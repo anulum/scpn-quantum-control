@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "scpn-quantum-control"
+version = "0.1.0"
+description = "Quantum-native reformulations of SCPN spiking, phase dynamics, and plasma control"
+requires-python = ">=3.9"
+license = "MIT"
+dependencies = [
+    "qiskit>=1.0.0",
+    "qiskit-aer>=0.14.0",
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "networkx>=3.0",
+]
+
+[project.optional-dependencies]
+viz = ["matplotlib>=3.5"]
+dev = ["pytest>=7.0", "pytest-cov"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/scpn_quantum_control"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
