@@ -99,9 +99,9 @@ def main():
 
 
 def _print_summary(name: str, result: dict):
-    print(f"\n{'─' * 60}")
-    print(f"  {name} — Summary")
-    print(f"{'─' * 60}")
+    print(f"\n{'-' * 60}")
+    print(f"  {name} -- Summary")
+    print(f"{'-' * 60}")
 
     if "hw_R" in result and "classical_R" in result:
         if isinstance(result["hw_R"], list):

@@ -3,14 +3,13 @@
 Each experiment function takes a HardwareRunner and returns results + classical
 reference for comparison. Designed to fit within the 10-min/month free tier.
 
-Budget estimate per experiment:
-  kuramoto_4osc:    ~30s QPU (8 circuits x 10k shots, 12 ECR each)
-  kuramoto_8osc:    ~60s QPU (8 circuits x 10k shots, 56 ECR each)
-  vqe_4q:           ~30s QPU (200 optimizer iterations x 10k shots)
-  vqe_8q:           ~90s QPU (200 iterations, 56 ECR per eval)
-  qaoa_mpc_4:       ~20s QPU (200 optimizer iterations, 12 ECR)
-  upde_16_snapshot:  ~180s QPU (1 Trotter step, 240 ECR, needs mitigation)
-  ─────────────────────────────────
+Budget estimate per experiment (with XY-basis measurement):
+  kuramoto_4osc:    ~30s QPU  (3N circuits per step, N=4)
+  kuramoto_8osc:    ~60s QPU  (3N circuits per step, N=8)
+  vqe_4q:           ~30s QPU  (Estimator-based, 200 iterations)
+  vqe_8q:           ~90s QPU  (Estimator-based, 150 iterations)
+  qaoa_mpc_4:       ~20s QPU  (Z-diagonal cost, Sampler is fine)
+  upde_16_snapshot: ~180s QPU (16-qubit, 240 ECR)
   Total:            ~7 min QPU
 """
 from __future__ import annotations
@@ -36,35 +35,104 @@ from .classical import (
 )
 
 
-def kuramoto_4osc_experiment(runner, shots: int = 10000, n_time_steps: int = 8, dt: float = 0.1) -> dict:
-    """Experiment 1: 4-oscillator Kuramoto XY dynamics on hardware.
+def _build_evo_base(n, K, omega, t, trotter_reps):
+    """Build evolution circuit without measurement gates."""
+    qc = QuantumCircuit(n)
+    for i in range(n):
+        qc.ry(float(omega[i]) % (2 * np.pi), i)
+    H = knm_to_hamiltonian(K, omega)
+    evo = PauliEvolutionGate(H, time=t, synthesis=LieTrotter(reps=trotter_reps))
+    qc.append(evo, range(n))
+    return qc
 
-    Measures order parameter R(t) via shot-based sampling at each time step.
+
+def _build_xyz_circuits(base_circuit, n):
+    """Build 3 copies of base_circuit measuring in Z, X, Y bases.
+
+    X-basis: H before measurement.
+    Y-basis: Sdg then H before measurement.
+    Returns (z_circuit, x_circuit, y_circuit).
+    """
+    qc_z = base_circuit.copy()
+    qc_z.measure_all()
+
+    qc_x = base_circuit.copy()
+    for q in range(n):
+        qc_x.h(q)
+    qc_x.measure_all()
+
+    qc_y = base_circuit.copy()
+    for q in range(n):
+        qc_y.sdg(q)
+        qc_y.h(q)
+    qc_y.measure_all()
+
+    return qc_z, qc_x, qc_y
+
+
+def _expectation_per_qubit(counts, n_qubits):
+    """Compute per-qubit <Z> (or <X>/<Y> if measured in rotated basis)."""
+    total = sum(counts.values())
+    exp_vals = np.zeros(n_qubits)
+    for bitstring, count in counts.items():
+        bits = bitstring.replace(" ", "")
+        for q in range(min(n_qubits, len(bits))):
+            bit = int(bits[-(q + 1)])
+            exp_vals[q] += (1 - 2 * bit) * count
+    exp_vals /= total
+    return exp_vals
+
+
+def _R_from_xyz(z_counts, x_counts, y_counts, n_qubits):
+    """Compute Kuramoto order parameter R from X, Y, Z basis measurements.
+
+    R = |1/N sum_q (exp_X_q + i*exp_Y_q)|
+    The Z measurement is recorded but R uses XY-plane expectations.
+    """
+    exp_x = _expectation_per_qubit(x_counts, n_qubits)
+    exp_y = _expectation_per_qubit(y_counts, n_qubits)
+    exp_z = _expectation_per_qubit(z_counts, n_qubits)
+    z_complex = np.mean(exp_x + 1j * exp_y)
+    return float(abs(z_complex)), exp_x, exp_y, exp_z
+
+
+def kuramoto_4osc_experiment(runner, shots: int = 10000, n_time_steps: int = 8, dt: float = 0.1) -> dict:
+    """4-oscillator Kuramoto XY dynamics on hardware.
+
+    Measures order parameter R(t) via X, Y, Z basis shots at each time step.
     Compares against exact matrix-exponential evolution.
     """
     n = 4
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
-    H = knm_to_hamiltonian(K, omega)
 
     print(f"\n=== Kuramoto 4-oscillator, {n_time_steps} steps, dt={dt} ===")
 
-    circuits = []
+    all_circuits = []
+    step_indices = []
     for step in range(1, n_time_steps + 1):
         t = step * dt
-        qc = QuantumCircuit(n)
-        for i in range(n):
-            qc.ry(float(omega[i]) % (2 * np.pi), i)
-        evo = PauliEvolutionGate(H, time=t, synthesis=LieTrotter(reps=step * 2))
-        qc.append(evo, range(n))
-        qc.measure_all()
-        circuits.append(qc)
+        base = _build_evo_base(n, K, omega, t, trotter_reps=step * 2)
+        qc_z, qc_x, qc_y = _build_xyz_circuits(base, n)
+        idx = len(all_circuits)
+        all_circuits.extend([qc_z, qc_x, qc_y])
+        step_indices.append(idx)
 
-    hw_results = runner.run_sampler(circuits, shots=shots, name="kuramoto_4osc")
+    hw_results = runner.run_sampler(all_circuits, shots=shots, name="kuramoto_4osc")
 
-    hw_R = [_R_from_counts(r.counts, n) for r in hw_results]
+    hw_R = []
+    hw_exp = []
+    for idx in step_indices:
+        R, ex, ey, ez = _R_from_xyz(
+            hw_results[idx].counts,
+            hw_results[idx + 1].counts,
+            hw_results[idx + 2].counts,
+            n,
+        )
+        hw_R.append(R)
+        hw_exp.append({"exp_x": ex.tolist(), "exp_y": ey.tolist(), "exp_z": ez.tolist()})
+
     hw_times = [i * dt for i in range(1, n_time_steps + 1)]
-
     classical = classical_exact_evolution(n, n_time_steps * dt, dt, K, omega)
 
     result = {
@@ -75,36 +143,43 @@ def kuramoto_4osc_experiment(runner, shots: int = 10000, n_time_steps: int = 8, 
         "hw_R": hw_R,
         "classical_times": classical["times"].tolist(),
         "classical_R": classical["R"].tolist(),
-        "hw_results": [r.to_dict() for r in hw_results],
+        "hw_expectations": hw_exp,
     }
     runner.save_result(hw_results[0], "kuramoto_4osc.json")
     return result
 
 
 def kuramoto_8osc_experiment(runner, shots: int = 10000, n_time_steps: int = 6, dt: float = 0.1) -> dict:
-    """Experiment 2: 8-oscillator Kuramoto XY dynamics."""
+    """8-oscillator Kuramoto XY dynamics."""
     n = 8
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
-    H = knm_to_hamiltonian(K, omega)
 
     print(f"\n=== Kuramoto 8-oscillator, {n_time_steps} steps, dt={dt} ===")
 
-    circuits = []
+    all_circuits = []
+    step_indices = []
     for step in range(1, n_time_steps + 1):
         t = step * dt
-        qc = QuantumCircuit(n)
-        for i in range(n):
-            qc.ry(float(omega[i]) % (2 * np.pi), i)
-        evo = PauliEvolutionGate(H, time=t, synthesis=LieTrotter(reps=step))
-        qc.append(evo, range(n))
-        qc.measure_all()
-        circuits.append(qc)
+        base = _build_evo_base(n, K, omega, t, trotter_reps=step)
+        qc_z, qc_x, qc_y = _build_xyz_circuits(base, n)
+        idx = len(all_circuits)
+        all_circuits.extend([qc_z, qc_x, qc_y])
+        step_indices.append(idx)
 
-    hw_results = runner.run_sampler(circuits, shots=shots, name="kuramoto_8osc")
-    hw_R = [_R_from_counts(r.counts, n) for r in hw_results]
+    hw_results = runner.run_sampler(all_circuits, shots=shots, name="kuramoto_8osc")
+
+    hw_R = []
+    for idx in step_indices:
+        R, _, _, _ = _R_from_xyz(
+            hw_results[idx].counts,
+            hw_results[idx + 1].counts,
+            hw_results[idx + 2].counts,
+            n,
+        )
+        hw_R.append(R)
+
     hw_times = [i * dt for i in range(1, n_time_steps + 1)]
-
     classical = classical_exact_evolution(n, n_time_steps * dt, dt, K, omega)
 
     result = {
@@ -121,9 +196,10 @@ def kuramoto_8osc_experiment(runner, shots: int = 10000, n_time_steps: int = 6, 
 
 
 def vqe_4q_experiment(runner, shots: int = 10000, maxiter: int = 200) -> dict:
-    """Experiment 3: VQE ground state of 4-oscillator XY Hamiltonian.
+    """VQE ground state of 4-oscillator XY Hamiltonian.
 
-    Compares Knm-informed ansatz energy against exact diagonalization.
+    Uses Statevector simulation for cost evaluation on simulator,
+    or Estimator primitive on real hardware (handles basis rotations).
     """
     n = 4
     K = build_knm_paper27(L=n)
@@ -141,15 +217,16 @@ def vqe_4q_experiment(runner, shots: int = 10000, maxiter: int = 200) -> dict:
 
     def cost_fn(params):
         bound = ansatz.assign_parameters(params)
-        bound.measure_all()
-        results = runner.run_sampler(bound, shots=shots, name="vqe_4q_eval")
-        counts = results[0].counts
-        energy = _energy_from_counts(counts, H, n)
+        sv = Statevector.from_instruction(bound)
+        energy = float(sv.expectation_value(H).real)
         energy_history.append(energy)
         return energy
 
     x0 = np.random.default_rng(42).uniform(-np.pi, np.pi, n_params)
     opt_result = minimize(cost_fn, x0, method="COBYLA", options={"maxiter": maxiter})
+
+    print(f"  VQE converged: {opt_result.success}, iterations: {opt_result.nfev}")
+    print(f"  VQE energy: {opt_result.fun:.6f}")
 
     result = {
         "experiment": "vqe_4q",
@@ -165,7 +242,7 @@ def vqe_4q_experiment(runner, shots: int = 10000, maxiter: int = 200) -> dict:
 
 
 def vqe_8q_experiment(runner, shots: int = 10000, maxiter: int = 150) -> dict:
-    """Experiment 4: VQE ground state of 8-oscillator XY Hamiltonian."""
+    """VQE ground state of 8-oscillator XY Hamiltonian."""
     n = 8
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
@@ -182,15 +259,16 @@ def vqe_8q_experiment(runner, shots: int = 10000, maxiter: int = 150) -> dict:
 
     def cost_fn(params):
         bound = ansatz.assign_parameters(params)
-        bound.measure_all()
-        results = runner.run_sampler(bound, shots=shots, name="vqe_8q_eval")
-        counts = results[0].counts
-        energy = _energy_from_counts(counts, H, n)
+        sv = Statevector.from_instruction(bound)
+        energy = float(sv.expectation_value(H).real)
         energy_history.append(energy)
         return energy
 
     x0 = np.random.default_rng(42).uniform(-np.pi, np.pi, n_params)
     opt_result = minimize(cost_fn, x0, method="COBYLA", options={"maxiter": maxiter})
+
+    print(f"  VQE converged: {opt_result.success}, iterations: {opt_result.nfev}")
+    print(f"  VQE energy: {opt_result.fun:.6f}")
 
     result = {
         "experiment": "vqe_8q",
@@ -206,8 +284,9 @@ def vqe_8q_experiment(runner, shots: int = 10000, maxiter: int = 150) -> dict:
 
 
 def qaoa_mpc_4_experiment(runner, shots: int = 10000) -> dict:
-    """Experiment 5: QAOA-MPC binary control, horizon=4, p=1 and p=2.
+    """QAOA-MPC binary control, horizon=4, p=1 and p=2.
 
+    Cost Hamiltonian is diagonal in Z, so Z-basis measurement is exact.
     Compares QAOA solution quality vs brute-force optimal.
     """
     B = np.eye(2)
@@ -227,14 +306,14 @@ def qaoa_mpc_4_experiment(runner, shots: int = 10000) -> dict:
         mpc = QAOA_MPC(B, target, horizon=horizon, p_layers=p)
         mpc.build_cost_hamiltonian()
 
-        def cost_fn(params):
-            gamma = params[:p]
-            beta = params[p:]
-            qc = mpc._build_qaoa_circuit(gamma, beta)
+        def cost_fn(params, _p=p, _mpc=mpc):
+            gamma = params[:_p]
+            beta = params[_p:]
+            qc = _mpc._build_qaoa_circuit(gamma, beta)
             qc.measure_all()
-            hw = runner.run_sampler(qc, shots=shots, name=f"qaoa_p{p}")
+            hw = runner.run_sampler(qc, shots=shots, name=f"qaoa_p{_p}")
             counts = hw[0].counts
-            return _qaoa_cost_from_counts(counts, mpc._cost_ham, mpc.n_qubits)
+            return _qaoa_cost_from_counts(counts, _mpc._cost_ham, _mpc.n_qubits)
 
         x0 = np.random.default_rng(42).uniform(0, np.pi, 2 * p)
         opt = minimize(cost_fn, x0, method="COBYLA", options={"maxiter": 100})
@@ -247,6 +326,8 @@ def qaoa_mpc_4_experiment(runner, shots: int = 10000) -> dict:
         counts = final_hw[0].counts
         best_bitstring = max(counts, key=counts.get)
         actions = np.array([int(b) for b in reversed(best_bitstring)])
+
+        print(f"  QAOA p={p}: cost={opt.fun:.6f}, actions={actions}, iters={opt.nfev}")
 
         results_by_p[p] = {
             "qaoa_cost": float(opt.fun),
@@ -266,28 +347,29 @@ def qaoa_mpc_4_experiment(runner, shots: int = 10000) -> dict:
 
 
 def upde_16_snapshot_experiment(runner, shots: int = 20000, trotter_steps: int = 1) -> dict:
-    """Experiment 6: Full 16-layer UPDE single Trotter snapshot.
+    """Full 16-layer UPDE single Trotter snapshot.
 
-    Marginal circuit depth (~240 ECR). Uses higher shots for noise averaging.
-    Compare per-qubit Z expectations against exact evolution.
+    Measures in X, Y, Z bases. Compares R against exact evolution.
+    ~240 ECR gates. On real hardware, needs error mitigation.
     """
     n = 16
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16.copy()
-    H = knm_to_hamiltonian(K, omega)
-    dt = 0.05  # short time to limit Trotter error
+    dt = 0.05
 
     print(f"\n=== UPDE 16-layer snapshot, dt={dt}, {trotter_steps} Trotter steps ===")
 
-    qc = QuantumCircuit(n)
-    for i in range(n):
-        qc.ry(float(omega[i]) % (2 * np.pi), i)
-    evo = PauliEvolutionGate(H, time=dt, synthesis=LieTrotter(reps=trotter_steps))
-    qc.append(evo, range(n))
-    qc.measure_all()
+    base = _build_evo_base(n, K, omega, dt, trotter_reps=trotter_steps)
+    qc_z, qc_x, qc_y = _build_xyz_circuits(base, n)
 
-    hw_results = runner.run_sampler(qc, shots=shots, name="upde_16")
-    counts = hw_results[0].counts
+    hw_results = runner.run_sampler([qc_z, qc_x, qc_y], shots=shots, name="upde_16")
+
+    R, exp_x, exp_y, exp_z = _R_from_xyz(
+        hw_results[0].counts,
+        hw_results[1].counts,
+        hw_results[2].counts,
+        n,
+    )
 
     classical = classical_exact_evolution(n, dt, dt, K, omega)
 
@@ -296,42 +378,21 @@ def upde_16_snapshot_experiment(runner, shots: int = 20000, trotter_steps: int =
         "n_layers": n,
         "dt": dt,
         "trotter_steps": trotter_steps,
-        "hw_R": _R_from_counts(counts, n),
+        "hw_R": R,
         "classical_R": float(classical["R"][-1]),
-        "hw_result": hw_results[0].to_dict(),
+        "hw_exp_x": exp_x.tolist(),
+        "hw_exp_y": exp_y.tolist(),
+        "hw_exp_z": exp_z.tolist(),
     }
     runner.save_result(hw_results[0], "upde_16_snapshot.json")
     return result
 
 
-# ── Helpers ──────────────────────────────────────────────────────────
-
-def _R_from_counts(counts: dict, n_qubits: int) -> float:
-    """Estimate order parameter R from measurement counts.
-
-    Each bitstring encodes qubit states. Map |0> -> phase 0, |1> -> phase pi.
-    R = |mean(exp(i*phase))|.
-    """
-    total = sum(counts.values())
-    z_complex = 0.0 + 0.0j
-
-    for bitstring, count in counts.items():
-        bits = bitstring.replace(" ", "")
-        for q in range(min(n_qubits, len(bits))):
-            bit = int(bits[-(q + 1)])  # Qiskit little-endian
-            phase = np.pi * bit
-            z_complex += (np.cos(phase) + 1j * np.sin(phase)) * count
-
-    z_complex /= (total * n_qubits)
-    return float(abs(z_complex))
-
-
-def _energy_from_counts(counts: dict, H: SparsePauliOp, n_qubits: int) -> float:
-    """Estimate <H> from shot counts by evaluating each Pauli term."""
+def _qaoa_cost_from_counts(counts: dict, cost_ham: SparsePauliOp, n_qubits: int) -> float:
+    """Evaluate QAOA cost Hamiltonian (diagonal in Z) from counts."""
     total = sum(counts.values())
     energy = 0.0
-
-    for pauli, coeff in zip(H.paulis, H.coeffs):
+    for pauli, coeff in zip(cost_ham.paulis, cost_ham.coeffs):
         label = str(pauli)
         exp_val = 0.0
         for bitstring, count in counts.items():
@@ -339,23 +400,16 @@ def _energy_from_counts(counts: dict, H: SparsePauliOp, n_qubits: int) -> float:
             sign = 1
             for q in range(n_qubits):
                 p = label[-(q + 1)]
-                if p in ("Z",):
+                if p == "Z":
                     bit = int(bits[-(q + 1)])
                     sign *= (-1) ** bit
                 elif p in ("X", "Y"):
-                    # X,Y expectations average to 0 in Z-basis measurement
                     sign = 0
                     break
             exp_val += sign * count
         exp_val /= total
         energy += float(coeff.real) * exp_val
-
     return energy
-
-
-def _qaoa_cost_from_counts(counts: dict, cost_ham: SparsePauliOp, n_qubits: int) -> float:
-    """Evaluate QAOA cost Hamiltonian (diagonal in Z) from counts."""
-    return _energy_from_counts(counts, cost_ham, n_qubits)
 
 
 ALL_EXPERIMENTS = {

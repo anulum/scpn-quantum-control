@@ -76,6 +76,7 @@ class HardwareRunner:
         self._service = None
         self._backend = None
         self._pm = None
+        self._calls = 0
 
     def connect(self):
         """Authenticate and select backend."""
@@ -154,9 +155,11 @@ class HardwareRunner:
 
         isa_circuits = [self.transpile(qc) for qc in circuits]
 
-        for i, isa in enumerate(isa_circuits):
-            stats = self.circuit_stats(isa)
-            print(f"  Circuit {i}: depth={stats['depth']}, ECR={stats['ecr_gates']}, qubits={stats['n_qubits']}")
+        self._calls += 1
+        if self._calls <= 3:
+            for i, isa in enumerate(isa_circuits):
+                stats = self.circuit_stats(isa)
+                print(f"  Circuit {i}: depth={stats['depth']}, ECR={stats['ecr_gates']}, qubits={stats['n_qubits']}")
 
         if self.use_simulator:
             return self._run_sampler_simulator(isa_circuits, shots, name)
