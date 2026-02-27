@@ -19,6 +19,7 @@ dependencies = [
 [project.optional-dependencies]
 viz = ["matplotlib>=3.5"]
 dev = ["pytest>=7.0", "pytest-cov"]
+ibm = ["qiskit-ibm-runtime>=0.20.0"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/scpn_quantum_control"]
