@@ -54,10 +54,17 @@ class HardwareRunner:
         result = runner.run_sampler(circuit, shots=10000, name="my_experiment")
     """
 
+    DEFAULT_INSTANCE = (
+        "crn:v1:bluemix:public:quantum-computing:us-east:"
+        "a/78db885720334fd19191b33a839d0c35:"
+        "eb82d44a-2e21-44bd-9855-f72768138a57::"
+    )
+
     def __init__(
         self,
         token: str | None = None,
-        channel: str = "ibm_quantum",
+        channel: str = "ibm_quantum_platform",
+        instance: str | None = None,
         backend_name: str | None = None,
         use_simulator: bool = False,
         optimization_level: int = 2,
@@ -66,6 +73,7 @@ class HardwareRunner:
     ):
         self.token = token
         self.channel = channel
+        self.instance = instance or self.DEFAULT_INSTANCE
         self._backend_name = backend_name
         self.use_simulator = use_simulator
         self.optimization_level = optimization_level
@@ -88,7 +96,9 @@ class HardwareRunner:
 
         if self.token:
             self._service = QiskitRuntimeService(
-                channel=self.channel, token=self.token
+                channel=self.channel,
+                token=self.token,
+                instance=self.instance,
             )
         else:
             self._service = QiskitRuntimeService()
@@ -303,10 +313,11 @@ class HardwareRunner:
         return path
 
     @staticmethod
-    def save_token(token: str, channel: str = "ibm_quantum"):
+    def save_token(token: str, instance: str | None = None, channel: str = "ibm_quantum_platform"):
         """Save IBM Quantum API token to disk (one-time setup)."""
         from qiskit_ibm_runtime import QiskitRuntimeService
+        inst = instance or HardwareRunner.DEFAULT_INSTANCE
         QiskitRuntimeService.save_account(
-            channel=channel, token=token, overwrite=True
+            channel=channel, token=token, instance=inst, overwrite=True,
         )
         print("Token saved. Future runs need no token argument.")
