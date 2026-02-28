@@ -1,0 +1,14 @@
+{
+  "backend": "ibm_fez",
+  "experiment": "vqe_4q",
+  "timestamp": "2026-02-28T01:15:00",
+  "n_qubits": 4,
+  "ansatz": "knm_informed_ry_rz_cz",
+  "optimizer": "COBYLA",
+  "maxiter": 100,
+  "vqe_energy": -6.2998,
+  "exact_ground_energy": -6.3030,
+  "absolute_gap": 0.0032,
+  "relative_error_pct": 0.05,
+  "notes": "Statevector cost evaluation on simulator, transpiled ansatz executed on hardware for final energy. Knm-informed CZ topology matches physical coupling graph."
+}

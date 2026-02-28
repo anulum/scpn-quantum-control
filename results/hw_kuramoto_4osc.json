@@ -1,0 +1,23 @@
+{
+  "backend": "ibm_fez",
+  "processor": "Heron r2 (156q)",
+  "experiment": "kuramoto_4osc",
+  "job_id": "d6h2qbf3o3rs73caft20",
+  "timestamp": "2026-02-28T00:48:40",
+  "shots": 10000,
+  "n_qubits": 4,
+  "measurement_bases": ["Z", "X", "Y"],
+  "time_steps": [
+    {"t": 0.10, "hw_R": 0.6478, "exact_R": 0.8015, "abs_err": 0.1537, "rel_err_pct": 19.2},
+    {"t": 0.20, "hw_R": 0.5883, "exact_R": 0.7883, "abs_err": 0.2000, "rel_err_pct": 25.4},
+    {"t": 0.30, "hw_R": 0.4891, "exact_R": 0.7669, "abs_err": 0.2778, "rel_err_pct": 36.2},
+    {"t": 0.40, "hw_R": 0.3757, "exact_R": 0.7380, "abs_err": 0.3623, "rel_err_pct": 49.1}
+  ],
+  "wall_time_s": 44.29,
+  "metadata": {
+    "depth": 149,
+    "n_qubits": 156,
+    "total_gates": 250,
+    "native_gate_set": "cz (Heron r2)"
+  }
+}
