@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import numpy as np
-from qiskit.quantum_info import Statevector
+from qiskit.quantum_info import DensityMatrix, Statevector
 
 from scpn_quantum_control.crypto.noise_analysis import security_analysis
 from scpn_quantum_control.crypto.percolation import (
     _concurrence_2qubit,
+    concurrence_map,
     key_rate_per_channel,
     percolation_threshold,
     robustness_random_removal,
@@ -78,6 +79,32 @@ class TestTopologyAuthEdgeCases:
         fp3 = spectral_fingerprint(np.eye(3) * 0)
         fp4 = spectral_fingerprint(np.eye(4) * 0)
         assert topology_distance(fp3, fp4) == float("inf")
+
+
+class TestConcurrenceMap:
+    def test_concurrence_map_3q(self):
+        K = np.array([[0, 0.5, 0.1], [0.5, 0, 0.3], [0.1, 0.3, 0]])
+        omega = np.array([1.0, 1.1, 0.9])
+        cmap = concurrence_map(K, omega, maxiter=30)
+        assert cmap.shape == (3, 3)
+        np.testing.assert_allclose(np.diag(cmap), 0.0)
+        # Symmetric
+        np.testing.assert_allclose(cmap, cmap.T, atol=1e-10)
+
+    def test_concurrence_via_density_matrix(self):
+        # Bell state: concurrence = 1
+        rho = DensityMatrix([1 / np.sqrt(2), 0, 0, 1 / np.sqrt(2)])
+        c = _concurrence_2qubit(rho)
+        assert c > 0.95
+
+    def test_robustness_targeted_tree_graph(self):
+        # Tree: removing any edge disconnects
+        K = np.zeros((4, 4))
+        K[0, 1] = K[1, 0] = 0.5
+        K[1, 2] = K[2, 1] = 0.3
+        K[2, 3] = K[3, 2] = 0.4
+        result = robustness_targeted_removal(K)
+        assert result["edges_to_disconnect"] == 1
 
 
 class TestNoiseAnalysisEdgeCases:

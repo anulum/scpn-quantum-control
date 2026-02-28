@@ -239,7 +239,8 @@ def best_entanglement_path(
         for v in range(n):
             if v == u or v in visited or K[u, v] <= 0:
                 continue
-            new_bw = float(min(bw, K[u, v]))
+            edge_w = float(K[u, v])
+            new_bw = bw if bw < edge_w else edge_w
             if new_bw > best[v]:
                 best[v] = new_bw
                 parent[v] = u
