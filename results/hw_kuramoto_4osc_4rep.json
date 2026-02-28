@@ -1,0 +1,23 @@
+{
+  "backend": "ibm_fez",
+  "experiment": "kuramoto_4osc_trotter_refinement",
+  "job_id": "d6h3il9keb2s73be4pn0",
+  "n_qubits": 4,
+  "shots": 20000,
+  "results": [
+    {
+      "t": 0.1,
+      "trotter_reps": 4,
+      "hw_R": 0.625174528131945,
+      "exact_R": 0.801509023084279,
+      "depth": 290
+    },
+    {
+      "t": 0.2,
+      "trotter_reps": 4,
+      "hw_R": 0.5577557944566779,
+      "exact_R": 0.7883224715007977,
+      "depth": 292
+    }
+  ]
+}
