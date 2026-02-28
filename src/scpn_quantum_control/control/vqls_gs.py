@@ -97,7 +97,8 @@ class VQLS_GradShafranov:
         sv = Statevector.from_instruction(bound)
         psi = np.real(np.array(sv))
 
-        # Normalize to physical scale
+        # L2 projection rescaling: scale = <b|b> / <b|A|psi>
+        # Bravo-Prieto et al., arXiv:1909.05820 (2019), post-processing step
         A_psi = A @ psi
         scale = np.vdot(b, b) / np.vdot(b, A_psi) if abs(np.vdot(b, A_psi)) > 1e-15 else 1.0
         return psi * float(np.real(scale))

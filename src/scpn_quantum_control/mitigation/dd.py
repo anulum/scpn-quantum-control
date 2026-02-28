@@ -13,11 +13,13 @@ from qiskit import QuantumCircuit
 class DDSequence(Enum):
     XY4 = "XY4"
     X2 = "X2"
+    CPMG = "CPMG"  # Carr-Purcell-Meiboom-Gill, Meiboom & Gill (1958)
 
 
 _PULSE_MAP = {
     DDSequence.XY4: ["x", "y", "x", "y"],
     DDSequence.X2: ["x", "x"],
+    DDSequence.CPMG: ["y", "x", "y", "x"],
 }
 
 

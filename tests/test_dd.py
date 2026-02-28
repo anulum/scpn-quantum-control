@@ -56,3 +56,13 @@ def test_multiple_idle_qubits():
     # 3 qubits * 2 x gates each = 6 x gates, + 3*2=6 y gates
     assert ops.get("x", 0) >= 6
     assert ops.get("y", 0) >= 6
+
+
+def test_cpmg_adds_gates():
+    """CPMG sequence (YXYX) should add both x and y gates."""
+    qc = QuantumCircuit(2)
+    qc.h(0)
+    result = insert_dd_sequence(qc, idle_qubits=[1], sequence=DDSequence.CPMG)
+    ops = result.count_ops()
+    assert ops.get("y", 0) >= 2
+    assert ops.get("x", 0) >= 2
