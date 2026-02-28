@@ -40,7 +40,8 @@ class QuantumDenseLayer:
         if weights is None:
             weights = np.random.default_rng().uniform(0.0, 1.0, (n_neurons, n_inputs))
         self.synapses = [
-            [QuantumSynapse(float(weights[n, i])) for i in range(n_inputs)] for n in range(n_neurons)
+            [QuantumSynapse(float(weights[n, i])) for i in range(n_inputs)]
+            for n in range(n_neurons)
         ]
 
     def forward(self, input_values: np.ndarray) -> np.ndarray:
