@@ -208,6 +208,161 @@ def test_kuramoto_4osc_zne_on_simulator(sim_runner):
     assert np.isfinite(result["classical_R"])
 
 
+def test_noise_baseline_on_simulator(sim_runner):
+    """Baseline circuit: low depth, R close to classical."""
+    from scpn_quantum_control.hardware.experiments import noise_baseline_experiment
+
+    result = noise_baseline_experiment(sim_runner, shots=500)
+    assert result["experiment"] == "noise_baseline"
+    assert result["n_qubits"] == 4
+    assert 0.0 <= result["hw_R"] <= 1.5
+    assert np.isfinite(result["classical_R"])
+    assert len(result["hw_exp_x"]) == 4
+    assert len(result["hw_exp_z"]) == 4
+
+
+def test_kuramoto_8osc_zne_on_simulator(sim_runner):
+    """8-osc ZNE: produces R per scale and finite extrapolated value."""
+    from scpn_quantum_control.hardware.experiments import kuramoto_8osc_zne_experiment
+
+    result = kuramoto_8osc_zne_experiment(sim_runner, shots=500, dt=0.05, scales=[1, 3])
+    assert result["experiment"] == "kuramoto_8osc_zne"
+    assert result["n_oscillators"] == 8
+    assert len(result["R_per_scale"]) == 2
+    assert np.isfinite(result["zne_R"])
+    assert np.isfinite(result["classical_R"])
+
+
+def test_vqe_8q_hardware_on_simulator(sim_runner):
+    """VQE 8q hardware path: returns hw_energy, sim_energy, exact_energy."""
+    import scpn_quantum_control.hardware.experiments as exp_mod
+    from scpn_quantum_control.hardware.experiments import vqe_8q_hardware_experiment
+
+    original = exp_mod.minimize
+
+    def limited_minimize(fn, x0, **kwargs):
+        kwargs.setdefault("options", {})["maxiter"] = 20
+        return original(fn, x0, **kwargs)
+
+    exp_mod.minimize = limited_minimize
+    try:
+        result = vqe_8q_hardware_experiment(sim_runner, shots=100, maxiter=20)
+        assert result["experiment"] == "vqe_8q_hardware"
+        assert result["n_qubits"] == 8
+        assert np.isfinite(result["hw_energy"])
+        assert np.isfinite(result["sim_energy"])
+        assert np.isfinite(result["exact_energy"])
+    finally:
+        exp_mod.minimize = original
+
+
+@pytest.mark.slow
+def test_upde_16_dd_on_simulator(sim_runner):
+    """16-layer UPDE with DD: R + per-qubit expectations for 16 layers.
+
+    Marked slow: 16-qubit circuits take significant time on AerSimulator.
+    Run with: pytest -m slow
+    """
+    from scpn_quantum_control.hardware.experiments import upde_16_dd_experiment
+
+    result = upde_16_dd_experiment(sim_runner, shots=100, trotter_steps=1)
+    assert result["experiment"] == "upde_16_dd"
+    assert result["n_layers"] == 16
+    assert 0.0 <= result["hw_R_raw"] <= 1.5
+    assert 0.0 <= result["hw_R_dd"] <= 1.5
+    assert np.isfinite(result["classical_R"])
+    assert len(result["hw_exp_x_dd"]) == 16
+
+
+def test_kuramoto_4osc_trotter2_on_simulator(sim_runner):
+    """Trotter-2: produces R per step, comparison data."""
+    from scpn_quantum_control.hardware.experiments import kuramoto_4osc_trotter2_experiment
+
+    result = kuramoto_4osc_trotter2_experiment(sim_runner, shots=500, n_time_steps=3, dt=0.05)
+    assert result["experiment"] == "kuramoto_4osc_trotter2"
+    assert result["trotter_order"] == 2
+    assert len(result["hw_R"]) == 3
+    assert len(result["classical_R"]) > 0
+    assert all(np.isfinite(r) for r in result["hw_R"])
+
+
+def test_sync_threshold_on_simulator(sim_runner):
+    """Sync threshold sweep: R should increase with K_base."""
+    from scpn_quantum_control.hardware.experiments import sync_threshold_experiment
+
+    result = sync_threshold_experiment(sim_runner, shots=500, k_values=[0.1, 0.45])
+    assert result["experiment"] == "sync_threshold"
+    assert len(result["results"]) == 2
+    for entry in result["results"]:
+        assert 0.0 <= entry["hw_R"] <= 1.5
+        assert np.isfinite(entry["classical_R"])
+
+
+def test_ansatz_comparison_hw_on_simulator(sim_runner):
+    """Ansatz comparison: all three produce finite hw_energy."""
+    import scpn_quantum_control.hardware.experiments as exp_mod
+    from scpn_quantum_control.hardware.experiments import ansatz_comparison_hw_experiment
+
+    original = exp_mod.minimize
+
+    def limited_minimize(fn, x0, **kwargs):
+        kwargs.setdefault("options", {})["maxiter"] = 15
+        return original(fn, x0, **kwargs)
+
+    exp_mod.minimize = limited_minimize
+    try:
+        result = ansatz_comparison_hw_experiment(sim_runner, shots=100, maxiter=15)
+        assert result["experiment"] == "ansatz_comparison_hw"
+        assert len(result["comparison"]) == 3
+        for entry in result["comparison"]:
+            assert np.isfinite(entry["hw_energy"])
+            assert np.isfinite(entry["sim_energy"])
+    finally:
+        exp_mod.minimize = original
+
+
+def test_zne_higher_order_on_simulator(sim_runner):
+    """ZNE higher-order: produces extrapolations for multiple polynomial orders."""
+    from scpn_quantum_control.hardware.experiments import zne_higher_order_experiment
+
+    result = zne_higher_order_experiment(
+        sim_runner, shots=500, dt=0.05, scales=[1, 3, 5], poly_order=2
+    )
+    assert result["experiment"] == "zne_higher_order"
+    assert len(result["R_per_scale"]) == 3
+    assert "order_1" in result["extrapolations"]
+    assert "order_2" in result["extrapolations"]
+    assert np.isfinite(result["extrapolations"]["order_1"]["zne_R"])
+    assert np.isfinite(result["extrapolations"]["order_2"]["zne_R"])
+
+
+def test_decoherence_scaling_on_simulator(sim_runner):
+    """Decoherence scaling: produces data points and gamma fit."""
+    from scpn_quantum_control.hardware.experiments import decoherence_scaling_experiment
+
+    result = decoherence_scaling_experiment(sim_runner, shots=500, qubit_counts=[2, 4, 6])
+    assert result["experiment"] == "decoherence_scaling"
+    assert len(result["data_points"]) == 3
+    for dp in result["data_points"]:
+        assert dp["depth"] > 0
+        assert 0.0 <= dp["hw_R"] <= 1.5
+    assert np.isfinite(result["fit_gamma"])
+
+
+def test_vqe_landscape_on_simulator(sim_runner):
+    """VQE landscape: energy variance for barren plateau detection."""
+    from scpn_quantum_control.hardware.experiments import vqe_landscape_experiment
+
+    result = vqe_landscape_experiment(sim_runner, shots=100, n_samples=10)
+    assert result["experiment"] == "vqe_landscape"
+    assert "knm_informed" in result["landscapes"]
+    assert "two_local" in result["landscapes"]
+    for name in ["knm_informed", "two_local"]:
+        land = result["landscapes"][name]
+        assert land["std_energy"] > 0
+        assert land["min_energy"] < land["max_energy"]
+
+
 def test_transpile_with_dd(sim_runner):
     """DD pass should not crash; on simulator it falls back to original circuit."""
     from qiskit import QuantumCircuit
