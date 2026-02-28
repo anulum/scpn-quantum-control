@@ -114,9 +114,7 @@ def classical_exact_evolution(
 
     H_op = knm_to_hamiltonian(K, omega)
     H_mat = np.array(H_op.to_matrix())
-    2**n_osc
 
-    # Initial state: each qubit Ry(omega_i mod 2pi) |0>
     psi = _build_initial_state(n_osc, omega)
 
     n_steps = max(1, round(t_max / dt))
@@ -144,7 +142,6 @@ def _build_initial_state(n_osc: int, omega: np.ndarray) -> np.ndarray:
 
 def _state_order_param(psi: np.ndarray, n_osc: int) -> float:
     """Compute R from statevector via X,Y expectations per qubit."""
-    2**n_osc
     z_complex = 0.0 + 0.0j
 
     for q in range(n_osc):
@@ -170,6 +167,32 @@ def _expectation_pauli(psi: np.ndarray, n: int, qubit: int, pauli: str) -> float
     for i in range(n):
         op = np.kron(op, p if i == qubit else np.eye(2))
     return float(np.real(psi.conj() @ op @ psi))
+
+
+def bloch_vectors_from_json(path: str) -> dict:
+    """Extract per-qubit Bloch vector magnitudes from a hardware result JSON.
+
+    Expects keys 'exp_x', 'exp_y', 'exp_z' (lists of per-qubit expectations).
+    Returns dict with 'bloch_magnitudes' (sqrt(X^2+Y^2+Z^2) per qubit) and
+    the raw expectation arrays.
+    """
+    import json as _json
+    from pathlib import Path as _Path
+
+    with open(_Path(path)) as f:
+        data = _json.load(f)
+
+    ex = np.array(data["exp_x"])
+    ey = np.array(data["exp_y"])
+    ez = np.array(data["exp_z"])
+    magnitudes = np.sqrt(ex**2 + ey**2 + ez**2)
+    return {
+        "exp_x": ex,
+        "exp_y": ey,
+        "exp_z": ez,
+        "bloch_magnitudes": magnitudes,
+        "n_qubits": len(ex),
+    }
 
 
 def classical_brute_mpc(

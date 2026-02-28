@@ -7,6 +7,7 @@ and result collection. Falls back to AerSimulator when no hardware available.
 from __future__ import annotations
 
 import json
+import os
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -54,10 +55,11 @@ class HardwareRunner:
         result = runner.run_sampler(circuit, shots=10000, name="my_experiment")
     """
 
-    DEFAULT_INSTANCE = (
+    DEFAULT_INSTANCE = os.environ.get(
+        "SCPN_IBM_INSTANCE",
         "crn:v1:bluemix:public:quantum-computing:us-east:"
         "a/78db885720334fd19191b33a839d0c35:"
-        "eb82d44a-2e21-44bd-9855-f72768138a57::"
+        "eb82d44a-2e21-44bd-9855-f72768138a57::",
     )
 
     def __init__(
@@ -70,6 +72,7 @@ class HardwareRunner:
         optimization_level: int = 2,
         resilience_level: int = 1,
         results_dir: str = "results",
+        noise_model=None,
     ):
         self.token = token
         self.channel = channel
@@ -80,6 +83,7 @@ class HardwareRunner:
         self.resilience_level = resilience_level
         self.results_dir = Path(results_dir)
         self.results_dir.mkdir(parents=True, exist_ok=True)
+        self._noise_model = noise_model
 
         self._service = None
         self._backend = None
@@ -117,12 +121,16 @@ class HardwareRunner:
     def _connect_simulator(self):
         from qiskit_aer import AerSimulator
 
-        self._backend = AerSimulator()
+        if self._noise_model is not None:
+            self._backend = AerSimulator(noise_model=self._noise_model)
+        else:
+            self._backend = AerSimulator()
         self._pm = generate_preset_pass_manager(
             optimization_level=self.optimization_level,
             basis_gates=["ecr", "id", "rz", "sx", "x"],
         )
-        print("Connected: AerSimulator (local)")
+        noisy_tag = ", noisy" if self._noise_model is not None else ""
+        print(f"Connected: AerSimulator (local{noisy_tag})")
 
     @property
     def backend(self):
@@ -136,6 +144,7 @@ class HardwareRunner:
 
     def transpile(self, circuit: QuantumCircuit) -> QuantumCircuit:
         """Transpile circuit for target backend."""
+        assert self._pm is not None, "call connect() first"
         return self._pm.run(circuit)
 
     def transpile_observable(
@@ -228,7 +237,7 @@ class HardwareRunner:
         estimator = Estimator(mode=self._backend)
         estimator.options.resilience_level = self.resilience_level
 
-        pubs = [(isa_circuit, isa_obs)]
+        pubs: list = [(isa_circuit, isa_obs)]
         if parameter_values is not None:
             pubs = [(isa_circuit, isa_obs, pv) for pv in parameter_values]
 
@@ -250,18 +259,13 @@ class HardwareRunner:
         )
 
     def _run_sampler_simulator(self, isa_circuits, shots, name):
-        from qiskit_aer import AerSimulator
-
-        sim = AerSimulator()
         from qiskit import transpile as qk_transpile
 
         results = []
         t0 = time.time()
         for i, qc in enumerate(isa_circuits):
-            tc = qk_transpile(qc, sim)
-            from qiskit_aer import AerSimulator
-
-            job = sim.run(tc, shots=shots)
+            tc = qk_transpile(qc, self._backend)
+            job = self._backend.run(tc, shots=shots)
             counts = job.result().get_counts()
             wall = time.time() - t0
             jr = JobResult(
@@ -302,8 +306,68 @@ class HardwareRunner:
             metadata=stats,
         )
 
+    def run_estimator_zne(
+        self,
+        circuit: QuantumCircuit,
+        observables: list[SparsePauliOp],
+        scales: list[int] | None = None,
+        order: int = 1,
+        name: str = "zne_experiment",
+    ):
+        """Run ZNE: fold circuit at multiple noise scales, extrapolate to zero."""
+        from ..mitigation.zne import gate_fold_circuit, zne_extrapolate
+
+        if scales is None:
+            scales = [1, 3, 5]
+
+        evs_per_scale = []
+        for s in scales:
+            folded = gate_fold_circuit(circuit, s)
+            result = self.run_estimator(folded, observables, name=f"{name}_s{s}")
+            assert result.expectation_values is not None
+            evs_per_scale.append(float(np.mean(result.expectation_values)))
+
+        return zne_extrapolate(scales, evs_per_scale, order=order)
+
+    def transpile_with_dd(
+        self,
+        circuit: QuantumCircuit,
+        dd_sequence: list[str] | None = None,
+    ) -> QuantumCircuit:
+        """Transpile with Qiskit's PadDynamicalDecoupling pass.
+
+        Default sequence is XY4: [X, Y, X, Y].
+        """
+        from qiskit.circuit.library import XGate, YGate
+        from qiskit.transpiler import PassManager
+        from qiskit.transpiler.passes import PadDynamicalDecoupling
+
+        assert self._pm is not None, "call connect() first"
+        isa = self._pm.run(circuit)
+
+        if dd_sequence is None:
+            dd_sequence_gates = [XGate(), YGate(), XGate(), YGate()]
+        else:
+            gate_map = {"x": XGate, "y": YGate}
+            dd_sequence_gates = [gate_map[g.lower()]() for g in dd_sequence]
+
+        dd_pm = PassManager(
+            [
+                PadDynamicalDecoupling(
+                    durations=None,
+                    dd_sequence=dd_sequence_gates,
+                    target=getattr(self._backend, "target", None),
+                ),
+            ]
+        )
+        try:
+            return dd_pm.run(isa)
+        except Exception:
+            return isa
+
     def save_result(self, result: JobResult | list[JobResult], filename: str | None = None):
         """Save result(s) to JSON in results_dir."""
+        data: dict | list[dict]
         if isinstance(result, list):
             data = [r.to_dict() for r in result]
         else:

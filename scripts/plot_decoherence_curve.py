@@ -58,6 +58,38 @@ def fit_exponential_decay(depths, errors):
         return None, None
 
 
+def fit_decoherence_rate(
+    depths: list[float],
+    hw_r: list[float],
+    exact_r: list[float],
+) -> dict:
+    """Fit R_hw/R_exact = exp(-gamma * depth) and extract physical gamma.
+
+    Returns dict with 'gamma', 'r_squared', 'ratios', 'fit_ratios'.
+    """
+    from scipy.optimize import curve_fit
+
+    d = np.asarray(depths, dtype=float)
+    ratios = np.asarray(hw_r) / np.asarray(exact_r)
+
+    def model(x, gamma):
+        return np.exp(-gamma * x)
+
+    popt, _ = curve_fit(model, d, ratios, p0=[0.001], bounds=(0, 0.1))
+    gamma = float(popt[0])
+    fit_ratios = model(d, gamma)
+    ss_res = np.sum((ratios - fit_ratios) ** 2)
+    ss_tot = np.sum((ratios - np.mean(ratios)) ** 2)
+    r_sq = 1.0 - ss_res / ss_tot if ss_tot > 0 else 0.0
+
+    return {
+        "gamma": gamma,
+        "r_squared": r_sq,
+        "ratios": ratios.tolist(),
+        "fit_ratios": fit_ratios.tolist(),
+    }
+
+
 def plot_decoherence():
     import matplotlib.pyplot as plt
     from matplotlib.patches import Rectangle

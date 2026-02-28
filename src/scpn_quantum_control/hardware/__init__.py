@@ -1,4 +1,5 @@
 from .classical import (
+    bloch_vectors_from_json,
     classical_brute_mpc,
     classical_exact_diag,
     classical_kuramoto_reference,
@@ -6,17 +7,21 @@ from .classical import (
 from .experiments import (
     ALL_EXPERIMENTS,
     kuramoto_4osc_experiment,
+    kuramoto_4osc_zne_experiment,
     kuramoto_8osc_experiment,
     qaoa_mpc_4_experiment,
     upde_16_snapshot_experiment,
     vqe_4q_experiment,
     vqe_8q_experiment,
 )
+from .noise_model import heron_r2_noise_model
 from .runner import HardwareRunner
 
 __all__ = [
     "HardwareRunner",
+    "heron_r2_noise_model",
     "kuramoto_4osc_experiment",
+    "kuramoto_4osc_zne_experiment",
     "kuramoto_8osc_experiment",
     "vqe_4q_experiment",
     "vqe_8q_experiment",
@@ -26,4 +31,5 @@ __all__ = [
     "classical_kuramoto_reference",
     "classical_exact_diag",
     "classical_brute_mpc",
+    "bloch_vectors_from_json",
 ]

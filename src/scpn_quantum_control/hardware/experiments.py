@@ -416,6 +416,53 @@ def _qaoa_cost_from_counts(counts: dict, cost_ham: SparsePauliOp, n_qubits: int)
     return energy
 
 
+def kuramoto_4osc_zne_experiment(
+    runner, shots: int = 10000, dt: float = 0.1, scales: list[int] | None = None
+) -> dict:
+    """4-oscillator Kuramoto with ZNE error mitigation.
+
+    Runs the evolution at multiple noise scales via unitary folding,
+    then extrapolates to zero noise.
+    """
+    from ..mitigation.zne import gate_fold_circuit, zne_extrapolate
+
+    if scales is None:
+        scales = [1, 3, 5]
+
+    n = 4
+    K = build_knm_paper27(L=n)
+    omega = OMEGA_N_16[:n]
+    t = dt
+
+    print(f"\n=== Kuramoto 4-osc ZNE, dt={dt}, scales={scales} ===")
+
+    base = _build_evo_base(n, K, omega, t, trotter_reps=2)
+
+    R_per_scale = []
+    for s in scales:
+        folded = gate_fold_circuit(base, s)
+        qc_z, qc_x, qc_y = _build_xyz_circuits(folded, n)
+        hw = runner.run_sampler([qc_z, qc_x, qc_y], shots=shots, name=f"zne_s{s}")
+        R, _, _, _ = _R_from_xyz(hw[0].counts, hw[1].counts, hw[2].counts, n)
+        R_per_scale.append(R)
+        print(f"  scale={s}: R={R:.4f}")
+
+    zne = zne_extrapolate(scales, R_per_scale, order=1)
+    classical = classical_exact_evolution(n, dt, dt, K, omega)
+
+    print(f"  ZNE R(0) = {zne.zero_noise_estimate:.4f}")
+    print(f"  Exact R  = {classical['R'][-1]:.4f}")
+
+    return {
+        "experiment": "kuramoto_4osc_zne",
+        "scales": scales,
+        "R_per_scale": R_per_scale,
+        "zne_R": zne.zero_noise_estimate,
+        "classical_R": float(classical["R"][-1]),
+        "fit_residual": zne.fit_residual,
+    }
+
+
 ALL_EXPERIMENTS = {
     "kuramoto_4osc": kuramoto_4osc_experiment,
     "kuramoto_8osc": kuramoto_8osc_experiment,
@@ -423,4 +470,5 @@ ALL_EXPERIMENTS = {
     "vqe_8q": vqe_8q_experiment,
     "qaoa_mpc_4": qaoa_mpc_4_experiment,
     "upde_16_snapshot": upde_16_snapshot_experiment,
+    "kuramoto_4osc_zne": kuramoto_4osc_zne_experiment,
 }
