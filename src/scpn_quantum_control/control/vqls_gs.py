@@ -100,7 +100,9 @@ class VQLS_GradShafranov:
 
         # Ψ (flux function) is real-valued; verify the ansatz converged to a real state
         imag_norm = float(np.linalg.norm(sv_arr.imag))
-        assert imag_norm < self.imag_tol, f"statevector has large imaginary component: {imag_norm:.4f}"
+        assert imag_norm < self.imag_tol, (
+            f"statevector has large imaginary component: {imag_norm:.4f}"
+        )
         psi = sv_arr.real
 
         # L2 projection rescaling: scale = <b|b> / <b|A|psi>

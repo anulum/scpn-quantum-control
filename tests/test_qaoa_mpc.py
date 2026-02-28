@@ -1,7 +1,6 @@
 """Tests for control/qaoa_mpc.py."""
 
 import numpy as np
-from qiskit.quantum_info import Statevector
 
 from scpn_quantum_control.control.qaoa_mpc import QAOA_MPC
 from scpn_quantum_control.hardware.classical import classical_brute_mpc

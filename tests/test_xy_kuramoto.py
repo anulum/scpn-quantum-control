@@ -2,7 +2,6 @@
 
 import numpy as np
 import pytest
-from qiskit import QuantumCircuit
 
 from scpn_quantum_control.phase.xy_kuramoto import QuantumKuramotoSolver
 
@@ -73,9 +72,10 @@ def test_second_order_trotter():
     Uses 4 oscillators. Circuits must be decomposed before Statevector simulation
     because PauliEvolutionGate.to_matrix() computes exact expm, bypassing Trotter.
     """
-    from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
     from qiskit.quantum_info import Operator
     from scipy.linalg import expm
+
+    from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 
     n = 4
     K = build_knm_paper27(L=n)

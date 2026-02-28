@@ -9,9 +9,8 @@ from __future__ import annotations
 
 import numpy as np
 from qiskit import QuantumCircuit
-from qiskit.quantum_info import Statevector
-
 from qiskit.circuit.library import RYGate
+from qiskit.quantum_info import Statevector
 
 from ..bridge.sc_to_quantum import probability_to_angle
 
