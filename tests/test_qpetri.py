@@ -61,6 +61,25 @@ def test_controlled_output_depends_on_input():
     assert abs(out_a[1] - out_b[1]) > 1e-4
 
 
+def test_multi_input_conjunctive_gating():
+    """Multi-input transition: output depends on ALL inputs, not just the first.
+
+    Place 0 and Place 1 are both inputs to transition 0. Output goes to Place 2.
+    When both inputs have high tokens, output should exceed the case where one is low.
+    Light consumption (W_in=0.3) avoids the artifact where Ry(-θ)|0⟩ creates
+    spurious |1⟩ amplitude on empty places.
+    """
+    W_in = np.array([[0.3, 0.3, 0.0]])
+    W_out = np.array([[0.0], [0.0], [0.7]])
+    thresholds = np.array([1.0])
+    net = QuantumPetriNet.from_matrices(W_in, W_out, thresholds)
+
+    out_both = net.step(np.array([0.9, 0.9, 0.0]))
+    out_low = net.step(np.array([0.9, 0.1, 0.0]))
+
+    assert out_both[2] > out_low[2] + 1e-4
+
+
 def test_multiple_transitions_preserve_bounds():
     """Token densities stay in [0, 1] after multiple steps."""
     W_in = np.array([[0.5, 0.0], [0.0, 0.5]])

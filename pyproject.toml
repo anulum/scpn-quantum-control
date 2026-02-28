@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "scpn-quantum-control"
-version = "0.2.3"
+version = "0.2.4"
 description = "Quantum-native reformulations of SCPN spiking, phase dynamics, and plasma control"
 readme = "README.md"
 license = "MIT"

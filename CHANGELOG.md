@@ -3,6 +3,23 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.4] - 2026-02-28
+
+### Fixed
+
+- **QAOA Hamiltonian**: correct Ising encoding with identity (constant) term — h_z = -(a^2-2ab)/2, c0 = (a^2-2ab)*H/2 + H*b^2; removed spurious ZZ terms
+- **Quantum Petri net**: multi-input transitions now use multi-controlled Ry (AND gating) instead of single CRy on first input only
+- **Inhibitor arcs**: restructured anti-control pattern (X-CRy-X) to correctly gate output on inhibitor place emptiness
+- **build_knm_paper27**: removed dead `zeta_uniform` parameter
+- **VQLS**: imaginary norm threshold now configurable via `imag_tol` init parameter (default 0.1)
+
+### Added
+
+- `test_hamiltonian_matches_classical_cost` — verifies QAOA Hamiltonian diagonal matches brute-force cost for all bitstrings
+- `test_optimal_bitstring_matches_brute_force` — verifies minimum eigenvalue bitstring equals classical optimum
+- `test_multi_input_conjunctive_gating` — verifies Petri net output depends on all input places
+- `test_inhibitor_blocks_when_place_occupied` — verifies anti-control suppresses output when inhibitor is |1>
+
 ## [0.2.3] - 2026-02-28
 
 ### Fixed

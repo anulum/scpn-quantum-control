@@ -34,32 +34,23 @@ class QAOA_MPC:
         self._cost_ham: SparsePauliOp | None = None
 
     def build_cost_hamiltonian(self) -> SparsePauliOp:
-        """Map quadratic binary cost to Ising Hamiltonian.
+        """Map per-timestep quadratic binary cost to Ising Hamiltonian.
 
-        C(u) = sum_t (B*u_t - target)^2
-             = sum_t (B^2*u_t^2 - 2*B*target*u_t + target^2)
-
-        Binary u_t^2 = u_t, and u_t = (1 - Z_t)/2 in Ising encoding.
+        C(u) = sum_t (a*u_t - b)^2,  a=||B||, b=||target||/H.
+        Expanding with u_t^2=u_t and u_t=(1-Z_t)/2:
+            C = const + h_z * sum_t Z_t
+        where h_z = -(a^2 - 2ab)/2.  No ZZ terms (timesteps are independent).
         """
-        b_norm = float(np.linalg.norm(self.B))
-        t_norm = float(np.linalg.norm(self.target))
+        a = float(np.linalg.norm(self.B))
+        b = float(np.linalg.norm(self.target)) / self.horizon
+        h_z = -(a**2 - 2.0 * a * b) / 2.0
+        c0 = (a**2 - 2.0 * a * b) * self.horizon / 2.0 + self.horizon * b**2
 
-        pauli_list = []
+        pauli_list = [("I" * self.n_qubits, c0)]
         for t in range(self.horizon):
-            # Linear term from -2*B*target*u_t -> coefficient on Z_t
-            h_i = b_norm * t_norm / self.horizon
             z_str = ["I"] * self.n_qubits
             z_str[t] = "Z"
-            pauli_list.append(("".join(reversed(z_str)), h_i))
-
-        # ZZ interaction terms from cross-timestep coupling
-        for t1 in range(self.horizon):
-            for t2 in range(t1 + 1, self.horizon):
-                J_ij = (b_norm**2) / (2.0 * self.horizon)
-                zz_str = ["I"] * self.n_qubits
-                zz_str[t1] = "Z"
-                zz_str[t2] = "Z"
-                pauli_list.append(("".join(reversed(zz_str)), J_ij))
+            pauli_list.append(("".join(reversed(z_str)), h_z))
 
         labels, coeffs = zip(*pauli_list)
         self._cost_ham = SparsePauliOp(list(labels), list(coeffs)).simplify()

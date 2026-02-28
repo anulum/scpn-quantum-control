@@ -5,7 +5,7 @@ from .sc_to_quantum import (
     measurement_to_bitstream,
     probability_to_angle,
 )
-from .spn_to_qcircuit import inhibitor_to_anti_control, spn_to_circuit
+from .spn_to_qcircuit import inhibitor_anti_control, spn_to_circuit
 
 __all__ = [
     "knm_to_hamiltonian",
@@ -17,5 +17,5 @@ __all__ = [
     "bitstream_to_statevector",
     "measurement_to_bitstream",
     "spn_to_circuit",
-    "inhibitor_to_anti_control",
+    "inhibitor_anti_control",
 ]

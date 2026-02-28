@@ -21,10 +21,11 @@ class VQLS_GradShafranov:
     Source: peaked Gaussian J(x) = exp(-(x - 0.5)^2 / 0.05).
     """
 
-    def __init__(self, n_qubits: int = 4, source_width: float = 0.05):
+    def __init__(self, n_qubits: int = 4, source_width: float = 0.05, imag_tol: float = 0.1):
         self.n_qubits = n_qubits
         self.grid_size = 2**n_qubits
         self.source_width = source_width
+        self.imag_tol = imag_tol
         self._A: np.ndarray | None = None
         self._b: np.ndarray | None = None
         self._optimal_params: np.ndarray | None = None
@@ -99,7 +100,7 @@ class VQLS_GradShafranov:
 
         # Ψ (flux function) is real-valued; verify the ansatz converged to a real state
         imag_norm = float(np.linalg.norm(sv_arr.imag))
-        assert imag_norm < 0.1, f"statevector has large imaginary component: {imag_norm:.4f}"
+        assert imag_norm < self.imag_tol, f"statevector has large imaginary component: {imag_norm:.4f}"
         psi = sv_arr.real
 
         # L2 projection rescaling: scale = <b|b> / <b|A|psi>

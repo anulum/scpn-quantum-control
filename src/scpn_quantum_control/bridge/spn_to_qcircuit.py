@@ -25,6 +25,10 @@ def spn_to_circuit(
         W_out: (n_places, n_transitions) output arc weights.
         thresholds: (n_transitions,) firing thresholds.
 
+    Inhibitor arcs (W_in < 0): the place must be empty (|0>) for the
+    transition to fire.  Implemented as anti-controlled rotation on output
+    places: X on inhibitor place, CRy on output, X restore.
+
     Returns:
         QuantumCircuit with n_places qubits.
     """
@@ -32,19 +36,15 @@ def spn_to_circuit(
     qc = QuantumCircuit(n_p)
 
     for t in range(n_t):
+        inhibitor_places = []
         for p in range(n_p):
             w = W_in[t, p]
             if abs(w) < 1e-15:
                 continue
-
-            theta = probability_to_angle(float(abs(w)))
-
             if w < 0:
-                inhibitor_to_anti_control(qc, p, theta)
+                inhibitor_places.append(p)
             else:
-                # Input arc: controlled rotation removing tokens
-                # Use threshold-weighted angle
-                thresh_angle = theta * thresholds[t]
+                thresh_angle = probability_to_angle(float(abs(w))) * thresholds[t]
                 qc.ry(-thresh_angle, p)
 
         for p in range(n_p):
@@ -52,17 +52,35 @@ def spn_to_circuit(
             if abs(w) < 1e-15:
                 continue
             theta = probability_to_angle(float(abs(w)))
-            qc.ry(theta, p)
+            if inhibitor_places:
+                inhibitor_anti_control(qc, inhibitor_places, p, theta)
+            else:
+                qc.ry(theta, p)
 
     return qc
 
 
-def inhibitor_to_anti_control(circuit: QuantumCircuit, qubit: int, theta: float):
-    """Inhibitor arc: fires when place is empty (anti-control).
+def inhibitor_anti_control(
+    circuit: QuantumCircuit, inhibitor_qubits: list[int], target: int, theta: float
+):
+    """Anti-control: output fires only when inhibitor places are empty (|0>).
 
-    Anti-control pattern: X gate flips control sense, then CRy, then X restore.
-    For single-qubit inhibitor, we condition on |0> via X-Ry-X.
+    Pattern per inhibitor qubit: X flips control sense so CRy activates on |0>.
     """
-    circuit.x(qubit)
-    circuit.ry(theta, qubit)
-    circuit.x(qubit)
+    for q in inhibitor_qubits:
+        circuit.x(q)
+    if len(inhibitor_qubits) == 1 and inhibitor_qubits[0] != target:
+        circuit.cry(theta, inhibitor_qubits[0], target)
+    elif len(inhibitor_qubits) > 1:
+        from qiskit.circuit.library import RYGate
+
+        controls = [q for q in inhibitor_qubits if q != target]
+        if controls:
+            gate = RYGate(theta).control(len(controls))
+            circuit.append(gate, controls + [target])
+        else:
+            circuit.ry(theta, target)
+    else:
+        circuit.ry(theta, target)
+    for q in inhibitor_qubits:
+        circuit.x(q)

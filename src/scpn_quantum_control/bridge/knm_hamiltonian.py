@@ -42,7 +42,6 @@ def build_knm_paper27(
     L: int = 16,
     K_base: float = 0.45,  # Paper 27, Eq. 3
     K_alpha: float = 0.3,  # Paper 27, Eq. 3
-    zeta_uniform: float = 0.0,
 ) -> np.ndarray:
     """Build the canonical Knm coupling matrix from Paper 27.
 

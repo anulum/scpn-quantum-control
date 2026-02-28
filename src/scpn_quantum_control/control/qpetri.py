@@ -11,6 +11,8 @@ import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 
+from qiskit.circuit.library import RYGate
+
 from ..bridge.sc_to_quantum import probability_to_angle
 
 
@@ -47,9 +49,9 @@ class QuantumPetriNet:
         """Apply transition t_idx as controlled rotations.
 
         Input arcs: consume tokens (negative rotation on input places).
-        Output arcs: produce tokens controlled by input places (threshold gating).
-        A transition fires only when an input place has token density; the
-        input-place qubit controls the output rotation via CRy.
+        Output arcs: produce tokens controlled by ALL input places (AND gating).
+        All input-place qubits must be |1> for the output rotation to fire,
+        matching conjunctive Petri net semantics.
         """
         input_places = [p for p in range(self.n_places) if abs(self.W_in[t_idx, p]) > 1e-15]
 
@@ -62,10 +64,14 @@ class QuantumPetriNet:
             if abs(w_out) < 1e-15:
                 continue
             theta = probability_to_angle(abs(w_out))
-            if input_places and input_places[0] != p_out:
-                circuit.cry(theta, input_places[0], p_out)
-            else:
+            controls = [p for p in input_places if p != p_out]
+            if len(controls) == 0:
                 circuit.ry(theta, p_out)
+            elif len(controls) == 1:
+                circuit.cry(theta, controls[0], p_out)
+            else:
+                gate = RYGate(theta).control(len(controls))
+                circuit.append(gate, controls + [p_out])
 
     def step(self, marking: np.ndarray) -> np.ndarray:
         """Full step: encode marking, apply all transitions, measure -> new marking."""
