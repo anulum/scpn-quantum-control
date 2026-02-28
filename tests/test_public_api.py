@@ -8,7 +8,7 @@ def test_top_level_version():
     import scpn_quantum_control
 
     assert hasattr(scpn_quantum_control, "__version__")
-    assert scpn_quantum_control.__version__ == "0.5.0"
+    assert scpn_quantum_control.__version__ == "0.5.1"
 
 
 def test_bridge_exports():

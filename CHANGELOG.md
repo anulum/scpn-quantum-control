@@ -3,6 +3,12 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.5.1] - 2026-03-01
+
+### Fixed
+
+- **PyPI version mismatch**: v0.5.0 published with `__version__ = "0.4.0"` due to tag timing. This release ensures `__version__`, `pyproject.toml`, and PyPI all report 0.5.1.
+
 ## [0.5.0] - 2026-03-01
 
 ### Added
