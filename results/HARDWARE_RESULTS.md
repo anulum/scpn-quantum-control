@@ -3,8 +3,8 @@
 Date: 2026-02-28
 Backend: ibm_fez (Heron r2, 156 qubits)
 Plan: Open (10 min/month free tier)
-QPU used: 5.7 min (341 s)
-QPU remaining: ~4.3 min
+QPU used: ~7 min (~420 s)
+QPU remaining: ~3 min (new 10-min budget on 2026-03-01)
 
 
 ## Experiment 1: Kuramoto 4-Oscillator XY Dynamics
@@ -76,17 +76,45 @@ optimization loop. Future improvement: use local simulation for optimizer
 iterations, hardware only for final verification.
 
 
+## Experiment 4: Kuramoto 8-Oscillator XY Dynamics
+
+Job ID: `d6h36av3o3rs73cagcfg`
+Shots: 10,000 per circuit (Z, X, Y bases = 3 circuits per time step)
+Total circuits: 9 (3 time steps x 3 bases)
+
+| t (s) | hw_R   | sim_R  | exact_R | hw_err  | sim_err | depth |
+|-------|--------|--------|---------|---------|---------|-------|
+| 0.10  | 0.4968 | 0.5906 | 0.5816  | 14.6%   | 1.5%    | 246   |
+| 0.20  | 0.4414 | 0.5807 | 0.5522  | 20.1%   | 5.2%    | 539   |
+| 0.30  | 0.3451 | 0.5464 | 0.5076  | 32.0%   | 7.6%    | 790   |
+
+**Analysis**: Hardware error at t=0.1 (14.6%) is slightly better than 4-osc
+(19.2%), despite double the qubits. The 8-qubit experiment uses fewer Trotter
+reps per step (1x vs 2x for 4-osc), yielding shallower circuits at early steps.
+At t=0.3, depth=790 pushes beyond Heron coherence limits — the 32% error is
+dominated by decoherence, not Trotter error (simulator has only 7.6% error).
+
+**Circuit profile**: depth=246/539/790 for steps 1/2/3. Depth grows linearly
+with Trotter reps. The step-3 circuit (790 depth) is at the practical limit
+for Heron r2 without error mitigation.
+
+**QPU time**: ~80 s wall time (9 circuits batched in single job).
+
+
 ## Comparison: Simulator vs Hardware
 
-| Experiment      | Sim Error | HW Error  | HW Overhead | QPU Time |
-|-----------------|-----------|-----------|-------------|----------|
-| kuramoto_4osc   | 1.0%      | 19.2%     | +18.2%      | 44 s     |
-| vqe_4q          | 0.004%    | 0.05%     | +0.046%     | 15 s     |
-| qaoa_mpc_4      | Working   | Working   | Comparable  | 282 s    |
+| Experiment      | Qubits | Sim Error | HW Error  | HW Overhead | QPU Time |
+|-----------------|--------|-----------|-----------|-------------|----------|
+| kuramoto_4osc   | 4      | 1.0%      | 19.2%     | +18.2%      | 44 s     |
+| kuramoto_8osc   | 8      | 1.5%      | 14.6%     | +13.1%      | 80 s     |
+| vqe_4q          | 4      | 0.004%    | 0.05%     | +0.046%     | 15 s     |
+| qaoa_mpc_4      | 4      | Working   | Working   | Comparable  | 282 s    |
 
-**Key insight**: VQE is the most hardware-resilient experiment (0.05% error)
-because it uses only 12 two-qubit gates. Kuramoto time evolution accumulates
-more decoherence with deeper circuits (149 depth).
+**Key insights**:
+- VQE is the most hardware-resilient (0.05% error) due to shallow circuits (12 CZ gates)
+- 8-osc at t=0.1 outperforms 4-osc (14.6% vs 19.2%) because fewer Trotter reps
+- Circuit depth is the primary error driver: depth 149 (4osc) and 246 (8osc) at t=0.1 are
+  within coherence; depth 790 (8osc, t=0.3) exceeds practical limits without mitigation
 
 
 ## QPU Budget Accounting
@@ -96,11 +124,15 @@ more decoherence with deeper circuits (149 depth).
 | kuramoto_4osc   | 1    | 44      | 12 circuits batched       |
 | vqe_4q          | ~1   | 15      | Single final evaluation   |
 | qaoa_mpc_4      | 78   | 282     | 1 job per COBYLA iter     |
-| **Total**       | ~80  | **341** | 5.7 min of 10 min budget  |
+| kuramoto_8osc   | 1    | 80      | 9 circuits batched        |
+| **Total**       | ~81  | **421** | 7.0 min of 10 min budget  |
 
-Remaining: ~4.3 min (259 s)
+Remaining: ~3 min (179 s) in Feb 2026 budget.
+New 10-min budget available 2026-03-01.
 
-Planned: kuramoto_8osc (3 time steps, 9 circuits, ~1.5 min estimated)
+### Planned (March budget)
+- vqe_8q: 8-qubit VQE ground state (~90 s QPU)
+- upde_16_snapshot: 16-layer UPDE (~180 s QPU, marginal circuit depth)
 
 
 ## Hardware Details

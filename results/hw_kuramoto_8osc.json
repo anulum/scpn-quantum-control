@@ -1,0 +1,17 @@
+{
+  "backend": "ibm_fez",
+  "processor": "Heron r2 (156q)",
+  "experiment": "kuramoto_8osc",
+  "job_id": "d6h36av3o3rs73cagcfg",
+  "timestamp": "2026-02-28T02:00:00",
+  "shots": 10000,
+  "n_qubits": 8,
+  "measurement_bases": ["Z", "X", "Y"],
+  "circuits": 9,
+  "time_steps": [
+    {"t": 0.10, "hw_R": 0.4968, "exact_R": 0.5816, "abs_err": 0.0848, "rel_err_pct": 14.6, "circuit_depth": 246},
+    {"t": 0.20, "hw_R": 0.4414, "exact_R": 0.5522, "abs_err": 0.1108, "rel_err_pct": 20.1, "circuit_depth": 539},
+    {"t": 0.30, "hw_R": 0.3451, "exact_R": 0.5076, "abs_err": 0.1625, "rel_err_pct": 32.0, "circuit_depth": 790}
+  ],
+  "notes": "8-qubit XY Hamiltonian evolution. Circuit depth grows with Trotter reps (1,2,3). Native CZ gates on Heron r2."
+}
