@@ -20,13 +20,13 @@ class QuantumDisruptionClassifier:
 
     N_FEATURES = 11
 
-    def __init__(self, n_features: int = 11, n_layers: int = 3):
+    def __init__(self, n_features: int = 11, n_layers: int = 3, seed: int = 42):
         self.n_features = n_features
         self.n_data_qubits = 4  # ceil(log2(16)) for 11->16 padding
         self.n_layers = n_layers
         self.n_qubits = self.n_data_qubits + 1  # +1 ancilla
         n_params = n_layers * (self.n_qubits * 2 + (self.n_qubits - 1))
-        self.params = np.random.default_rng(42).uniform(-np.pi, np.pi, n_params)
+        self.params = np.random.default_rng(seed).uniform(-np.pi, np.pi, n_params)
 
     def encode_features(self, features: np.ndarray) -> QuantumCircuit:
         """Amplitude-encode 11-D features into 4 qubits (pad to 16-D)."""

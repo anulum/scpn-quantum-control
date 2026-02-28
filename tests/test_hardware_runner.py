@@ -142,3 +142,40 @@ def test_qaoa_mpc_on_simulator(sim_runner):
         assert "qaoa_p1" in result
     finally:
         exp_mod.minimize = original
+
+
+# ── Bloch vector tests ──
+
+
+def test_bloch_vector_magnitude_bounded(tmp_path):
+    """Bloch magnitudes from valid expectations must be in [0, 1]."""
+    import json
+
+    data = {
+        "exp_x": [0.3, -0.2, 0.0],
+        "exp_y": [0.4, 0.1, 0.0],
+        "exp_z": [0.5, 0.8, 1.0],
+    }
+    path = tmp_path / "bloch_test.json"
+    with open(path, "w") as f:
+        json.dump(data, f)
+
+    from scpn_quantum_control.hardware.classical import bloch_vectors_from_json
+
+    result = bloch_vectors_from_json(str(path))
+    assert result["n_qubits"] == 3
+    # sqrt(x^2+y^2+z^2) must be <= 1 for valid quantum states
+    for m in result["bloch_magnitudes"]:
+        assert 0.0 <= m <= 1.0 + 1e-10
+
+
+# ── Sparse eigensolver test ──
+
+
+def test_exact_diag_sparse_path():
+    """Sparse eigensolver (k_eigenvalues) should agree with dense on ground energy."""
+    ref_dense = classical_exact_diag(4)
+    ref_sparse = classical_exact_diag(4, k_eigenvalues=6)
+    assert abs(ref_dense["ground_energy"] - ref_sparse["ground_energy"]) < 1e-8
+    assert abs(ref_dense["spectral_gap"] - ref_sparse["spectral_gap"]) < 1e-8
+    assert len(ref_sparse["eigenvalues"]) == 6

@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import numpy as np
 from scipy.linalg import expm
+from scipy.sparse import csc_matrix
+from scipy.sparse.linalg import eigsh
 
 from ..bridge.knm_hamiltonian import (
     OMEGA_N_16,
@@ -67,8 +69,13 @@ def classical_exact_diag(
     n_osc: int,
     K: np.ndarray | None = None,
     omega: np.ndarray | None = None,
+    k_eigenvalues: int | None = None,
 ) -> dict:
     """Exact diagonalization of the XY Kuramoto Hamiltonian.
+
+    For n_osc >= 14 (2^14 = 16384 entries), uses scipy.sparse.linalg.eigsh
+    to compute only the lowest k_eigenvalues (default 6) without building
+    a dense 2^n x 2^n array.
 
     Returns eigenvalues, ground energy, and ground state vector.
     """
@@ -78,13 +85,19 @@ def classical_exact_diag(
         omega = OMEGA_N_16[:n_osc].copy()
 
     H_op = knm_to_hamiltonian(K, omega)
-    H_mat = (
-        H_op.to_matrix().toarray()
-        if hasattr(H_op.to_matrix(), "toarray")
-        else np.array(H_op.to_matrix())
-    )
 
-    eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
+    if k_eigenvalues is not None or n_osc >= 14:
+        k = k_eigenvalues or 6
+        raw = H_op.to_matrix()
+        H_sparse = csc_matrix(raw) if not hasattr(raw, "tocsc") else raw.tocsc()
+        eigenvalues, eigenvectors = eigsh(H_sparse, k=k, which="SA")
+        idx = np.argsort(eigenvalues)
+        eigenvalues = eigenvalues[idx]
+        eigenvectors = eigenvectors[:, idx]
+    else:
+        raw = H_op.to_matrix()
+        H_mat = raw.toarray() if hasattr(raw, "toarray") else np.array(raw)
+        eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
 
     return {
         "eigenvalues": eigenvalues,

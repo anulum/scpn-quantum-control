@@ -43,3 +43,31 @@ def test_zero_marking():
     net = QuantumPetriNet(1, 1, W_in, W_out, thresholds)
     new_m = net.step(np.array([0.0]))
     assert new_m.shape == (1,)
+
+
+def test_controlled_output_depends_on_input():
+    """Output place token density should differ depending on input place state.
+
+    With input place at |0⟩ vs |1⟩, the CRy-controlled output should differ.
+    """
+    W_in = np.array([[0.3, 0.0]])  # light consumption from place 0
+    W_out = np.array([[0.0], [0.6]])  # output to place 1
+    thresholds = np.array([1.0])
+    net = QuantumPetriNet.from_matrices(W_in, W_out, thresholds)
+
+    out_a = net.step(np.array([0.0, 0.0]))
+    out_b = net.step(np.array([0.8, 0.0]))
+    # The two should give different place-1 markings (gating effect)
+    assert abs(out_a[1] - out_b[1]) > 1e-4
+
+
+def test_multiple_transitions_preserve_bounds():
+    """Token densities stay in [0, 1] after multiple steps."""
+    W_in = np.array([[0.5, 0.0], [0.0, 0.5]])
+    W_out = np.array([[0.0, 0.4], [0.4, 0.0]])
+    thresholds = np.array([0.8, 0.8])
+    net = QuantumPetriNet.from_matrices(W_in, W_out, thresholds)
+    marking = np.array([0.6, 0.4])
+    for _ in range(5):
+        marking = net.step(marking)
+        assert np.all(marking >= 0) and np.all(marking <= 1.0)

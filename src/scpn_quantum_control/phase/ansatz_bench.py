@@ -7,7 +7,7 @@ energy, parameter count, and convergence.
 from __future__ import annotations
 
 import numpy as np
-from qiskit.circuit.library import EfficientSU2, TwoLocal
+from qiskit.circuit.library import efficient_su2, n_local
 from qiskit.quantum_info import Statevector
 from scipy.optimize import minimize
 
@@ -49,9 +49,9 @@ def benchmark_ansatz(
     if ansatz_name == "knm_informed":
         ansatz = knm_to_ansatz(K, reps=reps)
     elif ansatz_name == "two_local":
-        ansatz = TwoLocal(n, ["ry", "rz"], "cz", reps=reps)
+        ansatz = n_local(n, rotation_blocks=["ry", "rz"], entanglement_blocks="cz", reps=reps)
     elif ansatz_name == "efficient_su2":
-        ansatz = EfficientSU2(n, reps=reps)
+        ansatz = efficient_su2(n, reps=reps)
     else:
         raise ValueError(f"Unknown ansatz: {ansatz_name}")
 

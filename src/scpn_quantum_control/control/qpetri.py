@@ -47,20 +47,25 @@ class QuantumPetriNet:
         """Apply transition t_idx as controlled rotations.
 
         Input arcs: consume tokens (negative rotation on input places).
-        Output arcs: produce tokens (positive rotation on output places).
-        Threshold check: CRy controlled by input places.
+        Output arcs: produce tokens controlled by input places (threshold gating).
+        A transition fires only when an input place has token density; the
+        input-place qubit controls the output rotation via CRy.
         """
-        for p in range(self.n_places):
-            w_in = self.W_in[t_idx, p]
-            if abs(w_in) > 1e-15:
-                theta = probability_to_angle(abs(w_in)) * self.thresholds[t_idx]
-                circuit.ry(-theta, p)
+        input_places = [p for p in range(self.n_places) if abs(self.W_in[t_idx, p]) > 1e-15]
 
-        for p in range(self.n_places):
-            w_out = self.W_out[p, t_idx]
-            if abs(w_out) > 1e-15:
-                theta = probability_to_angle(abs(w_out))
-                circuit.ry(theta, p)
+        for p in input_places:
+            theta = probability_to_angle(abs(self.W_in[t_idx, p])) * self.thresholds[t_idx]
+            circuit.ry(-theta, p)
+
+        for p_out in range(self.n_places):
+            w_out = self.W_out[p_out, t_idx]
+            if abs(w_out) < 1e-15:
+                continue
+            theta = probability_to_angle(abs(w_out))
+            if input_places and input_places[0] != p_out:
+                circuit.cry(theta, input_places[0], p_out)
+            else:
+                circuit.ry(theta, p_out)
 
     def step(self, marking: np.ndarray) -> np.ndarray:
         """Full step: encode marking, apply all transitions, measure -> new marking."""

@@ -3,6 +3,25 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.1] - 2026-02-28
+
+### Fixed
+
+- `q_disruption.py`: configurable `seed` parameter instead of hardcoded 42
+- `qpetri.py`: threshold gating via CRy — output rotations controlled by input place qubits
+- `classical.py`: sparse eigensolver path (`scipy.sparse.linalg.eigsh`) for N >= 14 or when `k_eigenvalues` specified
+- `ansatz_bench.py`: replaced deprecated `TwoLocal`/`EfficientSU2` classes with `n_local`/`efficient_su2` functions (Qiskit 2.1+)
+- `vqls_gs.py`: replaced deprecated `TwoLocal` class with `n_local` function
+
+### Added
+
+- STDP direction validation tests (gradient sign at theta=0 and theta=pi/2)
+- QEC threshold measurement tests (p=0.01 vs p=0.08 success rates, d=5 single-error decoding, very low error rate high success)
+- Disruption classifier seed reproducibility tests
+- Petri net controlled output and multi-step bounds tests
+- Bloch ball constraint test
+- Sparse vs dense eigensolver agreement test
+
 ## [0.2.0] - 2026-02-28
 
 ### Added

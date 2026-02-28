@@ -6,7 +6,7 @@ from .phase.phase_vqe import PhaseVQE
 from .phase.trotter_upde import QuantumUPDESolver
 from .phase.xy_kuramoto import QuantumKuramotoSolver
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 __all__ = [
     "OMEGA_N_16",

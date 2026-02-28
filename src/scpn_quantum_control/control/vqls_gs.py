@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import numpy as np
 from qiskit import QuantumCircuit
-from qiskit.circuit.library import TwoLocal
+from qiskit.circuit.library import n_local
 from qiskit.quantum_info import Statevector
 from scipy.optimize import minimize
 
@@ -54,7 +54,7 @@ class VQLS_GradShafranov:
         return A, b
 
     def build_ansatz(self, reps: int = 2) -> QuantumCircuit:
-        return TwoLocal(
+        return n_local(
             self.n_qubits,
             rotation_blocks=["ry"],
             entanglement_blocks="cz",

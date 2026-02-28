@@ -87,3 +87,48 @@ def test_knm_weighted_decoder_runs():
     err_z = np.zeros(18, dtype=np.int8)
     result = qec.decode_and_correct(err_x, err_z)
     assert isinstance(result, bool)
+
+
+def test_threshold_below_vs_above():
+    """Success rate at p=0.01 should exceed success rate at p=0.08 for d=3.
+
+    d=3 toric code has threshold ~10.3% for independent X/Z noise (Dennis et al. 2002).
+    """
+    qec = ControlQEC(distance=3)
+    rng = np.random.default_rng(123)
+    trials = 200
+
+    def success_rate(p_error):
+        ok = 0
+        for _ in range(trials):
+            ex, ez = qec.simulate_errors(p_error, rng=rng)
+            if qec.decode_and_correct(ex, ez):
+                ok += 1
+        return ok / trials
+
+    rate_low = success_rate(0.01)
+    rate_high = success_rate(0.08)
+    assert rate_low > rate_high
+
+
+def test_distance_5_constructs_and_decodes():
+    """d=5 surface code should construct and decode single errors."""
+    qec = ControlQEC(distance=5)
+    assert qec.code.num_data == 50  # 2*5^2
+    assert qec.code.Hx.shape == (25, 50)
+
+    # Single error should decode correctly
+    err_x = np.zeros(50, dtype=np.int8)
+    err_x[10] = 1
+    err_z = np.zeros(50, dtype=np.int8)
+    assert qec.decode_and_correct(err_x, err_z)
+
+
+def test_very_low_error_rate_high_success():
+    """At p=0.005, d=3 decoder should succeed > 80% of trials."""
+    qec = ControlQEC(distance=3)
+    rng = np.random.default_rng(42)
+    successes = sum(
+        qec.decode_and_correct(*qec.simulate_errors(0.005, rng=rng)) for _ in range(200)
+    )
+    assert successes / 200 > 0.80
