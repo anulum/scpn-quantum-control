@@ -95,9 +95,7 @@ files = [
     "src/scpn_quantum_control/mitigation/",
     "src/scpn_quantum_control/qsnn/",
     "src/scpn_quantum_control/qec/",
-    "src/scpn_quantum_control/hardware/classical.py",
-    "src/scpn_quantum_control/hardware/runner.py",
-    "src/scpn_quantum_control/hardware/experiments.py",
+    "src/scpn_quantum_control/hardware/",
 ]
 
 [[tool.mypy.overrides]]
