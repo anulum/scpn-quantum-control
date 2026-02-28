@@ -3,6 +3,17 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.7] - 2026-02-28
+
+### Added
+
+- **Parametrized quantum-vs-classical validation**: integration tests at n={2,3,4,6} qubits verifying Trotter evolution tracks classical exact evolution
+- **Exact diag cross-check**: integration test verifying `classical_exact_diag` ground energy matches direct `eigvalsh` of Hamiltonian matrix
+
+### Changed
+
+- **Coverage scope refined**: `omit` now excludes only `runner.py` and `experiments.py` (IBM-dependent), no longer blanket-excludes `hardware/`. `classical.py` now tracked.
+
 ## [0.2.6] - 2026-02-28
 
 ### Added

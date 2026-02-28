@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "scpn-quantum-control"
-version = "0.2.6"
+version = "0.2.7"
 description = "Quantum-native reformulations of SCPN spiking, phase dynamics, and plasma control"
 readme = "README.md"
 license = "MIT"
@@ -103,7 +103,9 @@ ignore_missing_imports = true
 
 [tool.coverage.run]
 source = ["scpn_quantum_control"]
-omit = ["*/hardware/*"]
+# runner.py and experiments.py require IBM credentials for full coverage;
+# classical.py is tested in tests/test_classical.py.
+omit = ["*/hardware/runner.py", "*/hardware/experiments.py"]
 
 [tool.coverage.report]
 exclude_lines = [

@@ -1,6 +1,7 @@
 """End-to-end integration tests exercising the full analysis pipeline."""
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.hardware.classical import classical_exact_evolution
@@ -95,3 +96,38 @@ def test_energy_conservation_trotter():
     # Energy drift should be small over 5 steps
     drift = max(abs(e - E0) for e in energies)
     assert drift < 0.5, f"energy drift {drift:.4f} exceeds tolerance"
+
+
+@pytest.mark.parametrize("n_osc", [2, 3, 4, 6])
+def test_quantum_vs_classical_parametrized(n_osc):
+    """Quantum R(t) tracks classical R(t) at multiple system sizes."""
+    K = build_knm_paper27(L=n_osc)
+    omega = OMEGA_N_16[:n_osc]
+    dt = 0.1
+    n_steps = 3
+
+    quantum = QuantumKuramotoSolver(n_osc, K, omega)
+    q_result = quantum.run(t_max=n_steps * dt, dt=dt, trotter_per_step=10)
+    classical = classical_exact_evolution(n_osc, n_steps * dt, dt, K, omega)
+
+    for q_r, c_r in zip(q_result["R"], classical["R"]):
+        assert abs(q_r - c_r) < 0.2, f"n={n_osc}: quantum R={q_r:.4f} vs classical R={c_r:.4f}"
+
+
+def test_exact_diag_ground_energy_matches_hamiltonian():
+    """Ground energy from exact diag should match min eigenvalue of H matrix."""
+    from scpn_quantum_control.hardware.classical import classical_exact_diag
+
+    n = 3
+    K = build_knm_paper27(L=n)
+    omega = OMEGA_N_16[:n]
+
+    result = classical_exact_diag(n, K=K, omega=omega)
+
+    from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_hamiltonian
+
+    H = knm_to_hamiltonian(K, omega)
+    H_mat = np.array(H.to_matrix())
+    evals_direct = np.linalg.eigvalsh(H_mat)
+
+    np.testing.assert_allclose(result["ground_energy"], evals_direct[0], atol=1e-10)
