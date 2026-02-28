@@ -96,6 +96,7 @@ files = [
     "src/scpn_quantum_control/qsnn/",
     "src/scpn_quantum_control/qec/",
     "src/scpn_quantum_control/hardware/",
+    "src/scpn_quantum_control/crypto/",
 ]
 
 [[tool.mypy.overrides]]
