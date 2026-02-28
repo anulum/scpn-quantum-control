@@ -34,7 +34,7 @@ class QuantumSTDP:
         probs = sv.probabilities([1])  # marginal on post qubit
         return float(probs[0] - probs[1])  # <Z> = P(0) - P(1)
 
-    def update(self, synapse, pre_measured: int, post_measured: int):
+    def update(self, synapse: QuantumSynapse, pre_measured: int, post_measured: int) -> None:  # noqa: F821
         """Apply parameter-shift gradient update to synapse weight.
 
         Only updates when pre-synaptic neuron fired (pre_measured=1).

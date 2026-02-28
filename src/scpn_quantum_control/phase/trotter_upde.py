@@ -8,7 +8,7 @@ maps to XY interaction strength; natural frequencies Omega_n map to Z fields.
 from __future__ import annotations
 
 import numpy as np
-from qiskit.quantum_info import Statevector
+from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from ..bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from .xy_kuramoto import QuantumKuramotoSolver
@@ -61,10 +61,10 @@ class QuantumUPDESolver:
             "n_layers": self.n_layers,
         }
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset statevector so the next step() reinitialises from omega."""
         if hasattr(self, "_sv"):
             del self._sv
 
-    def hamiltonian(self):
+    def hamiltonian(self) -> SparsePauliOp | None:
         return self._solver._hamiltonian

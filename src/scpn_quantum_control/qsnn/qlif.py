@@ -32,6 +32,7 @@ class QuantumLIFNeuron:
         dt: float = 1.0,
         resistance: float = 1.0,
         n_shots: int = 100,
+        rng: np.random.Generator | None = None,
     ):
         self.v_rest = v_rest
         self.v_threshold = v_threshold
@@ -39,6 +40,7 @@ class QuantumLIFNeuron:
         self.dt = dt
         self.resistance = resistance
         self.n_shots = n_shots
+        self.rng = rng or np.random.default_rng()
         self.v = v_rest
         self._last_circuit: QuantumCircuit | None = None
 
@@ -59,7 +61,7 @@ class QuantumLIFNeuron:
         p_spike = float(abs(sv[1]) ** 2)
 
         if self.n_shots > 0:
-            spikes = np.random.binomial(1, p_spike, size=self.n_shots)
+            spikes = self.rng.binomial(1, p_spike, size=self.n_shots)
             spike = int(np.mean(spikes) > 0.5)
         else:
             spike = int(p_spike > 0.5)
@@ -71,6 +73,6 @@ class QuantumLIFNeuron:
     def get_circuit(self) -> QuantumCircuit | None:
         return self._last_circuit
 
-    def reset(self):
+    def reset(self) -> None:
         self.v = self.v_rest
         self._last_circuit = None

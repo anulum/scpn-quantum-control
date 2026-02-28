@@ -95,7 +95,12 @@ class VQLS_GradShafranov:
 
         bound = ansatz.assign_parameters(result.x)
         sv = Statevector.from_instruction(bound)
-        psi = np.real(np.array(sv))
+        sv_arr = np.array(sv)
+
+        # Ψ (flux function) is real-valued; verify the ansatz converged to a real state
+        imag_norm = float(np.linalg.norm(sv_arr.imag))
+        assert imag_norm < 0.1, f"statevector has large imaginary component: {imag_norm:.4f}"
+        psi = sv_arr.real
 
         # L2 projection rescaling: scale = <b|b> / <b|A|psi>
         # Bravo-Prieto et al., arXiv:1909.05820 (2019), post-processing step

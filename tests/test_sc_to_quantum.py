@@ -45,3 +45,13 @@ def test_measurement_to_bitstream_bias():
     counts = {"0": 0, "1": 1000}
     bs = measurement_to_bitstream(counts, 500)
     assert np.all(bs == 1)
+
+
+def test_measurement_to_bitstream_seeded():
+    """Seeded rng should produce reproducible bitstreams."""
+    counts = {"0": 60, "1": 40}
+    rng1 = np.random.default_rng(99)
+    rng2 = np.random.default_rng(99)
+    bs1 = measurement_to_bitstream(counts, 100, rng=rng1)
+    bs2 = measurement_to_bitstream(counts, 100, rng=rng2)
+    np.testing.assert_array_equal(bs1, bs2)

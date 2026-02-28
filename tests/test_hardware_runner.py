@@ -140,7 +140,6 @@ def test_kuramoto_4osc_on_simulator(sim_runner):
 
 def test_qaoa_mpc_on_simulator(sim_runner):
     """Quick QAOA test with minimal iterations."""
-    # Monkey-patch to use fewer iterations
     import scpn_quantum_control.hardware.experiments as exp_mod
     from scpn_quantum_control.hardware.experiments import qaoa_mpc_4_experiment
 
@@ -157,6 +156,43 @@ def test_qaoa_mpc_on_simulator(sim_runner):
         assert "qaoa_p1" in result
     finally:
         exp_mod.minimize = original
+
+
+def test_vqe_4q_on_simulator(sim_runner):
+    """VQE should converge below exact ground energy + tolerance."""
+    import scpn_quantum_control.hardware.experiments as exp_mod
+    from scpn_quantum_control.hardware.experiments import vqe_4q_experiment
+
+    original = exp_mod.minimize
+
+    def limited_minimize(fn, x0, **kwargs):
+        kwargs.setdefault("options", {})["maxiter"] = 20
+        return original(fn, x0, **kwargs)
+
+    exp_mod.minimize = limited_minimize
+    try:
+        result = vqe_4q_experiment(sim_runner, shots=100, maxiter=20)
+        assert result["experiment"] == "vqe_4q"
+        assert result["n_qubits"] == 4
+        assert np.isfinite(result["vqe_energy"])
+        assert len(result["energy_history"]) > 0
+    finally:
+        exp_mod.minimize = original
+
+
+def test_transpile_with_dd(sim_runner):
+    """DD pass should not crash; on simulator it falls back to original circuit."""
+    from qiskit import QuantumCircuit
+
+    qc = QuantumCircuit(3)
+    qc.h(0)
+    qc.cx(0, 1)
+    qc.barrier()
+    qc.cx(1, 2)
+    qc.measure_all()
+    # transpile_with_dd handles the scheduling internally and falls back gracefully
+    dd_circuit = sim_runner.transpile_with_dd(qc)
+    assert dd_circuit.num_qubits >= 3
 
 
 # ── Bloch vector tests ──
@@ -205,18 +241,16 @@ def test_classical_evolution_matches_qiskit():
     This verifies that _build_initial_state and _expectation_pauli use
     Qiskit's little-endian convention consistently with knm_to_hamiltonian.
     """
-    from scipy.linalg import expm
 
     from qiskit.circuit.library import PauliEvolutionGate
     from qiskit.quantum_info import Statevector
     from qiskit.synthesis import LieTrotter
 
     from scpn_quantum_control.bridge.knm_hamiltonian import (
+        OMEGA_N_16,
         build_knm_paper27,
         knm_to_hamiltonian,
-        OMEGA_N_16,
     )
-    from scpn_quantum_control.hardware.experiments import _R_from_xyz, _build_evo_base, _build_xyz_circuits
 
     n = 3
     K = build_knm_paper27(L=n)

@@ -29,9 +29,9 @@ class QuantumSynapse:
         """Weight as probability: sin^2(theta/2)."""
         return float(np.sin(self.theta / 2.0) ** 2)
 
-    def apply(self, circuit: QuantumCircuit, pre_qubit: int, post_qubit: int):
+    def apply(self, circuit: QuantumCircuit, pre_qubit: int, post_qubit: int) -> None:
         """Append CRy(theta_w) gate: pre controls rotation on post."""
         circuit.cry(self.theta, pre_qubit, post_qubit)
 
-    def update_weight(self, new_w: float):
+    def update_weight(self, new_w: float) -> None:
         self.weight = np.clip(new_w, self.w_min, self.w_max)

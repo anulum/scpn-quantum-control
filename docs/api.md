@@ -104,7 +104,7 @@ PhaseVQE(hamiltonian: SparsePauliOp, ansatz_reps=2, knm=None)
 ```python
 QAOA_MPC(B_matrix, target_state, horizon, p_layers=2)
     .build_cost_hamiltonian() -> SparsePauliOp
-    .optimize(current_state) -> np.ndarray  # action sequence
+    .optimize() -> np.ndarray  # action sequence
 ```
 
 ### `vqls_gs.VQLS_GradShafranov`

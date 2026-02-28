@@ -40,13 +40,13 @@ OMEGA_N_16 = np.array(
 
 def build_knm_paper27(
     L: int = 16,
-    K_base: float = 0.45,
-    K_alpha: float = 0.3,
+    K_base: float = 0.45,  # Paper 27, Eq. 3
+    K_alpha: float = 0.3,  # Paper 27, Eq. 3
     zeta_uniform: float = 0.0,
 ) -> np.ndarray:
     """Build the canonical Knm coupling matrix from Paper 27.
 
-    K[i,j] = K_base * exp(-K_alpha * |i - j|)
+    K[i,j] = K_base * exp(-K_alpha * |i - j|)   (Paper 27, Eq. 3)
     with calibration anchors from Table 2 and cross-hierarchy boosts from S4.3.
     """
     idx = np.arange(L)

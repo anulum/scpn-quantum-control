@@ -36,9 +36,12 @@ def bitstream_to_statevector(bits: np.ndarray) -> np.ndarray:
     return np.array([np.cos(theta / 2.0), np.sin(theta / 2.0)])
 
 
-def measurement_to_bitstream(counts: dict, length: int) -> np.ndarray:
+def measurement_to_bitstream(
+    counts: dict, length: int, rng: np.random.Generator | None = None
+) -> np.ndarray:
     """Convert shot counts {'0': n0, '1': n1} to Bernoulli bitstream of given length."""
     total = sum(counts.values())
     p_one = counts.get("1", 0) / total if total > 0 else 0.0
-    rng = np.random.default_rng()
+    if rng is None:
+        rng = np.random.default_rng()
     return rng.binomial(1, p_one, size=length).astype(np.uint8)

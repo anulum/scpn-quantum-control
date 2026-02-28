@@ -144,8 +144,12 @@ def test_d5_beats_d3_below_threshold():
     trials = 300
     qec3 = ControlQEC(distance=3)
     qec5 = ControlQEC(distance=5)
-    ok3 = sum(qec3.decode_and_correct(*qec3.simulate_errors(0.03, rng=rng3)) for _ in range(trials))
-    ok5 = sum(qec5.decode_and_correct(*qec5.simulate_errors(0.03, rng=rng5)) for _ in range(trials))
+    ok3 = sum(
+        qec3.decode_and_correct(*qec3.simulate_errors(0.03, rng=rng3)) for _ in range(trials)
+    )
+    ok5 = sum(
+        qec5.decode_and_correct(*qec5.simulate_errors(0.03, rng=rng5)) for _ in range(trials)
+    )
     assert ok5 >= ok3 - 10  # d=5 at least within noise of d=3
 
 

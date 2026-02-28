@@ -199,25 +199,20 @@ def kuramoto_8osc_experiment(
     return result
 
 
-def vqe_4q_experiment(runner, shots: int = 10000, maxiter: int = 200) -> dict:
-    """VQE ground state of 4-oscillator XY Hamiltonian.
-
-    Uses Statevector simulation for cost evaluation on simulator,
-    or Estimator primitive on real hardware (handles basis rotations).
-    """
-    n = 4
+def _run_vqe(n: int, maxiter: int = 200) -> dict:
+    """Statevector VQE on the n-oscillator XY Hamiltonian."""
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
     H = knm_to_hamiltonian(K, omega)
     ansatz = knm_to_ansatz(K, reps=2)
     n_params = ansatz.num_parameters
 
-    print(f"\n=== VQE 4-qubit, {n_params} params, maxiter={maxiter} ===")
+    print(f"\n=== VQE {n}-qubit, {n_params} params, maxiter={maxiter} ===")
 
     exact = classical_exact_diag(n, K, omega)
     print(f"  Exact ground energy: {exact['ground_energy']:.6f}")
 
-    energy_history = []
+    energy_history: list[float] = []
 
     def cost_fn(params):
         bound = ansatz.assign_parameters(params)
@@ -232,8 +227,8 @@ def vqe_4q_experiment(runner, shots: int = 10000, maxiter: int = 200) -> dict:
     print(f"  VQE converged: {opt_result.success}, iterations: {opt_result.nfev}")
     print(f"  VQE energy: {opt_result.fun:.6f}")
 
-    result = {
-        "experiment": "vqe_4q",
+    return {
+        "experiment": f"vqe_{n}q",
         "n_qubits": n,
         "vqe_energy": float(opt_result.fun),
         "exact_ground_energy": exact["ground_energy"],
@@ -242,49 +237,16 @@ def vqe_4q_experiment(runner, shots: int = 10000, maxiter: int = 200) -> dict:
         "converged": bool(opt_result.success),
         "energy_history": energy_history,
     }
-    return result
+
+
+def vqe_4q_experiment(runner, shots: int = 10000, maxiter: int = 200) -> dict:
+    """VQE ground state of 4-oscillator XY Hamiltonian."""
+    return _run_vqe(4, maxiter)
 
 
 def vqe_8q_experiment(runner, shots: int = 10000, maxiter: int = 150) -> dict:
     """VQE ground state of 8-oscillator XY Hamiltonian."""
-    n = 8
-    K = build_knm_paper27(L=n)
-    omega = OMEGA_N_16[:n]
-    H = knm_to_hamiltonian(K, omega)
-    ansatz = knm_to_ansatz(K, reps=2)
-    n_params = ansatz.num_parameters
-
-    print(f"\n=== VQE 8-qubit, {n_params} params, maxiter={maxiter} ===")
-
-    exact = classical_exact_diag(n, K, omega)
-    print(f"  Exact ground energy: {exact['ground_energy']:.6f}")
-
-    energy_history = []
-
-    def cost_fn(params):
-        bound = ansatz.assign_parameters(params)
-        sv = Statevector.from_instruction(bound)
-        energy = float(sv.expectation_value(H).real)
-        energy_history.append(energy)
-        return energy
-
-    x0 = np.random.default_rng(42).uniform(-np.pi, np.pi, n_params)
-    opt_result = minimize(cost_fn, x0, method="COBYLA", options={"maxiter": maxiter})
-
-    print(f"  VQE converged: {opt_result.success}, iterations: {opt_result.nfev}")
-    print(f"  VQE energy: {opt_result.fun:.6f}")
-
-    result = {
-        "experiment": "vqe_8q",
-        "n_qubits": n,
-        "vqe_energy": float(opt_result.fun),
-        "exact_ground_energy": exact["ground_energy"],
-        "energy_gap": float(opt_result.fun - exact["ground_energy"]),
-        "n_iterations": opt_result.nfev,
-        "converged": bool(opt_result.success),
-        "energy_history": energy_history,
-    }
-    return result
+    return _run_vqe(8, maxiter)
 
 
 def qaoa_mpc_4_experiment(runner, shots: int = 10000) -> dict:

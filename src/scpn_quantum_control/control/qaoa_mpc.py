@@ -94,7 +94,7 @@ class QAOA_MPC:
 
         return qc
 
-    def optimize(self, current_state: np.ndarray | None = None) -> np.ndarray:
+    def optimize(self) -> np.ndarray:
         """Run QAOA optimization, return binary action sequence.
 
         Returns:

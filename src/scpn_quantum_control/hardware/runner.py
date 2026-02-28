@@ -7,6 +7,7 @@ and result collection. Falls back to AerSimulator when no hardware available.
 from __future__ import annotations
 
 import json
+import logging
 import os
 import time
 from dataclasses import dataclass, field
@@ -90,7 +91,7 @@ class HardwareRunner:
         self._pm = None
         self._calls = 0
 
-    def connect(self):
+    def connect(self) -> None:
         """Authenticate and select backend."""
         if self.use_simulator:
             self._connect_simulator()
@@ -118,7 +119,7 @@ class HardwareRunner:
         )
         print(f"Connected: {self._backend.name} ({self._backend.num_qubits}q)")
 
-    def _connect_simulator(self):
+    def _connect_simulator(self) -> None:
         from qiskit_aer import AerSimulator
 
         if self._noise_model is not None:
@@ -313,7 +314,7 @@ class HardwareRunner:
         scales: list[int] | None = None,
         order: int = 1,
         name: str = "zne_experiment",
-    ):
+    ) -> ZNEResult:  # noqa: F821 — avoid circular import
         """Run ZNE: fold circuit at multiple noise scales, extrapolate to zero."""
         from ..mitigation.zne import gate_fold_circuit, zne_extrapolate
 
@@ -340,6 +341,7 @@ class HardwareRunner:
         """
         from qiskit.circuit.library import XGate, YGate
         from qiskit.transpiler import PassManager
+        from qiskit.transpiler.exceptions import TranspilerError
         from qiskit.transpiler.passes import PadDynamicalDecoupling
 
         assert self._pm is not None, "call connect() first"
@@ -362,10 +364,15 @@ class HardwareRunner:
         )
         try:
             return dd_pm.run(isa)
-        except Exception:
+        except (ValueError, TypeError, TranspilerError) as exc:
+            logging.getLogger(__name__).warning(
+                "DD pass failed, returning original circuit: %s", exc
+            )
             return isa
 
-    def save_result(self, result: JobResult | list[JobResult], filename: str | None = None):
+    def save_result(
+        self, result: JobResult | list[JobResult], filename: str | None = None
+    ) -> Path:
         """Save result(s) to JSON in results_dir."""
         data: dict | list[dict]
         if isinstance(result, list):
@@ -385,7 +392,9 @@ class HardwareRunner:
         return path
 
     @staticmethod
-    def save_token(token: str, instance: str | None = None, channel: str = "ibm_quantum_platform"):
+    def save_token(
+        token: str, instance: str | None = None, channel: str = "ibm_quantum_platform"
+    ) -> None:
         """Save IBM Quantum API token to disk (one-time setup)."""
         from qiskit_ibm_runtime import QiskitRuntimeService
 

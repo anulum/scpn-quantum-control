@@ -69,33 +69,31 @@ class QuantumDisruptionClassifier:
         ancilla_probs = sv.probabilities([self.n_data_qubits])
         return float(ancilla_probs[1])
 
-    def train(self, X: np.ndarray, y: np.ndarray, epochs: int = 50, lr: float = 0.1):
+    def train(self, X: np.ndarray, y: np.ndarray, epochs: int = 50, lr: float = 0.1) -> None:
         """Parameter-shift gradient training on labeled data.
 
         X: (n_samples, n_features)
         y: (n_samples,) binary labels {0, 1}
-        """
-        shift = np.pi / 2
 
+        Uses the standard parameter-shift rule for Ry gates (generator Y/2):
+        df/dθ = (f(θ+π/2) - f(θ-π/2)) / 2.  Schuld et al., PRA 99, 032331 (2019).
+        """
         for _ in range(epochs):
             grad = np.zeros_like(self.params)
-            total_loss = 0.0
 
             for xi, yi in zip(X, y):
                 pred = self._forward_with_params(xi, self.params)
-                loss = (pred - yi) ** 2
-                total_loss += loss
 
                 for p_idx in range(len(self.params)):
                     params_plus = self.params.copy()
-                    params_plus[p_idx] += shift
+                    params_plus[p_idx] += np.pi / 2
                     params_minus = self.params.copy()
-                    params_minus[p_idx] -= shift
+                    params_minus[p_idx] -= np.pi / 2
 
                     f_plus = self._forward_with_params(xi, params_plus)
                     f_minus = self._forward_with_params(xi, params_minus)
 
-                    dpred = (f_plus - f_minus) / (2.0 * np.sin(shift))
+                    dpred = (f_plus - f_minus) / 2.0
                     grad[p_idx] += 2.0 * (pred - yi) * dpred
 
             grad /= len(X)

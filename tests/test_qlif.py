@@ -1,5 +1,7 @@
 """Tests for qsnn/qlif.py."""
 
+import numpy as np
+
 from scpn_quantum_control.qsnn.qlif import QuantumLIFNeuron
 
 
@@ -51,3 +53,23 @@ def test_statistical_spike_rate():
         spikes += neuron.step(1.0)
     rate = spikes / n_steps
     assert rate > 0.1
+
+
+def test_stochastic_mode_seeded():
+    """n_shots > 0 with seeded rng should be reproducible."""
+    rng1 = np.random.default_rng(42)
+    rng2 = np.random.default_rng(42)
+    n1 = QuantumLIFNeuron(v_threshold=0.5, tau_mem=2.0, dt=1.0, n_shots=50, rng=rng1)
+    n2 = QuantumLIFNeuron(v_threshold=0.5, tau_mem=2.0, dt=1.0, n_shots=50, rng=rng2)
+    spikes1 = [n1.step(1.0) for _ in range(20)]
+    spikes2 = [n2.step(1.0) for _ in range(20)]
+    assert spikes1 == spikes2
+
+
+def test_stochastic_mode_fires():
+    """n_shots > 0 with strong input should eventually spike."""
+    neuron = QuantumLIFNeuron(
+        v_threshold=0.5, tau_mem=2.0, dt=1.0, n_shots=50, rng=np.random.default_rng(7)
+    )
+    total = sum(neuron.step(1.0) for _ in range(50))
+    assert total > 0
