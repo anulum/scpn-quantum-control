@@ -121,7 +121,7 @@ However, the **outlier structure** is physically meaningful:
 - L3 (strongest Knm row sum = 2.93) maintains high coherence (|<X>|=0.55)
 - The extremes follow coupling, even if the middle layers don't
 
-**Novelty**: First 16-oscillator quantum simulation preserves per-layer structure
+**Novelty**: 16-oscillator snapshot preserves per-layer structure at extremes
 despite 46% global error. The outlier analysis (L12 collapse, L3 resilience)
 provides a testable prediction: dynamical decoupling on weakly-coupled qubits
 should disproportionately improve their coherence.
