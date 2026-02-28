@@ -3,6 +3,33 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.2] - 2026-02-28
+
+### Fixed
+
+- **MWPM decoder** (3 bugs):
+  - `_shortest_path` now uses dual edges for plaquette (Z) syndromes — all single Z errors were failing
+  - `_has_logical_error` uses seam-crossing winding number formula; shifted non-contractible cycles no longer missed
+  - d=5 now correctly outperforms d=3 below threshold (Dennis et al. 2002)
+- **Classical reference endianness** (`_build_initial_state`, `_expectation_pauli`): kron order reversed to match Qiskit little-endian convention; verified against Statevector evolution to 1e-6
+- **Parameter-shift rule** (`q_disruption.py`): removed misleading `sin(shift)` denominator (Schuld et al., PRA 99, 032331)
+- **VQLS**: assert imaginary norm < 0.1 before `np.real()` instead of silently discarding
+- **QAOA_MPC**: removed dead `current_state` parameter
+- **ZNE**: cache `base.inverse()` before fold loop
+- **trotter_upde**: remove dead `evolve(0)` call, add `reset()`
+- **qlif**: replace legacy `np.random.binomial` with seedable `rng` parameter
+- **runner**: catch `TranspilerError` in DD pass fallback instead of bare `except Exception`
+- **sc_to_quantum**: `measurement_to_bitstream` now accepts `rng` parameter
+
+### Added
+
+- `_run_vqe` helper eliminates vqe_4q/vqe_8q code duplication
+- Root `__init__.py` exports all 20 public symbols
+- Return type annotations on all public methods
+- 9 new tests: d5-beats-d3, shifted logical cycles, single X/Z error correctness, VQE experiment, DD transpile, QSNN stochastic mode, bitstream seeded
+- Citation markers on `K_base`, `K_alpha` (Paper 27, Eq. 3)
+- `test_classical_evolution_matches_qiskit`: definitive Qiskit-vs-classical endianness agreement test
+
 ## [0.2.1] - 2026-02-28
 
 ### Fixed
