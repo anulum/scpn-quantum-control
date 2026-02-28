@@ -5,7 +5,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://python.org)
 [![Qiskit 1.0+](https://img.shields.io/badge/qiskit-1.0%2B-6929C4.svg)](https://qiskit.org)
-[![Tests: 199](https://img.shields.io/badge/tests-199%20passing-brightgreen.svg)]()
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue.svg)](https://anulum.github.io/scpn-quantum-control)
+[![Tests: 208](https://img.shields.io/badge/tests-208%20passing-brightgreen.svg)]()
 [![Version: 0.3.0](https://img.shields.io/badge/version-0.3.0-orange.svg)]()
 [![Hardware: ibm_fez](https://img.shields.io/badge/hardware-ibm__fez%20Heron%20r2-blueviolet.svg)]()
 
@@ -213,6 +214,23 @@ Toric surface code protecting quantum control signals. MWPM decoder uses Knm gra
 Optional:
 - `matplotlib >= 3.5` for visualization
 - `qiskit-ibm-runtime >= 0.20.0` for hardware execution
+
+## Notebooks
+
+Interactive Jupyter notebooks in [`notebooks/`](notebooks/):
+
+| Notebook | Covers |
+|----------|--------|
+| `01_kuramoto_xy_dynamics` | Kuramoto → XY mapping, Trotter evolution, 4-osc and 8-osc |
+| `02_vqe_ground_state` | VQE with Knm-informed ansatz, ansatz comparison, 4q and 8q |
+| `03_error_mitigation` | ZNE (unitary folding + Richardson), noisy simulator |
+| `04_upde_16_layer` | Full 16-layer SCPN, per-layer coherence analysis |
+
+All run on local AerSimulator. No IBM credentials needed.
+
+## Documentation
+
+Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/scpn-quantum-control)** — equations, architecture, API reference, hardware guide, experiment roadmap.
 
 ## Related Repositories
 

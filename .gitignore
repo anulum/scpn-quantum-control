@@ -24,5 +24,8 @@ env/
 .DS_Store
 Thumbs.db
 
+# MkDocs build output
+site/
+
 # IBM Quantum credentials (never commit)
 qiskit-ibm.json

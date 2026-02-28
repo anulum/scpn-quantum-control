@@ -43,6 +43,7 @@ dependencies = [
 [project.optional-dependencies]
 viz = ["matplotlib>=3.5"]
 dev = ["pytest>=7.0", "pytest-cov", "ruff"]
+docs = ["mkdocs-material>=9.0"]
 ibm = ["qiskit-ibm-runtime>=0.20.0"]
 
 [project.urls]
@@ -50,6 +51,7 @@ Homepage = "https://github.com/anulum/scpn-quantum-control"
 Repository = "https://github.com/anulum/scpn-quantum-control"
 Issues = "https://github.com/anulum/scpn-quantum-control/issues"
 Changelog = "https://github.com/anulum/scpn-quantum-control/blob/main/CHANGELOG.md"
+Documentation = "https://anulum.github.io/scpn-quantum-control"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/scpn_quantum_control"]
@@ -95,6 +97,7 @@ files = [
     "src/scpn_quantum_control/qec/",
     "src/scpn_quantum_control/hardware/classical.py",
     "src/scpn_quantum_control/hardware/runner.py",
+    "src/scpn_quantum_control/hardware/experiments.py",
 ]
 
 [[tool.mypy.overrides]]
