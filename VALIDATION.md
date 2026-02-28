@@ -2,7 +2,7 @@
 
 ## Test Suite
 
-199 unit and integration tests across 20+ test files. All pass on Python 3.9-3.12 with Qiskit 1.0+.
+275 unit, integration, property-based, and regression tests across 32 test files. All pass on Python 3.9-3.12 with Qiskit 1.0+.
 
 ```bash
 pytest tests/ -v
@@ -52,7 +52,14 @@ VQE hardware result (0.05% error) provides publication-quality ground truth.
 | STDP weight update direction | `test_qstdp.py` |
 | Pauli qubit ordering (Qiskit little-endian) | `test_classical.py` |
 | Energy conservation under Trotter | `test_integration.py` |
-| Trotter order-2 convergence | `test_trotter.py` |
+| Trotter order-2 convergence | `test_trotter_error.py` |
+| Knm calibration anchors (Paper 27 Table 2) | `test_regression_baselines.py` |
+| 4q ground energy E₀ = -6.303 ± 0.01 | `test_regression_baselines.py` |
+| Hamiltonian Z-parity conservation | `test_cross_module.py` |
+| Solver ↔ bridge Hamiltonian identity | `test_cross_module.py` |
+| Knm symmetry, positivity, diagonal=K_base | `test_bridge_properties.py` (hypothesis) |
+| Hamiltonian Hermiticity (fuzz 2-6 qubits) | `test_bridge_properties.py` (hypothesis) |
+| Probability ↔ angle roundtrip (fuzz) | `test_bridge_properties.py` (hypothesis) |
 
 ## Running Validation
 
@@ -66,6 +73,12 @@ pytest tests/test_hardware_runner.py -v
 # Coverage report
 pytest tests/ --cov=scpn_quantum_control --cov-report=term-missing
 
-# Type check (27 source files, zero errors)
+# Type check (30 source files, zero errors)
 mypy
+
+# Lint (zero errors)
+ruff check src/ tests/
+
+# Code coverage (99%)
+pytest tests/ --cov=scpn_quantum_control --cov-report=html
 ```
