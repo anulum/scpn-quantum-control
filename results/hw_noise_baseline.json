@@ -1,0 +1,16 @@
+{
+  "backend": "ibm_fez",
+  "experiment": "noise_baseline",
+  "job_id": "d6h3oupkeb2s73be5200",
+  "n_qubits": 4,
+  "shots": 10000,
+  "hw_R": 0.8054432832298001,
+  "exact_R": 0.8059583548936137,
+  "note": "No evolution, just state prep + measure. Pure readout/gate noise.",
+  "metadata": {
+    "depth": 5,
+    "n_qubits": 156,
+    "ecr_gates": 0,
+    "total_gates": 21
+  }
+}
