@@ -1,0 +1,14 @@
+{
+  "backend": "ibm_fez",
+  "experiment": "kuramoto_2osc",
+  "job_id": "d6h3rfm48nic73amhvpg",
+  "n_qubits": 2,
+  "shots": 8000,
+  "hw_R": 0.7368587254352085,
+  "metadata": {
+    "depth": 13,
+    "n_qubits": 156,
+    "ecr_gates": 0,
+    "total_gates": 23
+  }
+}
