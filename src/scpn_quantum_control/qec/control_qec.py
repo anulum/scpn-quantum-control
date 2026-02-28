@@ -23,15 +23,13 @@ class SurfaceCode:
         """Build toric code check matrices for given code distance."""
         self.d = distance
         self.num_data = 2 * distance**2
-        self.Hx: np.ndarray
-        self.Hz: np.ndarray
         self.Hx, self.Hz = self._build_checks()
 
     def _build_checks(self) -> tuple[np.ndarray, np.ndarray]:
         d = self.d
         N = self.num_data
-        Hx = np.zeros((d * d, N), dtype=np.int8)
-        Hz = np.zeros((d * d, N), dtype=np.int8)
+        Hx: np.ndarray = np.zeros((d * d, N), dtype=np.int8)
+        Hz: np.ndarray = np.zeros((d * d, N), dtype=np.int8)
 
         def h(r, c):
             return 2 * (r * d + c)
