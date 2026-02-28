@@ -1,6 +1,6 @@
 """Tests for control/vqls_gs.py."""
+
 import numpy as np
-import pytest
 
 from scpn_quantum_control.control.vqls_gs import VQLS_GradShafranov
 

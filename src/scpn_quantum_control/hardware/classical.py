@@ -3,6 +3,7 @@
 Each function returns the exact/high-fidelity classical answer that the
 quantum hardware result should approximate.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -77,7 +78,11 @@ def classical_exact_diag(
         omega = OMEGA_N_16[:n_osc].copy()
 
     H_op = knm_to_hamiltonian(K, omega)
-    H_mat = H_op.to_matrix().toarray() if hasattr(H_op.to_matrix(), 'toarray') else np.array(H_op.to_matrix())
+    H_mat = (
+        H_op.to_matrix().toarray()
+        if hasattr(H_op.to_matrix(), "toarray")
+        else np.array(H_op.to_matrix())
+    )
 
     eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
 
@@ -109,7 +114,7 @@ def classical_exact_evolution(
 
     H_op = knm_to_hamiltonian(K, omega)
     H_mat = np.array(H_op.to_matrix())
-    dim = 2 ** n_osc
+    2**n_osc
 
     # Initial state: each qubit Ry(omega_i mod 2pi) |0>
     psi = _build_initial_state(n_osc, omega)
@@ -139,7 +144,7 @@ def _build_initial_state(n_osc: int, omega: np.ndarray) -> np.ndarray:
 
 def _state_order_param(psi: np.ndarray, n_osc: int) -> float:
     """Compute R from statevector via X,Y expectations per qubit."""
-    dim = 2 ** n_osc
+    2**n_osc
     z_complex = 0.0 + 0.0j
 
     for q in range(n_osc):
@@ -176,7 +181,7 @@ def classical_brute_mpc(
 
     Returns optimal actions, optimal cost, all costs for comparison.
     """
-    n_actions = 2 ** horizon
+    n_actions = 2**horizon
     best_cost = np.inf
     best_actions = np.zeros(horizon, dtype=int)
     all_costs = np.zeros(n_actions)
@@ -189,7 +194,7 @@ def classical_brute_mpc(
         cost = 0.0
         for t in range(horizon):
             diff = b_norm * actions[t] - t_norm / horizon
-            cost += diff ** 2
+            cost += diff**2
         all_costs[idx] = cost
         if cost < best_cost:
             best_cost = cost

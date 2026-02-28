@@ -4,6 +4,7 @@ Encodes the 11-D disruption feature vector into a 4-qubit amplitude state
 (zero-padded to 16-D), applies a parameterized quantum circuit as classifier,
 and measures an ancilla qubit for disruption/safe classification.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -30,7 +31,7 @@ class QuantumDisruptionClassifier:
     def encode_features(self, features: np.ndarray) -> QuantumCircuit:
         """Amplitude-encode 11-D features into 4 qubits (pad to 16-D)."""
         padded = np.zeros(16)
-        padded[:len(features)] = features
+        padded[: len(features)] = features
         norm = np.linalg.norm(padded)
         if norm < 1e-15:
             padded[0] = 1.0  # default to |0...0> for zero input

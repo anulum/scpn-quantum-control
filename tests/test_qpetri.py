@@ -1,4 +1,5 @@
 """Tests for control/qpetri.py."""
+
 import numpy as np
 import pytest
 
@@ -7,8 +8,8 @@ from scpn_quantum_control.control.qpetri import QuantumPetriNet
 
 @pytest.fixture
 def simple_net():
-    W_in = np.array([[0.8, 0.0], [0.0, 0.6]])   # 2 transitions, 2 places
-    W_out = np.array([[0.0, 0.7], [0.5, 0.0]])    # 2 places, 2 transitions
+    W_in = np.array([[0.8, 0.0], [0.0, 0.6]])  # 2 transitions, 2 places
+    W_out = np.array([[0.0, 0.7], [0.5, 0.0]])  # 2 places, 2 transitions
     thresholds = np.array([0.5, 0.5])
     return QuantumPetriNet(2, 2, W_in, W_out, thresholds)
 

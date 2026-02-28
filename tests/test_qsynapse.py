@@ -1,8 +1,9 @@
 """Tests for qsnn/qsynapse.py."""
+
 import numpy as np
 import pytest
-
 from qiskit import QuantumCircuit
+
 from scpn_quantum_control.qsnn.qsynapse import QuantumSynapse
 
 

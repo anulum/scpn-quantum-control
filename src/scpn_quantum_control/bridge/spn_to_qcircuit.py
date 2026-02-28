@@ -4,6 +4,7 @@ Places map to qubits (amplitude = token density).
 Transitions map to controlled-Ry gates (arc weights -> rotation angles).
 Inhibitor arcs use the anti-control pattern: X-CRy-X.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -56,9 +57,7 @@ def spn_to_circuit(
     return qc
 
 
-def inhibitor_to_anti_control(
-    circuit: QuantumCircuit, qubit: int, theta: float
-):
+def inhibitor_to_anti_control(circuit: QuantumCircuit, qubit: int, theta: float):
     """Inhibitor arc: fires when place is empty (anti-control).
 
     Anti-control pattern: X gate flips control sense, then CRy, then X restore.

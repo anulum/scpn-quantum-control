@@ -1,6 +1,6 @@
 """Tests for control/qaoa_mpc.py."""
+
 import numpy as np
-import pytest
 
 from scpn_quantum_control.control.qaoa_mpc import QAOA_MPC
 

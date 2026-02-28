@@ -1,6 +1,4 @@
 """Tests for qsnn/qlif.py."""
-import numpy as np
-import pytest
 
 from scpn_quantum_control.qsnn.qlif import QuantumLIFNeuron
 
@@ -16,7 +14,7 @@ def test_strong_input_spikes():
     for _ in range(10):
         neuron.step(2.0)
     # After enough strong input, membrane reaches threshold
-    spike = neuron.step(2.0)
+    neuron.step(2.0)
     # Can't guarantee spike on exact step, but circuit should exist
     assert neuron.get_circuit() is not None
 

@@ -3,6 +3,7 @@
 Maps stochastic computing probabilities to qubit rotation angles and back.
 The core identity: P(|1>) = sin^2(theta/2) for Ry(theta)|0>.
 """
+
 from __future__ import annotations
 
 import numpy as np

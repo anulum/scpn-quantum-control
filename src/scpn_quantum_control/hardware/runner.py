@@ -3,6 +3,7 @@
 Handles authentication, backend selection, transpilation, job submission,
 and result collection. Falls back to AerSimulator when no hardware available.
 """
+
 from __future__ import annotations
 
 import json
@@ -10,7 +11,6 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 import numpy as np
 from qiskit import QuantumCircuit
@@ -106,9 +106,7 @@ class HardwareRunner:
         if self._backend_name:
             self._backend = self._service.backend(self._backend_name)
         else:
-            self._backend = self._service.least_busy(
-                operational=True, simulator=False
-            )
+            self._backend = self._service.least_busy(operational=True, simulator=False)
 
         self._pm = generate_preset_pass_manager(
             backend=self._backend,
@@ -118,6 +116,7 @@ class HardwareRunner:
 
     def _connect_simulator(self):
         from qiskit_aer import AerSimulator
+
         self._backend = AerSimulator()
         self._pm = generate_preset_pass_manager(
             optimization_level=self.optimization_level,
@@ -139,7 +138,9 @@ class HardwareRunner:
         """Transpile circuit for target backend."""
         return self._pm.run(circuit)
 
-    def transpile_observable(self, obs: SparsePauliOp, isa_circuit: QuantumCircuit) -> SparsePauliOp:
+    def transpile_observable(
+        self, obs: SparsePauliOp, isa_circuit: QuantumCircuit
+    ) -> SparsePauliOp:
         """Map observable to transpiled circuit layout."""
         return obs.apply_layout(isa_circuit.layout)
 
@@ -169,7 +170,9 @@ class HardwareRunner:
         if self._calls <= 3:
             for i, isa in enumerate(isa_circuits):
                 stats = self.circuit_stats(isa)
-                print(f"  Circuit {i}: depth={stats['depth']}, ECR={stats['ecr_gates']}, qubits={stats['n_qubits']}")
+                print(
+                    f"  Circuit {i}: depth={stats['depth']}, ECR={stats['ecr_gates']}, qubits={stats['n_qubits']}"
+                )
 
         if self.use_simulator:
             return self._run_sampler_simulator(isa_circuits, shots, name)
@@ -211,7 +214,9 @@ class HardwareRunner:
         isa_circuit = self.transpile(circuit)
         isa_obs = [self.transpile_observable(obs, isa_circuit) for obs in observables]
         stats = self.circuit_stats(isa_circuit)
-        print(f"  Circuit: depth={stats['depth']}, ECR={stats['ecr_gates']}, qubits={stats['n_qubits']}")
+        print(
+            f"  Circuit: depth={stats['depth']}, ECR={stats['ecr_gates']}, qubits={stats['n_qubits']}"
+        )
 
         if self.use_simulator:
             return self._run_estimator_simulator(
@@ -246,6 +251,7 @@ class HardwareRunner:
 
     def _run_sampler_simulator(self, isa_circuits, shots, name):
         from qiskit_aer import AerSimulator
+
         sim = AerSimulator()
         from qiskit import transpile as qk_transpile
 
@@ -254,6 +260,7 @@ class HardwareRunner:
         for i, qc in enumerate(isa_circuits):
             tc = qk_transpile(qc, sim)
             from qiskit_aer import AerSimulator
+
             job = sim.run(tc, shots=shots)
             counts = job.result().get_counts()
             wall = time.time() - t0
@@ -271,6 +278,7 @@ class HardwareRunner:
 
     def _run_estimator_simulator(self, isa_circuit, isa_obs, parameter_values, name, stats):
         from qiskit.quantum_info import Statevector
+
         t0 = time.time()
         if parameter_values is not None:
             all_evs = []
@@ -316,8 +324,12 @@ class HardwareRunner:
     def save_token(token: str, instance: str | None = None, channel: str = "ibm_quantum_platform"):
         """Save IBM Quantum API token to disk (one-time setup)."""
         from qiskit_ibm_runtime import QiskitRuntimeService
+
         inst = instance or HardwareRunner.DEFAULT_INSTANCE
         QiskitRuntimeService.save_account(
-            channel=channel, token=token, instance=inst, overwrite=True,
+            channel=channel,
+            token=token,
+            instance=inst,
+            overwrite=True,
         )
         print("Token saved. Future runs need no token argument.")

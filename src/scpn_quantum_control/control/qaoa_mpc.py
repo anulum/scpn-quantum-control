@@ -3,6 +3,7 @@
 Discretizes the MPC action space to binary (coil on/off per timestep),
 maps the quadratic cost to an Ising Hamiltonian, then solves via QAOA.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -54,7 +55,7 @@ class QAOA_MPC:
         # ZZ interaction terms from cross-timestep coupling
         for t1 in range(self.horizon):
             for t2 in range(t1 + 1, self.horizon):
-                J_ij = (b_norm ** 2) / (2.0 * self.horizon)
+                J_ij = (b_norm**2) / (2.0 * self.horizon)
                 zz_str = ["I"] * self.n_qubits
                 zz_str[t1] = "Z"
                 zz_str[t2] = "Z"
@@ -103,8 +104,8 @@ class QAOA_MPC:
             self.build_cost_hamiltonian()
 
         def cost_fn(params):
-            gamma = params[:self.p]
-            beta = params[self.p:]
+            gamma = params[: self.p]
+            beta = params[self.p :]
             qc = self._build_qaoa_circuit(gamma, beta)
             sv = Statevector.from_instruction(qc)
             return float(sv.expectation_value(self._cost_ham).real)
@@ -112,8 +113,8 @@ class QAOA_MPC:
         x0 = np.random.default_rng().uniform(0, np.pi, 2 * self.p)
         result = minimize(cost_fn, x0, method="COBYLA", options={"maxiter": 200})
 
-        gamma_opt = result.x[:self.p]
-        beta_opt = result.x[self.p:]
+        gamma_opt = result.x[: self.p]
+        beta_opt = result.x[self.p :]
         qc = self._build_qaoa_circuit(gamma_opt, beta_opt)
         sv = Statevector.from_instruction(qc)
         probs = sv.probabilities()

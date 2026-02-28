@@ -4,6 +4,7 @@ Classical SPN tokens are probabilities in [0,1] per place.  Quantum Petri net
 encodes tokens as qubit amplitudes -- a transition fires on all branches in
 superposition.  Measurement collapses to a single control decision.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -80,6 +81,6 @@ class QuantumPetriNet:
         W_in: np.ndarray,
         W_out: np.ndarray,
         thresholds: np.ndarray,
-    ) -> "QuantumPetriNet":
+    ) -> QuantumPetriNet:
         n_t, n_p = W_in.shape
         return cls(n_p, n_t, W_in, W_out, thresholds)

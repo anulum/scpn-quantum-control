@@ -4,12 +4,13 @@ The 16-layer SCPN UPDE with Knm coupling becomes a 16-qubit system
 where each qubit encodes one layer's phase. Inter-layer coupling K[n,m]
 maps to XY interaction strength; natural frequencies Omega_n map to Z fields.
 """
+
 from __future__ import annotations
 
 import numpy as np
 from qiskit.quantum_info import Statevector
 
-from ..bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27, knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from .xy_kuramoto import QuantumKuramotoSolver
 
 
@@ -38,8 +39,9 @@ class QuantumUPDESolver:
     def step(self, dt: float = 0.1, trotter_steps: int = 5) -> dict:
         """Single Trotter step, return per-layer expectations and global R."""
         if not hasattr(self, "_sv"):
-            init_qc = self._solver.evolve(0)  # identity
+            self._solver.evolve(0)  # identity
             from qiskit import QuantumCircuit
+
             qc = QuantumCircuit(self.n_layers)
             for i in range(self.n_layers):
                 qc.ry(float(self.omega[i]) % (2 * np.pi), i)

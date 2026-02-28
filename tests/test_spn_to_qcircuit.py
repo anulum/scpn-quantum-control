@@ -1,9 +1,9 @@
 """Tests for bridge/spn_to_qcircuit.py."""
-import numpy as np
-import pytest
 
-from scpn_quantum_control.bridge.spn_to_qcircuit import spn_to_circuit, inhibitor_to_anti_control
+import numpy as np
 from qiskit import QuantumCircuit
+
+from scpn_quantum_control.bridge.spn_to_qcircuit import inhibitor_to_anti_control, spn_to_circuit
 
 
 def test_spn_to_circuit_qubit_count():

@@ -1,6 +1,6 @@
 """Tests for bridge/sc_to_quantum.py."""
+
 import numpy as np
-import pytest
 
 from scpn_quantum_control.bridge.sc_to_quantum import (
     angle_to_probability,

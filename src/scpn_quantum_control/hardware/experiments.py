@@ -12,6 +12,7 @@ Budget estimate per experiment (with XY-basis measurement):
   upde_16_snapshot: ~180s QPU (16-qubit, 240 ECR)
   Total:            ~7 min QPU
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -31,7 +32,6 @@ from .classical import (
     classical_brute_mpc,
     classical_exact_diag,
     classical_exact_evolution,
-    classical_kuramoto_reference,
 )
 
 
@@ -96,7 +96,9 @@ def _R_from_xyz(z_counts, x_counts, y_counts, n_qubits):
     return float(abs(z_complex)), exp_x, exp_y, exp_z
 
 
-def kuramoto_4osc_experiment(runner, shots: int = 10000, n_time_steps: int = 8, dt: float = 0.1) -> dict:
+def kuramoto_4osc_experiment(
+    runner, shots: int = 10000, n_time_steps: int = 8, dt: float = 0.1
+) -> dict:
     """4-oscillator Kuramoto XY dynamics on hardware.
 
     Measures order parameter R(t) via X, Y, Z basis shots at each time step.
@@ -149,7 +151,9 @@ def kuramoto_4osc_experiment(runner, shots: int = 10000, n_time_steps: int = 8, 
     return result
 
 
-def kuramoto_8osc_experiment(runner, shots: int = 10000, n_time_steps: int = 6, dt: float = 0.1) -> dict:
+def kuramoto_8osc_experiment(
+    runner, shots: int = 10000, n_time_steps: int = 6, dt: float = 0.1
+) -> dict:
     """8-oscillator Kuramoto XY dynamics."""
     n = 8
     K = build_knm_paper27(L=n)

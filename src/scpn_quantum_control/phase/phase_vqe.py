@@ -4,13 +4,14 @@ Finds the maximum synchronization configuration of the coupled oscillator
 system using a variational quantum eigensolver with physics-informed ansatz
 where entanglement topology matches Knm sparsity.
 """
+
 from __future__ import annotations
 
 import numpy as np
-from qiskit.quantum_info import SparsePauliOp, Statevector
+from qiskit.quantum_info import Statevector
 from scipy.optimize import minimize
 
-from ..bridge.knm_hamiltonian import knm_to_hamiltonian, knm_to_ansatz
+from ..bridge.knm_hamiltonian import knm_to_ansatz, knm_to_hamiltonian
 
 
 class PhaseVQE:

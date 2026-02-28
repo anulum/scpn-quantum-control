@@ -1,8 +1,8 @@
 """Tests for qec/control_qec.py."""
-import numpy as np
-import pytest
 
-from scpn_quantum_control.qec.control_qec import SurfaceCode, MWPMDecoder, ControlQEC
+import numpy as np
+
+from scpn_quantum_control.qec.control_qec import ControlQEC, MWPMDecoder, SurfaceCode
 
 
 def test_surface_code_dimensions():

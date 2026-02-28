@@ -1,14 +1,15 @@
 """Tests for hardware runner + experiments using local AerSimulator."""
+
 import numpy as np
 import pytest
 
-from scpn_quantum_control.hardware.runner import HardwareRunner, JobResult
 from scpn_quantum_control.hardware.classical import (
-    classical_kuramoto_reference,
+    classical_brute_mpc,
     classical_exact_diag,
     classical_exact_evolution,
-    classical_brute_mpc,
+    classical_kuramoto_reference,
 )
+from scpn_quantum_control.hardware.runner import HardwareRunner, JobResult
 
 
 @pytest.fixture
@@ -25,6 +26,7 @@ def test_connect_simulator(sim_runner):
 
 def test_transpile_simple_circuit(sim_runner):
     from qiskit import QuantumCircuit
+
     qc = QuantumCircuit(2)
     qc.h(0)
     qc.cx(0, 1)
@@ -35,6 +37,7 @@ def test_transpile_simple_circuit(sim_runner):
 
 def test_run_sampler_bell(sim_runner):
     from qiskit import QuantumCircuit
+
     qc = QuantumCircuit(2)
     qc.h(0)
     qc.cx(0, 1)
@@ -57,6 +60,7 @@ def test_save_result(sim_runner):
     path = sim_runner.save_result(jr, "test_save.json")
     assert path.exists()
     import json
+
     with open(path) as f:
         data = json.load(f)
     assert data["job_id"] == "test_123"
@@ -64,6 +68,7 @@ def test_save_result(sim_runner):
 
 def test_circuit_stats(sim_runner):
     from qiskit import QuantumCircuit
+
     qc = QuantumCircuit(2)
     qc.h(0)
     qc.cx(0, 1)
@@ -76,6 +81,7 @@ def test_circuit_stats(sim_runner):
 
 
 # ── Classical reference tests ──
+
 
 def test_classical_kuramoto():
     ref = classical_kuramoto_reference(4, t_max=0.5, dt=0.1)
@@ -107,8 +113,10 @@ def test_classical_brute_mpc():
 
 # ── Full experiment pipeline on simulator ──
 
+
 def test_kuramoto_4osc_on_simulator(sim_runner):
     from scpn_quantum_control.hardware.experiments import kuramoto_4osc_experiment
+
     result = kuramoto_4osc_experiment(sim_runner, shots=500, n_time_steps=3, dt=0.05)
     assert result["experiment"] == "kuramoto_4osc"
     assert len(result["hw_R"]) == 3
@@ -117,13 +125,12 @@ def test_kuramoto_4osc_on_simulator(sim_runner):
 
 def test_qaoa_mpc_on_simulator(sim_runner):
     """Quick QAOA test with minimal iterations."""
-    from scpn_quantum_control.hardware.experiments import qaoa_mpc_4_experiment
-
     # Monkey-patch to use fewer iterations
     import scpn_quantum_control.hardware.experiments as exp_mod
+    from scpn_quantum_control.hardware.experiments import qaoa_mpc_4_experiment
+
     original = exp_mod.minimize
 
-    call_count = [0]
     def limited_minimize(fn, x0, **kwargs):
         kwargs.setdefault("options", {})["maxiter"] = 5
         return original(fn, x0, **kwargs)

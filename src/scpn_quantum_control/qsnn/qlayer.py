@@ -6,6 +6,7 @@ Maps sc-neurocore SCDenseLayer to a parameterized circuit:
   - Entanglement: CX chain between neuron qubits
   - Readout: measure neuron register, threshold for spikes
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -38,8 +39,7 @@ class QuantumDenseLayer:
         if weights is None:
             weights = np.random.default_rng().uniform(0.0, 1.0, (n_neurons, n_inputs))
         self.synapses = [
-            [QuantumSynapse(weights[n, i]) for i in range(n_inputs)]
-            for n in range(n_neurons)
+            [QuantumSynapse(weights[n, i]) for i in range(n_inputs)] for n in range(n_neurons)
         ]
 
     def forward(self, input_values: np.ndarray) -> np.ndarray:
@@ -74,7 +74,9 @@ class QuantumDenseLayer:
         return (neuron_probs > self.spike_threshold).astype(int)
 
     def get_weights(self) -> np.ndarray:
-        return np.array([
-            [self.synapses[n][i].weight for i in range(self.n_inputs)]
-            for n in range(self.n_neurons)
-        ])
+        return np.array(
+            [
+                [self.synapses[n][i].weight for i in range(self.n_inputs)]
+                for n in range(self.n_neurons)
+            ]
+        )

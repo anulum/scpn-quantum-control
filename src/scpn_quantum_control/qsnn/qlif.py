@@ -4,6 +4,7 @@ Maps the classical StochasticLIFNeuron membrane dynamics to a parameterized
 quantum circuit. Membrane voltage encodes as rotation angle; measurement
 produces spike/no-spike with probability matching classical firing rate.
 """
+
 from __future__ import annotations
 
 import numpy as np

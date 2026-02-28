@@ -1,6 +1,6 @@
 """Tests for qsnn/qlayer.py."""
+
 import numpy as np
-import pytest
 
 from scpn_quantum_control.qsnn.qlayer import QuantumDenseLayer
 

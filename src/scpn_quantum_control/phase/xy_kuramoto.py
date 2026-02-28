@@ -6,6 +6,7 @@ is isomorphic to the XY spin Hamiltonian:
 
 Quantum hardware simulates this natively via Trotterized time evolution.
 """
+
 from __future__ import annotations
 
 import numpy as np

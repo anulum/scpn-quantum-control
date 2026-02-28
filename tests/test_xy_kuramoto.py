@@ -1,4 +1,5 @@
 """Tests for phase/xy_kuramoto.py."""
+
 import numpy as np
 import pytest
 
@@ -25,8 +26,9 @@ def test_evolve_circuit(small_solver):
 
 def test_order_parameter_range(small_solver):
     small_solver.build_hamiltonian()
-    from qiskit.quantum_info import Statevector
     from qiskit import QuantumCircuit
+    from qiskit.quantum_info import Statevector
+
     qc = QuantumCircuit(2)
     sv = Statevector.from_instruction(qc)
     R, psi = small_solver.measure_order_parameter(sv)

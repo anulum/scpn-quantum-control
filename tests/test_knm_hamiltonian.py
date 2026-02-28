@@ -1,4 +1,5 @@
 """Tests for bridge/knm_hamiltonian.py."""
+
 import numpy as np
 import pytest
 

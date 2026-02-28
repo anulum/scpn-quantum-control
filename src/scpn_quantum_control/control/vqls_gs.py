@@ -4,6 +4,7 @@ Discretized Laplacian del^2(Psi) = source on N grid points -> sparse linear
 system Ax=b.  VQLS finds |x> such that A|x> ~ |b> using variational cost
 C = 1 - |<b|A|x>|^2 / <x|A^dag A|x>.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -22,7 +23,7 @@ class VQLS_GradShafranov:
 
     def __init__(self, n_qubits: int = 4, source_width: float = 0.05):
         self.n_qubits = n_qubits
-        self.grid_size = 2 ** n_qubits
+        self.grid_size = 2**n_qubits
         self.source_width = source_width
         self._A: np.ndarray | None = None
         self._b: np.ndarray | None = None
@@ -42,10 +43,10 @@ class VQLS_GradShafranov:
                 A[i, i - 1] = -1.0
             if i < N - 1:
                 A[i, i + 1] = -1.0
-        A /= dx ** 2
+        A /= dx**2
 
         # Gaussian source profile
-        b = np.exp(-(x - 0.5) ** 2 / self.source_width)
+        b = np.exp(-((x - 0.5) ** 2) / self.source_width)
         b /= np.linalg.norm(b)
 
         self._A = A

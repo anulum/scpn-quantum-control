@@ -3,10 +3,11 @@
 Extends the scpn-quantum MWPM decoder with physics-aware weighting:
 Knm graph distance instead of lattice distance for edge weights.
 """
+
 from __future__ import annotations
 
-import numpy as np
 import networkx as nx
+import numpy as np
 
 
 class SurfaceCode:
@@ -20,7 +21,7 @@ class SurfaceCode:
 
     def __init__(self, distance: int = 3):
         self.d = distance
-        self.num_data = 2 * distance ** 2
+        self.num_data = 2 * distance**2
         self.Hx, self.Hz = self._build_checks()
 
     def _build_checks(self) -> tuple[np.ndarray, np.ndarray]:
@@ -67,7 +68,7 @@ class MWPMDecoder:
         """Decode syndrome -> correction vector of length 2*d^2."""
         defects = np.where(syndrome == 1)[0]
         if len(defects) == 0:
-            return np.zeros(2 * self.d ** 2, dtype=np.int8)
+            return np.zeros(2 * self.d**2, dtype=np.int8)
         if len(defects) % 2 == 1:
             defects = np.append(defects, defects[0])
 
@@ -79,7 +80,7 @@ class MWPMDecoder:
 
         matching = nx.max_weight_matching(G, maxcardinality=True)
 
-        correction = np.zeros(2 * self.d ** 2, dtype=np.int8)
+        correction = np.zeros(2 * self.d**2, dtype=np.int8)
         for i, j in matching:
             path = self._shortest_path(defects[i], defects[j])
             for qubit in path:
@@ -95,7 +96,11 @@ class MWPMDecoder:
         dc = min(abs(c1 - c2), d - abs(c1 - c2))
         base_dist = dr + dc
 
-        if self.knm_weights is not None and u < len(self.knm_weights) and v < len(self.knm_weights):
+        if (
+            self.knm_weights is not None
+            and u < len(self.knm_weights)
+            and v < len(self.knm_weights)
+        ):
             knm_factor = 1.0 / (1.0 + self.knm_weights[u, v])
             return max(1, int(base_dist * knm_factor))
         return base_dist
@@ -146,7 +151,9 @@ class ControlQEC:
         self.code = SurfaceCode(distance)
         self.decoder = MWPMDecoder(distance, knm_weights)
 
-    def simulate_errors(self, p_error: float, rng: np.random.Generator | None = None) -> tuple[np.ndarray, np.ndarray]:
+    def simulate_errors(
+        self, p_error: float, rng: np.random.Generator | None = None
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Simulate independent X and Z errors with probability p_error."""
         if rng is None:
             rng = np.random.default_rng()
@@ -168,8 +175,8 @@ class ControlQEC:
         corr_x = self.decoder.decode(syn_z)
         corr_z = self.decoder.decode(syn_x)
 
-        residual_x = (err_x ^ corr_x)
-        residual_z = (err_z ^ corr_z)
+        residual_x = err_x ^ corr_x
+        residual_z = err_z ^ corr_z
 
         new_syn_z = (self.code.Hx @ residual_x) % 2
         new_syn_x = (self.code.Hz @ residual_z) % 2

@@ -7,17 +7,35 @@ Kuramoto <-> XY mapping:
   K[i,j]*sin(theta_j - theta_i)  <=>  -J_ij*(X_i X_j + Y_i Y_j)
   omega_i                         <=>  -h_i * Z_i
 """
+
 from __future__ import annotations
 
 import numpy as np
-from qiskit.circuit import QuantumCircuit, ParameterVector
+from qiskit.circuit import ParameterVector, QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp
 
 # Paper 27, Table 1: canonical natural frequencies (rad/s)
-OMEGA_N_16 = np.array([
-    1.329, 2.610, 0.844, 1.520, 0.710, 3.780, 1.055, 0.625,
-    2.210, 1.740, 0.480, 3.210, 0.915, 1.410, 2.830, 0.991,
-], dtype=np.float64)
+OMEGA_N_16 = np.array(
+    [
+        1.329,
+        2.610,
+        0.844,
+        1.520,
+        0.710,
+        3.780,
+        1.055,
+        0.625,
+        2.210,
+        1.740,
+        0.480,
+        3.210,
+        0.915,
+        1.410,
+        2.830,
+        0.991,
+    ],
+    dtype=np.float64,
+)
 
 
 def build_knm_paper27(
@@ -42,9 +60,9 @@ def build_knm_paper27(
 
     # Paper 27 S4.3 cross-hierarchy boosts
     if L > 15:
-        K[0, 15] = K[15, 0] = max(K[0, 15], 0.05)   # L1-L16
+        K[0, 15] = K[15, 0] = max(K[0, 15], 0.05)  # L1-L16
     if L > 6:
-        K[4, 6] = K[6, 4] = max(K[4, 6], 0.15)      # L5-L7
+        K[4, 6] = K[6, 4] = max(K[4, 6], 0.15)  # L5-L7
 
     return K
 
@@ -84,9 +102,7 @@ def knm_to_hamiltonian(K: np.ndarray, omega: np.ndarray) -> SparsePauliOp:
     return SparsePauliOp(list(labels), list(coeffs)).simplify()
 
 
-def knm_to_ansatz(
-    K: np.ndarray, reps: int = 2, threshold: float = 0.01
-) -> QuantumCircuit:
+def knm_to_ansatz(K: np.ndarray, reps: int = 2, threshold: float = 0.01) -> QuantumCircuit:
     """Build physics-informed ansatz: CZ entanglement only between Knm-connected pairs.
 
     Pattern from QUANTUM_LAB script 16 (PhysicsInformedAnsatz).

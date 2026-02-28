@@ -1,9 +1,9 @@
 """Tests for qsnn/qstdp.py."""
-import numpy as np
-import pytest
 
-from scpn_quantum_control.qsnn.qsynapse import QuantumSynapse
+import numpy as np
+
 from scpn_quantum_control.qsnn.qstdp import QuantumSTDP
+from scpn_quantum_control.qsnn.qsynapse import QuantumSynapse
 
 
 def test_no_update_without_pre_spike():

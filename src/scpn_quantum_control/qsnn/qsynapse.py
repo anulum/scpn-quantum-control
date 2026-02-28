@@ -3,6 +3,7 @@
 Classical BitstreamSynapse multiplies via AND gate: P(out) = P(pre)*P(weight).
 Quantum analog: CRy(theta_w) on post qubit controlled by pre qubit.
 """
+
 from __future__ import annotations
 
 import numpy as np

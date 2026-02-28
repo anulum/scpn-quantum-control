@@ -1,9 +1,9 @@
 """Tests for phase/phase_vqe.py."""
-import numpy as np
-import pytest
 
+import numpy as np
+
+from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.phase.phase_vqe import PhaseVQE
-from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27, OMEGA_N_16
 
 
 def test_solve_returns_energy():

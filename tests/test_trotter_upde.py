@@ -1,9 +1,7 @@
 """Tests for phase/trotter_upde.py."""
-import numpy as np
-import pytest
 
-from scpn_quantum_control.phase.trotter_upde import QuantumUPDESolver
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.phase.trotter_upde import QuantumUPDESolver
 
 
 def test_default_16_layers():

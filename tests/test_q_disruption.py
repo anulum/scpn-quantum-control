@@ -1,4 +1,5 @@
 """Tests for control/q_disruption.py."""
+
 import numpy as np
 import pytest
 

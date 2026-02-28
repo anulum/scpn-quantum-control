@@ -4,6 +4,7 @@ Classical STDP updates weights from spike correlations.  Quantum STDP
 computes d<Z>/d(theta) using the parameter-shift rule, then nudges
 synapse angle to increase/decrease post-synaptic firing correlation.
 """
+
 from __future__ import annotations
 
 import numpy as np
