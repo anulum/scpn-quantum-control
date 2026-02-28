@@ -228,7 +228,7 @@ def classical_brute_mpc(
     """
     n_actions = 2**horizon
     best_cost = np.inf
-    best_actions = np.zeros(horizon, dtype=int)
+    best_actions: np.ndarray = np.zeros(horizon, dtype=int)
     all_costs = np.zeros(n_actions)
 
     b_norm = float(np.linalg.norm(B_matrix))

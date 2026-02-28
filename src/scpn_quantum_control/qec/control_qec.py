@@ -23,6 +23,8 @@ class SurfaceCode:
         """Build toric code check matrices for given code distance."""
         self.d = distance
         self.num_data = 2 * distance**2
+        self.Hx: np.ndarray
+        self.Hz: np.ndarray
         self.Hx, self.Hz = self._build_checks()
 
     def _build_checks(self) -> tuple[np.ndarray, np.ndarray]:
@@ -86,7 +88,7 @@ class MWPMDecoder:
 
         matching = nx.max_weight_matching(G, maxcardinality=True)
 
-        correction = np.zeros(2 * self.d**2, dtype=np.int8)
+        correction: np.ndarray = np.zeros(2 * self.d**2, dtype=np.int8)
         for i, j in matching:
             path = self._shortest_path(defects[i], defects[j], dual=dual)
             for qubit in path:
