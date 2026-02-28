@@ -418,6 +418,79 @@ def test_exact_diag_sparse_path():
 # ── Endianness agreement tests ──
 
 
+def test_bell_test_4q_on_simulator(sim_runner):
+    """CHSH Bell test: S values are finite, S_sim shows entanglement."""
+    import scpn_quantum_control.phase.phase_vqe as vqe_mod
+    from scpn_quantum_control.hardware.experiments import bell_test_4q_experiment
+
+    original = vqe_mod.minimize
+
+    def limited_minimize(fn, x0, **kwargs):
+        kwargs.setdefault("options", {})["maxiter"] = 30
+        return original(fn, x0, **kwargs)
+
+    vqe_mod.minimize = limited_minimize
+    try:
+        result = bell_test_4q_experiment(sim_runner, shots=500, maxiter=30)
+        assert result["experiment"] == "bell_test_4q"
+        assert np.isfinite(result["S_hw"])
+        assert np.isfinite(result["S_sim"])
+        assert result["S_sim"] > 0
+        assert "correlators_hw" in result
+        assert "correlators_sim" in result
+    finally:
+        vqe_mod.minimize = original
+
+
+def test_correlator_4q_on_simulator(sim_runner):
+    """ZZ correlator: 4×4 symmetric matrix with finite Frobenius error."""
+    import scpn_quantum_control.phase.phase_vqe as vqe_mod
+    from scpn_quantum_control.hardware.experiments import correlator_4q_experiment
+
+    original = vqe_mod.minimize
+
+    def limited_minimize(fn, x0, **kwargs):
+        kwargs.setdefault("options", {})["maxiter"] = 30
+        return original(fn, x0, **kwargs)
+
+    vqe_mod.minimize = limited_minimize
+    try:
+        result = correlator_4q_experiment(sim_runner, shots=500, maxiter=30)
+        assert result["experiment"] == "correlator_4q"
+        corr = np.array(result["corr_hw"])
+        assert corr.shape == (4, 4)
+        np.testing.assert_allclose(corr, corr.T, atol=1e-10)
+        assert np.isfinite(result["frobenius_error"])
+        assert result["max_correlation_hw"] > 0
+    finally:
+        vqe_mod.minimize = original
+
+
+def test_qkd_qber_4q_on_simulator(sim_runner):
+    """QKD QBER: error rates in [0,1], dict keys present."""
+    import scpn_quantum_control.phase.phase_vqe as vqe_mod
+    from scpn_quantum_control.hardware.experiments import qkd_qber_4q_experiment
+
+    original = vqe_mod.minimize
+
+    def limited_minimize(fn, x0, **kwargs):
+        kwargs.setdefault("options", {})["maxiter"] = 30
+        return original(fn, x0, **kwargs)
+
+    vqe_mod.minimize = limited_minimize
+    try:
+        result = qkd_qber_4q_experiment(sim_runner, shots=500, maxiter=30)
+        assert result["experiment"] == "qkd_qber_4q"
+        assert 0.0 <= result["qber_z_hw"] <= 1.0
+        assert 0.0 <= result["qber_x_hw"] <= 1.0
+        assert 0.0 <= result["qber_sim"] <= 1.0
+        assert isinstance(result["secure_hw"], bool)
+        assert isinstance(result["secure_sim"], bool)
+        assert np.isfinite(result["key_rate_hw"])
+    finally:
+        vqe_mod.minimize = original
+
+
 def test_classical_evolution_matches_qiskit():
     """Classical expm evolution R must match Qiskit Statevector evolution.
 

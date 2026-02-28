@@ -3,7 +3,7 @@
 Each experiment function takes a HardwareRunner and returns results + classical
 reference for comparison. Designed to fit within the 10-min/month free tier.
 
-17 experiments total. See docs/EXPERIMENT_ROADMAP.md for budget allocation.
+20 experiments total. See docs/EXPERIMENT_ROADMAP.md for budget allocation.
 """
 
 from __future__ import annotations
@@ -21,6 +21,13 @@ from ..bridge.knm_hamiltonian import (
     knm_to_ansatz,
     knm_to_hamiltonian,
 )
+from ..crypto.entanglement_qkd import (
+    bell_inequality_test,
+    correlator_matrix,
+    scpn_qkd_protocol,
+)
+from ..crypto.knm_key import estimate_qber, extract_raw_key, prepare_key_state
+from ..crypto.noise_analysis import devetak_winter_rate
 from .classical import (
     classical_brute_mpc,
     classical_exact_diag,
@@ -976,6 +983,198 @@ def vqe_landscape_experiment(runner, shots: int = 10000, n_samples: int = 50) ->
     }
 
 
+def _correlator_from_counts(counts: dict, qubit_a: int, qubit_b: int) -> float:
+    """Compute <A B> from 2-qubit marginal of multi-qubit counts.
+
+    E(A,B) = (N_same - N_diff) / N_total where same/diff refers to
+    the measurement outcomes of qubits a and b.
+    """
+    n_same = 0
+    n_diff = 0
+    for bitstring, count in counts.items():
+        bits = bitstring.replace(" ", "")
+        bit_a = int(bits[-(qubit_a + 1)])
+        bit_b = int(bits[-(qubit_b + 1)])
+        if bit_a == bit_b:
+            n_same += count
+        else:
+            n_diff += count
+    total = n_same + n_diff
+    if total == 0:
+        return 0.0
+    return (n_same - n_diff) / total
+
+
+def bell_test_4q_experiment(runner, shots: int = 10000, maxiter: int = 100) -> dict:
+    """CHSH Bell test on 4-qubit K_nm ground state.
+
+    Certifies entanglement between qubits 0 and 1 via CHSH inequality
+    violation. S > 2 proves non-classical correlations on hardware.
+    ~20s QPU budget (4 circuits × ~5s each).
+    """
+    n = 4
+    K = build_knm_paper27(L=n)
+    omega = OMEGA_N_16[:n]
+
+    print(f"\n=== Bell test 4q, maxiter={maxiter} ===")
+
+    key_state = prepare_key_state(K, omega, ansatz_reps=2, maxiter=maxiter)
+    base_circuit = key_state["circuit"]
+    sv = key_state["statevector"]
+
+    # 4 measurement circuits: ZZ, ZX, XZ, XX on qubits 0,1
+    qc_zz = base_circuit.copy()
+    qc_zz.measure_all()
+
+    qc_zx = base_circuit.copy()
+    qc_zx.h(1)
+    qc_zx.measure_all()
+
+    qc_xz = base_circuit.copy()
+    qc_xz.h(0)
+    qc_xz.measure_all()
+
+    qc_xx = base_circuit.copy()
+    qc_xx.h(0)
+    qc_xx.h(1)
+    qc_xx.measure_all()
+
+    hw_results = runner.run_sampler([qc_zz, qc_zx, qc_xz, qc_xx], shots=shots, name="bell_test_4q")
+
+    e_zz = _correlator_from_counts(hw_results[0].counts, 0, 1)
+    e_zx = _correlator_from_counts(hw_results[1].counts, 0, 1)
+    e_xz = _correlator_from_counts(hw_results[2].counts, 0, 1)
+    e_xx = _correlator_from_counts(hw_results[3].counts, 0, 1)
+
+    s_hw = abs(e_zz - e_zx + e_xz + e_xx)
+
+    sim_bell = bell_inequality_test(sv, 0, 1, n)
+    s_sim = sim_bell["S"]
+
+    print(f"  S_hw={s_hw:.4f}, S_sim={s_sim:.4f}")
+
+    return {
+        "experiment": "bell_test_4q",
+        "S_hw": s_hw,
+        "S_sim": s_sim,
+        "violates_classical_hw": s_hw > 2.0,
+        "violates_classical_sim": sim_bell["violates_classical"],
+        "correlators_hw": {"ZZ": e_zz, "ZX": e_zx, "XZ": e_xz, "XX": e_xx},
+        "correlators_sim": sim_bell["correlators"],
+    }
+
+
+def correlator_4q_experiment(runner, shots: int = 10000, maxiter: int = 100) -> dict:
+    """ZZ cross-correlation of 4-qubit K_nm ground state on hardware.
+
+    Validates that the K_ij coupling topology maps to measurable quantum
+    correlations. Connected correlation C[i,j] = <Z_i Z_j> - <Z_i><Z_j>.
+    ~25s QPU budget (1 circuit).
+    """
+    n = 4
+    K = build_knm_paper27(L=n)
+    omega = OMEGA_N_16[:n]
+
+    print(f"\n=== Correlator 4q, maxiter={maxiter} ===")
+
+    key_state = prepare_key_state(K, omega, ansatz_reps=2, maxiter=maxiter)
+    base_circuit = key_state["circuit"]
+    sv = key_state["statevector"]
+
+    qc_z = base_circuit.copy()
+    qc_z.measure_all()
+    hw_results = runner.run_sampler(qc_z, shots=shots, name="correlator_4q")
+    counts = hw_results[0].counts
+
+    # Per-qubit <Z_i> from counts
+    exp_z = _expectation_per_qubit(counts, n)
+
+    # <Z_i Z_j> for all pairs
+    corr_hw = np.zeros((n, n))
+    for i in range(n):
+        for j in range(n):
+            if i == j:
+                corr_hw[i, j] = 1.0 - exp_z[i] ** 2
+            else:
+                zz = _correlator_from_counts(counts, i, j)
+                corr_hw[i, j] = zz - exp_z[i] * exp_z[j]
+
+    # Simulator reference: correlator_matrix gives alice×bob block
+    corr_sim_block = correlator_matrix(sv, [0, 1], [2, 3])
+    corr_sim = np.zeros((n, n))
+    corr_sim[:2, 2:] = corr_sim_block
+    corr_sim[2:, :2] = corr_sim_block.T
+
+    frob_error = float(np.linalg.norm(corr_hw - corr_sim))
+    max_corr = float(np.max(np.abs(corr_hw)))
+
+    print(f"  frobenius_error={frob_error:.4f}, max_correlation={max_corr:.4f}")
+
+    return {
+        "experiment": "correlator_4q",
+        "corr_hw": corr_hw.tolist(),
+        "corr_sim": corr_sim.tolist(),
+        "frobenius_error": frob_error,
+        "max_correlation_hw": max_corr,
+    }
+
+
+def qkd_qber_4q_experiment(runner, shots: int = 10000, maxiter: int = 100) -> dict:
+    """QBER measurement from hardware for BB84-family security validation.
+
+    Measures in Z and X bases, extracts Alice (qubits 0,1) and Bob (qubits 2,3)
+    raw keys, computes QBER. Secure if QBER < 0.11 (BB84 threshold).
+    ~15s QPU budget (2 circuits).
+    """
+    n = 4
+    K = build_knm_paper27(L=n)
+    omega = OMEGA_N_16[:n]
+
+    print(f"\n=== QKD QBER 4q, maxiter={maxiter} ===")
+
+    key_state = prepare_key_state(K, omega, ansatz_reps=2, maxiter=maxiter)
+    base_circuit = key_state["circuit"]
+
+    # Z-basis and X-basis measurement circuits
+    qc_z = base_circuit.copy()
+    qc_z.measure_all()
+
+    qc_x = base_circuit.copy()
+    for q in range(n):
+        qc_x.h(q)
+    qc_x.measure_all()
+
+    hw_results = runner.run_sampler([qc_z, qc_x], shots=shots, name="qkd_qber_4q")
+
+    alice_z = extract_raw_key(hw_results[0].counts, "Z", [0, 1])
+    bob_z = extract_raw_key(hw_results[0].counts, "Z", [2, 3])
+    alice_x = extract_raw_key(hw_results[1].counts, "X", [0, 1])
+    bob_x = extract_raw_key(hw_results[1].counts, "X", [2, 3])
+
+    qber_z_hw = estimate_qber(alice_z, bob_z)
+    qber_x_hw = estimate_qber(alice_x, bob_x)
+
+    # Simulator reference
+    sim_result = scpn_qkd_protocol(K, omega, [0, 1], [2, 3], shots=shots)
+    qber_sim = sim_result["qber"]
+
+    rate_z = devetak_winter_rate(qber_z_hw)
+    rate_x = devetak_winter_rate(qber_x_hw)
+
+    print(f"  QBER_Z={qber_z_hw:.4f}, QBER_X={qber_x_hw:.4f}, QBER_sim={qber_sim:.4f}")
+    print(f"  key_rate_z={rate_z:.4f}, key_rate_x={rate_x:.4f}")
+
+    return {
+        "experiment": "qkd_qber_4q",
+        "qber_z_hw": qber_z_hw,
+        "qber_x_hw": qber_x_hw,
+        "qber_sim": qber_sim,
+        "secure_hw": qber_z_hw < 0.11 and qber_x_hw < 0.11,
+        "secure_sim": qber_sim < 0.11,
+        "key_rate_hw": max(rate_z, rate_x),
+    }
+
+
 ALL_EXPERIMENTS = {
     "kuramoto_4osc": kuramoto_4osc_experiment,
     "kuramoto_8osc": kuramoto_8osc_experiment,
@@ -994,4 +1193,7 @@ ALL_EXPERIMENTS = {
     "zne_higher_order": zne_higher_order_experiment,
     "decoherence_scaling": decoherence_scaling_experiment,
     "vqe_landscape": vqe_landscape_experiment,
+    "bell_test_4q": bell_test_4q_experiment,
+    "correlator_4q": correlator_4q_experiment,
+    "qkd_qber_4q": qkd_qber_4q_experiment,
 }
