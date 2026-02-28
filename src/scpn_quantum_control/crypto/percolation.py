@@ -113,9 +113,7 @@ def key_rate_per_channel(conc_map: np.ndarray) -> np.ndarray:
             C = conc_map[i, j]
             if C < 1e-10:
                 continue
-            # Concurrence → QBER
             e = (1 - np.sqrt(max(0, 1 - C**2))) / 2
-            # Binary entropy
             if e < 1e-15 or e > 1 - 1e-15:
                 h_e = 0.0
             else:
@@ -124,3 +122,138 @@ def key_rate_per_channel(conc_map: np.ndarray) -> np.ndarray:
             rates[i, j] = r
             rates[j, i] = r
     return rates
+
+
+# --- Network Robustness ---
+
+
+def robustness_random_removal(K: np.ndarray, n_trials: int = 50) -> dict:
+    """Test connectivity under random edge removal.
+
+    Removes edges one at a time in random order. Returns the fraction
+    of edges that can be removed before the graph disconnects.
+
+    This models random noise or calibration drift degrading K_nm entries.
+    """
+    n = K.shape[0]
+    edges = [(i, j, K[i, j]) for i in range(n) for j in range(i + 1, n) if K[i, j] > 0]
+    n_edges = len(edges)
+    if n_edges == 0:
+        return {"mean_resilience": 0.0, "min_resilience": 0.0, "n_edges": 0}
+
+    rng = np.random.default_rng(42)
+    resiliences = []
+
+    for _ in range(n_trials):
+        order = rng.permutation(n_edges)
+        K_test = K.copy()
+        disconnected_at = n_edges
+        for step, idx in enumerate(order):
+            i, j, _ = edges[idx]
+            K_test[i, j] = 0
+            K_test[j, i] = 0
+            D = np.diag(K_test.sum(axis=1))
+            L = D - K_test
+            eigvals = np.sort(np.linalg.eigvalsh(L))
+            if eigvals[1] < 1e-10:
+                disconnected_at = step + 1
+                break
+        resiliences.append(disconnected_at / n_edges)
+
+    return {
+        "mean_resilience": float(np.mean(resiliences)),
+        "min_resilience": float(np.min(resiliences)),
+        "n_edges": n_edges,
+    }
+
+
+def robustness_targeted_removal(K: np.ndarray) -> dict:
+    """Test connectivity under targeted removal of strongest edges.
+
+    Removes edges in decreasing weight order — worst-case attack.
+    Returns the number of edges removed before disconnection.
+    """
+    n = K.shape[0]
+    edges = [(i, j, K[i, j]) for i in range(n) for j in range(i + 1, n) if K[i, j] > 0]
+    edges.sort(key=lambda e: e[2], reverse=True)
+
+    K_test = K.copy()
+    for step, (i, j, _) in enumerate(edges):
+        K_test[i, j] = 0
+        K_test[j, i] = 0
+        D = np.diag(K_test.sum(axis=1))
+        L = D - K_test
+        eigvals = np.sort(np.linalg.eigvalsh(L))
+        if eigvals[1] < 1e-10:
+            return {
+                "edges_to_disconnect": step + 1,
+                "fraction": (step + 1) / len(edges) if edges else 0,
+                "weakest_removed": float(edges[step][2]),
+            }
+
+    return {
+        "edges_to_disconnect": len(edges),
+        "fraction": 1.0,
+        "weakest_removed": float(edges[-1][2]) if edges else 0,
+    }
+
+
+# --- Entanglement Routing ---
+
+
+def best_entanglement_path(
+    K: np.ndarray,
+    source: int,
+    target: int,
+) -> dict:
+    """Find the path from source to target maximizing minimum edge weight.
+
+    In entanglement routing, the bottleneck link determines the path's
+    entanglement fidelity. Uses a modified Dijkstra with max-min metric.
+
+    Returns dict with 'path' (list of node indices) and 'bottleneck' (float).
+    """
+    import heapq
+
+    n = K.shape[0]
+    # Max-min path: invert to find path that maximizes the minimum edge
+    # Use negative weights with Dijkstra to find max-bottleneck path
+    best = np.full(n, -np.inf)
+    best[source] = np.inf
+    parent = [-1] * n
+    visited = set()
+
+    # Priority queue: (-bottleneck, node) — negate for min-heap
+    pq = [(-np.inf, source)]
+
+    while pq:
+        neg_bw, u = heapq.heappop(pq)
+        if u in visited:
+            continue
+        visited.add(u)
+        bw = -neg_bw
+
+        if u == target:
+            break
+
+        for v in range(n):
+            if v == u or v in visited or K[u, v] <= 0:
+                continue
+            new_bw = min(bw, K[u, v])
+            if new_bw > best[v]:
+                best[v] = new_bw
+                parent[v] = u
+                heapq.heappush(pq, (-new_bw, v))
+
+    if best[target] == -np.inf:
+        return {"path": [], "bottleneck": 0.0}
+
+    # Reconstruct path
+    path = []
+    node = target
+    while node != -1:
+        path.append(node)
+        node = parent[node]
+    path.reverse()
+
+    return {"path": path, "bottleneck": float(best[target])}

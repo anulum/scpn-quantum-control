@@ -13,4 +13,5 @@ __all__ = [
     "entanglement_qkd",
     "percolation",
     "hierarchical_keys",
+    "noise_analysis",
 ]
