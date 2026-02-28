@@ -21,7 +21,7 @@ for the full K_nm formula and parameter values.
 ## Headline Results
 
 1. **VQE ground state**: 0.05% error on real hardware (publication-quality)
-2. **First 16-layer SCPN quantum simulation**: per-layer structure preserved
+2. **16-layer UPDE snapshot**: per-layer structure partially preserved (L12 collapse, L3 resilience)
 3. **12-point decoherence curve**: depth 5→770, coherence wall at depth 250-400
 4. **Trotter depth tradeoff**: shallow circuits beat accurate circuits on NISQ
 5. **Readout noise floor**: 0.1% error at depth 5 (near-perfect readout)
@@ -116,7 +116,7 @@ R approaches noise floor (~0.1) at depth >1000.
 
 ### 5. UPDE 16-Layer Snapshot (Two Time Points)
 
-First quantum simulation of all 16 SCPN layers on real hardware.
+16-layer UPDE snapshot on real hardware (46% global error, NISQ-consistent).
 
 | dt   | Job                          | hw_R   | Classical R | Depth     |
 |------|------------------------------|--------|-------------|-----------|
@@ -206,6 +206,9 @@ All error in the scaling curve comes from gate decoherence during evolution.
 - vqe_8q on hardware (56 CZ gates, within coherence)
 - UPDE-16 with dynamical decoupling (reduce idle qubit decoherence)
 - Repeat noise baseline to track calibration drift
+- `bell_test_4q`: CHSH violation certifies K_nm entanglement (~20s QPU)
+- `correlator_4q`: ZZ cross-correlation validates coupling topology (~25s QPU)
+- `qkd_qber_4q`: QBER from hardware vs BB84 threshold (~15s QPU)
 
 
 ## Hardware Details

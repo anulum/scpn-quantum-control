@@ -3,6 +3,21 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.5.0] - 2026-03-01
+
+### Added
+
+- **3 crypto hardware experiments**: `bell_test_4q` (CHSH violation on hardware), `correlator_4q` (ZZ cross-correlation topology validation), `qkd_qber_4q` (QBER from hardware vs BB84 threshold)
+- **`_correlator_from_counts()` helper**: extracts 2-qubit correlator E(A,B) from 4-qubit measurement counts
+- **noise_analysis.py**: `devetak_winter_rate()` key rate from Devetak-Winter bound
+- **3 simulator tests**: bell test, correlator, QKD QBER — all using VQE monkey-patching pattern
+
+### Changed
+
+- **Experiment count**: 17 → 20 (3 crypto experiments added to `ALL_EXPERIMENTS`)
+- **Test count**: 408 → 411
+- **Version bump**: 0.4.0 → 0.5.0 across pyproject.toml, CITATION.cff, badges
+
 ## [0.4.0] - 2026-02-28
 
 ### Added
@@ -191,6 +206,6 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **qec/**: Toric surface code + MWPM decoder with Knm-weighted edges (`control_qec.py`)
 - **hardware/**: IBM Quantum runner for ibm_fez Heron r2 (`runner.py`, `experiments.py`, `classical.py`)
 - 88 unit tests, 4 example scripts, 19 hardware result files
-- Hardware validation on ibm_fez: VQE 0.05% error, 12-point decoherence curve, first 16-layer SCPN quantum simulation
+- Hardware validation on ibm_fez: VQE 0.05% error, 12-point decoherence curve, 16-layer UPDE snapshot
 - CI workflow with Python 3.9-3.12 matrix, coverage, ruff lint
 - Full documentation: architecture, API reference, hardware results

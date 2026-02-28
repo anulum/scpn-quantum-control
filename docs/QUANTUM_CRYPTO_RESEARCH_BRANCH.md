@@ -24,20 +24,22 @@ physical coupling matrix.
 
 ```
 scpn_quantum_control/
-└── crypto/                    # NEW: Quantum cryptography research
+└── crypto/                    # Topology-authenticated quantum cryptography
     ├── __init__.py
     ├── knm_key.py             # K_nm → key material pipeline
     ├── topology_auth.py       # Spectral fingerprint authentication
     ├── entanglement_qkd.py    # Entanglement-based key distribution
     ├── percolation.py         # K_nm entanglement percolation analysis
-    └── hierarchical_keys.py   # Multi-layer key derivation from SCPN
+    ├── hierarchical_keys.py   # Multi-layer key derivation from SCPN
+    └── noise_analysis.py      # Devetak-Winter key rates, noise channels
 
 tests/
 ├── test_knm_key.py
 ├── test_topology_auth.py
 ├── test_entanglement_qkd.py
 ├── test_percolation.py
-└── test_hierarchical_keys.py
+├── test_hierarchical_keys.py
+└── test_noise_analysis.py
 ```
 
 ## Module Specifications
@@ -159,14 +161,15 @@ Master key: hash(K_nm_full ‖ R_global)
 temporal entropy. Different time windows produce different keys
 from the same K_nm — natural key rotation without re-keying.
 
-## Hardware Experiments (Future)
+## Hardware Experiments
 
-| Experiment | Qubits | Description |
-|-----------|--------|-------------|
-| `qkd_4q_simulator` | 4 | Proof-of-concept: 2+2 qubit QKD on Aer |
-| `correlator_8q` | 8 | Cross-correlation matrix on ibm_fez |
-| `bell_test_4q` | 4 | CHSH violation with K_nm ground state |
-| `percolation_16q` | 16 | Full K_nm entanglement map on hardware |
+| Experiment | Qubits | Status | Description |
+|-----------|--------|--------|-------------|
+| `bell_test_4q` | 4 | **Implemented (v0.5.0)** | CHSH violation with K_nm ground state on hardware |
+| `correlator_4q` | 4 | **Implemented (v0.5.0)** | ZZ cross-correlation validates K_ij topology |
+| `qkd_qber_4q` | 4 | **Implemented (v0.5.0)** | QBER from hardware vs BB84 threshold (< 0.11) |
+| `correlator_8q` | 8 | Planned | Cross-correlation matrix on ibm_fez |
+| `percolation_16q` | 16 | Planned | Full K_nm entanglement map on hardware |
 
 ## Dependencies on Existing Modules
 
@@ -180,21 +183,19 @@ from the same K_nm — natural key rotation without re-keying.
 
 ## Research Timeline
 
-**Phase 1 (Module scaffolding)**:
-- `knm_key.py` + `topology_auth.py` — pure-state simulator
-- Tests verifying QBER < 11% on ideal simulator
+**Phase 1 — Complete**: All 6 crypto modules implemented with full test coverage.
+`knm_key`, `topology_auth`, `entanglement_qkd`, `percolation`, `hierarchical_keys`, `noise_analysis`.
 
-**Phase 2 (Protocol validation)**:
-- `entanglement_qkd.py` — full SCPN-QKD protocol
-- Bell inequality verification on ground state
-- Noise model: QBER under Heron r2 noise
+**Phase 2 — Complete**: Full SCPN-QKD protocol on simulator. Bell inequality
+verification, QBER estimation, Devetak-Winter key rates under noise.
 
-**Phase 3 (Network analysis)**:
-- `percolation.py` + `hierarchical_keys.py`
-- Entanglement map of full 16-layer K_nm
-- Key rate optimization over coupling topology
+**Phase 3 — Complete**: Entanglement percolation on K_nm graph, hierarchical
+key derivation from 16-layer SCPN structure.
 
-**Phase 4 (Hardware)**:
-- 4-qubit QKD on ibm_fez
-- 8-qubit correlator measurement
-- 16-qubit percolation experiment
+**Phase 4 — In progress**: 3 hardware experiment wrappers implemented (v0.5.0).
+Awaiting March QPU budget for ibm_fez execution.
+- `bell_test_4q`: CHSH S-value from hardware counts
+- `correlator_4q`: 4x4 connected correlation matrix
+- `qkd_qber_4q`: Z-basis and X-basis QBER
+
+**Phase 5 — Planned**: 8-qubit correlator, 16-qubit percolation on hardware.

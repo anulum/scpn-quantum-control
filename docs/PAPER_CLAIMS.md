@@ -17,11 +17,12 @@ results emerge: (1) a physics-informed VQE ansatz whose entanglement topology
 mirrors the coupling graph achieves 0.05% ground-state energy error on 4 qubits,
 matching the best reported VQE accuracies on comparable Hamiltonians; (2) a
 12-point decoherence scaling curve from depth 5 to 770 identifies three distinct
-regimes with a coherence wall at depth 250-400; (3) the first quantum simulation
-of a 16-oscillator system reveals per-oscillator coherence that correlates with
-coupling strength (Spearman rho = 0.68, p < 0.005); (4) a Trotter-depth tradeoff
-shows single-step evolution outperforms multi-step on current hardware; (5)
-QAOA-based model predictive control finds lower-cost action sequences than
+regimes with a coherence wall at depth 250-400; (3) a 16-oscillator snapshot
+preserves per-layer structure at extremes (L12 collapse, L3 resilience) despite
+46% global error — overall Spearman rho = -0.13 indicates hardware noise
+dominates over coupling topology for mid-range layers; (4) a Trotter-depth
+tradeoff shows single-step evolution outperforms multi-step on current hardware;
+(5) QAOA-based model predictive control finds lower-cost action sequences than
 brute-force search. All experiments ran within a 10-minute free-tier QPU budget.
 
 
@@ -82,7 +83,7 @@ useful for planning future experiments.
 - Repeat noise baseline monthly to track calibration drift (first data point: March)
 
 
-## Claim 3: 16-Oscillator Per-Layer Coherence Correlates with Coupling Strength
+## Claim 3: 16-Oscillator Snapshot Preserves Per-Layer Structure at Extremes
 
 **Data**: `results/hw_upde_16_snapshot.json`
 
@@ -235,6 +236,31 @@ Future work should use simulator for optimization, hardware for final evaluation
 | **Total** | **~305** | Half of monthly budget |
 
 
+## Claim 6 (Crypto): K_nm Topology-Authenticated QKD
+
+**Status**: Simulator-validated, hardware experiment wrappers implemented (v0.5.0).
+
+**Thesis**: The SCPN coupling matrix K_nm encodes oscillator topology as quantum
+entanglement structure under the Kuramoto-XY isomorphism. Parties sharing K_nm
+generate correlated measurement statistics from H(K_nm)'s ground state — an
+eavesdropper without K_nm cannot reconstruct these correlations.
+
+**Hardware experiments** (awaiting March QPU budget):
+- `bell_test_4q`: CHSH S-value from 4 measurement basis combinations
+- `correlator_4q`: 4x4 connected ZZ correlation matrix
+- `qkd_qber_4q`: Z-basis and X-basis QBER vs BB84 threshold (< 0.11)
+
+**What strengthens this for publication**:
+- Demonstrate CHSH violation (S > 2) on hardware with optimized VQE convergence
+- Show QBER < 0.11 on hardware (positive Devetak-Winter key rate)
+- Compare hardware correlation matrix to exact correlator matrix (Frobenius error)
+- Scale to 8-qubit correlator for richer topology validation
+
+**Separate publication track**: These results are independent of the phase
+dynamics paper (Claims 1-5) and could form a standalone letter to PRA/PRL
+on topology-authenticated quantum key distribution.
+
+
 ## Timeline
 
 | Milestone | Target |
@@ -242,6 +268,7 @@ Future work should use simulator for optimization, hardware for final evaluation
 | March experiments complete | 2026-03-15 |
 | Spearman correlation + fit analysis | 2026-03-20 |
 | All 5 figures generated | 2026-03-25 |
-| Draft manuscript | 2026-04-15 |
+| Draft manuscript (phase dynamics) | 2026-04-15 |
+| Crypto hardware data collected | 2026-04-01 |
 | Internal review | 2026-04-30 |
 | Submission | 2026-05-15 |

@@ -82,9 +82,28 @@ result = solver.step(dt=0.05)
 print(f"R_global: {result['R_global']:.4f}")
 ```
 
+## 6. Crypto Bell test on simulator
+
+```python
+from scpn_quantum_control.hardware import HardwareRunner
+from scpn_quantum_control.hardware.experiments import bell_test_4q_experiment
+
+runner = HardwareRunner(use_simulator=True)
+runner.connect()
+
+result = bell_test_4q_experiment(runner, shots=10000, maxiter=100)
+print(f"S_hw:  {result['S_hw']:.4f}")
+print(f"S_sim: {result['S_sim']:.4f}")
+print(f"Violates classical (S>2): {result['violates_classical_hw']}")
+```
+
+The Bell test prepares the VQE ground state of H(K_nm), measures in 4 basis
+combinations (ZZ, ZX, XZ, XX), and checks whether the CHSH S-value exceeds
+the classical bound of 2.
+
 ## Available experiments
 
-17 pre-built experiments in `ALL_EXPERIMENTS`:
+20 pre-built experiments in `ALL_EXPERIMENTS`:
 
 ```python
 from scpn_quantum_control.hardware.experiments import ALL_EXPERIMENTS

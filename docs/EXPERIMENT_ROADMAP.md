@@ -2,9 +2,9 @@
 
 Backend: ibm_fez (Heron r2, 156 qubits)
 Budget: 10 min QPU / month (free tier)
-Repository: scpn-quantum-control v0.3.0
+Repository: scpn-quantum-control v0.5.0
 
-## Experiment Inventory (17 total)
+## Experiment Inventory (20 total)
 
 | # | Experiment | Qubits | Est. QPU | Month | Science Question |
 |---|-----------|--------|----------|-------|-----------------|
@@ -25,6 +25,9 @@ Repository: scpn-quantum-control v0.3.0
 | 15 | `vqe_8q` | 8 | 0s | — | Statevector only (Feb, done) |
 | 16 | `qaoa_mpc_4` | 4 | 20s | — | Binary MPC (Feb, done) |
 | 17 | `upde_16_snapshot` | 16 | 180s | — | 16-layer snapshot (Feb, done) |
+| 18 | `bell_test_4q` | 4 | ~20s | Mar | CHSH violation certifies K_nm entanglement |
+| 19 | `correlator_4q` | 4 | ~25s | Mar | ZZ cross-correlation validates K_ij topology |
+| 20 | `qkd_qber_4q` | 4 | ~15s | Mar | QBER from hardware vs BB84 threshold |
 
 
 ## March 2026 Plan (~370s QPU)

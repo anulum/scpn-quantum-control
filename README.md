@@ -6,8 +6,8 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://python.org)
 [![Qiskit 1.0+](https://img.shields.io/badge/qiskit-1.0%2B-6929C4.svg)](https://qiskit.org)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue.svg)](https://anulum.github.io/scpn-quantum-control)
-[![Tests: 405](https://img.shields.io/badge/tests-405%20passing-brightgreen.svg)]()
-[![Version: 0.4.0](https://img.shields.io/badge/version-0.4.0-orange.svg)]()
+[![Tests: 411](https://img.shields.io/badge/tests-411%20passing-brightgreen.svg)]()
+[![Version: 0.5.0](https://img.shields.io/badge/version-0.5.0-orange.svg)]()
 [![Hardware: ibm_fez](https://img.shields.io/badge/hardware-ibm__fez%20Heron%20r2-blueviolet.svg)]()
 
 The **Self-Consistent Phenomenological Network (SCPN)** models hierarchical
@@ -16,8 +16,8 @@ The Kuramoto model is isomorphic to the XY spin Hamiltonian — superconducting
 qubits simulate it natively via Trotterized time evolution. This repo implements
 that mapping: it compiles SCPN coupling parameters into Qiskit circuits and
 validates them on IBM Heron r2 hardware (156 qubits), achieving **0.05% VQE
-ground-state error** and the **first quantum simulation of all 16 SCPN layers**
-on real hardware.
+ground-state error** and the **first hardware attempt at a full 16-layer
+UPDE snapshot** (46% error at depth 770 — consistent with NISQ expectations).
 
 If you work on quantum simulation of coupled oscillators, NISQ benchmarking,
 or Kuramoto/XY physics, this repo gives you a tested pipeline from coupling
@@ -86,7 +86,7 @@ Full results with all 12 decoherence data points: [`results/HARDWARE_RESULTS.md`
 depth. On NISQ hardware, decoherence from the extra gates outweighs the
 Trotter error reduction. Optimal strategy: fewest reps that capture the physics.*
 
-- First quantum simulation of all 16 SCPN layers on real hardware — per-layer structure matches coupling topology
+- 16-layer UPDE snapshot on real hardware — per-layer structure partially tracks coupling topology (L12 collapse, L3 resilience at the extremes; Spearman rho = -0.13 across all layers)
 
 ![UPDE-16 per-layer expectations](figures/upde16_layer_bars.png)
 *Per-layer X-basis expectations from the 16-qubit UPDE snapshot on ibm_fez.
@@ -122,6 +122,13 @@ scpn_quantum_control/
 │   ├── knm_hamiltonian.py  Knm matrix -> SparsePauliOp compiler
 │   ├── spn_to_qcircuit.py  SPN topology -> quantum circuit
 │   └── sc_to_quantum.py    Bitstream probability <-> rotation angle
+├── crypto/         Topology-authenticated quantum cryptography
+│   ├── knm_key.py         K_nm → VQE ground state → key material
+│   ├── entanglement_qkd.py  SCPN-QKD protocol, CHSH Bell test
+│   ├── topology_auth.py   Spectral fingerprint authentication
+│   ├── percolation.py     Entanglement percolation on K_nm graph
+│   ├── hierarchical_keys.py  Multi-layer key derivation
+│   └── noise_analysis.py  Devetak-Winter key rates, noise channels
 ├── qec/            Quantum error correction
 │   └── control_qec.py     Toric code + MWPM decoder (Knm-weighted)
 ├── mitigation/     Error mitigation
@@ -129,7 +136,7 @@ scpn_quantum_control/
 │   └── dd.py           Dynamical decoupling (XY4, X2)
 └── hardware/       IBM Quantum hardware runner
     ├── runner.py       ibm_fez job submission + result parsing
-    ├── experiments.py  Pre-built experiment circuits
+    ├── experiments.py  20 pre-built experiment circuits (incl. 3 crypto)
     └── classical.py    Classical Kuramoto reference solver
 ```
 
@@ -195,6 +202,16 @@ Compiles SCPN data structures into quantum circuits:
 ### QEC (`qec/`)
 
 Toric surface code protecting quantum control signals. MWPM decoder uses Knm graph distance instead of lattice distance for physics-aware error correction.
+
+### Quantum Cryptography (`crypto/`)
+
+Topology-authenticated QKD using K_nm as shared secret:
+- **Key generation**: VQE ground state of H(K_nm) → correlated measurement → sifted key
+- **CHSH Bell test**: certifies entanglement via CHSH inequality violation
+- **Spectral fingerprint**: Laplacian spectrum of K_nm as public authentication token
+- **Entanglement percolation**: identifies above-threshold qubit pairs for QKD channels
+- **Hierarchical keys**: 16-layer SCPN hierarchy → key derivation tree
+- **Noise analysis**: Devetak-Winter key rates under depolarizing/amplitude-damping channels
 
 ### Error Mitigation (`mitigation/`)
 

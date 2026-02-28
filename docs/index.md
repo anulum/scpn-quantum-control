@@ -23,10 +23,10 @@ runs them on IBM Heron r2 hardware (156 qubits).
 | Result | Value |
 |--------|-------|
 | VQE ground-state error | **0.05%** (4-qubit, ibm_fez) |
-| 16-layer SCPN simulation | First on real hardware |
+| 16-layer UPDE snapshot | 46% error at depth 770 (NISQ-consistent) |
 | Decoherence curve | 12 points, depth 5→770 |
 | Coherence wall | depth 250-400 (Heron r2) |
-| Test suite | 208 passing |
+| Test suite | 411 passing |
 
 ## Modules
 
@@ -36,9 +36,10 @@ runs them on IBM Heron r2 hardware (156 qubits).
 | `phase` | Kuramoto XY solver, VQE, UPDE-16, Trotter |
 | `control` | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, disruption classifier |
 | `qsnn` | Quantum spiking neural networks (LIF, STDP, synapses) |
+| `crypto` | Topology-authenticated QKD, Bell tests, key rates, percolation |
 | `qec` | Toric code + MWPM decoder with K_nm-weighted distances |
 | `mitigation` | ZNE (unitary folding) + dynamical decoupling (XY4, CPMG) |
-| `hardware` | IBM Quantum runner, 17 pre-built experiments, classical references |
+| `hardware` | IBM Quantum runner, 20 pre-built experiments, classical references |
 
 ## Quick example
 
