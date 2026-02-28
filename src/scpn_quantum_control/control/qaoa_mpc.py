@@ -60,6 +60,7 @@ class QAOA_MPC:
         """Build p-layer QAOA circuit: initial |+>, alternating cost/mixer."""
         if self._cost_ham is None:
             self.build_cost_hamiltonian()
+        assert self._cost_ham is not None
 
         qc = QuantumCircuit(self.n_qubits)
         for q in range(self.n_qubits):

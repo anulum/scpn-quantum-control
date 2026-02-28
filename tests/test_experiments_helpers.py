@@ -105,3 +105,21 @@ def test_build_xyz_circuits_y_has_sdg():
     _, _, qc_y = _build_xyz_circuits(base, 2)
     ops = qc_y.count_ops()
     assert "sdg" in ops
+
+
+def test_all_experiments_registry_complete():
+    """ALL_EXPERIMENTS must contain every *_experiment function in the module."""
+    import inspect
+
+    from scpn_quantum_control.hardware import experiments as mod
+    from scpn_quantum_control.hardware.experiments import ALL_EXPERIMENTS
+
+    defined = {
+        name
+        for name, obj in inspect.getmembers(mod, inspect.isfunction)
+        if name.endswith("_experiment") and not name.startswith("_")
+    }
+    registered = set(ALL_EXPERIMENTS.values())
+    registered_names = {f.__name__ for f in registered}
+    missing = defined - registered_names
+    assert not missing, f"Unregistered experiments: {missing}"

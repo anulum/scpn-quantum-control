@@ -7,9 +7,14 @@ synapse angle based on pre/post spike correlation (Hebbian).
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
+
+if TYPE_CHECKING:
+    from .qsynapse import QuantumSynapse
 
 
 class QuantumSTDP:
@@ -37,7 +42,7 @@ class QuantumSTDP:
         probs = sv.probabilities([1])
         return float(probs[0] - probs[1])
 
-    def update(self, synapse: QuantumSynapse, pre_measured: int, post_measured: int) -> None:  # noqa: F821
+    def update(self, synapse: QuantumSynapse, pre_measured: int, post_measured: int) -> None:
         """Apply Hebbian parameter-shift gradient update.
 
         LTP when both pre and post fire; LTD when pre fires but post doesn't.

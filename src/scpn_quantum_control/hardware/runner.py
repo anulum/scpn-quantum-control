@@ -13,11 +13,15 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp
 from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
+
+if TYPE_CHECKING:
+    from ..mitigation.zne import ZNEResult
 
 
 @dataclass
@@ -108,11 +112,13 @@ class HardwareRunner:
         else:
             self._service = QiskitRuntimeService()
 
+        assert self._service is not None
         if self._backend_name:
             self._backend = self._service.backend(self._backend_name)
         else:
             self._backend = self._service.least_busy(operational=True, simulator=False)
 
+        assert self._backend is not None
         self._pm = generate_preset_pass_manager(
             backend=self._backend,
             optimization_level=self.optimization_level,
@@ -314,7 +320,7 @@ class HardwareRunner:
         scales: list[int] | None = None,
         order: int = 1,
         name: str = "zne_experiment",
-    ) -> ZNEResult:  # noqa: F821 — avoid circular import
+    ) -> ZNEResult:
         """Run ZNE: fold circuit at multiple noise scales, extrapolate to zero."""
         from ..mitigation.zne import gate_fold_circuit, zne_extrapolate
 

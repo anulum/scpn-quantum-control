@@ -3,6 +3,22 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.6] - 2026-02-28
+
+### Added
+
+- **Classical reference tests**: 20 tests covering `classical_kuramoto_reference`, `classical_exact_diag`, `classical_exact_evolution`, `classical_brute_mpc`, and `bloch_vectors_from_json`
+- **Pauli ordering validation**: 2 tests confirming qubit labeling consistency between Hamiltonian builder and state preparation (`<0|H|0> = -sum(omega)` and single-flip energy shift)
+- **ALL_EXPERIMENTS completeness**: test verifying every `*_experiment()` function is registered in the `ALL_EXPERIMENTS` dict
+- **Integration tests**: quantum-vs-classical Kuramoto, ZNE on noiseless backend, energy conservation under Trotter, Trotter order-2 passthrough
+
+### Changed
+
+- **mypy scope expanded**: now covers `control/`, `qsnn/`, `qec/` in addition to `bridge/`, `phase/`, `mitigation/`, `hardware/` — 27 source files checked, zero errors
+- Fixed type narrowing in `vqls_gs.py`, `qaoa_mpc.py`, `runner.py` (assert-after-guard pattern)
+- Fixed `QuantumSTDP` forward reference to `QuantumSynapse` via `TYPE_CHECKING` import
+- Fixed `ZNEResult` forward reference in `runner.py` via `TYPE_CHECKING` import
+
 ## [0.2.5] - 2026-02-28
 
 ### Added

@@ -70,6 +70,7 @@ class VQLS_GradShafranov:
         """
         if self._A is None:
             self.discretize()
+        assert self._A is not None and self._b is not None
 
         ansatz = self.build_ansatz(reps)
         A = self._A

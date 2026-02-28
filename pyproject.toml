@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "scpn-quantum-control"
-version = "0.2.5"
+version = "0.2.6"
 description = "Quantum-native reformulations of SCPN spiking, phase dynamics, and plasma control"
 readme = "README.md"
 license = "MIT"
@@ -88,8 +88,11 @@ warn_unused_configs = true
 ignore_missing_imports = true
 files = [
     "src/scpn_quantum_control/bridge/",
+    "src/scpn_quantum_control/control/",
     "src/scpn_quantum_control/phase/",
     "src/scpn_quantum_control/mitigation/",
+    "src/scpn_quantum_control/qsnn/",
+    "src/scpn_quantum_control/qec/",
     "src/scpn_quantum_control/hardware/classical.py",
     "src/scpn_quantum_control/hardware/runner.py",
 ]
