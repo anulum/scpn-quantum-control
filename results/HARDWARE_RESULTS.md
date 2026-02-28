@@ -3,7 +3,7 @@
 Date: 2026-02-28
 Backend: ibm_fez (Heron r2, 156 qubits)
 Plan: Open (10 min/month free tier)
-QPU used: ~10 min (~600 s) -- Feb 2026 budget exhausted
+QPU used: ~10 min -- Feb 2026 budget exhausted (8 experiments)
 New 10-min budget available 2026-03-01
 
 
@@ -192,6 +192,36 @@ percentage points. The remaining 16.9% gap is dominated by decoherence, not
 shot noise. Publication figure should use this 20k-shot data point.
 
 
+## Experiment 8: Kuramoto 12-Oscillator (Scaling Data Point)
+
+Job ID: `d6h3fae48nic73amhgog`
+Shots: 20,000. t=0.1, 1 Trotter step.
+
+| Metric          | Value  |
+|-----------------|--------|
+| hw_R            | 0.3574 |
+| exact_quantum_R | 0.5644 |
+| hw error        | 36.7%  |
+| Circuit depth   | 469-554|
+
+**Analysis**: 12-qubit sits right at the coherence cliff. Depth ~500 is where
+Heron r2 transitions from "signal" to "noise". The 4→8→12→16 qubit scaling
+at t=0.1 gives a clean decoherence curve:
+
+| Qubits | hw_R   | exact_R | hw_err | Depth |
+|--------|--------|---------|--------|-------|
+| 4      | 0.6662 | 0.8015  | 16.9%  | 149   |
+| 8      | 0.4968 | 0.5816  | 14.6%  | 246   |
+| 12     | 0.3574 | 0.5644  | 36.7%  | 469   |
+| 16     | 0.3321 | ~0.56*  | ~41%   | 770   |
+
+*16q exact reference unavailable (2^16 matrix OOM); classical Kuramoto R=0.62.
+
+The error jump from 8q (14.6%) to 12q (36.7%) pinpoints the coherence wall
+at depth ~350-500. Below that, hardware noise is manageable; above, decoherence
+dominates. This is the key engineering constraint for SCPN quantum simulations.
+
+
 ## Comparison: Simulator vs Hardware
 
 | Experiment      | Qubits | Sim Error | HW Error  | HW Overhead | QPU Time |
@@ -222,7 +252,8 @@ shot noise. Publication figure should use this 20k-shot data point.
 | upde_16 (dt=0.05)| 1   | ~60     | 3 circuits, 20k shots     |
 | upde_16 (dt=0.1) | 1   | ~60     | 3 circuits, 20k shots     |
 | 4osc 20k shots  | 1    | ~30     | 3 circuits, 20k shots     |
-| **Total**       | ~85  | **~600**| 10 min budget exhausted   |
+| 12osc scaling   | 1    | ~50     | 3 circuits, 20k shots     |
+| **Total**       | ~86  | **~600**| 10 min budget exhausted   |
 New 10-min budget available 2026-03-01.
 
 ### Planned (March budget)
