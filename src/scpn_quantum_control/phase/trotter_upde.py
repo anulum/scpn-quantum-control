@@ -24,6 +24,7 @@ class QuantumUPDESolver:
         self,
         K: np.ndarray | None = None,
         omega: np.ndarray | None = None,
+        trotter_order: int = 1,
     ):
         if K is None:
             K = build_knm_paper27()
@@ -33,7 +34,7 @@ class QuantumUPDESolver:
         self.K = K
         self.omega = omega
         self.n_layers = len(omega)
-        self._solver = QuantumKuramotoSolver(self.n_layers, K, omega)
+        self._solver = QuantumKuramotoSolver(self.n_layers, K, omega, trotter_order=trotter_order)
         self._solver.build_hamiltonian()
 
     def step(self, dt: float = 0.1, trotter_steps: int = 5) -> dict:

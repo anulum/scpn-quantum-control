@@ -13,7 +13,7 @@ import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import PauliEvolutionGate
 from qiskit.quantum_info import SparsePauliOp, Statevector
-from qiskit.synthesis import LieTrotter
+from qiskit.synthesis import LieTrotter, SuzukiTrotter
 
 from ..bridge.knm_hamiltonian import knm_to_hamiltonian
 
@@ -30,10 +30,12 @@ class QuantumKuramotoSolver:
         n_oscillators: int,
         K_coupling: np.ndarray,
         omega_natural: np.ndarray,
+        trotter_order: int = 1,
     ):
         self.n = n_oscillators
         self.K = np.asarray(K_coupling, dtype=np.float64)
         self.omega = np.asarray(omega_natural, dtype=np.float64)
+        self.trotter_order = trotter_order
         self._hamiltonian: SparsePauliOp | None = None
 
     def build_hamiltonian(self) -> SparsePauliOp:
@@ -41,10 +43,17 @@ class QuantumKuramotoSolver:
         return self._hamiltonian
 
     def evolve(self, time: float, trotter_steps: int = 10) -> QuantumCircuit:
-        """Build Trotterized evolution circuit U(t) = exp(-iHt)."""
+        """Build Trotterized evolution circuit U(t) = exp(-iHt).
+
+        Uses LieTrotter (order=1, O(t²/reps)) or SuzukiTrotter (order=2,
+        O(t³/reps²)) depending on self.trotter_order.
+        """
         if self._hamiltonian is None:
             self.build_hamiltonian()
-        synth = LieTrotter(reps=trotter_steps)
+        if self.trotter_order == 2:
+            synth = SuzukiTrotter(order=2, reps=trotter_steps)
+        else:
+            synth = LieTrotter(reps=trotter_steps)
         evo_gate = PauliEvolutionGate(self._hamiltonian, time=time, synthesis=synth)
         qc = QuantumCircuit(self.n)
         qc.append(evo_gate, range(self.n))
@@ -89,6 +98,12 @@ class QuantumKuramotoSolver:
             R_history[step], _ = self.measure_order_parameter(sv)
 
         return {"times": times, "R": R_history}
+
+    def energy_expectation(self, sv: Statevector) -> float:
+        """Compute <H> for a given statevector."""
+        if self._hamiltonian is None:
+            self.build_hamiltonian()
+        return float(sv.expectation_value(self._hamiltonian).real)
 
     def _pauli_op(self, pauli: str, qubit: int) -> SparsePauliOp:
         label = ["I"] * self.n

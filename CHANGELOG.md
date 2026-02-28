@@ -3,6 +3,16 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.5] - 2026-02-28
+
+### Added
+
+- **Second-order Trotter**: `trotter_order=2` parameter on `QuantumKuramotoSolver` and `QuantumUPDESolver` uses SuzukiTrotter(order=2) with O(t^3/reps^2) error vs O(t^2/reps) for first-order
+- **Energy tracking**: `QuantumKuramotoSolver.energy_expectation(sv)` returns <H> for paper figure data
+- `test_second_order_trotter` — verifies order-2 Trotter error < order-1 on 4-oscillator system
+- `test_trotter_error_decreases_with_reps` — verifies convergence: error(reps=8) < error(reps=3) < error(reps=1)
+- `test_energy_expectation` — verifies <H> matches direct matrix computation
+
 ## [0.2.4] - 2026-02-28
 
 ### Fixed
