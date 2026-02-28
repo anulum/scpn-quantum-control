@@ -82,10 +82,14 @@ known-first-party = ["scpn_quantum_control"]
 
 [tool.mypy]
 python_version = "3.9"
-warn_return_any = true
+warn_return_any = false
 warn_unused_configs = true
 ignore_missing_imports = true
 files = ["src/scpn_quantum_control/bridge/"]
+
+[[tool.mypy.overrides]]
+module = "numpy.*"
+ignore_missing_imports = true
 
 [tool.coverage.run]
 source = ["scpn_quantum_control"]

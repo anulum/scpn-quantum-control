@@ -37,7 +37,7 @@ def spn_to_circuit(
             if abs(w) < 1e-15:
                 continue
 
-            theta = probability_to_angle(abs(w))
+            theta = probability_to_angle(float(abs(w)))
 
             if w < 0:
                 inhibitor_to_anti_control(qc, p, theta)
@@ -51,7 +51,7 @@ def spn_to_circuit(
             w = W_out[p, t]
             if abs(w) < 1e-15:
                 continue
-            theta = probability_to_angle(abs(w))
+            theta = probability_to_angle(float(abs(w)))
             qc.ry(theta, p)
 
     return qc
