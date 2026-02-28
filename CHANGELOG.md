@@ -3,6 +3,25 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.0] - 2026-02-28
+
+### Added
+
+- **GitHub Pages docs**: MkDocs Material site with 7 pages, auto-deploy on push to main
+- **4 Jupyter notebooks**: Kuramoto XY dynamics, VQE ground state, error mitigation (ZNE), UPDE-16
+- **10 hardware experiments**: noise baseline, 8-osc ZNE, 8q VQE on hardware, UPDE-16 with DD, Trotter order-2, sync threshold, decoherence scaling, ZNE higher-order, VQE landscape, cross-layer correlation
+- **14 property-based tests** (hypothesis): probability-angle roundtrip, Knm symmetry/positivity, Hamiltonian Hermiticity, ansatz parameter counts
+- **8 edge-case tests**: 2-oscillator minimal, SuzukiTrotter order=2, single-value inputs
+- **13 coverage-gap tests**: multi-inhibitor anti-control, QAOA ZZ path, VQLS near-zero guard, QEC odd defects / correction failure, QSTDP synapse
+- **4 integration tests**: Knm → VQE ground state, Knm → Trotter → energy, 8q spectrum, 16-layer Hamiltonian structure
+- **7 regression tests**: Knm calibration anchors, cross-hierarchy boosts, omega values, 4q ground energy baseline, statevector R, R evolution monotonicity, _R_from_xyz validation
+
+### Changed
+
+- **Mypy**: expanded from 27 to 30 source files (full hardware/ directory)
+- **Test count**: 208 → 254
+- **pyproject.toml**: docs URL, mkdocs-material optional dep
+
 ## [0.3.0] - 2026-02-28
 
 ### Added

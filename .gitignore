@@ -21,6 +21,7 @@ env/
 .env
 
 *.ipynb_checkpoints/
+.hypothesis/
 .DS_Store
 Thumbs.db
 
