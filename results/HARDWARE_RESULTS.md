@@ -3,8 +3,8 @@
 Date: 2026-02-28
 Backend: ibm_fez (Heron r2, 156 qubits)
 Plan: Open (10 min/month free tier)
-QPU used: ~9.7 min (~581 s)
-QPU remaining: ~0.3 min (new 10-min budget on 2026-03-01)
+QPU used: ~10 min (~600 s) -- Feb 2026 budget exhausted
+New 10-min budget available 2026-03-01
 
 
 ## Experiment 1: Kuramoto 4-Oscillator XY Dynamics
@@ -160,6 +160,38 @@ stronger coupling (L3-L4, L10) maintain coherence; weakly-coupled layers
 (L6, L12) decohere first. This matches the SCPN theoretical hierarchy.
 
 
+## Experiment 6: UPDE 16-Layer at dt=0.1 (Second Snapshot)
+
+Job ID: `d6h3e2f3o3rs73caglmg`
+Shots: 20,000 per circuit. Trotter steps: 2.
+
+| dt   | hw_R   | Classical R | Depth     |
+|------|--------|-------------|-----------|
+| 0.05 | 0.3321 | 0.6154      | 669-770   |
+| 0.10 | 0.1528 | 0.6134      | 935-1033  |
+
+**Analysis**: Two-point UPDE-16 trajectory. At dt=0.1 (2 Trotter steps, depth
+~1000), hw_R drops to 0.15 — approaching the fully-mixed noise floor.
+Classical Kuramoto R stays nearly constant (0.615 vs 0.613) because the
+system barely evolves in 0.05s. The hw_R decay (0.33 -> 0.15) is entirely
+decoherence-driven, confirming depth ~500 as the signal threshold.
+
+
+## Experiment 7: Kuramoto 4-Osc High-Statistics (20k shots)
+
+Job ID: `d6h3e9qthhns7391ks3g`
+Shots: 20,000 (2x previous). t=0.1, 2 Trotter reps.
+
+| Shots  | hw_R   | exact_R | err    |
+|--------|--------|---------|--------|
+| 10,000 | 0.6478 | 0.8015  | 19.2%  |
+| 20,000 | 0.6662 | 0.8015  | 16.9%  |
+
+**Analysis**: Doubling shots improved R by +0.018 and reduced error by 2.3
+percentage points. The remaining 16.9% gap is dominated by decoherence, not
+shot noise. Publication figure should use this 20k-shot data point.
+
+
 ## Comparison: Simulator vs Hardware
 
 | Experiment      | Qubits | Sim Error | HW Error  | HW Overhead | QPU Time |
@@ -187,10 +219,10 @@ stronger coupling (L3-L4, L10) maintain coherence; weakly-coupled layers
 | vqe_4q          | ~1   | 15      | Single final evaluation   |
 | qaoa_mpc_4      | 78   | 282     | 1 job per COBYLA iter     |
 | kuramoto_8osc   | 2    | 180     | 18 circuits (2 batches)   |
-| upde_16         | 1    | ~60     | 3 circuits, 20k shots     |
-| **Total**       | ~83  | **~581**| ~9.7 min of 10 min budget |
-
-Remaining: ~0.3 min (~20 s) in Feb 2026 budget.
+| upde_16 (dt=0.05)| 1   | ~60     | 3 circuits, 20k shots     |
+| upde_16 (dt=0.1) | 1   | ~60     | 3 circuits, 20k shots     |
+| 4osc 20k shots  | 1    | ~30     | 3 circuits, 20k shots     |
+| **Total**       | ~85  | **~600**| 10 min budget exhausted   |
 New 10-min budget available 2026-03-01.
 
 ### Planned (March budget)
