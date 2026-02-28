@@ -35,8 +35,9 @@ def gate_fold_circuit(circuit: QuantumCircuit, scale: int) -> QuantumCircuit:
 
     folded = base.copy()
     n_folds = (scale - 1) // 2
+    base_inv = base.inverse()
     for _ in range(n_folds):
-        folded.compose(base.inverse(), inplace=True)
+        folded.compose(base_inv, inplace=True)
         folded.compose(base, inplace=True)
 
     if circuit.num_clbits > 0:

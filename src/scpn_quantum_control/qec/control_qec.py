@@ -64,8 +64,12 @@ class MWPMDecoder:
         self.d = distance
         self.knm_weights = knm_weights
 
-    def decode(self, syndrome: np.ndarray) -> np.ndarray:
-        """Decode syndrome -> correction vector of length 2*d^2."""
+    def decode(self, syndrome: np.ndarray, dual: bool = False) -> np.ndarray:
+        """Decode syndrome -> correction vector of length 2*d^2.
+
+        dual=False for vertex syndromes (X error correction),
+        dual=True for plaquette syndromes (Z error correction).
+        """
         defects = np.where(syndrome == 1)[0]
         if len(defects) == 0:
             return np.zeros(2 * self.d**2, dtype=np.int8)
@@ -82,7 +86,7 @@ class MWPMDecoder:
 
         correction = np.zeros(2 * self.d**2, dtype=np.int8)
         for i, j in matching:
-            path = self._shortest_path(defects[i], defects[j])
+            path = self._shortest_path(defects[i], defects[j], dual=dual)
             for qubit in path:
                 correction[qubit] ^= 1
 
@@ -105,38 +109,58 @@ class MWPMDecoder:
             return max(1, int(base_dist * knm_factor))
         return base_dist
 
-    def _shortest_path(self, u: int, v: int) -> list[int]:
-        """Qubit indices along Manhattan shortest path on torus."""
+    def _shortest_path(self, u: int, v: int, dual: bool = False) -> list[int]:
+        """Qubit indices along Manhattan shortest path on torus.
+
+        dual=False: vertex path (vertical edges for row moves, horizontal for column).
+        dual=True: plaquette path (horizontal edges for row moves, vertical for column).
+        On the toric code, plaquette (r,c) and plaquette ((r+1)%d, c) share
+        horizontal edge h((r+1)%d, c), so row movement in the dual uses h-edges.
+        """
         d = self.d
         r1, c1 = divmod(u, d)
         r2, c2 = divmod(v, d)
-        path = []
+        path: list[int] = []
 
-        # Row movement
         dr_fwd = (r2 - r1) % d
         dr_bwd = (r1 - r2) % d
         r = r1
         if dr_fwd <= dr_bwd:
             for _ in range(dr_fwd):
-                path.append(2 * (r * d + c1) + 1)  # vertical edge
-                r = (r + 1) % d
+                if dual:
+                    r = (r + 1) % d
+                    path.append(2 * (r * d + c1))  # horizontal edge h(r, c1)
+                else:
+                    path.append(2 * (r * d + c1) + 1)  # vertical edge v(r, c1)
+                    r = (r + 1) % d
         else:
             for _ in range(dr_bwd):
-                r = (r - 1) % d
-                path.append(2 * (r * d + c1) + 1)
+                if dual:
+                    path.append(2 * (r * d + c1))  # horizontal edge h(r, c1)
+                    r = (r - 1) % d
+                else:
+                    r = (r - 1) % d
+                    path.append(2 * (r * d + c1) + 1)  # vertical edge v(r, c1)
 
-        # Column movement
         dc_fwd = (c2 - c1) % d
         dc_bwd = (c1 - c2) % d
         c = c1
         if dc_fwd <= dc_bwd:
             for _ in range(dc_fwd):
-                path.append(2 * (r2 * d + c))  # horizontal edge
-                c = (c + 1) % d
+                if dual:
+                    c = (c + 1) % d
+                    path.append(2 * (r2 * d + c) + 1)  # vertical edge v(r2, c)
+                else:
+                    path.append(2 * (r2 * d + c))  # horizontal edge h(r2, c)
+                    c = (c + 1) % d
         else:
             for _ in range(dc_bwd):
-                c = (c - 1) % d
-                path.append(2 * (r2 * d + c))
+                if dual:
+                    path.append(2 * (r2 * d + c) + 1)  # vertical edge v(r2, c)
+                    c = (c - 1) % d
+                else:
+                    c = (c - 1) % d
+                    path.append(2 * (r2 * d + c))  # horizontal edge h(r2, c)
 
         return path
 
@@ -169,11 +193,16 @@ class ControlQEC:
         return syn_z, syn_x
 
     def decode_and_correct(self, err_x: np.ndarray, err_z: np.ndarray) -> bool:
-        """Full decode cycle. Returns True if correction is valid."""
+        """Full decode cycle. Returns True if no logical error remains.
+
+        Checks both syndrome clearance and non-trivial homology on the torus.
+        A residual with zero syndrome can still be a logical operator if it wraps
+        around a non-contractible cycle.
+        """
         syn_z, syn_x = self.get_syndrome(err_x, err_z)
 
-        corr_x = self.decoder.decode(syn_z)
-        corr_z = self.decoder.decode(syn_x)
+        corr_x = self.decoder.decode(syn_z, dual=False)
+        corr_z = self.decoder.decode(syn_x, dual=True)
 
         residual_x = err_x ^ corr_x
         residual_z = err_z ^ corr_z
@@ -181,4 +210,28 @@ class ControlQEC:
         new_syn_z = (self.code.Hx @ residual_x) % 2
         new_syn_x = (self.code.Hz @ residual_z) % 2
 
-        return bool(np.all(new_syn_z == 0) and np.all(new_syn_x == 0))
+        if not (np.all(new_syn_z == 0) and np.all(new_syn_x == 0)):
+            return False
+
+        return not self._has_logical_error(residual_x, residual_z)
+
+    def _has_logical_error(self, residual_x: np.ndarray, residual_z: np.ndarray) -> bool:
+        """Check if residual errors form non-trivial homology cycles.
+
+        A residual with zero syndrome may still be a logical operator if it
+        wraps around a non-contractible cycle of the torus. We detect winding
+        by counting edge crossings at a seam:
+        - Horizontal winding: parity of h-edges crossing the vertical seam
+          at column 0, i.e. h(r, 0) = 2*r*d for each row r.
+        - Vertical winding: parity of v-edges crossing the horizontal seam
+          at row 0, i.e. v(0, c) = 2*c + 1 for each column c.
+        """
+        d = self.code.d
+        for residual in (residual_x, residual_z):
+            # Horizontal winding: h-edges crossing column 0→1 boundary
+            if sum(int(residual[2 * r * d]) for r in range(d)) % 2 == 1:
+                return True
+            # Vertical winding: v-edges crossing row 0→1 boundary
+            if sum(int(residual[2 * c + 1]) for c in range(d)) % 2 == 1:
+                return True
+        return False

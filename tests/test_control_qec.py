@@ -132,3 +132,66 @@ def test_very_low_error_rate_high_success():
         qec.decode_and_correct(*qec.simulate_errors(0.005, rng=rng)) for _ in range(200)
     )
     assert successes / 200 > 0.80
+
+
+def test_d5_beats_d3_below_threshold():
+    """Below threshold (p=0.03), d=5 should match or beat d=3.
+
+    Dennis et al. 2002: toric code MWPM threshold ~10.3% per channel.
+    """
+    rng3 = np.random.default_rng(77)
+    rng5 = np.random.default_rng(77)
+    trials = 300
+    qec3 = ControlQEC(distance=3)
+    qec5 = ControlQEC(distance=5)
+    ok3 = sum(qec3.decode_and_correct(*qec3.simulate_errors(0.03, rng=rng3)) for _ in range(trials))
+    ok5 = sum(qec5.decode_and_correct(*qec5.simulate_errors(0.03, rng=rng5)) for _ in range(trials))
+    assert ok5 >= ok3 - 10  # d=5 at least within noise of d=3
+
+
+def test_logical_error_detected_shifted_cycle():
+    """Logical operators at any row/column must be detected, not just row/col 0."""
+    d = 5
+    qec = ControlQEC(distance=d)
+    N = 2 * d**2
+    zero = np.zeros(N, dtype=np.int8)
+
+    for row in range(d):
+        cycle = np.zeros(N, dtype=np.int8)
+        for c in range(d):
+            cycle[2 * (row * d + c)] = 1  # h(row, c)
+        assert qec._has_logical_error(cycle, zero), f"missed horizontal cycle at row {row}"
+
+    for col in range(d):
+        cycle = np.zeros(N, dtype=np.int8)
+        for r in range(d):
+            cycle[2 * (r * d + col) + 1] = 1  # v(r, col)
+        assert qec._has_logical_error(cycle, zero), f"missed vertical cycle at col {col}"
+
+
+def test_single_z_error_corrected():
+    """Single Z error should be decoded correctly (dual path)."""
+    for d in (3, 5):
+        qec = ControlQEC(distance=d)
+        N = 2 * d**2
+        for qubit in range(min(N, 10)):
+            err_x = np.zeros(N, dtype=np.int8)
+            err_z = np.zeros(N, dtype=np.int8)
+            err_z[qubit] = 1
+            assert qec.decode_and_correct(err_x, err_z), (
+                f"d={d} failed on single Z error at qubit {qubit}"
+            )
+
+
+def test_single_x_error_corrected():
+    """Single X error should be decoded correctly (primal path)."""
+    for d in (3, 5):
+        qec = ControlQEC(distance=d)
+        N = 2 * d**2
+        for qubit in range(min(N, 10)):
+            err_x = np.zeros(N, dtype=np.int8)
+            err_x[qubit] = 1
+            err_z = np.zeros(N, dtype=np.int8)
+            assert qec.decode_and_correct(err_x, err_z), (
+                f"d={d} failed on single X error at qubit {qubit}"
+            )

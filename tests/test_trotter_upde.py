@@ -34,3 +34,18 @@ def test_run_returns_R_trajectory():
     assert len(result["R"]) == 6  # n_steps + 1
     for r in result["R"]:
         assert 0.0 <= r <= 1.5  # allow some numerical margin
+
+
+def test_step_and_reset():
+    """step() should accumulate state; reset() should reinitialise."""
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    solver = QuantumUPDESolver(K=K, omega=omega)
+
+    r1 = solver.step(dt=0.1)
+    r2 = solver.step(dt=0.1)
+    assert r1["R_global"] != r2["R_global"]  # state evolved
+
+    solver.reset()
+    r3 = solver.step(dt=0.1)
+    assert abs(r3["R_global"] - r1["R_global"]) < 1e-10  # same first step

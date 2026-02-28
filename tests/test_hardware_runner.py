@@ -102,6 +102,21 @@ def test_classical_exact_evolution():
     assert all(np.isfinite(r) for r in ref["R"])
 
 
+def test_classical_exact_evolution_n1():
+    """n=1: single oscillator, R from single-qubit XY expectations."""
+    ref = classical_exact_evolution(1, 0.2, 0.1)
+    assert len(ref["R"]) == 3
+    for r in ref["R"]:
+        assert 0.0 <= r <= 1.0 + 1e-10
+
+
+def test_classical_exact_diag_n1():
+    """n=1: single qubit Hamiltonian has 2 eigenvalues."""
+    ref = classical_exact_diag(1)
+    assert len(ref["eigenvalues"]) == 2
+    assert ref["spectral_gap"] > 0
+
+
 def test_classical_brute_mpc():
     B = np.eye(2)
     target = np.array([0.8, 0.6])
@@ -179,3 +194,65 @@ def test_exact_diag_sparse_path():
     assert abs(ref_dense["ground_energy"] - ref_sparse["ground_energy"]) < 1e-8
     assert abs(ref_dense["spectral_gap"] - ref_sparse["spectral_gap"]) < 1e-8
     assert len(ref_sparse["eigenvalues"]) == 6
+
+
+# ── Endianness agreement tests ──
+
+
+def test_classical_evolution_matches_qiskit():
+    """Classical expm evolution R must match Qiskit Statevector evolution.
+
+    This verifies that _build_initial_state and _expectation_pauli use
+    Qiskit's little-endian convention consistently with knm_to_hamiltonian.
+    """
+    from scipy.linalg import expm
+
+    from qiskit.circuit.library import PauliEvolutionGate
+    from qiskit.quantum_info import Statevector
+    from qiskit.synthesis import LieTrotter
+
+    from scpn_quantum_control.bridge.knm_hamiltonian import (
+        build_knm_paper27,
+        knm_to_hamiltonian,
+        OMEGA_N_16,
+    )
+    from scpn_quantum_control.hardware.experiments import _R_from_xyz, _build_evo_base, _build_xyz_circuits
+
+    n = 3
+    K = build_knm_paper27(L=n)
+    omega = OMEGA_N_16[:n]
+    dt = 0.3
+
+    # Qiskit circuit evolution (ground truth)
+    from qiskit import QuantumCircuit
+
+    qc = QuantumCircuit(n)
+    for i in range(n):
+        qc.ry(float(omega[i]) % (2 * np.pi), i)
+    H = knm_to_hamiltonian(K, omega)
+    evo = PauliEvolutionGate(H, time=dt, synthesis=LieTrotter(reps=100))
+    qc.append(evo, range(n))
+    sv = Statevector.from_instruction(qc)
+
+    # Classical expm evolution
+    ref = classical_exact_evolution(n, dt, dt, K, omega)
+    R_classical = ref["R"][-1]
+
+    # Qiskit R from statevector per-qubit expectations
+    from qiskit.quantum_info import SparsePauliOp
+
+    z_complex = 0.0 + 0.0j
+    for q in range(n):
+        x_label = ["I"] * n
+        y_label = ["I"] * n
+        x_label[q] = "X"
+        y_label[q] = "Y"
+        x_op = SparsePauliOp("".join(reversed(x_label)))
+        y_op = SparsePauliOp("".join(reversed(y_label)))
+        z_complex += sv.expectation_value(x_op).real + 1j * sv.expectation_value(y_op).real
+    z_complex /= n
+    R_qiskit = abs(z_complex)
+
+    assert abs(R_classical - R_qiskit) < 1e-6, (
+        f"R mismatch: classical={R_classical:.6f}, qiskit={R_qiskit:.6f}"
+    )

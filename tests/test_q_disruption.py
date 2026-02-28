@@ -58,3 +58,15 @@ def test_different_seed_different_params():
     c1 = QuantumDisruptionClassifier(n_layers=2, seed=0)
     c2 = QuantumDisruptionClassifier(n_layers=2, seed=1)
     assert not np.allclose(c1.params, c2.params)
+
+
+def test_zero_feature_vector(clf):
+    """All-zero features should not crash (amplitude encoding fallback)."""
+    risk = clf.predict(np.zeros(11))
+    assert 0.0 <= risk <= 1.0
+
+
+def test_feature_normalization(clf):
+    """Very large features should be normalized before encoding."""
+    risk = clf.predict(np.ones(11) * 1e6)
+    assert 0.0 <= risk <= 1.0

@@ -144,9 +144,13 @@ def classical_exact_evolution(
 
 
 def _build_initial_state(n_osc: int, omega: np.ndarray) -> np.ndarray:
-    """Tensor product of Ry(omega_i mod 2pi)|0> for each qubit."""
+    """Tensor product of Ry(omega_i mod 2pi)|0> in Qiskit little-endian order.
+
+    Qiskit stores |b_{n-1}...b_1 b_0> with qubit 0 as the LSB, so the
+    kron order must be q_{n-1} ⊗ ... ⊗ q_1 ⊗ q_0.
+    """
     state = np.array([1.0 + 0j])
-    for i in range(n_osc):
+    for i in reversed(range(n_osc)):
         angle = float(omega[i]) % (2 * np.pi)
         q = np.array([np.cos(angle / 2), np.sin(angle / 2)], dtype=complex)
         state = np.kron(state, q)
@@ -168,7 +172,11 @@ def _state_order_param(psi: np.ndarray, n_osc: int) -> float:
 
 
 def _expectation_pauli(psi: np.ndarray, n: int, qubit: int, pauli: str) -> float:
-    """<psi| P_qubit |psi> where P acts on one qubit, identity elsewhere."""
+    """<psi| P_qubit |psi> where P acts on one qubit, identity elsewhere.
+
+    Qiskit little-endian: qubit 0 is the rightmost (LSB) position in the
+    kron product.  Position from the left in the kron is (n - 1 - qubit).
+    """
     if pauli == "X":
         p = np.array([[0, 1], [1, 0]], dtype=complex)
     elif pauli == "Y":
@@ -176,9 +184,10 @@ def _expectation_pauli(psi: np.ndarray, n: int, qubit: int, pauli: str) -> float
     else:
         p = np.array([[1, 0], [0, -1]], dtype=complex)
 
+    kron_pos = n - 1 - qubit
     op = np.array([[1.0]])
     for i in range(n):
-        op = np.kron(op, p if i == qubit else np.eye(2))
+        op = np.kron(op, p if i == kron_pos else np.eye(2))
     return float(np.real(psi.conj() @ op @ psi))
 
 

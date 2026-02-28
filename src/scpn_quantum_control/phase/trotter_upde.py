@@ -39,7 +39,6 @@ class QuantumUPDESolver:
     def step(self, dt: float = 0.1, trotter_steps: int = 5) -> dict:
         """Single Trotter step, return per-layer expectations and global R."""
         if not hasattr(self, "_sv"):
-            self._solver.evolve(0)  # identity
             from qiskit import QuantumCircuit
 
             qc = QuantumCircuit(self.n_layers)
@@ -61,6 +60,11 @@ class QuantumUPDESolver:
             "R": result["R"],
             "n_layers": self.n_layers,
         }
+
+    def reset(self):
+        """Reset statevector so the next step() reinitialises from omega."""
+        if hasattr(self, "_sv"):
+            del self._sv
 
     def hamiltonian(self):
         return self._solver._hamiltonian

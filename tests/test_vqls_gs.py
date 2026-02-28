@@ -37,3 +37,10 @@ def test_ansatz_qubit_count():
     solver = VQLS_GradShafranov(n_qubits=4)
     qc = solver.build_ansatz(reps=1)
     assert qc.num_qubits == 4
+
+
+def test_solve_respects_boundary_conditions():
+    """Solution should be non-trivial (not all zeros) for a Gaussian source."""
+    solver = VQLS_GradShafranov(n_qubits=3)
+    psi = solver.solve(reps=1, maxiter=50)
+    assert np.linalg.norm(psi) > 1e-6

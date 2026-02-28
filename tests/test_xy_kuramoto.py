@@ -50,3 +50,17 @@ def test_strong_coupling_increases_R():
     result = solver.run(t_max=0.5, dt=0.1)
     # R should not collapse for identical frequencies with strong coupling
     assert result["R"][-1] > 0.1
+
+
+def test_single_oscillator():
+    """n=1: no coupling, R determined by single qubit state."""
+    K = np.array([[0.0]])
+    omega = np.array([1.0])
+    solver = QuantumKuramotoSolver(1, K, omega)
+    H = solver.build_hamiltonian()
+    assert H.num_qubits == 1
+
+    result = solver.run(t_max=0.2, dt=0.1)
+    # Single qubit => R = |<X> + i<Y>| is well-defined
+    for r in result["R"]:
+        assert 0.0 <= r <= 1.0 + 1e-10
