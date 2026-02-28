@@ -1,0 +1,31 @@
+# ─────────────────────────────────────────────────────────────────────
+# scpn-quantum-control — Citation Metadata
+# © 1998–2026 Miroslav Šotek. All rights reserved.
+# Contact: www.anulum.li | protoscience@anulum.li
+# ORCID: https://orcid.org/0009-0009-3560-0851
+# License: MIT
+# ─────────────────────────────────────────────────────────────────────
+cff-version: 1.2.0
+title: "scpn-quantum-control: Quantum-Native SCPN Phase Dynamics and Control"
+message: "If you use this software, please cite it using the metadata below."
+type: software
+authors:
+  - family-names: "Sotek"
+    given-names: "Miroslav"
+    orcid: "https://orcid.org/0009-0009-3560-0851"
+version: "0.1.0"
+date-released: "2026-02-28"
+license: "MIT"
+repository-code: "https://github.com/anulum/scpn-quantum-control"
+url: "https://www.anulum.li"
+keywords:
+  - quantum computing
+  - Kuramoto model
+  - spiking neural networks
+  - plasma control
+  - SCPN
+  - qiskit
+  - NISQ
+  - XY Hamiltonian
+  - Trotter decomposition
+  - VQE

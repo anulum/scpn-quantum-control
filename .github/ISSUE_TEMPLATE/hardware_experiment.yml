@@ -1,0 +1,42 @@
+name: Hardware Experiment Request
+description: Request a new experiment on IBM Quantum hardware
+labels: [hardware, experiment]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Experiment description
+      description: What quantum circuit/algorithm should be run on hardware?
+    validations:
+      required: true
+
+  - type: input
+    id: qubits
+    attributes:
+      label: Qubit count
+      placeholder: "4"
+
+  - type: input
+    id: depth
+    attributes:
+      label: Estimated circuit depth
+      description: After transpilation to native gates
+      placeholder: "~150"
+
+  - type: input
+    id: shots
+    attributes:
+      label: Shot count
+      placeholder: "10000"
+
+  - type: textarea
+    id: classical_reference
+    attributes:
+      label: Classical reference value
+      description: Expected result from classical simulation for comparison.
+
+  - type: textarea
+    id: budget
+    attributes:
+      label: QPU budget estimate
+      description: Estimated QPU seconds needed. Monthly budget is 600s.

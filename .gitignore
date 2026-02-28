@@ -6,11 +6,23 @@ dist/
 build/
 .eggs/
 *.egg
+
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 *.so
+htmlcov/
+coverage.xml
+.coverage
+
 .venv/
 venv/
 env/
 .env
+
+*.ipynb_checkpoints/
+.DS_Store
+Thumbs.db
+
+# IBM Quantum credentials (never commit)
+qiskit-ibm.json

@@ -1,0 +1,66 @@
+name: Bug Report
+description: Report a bug in scpn-quantum-control
+labels: [bug]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What went wrong?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Minimal code or commands to trigger the bug.
+      render: python
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened instead?
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What actually happened? Include error messages or wrong values.
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      options:
+        - qsnn (quantum spiking)
+        - phase (Kuramoto/UPDE)
+        - control (QAOA/VQLS/QPetri)
+        - bridge (converters)
+        - qec (error correction)
+        - hardware (IBM runner)
+        - other
+
+  - type: input
+    id: backend
+    attributes:
+      label: Backend
+      description: "Qiskit backend used (e.g., aer_simulator, ibm_fez)"
+      placeholder: aer_simulator
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Python version, qiskit version, OS
+      render: shell
+      value: |
+        python --version
+        pip show qiskit qiskit-aer qiskit-ibm-runtime
+
+  - type: textarea
+    id: physics
+    attributes:
+      label: Physics reference (if applicable)
+      description: If this is a numerical accuracy bug, cite the expected result source (paper, equation, classical solver).

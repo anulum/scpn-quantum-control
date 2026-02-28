@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: mailto:protoscience@anulum.li?subject=[SECURITY]%20scpn-quantum-control
+    about: Report security issues privately via email
+  - name: Documentation
+    url: https://github.com/anulum/scpn-quantum-control/tree/main/docs
+    about: Browse the documentation

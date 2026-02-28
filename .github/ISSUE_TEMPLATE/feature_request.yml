@@ -1,0 +1,37 @@
+name: Feature Request
+description: Propose a new feature or enhancement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Proposed feature
+      description: What do you want added or changed?
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Why is this needed? What problem does it solve?
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Target module
+      options:
+        - qsnn (quantum spiking)
+        - phase (Kuramoto/UPDE)
+        - control (QAOA/VQLS/QPetri)
+        - bridge (converters)
+        - qec (error correction)
+        - hardware (IBM runner)
+        - new module
+        - infrastructure/CI
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches you've thought about.

@@ -1,0 +1,33 @@
+{
+  "title": "scpn-quantum-control: Quantum-Native SCPN Phase Dynamics and Control",
+  "description": "Quantum-native reformulations of SCPN spiking neural networks, Kuramoto phase dynamics, and tokamak plasma control algorithms. Validated on IBM Heron r2 hardware.",
+  "creators": [
+    {
+      "name": "Sotek, Miroslav",
+      "orcid": "0009-0009-3560-0851",
+      "affiliation": "Anulum"
+    }
+  ],
+  "upload_type": "software",
+  "access_right": "open",
+  "license": "MIT",
+  "keywords": [
+    "quantum computing",
+    "Kuramoto model",
+    "spiking neural networks",
+    "tokamak plasma control",
+    "SCPN",
+    "qiskit",
+    "NISQ",
+    "XY Hamiltonian",
+    "Trotter decomposition",
+    "VQE",
+    "QAOA"
+  ],
+  "related_identifiers": [
+    {
+      "relation": "isPartOf",
+      "identifier": "https://github.com/anulum/scpn-quantum-control"
+    }
+  ]
+}

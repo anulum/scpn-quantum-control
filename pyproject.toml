@@ -6,8 +6,32 @@ build-backend = "hatchling.build"
 name = "scpn-quantum-control"
 version = "0.1.0"
 description = "Quantum-native reformulations of SCPN spiking, phase dynamics, and plasma control"
-requires-python = ">=3.9"
+readme = "README.md"
 license = "MIT"
+requires-python = ">=3.9"
+authors = [
+    { name = "Miroslav Sotek", email = "protoscience@anulum.li" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+keywords = [
+    "quantum computing",
+    "kuramoto",
+    "spiking neural networks",
+    "plasma control",
+    "scpn",
+    "qiskit",
+]
 dependencies = [
     "qiskit>=1.0.0",
     "qiskit-aer>=0.14.0",
@@ -18,11 +42,58 @@ dependencies = [
 
 [project.optional-dependencies]
 viz = ["matplotlib>=3.5"]
-dev = ["pytest>=7.0", "pytest-cov"]
+dev = ["pytest>=7.0", "pytest-cov", "ruff"]
 ibm = ["qiskit-ibm-runtime>=0.20.0"]
+
+[project.urls]
+Homepage = "https://github.com/anulum/scpn-quantum-control"
+Repository = "https://github.com/anulum/scpn-quantum-control"
+Issues = "https://github.com/anulum/scpn-quantum-control/issues"
+Changelog = "https://github.com/anulum/scpn-quantum-control/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/scpn_quantum_control"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "hardware: requires IBM Quantum credentials",
+]
+xfail_strict = true
+filterwarnings = [
+    "ignore::DeprecationWarning:qiskit",
+    "ignore::DeprecationWarning:stevedore",
+]
+
+[tool.ruff]
+target-version = "py39"
+line-length = 99
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+ignore = [
+    "E501",   # line length handled by formatter
+    "SIM108", # ternary can reduce readability for physics code
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["scpn_quantum_control"]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+files = ["src/scpn_quantum_control/bridge/"]
+
+[tool.coverage.run]
+source = ["scpn_quantum_control"]
+omit = ["*/hardware/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__",
+    "raise NotImplementedError",
+]
