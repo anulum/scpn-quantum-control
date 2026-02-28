@@ -1,0 +1,14 @@
+{
+  "backend": "ibm_fez",
+  "experiment": "depth_probe_40",
+  "job_id": "d6h3qr9keb2s73be54d0",
+  "n_qubits": 4,
+  "shots": 8000,
+  "hw_R": 0.7727174956767836,
+  "metadata": {
+    "depth": 25,
+    "n_qubits": 156,
+    "ecr_gates": 0,
+    "total_gates": 54
+  }
+}
