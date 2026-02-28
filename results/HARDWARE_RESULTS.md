@@ -3,8 +3,8 @@
 Date: 2026-02-28
 Backend: ibm_fez (Heron r2, 156 qubits)
 Plan: Open (10 min/month free tier)
-QPU used: ~8 min (~481 s)
-QPU remaining: ~2 min (new 10-min budget on 2026-03-01)
+QPU used: ~9.7 min (~581 s)
+QPU remaining: ~0.3 min (new 10-min budget on 2026-03-01)
 
 
 ## Experiment 1: Kuramoto 4-Oscillator XY Dynamics
@@ -87,18 +87,24 @@ Total circuits: 9 (3 time steps x 3 bases)
 | 0.10  | 0.4968 | 0.5906 | 0.5816  | 14.6%   | 1.5%    | 246   |
 | 0.20  | 0.4414 | 0.5807 | 0.5522  | 20.1%   | 5.2%    | 539   |
 | 0.30  | 0.3451 | 0.5464 | 0.5076  | 32.0%   | 7.6%    | 790   |
+| 0.40  | 0.2231 | 0.5135 | 0.4545  | 50.9%   | 13.0%   | 1103  |
+| 0.50  | 0.1640 | 0.4448 | 0.4022  | 59.2%   | 10.6%   | 1307  |
+| 0.60  | 0.1147 | 0.3895 | 0.3606  | 68.2%   | 8.0%    | 1521  |
 
-**Analysis**: Hardware error at t=0.1 (14.6%) is slightly better than 4-osc
-(19.2%), despite double the qubits. The 8-qubit experiment uses fewer Trotter
-reps per step (1x vs 2x for 4-osc), yielding shallower circuits at early steps.
-At t=0.3, depth=790 pushes beyond Heron coherence limits — the 32% error is
-dominated by decoherence, not Trotter error (simulator has only 7.6% error).
+Job IDs: `d6h36av3o3rs73cagcfg` (steps 1-3), `d6h3b8pkeb2s73be4gvg` (steps 4-6)
 
-**Circuit profile**: depth=246/539/790 for steps 1/2/3. Depth grows linearly
-with Trotter reps. The step-3 circuit (790 depth) is at the practical limit
-for Heron r2 without error mitigation.
+**Analysis**: Complete 6-step trajectory. Hardware error at t=0.1 (14.6%) is
+better than 4-osc (19.2%) due to fewer Trotter reps per step. Beyond t=0.3,
+circuits exceed depth 1000 and R decays toward the noise floor (~0.1). At
+t=0.6, hw_R=0.11 is barely above random measurement (R=0 for fully mixed
+state). The sim error stays moderate (8-13%) because Trotter error is the
+only source — confirming that hardware decoherence, not algorithmic error,
+dominates beyond depth ~800.
 
-**QPU time**: ~80 s wall time (9 circuits batched in single job).
+**Circuit profile**: depth 246 (step 1) to 1521 (step 6). Depth ~500 is the
+practical limit for meaningful R measurement on Heron r2 without mitigation.
+
+**QPU time**: ~80 s (steps 1-3) + ~100 s (steps 4-6) = ~180 s total.
 
 
 ## Experiment 5: UPDE 16-Layer Snapshot
@@ -180,11 +186,11 @@ stronger coupling (L3-L4, L10) maintain coherence; weakly-coupled layers
 | kuramoto_4osc   | 1    | 44      | 12 circuits batched       |
 | vqe_4q          | ~1   | 15      | Single final evaluation   |
 | qaoa_mpc_4      | 78   | 282     | 1 job per COBYLA iter     |
-| kuramoto_8osc   | 1    | 80      | 9 circuits batched        |
+| kuramoto_8osc   | 2    | 180     | 18 circuits (2 batches)   |
 | upde_16         | 1    | ~60     | 3 circuits, 20k shots     |
-| **Total**       | ~82  | **~481**| ~8.0 min of 10 min budget |
+| **Total**       | ~83  | **~581**| ~9.7 min of 10 min budget |
 
-Remaining: ~2 min (119 s) in Feb 2026 budget.
+Remaining: ~0.3 min (~20 s) in Feb 2026 budget.
 New 10-min budget available 2026-03-01.
 
 ### Planned (March budget)
