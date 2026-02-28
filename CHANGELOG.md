@@ -3,6 +3,23 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.0] - 2026-02-28
+
+### Added
+
+- **README rewrite**: motivating abstract explaining SCPN→XY isomorphism, "Background" section with Kuramoto-to-Hamiltonian derivation, all 4 figures embedded with captions, expanded example table with descriptions, "Related Repositories" section
+- **Paper 27 citation**: formal working paper reference in README and docs/equations.md
+- **docs/equations.md**: SCPN overview and UPDE definition added; equations document is now self-contained
+- **examples/README.md**: guided walkthrough of all 6 examples with physics context
+- **HARDWARE_RESULTS.md**: layer naming convention section explaining L1-L16 mapping
+
+### Changed
+
+- **CI mypy scope**: expanded from `bridge/` only to full `mypy` (pyproject.toml `files` list covers all 8 module paths — 27 source files, zero errors)
+- **VALIDATION.md**: test count 88→199, classical references now point to in-repo `hardware/classical.py` functions instead of external packages, added Pauli ordering and Trotter convergence invariants
+- **Badges**: test count 88→199, added version badge (v0.3.0)
+- **CITATION.cff**: version 0.1.0→0.3.0
+
 ## [0.2.7] - 2026-02-28
 
 ### Added

@@ -30,6 +30,7 @@ class QuantumPetriNet:
         W_out: np.ndarray,
         thresholds: np.ndarray,
     ):
+        """W_in: (n_transitions, n_places), W_out: (n_places, n_transitions)."""
         self.n_places = n_places
         self.n_transitions = n_transitions
         self.W_in = np.asarray(W_in, dtype=np.float64)
@@ -92,5 +93,6 @@ class QuantumPetriNet:
         W_out: np.ndarray,
         thresholds: np.ndarray,
     ) -> QuantumPetriNet:
+        """Construct from arc weight matrices, inferring n_places and n_transitions."""
         n_t, n_p = W_in.shape
         return cls(n_p, n_t, W_in, W_out, thresholds)

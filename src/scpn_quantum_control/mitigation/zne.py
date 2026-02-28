@@ -14,6 +14,8 @@ from qiskit import QuantumCircuit
 
 @dataclass
 class ZNEResult:
+    """Richardson extrapolation result: scales, raw values, and zero-noise estimate."""
+
     noise_scales: list[int]
     expectation_values: list[float]
     zero_noise_estimate: float

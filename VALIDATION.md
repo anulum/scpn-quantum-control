@@ -2,7 +2,7 @@
 
 ## Test Suite
 
-88 unit tests across 16 test files. All pass on Python 3.9-3.12 with Qiskit 1.0+.
+199 unit and integration tests across 20+ test files. All pass on Python 3.9-3.12 with Qiskit 1.0+.
 
 ```bash
 pytest tests/ -v
@@ -16,12 +16,12 @@ Each quantum module is verified against its classical counterpart:
 
 | Module | Classical Reference | Parity Check |
 |--------|-------------------|--------------|
-| `qlif.py` | sc-neurocore `StochasticLIFNeuron` | Spike rate within 2-sigma of Bernoulli expectation |
-| `xy_kuramoto.py` | scpn-control `kuramoto.py` | R(t) within 5% of ODE solution for K >> delta-omega |
-| `trotter_upde.py` | scpn-control `upde.py` | Per-layer phase evolution tracks classical trajectory |
-| `phase_vqe.py` | Exact diagonalization | Ground energy within 0.1% (simulator) |
-| `qaoa_mpc.py` | Brute-force enumeration | Finds optimal action for small horizons |
-| `knm_hamiltonian.py` | SCPN canonical Knm | Hamiltonian eigenspectrum matches analytical bounds |
+| `qlif.py` | Bernoulli(sin^2(theta/2)) | Spike rate within 2-sigma of expectation |
+| `xy_kuramoto.py` | `hardware/classical.py` `classical_kuramoto_reference()` | R(t) within 5% of ODE solution for K >> delta-omega |
+| `trotter_upde.py` | `hardware/classical.py` `classical_exact_evolution()` | Per-layer phase evolution tracks classical trajectory at n={2,3,4,6} qubits |
+| `phase_vqe.py` | `hardware/classical.py` `classical_exact_diag()` | Ground energy within 0.1% (simulator) |
+| `qaoa_mpc.py` | `hardware/classical.py` `classical_brute_mpc()` | Finds optimal action for small horizons |
+| `knm_hamiltonian.py` | SCPN canonical K_nm (Paper 27) | Hamiltonian eigenspectrum matches analytical bounds |
 
 ### 2. Circuit Validity
 
@@ -50,6 +50,9 @@ VQE hardware result (0.05% error) provides publication-quality ground truth.
 | Surface code syndrome validity | `test_control_qec.py` |
 | QPN marking conservation | `test_qpetri.py` |
 | STDP weight update direction | `test_qstdp.py` |
+| Pauli qubit ordering (Qiskit little-endian) | `test_classical.py` |
+| Energy conservation under Trotter | `test_integration.py` |
+| Trotter order-2 convergence | `test_trotter.py` |
 
 ## Running Validation
 
@@ -62,4 +65,7 @@ pytest tests/test_hardware_runner.py -v
 
 # Coverage report
 pytest tests/ --cov=scpn_quantum_control --cov-report=term-missing
+
+# Type check (27 source files, zero errors)
+mypy
 ```

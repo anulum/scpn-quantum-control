@@ -30,6 +30,7 @@ class QuantumSTDP:
     """
 
     def __init__(self, learning_rate: float = 0.01, shift: float = np.pi / 2):
+        """shift = pi/2 gives the standard parameter-shift rule."""
         self.lr = learning_rate
         self.shift = shift
 

@@ -3,9 +3,19 @@
 Date: 2026-02-28
 Backend: ibm_fez (Heron r2, 156 qubits)
 Plan: Open (10 min/month free tier)
-QPU used: 10 min -- Feb 2026 budget fully exhausted
+QPU used: 10 min — Feb 2026 budget fully exhausted
 Jobs submitted: ~100
 New 10-min budget available 2026-03-01
+
+## Layer Naming Convention
+
+Throughout this document, "L1" through "L16" refer to the 16 oscillator
+layers of the SCPN (Self-Consistent Phenomenological Network). Each layer
+has a natural frequency omega_n and couples to other layers via the matrix
+K_nm = K_base * exp(-alpha * |n - m|). In quantum experiments, each layer
+maps to one qubit — e.g. "16-qubit UPDE" means all 16 SCPN layers
+simulated simultaneously. See [`docs/equations.md`](../docs/equations.md)
+for the full K_nm formula and parameter values.
 
 
 ## Headline Results

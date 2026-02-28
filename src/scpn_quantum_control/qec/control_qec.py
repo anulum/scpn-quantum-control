@@ -20,6 +20,7 @@ class SurfaceCode:
     """
 
     def __init__(self, distance: int = 3):
+        """Build toric code check matrices for given code distance."""
         self.d = distance
         self.num_data = 2 * distance**2
         self.Hx, self.Hz = self._build_checks()
@@ -61,6 +62,7 @@ class MWPMDecoder:
     """
 
     def __init__(self, distance: int, knm_weights: np.ndarray | None = None):
+        """Optional knm_weights rescales Manhattan distance by 1/(1+K[u,v])."""
         self.d = distance
         self.knm_weights = knm_weights
 
@@ -172,6 +174,7 @@ class ControlQEC:
     """
 
     def __init__(self, distance: int = 3, knm_weights: np.ndarray | None = None):
+        """Assemble SurfaceCode + MWPMDecoder for the given distance."""
         self.code = SurfaceCode(distance)
         self.decoder = MWPMDecoder(distance, knm_weights)
 

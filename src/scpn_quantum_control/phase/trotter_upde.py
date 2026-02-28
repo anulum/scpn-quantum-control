@@ -26,6 +26,7 @@ class QuantumUPDESolver:
         omega: np.ndarray | None = None,
         trotter_order: int = 1,
     ):
+        """Defaults to canonical 16-layer Paper 27 parameters if K/omega not given."""
         if K is None:
             K = build_knm_paper27()
         if omega is None:
@@ -68,4 +69,5 @@ class QuantumUPDESolver:
             del self._sv
 
     def hamiltonian(self) -> SparsePauliOp | None:
+        """Return the compiled XY Hamiltonian, or None if not yet built."""
         return self._solver._hamiltonian

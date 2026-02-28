@@ -21,6 +21,7 @@ class QuantumDisruptionClassifier:
     N_FEATURES = 11
 
     def __init__(self, n_features: int = 11, n_layers: int = 3, seed: int = 42):
+        """Configure classifier: n_features padded to 16-D, n_layers of Ry/Rz+CX."""
         self.n_features = n_features
         self.n_data_qubits = 4  # ceil(log2(16)) for 11->16 padding
         self.n_layers = n_layers

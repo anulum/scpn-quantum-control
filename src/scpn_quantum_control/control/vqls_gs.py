@@ -22,6 +22,7 @@ class VQLS_GradShafranov:
     """
 
     def __init__(self, n_qubits: int = 4, source_width: float = 0.05, imag_tol: float = 0.1):
+        """Grid size = 2^n_qubits. source_width controls Gaussian J(x) width."""
         self.n_qubits = n_qubits
         self.grid_size = 2**n_qubits
         self.source_width = source_width
@@ -55,6 +56,7 @@ class VQLS_GradShafranov:
         return A, b
 
     def build_ansatz(self, reps: int = 2) -> QuantumCircuit:
+        """Ry + CZ linear-entanglement ansatz for the variational state."""
         return n_local(
             self.n_qubits,
             rotation_blocks=["ry"],

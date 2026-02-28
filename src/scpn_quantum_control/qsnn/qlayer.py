@@ -31,6 +31,7 @@ class QuantumDenseLayer:
         weights: np.ndarray | None = None,
         spike_threshold: float = 0.5,
     ):
+        """weights: (n_neurons, n_inputs) or None for random init in [0, 1]."""
         self.n_neurons = n_neurons
         self.n_inputs = n_inputs
         self.spike_threshold = spike_threshold
@@ -74,6 +75,7 @@ class QuantumDenseLayer:
         return (neuron_probs > self.spike_threshold).astype(int)
 
     def get_weights(self) -> np.ndarray:
+        """Return (n_neurons, n_inputs) weight matrix."""
         return np.array(
             [
                 [self.synapses[n][i].weight for i in range(self.n_inputs)]

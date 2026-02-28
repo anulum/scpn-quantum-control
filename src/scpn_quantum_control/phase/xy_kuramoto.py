@@ -32,6 +32,7 @@ class QuantumKuramotoSolver:
         omega_natural: np.ndarray,
         trotter_order: int = 1,
     ):
+        """K_coupling: (n,n) coupling matrix, omega_natural: (n,) frequencies."""
         self.n = n_oscillators
         self.K = np.asarray(K_coupling, dtype=np.float64)
         self.omega = np.asarray(omega_natural, dtype=np.float64)
@@ -39,6 +40,7 @@ class QuantumKuramotoSolver:
         self._hamiltonian: SparsePauliOp | None = None
 
     def build_hamiltonian(self) -> SparsePauliOp:
+        """Compile K + omega into SparsePauliOp. Called automatically by evolve()."""
         self._hamiltonian = knm_to_hamiltonian(self.K, self.omega)
         return self._hamiltonian
 

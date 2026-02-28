@@ -60,7 +60,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -e ".[dev]" mypy
-      - run: mypy src/scpn_quantum_control/bridge/ --ignore-missing-imports
+      - run: mypy
 
   hardware-smoke:
     needs: test

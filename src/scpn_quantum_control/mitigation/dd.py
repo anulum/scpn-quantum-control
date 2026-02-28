@@ -11,6 +11,8 @@ from qiskit import QuantumCircuit
 
 
 class DDSequence(Enum):
+    """Supported dynamical decoupling pulse sequences."""
+
     XY4 = "XY4"
     X2 = "X2"
     CPMG = "CPMG"  # Carr-Purcell-Meiboom-Gill, Meiboom & Gill (1958)

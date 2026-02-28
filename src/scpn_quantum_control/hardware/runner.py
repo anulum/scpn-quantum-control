@@ -26,6 +26,8 @@ if TYPE_CHECKING:
 
 @dataclass
 class JobResult:
+    """Result from a single hardware or simulator job."""
+
     job_id: str
     backend_name: str
     experiment_name: str
@@ -36,6 +38,7 @@ class JobResult:
     timestamp: str = ""
 
     def to_dict(self) -> dict:
+        """Serialize to JSON-compatible dict."""
         d = {
             "job_id": self.job_id,
             "backend": self.backend_name,
@@ -79,6 +82,7 @@ class HardwareRunner:
         results_dir: str = "results",
         noise_model=None,
     ):
+        """Configure runner. Call connect() before submitting jobs."""
         self.token = token
         self.channel = channel
         self.instance = instance or self.DEFAULT_INSTANCE
@@ -141,10 +145,12 @@ class HardwareRunner:
 
     @property
     def backend(self):
+        """Active Qiskit backend (None before connect())."""
         return self._backend
 
     @property
     def backend_name(self) -> str:
+        """Backend name string, or 'not_connected' before connect()."""
         if self._backend is None:
             return "not_connected"
         return getattr(self._backend, "name", "aer_simulator")

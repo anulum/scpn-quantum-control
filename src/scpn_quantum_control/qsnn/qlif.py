@@ -34,6 +34,7 @@ class QuantumLIFNeuron:
         n_shots: int = 100,
         rng: np.random.Generator | None = None,
     ):
+        """n_shots=0 uses deterministic threshold; n_shots>0 uses stochastic sampling."""
         self.v_rest = v_rest
         self.v_threshold = v_threshold
         self.tau_mem = tau_mem
@@ -71,8 +72,10 @@ class QuantumLIFNeuron:
         return spike
 
     def get_circuit(self) -> QuantumCircuit | None:
+        """Return the last Ry circuit built by step(), or None."""
         return self._last_circuit
 
     def reset(self) -> None:
+        """Reset membrane to v_rest."""
         self.v = self.v_rest
         self._last_circuit = None

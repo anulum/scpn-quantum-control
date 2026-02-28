@@ -5,10 +5,63 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://python.org)
 [![Qiskit 1.0+](https://img.shields.io/badge/qiskit-1.0%2B-6929C4.svg)](https://qiskit.org)
-[![Tests: 88](https://img.shields.io/badge/tests-88%20passing-brightgreen.svg)]()
+[![Tests: 199](https://img.shields.io/badge/tests-199%20passing-brightgreen.svg)]()
+[![Version: 0.3.0](https://img.shields.io/badge/version-0.3.0-orange.svg)]()
 [![Hardware: ibm_fez](https://img.shields.io/badge/hardware-ibm__fez%20Heron%20r2-blueviolet.svg)]()
 
-Quantum-native reformulations of SCPN spiking neural networks, Kuramoto phase dynamics, and tokamak plasma control. Validated on IBM Heron r2 hardware (156 qubits).
+The **Self-Consistent Phenomenological Network (SCPN)** models hierarchical
+dynamics as 16 coupled Kuramoto oscillators with a coupling matrix K_nm.
+The Kuramoto model is isomorphic to the XY spin Hamiltonian — superconducting
+qubits simulate it natively via Trotterized time evolution. This repo implements
+that mapping: it compiles SCPN coupling parameters into Qiskit circuits and
+validates them on IBM Heron r2 hardware (156 qubits), achieving **0.05% VQE
+ground-state error** and the **first quantum simulation of all 16 SCPN layers**
+on real hardware.
+
+If you work on quantum simulation of coupled oscillators, NISQ benchmarking,
+or Kuramoto/XY physics, this repo gives you a tested pipeline from coupling
+matrices to hardware results.
+
+## Background: SCPN and the Quantum Mapping
+
+SCPN is a theoretical framework in which 16 oscillator layers — each with
+a natural frequency omega_n — interact through a coupling matrix K_nm:
+
+```
+K_nm = K_base * exp(-alpha * |n - m|)
+```
+
+with K_base = 0.45, alpha = 0.3, and empirical calibration anchors
+(K[1,2] = 0.302, K[2,3] = 0.201, K[3,4] = 0.252, K[4,5] = 0.154).
+Cross-hierarchy boosts link distant layers (L1-L16 = 0.05, L5-L7 = 0.15).
+See `docs/equations.md` for the full parameter set.
+
+The classical dynamics follow the Kuramoto ODE:
+
+```
+d(theta_i)/dt = omega_i + sum_j K_ij sin(theta_j - theta_i)
+```
+
+The core isomorphism: this ODE maps to the quantum XY Hamiltonian
+
+```
+H = -sum_{i<j} K_ij (X_i X_j + Y_i Y_j) - sum_i omega_i Z_i
+```
+
+where X, Y, Z are Pauli operators. Superconducting transmon qubits implement
+XX+YY interactions natively through controlled-Z gates, making quantum hardware
+a natural simulator for Kuramoto phase dynamics. The order parameter R — a
+measure of global synchronization — is extracted from qubit expectations:
+R = (1/N)|sum_i (<X_i> + i<Y_i>)|.
+
+![Layer coherence vs coupling strength](figures/layer_coherence_vs_coupling.png)
+*Coherence R as a function of coupling strength K_base across 16 SCPN layers.
+Strongly-coupled layers (L3, L4, L10) synchronize first; weakly-coupled L12
+lags behind, consistent with the exponential decay in K_nm.*
+
+**Reference**: M. Sotek, *Self-Consistent Phenomenological Network: Layer
+Dynamics and Coupling Structure*, Working Paper 27 (2025). Manuscript in
+preparation.
 
 ## Hardware Results (ibm_fez, February 2026)
 
@@ -20,13 +73,31 @@ Quantum-native reformulations of SCPN spiking neural networks, Kuramoto phase dy
 | UPDE-16 snapshot | 16 | 770 | R=0.332 | R=0.615 | 46% |
 | QAOA-MPC (p=2) | 4 | -- | -0.514 | 0.250 | -- |
 
-Full results: [`results/HARDWARE_RESULTS.md`](results/HARDWARE_RESULTS.md)
+Full results with all 12 decoherence data points: [`results/HARDWARE_RESULTS.md`](results/HARDWARE_RESULTS.md)
 
 **Key findings:**
-- VQE with Knm-informed ansatz achieves publication-quality 0.05% error
-- Coherence wall at depth 250-400 on Heron r2
-- First quantum simulation of all 16 SCPN layers on real hardware
-- Shallow Trotter (1 rep) beats deep Trotter on NISQ devices
+
+- VQE with K_nm-informed ansatz achieves publication-quality 0.05% error
+- Coherence wall at depth 250-400 on Heron r2 — shallow Trotter (1 rep) beats deep Trotter on NISQ devices
+
+![Trotter depth tradeoff](figures/trotter_tradeoff.png)
+*More Trotter repetitions improve mathematical accuracy but increase circuit
+depth. On NISQ hardware, decoherence from the extra gates outweighs the
+Trotter error reduction. Optimal strategy: fewest reps that capture the physics.*
+
+- First quantum simulation of all 16 SCPN layers on real hardware — per-layer structure matches coupling topology
+
+![UPDE-16 per-layer expectations](figures/upde16_layer_bars.png)
+*Per-layer X-basis expectations from the 16-qubit UPDE snapshot on ibm_fez.
+L12 (most weakly coupled) shows near-complete decoherence; strongly-coupled
+layers (L3, L4, L10) maintain coherence.*
+
+- 12-point decoherence curve from depth 5 to 770 with exponential decay fit
+
+![Decoherence curve](figures/decoherence_curve.png)
+*Hardware-to-exact ratio R_hw/R_exact vs circuit depth. The three regimes:
+near-perfect readout (depth < 25), linear decoherence (85-400), and
+noise-dominated (> 400).*
 
 ## Architecture
 
@@ -52,6 +123,9 @@ scpn_quantum_control/
 │   └── sc_to_quantum.py    Bitstream probability <-> rotation angle
 ├── qec/            Quantum error correction
 │   └── control_qec.py     Toric code + MWPM decoder (Knm-weighted)
+├── mitigation/     Error mitigation
+│   ├── zne.py          Zero-noise extrapolation (unitary folding)
+│   └── dd.py           Dynamical decoupling (XY4, X2)
 └── hardware/       IBM Quantum hardware runner
     ├── runner.py       ibm_fez job submission + result parsing
     ├── experiments.py  Pre-built experiment circuits
@@ -65,14 +139,20 @@ pip install -e ".[dev]"
 pytest tests/ -v
 ```
 
-### Run an example
+### Examples
 
-```bash
-python examples/01_qlif_demo.py      # Quantum LIF neuron spike train
-python examples/02_kuramoto_xy_demo.py  # 4-oscillator XY dynamics
-python examples/03_qaoa_mpc_demo.py  # QAOA binary MPC
-python examples/04_qpetri_demo.py    # Quantum Petri net firing
-```
+See [`examples/README.md`](examples/README.md) for a guided walkthrough. Summary:
+
+| Example | What it does |
+|---------|-------------|
+| [`01_qlif_demo.py`](examples/01_qlif_demo.py) | Quantum LIF neuron: maps membrane potential to Ry rotation, compares firing rates with classical Bernoulli expectation |
+| [`02_kuramoto_xy_demo.py`](examples/02_kuramoto_xy_demo.py) | 4-oscillator Kuramoto dynamics on the XY Hamiltonian via Trotter evolution; prints R(t) trajectory |
+| [`03_qaoa_mpc_demo.py`](examples/03_qaoa_mpc_demo.py) | QAOA-based binary MPC: optimizes 4-step coil control sequence by mapping quadratic cost to Ising Hamiltonian |
+| [`04_qpetri_demo.py`](examples/04_qpetri_demo.py) | Quantum Petri net: 3 places, 2 transitions — tokens evolve in superposition via controlled rotations |
+| [`05_vqe_ansatz_comparison.py`](examples/05_vqe_ansatz_comparison.py) | Benchmarks three VQE ansatze (K_nm-informed, hardware-efficient, EfficientSU2) on the 4-qubit Kuramoto Hamiltonian |
+| [`06_zne_demo.py`](examples/06_zne_demo.py) | Zero-noise extrapolation on a noisy simulator: unitary folding + Richardson extrapolation under synthetic Heron r2 noise |
+
+All examples run on statevector simulation (no QPU needed).
 
 ### Hardware execution (requires IBM Quantum credentials)
 
@@ -85,17 +165,17 @@ python run_hardware.py --experiment kuramoto --qubits 4 --shots 10000
 
 ### Quantum Spiking Neural Networks (`qsnn/`)
 
-Maps sc-neurocore stochastic LIF neurons to parameterized quantum circuits. A qubit with Ry(theta) rotation + Z-basis measurement produces spike/no-spike with probability cos^2(theta/2) -- direct analog of stochastic membrane potential.
+Maps stochastic LIF neurons to parameterized quantum circuits. A qubit with
+Ry(theta) rotation + Z-basis measurement produces spike/no-spike with
+probability sin^2(theta/2) — direct analog of stochastic membrane potential.
 
 ### Quantum Phase Dynamics (`phase/`)
 
-The Kuramoto equation is isomorphic to the XY spin Hamiltonian:
-
-```
-H = -sum_{i<j} K_ij (X_i X_j + Y_i Y_j) - sum_i omega_i Z_i
-```
-
-Quantum hardware simulates this natively via Trotterized time evolution. The 16-layer UPDE becomes a 16-qubit spin chain with Knm coupling.
+The Kuramoto ODE is isomorphic to the XY spin Hamiltonian (see
+[Background](#background-scpn-and-the-quantum-mapping)). Quantum hardware
+simulates this natively via Trotterized time evolution. The 16-layer UPDE
+(Unified Phase Dynamics Equation — the master equation governing all SCPN
+layers) becomes a 16-qubit spin chain with K_nm coupling.
 
 ### Quantum Control (`control/`)
 
@@ -115,6 +195,11 @@ Compiles SCPN data structures into quantum circuits:
 
 Toric surface code protecting quantum control signals. MWPM decoder uses Knm graph distance instead of lattice distance for physics-aware error correction.
 
+### Error Mitigation (`mitigation/`)
+
+- **ZNE**: Global unitary folding + Richardson extrapolation (Giurgica-Tiron et al. 2020)
+- **DD**: Dynamical decoupling pulse insertion (XY4, X2) for idle qubits (Viola et al. 1999)
+
 ## Dependencies
 
 | Package | Version | Purpose |
@@ -128,6 +213,12 @@ Toric surface code protecting quantum control signals. MWPM decoder uses Knm gra
 Optional:
 - `matplotlib >= 3.5` for visualization
 - `qiskit-ibm-runtime >= 0.20.0` for hardware execution
+
+## Related Repositories
+
+| Repository | Description |
+|-----------|-------------|
+| [scpn-fusion-core](https://github.com/anulum/scpn-fusion-core) | Classical SCPN algorithms: Kuramoto solvers, coupling matrix calibration, transport models (v3.9.2, 1899 tests) |
 
 ## Citation
 

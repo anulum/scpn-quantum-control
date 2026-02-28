@@ -26,6 +26,7 @@ class QAOA_MPC:
         horizon: int,
         p_layers: int = 2,
     ):
+        """Set up MPC: B_matrix maps actions to state, horizon = number of binary timesteps."""
         self.B = np.asarray(B_matrix, dtype=np.float64)
         self.target = np.asarray(target_state, dtype=np.float64)
         self.horizon = horizon

@@ -28,6 +28,7 @@ class PhaseVQE:
         ansatz_reps: int = 2,
         threshold: float = 0.01,
     ):
+        """Build Hamiltonian and K_nm-informed ansatz from coupling parameters."""
         self.K = K
         self.omega = omega
         self.hamiltonian = knm_to_hamiltonian(K, omega)
