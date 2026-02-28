@@ -3,6 +3,19 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.3] - 2026-02-28
+
+### Fixed
+
+- **Disruption classifier**: removed dead CX parameter entries — `n_params` was `n_layers*(2*n_qubits + n_qubits-1)` but CX gates have no trainable parameters; now `n_layers*2*n_qubits` (30 vs 42 for default config)
+- **QSTDP Hebbian dynamics**: `post_measured` was accepted but ignored; now implements LTP (pre+post → weight increase) and LTD (pre only → weight decrease) per Hebbian learning rule
+
+### Added
+
+- Test for `kuramoto_4osc_zne_experiment` on simulator
+- Test for `upde_16_snapshot_experiment` on simulator (marked `@pytest.mark.slow`)
+- `pytest.ini_options.addopts` skips slow/hardware tests by default
+
 ## [0.2.2] - 2026-02-28
 
 ### Fixed

@@ -25,7 +25,7 @@ class QuantumDisruptionClassifier:
         self.n_data_qubits = 4  # ceil(log2(16)) for 11->16 padding
         self.n_layers = n_layers
         self.n_qubits = self.n_data_qubits + 1  # +1 ancilla
-        n_params = n_layers * (self.n_qubits * 2 + (self.n_qubits - 1))
+        n_params = n_layers * self.n_qubits * 2
         self.params = np.random.default_rng(seed).uniform(-np.pi, np.pi, n_params)
 
     def encode_features(self, features: np.ndarray) -> QuantumCircuit:
@@ -57,7 +57,6 @@ class QuantumDisruptionClassifier:
                 idx += 1
             for q in range(self.n_qubits - 1):
                 qc.cx(q, q + 1)
-                idx += 1
         return qc
 
     def predict(self, features: np.ndarray) -> float:

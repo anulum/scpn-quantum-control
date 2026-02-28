@@ -180,6 +180,34 @@ def test_vqe_4q_on_simulator(sim_runner):
         exp_mod.minimize = original
 
 
+@pytest.mark.slow
+def test_upde_16_snapshot_on_simulator(sim_runner):
+    """16-layer UPDE snapshot: produces R and per-qubit expectations.
+
+    Marked slow: 16-qubit Trotter circuit takes ~5 min on AerSimulator.
+    Run with: pytest -m slow
+    """
+    from scpn_quantum_control.hardware.experiments import upde_16_snapshot_experiment
+
+    result = upde_16_snapshot_experiment(sim_runner, shots=100, trotter_steps=1)
+    assert result["experiment"] == "upde_16_snapshot"
+    assert result["n_layers"] == 16
+    assert 0.0 <= result["hw_R"] <= 1.5
+    assert np.isfinite(result["classical_R"])
+    assert len(result["hw_exp_x"]) == 16
+
+
+def test_kuramoto_4osc_zne_on_simulator(sim_runner):
+    """ZNE experiment: produces R per scale and extrapolated value."""
+    from scpn_quantum_control.hardware.experiments import kuramoto_4osc_zne_experiment
+
+    result = kuramoto_4osc_zne_experiment(sim_runner, shots=500, dt=0.05, scales=[1, 3])
+    assert result["experiment"] == "kuramoto_4osc_zne"
+    assert len(result["R_per_scale"]) == 2
+    assert np.isfinite(result["zne_R"])
+    assert np.isfinite(result["classical_R"])
+
+
 def test_transpile_with_dd(sim_runner):
     """DD pass should not crash; on simulator it falls back to original circuit."""
     from qiskit import QuantumCircuit
