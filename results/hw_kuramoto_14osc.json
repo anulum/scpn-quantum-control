@@ -1,0 +1,12 @@
+{
+  "backend": "ibm_fez",
+  "experiment": "kuramoto_14osc",
+  "job_id": "d6h3lkpkeb2s73be4ttg",
+  "n_qubits": 14,
+  "t": 0.1,
+  "shots": 10000,
+  "hw_R": 0.381411582553706,
+  "classical_kuramoto_R": 0.6213122278308914,
+  "exact_quantum_R": null,
+  "note": "2^14 exact reference OOM (20GB); using classical Kuramoto ODE"
+}
