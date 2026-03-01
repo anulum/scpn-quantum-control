@@ -31,6 +31,8 @@ class QuantumSTDP:
 
     def __init__(self, learning_rate: float = 0.01, shift: float = np.pi / 2):
         """shift = pi/2 gives the standard parameter-shift rule."""
+        if abs(np.sin(shift)) < 1e-12:
+            raise ValueError(f"shift={shift} makes sin(shift)~0, parameter-shift rule undefined")
         self.lr = learning_rate
         self.shift = shift
 

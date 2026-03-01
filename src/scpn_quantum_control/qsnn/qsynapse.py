@@ -18,6 +18,8 @@ class QuantumSynapse:
 
     def __init__(self, weight: float, w_min: float = 0.0, w_max: float = 1.0):
         """Weight is clamped to [w_min, w_max]."""
+        if w_max <= w_min:
+            raise ValueError(f"w_max ({w_max}) must exceed w_min ({w_min})")
         self.w_min = w_min
         self.w_max = w_max
         self.weight = np.clip(weight, w_min, w_max)

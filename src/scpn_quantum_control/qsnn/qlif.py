@@ -35,6 +35,10 @@ class QuantumLIFNeuron:
         rng: np.random.Generator | None = None,
     ):
         """n_shots=0 uses deterministic threshold; n_shots>0 uses stochastic sampling."""
+        if v_threshold <= v_rest:
+            raise ValueError(f"v_threshold ({v_threshold}) must exceed v_rest ({v_rest})")
+        if tau_mem <= 0:
+            raise ValueError(f"tau_mem must be positive, got {tau_mem}")
         self.v_rest = v_rest
         self.v_threshold = v_threshold
         self.tau_mem = tau_mem

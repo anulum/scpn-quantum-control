@@ -3,6 +3,26 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.6.0] - 2026-03-01
+
+### Fixed
+
+- Division-by-zero in QuantumLIFNeuron when v_threshold == v_rest
+- Division-by-zero in QuantumSynapse when w_max == w_min
+- Division-by-zero in QuantumSTDP when sin(shift) == 0
+- Notebook 02 referencing non-existent PhaseVQE.solve() dict keys
+
+### Added
+
+- Input validation guards on QSNN constructors (qlif, qsynapse, qstdp)
+- PhaseVQE.solve() now returns exact_energy, energy_gap, relative_error_pct, n_params
+- 6 new validation tests (test_qsnn_validation.py)
+
+### Changed
+
+- docs/changelog.md fleshed out with full version history
+- Test count: 411 → 417
+
 ## [0.5.1] - 2026-03-01
 
 ### Fixed

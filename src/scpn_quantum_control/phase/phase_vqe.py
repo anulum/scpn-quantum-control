@@ -12,6 +12,7 @@ from qiskit.quantum_info import Statevector
 from scipy.optimize import minimize
 
 from ..bridge.knm_hamiltonian import knm_to_ansatz, knm_to_hamiltonian
+from ..hardware.classical import classical_exact_diag
 
 
 class PhaseVQE:
@@ -59,10 +60,19 @@ class PhaseVQE:
         self._optimal_params = result.x
         self._ground_energy = float(result.fun)
 
+        n = len(self.omega)
+        exact = classical_exact_diag(n, K=self.K, omega=self.omega)
+        exact_e = exact["ground_energy"]
+        gap = abs(self._ground_energy - exact_e)
+
         return {
             "ground_energy": self._ground_energy,
+            "exact_energy": exact_e,
+            "energy_gap": gap,
+            "relative_error_pct": gap / abs(exact_e) * 100 if exact_e != 0 else float("inf"),
             "optimal_params": self._optimal_params,
             "n_evals": result.nfev,
+            "n_params": self.n_params,
             "converged": result.success,
         }
 
