@@ -39,6 +39,11 @@ with K_base = 0.45, alpha = 0.3, and empirical calibration anchors
 Cross-hierarchy boosts link distant layers (L1-L16 = 0.05, L5-L7 = 0.15).
 See `docs/equations.md` for the full parameter set.
 
+![Knm coupling matrix](figures/knm_heatmap.png)
+*The 16×16 K_nm coupling matrix. White annotations: calibration anchors from
+Paper 27 Table 2. Cyan annotations: cross-hierarchy boosts (L1↔L16, L5↔L7).
+Exponential decay with distance is visible along the diagonal.*
+
 The classical dynamics follow the Kuramoto ODE:
 
 ```

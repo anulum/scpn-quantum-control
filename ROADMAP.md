@@ -49,7 +49,7 @@
 
 ## Future
 
-- Fault-tolerant UPDE simulation (surface code logical qubits)
+- Fault-tolerant UPDE simulation (surface code logical qubits; post-2030, hardware-dependent)
 - QSNN training loop on hardware (parameter-shift STDP)
 - Quantum disruption classifier trained on ITER disruption database
 - Integration with SCPN SSGF geometry engine
