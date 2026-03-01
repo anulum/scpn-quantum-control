@@ -8,6 +8,7 @@
       "affiliation": "Anulum"
     }
   ],
+  "version": "0.6.0",
   "upload_type": "software",
   "access_right": "open",
   "license": "MIT",
