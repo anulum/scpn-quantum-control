@@ -24,7 +24,7 @@
 
 ### v0.5.0 (February 2026)
 - 3 crypto hardware experiments: Bell test, correlator, QKD QBER
-- 20 total experiments in registry, 411 tests
+- 20 total experiments in registry, 442 tests
 
 ### v0.6.0 (February 2026)
 - ZNE error mitigation on kuramoto_4osc
@@ -32,12 +32,14 @@
 - DD on full 16-layer UPDE
 - Noise baseline repeat for calibration drift tracking
 
-### v0.6.2 (March 2026) — current
+### v0.6.4 (March 2026) — current
 - All 4 notebooks executed with outputs committed
 - Knm heatmap figure (`figures/knm_heatmap.png`)
 - Zenodo DOI published (10.5281/zenodo.18821929)
 - PyPI package published
 - 442 tests, 99%+ line coverage
+- v0.6.3: coverage gate, mitigation API docs, notebook table
+- v0.6.4: LICENSE fix, codecov fix, issue templates, dependabot pip, SECURITY.md, README tree
 
 ## v0.7.0 (Q2 2026)
 

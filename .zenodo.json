@@ -1,6 +1,6 @@
 {
   "title": "scpn-quantum-control: Quantum-Native SCPN Phase Dynamics and Control",
-  "description": "Compiles SCPN Kuramoto coupling matrices into Qiskit circuits and validates them on IBM Heron r2 hardware. Achieves 0.05% VQE ground-state error on 4-qubit XY Hamiltonian. Includes Trotterized UPDE solver (16-layer), QAOA-MPC, quantum Petri nets, quantum spiking neural networks, ZNE/DD error mitigation, and toric-code QEC with MWPM decoder. 424 tests, 99% coverage.",
+  "description": "Compiles SCPN Kuramoto coupling matrices into Qiskit circuits and validates them on IBM Heron r2 hardware. Achieves 0.05% VQE ground-state error on 4-qubit XY Hamiltonian. Includes Trotterized UPDE solver (16-layer), QAOA-MPC, quantum Petri nets, quantum spiking neural networks, ZNE/DD error mitigation, and toric-code QEC with MWPM decoder. 442 tests, 99% coverage.",
   "creators": [
     {
       "name": "Sotek, Miroslav",
