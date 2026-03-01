@@ -1,34 +1,60 @@
 {
   "title": "scpn-quantum-control: Quantum-Native SCPN Phase Dynamics and Control",
-  "description": "Quantum-native reformulations of SCPN spiking neural networks, Kuramoto phase dynamics, and tokamak plasma control algorithms. Validated on IBM Heron r2 hardware.",
+  "description": "Compiles SCPN Kuramoto coupling matrices into Qiskit circuits and validates them on IBM Heron r2 hardware. Achieves 0.05% VQE ground-state error on 4-qubit XY Hamiltonian. Includes Trotterized UPDE solver (16-layer), QAOA-MPC, quantum Petri nets, quantum spiking neural networks, ZNE/DD error mitigation, and toric-code QEC with MWPM decoder. 424 tests, 99% coverage.",
   "creators": [
     {
       "name": "Sotek, Miroslav",
-      "orcid": "0009-0009-3560-0851",
-      "affiliation": "Anulum"
+      "affiliation": "ANULUM CH & LI",
+      "orcid": "0009-0009-3560-0851"
     }
   ],
-  "version": "0.6.0",
   "upload_type": "software",
+  "version": "0.6.0",
+  "publication_date": "2026-03-01",
   "access_right": "open",
   "license": "MIT",
+  "language": "eng",
   "keywords": [
     "quantum computing",
     "Kuramoto model",
-    "spiking neural networks",
-    "tokamak plasma control",
-    "SCPN",
-    "qiskit",
-    "NISQ",
     "XY Hamiltonian",
     "Trotter decomposition",
     "VQE",
-    "QAOA"
+    "QAOA",
+    "spiking neural networks",
+    "plasma control",
+    "SCPN",
+    "qiskit",
+    "NISQ",
+    "IBM Heron r2",
+    "error mitigation",
+    "quantum error correction",
+    "phase dynamics"
   ],
   "related_identifiers": [
     {
-      "relation": "isPartOf",
-      "identifier": "https://github.com/anulum/scpn-quantum-control"
+      "identifier": "https://github.com/anulum/scpn-quantum-control",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    },
+    {
+      "identifier": "https://pypi.org/project/scpn-quantum-control/",
+      "relation": "isAlternateIdentifier",
+      "scheme": "url"
+    },
+    {
+      "identifier": "https://anulum.github.io/scpn-quantum-control",
+      "relation": "isDocumentedBy",
+      "scheme": "url"
+    },
+    {
+      "identifier": "https://github.com/anulum/scpn-fusion-core",
+      "relation": "isRelatedTo",
+      "scheme": "url"
     }
-  ]
+  ],
+  "communities": [
+    {"identifier": "zenodo"}
+  ],
+  "notes": "Part of the SCPN (Self-Consistent Phenomenological Network) research framework by ANULUM. Hardware validation performed on IBM Quantum ibm_fez (Heron r2, 156 qubits)."
 }
