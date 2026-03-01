@@ -46,7 +46,7 @@ jobs:
           pytest tests/ --cov=scpn_quantum_control --cov-report=xml --ignore=tests/test_hardware_runner.py
       - name: Upload coverage
         if: matrix.python-version == '3.12'
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           file: coverage.xml
           fail_ci_if_error: false
