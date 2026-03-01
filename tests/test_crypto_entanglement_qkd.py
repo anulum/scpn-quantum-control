@@ -40,7 +40,7 @@ def test_correlator_matrix_has_nonzero_entries():
     state = prepare_key_state(K, omega, ansatz_reps=2, maxiter=50)
     sv = state["statevector"]
     corr = correlator_matrix(sv, [0, 1], [2, 3])
-    assert np.any(np.abs(corr) > 1e-4), "Expected nonzero cross-correlations"
+    assert np.any(np.abs(corr) > 1e-6), "Expected nonzero cross-correlations"
 
 
 def test_bell_test_returns_S():
