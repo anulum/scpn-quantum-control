@@ -13,11 +13,10 @@ import numpy as np
 def _import_plasma_knm_module(*, repo_src: str | Path | None = None):
     """Import ``scpn_control.phase.plasma_knm`` with optional local src path."""
     inserted = False
-    if repo_src is not None:
-        src = str(Path(repo_src).resolve())
-        if src not in sys.path:
-            sys.path.insert(0, src)
-            inserted = True
+    src = str(Path(repo_src).resolve()) if repo_src is not None else ""
+    if src and src not in sys.path:
+        sys.path.insert(0, src)
+        inserted = True
     try:
         return import_module("scpn_control.phase.plasma_knm")
     except Exception as exc:  # pragma: no cover - optional dependency path
@@ -26,7 +25,7 @@ def _import_plasma_knm_module(*, repo_src: str | Path | None = None):
             "or pass repo_src='<path>/scpn-control/src' to bridge functions."
         ) from exc
     finally:
-        if inserted and sys.path and sys.path[0] == str(Path(repo_src).resolve()):
+        if inserted and sys.path and sys.path[0] == src:
             sys.path.pop(0)
 
 

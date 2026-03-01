@@ -11,8 +11,6 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
-FloatArray = NDArray[np.float64]
-
 
 def _as_finite_float(name: str, value: Any) -> float:
     x = float(value)
@@ -101,7 +99,7 @@ class UPDEPhaseArtifact:
     """Portable UPDE state artifact shared across execution backends."""
 
     layers: list[LayerStateArtifact]
-    cross_layer_alignment: FloatArray
+    cross_layer_alignment: NDArray[np.float64]
     stability_proxy: float
     regime_id: str
     metadata: dict[str, Any] = field(default_factory=dict)
