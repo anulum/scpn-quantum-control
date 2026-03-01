@@ -10,6 +10,7 @@
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue.svg)](https://anulum.github.io/scpn-quantum-control)
 [![Tests: 424](https://img.shields.io/badge/tests-424%20passing-brightgreen.svg)]()
 [![Version: 0.6.2](https://img.shields.io/badge/version-0.6.2-orange.svg)](https://pypi.org/project/scpn-quantum-control/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18821929.svg)](https://doi.org/10.5281/zenodo.18821929)
 [![Hardware: ibm_fez](https://img.shields.io/badge/hardware-ibm__fez%20Heron%20r2-blueviolet.svg)]()
 
 The **Self-Consistent Phenomenological Network (SCPN)** models hierarchical
