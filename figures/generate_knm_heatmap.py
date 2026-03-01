@@ -22,24 +22,38 @@ def generate_knm_heatmap():
     ax.set_title(r"$K_{nm}$ coupling matrix (Paper 27, Eq. 3)")
     ax.set_xticks(range(16))
     ax.set_yticks(range(16))
-    ax.set_xticklabels([f"L{i+1}" for i in range(16)], fontsize=7)
-    ax.set_yticklabels([f"L{i+1}" for i in range(16)], fontsize=7)
+    ax.set_xticklabels([f"L{i + 1}" for i in range(16)], fontsize=7)
+    ax.set_yticklabels([f"L{i + 1}" for i in range(16)], fontsize=7)
 
     # Annotate calibration anchors — Paper 27 Table 2
     anchors = {(0, 1): 0.302, (1, 2): 0.201, (2, 3): 0.252, (3, 4): 0.154}
     for (i, j), val in anchors.items():
-        ax.text(j, i, f"{val:.3f}", ha="center", va="center",
-                fontsize=6, color="white", fontweight="bold")
-        ax.text(i, j, f"{val:.3f}", ha="center", va="center",
-                fontsize=6, color="white", fontweight="bold")
+        ax.text(
+            j,
+            i,
+            f"{val:.3f}",
+            ha="center",
+            va="center",
+            fontsize=6,
+            color="white",
+            fontweight="bold",
+        )
+        ax.text(
+            i,
+            j,
+            f"{val:.3f}",
+            ha="center",
+            va="center",
+            fontsize=6,
+            color="white",
+            fontweight="bold",
+        )
 
     # Annotate cross-hierarchy boosts — Paper 27 S4.3
     boosts = {(0, 15): 0.05, (4, 6): 0.15}
     for (i, j), val in boosts.items():
-        ax.text(j, i, f"{val:.2f}", ha="center", va="center",
-                fontsize=6, color="cyan")
-        ax.text(i, j, f"{val:.2f}", ha="center", va="center",
-                fontsize=6, color="cyan")
+        ax.text(j, i, f"{val:.2f}", ha="center", va="center", fontsize=6, color="cyan")
+        ax.text(i, j, f"{val:.2f}", ha="center", va="center", fontsize=6, color="cyan")
 
     out = Path(__file__).parent / "knm_heatmap.png"
     fig.savefig(out, bbox_inches="tight")
