@@ -247,3 +247,23 @@ All error in the scaling curve comes from gate decoherence during evolution.
 | `sim_kuramoto_4osc.json`      | Simulator baseline (4-osc)            |
 | `sim_kuramoto_8osc.json`      | Simulator baseline (8-osc)            |
 | `SIMULATOR_RESULTS.md`        | Full simulator results document       |
+
+
+## Reproduction
+
+All experiments can be reproduced with an IBM Quantum account (free tier provides 10 min/month on Heron r2).
+
+**Source code:**
+
+- `src/scpn_quantum_control/hardware/experiments.py` — 20 pre-built experiment functions (kuramoto_4osc, vqe_4q, upde_16_snapshot, etc.)
+- `src/scpn_quantum_control/hardware/runner.py` — IBM backend connection, job submission, result parsing
+- `src/scpn_quantum_control/hardware/classical.py` — Classical Kuramoto ODE solver for exact references
+
+**CLI invocation:**
+
+```bash
+pip install -e ".[ibm]"
+python run_hardware.py --experiment kuramoto --qubits 4 --shots 10000
+```
+
+**Raw data:** All `results/*.json` files contain full measurement counts, timestamps, backend names, and job IDs (where applicable). VQE (`hw_vqe_4q.json`) ran through a COBYLA optimizer loop — see the `job_note` field in that file.

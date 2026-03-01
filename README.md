@@ -7,7 +7,7 @@
 [![Qiskit 1.0+](https://img.shields.io/badge/qiskit-1.0%2B-6929C4.svg)](https://qiskit.org)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue.svg)](https://anulum.github.io/scpn-quantum-control)
 [![Tests: 411](https://img.shields.io/badge/tests-411%20passing-brightgreen.svg)]()
-[![Version: 0.5.0](https://img.shields.io/badge/version-0.5.0-orange.svg)]()
+[![Version: 0.5.1](https://img.shields.io/badge/version-0.5.1-orange.svg)](https://pypi.org/project/scpn-quantum-control/)
 [![Hardware: ibm_fez](https://img.shields.io/badge/hardware-ibm__fez%20Heron%20r2-blueviolet.svg)]()
 
 The **Self-Consistent Phenomenological Network (SCPN)** models hierarchical
@@ -143,7 +143,14 @@ scpn_quantum_control/
 ## Quick Start
 
 ```bash
+pip install scpn-quantum-control
+```
+
+For development (editable install with test/lint tooling):
+
+```bash
 pip install -e ".[dev]"
+pre-commit install
 pytest tests/ -v
 ```
 

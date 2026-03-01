@@ -6,6 +6,8 @@
   "ansatz": "knm_informed_ry_rz_cz",
   "optimizer": "COBYLA",
   "maxiter": 100,
+  "job_id": "optimizer_loop_100_iterations",
+  "job_note": "VQE uses COBYLA optimizer (100 iterations). Each iteration evaluates the cost function on the simulator with the transpiled ansatz; the final optimized circuit is executed on hardware for the reported energy. No single IBM job ID — the hardware call is the final evaluation.",
   "vqe_energy": -6.2998,
   "exact_ground_energy": -6.3030,
   "absolute_gap": 0.0032,
