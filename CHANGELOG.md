@@ -10,18 +10,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Division-by-zero in QuantumLIFNeuron when v_threshold == v_rest
 - Division-by-zero in QuantumSynapse when w_max == w_min
 - Division-by-zero in QuantumSTDP when sin(shift) == 0
+- Division-by-zero in QAOA_MPC when horizon <= 0
+- Division-by-zero in classical_kuramoto_reference when dt <= 0
+- Index-out-of-bounds in bell_inequality_test when qubit >= n_total
+- Index-out-of-bounds in best_entanglement_path when source/target >= n
 - Notebook 02 referencing non-existent PhaseVQE.solve() dict keys
+- Stale test counts in VALIDATION.md and docs/index.md
 
 ### Added
 
 - Input validation guards on QSNN constructors (qlif, qsynapse, qstdp)
+- Input validation on QAOA_MPC, bell_inequality_test, best_entanglement_path, classical_kuramoto_reference
 - PhaseVQE.solve() now returns exact_energy, energy_gap, relative_error_pct, n_params
-- 6 new validation tests (test_qsnn_validation.py)
+- 13 validation tests (test_qsnn_validation.py)
 
 ### Changed
 
 - docs/changelog.md fleshed out with full version history
-- Test count: 411 → 417
+- Test count: 411 → 424
 
 ## [0.5.1] - 2026-03-01
 

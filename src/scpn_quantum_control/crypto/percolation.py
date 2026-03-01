@@ -216,6 +216,8 @@ def best_entanglement_path(
     import heapq
 
     n = K.shape[0]
+    if source >= n or target >= n or source < 0 or target < 0:
+        raise ValueError(f"source ({source}) / target ({target}) out of range [0, {n})")
     # Max-min path: invert to find path that maximizes the minimum edge
     # Use negative weights with Dijkstra to find max-bottleneck path
     best = np.full(n, -np.inf)

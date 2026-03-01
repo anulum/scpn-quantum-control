@@ -9,10 +9,10 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
 
 **Hardening + high-level API.**
 
-- Input validation guards on all QSNN constructors — prevents div-by-zero in qlif, qsynapse, qstdp
+- Input validation guards on all public API constructors — prevents div-by-zero in qlif, qsynapse, qstdp, qaoa_mpc, classical_kuramoto_reference; bounds-checks on bell_inequality_test, best_entanglement_path
 - `PhaseVQE.solve()` now returns `exact_energy`, `energy_gap`, `relative_error_pct`, `n_params`
 - Notebook 02 fixed to use enriched solve() dict
-- 6 new validation tests (417 total)
+- 13 validation tests (424 total)
 
 ## [0.5.1] - 2026-03-01
 

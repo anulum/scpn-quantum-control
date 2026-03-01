@@ -30,6 +30,10 @@ def classical_kuramoto_reference(
 
     Returns times, theta(t), R(t) for direct comparison with quantum results.
     """
+    if dt <= 0:
+        raise ValueError(f"dt must be positive, got {dt}")
+    if t_max < 0:
+        raise ValueError(f"t_max must be non-negative, got {t_max}")
     if K is None:
         K = build_knm_paper27(L=n_osc)
     if omega is None:

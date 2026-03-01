@@ -145,6 +145,8 @@ def bell_inequality_test(
     Classical bound: S ≤ 2. Quantum bound: S ≤ 2√2.
     Violation (S > 2) certifies entanglement.
     """
+    if qubit_a >= n_total or qubit_b >= n_total:
+        raise ValueError(f"qubits ({qubit_a}, {qubit_b}) out of range for {n_total}-qubit system")
 
     def _correlator(pauli_a: str, pauli_b: str) -> float:
         label = ["I"] * n_total
