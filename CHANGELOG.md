@@ -3,6 +3,13 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.6.1] - 2026-03-01
+
+### Fixed
+
+- mypy errors in bridge module: remove FloatArray type alias (incompatible with Python 3.9), fix Path(None) in control_plasma_knm.py
+- Zenodo metadata enriched (.zenodo.json, CITATION.cff)
+
 ## [0.6.0] - 2026-03-01
 
 ### Fixed
