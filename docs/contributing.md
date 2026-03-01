@@ -19,7 +19,7 @@ All PRs must pass:
 ruff check src/ tests/       # zero errors
 ruff format --check src/ tests/  # zero diffs
 python -m mypy src/           # zero errors
-pytest tests/ -x -q           # 411+ tests pass
+pytest tests/ -x -q           # 442 tests pass
 ```
 
 ## Anti-slop policy

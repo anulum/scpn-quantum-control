@@ -73,7 +73,7 @@ def generate_quantum_control_header():
         color="#ffd700", fontsize=13, fontname="monospace", alpha=0.7,
     )
     ax.text(
-        1.0, 4.5, "v0.5.1 | 411 TESTS | VQE 0.05% ERROR | 16-LAYER UPDE",
+        1.0, 4.5, "v0.6.3 | 442 TESTS | VQE 0.05% ERROR | 16-LAYER UPDE",
         color="#00d4ff", fontsize=10, fontname="monospace", alpha=0.5,
     )
 

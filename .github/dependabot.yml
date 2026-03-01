@@ -5,3 +5,8 @@ updates:
     schedule:
       interval: weekly
       day: monday
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday

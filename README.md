@@ -120,7 +120,9 @@ scpn_quantum_control/
 ├── phase/          Quantum phase dynamics
 │   ├── xy_kuramoto.py  Kuramoto -> XY Hamiltonian + Trotter evolution
 │   ├── trotter_upde.py 16-layer UPDE as multi-site spin chain
-│   └── phase_vqe.py    VQE ground state with Knm-informed ansatz
+│   ├── phase_vqe.py    VQE ground state with Knm-informed ansatz
+│   ├── ansatz_bench.py     VQE ansatz comparison benchmarking
+│   └── trotter_error.py    Trotter evolution error analysis
 ├── control/        Quantum control algorithms
 │   ├── qaoa_mpc.py     QAOA binary MPC trajectory optimization
 │   ├── vqls_gs.py      VQLS for Grad-Shafranov equilibrium
@@ -131,7 +133,8 @@ scpn_quantum_control/
 │   ├── phase_artifact.py   Shared UPDE phase artifact schema
 │   ├── orchestrator_adapter.py  scpn-phase-orchestrator <-> quantum bridge adapter
 │   ├── spn_to_qcircuit.py  SPN topology -> quantum circuit
-│   └── sc_to_quantum.py    Bitstream probability <-> rotation angle
+│   ├── sc_to_quantum.py    Bitstream probability <-> rotation angle
+│   └── control_plasma_knm.py  scpn-control plasma Knm compatibility bridge
 ├── crypto/         Topology-authenticated quantum cryptography
 │   ├── knm_key.py         K_nm → VQE ground state → key material
 │   ├── entanglement_qkd.py  SCPN-QKD protocol, CHSH Bell test
@@ -278,6 +281,7 @@ Integration reference:
 | Repository | Description |
 |-----------|-------------|
 | [scpn-fusion-core](https://github.com/anulum/scpn-fusion-core) | Classical SCPN algorithms: Kuramoto solvers, coupling matrix calibration, transport models (v3.9.2, 1899 tests) |
+| [scpn-phase-orchestrator](https://github.com/anulum/scpn-phase-orchestrator) | SCPN phase orchestration: regime detection, UPDE engine, Petri-net supervisor (v0.1.0, 225 tests) |
 
 ## Citation
 
