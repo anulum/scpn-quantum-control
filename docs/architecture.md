@@ -5,6 +5,9 @@
 ```
 bridge/
 ├── knm_hamiltonian.py   (standalone - canonical Knm data)
+├── control_plasma_knm.py (optional bridge to scpn-control plasma Knm builders)
+├── phase_artifact.py    (shared UPDE phase artifact schema)
+├── orchestrator_adapter.py (phase-orchestrator payload adapter)
 ├── sc_to_quantum.py     (standalone - angle/probability conversion)
 └── spn_to_qcircuit.py   (uses sc_to_quantum)
 

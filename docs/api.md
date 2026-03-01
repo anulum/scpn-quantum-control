@@ -20,6 +20,47 @@ OMEGA_N_16: np.ndarray  # 16 canonical frequencies (rad/s)
 build_knm_paper27() -> np.ndarray  # 16x16 coupling matrix
 ```
 
+### `phase_artifact`
+
+```python
+LockSignatureArtifact(source_layer, target_layer, plv, mean_lag)
+LayerStateArtifact(R, psi, lock_signatures={})
+UPDEPhaseArtifact(layers, cross_layer_alignment, stability_proxy, regime_id, metadata={})
+```
+
+Helpers:
+
+```python
+UPDEPhaseArtifact.to_dict() -> dict
+UPDEPhaseArtifact.to_json(indent=2) -> str
+UPDEPhaseArtifact.from_dict(payload) -> UPDEPhaseArtifact
+UPDEPhaseArtifact.from_json(payload) -> UPDEPhaseArtifact
+```
+
+### `orchestrator_adapter`
+
+```python
+PhaseOrchestratorAdapter.from_orchestrator_state(state, metadata=None) -> UPDEPhaseArtifact
+PhaseOrchestratorAdapter.to_orchestrator_payload(artifact) -> dict
+PhaseOrchestratorAdapter.to_scpn_control_telemetry(artifact) -> dict
+PhaseOrchestratorAdapter.build_knm_from_binding_spec(binding_spec, zero_diagonal=False) -> np.ndarray
+PhaseOrchestratorAdapter.build_omega_from_binding_spec(binding_spec, default_omega=1.0) -> np.ndarray
+```
+
+### `control_plasma_knm`
+
+Compatibility bridge for `scpn-control` plasma-native Knm update.
+
+```python
+build_knm_plasma(mode="baseline", L=8, K_base=0.30, zeta_uniform=0.0, ..., repo_src=None) -> np.ndarray
+build_knm_plasma_spec(...) -> dict  # {K, zeta, layer_names}
+build_knm_plasma_from_config(R0, a, B0, Ip, n_e, ..., repo_src=None) -> np.ndarray
+plasma_omega(L=8, repo_src=None) -> np.ndarray
+```
+
+If `scpn-control` is not importable, these functions raise `ImportError` with
+setup guidance.
+
 ### `sc_to_quantum`
 
 ```python

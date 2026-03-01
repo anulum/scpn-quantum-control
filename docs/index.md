@@ -58,5 +58,6 @@ print(f"R(t): {result['R']}")
 
 - [Installation](installation.md) — pip install + dev setup
 - [Quickstart](quickstart.md) — first experiment in 5 minutes
+- [Orchestrator Integration](orchestrator_integration.md) — fusion-defined Kuramoto/UPDE specs into quantum lanes
 - [API Reference](api.md) — full module documentation
 - [Hardware Guide](hardware_guide.md) — IBM Quantum setup

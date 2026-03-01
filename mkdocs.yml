@@ -43,6 +43,7 @@ nav:
   - Theory:
       - Equations: equations.md
       - Architecture: architecture.md
+      - Orchestrator Integration: orchestrator_integration.md
   - API Reference: api.md
   - Hardware:
       - IBM Guide: hardware_guide.md

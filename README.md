@@ -122,6 +122,8 @@ scpn_quantum_control/
 │   └── q_disruption.py Quantum kernel disruption classifier
 ├── bridge/         Classical <-> quantum converters
 │   ├── knm_hamiltonian.py  Knm matrix -> SparsePauliOp compiler
+│   ├── phase_artifact.py   Shared UPDE phase artifact schema
+│   ├── orchestrator_adapter.py  scpn-phase-orchestrator <-> quantum bridge adapter
 │   ├── spn_to_qcircuit.py  SPN topology -> quantum circuit
 │   └── sc_to_quantum.py    Bitstream probability <-> rotation angle
 ├── crypto/         Topology-authenticated quantum cryptography
@@ -207,6 +209,9 @@ Compiles SCPN data structures into quantum circuits:
 - `knm_to_hamiltonian()`: 16x16 coupling matrix -> SparsePauliOp
 - `knm_to_ansatz()`: Physics-informed entanglement topology
 - `probability_to_angle()`: p -> 2*arcsin(sqrt(p))
+- `UPDEPhaseArtifact`: shared phase-state schema for classical/quantum lanes
+- `PhaseOrchestratorAdapter`: converts `scpn-phase-orchestrator` state payloads to quantum bridge artifacts and back
+- `build_knm_from_binding_spec()`: derives quantum Knm directly from orchestrator/fusion binding specs
 
 ### QEC (`qec/`)
 
@@ -257,6 +262,10 @@ All run on local AerSimulator. No IBM credentials needed.
 ## Documentation
 
 Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/scpn-quantum-control)** — equations, architecture, API reference, hardware guide, experiment roadmap.
+
+Integration reference:
+- [`docs/orchestrator_integration.md`](docs/orchestrator_integration.md) — fusion/orchestrator-defined Kuramoto/UPDE specs into quantum bridge artifacts, with non-collision policy vs `scpn-control`.
+- Includes `scpn-control` plasma-native Knm compatibility bridge (`build_knm_plasma*`, `plasma_omega`).
 
 ## Related Repositories
 
