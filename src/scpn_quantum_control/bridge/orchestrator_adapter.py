@@ -116,7 +116,9 @@ class PhaseOrchestratorAdapter:
         K_ij = base_strength * exp(-decay_alpha * |i-j|).
         """
         layers = list(_read_field(binding_spec, "layers"))
-        n_osc = sum(len(list(_read_field(layer, "oscillator_ids", default=[]))) for layer in layers)
+        n_osc = sum(
+            len(list(_read_field(layer, "oscillator_ids", default=[]))) for layer in layers
+        )
         if n_osc < 1:
             raise ValueError("BindingSpec must define at least one oscillator.")
 
