@@ -24,7 +24,7 @@ from .qsnn.qlif import QuantumLIFNeuron
 from .qsnn.qstdp import QuantumSTDP
 from .qsnn.qsynapse import QuantumSynapse
 
-__version__ = "0.6.1"
+__version__ = "0.6.2"
 
 __all__ = [
     "OMEGA_N_16",

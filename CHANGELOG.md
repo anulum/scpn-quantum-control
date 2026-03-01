@@ -3,6 +3,22 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.6.2] - 2026-03-01
+
+### Fixed
+
+- Notebook 01/03/04: `classical_kuramoto_ode` → `classical_kuramoto_reference`
+- Notebook 03: ZNE scales [1,2,3,4,5] → [1,3,5,7,9] (odd required by gate_fold_circuit)
+- Notebook 04: rewrite to 8-qubit Trotter + 16-layer classical (16-qubit statevector intractable on laptop)
+- Remove misplaced docs/SESSION_LOG and docs/HANDOVER (duplicates of .coordination/)
+
+### Added
+
+- `figures/generate_knm_heatmap.py` + `figures/knm_heatmap.png` (16×16 K_nm coupling matrix)
+- Knm heatmap figure in README with annotated calibration anchors
+- All 4 notebooks executed with embedded outputs
+- ROADMAP: post-2030 timeline qualifier on fault-tolerant bullet
+
 ## [0.6.1] - 2026-03-01
 
 ### Fixed

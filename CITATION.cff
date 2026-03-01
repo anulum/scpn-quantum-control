@@ -14,7 +14,7 @@ authors:
     given-names: "Miroslav"
     orcid: "https://orcid.org/0009-0009-3560-0851"
     affiliation: "ANULUM CH & LI"
-version: "0.6.1"
+version: "0.6.2"
 date-released: "2026-03-01"
 license: "MIT"
 repository-code: "https://github.com/anulum/scpn-quantum-control"
