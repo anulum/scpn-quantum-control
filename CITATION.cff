@@ -17,6 +17,7 @@ authors:
 version: "0.6.2"
 date-released: "2026-03-01"
 license: "MIT"
+doi: "10.5281/zenodo.18821929"
 repository-code: "https://github.com/anulum/scpn-quantum-control"
 url: "https://www.anulum.li"
 abstract: >-
