@@ -3,6 +3,40 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.6.4] - 2026-03-01
+
+### Fixed
+
+- Stale test counts in docs (411/424 → 442) across index.md, installation.md, contributing.md
+- `figures/generate_header.py` version string (v0.5.1/411 → v0.6.3/442)
+- README architecture tree: add missing `ansatz_bench.py`, `trotter_error.py`, `control_plasma_knm.py`
+- SECURITY.md supported versions (0.1.x → 0.6.x)
+
+### Added
+
+- scpn-phase-orchestrator in README Related Repositories
+- pip ecosystem in dependabot monitoring
+- v0.6.1 and v0.6.2 entries in docs/changelog.md
+
+### Changed
+
+- Version bump: 0.6.2 → 0.6.4 across pyproject.toml, __init__.py, CITATION.cff, .zenodo.json, badges, test
+
+## [0.6.3] - 2026-03-01
+
+### Fixed
+
+- Coverage gate in CI (codecov threshold)
+- Mitigation API docs (ZNE/DD endpoint reference)
+- Notebook table alignment in docs
+- ruff S311 violation in tests
+
+### Added
+
+- `docs/mitigation_api.md` — ZNE/DD API reference
+- Coverage gate job in CI workflow
+- Notebook summary table in docs/index.md
+
 ## [0.6.2] - 2026-03-01
 
 ### Fixed
