@@ -22,16 +22,22 @@
 - Integration + regression test suites
 - Test count: 208 → 254 → 408
 
-### v0.5.0 (March 2026) — current
+### v0.5.0 (February 2026)
 - 3 crypto hardware experiments: Bell test, correlator, QKD QBER
 - 20 total experiments in registry, 411 tests
 
-## v0.6.0 (Q1 2026)
-
-- ZNE error mitigation on kuramoto_4osc (target: halve depth-85 error)
+### v0.6.0 (February 2026)
+- ZNE error mitigation on kuramoto_4osc
 - VQE 8-qubit on hardware (56 CZ gates, within coherence)
 - DD on full 16-layer UPDE
 - Noise baseline repeat for calibration drift tracking
+
+### v0.6.2 (March 2026) — current
+- All 4 notebooks executed with outputs committed
+- Knm heatmap figure (`figures/knm_heatmap.png`)
+- Zenodo DOI published (10.5281/zenodo.18821929)
+- PyPI package published
+- 442 tests, 99%+ line coverage
 
 ## v0.7.0 (Q2 2026)
 

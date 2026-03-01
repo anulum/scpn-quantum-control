@@ -4,8 +4,8 @@ Renders a Quantum-Logic Map: stylized Bloch sphere trajectory
 sampled into SCPN spike rasters, with quantum interference background.
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 WIDTH, HEIGHT = 12.8, 6.4
 DPI = 100

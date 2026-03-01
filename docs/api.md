@@ -183,6 +183,43 @@ ControlQEC(distance=3)
     .decode_syndrome(syndrome) -> np.ndarray  # correction
 ```
 
+## mitigation
+
+### `zne`
+
+```python
+@dataclass
+class ZNEResult:
+    noise_scales: list[int]
+    expectation_values: list[float]
+    zero_noise_estimate: float
+    fit_residual: float
+```
+
+```python
+gate_fold_circuit(circuit: QuantumCircuit, scale: int) -> QuantumCircuit
+```
+Global unitary folding: G → G (G†G)^((scale-1)/2). `scale` must be an odd positive integer. Measurements are stripped before folding and re-appended.
+
+```python
+zne_extrapolate(noise_scales: list[int], expectation_values: list[float], order: int = 1) -> ZNEResult
+```
+Richardson extrapolation to zero noise. `order` controls polynomial degree (1=linear, 2=quadratic).
+
+### `dd`
+
+```python
+class DDSequence(Enum):
+    XY4 = "XY4"
+    X2 = "X2"
+    CPMG = "CPMG"
+```
+
+```python
+insert_dd_sequence(circuit: QuantumCircuit, idle_qubits: list[int], sequence: DDSequence = DDSequence.XY4) -> QuantumCircuit
+```
+Insert DD pulses on `idle_qubits` after existing gates. For transpiler-level insertion, use `HardwareRunner.transpile_with_dd()`.
+
 ## hardware
 
 ### `runner`

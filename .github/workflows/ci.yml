@@ -43,7 +43,7 @@ jobs:
       - name: Run tests with coverage (3.12 only)
         if: matrix.python-version == '3.12'
         run: |
-          pytest tests/ --cov=scpn_quantum_control --cov-report=xml --ignore=tests/test_hardware_runner.py
+          pytest tests/ --cov=scpn_quantum_control --cov-report=xml --cov-fail-under=95 --ignore=tests/test_hardware_runner.py
       - name: Upload coverage
         if: matrix.python-version == '3.12'
         uses: codecov/codecov-action@v5

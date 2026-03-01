@@ -2,7 +2,7 @@
 
 ## Test Suite
 
-424 unit, integration, property-based, and regression tests across 47 test files. All pass on Python 3.9-3.12 with Qiskit 1.0+.
+442 unit, integration, property-based, and regression tests across 47 test files. All pass on Python 3.9-3.12 with Qiskit 1.0+.
 
 ```bash
 pytest tests/ -v
@@ -61,6 +61,14 @@ VQE hardware result (0.05% error) provides publication-quality ground truth.
 | Hamiltonian Hermiticity (fuzz 2-6 qubits) | `test_bridge_properties.py` (hypothesis) |
 | Probability ↔ angle roundtrip (fuzz) | `test_bridge_properties.py` (hypothesis) |
 
+## Coverage
+
+99%+ line coverage (CI enforces `--cov-fail-under=95`).
+
+```bash
+pytest tests/ --cov=scpn_quantum_control --cov-report=term-missing
+```
+
 ## Running Validation
 
 ```bash
@@ -70,15 +78,9 @@ pytest tests/ -v
 # Hardware tests only (requires IBM credentials)
 pytest tests/test_hardware_runner.py -v
 
-# Coverage report
-pytest tests/ --cov=scpn_quantum_control --cov-report=term-missing
-
 # Type check (33 source files, zero errors)
 mypy
 
 # Lint (zero errors)
 ruff check src/ tests/
-
-# Code coverage (99%)
-pytest tests/ --cov=scpn_quantum_control --cov-report=html
 ```
