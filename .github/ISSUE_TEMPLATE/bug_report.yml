@@ -38,7 +38,9 @@ body:
         - phase (Kuramoto/UPDE)
         - control (QAOA/VQLS/QPetri)
         - bridge (converters)
+        - crypto (QKD/Bell/percolation)
         - qec (error correction)
+        - mitigation (ZNE/DD)
         - hardware (IBM runner)
         - other
 
