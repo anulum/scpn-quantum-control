@@ -5,6 +5,25 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-control/blob/main/CHANGELOG.md)
 
+## [0.6.4] - 2026-03-01
+
+**Docs/metadata hardening.**
+
+- Fix stale test counts (411/424 → 442) in docs pages
+- Fix header generator version string (v0.5.1 → v0.6.3)
+- Complete README architecture tree (3 missing files)
+- Add scpn-phase-orchestrator to Related Repositories
+- Update SECURITY.md supported versions (0.6.x)
+- Add pip ecosystem to dependabot
+- Version bump 0.6.2 → 0.6.4
+
+## [0.6.3] - 2026-03-01
+
+**Coverage gate, mitigation API docs, notebook table.**
+
+- Coverage gate in CI, mitigation API docs, notebook summary table, ruff fix
+- Test count: 424 → 442
+
 ## [0.6.2] - 2026-03-01
 
 **Notebook fixes + Knm heatmap figure.**
