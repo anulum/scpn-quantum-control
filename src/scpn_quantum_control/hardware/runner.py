@@ -296,7 +296,9 @@ class HardwareRunner:
             results.append(jr)
         return results
 
-    def _run_estimator_simulator(self, isa_circuit, isa_obs, parameter_values, name, stats) -> JobResult:
+    def _run_estimator_simulator(
+        self, isa_circuit, isa_obs, parameter_values, name, stats
+    ) -> JobResult:
         from qiskit.quantum_info import Statevector
 
         t0 = time.time()
