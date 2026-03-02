@@ -76,3 +76,35 @@ ZNE can partially recover the ideal result from noisy circuit execution.
 ```bash
 python examples/06_zne_demo.py
 ```
+
+## 07_crypto_bell_test.py — CHSH Bell Test
+
+Prepares the K_nm ground state via VQE and evaluates the CHSH S-parameter
+for nearest-neighbour qubit pairs. Demonstrates entanglement certification
+using the coupling topology as shared secret.
+
+```bash
+python examples/07_crypto_bell_test.py
+```
+
+## 08_dynamical_decoupling.py — DD Fidelity Comparison
+
+Compares the order parameter R with and without XY4 dynamical decoupling
+on a 4-qubit Kuramoto circuit under synthetic Heron r2 noise. Shows how
+DD pulse insertion partially recovers coherence on NISQ hardware.
+
+```bash
+python examples/08_dynamical_decoupling.py
+```
+
+## 09_classical_vs_quantum_benchmark.py — Classical vs Quantum
+
+Benchmarks classical Euler ODE, exact matrix-exponential evolution, and
+quantum Trotterized XY simulation at N=4, 8, 16. Reports wall-clock time,
+R(t) accuracy, and VQE ground-state energy vs exact diagonalization.
+Demonstrates that at NISQ scale, classical solvers dominate — quantum
+advantage requires N>>20 with error correction.
+
+```bash
+python examples/09_classical_vs_quantum_benchmark.py
+```
