@@ -70,6 +70,27 @@ def build_knm_paper27(
     return K
 
 
+def build_kuramoto_ring(
+    n: int,
+    coupling: float = 1.0,
+    omega: np.ndarray | None = None,
+    rng_seed: int | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Build a nearest-neighbour ring coupling matrix for n Kuramoto oscillators.
+
+    Returns (K, omega) ready for QuantumKuramotoSolver or knm_to_hamiltonian.
+    If omega is None, draws from N(0,1) with the given seed.
+    """
+    K = np.zeros((n, n), dtype=np.float64)
+    for i in range(n):
+        j = (i + 1) % n
+        K[i, j] = K[j, i] = coupling
+    if omega is None:
+        rng = np.random.default_rng(rng_seed)
+        omega = rng.standard_normal(n)
+    return K, np.asarray(omega, dtype=np.float64)
+
+
 def knm_to_hamiltonian(K: np.ndarray, omega: np.ndarray) -> SparsePauliOp:
     """Convert Knm coupling matrix + natural frequencies to SparsePauliOp.
 

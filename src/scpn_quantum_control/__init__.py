@@ -1,4 +1,4 @@
-"""Quantum-native reformulations of SCPN spiking, phase dynamics, and plasma control."""
+"""NISQ quantum simulation of coupled Kuramoto oscillator networks via XY Hamiltonian mapping."""
 
 from .bridge.control_plasma_knm import (
     build_knm_plasma,
@@ -9,6 +9,7 @@ from .bridge.control_plasma_knm import (
 from .bridge.knm_hamiltonian import (
     OMEGA_N_16,
     build_knm_paper27,
+    build_kuramoto_ring,
     knm_to_ansatz,
     knm_to_hamiltonian,
 )
@@ -34,6 +35,7 @@ __version__ = "0.9.0"
 __all__ = [
     "OMEGA_N_16",
     "build_knm_paper27",
+    "build_kuramoto_ring",
     "build_knm_plasma",
     "build_knm_plasma_spec",
     "build_knm_plasma_from_config",

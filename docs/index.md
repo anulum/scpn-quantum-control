@@ -6,17 +6,18 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://python.org)
 [![Qiskit 1.0+](https://img.shields.io/badge/qiskit-1.0%2B-6929C4.svg)](https://qiskit.org)
 
-Quantum simulation of coupled oscillators on IBM superconducting hardware.
+NISQ quantum simulation of coupled Kuramoto oscillator networks on IBM superconducting hardware.
 
 ## What this does
 
-The **Self-Consistent Phenomenological Network (SCPN)** models hierarchical
-dynamics as 16 coupled Kuramoto oscillators with a coupling matrix K_nm.
-The Kuramoto model maps directly to the XY spin Hamiltonian — superconducting
-qubits simulate it natively via Trotterized time evolution.
+The Kuramoto model for coupled oscillators maps directly to the quantum
+XY spin Hamiltonian — superconducting qubits simulate it natively via
+Trotterized time evolution.
 
-This package compiles SCPN coupling parameters into Qiskit circuits and
-runs them on IBM Heron r2 hardware (156 qubits).
+Supply any coupling matrix K and natural frequencies omega; this package
+compiles them into Qiskit circuits and runs them on statevector simulation
+or IBM Heron r2 hardware. Ships with the SCPN 16-oscillator network as
+a built-in example.
 
 ## Key results
 
@@ -43,15 +44,25 @@ runs them on IBM Heron r2 hardware (156 qubits).
 
 ## Quick example
 
+Any coupling topology works — bring your own K and omega:
+
 ```python
-from scpn_quantum_control.bridge import OMEGA_N_16, build_knm_paper27
-from scpn_quantum_control.phase import QuantumKuramotoSolver
+from scpn_quantum_control import QuantumKuramotoSolver, build_kuramoto_ring
+
+K, omega = build_kuramoto_ring(6, coupling=0.5, rng_seed=42)
+solver = QuantumKuramotoSolver(6, K, omega)
+result = solver.run(t_max=1.0, dt=0.1, trotter_per_step=2)
+print(f"R(t): {result['R']}")
+```
+
+Or use the built-in SCPN network:
+
+```python
+from scpn_quantum_control import QuantumKuramotoSolver, build_knm_paper27, OMEGA_N_16
 
 K = build_knm_paper27(L=4)
-omega = OMEGA_N_16[:4]
-solver = QuantumKuramotoSolver(4, K, omega)
+solver = QuantumKuramotoSolver(4, K, OMEGA_N_16[:4])
 result = solver.run(t_max=0.5, dt=0.1, trotter_per_step=2)
-print(f"R(t): {result['R']}")
 ```
 
 ## Limitations
