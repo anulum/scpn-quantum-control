@@ -20,7 +20,7 @@ for the full K_nm formula and parameter values.
 
 ## Headline Results
 
-1. **VQE ground state**: 0.05% error on real hardware (publication-quality)
+1. **VQE ground state**: 0.05% error on 4-qubit subsystem (ibm_fez)
 2. **16-layer UPDE snapshot**: per-layer structure partially preserved (L12 collapse, L3 resilience)
 3. **12-point decoherence curve**: depth 5→770, coherence wall at depth 250-400
 4. **Trotter depth tradeoff**: shallow circuits beat accurate circuits on NISQ
