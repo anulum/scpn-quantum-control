@@ -1,6 +1,7 @@
 """Tests for control/qaoa_mpc.py."""
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.control.qaoa_mpc import QAOA_MPC
 from scpn_quantum_control.hardware.classical import classical_brute_mpc
@@ -68,3 +69,24 @@ def test_optimal_bitstring_matches_brute_force():
     qaoa_min_actions = np.array([(qaoa_min_idx >> bit) & 1 for bit in range(horizon)])
 
     np.testing.assert_array_equal(qaoa_min_actions, brute["optimal_actions"])
+
+
+def test_optimize_before_build_raises():
+    """RuntimeError guard fires when auto-build is sabotaged."""
+    B = np.array([[1.0]])
+    target = np.array([1.0])
+    mpc = QAOA_MPC(B, target, horizon=2, p_layers=1)
+    mpc.build_cost_hamiltonian = lambda: None  # break auto-build
+    with pytest.raises(RuntimeError, match="build"):
+        mpc.optimize()
+
+
+def test_optimize_seeded_deterministic():
+    """Seeded optimize produces identical action sequences."""
+    B = np.array([[1.0]])
+    target = np.array([1.0])
+    mpc = QAOA_MPC(B, target, horizon=4, p_layers=1)
+    r1 = mpc.optimize(seed=42)
+    mpc._cost_ham = None  # reset to re-run from scratch
+    r2 = mpc.optimize(seed=42)
+    np.testing.assert_array_equal(r1, r2)

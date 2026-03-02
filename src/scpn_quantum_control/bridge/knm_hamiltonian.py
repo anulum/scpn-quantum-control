@@ -14,6 +14,8 @@ import numpy as np
 from qiskit.circuit import ParameterVector, QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp
 
+KNM_SPARSITY_EPS = 1e-15  # coupling magnitudes below this treated as zero
+
 # Paper 27, Table 1: canonical natural frequencies (rad/s)
 OMEGA_N_16 = np.array(
     [
@@ -77,14 +79,14 @@ def knm_to_hamiltonian(K: np.ndarray, omega: np.ndarray) -> SparsePauliOp:
     pauli_list = []
 
     for i in range(n):
-        if abs(omega[i]) > 1e-15:
+        if abs(omega[i]) > KNM_SPARSITY_EPS:
             z_str = ["I"] * n
             z_str[i] = "Z"
             pauli_list.append(("".join(reversed(z_str)), -omega[i]))
 
     for i in range(n):
         for j in range(i + 1, n):
-            if abs(K[i, j]) < 1e-15:
+            if abs(K[i, j]) < KNM_SPARSITY_EPS:
                 continue
             # XX term
             xx = ["I"] * n

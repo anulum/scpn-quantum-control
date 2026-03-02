@@ -65,14 +65,15 @@ class VQLS_GradShafranov:
             entanglement="linear",
         )
 
-    def solve(self, reps: int = 2, maxiter: int = 200) -> np.ndarray:
+    def solve(self, reps: int = 2, maxiter: int = 200, seed: int | None = None) -> np.ndarray:
         """VQLS optimization -> Psi profile on grid.
 
         Cost: C = 1 - |<b|A|x>|^2 / <x|A^dag A|x>
         """
         if self._A is None:
             self.discretize()
-        assert self._A is not None and self._b is not None
+        if self._A is None or self._b is None:
+            raise RuntimeError("call discretize() before solve()")
 
         ansatz = self.build_ansatz(reps)
         A = self._A
@@ -93,7 +94,7 @@ class VQLS_GradShafranov:
             return 1.0 - abs(bAx) ** 2 / xAtAx
 
         n_params = ansatz.num_parameters
-        x0 = np.random.default_rng().uniform(-np.pi, np.pi, n_params)
+        x0 = np.random.default_rng(seed).uniform(-np.pi, np.pi, n_params)
         result = minimize(cost_fn, x0, method="COBYLA", options={"maxiter": maxiter})
         self._optimal_params = result.x
 
@@ -103,9 +104,10 @@ class VQLS_GradShafranov:
 
         # Ψ (flux function) is real-valued; verify the ansatz converged to a real state
         imag_norm = float(np.linalg.norm(sv_arr.imag))
-        assert imag_norm < self.imag_tol, (
-            f"statevector has large imaginary component: {imag_norm:.4f}"
-        )
+        if imag_norm >= self.imag_tol:
+            raise ValueError(
+                f"solution imaginary norm {imag_norm:.2e} exceeds tolerance {self.imag_tol:.2e}"
+            )
         psi = sv_arr.real
 
         # L2 projection rescaling: scale = <b|b> / <b|A|psi>

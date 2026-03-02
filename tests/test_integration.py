@@ -95,7 +95,7 @@ def test_energy_conservation_trotter():
 
     # Energy drift should be small over 5 steps
     drift = max(abs(e - E0) for e in energies)
-    assert drift < 0.5, f"energy drift {drift:.4f} exceeds tolerance"
+    assert drift < 0.25, f"energy drift {drift:.4f} exceeds tolerance"
 
 
 @pytest.mark.parametrize("n_osc", [2, 3, 4, 6])

@@ -39,6 +39,18 @@ def test_raises_for_large_n():
         trotter_error_norm(K, omega, t=0.1, reps=1)
 
 
+def test_trotter_convergence_rate(small_system):
+    """Lie-Trotter error scales as O(t^2) at fixed reps.
+
+    Halving t should reduce error by ~4x. Accept >2x for finite-size effects.
+    """
+    K, omega = small_system
+    err_coarse = trotter_error_norm(K, omega, t=1.0, reps=1)
+    err_fine = trotter_error_norm(K, omega, t=0.5, reps=1)
+    ratio = err_coarse / max(err_fine, 1e-15)
+    assert ratio > 2.0, f"expected ~4x improvement, got {ratio:.1f}x"
+
+
 def test_sweep_returns_2d(small_system):
     K, omega = small_system
     result = trotter_error_sweep(K, omega, t_values=[0.05, 0.1], reps_values=[1, 2])

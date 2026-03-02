@@ -18,6 +18,9 @@ import hmac
 import numpy as np
 from scipy.stats import entropy as scipy_entropy
 
+EIGENVALUE_ZERO_ATOL = 1e-12  # absolute tolerance for Laplacian zero eigenvalues
+EIGENVALUE_ZERO_RTOL = 1e-8   # relative tolerance for Laplacian eigenvalue ratios
+
 
 def spectral_fingerprint(K: np.ndarray) -> dict:
     """Compute public spectral fingerprint of coupling matrix.
@@ -35,16 +38,16 @@ def spectral_fingerprint(K: np.ndarray) -> dict:
     eigvals = np.sort(np.linalg.eigvalsh(L))
 
     fiedler = float(eigvals[1]) if n > 1 else 0.0
-    gap_ratio = float(eigvals[1] / eigvals[2]) if n > 2 and eigvals[2] > 1e-12 else 0.0
+    gap_ratio = float(eigvals[1] / eigvals[2]) if n > 2 and eigvals[2] > EIGENVALUE_ZERO_ATOL else 0.0
 
-    pos_eigvals = eigvals[eigvals > 1e-12]
+    pos_eigvals = eigvals[eigvals > EIGENVALUE_ZERO_ATOL]
     if len(pos_eigvals) > 0:
         p = pos_eigvals / pos_eigvals.sum()
         s_entropy = float(scipy_entropy(p, base=2))
     else:
         s_entropy = 0.0
 
-    n_components = int(np.sum(eigvals < 1e-8))
+    n_components = int(np.sum(eigvals < EIGENVALUE_ZERO_RTOL))
 
     return {
         "fiedler": fiedler,
@@ -63,14 +66,14 @@ def normalized_laplacian_fingerprint(K: np.ndarray) -> dict:
     """
     n = K.shape[0]
     d = K.sum(axis=1)
-    d_inv_sqrt = np.where(d > 1e-12, 1.0 / np.sqrt(d), 0.0)
+    d_inv_sqrt = np.where(d > EIGENVALUE_ZERO_ATOL, 1.0 / np.sqrt(d), 0.0)
     D_inv_sqrt = np.diag(d_inv_sqrt)
     L_sym = np.eye(n) - D_inv_sqrt @ K @ D_inv_sqrt
 
     eigvals = np.sort(np.linalg.eigvalsh(L_sym))
     fiedler = float(eigvals[1]) if n > 1 else 0.0
 
-    pos_eigvals = eigvals[eigvals > 1e-12]
+    pos_eigvals = eigvals[eigvals > EIGENVALUE_ZERO_ATOL]
     if len(pos_eigvals) > 0:
         p = pos_eigvals / pos_eigvals.sum()
         s_entropy = float(scipy_entropy(p, base=2))

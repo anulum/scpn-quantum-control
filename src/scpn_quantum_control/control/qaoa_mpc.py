@@ -63,7 +63,8 @@ class QAOA_MPC:
         """Build p-layer QAOA circuit: initial |+>, alternating cost/mixer."""
         if self._cost_ham is None:
             self.build_cost_hamiltonian()
-        assert self._cost_ham is not None
+        if self._cost_ham is None:
+            raise RuntimeError("call build_cost_hamiltonian() before optimize()")
 
         qc = QuantumCircuit(self.n_qubits)
         for q in range(self.n_qubits):
@@ -89,7 +90,7 @@ class QAOA_MPC:
 
         return qc
 
-    def optimize(self) -> np.ndarray:
+    def optimize(self, seed: int | None = None) -> np.ndarray:
         """Run QAOA optimization, return binary action sequence.
 
         Returns:
@@ -105,7 +106,7 @@ class QAOA_MPC:
             sv = Statevector.from_instruction(qc)
             return float(sv.expectation_value(self._cost_ham).real)
 
-        x0 = np.random.default_rng().uniform(0, np.pi, 2 * self.p)
+        x0 = np.random.default_rng(seed).uniform(0, np.pi, 2 * self.p)
         result = minimize(cost_fn, x0, method="COBYLA", options={"maxiter": 200})
 
         gamma_opt = result.x[: self.p]
