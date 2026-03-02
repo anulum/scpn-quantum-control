@@ -14,23 +14,25 @@
 [![Hardware: ibm_fez](https://img.shields.io/badge/hardware-ibm__fez%20Heron%20r2-blueviolet.svg)]()
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/anulum/scpn-quantum-control/blob/main/notebooks/01_kuramoto_xy_dynamics.ipynb)
 
-The **Self-Consistent Phenomenological Network (SCPN)** models hierarchical
-dynamics as 16 coupled Kuramoto oscillators with a coupling matrix K_nm.
-The Kuramoto model is isomorphic to the XY spin Hamiltonian — superconducting
-qubits simulate it natively via Trotterized time evolution. This repo implements
-that mapping: it compiles SCPN coupling parameters into Qiskit circuits and
-validates them on IBM Heron r2 hardware (156 qubits), achieving **0.05% VQE
-ground-state error** and an **initial 16-layer UPDE snapshot** (46% error
-at depth 770 — consistent with NISQ decoherence expectations).
+NISQ quantum simulation of coupled Kuramoto oscillator networks via the
+XY spin Hamiltonian mapping. Supply any coupling matrix K and natural
+frequencies omega; this package compiles them into Qiskit circuits and
+runs Trotterized time evolution on statevector simulation or IBM hardware.
+
+Validated on IBM Heron r2 (ibm_fez): **0.05% VQE ground-state error**
+on a 4-qubit subsystem, plus a 12-point decoherence curve from depth 5
+to 770. Ships with the SCPN 16-oscillator network as a built-in example,
+but works with any coupling topology.
 
 If you work on quantum simulation of coupled oscillators, NISQ benchmarking,
-or Kuramoto/XY physics, this repo gives you a tested pipeline from coupling
+or Kuramoto/XY physics, this gives you a tested pipeline from coupling
 matrices to hardware results.
 
-## Background: SCPN and the Quantum Mapping
+## Background: Kuramoto → XY Mapping
 
-SCPN is a theoretical framework in which 16 oscillator layers — each with
-a natural frequency omega_n — interact through a coupling matrix K_nm:
+Any network of N coupled Kuramoto oscillators can be mapped to a quantum
+XY Hamiltonian. The built-in SCPN example uses 16 oscillators with a
+coupling matrix K_nm:
 
 ```
 K_nm = K_base * exp(-alpha * |n - m|)
@@ -158,6 +160,27 @@ scpn_quantum_control/
 
 ```bash
 pip install scpn-quantum-control
+```
+
+**Any coupling network** — bring your own K and omega:
+
+```python
+from scpn_quantum_control import QuantumKuramotoSolver, build_kuramoto_ring
+
+K, omega = build_kuramoto_ring(6, coupling=0.5, rng_seed=42)
+solver = QuantumKuramotoSolver(6, K, omega)
+result = solver.run(t_max=1.0, dt=0.1, trotter_per_step=2)
+print(f"R(t): {result['R']}")
+```
+
+**Built-in SCPN network** (16 oscillators from Paper 27):
+
+```python
+from scpn_quantum_control import QuantumKuramotoSolver, build_knm_paper27, OMEGA_N_16
+
+K = build_knm_paper27(L=4)
+solver = QuantumKuramotoSolver(4, K, OMEGA_N_16[:4])
+result = solver.run(t_max=0.5, dt=0.1, trotter_per_step=2)
 ```
 
 For development (editable install with test/lint tooling):
