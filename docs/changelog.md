@@ -5,6 +5,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-control/blob/main/CHANGELOG.md)
 
+## [0.7.0] - 2026-03-02
+
+**Packaging, RNG hygiene, CI, exports hardening.**
+
+- Fix crypto `__all__` (callable symbols, not module names)
+- PEP 561 `py.typed` marker
+- Seeded RNG in `QuantumDenseLayer`, `inf` → `nan` in PhaseVQE
+- Named constants in percolation, pip cache in CI, dependency upper bounds
+- 456 tests, 99%+ coverage
+
 ## [0.6.4] - 2026-03-01
 
 **Docs/metadata hardening.**

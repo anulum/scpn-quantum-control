@@ -32,7 +32,14 @@
 - DD on full 16-layer UPDE
 - Noise baseline repeat for calibration drift tracking
 
-### v0.6.4 (March 2026) — current
+### v0.7.0 (March 2026) — current
+- PEP 561 `py.typed` marker
+- Fixed crypto exports (callable symbols instead of module names)
+- Seeded RNG in `QuantumDenseLayer`, `inf` → `nan` in PhaseVQE
+- Named constants in percolation, pip cache in CI, dependency upper bounds
+- 456 tests, 99%+ line coverage
+
+### v0.6.4 (March 2026)
 - All 4 notebooks executed with outputs committed
 - Knm heatmap figure (`figures/knm_heatmap.png`)
 - Zenodo DOI published (10.5281/zenodo.18821929)
@@ -41,7 +48,7 @@
 - v0.6.3: coverage gate, mitigation API docs, notebook table
 - v0.6.4: LICENSE fix, codecov fix, issue templates, dependabot pip, SECURITY.md, README tree
 
-## v0.7.0 (Q2 2026)
+## v0.8.0 (Q2 2026)
 
 - Kuramoto synchronization bifurcation on hardware (sweep K_base)
 - Hardware ansatz comparison (Knm-informed vs TwoLocal vs EfficientSU2)

@@ -20,6 +20,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
+          cache: 'pip'
       - run: pip install ruff
       - run: ruff check src/ tests/
       - run: ruff format --check src/ tests/
@@ -36,6 +37,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'pip'
       - name: Install dependencies
         run: pip install -e ".[dev]"
       - name: Run tests
@@ -59,6 +61,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
+          cache: 'pip'
       - run: pip install -e ".[dev]" mypy
       - run: mypy
 
@@ -71,6 +74,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
+          cache: 'pip'
       - run: pip install -e ".[dev]"
       - name: Hardware tests (simulator only)
         run: pytest tests/test_hardware_runner.py -v --tb=short -k "simulator"
