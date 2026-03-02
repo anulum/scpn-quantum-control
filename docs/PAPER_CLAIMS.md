@@ -238,7 +238,7 @@ Future work should use simulator for optimization, hardware for final evaluation
 
 ## Claim 6 (Crypto): K_nm Topology-Authenticated QKD
 
-**Status**: Simulator-validated, hardware experiment wrappers implemented (v0.5.0).
+**Status**: Simulator-validated, hardware experiment wrappers implemented (v0.6.4).
 
 **Thesis**: The SCPN coupling matrix K_nm encodes oscillator topology as quantum
 entanglement structure under the Kuramoto-XY isomorphism. Parties sharing K_nm

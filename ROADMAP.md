@@ -24,7 +24,7 @@
 
 ### v0.5.0 (February 2026)
 - 3 crypto hardware experiments: Bell test, correlator, QKD QBER
-- 20 total experiments in registry, 442 tests
+- 20 total experiments in registry, 411 tests
 
 ### v0.6.0 (February 2026)
 - ZNE error mitigation on kuramoto_4osc

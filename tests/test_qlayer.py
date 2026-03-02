@@ -33,3 +33,17 @@ def test_custom_weights():
     W = np.array([[0.9, 0.9], [0.1, 0.1]])
     layer = QuantumDenseLayer(n_neurons=2, n_inputs=2, weights=W)
     np.testing.assert_allclose(layer.get_weights(), W, atol=1e-10)
+
+
+def test_low_threshold_fires():
+    W = np.array([[0.9, 0.9]])
+    layer = QuantumDenseLayer(n_neurons=1, n_inputs=2, weights=W, spike_threshold=0.01)
+    out = layer.forward(np.array([1.0, 1.0]))
+    assert out[0] == 1
+
+
+def test_random_weight_bounds():
+    layer = QuantumDenseLayer(n_neurons=4, n_inputs=3)
+    W = layer.get_weights()
+    assert W.shape == (4, 3)
+    assert np.all((W >= 0.0) & (W <= 1.0))

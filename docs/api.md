@@ -105,8 +105,9 @@ QuantumSTDP(learning_rate: float = 0.01, shift: float = pi/2)
 ### `qlayer.QuantumDenseLayer`
 
 ```python
-QuantumDenseLayer(n_neurons, n_inputs, weights=None, neuron_params=None)
-    .forward(input_values: np.ndarray) -> np.ndarray  # spike array
+QuantumDenseLayer(n_neurons: int, n_inputs: int, weights: np.ndarray | None = None, spike_threshold: float = 0.5)
+    .forward(input_values: np.ndarray) -> np.ndarray  # spike array (0/1)
+    .get_weights() -> np.ndarray  # (n_neurons, n_inputs)
 ```
 
 ## phase
@@ -118,7 +119,7 @@ QuantumKuramotoSolver(n_oscillators, K_coupling, omega_natural, backend=None)
     .build_hamiltonian() -> SparsePauliOp
     .evolve(time, trotter_steps=1) -> QuantumCircuit
     .measure_order_parameter(statevector) -> tuple[float, float]  # (R, psi)
-    .run(t_max, dt, shots=10000) -> dict  # R_trajectory, phases
+    .run(t_max: float, dt: float, trotter_per_step: int = 5) -> dict  # times, R
 ```
 
 ### `trotter_upde.QuantumUPDESolver`
@@ -133,9 +134,11 @@ QuantumUPDESolver(n_layers=16, knm=None, omega=None)
 ### `phase_vqe.PhaseVQE`
 
 ```python
-PhaseVQE(hamiltonian: SparsePauliOp, ansatz_reps=2, knm=None)
-    .build_ansatz() -> QuantumCircuit
-    .solve(optimizer="COBYLA", maxiter=200) -> dict  # energy, params
+PhaseVQE(K: np.ndarray, omega: np.ndarray, ansatz_reps: int = 2, threshold: float = 0.01)
+    .solve(optimizer="COBYLA", maxiter=200, seed: int | None = None) -> dict
+        # ground_energy, exact_energy, energy_gap, relative_error_pct,
+        # optimal_params, n_evals, n_params, converged
+    .ground_state() -> Statevector | None
 ```
 
 ## control
@@ -239,5 +242,5 @@ build_qaoa_circuit(cost_hamiltonian, p_layers, params) -> QuantumCircuit
 ### `classical`
 
 ```python
-classical_kuramoto(K, omega, t_max, dt) -> dict  # R_trajectory, phases
+classical_kuramoto_reference(n_osc, t_max, dt, K=None, omega=None, theta0=None) -> dict
 ```

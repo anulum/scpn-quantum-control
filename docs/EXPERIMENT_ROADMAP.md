@@ -2,7 +2,7 @@
 
 Backend: ibm_fez (Heron r2, 156 qubits)
 Budget: 10 min QPU / month (free tier)
-Repository: scpn-quantum-control v0.5.0
+Repository: scpn-quantum-control v0.6.4
 
 ## Experiment Inventory (20 total)
 

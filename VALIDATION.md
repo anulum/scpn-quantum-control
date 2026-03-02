@@ -2,7 +2,7 @@
 
 ## Test Suite
 
-442 unit, integration, property-based, and regression tests across 47 test files. All pass on Python 3.9-3.12 with Qiskit 1.0+.
+442 unit, integration, property-based, and regression tests across 50 test files. All pass on Python 3.9-3.12 with Qiskit 1.0+.
 
 ```bash
 pytest tests/ -v
@@ -78,7 +78,7 @@ pytest tests/ -v
 # Hardware tests only (requires IBM credentials)
 pytest tests/test_hardware_runner.py -v
 
-# Type check (33 source files, zero errors)
+# Type check (32 source files, zero errors)
 mypy
 
 # Lint (zero errors)

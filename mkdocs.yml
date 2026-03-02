@@ -44,11 +44,14 @@ nav:
       - Equations: equations.md
       - Architecture: architecture.md
       - Orchestrator Integration: orchestrator_integration.md
-  - API Reference: api.md
+  - API Reference:
+      - Full Reference: api.md
+      - Mitigation API: mitigation_api.md
   - Hardware:
       - IBM Guide: hardware_guide.md
       - Experiment Roadmap: EXPERIMENT_ROADMAP.md
       - Results & Claims: PAPER_CLAIMS.md
+      - Crypto Research: QUANTUM_CRYPTO_RESEARCH_BRANCH.md
   - Notebooks: notebooks.md
   - Contributing: contributing.md
   - Changelog: changelog.md

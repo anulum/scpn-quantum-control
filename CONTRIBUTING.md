@@ -47,6 +47,9 @@ pytest tests/ --cov=scpn_quantum_control --cov-report=term-missing
 
 # Lint
 ruff check src/ tests/
+
+# Type check
+mypy src/
 ```
 
 Every new module needs a corresponding `tests/test_<module>.py` with:
@@ -58,6 +61,7 @@ Every new module needs a corresponding `tests/test_<module>.py` with:
 
 - [ ] Tests pass: `pytest tests/ -v`
 - [ ] Lint clean: `ruff check src/ tests/`
+- [ ] Type check clean: `mypy src/`
 - [ ] No new magic numbers without source citation
 - [ ] CHANGELOG.md updated for user-facing changes
 - [ ] Hardware experiments documented in `results/` with JSON + job ID

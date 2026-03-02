@@ -99,7 +99,7 @@ def test_vqe_4q_beats_random():
         random_energies.append(E)
     E_random_avg = np.mean(random_energies)
 
-    result = vqe.solve(maxiter=30)
+    result = vqe.solve(maxiter=30, seed=0)
     E_opt = result["ground_energy"]
 
     assert E_opt < E_random_avg, f"VQE ({E_opt:.3f}) should beat random ({E_random_avg:.3f})"
