@@ -12,8 +12,14 @@ coupling parameters simultaneously.
 
 from __future__ import annotations
 
+import logging
+
 import numpy as np
 from qiskit.quantum_info import DensityMatrix, Statevector, partial_trace
+
+from .._constants import CONCURRENCE_EPS, QBER_SECURITY_THRESHOLD  # noqa: F401
+
+_log = logging.getLogger(__name__)
 
 
 def depolarizing_channel(rho: np.ndarray, p: float) -> np.ndarray:
@@ -24,7 +30,8 @@ def depolarizing_channel(rho: np.ndarray, p: float) -> np.ndarray:
         p: Depolarizing probability in [0, 1].
     """
     d = rho.shape[0]
-    return (1 - p) * rho + p * np.eye(d) / d
+    result: np.ndarray = (1 - p) * rho + p * np.eye(d) / d
+    return result
 
 
 def amplitude_damping_single(rho_2x2: np.ndarray, gamma: float) -> np.ndarray:
@@ -36,7 +43,8 @@ def amplitude_damping_single(rho_2x2: np.ndarray, gamma: float) -> np.ndarray:
     s1g = np.sqrt(1 - gamma)
     k0 = np.array([[1, 0], [0, s1g]])
     k1 = np.array([[0, sg], [0, 0]])
-    return np.asarray(k0 @ rho_2x2 @ k0.conj().T + k1 @ rho_2x2 @ k1.conj().T)
+    result: np.ndarray = np.asarray(k0 @ rho_2x2 @ k0.conj().T + k1 @ rho_2x2 @ k1.conj().T)
+    return result
 
 
 def noisy_concurrence(
@@ -64,7 +72,11 @@ def _concurrence_2qubit(rho: np.ndarray) -> float:
     yy = np.kron(sigma_y, sigma_y)
     rho_tilde = yy @ rho.conj() @ yy
     product = rho @ rho_tilde
-    eigvals = np.sort(np.abs(np.linalg.eigvals(product)))[::-1]
+    raw_eigvals = np.linalg.eigvals(product)
+    max_imag = float(np.max(np.abs(raw_eigvals.imag)))
+    if max_imag > 1e-6:
+        _log.warning("Concurrence eigenvalues have imaginary part %.2e", max_imag)
+    eigvals = np.sort(np.abs(raw_eigvals))[::-1]
     sqrt_eigvals = np.sqrt(np.maximum(eigvals, 0))
     return float(max(0, sqrt_eigvals[0] - sqrt_eigvals[1] - sqrt_eigvals[2] - sqrt_eigvals[3]))
 

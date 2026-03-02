@@ -13,6 +13,8 @@ from qiskit.circuit.library import n_local
 from qiskit.quantum_info import Statevector
 from scipy.optimize import minimize
 
+from .._constants import VQLS_DENOMINATOR_EPS
+
 
 class VQLS_GradShafranov:
     """Variational Quantum Linear Solver for 1D Grad-Shafranov.
@@ -89,7 +91,7 @@ class VQLS_GradShafranov:
             bAx = np.vdot(b, Ax)
             xAtAx = np.vdot(x_vec, AtA @ x_vec).real
 
-            if xAtAx < 1e-15:
+            if xAtAx < VQLS_DENOMINATOR_EPS:
                 return 1.0
             return 1.0 - abs(bAx) ** 2 / xAtAx
 
@@ -114,4 +116,5 @@ class VQLS_GradShafranov:
         # Bravo-Prieto et al., arXiv:1909.05820 (2019), post-processing step
         A_psi = A @ psi
         scale = np.vdot(b, b) / np.vdot(b, A_psi) if abs(np.vdot(b, A_psi)) > 1e-15 else 1.0
-        return psi * float(np.real(scale))
+        solution: np.ndarray = psi * float(np.real(scale))
+        return solution

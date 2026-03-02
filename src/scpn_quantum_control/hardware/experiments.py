@@ -75,7 +75,11 @@ def _build_xyz_circuits(base_circuit, n):
 
 
 def _expectation_per_qubit(counts, n_qubits):
-    """Compute per-qubit <Z> (or <X>/<Y> if measured in rotated basis)."""
+    """Compute per-qubit <Z> and shot-noise standard deviation.
+
+    Returns:
+        (exp_vals, std_vals) where std = sqrt((1 - exp^2) / N_shots).
+    """
     total = sum(counts.values())
     exp_vals = np.zeros(n_qubits)
     for bitstring, count in counts.items():
@@ -84,20 +88,24 @@ def _expectation_per_qubit(counts, n_qubits):
             bit = int(bits[-(q + 1)])
             exp_vals[q] += (1 - 2 * bit) * count
     exp_vals /= total
-    return exp_vals
+    std_vals: np.ndarray = np.sqrt(np.maximum(1.0 - exp_vals**2, 0.0) / total)
+    return exp_vals, std_vals
 
 
 def _R_from_xyz(z_counts, x_counts, y_counts, n_qubits):
     """Compute Kuramoto order parameter R from X, Y, Z basis measurements.
 
-    R = |1/N sum_q (exp_X_q + i*exp_Y_q)|
-    The Z measurement is recorded but R uses XY-plane expectations.
+    Returns:
+        (R, R_std, exp_x, exp_y, exp_z, std_x, std_y, std_z)
     """
-    exp_x = _expectation_per_qubit(x_counts, n_qubits)
-    exp_y = _expectation_per_qubit(y_counts, n_qubits)
-    exp_z = _expectation_per_qubit(z_counts, n_qubits)
+    exp_x, std_x = _expectation_per_qubit(x_counts, n_qubits)
+    exp_y, std_y = _expectation_per_qubit(y_counts, n_qubits)
+    exp_z, std_z = _expectation_per_qubit(z_counts, n_qubits)
     z_complex = np.mean(exp_x + 1j * exp_y)
-    return float(abs(z_complex)), exp_x, exp_y, exp_z
+    R = float(abs(z_complex))
+    # Propagated uncertainty: delta_R ≈ sqrt(sum(std_x^2 + std_y^2)) / N
+    R_std = float(np.sqrt(np.mean(std_x**2 + std_y**2)) / np.sqrt(n_qubits))
+    return R, R_std, exp_x, exp_y, exp_z, std_x, std_y, std_z
 
 
 def kuramoto_4osc_experiment(
@@ -107,6 +115,19 @@ def kuramoto_4osc_experiment(
 
     Measures order parameter R(t) via X, Y, Z basis shots at each time step.
     Compares against exact matrix-exponential evolution.
+
+    Returns:
+        dict with keys:
+            experiment (str): Experiment name identifier.
+            n_oscillators (int): Number of oscillators.
+            dt (float): Time step size.
+            hw_times (list[float]): Hardware measurement times.
+            hw_R (list[float]): Hardware order parameter per step.
+            hw_R_std (list[float]): Shot-noise std of R per step.
+            classical_times (list[float]): Exact evolution times.
+            classical_R (list[float]): Exact order parameter per step.
+            classical_R_std (float): Always 0.0 (exact).
+            hw_expectations (list[dict]): Per-step exp_x, exp_y, exp_z.
     """
     n = 4
     K = build_knm_paper27(L=n)
@@ -127,15 +148,17 @@ def kuramoto_4osc_experiment(
     hw_results = runner.run_sampler(all_circuits, shots=shots, name="kuramoto_4osc")
 
     hw_R = []
+    hw_R_std = []
     hw_exp = []
     for idx in step_indices:
-        R, ex, ey, ez = _R_from_xyz(
+        R, R_std, ex, ey, ez, sx, sy, sz = _R_from_xyz(
             hw_results[idx].counts,
             hw_results[idx + 1].counts,
             hw_results[idx + 2].counts,
             n,
         )
         hw_R.append(R)
+        hw_R_std.append(R_std)
         hw_exp.append({"exp_x": ex.tolist(), "exp_y": ey.tolist(), "exp_z": ez.tolist()})
 
     hw_times = [i * dt for i in range(1, n_time_steps + 1)]
@@ -147,8 +170,10 @@ def kuramoto_4osc_experiment(
         "dt": dt,
         "hw_times": hw_times,
         "hw_R": hw_R,
+        "hw_R_std": hw_R_std,
         "classical_times": classical["times"].tolist(),
         "classical_R": classical["R"].tolist(),
+        "classical_R_std": 0.0,
         "hw_expectations": hw_exp,
     }
     runner.save_result(hw_results[0], "kuramoto_4osc.json")
@@ -158,7 +183,20 @@ def kuramoto_4osc_experiment(
 def kuramoto_8osc_experiment(
     runner, shots: int = 10000, n_time_steps: int = 6, dt: float = 0.1
 ) -> dict:
-    """8-oscillator Kuramoto XY dynamics."""
+    """8-oscillator Kuramoto XY dynamics.
+
+    Returns:
+        dict with keys:
+            experiment (str): Experiment name identifier.
+            n_oscillators (int): Number of oscillators.
+            dt (float): Time step size.
+            hw_times (list[float]): Hardware measurement times.
+            hw_R (list[float]): Hardware order parameter per step.
+            hw_R_std (list[float]): Shot-noise std of R per step.
+            classical_times (list[float]): Exact evolution times.
+            classical_R (list[float]): Exact order parameter per step.
+            classical_R_std (float): Always 0.0 (exact).
+    """
     n = 8
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
@@ -178,14 +216,16 @@ def kuramoto_8osc_experiment(
     hw_results = runner.run_sampler(all_circuits, shots=shots, name="kuramoto_8osc")
 
     hw_R = []
+    hw_R_std = []
     for idx in step_indices:
-        R, _, _, _ = _R_from_xyz(
+        R, R_std, *_ = _R_from_xyz(
             hw_results[idx].counts,
             hw_results[idx + 1].counts,
             hw_results[idx + 2].counts,
             n,
         )
         hw_R.append(R)
+        hw_R_std.append(R_std)
 
     hw_times = [i * dt for i in range(1, n_time_steps + 1)]
     classical = classical_exact_evolution(n, n_time_steps * dt, dt, K, omega)
@@ -196,8 +236,10 @@ def kuramoto_8osc_experiment(
         "dt": dt,
         "hw_times": hw_times,
         "hw_R": hw_R,
+        "hw_R_std": hw_R_std,
         "classical_times": classical["times"].tolist(),
         "classical_R": classical["R"].tolist(),
+        "classical_R_std": 0.0,
     }
     runner.save_result(hw_results[0], "kuramoto_8osc.json")
     return result
@@ -244,12 +286,36 @@ def _run_vqe(n: int, maxiter: int = 200) -> dict:
 
 
 def vqe_4q_experiment(runner, shots: int = 10000, maxiter: int = 200) -> dict:
-    """VQE ground state of 4-oscillator XY Hamiltonian."""
+    """VQE ground state of 4-oscillator XY Hamiltonian.
+
+    Returns:
+        dict with keys:
+            experiment (str): Experiment name identifier.
+            n_qubits (int): Number of qubits.
+            vqe_energy (float): Optimized VQE energy.
+            exact_ground_energy (float): Exact diagonalization ground energy.
+            energy_gap (float): vqe_energy - exact_ground_energy.
+            n_iterations (int): COBYLA function evaluations.
+            converged (bool): Whether optimizer converged.
+            energy_history (list[float]): Energy at each iteration.
+    """
     return _run_vqe(4, maxiter)
 
 
 def vqe_8q_experiment(runner, shots: int = 10000, maxiter: int = 150) -> dict:
-    """VQE ground state of 8-oscillator XY Hamiltonian."""
+    """VQE ground state of 8-oscillator XY Hamiltonian.
+
+    Returns:
+        dict with keys:
+            experiment (str): Experiment name identifier.
+            n_qubits (int): Number of qubits.
+            vqe_energy (float): Optimized VQE energy.
+            exact_ground_energy (float): Exact diagonalization ground energy.
+            energy_gap (float): vqe_energy - exact_ground_energy.
+            n_iterations (int): COBYLA function evaluations.
+            converged (bool): Whether optimizer converged.
+            energy_history (list[float]): Energy at each iteration.
+    """
     return _run_vqe(8, maxiter)
 
 
@@ -258,6 +324,15 @@ def qaoa_mpc_4_experiment(runner, shots: int = 10000) -> dict:
 
     Cost Hamiltonian is diagonal in Z, so Z-basis measurement is exact.
     Compares QAOA solution quality vs brute-force optimal.
+
+    Returns:
+        dict with keys:
+            experiment (str): Experiment name identifier.
+            horizon (int): MPC planning horizon.
+            brute_force_cost (float): Optimal cost from exhaustive search.
+            brute_force_actions (list[int]): Optimal binary actions.
+            qaoa_p1 (dict): p=1 results (qaoa_cost, qaoa_actions, n_iterations).
+            qaoa_p2 (dict): p=2 results (qaoa_cost, qaoa_actions, n_iterations).
     """
     B = np.eye(2)
     target = np.array([0.8, 0.6])
@@ -321,6 +396,20 @@ def upde_16_snapshot_experiment(runner, shots: int = 20000, trotter_steps: int =
 
     Measures in X, Y, Z bases. Compares R against exact evolution.
     ~240 ECR gates. On real hardware, needs error mitigation.
+
+    Returns:
+        dict with keys:
+            experiment (str): Experiment name identifier.
+            n_layers (int): Number of UPDE layers (16).
+            dt (float): Time step size.
+            trotter_steps (int): Number of Trotter repetitions.
+            hw_R (float): Hardware order parameter.
+            hw_R_std (float): Shot-noise std of R.
+            classical_R (float): Exact order parameter.
+            classical_R_std (float): Always 0.0 (exact).
+            hw_exp_x (list[float]): Per-qubit X expectations.
+            hw_exp_y (list[float]): Per-qubit Y expectations.
+            hw_exp_z (list[float]): Per-qubit Z expectations.
     """
     n = 16
     K = build_knm_paper27(L=n)
@@ -334,7 +423,7 @@ def upde_16_snapshot_experiment(runner, shots: int = 20000, trotter_steps: int =
 
     hw_results = runner.run_sampler([qc_z, qc_x, qc_y], shots=shots, name="upde_16")
 
-    R, exp_x, exp_y, exp_z = _R_from_xyz(
+    R, R_std, exp_x, exp_y, exp_z, *_ = _R_from_xyz(
         hw_results[0].counts,
         hw_results[1].counts,
         hw_results[2].counts,
@@ -349,7 +438,9 @@ def upde_16_snapshot_experiment(runner, shots: int = 20000, trotter_steps: int =
         "dt": dt,
         "trotter_steps": trotter_steps,
         "hw_R": R,
+        "hw_R_std": R_std,
         "classical_R": float(classical["R"][-1]),
+        "classical_R_std": 0.0,
         "hw_exp_x": exp_x.tolist(),
         "hw_exp_y": exp_y.tolist(),
         "hw_exp_z": exp_z.tolist(),
@@ -389,6 +480,15 @@ def kuramoto_4osc_zne_experiment(
 
     Runs the evolution at multiple noise scales via unitary folding,
     then extrapolates to zero noise.
+
+    Returns:
+        dict with keys:
+            experiment (str): Experiment name identifier.
+            scales (list[int]): Noise scale factors used.
+            R_per_scale (list[float]): Measured R at each scale.
+            zne_R (float): Zero-noise extrapolated R.
+            classical_R (float): Exact order parameter.
+            fit_residual (float): Polynomial fit residual.
     """
     from ..mitigation.zne import gate_fold_circuit, zne_extrapolate
 
@@ -409,7 +509,7 @@ def kuramoto_4osc_zne_experiment(
         folded = gate_fold_circuit(base, s)
         qc_z, qc_x, qc_y = _build_xyz_circuits(folded, n)
         hw = runner.run_sampler([qc_z, qc_x, qc_y], shots=shots, name=f"zne_s{s}")
-        R, _, _, _ = _R_from_xyz(hw[0].counts, hw[1].counts, hw[2].counts, n)
+        R, R_std, *_ = _R_from_xyz(hw[0].counts, hw[1].counts, hw[2].counts, n)
         R_per_scale.append(R)
         print(f"  scale={s}: R={R:.4f}")
 
@@ -433,7 +533,20 @@ def noise_baseline_experiment(runner, shots: int = 10000) -> dict:
     """4-qubit near-identity circuit for calibration drift detection.
 
     Single Trotter step at dt=0.01 (near-identity). Measures R + per-qubit
-    expectations. Compare Feb→Mar to detect backend drift.
+    expectations. Compare Feb->Mar to detect backend drift.
+
+    Returns:
+        dict with keys:
+            experiment (str): Experiment name identifier.
+            n_qubits (int): Number of qubits.
+            dt (float): Time step size (0.01, near-identity).
+            hw_R (float): Hardware order parameter.
+            hw_R_std (float): Shot-noise std of R.
+            classical_R (float): Exact order parameter.
+            classical_R_std (float): Always 0.0 (exact).
+            hw_exp_x (list[float]): Per-qubit X expectations.
+            hw_exp_y (list[float]): Per-qubit Y expectations.
+            hw_exp_z (list[float]): Per-qubit Z expectations.
     """
     n = 4
     K = build_knm_paper27(L=n)
@@ -446,7 +559,7 @@ def noise_baseline_experiment(runner, shots: int = 10000) -> dict:
     qc_z, qc_x, qc_y = _build_xyz_circuits(base, n)
 
     hw_results = runner.run_sampler([qc_z, qc_x, qc_y], shots=shots, name="noise_baseline")
-    R, exp_x, exp_y, exp_z = _R_from_xyz(
+    R, R_std, exp_x, exp_y, exp_z, *_ = _R_from_xyz(
         hw_results[0].counts, hw_results[1].counts, hw_results[2].counts, n
     )
 
@@ -457,7 +570,9 @@ def noise_baseline_experiment(runner, shots: int = 10000) -> dict:
         "n_qubits": n,
         "dt": dt,
         "hw_R": R,
+        "hw_R_std": R_std,
         "classical_R": float(classical["R"][-1]),
+        "classical_R_std": 0.0,
         "hw_exp_x": exp_x.tolist(),
         "hw_exp_y": exp_y.tolist(),
         "hw_exp_z": exp_z.tolist(),
@@ -473,6 +588,16 @@ def kuramoto_8osc_zne_experiment(
 
     Gate-fold at each noise scale, Richardson extrapolation to zero noise.
     Extends the 4-osc ZNE result to depth-233 territory.
+
+    Returns:
+        dict with keys:
+            experiment (str): Experiment name identifier.
+            n_oscillators (int): Number of oscillators.
+            scales (list[int]): Noise scale factors used.
+            R_per_scale (list[float]): Measured R at each scale.
+            zne_R (float): Zero-noise extrapolated R.
+            classical_R (float): Exact order parameter.
+            fit_residual (float): Polynomial fit residual.
     """
     from ..mitigation.zne import gate_fold_circuit, zne_extrapolate
 
@@ -493,7 +618,7 @@ def kuramoto_8osc_zne_experiment(
         folded = gate_fold_circuit(base, s)
         qc_z, qc_x, qc_y = _build_xyz_circuits(folded, n)
         hw = runner.run_sampler([qc_z, qc_x, qc_y], shots=shots, name=f"zne8_s{s}")
-        R, _, _, _ = _R_from_xyz(hw[0].counts, hw[1].counts, hw[2].counts, n)
+        R, R_std, *_ = _R_from_xyz(hw[0].counts, hw[1].counts, hw[2].counts, n)
         R_per_scale.append(R)
         print(f"  scale={s}: R={R:.4f}")
 
@@ -515,12 +640,23 @@ def kuramoto_8osc_zne_experiment(
 
 
 def vqe_8q_hardware_experiment(runner, shots: int = 10000, maxiter: int = 150) -> dict:
-    """VQE 8-qubit: Statevector optimization → hardware energy evaluation.
+    """VQE 8-qubit: Statevector optimization -> hardware energy evaluation.
 
-    1. COBYLA on Statevector → optimal params
+    1. COBYLA on Statevector -> optimal params
     2. Bind optimal params into Knm-informed ansatz
     3. Send bound circuit to hardware via run_estimator with H observable
     4. Return sim energy, hw energy, exact ground energy
+
+    Returns:
+        dict with keys:
+            experiment (str): Experiment name identifier.
+            n_qubits (int): Number of qubits.
+            sim_energy (float): Statevector-optimized VQE energy.
+            hw_energy (float): Hardware-evaluated energy.
+            exact_energy (float): Exact diagonalization ground energy.
+            sim_gap (float): sim_energy - exact_energy.
+            hw_gap (float): hw_energy - exact_energy.
+            n_iterations (int): COBYLA function evaluations.
     """
     n = 8
     K = build_knm_paper27(L=n)
@@ -567,6 +703,19 @@ def upde_16_dd_experiment(runner, shots: int = 20000, trotter_steps: int = 1) ->
 
     Same structure as upde_16_snapshot but applies DD (XY4) to each
     basis circuit before submission. Compares R(DD) vs R(no-DD) vs classical.
+
+    Returns:
+        dict with keys:
+            experiment (str): Experiment name identifier.
+            n_layers (int): Number of UPDE layers (16).
+            dt (float): Time step size.
+            trotter_steps (int): Number of Trotter repetitions.
+            hw_R_raw (float): Hardware R without DD.
+            hw_R_dd (float): Hardware R with dynamical decoupling.
+            classical_R (float): Exact order parameter.
+            hw_exp_x_dd (list[float]): Per-qubit X expectations (DD).
+            hw_exp_y_dd (list[float]): Per-qubit Y expectations (DD).
+            hw_exp_z_dd (list[float]): Per-qubit Z expectations (DD).
     """
     n = 16
     K = build_knm_paper27(L=n)
@@ -580,7 +729,7 @@ def upde_16_dd_experiment(runner, shots: int = 20000, trotter_steps: int = 1) ->
 
     # No-DD run
     hw_raw = runner.run_sampler([qc_z, qc_x, qc_y], shots=shots, name="upde16_raw")
-    R_raw, exp_x_raw, exp_y_raw, exp_z_raw = _R_from_xyz(
+    R_raw, R_raw_std, exp_x_raw, exp_y_raw, exp_z_raw, *_ = _R_from_xyz(
         hw_raw[0].counts, hw_raw[1].counts, hw_raw[2].counts, n
     )
 
@@ -589,7 +738,7 @@ def upde_16_dd_experiment(runner, shots: int = 20000, trotter_steps: int = 1) ->
     dd_x = runner.transpile_with_dd(qc_x)
     dd_y = runner.transpile_with_dd(qc_y)
     hw_dd = runner.run_sampler([dd_z, dd_x, dd_y], shots=shots, name="upde16_dd")
-    R_dd, exp_x_dd, exp_y_dd, exp_z_dd = _R_from_xyz(
+    R_dd, R_dd_std, exp_x_dd, exp_y_dd, exp_z_dd, *_ = _R_from_xyz(
         hw_dd[0].counts, hw_dd[1].counts, hw_dd[2].counts, n
     )
 
@@ -620,6 +769,20 @@ def kuramoto_4osc_trotter2_experiment(
 
     Same structure as kuramoto_4osc_experiment but uses SuzukiTrotter(order=2).
     Produces order-1 vs order-2 comparison data.
+
+    Returns:
+        dict with keys:
+            experiment (str): Experiment name identifier.
+            n_oscillators (int): Number of oscillators.
+            trotter_order (int): Suzuki-Trotter order (2).
+            dt (float): Time step size.
+            hw_times (list[float]): Hardware measurement times.
+            hw_R (list[float]): Hardware order parameter per step.
+            hw_R_std (list[float]): Shot-noise std of R per step.
+            classical_times (list[float]): Exact evolution times.
+            classical_R (list[float]): Exact order parameter per step.
+            classical_R_std (float): Always 0.0 (exact).
+            hw_expectations (list[dict]): Per-step exp_x, exp_y, exp_z.
     """
     n = 4
     K = build_knm_paper27(L=n)
@@ -640,15 +803,17 @@ def kuramoto_4osc_trotter2_experiment(
     hw_results = runner.run_sampler(all_circuits, shots=shots, name="kuramoto_4osc_trotter2")
 
     hw_R = []
+    hw_R_std = []
     hw_exp = []
     for idx in step_indices:
-        R, ex, ey, ez = _R_from_xyz(
+        R, R_std, ex, ey, ez, *_ = _R_from_xyz(
             hw_results[idx].counts,
             hw_results[idx + 1].counts,
             hw_results[idx + 2].counts,
             n,
         )
         hw_R.append(R)
+        hw_R_std.append(R_std)
         hw_exp.append({"exp_x": ex.tolist(), "exp_y": ey.tolist(), "exp_z": ez.tolist()})
 
     hw_times = [i * dt for i in range(1, n_time_steps + 1)]
@@ -661,8 +826,10 @@ def kuramoto_4osc_trotter2_experiment(
         "dt": dt,
         "hw_times": hw_times,
         "hw_R": hw_R,
+        "hw_R_std": hw_R_std,
         "classical_times": classical["times"].tolist(),
         "classical_R": classical["R"].tolist(),
+        "classical_R_std": 0.0,
         "hw_expectations": hw_exp,
     }
 
@@ -679,8 +846,16 @@ def sync_threshold_experiment(
     R grows (synchronized). K_c depends on frequency spread.
 
     Science: first measurement of Kuramoto phase transition on
-    superconducting qubits. Validates quantum XY ↔ classical Kuramoto
+    superconducting qubits. Validates quantum XY <-> classical Kuramoto
     correspondence at the critical point.
+
+    Returns:
+        dict with keys:
+            experiment (str): Experiment name identifier.
+            n_oscillators (int): Number of oscillators.
+            dt (float): Time step size.
+            k_values (list[float]): Coupling strengths swept.
+            results (list[dict]): Per-K dicts with K_base, hw_R, classical_R.
     """
     if k_values is None:
         k_values = [0.05, 0.15, 0.30, 0.45, 0.60, 0.80]
@@ -701,7 +876,7 @@ def sync_threshold_experiment(
         base = _build_evo_base(n, K, omega, dt, trotter_reps=2)
         qc_z, qc_x, qc_y = _build_xyz_circuits(base, n)
         hw = runner.run_sampler([qc_z, qc_x, qc_y], shots=shots, name=f"sync_K{k_base:.2f}")
-        R, ex, ey, ez = _R_from_xyz(hw[0].counts, hw[1].counts, hw[2].counts, n)
+        R, R_std, ex, ey, ez, *_ = _R_from_xyz(hw[0].counts, hw[1].counts, hw[2].counts, n)
 
         classical = classical_exact_evolution(n, dt, dt, K, omega)
         cl_R = float(classical["R"][-1])
@@ -734,6 +909,15 @@ def ansatz_comparison_hw_experiment(runner, shots: int = 10000, maxiter: int = 1
 
     Science: proves physics-informed (Knm) ansatz advantage is real
     on noisy hardware, not just an artifact of noiseless simulation.
+
+    Returns:
+        dict with keys:
+            experiment (str): Experiment name identifier.
+            n_qubits (int): Number of qubits.
+            exact_energy (float): Exact diagonalization ground energy.
+            comparison (list[dict]): Per-ansatz dicts with ansatz, n_params,
+                sim_energy, hw_energy, exact_energy, sim_gap, hw_gap,
+                n_iterations.
     """
     from qiskit.circuit.library import efficient_su2, n_local
 
@@ -804,9 +988,17 @@ def zne_higher_order_experiment(
     polynomial extrapolation recovers more signal than the 3-point linear
     version (kuramoto_4osc_zne).
 
-    Science: systematic ZNE study — linear vs quadratic vs cubic on the
+    Science: systematic ZNE study -- linear vs quadratic vs cubic on the
     same data. Determines optimal extrapolation order for XY evolution on
     Heron r2.
+
+    Returns:
+        dict with keys:
+            experiment (str): Experiment name identifier.
+            scales (list[int]): Noise scale factors used.
+            R_per_scale (list[float]): Measured R at each scale.
+            extrapolations (dict): Per-order dicts with zne_R, fit_residual.
+            classical_R (float): Exact order parameter.
     """
     from ..mitigation.zne import gate_fold_circuit, zne_extrapolate
 
@@ -827,7 +1019,7 @@ def zne_higher_order_experiment(
         folded = gate_fold_circuit(base, s)
         qc_z, qc_x, qc_y = _build_xyz_circuits(folded, n)
         hw = runner.run_sampler([qc_z, qc_x, qc_y], shots=shots, name=f"zne_ho_s{s}")
-        R, _, _, _ = _R_from_xyz(hw[0].counts, hw[1].counts, hw[2].counts, n)
+        R, R_std, *_ = _R_from_xyz(hw[0].counts, hw[1].counts, hw[2].counts, n)
         R_per_scale.append(R)
         print(f"  scale={s}: R={R:.4f}")
 
@@ -866,6 +1058,15 @@ def decoherence_scaling_experiment(
 
     Science: extracts per-gate depolarization rate gamma from a single
     calibration run. Enables predictive modeling of experiment fidelity.
+
+    Returns:
+        dict with keys:
+            experiment (str): Experiment name identifier.
+            dt (float): Time step size.
+            data_points (list[dict]): Per-qubit-count dicts with n_qubits,
+                depth, hw_R, classical_R.
+            fit_gamma (float): Fitted per-gate depolarization rate.
+            fit_r_squared (float): R-squared of exponential fit.
     """
     if qubit_counts is None:
         qubit_counts = [2, 4, 6, 8, 10, 12]
@@ -881,7 +1082,7 @@ def decoherence_scaling_experiment(
         base = _build_evo_base(n, K, omega, dt, trotter_reps=1)
         qc_z, qc_x, qc_y = _build_xyz_circuits(base, n)
         hw = runner.run_sampler([qc_z, qc_x, qc_y], shots=shots, name=f"decoherence_{n}q")
-        R, _, _, _ = _R_from_xyz(hw[0].counts, hw[1].counts, hw[2].counts, n)
+        R, R_std, *_ = _R_from_xyz(hw[0].counts, hw[1].counts, hw[2].counts, n)
 
         isa = runner.transpile(base)
         depth = isa.depth()
@@ -938,6 +1139,15 @@ def vqe_landscape_experiment(runner, shots: int = 10000, n_samples: int = 50) ->
 
     Reference: McClean et al., "Barren plateaus in quantum neural network
     training landscapes", Nature Comm. 9, 4812 (2018).
+
+    Returns:
+        dict with keys:
+            experiment (str): Experiment name identifier.
+            n_qubits (int): Number of qubits.
+            n_samples (int): Random parameter vectors sampled.
+            exact_ground_energy (float): Exact diagonalization ground energy.
+            landscapes (dict): Per-ansatz dicts with n_params, mean_energy,
+                std_energy, min_energy, max_energy.
     """
     from qiskit.circuit.library import n_local
 
@@ -1010,7 +1220,17 @@ def bell_test_4q_experiment(runner, shots: int = 10000, maxiter: int = 100) -> d
 
     Certifies entanglement between qubits 0 and 1 via CHSH inequality
     violation. S > 2 proves non-classical correlations on hardware.
-    ~20s QPU budget (4 circuits × ~5s each).
+    ~20s QPU budget (4 circuits x ~5s each).
+
+    Returns:
+        dict with keys:
+            experiment (str): Experiment name identifier.
+            S_hw (float): CHSH S value from hardware.
+            S_sim (float): CHSH S value from simulation.
+            violates_classical_hw (bool): S_hw > 2.0.
+            violates_classical_sim (bool): S_sim > 2.0.
+            correlators_hw (dict): ZZ, ZX, XZ, XX correlators (hardware).
+            correlators_sim (dict): Correlators from simulation.
     """
     n = 4
     K = build_knm_paper27(L=n)
@@ -1070,6 +1290,14 @@ def correlator_4q_experiment(runner, shots: int = 10000, maxiter: int = 100) -> 
     Validates that the K_ij coupling topology maps to measurable quantum
     correlations. Connected correlation C[i,j] = <Z_i Z_j> - <Z_i><Z_j>.
     ~25s QPU budget (1 circuit).
+
+    Returns:
+        dict with keys:
+            experiment (str): Experiment name identifier.
+            corr_hw (list[list[float]]): 4x4 connected correlation matrix (hw).
+            corr_sim (list[list[float]]): 4x4 connected correlation matrix (sim).
+            frobenius_error (float): ||corr_hw - corr_sim||_F.
+            max_correlation_hw (float): Max absolute correlation on hardware.
     """
     n = 4
     K = build_knm_paper27(L=n)
@@ -1087,7 +1315,7 @@ def correlator_4q_experiment(runner, shots: int = 10000, maxiter: int = 100) -> 
     counts = hw_results[0].counts
 
     # Per-qubit <Z_i> from counts
-    exp_z = _expectation_per_qubit(counts, n)
+    exp_z, _ = _expectation_per_qubit(counts, n)
 
     # <Z_i Z_j> for all pairs
     corr_hw = np.zeros((n, n))
@@ -1125,6 +1353,16 @@ def qkd_qber_4q_experiment(runner, shots: int = 10000, maxiter: int = 100) -> di
     Measures in Z and X bases, extracts Alice (qubits 0,1) and Bob (qubits 2,3)
     raw keys, computes QBER. Secure if QBER < 0.11 (BB84 threshold).
     ~15s QPU budget (2 circuits).
+
+    Returns:
+        dict with keys:
+            experiment (str): Experiment name identifier.
+            qber_z_hw (float): Z-basis QBER from hardware.
+            qber_x_hw (float): X-basis QBER from hardware.
+            qber_sim (float): QBER from simulator.
+            secure_hw (bool): Both QBERs < 0.11.
+            secure_sim (bool): Simulator QBER < 0.11.
+            key_rate_hw (float): Devetak-Winter secret key rate.
     """
     n = 4
     K = build_knm_paper27(L=n)

@@ -153,7 +153,8 @@ class PhaseOrchestratorAdapter:
             omegas.extend([layer_omega] * len(osc_ids))
         if not omegas:
             raise ValueError("BindingSpec must define at least one oscillator.")
-        return np.asarray(omegas, dtype=np.float64)
+        result: np.ndarray = np.asarray(omegas, dtype=np.float64)
+        return result
 
 
 __all__ = ["PhaseOrchestratorAdapter"]

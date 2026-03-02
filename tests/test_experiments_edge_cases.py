@@ -20,7 +20,7 @@ def test_kuramoto_2osc_minimal(sim_runner):
     base = _build_evo_base(n, K, omega, t=0.1, trotter_reps=1)
     qc_z, qc_x, qc_y = _build_xyz_circuits(base, n)
     hw = sim_runner.run_sampler([qc_z, qc_x, qc_y], shots=500, name="edge_2osc")
-    R, _, _, _ = _R_from_xyz(hw[0].counts, hw[1].counts, hw[2].counts, n)
+    R, *_ = _R_from_xyz(hw[0].counts, hw[1].counts, hw[2].counts, n)
     assert 0.0 <= R <= 1.5
 
 
@@ -76,7 +76,7 @@ def test_R_from_xyz_uniform_counts():
 
     # If every qubit is measured 50/50, X and Y expectations are ~0
     uniform = {"0000": 500, "1111": 500}
-    R, Xvec, Yvec, Zvec = _R_from_xyz(uniform, uniform, uniform, 4)
+    R, _, Xvec, Yvec, Zvec, *_ = _R_from_xyz(uniform, uniform, uniform, 4)
     assert R >= 0.0
     assert len(Xvec) == 4
 
@@ -86,7 +86,7 @@ def test_R_from_xyz_all_zero():
     from scpn_quantum_control.hardware.experiments import _R_from_xyz
 
     all_zero = {"00": 1000}
-    R, Xvec, Yvec, Zvec = _R_from_xyz(all_zero, all_zero, all_zero, 2)
+    R, _, Xvec, Yvec, Zvec, *_ = _R_from_xyz(all_zero, all_zero, all_zero, 2)
     assert R > 0.5  # all qubits aligned
     assert len(Xvec) == 2
 

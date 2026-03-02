@@ -114,7 +114,7 @@ def test_noisy_sim_zne_improvement(tmp_path):
         folded = gate_fold_circuit(base, s)
         qc_z, qc_x, qc_y = _build_xyz_circuits(folded, n)
         hw = runner.run_sampler([qc_z, qc_x, qc_y], shots=3000, name=f"zne_s{s}")
-        R, _, _, _ = _R_from_xyz(hw[0].counts, hw[1].counts, hw[2].counts, n)
+        R, *_ = _R_from_xyz(hw[0].counts, hw[1].counts, hw[2].counts, n)
         R_per_scale.append(R)
 
     result = zne_extrapolate([1, 3, 5], R_per_scale, order=1)

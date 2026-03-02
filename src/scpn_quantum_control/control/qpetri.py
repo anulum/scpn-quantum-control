@@ -80,7 +80,7 @@ class QuantumPetriNet:
             self.apply_transition(qc, t)
 
         sv = Statevector.from_instruction(qc)
-        new_marking = np.zeros(self.n_places)
+        new_marking: np.ndarray = np.zeros(self.n_places)
         for p in range(self.n_places):
             probs = sv.probabilities([p])
             new_marking[p] = probs[1]  # P(|1>) = token density

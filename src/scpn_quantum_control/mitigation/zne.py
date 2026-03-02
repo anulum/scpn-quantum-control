@@ -59,6 +59,8 @@ def zne_extrapolate(
     """
     x = np.array(noise_scales, dtype=float)
     y = np.array(expectation_values, dtype=float)
+    if len(x) < order + 1:
+        raise ValueError(f"Need >= {order + 1} data points for order-{order} fit, got {len(x)}")
 
     coeffs = np.polyfit(x, y, deg=min(order, len(x) - 1))
     poly = np.poly1d(coeffs)

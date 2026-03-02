@@ -106,7 +106,7 @@ def verify_key_chain(
 def _kuramoto_rhs(t: float, theta: np.ndarray, K: np.ndarray, omega: np.ndarray) -> np.ndarray:
     """Kuramoto ODE right-hand side: dθ/dt = ω + Σ K_nm sin(θ_m - θ_n)."""
     n = len(theta)
-    dtheta = omega.copy()
+    dtheta: np.ndarray = omega.copy()
     for i in range(n):
         for j in range(n):
             dtheta[i] += K[i, j] * np.sin(theta[j] - theta[i])
@@ -134,7 +134,10 @@ def evolve_key_phases(
         t_eval=t_eval,
         method="RK45",
     )
-    return np.asarray(sol.y)  # shape (n_layers, n_samples)
+    if sol.status != 0:
+        raise RuntimeError(f"Phase evolution failed: {sol.message}")
+    result: np.ndarray = np.asarray(sol.y)
+    return result  # shape (n_layers, n_samples)
 
 
 def rotating_key_schedule(
