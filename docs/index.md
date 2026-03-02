@@ -54,6 +54,12 @@ result = solver.run(t_max=0.5, dt=0.1, trotter_per_step=2)
 print(f"R(t): {result['R']}")
 ```
 
+## Limitations
+
+- **NISQ benchmarking only.** Circuit depths >400 hit the coherence wall; cloud QPUs cannot provide the <1 ms deterministic latency required for real tokamak control.
+- **SCPN is an unpublished model.** The K_nm parameterisation comes from a 2025 working paper with no external citations. The Kuramoto→XY mapping is standard; the specific coupling structure is not independently validated.
+- **No quantum advantage at this scale.** At N=4-16, classical ODE solvers are faster and more accurate. Advantage requires N>>20 with error-corrected qubits.
+
 ## Next steps
 
 - [Installation](installation.md) — pip install + dev setup

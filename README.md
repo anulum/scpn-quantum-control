@@ -19,8 +19,8 @@ The Kuramoto model is isomorphic to the XY spin Hamiltonian — superconducting
 qubits simulate it natively via Trotterized time evolution. This repo implements
 that mapping: it compiles SCPN coupling parameters into Qiskit circuits and
 validates them on IBM Heron r2 hardware (156 qubits), achieving **0.05% VQE
-ground-state error** and the **first hardware attempt at a full 16-layer
-UPDE snapshot** (46% error at depth 770 — consistent with NISQ expectations).
+ground-state error** and an **initial 16-layer UPDE snapshot** (46% error
+at depth 770 — consistent with NISQ decoherence expectations).
 
 If you work on quantum simulation of coupled oscillators, NISQ benchmarking,
 or Kuramoto/XY physics, this repo gives you a tested pipeline from coupling
@@ -86,7 +86,7 @@ Full results with all 12 decoherence data points: [`results/HARDWARE_RESULTS.md`
 
 **Key findings:**
 
-- VQE with K_nm-informed ansatz achieves publication-quality 0.05% error
+- VQE with K_nm-informed ansatz achieves 0.05% error on 4-qubit subsystem
 - Coherence wall at depth 250-400 on Heron r2 — shallow Trotter (1 rep) beats deep Trotter on NISQ devices
 
 ![Trotter depth tradeoff](figures/trotter_tradeoff.png)
@@ -275,6 +275,22 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 Integration reference:
 - [`docs/orchestrator_integration.md`](docs/orchestrator_integration.md) — fusion/orchestrator-defined Kuramoto/UPDE specs into quantum bridge artifacts, with non-collision policy vs `scpn-control`.
 - Includes `scpn-control` plasma-native Knm compatibility bridge (`build_knm_plasma*`, `plasma_omega`).
+
+## Limitations
+
+- **NISQ benchmarking only.** Current hardware results are proof-of-concept.
+  Circuit depths >400 hit the Heron r2 coherence wall; the 16-layer UPDE
+  snapshot (46% error) confirms this. Real tokamak control requires <1 ms
+  deterministic latency on radiation-hardened hardware — cloud QPUs cannot
+  provide that.
+- **SCPN is an unpublished model.** The 16-layer coupling structure comes
+  from a 2025 working paper (Sotek, Paper 27) with no external citations
+  yet. The Kuramoto→XY mapping is standard physics; the specific K_nm
+  parameterisation is not independently validated.
+- **Small-scale advantage not demonstrated.** At N=4-16 qubits, classical
+  ODE solvers outperform quantum simulation in both speed and accuracy.
+  Potential quantum advantage requires N>>20 with error-corrected qubits
+  (post-2030 hardware).
 
 ## Related Repositories
 
