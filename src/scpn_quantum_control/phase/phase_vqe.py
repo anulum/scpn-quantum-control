@@ -43,12 +43,14 @@ class PhaseVQE:
         sv = Statevector.from_instruction(bound)
         return float(sv.expectation_value(self.hamiltonian).real)
 
-    def solve(self, optimizer: str = "COBYLA", maxiter: int = 200) -> dict:
+    def solve(
+        self, optimizer: str = "COBYLA", maxiter: int = 200, seed: int | None = None
+    ) -> dict:
         """Run VQE optimization.
 
         Returns dict with ground_energy, optimal_params, n_evals.
         """
-        x0 = np.random.default_rng().uniform(-np.pi, np.pi, self.n_params)
+        x0 = np.random.default_rng(seed).uniform(-np.pi, np.pi, self.n_params)
 
         result = minimize(
             self._cost,

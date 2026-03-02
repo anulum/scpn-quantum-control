@@ -9,14 +9,7 @@ from scpn_quantum_control.hardware.classical import (
     classical_exact_evolution,
     classical_kuramoto_reference,
 )
-from scpn_quantum_control.hardware.runner import HardwareRunner, JobResult
-
-
-@pytest.fixture
-def sim_runner(tmp_path):
-    runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "results"))
-    runner.connect()
-    return runner
+from scpn_quantum_control.hardware.runner import JobResult
 
 
 def test_connect_simulator(sim_runner):

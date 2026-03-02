@@ -165,9 +165,9 @@ from the same K_nm — natural key rotation without re-keying.
 
 | Experiment | Qubits | Status | Description |
 |-----------|--------|--------|-------------|
-| `bell_test_4q` | 4 | **Implemented (v0.5.0)** | CHSH violation with K_nm ground state on hardware |
-| `correlator_4q` | 4 | **Implemented (v0.5.0)** | ZZ cross-correlation validates K_ij topology |
-| `qkd_qber_4q` | 4 | **Implemented (v0.5.0)** | QBER from hardware vs BB84 threshold (< 0.11) |
+| `bell_test_4q` | 4 | **Implemented (v0.6.4)** | CHSH violation with K_nm ground state on hardware |
+| `correlator_4q` | 4 | **Implemented (v0.6.4)** | ZZ cross-correlation validates K_ij topology |
+| `qkd_qber_4q` | 4 | **Implemented (v0.6.4)** | QBER from hardware vs BB84 threshold (< 0.11) |
 | `correlator_8q` | 8 | Planned | Cross-correlation matrix on ibm_fez |
 | `percolation_16q` | 16 | Planned | Full K_nm entanglement map on hardware |
 
@@ -192,7 +192,7 @@ verification, QBER estimation, Devetak-Winter key rates under noise.
 **Phase 3 — Complete**: Entanglement percolation on K_nm graph, hierarchical
 key derivation from 16-layer SCPN structure.
 
-**Phase 4 — In progress**: 3 hardware experiment wrappers implemented (v0.5.0).
+**Phase 4 — In progress**: 3 hardware experiment wrappers implemented (v0.6.4).
 Awaiting March QPU budget for ibm_fez execution.
 - `bell_test_4q`: CHSH S-value from hardware counts
 - `correlator_4q`: 4x4 connected correlation matrix

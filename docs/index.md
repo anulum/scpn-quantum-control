@@ -38,7 +38,7 @@ runs them on IBM Heron r2 hardware (156 qubits).
 | `qsnn` | Quantum spiking neural networks (LIF, STDP, synapses) |
 | `crypto` | Topology-authenticated QKD, Bell tests, key rates, percolation |
 | `qec` | Toric code + MWPM decoder with K_nm-weighted distances |
-| `mitigation` | ZNE (unitary folding) + dynamical decoupling (XY4, CPMG) |
+| `mitigation` | ZNE (unitary folding) + dynamical decoupling (XY4, X2, CPMG) |
 | `hardware` | IBM Quantum runner, 20 pre-built experiments, classical references |
 
 ## Quick example

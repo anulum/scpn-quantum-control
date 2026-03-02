@@ -41,7 +41,7 @@ def test_vqe_solve_returns_exact_energy():
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
     vqe = PhaseVQE(K, omega, ansatz_reps=1)
-    sol = vqe.solve(maxiter=50)
+    sol = vqe.solve(maxiter=50, seed=0)
     assert "exact_energy" in sol
     assert isinstance(sol["exact_energy"], float)
 
@@ -51,7 +51,7 @@ def test_vqe_solve_returns_energy_gap():
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
     vqe = PhaseVQE(K, omega, ansatz_reps=1)
-    sol = vqe.solve(maxiter=50)
+    sol = vqe.solve(maxiter=50, seed=0)
     assert "energy_gap" in sol
     assert sol["energy_gap"] >= 0.0
     assert "relative_error_pct" in sol

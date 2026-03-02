@@ -3,16 +3,6 @@
 from __future__ import annotations
 
 import numpy as np
-import pytest
-
-from scpn_quantum_control.hardware.runner import HardwareRunner
-
-
-@pytest.fixture
-def sim_runner(tmp_path):
-    runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "results"))
-    runner.connect()
-    return runner
 
 
 def test_kuramoto_2osc_minimal(sim_runner):

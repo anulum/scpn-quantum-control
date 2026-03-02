@@ -146,7 +146,7 @@ scpn_quantum_control/
 │   └── control_qec.py     Toric code + MWPM decoder (Knm-weighted)
 ├── mitigation/     Error mitigation
 │   ├── zne.py          Zero-noise extrapolation (unitary folding)
-│   └── dd.py           Dynamical decoupling (XY4, X2)
+│   └── dd.py           Dynamical decoupling (XY4, X2, CPMG)
 └── hardware/       IBM Quantum hardware runner
     ├── runner.py       ibm_fez job submission + result parsing
     ├── experiments.py  20 pre-built experiment circuits (incl. 3 crypto)
@@ -239,7 +239,7 @@ Topology-authenticated QKD using K_nm as shared secret:
 ### Error Mitigation (`mitigation/`)
 
 - **ZNE**: Global unitary folding + Richardson extrapolation (Giurgica-Tiron et al. 2020)
-- **DD**: Dynamical decoupling pulse insertion (XY4, X2) for idle qubits (Viola et al. 1999)
+- **DD**: Dynamical decoupling pulse insertion (XY4, X2, CPMG) for idle qubits (Viola et al. 1999)
 
 ## Dependencies
 
@@ -290,7 +290,8 @@ Integration reference:
   title  = {scpn-quantum-control: Quantum-Native SCPN Phase Dynamics and Control},
   author = {Sotek, Miroslav},
   year   = {2026},
-  url    = {https://github.com/anulum/scpn-quantum-control}
+  url    = {https://github.com/anulum/scpn-quantum-control},
+  doi    = {10.5281/zenodo.18821929}
 }
 ```
 
