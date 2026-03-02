@@ -1,0 +1,1540 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Quantum simulation of coupled oscillators on IBM hardware">
+      
+      
+        <meta name="author" content="Miroslav Sotek">
+      
+      
+        <link rel="canonical" href="https://anulum.github.io/scpn-quantum-control/QUANTUM_CRYPTO_RESEARCH_BRANCH/">
+      
+      
+        <link rel="prev" href="../PAPER_CLAIMS/">
+      
+      
+        <link rel="next" href="../notebooks/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
+    
+    
+      
+        <title>Crypto Research - scpn-quantum-control</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#quantum-cryptography-research-branch" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="scpn-quantum-control" class="md-header__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            scpn-quantum-control
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Crypto Research
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="scpn-quantum-control" class="md-nav__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    scpn-quantum-control
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../equations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../orchestrator_integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestrator Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mitigation_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mitigation API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hardware_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IBM Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXPERIMENT_ROADMAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PAPER_CLAIMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results & Claims
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Crypto Research
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Crypto Research
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#thesis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Thesis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#literature-grounding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Literature Grounding
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-specifications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module Specifications
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Module Specifications">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-knm_keypy-coupling-matrix-to-key-material" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. knm_key.py — Coupling Matrix to Key Material
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-topology_authpy-spectral-fingerprint-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. topology_auth.py — Spectral Fingerprint Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-entanglement_qkdpy-topology-authenticated-qkd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. entanglement_qkd.py — Topology-Authenticated QKD
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-percolationpy-entanglement-percolation-on-k_nm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. percolation.py — Entanglement Percolation on K_nm
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-hierarchical_keyspy-scpn-layer-key-derivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. hierarchical_keys.py — SCPN Layer Key Derivation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hardware-experiments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hardware Experiments
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dependencies-on-existing-modules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependencies on Existing Modules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#research-timeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Research Timeline
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notebooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#thesis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Thesis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#literature-grounding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Literature Grounding
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-specifications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module Specifications
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Module Specifications">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-knm_keypy-coupling-matrix-to-key-material" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. knm_key.py — Coupling Matrix to Key Material
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-topology_authpy-spectral-fingerprint-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. topology_auth.py — Spectral Fingerprint Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-entanglement_qkdpy-topology-authenticated-qkd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. entanglement_qkd.py — Topology-Authenticated QKD
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-percolationpy-entanglement-percolation-on-k_nm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. percolation.py — Entanglement Percolation on K_nm
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-hierarchical_keyspy-scpn-layer-key-derivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. hierarchical_keys.py — SCPN Layer Key Derivation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hardware-experiments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hardware Experiments
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dependencies-on-existing-modules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependencies on Existing Modules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#research-timeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Research Timeline
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="quantum-cryptography-research-branch">Quantum Cryptography Research Branch<a class="headerlink" href="#quantum-cryptography-research-branch" title="Permanent link">&para;</a></h1>
+<h2 id="thesis">Thesis<a class="headerlink" href="#thesis" title="Permanent link">&para;</a></h2>
+<p>The SCPN coupling matrix K_nm encodes oscillator topology as quantum
+entanglement structure under the Kuramoto-XY isomorphism. Parties who
+share K_nm can generate correlated measurement statistics from the
+Hamiltonian's ground state — an eavesdropper without K_nm cannot
+reconstruct these correlations. This gives a topology-authenticated
+QKD protocol where the shared secret is not a bit string but a
+physical coupling matrix.</p>
+<h2 id="literature-grounding">Literature Grounding<a class="headerlink" href="#literature-grounding" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Paper</th>
+<th>Key Result</th>
+<th>K_nm Connection</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frequency-bin QKD (npj Quantum Inf. 2025)</td>
+<td>Coupled ring resonators implement BBM92 via coupling topology</td>
+<td>K_nm maps to photonic coupling graph</td>
+</tr>
+<tr>
+<td>Huygens quantum sync (Nature Comms. 2025)</td>
+<td>Coupled oscillators under shared noise co-generate phase sync + entanglement</td>
+<td>Kuramoto sync = entanglement generation</td>
+</tr>
+<tr>
+<td>Quantum network science (AAAI 2025)</td>
+<td>Fidelity-weighted graph structure determines key rate</td>
+<td>K_nm spectral properties set QKD channel capacity</td>
+</tr>
+<tr>
+<td>Entanglement percolation (arXiv 2026)</td>
+<td>Mixed-state threshold lower than pure-state</td>
+<td>Weak K_nm entries still contribute above threshold</td>
+</tr>
+<tr>
+<td>Hierarchical group QKD (Sci. Reports 2025)</td>
+<td>Multi-party protocol with sub-group key derivation</td>
+<td>16-layer hierarchy = natural key tree</td>
+</tr>
+</tbody>
+</table>
+<h2 id="module-architecture">Module Architecture<a class="headerlink" href="#module-architecture" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>scpn_quantum_control/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>└── crypto/                    # Topology-authenticated quantum cryptography
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    ├── __init__.py
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    ├── knm_key.py             # K_nm → key material pipeline
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    ├── topology_auth.py       # Spectral fingerprint authentication
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    ├── entanglement_qkd.py    # Entanglement-based key distribution
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    ├── percolation.py         # K_nm entanglement percolation analysis
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    ├── hierarchical_keys.py   # Multi-layer key derivation from SCPN
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    └── noise_analysis.py      # Devetak-Winter key rates, noise channels
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>tests/
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>├── test_knm_key.py
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>├── test_topology_auth.py
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>├── test_entanglement_qkd.py
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>├── test_percolation.py
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>├── test_hierarchical_keys.py
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>└── test_noise_analysis.py
+</code></pre></div>
+<h2 id="module-specifications">Module Specifications<a class="headerlink" href="#module-specifications" title="Permanent link">&para;</a></h2>
+<h3 id="1-knm_keypy-coupling-matrix-to-key-material">1. <code>knm_key.py</code> — Coupling Matrix to Key Material<a class="headerlink" href="#1-knm_keypy-coupling-matrix-to-key-material" title="Permanent link">&para;</a></h3>
+<p><strong>Core primitive</strong>: Given shared K_nm and agreed Hamiltonian H(K_nm),
+prepare the ground state |ψ₀⟩, measure in agreed basis, extract
+correlated bit string.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Pipeline:
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  K_nm → knm_to_hamiltonian(K) → VQE ground state → measurement → sift → key
+</code></pre></div>
+<p><strong>Functions:</strong>
+- <code>prepare_key_state(K, omega, ansatz_reps)</code> → QuantumCircuit
+  Builds VQE-optimized circuit encoding K_nm's ground state.
+- <code>extract_raw_key(counts, basis, n_qubits)</code> → BitArray
+  Sifts measurement results into raw key bits.
+- <code>estimate_qber(alice_bits, bob_bits)</code> → float
+  Quantum bit error rate from shared subset.
+- <code>privacy_amplification(raw_key, qber)</code> → SecureKey
+  Universal₂ hash family compression.</p>
+<p><strong>Security argument</strong>: K_nm has 16×15/2 = 120 independent off-diagonal
+entries (symmetric, zero diagonal). Each entry is a continuous real
+value. An eavesdropper must reconstruct all 120 values to reproduce
+the ground state — the search space is R^120. Measurement statistics
+from a wrong K_nm' produce statistically distinguishable correlations
+(detectable via QBER &gt; threshold).</p>
+<h3 id="2-topology_authpy-spectral-fingerprint-authentication">2. <code>topology_auth.py</code> — Spectral Fingerprint Authentication<a class="headerlink" href="#2-topology_authpy-spectral-fingerprint-authentication" title="Permanent link">&para;</a></h3>
+<p><strong>Core idea</strong>: The Laplacian spectrum of K_nm (already computed by
+SSGF's <code>spectral.py</code>) provides a public authentication token.
+The Fiedler value λ₁ and spectral gap λ₁/λ₂ uniquely characterize
+the coupling topology without revealing K_nm itself.</p>
+<p><strong>Functions:</strong>
+- <code>spectral_fingerprint(K)</code> → dict
+  Returns {fiedler, gap_ratio, spectral_entropy, n_components}.
+- <code>verify_fingerprint(K, fingerprint, tol)</code> → bool
+  Checks K against a claimed fingerprint.
+- <code>topology_distance(fp1, fp2)</code> → float
+  Metric between two fingerprints for drift detection.</p>
+<p><strong>Why it works</strong>: Spectral properties are graph invariants — many
+different K_nm matrices share the same spectrum (co-spectral graphs).
+Publishing the spectrum doesn't reveal K_nm, but any party with the
+true K_nm can verify consistency.</p>
+<h3 id="3-entanglement_qkdpy-topology-authenticated-qkd">3. <code>entanglement_qkd.py</code> — Topology-Authenticated QKD<a class="headerlink" href="#3-entanglement_qkdpy-topology-authenticated-qkd" title="Permanent link">&para;</a></h3>
+<p><strong>Protocol (SCPN-QKD):</strong>
+1. Alice and Bob share K_nm (pre-distributed secret).
+2. Both construct H(K_nm) and prepare ground state |ψ₀⟩.
+3. Alice measures qubits {0,...,7} in random {X, Z} basis.
+4. Bob measures qubits {8,...,15} in random {X, Z} basis.
+5. Public channel: announce basis choices, keep matching.
+6. Sift → estimate QBER → privacy amplify → secure key.</p>
+<p><strong>Functions:</strong>
+- <code>scpn_qkd_protocol(K, omega, alice_qubits, bob_qubits, shots)</code> → QKDResult
+  Full protocol execution on simulator.
+- <code>correlator_matrix(counts, alice_qubits, bob_qubits)</code> → ndarray
+  Cross-correlation matrix between Alice and Bob measurements.
+- <code>bell_inequality_test(correlator)</code> → dict
+  CHSH violation test to certify entanglement.</p>
+<p><strong>Key rate bound</strong>: From the Devetak-Winter formula,
+r ≥ 1 - h(QBER) - h(QBER) where h is binary entropy.
+The topology-dependent entanglement structure means different
+qubit pairs have different key rates — strongly coupled pairs
+(K_nm &gt; 0.2) yield higher rates.</p>
+<h3 id="4-percolationpy-entanglement-percolation-on-k_nm">4. <code>percolation.py</code> — Entanglement Percolation on K_nm<a class="headerlink" href="#4-percolationpy-entanglement-percolation-on-k_nm" title="Permanent link">&para;</a></h3>
+<p><strong>Core question</strong>: Which (n,m) pairs in K_nm are entangled
+above threshold and usable as QKD channels?</p>
+<p><strong>Functions:</strong>
+- <code>concurrence_map(K, omega)</code> → ndarray
+  Compute pairwise concurrence from ground state reduced density matrices.
+- <code>percolation_threshold(K)</code> → float
+  Minimum K_nm value for end-to-end entanglement.
+- <code>active_channel_graph(K, threshold)</code> → nx.Graph
+  Graph of above-threshold entangled pairs.
+- <code>key_rate_per_channel(concurrence_map)</code> → ndarray
+  Devetak-Winter key rate for each link.</p>
+<p><strong>Connection to SSGF</strong>: The Fiedler value λ₁ from SSGF's spectral
+bridge is the algebraic connectivity — when λ₁ &gt; 0, the graph
+is connected and end-to-end entanglement percolates.</p>
+<h3 id="5-hierarchical_keyspy-scpn-layer-key-derivation">5. <code>hierarchical_keys.py</code> — SCPN Layer Key Derivation<a class="headerlink" href="#5-hierarchical_keyspy-scpn-layer-key-derivation" title="Permanent link">&para;</a></h3>
+<p><strong>Core idea</strong>: The 16-layer SCPN hierarchy maps to a key tree.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Master key: hash(K_nm_full ‖ R_global)
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>  ├── L1 subkey: hash(K_nm[0,:] ‖ θ₁(t))
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>  ├── L2 subkey: hash(K_nm[1,:] ‖ θ₂(t))
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>  ├── ...
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>  └── L16 subkey: hash(K_nm[15,:] ‖ θ₁₆(t))
+</code></pre></div>
+<p><strong>Functions:</strong>
+- <code>derive_master_key(K, R_global, nonce)</code> → bytes
+  Master key from full coupling matrix + order parameter.
+- <code>derive_layer_key(K, layer_idx, phase_sequence, nonce)</code> → bytes
+  Layer-specific subkey.
+- <code>key_hierarchy(K, phases, n_layers)</code> → dict[int, bytes]
+  Full hierarchy derivation.
+- <code>verify_key_chain(master, layer_keys, K)</code> → bool
+  Verify layer keys are consistent with master.</p>
+<p><strong>Time-varying keys</strong>: The Kuramoto phase sequence θ_n(t) adds
+temporal entropy. Different time windows produce different keys
+from the same K_nm — natural key rotation without re-keying.</p>
+<h2 id="hardware-experiments">Hardware Experiments<a class="headerlink" href="#hardware-experiments" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Experiment</th>
+<th>Qubits</th>
+<th>Status</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bell_test_4q</code></td>
+<td>4</td>
+<td><strong>Implemented (v0.6.4)</strong></td>
+<td>CHSH violation with K_nm ground state on hardware</td>
+</tr>
+<tr>
+<td><code>correlator_4q</code></td>
+<td>4</td>
+<td><strong>Implemented (v0.6.4)</strong></td>
+<td>ZZ cross-correlation validates K_ij topology</td>
+</tr>
+<tr>
+<td><code>qkd_qber_4q</code></td>
+<td>4</td>
+<td><strong>Implemented (v0.6.4)</strong></td>
+<td>QBER from hardware vs BB84 threshold (&lt; 0.11)</td>
+</tr>
+<tr>
+<td><code>correlator_8q</code></td>
+<td>8</td>
+<td>Planned</td>
+<td>Cross-correlation matrix on ibm_fez</td>
+</tr>
+<tr>
+<td><code>percolation_16q</code></td>
+<td>16</td>
+<td>Planned</td>
+<td>Full K_nm entanglement map on hardware</td>
+</tr>
+</tbody>
+</table>
+<h2 id="dependencies-on-existing-modules">Dependencies on Existing Modules<a class="headerlink" href="#dependencies-on-existing-modules" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Existing Module</th>
+<th>Used By</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bridge.knm_hamiltonian</code></td>
+<td>knm_key, entanglement_qkd</td>
+<td>K_nm → H conversion</td>
+</tr>
+<tr>
+<td><code>phase.phase_vqe</code></td>
+<td>knm_key</td>
+<td>Ground state preparation</td>
+</tr>
+<tr>
+<td><code>qec.control_qec</code></td>
+<td>entanglement_qkd</td>
+<td>Error correction on key circuits</td>
+</tr>
+<tr>
+<td><code>mitigation.zne</code></td>
+<td>entanglement_qkd</td>
+<td>Error mitigation for key extraction</td>
+</tr>
+<tr>
+<td><code>hardware.runner</code></td>
+<td>all experiments</td>
+<td>IBM hardware execution</td>
+</tr>
+</tbody>
+</table>
+<h2 id="research-timeline">Research Timeline<a class="headerlink" href="#research-timeline" title="Permanent link">&para;</a></h2>
+<p><strong>Phase 1 — Complete</strong>: All 6 crypto modules implemented with full test coverage.
+<code>knm_key</code>, <code>topology_auth</code>, <code>entanglement_qkd</code>, <code>percolation</code>, <code>hierarchical_keys</code>, <code>noise_analysis</code>.</p>
+<p><strong>Phase 2 — Complete</strong>: Full SCPN-QKD protocol on simulator. Bell inequality
+verification, QBER estimation, Devetak-Winter key rates under noise.</p>
+<p><strong>Phase 3 — Complete</strong>: Entanglement percolation on K_nm graph, hierarchical
+key derivation from 16-layer SCPN structure.</p>
+<p><strong>Phase 4 — In progress</strong>: 3 hardware experiment wrappers implemented (v0.6.4).
+Awaiting March QPU budget for ibm_fez execution.
+- <code>bell_test_4q</code>: CHSH S-value from hardware counts
+- <code>correlator_4q</code>: 4x4 connected correlation matrix
+- <code>qkd_qber_4q</code>: Z-basis and X-basis QBER</p>
+<p><strong>Phase 5 — Planned</strong>: 8-qubit correlator, 16-qubit percolation on hardware.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
