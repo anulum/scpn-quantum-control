@@ -166,4 +166,4 @@ values differ due to decoherence.
    beyond that, higher-order Trotter formulas would help.
 
 4. **4-qubit experiments are hardware-ready**: 12-24 ECR gates fit comfortably
-   within Heron coherence limits. These should produce publication-quality data.
+   within Heron coherence limits. These should produce clean data on hardware.

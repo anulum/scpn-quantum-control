@@ -12,6 +12,7 @@
 [![Version: 0.9.0](https://img.shields.io/badge/version-0.9.0-orange.svg)](https://pypi.org/project/scpn-quantum-control/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18821929.svg)](https://doi.org/10.5281/zenodo.18821929)
 [![Hardware: ibm_fez](https://img.shields.io/badge/hardware-ibm__fez%20Heron%20r2-blueviolet.svg)]()
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/anulum/scpn-quantum-control/blob/main/notebooks/01_kuramoto_xy_dynamics.ipynb)
 
 The **Self-Consistent Phenomenological Network (SCPN)** models hierarchical
 dynamics as 16 coupled Kuramoto oscillators with a coupling matrix K_nm.
