@@ -158,7 +158,7 @@ def test_qec_residual_syndrome_failure():
         if not success:
             failures += 1
     # At p=0.3, most rounds should fail
-    assert failures > 0
+    assert failures >= 5
 
 
 # --- qstdp line 17: TYPE_CHECKING import ---

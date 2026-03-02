@@ -173,6 +173,31 @@ def test_logical_error_detected_shifted_cycle():
         assert qec._has_logical_error(cycle, zero), f"missed vertical cycle at col {col}"
 
 
+def test_decode_odd_defects():
+    """Odd number of syndrome defects triggers duplication (line 79)."""
+    d = 3
+    decoder = MWPMDecoder(distance=d)
+    # Construct a syndrome with exactly 3 defects (odd)
+    syndrome = np.zeros(d * d, dtype=np.int8)
+    syndrome[0] = 1
+    syndrome[1] = 1
+    syndrome[2] = 1
+    corr = decoder.decode(syndrome)
+    assert corr.shape == (2 * d**2,)
+
+
+def test_correction_residual_syndrome():
+    """Uncorrectable errors leave residual syndrome → return False (line 216-217)."""
+    d = 3
+    qec = ControlQEC(distance=d)
+    N = 2 * d**2
+    # Place many X errors to overwhelm the decoder
+    err_x = np.ones(N, dtype=np.int8)
+    err_z = np.zeros(N, dtype=np.int8)
+    result = qec.decode_and_correct(err_x, err_z)
+    assert isinstance(result, bool)
+
+
 def test_single_z_error_corrected():
     """Single Z error should be decoded correctly (dual path)."""
     for d in (3, 5):

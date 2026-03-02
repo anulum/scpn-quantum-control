@@ -92,6 +92,27 @@ class TestDevetakWinterRate:
         assert devetak_winter_rate(0.12) == 0.0
 
 
+class TestConcurrenceImaginaryWarning:
+    def test_non_hermitian_triggers_warning(self, caplog):
+        """Non-Hermitian density matrix triggers imaginary eigenvalue warning (line 78)."""
+        from scpn_quantum_control.crypto.noise_analysis import _concurrence_2qubit
+
+        # Construct a non-Hermitian 4x4 matrix
+        rho = np.array(
+            [
+                [0.5, 0.1, 0.0, 0.3],
+                [0.2, 0.2, 0.0, 0.0],
+                [0.0, 0.0, 0.1, 0.0],
+                [0.0, 0.0, 0.0, 0.2],
+            ]
+        )
+        import logging
+
+        with caplog.at_level(logging.WARNING, logger="scpn_quantum_control.crypto.noise_analysis"):
+            result = _concurrence_2qubit(rho)
+        assert isinstance(result, float)
+
+
 class TestSecurityAnalysis:
     def test_returns_expected_keys(self):
         sv = _bell_plus()

@@ -273,12 +273,16 @@ def _run_vqe(n: int, maxiter: int = 200) -> dict:
     print(f"  VQE converged: {opt_result.success}, iterations: {opt_result.nfev}")
     print(f"  VQE energy: {opt_result.fun:.6f}")
 
+    tail = energy_history[-10:] if len(energy_history) >= 10 else energy_history
+    energy_std = float(np.std(tail))
+
     return {
         "experiment": f"vqe_{n}q",
         "n_qubits": n,
         "vqe_energy": float(opt_result.fun),
         "exact_ground_energy": exact["ground_energy"],
         "energy_gap": float(opt_result.fun - exact["ground_energy"]),
+        "energy_std": energy_std,
         "n_iterations": opt_result.nfev,
         "converged": bool(opt_result.success),
         "energy_history": energy_history,
@@ -505,13 +509,15 @@ def kuramoto_4osc_zne_experiment(
     base = _build_evo_base(n, K, omega, t, trotter_reps=2)
 
     R_per_scale = []
+    R_std_per_scale = []
     for s in scales:
         folded = gate_fold_circuit(base, s)
         qc_z, qc_x, qc_y = _build_xyz_circuits(folded, n)
         hw = runner.run_sampler([qc_z, qc_x, qc_y], shots=shots, name=f"zne_s{s}")
         R, R_std, *_ = _R_from_xyz(hw[0].counts, hw[1].counts, hw[2].counts, n)
         R_per_scale.append(R)
-        print(f"  scale={s}: R={R:.4f}")
+        R_std_per_scale.append(R_std)
+        print(f"  scale={s}: R={R:.4f} ± {R_std:.4f}")
 
     zne = zne_extrapolate(scales, R_per_scale, order=1)
     classical = classical_exact_evolution(n, dt, dt, K, omega)
@@ -523,6 +529,7 @@ def kuramoto_4osc_zne_experiment(
         "experiment": "kuramoto_4osc_zne",
         "scales": scales,
         "R_per_scale": R_per_scale,
+        "R_std_per_scale": R_std_per_scale,
         "zne_R": zne.zero_noise_estimate,
         "classical_R": float(classical["R"][-1]),
         "fit_residual": zne.fit_residual,
@@ -614,13 +621,15 @@ def kuramoto_8osc_zne_experiment(
     base = _build_evo_base(n, K, omega, t, trotter_reps=2)
 
     R_per_scale = []
+    R_std_per_scale = []
     for s in scales:
         folded = gate_fold_circuit(base, s)
         qc_z, qc_x, qc_y = _build_xyz_circuits(folded, n)
         hw = runner.run_sampler([qc_z, qc_x, qc_y], shots=shots, name=f"zne8_s{s}")
         R, R_std, *_ = _R_from_xyz(hw[0].counts, hw[1].counts, hw[2].counts, n)
         R_per_scale.append(R)
-        print(f"  scale={s}: R={R:.4f}")
+        R_std_per_scale.append(R_std)
+        print(f"  scale={s}: R={R:.4f} ± {R_std:.4f}")
 
     zne = zne_extrapolate(scales, R_per_scale, order=1)
     classical = classical_exact_evolution(n, dt, dt, K, omega)
@@ -633,6 +642,7 @@ def kuramoto_8osc_zne_experiment(
         "n_oscillators": n,
         "scales": scales,
         "R_per_scale": R_per_scale,
+        "R_std_per_scale": R_std_per_scale,
         "zne_R": zne.zero_noise_estimate,
         "classical_R": float(classical["R"][-1]),
         "fit_residual": zne.fit_residual,
@@ -1015,13 +1025,15 @@ def zne_higher_order_experiment(
     base = _build_evo_base(n, K, omega, t, trotter_reps=2)
 
     R_per_scale = []
+    R_std_per_scale = []
     for s in scales:
         folded = gate_fold_circuit(base, s)
         qc_z, qc_x, qc_y = _build_xyz_circuits(folded, n)
         hw = runner.run_sampler([qc_z, qc_x, qc_y], shots=shots, name=f"zne_ho_s{s}")
         R, R_std, *_ = _R_from_xyz(hw[0].counts, hw[1].counts, hw[2].counts, n)
         R_per_scale.append(R)
-        print(f"  scale={s}: R={R:.4f}")
+        R_std_per_scale.append(R_std)
+        print(f"  scale={s}: R={R:.4f} ± {R_std:.4f}")
 
     zne_results = {}
     for order in range(1, poly_order + 1):
@@ -1040,6 +1052,7 @@ def zne_higher_order_experiment(
         "experiment": "zne_higher_order",
         "scales": scales,
         "R_per_scale": R_per_scale,
+        "R_std_per_scale": R_std_per_scale,
         "extrapolations": zne_results,
         "classical_R": float(classical["R"][-1]),
     }

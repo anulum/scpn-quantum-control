@@ -14,19 +14,17 @@ def _transpiled_depth(qc) -> int:
     return t.depth()
 
 
-def test_4osc_1rep_trotter_depth():
+def test_4osc_1rep_trotter_depth(knm_4q):
     """4-qubit, 1 Trotter rep: depth should not exceed 100."""
-    K = build_knm_paper27(L=4)
-    omega = OMEGA_N_16[:4]
+    K, omega = knm_4q
     qc = _build_evo_base(4, K, omega, t=1.0, trotter_reps=1)
     d = _transpiled_depth(qc)
     assert d < 100, f"4q 1-rep depth={d}, expected <100"
 
 
-def test_8osc_1rep_trotter_depth():
+def test_8osc_1rep_trotter_depth(knm_8q):
     """8-qubit, 1 Trotter rep: depth should not exceed 300."""
-    K = build_knm_paper27(L=8)
-    omega = OMEGA_N_16[:8]
+    K, omega = knm_8q
     qc = _build_evo_base(8, K, omega, t=1.0, trotter_reps=1)
     d = _transpiled_depth(qc)
     assert d < 300, f"8q 1-rep depth={d}, expected <300"
@@ -41,10 +39,9 @@ def test_16q_1rep_trotter_depth():
     assert d < 1000, f"16q 1-rep depth={d}, expected <1000"
 
 
-def test_depth_scales_with_reps():
+def test_depth_scales_with_reps(knm_4q):
     """More Trotter reps → proportionally deeper circuit."""
-    K = build_knm_paper27(L=4)
-    omega = OMEGA_N_16[:4]
+    K, omega = knm_4q
     qc1 = _build_evo_base(4, K, omega, t=1.0, trotter_reps=1)
     qc2 = _build_evo_base(4, K, omega, t=1.0, trotter_reps=3)
     d1 = _transpiled_depth(qc1)
@@ -53,9 +50,9 @@ def test_depth_scales_with_reps():
     assert d3 < 4 * d1, f"3-rep depth ({d3}) should be < 4x 1-rep depth ({d1})"
 
 
-def test_ansatz_depth_scales_with_reps():
+def test_ansatz_depth_scales_with_reps(knm_4q):
     """Ansatz depth grows with reps."""
-    K = build_knm_paper27(L=4)
+    K, _ = knm_4q
     qc1 = knm_to_ansatz(K, reps=1)
     qc2 = knm_to_ansatz(K, reps=3)
     d1 = _transpiled_depth(qc1)

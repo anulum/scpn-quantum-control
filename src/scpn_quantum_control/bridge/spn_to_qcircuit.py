@@ -10,6 +10,7 @@ from __future__ import annotations
 import numpy as np
 from qiskit import QuantumCircuit
 
+from .._constants import WEIGHT_SPARSITY_EPS
 from .sc_to_quantum import probability_to_angle
 
 
@@ -39,7 +40,7 @@ def spn_to_circuit(
         inhibitor_places = []
         for p in range(n_p):
             w = W_in[t, p]
-            if abs(w) < 1e-15:
+            if abs(w) < WEIGHT_SPARSITY_EPS:
                 continue
             if w < 0:
                 inhibitor_places.append(p)
@@ -49,7 +50,7 @@ def spn_to_circuit(
 
         for p in range(n_p):
             w = W_out[p, t]
-            if abs(w) < 1e-15:
+            if abs(w) < WEIGHT_SPARSITY_EPS:
                 continue
             theta = probability_to_angle(float(abs(w)))
             if inhibitor_places:

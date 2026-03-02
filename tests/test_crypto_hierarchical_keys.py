@@ -2,12 +2,17 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+from unittest.mock import patch
+
 import numpy as np
+import pytest
 
 from scpn_quantum_control.bridge import build_knm_paper27
 from scpn_quantum_control.crypto.hierarchical_keys import (
     derive_layer_key,
     derive_master_key,
+    evolve_key_phases,
     key_hierarchy,
     verify_key_chain,
 )
@@ -80,3 +85,21 @@ def test_verify_key_chain_wrong_R():
     phases = np.array([0.1, 0.2, 0.3, 0.4])
     h = key_hierarchy(K, phases, R_global=0.7)
     assert not verify_key_chain(h["master"], h["layers"], K, phases, 0.9)
+
+
+def test_evolve_key_phases_ode_failure():
+    """ODE solver failure raises RuntimeError (line 138)."""
+    K = build_knm_paper27(L=4)
+    omega = np.array([1.0, 2.0, 3.0, 4.0])
+    theta_0 = np.zeros(4)
+
+    failed_sol = SimpleNamespace(status=-1, message="step size too small")
+
+    with (
+        patch(
+            "scpn_quantum_control.crypto.hierarchical_keys.solve_ivp",
+            return_value=failed_sol,
+        ),
+        pytest.raises(RuntimeError, match="Phase evolution failed"),
+    ):
+        evolve_key_phases(K, omega, theta_0, t_window=1.0)

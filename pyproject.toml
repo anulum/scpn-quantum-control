@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "scpn-quantum-control"
-version = "0.8.0"
+version = "0.9.0"
 description = "Quantum-native reformulations of SCPN spiking, phase dynamics, and plasma control"
 readme = "README.md"
 license = "MIT"
@@ -13,7 +13,7 @@ authors = [
     { name = "Miroslav Sotek", email = "protoscience@anulum.li" },
 ]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
@@ -137,3 +137,4 @@ exclude_lines = [
     "if __name__",
     "raise NotImplementedError",
 ]
+exclude_also = ["if TYPE_CHECKING:"]

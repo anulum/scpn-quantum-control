@@ -21,7 +21,11 @@ def _as_finite_float(name: str, value: Any) -> float:
 
 @dataclass(frozen=True)
 class LockSignatureArtifact:
-    """Pairwise lock metrics between source and target layers."""
+    """Pairwise lock metrics between source and target layers.
+
+    plv: Phase Locking Value in [0,1] (Lachaux et al., HBM 1999).
+    mean_lag: mean phase difference (radians) at PLV maximum.
+    """
 
     source_layer: int
     target_layer: int
@@ -56,7 +60,11 @@ class LockSignatureArtifact:
 
 @dataclass(frozen=True)
 class LayerStateArtifact:
-    """Layer-local coherence metrics and lock signatures."""
+    """Layer-local coherence metrics and lock signatures.
+
+    R: Kuramoto order parameter |z| in [0,1].
+    psi: mean phase angle arg(z) in radians.
+    """
 
     R: float
     psi: float

@@ -179,11 +179,36 @@ class HardwareRunner:
             "total_gates": sum(ops.values()),
         }
 
+    def _log_job(self, job_id: str, name: str) -> None:
+        """Append job metadata to jobs.json for recovery."""
+        jobs_path = self.results_dir / "jobs.json"
+        entries: list[dict] = []
+        if jobs_path.exists():
+            with open(jobs_path) as f:
+                entries = json.load(f)
+        entries.append(
+            {
+                "job_id": job_id,
+                "name": name,
+                "timestamp": datetime.now().isoformat(),
+                "backend": self.backend_name,
+            }
+        )
+        with open(jobs_path, "w") as f:
+            json.dump(entries, f, indent=2)
+
+    def retrieve_job(self, job_id: str) -> Any:
+        """Retrieve a previously submitted job by ID."""
+        if self._service is None:
+            raise RuntimeError("call connect() first (hardware mode required)")
+        return self._service.job(job_id)
+
     def run_sampler(
         self,
         circuits: list[QuantumCircuit] | QuantumCircuit,
         shots: int = 10000,
         name: str = "experiment",
+        timeout_s: float = 600,
     ) -> list[JobResult]:
         """Submit circuits via SamplerV2, return counts."""
         if isinstance(circuits, QuantumCircuit):
@@ -209,15 +234,18 @@ class HardwareRunner:
 
         t0 = time.time()
         job = sampler.run(isa_circuits)
-        print(f"  Job submitted: {job.job_id()}")
-        result = job.result()
+        job_id = job.job_id()
+        print(f"  Job submitted: {job_id}")
+        self._log_job(job_id, name)
+
+        result = job.result(timeout=timeout_s)
         wall = time.time() - t0
 
         results = []
         for i, pub_result in enumerate(result):
             counts = pub_result.data.meas.get_counts()
             jr = JobResult(
-                job_id=job.job_id(),
+                job_id=job_id,
                 backend_name=self.backend_name,
                 experiment_name=f"{name}_{i}",
                 counts=counts,
@@ -234,6 +262,7 @@ class HardwareRunner:
         observables: list[SparsePauliOp],
         parameter_values: list[list[float]] | None = None,
         name: str = "experiment",
+        timeout_s: float = 600,
     ) -> JobResult:
         """Submit circuit+observables via EstimatorV2, return expectation values."""
         isa_circuit = self.transpile(circuit)
@@ -259,13 +288,16 @@ class HardwareRunner:
 
         t0 = time.time()
         job = estimator.run(pubs)
-        print(f"  Job submitted: {job.job_id()}")
-        result = job.result()
+        job_id = job.job_id()
+        print(f"  Job submitted: {job_id}")
+        self._log_job(job_id, name)
+
+        result = job.result(timeout=timeout_s)
         wall = time.time() - t0
 
         evs = np.array([r.data.evs for r in result])
         return JobResult(
-            job_id=job.job_id(),
+            job_id=job_id,
             backend_name=self.backend_name,
             experiment_name=name,
             expectation_values=evs,

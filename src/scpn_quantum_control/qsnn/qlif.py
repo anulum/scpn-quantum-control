@@ -39,6 +39,10 @@ class QuantumLIFNeuron:
             raise ValueError(f"v_threshold ({v_threshold}) must exceed v_rest ({v_rest})")
         if tau_mem <= 0:
             raise ValueError(f"tau_mem must be positive, got {tau_mem}")
+        if dt <= 0:
+            raise ValueError(f"dt must be positive, got {dt}")
+        if n_shots < 0:
+            raise ValueError(f"n_shots must be >= 0, got {n_shots}")
         self.v_rest = v_rest
         self.v_threshold = v_threshold
         self.tau_mem = tau_mem

@@ -3,6 +3,38 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.9.0] - 2026-03-02
+
+### Added
+
+- 100% line coverage: 13 new tests closing 19 uncovered lines across 9 files
+- Security scanning CI job (bandit + pip-audit) in `ci.yml`
+- `.github/CODEOWNERS` (default: @anulum)
+- Input validation: `QuantumPetriNet` (shape checks), `QLiF` (dt/n_shots), `QAOA_MPC` (p_layers)
+- `WEIGHT_SPARSITY_EPS` constant; Shor & Preskill citation on `QBER_SECURITY_THRESHOLD`
+- ZNE experiments now return `R_std_per_scale` (shot-noise error bars per noise scale)
+- `_run_vqe()` returns `energy_std` (convergence stability metric)
+- Runner `timeout_s` parameter on `run_sampler`/`run_estimator`, job metadata logged to `jobs.json`
+- `retrieve_job(job_id)` recovery method on `HardwareRunner`
+- `examples/07_crypto_bell_test.py` — CHSH violation demo
+- `examples/08_dynamical_decoupling.py` — XY4 DD vs raw fidelity comparison
+- `notebooks/05_crypto_and_entanglement.ipynb` — Bell test, correlator matrix, QKD, key rate
+- Shared fixtures in `conftest.py`: `knm_4q`, `knm_8q`, `rng`
+- Dataclass field docs on `LockSignatureArtifact` (PLV, mean_lag) and `LayerStateArtifact` (R, psi)
+
+### Fixed
+
+- `q_disruption.py`: magic `16` replaced with `2**self.n_data_qubits`
+- Bare `1e-15` in `qpetri.py`, `spn_to_qcircuit.py`, `q_disruption.py` replaced with `WEIGHT_SPARSITY_EPS`
+- Weak assertions tightened: `rate > 0.1` → `0.15 < rate < 0.85`, `total > 0` → `>= 5`, `failures > 0` → `>= 5`
+
+### Changed
+
+- `Development Status :: 4 - Beta` → `Development Status :: 5 - Production/Stable`
+- `TYPE_CHECKING` blocks excluded from coverage (`exclude_also`)
+- Version bump: 0.8.0 → 0.9.0
+- Test count: 483 → ~505
+
 ## [0.8.0] - 2026-03-02
 
 ### Added

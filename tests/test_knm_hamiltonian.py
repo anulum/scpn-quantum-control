@@ -1,6 +1,7 @@
 """Tests for bridge/knm_hamiltonian.py."""
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.bridge.knm_hamiltonian import (
     OMEGA_N_16,
@@ -63,6 +64,13 @@ def test_pauli_ordering_energy_on_zero_state():
     # H = -sum(omega_i * Z_i) - sum(K_ij * (XX+YY))
     # |0...0>: <Z_i>=+1, <XX>=<YY>=0
     np.testing.assert_allclose(E, -np.sum(omega), atol=1e-12)
+
+
+def test_knm_omega_shape_mismatch():
+    K = build_knm_paper27(L=4)
+    omega = OMEGA_N_16[:3]  # 3 != 4
+    with pytest.raises(ValueError, match="rows but omega has"):
+        knm_to_hamiltonian(K, omega)
 
 
 def test_pauli_ordering_single_flip():

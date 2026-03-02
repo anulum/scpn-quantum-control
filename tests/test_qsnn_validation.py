@@ -7,6 +7,7 @@ import pytest
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.control.qaoa_mpc import QAOA_MPC
+from scpn_quantum_control.control.qpetri import QuantumPetriNet
 from scpn_quantum_control.crypto.entanglement_qkd import bell_inequality_test
 from scpn_quantum_control.crypto.percolation import best_entanglement_path
 from scpn_quantum_control.hardware.classical import classical_kuramoto_reference
@@ -59,6 +60,19 @@ def test_vqe_solve_returns_energy_gap():
     assert sol["n_params"] == vqe.n_params
 
 
+# --- QLiF extra validation ---
+
+
+def test_qlif_rejects_zero_dt():
+    with pytest.raises(ValueError, match="dt must be positive"):
+        QuantumLIFNeuron(dt=0.0)
+
+
+def test_qlif_rejects_negative_nshots():
+    with pytest.raises(ValueError, match="n_shots must be >= 0"):
+        QuantumLIFNeuron(n_shots=-1)
+
+
 # --- QAOA-MPC validation ---
 
 
@@ -70,6 +84,29 @@ def test_qaoa_mpc_rejects_zero_horizon():
 def test_qaoa_mpc_rejects_negative_horizon():
     with pytest.raises(ValueError, match="horizon must be positive"):
         QAOA_MPC(B_matrix=np.eye(2), target_state=np.ones(2), horizon=-3)
+
+
+def test_qaoa_mpc_rejects_zero_p_layers():
+    with pytest.raises(ValueError, match="p_layers must be positive"):
+        QAOA_MPC(B_matrix=np.eye(2), target_state=np.ones(2), horizon=2, p_layers=0)
+
+
+# --- QuantumPetriNet validation ---
+
+
+def test_qpetri_rejects_zero_places():
+    with pytest.raises(ValueError, match="must be positive"):
+        QuantumPetriNet(0, 1, np.zeros((1, 0)), np.zeros((0, 1)), np.array([1.0]))
+
+
+def test_qpetri_rejects_wrong_w_in_shape():
+    with pytest.raises(ValueError, match="W_in shape"):
+        QuantumPetriNet(2, 1, np.zeros((2, 2)), np.zeros((2, 1)), np.array([1.0]))
+
+
+def test_qpetri_rejects_wrong_threshold_length():
+    with pytest.raises(ValueError, match="thresholds length"):
+        QuantumPetriNet(2, 1, np.zeros((1, 2)), np.zeros((2, 1)), np.array([1.0, 2.0]))
 
 
 # --- Entanglement QKD validation ---
