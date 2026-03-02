@@ -2,7 +2,7 @@
 
 ## Test Suite
 
-442 unit, integration, property-based, and regression tests across 50 test files. All pass on Python 3.9-3.12 with Qiskit 1.0+.
+452 unit, integration, property-based, and regression tests across 50 test files. All pass on Python 3.9-3.12 with Qiskit 1.0+.
 
 ```bash
 pytest tests/ -v

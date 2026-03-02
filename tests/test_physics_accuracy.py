@@ -60,7 +60,7 @@ def test_4q_trotter_tracks_classical_short_time():
     assert 0.0 <= R_quantum <= 1.5
     assert 0.0 <= R_classical <= 1.0
     # At short time, Trotter and classical are within reasonable agreement
-    assert abs(R_quantum - R_classical) < 0.5, (
+    assert abs(R_quantum - R_classical) < 0.20, (
         f"R_quantum={R_quantum:.4f}, R_classical={R_classical:.4f}"
     )
 
@@ -82,7 +82,7 @@ def test_energy_conservation_trotter():
     E_evo = float(sv_evo.expectation_value(H).real)
 
     # Energy drift bounded — Trotter error grows with time but stays small for short t
-    assert abs(E_evo - E_init) < 1.0, f"Energy drift: E_init={E_init:.4f}, E_evo={E_evo:.4f}"
+    assert abs(E_evo - E_init) < 0.30, f"Energy drift: E_init={E_init:.4f}, E_evo={E_evo:.4f}"
 
 
 def test_vqe_4q_beats_random():

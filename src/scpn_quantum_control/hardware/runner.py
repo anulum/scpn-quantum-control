@@ -116,13 +116,15 @@ class HardwareRunner:
         else:
             self._service = QiskitRuntimeService()
 
-        assert self._service is not None
+        if self._service is None:
+            raise RuntimeError("call connect() first")
         if self._backend_name:
             self._backend = self._service.backend(self._backend_name)
         else:
             self._backend = self._service.least_busy(operational=True, simulator=False)
 
-        assert self._backend is not None
+        if self._backend is None:
+            raise RuntimeError("call connect() first")
         self._pm = generate_preset_pass_manager(
             backend=self._backend,
             optimization_level=self.optimization_level,
@@ -157,7 +159,8 @@ class HardwareRunner:
 
     def transpile(self, circuit: QuantumCircuit) -> QuantumCircuit:
         """Transpile circuit for target backend."""
-        assert self._pm is not None, "call connect() first"
+        if self._pm is None:
+            raise RuntimeError("call connect() first")
         return self._pm.run(circuit)
 
     def transpile_observable(
@@ -337,7 +340,8 @@ class HardwareRunner:
         for s in scales:
             folded = gate_fold_circuit(circuit, s)
             result = self.run_estimator(folded, observables, name=f"{name}_s{s}")
-            assert result.expectation_values is not None
+            if result.expectation_values is None:
+                raise ValueError("job returned no expectation values")
             evs_per_scale.append(float(np.mean(result.expectation_values)))
 
         return zne_extrapolate(scales, evs_per_scale, order=order)
@@ -356,7 +360,8 @@ class HardwareRunner:
         from qiskit.transpiler.exceptions import TranspilerError
         from qiskit.transpiler.passes import PadDynamicalDecoupling
 
-        assert self._pm is not None, "call connect() first"
+        if self._pm is None:
+            raise RuntimeError("call connect() first")
         isa = self._pm.run(circuit)
 
         if dd_sequence is None:
