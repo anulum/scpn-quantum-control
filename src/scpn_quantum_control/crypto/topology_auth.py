@@ -19,7 +19,7 @@ import numpy as np
 from scipy.stats import entropy as scipy_entropy
 
 EIGENVALUE_ZERO_ATOL = 1e-12  # absolute tolerance for Laplacian zero eigenvalues
-EIGENVALUE_ZERO_RTOL = 1e-8   # relative tolerance for Laplacian eigenvalue ratios
+EIGENVALUE_ZERO_RTOL = 1e-8  # relative tolerance for Laplacian eigenvalue ratios
 
 
 def spectral_fingerprint(K: np.ndarray) -> dict:
@@ -38,7 +38,9 @@ def spectral_fingerprint(K: np.ndarray) -> dict:
     eigvals = np.sort(np.linalg.eigvalsh(L))
 
     fiedler = float(eigvals[1]) if n > 1 else 0.0
-    gap_ratio = float(eigvals[1] / eigvals[2]) if n > 2 and eigvals[2] > EIGENVALUE_ZERO_ATOL else 0.0
+    gap_ratio = (
+        float(eigvals[1] / eigvals[2]) if n > 2 and eigvals[2] > EIGENVALUE_ZERO_ATOL else 0.0
+    )
 
     pos_eigvals = eigvals[eigvals > EIGENVALUE_ZERO_ATOL]
     if len(pos_eigvals) > 0:

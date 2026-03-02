@@ -19,7 +19,10 @@ def _import_plasma_knm_module(*, repo_src: str | Path | None = None):
         inserted = True
     try:
         return import_module("scpn_control.phase.plasma_knm")
-    except (ImportError, ModuleNotFoundError) as exc:  # pragma: no cover - optional dependency path
+    except (
+        ImportError,
+        ModuleNotFoundError,
+    ) as exc:  # pragma: no cover - optional dependency path
         raise ImportError(
             "Unable to import scpn_control.phase.plasma_knm. Install scpn-control "
             "or pass repo_src='<path>/scpn-control/src' to bridge functions."
