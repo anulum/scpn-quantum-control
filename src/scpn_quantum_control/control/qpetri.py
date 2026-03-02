@@ -76,14 +76,14 @@ class QuantumPetriNet:
         ]
 
         for p in input_places:
-            theta = probability_to_angle(abs(self.W_in[t_idx, p])) * self.thresholds[t_idx]
+            theta = probability_to_angle(float(abs(self.W_in[t_idx, p]))) * self.thresholds[t_idx]
             circuit.ry(-theta, p)
 
         for p_out in range(self.n_places):
             w_out = self.W_out[p_out, t_idx]
             if abs(w_out) < WEIGHT_SPARSITY_EPS:
                 continue
-            theta = probability_to_angle(abs(w_out))
+            theta = probability_to_angle(float(abs(w_out)))
             controls = [p for p in input_places if p != p_out]
             if len(controls) == 0:
                 circuit.ry(theta, p_out)
