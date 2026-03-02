@@ -13,7 +13,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from qiskit import QuantumCircuit
@@ -94,9 +94,9 @@ class HardwareRunner:
         self.results_dir.mkdir(parents=True, exist_ok=True)
         self._noise_model = noise_model
 
-        self._service = None
-        self._backend = None
-        self._pm = None
+        self._service: Any = None
+        self._backend: Any = None
+        self._pm: Any = None
         self._calls = 0
 
     def connect(self) -> None:
@@ -274,7 +274,7 @@ class HardwareRunner:
             metadata=stats,
         )
 
-    def _run_sampler_simulator(self, isa_circuits, shots, name):
+    def _run_sampler_simulator(self, isa_circuits, shots, name) -> list[JobResult]:
         from qiskit import transpile as qk_transpile
 
         results = []
@@ -296,7 +296,7 @@ class HardwareRunner:
             results.append(jr)
         return results
 
-    def _run_estimator_simulator(self, isa_circuit, isa_obs, parameter_values, name, stats):
+    def _run_estimator_simulator(self, isa_circuit, isa_obs, parameter_values, name, stats) -> JobResult:
         from qiskit.quantum_info import Statevector
 
         t0 = time.time()

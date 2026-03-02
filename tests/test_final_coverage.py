@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.hardware.classical import _expectation_pauli
 
@@ -33,7 +34,9 @@ def test_inhibitor_all_equal_target():
     qc = QuantumCircuit(3)
     # 2 inhibitors both equal to target → controls list empty → bare ry
     inhibitor_anti_control(qc, [1, 1], target=1, theta=0.5)
-    assert qc.size() > 0
+    from qiskit.circuit.library import RYGate
+
+    assert any(isinstance(inst.operation, RYGate) for inst in qc.data)
 
 
 def test_inhibitor_single_self():
@@ -44,7 +47,9 @@ def test_inhibitor_single_self():
 
     qc = QuantumCircuit(3)
     inhibitor_anti_control(qc, [2], target=2, theta=0.4)
-    assert qc.size() > 0
+    from qiskit.circuit.library import RYGate
+
+    assert any(isinstance(inst.operation, RYGate) for inst in qc.data)
 
 
 def test_qec_odd_syndrome_defects():
@@ -64,8 +69,7 @@ def test_qec_odd_syndrome_defects():
             corr = qec.decoder.decode(syn_z)
             assert corr.shape == (n_data,)
             return
-    # If no odd syndrome found in 100 tries, skip
-    assert True
+    pytest.skip("no odd syndrome found in 100 random samples")
 
 
 def test_qec_decode_and_correct_failure():

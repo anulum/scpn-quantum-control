@@ -62,7 +62,7 @@ def spn_to_circuit(
 
 def inhibitor_anti_control(
     circuit: QuantumCircuit, inhibitor_qubits: list[int], target: int, theta: float
-):
+) -> None:
     """Anti-control: output fires only when inhibitor places are empty (|0>).
 
     Pattern per inhibitor qubit: X flips control sense so CRy activates on |0>.

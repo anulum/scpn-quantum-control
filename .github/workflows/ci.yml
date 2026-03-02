@@ -65,6 +65,25 @@ jobs:
       - run: pip install -e ".[dev]" mypy
       - run: mypy
 
+  wheel-check:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - run: pip install build
+      - run: python -m build
+      - name: Install from wheel
+        run: pip install dist/*.whl
+      - name: Smoke test
+        run: |
+          python -c "import scpn_quantum_control; print(scpn_quantum_control.__version__)"
+          python -c "from scpn_quantum_control.crypto import spectral_fingerprint; print('OK')"
+          python -c "from scpn_quantum_control import knm_to_ansatz; print('OK')"
+
   hardware-smoke:
     needs: test
     runs-on: ubuntu-latest
@@ -80,7 +99,7 @@ jobs:
         run: pytest tests/test_hardware_runner.py -v --tb=short -k "simulator"
 
   ci-gate:
-    needs: [lint, test, type-check]
+    needs: [lint, test, type-check, wheel-check]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -88,7 +107,8 @@ jobs:
         run: |
           if [[ "${{ needs.lint.result }}" != "success" ]] || \
              [[ "${{ needs.test.result }}" != "success" ]] || \
-             [[ "${{ needs.type-check.result }}" != "success" ]]; then
+             [[ "${{ needs.type-check.result }}" != "success" ]] || \
+             [[ "${{ needs.wheel-check.result }}" != "success" ]]; then
             echo "CI gate failed"
             exit 1
           fi

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "scpn-quantum-control"
-version = "0.7.0"
+version = "0.7.1"
 description = "Quantum-native reformulations of SCPN spiking, phase dynamics, and plasma control"
 readme = "README.md"
 license = "MIT"
@@ -41,8 +41,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-viz = ["matplotlib>=3.5"]
-dev = ["pytest>=7.0", "pytest-cov", "ruff", "hypothesis", "pre-commit", "mypy>=1.0"]
+viz = ["matplotlib>=3.5,<4.0"]
+dev = ["pytest>=7.0", "pytest-cov", "ruff", "hypothesis", "pre-commit", "mypy>=1.0", "build"]
 docs = ["mkdocs-material>=9.0"]
 ibm = ["qiskit-ibm-runtime>=0.20.0"]
 
@@ -52,6 +52,9 @@ Repository = "https://github.com/anulum/scpn-quantum-control"
 Issues = "https://github.com/anulum/scpn-quantum-control/issues"
 Changelog = "https://github.com/anulum/scpn-quantum-control/blob/main/CHANGELOG.md"
 Documentation = "https://anulum.github.io/scpn-quantum-control"
+
+[tool.hatch.build.targets.sdist]
+exclude = [".github/", "dist/", "results/", "figures/", "notebooks/"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/scpn_quantum_control"]
@@ -85,22 +88,41 @@ known-first-party = ["scpn_quantum_control"]
 
 [tool.mypy]
 python_version = "3.9"
-warn_return_any = false
+warn_return_any = true
 warn_unused_configs = true
-ignore_missing_imports = true
+warn_unreachable = true
+check_untyped_defs = true
+ignore_missing_imports = false
 files = [
-    "src/scpn_quantum_control/bridge/",
-    "src/scpn_quantum_control/control/",
-    "src/scpn_quantum_control/phase/",
-    "src/scpn_quantum_control/mitigation/",
-    "src/scpn_quantum_control/qsnn/",
-    "src/scpn_quantum_control/qec/",
-    "src/scpn_quantum_control/hardware/",
-    "src/scpn_quantum_control/crypto/",
+    "src/scpn_quantum_control/",
 ]
 
 [[tool.mypy.overrides]]
 module = "numpy.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "scipy.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "networkx.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "qiskit.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "qiskit_aer.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "qiskit_ibm_runtime.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "matplotlib.*"
 ignore_missing_imports = true
 
 [tool.coverage.run]

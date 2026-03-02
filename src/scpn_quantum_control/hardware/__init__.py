@@ -2,6 +2,7 @@ from .classical import (
     bloch_vectors_from_json,
     classical_brute_mpc,
     classical_exact_diag,
+    classical_exact_evolution,
     classical_kuramoto_reference,
 )
 from .experiments import (
@@ -25,7 +26,7 @@ from .experiments import (
     zne_higher_order_experiment,
 )
 from .noise_model import heron_r2_noise_model
-from .runner import HardwareRunner
+from .runner import HardwareRunner, JobResult
 
 __all__ = [
     "HardwareRunner",
@@ -52,4 +53,6 @@ __all__ = [
     "classical_exact_diag",
     "classical_brute_mpc",
     "bloch_vectors_from_json",
+    "classical_exact_evolution",
+    "JobResult",
 ]

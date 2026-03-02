@@ -93,7 +93,7 @@ def normalized_laplacian_fingerprint(K: np.ndarray) -> dict:
 def verify_fingerprint(K: np.ndarray, fingerprint: dict, tol: float = 1e-6) -> bool:
     """Check K against a claimed spectral fingerprint."""
     computed = spectral_fingerprint(K)
-    return (
+    return bool(
         abs(computed["fiedler"] - fingerprint["fiedler"]) < tol
         and abs(computed["spectral_entropy"] - fingerprint["spectral_entropy"]) < tol
         and computed["n_components"] == fingerprint["n_components"]

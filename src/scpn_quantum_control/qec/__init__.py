@@ -1,3 +1,3 @@
-from .control_qec import ControlQEC
+from .control_qec import ControlQEC, MWPMDecoder, SurfaceCode
 
-__all__ = ["ControlQEC"]
+__all__ = ["ControlQEC", "SurfaceCode", "MWPMDecoder"]

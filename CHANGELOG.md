@@ -3,6 +3,29 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.7.1] - 2026-03-02
+
+### Fixed
+
+- Trivial `assert True` and `assert qc.size() > 0` replaced with meaningful assertions
+- 3 duplicate tests removed (`test_omega_shape`, `test_knm_paper27_calibration_anchors`, `test_all_experiment_functions_registered`)
+- `inhibitor_anti_control` missing `-> None` return annotation
+- mypy blanket `ignore_missing_imports` replaced with per-module overrides
+- `__all__` export gaps: `knm_to_ansatz` (top-level), `classical_exact_evolution`/`JobResult` (hardware), `SurfaceCode`/`MWPMDecoder` (qec)
+
+### Added
+
+- `wheel-check` CI job: build → install from wheel → smoke test
+- 10 error-path tests: phase_artifact validation, runner connect guards, orchestrator adapter bounds
+- mypy `warn_unreachable`, `check_untyped_defs` enabled
+- sdist excludes (.github/, dist/, results/, figures/, notebooks/)
+- `build` in dev extras, matplotlib upper bound `<4.0`
+- Docstrings on `hmac_sign`, `hmac_verify_key`, `PhaseOrchestratorAdapter.from_orchestrator_state`
+
+### Changed
+
+- Version bump: 0.7.0 → 0.7.1
+
 ## [0.7.0] - 2026-03-02
 
 ### Fixed

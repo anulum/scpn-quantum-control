@@ -134,7 +134,7 @@ def evolve_key_phases(
         t_eval=t_eval,
         method="RK45",
     )
-    return sol.y  # shape (n_layers, n_samples)
+    return np.asarray(sol.y)  # shape (n_layers, n_samples)
 
 
 def rotating_key_schedule(
@@ -201,11 +201,14 @@ def group_key(
 
 
 def hmac_verify_key(key: bytes, message: bytes, expected_mac: bytes) -> bool:
-    """HMAC-SHA256 verification for key-authenticated messages."""
+    """Verify HMAC-SHA256 tag in constant time.
+
+    Returns True iff the tag computed from (key, message) matches expected_mac.
+    """
     computed = hmac.new(key, message, hashlib.sha256).digest()
     return hmac.compare_digest(computed, expected_mac)
 
 
 def hmac_sign(key: bytes, message: bytes) -> bytes:
-    """HMAC-SHA256 signature for a message using a derived key."""
+    """Produce HMAC-SHA256 authentication tag for message under key."""
     return hmac.new(key, message, hashlib.sha256).digest()

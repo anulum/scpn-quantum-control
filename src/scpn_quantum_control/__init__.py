@@ -6,7 +6,12 @@ from .bridge.control_plasma_knm import (
     build_knm_plasma_spec,
     plasma_omega,
 )
-from .bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27, knm_to_hamiltonian
+from .bridge.knm_hamiltonian import (
+    OMEGA_N_16,
+    build_knm_paper27,
+    knm_to_ansatz,
+    knm_to_hamiltonian,
+)
 from .bridge.orchestrator_adapter import PhaseOrchestratorAdapter
 from .bridge.phase_artifact import LayerStateArtifact, LockSignatureArtifact, UPDEPhaseArtifact
 from .control.q_disruption import QuantumDisruptionClassifier
@@ -24,7 +29,7 @@ from .qsnn.qlif import QuantumLIFNeuron
 from .qsnn.qstdp import QuantumSTDP
 from .qsnn.qsynapse import QuantumSynapse
 
-__version__ = "0.7.0"
+__version__ = "0.7.1"
 
 __all__ = [
     "OMEGA_N_16",
@@ -34,6 +39,7 @@ __all__ = [
     "build_knm_plasma_from_config",
     "plasma_omega",
     "knm_to_hamiltonian",
+    "knm_to_ansatz",
     "LockSignatureArtifact",
     "LayerStateArtifact",
     "UPDEPhaseArtifact",
