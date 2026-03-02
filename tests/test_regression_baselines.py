@@ -117,5 +117,5 @@ def test_R_from_xyz_known_distribution():
     counts_x = {"0000": 5000, "1111": 5000}
     counts_y = {"0000": 5000, "1111": 5000}
     counts_z = {"0000": 5000, "1111": 5000}
-    R, exp_x, exp_y, exp_z = _R_from_xyz(counts_z, counts_x, counts_y, n_qubits=4)
+    R, _, exp_x, exp_y, exp_z, *_ = _R_from_xyz(counts_z, counts_x, counts_y, n_qubits=4)
     assert abs(R) < 0.01, f"Balanced counts should give R≈0, got {R}"

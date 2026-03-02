@@ -37,10 +37,11 @@ def insert_dd_sequence(
     ``PadDynamicalDecoupling`` pass.
     """
     out = circuit.copy()
-    pulses = _PULSE_MAP[sequence]
     for q in idle_qubits:
         if q >= out.num_qubits:
             raise ValueError(f"qubit {q} out of range for {out.num_qubits}-qubit circuit")
+    pulses = _PULSE_MAP[sequence]
+    for q in idle_qubits:
         for gate in pulses:
             getattr(out, gate)(q)
     return out

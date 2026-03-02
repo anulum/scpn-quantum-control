@@ -74,7 +74,7 @@ def test_low_error_rate_some_success():
         err_x, err_z = qec.simulate_errors(0.02, rng=rng)
         if qec.decode_and_correct(err_x, err_z):
             successes += 1
-    assert successes > 0
+    assert successes >= 10, f"Only {successes}/50 corrected at p=0.02, expected >=10"
 
 
 def test_knm_weighted_decoder_runs():

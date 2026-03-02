@@ -153,7 +153,7 @@ def _build_initial_state(n_osc: int, omega: np.ndarray) -> np.ndarray:
     Qiskit stores |b_{n-1}...b_1 b_0> with qubit 0 as the LSB, so the
     kron order must be q_{n-1} ⊗ ... ⊗ q_1 ⊗ q_0.
     """
-    state = np.array([1.0 + 0j])
+    state: np.ndarray = np.array([1.0 + 0j])
     for i in reversed(range(n_osc)):
         angle = float(omega[i]) % (2 * np.pi)
         q = np.array([np.cos(angle / 2), np.sin(angle / 2)], dtype=complex)

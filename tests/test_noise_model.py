@@ -68,8 +68,8 @@ def test_noisy_R_lower_than_noiseless(noisy_runner, clean_runner):
     noisy_hw = noisy_runner.run_sampler([qc_z, qc_x, qc_y], shots=5000, name="noisy")
     clean_hw = clean_runner.run_sampler([qc_z, qc_x, qc_y], shots=5000, name="clean")
 
-    R_noisy, _, _, _ = _R_from_xyz(noisy_hw[0].counts, noisy_hw[1].counts, noisy_hw[2].counts, n)
-    R_clean, _, _, _ = _R_from_xyz(clean_hw[0].counts, clean_hw[1].counts, clean_hw[2].counts, n)
+    R_noisy, *_ = _R_from_xyz(noisy_hw[0].counts, noisy_hw[1].counts, noisy_hw[2].counts, n)
+    R_clean, *_ = _R_from_xyz(clean_hw[0].counts, clean_hw[1].counts, clean_hw[2].counts, n)
 
     # Noisy R should be lower (or at most equal within statistical noise)
     assert R_noisy < R_clean + 0.15

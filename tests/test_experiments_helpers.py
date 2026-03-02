@@ -13,28 +13,30 @@ from scpn_quantum_control.hardware.experiments import (
 def test_expectation_per_qubit_all_zeros():
     """All |0> outcomes should give <Z> = +1 for each qubit."""
     counts = {"00": 1000}
-    exp = _expectation_per_qubit(counts, 2)
+    exp, std = _expectation_per_qubit(counts, 2)
     np.testing.assert_allclose(exp, [1.0, 1.0])
+    assert std.shape == (2,)
 
 
 def test_expectation_per_qubit_all_ones():
     """All |1> outcomes should give <Z> = -1 for each qubit."""
     counts = {"11": 1000}
-    exp = _expectation_per_qubit(counts, 2)
+    exp, std = _expectation_per_qubit(counts, 2)
     np.testing.assert_allclose(exp, [-1.0, -1.0])
 
 
 def test_expectation_per_qubit_mixed():
     """50/50 split should give <Z> ~ 0."""
     counts = {"00": 500, "11": 500}
-    exp = _expectation_per_qubit(counts, 2)
+    exp, std = _expectation_per_qubit(counts, 2)
     np.testing.assert_allclose(exp, [0.0, 0.0])
+    assert all(s > 0 for s in std)
 
 
 def test_expectation_per_qubit_single_qubit_asymmetric():
     """For one qubit: P(0)=0.7, P(1)=0.3 => <Z> = 0.4."""
     counts = {"0": 700, "1": 300}
-    exp = _expectation_per_qubit(counts, 1)
+    exp, std = _expectation_per_qubit(counts, 1)
     np.testing.assert_allclose(exp, [0.4])
 
 
@@ -44,7 +46,7 @@ def test_R_from_xyz_perfect_x_alignment():
     z_counts = {"0000": 500, "1111": 500}
     x_counts = {"0000": 1000}  # all <X> = +1
     y_counts = {"0000": 500, "1111": 500}  # <Y> ~ 0
-    R, ex, ey, ez = _R_from_xyz(z_counts, x_counts, y_counts, n)
+    R, _, ex, ey, ez, *_ = _R_from_xyz(z_counts, x_counts, y_counts, n)
     assert abs(ex[0] - 1.0) < 0.01
     assert R > 0.5
 
@@ -56,7 +58,7 @@ def test_R_from_xyz_random_counts():
     z_counts = {f"{i:03b}": int(v) for i, v in enumerate(rng.integers(1, 100, 8))}
     x_counts = {f"{i:03b}": int(v) for i, v in enumerate(rng.integers(1, 100, 8))}
     y_counts = {f"{i:03b}": int(v) for i, v in enumerate(rng.integers(1, 100, 8))}
-    R, ex, ey, ez = _R_from_xyz(z_counts, x_counts, y_counts, n)
+    R, _, ex, ey, ez, *_ = _R_from_xyz(z_counts, x_counts, y_counts, n)
     assert 0.0 <= R <= 1.0 + 0.01
     assert len(ex) == n
 

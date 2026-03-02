@@ -13,6 +13,7 @@ import hashlib
 import numpy as np
 from qiskit.quantum_info import Statevector
 
+from .._constants import QBER_SECURITY_THRESHOLD
 from ..phase.phase_vqe import PhaseVQE
 
 
@@ -59,7 +60,7 @@ def extract_raw_key(
         keep_qubits = list(range(n_qubits))
 
     # Majority vote per qubit across all shots
-    bits = np.zeros(len(keep_qubits), dtype=np.uint8)
+    bits: np.ndarray = np.zeros(len(keep_qubits), dtype=np.uint8)
     for q_idx, q in enumerate(keep_qubits):
         ones = sum(c for bitstring, c in counts.items() if bitstring[-(q + 1)] == "1")
         zeros = sum(c for bitstring, c in counts.items() if bitstring[-(q + 1)] == "0")
@@ -84,7 +85,7 @@ def privacy_amplification(raw_key: np.ndarray, qber: float) -> bytes:
     Compression ratio: 1 - 2h(QBER) where h is binary entropy.
     Uses SHA-256 as the hash family member.
     """
-    if qber >= 0.11:
+    if qber >= QBER_SECURITY_THRESHOLD:
         return b""
 
     h_qber = -qber * np.log2(qber + 1e-15) - (1 - qber) * np.log2(1 - qber + 1e-15)

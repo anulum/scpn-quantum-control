@@ -14,11 +14,12 @@ from __future__ import annotations
 import numpy as np
 from qiskit.quantum_info import DensityMatrix, Statevector, partial_trace
 
+from .._constants import CONCURRENCE_EPS, COUPLING_SPARSITY_EPS
 from ..phase.phase_vqe import PhaseVQE
 
-_CONCURRENCE_EPS = 1e-10  # concurrence magnitudes below this treated as zero
-_ENTROPY_CLAMP_EPS = 1e-15  # clamp binary entropy argument away from 0/1
-_FIEDLER_DISCONNECT_EPS = 1e-10  # Fiedler value below this = disconnected
+_CONCURRENCE_EPS = CONCURRENCE_EPS
+_ENTROPY_CLAMP_EPS = COUPLING_SPARSITY_EPS
+_FIEDLER_DISCONNECT_EPS = CONCURRENCE_EPS
 
 
 def concurrence_map(K: np.ndarray, omega: np.ndarray, maxiter: int = 100) -> np.ndarray:
@@ -35,11 +36,10 @@ def concurrence_map(K: np.ndarray, omega: np.ndarray, maxiter: int = 100) -> np.
     sv = Statevector.from_instruction(vqe.ansatz.assign_parameters(result["optimal_params"]))
 
     rho_full = DensityMatrix(sv)
-    conc = np.zeros((n, n))
+    conc: np.ndarray = np.zeros((n, n))
 
     for i in range(n):
         for j in range(i + 1, n):
-            # Trace out all qubits except i and j
             keep = [i, j]
             trace_out = [q for q in range(n) if q not in keep]
             rho_ij = partial_trace(rho_full, trace_out)
@@ -111,7 +111,7 @@ def key_rate_per_channel(conc_map: np.ndarray) -> np.ndarray:
     and h is binary entropy.
     """
     n = conc_map.shape[0]
-    rates = np.zeros((n, n))
+    rates: np.ndarray = np.zeros((n, n))
     for i in range(n):
         for j in range(i + 1, n):
             C = conc_map[i, j]

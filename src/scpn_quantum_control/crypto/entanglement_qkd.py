@@ -85,7 +85,7 @@ def _measure_in_basis(
 
     Returns majority-vote bit array.
     """
-    bits = np.zeros(len(qubits), dtype=np.uint8)
+    bits: np.ndarray = np.zeros(len(qubits), dtype=np.uint8)
     for i, (q, basis) in enumerate(zip(qubits, bases)):
         label = ["I"] * n_total
         label[q] = basis
@@ -107,7 +107,7 @@ def correlator_matrix(
     Non-zero off-diagonal elements indicate entanglement.
     """
     n = int(np.log2(len(sv.data)))
-    corr = np.zeros((len(alice_qubits), len(bob_qubits)))
+    corr: np.ndarray = np.zeros((len(alice_qubits), len(bob_qubits)))
 
     for i, qa in enumerate(alice_qubits):
         label_a = ["I"] * n

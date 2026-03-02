@@ -52,7 +52,8 @@ def build_knm_plasma(
         custom_overrides=custom_overrides,
         layer_names=layer_names,
     )
-    return np.asarray(spec.K, dtype=np.float64)
+    result: np.ndarray = np.asarray(spec.K, dtype=np.float64)
+    return result
 
 
 def build_knm_plasma_spec(
@@ -108,13 +109,15 @@ def build_knm_plasma_from_config(
         L=L,
         zeta_uniform=zeta_uniform,
     )
-    return np.asarray(spec.K, dtype=np.float64)
+    result: np.ndarray = np.asarray(spec.K, dtype=np.float64)
+    return result
 
 
 def plasma_omega(*, L: int = 8, repo_src: str | Path | None = None) -> np.ndarray:
     """Return plasma omega vector from scpn-control."""
     mod = _import_plasma_knm_module(repo_src=repo_src)
-    return np.asarray(mod.plasma_omega(L=L), dtype=np.float64)
+    result: np.ndarray = np.asarray(mod.plasma_omega(L=L), dtype=np.float64)
+    return result
 
 
 __all__ = [

@@ -74,13 +74,15 @@ class QuantumDenseLayer:
             marginal = sv.probabilities([self.n_inputs + n])
             neuron_probs[n] = marginal[1]  # P(|1>)
 
-        return (neuron_probs > self.spike_threshold).astype(int)
+        result: np.ndarray = (neuron_probs > self.spike_threshold).astype(int)
+        return result
 
     def get_weights(self) -> np.ndarray:
         """Return (n_neurons, n_inputs) weight matrix."""
-        return np.array(
+        result: np.ndarray = np.array(
             [
                 [self.synapses[n][i].weight for i in range(self.n_inputs)]
                 for n in range(self.n_neurons)
             ]
         )
+        return result

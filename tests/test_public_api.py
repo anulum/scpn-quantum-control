@@ -2,67 +2,54 @@
 
 from __future__ import annotations
 
+import numpy as np
+
 
 def test_top_level_version():
     """Package exposes __version__."""
     import scpn_quantum_control
 
     assert hasattr(scpn_quantum_control, "__version__")
-    assert scpn_quantum_control.__version__ == "0.7.1"
+    assert scpn_quantum_control.__version__ == "0.8.0"
+
+
+def _check_exports(submod: str) -> None:
+    mod = __import__(f"scpn_quantum_control.{submod}", fromlist=["__all__"])
+    for name in mod.__all__:
+        obj = getattr(mod, name)
+        assert callable(obj) or isinstance(obj, (type, np.ndarray, dict, list, str)), (
+            f"{submod}.{name} has unexpected type {type(obj)}"
+        )
 
 
 def test_bridge_exports():
-    """bridge.__all__ exports are importable."""
-    from scpn_quantum_control.bridge import __all__ as bridge_all
-
-    for name in bridge_all:
-        obj = getattr(__import__("scpn_quantum_control.bridge", fromlist=[name]), name)
-        assert obj is not None, f"bridge.{name} is None"
+    """bridge.__all__ exports are importable and typed."""
+    _check_exports("bridge")
 
 
 def test_phase_exports():
-    """phase.__all__ exports are importable."""
-    from scpn_quantum_control.phase import __all__ as phase_all
-
-    for name in phase_all:
-        obj = getattr(__import__("scpn_quantum_control.phase", fromlist=[name]), name)
-        assert obj is not None
+    """phase.__all__ exports are importable and typed."""
+    _check_exports("phase")
 
 
 def test_control_exports():
-    """control.__all__ exports are importable."""
-    from scpn_quantum_control.control import __all__ as control_all
-
-    for name in control_all:
-        obj = getattr(__import__("scpn_quantum_control.control", fromlist=[name]), name)
-        assert obj is not None
+    """control.__all__ exports are importable and typed."""
+    _check_exports("control")
 
 
 def test_qsnn_exports():
-    """qsnn.__all__ exports are importable."""
-    from scpn_quantum_control.qsnn import __all__ as qsnn_all
-
-    for name in qsnn_all:
-        obj = getattr(__import__("scpn_quantum_control.qsnn", fromlist=[name]), name)
-        assert obj is not None
+    """qsnn.__all__ exports are importable and typed."""
+    _check_exports("qsnn")
 
 
 def test_mitigation_exports():
-    """mitigation.__all__ exports are importable."""
-    from scpn_quantum_control.mitigation import __all__ as mit_all
-
-    for name in mit_all:
-        obj = getattr(__import__("scpn_quantum_control.mitigation", fromlist=[name]), name)
-        assert obj is not None
+    """mitigation.__all__ exports are importable and typed."""
+    _check_exports("mitigation")
 
 
 def test_hardware_exports():
-    """hardware.__all__ exports are importable."""
-    from scpn_quantum_control.hardware import __all__ as hw_all
-
-    for name in hw_all:
-        obj = getattr(__import__("scpn_quantum_control.hardware", fromlist=[name]), name)
-        assert obj is not None
+    """hardware.__all__ exports are importable and typed."""
+    _check_exports("hardware")
 
 
 def test_no_private_in_all():

@@ -14,7 +14,9 @@ import numpy as np
 from qiskit.circuit import ParameterVector, QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp
 
-KNM_SPARSITY_EPS = 1e-15  # coupling magnitudes below this treated as zero
+from .._constants import COUPLING_SPARSITY_EPS
+
+KNM_SPARSITY_EPS = COUPLING_SPARSITY_EPS
 
 # Paper 27, Table 1: canonical natural frequencies (rad/s)
 OMEGA_N_16 = np.array(
@@ -76,6 +78,8 @@ def knm_to_hamiltonian(K: np.ndarray, omega: np.ndarray) -> SparsePauliOp:
     Uses Qiskit little-endian qubit ordering.
     """
     n = len(omega)
+    if K.shape[0] != n:
+        raise ValueError(f"K has {K.shape[0]} rows but omega has {n} elements")
     pauli_list = []
 
     for i in range(n):

@@ -48,14 +48,23 @@
 - v0.6.3: coverage gate, mitigation API docs, notebook table
 - v0.6.4: LICENSE fix, codecov fix, issue templates, dependabot pip, SECURITY.md, README tree
 
-## v0.8.0 (Q2 2026)
+## v0.8.0 (Completed)
+
+- Shot-noise error bars on all 20 hardware experiments
+- Property-based tests (Hamiltonian Hermiticity, crypto round-trips, QEC invariants)
+- Input validation guards (K/omega shape, ZNE data points, DD qubit range, ODE solver status)
+- Named constants consolidation (`_constants.py`)
+- 21 mypy `no-any-return` fixes across 13 source files
+- 483 tests, 99%+ line coverage
+
+## v0.9.0 (Q2 2026)
 
 - Kuramoto synchronization bifurcation on hardware (sweep K_base)
 - Hardware ansatz comparison (Knm-informed vs TwoLocal vs EfficientSU2)
 - Higher-order ZNE (5-point polynomial extrapolation)
 - Per-gate depolarization rate extraction from qubit scaling data
 
-## v0.8.0 (Q3 2026)
+## v1.0.0 (Q3 2026)
 
 - PEC (probabilistic error cancellation) integration
 - Trapped-ion backend support (IonQ / Quantinuum)

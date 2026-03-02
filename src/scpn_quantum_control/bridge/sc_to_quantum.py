@@ -14,8 +14,8 @@ def probability_to_angle(p: float) -> float:
 
     P(|1>) = sin^2(theta/2)  =>  theta = 2*arcsin(sqrt(p))
     """
-    p = np.clip(p, 0.0, 1.0)
-    return float(2.0 * np.arcsin(np.sqrt(p)))
+    p_clamped = float(np.clip(p, 0.0, 1.0))
+    return float(2.0 * np.arcsin(np.sqrt(p_clamped)))
 
 
 def angle_to_probability(theta: float) -> float:
@@ -33,7 +33,8 @@ def bitstream_to_statevector(bits: np.ndarray) -> np.ndarray:
     """
     p = float(np.mean(bits))
     theta = probability_to_angle(p)
-    return np.array([np.cos(theta / 2.0), np.sin(theta / 2.0)])
+    result: np.ndarray = np.array([np.cos(theta / 2.0), np.sin(theta / 2.0)])
+    return result
 
 
 def measurement_to_bitstream(
@@ -44,4 +45,5 @@ def measurement_to_bitstream(
     p_one = counts.get("1", 0) / total if total > 0 else 0.0
     if rng is None:
         rng = np.random.default_rng()
-    return rng.binomial(1, p_one, size=length).astype(np.uint8)
+    result: np.ndarray = rng.binomial(1, p_one, size=length).astype(np.uint8)
+    return result

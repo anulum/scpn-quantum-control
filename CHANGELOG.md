@@ -3,6 +3,30 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.8.0] - 2026-03-02
+
+### Added
+
+- Shot-noise error bars (`hw_R_std`, `hw_expectations_std`) on all 20 hardware experiments
+- 3 property-based test files: `test_knm_properties.py`, `test_crypto_properties.py`, `test_qec_properties.py` (9 hypothesis tests)
+- 4 coverage test files: `test_orchestrator_adapter_helpers.py`, `test_vqls_edge_cases.py`, `test_percolation_edge_cases.py`, `test_topology_auth_edge.py` (12 tests)
+- `_constants.py`: shared `COUPLING_SPARSITY_EPS`, `CONCURRENCE_EPS`, `QBER_SECURITY_THRESHOLD`, `VQLS_DENOMINATOR_EPS`
+- `.editorconfig` for consistent formatting
+- Input validation: K/omega shape mismatch, ZNE data point count, DD qubit range, ODE solver status, eigenvalue reality check
+- 3 experiment functions exported from `hardware` subpackage: `bell_test_4q_experiment`, `correlator_4q_experiment`, `qkd_qber_4q_experiment`
+
+### Fixed
+
+- 21 mypy `no-any-return` errors across 13 source files (numpy expression type annotations)
+- Dead code removed in `qaoa_mpc.py` (redundant None check after builder)
+- `test_public_api.py` assertions strengthened from `is not None` to type checks
+- `test_control_qec.py` success threshold tightened from `> 0` to `>= 10`
+
+### Changed
+
+- Version bump: 0.7.1 → 0.8.0
+- Test count: 463 → 483
+
 ## [0.7.1] - 2026-03-02
 
 ### Fixed

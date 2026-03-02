@@ -63,8 +63,7 @@ class QAOA_MPC:
         """Build p-layer QAOA circuit: initial |+>, alternating cost/mixer."""
         if self._cost_ham is None:
             self.build_cost_hamiltonian()
-        if self._cost_ham is None:
-            raise RuntimeError("call build_cost_hamiltonian() before optimize()")
+        assert self._cost_ham is not None  # set by build_cost_hamiltonian
 
         qc = QuantumCircuit(self.n_qubits)
         for q in range(self.n_qubits):
@@ -115,4 +114,5 @@ class QAOA_MPC:
         sv = Statevector.from_instruction(qc)
         probs = sv.probabilities()
         best_bitstring = format(int(np.argmax(probs)), f"0{self.n_qubits}b")
-        return np.array([int(b) for b in reversed(best_bitstring)])
+        actions: np.ndarray = np.array([int(b) for b in reversed(best_bitstring)])
+        return actions
