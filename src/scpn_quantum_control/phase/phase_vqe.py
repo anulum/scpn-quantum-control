@@ -71,7 +71,9 @@ class PhaseVQE:
             "ground_energy": self._ground_energy,
             "exact_energy": exact_e,
             "energy_gap": gap,
-            "relative_error_pct": gap / abs(exact_e) * 100 if exact_e != 0 else float("inf"),
+            "relative_error_pct": gap / abs(exact_e) * 100
+            if abs(exact_e) > 1e-15
+            else float("nan"),
             "optimal_params": self._optimal_params,
             "n_evals": result.nfev,
             "n_params": self.n_params,

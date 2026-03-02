@@ -16,6 +16,10 @@ from qiskit.quantum_info import DensityMatrix, Statevector, partial_trace
 
 from ..phase.phase_vqe import PhaseVQE
 
+_CONCURRENCE_EPS = 1e-10  # concurrence magnitudes below this treated as zero
+_ENTROPY_CLAMP_EPS = 1e-15  # clamp binary entropy argument away from 0/1
+_FIEDLER_DISCONNECT_EPS = 1e-10  # Fiedler value below this = disconnected
+
 
 def concurrence_map(K: np.ndarray, omega: np.ndarray, maxiter: int = 100) -> np.ndarray:
     """Compute pairwise concurrence from ground state reduced density matrices.
@@ -80,7 +84,7 @@ def percolation_threshold(K: np.ndarray) -> float:
         D = np.diag(adj.sum(axis=1))
         L = D - adj
         eigvals = np.sort(np.linalg.eigvalsh(L))
-        if eigvals[1] > 1e-10:
+        if eigvals[1] > _FIEDLER_DISCONNECT_EPS:
             return float(threshold)
 
     return float(sorted_vals[0])
@@ -111,10 +115,10 @@ def key_rate_per_channel(conc_map: np.ndarray) -> np.ndarray:
     for i in range(n):
         for j in range(i + 1, n):
             C = conc_map[i, j]
-            if C < 1e-10:
+            if C < _CONCURRENCE_EPS:
                 continue
             e = (1 - np.sqrt(max(0, 1 - C**2))) / 2
-            if e < 1e-15 or e > 1 - 1e-15:
+            if e < _ENTROPY_CLAMP_EPS or e > 1 - _ENTROPY_CLAMP_EPS:
                 h_e = 0.0
             else:
                 h_e = -e * np.log2(e) - (1 - e) * np.log2(1 - e)
@@ -155,7 +159,7 @@ def robustness_random_removal(K: np.ndarray, n_trials: int = 50) -> dict:
             D = np.diag(K_test.sum(axis=1))
             L = D - K_test
             eigvals = np.sort(np.linalg.eigvalsh(L))
-            if eigvals[1] < 1e-10:
+            if eigvals[1] < _FIEDLER_DISCONNECT_EPS:
                 disconnected_at = step + 1
                 break
         resiliences.append(disconnected_at / n_edges)

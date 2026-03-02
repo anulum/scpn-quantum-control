@@ -26,7 +26,7 @@ runs them on IBM Heron r2 hardware (156 qubits).
 | 16-layer UPDE snapshot | 46% error at depth 770 (NISQ-consistent) |
 | Decoherence curve | 12 points, depth 5→770 |
 | Coherence wall | depth 250-400 (Heron r2) |
-| Test suite | 442 passing |
+| Test suite | 456 passing |
 
 ## Modules
 

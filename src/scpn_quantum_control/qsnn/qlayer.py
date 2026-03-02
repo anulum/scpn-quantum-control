@@ -30,6 +30,7 @@ class QuantumDenseLayer:
         n_inputs: int,
         weights: np.ndarray | None = None,
         spike_threshold: float = 0.5,
+        seed: int | None = None,
     ):
         """weights: (n_neurons, n_inputs) or None for random init in [0, 1]."""
         self.n_neurons = n_neurons
@@ -38,7 +39,7 @@ class QuantumDenseLayer:
         self.n_qubits = n_inputs + n_neurons
 
         if weights is None:
-            weights = np.random.default_rng().uniform(0.0, 1.0, (n_neurons, n_inputs))
+            weights = np.random.default_rng(seed).uniform(0.0, 1.0, (n_neurons, n_inputs))
         self.synapses = [
             [QuantumSynapse(float(weights[n, i])) for i in range(n_inputs)]
             for n in range(n_neurons)

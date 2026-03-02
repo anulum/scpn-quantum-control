@@ -47,3 +47,9 @@ def test_random_weight_bounds():
     W = layer.get_weights()
     assert W.shape == (4, 3)
     assert np.all((W >= 0.0) & (W <= 1.0))
+
+
+def test_default_weights_seeded_deterministic():
+    layer1 = QuantumDenseLayer(n_neurons=2, n_inputs=2, seed=42)
+    layer2 = QuantumDenseLayer(n_neurons=2, n_inputs=2, seed=42)
+    np.testing.assert_array_equal(layer1.get_weights(), layer2.get_weights())

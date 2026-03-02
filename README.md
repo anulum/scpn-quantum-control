@@ -8,8 +8,8 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://python.org)
 [![Qiskit 1.0+](https://img.shields.io/badge/qiskit-1.0%2B-6929C4.svg)](https://qiskit.org)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue.svg)](https://anulum.github.io/scpn-quantum-control)
-[![Tests: 442](https://img.shields.io/badge/tests-442%20passing-brightgreen.svg)]()
-[![Version: 0.6.4](https://img.shields.io/badge/version-0.6.4-orange.svg)](https://pypi.org/project/scpn-quantum-control/)
+[![Tests: 456](https://img.shields.io/badge/tests-456%20passing-brightgreen.svg)]()
+[![Version: 0.7.0](https://img.shields.io/badge/version-0.7.0-orange.svg)](https://pypi.org/project/scpn-quantum-control/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18821929.svg)](https://doi.org/10.5281/zenodo.18821929)
 [![Hardware: ibm_fez](https://img.shields.io/badge/hardware-ibm__fez%20Heron%20r2-blueviolet.svg)]()
 

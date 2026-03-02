@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "scpn-quantum-control"
-version = "0.6.4"
+version = "0.7.0"
 description = "Quantum-native reformulations of SCPN spiking, phase dynamics, and plasma control"
 readme = "README.md"
 license = "MIT"
@@ -33,11 +33,11 @@ keywords = [
     "qiskit",
 ]
 dependencies = [
-    "qiskit>=1.0.0",
-    "qiskit-aer>=0.14.0",
-    "numpy>=1.24",
-    "scipy>=1.10",
-    "networkx>=3.0",
+    "qiskit>=1.0.0,<2.0",
+    "qiskit-aer>=0.14.0,<1.0",
+    "numpy>=1.24,<3.0",
+    "scipy>=1.10,<2.0",
+    "networkx>=3.0,<4.0",
 ]
 
 [project.optional-dependencies]

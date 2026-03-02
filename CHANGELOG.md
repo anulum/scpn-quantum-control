@@ -3,6 +3,27 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.7.0] - 2026-03-02
+
+### Fixed
+
+- `crypto/__init__.py` exported module names instead of callable symbols
+- `QuantumDenseLayer` unseeded `default_rng()` — now accepts `seed` parameter
+- `PhaseVQE.relative_error_pct` returned `inf` when exact energy ~0; now returns `nan`
+- Bare magic numbers in `percolation.py` replaced with named constants
+
+### Added
+
+- PEP 561 `py.typed` marker for downstream mypy/pyright consumers
+- pip caching (`cache: 'pip'`) in all CI `setup-python` steps
+- Dependency upper bounds (next-major caps on qiskit, numpy, scipy, networkx)
+- `test_crypto_exports.py` — validates all `crypto.__all__` entries are callable
+- Seed determinism test for `QuantumDenseLayer`
+
+### Changed
+
+- Version bump: 0.6.4 → 0.7.0
+
 ## [0.6.4] - 2026-03-01
 
 ### Fixed
