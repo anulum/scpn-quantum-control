@@ -81,7 +81,7 @@ def build_kuramoto_ring(
     Returns (K, omega) ready for QuantumKuramotoSolver or knm_to_hamiltonian.
     If omega is None, draws from N(0,1) with the given seed.
     """
-    K = np.zeros((n, n), dtype=np.float64)
+    K: np.ndarray = np.zeros((n, n), dtype=np.float64)
     for i in range(n):
         j = (i + 1) % n
         K[i, j] = K[j, i] = coupling
