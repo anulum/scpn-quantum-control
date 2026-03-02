@@ -12,6 +12,7 @@ from qiskit import QuantumCircuit
 from qiskit.circuit.library import RYGate
 from qiskit.quantum_info import Statevector
 
+from .._constants import WEIGHT_SPARSITY_EPS
 from ..bridge.sc_to_quantum import probability_to_angle
 
 
@@ -31,11 +32,28 @@ class QuantumPetriNet:
         thresholds: np.ndarray,
     ):
         """W_in: (n_transitions, n_places), W_out: (n_places, n_transitions)."""
+        if n_places <= 0 or n_transitions <= 0:
+            raise ValueError(
+                f"n_places ({n_places}) and n_transitions ({n_transitions}) must be positive"
+            )
+        W_in = np.asarray(W_in, dtype=np.float64)
+        W_out = np.asarray(W_out, dtype=np.float64)
+        thresholds = np.asarray(thresholds, dtype=np.float64)
+        if W_in.shape != (n_transitions, n_places):
+            raise ValueError(f"W_in shape {W_in.shape} != expected ({n_transitions}, {n_places})")
+        if W_out.shape != (n_places, n_transitions):
+            raise ValueError(
+                f"W_out shape {W_out.shape} != expected ({n_places}, {n_transitions})"
+            )
+        if len(thresholds) != n_transitions:
+            raise ValueError(
+                f"thresholds length {len(thresholds)} != n_transitions {n_transitions}"
+            )
         self.n_places = n_places
         self.n_transitions = n_transitions
-        self.W_in = np.asarray(W_in, dtype=np.float64)
-        self.W_out = np.asarray(W_out, dtype=np.float64)
-        self.thresholds = np.asarray(thresholds, dtype=np.float64)
+        self.W_in = W_in
+        self.W_out = W_out
+        self.thresholds = thresholds
 
     def encode_marking(self, marking: np.ndarray) -> QuantumCircuit:
         """Amplitude-encode token state: p_i -> Ry(theta_i)|0>."""
@@ -53,7 +71,9 @@ class QuantumPetriNet:
         All input-place qubits must be |1> for the output rotation to fire,
         matching conjunctive Petri net semantics.
         """
-        input_places = [p for p in range(self.n_places) if abs(self.W_in[t_idx, p]) > 1e-15]
+        input_places = [
+            p for p in range(self.n_places) if abs(self.W_in[t_idx, p]) > WEIGHT_SPARSITY_EPS
+        ]
 
         for p in input_places:
             theta = probability_to_angle(abs(self.W_in[t_idx, p])) * self.thresholds[t_idx]
@@ -61,7 +81,7 @@ class QuantumPetriNet:
 
         for p_out in range(self.n_places):
             w_out = self.W_out[p_out, t_idx]
-            if abs(w_out) < 1e-15:
+            if abs(w_out) < WEIGHT_SPARSITY_EPS:
                 continue
             theta = probability_to_angle(abs(w_out))
             controls = [p for p in input_places if p != p_out]

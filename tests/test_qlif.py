@@ -52,7 +52,7 @@ def test_statistical_spike_rate():
     for _ in range(n_steps):
         spikes += neuron.step(1.0)
     rate = spikes / n_steps
-    assert rate > 0.1
+    assert rate > 0.5
 
 
 def test_stochastic_mode_seeded():
@@ -72,4 +72,4 @@ def test_stochastic_mode_fires():
         v_threshold=0.5, tau_mem=2.0, dt=1.0, n_shots=50, rng=np.random.default_rng(7)
     )
     total = sum(neuron.step(1.0) for _ in range(50))
-    assert total > 0
+    assert total >= 5

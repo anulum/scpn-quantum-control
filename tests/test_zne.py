@@ -87,6 +87,15 @@ def test_zne_result_fields():
     assert np.isfinite(result.fit_residual)
 
 
+def test_zne_insufficient_data_points():
+    """Need >= order+1 data points for polynomial fit (line 63)."""
+    with pytest.raises(ValueError, match="data points"):
+        zne_extrapolate([1], [0.9], order=1)
+
+    with pytest.raises(ValueError, match="data points"):
+        zne_extrapolate([1, 3], [0.9, 0.7], order=2)
+
+
 def test_noisy_sim_zne_improvement(tmp_path):
     """ZNE on a noisy simulator should extrapolate closer to noiseless value."""
     from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27

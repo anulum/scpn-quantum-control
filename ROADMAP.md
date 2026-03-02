@@ -57,12 +57,20 @@
 - 21 mypy `no-any-return` fixes across 13 source files
 - 483 tests, 99%+ line coverage
 
-## v0.9.0 (Q2 2026)
+## v0.9.0 (Completed)
 
-- Kuramoto synchronization bifurcation on hardware (sweep K_base)
-- Hardware ansatz comparison (Knm-informed vs TwoLocal vs EfficientSU2)
-- Higher-order ZNE (5-point polynomial extrapolation)
-- Per-gate depolarization rate extraction from qubit scaling data
+- 100% line coverage (19 uncovered lines closed)
+- Security scanning in CI (bandit + pip-audit)
+- CODEOWNERS, TYPE_CHECKING coverage exclusion
+- Input validation on QuantumPetriNet, QLiF (dt/n_shots), QAOA_MPC (p_layers)
+- Magic number consolidation (WEIGHT_SPARSITY_EPS)
+- ZNE R_std propagation, VQE energy_std
+- Runner job timeout + persistence (jobs.json)
+- Crypto Bell test + dynamical decoupling examples
+- Crypto & entanglement notebook
+- Shared test fixtures, tightened assertions
+- Production/Stable classifier
+- ~505 tests, 100% coverage
 
 ## v1.0.0 (Q3 2026)
 

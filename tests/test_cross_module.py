@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 from qiskit.quantum_info import Statevector
 
-from scpn_quantum_control.bridge import OMEGA_N_16, build_knm_paper27, knm_to_hamiltonian
+from scpn_quantum_control.bridge import knm_to_hamiltonian
 from scpn_quantum_control.hardware.classical import (
     classical_exact_diag,
     classical_kuramoto_reference,
@@ -13,17 +13,15 @@ from scpn_quantum_control.hardware.classical import (
 from scpn_quantum_control.phase.xy_kuramoto import QuantumKuramotoSolver
 
 
-def test_kuramoto_solver_vs_classical_ground_energy():
+def test_kuramoto_solver_vs_classical_ground_energy(knm_4q):
     """QuantumKuramotoSolver Hamiltonian matches classical_exact_diag ground energy."""
-    K = build_knm_paper27(L=4)
-    omega = OMEGA_N_16[:4]
+    K, omega = knm_4q
 
     solver = QuantumKuramotoSolver(4, K, omega)
     H_solver = solver.build_hamiltonian()
 
     H_bridge = knm_to_hamiltonian(K, omega)
 
-    # Both should produce identical Hamiltonians
     mat_solver = H_solver.to_matrix()
     mat_bridge = H_bridge.to_matrix()
     if hasattr(mat_solver, "toarray"):
@@ -34,10 +32,9 @@ def test_kuramoto_solver_vs_classical_ground_energy():
     assert np.allclose(mat_solver, mat_bridge, atol=1e-10)
 
 
-def test_classical_diag_vs_numpy_eigvalsh():
+def test_classical_diag_vs_numpy_eigvalsh(knm_4q):
     """classical_exact_diag matches direct numpy eigvalsh."""
-    K = build_knm_paper27(L=4)
-    omega = OMEGA_N_16[:4]
+    K, omega = knm_4q
 
     result = classical_exact_diag(n_osc=4, K=K, omega=omega)
     E0_classical = result["ground_energy"]
@@ -58,10 +55,9 @@ def test_classical_kuramoto_R_positive():
     assert 0.0 <= R_final <= 1.0 + 1e-10
 
 
-def test_energy_expectation_ground_state():
+def test_energy_expectation_ground_state(knm_4q):
     """Ground state of H has energy matching the lowest eigenvalue."""
-    K = build_knm_paper27(L=4)
-    omega = OMEGA_N_16[:4]
+    K, omega = knm_4q
 
     H = knm_to_hamiltonian(K, omega)
     mat = H.to_matrix()
@@ -76,17 +72,15 @@ def test_energy_expectation_ground_state():
     assert abs(E - eigvals[0]) < 1e-8
 
 
-def test_hamiltonian_commutes_with_total_z_parity():
+def test_hamiltonian_commutes_with_total_z_parity(knm_4q):
     """XY Hamiltonian conserves total Z parity (XX+YY preserves excitation number mod 2)."""
-    K = build_knm_paper27(L=4)
-    omega = OMEGA_N_16[:4]
+    K, omega = knm_4q
 
     H = knm_to_hamiltonian(K, omega)
     mat = H.to_matrix()
     if hasattr(mat, "toarray"):
         mat = mat.toarray()
 
-    # Build parity operator: tensor product of Z's
     from functools import reduce
 
     Z = np.array([[1, 0], [0, -1]])

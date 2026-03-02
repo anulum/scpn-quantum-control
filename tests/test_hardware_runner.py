@@ -59,6 +59,31 @@ def test_save_result(sim_runner):
     assert data["job_id"] == "test_123"
 
 
+def test_log_job_creates_jobs_json(sim_runner):
+    """_log_job appends entries to jobs.json."""
+    import json
+
+    sim_runner._log_job("job_abc", "test_exp")
+    sim_runner._log_job("job_def", "test_exp_2")
+    jobs_path = sim_runner.results_dir / "jobs.json"
+    assert jobs_path.exists()
+    with open(jobs_path) as f:
+        entries = json.load(f)
+    assert len(entries) >= 2
+    ids = [e["job_id"] for e in entries]
+    assert "job_abc" in ids
+    assert "job_def" in ids
+
+
+def test_retrieve_job_requires_connect():
+    """retrieve_job raises RuntimeError without hardware service."""
+    from scpn_quantum_control.hardware.runner import HardwareRunner
+
+    runner = HardwareRunner(use_simulator=True)
+    with pytest.raises(RuntimeError, match="call connect"):
+        runner.retrieve_job("fake_id")
+
+
 def test_circuit_stats(sim_runner):
     from qiskit import QuantumCircuit
 
@@ -168,6 +193,8 @@ def test_vqe_4q_on_simulator(sim_runner):
         assert result["experiment"] == "vqe_4q"
         assert result["n_qubits"] == 4
         assert np.isfinite(result["vqe_energy"])
+        assert np.isfinite(result["energy_std"])
+        assert result["energy_std"] >= 0.0
         assert len(result["energy_history"]) > 0
     finally:
         exp_mod.minimize = original
@@ -197,6 +224,8 @@ def test_kuramoto_4osc_zne_on_simulator(sim_runner):
     result = kuramoto_4osc_zne_experiment(sim_runner, shots=500, dt=0.05, scales=[1, 3])
     assert result["experiment"] == "kuramoto_4osc_zne"
     assert len(result["R_per_scale"]) == 2
+    assert len(result["R_std_per_scale"]) == 2
+    assert all(np.isfinite(s) for s in result["R_std_per_scale"])
     assert np.isfinite(result["zne_R"])
     assert np.isfinite(result["classical_R"])
 
@@ -222,6 +251,8 @@ def test_kuramoto_8osc_zne_on_simulator(sim_runner):
     assert result["experiment"] == "kuramoto_8osc_zne"
     assert result["n_oscillators"] == 8
     assert len(result["R_per_scale"]) == 2
+    assert len(result["R_std_per_scale"]) == 2
+    assert all(np.isfinite(s) for s in result["R_std_per_scale"])
     assert np.isfinite(result["zne_R"])
     assert np.isfinite(result["classical_R"])
 
@@ -323,6 +354,8 @@ def test_zne_higher_order_on_simulator(sim_runner):
     )
     assert result["experiment"] == "zne_higher_order"
     assert len(result["R_per_scale"]) == 3
+    assert len(result["R_std_per_scale"]) == 3
+    assert all(np.isfinite(s) for s in result["R_std_per_scale"])
     assert "order_1" in result["extrapolations"]
     assert "order_2" in result["extrapolations"]
     assert np.isfinite(result["extrapolations"]["order_1"]["zne_R"])

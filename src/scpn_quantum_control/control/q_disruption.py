@@ -11,6 +11,8 @@ import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 
+from .._constants import WEIGHT_SPARSITY_EPS
+
 
 class QuantumDisruptionClassifier:
     """Parameterized quantum circuit classifier for disruption prediction.
@@ -31,10 +33,11 @@ class QuantumDisruptionClassifier:
 
     def encode_features(self, features: np.ndarray) -> QuantumCircuit:
         """Amplitude-encode 11-D features into 4 qubits (pad to 16-D)."""
-        padded = np.zeros(16)
+        dim = 2**self.n_data_qubits
+        padded = np.zeros(dim)
         padded[: len(features)] = features
         norm = np.linalg.norm(padded)
-        if norm < 1e-15:
+        if norm < WEIGHT_SPARSITY_EPS:
             padded[0] = 1.0  # default to |0...0> for zero input
         else:
             padded /= norm

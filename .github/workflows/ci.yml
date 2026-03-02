@@ -84,6 +84,19 @@ jobs:
           python -c "from scpn_quantum_control.crypto import spectral_fingerprint; print('OK')"
           python -c "from scpn_quantum_control import knm_to_ansatz; print('OK')"
 
+  security:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - run: pip install bandit pip-audit
+      - run: bandit -r src/ -ll -q
+      - run: pip install -e ".[dev]" && pip-audit --desc on
+
   hardware-smoke:
     needs: test
     runs-on: ubuntu-latest
@@ -99,7 +112,7 @@ jobs:
         run: pytest tests/test_hardware_runner.py -v --tb=short -k "simulator"
 
   ci-gate:
-    needs: [lint, test, type-check, wheel-check]
+    needs: [lint, test, type-check, wheel-check, security]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -108,7 +121,8 @@ jobs:
           if [[ "${{ needs.lint.result }}" != "success" ]] || \
              [[ "${{ needs.test.result }}" != "success" ]] || \
              [[ "${{ needs.type-check.result }}" != "success" ]] || \
-             [[ "${{ needs.wheel-check.result }}" != "success" ]]; then
+             [[ "${{ needs.wheel-check.result }}" != "success" ]] || \
+             [[ "${{ needs.security.result }}" != "success" ]]; then
             echo "CI gate failed"
             exit 1
           fi
