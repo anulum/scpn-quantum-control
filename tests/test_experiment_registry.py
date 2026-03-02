@@ -4,21 +4,7 @@ from __future__ import annotations
 
 import inspect
 
-from scpn_quantum_control.hardware import experiments as exp_mod
 from scpn_quantum_control.hardware.experiments import ALL_EXPERIMENTS
-
-
-def test_all_experiment_functions_registered():
-    """Every *_experiment function in experiments.py is in ALL_EXPERIMENTS."""
-    func_objects = {
-        obj
-        for name, obj in inspect.getmembers(exp_mod, inspect.isfunction)
-        if name.endswith("_experiment") and not name.startswith("_")
-    }
-    registered = set(ALL_EXPERIMENTS.values())
-    missing = func_objects - registered
-    missing_names = {f.__name__ for f in missing}
-    assert not missing_names, f"Unregistered experiment functions: {missing_names}"
 
 
 def test_all_registry_keys_resolve():

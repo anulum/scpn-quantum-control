@@ -44,7 +44,7 @@ def test_12q_ansatz_depth():
     qc = knm_to_ansatz(K, reps=2)
     assert qc.num_qubits == 12
     assert qc.num_parameters == 12 * 2 * 2  # n * 2_params * reps
-    assert qc.size() > 0
+    assert qc.depth() >= 2, "12q ansatz at reps=2 must have depth >= 2"
 
 
 def test_16q_ansatz_reps1():

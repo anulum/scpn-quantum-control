@@ -20,7 +20,8 @@ def test_multi_inhibitor_anti_control():
 
     qc = QuantumCircuit(4)
     inhibitor_anti_control(qc, [0, 1], target=2, theta=0.5)
-    assert qc.size() > 0
+    ops = qc.count_ops()
+    assert ops.get("x", 0) >= 2, "anti-control pattern requires X gates on inhibitor qubits"
 
 
 def test_inhibitor_target_in_inhibitor_list():
@@ -30,7 +31,8 @@ def test_inhibitor_target_in_inhibitor_list():
     qc = QuantumCircuit(3)
     # target=1 is in inhibitor_qubits=[0,1] — controls list becomes [0], still works
     inhibitor_anti_control(qc, [0, 1], target=1, theta=0.3)
-    assert qc.size() > 0
+    ops = qc.count_ops()
+    assert ops.get("x", 0) >= 2, "anti-control pattern requires X gates on inhibitor qubits"
 
 
 def test_spn_circuit_with_inhibitor_arcs():
@@ -78,7 +80,9 @@ def test_qaoa_zz_circuit_path():
     gamma = np.array([0.5])
     beta = np.array([0.3])
     qc = mpc._build_qaoa_circuit(gamma, beta)
-    assert qc.size() > 0
+    assert qc.depth() > 0
+    ops = qc.count_ops()
+    assert ops.get("rzz", 0) > 0 or ops.get("rz", 0) > 0, "expected ZZ rotation gates"
 
 
 # --- vqls_gs line 92: degenerate xAtAx near zero ---
@@ -88,8 +92,8 @@ def test_vqls_cost_handles_near_zero_state():
     """VQLS cost returns 1.0 when xAtAx < 1e-15 (line 92)."""
     solver = VQLS_GradShafranov(n_qubits=4)
     psi = solver.solve(maxiter=5)
-    assert psi is not None
-    assert len(psi) > 0
+    assert psi.shape == (2**4,)
+    assert np.linalg.norm(psi) > 0, "VQLS returned zero vector"
 
 
 # --- xy_kuramoto lines 54, 107: lazy hamiltonian build ---

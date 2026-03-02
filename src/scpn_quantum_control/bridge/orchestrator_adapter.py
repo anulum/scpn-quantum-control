@@ -53,6 +53,7 @@ class PhaseOrchestratorAdapter:
         *,
         metadata: Mapping[str, Any] | None = None,
     ) -> UPDEPhaseArtifact:
+        """Build a UPDEPhaseArtifact from an scpn-phase-orchestrator state payload."""
         raw_layers = list(_read_field(state, "layers"))
         layers: list[LayerStateArtifact] = []
         for idx, layer in enumerate(raw_layers):
@@ -128,7 +129,7 @@ class PhaseOrchestratorAdapter:
 
         idx = np.arange(n_osc, dtype=np.float64)
         dist = np.abs(idx[:, None] - idx[None, :])
-        knm = base_strength * np.exp(-decay_alpha * dist)
+        knm: np.ndarray = base_strength * np.exp(-decay_alpha * dist)
         if zero_diagonal:
             np.fill_diagonal(knm, 0.0)
         return knm

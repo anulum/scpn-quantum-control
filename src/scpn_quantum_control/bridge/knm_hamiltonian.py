@@ -51,7 +51,7 @@ def build_knm_paper27(
     with calibration anchors from Table 2 and cross-hierarchy boosts from S4.3.
     """
     idx = np.arange(L)
-    K = K_base * np.exp(-K_alpha * np.abs(idx[:, None] - idx[None, :]))
+    K: np.ndarray = K_base * np.exp(-K_alpha * np.abs(idx[:, None] - idx[None, :]))
 
     # Paper 27 Table 2 calibration anchors (only apply if indices in range)
     anchors = {(0, 1): 0.302, (1, 2): 0.201, (2, 3): 0.252, (3, 4): 0.154}

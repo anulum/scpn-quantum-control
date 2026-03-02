@@ -36,7 +36,7 @@ def amplitude_damping_single(rho_2x2: np.ndarray, gamma: float) -> np.ndarray:
     s1g = np.sqrt(1 - gamma)
     k0 = np.array([[1, 0], [0, s1g]])
     k1 = np.array([[0, sg], [0, 0]])
-    return k0 @ rho_2x2 @ k0.conj().T + k1 @ rho_2x2 @ k1.conj().T
+    return np.asarray(k0 @ rho_2x2 @ k0.conj().T + k1 @ rho_2x2 @ k1.conj().T)
 
 
 def noisy_concurrence(
