@@ -14,3 +14,12 @@ repos:
       - id: mypy
         additional_dependencies: [numpy, scipy, networkx, qiskit]
         pass_filenames: false
+
+  - repo: local
+    hooks:
+      - id: version-consistency
+        name: version consistency
+        entry: python scripts/check_version_consistency.py
+        language: python
+        always_run: true
+        pass_filenames: false
