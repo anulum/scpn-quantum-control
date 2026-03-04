@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# scpn-quantum-control — pre-push hook
+# Runs full CI preflight before allowing push.
+# Install: git config core.hooksPath .githooks
+# Skip once: git push --no-verify
+# © 1998–2026 Miroslav Šotek. All rights reserved.
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+echo "pre-push: running preflight..."
+python "$REPO_ROOT/tools/preflight.py"
