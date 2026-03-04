@@ -23,3 +23,11 @@ repos:
         language: python
         always_run: true
         pass_filenames: false
+
+      - id: preflight
+        name: preflight (full CI mirror)
+        entry: python tools/preflight.py
+        language: python
+        always_run: true
+        pass_filenames: false
+        stages: [pre-push]
