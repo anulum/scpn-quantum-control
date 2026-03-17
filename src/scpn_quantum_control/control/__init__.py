@@ -4,6 +4,12 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 from .q_disruption import QuantumDisruptionClassifier
+from .q_disruption_iter import (
+    DisruptionBenchmark,
+    ITERFeatureSpec,
+    generate_synthetic_iter_data,
+    normalize_iter_features,
+)
 from .qaoa_mpc import QAOA_MPC
 from .qpetri import QuantumPetriNet
 from .vqls_gs import VQLS_GradShafranov
@@ -13,4 +19,8 @@ __all__ = [
     "VQLS_GradShafranov",
     "QuantumPetriNet",
     "QuantumDisruptionClassifier",
+    "DisruptionBenchmark",
+    "ITERFeatureSpec",
+    "generate_synthetic_iter_data",
+    "normalize_iter_features",
 ]

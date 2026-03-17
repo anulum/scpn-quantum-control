@@ -7,5 +7,6 @@ from .qlayer import QuantumDenseLayer
 from .qlif import QuantumLIFNeuron
 from .qstdp import QuantumSTDP
 from .qsynapse import QuantumSynapse
+from .training import QSNNTrainer
 
-__all__ = ["QuantumLIFNeuron", "QuantumSynapse", "QuantumSTDP", "QuantumDenseLayer"]
+__all__ = ["QuantumLIFNeuron", "QuantumSynapse", "QuantumSTDP", "QuantumDenseLayer", "QSNNTrainer"]

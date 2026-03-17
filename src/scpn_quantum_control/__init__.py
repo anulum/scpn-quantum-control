@@ -5,6 +5,13 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 """NISQ quantum simulation of coupled Kuramoto oscillator networks via XY Hamiltonian mapping."""
 
+from .benchmarks.quantum_advantage import (
+    AdvantageResult,
+    classical_benchmark,
+    estimate_crossover,
+    quantum_benchmark,
+    run_scaling_benchmark,
+)
 from .bridge.control_plasma_knm import (
     build_knm_plasma,
     build_knm_plasma_from_config,
@@ -20,24 +27,45 @@ from .bridge.knm_hamiltonian import (
 )
 from .bridge.orchestrator_adapter import PhaseOrchestratorAdapter
 from .bridge.phase_artifact import LayerStateArtifact, LockSignatureArtifact, UPDEPhaseArtifact
+from .bridge.snn_adapter import (
+    SNNQuantumBridge,
+    quantum_measurement_to_current,
+    spike_train_to_rotations,
+)
+from .bridge.ssgf_adapter import (
+    quantum_to_ssgf_state,
+    ssgf_state_to_quantum,
+    ssgf_w_to_hamiltonian,
+)
 from .control.q_disruption import QuantumDisruptionClassifier
+from .control.q_disruption_iter import (
+    DisruptionBenchmark,
+    ITERFeatureSpec,
+    generate_synthetic_iter_data,
+    normalize_iter_features,
+)
 from .control.qaoa_mpc import QAOA_MPC
 from .control.qpetri import QuantumPetriNet
 from .control.vqls_gs import VQLS_GradShafranov
 from .hardware.runner import HardwareRunner, JobResult
+from .hardware.trapped_ion import transpile_for_trapped_ion, trapped_ion_noise_model
+from .identity.binding_spec import ARCANE_SAPIENCE_SPEC, build_identity_attractor, solve_identity
 from .identity.coherence_budget import coherence_budget, fidelity_at_depth
 from .identity.entanglement_witness import chsh_from_statevector, disposition_entanglement_map
 from .identity.ground_state import IdentityAttractor
 from .identity.identity_key import identity_fingerprint, prove_identity, verify_identity
+from .mitigation.pec import PECResult, pauli_twirl_decompose, pec_sample
 from .mitigation.zne import ZNEResult, gate_fold_circuit, zne_extrapolate
 from .phase.phase_vqe import PhaseVQE
 from .phase.trotter_upde import QuantumUPDESolver
 from .phase.xy_kuramoto import QuantumKuramotoSolver
 from .qec.control_qec import ControlQEC
+from .qec.fault_tolerant import FaultTolerantUPDE, LogicalQubit
 from .qsnn.qlayer import QuantumDenseLayer
 from .qsnn.qlif import QuantumLIFNeuron
 from .qsnn.qstdp import QuantumSTDP
 from .qsnn.qsynapse import QuantumSynapse
+from .qsnn.training import QSNNTrainer
 
 __version__ = "0.9.0"
 
@@ -55,24 +83,45 @@ __all__ = [
     "LayerStateArtifact",
     "UPDEPhaseArtifact",
     "PhaseOrchestratorAdapter",
+    "SNNQuantumBridge",
+    "spike_train_to_rotations",
+    "quantum_measurement_to_current",
+    "ssgf_w_to_hamiltonian",
+    "ssgf_state_to_quantum",
+    "quantum_to_ssgf_state",
     "QuantumKuramotoSolver",
     "QuantumUPDESolver",
     "PhaseVQE",
     "HardwareRunner",
     "JobResult",
+    "trapped_ion_noise_model",
+    "transpile_for_trapped_ion",
     "QuantumDisruptionClassifier",
+    "DisruptionBenchmark",
+    "ITERFeatureSpec",
+    "generate_synthetic_iter_data",
+    "normalize_iter_features",
     "QAOA_MPC",
     "QuantumPetriNet",
     "VQLS_GradShafranov",
     "ControlQEC",
+    "FaultTolerantUPDE",
+    "LogicalQubit",
     "QuantumLIFNeuron",
     "QuantumSynapse",
     "QuantumSTDP",
     "QuantumDenseLayer",
+    "QSNNTrainer",
     "ZNEResult",
     "gate_fold_circuit",
     "zne_extrapolate",
+    "PECResult",
+    "pauli_twirl_decompose",
+    "pec_sample",
     "IdentityAttractor",
+    "ARCANE_SAPIENCE_SPEC",
+    "build_identity_attractor",
+    "solve_identity",
     "coherence_budget",
     "fidelity_at_depth",
     "chsh_from_statevector",
@@ -80,4 +129,9 @@ __all__ = [
     "identity_fingerprint",
     "prove_identity",
     "verify_identity",
+    "AdvantageResult",
+    "classical_benchmark",
+    "quantum_benchmark",
+    "estimate_crossover",
+    "run_scaling_benchmark",
 ]

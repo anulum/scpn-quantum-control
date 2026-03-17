@@ -24,7 +24,9 @@ from .sc_to_quantum import (
     measurement_to_bitstream,
     probability_to_angle,
 )
+from .snn_adapter import SNNQuantumBridge, quantum_measurement_to_current, spike_train_to_rotations
 from .spn_to_qcircuit import inhibitor_anti_control, spn_to_circuit
+from .ssgf_adapter import quantum_to_ssgf_state, ssgf_state_to_quantum, ssgf_w_to_hamiltonian
 
 __all__ = [
     "knm_to_hamiltonian",
@@ -46,4 +48,10 @@ __all__ = [
     "measurement_to_bitstream",
     "spn_to_circuit",
     "inhibitor_anti_control",
+    "SNNQuantumBridge",
+    "spike_train_to_rotations",
+    "quantum_measurement_to_current",
+    "ssgf_w_to_hamiltonian",
+    "ssgf_state_to_quantum",
+    "quantum_to_ssgf_state",
 ]

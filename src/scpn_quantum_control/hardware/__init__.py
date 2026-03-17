@@ -35,6 +35,7 @@ from .experiments import (
 )
 from .noise_model import heron_r2_noise_model
 from .runner import HardwareRunner, JobResult
+from .trapped_ion import transpile_for_trapped_ion, trapped_ion_noise_model
 
 __all__ = [
     "HardwareRunner",
@@ -66,4 +67,6 @@ __all__ = [
     "bloch_vectors_from_json",
     "classical_exact_evolution",
     "JobResult",
+    "trapped_ion_noise_model",
+    "transpile_for_trapped_ion",
 ]

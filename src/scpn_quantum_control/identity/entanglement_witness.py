@@ -100,10 +100,12 @@ def disposition_entanglement_map(
 
     tsirelson = 2 * np.sqrt(2)
     pairs = []
+    s_values: list[float] = []
 
     for i in range(n):
         for j in range(i + 1, n):
             S = chsh_from_statevector(sv, i, j)
+            s_values.append(S)
             label_i = disposition_labels[i] if disposition_labels else f"q{i}"
             label_j = disposition_labels[j] if disposition_labels else f"q{j}"
             pairs.append(
@@ -117,13 +119,12 @@ def disposition_entanglement_map(
                 }
             )
 
-    s_values = [p["S"] for p in pairs]
     n_entangled = sum(1 for p in pairs if p["entangled"])
     mean_s = float(np.mean(s_values)) if s_values else 0.0
 
     return {
         "pairs": pairs,
-        "max_S": float(max(s_values)) if s_values else 0.0,
+        "max_S": max(s_values) if s_values else 0.0,
         "n_entangled": n_entangled,
         "n_pairs": len(pairs),
         "integration_metric": mean_s / tsirelson,
