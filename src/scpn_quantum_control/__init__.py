@@ -71,6 +71,7 @@ from .phase.trotter_upde import QuantumUPDESolver
 from .phase.xy_kuramoto import QuantumKuramotoSolver
 from .qec.control_qec import ControlQEC
 from .qec.fault_tolerant import FaultTolerantUPDE, LogicalQubit
+from .qec.surface_code_upde import SurfaceCodeSpec, SurfaceCodeUPDE
 from .qsnn.qlayer import QuantumDenseLayer
 from .qsnn.qlif import QuantumLIFNeuron
 from .qsnn.qstdp import QuantumSTDP
@@ -120,6 +121,8 @@ __all__ = [
     "ControlQEC",
     "FaultTolerantUPDE",
     "LogicalQubit",
+    "SurfaceCodeSpec",
+    "SurfaceCodeUPDE",
     "QuantumLIFNeuron",
     "QuantumSynapse",
     "QuantumSTDP",

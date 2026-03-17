@@ -102,7 +102,8 @@ class VQLS_GradShafranov:
 
         n_params = ansatz.num_parameters
         x0 = np.random.default_rng(seed).uniform(-np.pi, np.pi, n_params)
-        result = minimize(cost_fn, x0, method="COBYLA", options={"maxiter": maxiter})
+        effective_maxiter = max(maxiter, n_params + 10)
+        result = minimize(cost_fn, x0, method="COBYLA", options={"maxiter": effective_maxiter})
         self._optimal_params = result.x
 
         bound = ansatz.assign_parameters(result.x)

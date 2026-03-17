@@ -1,0 +1,17 @@
+[package]
+name = "scpn-quantum-engine"
+version = "0.1.0"
+edition = "2021"
+license = "AGPL-3.0-or-later"
+
+[lib]
+name = "scpn_quantum_engine"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.25", features = ["extension-module"] }
+ndarray = "0.16"
+numpy = "0.25"
+num-complex = "0.4"
+rand = "0.9"
+rayon = "1.10"
