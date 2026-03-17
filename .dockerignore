@@ -1,0 +1,16 @@
+.git
+.github
+.githooks
+.mypy_cache
+.pytest_cache
+.ruff_cache
+__pycache__
+*.egg-info
+dist/
+build/
+docs/
+docs-site/
+notebooks/
+.coordination/
+*.bundle
+*.whl

@@ -7,7 +7,7 @@ name = "scpn-quantum-control"
 version = "0.9.0"
 description = "NISQ quantum simulation of coupled Kuramoto oscillator networks via XY Hamiltonian mapping"
 readme = "README.md"
-license = "MIT"
+license = "AGPL-3.0-or-later"
 requires-python = ">=3.9"
 authors = [
     { name = "Miroslav Sotek", email = "protoscience@anulum.li" },
@@ -15,7 +15,7 @@ authors = [
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",

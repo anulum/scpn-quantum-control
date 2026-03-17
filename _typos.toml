@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+
+[default.extend-words]
+# Domain-specific allowlist
+knm = "knm"           # K_nm coupling matrix
+ket = "ket"           # Dirac ket notation
+bra = "bra"           # Dirac bra notation
+mpc = "mpc"           # Model Predictive Control
+qec = "qec"           # Quantum Error Correction
+qkd = "qkd"           # Quantum Key Distribution
+QBER = "QBER"         # Quantum Bit Error Rate
+MWPM = "MWPM"         # Minimum Weight Perfect Matching
+nde = "nde"           # non-deterministic evolution
+dof = "dof"           # degrees of freedom
+upde = "upde"         # Unified Phase Dynamics Equation
+ssgf = "ssgf"         # Stochastic Synthesis of Geometric Fields
+
+[files]
+extend-exclude = [
+    "*.ipynb",
+    ".git/",
+]
