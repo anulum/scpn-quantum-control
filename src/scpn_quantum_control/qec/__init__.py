@@ -5,5 +5,14 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 from .control_qec import ControlQEC, MWPMDecoder, SurfaceCode
 from .fault_tolerant import FaultTolerantUPDE, LogicalQubit
+from .surface_code_upde import SurfaceCodeSpec, SurfaceCodeUPDE
 
-__all__ = ["ControlQEC", "SurfaceCode", "MWPMDecoder", "FaultTolerantUPDE", "LogicalQubit"]
+__all__ = [
+    "ControlQEC",
+    "SurfaceCode",
+    "MWPMDecoder",
+    "FaultTolerantUPDE",
+    "LogicalQubit",
+    "SurfaceCodeSpec",
+    "SurfaceCodeUPDE",
+]

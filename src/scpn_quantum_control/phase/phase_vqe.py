@@ -57,11 +57,12 @@ class PhaseVQE:
         """
         x0 = np.random.default_rng(seed).uniform(-np.pi, np.pi, self.n_params)
 
+        effective_maxiter = max(maxiter, self.n_params + 10)
         result = minimize(
             self._cost,
             x0,
             method=optimizer,
-            options={"maxiter": maxiter},
+            options={"maxiter": effective_maxiter},
         )
 
         self._optimal_params = result.x

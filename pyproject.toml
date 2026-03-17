@@ -71,6 +71,7 @@ xfail_strict = true
 filterwarnings = [
     "ignore::DeprecationWarning:qiskit",
     "ignore::DeprecationWarning:stevedore",
+    "ignore:COBYLA.*Invalid MAXFUN:UserWarning:scipy",
 ]
 
 [tool.ruff]
@@ -125,6 +126,11 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "matplotlib.*"
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "scpn_quantum_engine"
+ignore_missing_imports = true
+follow_imports = "skip"
 
 [tool.coverage.run]
 source = ["scpn_quantum_control"]

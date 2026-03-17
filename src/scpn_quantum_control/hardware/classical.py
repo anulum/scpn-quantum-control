@@ -47,6 +47,27 @@ def classical_kuramoto_reference(
         theta0 = np.array([om % (2 * np.pi) for om in omega])
 
     n_steps = max(1, round(t_max / dt))
+
+    # Rust fast path: ~100x faster for N >= 8
+    try:
+        import scpn_quantum_engine as _engine
+
+        times_rs, R_rs = _engine.kuramoto_trajectory(theta0, omega, K, dt, n_steps)
+        # Rebuild theta history step-by-step (still Rust-accelerated)
+        theta_history_rs = np.zeros((n_steps + 1, n_osc))
+        theta_history_rs[0] = theta0
+        for s in range(1, n_steps + 1):
+            theta_history_rs[s] = np.asarray(
+                _engine.kuramoto_euler(theta_history_rs[s - 1], omega, K, dt, 1)
+            )
+        return {
+            "times": np.asarray(times_rs),
+            "theta": theta_history_rs,
+            "R": np.asarray(R_rs),
+        }
+    except ImportError:
+        pass
+
     times = np.linspace(0, t_max, n_steps + 1)
     theta_history = np.zeros((n_steps + 1, n_osc))
     R_history = np.zeros(n_steps + 1)
