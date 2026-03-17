@@ -83,7 +83,8 @@ class IdentityAttractor:
         """Energy gap E_1 - E_0. Call solve() first."""
         if self._result is None:
             raise RuntimeError("Call solve() before robustness_gap()")
-        return self._result["robustness_gap"]
+        gap: float = self._result["robustness_gap"]
+        return gap
 
     def ground_state(self):
         """Return the VQE-optimized ground state vector."""
