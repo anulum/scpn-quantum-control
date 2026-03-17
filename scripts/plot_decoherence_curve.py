@@ -3,6 +3,7 @@
 Produces: figures/decoherence_curve.png
 Requires: matplotlib (pip install matplotlib)
 """
+
 from __future__ import annotations
 
 import json
@@ -48,7 +49,9 @@ def fit_exponential_decay(depths, errors):
     errors_arr = np.asarray(errors, dtype=float)
     try:
         popt, _ = curve_fit(
-            model, depths_arr, errors_arr,
+            model,
+            depths_arr,
+            errors_arr,
             p0=[50.0, 0.005, 0.0],
             bounds=([0, 0, -5], [100, 0.1, 10]),
             maxfev=5000,
@@ -92,7 +95,6 @@ def fit_decoherence_rate(
 
 def plot_decoherence():
     import matplotlib.pyplot as plt
-    from matplotlib.patches import Rectangle
 
     fig, ax = plt.subplots(figsize=(10, 6))
 
@@ -107,11 +109,16 @@ def plot_decoherence():
     n_qubits = [n for d, e, n, _ in ERROR_DATA]
 
     scatter = ax.scatter(
-        depths, errors,
-        c=n_qubits, cmap="viridis", s=100, edgecolors="black",
-        linewidths=0.8, zorder=5,
+        depths,
+        errors,
+        c=n_qubits,
+        cmap="viridis",
+        s=100,
+        edgecolors="black",
+        linewidths=0.8,
+        zorder=5,
     )
-    cbar = plt.colorbar(scatter, ax=ax, label="Qubits", pad=0.02)
+    plt.colorbar(scatter, ax=ax, label="Qubits", pad=0.02)
 
     # Labels for key points
     annotations = {
@@ -121,12 +128,17 @@ def plot_decoherence():
         290: ("22.0%\n4 Trotter", (10, 5)),
         770: ("46%\nUPDE-16", (-80, 10)),
     }
-    for d, e, n, lab in ERROR_DATA:
+    for d, e, _n, _lab in ERROR_DATA:
         if d in annotations:
             text, offset = annotations[d]
             ax.annotate(
-                text, (d, e), textcoords="offset points", xytext=offset,
-                fontsize=7.5, ha="left", va="bottom",
+                text,
+                (d, e),
+                textcoords="offset points",
+                xytext=offset,
+                fontsize=7.5,
+                ha="left",
+                va="bottom",
                 arrowprops=dict(arrowstyle="-", color="gray", lw=0.5),
             )
 
@@ -136,7 +148,12 @@ def plot_decoherence():
         d_fit = np.linspace(1, 800, 300)
         e_fit = model(d_fit, *popt)
         ax.plot(
-            d_fit, e_fit, "--", color="gray", alpha=0.6, lw=1.5,
+            d_fit,
+            e_fit,
+            "--",
+            color="gray",
+            alpha=0.6,
+            lw=1.5,
             label=f"Fit: a(1-exp(-{popt[1]:.4f}d))+{popt[2]:.1f}",
         )
 
@@ -176,19 +193,29 @@ def plot_layer_coherence():
 
     # Build Knm and compute row sums
     from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
+
     K = build_knm_paper27(16)
     row_sums = K.sum(axis=1)
 
     # Spearman correlation
     from scipy.stats import spearmanr
+
     rho, pval = spearmanr(row_sums, abs_x)
 
     fig, ax = plt.subplots(figsize=(9, 6))
-    labels = [f"L{i+1}" for i in range(16)]
+    labels = [f"L{i + 1}" for i in range(16)]
 
-    scatter = ax.scatter(
-        row_sums, abs_x, s=120, c=abs_x, cmap="RdYlGn",
-        edgecolors="black", linewidths=0.8, zorder=5, vmin=0, vmax=0.7,
+    ax.scatter(
+        row_sums,
+        abs_x,
+        s=120,
+        c=abs_x,
+        cmap="RdYlGn",
+        edgecolors="black",
+        linewidths=0.8,
+        zorder=5,
+        vmin=0,
+        vmax=0.7,
     )
 
     for i, lbl in enumerate(labels):
@@ -197,15 +224,28 @@ def plot_layer_coherence():
             offset_x, offset_y = 0.03, -0.03
         elif lbl == "L16":
             offset_x, offset_y = -0.15, 0.02
-        ax.annotate(lbl, (row_sums[i], abs_x[i]),
-                     xytext=(row_sums[i] + offset_x, abs_x[i] + offset_y),
-                     fontsize=8, fontweight="bold")
+        ax.annotate(
+            lbl,
+            (row_sums[i], abs_x[i]),
+            xytext=(row_sums[i] + offset_x, abs_x[i] + offset_y),
+            fontsize=8,
+            fontweight="bold",
+        )
 
     # Highlight L12 (weakest) and L3 (strongest)
-    for idx, color, name in [(11, "red", "L12: weakest coupling"), (2, "green", "L3: strongest coupling")]:
+    for idx, color, name in [
+        (11, "red", "L12: weakest coupling"),
+        (2, "green", "L3: strongest coupling"),
+    ]:
         ax.scatter(
-            [row_sums[idx]], [abs_x[idx]], s=250, facecolors="none",
-            edgecolors=color, linewidths=2.5, zorder=6, label=name,
+            [row_sums[idx]],
+            [abs_x[idx]],
+            s=250,
+            facecolors="none",
+            edgecolors=color,
+            linewidths=2.5,
+            zorder=6,
+            label=name,
         )
 
     ax.set_xlabel("Knm Row Sum (coupling strength)", fontsize=12)
@@ -241,9 +281,14 @@ def plot_trotter_tradeoff():
     # Left: R vs depth
     ax1.plot(depths, hw_R, "o-", color="#d62728", markersize=10, lw=2, label="Hardware R")
     ax1.axhline(exact_R, ls="--", color="black", lw=1, alpha=0.6, label=f"Exact R = {exact_R}")
-    for i, (d, r, rep) in enumerate(zip(depths, hw_R, reps)):
-        ax1.annotate(f"{rep} rep{'s' if rep > 1 else ''}", (d, r),
-                      textcoords="offset points", xytext=(10, 5), fontsize=9)
+    for _i, (d, r, rep) in enumerate(zip(depths, hw_R, reps)):
+        ax1.annotate(
+            f"{rep} rep{'s' if rep > 1 else ''}",
+            (d, r),
+            textcoords="offset points",
+            xytext=(10, 5),
+            fontsize=9,
+        )
     ax1.set_xlabel("Circuit Depth", fontsize=11)
     ax1.set_ylabel("Order Parameter R", fontsize=11)
     ax1.set_title("More Trotter Reps = Worse on NISQ", fontsize=12)
@@ -252,7 +297,7 @@ def plot_trotter_tradeoff():
 
     # Right: error vs reps
     ax2.bar(reps, errors, color=["#2ca02c", "#ff7f0e", "#d62728"], edgecolor="black", width=0.6)
-    for i, (rep, err) in enumerate(zip(reps, errors)):
+    for _i, (rep, err) in enumerate(zip(reps, errors)):
         ax2.text(rep, err + 0.5, f"{err:.1f}%", ha="center", fontsize=10, fontweight="bold")
     ax2.set_xlabel("Trotter Reps", fontsize=11)
     ax2.set_ylabel("Relative Error (%)", fontsize=11)
@@ -279,29 +324,29 @@ def plot_upde16_bars():
         data = json.load(f)
 
     abs_x = np.abs(np.array(data["exp_x"]))
-    layers = [f"L{i+1}" for i in range(16)]
+    layers = [f"L{i + 1}" for i in range(16)]
 
     # Color by decoherence severity
     colors = []
     for v in abs_x:
         if v >= 0.5:
-            colors.append("#2ca02c")   # strong
+            colors.append("#2ca02c")  # strong
         elif v >= 0.3:
-            colors.append("#ff7f0e")   # moderate
+            colors.append("#ff7f0e")  # moderate
         elif v >= 0.1:
-            colors.append("#d62728")   # weak
+            colors.append("#d62728")  # weak
         else:
-            colors.append("#7f7f7f")   # near-dead
+            colors.append("#7f7f7f")  # near-dead
 
     fig, ax = plt.subplots(figsize=(12, 5))
     bars = ax.bar(layers, abs_x, color=colors, edgecolor="black", linewidth=0.6)
 
     for bar, v in zip(bars, abs_x):
-        ax.text(bar.get_x() + bar.get_width() / 2, v + 0.01,
-                f"{v:.2f}", ha="center", fontsize=8)
+        ax.text(bar.get_x() + bar.get_width() / 2, v + 0.01, f"{v:.2f}", ha="center", fontsize=8)
 
     # Legend
     from matplotlib.patches import Patch
+
     legend_elements = [
         Patch(facecolor="#2ca02c", edgecolor="black", label="Strong (>0.5)"),
         Patch(facecolor="#ff7f0e", edgecolor="black", label="Moderate (0.3-0.5)"),
@@ -313,8 +358,7 @@ def plot_upde16_bars():
     ax.set_xlabel("SCPN Layer", fontsize=12)
     ax.set_ylabel("|<X>| Expectation", fontsize=12)
     ax.set_title(
-        "UPDE-16 Per-Layer Coherence on IBM Heron r2\n"
-        "dt=0.05, depth 770, 20k shots",
+        "UPDE-16 Per-Layer Coherence on IBM Heron r2\ndt=0.05, depth 770, 20k shots",
         fontsize=13,
     )
     ax.set_ylim(0, 0.75)

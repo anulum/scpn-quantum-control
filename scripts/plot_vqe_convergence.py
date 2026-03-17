@@ -7,9 +7,6 @@ Requires: matplotlib (pip install matplotlib)
 from __future__ import annotations
 
 import pathlib
-import sys
-
-import numpy as np
 
 FIGURES_DIR = pathlib.Path(__file__).resolve().parent.parent / "figures"
 
@@ -32,7 +29,11 @@ def main():
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5))
 
     colors = {"knm_informed": "#2ca02c", "two_local": "#ff7f0e", "efficient_su2": "#1f77b4"}
-    labels = {"knm_informed": "Knm-informed", "two_local": "TwoLocal", "efficient_su2": "EfficientSU2"}
+    labels = {
+        "knm_informed": "Knm-informed",
+        "two_local": "TwoLocal",
+        "efficient_su2": "EfficientSU2",
+    }
 
     for r in results:
         name = r["ansatz"]
