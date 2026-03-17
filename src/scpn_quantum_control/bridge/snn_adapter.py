@@ -93,7 +93,7 @@ class ArcaneNeuronBridge:
         seed: int | None = None,
     ):
         try:
-            from sc_neurocore.neurons import ArcaneNeuron
+            from sc_neurocore.neurons.models import ArcaneNeuron
         except ImportError as exc:
             raise ImportError("sc-neurocore required: pip install sc-neurocore") from exc
 
