@@ -25,6 +25,7 @@ Available experiments:
     qaoa_mpc_4        QAOA binary MPC, horizon=4              (~20s QPU)
     upde_16_snapshot  Full 16-layer UPDE snapshot              (~180s QPU)
 """
+
 from __future__ import annotations
 
 import argparse
@@ -45,8 +46,12 @@ def main():
     parser.add_argument("--simulator", action="store_true", help="Use local AerSimulator")
     parser.add_argument("--experiment", metavar="NAME", help="Run a specific experiment")
     parser.add_argument("--all", action="store_true", help="Run all experiments")
-    parser.add_argument("--shots", type=int, default=10000, help="Shots per circuit (default: 10000)")
-    parser.add_argument("--results-dir", default="results", help="Output directory (default: results)")
+    parser.add_argument(
+        "--shots", type=int, default=10000, help="Shots per circuit (default: 10000)"
+    )
+    parser.add_argument(
+        "--results-dir", default="results", help="Output directory (default: results)"
+    )
     parser.add_argument("--list", action="store_true", help="List available experiments")
     args = parser.parse_args()
 
@@ -106,7 +111,9 @@ def _print_summary(name: str, result: dict):
     if "hw_R" in result and "classical_R" in result:
         if isinstance(result["hw_R"], list):
             for i, (hr, cr) in enumerate(zip(result["hw_R"], result["classical_R"][1:])):
-                print(f"  t={result['hw_times'][i]:.2f}  hw_R={hr:.4f}  exact_R={cr:.4f}  err={abs(hr-cr):.4f}")
+                print(
+                    f"  t={result['hw_times'][i]:.2f}  hw_R={hr:.4f}  exact_R={cr:.4f}  err={abs(hr - cr):.4f}"
+                )
         else:
             print(f"  hw_R={result['hw_R']:.4f}  exact_R={result['classical_R']:.4f}")
 
