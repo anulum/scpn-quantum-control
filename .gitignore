@@ -30,3 +30,7 @@ site/
 
 # IBM Quantum credentials (never commit)
 qiskit-ibm.json
+
+# Rust build artifacts
+**/target/
+scpn_quantum_engine/target/
