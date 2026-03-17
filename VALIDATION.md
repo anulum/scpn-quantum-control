@@ -2,7 +2,7 @@
 
 ## Test Suite
 
-~508 unit, integration, property-based, and regression tests across ~65 test files. All pass on Python 3.9-3.12 with Qiskit 1.0+. 99.6% line coverage.
+~553 unit, integration, property-based, and regression tests across ~69 test files. All pass on Python 3.9-3.12 with Qiskit 1.0+. 99%+ line coverage.
 
 ```bash
 pytest tests/ -v
@@ -10,9 +10,9 @@ pytest tests/ -v
 
 ## Test Categories
 
-### Unit Tests (~440 tests, ~55 files)
+### Unit Tests (~480 tests, ~59 files)
 
-Cover individual modules: Hamiltonian construction, Trotter evolution, VQE, QAOA, QSNN neurons/synapses, crypto protocols, QEC decoder, error mitigation. Each test runs in <1s on statevector simulator.
+Cover individual modules: Hamiltonian construction, Trotter evolution, VQE, QAOA, QSNN neurons/synapses, crypto protocols, QEC decoder, error mitigation, identity continuity analysis. Each test runs in <1s on statevector simulator.
 
 ### Integration Tests (21 tests, 4 files)
 
@@ -34,6 +34,17 @@ Hypothesis-driven fuzzing of invariants:
 | `test_bridge_properties.py` | 5 | K_nm symmetry/positivity/diagonal, Hamiltonian Hermiticity (2-6 qubits), probability ↔ angle roundtrip |
 | `test_crypto_properties.py` | 4 | CHSH S-parameter bound, key generation roundtrip, QKD sifting preserves key length |
 | `test_qec_properties.py` | 3 | Syndrome length, decoder output shape, correction preserves code space |
+
+### Identity Continuity Tests (43 tests, 4 files)
+
+Validate the identity analysis subpackage:
+
+| File | Tests | What It Validates |
+|------|-------|-------------------|
+| `test_identity_ground_state.py` | 11 | VQE attractor basin, robustness gap, binding spec input, error on mismatched dimensions, stronger coupling → larger gap |
+| `test_identity_coherence_budget.py` | 15 | Fidelity monotonicity (depth, qubits), budget bounds, hardware param propagation, worse hardware → shorter budget |
+| `test_identity_entanglement.py` | 13 | Bell state CHSH violation (S≈2√2), product state respects bound, GHZ tripartite (no bipartite), disposition labels, integration metric |
+| `test_identity_key.py` | 9 | Spectral fingerprint, commitment format, challenge-response (correct/wrong K_nm), binding spec input |
 
 ### Hardware Smoke Tests (34 tests, 3 files)
 
@@ -94,6 +105,12 @@ VQE hardware result: 0.05% error on 4-qubit subsystem.
 | 4q ground energy E₀ = -6.303 ± 0.01 | `test_regression_baselines.py` |
 | Hamiltonian Z-parity conservation | `test_cross_module.py` |
 | Solver ↔ bridge Hamiltonian identity | `test_cross_module.py` |
+| Robustness gap >= 0 | `test_identity_ground_state.py` |
+| Fidelity monotonically decreasing with depth | `test_identity_coherence_budget.py` |
+| Bell state CHSH S > 2 | `test_identity_entanglement.py` |
+| Product state CHSH S <= 2 | `test_identity_entanglement.py` |
+| GHZ state: zero bipartite entanglement | `test_identity_entanglement.py` |
+| Challenge-response: correct K_nm passes, wrong K_nm fails | `test_identity_key.py` |
 | Knm symmetry, positivity, diagonal=K_base | `test_bridge_properties.py` (hypothesis) |
 | Hamiltonian Hermiticity (fuzz 2-6 qubits) | `test_bridge_properties.py` (hypothesis) |
 | Probability ↔ angle roundtrip (fuzz) | `test_bridge_properties.py` (hypothesis) |
