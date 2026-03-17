@@ -1,10 +1,9 @@
-# ─────────────────────────────────────────────────────────────────────
-# scpn-quantum-control — Citation Metadata
-# © 1998–2026 Miroslav Šotek. All rights reserved.
+# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# ORCID: https://orcid.org/0009-0009-3560-0851
-# License: MIT
-# ─────────────────────────────────────────────────────────────────────
+# scpn-quantum-control — Citation Metadata
 cff-version: 1.2.0
 title: "scpn-quantum-control: Quantum-Native SCPN Phase Dynamics and Control"
 message: "If you use this software, please cite it using the metadata below."
@@ -16,7 +15,7 @@ authors:
     affiliation: "ANULUM CH & LI"
 version: "0.9.0"
 date-released: "2026-03-02"
-license: "MIT"
+license: "AGPL-3.0-or-later"
 doi: "10.5281/zenodo.18821929"
 repository-code: "https://github.com/anulum/scpn-quantum-control"
 url: "https://www.anulum.li"
