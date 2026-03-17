@@ -2,7 +2,12 @@
 
 Backend: ibm_fez (Heron r2, 156 qubits)
 Budget: 10 min QPU / month (free tier)
-Repository: scpn-quantum-control v0.6.4
+Repository: scpn-quantum-control v0.9.0+
+
+**Update (March 17, 2026):** 9 v1.0 modules implemented (PEC, trapped-ion,
+ITER disruption, quantum advantage, SNN/SSGF adapters, identity binding,
+QSNN training, fault-tolerant UPDE). All 20 experiments validated on
+AerSimulator. Hardware runs pending IBM Quantum API token.
 
 ## Experiment Inventory (20 total)
 

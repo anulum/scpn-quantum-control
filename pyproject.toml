@@ -21,6 +21,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Physics",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
@@ -43,7 +44,7 @@ dependencies = [
 [project.optional-dependencies]
 viz = ["matplotlib>=3.5,<4.0"]
 dev = ["pytest>=7.0", "pytest-cov", "ruff", "hypothesis", "pre-commit", "mypy>=1.0", "build"]
-docs = ["mkdocs-material>=9.0"]
+docs = ["mkdocs>=1.6", "mkdocs-material>=9.0", "pymdown-extensions>=10.0"]
 ibm = ["qiskit-ibm-runtime>=0.20.0"]
 
 [project.urls]

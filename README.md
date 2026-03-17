@@ -4,11 +4,11 @@
 
 [![CI](https://github.com/anulum/scpn-quantum-control/actions/workflows/ci.yml/badge.svg)](https://github.com/anulum/scpn-quantum-control/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/anulum/scpn-quantum-control/branch/main/graph/badge.svg)](https://codecov.io/gh/anulum/scpn-quantum-control)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://python.org)
 [![Qiskit 1.0+](https://img.shields.io/badge/qiskit-1.0%2B-6929C4.svg)](https://qiskit.org)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue.svg)](https://anulum.github.io/scpn-quantum-control)
-[![Tests: ~505](https://img.shields.io/badge/tests-~505%20passing-brightgreen.svg)]()
+[![Tests: 627+](https://img.shields.io/badge/tests-627%2B%20passing-brightgreen.svg)]()
 [![Version: 0.9.0](https://img.shields.io/badge/version-0.9.0-orange.svg)](https://pypi.org/project/scpn-quantum-control/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18821929.svg)](https://doi.org/10.5281/zenodo.18821929)
 [![Hardware: ibm_fez](https://img.shields.io/badge/hardware-ibm__fez%20Heron%20r2-blueviolet.svg)]()
@@ -116,12 +116,13 @@ noise-dominated (> 400).*
 ```
 scpn_quantum_control/
 ├── qsnn/           Quantum spiking neural networks
-│   ├── qlif.py         Ry-rotation LIF neuron (P(spike) = sin^2(theta/2))
+│   ├── qlif.py         Ry-rotation LIF neuron (P(spike) = sin²(θ/2))
 │   ├── qsynapse.py     Controlled-Ry synapse (CRy weight encoding)
 │   ├── qstdp.py        Parameter-shift STDP learning rule
-│   └── qlayer.py       Multi-qubit entangled dense layer
+│   ├── qlayer.py       Multi-qubit entangled dense layer
+│   └── training.py     Parameter-shift gradient trainer
 ├── phase/          Quantum phase dynamics
-│   ├── xy_kuramoto.py  Kuramoto -> XY Hamiltonian + Trotter evolution
+│   ├── xy_kuramoto.py  Kuramoto → XY Hamiltonian + Trotter evolution
 │   ├── trotter_upde.py 16-layer UPDE as multi-site spin chain
 │   ├── phase_vqe.py    VQE ground state with Knm-informed ansatz
 │   ├── ansatz_bench.py     VQE ansatz comparison benchmarking
@@ -130,14 +131,25 @@ scpn_quantum_control/
 │   ├── qaoa_mpc.py     QAOA binary MPC trajectory optimization
 │   ├── vqls_gs.py      VQLS for Grad-Shafranov equilibrium
 │   ├── qpetri.py       Quantum Petri net (superposition tokens)
-│   └── q_disruption.py Quantum kernel disruption classifier
-├── bridge/         Classical <-> quantum converters
-│   ├── knm_hamiltonian.py  Knm matrix -> SparsePauliOp compiler
+│   ├── q_disruption.py    Quantum kernel disruption classifier
+│   └── q_disruption_iter.py  ITER 11-feature classifier + fusion-core adapter
+├── bridge/         Classical ↔ quantum converters
+│   ├── knm_hamiltonian.py  Knm matrix → SparsePauliOp compiler
+│   ├── snn_adapter.py     sc-neurocore ArcaneNeuron ↔ quantum layer
+│   ├── ssgf_adapter.py    SSGF geometry ↔ quantum (quantum-in-the-loop)
 │   ├── phase_artifact.py   Shared UPDE phase artifact schema
-│   ├── orchestrator_adapter.py  scpn-phase-orchestrator <-> quantum bridge adapter
-│   ├── spn_to_qcircuit.py  SPN topology -> quantum circuit
-│   ├── sc_to_quantum.py    Bitstream probability <-> rotation angle
-│   └── control_plasma_knm.py  scpn-control plasma Knm compatibility bridge
+│   ├── orchestrator_adapter.py  scpn-phase-orchestrator bridge
+│   ├── spn_to_qcircuit.py  SPN topology → quantum circuit
+│   ├── sc_to_quantum.py    Bitstream probability ↔ rotation angle
+│   └── control_plasma_knm.py  scpn-control plasma Knm bridge
+├── identity/       Identity continuity analysis
+│   ├── ground_state.py     VQE attractor basin + robustness gap
+│   ├── coherence_budget.py Heron r2 decoherence budget
+│   ├── entanglement_witness.py  CHSH S-parameter measurement
+│   ├── identity_key.py    Spectral fingerprint + HMAC verification
+│   └── binding_spec.py    6-layer 18-osc topology + orchestrator mapping
+├── benchmarks/     Performance benchmarks
+│   └── quantum_advantage.py  Classical vs quantum scaling + crossover
 ├── crypto/         Topology-authenticated quantum cryptography
 │   ├── knm_key.py         K_nm → VQE ground state → key material
 │   ├── entanglement_qkd.py  SCPN-QKD protocol, CHSH Bell test
@@ -146,13 +158,16 @@ scpn_quantum_control/
 │   ├── hierarchical_keys.py  Multi-layer key derivation
 │   └── noise_analysis.py  Devetak-Winter key rates, noise channels
 ├── qec/            Quantum error correction
-│   └── control_qec.py     Toric code + MWPM decoder (Knm-weighted)
+│   ├── control_qec.py     Toric code + MWPM decoder (Knm-weighted)
+│   └── fault_tolerant.py  Repetition-code logical qubits + transversal RZZ
 ├── mitigation/     Error mitigation
 │   ├── zne.py          Zero-noise extrapolation (unitary folding)
+│   ├── pec.py          Probabilistic error cancellation (Pauli twirl)
 │   └── dd.py           Dynamical decoupling (XY4, X2, CPMG)
-└── hardware/       IBM Quantum hardware runner
+└── hardware/       Hardware backends
     ├── runner.py       ibm_fez job submission + result parsing
-    ├── experiments.py  20 pre-built experiment circuits (incl. 3 crypto)
+    ├── experiments.py  20 pre-built experiment circuits
+    ├── trapped_ion.py  Trapped-ion noise model + transpilation
     └── classical.py    Classical Kuramoto reference solver
 ```
 
@@ -289,6 +304,9 @@ Interactive Jupyter notebooks in [`notebooks/`](notebooks/):
 | `02_vqe_ground_state` | VQE with Knm-informed ansatz, ansatz comparison, 4q and 8q |
 | `03_error_mitigation` | ZNE (unitary folding + Richardson), noisy simulator |
 | `04_upde_16_layer` | Full 16-layer SCPN, per-layer coherence analysis |
+| `05_crypto_and_entanglement` | CHSH Bell test, correlator matrix, QKD QBER |
+| `06_pec_error_cancellation` | PEC quasi-probability, Monte Carlo, overhead scaling |
+| `07_quantum_advantage_scaling` | Classical vs quantum timing, crossover extrapolation |
 
 All run on local AerSimulator. No IBM credentials needed.
 
@@ -337,4 +355,4 @@ Integration reference:
 
 ## License
 
-[MIT](LICENSE)
+[AGPL-3.0-or-later](LICENSE) — commercial license available.

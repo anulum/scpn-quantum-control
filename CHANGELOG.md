@@ -8,18 +8,43 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - `identity/` subpackage: quantitative identity continuity analysis
-  - `IdentityAttractor`: VQE-based attractor basin + robustness gap (energy gap E_1 - E_0)
-  - `coherence_budget()`: max circuit depth before fidelity loss on Heron r2 noise model
-  - `chsh_from_statevector()`, `disposition_entanglement_map()`: CHSH S-parameter for qubit pairs
-  - `identity_fingerprint()`: spectral + VQE + SHA-256 commitment from coupling topology
-  - `verify_identity()`, `prove_identity()`: HMAC challenge-response via K_nm
-- 43 new tests across 4 test files (test_identity_{ground_state,coherence_budget,entanglement,key}.py)
-- `examples/10_identity_continuity_demo.py`: end-to-end demo exercising all identity modules
-- Reference identity binding spec (6 disposition layers, 18 oscillators) in demo
+  - `IdentityAttractor`: VQE-based attractor basin + robustness gap
+  - `coherence_budget()`: max circuit depth before fidelity loss on Heron r2
+  - `chsh_from_statevector()`, `disposition_entanglement_map()`: CHSH S-parameter
+  - `identity_fingerprint()`, `verify_identity()`, `prove_identity()`: K_nm fingerprint + HMAC
+- 9 v1.0 modules:
+  - `mitigation/pec.py`: Probabilistic Error Cancellation (Temme et al. PRL 119 180509)
+  - `hardware/trapped_ion.py`: trapped-ion noise model (MS gate) + transpilation
+  - `control/q_disruption_iter.py`: ITER 11-feature disruption classifier + fusion-core adapter
+  - `benchmarks/quantum_advantage.py`: classical vs quantum scaling + crossover extrapolation
+  - `bridge/snn_adapter.py`: ArcaneNeuronBridge (sc-neurocore ↔ quantum layer)
+  - `bridge/ssgf_adapter.py`: SSGFQuantumLoop (SSGF engine ↔ quantum Trotter loop)
+  - `identity/binding_spec.py`: 6-layer 18-oscillator topology + orchestrator 18↔35 mapping
+  - `qsnn/training.py`: parameter-shift gradient trainer for QuantumDenseLayer
+  - `qec/fault_tolerant.py`: repetition-code logical qubits + transversal RZZ
+- 4 cross-repo integrations: sc-neurocore, SSGF engine, scpn-phase-orchestrator, scpn-fusion-core
+- 7 new examples (11–17): PEC, trapped-ion, ITER, quantum advantage, QSNN training, fault-tolerant, bridges
+- 2 new notebooks: `06_pec_error_cancellation`, `07_quantum_advantage_scaling`
+- 2 new API doc pages: `bridges_api.md`, `benchmarks_api.md`
+- `docs/equations.md`: PEC, trapped-ion noise, ITER features, fault-tolerant QEC, SSGF loop, binding topology, quantum advantage scaling
+- Enterprise hardening: SPDX headers (130 files), AGPL-3.0 dual-license, 4 new CI workflows, Dockerfile, Makefile, GOVERNANCE, SUPPORT, CONTRIBUTORS
 
 ### Fixed
 
-- CHSH angles: b'=-π/4 gave S=0 for Bell states; corrected to b'=3π/4 → S≈2√2
+- CHSH angles: b'=-π/4 → b'=3π/4 for correct S≈2√2
+- README license badge: MIT → AGPL-3.0-or-later
+- README test count: ~505 → 627+
+- README architecture tree: added identity, benchmarks, bridges, new modules
+- mypy numpy `no-any-return` errors across new modules
+- ruff E741/format issues in examples and notebooks
+- ArcaneNeuron import path: `neurons` → `neurons.models`
+
+### Changed
+
+- Python 3.13 added to CI test matrix and pyproject classifiers
+- `[docs]` optional deps: added `mkdocs`, `pymdown-extensions`
+- Test count: ~505 → 627+
+- Coverage: 100% maintained
 
 ## [0.9.0] - 2026-03-02
 
