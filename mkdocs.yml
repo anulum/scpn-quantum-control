@@ -51,6 +51,8 @@ nav:
       - Full Reference: api.md
       - Identity API: identity_api.md
       - Mitigation API: mitigation_api.md
+      - Bridges API: bridges_api.md
+      - Benchmarks API: benchmarks_api.md
   - Hardware:
       - IBM Guide: hardware_guide.md
       - Experiment Roadmap: EXPERIMENT_ROADMAP.md

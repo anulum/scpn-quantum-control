@@ -1,8 +1,7 @@
 # scpn-quantum-control
 
 [![CI](https://github.com/anulum/scpn-quantum-control/actions/workflows/ci.yml/badge.svg)](https://github.com/anulum/scpn-quantum-control/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/anulum/scpn-quantum-control/branch/main/graph/badge.svg)](https://codecov.io/gh/anulum/scpn-quantum-control)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/anulum/scpn-quantum-control/blob/main/LICENSE)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](https://github.com/anulum/scpn-quantum-control/blob/main/LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://python.org)
 [![Qiskit 1.0+](https://img.shields.io/badge/qiskit-1.0%2B-6929C4.svg)](https://qiskit.org)
 
@@ -26,21 +25,23 @@ a built-in example.
 | VQE ground-state error | **0.05%** (4-qubit, ibm_fez) |
 | 16-layer UPDE snapshot | 46% error at depth 770 (NISQ-consistent) |
 | Decoherence curve | 12 points, depth 5→770 |
-| Coherence wall | depth 250-400 (Heron r2) |
-| Test suite | ~505 passing |
+| Coherence wall | depth 250–400 (Heron r2) |
+| Test suite | 627+ passing, 100% coverage |
 
 ## Modules
 
 | Module | Purpose |
 |--------|---------|
-| `bridge` | K_nm → Hamiltonian, ansatz, circuit converters |
+| `bridge` | K_nm → Hamiltonian, SNN adapter (sc-neurocore), SSGF adapter, orchestrator bridge |
 | `phase` | Kuramoto XY solver, VQE, UPDE-16, Trotter |
-| `control` | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, disruption classifier |
-| `qsnn` | Quantum spiking neural networks (LIF, STDP, synapses) |
+| `control` | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, ITER disruption classifier |
+| `qsnn` | Quantum spiking neural networks (LIF, STDP, synapses, training) |
 | `crypto` | Topology-authenticated QKD, Bell tests, key rates, percolation |
-| `qec` | Toric code + MWPM decoder with K_nm-weighted distances |
-| `mitigation` | ZNE (unitary folding) + dynamical decoupling (XY4, X2, CPMG) |
-| `hardware` | IBM Quantum runner, 20 pre-built experiments, classical references |
+| `qec` | Toric code + MWPM decoder, fault-tolerant UPDE (repetition code) |
+| `mitigation` | ZNE (unitary folding), PEC (Pauli twirling), dynamical decoupling |
+| `hardware` | IBM Quantum runner, trapped-ion backend, 20 pre-built experiments |
+| `identity` | VQE attractor basin, coherence budget, entanglement witness, fingerprint, binding spec |
+| `benchmarks` | Classical vs quantum scaling, crossover extrapolation |
 
 ## Quick example
 
@@ -69,12 +70,13 @@ result = solver.run(t_max=0.5, dt=0.1, trotter_per_step=2)
 
 - **NISQ benchmarking only.** Circuit depths >400 hit the coherence wall; cloud QPUs cannot provide the <1 ms deterministic latency required for real tokamak control.
 - **SCPN is an unpublished model.** The K_nm parameterisation comes from a 2025 working paper with no external citations. The Kuramoto→XY mapping is standard; the specific coupling structure is not independently validated.
-- **No quantum advantage at this scale.** At N=4-16, classical ODE solvers are faster and more accurate. Advantage requires N>>20 with error-corrected qubits.
+- **No quantum advantage at this scale.** At N=4–16, classical ODE solvers are faster and more accurate. Advantage requires N>>20 with error-corrected qubits.
 
 ## Next steps
 
 - [Installation](installation.md) — pip install + dev setup
 - [Quickstart](quickstart.md) — first experiment in 5 minutes
-- [Orchestrator Integration](orchestrator_integration.md) — fusion-defined Kuramoto/UPDE specs into quantum lanes
+- [Equations](equations.md) — mathematical foundations
 - [API Reference](api.md) — full module documentation
+- [Bridges](bridges_api.md) — cross-repo integrations
 - [Hardware Guide](hardware_guide.md) — IBM Quantum setup

@@ -2,7 +2,7 @@
 
 ## Test Suite
 
-~553 unit, integration, property-based, and regression tests across ~69 test files. All pass on Python 3.9-3.12 with Qiskit 1.0+. 99%+ line coverage.
+627+ unit, integration, property-based, and regression tests across ~80 test files. All pass on Python 3.9–3.12 with Qiskit 1.0+. 100% line coverage.
 
 ```bash
 pytest tests/ -v
@@ -10,9 +10,9 @@ pytest tests/ -v
 
 ## Test Categories
 
-### Unit Tests (~480 tests, ~59 files)
+### Unit Tests (~540 tests, ~70 files)
 
-Cover individual modules: Hamiltonian construction, Trotter evolution, VQE, QAOA, QSNN neurons/synapses, crypto protocols, QEC decoder, error mitigation, identity continuity analysis. Each test runs in <1s on statevector simulator.
+Cover individual modules: Hamiltonian construction, Trotter evolution, VQE, QAOA, QSNN neurons/synapses, crypto protocols, QEC decoder, error mitigation (ZNE + PEC), trapped-ion backend, ITER disruption classifier, quantum advantage benchmark, SNN adapter, SSGF adapter, identity binding spec, QSNN training, fault-tolerant UPDE. Each test runs in <1s on statevector simulator.
 
 ### Integration Tests (21 tests, 4 files)
 
@@ -37,123 +37,87 @@ Hypothesis-driven fuzzing of invariants:
 
 ### Identity Continuity Tests (43 tests, 4 files)
 
-Validate the identity analysis subpackage:
+| File | Tests | What It Validates |
+|------|-------|-------------------|
+| `test_identity_ground_state.py` | 11 | VQE attractor basin, robustness gap, binding spec input |
+| `test_identity_coherence_budget.py` | 15 | Fidelity monotonicity, budget bounds, hardware param propagation |
+| `test_identity_entanglement.py` | 13 | Bell state CHSH violation (S≈2√2), product state respects bound |
+| `test_identity_key.py` | 9 | Spectral fingerprint, challenge-response verification |
+
+### v1.0 Module Tests (74 tests, 9 files)
 
 | File | Tests | What It Validates |
 |------|-------|-------------------|
-| `test_identity_ground_state.py` | 11 | VQE attractor basin, robustness gap, binding spec input, error on mismatched dimensions, stronger coupling → larger gap |
-| `test_identity_coherence_budget.py` | 15 | Fidelity monotonicity (depth, qubits), budget bounds, hardware param propagation, worse hardware → shorter budget |
-| `test_identity_entanglement.py` | 13 | Bell state CHSH violation (S≈2√2), product state respects bound, GHZ tripartite (no bipartite), disposition labels, integration metric |
-| `test_identity_key.py` | 9 | Spectral fingerprint, commitment format, challenge-response (correct/wrong K_nm), binding spec input |
+| `test_pec.py` | 9 | PEC quasi-probability coefficients, Monte Carlo sampling, overhead scaling |
+| `test_trapped_ion.py` | 8 | MS gate noise model, transpilation to {cx,ry,rz,sx,x}, unitarity preservation |
+| `test_q_disruption_iter.py` | 10 | ITER 11-feature normalization, synthetic data generation, classifier benchmark |
+| `test_quantum_advantage.py` | 8 | Classical vs quantum timing, crossover extrapolation, memory guard at n>14 |
+| `test_snn_adapter.py` | 8 | Spike-to-rotation conversion, measurement-to-current, bridge forward pass |
+| `test_ssgf_adapter.py` | 8 | W→Hamiltonian, phase encoding/recovery roundtrip, state extraction |
+| `test_binding_spec.py` | 7 | 6-layer 18-oscillator topology, K/omega compilation, VQE attractor |
+| `test_qsnn_training.py` | 8 | Parameter-shift gradient, epoch training, loss decrease |
+| `test_fault_tolerant.py` | 8 | Repetition code encoding, transversal RZZ, syndrome extraction, qubit count |
+
+### Cross-Repo Wiring Tests (17 tests, 1 file)
+
+| File | Tests | What It Validates |
+|------|-------|-------------------|
+| `test_cross_repo_wiring.py` | 17 | ArcaneNeuronBridge (6, skip without sc-neurocore), SSGFQuantumLoop (4), orchestrator mapping roundtrip (4), fusion-core shot adapter (3) |
 
 ### Hardware Smoke Tests (34 tests, 3 files)
 
-Validate all 20 experiment circuits on AerSimulator (no IBM credentials needed):
-
-| File | Tests | Coverage |
-|------|-------|----------|
-| `test_hardware_runner.py` | 22 | All 20 experiments produce valid result dicts with expected keys, R ∈ [0,1], job logging, timeout |
-| `test_experiments_expanded.py` | 7 | Edge cases: 2q/6q scaling, custom Trotter orders, QAOA p=1/p=3 |
-| `test_experiments_edge_cases.py` | 5 | Boundary inputs: single qubit, empty coupling, zero time |
+All 20 experiment circuits validated on AerSimulator (no IBM credentials needed).
 
 ## Physics Verification Gates
 
 ### 1. Quantum-Classical Parity
 
-Each quantum module is verified against its classical counterpart:
-
 | Module | Classical Reference | Parity Check |
 |--------|-------------------|--------------|
-| `qlif.py` | Bernoulli(sin^2(theta/2)) | Spike rate within 2-sigma of expectation |
-| `xy_kuramoto.py` | `hardware/classical.py` `classical_kuramoto_reference()` | R(t) within 5% of ODE solution for K >> delta-omega |
-| `trotter_upde.py` | `hardware/classical.py` `classical_exact_evolution()` | Per-layer phase evolution tracks classical trajectory at n={2,3,4,6} qubits |
-| `phase_vqe.py` | `hardware/classical.py` `classical_exact_diag()` | Ground energy within 0.1% (simulator) |
-| `qaoa_mpc.py` | `hardware/classical.py` `classical_brute_mpc()` | Finds optimal action for small horizons |
-| `knm_hamiltonian.py` | SCPN canonical K_nm (Paper 27) | Hamiltonian eigenspectrum matches analytical bounds |
+| `qlif.py` | Bernoulli(sin²(θ/2)) | Spike rate within 2σ |
+| `xy_kuramoto.py` | `classical_kuramoto_reference()` | R(t) within 5% for K >> Δω |
+| `trotter_upde.py` | `classical_exact_evolution()` | Per-layer phase tracks classical at n={2,3,4,6} |
+| `phase_vqe.py` | `classical_exact_diag()` | Ground energy within 0.1% (simulator) |
+| `qaoa_mpc.py` | `classical_brute_mpc()` | Optimal action for small horizons |
+| `pec.py` | Analytical quasi-prob coefficients | q_I + 3·q_XYZ = 1, overhead = γ^n_gates |
+| `quantum_advantage.py` | Classical expm timing | Exponential fit crossover at n>>14 |
+| `fault_tolerant.py` | Distance-d repetition code | Syndrome detects injected bit-flip |
 
-### 2. Circuit Validity
-
-All generated QuantumCircuits must:
-- Transpile on `AerSimulator` without error
-- Satisfy qubit count = expected (no stray qubits)
-- Produce measurement distributions that sum to 1.0 within floating-point tolerance
-
-### 3. Hardware Validation (ibm_fez)
-
-12-point decoherence curve (depth 5 to 770) validates:
-- Readout noise floor: 0.1% at depth 5
-- Linear decoherence regime: depth 85-400
-- Coherence wall: depth 250-400
-
-VQE hardware result: 0.05% error on 4-qubit subsystem.
-
-### 4. Numerical Invariants
+### 2. Numerical Invariants
 
 | Invariant | Where Checked |
 |-----------|---------------|
-| Hamiltonian Hermiticity | `test_knm_hamiltonian.py` |
+| Hamiltonian Hermiticity | `test_knm_hamiltonian.py`, `test_bridge_properties.py` (hypothesis) |
+| K_nm symmetry, positivity, diagonal | `test_bridge_properties.py` (hypothesis) |
+| K_nm calibration anchors (Paper 27 Table 2) | `test_regression_baselines.py` |
+| 4q ground energy E₀ = -6.303 ± 0.01 | `test_regression_baselines.py` |
+| Order parameter R ∈ [0, 1] | `test_xy_kuramoto.py` |
 | Synapse weight bounds [w_min, w_max] | `test_qsynapse.py` |
-| Angle-probability roundtrip: p = sin^2(arcsin(sqrt(p))/1) | `test_sc_to_quantum.py` |
-| Order parameter R in [0, 1] | `test_xy_kuramoto.py` |
-| Surface code syndrome validity | `test_control_qec.py` |
-| QPN marking conservation | `test_qpetri.py` |
-| STDP weight update direction | `test_qstdp.py` |
-| Pauli qubit ordering (Qiskit little-endian) | `test_classical.py` |
+| Angle-probability roundtrip | `test_sc_to_quantum.py` |
 | Energy conservation under Trotter | `test_integration.py` |
 | Trotter order-2 convergence | `test_trotter_error.py` |
-| Knm calibration anchors (Paper 27 Table 2) | `test_regression_baselines.py` |
-| 4q ground energy E₀ = -6.303 ± 0.01 | `test_regression_baselines.py` |
-| Hamiltonian Z-parity conservation | `test_cross_module.py` |
-| Solver ↔ bridge Hamiltonian identity | `test_cross_module.py` |
-| Robustness gap >= 0 | `test_identity_ground_state.py` |
-| Fidelity monotonically decreasing with depth | `test_identity_coherence_budget.py` |
+| Z-parity conservation | `test_cross_module.py` |
 | Bell state CHSH S > 2 | `test_identity_entanglement.py` |
-| Product state CHSH S <= 2 | `test_identity_entanglement.py` |
-| GHZ state: zero bipartite entanglement | `test_identity_entanglement.py` |
-| Challenge-response: correct K_nm passes, wrong K_nm fails | `test_identity_key.py` |
-| Knm symmetry, positivity, diagonal=K_base | `test_bridge_properties.py` (hypothesis) |
-| Hamiltonian Hermiticity (fuzz 2-6 qubits) | `test_bridge_properties.py` (hypothesis) |
-| Probability ↔ angle roundtrip (fuzz) | `test_bridge_properties.py` (hypothesis) |
+| Product state CHSH S ≤ 2 | `test_identity_entanglement.py` |
+| Fidelity monotonically decreasing with depth | `test_identity_coherence_budget.py` |
+| PEC overhead = (Σ|q_k|)^n_gates | `test_pec.py` |
+| Repetition code: d qubits encode 1 logical | `test_fault_tolerant.py` |
+| Orchestrator phase roundtrip (mod 2π) | `test_cross_repo_wiring.py` |
+| Fusion-core features normalized to [0,1] | `test_cross_repo_wiring.py` |
 
-### 5. Classical Benchmark Comparison
+### 3. Hardware Validation (ibm_fez)
 
-`examples/09_classical_vs_quantum_benchmark.py` compares wall-clock time
-and accuracy for classical Euler ODE, classical exact evolution (matrix
-exponential), and quantum Trotterized XY simulation at N=4, 8, 16.
-At current NISQ scale, classical solvers are 10-1000x faster with exact
-results. Quantum Trotter adds O(dt²) discretization error. This benchmark
-establishes the baseline that quantum advantage requires N>>20 with error
-correction.
+12-point decoherence curve (depth 5 to 770):
+
+- Readout noise floor: 0.1% at depth 5
+- Linear decoherence regime: depth 85–400
+- Coherence wall: depth 250–400
+- VQE hardware result: 0.05% error on 4-qubit subsystem
 
 ## Coverage
 
-99%+ line coverage (CI enforces `--cov-fail-under=99`).
+100% line coverage (CI enforces `--cov-fail-under=99`).
 
 ```bash
 pytest tests/ --cov=scpn_quantum_control --cov-report=term-missing
-```
-
-## Running Validation
-
-```bash
-# Full suite
-pytest tests/ -v
-
-# Integration + regression only
-pytest tests/test_integration.py tests/test_integration_pipeline.py tests/test_cross_module.py tests/test_regression_baselines.py -v
-
-# Hardware tests only (requires IBM credentials)
-pytest tests/test_hardware_runner.py -v
-
-# Classical vs quantum benchmark
-python examples/09_classical_vs_quantum_benchmark.py
-
-# Type check (42 source files, zero errors)
-mypy
-
-# Lint (zero errors)
-ruff check src/ tests/
-
-# Security scan
-pip install bandit pip-audit && bandit -r src/ -ll -q && pip-audit --desc on
 ```
