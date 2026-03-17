@@ -132,6 +132,16 @@ module = "scpn_quantum_engine"
 ignore_missing_imports = true
 follow_imports = "skip"
 
+[[tool.mypy.overrides]]
+module = "jax.*"
+ignore_missing_imports = true
+follow_imports = "skip"
+
+[[tool.mypy.overrides]]
+module = "jaxlib.*"
+ignore_missing_imports = true
+follow_imports = "skip"
+
 [tool.coverage.run]
 source = ["scpn_quantum_control"]
 # runner.py and experiments.py require IBM credentials for full coverage;
