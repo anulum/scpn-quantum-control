@@ -10,7 +10,6 @@ the CHSH S-parameter for nearest-neighbour qubit pairs.
 S > 2 certifies entanglement.  No QPU needed.
 """
 
-import numpy as np
 from qiskit.quantum_info import Statevector
 
 from scpn_quantum_control.bridge.knm_hamiltonian import (

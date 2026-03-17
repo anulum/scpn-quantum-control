@@ -4,6 +4,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 """QAOA-MPC demo: binary coil control over 4 timesteps."""
+
 import numpy as np
 
 from scpn_quantum_control.control import QAOA_MPC
@@ -16,7 +17,7 @@ def main():
 
     print(f"Target state: {target}")
     print(f"Horizon: {horizon} timesteps")
-    print(f"QAOA p-layers: 2\n")
+    print("QAOA p-layers: 2\n")
 
     mpc = QAOA_MPC(B, target, horizon=horizon, p_layers=2)
     H = mpc.build_cost_hamiltonian()
@@ -24,7 +25,7 @@ def main():
 
     actions = mpc.optimize()
     print(f"\nOptimal action sequence: {actions}")
-    print(f"  (1 = coil ON, 0 = coil OFF)")
+    print("  (1 = coil ON, 0 = coil OFF)")
 
 
 if __name__ == "__main__":

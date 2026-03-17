@@ -23,4 +23,6 @@ print(f"{'Ansatz':<20} {'Params':>6} {'Energy':>10} {'Gap':>10} {'Evals':>6}")
 print("-" * 56)
 for r in results:
     gap = abs(r["energy"] - exact["ground_energy"])
-    print(f"{r['ansatz']:<20} {r['n_params']:>6} {r['energy']:>10.4f} {gap:>10.4f} {r['n_evals']:>6}")
+    print(
+        f"{r['ansatz']:<20} {r['n_params']:>6} {r['energy']:>10.4f} {gap:>10.4f} {r['n_evals']:>6}"
+    )
