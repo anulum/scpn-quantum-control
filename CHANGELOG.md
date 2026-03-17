@@ -3,6 +3,24 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- `identity/` subpackage: quantitative identity continuity analysis
+  - `IdentityAttractor`: VQE-based attractor basin + robustness gap (energy gap E_1 - E_0)
+  - `coherence_budget()`: max circuit depth before fidelity loss on Heron r2 noise model
+  - `chsh_from_statevector()`, `disposition_entanglement_map()`: CHSH S-parameter for qubit pairs
+  - `identity_fingerprint()`: spectral + VQE + SHA-256 commitment from coupling topology
+  - `verify_identity()`, `prove_identity()`: HMAC challenge-response via K_nm
+- 43 new tests across 4 test files (test_identity_{ground_state,coherence_budget,entanglement,key}.py)
+- `examples/10_identity_continuity_demo.py`: end-to-end demo exercising all identity modules
+- Reference identity binding spec (6 disposition layers, 18 oscillators) in demo
+
+### Fixed
+
+- CHSH angles: b'=-π/4 gave S=0 for Bell states; corrected to b'=3π/4 → S≈2√2
+
 ## [0.9.0] - 2026-03-02
 
 ### Added

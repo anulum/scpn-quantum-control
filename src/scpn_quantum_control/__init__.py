@@ -20,6 +20,10 @@ from .control.qaoa_mpc import QAOA_MPC
 from .control.qpetri import QuantumPetriNet
 from .control.vqls_gs import VQLS_GradShafranov
 from .hardware.runner import HardwareRunner, JobResult
+from .identity.coherence_budget import coherence_budget, fidelity_at_depth
+from .identity.entanglement_witness import chsh_from_statevector, disposition_entanglement_map
+from .identity.ground_state import IdentityAttractor
+from .identity.identity_key import identity_fingerprint, prove_identity, verify_identity
 from .mitigation.zne import ZNEResult, gate_fold_circuit, zne_extrapolate
 from .phase.phase_vqe import PhaseVQE
 from .phase.trotter_upde import QuantumUPDESolver
@@ -63,4 +67,12 @@ __all__ = [
     "ZNEResult",
     "gate_fold_circuit",
     "zne_extrapolate",
+    "IdentityAttractor",
+    "coherence_budget",
+    "fidelity_at_depth",
+    "chsh_from_statevector",
+    "disposition_entanglement_map",
+    "identity_fingerprint",
+    "prove_identity",
+    "verify_identity",
 ]
