@@ -6,6 +6,9 @@
 """ITER-specific disruption classifier with 11 physics-based features.
 
 Feature ranges from ITER Physics Basis, Nuclear Fusion 39 (12), 1999.
+
+Integration with scpn-fusion-core: use from_fusion_core_shot() to load
+real tokamak disruption data from NPZ archives.
 """
 
 from __future__ import annotations
@@ -44,6 +47,16 @@ class ITERFeatureSpec:
             [17.0, 8.0, 2.0, 1.5, 4.0, 100.0, 0.01, 5.0, 400.0, 2.2, 5.0]
         )
     )
+
+
+# Mapping from fusion-core NPZ archive keys to ITER feature indices.
+_FUSION_CORE_KEY_MAP: dict[str, int] = {
+    "Ip_MA": 0,
+    "q95": 1,
+    "ne_1e19": 3,  # maps to n_GW (Greenwald fraction proxy)
+    "beta_N": 4,
+    "locked_mode_amp": 6,
+}
 
 
 def normalize_iter_features(raw: np.ndarray, spec: ITERFeatureSpec | None = None) -> np.ndarray:
@@ -95,6 +108,30 @@ def generate_synthetic_iter_data(
     X, y = X[idx], y[idx]
     X = normalize_iter_features(X, spec)
     return X, y
+
+
+def from_fusion_core_shot(shot_data: dict) -> tuple[np.ndarray, int]:
+    """Convert a fusion-core NPZ disruption shot to ITER feature vector.
+
+    shot_data: dict loaded from scpn_fusion.io.tokamak_disruption_archive
+               with keys like Ip_MA, q95, beta_N, locked_mode_amp, ne_1e19,
+               is_disruption, disruption_time_idx.
+
+    Returns (features_11, label) where features are time-averaged scalars
+    normalized to [0, 1], label is 0 (safe) or 1 (disruption).
+    """
+    spec = ITERFeatureSpec()
+    centers = np.array([15.0, 3.0, 0.85, 0.85, 1.8, 30.0, 0.0001, 0.3, 350.0, 1.7, 0.0])
+    raw = centers.copy()
+
+    for key, idx in _FUSION_CORE_KEY_MAP.items():
+        if key in shot_data:
+            arr = np.asarray(shot_data[key], dtype=np.float64)
+            raw[idx] = float(np.mean(arr)) if arr.ndim > 0 else float(arr)
+
+    features = normalize_iter_features(raw, spec)
+    label = int(shot_data.get("is_disruption", 0))
+    return features, label
 
 
 class DisruptionBenchmark:
