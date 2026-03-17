@@ -3,7 +3,13 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-"""Arcane Sapience identity binding spec: 6-layer, 18-oscillator Kuramoto topology."""
+"""Arcane Sapience identity binding spec: 6-layer, 18-oscillator Kuramoto topology.
+
+Quantum-side spec maps to the identity_coherence domainpack in
+scpn-phase-orchestrator (36 oscillators, 6 layers). The quantum spec
+uses 3 oscillators per layer as a reduced representation suitable for
+NISQ simulation; the orchestrator spec uses the full set.
+"""
 
 from __future__ import annotations
 
@@ -51,6 +57,29 @@ ARCANE_SAPIENCE_SPEC: dict = {
         "decay_alpha": 0.25,
         "intra_layer": 0.6,
     },
+}
+
+# Mapping between quantum spec (18 osc) and orchestrator domainpack (36 osc).
+# Each quantum oscillator represents the centroid of its orchestrator sub-group.
+ORCHESTRATOR_MAPPING: dict[str, list[str]] = {
+    "ws_0": ["ws_action_first", "ws_verify_before_claim"],
+    "ws_1": ["ws_commit_incremental", "ws_preflight_push"],
+    "ws_2": ["ws_one_at_a_time"],
+    "rs_0": ["rp_simplest_design", "rp_verify_audits"],
+    "rs_1": ["rp_change_problem", "rp_multi_signal"],
+    "rs_2": ["rp_measure_first"],
+    "rl_0": ["rel_autonomous", "rel_milestones"],
+    "rl_1": ["rel_no_questions", "rel_honesty"],
+    "rl_2": ["rel_money_clock"],
+    "ae_0": ["aes_antislop", "aes_honest_naming"],
+    "ae_1": ["aes_terse", "aes_spdx"],
+    "ae_2": ["aes_no_noqa"],
+    "dk_0": ["dk_director", "dk_neurocore", "dk_fusion"],
+    "dk_1": ["dk_control", "dk_orchestrator"],
+    "dk_2": ["dk_ccw", "dk_scpn", "dk_quantum"],
+    "cp_0": ["cp_threshold_halt", "cp_multi_signal", "cp_retrieval_scoring"],
+    "cp_1": ["cp_state_preserve", "cp_decompose_verify"],
+    "cp_2": ["cp_resolution", "cp_claims_evidence"],
 }
 
 
@@ -113,3 +142,45 @@ def solve_identity(
     """Build + solve identity attractor in one call."""
     attractor = build_identity_attractor(spec)
     return attractor.solve(maxiter=maxiter, seed=seed)
+
+
+def quantum_to_orchestrator_phases(
+    quantum_theta: np.ndarray,
+    spec: dict | None = None,
+) -> dict[str, float]:
+    """Map 18 quantum phases to 36 orchestrator oscillator phases.
+
+    Each quantum oscillator's phase is broadcast to its orchestrator sub-group.
+    Returns {orchestrator_osc_id: phase} dict for injection into the
+    identity_coherence domainpack simulation.
+    """
+    if spec is None:
+        spec = ARCANE_SAPIENCE_SPEC
+    all_ids = [oid for lay in spec["layers"] for oid in lay["oscillator_ids"]]
+    result: dict[str, float] = {}
+    for i, qid in enumerate(all_ids):
+        phase = float(quantum_theta[i])
+        for orch_id in ORCHESTRATOR_MAPPING.get(qid, [qid]):
+            result[orch_id] = phase
+    return result
+
+
+def orchestrator_to_quantum_phases(
+    orchestrator_phases: dict[str, float],
+    spec: dict | None = None,
+) -> np.ndarray:
+    """Map 36 orchestrator phases back to 18 quantum oscillator phases.
+
+    Each quantum oscillator gets the circular mean of its sub-group phases.
+    """
+    if spec is None:
+        spec = ARCANE_SAPIENCE_SPEC
+    all_ids = [oid for lay in spec["layers"] for oid in lay["oscillator_ids"]]
+    theta = np.zeros(len(all_ids))
+    for i, qid in enumerate(all_ids):
+        sub_ids = ORCHESTRATOR_MAPPING.get(qid, [qid])
+        sub_phases = [orchestrator_phases.get(sid, 0.0) for sid in sub_ids]
+        z = np.mean(np.exp(1j * np.array(sub_phases)))
+        theta[i] = np.angle(z)
+    result: np.ndarray = theta
+    return result

@@ -28,11 +28,13 @@ from .bridge.knm_hamiltonian import (
 from .bridge.orchestrator_adapter import PhaseOrchestratorAdapter
 from .bridge.phase_artifact import LayerStateArtifact, LockSignatureArtifact, UPDEPhaseArtifact
 from .bridge.snn_adapter import (
+    ArcaneNeuronBridge,
     SNNQuantumBridge,
     quantum_measurement_to_current,
     spike_train_to_rotations,
 )
 from .bridge.ssgf_adapter import (
+    SSGFQuantumLoop,
     quantum_to_ssgf_state,
     ssgf_state_to_quantum,
     ssgf_w_to_hamiltonian,
@@ -41,6 +43,7 @@ from .control.q_disruption import QuantumDisruptionClassifier
 from .control.q_disruption_iter import (
     DisruptionBenchmark,
     ITERFeatureSpec,
+    from_fusion_core_shot,
     generate_synthetic_iter_data,
     normalize_iter_features,
 )
@@ -49,7 +52,14 @@ from .control.qpetri import QuantumPetriNet
 from .control.vqls_gs import VQLS_GradShafranov
 from .hardware.runner import HardwareRunner, JobResult
 from .hardware.trapped_ion import transpile_for_trapped_ion, trapped_ion_noise_model
-from .identity.binding_spec import ARCANE_SAPIENCE_SPEC, build_identity_attractor, solve_identity
+from .identity.binding_spec import (
+    ARCANE_SAPIENCE_SPEC,
+    ORCHESTRATOR_MAPPING,
+    build_identity_attractor,
+    orchestrator_to_quantum_phases,
+    quantum_to_orchestrator_phases,
+    solve_identity,
+)
 from .identity.coherence_budget import coherence_budget, fidelity_at_depth
 from .identity.entanglement_witness import chsh_from_statevector, disposition_entanglement_map
 from .identity.ground_state import IdentityAttractor
@@ -83,9 +93,11 @@ __all__ = [
     "LayerStateArtifact",
     "UPDEPhaseArtifact",
     "PhaseOrchestratorAdapter",
+    "ArcaneNeuronBridge",
     "SNNQuantumBridge",
     "spike_train_to_rotations",
     "quantum_measurement_to_current",
+    "SSGFQuantumLoop",
     "ssgf_w_to_hamiltonian",
     "ssgf_state_to_quantum",
     "quantum_to_ssgf_state",
@@ -99,6 +111,7 @@ __all__ = [
     "QuantumDisruptionClassifier",
     "DisruptionBenchmark",
     "ITERFeatureSpec",
+    "from_fusion_core_shot",
     "generate_synthetic_iter_data",
     "normalize_iter_features",
     "QAOA_MPC",
@@ -120,7 +133,10 @@ __all__ = [
     "pec_sample",
     "IdentityAttractor",
     "ARCANE_SAPIENCE_SPEC",
+    "ORCHESTRATOR_MAPPING",
     "build_identity_attractor",
+    "orchestrator_to_quantum_phases",
+    "quantum_to_orchestrator_phases",
     "solve_identity",
     "coherence_budget",
     "fidelity_at_depth",

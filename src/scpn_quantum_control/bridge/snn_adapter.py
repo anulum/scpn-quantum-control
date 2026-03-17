@@ -3,7 +3,10 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-"""SNN <> quantum bridge: spike trains to rotation angles, measurements to currents."""
+"""SNN <> quantum bridge: spike trains to rotation angles, measurements to currents.
+
+Supports raw numpy spike arrays and optional sc-neurocore ArcaneNeuron integration.
+"""
 
 from __future__ import annotations
 
@@ -68,3 +71,73 @@ class SNNQuantumBridge:
         input_values = angles / np.pi  # QuantumDenseLayer expects [0, 1]
         spikes = self.layer.forward(input_values[: self.n_inputs])
         return quantum_measurement_to_current(spikes.astype(float), self.scale)
+
+
+class ArcaneNeuronBridge:
+    """Bridge between sc-neurocore ArcaneNeuron and quantum layer.
+
+    Runs ArcaneNeuron for n_steps, collects spike history from v_fast
+    threshold crossings, passes through quantum layer, feeds output
+    currents back as ArcaneNeuron input.
+
+    Requires: pip install sc-neurocore
+    """
+
+    def __init__(
+        self,
+        n_neurons: int,
+        n_inputs: int,
+        threshold: float = 1.0,
+        window: int = 10,
+        scale: float = 1.0,
+        seed: int | None = None,
+    ):
+        try:
+            from sc_neurocore.neurons import ArcaneNeuron
+        except ImportError as exc:
+            raise ImportError("sc-neurocore required: pip install sc-neurocore") from exc
+
+        self.threshold = threshold
+        self.bridge = SNNQuantumBridge(n_neurons, n_inputs, window, scale, seed)
+        self.neurons = [ArcaneNeuron() for _ in range(n_inputs)]
+        self._spike_history: list[np.ndarray] = []
+
+    def step_neurons(self, currents: np.ndarray) -> np.ndarray:
+        """Step all ArcaneNeurons, return binary spike vector."""
+        spikes: np.ndarray = np.zeros(len(self.neurons), dtype=np.float64)
+        for i, neuron in enumerate(self.neurons):
+            spikes[i] = float(neuron.step(float(currents[i])))
+        self._spike_history.append(spikes)
+        return spikes
+
+    def quantum_forward(self) -> np.ndarray:
+        """Pass accumulated spike history through quantum layer.
+
+        Returns (n_neurons,) output currents.
+        """
+        if not self._spike_history:
+            out: np.ndarray = np.zeros(self.bridge.n_neurons)
+            return out
+        history = np.array(self._spike_history)
+        return self.bridge.forward(history)
+
+    def step(self, external_currents: np.ndarray) -> dict:
+        """Full cycle: step neurons -> quantum forward -> output.
+
+        Returns dict with spike vector, output currents, and neuron states.
+        """
+        spikes = self.step_neurons(external_currents)
+        output_currents = self.quantum_forward()
+        states = [n.get_state() for n in self.neurons]
+        return {
+            "spikes": spikes,
+            "output_currents": output_currents,
+            "v_deep": np.array([s["v_deep"] for s in states]),
+            "confidence": np.array([s["confidence"] for s in states]),
+        }
+
+    def reset(self) -> None:
+        """Reset neurons and spike history. v_deep persists (identity)."""
+        for n in self.neurons:
+            n.reset()
+        self._spike_history.clear()
