@@ -4,10 +4,9 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 """Kuramoto -> XY Hamiltonian demo: 4-oscillator synchronization."""
-import numpy as np
 
-from scpn_quantum_control.phase import QuantumKuramotoSolver
 from scpn_quantum_control.bridge import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.phase import QuantumKuramotoSolver
 
 
 def main():
@@ -17,7 +16,7 @@ def main():
 
     print(f"Oscillators: {n}")
     print(f"Frequencies: {omega}")
-    print(f"Coupling K[0,1]={K[0,1]:.3f}, K[1,2]={K[1,2]:.3f}")
+    print(f"Coupling K[0,1]={K[0, 1]:.3f}, K[1,2]={K[1, 2]:.3f}")
 
     solver = QuantumKuramotoSolver(n, K, omega)
     result = solver.run(t_max=1.0, dt=0.2, trotter_per_step=3)
