@@ -1,0 +1,37 @@
+{
+  "experiment": "noise_baseline_mar2026_full",
+  "backend": "ibm_fez",
+  "date": "2026-03-18T11:50:00Z",
+  "job_ids": [
+    "d6t9asmsh9gc73did75g",
+    "d6t9c8n90okc73et6ho0"
+  ],
+  "shots": 500,
+  "expectations": {
+    "X": [
+      0.936,
+      0.552,
+      0.756,
+      0.892
+    ],
+    "Y": [
+      -0.036,
+      0.008,
+      0.008,
+      0.02
+    ],
+    "Z": [
+      0.344,
+      -0.824,
+      0.708,
+      0.148
+    ]
+  },
+  "R_xy": 0.784,
+  "feb_baseline_R": 0.8054,
+  "drift": 0.0214,
+  "drift_pct": 2.66,
+  "calibration_stable": false,
+  "wall_time_s": 16.7,
+  "note": "Drift 2.7% exceeds 2% threshold. Marginal \u2014 hardware calibration shifted slightly since Feb 2026."
+}

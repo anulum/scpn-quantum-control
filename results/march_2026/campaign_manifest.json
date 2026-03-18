@@ -1,0 +1,96 @@
+[
+  {
+    "experiment": "noise_baseline",
+    "job_id": "d6t9e7f90okc73et6jlg",
+    "n_circuits": 3,
+    "shots": 4000,
+    "depths": [
+      5,
+      4,
+      3
+    ],
+    "submitted": "2026-03-18T12:14:21.185878+00:00",
+    "status": "QUEUED"
+  },
+  {
+    "experiment": "kuramoto_4osc_s1",
+    "job_id": "d6t9eabbjfas73fpbmv0",
+    "n_circuits": 3,
+    "shots": 4000,
+    "depths": [
+      80,
+      87,
+      79
+    ],
+    "submitted": "2026-03-18T12:14:33.818094+00:00",
+    "status": "QUEUED"
+  },
+  {
+    "experiment": "kuramoto_4osc_s3_proxy",
+    "job_id": "d6t9egbbjfas73fpbn40",
+    "n_circuits": 3,
+    "shots": 4000,
+    "depths": [
+      78,
+      72,
+      78
+    ],
+    "submitted": "2026-03-18T12:14:57.363135+00:00",
+    "status": "QUEUED"
+  },
+  {
+    "experiment": "kuramoto_8osc",
+    "job_id": "d6t9ejfgtkcc73cmemv0",
+    "n_circuits": 3,
+    "shots": 4000,
+    "depths": [
+      254,
+      244,
+      232
+    ],
+    "submitted": "2026-03-18T12:15:09.396494+00:00",
+    "status": "QUEUED"
+  },
+  {
+    "experiment": "kuramoto_4osc_trotter2",
+    "job_id": "d6t9emf90okc73et6k50",
+    "n_circuits": 3,
+    "shots": 4000,
+    "depths": [
+      152,
+      137,
+      155
+    ],
+    "submitted": "2026-03-18T12:15:21.504370+00:00",
+    "status": "QUEUED"
+  },
+  {
+    "experiment": "bell_test_4q",
+    "job_id": "d6t9eqush9gc73didba0",
+    "n_circuits": 4,
+    "shots": 4000,
+    "depths": [
+      45,
+      48,
+      47,
+      48
+    ],
+    "submitted": "2026-03-18T12:15:39.803106+00:00",
+    "status": "QUEUED",
+    "vqe_energy": -6.302752410871402
+  },
+  {
+    "experiment": "correlator_4q",
+    "job_id": "d6t9erfgtkcc73cmen70",
+    "n_circuits": 4,
+    "shots": 4000,
+    "depths": [
+      45,
+      48,
+      47,
+      48
+    ],
+    "submitted": "2026-03-18T12:15:41.825186+00:00",
+    "status": "QUEUED"
+  }
+]

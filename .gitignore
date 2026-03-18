@@ -34,3 +34,6 @@ qiskit-ibm.json
 # Rust build artifacts
 **/target/
 scpn_quantum_engine/target/
+
+# Internal business docs — never commit
+docs/internal/

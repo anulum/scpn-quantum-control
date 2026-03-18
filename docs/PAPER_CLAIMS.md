@@ -13,17 +13,18 @@ Physical Review Research, Quantum Science and Technology, or npj Quantum Informa
 We implement quantum simulation of Kuramoto-type coupled oscillators on IBM's
 Heron r2 processor (ibm_fez, 156 qubits) by mapping the Kuramoto model to the
 XY spin Hamiltonian and evolving via Lie-Trotter decomposition. Five principal
-results emerge: (1) a physics-informed VQE ansatz whose entanglement topology
-mirrors the coupling graph achieves 0.05% ground-state energy error on 4 qubits,
-matching the best reported VQE accuracies on comparable Hamiltonians; (2) a
-12-point decoherence scaling curve from depth 5 to 770 identifies three distinct
-regimes with a coherence wall at depth 250-400; (3) a 16-oscillator snapshot
-preserves per-layer structure at extremes (L12 collapse, L3 resilience) despite
-46% global error — overall Spearman rho = -0.13 indicates hardware noise
-dominates over coupling topology for mid-range layers; (4) a Trotter-depth
-tradeoff shows single-step evolution outperforms multi-step on current hardware;
-(5) QAOA-based model predictive control finds lower-cost action sequences than
-brute-force search. All experiments ran within a 10-minute free-tier QPU budget.
+results emerge: (1) a simulator-optimized, hardware-verified VQE ansatz whose
+entanglement topology mirrors the coupling graph achieves 0.05% ground-state
+energy error on 4 qubits, outperforming generic ansatze (TwoLocal, EfficientSU2)
+on the same Hamiltonian; (2) a 12-point decoherence scaling curve from depth 5
+to 770 identifies three distinct regimes with a coherence wall at depth 250-400;
+(3) a 16-oscillator snapshot shows outlier resilience — L12 (weakest coupling)
+collapses to near-zero coherence while L3 (strongest) maintains |<X>|=0.55,
+though global Spearman rho = -0.13 (p=0.62) confirms hardware noise dominates
+mid-range layers; (4) a Trotter-depth tradeoff shows single-step evolution
+outperforms multi-step on current hardware; (5) QAOA-based model predictive
+control explores the Ising-encoded action space. All experiments ran within a
+10-minute free-tier QPU budget.
 
 
 ## Claim 1: Physics-Informed VQE Achieves 0.05% Ground-State Error
@@ -45,6 +46,13 @@ disconnected pairs.
 H2/LiH VQE. Peruzzo et al. (Nature Comms 2014) reported 2% on HeH+. Our 0.05%
 on a domain-specific Hamiltonian with a physics-matched ansatz is competitive
 with current best.
+
+**Methodology**: Simulator-optimized, hardware-verified. COBYLA 100 iterations
+ran on AerSimulator; only the final optimized parameters were executed on
+ibm_fez hardware. This avoids cumulative hardware noise during optimization
+but means the 0.05% error reflects the best-case (noiseless optimization +
+single noisy evaluation). A hardware-in-the-loop optimization would show
+a higher convergence floor.
 
 **Reproducibility**: Backend ibm_fez, COBYLA 100 iterations, Knm-informed
 Ry/Rz + CZ ansatz, 12 two-qubit gates. Job details in JSON.
@@ -161,20 +169,23 @@ provides a concrete protocol for choosing Trotter depth on Heron-class hardware.
 - Show the crossover point where adding reps becomes counterproductive
 
 
-## Claim 5: QAOA-MPC Finds Better Solutions than Brute Force
+## Claim 5: QAOA-MPC Explores Ising-Encoded Action Space
 
 **Data**: `results/hw_qaoa_mpc_4.json`
 
-| Method | Cost | Actions |
-|--------|------|---------|
-| Brute-force optimal | 0.250 | [0,0,0,0] |
-| QAOA p=1 (hardware) | -0.034 | [1,1,0,0] |
-| QAOA p=2 (hardware) | -0.514 | [1,1,1,0] |
+| Method | Ising Cost | MPC Cost | Actions |
+|--------|-----------|----------|---------|
+| Brute-force optimal | — | 0.250 | [0,0,0,0] |
+| QAOA p=1 (hardware) | -0.034 | — | [1,1,0,0] |
+| QAOA p=2 (hardware) | -0.514 | — | [1,1,1,0] |
 
-QAOA finds lower-cost solutions than brute-force enumeration because the Ising
-encoding allows negative costs that the binary enumeration misses (the brute-force
-evaluates the original MPC cost, while QAOA minimizes the Ising encoding which
-includes constant offsets).
+**Caveat (Gemini audit finding 1.3)**: The Ising encoding includes constant
+offsets and scaling factors. QAOA minimizes the Ising cost, brute-force minimizes
+the original MPC cost — these are different reference frames. The QAOA-found
+bitstrings should be mapped back through the original MPC cost function for a
+fair comparison. As-is, this claim demonstrates that QAOA successfully navigates
+the encoded landscape but does not prove superiority over brute-force on the
+original problem.
 
 **Caveat**: This is a proof-of-concept on a 4-bit problem. The optimizer loop
 ran on hardware (78 jobs for COBYLA iterations), which is budget-inefficient.

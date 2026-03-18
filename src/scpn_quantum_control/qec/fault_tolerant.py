@@ -3,11 +3,12 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-"""Fault-tolerant UPDE simulation with repetition-code logical qubits.
+"""Repetition-code UPDE simulation with bit-flip protected logical qubits.
 
 Proof-of-concept for QEC-protected Kuramoto dynamics. Uses distance-d
-repetition code (bit-flip only) per oscillator. Validates approach on
-statevector; not executable on current hardware at useful noise levels.
+repetition code (bit-flip only) per oscillator. Does NOT correct phase
+errors — use SurfaceCodeUPDE for full X+Z protection. Validates approach
+on statevector; not executable on current hardware at useful noise levels.
 """
 
 from __future__ import annotations
@@ -33,8 +34,8 @@ class LogicalQubit:
         return self.code_distance
 
 
-class FaultTolerantUPDE:
-    """QEC-protected Kuramoto evolution using repetition code encoding.
+class RepetitionCodeUPDE:
+    """Repetition-code Kuramoto evolution (bit-flip protection only).
 
     Each of n_osc oscillators is encoded into d physical qubits.
     Layout per oscillator: [d data qubits | d-1 ancilla qubits].
@@ -153,3 +154,7 @@ class FaultTolerantUPDE:
     def physical_qubit_count(self) -> int:
         """Total physical qubits: n_osc * (d + d - 1)."""
         return self.total_qubits
+
+
+# Backwards compatibility
+FaultTolerantUPDE = RepetitionCodeUPDE

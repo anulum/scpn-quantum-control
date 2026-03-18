@@ -4,7 +4,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 from .control_qec import ControlQEC, MWPMDecoder, SurfaceCode
-from .fault_tolerant import FaultTolerantUPDE, LogicalQubit
+from .fault_tolerant import FaultTolerantUPDE, LogicalQubit, RepetitionCodeUPDE
 from .surface_code_upde import SurfaceCodeSpec, SurfaceCodeUPDE
 
 __all__ = [
