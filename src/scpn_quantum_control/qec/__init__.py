@@ -12,6 +12,7 @@ __all__ = [
     "SurfaceCode",
     "MWPMDecoder",
     "FaultTolerantUPDE",
+    "RepetitionCodeUPDE",
     "LogicalQubit",
     "SurfaceCodeSpec",
     "SurfaceCodeUPDE",
