@@ -133,6 +133,10 @@ ignore_missing_imports = true
 follow_imports = "skip"
 
 [[tool.mypy.overrides]]
+module = "sc_neurocore.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
 module = "jax.*"
 ignore_missing_imports = true
 follow_imports = "skip"
