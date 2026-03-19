@@ -57,7 +57,10 @@ def fit_exponential_decay(depths, errors):
             maxfev=5000,
         )
         return popt, model
-    except Exception:
+    except (RuntimeError, ValueError) as exc:
+        import logging
+
+        logging.getLogger(__name__).warning("Decoherence fit failed: %s", exc)
         return None, None
 
 

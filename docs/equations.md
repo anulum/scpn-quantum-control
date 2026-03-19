@@ -12,7 +12,7 @@ $$H = -\sum_{i<j} K_{ij} (X_i X_j + Y_i Y_j) - \sum_i \omega_i Z_i$$
 
 Time evolution via Lie-Trotter decomposition:
 
-$$U(t) = e^{-iHt} \approx \left[e^{-iH_{ZZ}\Delta t}\, e^{-iH_Z\Delta t}\right]^{t/\Delta t}$$
+$$U(t) = e^{-iHt} \approx \left[e^{-iH_{XY}\Delta t}\, e^{-iH_Z\Delta t}\right]^{t/\Delta t}$$
 
 Order parameter from qubit expectations:
 

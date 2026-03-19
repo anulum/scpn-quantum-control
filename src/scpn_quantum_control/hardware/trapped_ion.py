@@ -3,9 +3,12 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-"""Trapped-ion hardware model with Molmer-Sorensen gates.
+"""Synthetic trapped-ion noise model for cross-platform benchmarking.
 
-All-to-all connectivity, no SWAP overhead. Native basis: {rxx, rz, ry}.
+Models all-to-all connectivity (no SWAP overhead) with depolarizing +
+thermal relaxation on MS gates. Transpiles to {cx, ry, rz} as a proxy
+for the native {rxx, ry, rz} basis. Calibration values are representative
+order-of-magnitude QCCD benchmarks, not a specific device calibration.
 """
 
 from __future__ import annotations

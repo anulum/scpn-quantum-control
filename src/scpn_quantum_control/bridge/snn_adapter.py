@@ -30,13 +30,14 @@ def spike_train_to_rotations(spikes: np.ndarray, window: int = 10) -> np.ndarray
     return angles
 
 
-def quantum_measurement_to_current(probs: np.ndarray, scale: float = 1.0) -> np.ndarray:
-    """Convert qubit P(|1>) probabilities to SNN input currents.
+def quantum_measurement_to_current(values: np.ndarray, scale: float = 1.0) -> np.ndarray:
+    """Convert quantum output values to SNN input currents.
 
-    probs: (n_neurons,) array of P(|1>) values in [0, 1].
+    values: (n_neurons,) array — either P(|1>) probabilities in [0, 1]
+    or binary spike indicators (0/1). Both are valid inputs.
     Returns (n_neurons,) input currents scaled by ``scale``.
     """
-    currents: np.ndarray = np.asarray(probs, dtype=np.float64) * scale
+    currents: np.ndarray = np.asarray(values, dtype=np.float64) * scale
     return currents
 
 

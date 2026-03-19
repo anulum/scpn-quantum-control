@@ -98,10 +98,11 @@ Converts scpn-fusion-core NPZ archive shot data to ITER 11-feature vector.
 ```python
 from scpn_quantum_control.control.q_disruption_iter import from_fusion_core_shot
 
-shot = np.load("disruption_shot_001.npz", allow_pickle=True)
-features, label = from_fusion_core_shot(dict(shot))
+shot = dict(np.load("disruption_shot_001.npz"))  # trusted local data only
+features, label, warnings = from_fusion_core_shot(shot)
 # features: (11,) normalized to [0, 1]
 # label: 0 (safe) or 1 (disruption)
+# warnings: list of features that defaulted to ITER center values
 ```
 
 Supported keys: `Ip_MA`, `q95`, `ne_1e19`, `beta_N`, `locked_mode_amp`.

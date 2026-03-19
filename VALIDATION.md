@@ -116,7 +116,7 @@ All 20 experiment circuits validated on AerSimulator (no IBM credentials needed)
 
 ## Coverage
 
-100% line coverage (CI enforces `--cov-fail-under=99`).
+100% line coverage locally. CI enforces `--cov-fail-under=95` (excludes hardware runner/experiments which require IBM credentials).
 
 ```bash
 pytest tests/ --cov=scpn_quantum_control --cov-report=term-missing
