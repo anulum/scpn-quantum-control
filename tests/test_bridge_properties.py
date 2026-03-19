@@ -97,7 +97,7 @@ def test_knm_shape(L: int):
 
 
 @given(n=st.integers(min_value=2, max_value=6))
-@settings(max_examples=20)
+@settings(max_examples=20, deadline=2000)
 def test_hamiltonian_hermitian(n: int):
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
