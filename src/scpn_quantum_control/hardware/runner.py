@@ -78,7 +78,7 @@ class HardwareRunner:
     def __init__(
         self,
         token: str | None = None,
-        channel: str = "ibm_quantum_platform",
+        channel: str = "ibm_cloud",
         instance: str | None = None,
         backend_name: str | None = None,
         use_simulator: bool = False,
@@ -448,9 +448,7 @@ class HardwareRunner:
         return path
 
     @staticmethod
-    def save_token(
-        token: str, instance: str | None = None, channel: str = "ibm_quantum_platform"
-    ) -> None:
+    def save_token(token: str, instance: str | None = None, channel: str = "ibm_cloud") -> None:
         """Save IBM Quantum API token to disk (one-time setup)."""
         from qiskit_ibm_runtime import QiskitRuntimeService
 

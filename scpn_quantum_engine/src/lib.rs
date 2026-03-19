@@ -28,12 +28,14 @@ fn pec_coefficients(gate_error_rate: f64) -> [f64; 4] {
     [q_i, q_xyz, q_xyz, q_xyz]
 }
 
-/// PEC Monte Carlo sampling in parallel (rayon).
+/// PEC sign-sampling in parallel (rayon). Single-qubit depolarizing model.
 ///
 /// Returns (mitigated_value, overhead, sign_distribution).
-/// `circuit_z_expectations` is a precomputed array of <Z> for each Pauli insertion.
-/// For simplicity, this implements the sampling loop — the circuit evaluation
-/// is done in Python/qiskit before calling this.
+/// `base_exp_z` is the noiseless <Z> expectation from the ideal circuit.
+/// Each sample draws a Pauli correction per gate, accumulates the sign
+/// product, and scales by gamma^n_gates. The sampled operator identity
+/// affects the sign but not the base expectation — this is the single-qubit
+/// approximation where all corrections act on one qubit.
 #[pyfunction]
 fn pec_sample_parallel(
     gate_error_rate: f64,
@@ -95,27 +97,31 @@ fn build_knm<'py>(
     k_base: f64,
     alpha: f64,
 ) -> Bound<'py, PyArray2<f64>> {
+    // Full exponential matrix including diagonal (K_base at i==j)
     let mut k = Array2::<f64>::zeros((n, n));
     for i in 0..n {
         for j in 0..n {
-            if i != j {
-                k[[i, j]] = k_base * (-alpha * (i as f64 - j as f64).abs()).exp();
-            }
+            k[[i, j]] = k_base * (-alpha * (i as f64 - j as f64).abs()).exp();
         }
     }
 
     // Calibration anchors (Paper 27 Table 2)
-    if n >= 5 {
-        k[[0, 1]] = 0.302; k[[1, 0]] = 0.302;
-        k[[1, 2]] = 0.201; k[[2, 1]] = 0.201;
-        k[[2, 3]] = 0.252; k[[3, 2]] = 0.252;
-        k[[3, 4]] = 0.154; k[[4, 3]] = 0.154;
+    let anchors: [(usize, usize, f64); 4] = [(0, 1, 0.302), (1, 2, 0.201), (2, 3, 0.252), (3, 4, 0.154)];
+    for &(i, j, val) in &anchors {
+        if i < n && j < n {
+            k[[i, j]] = val;
+            k[[j, i]] = val;
+        }
     }
 
-    // Cross-hierarchy boosts
-    if n >= 16 {
-        k[[0, 15]] = 0.05; k[[15, 0]] = 0.05;
-        k[[4, 6]] = 0.15; k[[6, 4]] = 0.15;
+    // Cross-hierarchy boosts (max preserves exponential if already larger)
+    if n > 15 {
+        k[[0, 15]] = k[[0, 15]].max(0.05);
+        k[[15, 0]] = k[[15, 0]].max(0.05);
+    }
+    if n > 6 {
+        k[[4, 6]] = k[[4, 6]].max(0.15);
+        k[[6, 4]] = k[[6, 4]].max(0.15);
     }
 
     PyArray2::from_owned_array(py, k)
