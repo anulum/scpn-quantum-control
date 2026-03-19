@@ -6,7 +6,7 @@
 """Arcane Sapience identity binding spec: 6-layer, 18-oscillator Kuramoto topology.
 
 Quantum-side spec maps to the identity_coherence domainpack in
-scpn-phase-orchestrator (36 oscillators, 6 layers). The quantum spec
+scpn-phase-orchestrator (35 oscillators, 6 layers). The quantum spec
 uses 3 oscillators per layer as a reduced representation suitable for
 NISQ simulation; the orchestrator spec uses the full set.
 """
@@ -148,7 +148,7 @@ def quantum_to_orchestrator_phases(
     quantum_theta: np.ndarray,
     spec: dict | None = None,
 ) -> dict[str, float]:
-    """Map 18 quantum phases to 36 orchestrator oscillator phases.
+    """Map 18 quantum phases to 35 orchestrator oscillator phases.
 
     Each quantum oscillator's phase is broadcast to its orchestrator sub-group.
     Returns {orchestrator_osc_id: phase} dict for injection into the
@@ -169,7 +169,7 @@ def orchestrator_to_quantum_phases(
     orchestrator_phases: dict[str, float],
     spec: dict | None = None,
 ) -> np.ndarray:
-    """Map 36 orchestrator phases back to 18 quantum oscillator phases.
+    """Map 35 orchestrator phases back to 18 quantum oscillator phases.
 
     Each quantum oscillator gets the circular mean of its sub-group phases.
     """
