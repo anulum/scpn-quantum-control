@@ -4,37 +4,64 @@
 
 ```
 bridge/
-├── knm_hamiltonian.py   (standalone - canonical Knm data)
-├── control_plasma_knm.py (optional bridge to scpn-control plasma Knm builders)
-├── phase_artifact.py    (shared UPDE phase artifact schema)
+├── knm_hamiltonian.py      (standalone — canonical Knm data)
+├── snn_adapter.py          (optional sc-neurocore ArcaneNeuron bridge)
+├── ssgf_adapter.py         (optional SSGF geometry engine bridge)
+├── control_plasma_knm.py   (optional scpn-control plasma Knm bridge)
+├── phase_artifact.py       (shared UPDE phase artifact schema)
 ├── orchestrator_adapter.py (phase-orchestrator payload adapter)
-├── sc_to_quantum.py     (standalone - angle/probability conversion)
-└── spn_to_qcircuit.py   (uses sc_to_quantum)
+├── sc_to_quantum.py        (standalone — angle/probability conversion)
+└── spn_to_qcircuit.py      (uses sc_to_quantum)
 
 qsnn/
-├── qlif.py              (standalone)
-├── qsynapse.py          (standalone)
-├── qstdp.py             (uses qsynapse)
-└── qlayer.py            (uses qlif, qsynapse)
+├── qlif.py       (standalone)
+├── qsynapse.py   (standalone)
+├── qstdp.py      (uses qsynapse)
+├── qlayer.py     (uses qlif, qsynapse)
+└── training.py   (parameter-shift gradient trainer)
 
 phase/
-├── xy_kuramoto.py       (uses knm_hamiltonian)
-├── trotter_upde.py      (uses knm_hamiltonian)
-└── phase_vqe.py         (uses knm_hamiltonian)
+├── xy_kuramoto.py   (uses knm_hamiltonian)
+├── trotter_upde.py  (uses knm_hamiltonian)
+├── phase_vqe.py     (uses knm_hamiltonian)
+├── ansatz_bench.py  (uses knm_hamiltonian)
+└── trotter_error.py (uses knm_hamiltonian)
 
 control/
 ├── qaoa_mpc.py          (uses knm_hamiltonian)
 ├── vqls_gs.py           (standalone)
 ├── qpetri.py            (uses spn_to_qcircuit)
-└── q_disruption.py      (uses sc_to_quantum)
+├── q_disruption.py      (uses sc_to_quantum)
+└── q_disruption_iter.py (ITER 11-feature classifier + fusion-core adapter)
+
+identity/
+├── ground_state.py          (VQE attractor basin)
+├── coherence_budget.py      (Heron r2 decoherence budget)
+├── entanglement_witness.py  (CHSH S-parameter)
+├── identity_key.py          (spectral fingerprint + HMAC)
+└── binding_spec.py          (6-layer topology + orchestrator mapping)
+
+benchmarks/
+└── quantum_advantage.py     (classical vs quantum scaling)
 
 qec/
-└── control_qec.py       (standalone)
+├── control_qec.py        (toric code + MWPM decoder)
+├── fault_tolerant.py     (RepetitionCodeUPDE — bit-flip only)
+└── surface_code_upde.py  (structural model — resource estimation)
+
+mitigation/
+├── zne.py  (zero-noise extrapolation)
+├── pec.py  (probabilistic error cancellation)
+└── dd.py   (dynamical decoupling)
 
 hardware/
-├── runner.py            (uses xy_kuramoto, phase_vqe, qaoa_mpc)
-├── experiments.py       (uses knm_hamiltonian)
-└── classical.py         (standalone - numpy ODE reference)
+├── runner.py        (IBM Quantum job submission)
+├── experiments.py   (20 pre-built experiments)
+├── trapped_ion.py   (synthetic trapped-ion noise model)
+└── classical.py     (Rust-accelerated Kuramoto reference)
+
+scpn_quantum_engine/  (Rust crate, PyO3 0.25)
+└── src/lib.rs        (kuramoto_trajectory, pec_sample_parallel, build_knm)
 ```
 
 ## Classical-to-Quantum Mapping

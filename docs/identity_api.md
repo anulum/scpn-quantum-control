@@ -88,6 +88,31 @@ response = prove_identity(K, challenge)
 assert verify_identity(K, challenge, response)
 ```
 
+## Binding Spec & Orchestrator Mapping
+
+```python
+from scpn_quantum_control.identity.binding_spec import (
+    ARCANE_SAPIENCE_SPEC,
+    ORCHESTRATOR_MAPPING,
+    quantum_to_orchestrator_phases,
+    orchestrator_to_quantum_phases,
+    build_identity_attractor,
+    solve_identity,
+)
+
+# 18 quantum oscillators -> 35 orchestrator domainpack oscillators
+orch_phases = quantum_to_orchestrator_phases(theta_18)
+
+# 35 orchestrator -> 18 quantum (circular mean roundtrip)
+theta_back = orchestrator_to_quantum_phases(orch_phases)
+
+# Build + solve attractor in one call
+result = solve_identity()  # uses ARCANE_SAPIENCE_SPEC by default
+```
+
+`ORCHESTRATOR_MAPPING` maps each of the 18 quantum oscillators to its
+corresponding sub-group in the `identity_coherence` domainpack (35 total).
+
 ## Demo
 
-See `examples/10_identity_continuity_demo.py` for end-to-end usage of all four modules.
+See `examples/10_identity_continuity_demo.py` for end-to-end usage of all identity modules.

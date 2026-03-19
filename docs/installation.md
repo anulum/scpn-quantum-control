@@ -42,7 +42,7 @@ pip install -e ".[dev,viz,ibm]"
 
 ```bash
 python -c "import scpn_quantum_control; print('OK')"
-pytest tests/ -x -q  # ~505 tests should pass
+pytest tests/ -x -q  # 679 tests should pass
 ```
 
 ## IBM Quantum setup (optional)

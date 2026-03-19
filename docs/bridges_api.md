@@ -106,4 +106,8 @@ features, label, warnings = from_fusion_core_shot(shot)
 ```
 
 Supported keys: `Ip_MA`, `q95`, `ne_1e19`, `beta_N`, `locked_mode_amp`.
-Missing keys default to ITER operational point centers.
+Missing keys default to ITER operational point centers; the `warnings`
+list reports which features were defaulted (typically 6-11 of 11).
+
+Note: `ne_1e19` maps to the `n_GW` slot as a proxy. For accurate
+Greenwald fraction, divide by `n_GW = I_p / (pi * a^2)` externally.

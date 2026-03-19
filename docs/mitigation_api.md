@@ -61,6 +61,39 @@ Richardson extrapolation to zero noise.
 
 **Returns:** `ZNEResult` with extrapolated zero-noise estimate and fit residual.
 
+## Probabilistic Error Cancellation (`mitigation.pec`)
+
+Temme et al., PRL 119, 180509 (2017). Single-qubit depolarizing channel inversion via quasi-probability decomposition and Monte Carlo sampling.
+
+### `PECResult`
+
+```python
+@dataclass
+class PECResult:
+    mitigated_value: float
+    overhead: float
+    n_samples: int
+    sign_distribution: list[float]
+```
+
+### `pauli_twirl_decompose`
+
+```python
+pauli_twirl_decompose(gate_error_rate: float, n_qubits: int = 1) -> np.ndarray
+```
+
+Returns [q_I, q_X, q_Y, q_Z] quasi-probability coefficients. Sum = 1 (trace preservation). Currently single-qubit only.
+
+### `pec_sample`
+
+```python
+pec_sample(circuit, gate_error_rate, n_samples, observable_qubit=0, rng=None) -> PECResult
+```
+
+Monte Carlo PEC: samples Pauli corrections from quasi-probability distribution, accumulates signed expectations. Overhead scales as γ^n_gates.
+
+**Note:** Current implementation applies corrections to `observable_qubit` only. Gate-local multi-qubit PEC is planned.
+
 ## Dynamical Decoupling (`mitigation.dd`)
 
 ### `DDSequence`
