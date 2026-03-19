@@ -42,7 +42,7 @@ Cross-repo integrations wired:
 - **scpn-phase-orchestrator**: 18↔35 oscillator phase mapping (identity_coherence domainpack)
 - **scpn-fusion-core**: NPZ archive shot data → ITER 11-feature vector
 
-627+ tests, 100% coverage, all 6 preflight gates passing.
+679 tests, 100% coverage, all 6 preflight gates passing.
 
 ## v1.0.0 (Target: Q2 2026)
 

@@ -176,6 +176,27 @@ QuantumDisruptionClassifier(n_features=11, n_layers=3)
     .train(X, y, epochs=10, lr=0.01)
 ```
 
+### `q_disruption_iter`
+
+```python
+ITERFeatureSpec()  # 11 ITER disruption features with min/max ranges
+normalize_iter_features(raw: np.ndarray) -> np.ndarray  # min-max to [0, 1]
+generate_synthetic_iter_data(n_samples, disruption_fraction=0.3) -> (X, y)
+from_fusion_core_shot(shot_data: dict) -> (features, label, warnings)
+DisruptionBenchmark(n_train=100, n_test=50).run(epochs=10) -> dict
+```
+
+## qsnn (continued)
+
+### `training.QSNNTrainer`
+
+```python
+QSNNTrainer(layer: QuantumDenseLayer, lr: float = 0.01)
+    .parameter_shift_gradient(inputs, target) -> np.ndarray
+    .train_epoch(X, y) -> float  # mean loss
+    .train(X, y, epochs=10) -> list[float]  # loss history
+```
+
 ## qec
 
 ### `control_qec.ControlQEC`
@@ -184,6 +205,30 @@ QuantumDisruptionClassifier(n_features=11, n_layers=3)
 ControlQEC(distance=3)
     .protect_signal(circuit) -> QuantumCircuit
     .decode_syndrome(syndrome) -> np.ndarray  # correction
+```
+
+### `fault_tolerant.RepetitionCodeUPDE`
+
+Bit-flip protected UPDE. Does NOT correct phase errors.
+
+```python
+RepetitionCodeUPDE(n_osc, code_distance=3, K=None, omega=None)
+    .build_step_circuit(dt=0.1) -> QuantumCircuit
+    .step_with_qec(dt=0.1) -> dict  # syndromes, errors_detected
+    .physical_qubit_count() -> int
+```
+
+Alias: `FaultTolerantUPDE = RepetitionCodeUPDE`
+
+### `surface_code_upde.SurfaceCodeUPDE`
+
+Structural model for resource estimation. NOT executable QEC.
+
+```python
+SurfaceCodeSpec.from_distance(d: int) -> SurfaceCodeSpec  # d must be odd >= 3
+SurfaceCodeUPDE(n_osc, code_distance=3, K=None, omega=None)
+    .build_step_circuit(dt=0.1) -> QuantumCircuit
+    .physical_qubit_budget() -> dict  # total_physical, correctable_errors, etc.
 ```
 
 ## mitigation

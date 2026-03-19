@@ -102,9 +102,85 @@ python examples/08_dynamical_decoupling.py
 Benchmarks classical Euler ODE, exact matrix-exponential evolution, and
 quantum Trotterized XY simulation at N=4, 8, 16. Reports wall-clock time,
 R(t) accuracy, and VQE ground-state energy vs exact diagonalization.
-Demonstrates that at NISQ scale, classical solvers dominate — quantum
-advantage requires N>>20 with error correction.
 
 ```bash
 python examples/09_classical_vs_quantum_benchmark.py
+```
+
+## 10_identity_continuity_demo.py — Identity Analysis
+
+End-to-end demo of all identity modules: VQE attractor basin, coherence
+budget, entanglement witness, spectral fingerprint, and binding spec.
+
+```bash
+python examples/10_identity_continuity_demo.py
+```
+
+## 11_pec_demo.py — PEC Error Mitigation
+
+Probabilistic error cancellation: quasi-probability coefficients and
+Monte Carlo sampling at varying gate error rates.
+
+```bash
+python examples/11_pec_demo.py
+```
+
+## 12_trapped_ion_demo.py — Trapped-Ion Backend
+
+Synthetic trapped-ion noise model with all-to-all connectivity.
+Transpiles and runs Kuramoto circuits under MS gate noise.
+
+```bash
+python examples/12_trapped_ion_demo.py
+```
+
+## 13_iter_disruption_demo.py — ITER Disruption Classifier
+
+11 physics-based ITER features, synthetic data generation, and quantum
+circuit classifier benchmark.
+
+```bash
+python examples/13_iter_disruption_demo.py
+```
+
+## 14_quantum_advantage_demo.py — Quantum Advantage Scaling
+
+Classical vs quantum wall-clock timing with crossover extrapolation.
+
+```bash
+python examples/14_quantum_advantage_demo.py
+```
+
+## 15_qsnn_training_demo.py — QSNN Training
+
+Parameter-shift gradient descent on QuantumDenseLayer synapse angles.
+
+```bash
+python examples/15_qsnn_training_demo.py
+```
+
+## 16_fault_tolerant_demo.py — Fault-Tolerant UPDE
+
+Repetition-code logical qubits with syndrome extraction at distance 3 and 5.
+
+```bash
+python examples/16_fault_tolerant_demo.py
+```
+
+## 17_snn_ssgf_bridges_demo.py — Cross-Repo Bridges
+
+SNN adapter (spike trains → quantum → currents), SSGF adapter (geometry
+→ Hamiltonian → roundtrip), and orchestrator phase mapping (18 ↔ 35).
+
+```bash
+python examples/17_snn_ssgf_bridges_demo.py
+```
+
+## 18_end_to_end_pipeline.py — Full Pipeline
+
+K_nm → VQE → Trotter evolution → ZNE → PEC → classical comparison.
+All 5 stages in one script.
+
+```bash
+python examples/18_end_to_end_pipeline.py
 ```

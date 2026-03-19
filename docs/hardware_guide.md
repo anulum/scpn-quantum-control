@@ -2,11 +2,11 @@
 
 ## Prerequisites
 
-1. IBM Quantum account: https://quantum.ibm.com
-2. Credentials configured:
+1. IBM Quantum account: https://quantum.cloud.ibm.com
+2. Credentials configured (use `ibm_cloud` channel, NOT deprecated `ibm_quantum`):
    ```bash
-   export QISKIT_IBM_TOKEN="your-token-here"
-   # or save to ~/.qiskit/qiskit-ibm.json
+   export IBM_QUANTUM_TOKEN="your-token-here"
+   export IBM_QUANTUM_CRN="your-crn-instance-id"
    ```
 3. Install IBM runtime:
    ```bash

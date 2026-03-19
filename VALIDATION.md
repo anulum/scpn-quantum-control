@@ -2,7 +2,7 @@
 
 ## Test Suite
 
-627+ unit, integration, property-based, and regression tests across ~80 test files. All pass on Python 3.9–3.12 with Qiskit 1.0+. 100% line coverage.
+679 unit, integration, property-based, and regression tests across ~80 test files. All pass on Python 3.9–3.12 with Qiskit 1.0+. 100% line coverage.
 
 ```bash
 pytest tests/ -v
