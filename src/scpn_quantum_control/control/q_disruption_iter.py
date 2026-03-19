@@ -110,28 +110,39 @@ def generate_synthetic_iter_data(
     return X, y
 
 
-def from_fusion_core_shot(shot_data: dict) -> tuple[np.ndarray, int]:
+def from_fusion_core_shot(shot_data: dict) -> tuple[np.ndarray, int, list[str]]:
     """Convert a fusion-core NPZ disruption shot to ITER feature vector.
 
     shot_data: dict loaded from scpn_fusion.io.tokamak_disruption_archive
                with keys like Ip_MA, q95, beta_N, locked_mode_amp, ne_1e19,
                is_disruption, disruption_time_idx.
 
-    Returns (features_11, label) where features are time-averaged scalars
-    normalized to [0, 1], label is 0 (safe) or 1 (disruption).
+    Returns (features_11, label, warnings) where features are time-averaged
+    scalars normalized to [0, 1], label is 0 (safe) or 1 (disruption),
+    and warnings lists any features that defaulted to ITER center values.
+
+    Note: ne_1e19 maps to the n_GW slot as a proxy. For accurate Greenwald
+    fraction, divide by n_GW = I_p / (pi * a²) externally.
     """
     spec = ITERFeatureSpec()
     centers = np.array([15.0, 3.0, 0.85, 0.85, 1.8, 30.0, 0.0001, 0.3, 350.0, 1.7, 0.0])
     raw = centers.copy()
+    warnings: list[str] = []
 
+    mapped_indices: set[int] = set()
     for key, idx in _FUSION_CORE_KEY_MAP.items():
         if key in shot_data:
             arr = np.asarray(shot_data[key], dtype=np.float64)
             raw[idx] = float(np.mean(arr)) if arr.ndim > 0 else float(arr)
+            mapped_indices.add(idx)
+
+    for idx, name in enumerate(spec.names):
+        if idx not in mapped_indices:
+            warnings.append(f"{name} defaulted to center value {centers[idx]}")
 
     features = normalize_iter_features(raw, spec)
     label = int(shot_data.get("is_disruption", 0))
-    return features, label
+    return features, label, warnings
 
 
 class DisruptionBenchmark:

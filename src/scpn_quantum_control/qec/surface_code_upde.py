@@ -52,11 +52,18 @@ class SurfaceCodeSpec:
 
 
 class SurfaceCodeUPDE:
-    """Surface-code protected Kuramoto-XY simulation.
+    """Structural model of surface-code protected Kuramoto-XY simulation.
 
-    Each of n_osc oscillators is a distance-d rotated surface code
-    logical qubit. Corrects arbitrary single-qubit errors (X, Y, Z)
-    up to floor((d-1)/2) errors per code block.
+    NOT an executable QEC implementation. This models the circuit structure
+    (encoding, logical gates, syndrome extraction) and qubit budget of a
+    surface-code UPDE, but does not perform stabilizer-state preparation,
+    ancilla measurement, or syndrome decoding. Use for resource estimation
+    and circuit-depth analysis, not for fault-tolerance claims.
+
+    Each oscillator is modeled as a distance-d rotated surface code patch.
+    Logical Rz is transversal (angle distributed across d² data qubits).
+    Logical ZZ uses pairwise RZZ as an operator-level approximation of
+    lattice surgery (Litinski, Quantum 3, 205 (2019)).
 
     Physical qubit budget:
       n_osc=4, d=3: 4 × 17 = 68 qubits

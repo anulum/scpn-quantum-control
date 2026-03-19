@@ -12,15 +12,14 @@ IBM executes them automatically when time becomes available.
 from __future__ import annotations
 
 import json
+import os
 import sys
-import time
 from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
 from qiskit import QuantumCircuit, transpile
 from qiskit.circuit.library import PauliEvolutionGate
-from qiskit.quantum_info import SparsePauliOp, Statevector
 from qiskit.synthesis import LieTrotter, SuzukiTrotter
 from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2
 
@@ -33,15 +32,20 @@ from scpn_quantum_control.bridge.knm_hamiltonian import (
     knm_to_hamiltonian,
 )
 
-TOKEN = "edg61ntxkPcPBl5VMF-33r1mKl27qeVxtGg4mmNE6zMD"
-CRN = "crn:v1:bluemix:public:quantum-computing:us-east:a/78db885720334fd19191b33a839d0c35:841cc36d-0afd-4f96-ada2-8c56e1c443a0::"
 BACKEND_NAME = "ibm_fez"
 SHOTS = 4000
 RESULTS_DIR = Path(__file__).resolve().parent.parent / "results" / "march_2026"
 
 
 def connect():
-    service = QiskitRuntimeService(channel="ibm_cloud", token=TOKEN, instance=CRN)
+    token = os.environ.get("IBM_QUANTUM_TOKEN")
+    crn = os.environ.get("IBM_QUANTUM_CRN")
+    if not token or not crn:
+        raise RuntimeError(
+            "Set IBM_QUANTUM_TOKEN and IBM_QUANTUM_CRN environment variables. "
+            "See memory/reference_credentials_vault.md for values."
+        )
+    service = QiskitRuntimeService(channel="ibm_cloud", token=token, instance=crn)
     backend = service.backend(BACKEND_NAME)
     print(f"Connected: {backend.name}, {backend.num_qubits}q")
     return service, backend
@@ -95,13 +99,11 @@ def build_baseline_circuits(backend):
 def build_bell_circuits(backend):
     K = build_knm_paper27(L=4)
     omega = OMEGA_N_16[:4]
-    H = knm_to_hamiltonian(K, omega)
 
-    # VQE ground state (pre-optimized on simulator)
     from scpn_quantum_control.phase.phase_vqe import PhaseVQE
+
     vqe = PhaseVQE(K, omega, ansatz_reps=2)
     sol = vqe.solve(maxiter=200, seed=42)
-    sv = vqe.ground_state()
 
     # CHSH: 4 basis combinations (ZZ, ZX, XZ, XX)
     circuits = []
@@ -127,7 +129,9 @@ def submit_and_log(name, circuits, backend, shots=SHOTS):
     job_id = job.job_id()
     n_circuits = len(circuits)
     depths = [c.depth() for c in circuits]
-    print(f"  {name}: {n_circuits} circuits, depths={depths[:3]}{'...' if len(depths)>3 else ''}, job={job_id}")
+    print(
+        f"  {name}: {n_circuits} circuits, depths={depths[:3]}{'...' if len(depths) > 3 else ''}, job={job_id}"
+    )
     return {
         "experiment": name,
         "job_id": job_id,
@@ -158,10 +162,7 @@ def main():
     circs_s1 = build_kuramoto_circuits(4, 0.1, 1, backend, order=1)
     manifest.append(submit_and_log("kuramoto_4osc_s1", circs_s1, backend, shots=SHOTS))
 
-    # 3. Kuramoto 4-osc ZNE scale=3 — gate-fold the s1 circuits
-    from scpn_quantum_control.mitigation.zne import gate_fold_circuit
-    circs_s1_raw = build_kuramoto_circuits(4, 0.1, 1, backend, order=1)
-    # Can't gate-fold transpiled circuits easily — submit raw at higher depth
+    # 3. Kuramoto 4-osc at longer evolution (higher depth proxy for ZNE scale=3)
     circs_s3 = build_kuramoto_circuits(4, 0.3, 1, backend, order=1)
     manifest.append(submit_and_log("kuramoto_4osc_s3_proxy", circs_s3, backend, shots=SHOTS))
 
@@ -190,7 +191,7 @@ def main():
     print(f"\n{'=' * 60}")
     print(f"  {len(manifest)} jobs submitted, all QUEUED")
     print(f"  Manifest: {manifest_path}")
-    print(f"  Jobs execute when QPU budget resets (~March 27)")
+    print("  Jobs execute when QPU budget resets (~March 27)")
     print(f"{'=' * 60}")
 
     print("\nJob IDs for retrieval:")
