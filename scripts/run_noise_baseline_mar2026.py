@@ -31,9 +31,8 @@ from pathlib import Path
 # Ensure project is importable
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from scpn_quantum_control.hardware.runner import HardwareRunner
 from scpn_quantum_control.hardware.experiments import noise_baseline_experiment
-
+from scpn_quantum_control.hardware.runner import HardwareRunner
 
 FEB_BASELINE_R = 0.8054
 DRIFT_THRESHOLD = 0.02
@@ -63,7 +62,7 @@ def main() -> None:
     drift = abs(hw_R - FEB_BASELINE_R)
     drifted = drift > DRIFT_THRESHOLD
 
-    print(f"\n--- Results ---")
+    print("\n--- Results ---")
     print(f"  R (March 2026): {hw_R:.4f}")
     print(f"  R (Feb 2026):   {FEB_BASELINE_R:.4f}")
     print(f"  Drift:          {drift:.4f} {'⚠ DRIFTED' if drifted else '✓ stable'}")
@@ -92,9 +91,9 @@ def main() -> None:
 
     if drifted:
         print(f"\n  ⚠ Backend drifted {drift:.4f} (> {DRIFT_THRESHOLD})")
-        print(f"  All subsequent March results should note calibration shift.")
+        print("  All subsequent March results should note calibration shift.")
     else:
-        print(f"\n  ✓ Backend stable. March experiments can proceed with Feb baselines.")
+        print("\n  ✓ Backend stable. March experiments can proceed with Feb baselines.")
 
 
 if __name__ == "__main__":
