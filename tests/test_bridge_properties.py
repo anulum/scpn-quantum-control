@@ -21,6 +21,9 @@ from scpn_quantum_control.bridge import (
 )
 from scpn_quantum_control.bridge.sc_to_quantum import bitstream_to_statevector
 
+# Hamiltonian construction at n=6 regularly exceeds 200ms default
+_DEADLINE = 2000
+
 # --- probability <-> angle roundtrip ---
 
 
@@ -55,7 +58,7 @@ def test_probability_to_angle_clamps(p: float):
 
 
 @given(p=st.floats(min_value=0.0, max_value=1.0))
-@settings(max_examples=50)
+@settings(max_examples=50, deadline=_DEADLINE)
 def test_bitstream_statevector_normalized(p: float):
     bits = np.array([1] * int(p * 100) + [0] * int((1 - p) * 100), dtype=np.uint8)
     if len(bits) == 0:
@@ -107,7 +110,7 @@ def test_hamiltonian_hermitian(n: int):
 
 
 @given(n=st.integers(min_value=2, max_value=6))
-@settings(max_examples=20)
+@settings(max_examples=20, deadline=_DEADLINE)
 def test_hamiltonian_qubit_count(n: int):
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
@@ -116,7 +119,7 @@ def test_hamiltonian_qubit_count(n: int):
 
 
 @given(n=st.integers(min_value=2, max_value=6))
-@settings(max_examples=20)
+@settings(max_examples=20, deadline=_DEADLINE)
 def test_hamiltonian_real_eigenvalues(n: int):
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
@@ -132,7 +135,7 @@ def test_hamiltonian_real_eigenvalues(n: int):
 
 
 @given(n=st.integers(min_value=2, max_value=6), reps=st.integers(min_value=1, max_value=3))
-@settings(max_examples=20)
+@settings(max_examples=20, deadline=_DEADLINE)
 def test_ansatz_qubit_count(n: int, reps: int):
     K = build_knm_paper27(L=n)
     qc = knm_to_ansatz(K, reps=reps)
@@ -140,7 +143,7 @@ def test_ansatz_qubit_count(n: int, reps: int):
 
 
 @given(n=st.integers(min_value=2, max_value=6), reps=st.integers(min_value=1, max_value=3))
-@settings(max_examples=20)
+@settings(max_examples=20, deadline=_DEADLINE)
 def test_ansatz_param_count(n: int, reps: int):
     K = build_knm_paper27(L=n)
     qc = knm_to_ansatz(K, reps=reps)
