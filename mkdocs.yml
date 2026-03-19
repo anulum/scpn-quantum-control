@@ -49,6 +49,7 @@ nav:
       - Orchestrator Integration: orchestrator_integration.md
   - API Reference:
       - Full Reference: api.md
+      - Auto-Generated: autodoc.md
       - Identity API: identity_api.md
       - Mitigation API: mitigation_api.md
       - Bridges API: bridges_api.md
@@ -79,3 +80,10 @@ extra_javascript:
 
 plugins:
   - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: false
+            show_root_heading: true
+            members_order: source
