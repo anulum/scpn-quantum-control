@@ -83,13 +83,18 @@ class HardwareRunner:
         backend_name: str | None = None,
         use_simulator: bool = False,
         optimization_level: int = 2,
-        resilience_level: int = 1,
+        resilience_level: int = 2,
         use_fractional_gates: bool = True,
         results_dir: str = "results",
         noise_model=None,
     ):
         """Configure runner. Call connect() before submitting jobs.
 
+        resilience_level: IBM Runtime error mitigation level.
+            0 = no mitigation
+            1 = TREX (readout error mitigation)
+            2 = PEA (probabilistic error amplification + noise learning + extrapolation)
+            Default changed to 2 (PEA) for better accuracy on Heron r2+.
         use_fractional_gates: Enable native RZZ on Heron r2+ (50-68% depth reduction).
             Requires Qiskit >= 1.3 and a backend that supports fractional gates.
             Falls back gracefully if the backend does not support them.
