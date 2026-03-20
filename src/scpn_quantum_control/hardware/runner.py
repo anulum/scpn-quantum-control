@@ -84,10 +84,16 @@ class HardwareRunner:
         use_simulator: bool = False,
         optimization_level: int = 2,
         resilience_level: int = 1,
+        use_fractional_gates: bool = True,
         results_dir: str = "results",
         noise_model=None,
     ):
-        """Configure runner. Call connect() before submitting jobs."""
+        """Configure runner. Call connect() before submitting jobs.
+
+        use_fractional_gates: Enable native RZZ on Heron r2+ (50-68% depth reduction).
+            Requires Qiskit >= 1.3 and a backend that supports fractional gates.
+            Falls back gracefully if the backend does not support them.
+        """
         self.token = token
         self.channel = channel
         self.instance = instance or self.DEFAULT_INSTANCE
@@ -95,6 +101,7 @@ class HardwareRunner:
         self.use_simulator = use_simulator
         self.optimization_level = optimization_level
         self.resilience_level = resilience_level
+        self.use_fractional_gates = use_fractional_gates
         self.results_dir = Path(results_dir)
         self.results_dir.mkdir(parents=True, exist_ok=True)
         self._noise_model = noise_model
@@ -143,9 +150,12 @@ class HardwareRunner:
             self._backend = AerSimulator(noise_model=self._noise_model)
         else:
             self._backend = AerSimulator()
+        basis = ["ecr", "id", "rz", "sx", "x"]
+        if self.use_fractional_gates:
+            basis.extend(["rx", "rzz"])
         self._pm = generate_preset_pass_manager(
             optimization_level=self.optimization_level,
-            basis_gates=["ecr", "id", "rz", "sx", "x"],
+            basis_gates=basis,
         )
         noisy_tag = ", noisy" if self._noise_model is not None else ""
         print(f"Connected: AerSimulator (local{noisy_tag})")
