@@ -12,6 +12,16 @@ from .bkt_analysis import (
     scan_synchronization_transition,
 )
 from .dynamical_lie_algebra import DLAResult, compute_dla
+from .phase_diagram import (
+    PhaseBoundary,
+    PhaseDiagramResult,
+    compute_phase_diagram,
+    critical_coupling_finite_graph,
+    critical_coupling_mean_field,
+    decoherence_temperature,
+    effective_temperature,
+    order_parameter_steady_state,
+)
 from .qfi import QFIResult, compute_qfi, qfi_gap_tradeoff
 
 __all__ = [
@@ -23,6 +33,14 @@ __all__ = [
     "scan_synchronization_transition",
     "DLAResult",
     "compute_dla",
+    "PhaseBoundary",
+    "PhaseDiagramResult",
+    "compute_phase_diagram",
+    "critical_coupling_finite_graph",
+    "critical_coupling_mean_field",
+    "decoherence_temperature",
+    "effective_temperature",
+    "order_parameter_steady_state",
     "QFIResult",
     "compute_qfi",
     "qfi_gap_tradeoff",
