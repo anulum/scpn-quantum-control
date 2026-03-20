@@ -15,6 +15,12 @@ from .coherence_budget import coherence_budget, fidelity_at_depth
 from .entanglement_witness import chsh_from_statevector, disposition_entanglement_map
 from .ground_state import IdentityAttractor
 from .identity_key import identity_fingerprint, verify_identity
+from .robustness import (
+    RobustnessCertificate,
+    compute_robustness_certificate,
+    gap_vs_perturbation_scan,
+    perturbation_fidelity,
+)
 
 __all__ = [
     "IdentityAttractor",
@@ -27,4 +33,8 @@ __all__ = [
     "ARCANE_SAPIENCE_SPEC",
     "build_identity_attractor",
     "solve_identity",
+    "RobustnessCertificate",
+    "compute_robustness_certificate",
+    "perturbation_fidelity",
+    "gap_vs_perturbation_scan",
 ]
