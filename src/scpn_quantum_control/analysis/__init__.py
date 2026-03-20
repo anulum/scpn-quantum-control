@@ -12,6 +12,11 @@ from .bkt_analysis import (
     scan_synchronization_transition,
 )
 from .dynamical_lie_algebra import DLAResult, compute_dla
+from .entanglement_spectrum import (
+    EntanglementResult,
+    entanglement_analysis,
+    entropy_vs_coupling_scan,
+)
 from .phase_diagram import (
     PhaseBoundary,
     PhaseDiagramResult,
@@ -45,6 +50,9 @@ __all__ = [
     "QFIResult",
     "compute_qfi",
     "qfi_gap_tradeoff",
+    "EntanglementResult",
+    "entanglement_analysis",
+    "entropy_vs_coupling_scan",
     "PhiResult",
     "compute_quantum_phi",
     "phi_vs_coupling_scan",
