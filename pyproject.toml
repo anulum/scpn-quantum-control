@@ -34,7 +34,7 @@ keywords = [
     "qiskit",
 ]
 dependencies = [
-    "qiskit>=1.0.0,<2.0",
+    "qiskit>=1.0.0,<2.0",  # Qiskit >=2.2 has PauliEvolutionGate bug (GH #15476)
     "qiskit-aer>=0.14.0,<1.0",
     "numpy>=1.24,<3.0",
     "scipy>=1.10,<2.0",
