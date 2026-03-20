@@ -4,5 +4,6 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 from .dynamical_lie_algebra import DLAResult, compute_dla
+from .qfi import QFIResult, compute_qfi, qfi_gap_tradeoff
 
-__all__ = ["DLAResult", "compute_dla"]
+__all__ = ["DLAResult", "compute_dla", "QFIResult", "compute_qfi", "qfi_gap_tradeoff"]
