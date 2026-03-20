@@ -23,6 +23,7 @@ from .phase_diagram import (
     order_parameter_steady_state,
 )
 from .qfi import QFIResult, compute_qfi, qfi_gap_tradeoff
+from .quantum_phi import PhiResult, compute_quantum_phi, phi_vs_coupling_scan, von_neumann_entropy
 
 __all__ = [
     "BKTResult",
@@ -44,4 +45,8 @@ __all__ = [
     "QFIResult",
     "compute_qfi",
     "qfi_gap_tradeoff",
+    "PhiResult",
+    "compute_quantum_phi",
+    "phi_vs_coupling_scan",
+    "von_neumann_entropy",
 ]
