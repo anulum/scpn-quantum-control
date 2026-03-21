@@ -17,6 +17,7 @@ from .entanglement_spectrum import (
     entanglement_analysis,
     entropy_vs_coupling_scan,
 )
+from .koopman import KoopmanResult, koopman_analysis, koopman_to_hamiltonian
 from .phase_diagram import (
     PhaseBoundary,
     PhaseDiagramResult,
@@ -50,6 +51,9 @@ __all__ = [
     "QFIResult",
     "compute_qfi",
     "qfi_gap_tradeoff",
+    "KoopmanResult",
+    "koopman_analysis",
+    "koopman_to_hamiltonian",
     "EntanglementResult",
     "entanglement_analysis",
     "entropy_vs_coupling_scan",
