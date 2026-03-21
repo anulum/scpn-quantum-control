@@ -5,9 +5,13 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 """U(1) gauge theory observables for the Kuramoto-XY quantum model."""
 
+from .vortex_detector import VortexResult, measure_vortex_density, vortex_density_vs_coupling
 from .wilson_loop import WilsonLoopResult, compute_wilson_loops, wilson_loop_expectation
 
 __all__ = [
+    "VortexResult",
+    "measure_vortex_density",
+    "vortex_density_vs_coupling",
     "WilsonLoopResult",
     "compute_wilson_loops",
     "wilson_loop_expectation",
