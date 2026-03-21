@@ -6,9 +6,12 @@
 """SSGF quantum extensions: gradient, cost, outer cycle."""
 
 from .quantum_gradient import QuantumGradientResult, compute_quantum_gradient, quantum_cost
+from .quantum_outer_cycle import OuterCycleResult, quantum_outer_cycle
 
 __all__ = [
     "QuantumGradientResult",
     "compute_quantum_gradient",
     "quantum_cost",
+    "OuterCycleResult",
+    "quantum_outer_cycle",
 ]
