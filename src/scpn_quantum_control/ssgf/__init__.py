@@ -5,10 +5,13 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 """SSGF quantum extensions: gradient, cost, outer cycle."""
 
+from .quantum_costs import QuantumCosts, compute_quantum_costs
 from .quantum_gradient import QuantumGradientResult, compute_quantum_gradient, quantum_cost
 from .quantum_outer_cycle import OuterCycleResult, quantum_outer_cycle
 
 __all__ = [
+    "QuantumCosts",
+    "compute_quantum_costs",
     "QuantumGradientResult",
     "compute_quantum_gradient",
     "quantum_cost",
