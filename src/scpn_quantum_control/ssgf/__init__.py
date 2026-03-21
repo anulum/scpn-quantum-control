@@ -8,6 +8,7 @@
 from .quantum_costs import QuantumCosts, compute_quantum_costs
 from .quantum_gradient import QuantumGradientResult, compute_quantum_gradient, quantum_cost
 from .quantum_outer_cycle import OuterCycleResult, quantum_outer_cycle
+from .quantum_spectral import SpectralBridgeResult, spectral_bridge_analysis
 
 __all__ = [
     "QuantumCosts",
@@ -17,4 +18,6 @@ __all__ = [
     "quantum_cost",
     "OuterCycleResult",
     "quantum_outer_cycle",
+    "SpectralBridgeResult",
+    "spectral_bridge_analysis",
 ]
