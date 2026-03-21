@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+"""PGBO quantum extensions: phase-geometry bridge."""
+
+from .quantum_bridge import PGBOResult, compute_pgbo_tensor
+
+__all__ = ["PGBOResult", "compute_pgbo_tensor"]
