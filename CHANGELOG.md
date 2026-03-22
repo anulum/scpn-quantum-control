@@ -5,7 +5,69 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-### Added
+### Added (March 20-22 marathon: 60 commits, 56 new modules)
+
+- `analysis/` subpackage expanded to 14 modules:
+  - `bkt_analysis`: BKT phase transition (Fiedler, T_BKT, p_h1 prediction)
+  - `bkt_universals`: 10 candidate expressions for p_h1 = 0.72
+  - `p_h1_derivation`: A_HP × sqrt(2/pi) = 0.717, Gap 3 closed (0.5%)
+  - `phase_diagram`: K_c vs T_eff synchronisation boundary
+  - `dynamical_lie_algebra`: DLA computation (126/255 at N=4)
+  - `qfi`: Quantum Fisher Information for parameter estimation
+  - `quantum_phi`: IIT integrated information from density matrix
+  - `entanglement_spectrum`: half-chain entropy, CFT central charge
+  - `koopman`: Koopman linearisation for nonlinear Kuramoto (BQP argument)
+  - `otoc`: Out-of-time-order correlator for quantum chaos
+  - `shadow_tomography`: classical shadow estimation (O(log M) shots)
+  - `hamiltonian_learning`: recover K_nm from measurement data
+  - `enaqt`: environment-assisted quantum transport optimisation
+  - `vortex_binding`: Kosterlitz RG flow, logarithmic pair energy
+  - `h1_persistence`: vortex density scan at BKT transition
+- `gauge/` subpackage (5 modules — NEW):
+  - `wilson_loop`: U(1) Wilson loop measurement
+  - `vortex_detector`: BKT vortex density order parameter
+  - `cft_analysis`: CFT central charge extraction at K_c
+  - `universality`: BKT universality class check (eta, Nelson-Kosterlitz)
+  - `confinement`: string tension, confinement-deconfinement mapping
+- `ssgf/` subpackage (4 modules — NEW):
+  - `quantum_gradient`: dC_quantum/dz via finite differences
+  - `quantum_costs`: C_micro, C4_tcbo, C_pgbo quantum cost terms
+  - `quantum_outer_cycle`: variational z descent with quantum feedback
+  - `quantum_spectral`: Fiedler value via QPE resource estimation
+- `applications/` subpackage expanded to 10 modules:
+  - `fmo_benchmark`: FMO photosynthetic complex (7 chromophores)
+  - `power_grid`: IEEE 5-bus power grid synchronisation
+  - `josephson_array`: JJA/transmon self-simulation (E_J/E_C=60)
+  - `eeg_benchmark`: 8-channel alpha-band PLV functional connectivity
+  - `iter_benchmark`: 8 MHD mode coupling (NTM/RWM/kink/ELM)
+  - `cross_domain`: summary of all 5 physical system benchmarks
+  - `quantum_kernel`: K_nm-informed feature encoding for classification
+  - `quantum_reservoir`: Pauli feature extraction, ridge regression readout
+  - `disruption_classifier`: quantum kernel classifier for plasma stability
+  - `quantum_evs`: quantum-enhanced EVS for CCW consciousness detection
+- `phase/` 4 new algorithms:
+  - `adapt_vqe`: gradient-driven operator selection, barren-plateau-free
+  - `avqds`: McLachlan variational dynamics, circuit depth independent of time
+  - `qsvt_evolution`: QSVT resource estimation (260x speedup vs Trotter-1)
+  - `varqite`: imaginary-time ground state, guaranteed convergence
+- `tcbo/quantum_observer`: p_h1, TEE, string order, Betti proxies
+- `pgbo/quantum_bridge`: quantum geometric tensor, Berry curvature
+- `l16/quantum_director`: Loschmidt echo, stability score, action decision
+- `bridge/snn_backward`: parameter-shift gradient through quantum layer
+- `bridge/ssgf_w_adapter`: correlator-weighted geometry W update
+- `bridge/orchestrator_feedback`: advance/hold/rollback from quantum state
+- `identity/robustness`: adiabatic robustness certificate (gap → perturbation bound)
+- `qec/error_budget`: 3-channel Trotter+gate+logical error allocation
+- `benchmarks/mps_baseline`: bond dimension, memory, advantage threshold
+- `benchmarks/gpu_baseline`: A100 FLOPS, GPU vs QPU crossover
+- `benchmarks/appqsim_protocol`: application-oriented fidelity metrics
+- `hardware/gpu_accel`: cupy opt-in GPU offload for eigvalsh, expm, matmul
+- `hardware/circuit_cutting`: partition optimiser for 32-64 oscillators
+- `hardware/qasm_export`: OpenQASM 3.0 circuit export
+- `hardware/qcvv`: state fidelity, mirror circuit, XEB certification
+- `GAP_CLOSURE_STATUS.md`: honest assessment of all three gaps
+
+### Previously added
 
 - `identity/` subpackage: quantitative identity continuity analysis
   - `IdentityAttractor`: VQE-based attractor basin + robustness gap
