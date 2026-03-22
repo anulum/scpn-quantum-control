@@ -125,9 +125,15 @@ def classical_exact_diag(
         eigenvalues = eigenvalues[idx]
         eigenvectors = eigenvectors[:, idx]
     else:
+        from .gpu_accel import eigh as gpu_eigh
+        from .gpu_accel import is_gpu_available
+
         raw = H_op.to_matrix()
         H_mat = raw.toarray() if hasattr(raw, "toarray") else np.array(raw)
-        eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
+        if is_gpu_available() and H_mat.shape[0] >= 64:
+            eigenvalues, eigenvectors = gpu_eigh(H_mat)
+        else:
+            eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
 
     return {
         "eigenvalues": eigenvalues,
