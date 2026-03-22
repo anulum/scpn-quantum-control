@@ -39,6 +39,7 @@ _PYTEST_BASE = [
     "--tb=short",
     "-q",
     "--ignore=tests/test_hardware_runner.py",
+    "--ignore=tests/test_dynamical_lie_algebra.py",  # DLA: 27 min/test, skip for pre-push
 ]
 
 _PYTEST_COV = _PYTEST_BASE + [
