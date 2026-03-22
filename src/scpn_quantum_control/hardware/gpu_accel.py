@@ -31,7 +31,7 @@ _cp = None
 # cupy import can hang on misconfigured CUDA — opt-in only.
 if _os.environ.get("SCPN_GPU_ENABLE", "0") == "1":
     try:
-        import cupy as _cp_module  # type: ignore[import-untyped]
+        import cupy as _cp_module  # type: ignore[import-untyped,import-not-found]
 
         if _cp_module.cuda.runtime.getDeviceCount() > 0:
             _cp = _cp_module
