@@ -23,4 +23,5 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install mkdocs-material "mkdocstrings[python]>=0.24,<1.0" pymdown-extensions
+      - run: pip install --no-deps -e .
       - run: mkdocs gh-deploy --force
