@@ -5,6 +5,8 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 """NISQ quantum simulation of coupled Kuramoto oscillator networks via XY Hamiltonian mapping."""
 
+# Subpackage-level access for new modules
+from . import analysis, applications, gauge, l16, pgbo, ssgf, tcbo
 from .benchmarks.quantum_advantage import (
     AdvantageResult,
     classical_benchmark,
@@ -153,4 +155,11 @@ __all__ = [
     "quantum_benchmark",
     "estimate_crossover",
     "run_scaling_benchmark",
+    "analysis",
+    "applications",
+    "gauge",
+    "ssgf",
+    "tcbo",
+    "pgbo",
+    "l16",
 ]
