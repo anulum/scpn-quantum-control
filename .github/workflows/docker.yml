@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+
+name: Docker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Dockerfile"
+      - "pyproject.toml"
+      - "src/**"
+  workflow_dispatch:
+
+jobs:
+  docker-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+
+      - name: Build Docker image
+        run: docker build -t scpn-quantum-control:test .
+
+      - name: Run tests in Docker
+        run: docker run --rm scpn-quantum-control:test
+
+      - name: Verify import
+        run: docker run --rm scpn-quantum-control:test python -c "import scpn_quantum_control; print(f'v{scpn_quantum_control.__version__}')"
