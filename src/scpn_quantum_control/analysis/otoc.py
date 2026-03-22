@@ -38,9 +38,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
-from scipy.linalg import expm
 
 from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+from ..hardware.gpu_accel import expm
 
 
 @dataclass

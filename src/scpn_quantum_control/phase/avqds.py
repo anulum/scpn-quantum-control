@@ -115,7 +115,7 @@ def avqds_simulate(
         ansatz_reps: ansatz circuit repetitions
         seed: random seed for initial parameters
     """
-    from scipy.linalg import expm
+    from ..hardware.gpu_accel import expm
 
     H_op = knm_to_hamiltonian(K, omega)
     H_mat = H_op.to_matrix()
