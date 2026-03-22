@@ -222,6 +222,121 @@ fn kuramoto_trajectory<'py>(
     )
 }
 
+/// DLA: compute dynamical Lie algebra dimension via commutator closure.
+///
+/// Takes a flat array of generator matrices (each dim×dim, row-major)
+/// and computes the closure under commutation. Returns the DLA dimension.
+///
+/// This is the hot path that takes 27 min in Python for N=4. In Rust
+/// with vectorised matrix ops, target is <30s.
+#[pyfunction]
+fn dla_dimension(
+    generators_flat: PyReadonlyArray1<'_, f64>,
+    dim: usize,
+    n_generators: usize,
+    max_iterations: usize,
+    max_dimension: usize,
+    tol: f64,
+) -> usize {
+    let data = generators_flat.as_slice().unwrap();
+    let mat_size = dim * dim;
+
+    // Parse generators into Vec<Vec<f64>> (row-major dense matrices)
+    let mut basis: Vec<Vec<f64>> = Vec::new();
+    for g in 0..n_generators {
+        let start = g * mat_size;
+        let mat: Vec<f64> = data[start..start + mat_size].to_vec();
+        if is_independent_fast(&mat, &basis, dim, tol) {
+            basis.push(mat);
+        }
+    }
+
+    // Commutator closure
+    for _iter in 0..max_iterations {
+        let n_basis = basis.len();
+        if n_basis >= max_dimension {
+            break;
+        }
+
+        let mut new_ops: Vec<Vec<f64>> = Vec::new();
+
+        for i in 0..n_basis {
+            for j in (i + 1)..n_basis {
+                let comm = commutator_dense(&basis[i], &basis[j], dim);
+                let norm: f64 = comm.iter().map(|x| x * x).sum::<f64>().sqrt();
+                if norm < tol {
+                    continue;
+                }
+
+                // Check independence against basis + new_ops
+                let mut combined = basis.clone();
+                combined.extend(new_ops.iter().cloned());
+                if is_independent_fast(&comm, &combined, dim, tol) {
+                    new_ops.push(comm);
+                    if basis.len() + new_ops.len() >= max_dimension {
+                        break;
+                    }
+                }
+            }
+            if basis.len() + new_ops.len() >= max_dimension {
+                break;
+            }
+        }
+
+        if new_ops.is_empty() {
+            break;
+        }
+        basis.extend(new_ops);
+    }
+
+    basis.len()
+}
+
+/// Dense matrix commutator [A, B] = AB - BA (row-major)
+fn commutator_dense(a: &[f64], b: &[f64], dim: usize) -> Vec<f64> {
+    let mut result = vec![0.0; dim * dim];
+    for i in 0..dim {
+        for j in 0..dim {
+            let mut ab = 0.0;
+            let mut ba = 0.0;
+            for k in 0..dim {
+                ab += a[i * dim + k] * b[k * dim + j];
+                ba += b[i * dim + k] * a[k * dim + j];
+            }
+            result[i * dim + j] = ab - ba;
+        }
+    }
+    result
+}
+
+/// Fast linear independence check via Gram-Schmidt projection.
+fn is_independent_fast(new_op: &[f64], basis: &[Vec<f64>], _dim: usize, tol: f64) -> bool {
+    let new_norm: f64 = new_op.iter().map(|x| x * x).sum::<f64>().sqrt();
+    if new_norm < tol {
+        return false;
+    }
+    if basis.is_empty() {
+        return true;
+    }
+
+    // Project out basis components
+    let mut residual: Vec<f64> = new_op.to_vec();
+    for b in basis {
+        let b_norm_sq: f64 = b.iter().map(|x| x * x).sum();
+        if b_norm_sq < tol * tol {
+            continue;
+        }
+        let dot: f64 = residual.iter().zip(b.iter()).map(|(r, bi)| r * bi).sum();
+        let coeff = dot / b_norm_sq;
+        for (r, bi) in residual.iter_mut().zip(b.iter()) {
+            *r -= coeff * bi;
+        }
+    }
+
+    let res_norm: f64 = residual.iter().map(|x| x * x).sum::<f64>().sqrt();
+    res_norm > tol
+}
+
 #[pymodule]
 fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(pec_coefficients, m)?)?;
@@ -230,5 +345,6 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(kuramoto_euler, m)?)?;
     m.add_function(wrap_pyfunction!(order_parameter, m)?)?;
     m.add_function(wrap_pyfunction!(kuramoto_trajectory, m)?)?;
+    m.add_function(wrap_pyfunction!(dla_dimension, m)?)?;
     Ok(())
 }
