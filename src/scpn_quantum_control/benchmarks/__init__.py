@@ -5,6 +5,7 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 """Quantum advantage and scaling benchmarks."""
 
+from .mps_baseline import MPSBaselineResult, mps_baseline_comparison
 from .quantum_advantage import (
     AdvantageResult,
     classical_benchmark,
@@ -14,6 +15,8 @@ from .quantum_advantage import (
 )
 
 __all__ = [
+    "MPSBaselineResult",
+    "mps_baseline_comparison",
     "AdvantageResult",
     "classical_benchmark",
     "estimate_crossover",
