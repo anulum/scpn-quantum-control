@@ -21,10 +21,12 @@ RUN pip install --no-cache-dir ".[dev]"
 
 COPY tests/ tests/
 COPY examples/ examples/
+COPY tools/ tools/
 
 USER sqc
 
 HEALTHCHECK --interval=60s --timeout=10s --start-period=10s --retries=3 \
     CMD python -c "import scpn_quantum_control; print('OK')"
 
-CMD ["pytest", "tests/", "-v", "--tb=short"]
+# Skip DLA (27 min/test) and hardware runner (needs IBM creds) by default
+CMD ["pytest", "tests/", "-v", "--tb=short", "--ignore=tests/test_dynamical_lie_algebra.py", "--ignore=tests/test_hardware_runner.py"]

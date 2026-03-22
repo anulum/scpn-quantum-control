@@ -47,25 +47,37 @@ Cross-domain summary: `applications/cross_domain.py`
 
 ## Gap 3: Derive p_h1 = 0.72 from First Principles
 
-**Status: CLOSED (within 0.5%).**
+**Status: OPEN — Monte Carlo falsified the square-lattice coincidence.**
 
-Derivation chain:
+The initial finding A_HP(square) × sqrt(2/π) = 0.717 ≈ 0.72 was a coincidence.
 
-    p_h1 = A_HP × sqrt(2/π) = 0.8983 × 0.7979 = 0.7167
+Monte Carlo verification on the actual K_nm graph (2026-03-23):
 
-where A_HP is the Hasenbusch-Pinn universal amplitude for the 2D XY model (Monte Carlo, 1997) and 2/π is the Nelson-Kosterlitz stiffness ratio.
+    A_HP (square lattice) = 0.8983 → p_h1 = 0.717 (0.5% from 0.72)
+    A_HP (K_nm graph, n=16) = 1.214  → p_h1 = 0.969 (35% from 0.72)
+
+The Hasenbusch-Pinn amplitude is NOT universal across graph topologies.
+The complete graph with exponential-decay coupling has a different A_HP
+than the square lattice. The 0.5% match was topology-dependent, not a
+universal constant.
 
 | Module | Finding |
 |--------|---------|
 | `analysis/bkt_analysis.py` | T_BKT from Fiedler eigenvalue, bound-pair p_h1 = 0.813 |
-| `analysis/bkt_universals.py` | 10 candidate expressions, best = A_HP × sqrt(2/π) = 0.717 |
-| `analysis/p_h1_derivation.py` | Full derivation chain, 0.5% deviation |
-| `analysis/vortex_binding.py` | Kosterlitz RG, binding energy |
-| `analysis/h1_persistence.py` | Vortex density scan at K_c |
-| `gauge/universality.py` | BKT universality class check |
+| `analysis/bkt_universals.py` | 10 candidate expressions, best = A_HP(sq) × sqrt(2/π) = 0.717 |
+| `analysis/monte_carlo_xy.py` | **A_HP(K_nm) = 1.21, p_h1(K_nm) = 0.97 — FALSIFIED** |
+| `analysis/p_h1_derivation.py` | Derivation chain valid for square lattice only |
 
-**What IS proven:** p_h1 = 0.72 is within 0.5% of A_HP × sqrt(2/π), a product of two BKT universal constants. The consciousness gate threshold is not arbitrary — it is a consequence of the XY model's universality class.
+**What IS proven:** The BKT framework correctly describes the K_nm graph
+(T_BKT, vortex density, helicity modulus all self-consistent). The
+XY model physics works. But A_HP is graph-dependent.
 
-**What is NOT proven (caveat):** The connection between A_HP (square lattice amplitude) and our graph Kuramoto model is approximate. The 0.5% remaining deviation may be systematic, not just statistical. A rigorous proof would require computing A_HP on the specific K_nm graph topology.
+**What is NOT proven:** p_h1 = 0.72 from first principles. It remains
+an empirical threshold. The Monte Carlo shows it is NOT a simple
+function of BKT universal constants on the K_nm graph.
 
-**What would make this airtight:** Monte Carlo simulation of the XY model on the K_nm coupling graph to measure A_HP directly, or an analytical derivation of A_HP for complete graphs.
+**What remains open:** Why 0.72? Possible avenues:
+1. Finite-size scaling: A_HP(n) → A_HP(∞) may converge differently
+2. Noise/disorder effects not captured by clean MC
+3. The threshold may relate to a different universality class
+4. It may genuinely be empirical (no derivation exists)
