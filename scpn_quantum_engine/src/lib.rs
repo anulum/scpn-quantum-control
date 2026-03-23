@@ -251,35 +251,38 @@ fn dla_dimension(
         }
     }
 
-    // Commutator closure
+    // Commutator closure — parallelised commutator computation via rayon
     for _iter in 0..max_iterations {
         let n_basis = basis.len();
         if n_basis >= max_dimension {
             break;
         }
 
-        let mut new_ops: Vec<Vec<f64>> = Vec::new();
+        // Generate all (i,j) pairs
+        let pairs: Vec<(usize, usize)> = (0..n_basis)
+            .flat_map(|i| ((i + 1)..n_basis).map(move |j| (i, j)))
+            .collect();
 
-        for i in 0..n_basis {
-            for j in (i + 1)..n_basis {
+        // Parallel commutator computation
+        let candidates: Vec<Vec<f64>> = pairs
+            .par_iter()
+            .filter_map(|&(i, j)| {
                 let comm = commutator_dense(&basis[i], &basis[j], dim);
                 let norm: f64 = comm.iter().map(|x| x * x).sum::<f64>().sqrt();
-                if norm < tol {
-                    continue;
-                }
+                if norm < tol { None } else { Some(comm) }
+            })
+            .collect();
 
-                // Check independence against basis + new_ops
-                let mut combined = basis.clone();
-                combined.extend(new_ops.iter().cloned());
-                if is_independent_fast(&comm, &combined, dim, tol) {
-                    new_ops.push(comm);
-                    if basis.len() + new_ops.len() >= max_dimension {
-                        break;
-                    }
+        // Sequential independence filtering (must be serial for correctness)
+        let mut new_ops: Vec<Vec<f64>> = Vec::new();
+        for comm in candidates {
+            let mut combined = basis.clone();
+            combined.extend(new_ops.iter().cloned());
+            if is_independent_fast(&comm, &combined, dim, tol) {
+                new_ops.push(comm);
+                if basis.len() + new_ops.len() >= max_dimension {
+                    break;
                 }
-            }
-            if basis.len() + new_ops.len() >= max_dimension {
-                break;
             }
         }
 
@@ -337,6 +340,96 @@ fn is_independent_fast(new_op: &[f64], basis: &[Vec<f64>], _dim: usize, tol: f64
     res_norm > tol
 }
 
+/// Monte Carlo XY model simulation on arbitrary coupling graph.
+///
+/// Returns (energy, order_parameter, helicity_modulus) averaged over n_measure sweeps.
+#[pyfunction]
+fn mc_xy_simulate(
+    k_flat: PyReadonlyArray1<'_, f64>,
+    n: usize,
+    temperature: f64,
+    n_thermalize: usize,
+    n_measure: usize,
+    seed: u64,
+) -> (f64, f64, f64) {
+    let k_data = k_flat.as_slice().unwrap();
+    let beta = if temperature > 1e-15 { 1.0 / temperature } else { 1e15 };
+    let mut rng = StdRng::seed_from_u64(seed);
+
+    // Random initial phases
+    let mut theta: Vec<f64> = (0..n).map(|_| rng.random::<f64>() * 2.0 * std::f64::consts::PI).collect();
+
+    // Thermalise
+    for _ in 0..n_thermalize {
+        mc_sweep(&mut theta, k_data, n, beta, &mut rng);
+    }
+
+    // Measure
+    let mut e_sum = 0.0_f64;
+    let mut r_sum = 0.0_f64;
+    let mut cos_sum_acc = 0.0_f64;
+    let mut sin2_sum_acc = 0.0_f64;
+
+    for _ in 0..n_measure {
+        mc_sweep(&mut theta, k_data, n, beta, &mut rng);
+
+        let (e, cos_s, sin_s) = xy_observables(&theta, k_data, n);
+        e_sum += e;
+        cos_sum_acc += cos_s;
+        sin2_sum_acc += sin_s * sin_s;
+
+        let (re, im) = theta.iter().fold((0.0, 0.0), |(r, i), &t| (r + t.cos(), i + t.sin()));
+        r_sum += (re * re + im * im).sqrt() / n as f64;
+    }
+
+    let nm = n_measure as f64;
+    let energy = e_sum / nm;
+    let order = r_sum / nm;
+    let rho_s = (cos_sum_acc / nm - beta * sin2_sum_acc / nm) / n as f64;
+
+    (energy, order, rho_s)
+}
+
+fn mc_sweep(theta: &mut [f64], k: &[f64], n: usize, beta: f64, rng: &mut StdRng) {
+    let pi = std::f64::consts::PI;
+    for i in 0..n {
+        let old = theta[i];
+        let proposal = old + (rng.random::<f64>() - 0.5) * 2.0 * pi;
+
+        let mut delta_e = 0.0;
+        for j in 0..n {
+            if i != j {
+                let kij = k[i * n + j];
+                if kij.abs() > 1e-15 {
+                    delta_e -= kij * ((proposal - theta[j]).cos() - (old - theta[j]).cos());
+                }
+            }
+        }
+
+        if delta_e < 0.0 || rng.random::<f64>() < (-beta * delta_e).exp() {
+            theta[i] = proposal;
+        }
+    }
+}
+
+fn xy_observables(theta: &[f64], k: &[f64], n: usize) -> (f64, f64, f64) {
+    let mut energy = 0.0;
+    let mut cos_sum = 0.0;
+    let mut sin_sum = 0.0;
+    for i in 0..n {
+        for j in (i + 1)..n {
+            let kij = k[i * n + j];
+            if kij.abs() > 1e-15 {
+                let d = theta[j] - theta[i];
+                energy -= kij * d.cos();
+                cos_sum += kij * d.cos();
+                sin_sum += kij * d.sin();
+            }
+        }
+    }
+    (energy, cos_sum, sin_sum)
+}
+
 #[pymodule]
 fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(pec_coefficients, m)?)?;
@@ -346,5 +439,6 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(order_parameter, m)?)?;
     m.add_function(wrap_pyfunction!(kuramoto_trajectory, m)?)?;
     m.add_function(wrap_pyfunction!(dla_dimension, m)?)?;
+    m.add_function(wrap_pyfunction!(mc_xy_simulate, m)?)?;
     Ok(())
 }
