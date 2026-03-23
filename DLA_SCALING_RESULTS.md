@@ -34,3 +34,31 @@ The DLA result establishes a necessary condition, not a sufficient one.
 
 N=6 dim=64, max DLA = 4095. At the scaling rate, computation would take
 ~8 hours in Rust. Deferred — the N=4,5 trend is clear.
+
+---
+
+# MC Finite-Size Scaling Results
+
+**Date:** 2026-03-23
+**Tool:** Rust MC (scpn_quantum_engine::mc_xy_simulate)
+**Settings:** 10k thermalise, 10k measure, 15 temperatures, 5 seeds per N
+
+## Results
+
+| N | A_HP (mean) | A_HP (std) | p_h1 = A_HP × sqrt(2/pi) |
+|---|-------------|------------|---------------------------|
+| 4 | 1.2115 | 0.0053 | 0.9666 |
+| 8 | 1.2033 | 0.0152 | 0.9601 |
+| 16 | 1.2179 | 0.0004 | 0.9717 |
+| 32 | 1.2154 | 0.0007 | 0.9698 |
+
+**Runtime:** 73 seconds total (Rust MC, ~100x faster than Python).
+
+## Interpretation
+
+A_HP(K_nm) = 1.21 +/- 0.01 is STABLE across all system sizes N=4 to N=32.
+No convergence toward the square-lattice value A_HP = 0.8983.
+
+Gap 3 conclusion: p_h1 = 0.72 CANNOT be derived from BKT universals
+on the K_nm graph. The MC gives p_h1 ~ 0.97 consistently. The value 0.72
+remains empirical with no known first-principles derivation.
