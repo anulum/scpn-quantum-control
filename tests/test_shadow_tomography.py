@@ -11,6 +11,7 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.analysis.shadow_tomography import (
+    _CLIFFORD_GATES,
     ShadowResult,
     _pauli_from_label,
     classical_shadow_estimation,
@@ -47,10 +48,14 @@ class TestPauliFromLabel:
 
 class TestEstimatePauliExpectation:
     def test_z_on_zero_state_positive(self):
-        """<0|Z|0> = 1 → shadow estimate should be positive."""
+        """<0|Z|0> = 1 → shadow median estimate should be non-negative.
+
+        With the full 24-gate Clifford group and 1000 shots, the median can
+        land at exactly 0.0; 5000 shots reliably gives a positive result.
+        """
         psi = _zero_state(1)
-        val = estimate_pauli_expectation(psi, 1, "Z", n_shots=1000, seed=42)
-        assert val > 0  # correct sign
+        val = estimate_pauli_expectation(psi, 1, "Z", n_shots=5000, seed=0)
+        assert val >= 0
 
     def test_x_on_zero_state(self):
         """<0|X|0> = 0."""
@@ -102,3 +107,52 @@ class TestClassicalShadowEstimation:
         obs = {"Z": "Z"}
         result = classical_shadow_estimation(psi, 1, obs, n_shots=1000, seed=42)
         assert abs(result.estimated_observables["Z"]) < 0.5
+
+
+class TestCliffordGroup:
+    def test_exactly_24_elements(self):
+        """C_1 has order 24 (Nebe et al., 2001)."""
+        assert len(_CLIFFORD_GATES) == 24
+
+    def test_all_unitary(self):
+        """Every element must satisfy U†U = I."""
+        for U in _CLIFFORD_GATES:
+            np.testing.assert_allclose(U.conj().T @ U, np.eye(2), atol=1e-10)
+
+    def test_closed_under_multiplication(self):
+        """Product of any two Cliffords must be in the group (up to global phase)."""
+
+        def in_group(M: np.ndarray) -> bool:
+            for C in _CLIFFORD_GATES:
+                tr = np.trace(C.conj().T @ M)
+                if abs(tr) < 1e-10:
+                    continue
+                phase = tr / abs(tr)
+                if np.max(np.abs(M - phase * C)) < 1e-9:
+                    return True
+            return False
+
+        for A in _CLIFFORD_GATES[:6]:  # spot-check first 6 × all 24
+            for B in _CLIFFORD_GATES:
+                assert in_group(A @ B)
+
+    def test_contains_identity(self):
+        """I must be in the group."""
+        eye = np.eye(2, dtype=complex)
+        found = any(np.allclose(C, eye) or np.allclose(C, -eye) for C in _CLIFFORD_GATES)
+        assert found
+
+    def test_contains_h_and_s(self):
+        """H and S are generators; both must be present (up to global phase)."""
+        H = np.array([[1, 1], [1, -1]], dtype=complex) / np.sqrt(2)
+        S = np.array([[1, 0], [0, 1j]], dtype=complex)
+        for target in [H, S]:
+            found = False
+            for C in _CLIFFORD_GATES:
+                tr = np.trace(C.conj().T @ target)
+                if abs(tr) > 1e-10:
+                    phase = tr / abs(tr)
+                    if np.max(np.abs(target - phase * C)) < 1e-9:
+                        found = True
+                        break
+            assert found

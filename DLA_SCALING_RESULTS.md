@@ -33,14 +33,24 @@ The DLA result establishes a necessary condition, not a sufficient one.
 
 The DLA dimension follows DLA(N) = 2^(2N-1) - 2 = (dim(su(2^N)) - 3) / 2.
 
-The missing 2 dimensions are the identity I and the global Z = sum_i Z_i,
-both of which commute with all XY terms. The DLA generates exactly half
-of su(2^N) minus the Cartan subalgebra of the residual U(1) symmetry.
+**Representation-theoretic explanation:**
 
-**This is a novel observation.** The exact formula DLA = 2^(2N-1) - 2 for
-the XY model with generic (non-degenerate) frequencies has not been
-published. It implies the system generates the full algebra of one of
-two irreducible blocks under the Z-parity symmetry.
+DLA = 2 x (2^(2(N-1)) - 1) = dim(su(2^(N-1))) + dim(su(2^(N-1)))
+
+The XY Hamiltonian preserves Z_2 parity (even/odd excitation number).
+The 2^N Hilbert space splits into two sectors of dimension 2^(N-1).
+The DLA generates the FULL algebra within each parity sector (su(2^(N-1)))
+but NO operators connecting the two sectors.
+
+The 2 missing dimensions correspond to: (1) the identity, and (2) the
+parity operator P = prod_i Z_i (which commutes with all XY terms).
+
+**This is a novel observation.** The exact decomposition
+DLA = su(even_parity) + su(odd_parity) for the XY model with generic
+frequencies has not been published. It establishes:
+1. The system generates a maximal subalgebra (exponential dimension)
+2. The Z_2 parity is the ONLY symmetry constraint
+3. Classical simulation requires tracking 2^(N-1) amplitudes per sector
 
 ## Comparison
 

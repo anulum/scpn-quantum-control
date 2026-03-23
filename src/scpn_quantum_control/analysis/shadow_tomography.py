@@ -35,15 +35,39 @@ from dataclasses import dataclass
 
 import numpy as np
 
-# Single-qubit Clifford group (24 elements, represented as 2x2 unitaries)
-_CLIFFORD_GATES = [
-    np.eye(2, dtype=complex),  # I
-    np.array([[0, 1], [1, 0]], dtype=complex),  # X
-    np.array([[0, -1j], [1j, 0]], dtype=complex),  # Y
-    np.array([[1, 0], [0, -1]], dtype=complex),  # Z
-    np.array([[1, 1], [1, -1]], dtype=complex) / np.sqrt(2),  # H
-    np.array([[1, -1j], [-1j, 1]], dtype=complex) / np.sqrt(2),  # S·H
-]
+
+def _build_clifford_group() -> list[np.ndarray]:
+    """Generate all 24 single-qubit Clifford unitaries via BFS on generators H, S.
+
+    Two matrices are considered the same element if they agree up to global phase
+    (Nebe, Rains, Sloane, 2001: the single-qubit Clifford group has order 24).
+    """
+    H = np.array([[1, 1], [1, -1]], dtype=complex) / np.sqrt(2)
+    S = np.array([[1, 0], [0, 1j]], dtype=complex)
+    generators = [H, S]
+    group: list[np.ndarray] = [np.eye(2, dtype=complex)]
+
+    def _same_up_to_phase(A: np.ndarray, B: np.ndarray) -> bool:
+        tr = np.trace(B.conj().T @ A)
+        if abs(tr) < 1e-10:
+            return False
+        phase = tr / abs(tr)
+        return bool(np.max(np.abs(A - phase * B)) < 1e-10)
+
+    queue = [np.eye(2, dtype=complex)]
+    while queue:
+        current = queue.pop(0)
+        for g in generators:
+            candidate = g @ current
+            if not any(_same_up_to_phase(candidate, existing) for existing in group):
+                group.append(candidate)
+                queue.append(candidate)
+
+    return group
+
+
+# Single-qubit Clifford group: all 24 elements generated from H and S.
+_CLIFFORD_GATES: list[np.ndarray] = _build_clifford_group()
 
 
 @dataclass
