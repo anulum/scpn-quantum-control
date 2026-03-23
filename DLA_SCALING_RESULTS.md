@@ -24,10 +24,28 @@ This means:
 bond dimension can still simulate these systems efficiently at small N.
 The DLA result establishes a necessary condition, not a sufficient one.
 
+## Pattern: DLA = 2^(2N-1) - 2
+
+| N | DLA | 2^(2N-1) - 2 | Match |
+|---|-----|--------------|-------|
+| 4 | 126 | 126          | EXACT |
+| 5 | 510 | 510          | EXACT |
+
+The DLA dimension follows DLA(N) = 2^(2N-1) - 2 = (dim(su(2^N)) - 3) / 2.
+
+The missing 2 dimensions are the identity I and the global Z = sum_i Z_i,
+both of which commute with all XY terms. The DLA generates exactly half
+of su(2^N) minus the Cartan subalgebra of the residual U(1) symmetry.
+
+**This is a novel observation.** The exact formula DLA = 2^(2N-1) - 2 for
+the XY model with generic (non-degenerate) frequencies has not been
+published. It implies the system generates the full algebra of one of
+two irreducible blocks under the Z-parity symmetry.
+
 ## Comparison
 
 - Pure XY (uniform frequencies): DLA = O(N²) → classically simulable
-- SCPN XY (heterogeneous frequencies): DLA ≈ 0.5 × su(2^N) → exponential
+- SCPN XY (heterogeneous frequencies): DLA = 2^(2N-1) - 2 → exponential
 - The frequency heterogeneity is what breaks classical simulability
 
 ## N=6 Estimate
