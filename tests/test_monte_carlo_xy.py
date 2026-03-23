@@ -9,8 +9,10 @@ from __future__ import annotations
 
 from scpn_quantum_control.analysis.monte_carlo_xy import (
     AHPResult,
+    FiniteSizeResult,
     MCResult,
     extract_a_hp,
+    finite_size_scaling,
     mc_simulate,
 )
 from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
@@ -71,3 +73,25 @@ class TestExtractAHP:
         print(f"  |p_h1 - 0.72|: {result.deviation_from_072:.4f}")
         print(f"  T_BKT: {result.t_bkt:.6f}")
         assert isinstance(result.a_hp_graph, float)
+
+
+class TestFiniteSizeScaling:
+    def test_returns_result(self):
+        result = finite_size_scaling(
+            n_values=[4, 8], n_seeds=2, n_thermalize=300, n_measure=300, n_temps=6
+        )
+        assert isinstance(result, FiniteSizeResult)
+
+    def test_correct_lengths(self):
+        result = finite_size_scaling(
+            n_values=[4, 8], n_seeds=2, n_thermalize=300, n_measure=300, n_temps=6
+        )
+        assert len(result.a_hp_means) == 2
+        assert len(result.a_hp_stds) == 2
+        assert len(result.p_h1_means) == 2
+
+    def test_a_hp_positive(self):
+        result = finite_size_scaling(
+            n_values=[4], n_seeds=2, n_thermalize=300, n_measure=300, n_temps=6
+        )
+        assert result.a_hp_means[0] > 0
