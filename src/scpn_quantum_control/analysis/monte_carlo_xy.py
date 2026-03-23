@@ -205,3 +205,63 @@ def extract_a_hp(
         helicity_moduli=rho_s_vals,
         order_parameters=r_vals,
     )
+
+
+@dataclass
+class FiniteSizeResult:
+    """Finite-size scaling of A_HP across system sizes."""
+
+    n_values: list[int]
+    a_hp_means: list[float]
+    a_hp_stds: list[float]
+    p_h1_means: list[float]
+    n_seeds: int
+
+
+def finite_size_scaling(
+    n_values: list[int] | None = None,
+    n_seeds: int = 3,
+    n_thermalize: int = 5000,
+    n_measure: int = 5000,
+    n_temps: int = 12,
+    base_seed: int = 42,
+) -> FiniteSizeResult:
+    """Run A_HP extraction at multiple system sizes with error bars.
+
+    For each N, runs n_seeds independent MC chains and reports
+    mean ± std of A_HP. Tests whether A_HP(N) converges as N → ∞.
+    """
+    from ..bridge.knm_hamiltonian import build_knm_paper27
+
+    if n_values is None:
+        n_values = [4, 8, 16]
+
+    nk_sqrt = float(np.sqrt(2.0 / np.pi))
+    a_hp_means: list[float] = []
+    a_hp_stds: list[float] = []
+    p_h1_means: list[float] = []
+
+    for n_osc in n_values:
+        K = build_knm_paper27(L=n_osc)
+        seed_results: list[float] = []
+
+        for s in range(n_seeds):
+            seed = base_seed + s * 1000 + n_osc
+            result = extract_a_hp(
+                K, n_temps=n_temps, n_thermalize=n_thermalize, n_measure=n_measure, seed=seed
+            )
+            seed_results.append(result.a_hp_graph)
+
+        mean_ahp = float(np.mean(seed_results))
+        std_ahp = float(np.std(seed_results))
+        a_hp_means.append(mean_ahp)
+        a_hp_stds.append(std_ahp)
+        p_h1_means.append(mean_ahp * nk_sqrt)
+
+    return FiniteSizeResult(
+        n_values=n_values,
+        a_hp_means=a_hp_means,
+        a_hp_stds=a_hp_stds,
+        p_h1_means=p_h1_means,
+        n_seeds=n_seeds,
+    )
