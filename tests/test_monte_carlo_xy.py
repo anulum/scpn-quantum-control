@@ -75,6 +75,58 @@ class TestExtractAHP:
         assert isinstance(result.a_hp_graph, float)
 
 
+class TestMCPythonFallback:
+    """Force the Python MC path to exercise uncovered lines."""
+
+    def test_python_mc_sweep(self):
+        import numpy as np
+
+        from scpn_quantum_control.analysis.monte_carlo_xy import _mc_sweep
+
+        K = build_knm_paper27(L=4)
+        rng = np.random.default_rng(42)
+        theta = rng.uniform(0, 2 * np.pi, 4)
+        theta_new = _mc_sweep(theta, K, beta=10.0, rng=rng)
+        assert len(theta_new) == 4
+
+    def test_python_mc_full(self):
+        """Run Python path by monkeypatching away the Rust import."""
+        import sys
+
+        from scpn_quantum_control.analysis import monte_carlo_xy as mc_mod
+
+        # Temporarily hide Rust engine
+        hidden = sys.modules.pop("scpn_quantum_engine", None)
+        try:
+            # Force reimport to hit Python path
+            orig_simulate = mc_mod.mc_simulate
+
+            def python_only(K, temperature, n_thermalize=500, n_measure=500, seed=42):
+                # Call with ImportError on Rust
+                import builtins
+
+                real_import = builtins.__import__
+
+                def mock_import(name, *args, **kwargs):
+                    if name == "scpn_quantum_engine":
+                        raise ImportError("mocked")
+                    return real_import(name, *args, **kwargs)
+
+                builtins.__import__ = mock_import
+                try:
+                    result = orig_simulate(K, temperature, n_thermalize, n_measure, seed)
+                finally:
+                    builtins.__import__ = real_import
+                return result
+
+            K = build_knm_paper27(L=4)
+            result = python_only(K, 0.05, 200, 200)
+            assert result.order_parameter > 0
+        finally:
+            if hidden is not None:
+                sys.modules["scpn_quantum_engine"] = hidden
+
+
 class TestFiniteSizeScaling:
     def test_returns_result(self):
         result = finite_size_scaling(
