@@ -72,7 +72,7 @@ class HardwareRunner:
         "SCPN_IBM_INSTANCE",
         "crn:v1:bluemix:public:quantum-computing:us-east:"
         "a/78db885720334fd19191b33a839d0c35:"
-        "eb82d44a-2e21-44bd-9855-f72768138a57::",
+        "841cc36d-0afd-4f96-ada2-8c56e1c443a0::",
     )
 
     def __init__(
