@@ -53,7 +53,6 @@ def classical_kuramoto_reference(
         import scpn_quantum_engine as _engine
 
         times_rs, R_rs = _engine.kuramoto_trajectory(theta0, omega, K, dt, n_steps)
-        # Rebuild theta history step-by-step (still Rust-accelerated)
         theta_history_rs = np.zeros((n_steps + 1, n_osc))
         theta_history_rs[0] = theta0
         for s in range(1, n_steps + 1):
@@ -65,7 +64,7 @@ def classical_kuramoto_reference(
             "theta": theta_history_rs,
             "R": np.asarray(R_rs),
         }
-    except ImportError:
+    except (ImportError, AttributeError):
         pass
 
     times = np.linspace(0, t_max, n_steps + 1)

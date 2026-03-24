@@ -5,6 +5,15 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 from .dd import DDSequence, insert_dd_sequence
 from .pec import PECResult, pauli_twirl_decompose, pec_sample
+from .symmetry_verification import (
+    SymmetryVerificationResult,
+    bitstring_parity,
+    initial_state_parity,
+    parity_postselect,
+    parity_verified_expectation,
+    parity_verified_R,
+    symmetry_expand,
+)
 from .zne import ZNEResult, gate_fold_circuit, zne_extrapolate
 
 __all__ = [
@@ -16,4 +25,11 @@ __all__ = [
     "PECResult",
     "pauli_twirl_decompose",
     "pec_sample",
+    "SymmetryVerificationResult",
+    "bitstring_parity",
+    "initial_state_parity",
+    "parity_postselect",
+    "parity_verified_expectation",
+    "parity_verified_R",
+    "symmetry_expand",
 ]
