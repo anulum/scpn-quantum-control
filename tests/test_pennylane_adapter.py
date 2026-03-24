@@ -11,13 +11,18 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
-from scpn_quantum_control.hardware.pennylane_adapter import (
-    PennyLaneResult,
-    PennyLaneRunner,
-    is_pennylane_available,
-)
+try:
+    from scpn_quantum_control.hardware.pennylane_adapter import (
+        PennyLaneResult,
+        PennyLaneRunner,
+        is_pennylane_available,
+    )
 
-pytestmark = pytest.mark.skipif(not is_pennylane_available(), reason="PennyLane not installed")
+    _PL_OK = is_pennylane_available()
+except (ImportError, AttributeError):
+    _PL_OK = False
+
+pytestmark = pytest.mark.skipif(not _PL_OK, reason="PennyLane not available or broken")
 
 
 class TestPennyLaneRunner:
