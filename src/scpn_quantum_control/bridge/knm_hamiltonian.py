@@ -133,6 +133,62 @@ def knm_to_hamiltonian(K: np.ndarray, omega: np.ndarray) -> SparsePauliOp:
     return SparsePauliOp(list(labels), list(coeffs)).simplify()
 
 
+def knm_to_xxz_hamiltonian(
+    K: np.ndarray,
+    omega: np.ndarray,
+    delta: float = 0.0,
+) -> SparsePauliOp:
+    """Convert Knm + frequencies to XXZ Hamiltonian with anisotropy Δ.
+
+    H = -sum_{i<j} K[i,j] * (X_iX_j + Y_iY_j + Δ·Z_iZ_j) - sum_i omega_i * Z_i
+
+    Δ = 0: XY model (standard Kuramoto mapping, in-plane S² dynamics)
+    Δ = 1: isotropic Heisenberg (full S² dynamics, Kouchekian-Teodorescu 2025)
+
+    The anisotropy parameter controls the off-plane spin coupling that
+    the standard Kuramoto-XY mapping omits. The full Heisenberg model
+    (Δ=1) corresponds to the variational S² spin formulation proven in
+    arXiv:2601.00113 (Kouchekian & Teodorescu, 2025).
+
+    At Δ=1, perturbations around equilibria connect to the semiclassical
+    Gaudin model and the Richardson pairing mechanism.
+    """
+    n = len(omega)
+    if K.shape[0] != n:
+        raise ValueError(f"K has {K.shape[0]} rows but omega has {n} elements")
+    pauli_list = []
+
+    for i in range(n):
+        if abs(omega[i]) > KNM_SPARSITY_EPS:
+            z_str = ["I"] * n
+            z_str[i] = "Z"
+            pauli_list.append(("".join(reversed(z_str)), -omega[i]))
+
+    for i in range(n):
+        for j in range(i + 1, n):
+            if abs(K[i, j]) < KNM_SPARSITY_EPS:
+                continue
+            # XX term
+            xx = ["I"] * n
+            xx[i] = "X"
+            xx[j] = "X"
+            pauli_list.append(("".join(reversed(xx)), -K[i, j]))
+            # YY term
+            yy = ["I"] * n
+            yy[i] = "Y"
+            yy[j] = "Y"
+            pauli_list.append(("".join(reversed(yy)), -K[i, j]))
+            # ZZ term (off-plane, controlled by delta)
+            if abs(delta) > KNM_SPARSITY_EPS:
+                zz = ["I"] * n
+                zz[i] = "Z"
+                zz[j] = "Z"
+                pauli_list.append(("".join(reversed(zz)), -K[i, j] * delta))
+
+    labels, coeffs = zip(*pauli_list)
+    return SparsePauliOp(list(labels), list(coeffs)).simplify()
+
+
 def knm_to_ansatz(K: np.ndarray, reps: int = 2, threshold: float = 0.01) -> QuantumCircuit:
     """Build physics-informed ansatz: CZ entanglement only between Knm-connected pairs.
 
