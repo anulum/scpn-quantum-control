@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import tempfile
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -108,7 +109,11 @@ class HardwareRunner:
         self.resilience_level = resilience_level
         self.use_fractional_gates = use_fractional_gates
         self.results_dir = Path(results_dir)
-        self.results_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            self.results_dir.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            self.results_dir = Path(tempfile.gettempdir()) / "scpn_results"
+            self.results_dir.mkdir(parents=True, exist_ok=True)
         self._noise_model = noise_model
 
         self._service: Any = None
