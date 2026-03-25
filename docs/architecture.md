@@ -14,7 +14,95 @@
 | Notebooks | 13 |
 | Doc pages | 25 |
 
-## Module Dependency Graph
+## Subpackage Dependency Graph
+
+The 12 subpackages form a directed acyclic graph. `bridge/` is the foundation —
+every other subpackage depends on it for Hamiltonian construction and data
+conversion. `analysis/` is the largest consumer, using `phase/` for state
+preparation and `bridge/` for Hamiltonian access.
+
+```mermaid
+graph TD
+    bridge["bridge/ (11)\nK_nm → quantum objects"]
+    phase["phase/ (14)\nTime evolution"]
+    analysis["analysis/ (41)\nSync probes"]
+    control["control/ (5)\nQuantum control"]
+    qsnn["qsnn/ (5)\nQuantum SNN"]
+    identity["identity/ (6)\nIdentity analysis"]
+    hardware["hardware/ (9)\nBackends"]
+    mitigation["mitigation/ (4)\nError mitigation"]
+    qec["qec/ (4)\nError correction"]
+    gauge["gauge/ (5)\nGauge theory"]
+    apps["applications/ (10)\nBenchmarks"]
+    crypto["crypto/ (4)\nQKD"]
+    benchmarks["benchmarks/ (4)\nPerformance"]
+    ssgf["ssgf/ (4)\nGeometry"]
+
+    bridge --> phase
+    bridge --> analysis
+    bridge --> control
+    bridge --> qsnn
+    bridge --> identity
+    bridge --> apps
+    bridge --> crypto
+    bridge --> ssgf
+    phase --> analysis
+    phase --> identity
+    phase --> apps
+    phase --> gauge
+    analysis --> gauge
+    hardware --> phase
+    hardware --> apps
+    mitigation --> hardware
+    qec --> hardware
+    benchmarks --> phase
+    benchmarks --> hardware
+
+    style bridge fill:#6929C4,color:#fff
+    style analysis fill:#d4a017,color:#000
+    style phase fill:#6929C4,color:#fff
+    style hardware fill:#2ecc71,color:#000
+```
+
+## Hardware Execution Pipeline
+
+Circuit depth after transpilation determines which decoherence regime applies.
+The pipeline is the same for all experiments — only the circuit construction
+step differs.
+
+```mermaid
+graph LR
+    subgraph "Classical Side"
+        A["K_nm matrix"] --> B["knm_to_hamiltonian()"]
+        B --> C["Build QuantumCircuit\n(Trotter / VQE / QAOA)"]
+        C --> D["Transpile to\nnative gates"]
+    end
+
+    subgraph "Quantum Side"
+        D --> E["Submit via\nSamplerV2"]
+        E --> F["Parse bit-string\ncounts"]
+    end
+
+    subgraph "Analysis"
+        F --> G["⟨X⟩, ⟨Y⟩, ⟨Z⟩"]
+        G --> H["Order parameter\nR(t)"]
+        G --> I["Witnesses,\nQFI, PH, ..."]
+    end
+
+    style A fill:#6929C4,color:#fff
+    style H fill:#2ecc71,color:#000
+    style I fill:#d4a017,color:#000
+```
+
+**Decoherence regimes on Heron r2:**
+
+| Transpiled depth | Regime | Accuracy | Strategy |
+|:----------------:|--------|----------|----------|
+| < 150 | Near-ideal | < 10% error | Publish directly |
+| 150–400 | Mitigable | 10–30% error | ZNE + Z₂ post-selection |
+| > 400 | Noise-dominated | > 30% error | Qualitative only |
+
+## Module Dependency Graph (Full Detail)
 
 ```
 bridge/                                    ← Foundation: K_nm → quantum objects
@@ -203,33 +291,35 @@ Each module maps a classical SCPN computation to its quantum analog:
 | SPN token probability | Qubit amplitude | p -> amplitude encoding |
 | Disruption feature vector | Amplitude-encoded state | 11-D -> 16-D zero-padded |
 
-## Hardware Execution Model
+## Cross-Repository Integration
 
-```
-Classical optimizer loop (COBYLA/SPSA)
-  |
-  v
-Build QuantumCircuit (parameterized)
-  |
-  v
-Transpile to native gates (CZ, RZ, SX, X on Heron r2)
-  |
-  v
-Submit via qiskit-ibm-runtime SamplerV2
-  |
-  v
-Parse bit-string counts -> expectation values
-  |
-  v
-Compute order parameter R from <X>, <Y>, <Z>
+This package is one node in a five-repository ecosystem. Each bridge adapter
+converts between the data representations of the two repositories it connects.
+
+```mermaid
+graph LR
+    SC["sc-neurocore\n(SNN engine)"] -->|"snn_adapter\nmembrane → Ry angle"| QC["scpn-quantum-\ncontrol"]
+    SSGF["SSGF geometry\nengine"] -->|"ssgf_adapter\nW → H_XY"| QC
+    PO["scpn-phase-\norchestrator"] <-->|"orchestrator_adapter\npayload ↔ artifact"| QC
+    FC["scpn-fusion-core\n+ scpn-control"] -->|"control_plasma_knm\nplasma K_nm"| QC
+    QC -->|"phase_artifact\nUPDE state"| PO
+
+    style QC fill:#6929C4,color:#fff
+    style SC fill:#2ecc71,color:#000
+    style PO fill:#d4a017,color:#000
+    style FC fill:#e67e22,color:#000
 ```
 
-Circuit depth after transpilation determines which decoherence regime applies:
-- depth < 150: publishable accuracy (< 10% error)
-- depth 150-400: usable with error mitigation
-- depth > 400: qualitative results only
+| Bridge | Source repo | Data in | Data out |
+|--------|-----------|---------|----------|
+| `snn_adapter` | sc-neurocore | ArcaneNeuron membrane $v$ | $R_y(\theta)$ angle |
+| `ssgf_adapter` | SSGF engine | Geometry matrix $W$ | XY Hamiltonian |
+| `orchestrator_adapter` | scpn-phase-orchestrator | State payload (regime, phases) | UPDEPhaseArtifact |
+| `orchestrator_feedback` | scpn-phase-orchestrator | Quantum $R$, fidelity | Advance/hold/rollback |
+| `control_plasma_knm` | scpn-control | Plasma-native $K_{nm}$ | Standard $K_{nm}$ array |
+| `snn_backward` | sc-neurocore | Loss gradient | Parameter-shift $\nabla\theta$ |
 
-## Data Flow: Knm -> Hamiltonian -> Circuit -> Measurement -> R
+## Data Flow: Knm → Hamiltonian → Circuit → Measurement → R
 
 ```python
 from scpn_quantum_control.bridge.knm_hamiltonian import (

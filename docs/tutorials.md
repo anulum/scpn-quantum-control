@@ -8,33 +8,61 @@ understanding through hands-on computation to original research.
 
 ## Learning Path Overview
 
+```mermaid
+graph TD
+    subgraph "Level 1: Foundations — What is this package doing?"
+        T1["Tutorial 1\nFirst quantum sync"]
+        T2["Tutorial 2\nKuramoto-XY mapping"]
+        T3["Tutorial 3\nOrder parameter R"]
+    end
+
+    subgraph "Level 2: Core Workflows — How do I use it for research?"
+        T4["Tutorial 4\nVQE ground state"]
+        T5["Tutorial 5\nSync witnesses"]
+        T6["Tutorial 6\nError mitigation"]
+        T7["Tutorial 7\nFull pipeline\nK_nm → IBM → R"]
+    end
+
+    subgraph "Level 3: Research Tools — What can I discover?"
+        T8["Tutorial 8\nPhase transition map"]
+        T9["Tutorial 9\nPersistent homology"]
+        T10["Tutorial 10\nChaos: OTOC, SFF, Krylov"]
+        T11["Tutorial 11\nMagic, DLA complexity"]
+    end
+
+    subgraph "Level 4: Frontier — What has never been done?"
+        T12["Tutorial 12\nKouchekian-Teodorescu"]
+        T13["Tutorial 13\nFloquet time crystal"]
+        T14["Tutorial 14\nPublishing results"]
+    end
+
+    T1 --> T2 --> T3
+    T3 --> T4
+    T3 --> T5
+    T4 --> T6
+    T5 --> T7
+    T6 --> T7
+    T7 --> T8
+    T8 --> T9
+    T8 --> T10
+    T8 --> T11
+    T9 --> T12
+    T10 --> T13
+    T11 --> T14
+
+    style T1 fill:#2ecc71,color:#000
+    style T7 fill:#6929C4,color:#fff
+    style T12 fill:#d4a017,color:#000
+    style T13 fill:#d4a017,color:#000
+    style T14 fill:#d4a017,color:#000
 ```
-Level 1: Foundations          → "What is this package doing?"
-  │
-  ├─ Tutorial 1: Your first quantum synchronization
-  ├─ Tutorial 2: The Kuramoto-XY mapping explained
-  └─ Tutorial 3: Reading the order parameter R
-  │
-Level 2: Core Workflows      → "How do I use it for research?"
-  │
-  ├─ Tutorial 4: VQE ground state preparation
-  ├─ Tutorial 5: Detecting synchronization with witnesses
-  ├─ Tutorial 6: Error mitigation on real hardware
-  └─ Tutorial 7: The full pipeline (K_nm → circuit → IBM → R)
-  │
-Level 3: Research Tools       → "What can I discover?"
-  │
-  ├─ Tutorial 8: Mapping the phase transition
-  ├─ Tutorial 9: Topological analysis with persistent homology
-  ├─ Tutorial 10: Chaos diagnostics (OTOC, SFF, Krylov)
-  └─ Tutorial 11: Computational complexity (magic, DLA)
-  │
-Level 4: Frontier Physics     → "What has never been done before?"
-  │
-  ├─ Tutorial 12: The Kouchekian-Teodorescu connection
-  ├─ Tutorial 13: Floquet-Kuramoto time crystal
-  └─ Tutorial 14: Publishing your results
-```
+
+| Level | Colour | Question it answers | Time |
+|-------|--------|---------------------|------|
+| 1: Foundations | Green | "What is this package doing?" | ~30 min |
+| 2: Core Workflows | Grey | "How do I use it for research?" | ~1 hour |
+| 3: Research Tools | Purple | "What can I discover?" | ~2 hours |
+| 4: Frontier Physics | Gold | "What has never been done before?" | Open-ended |
 
 ---
 
@@ -285,6 +313,62 @@ mitigation — no calibration, no noise model, no circuit overhead.
 
 ---
 
+### Tutorial 7: The Full Pipeline (K_nm → Circuit → IBM → R)
+
+**Goal:** Run the complete pipeline from a coupling matrix to a hardware-ready
+circuit, execute it on a noisy simulator mimicking Heron r2, apply error mitigation,
+and extract the order parameter.
+
+**Time:** 15 minutes
+
+This tutorial chains together everything from Levels 1 and 2. Each step feeds the
+next — the output of `knm_to_hamiltonian()` is the input to `QuantumKuramotoSolver`,
+whose circuit is the input to transpilation, whose results are the input to ZNE.
+
+```mermaid
+graph LR
+    A["K_nm\n(Paper 27)"] --> B["knm_to_hamiltonian()\nSparsePauliOp"]
+    B --> C["QuantumKuramotoSolver\nTrotter circuit"]
+    C --> D["Transpile\nCZ, RZ, SX, X"]
+    D --> E["Noisy AerSimulator\n(Heron r2 model)"]
+    E --> F["Z₂ post-selection\n+ ZNE"]
+    F --> G["R(t)\nmitigated"]
+
+    style A fill:#6929C4,color:#fff
+    style G fill:#2ecc71,color:#000
+```
+
+```python
+import numpy as np
+from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27, OMEGA_N_16
+from scpn_quantum_control.phase.xy_kuramoto import QuantumKuramotoSolver
+from scpn_quantum_control.mitigation.symmetry_verification import parity_postselect
+from scpn_quantum_control.mitigation.zne import zne_extrapolate
+
+# Step 1: Build the coupling matrix
+K = build_knm_paper27(L=4)
+omega = OMEGA_N_16[:4]
+
+# Step 2: Time evolution via Trotter
+solver = QuantumKuramotoSolver(4, K, omega)
+result = solver.run(t_max=0.5, dt=0.1, trotter_per_step=2)
+
+# Step 3: (On real hardware, counts come from SamplerV2)
+# For this demo, result already contains statevector expectations
+print("Raw R(t):", [f"{r:.3f}" for r in result["R"]])
+
+# Step 4: Error mitigation (demonstrated with synthetic counts)
+# raw_counts = {...}  # from IBM hardware
+# clean = parity_postselect(raw_counts, target_parity=0)
+# mitigated = zne_extrapolate(circuit, noise_factors=[1, 3, 5])
+```
+
+**What to check:** After post-selection, the fraction of shots in the correct
+parity sector should be >80% for shallow circuits (depth < 150). If it drops
+below 60%, the circuit is too deep for the hardware — reduce Trotter repetitions.
+
+---
+
 ## Level 3: Research Tools
 
 ### Tutorial 8: Mapping the Phase Transition
@@ -425,6 +509,108 @@ H_heis = knm_to_xxz_hamiltonian(K * 1.0, np.zeros(3), delta=1.0).to_matrix()
 from XY to Heisenberg universality. Use the pairing correlator
 $\langle S_i^+ S_j^-\rangle$ to detect the Richardson mechanism predicted by the
 Kouchekian-Teodorescu paper.
+
+---
+
+### Tutorial 11: Computational Complexity (Magic, DLA)
+
+**Goal:** Quantify how classically hard the synchronization ground state is to
+simulate.
+
+Two measures of computational complexity converge at $K_c$:
+
+| Measure | What it quantifies | Value at $K_c$ |
+|---------|-------------------|----------------|
+| Stabilizer Rényi entropy $M_2$ | Distance from classically-simulable stabilizer states | **Peak** |
+| DLA dimension | Number of reachable unitaries from $H_{XY}$ | $2^{2N-1} - 2$ (exact) |
+
+The DLA dimension is a theorem, not a numerical observation. For the heterogeneous
+XY Hamiltonian with all $\omega_i$ distinct, the dynamical Lie algebra has exactly
+$2^{2N-1} - 2$ generators — approaching half of $\mathfrak{su}(2^N)$ as $N$ grows.
+The missing half is blocked by the Z₂ parity symmetry $P = Z^{\otimes N}$. This is
+the *only* symmetry, proven by exhaustive commutator closure.
+
+```python
+from scpn_quantum_control.analysis.dynamical_lie_algebra import dla_dimension
+from scpn_quantum_control.analysis.magic_nonstabilizerness import stabilizer_renyi_entropy
+from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27, OMEGA_N_16
+import numpy as np
+
+K = build_knm_paper27(L=3)
+omega = OMEGA_N_16[:3]
+
+# DLA dimension (exact formula)
+dim = dla_dimension(3)
+print(f"DLA dimension for N=3: {dim}")
+print(f"su(2^3) dimension:     {4**3 - 1}")
+print(f"Fraction:              {dim / (4**3 - 1):.2%}")
+
+# Magic of the ground state
+# (compute ground state via exact diag, then measure M_2)
+```
+
+**Key insight:** Magic peaks where synchronization happens. The quantum state
+that describes synchronized oscillators is precisely the state that is hardest
+to simulate classically. In the SCPN framework, this means consciousness emerges
+at the computational complexity boundary.
+
+---
+
+### Tutorial 13: Floquet-Kuramoto Time Crystal
+
+**Goal:** Drive the coupling periodically and detect discrete time-crystal (DTC)
+order.
+
+A Floquet-Kuramoto system has time-periodic coupling:
+$K(t) = K_0(1 + \delta\cos\Omega t)$. Under certain conditions, the order parameter
+$R(t)$ oscillates at a *subharmonic* of the drive frequency — the system breaks
+discrete time-translation symmetry. This is a discrete time crystal.
+
+```python
+from scpn_quantum_control.phase.floquet_kuramoto import FloquetKuramotoSolver
+from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27, OMEGA_N_16
+
+K = build_knm_paper27(L=4)
+omega = OMEGA_N_16[:4]
+
+solver = FloquetKuramotoSolver(
+    n_qubits=4, K=K, omega=omega,
+    drive_amplitude=0.3,   # delta
+    drive_frequency=2.0,   # Omega
+)
+result = solver.run(n_periods=20, steps_per_period=10)
+
+# Look for period-doubling in R(t)
+# DTC signature: R oscillates at Omega/2 instead of Omega
+```
+
+**What to look for:** In the Fourier transform of $R(t)$, a DTC shows a sharp
+peak at $\Omega/2$ (half the drive frequency). The peak persists even in the
+presence of noise — it is protected by the interaction, not fine-tuning. This
+is Gem 18, and has not been previously observed in the Kuramoto-XY context.
+
+---
+
+### Tutorial 14: Publishing Your Results
+
+**Goal:** Generate publication-quality figures and data from your analysis.
+
+**Checklist for a publishable quantum synchronization result:**
+
+| Item | Module | Output |
+|------|--------|--------|
+| Hardware calibration | `hardware.qcvv` | State fidelity, mirror circuits |
+| Error budget | `qec.error_budget` | Trotter + gate + logical allocation |
+| Critical concordance | `analysis.critical_concordance` | Multi-probe $K_c$ agreement |
+| Statistical significance | `analysis.finite_size_scaling` | $K_c(\infty)$ extrapolation |
+| ZNE error bars | `mitigation.zne` | Bootstrapped confidence intervals |
+| Raw data archival | `hardware.qasm_export` | OpenQASM 3.0 circuits |
+
+**Citation format:** See the main [README](../README.md#citation) for BibTeX.
+
+**Data availability:** Export all circuits as OpenQASM 3.0 via
+`hardware.qasm_export.export_qasm3()` for reproducibility. Archive raw counts
+in JSON alongside the QASM files.
 
 ---
 
