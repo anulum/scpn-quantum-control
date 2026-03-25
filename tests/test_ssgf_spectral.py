@@ -1,8 +1,6 @@
 """Tests for ssgf.quantum_spectral."""
 
-import numpy as np
-
-from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27, OMEGA_N_16
+from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.ssgf.quantum_spectral import (
     SpectralBridgeResult,
     entrainment_criterion,

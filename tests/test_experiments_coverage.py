@@ -1,9 +1,8 @@
 """Coverage tests for hardware.experiments — statevector-only functions."""
 
 import numpy as np
-import pytest
 
-from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27, OMEGA_N_16
+from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.hardware.experiments import (
     _build_evo_base,
     _build_xyz_circuits,

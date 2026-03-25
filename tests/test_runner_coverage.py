@@ -1,8 +1,5 @@
 """Coverage tests for hardware.runner — simulator paths only."""
 
-import numpy as np
-import pytest
-
 from scpn_quantum_control.hardware.runner import HardwareRunner
 
 
