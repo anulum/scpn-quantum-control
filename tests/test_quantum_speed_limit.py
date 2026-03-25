@@ -8,7 +8,6 @@
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from scpn_quantum_control.analysis.quantum_speed_limit import (
     QSLResult,
@@ -44,7 +43,9 @@ class TestComputeQSL:
         result = compute_qsl(K * 2, omega, t_target=2.0, R_threshold=0.3)
         # QSL is a lower bound: τ_actual ≥ τ_MT and τ_actual ≥ τ_ML
         if result.tau_MT > 0:
-            assert result.tau_actual >= result.tau_MT - 0.02  # small tolerance for dt discretization
+            assert (
+                result.tau_actual >= result.tau_MT - 0.02
+            )  # small tolerance for dt discretization
 
     def test_overlap_bounded(self):
         K = build_knm_paper27(L=2)
@@ -79,9 +80,11 @@ class TestQSLvsCoupling:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         scan = qsl_vs_coupling(
-            K, omega,
+            K,
+            omega,
             K_base_range=np.array([0.5, 2.0]),
-            t_target=2.0, R_threshold=0.3,
+            t_target=2.0,
+            R_threshold=0.3,
         )
         # Stronger coupling should generally synchronize faster
         # (but not guaranteed for all parameter regimes)
@@ -91,7 +94,8 @@ class TestQSLvsCoupling:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         scan = qsl_vs_coupling(
-            K, omega,
+            K,
+            omega,
             K_base_range=np.array([0.1, 1.0, 3.0]),
             t_target=2.0,
         )

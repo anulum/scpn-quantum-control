@@ -238,8 +238,11 @@ class TestCPDRFullPipeline:
             return results
 
         result = cpdr_full_pipeline(
-            qc, target_counts, noiseless_backend,
-            n_training=10, seed=42,
+            qc,
+            target_counts,
+            noiseless_backend,
+            n_training=10,
+            seed=42,
         )
         assert isinstance(result, CPDRResult)
         # With noiseless backend, mitigated ≈ raw

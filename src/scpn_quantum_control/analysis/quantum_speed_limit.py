@@ -105,7 +105,7 @@ def compute_qsl(
     for step in range(1, n_steps + 1):
         psi = U_dt @ psi
         R = _state_order_parameter(psi, n)
-        if R >= R_threshold:
+        if R_threshold <= R:
             tau_actual = step * dt
             break
 
@@ -163,7 +163,6 @@ def qsl_vs_coupling(
     The signature of BKT in the QSL is qualitatively different from
     standard QPTs.
     """
-    n = K.shape[0]
     if K_base_range is None:
         K_base_range = np.linspace(0.01, 3.0, n_K_values)
 
@@ -182,8 +181,11 @@ def qsl_vs_coupling(
         delta_E_vals.append(result.delta_E)
 
         # Also compute final R
-        from .entanglement_enhanced_sync import simulate_sync_trajectory, InitialState
-        traj = simulate_sync_trajectory(K_scaled, omega, InitialState.PRODUCT, t_max=t_target, n_steps=20)
+        from .entanglement_enhanced_sync import InitialState, simulate_sync_trajectory
+
+        traj = simulate_sync_trajectory(
+            K_scaled, omega, InitialState.PRODUCT, t_max=t_target, n_steps=20
+        )
         R_final_vals.append(traj.final_R)
 
     return {

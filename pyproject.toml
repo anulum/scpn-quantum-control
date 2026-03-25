@@ -148,6 +148,15 @@ module = "jaxlib.*"
 ignore_missing_imports = true
 follow_imports = "skip"
 
+[[tool.mypy.overrides]]
+module = "ripser.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "cirq.*"
+ignore_missing_imports = true
+follow_imports = "skip"
+
 [tool.coverage.run]
 source = ["scpn_quantum_control"]
 # runner.py and experiments.py require IBM credentials for full coverage;

@@ -75,8 +75,12 @@ class TestCorrelationWitness:
     def test_incoherent_state_does_not_fire(self):
         # All 16 bitstrings equally likely → ⟨Z_iZ_j⟩ ≈ 0 → correlator ≈ 0
         rng = np.random.default_rng(42)
-        x_counts = {format(i, "04b"): int(c) for i, c in enumerate(rng.multinomial(4000, [1 / 16] * 16))}
-        y_counts = {format(i, "04b"): int(c) for i, c in enumerate(rng.multinomial(4000, [1 / 16] * 16))}
+        x_counts = {
+            format(i, "04b"): int(c) for i, c in enumerate(rng.multinomial(4000, [1 / 16] * 16))
+        }
+        y_counts = {
+            format(i, "04b"): int(c) for i, c in enumerate(rng.multinomial(4000, [1 / 16] * 16))
+        }
         result = correlation_witness_from_counts(x_counts, y_counts, 4, threshold=1.0)
         assert not result.is_synchronized
         assert result.expectation_value >= 0
@@ -141,8 +145,12 @@ class TestEvaluateAll:
         x_counts = {"0000": 1000}
         y_counts = {"0000": 1000}
         results = evaluate_all_witnesses(
-            x_counts, y_counts, 4,
-            corr_threshold=0.5, fiedler_threshold=1.0, topo_threshold=0.5,
+            x_counts,
+            y_counts,
+            4,
+            corr_threshold=0.5,
+            fiedler_threshold=1.0,
+            topo_threshold=0.5,
         )
         assert results["correlation"].is_synchronized
         assert results["fiedler"].is_synchronized

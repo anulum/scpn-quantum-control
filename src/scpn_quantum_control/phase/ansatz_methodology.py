@@ -36,7 +36,7 @@ from dataclasses import dataclass
 
 import numpy as np
 from qiskit.circuit.library import efficient_su2, n_local
-from qiskit.quantum_info import SparsePauliOp, Statevector
+from qiskit.quantum_info import Statevector
 from scipy.optimize import minimize
 
 from ..bridge.knm_hamiltonian import (
@@ -71,9 +71,11 @@ def _count_entangling_gates(circuit) -> int:
     two_qubit_names = {"cx", "cz", "ecr", "rzz", "rxx", "ryy", "swap", "iswap", "cphase"}
     count = 0
     for inst in circuit.data:
-        if inst.operation.name in two_qubit_names:
-            count += 1
-        elif len(inst.qubits) >= 2 and inst.operation.name not in {"barrier", "measure"}:
+        if (
+            inst.operation.name in two_qubit_names
+            or len(inst.qubits) >= 2
+            and inst.operation.name not in {"barrier", "measure"}
+        ):
             count += 1
     return count
 
@@ -208,9 +210,13 @@ def run_full_benchmark(
         omega = OMEGA_N_16[:n]
         for name in ["knm_informed", "two_local", "efficient_su2"]:
             r = benchmark_single_ansatz(
-                K, omega, name,
-                maxiter=maxiter, reps=reps,
-                gradient_samples=gradient_samples, seed=seed,
+                K,
+                omega,
+                name,
+                maxiter=maxiter,
+                reps=reps,
+                gradient_samples=gradient_samples,
+                seed=seed,
             )
             results.append(r)
     return results
@@ -220,15 +226,17 @@ def summarize_benchmark(results: list[AnsatzBenchmarkResult]) -> dict:
     """Produce summary table from benchmark results."""
     rows = []
     for r in results:
-        rows.append({
-            "ansatz": r.ansatz_name,
-            "n_qubits": r.n_qubits,
-            "n_params": r.n_params,
-            "n_entangling": r.n_entangling_gates,
-            "energy": r.final_energy,
-            "exact": r.exact_energy,
-            "rel_error": r.relative_error,
-            "conv_iter": r.convergence_iter_99pct,
-            "grad_var": r.gradient_variance,
-        })
+        rows.append(
+            {
+                "ansatz": r.ansatz_name,
+                "n_qubits": r.n_qubits,
+                "n_params": r.n_params,
+                "n_entangling": r.n_entangling_gates,
+                "energy": r.final_energy,
+                "exact": r.exact_energy,
+                "rel_error": r.relative_error,
+                "conv_iter": r.convergence_iter_99pct,
+                "grad_var": r.gradient_variance,
+            }
+        )
     return {"results": rows}

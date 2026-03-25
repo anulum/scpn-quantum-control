@@ -1127,11 +1127,11 @@ def decoherence_scaling_experiment(
         coeffs = np.polyfit(depths[valid], log_ratios, 1)
         gamma = -coeffs[0]
         r_squared = 1.0 - np.var(log_ratios - np.polyval(coeffs, depths[valid])) / max(
-            np.var(log_ratios), 1e-10
+            float(np.var(log_ratios)), 1e-10
         )
     else:
-        gamma = float("nan")
-        r_squared = float("nan")
+        gamma = float("nan")  # type: ignore[assignment]
+        r_squared = float("nan")  # type: ignore[assignment]
 
     print(f"  Fit: gamma={gamma:.6f} per gate, R²={r_squared:.4f}")
 

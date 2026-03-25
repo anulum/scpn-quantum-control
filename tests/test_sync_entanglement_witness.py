@@ -8,7 +8,6 @@
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from scpn_quantum_control.analysis.sync_entanglement_witness import (
     EntanglementWitnessResult,
@@ -29,6 +28,7 @@ class TestRSeparableBound:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         from scpn_quantum_control.hardware.classical import classical_exact_diag
+
         exact = classical_exact_diag(3, K=K, omega=omega)
         E_ground = exact["ground_energy"]
         R_sep = R_separable_bound_at_energy(K, omega, E_ground, n_samples=500)

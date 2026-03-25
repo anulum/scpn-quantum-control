@@ -11,6 +11,7 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+
 try:
     from scpn_quantum_control.hardware.pennylane_adapter import (
         PennyLaneResult,

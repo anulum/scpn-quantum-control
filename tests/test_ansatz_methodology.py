@@ -7,7 +7,6 @@
 
 from __future__ import annotations
 
-import numpy as np
 import pytest
 
 from scpn_quantum_control.bridge.knm_hamiltonian import (
@@ -102,9 +101,7 @@ class TestBenchmarkSingleAnsatz:
     def test_all_ansatze_run(self, name):
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
-        result = benchmark_single_ansatz(
-            K, omega, name, maxiter=20, reps=1, gradient_samples=5
-        )
+        result = benchmark_single_ansatz(K, omega, name, maxiter=20, reps=1, gradient_samples=5)
         assert isinstance(result, AnsatzBenchmarkResult)
         assert result.ansatz_name == name
         assert result.n_qubits == 3
@@ -115,7 +112,9 @@ class TestBenchmarkSingleAnsatz:
     def test_knm_has_fewer_gates(self):
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
-        knm = benchmark_single_ansatz(K, omega, "knm_informed", maxiter=5, reps=1, gradient_samples=3)
+        knm = benchmark_single_ansatz(
+            K, omega, "knm_informed", maxiter=5, reps=1, gradient_samples=3
+        )
         hea = benchmark_single_ansatz(K, omega, "two_local", maxiter=5, reps=1, gradient_samples=3)
         # K_nm places CZ only where coupling exists; TwoLocal uses linear chain
         # For 4 qubits: K_nm may have fewer or same, never wildly more
@@ -130,9 +129,7 @@ class TestBenchmarkSingleAnsatz:
 
 class TestRunFullBenchmark:
     def test_small_benchmark(self):
-        results = run_full_benchmark(
-            system_sizes=[2, 3], maxiter=10, reps=1, gradient_samples=3
-        )
+        results = run_full_benchmark(system_sizes=[2, 3], maxiter=10, reps=1, gradient_samples=3)
         # 2 sizes × 3 ansatze = 6 results
         assert len(results) == 6
         names = [r.ansatz_name for r in results]
@@ -146,7 +143,9 @@ class TestSummarizeBenchmark:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         results = [
-            benchmark_single_ansatz(K, omega, "knm_informed", maxiter=5, reps=1, gradient_samples=3),
+            benchmark_single_ansatz(
+                K, omega, "knm_informed", maxiter=5, reps=1, gradient_samples=3
+            ),
         ]
         summary = summarize_benchmark(results)
         assert "results" in summary

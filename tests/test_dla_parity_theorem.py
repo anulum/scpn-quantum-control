@@ -81,8 +81,7 @@ class TestDLADecomposition:
             dim_from_decomp = su_dimension(d_e) + su_dimension(d_o)
             dim_from_formula = predicted_dla_dimension(n)
             assert dim_from_decomp == dim_from_formula, (
-                f"N={n}: decomposition gives {dim_from_decomp}, "
-                f"formula gives {dim_from_formula}"
+                f"N={n}: decomposition gives {dim_from_decomp}, formula gives {dim_from_formula}"
             )
 
 

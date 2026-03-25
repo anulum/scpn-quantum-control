@@ -253,6 +253,4 @@ class TestIntegrationWithExperiments:
         # |00⟩ has even parity; XY evolution preserves it
         for bs, p in probs.items():
             if p > 1e-10:
-                assert bitstring_parity(bs) == 0, (
-                    f"Bitstring {bs} has wrong parity (p={p:.4f})"
-                )
+                assert bitstring_parity(bs) == 0, f"Bitstring {bs} has wrong parity (p={p:.4f})"

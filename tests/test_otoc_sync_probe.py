@@ -8,7 +8,6 @@
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from scpn_quantum_control.analysis.otoc_sync_probe import (
     OTOCSyncScanResult,
@@ -22,9 +21,7 @@ class TestOTOCSyncScan:
     def test_returns_result(self):
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
-        result = otoc_sync_scan(
-            K, omega, n_K_values=5, n_time_points=10, t_max=1.0
-        )
+        result = otoc_sync_scan(K, omega, n_K_values=5, n_time_points=10, t_max=1.0)
         assert isinstance(result, OTOCSyncScanResult)
         assert len(result.K_base_values) == 5
         assert len(result.lyapunov_values) == 5
@@ -35,9 +32,11 @@ class TestOTOCSyncScan:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = otoc_sync_scan(
-            K, omega,
+            K,
+            omega,
             K_base_range=np.array([0.1, 1.0, 3.0]),
-            n_time_points=10, t_max=1.0,
+            n_time_points=10,
+            t_max=1.0,
         )
         # R should generally increase with coupling (though not monotonically
         # for all systems at all times)
@@ -46,18 +45,14 @@ class TestOTOCSyncScan:
     def test_otoc_final_values_real(self):
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
-        result = otoc_sync_scan(
-            K, omega, n_K_values=3, n_time_points=5, t_max=0.5
-        )
+        result = otoc_sync_scan(K, omega, n_K_values=3, n_time_points=5, t_max=0.5)
         for v in result.otoc_final_values:
             assert np.isfinite(v)
 
     def test_two_qubit_scan(self):
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
-        result = otoc_sync_scan(
-            K, omega, n_K_values=4, n_time_points=8, t_max=0.5
-        )
+        result = otoc_sync_scan(K, omega, n_K_values=4, n_time_points=8, t_max=0.5)
         assert result.n_qubits == 2
         assert len(result.K_base_values) == 4
 
@@ -66,9 +61,7 @@ class TestCompareOTOCvsR:
     def test_returns_expected_keys(self):
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
-        scan = otoc_sync_scan(
-            K, omega, n_K_values=5, n_time_points=10, t_max=1.0
-        )
+        scan = otoc_sync_scan(K, omega, n_K_values=5, n_time_points=10, t_max=1.0)
         comparison = compare_otoc_vs_R(scan)
         assert "K_c_classical" in comparison
         assert "K_c_otoc" in comparison
@@ -78,8 +71,6 @@ class TestCompareOTOCvsR:
     def test_detection_flag_is_bool(self):
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
-        scan = otoc_sync_scan(
-            K, omega, n_K_values=8, n_time_points=10, t_max=1.0
-        )
+        scan = otoc_sync_scan(K, omega, n_K_values=8, n_time_points=10, t_max=1.0)
         comparison = compare_otoc_vs_R(scan)
         assert isinstance(comparison["otoc_detects_transition"], bool)

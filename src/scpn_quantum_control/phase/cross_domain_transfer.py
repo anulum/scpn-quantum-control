@@ -147,6 +147,7 @@ def transfer_experiment(
 
     # Exact ground state energy
     from ..hardware.classical import classical_exact_diag
+
     exact = classical_exact_diag(target.K.shape[0], K=target.K, omega=target.omega)
     exact_energy = exact["ground_energy"]
 
@@ -157,9 +158,7 @@ def transfer_experiment(
 
     # Random init baseline
     random_init = rng.uniform(-np.pi, np.pi, n_target_params)
-    random_energy, random_iters, _ = _vqe_optimize(
-        target_ansatz, target_H, random_init, maxiter
-    )
+    random_energy, random_iters, _ = _vqe_optimize(target_ansatz, target_H, random_init, maxiter)
 
     # Transfer init
     transfer_energy, transfer_iters, _ = _vqe_optimize(
@@ -213,7 +212,11 @@ def summarize_transfer(results: list[TransferResult]) -> dict:
         "n_pairs": len(results),
         "n_positive_transfer": len(positive),
         "n_negative_transfer": len(negative),
-        "best_transfer": max(results, key=lambda r: r.speedup).source_system + " → " + max(results, key=lambda r: r.speedup).target_system if results else None,
+        "best_transfer": max(results, key=lambda r: r.speedup).source_system
+        + " → "
+        + max(results, key=lambda r: r.speedup).target_system
+        if results
+        else None,
         "best_speedup": max(r.speedup for r in results) if results else 0.0,
         "mean_speedup": float(np.mean([r.speedup for r in results])) if results else 0.0,
     }

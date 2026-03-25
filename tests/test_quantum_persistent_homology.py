@@ -116,8 +116,12 @@ class TestQuantumPH:
     def test_incoherent_higher_p_h1(self):
         # Random measurements → nontrivial topology
         rng = np.random.default_rng(42)
-        x_counts = {format(i, "04b"): int(c) for i, c in enumerate(rng.multinomial(4000, [1/16]*16))}
-        y_counts = {format(i, "04b"): int(c) for i, c in enumerate(rng.multinomial(4000, [1/16]*16))}
+        x_counts = {
+            format(i, "04b"): int(c) for i, c in enumerate(rng.multinomial(4000, [1 / 16] * 16))
+        }
+        y_counts = {
+            format(i, "04b"): int(c) for i, c in enumerate(rng.multinomial(4000, [1 / 16] * 16))
+        }
         result = quantum_persistent_homology(x_counts, y_counts, 4)
         # Incoherent state has more topological structure
         assert result.n_qubits == 4
@@ -151,9 +155,7 @@ class TestCompareQuantumClassical:
         omega = OMEGA_N_16[:3]
         x_counts = {"000": 800, "011": 200}
         y_counts = {"000": 900, "010": 100}
-        result = compare_quantum_classical_ph(
-            x_counts, y_counts, 3, K, omega, t=0.5
-        )
+        result = compare_quantum_classical_ph(x_counts, y_counts, 3, K, omega, t=0.5)
         assert "quantum_p_h1" in result
         assert "classical_p_h1" in result
         assert "delta_p_h1" in result
