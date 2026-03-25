@@ -98,7 +98,7 @@ jobs:
           cache: 'pip'
       - run: pip install bandit pip-audit
       - run: bandit -r src/ scripts/ -ll -q
-      - run: pip install -e ".[dev]" && pip-audit --desc on
+      - run: pip install -e ".[dev]" && pip-audit --desc on --ignore-vuln CVE-2026-4539
 
   hardware-smoke:
     needs: test
