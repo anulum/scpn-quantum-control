@@ -5,18 +5,35 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://python.org)
 [![Qiskit 1.0+](https://img.shields.io/badge/qiskit-1.0%2B-6929C4.svg)](https://qiskit.org)
 
-NISQ quantum simulation of coupled Kuramoto oscillator networks on IBM superconducting hardware.
+Quantum simulation of coupled Kuramoto oscillator networks on IBM superconducting
+hardware, with 33 novel research modules probing the synchronization phase transition.
 
-## What this does
+## What this package does
 
-The Kuramoto model for coupled oscillators maps directly to the quantum
-XY spin Hamiltonian — superconducting qubits simulate it natively via
-Trotterized time evolution.
+The classical Kuramoto model for coupled oscillators maps directly to the quantum XY
+spin Hamiltonian. Superconducting qubits are native simulators of this physics: each
+qubit is an oscillator on the Bloch sphere, and the XX+YY coupling between qubits
+reproduces the $\sin(\theta_j - \theta_i)$ interaction of the Kuramoto model.
 
-Supply any coupling matrix K and natural frequencies omega; this package
-compiles them into Qiskit circuits and runs them on statevector simulation
-or IBM Heron r2 hardware. Ships with the SCPN 16-oscillator network as
-a built-in example.
+This package provides three things:
+
+1. **A compiler** that takes any coupling matrix $K_{nm}$ and natural frequencies
+   $\omega_i$ and produces executable Qiskit circuits for IBM hardware.
+
+2. **33 research modules** (the "gems") implementing novel quantum probes of the
+   synchronization phase transition — synchronization witnesses, topological
+   diagnostics, chaos measures, computational complexity bounds, and open-system
+   dynamics. 21 of these have no prior art in the literature.
+
+3. **The SCPN 16-layer network** as a built-in benchmark — the coupling matrix from
+   Paper 27 of the Sentient-Consciousness Projection Network framework, where
+   synchronization is the mechanism by which consciousness emerges across 16
+   ontological layers.
+
+Think of it as a quantum microscope for synchronization. Classical Kuramoto tells you
+*when* oscillators lock in step. This package tells you *what the quantum state looks
+like* at the transition, *how hard it is* to prepare, *what its topology reveals*, and
+*where classical simulation fails*.
 
 ## Key results
 
@@ -24,28 +41,33 @@ a built-in example.
 |--------|-------|
 | VQE ground-state error | **0.05%** (4-qubit, ibm_fez) |
 | 16-layer UPDE snapshot | 46% error at depth 770 (NISQ-consistent) |
-| Decoherence curve | 12 points, depth 5→770 |
 | Coherence wall | depth 250–400 (Heron r2) |
-| Test suite | 679 passing, 100% coverage |
+| DLA dimension formula | $2^{2N-1} - 2$ (exact, all $N$) |
+| Novel research modules | 33 (21 with no prior art) |
+| IBM hardware jobs | 9 submitted to ibm_fez (2 completed) |
+| Test suite | **1,789 passing**, 7 skipped |
+| Python modules | 107 + 1 Rust crate |
 
-## Modules
+## Package map
 
-| Module | Purpose |
-|--------|---------|
-| `bridge` | K_nm → Hamiltonian, SNN adapter (sc-neurocore), SSGF adapter, orchestrator bridge |
-| `phase` | Kuramoto XY solver, VQE, UPDE-16, Trotter |
-| `control` | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, ITER disruption classifier |
-| `qsnn` | Quantum spiking neural networks (LIF, STDP, synapses, training) |
-| `crypto` | Topology-authenticated QKD, Bell tests, key rates, percolation |
-| `qec` | Toric code + MWPM decoder, fault-tolerant UPDE (repetition code) |
-| `mitigation` | ZNE (unitary folding), PEC (Pauli twirling), dynamical decoupling |
-| `hardware` | IBM Quantum runner, trapped-ion backend, 20 pre-built experiments |
-| `identity` | VQE attractor basin, coherence budget, entanglement witness, fingerprint, binding spec |
-| `benchmarks` | Classical vs quantum scaling, crossover extrapolation |
+| Subpackage | Modules | Purpose |
+|------------|:-------:|---------|
+| `analysis` | 41 | Synchronization probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
+| `phase` | 14 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC |
+| `bridge` | 11 | $K_{nm}$ → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
+| `control` | 5 | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, ITER disruption classifier |
+| `qsnn` | 5 | Quantum spiking neural networks (LIF, STDP, synapses, training) |
+| `hardware` | 9 | IBM Quantum runner, trapped-ion backend, GPU offload, circuit cutting |
+| `mitigation` | 4 | ZNE, PEC, dynamical decoupling, Z₂ parity post-selection |
+| `gauge` | 5 | U(1) Wilson loops, vortex detection, CFT, universality, confinement |
+| `identity` | 6 | VQE attractor, coherence budget, entanglement witness, fingerprint |
+| `qec` | 4 | Toric code, repetition code UPDE, surface code estimation, error budget |
+| `applications` | 10 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS |
+| `crypto` | 4 | BB84, Bell tests, topology-authenticated QKD |
 
 ## Quick example
 
-Any coupling topology works — bring your own K and omega:
+Any coupling topology — bring your own $K$ and $\omega$:
 
 ```python
 from scpn_quantum_control import QuantumKuramotoSolver, build_kuramoto_ring
@@ -56,27 +78,37 @@ result = solver.run(t_max=1.0, dt=0.1, trotter_per_step=2)
 print(f"R(t): {result['R']}")
 ```
 
-Or use the built-in SCPN network:
+Detect synchronization on hardware with witness operators:
 
 ```python
-from scpn_quantum_control import QuantumKuramotoSolver, build_knm_paper27, OMEGA_N_16
+from scpn_quantum_control.analysis.sync_witness import evaluate_all_witnesses
 
-K = build_knm_paper27(L=4)
-solver = QuantumKuramotoSolver(4, K, OMEGA_N_16[:4])
-result = solver.run(t_max=0.5, dt=0.1, trotter_per_step=2)
+# After running X-basis and Y-basis circuits on IBM hardware:
+results = evaluate_all_witnesses(x_counts, y_counts, n_qubits=4)
+for name, w in results.items():
+    print(f"{name}: {'SYNCHRONIZED' if w.is_synchronized else 'incoherent'}")
 ```
 
 ## Limitations
 
-- **NISQ benchmarking only.** Circuit depths >400 hit the coherence wall; cloud QPUs cannot provide the <1 ms deterministic latency required for real tokamak control.
-- **SCPN is an unpublished model.** The K_nm parameterisation comes from a 2025 working paper with no external citations. The Kuramoto→XY mapping is standard; the specific coupling structure is not independently validated.
-- **No quantum advantage at this scale.** At N=4–16, classical ODE solvers are faster and more accurate. Advantage requires N>>20 with error-corrected qubits.
+- **NISQ benchmarking only.** Circuit depths >400 hit the coherence wall on Heron r2.
+- **SCPN coupling matrix is from unpublished work.** The $K_{nm}$ parameterisation
+  comes from Paper 27 (2025 working paper, no external citations). The Kuramoto→XY
+  mapping is standard; the specific coupling structure is not independently validated.
+- **No quantum advantage at this scale.** At $N=4$–16, classical exact diagonalisation
+  is faster. Advantage requires $N \gg 20$ with error-corrected qubits.
+- **IBM hardware results incomplete.** 7 of 9 campaign jobs still queued (budget
+  resets ~March 27).
 
-## Next steps
+## Documentation
 
 - [Installation](installation.md) — pip install + dev setup
 - [Quickstart](quickstart.md) — first experiment in 5 minutes
-- [Equations](equations.md) — mathematical foundations
-- [API Reference](api.md) — full module documentation
-- [Bridges](bridges_api.md) — cross-repo integrations
+- [Research Gems](research_gems.md) — **33 novel modules with full theory and API**
+- [Equations](equations.md) — every equation in the codebase
+- [Architecture](architecture.md) — 107-module dependency graph
+- [API Reference](api.md) — core module documentation
+- [Analysis API](analysis_api.md) — 41 analysis modules
+- [Phase API](phase_api.md) — 14 evolution algorithms
 - [Hardware Guide](hardware_guide.md) — IBM Quantum setup
+- [Bridges](bridges_api.md) — cross-repo integrations

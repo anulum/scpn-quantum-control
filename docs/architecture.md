@@ -1,68 +1,191 @@
 # Architecture
 
+## Package Statistics (v0.9.1)
+
+| Metric | Count |
+|--------|-------|
+| Python modules | 107 |
+| Rust crate | 1 (PyO3 0.25) |
+| Tests | 1,789 |
+| Lines of code | ~17,500 |
+| Subpackages | 12 |
+| Research gems | 33 (21 novel, no prior art) |
+| Examples | 18 |
+| Notebooks | 13 |
+| Doc pages | 25 |
+
 ## Module Dependency Graph
 
 ```
-bridge/
-├── knm_hamiltonian.py      (standalone — canonical Knm data)
-├── snn_adapter.py          (optional sc-neurocore ArcaneNeuron bridge)
-├── ssgf_adapter.py         (optional SSGF geometry engine bridge)
-├── control_plasma_knm.py   (optional scpn-control plasma Knm bridge)
-├── phase_artifact.py       (shared UPDE phase artifact schema)
-├── orchestrator_adapter.py (phase-orchestrator payload adapter)
-├── sc_to_quantum.py        (standalone — angle/probability conversion)
-└── spn_to_qcircuit.py      (uses sc_to_quantum)
+bridge/                                    ← Foundation: K_nm → quantum objects
+├── knm_hamiltonian.py                       Canonical K_nm data, XY + XXZ Hamiltonians, ansatz
+├── snn_adapter.py                           sc-neurocore ArcaneNeuron bridge (optional)
+├── snn_backward.py                          Parameter-shift gradient through quantum layer
+├── ssgf_adapter.py                          SSGF geometry engine bridge (optional)
+├── ssgf_w_adapter.py                        Correlator-weighted geometry W update
+├── control_plasma_knm.py                    scpn-control plasma K_nm bridge (optional)
+├── phase_artifact.py                        Shared UPDE phase artifact schema
+├── orchestrator_adapter.py                  Phase-orchestrator payload adapter
+├── orchestrator_feedback.py                 Advance/hold/rollback from quantum state
+├── sc_to_quantum.py                         Angle/probability conversion
+└── spn_to_qcircuit.py                       SPN token → circuit amplitude
 
-qsnn/
-├── qlif.py       (standalone)
-├── qsynapse.py   (standalone)
-├── qstdp.py      (uses qsynapse)
-├── qlayer.py     (uses qlif, qsynapse)
-└── training.py   (parameter-shift gradient trainer)
+analysis/                                  ← 41 modules: probes of the sync transition
+├── sync_witness.py                          ★ Synchronization witnesses (Gem 1)
+├── sync_entanglement_witness.py             ★ R as entanglement witness (Gem 12)
+├── quantum_persistent_homology.py           ★ Full PH pipeline from counts (Gem 5)
+├── persistent_homology.py                     Classical PH utilities
+├── h1_persistence.py                          Vortex density at BKT
+├── entanglement_enhanced_sync.py            ★ Entanglement lowers K_c (Gem 7)
+├── hamiltonian_self_consistency.py           ★ K_nm round-trip verification (Gem 10)
+├── hamiltonian_learning.py                    Recover K_nm from measurements
+├── dynamical_lie_algebra.py                 ★ DLA dimension = 2^(2N-1)-2 (Gem 11)
+├── dla_parity_theorem.py                    ★ Z₂ parity proof (Gem 14)
+├── qfi_criticality.py                       ★ QFI metrological sweet spot (Gem 15)
+├── qfi.py                                     Full QFI matrix computation
+├── entanglement_percolation.py              ★ Percolation = sync threshold (Gem 16)
+├── qrc_phase_detector.py                    ★ Self-probing reservoir (Gem 17)
+├── critical_concordance.py                  ★ Multi-probe K_c agreement (Gem 19)
+├── berry_fidelity.py                        ★ Berry phase / χ_F at BKT (Gem 20)
+├── quantum_mpemba.py                        ★ Quantum Mpemba effect (Gem 21)
+├── lindblad_ness.py                         ★ Lindblad NESS (Gem 22)
+├── adiabatic_gap.py                         ★ Adiabatic preparation hardness (Gem 23)
+├── pairing_correlator.py                    ★ Richardson pairing (Gem 25)
+├── xxz_phase_diagram.py                     ★ K_c vs Δ crossover (Gem 26)
+├── spectral_form_factor.py                  ★ SFF + level statistics (Gem 27)
+├── loschmidt_echo.py                        ★ Loschmidt echo / DQPT (Gem 28)
+├── entanglement_entropy.py                  ★ Half-chain entropy + Schmidt gap (Gem 29-30)
+├── entanglement_spectrum.py                   Full entanglement spectrum + CFT c
+├── krylov_complexity.py                     ★ Krylov complexity (Gem 31, highest novelty)
+├── magic_nonstabilizerness.py               ★ Stabilizer Rényi entropy (Gem 32)
+├── finite_size_scaling.py                   ★ BKT logarithmic corrections (Gem 33)
+├── otoc.py                                    Core OTOC computation
+├── otoc_sync_probe.py                       ★ OTOC as sync probe (Gem 9)
+├── quantum_speed_limit.py                   ★ QSL for BKT sync (Gem 13)
+├── quantum_phi.py                             IIT Φ from density matrix
+├── shadow_tomography.py                       Classical shadow estimation
+├── bkt_analysis.py                            Core BKT diagnostics
+├── bkt_universals.py                          10 candidate expressions for p_H1
+├── p_h1_derivation.py                         A_HP × √(2/π) = 0.717
+├── phase_diagram.py                           K_c vs T_eff boundary
+├── graph_topology_scan.py                     Coupling graph metrics
+├── koopman.py                                 Koopman linearisation (BQP argument)
+├── monte_carlo_xy.py                          Classical XY MC (Rust-accelerated)
+├── vortex_binding.py                          Kosterlitz RG flow
+└── enaqt.py                                   Environment-assisted quantum transport
 
-phase/
-├── xy_kuramoto.py   (uses knm_hamiltonian)
-├── trotter_upde.py  (uses knm_hamiltonian)
-├── phase_vqe.py     (uses knm_hamiltonian)
-├── ansatz_bench.py  (uses knm_hamiltonian)
-└── trotter_error.py (uses knm_hamiltonian)
+phase/                                     ← 14 modules: time evolution + variational
+├── xy_kuramoto.py                             Trotterised XY solver
+├── trotter_upde.py                            Full 16-layer UPDE solver
+├── trotter_error.py                           Trotter error analysis
+├── phase_vqe.py                               Variational eigensolver
+├── adapt_vqe.py                             ★ Gradient-driven operator selection
+├── varqite.py                                 Imaginary time evolution
+├── avqds.py                                   Adaptive variational dynamics
+├── qsvt_evolution.py                          QSVT resource estimation (260× speedup)
+├── adiabatic_preparation.py                   Adiabatic ground state prep
+├── cross_domain_transfer.py                 ★ VQE parameter warm-starting (Gem 8)
+├── floquet_kuramoto.py                      ★ Discrete time crystal (Gem 18)
+├── coupling_topology_ansatz.py              ★ K_nm-informed ansatz (Gem 4)
+├── ansatz_methodology.py                      Ansatz strategy analysis
+└── ansatz_bench.py                            Ansatz benchmarking
 
-control/
-├── qaoa_mpc.py          (uses knm_hamiltonian)
-├── vqls_gs.py           (standalone)
-├── qpetri.py            (uses spn_to_qcircuit)
-├── q_disruption.py      (uses sc_to_quantum)
-└── q_disruption_iter.py (ITER 11-feature classifier + fusion-core adapter)
+control/                                   ← Quantum control + classification
+├── qaoa_mpc.py                                QAOA model-predictive control
+├── vqls_gs.py                                 VQLS Grad-Shafranov solver
+├── qpetri.py                                  Quantum Petri nets
+├── q_disruption.py                            Disruption classifier
+└── q_disruption_iter.py                       ITER 11-feature + fusion-core adapter
 
-identity/
-├── ground_state.py          (VQE attractor basin)
-├── coherence_budget.py      (Heron r2 decoherence budget)
-├── entanglement_witness.py  (CHSH S-parameter)
-├── identity_key.py          (spectral fingerprint + HMAC)
-└── binding_spec.py          (6-layer topology + orchestrator mapping)
+qsnn/                                      ← Quantum spiking neural networks
+├── qlif.py                                    Quantum LIF neuron
+├── qsynapse.py                                Quantum synapse (CRy)
+├── qstdp.py                                   Quantum STDP learning
+├── qlayer.py                                  Dense quantum layer
+└── training.py                                Parameter-shift trainer
 
-benchmarks/
-└── quantum_advantage.py     (classical vs quantum scaling)
+identity/                                  ← Identity continuity analysis
+├── ground_state.py                            VQE attractor basin
+├── coherence_budget.py                        Heron r2 decoherence budget
+├── entanglement_witness.py                    CHSH S-parameter
+├── identity_key.py                            Spectral fingerprint + HMAC
+├── robustness.py                              Adiabatic robustness certificate
+└── binding_spec.py                            6-layer topology + orchestrator mapping
 
-qec/
-├── control_qec.py        (toric code + MWPM decoder)
-├── fault_tolerant.py     (RepetitionCodeUPDE — bit-flip only)
-└── surface_code_upde.py  (structural model — resource estimation)
+mitigation/                                ← Error mitigation
+├── zne.py                                     Zero-noise extrapolation
+├── pec.py                                     Probabilistic error cancellation
+├── dd.py                                      Dynamical decoupling
+└── symmetry_verification.py                 ★ Z₂ parity post-selection (Gem 2)
 
-mitigation/
-├── zne.py  (zero-noise extrapolation)
-├── pec.py  (probabilistic error cancellation)
-└── dd.py   (dynamical decoupling)
+gauge/                                     ← U(1) gauge theory probes
+├── wilson_loop.py                             Wilson loop measurement
+├── vortex_detector.py                         BKT vortex density
+├── cft_analysis.py                            CFT central charge extraction
+├── universality.py                            BKT universality class check
+└── confinement.py                             String tension + confinement
 
-hardware/
-├── runner.py        (IBM Quantum job submission)
-├── experiments.py   (20 pre-built experiments)
-├── trapped_ion.py   (synthetic trapped-ion noise model)
-└── classical.py     (Rust-accelerated Kuramoto reference)
+ssgf/                                      ← SSGF quantum integration
+├── quantum_gradient.py                        dC_quantum/dz via finite differences
+├── quantum_costs.py                           C_micro, C4_tcbo, C_pgbo
+├── quantum_outer_cycle.py                     Variational z descent
+└── quantum_spectral.py                        Fiedler via QPE resource estimation
 
-scpn_quantum_engine/  (Rust crate, PyO3 0.25)
-└── src/lib.rs        (kuramoto_trajectory, pec_sample_parallel, build_knm)
+applications/                              ← Physical system benchmarks
+├── fmo_benchmark.py                           FMO photosynthetic complex (7 chromophores)
+├── power_grid.py                              IEEE 5-bus power grid
+├── josephson_array.py                         JJA/transmon self-simulation
+├── eeg_benchmark.py                           8-channel alpha-band PLV
+├── iter_benchmark.py                          8 MHD mode coupling
+├── cross_domain.py                            5-system benchmark summary
+├── quantum_kernel.py                          K_nm-informed classification
+├── quantum_reservoir.py                       Pauli feature extraction
+├── disruption_classifier.py                   Plasma stability classification
+└── quantum_evs.py                             Quantum-enhanced EVS for CCW
+
+benchmarks/                                ← Performance baselines
+├── quantum_advantage.py                       Classical vs quantum scaling
+├── mps_baseline.py                            MPS bond dimension + advantage threshold
+├── gpu_baseline.py                            A100 FLOPS + GPU vs QPU crossover
+└── appqsim_protocol.py                        Application-oriented fidelity metrics
+
+qec/                                       ← Quantum error correction
+├── control_qec.py                             Toric code + MWPM decoder
+├── fault_tolerant.py                          RepetitionCodeUPDE
+├── surface_code_upde.py                       Surface code resource estimation
+└── error_budget.py                            3-channel Trotter+gate+logical allocation
+
+hardware/                                  ← Backend + experiments
+├── runner.py                                  IBM Quantum job submission
+├── experiments.py                             20 pre-built experiments
+├── trapped_ion.py                             Trapped-ion noise model
+├── classical.py                               Rust-accelerated Kuramoto reference
+├── gpu_accel.py                               CuPy GPU offload (opt-in)
+├── circuit_cutting.py                         Partition optimiser for 32-64 oscillators
+├── qasm_export.py                             OpenQASM 3.0 export
+├── qcvv.py                                    State fidelity + mirror circuits + XEB
+└── cirq_adapter.py                            Cirq backend adapter (optional)
+
+crypto/                                    ← Quantum key distribution
+├── qkd_bb84.py                                BB84 protocol
+├── bell_test.py                               CHSH test
+├── topology_auth.py                           Topology-authenticated QKD
+└── percolation.py                             Key rate percolation
+
+tcbo/                                      ← TCBO quantum observer
+└── quantum_observer.py                        p_h1, TEE, string order, Betti proxies
+
+pgbo/                                      ← PGBO quantum bridge
+└── quantum_bridge.py                          Quantum geometric tensor, Berry curvature
+
+l16/                                       ← Layer 16 quantum director
+└── quantum_director.py                        Loschmidt echo, stability score
+
+scpn_quantum_engine/                       ← Rust crate (PyO3 0.25)
+└── src/lib.rs                                 kuramoto_trajectory, pec_sample, build_knm
 ```
+
+★ marks modules from the 33 Research Gems (Rounds 1-8, March 2026).
 
 ## Classical-to-Quantum Mapping
 
