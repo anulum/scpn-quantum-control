@@ -8,25 +8,53 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://python.org)
 [![Qiskit 1.0+](https://img.shields.io/badge/qiskit-1.0%2B-6929C4.svg)](https://qiskit.org)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue.svg)](https://anulum.github.io/scpn-quantum-control)
-[![Tests: 627+](https://img.shields.io/badge/tests-679%20passing-brightgreen.svg)]()
-[![Version: 0.9.0](https://img.shields.io/badge/version-0.9.0-orange.svg)](https://pypi.org/project/scpn-quantum-control/)
+[![Tests: 1789](https://img.shields.io/badge/tests-1789%20passing-brightgreen.svg)]()
+[![Version: 0.9.1](https://img.shields.io/badge/version-0.9.1-orange.svg)](https://pypi.org/project/scpn-quantum-control/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18821929.svg)](https://doi.org/10.5281/zenodo.18821929)
 [![Hardware: ibm_fez](https://img.shields.io/badge/hardware-ibm__fez%20Heron%20r2-blueviolet.svg)]()
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/anulum/scpn-quantum-control/blob/main/notebooks/01_kuramoto_xy_dynamics.ipynb)
 
-NISQ quantum simulation of coupled Kuramoto oscillator networks via the
-XY spin Hamiltonian mapping. Supply any coupling matrix K and natural
-frequencies omega; this package compiles them into Qiskit circuits and
-runs Trotterized time evolution on statevector simulation or IBM hardware.
+---
 
-Validated on IBM Heron r2 (ibm_fez): **0.05% VQE ground-state error**
-on a 4-qubit subsystem, plus a 12-point decoherence curve from depth 5
-to 770. Ships with the SCPN 16-oscillator network as a built-in example,
-but works with any coupling topology.
+## What This Package Does
 
-If you work on quantum simulation of coupled oscillators, NISQ benchmarking,
-or Kuramoto/XY physics, this gives you a tested pipeline from coupling
-matrices to hardware results.
+The classical Kuramoto model for coupled oscillators maps directly to the quantum
+XY spin Hamiltonian. Superconducting qubits are native simulators of this physics:
+each qubit is an oscillator on the Bloch sphere, and the XX+YY coupling between
+qubits reproduces the sin(theta_j - theta_i) interaction of the Kuramoto model.
+
+This package provides three things:
+
+1. **A compiler** that takes any coupling matrix K_nm and natural frequencies
+   omega and produces executable Qiskit circuits for IBM hardware.
+
+2. **33 research modules** (the "gems") implementing novel quantum probes of the
+   synchronization phase transition — synchronization witnesses, topological
+   diagnostics, chaos measures, computational complexity bounds, and open-system
+   dynamics. 21 of these have no prior art in the literature.
+
+3. **The SCPN 16-layer network** as a built-in benchmark — the coupling matrix
+   from Paper 27 of the Sentient-Consciousness Projection Network framework,
+   where synchronization is the mechanism by which consciousness emerges across
+   16 ontological layers.
+
+Think of it as a quantum microscope for synchronization. Classical Kuramoto tells
+you *when* oscillators lock in step. This package tells you *what the quantum
+state looks like* at the transition, *how hard it is* to prepare, *what its
+topology reveals*, and *where classical simulation fails*.
+
+## Key Results
+
+| Result | Value |
+|--------|-------|
+| VQE ground-state error | **0.05%** (4-qubit, ibm_fez) |
+| 16-layer UPDE snapshot | 46% error at depth 770 (NISQ-consistent) |
+| Coherence wall | depth 250–400 (Heron r2) |
+| DLA dimension formula | 2^(2N-1) − 2 (exact, all N) |
+| Novel research modules | 33 (21 with no prior art) |
+| IBM hardware jobs | 9 submitted to ibm_fez (2 completed) |
+| Test suite | **1,789 passing**, 7 skipped |
+| Python modules | 107 + 1 Rust crate |
 
 ## Background: Kuramoto → XY Mapping
 
@@ -111,66 +139,67 @@ layers (L3, L4, L10) maintain coherence.*
 near-perfect readout (depth < 25), linear decoherence (85-400), and
 noise-dominated (> 400).*
 
-## Architecture
+## Package Map
 
+```mermaid
+graph TD
+    subgraph Foundation
+        bridge["bridge/ (11)\nK_nm → Hamiltonian\ncross-repo adapters"]
+    end
+
+    subgraph "Core Physics"
+        phase["phase/ (14)\nTrotter, VQE, ADAPT-VQE\nVarQITE, Floquet DTC"]
+        analysis["analysis/ (41)\nWitnesses, QFI, PH\nOTOC, Krylov, magic"]
+    end
+
+    subgraph "Applications"
+        control["control/ (5)\nQAOA-MPC, VQLS-GS\nPetri nets, ITER"]
+        qsnn["qsnn/ (5)\nQuantum spiking\nneural networks"]
+        apps["applications/ (10)\nFMO, power grid\nJosephson, EEG, ITER"]
+    end
+
+    subgraph "Hardware & QEC"
+        hw["hardware/ (9)\nIBM runner, trapped-ion\nGPU offload, cutting"]
+        mit["mitigation/ (4)\nZNE, PEC, DD\nZ₂ post-selection"]
+        qec["qec/ (4)\nToric code, surface code\nrep code, error budget"]
+    end
+
+    subgraph "Field Theory"
+        gauge["gauge/ (5)\nWilson loops, vortices\nCFT, universality"]
+        crypto["crypto/ (4)\nBB84, Bell tests\ntopology-auth QKD"]
+    end
+
+    bridge --> phase
+    bridge --> analysis
+    bridge --> control
+    bridge --> qsnn
+    phase --> analysis
+    phase --> apps
+    hw --> phase
+    mit --> hw
+    qec --> hw
+    analysis --> gauge
+
+    style bridge fill:#6929C4,color:#fff
+    style analysis fill:#d4a017,color:#000
+    style phase fill:#6929C4,color:#fff
 ```
-scpn_quantum_control/
-├── qsnn/           Quantum spiking neural networks
-│   ├── qlif.py         Ry-rotation LIF neuron (P(spike) = sin²(θ/2))
-│   ├── qsynapse.py     Controlled-Ry synapse (CRy weight encoding)
-│   ├── qstdp.py        Parameter-shift STDP learning rule
-│   ├── qlayer.py       Multi-qubit entangled dense layer
-│   └── training.py     Parameter-shift gradient trainer
-├── phase/          Quantum phase dynamics
-│   ├── xy_kuramoto.py  Kuramoto → XY Hamiltonian + Trotter evolution
-│   ├── trotter_upde.py 16-layer UPDE as multi-site spin chain
-│   ├── phase_vqe.py    VQE ground state with Knm-informed ansatz
-│   ├── ansatz_bench.py     VQE ansatz comparison benchmarking
-│   └── trotter_error.py    Trotter evolution error analysis
-├── control/        Quantum control algorithms
-│   ├── qaoa_mpc.py     QAOA binary MPC trajectory optimization
-│   ├── vqls_gs.py      VQLS for Grad-Shafranov equilibrium
-│   ├── qpetri.py       Quantum Petri net (superposition tokens)
-│   ├── q_disruption.py    Quantum kernel disruption classifier
-│   └── q_disruption_iter.py  ITER 11-feature classifier + fusion-core adapter
-├── bridge/         Classical ↔ quantum converters
-│   ├── knm_hamiltonian.py  Knm matrix → SparsePauliOp compiler
-│   ├── snn_adapter.py     sc-neurocore ArcaneNeuron ↔ quantum layer
-│   ├── ssgf_adapter.py    SSGF geometry ↔ quantum (quantum-in-the-loop)
-│   ├── phase_artifact.py   Shared UPDE phase artifact schema
-│   ├── orchestrator_adapter.py  scpn-phase-orchestrator bridge
-│   ├── spn_to_qcircuit.py  SPN topology → quantum circuit
-│   ├── sc_to_quantum.py    Bitstream probability ↔ rotation angle
-│   └── control_plasma_knm.py  scpn-control plasma Knm bridge
-├── identity/       Identity continuity analysis
-│   ├── ground_state.py     VQE attractor basin + robustness gap
-│   ├── coherence_budget.py Heron r2 decoherence budget
-│   ├── entanglement_witness.py  CHSH S-parameter measurement
-│   ├── identity_key.py    Spectral fingerprint + HMAC verification
-│   └── binding_spec.py    6-layer 18-osc topology + orchestrator mapping
-├── benchmarks/     Performance benchmarks
-│   └── quantum_advantage.py  Classical vs quantum scaling + crossover
-├── crypto/         Topology-authenticated quantum cryptography
-│   ├── knm_key.py         K_nm → VQE ground state → key material
-│   ├── entanglement_qkd.py  SCPN-QKD protocol, CHSH Bell test
-│   ├── topology_auth.py   Spectral fingerprint authentication
-│   ├── percolation.py     Entanglement percolation on K_nm graph
-│   ├── hierarchical_keys.py  Multi-layer key derivation
-│   └── noise_analysis.py  Devetak-Winter key rates, noise channels
-├── qec/            Quantum error correction
-│   ├── control_qec.py      Toric code + MWPM decoder (Knm-weighted)
-│   ├── fault_tolerant.py   RepetitionCodeUPDE (bit-flip protection)
-│   └── surface_code_upde.py  SurfaceCodeUPDE (structural model, resource estimation)
-├── mitigation/     Error mitigation
-│   ├── zne.py          Zero-noise extrapolation (unitary folding)
-│   ├── pec.py          Probabilistic error cancellation (Pauli twirl)
-│   └── dd.py           Dynamical decoupling (XY4, X2, CPMG)
-└── hardware/       Hardware backends
-    ├── runner.py       ibm_fez job submission + result parsing
-    ├── experiments.py  20 pre-built experiment circuits
-    ├── trapped_ion.py  Trapped-ion noise model + transpilation
-    └── classical.py    Classical Kuramoto reference solver
-```
+
+| Subpackage | Modules | Purpose |
+|------------|:-------:|---------|
+| `analysis` | 41 | Synchronization probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
+| `phase` | 14 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC |
+| `bridge` | 11 | K_nm → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
+| `applications` | 10 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS |
+| `hardware` | 9 | IBM Quantum runner, trapped-ion backend, GPU offload, circuit cutting |
+| `identity` | 6 | VQE attractor, coherence budget, entanglement witness, fingerprint |
+| `control` | 5 | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, ITER disruption classifier |
+| `qsnn` | 5 | Quantum spiking neural networks (LIF, STDP, synapses, training) |
+| `gauge` | 5 | U(1) Wilson loops, vortex detection, CFT, universality, confinement |
+| `qec` | 4 | Toric code, repetition code UPDE, surface code estimation, error budget |
+| `mitigation` | 4 | ZNE, PEC, dynamical decoupling, Z₂ parity post-selection |
+| `crypto` | 4 | BB84, Bell tests, topology-authenticated QKD |
+| `benchmarks` | 4 | Classical vs quantum scaling, MPS baseline, GPU baseline, AppQSim |
 
 ## Quick Start
 
@@ -199,6 +228,17 @@ solver = QuantumKuramotoSolver(4, K, OMEGA_N_16[:4])
 result = solver.run(t_max=0.5, dt=0.1, trotter_per_step=2)
 ```
 
+**Detect synchronization** with witness operators:
+
+```python
+from scpn_quantum_control.analysis.sync_witness import evaluate_all_witnesses
+
+# After running X-basis and Y-basis circuits on IBM hardware:
+results = evaluate_all_witnesses(x_counts, y_counts, n_qubits=4)
+for name, w in results.items():
+    print(f"{name}: {'SYNCHRONIZED' if w.is_synchronized else 'incoherent'}")
+```
+
 For development (editable install with test/lint tooling):
 
 ```bash
@@ -207,21 +247,6 @@ pre-commit install
 pytest tests/ -v
 ```
 
-### Examples
-
-See [`examples/README.md`](examples/README.md) for a guided walkthrough. Summary:
-
-| Example | What it does |
-|---------|-------------|
-| [`01_qlif_demo.py`](examples/01_qlif_demo.py) | Quantum LIF neuron: maps membrane potential to Ry rotation, compares firing rates with classical Bernoulli expectation |
-| [`02_kuramoto_xy_demo.py`](examples/02_kuramoto_xy_demo.py) | 4-oscillator Kuramoto dynamics on the XY Hamiltonian via Trotter evolution; prints R(t) trajectory |
-| [`03_qaoa_mpc_demo.py`](examples/03_qaoa_mpc_demo.py) | QAOA-based binary MPC: optimizes 4-step coil control sequence by mapping quadratic cost to Ising Hamiltonian |
-| [`04_qpetri_demo.py`](examples/04_qpetri_demo.py) | Quantum Petri net: 3 places, 2 transitions — tokens evolve in superposition via controlled rotations |
-| [`05_vqe_ansatz_comparison.py`](examples/05_vqe_ansatz_comparison.py) | Benchmarks three VQE ansatze (K_nm-informed, hardware-efficient, EfficientSU2) on the 4-qubit Kuramoto Hamiltonian |
-| [`06_zne_demo.py`](examples/06_zne_demo.py) | Zero-noise extrapolation on a noisy simulator: unitary folding + Richardson extrapolation under synthetic Heron r2 noise |
-
-All examples run on statevector simulation (no QPU needed).
-
 ### Hardware execution (requires IBM Quantum credentials)
 
 ```bash
@@ -229,57 +254,96 @@ pip install -e ".[ibm]"
 python run_hardware.py --experiment kuramoto --qubits 4 --shots 10000
 ```
 
-## Modules
+## Data Flow
 
-### Quantum Spiking Neural Networks (`qsnn/`)
+The pipeline from coupling matrix to measurement follows a fixed sequence:
 
-Maps stochastic LIF neurons to parameterized quantum circuits. A qubit with
-Ry(theta) rotation + Z-basis measurement produces spike/no-spike with
-probability sin^2(theta/2) — direct analog of stochastic membrane potential.
+```mermaid
+graph LR
+    A["K_nm\ncoupling matrix"] --> B["knm_to_hamiltonian()\nSparsePauliOp"]
+    B --> C["Trotter / VQE\nQuantumCircuit"]
+    C --> D["Transpile\nnative gates"]
+    D --> E["Execute\nAer / IBM"]
+    E --> F["Parse counts\n⟨X⟩, ⟨Y⟩, ⟨Z⟩"]
+    F --> G["Order parameter\nR(t)"]
 
-### Quantum Phase Dynamics (`phase/`)
+    style A fill:#6929C4,color:#fff
+    style G fill:#2ecc71,color:#000
+```
 
-The Kuramoto ODE is isomorphic to the XY spin Hamiltonian (see
-[Background](#background-scpn-and-the-quantum-mapping)). Quantum hardware
-simulates this natively via Trotterized time evolution. The 16-layer UPDE
-(Unified Phase Dynamics Equation — the master equation governing all SCPN
-layers) becomes a 16-qubit spin chain with K_nm coupling.
+## Examples
 
-### Quantum Control (`control/`)
+18 standalone scripts in [`examples/`](examples/):
 
-- **QAOA-MPC**: Discretize MPC action space to binary, map quadratic cost to Ising Hamiltonian, solve via QAOA
-- **VQLS-GS**: Solve discretized Grad-Shafranov PDE as quantum linear system
-- **Quantum Petri**: SPN tokens as qubit amplitudes, transitions fire in superposition
-- **Disruption classifier**: 11-D feature amplitude encoding + parameterized circuit
+| # | Script | What it demonstrates |
+|:-:|--------|---------------------|
+| 01 | `qlif_demo` | Quantum LIF neuron: membrane → Ry rotation → spike |
+| 02 | `kuramoto_xy_demo` | 4-oscillator Kuramoto dynamics, R(t) trajectory |
+| 03 | `qaoa_mpc_demo` | QAOA binary MPC: quadratic cost → Ising Hamiltonian |
+| 04 | `qpetri_demo` | Quantum Petri net: tokens evolve in superposition |
+| 05 | `vqe_ansatz_comparison` | Three ansatze benchmarked on 4-qubit Hamiltonian |
+| 06 | `zne_demo` | Zero-noise extrapolation with unitary folding |
+| 07 | `crypto_bell_test` | CHSH inequality violation certification |
+| 08 | `dynamical_decoupling` | DD pulse sequence insertion (XY4, X2, CPMG) |
+| 09 | `classical_vs_quantum_benchmark` | Scaling crossover analysis |
+| 10 | `identity_continuity_demo` | VQE attractor basin stability |
+| 11 | `pec_demo` | Probabilistic error cancellation |
+| 12 | `trapped_ion_demo` | Ion trap noise model comparison |
+| 13 | `iter_disruption_demo` | ITER plasma disruption classification |
+| 14 | `quantum_advantage_demo` | Advantage threshold estimation |
+| 15 | `qsnn_training_demo` | QSNN training loop with parameter-shift |
+| 16 | `fault_tolerant_demo` | Repetition code UPDE |
+| 17 | `snn_ssgf_bridges_demo` | Cross-repo bridge roundtrips |
+| 18 | `end_to_end_pipeline` | Complete K_nm → IBM → analysis pipeline |
 
-### Bridge (`bridge/`)
+All examples run on statevector simulation (no QPU needed).
 
-Compiles SCPN data structures into quantum circuits:
-- `knm_to_hamiltonian()`: 16x16 coupling matrix -> SparsePauliOp
-- `knm_to_ansatz()`: Physics-informed entanglement topology
-- `probability_to_angle()`: p -> 2*arcsin(sqrt(p))
-- `UPDEPhaseArtifact`: shared phase-state schema for classical/quantum lanes
-- `PhaseOrchestratorAdapter`: converts `scpn-phase-orchestrator` state payloads to quantum bridge artifacts and back
-- `build_knm_from_binding_spec()`: derives quantum Knm directly from orchestrator/fusion binding specs
+## Notebooks
 
-### QEC (`qec/`)
+13 interactive Jupyter notebooks in [`notebooks/`](notebooks/) covering every
+module from beginner to frontier research:
 
-Toric surface code protecting quantum control signals. MWPM decoder uses Knm graph distance instead of lattice distance for physics-aware error correction.
+| # | Notebook | Level | Key Output |
+|:-:|----------|:-----:|------------|
+| 01 | Kuramoto XY Dynamics | Beginner | R(t) trajectory, quantum-classical overlay |
+| 02 | VQE Ground State | Beginner | Energy convergence, ansatz comparison |
+| 03 | Error Mitigation | Intermediate | ZNE extrapolation plot |
+| 04 | UPDE 16-Layer | Intermediate | Per-layer R bar chart |
+| 05 | Crypto & Entanglement | Intermediate | CHSH S-parameter, QKD QBER |
+| 06 | PEC Error Cancellation | Advanced | PEC vs ZNE, overhead scaling |
+| 07 | Quantum Advantage | Advanced | Scaling crossover prediction |
+| 08 | Identity Continuity | Advanced | Attractor basin, fingerprint |
+| 09 | ITER Disruption | Domain | Feature distributions, accuracy |
+| 10 | QSNN Training | Advanced | Loss curve, weight evolution |
+| 11 | Surface Code Budget | Advanced | QEC resource estimation |
+| 12 | Trapped Ion Comparison | Advanced | Noise model comparison |
+| 13 | Cross-Repo Bridges | Integration | Phase roundtrip, adapter demos |
 
-### Quantum Cryptography (`crypto/`)
+All run on local AerSimulator. No IBM credentials needed.
 
-Topology-authenticated QKD using K_nm as shared secret:
-- **Key generation**: VQE ground state of H(K_nm) → correlated measurement → sifted key
-- **CHSH Bell test**: certifies entanglement via CHSH inequality violation
-- **Spectral fingerprint**: Laplacian spectrum of K_nm as public authentication token
-- **Entanglement percolation**: identifies above-threshold qubit pairs for QKD channels
-- **Hierarchical keys**: 16-layer SCPN hierarchy → key derivation tree
-- **Noise analysis**: Devetak-Winter key rates under depolarizing/amplitude-damping channels
+## Architecture
 
-### Error Mitigation (`mitigation/`)
-
-- **ZNE**: Global unitary folding + Richardson extrapolation (Giurgica-Tiron et al. 2020)
-- **DD**: Dynamical decoupling pulse insertion (XY4, X2, CPMG) for idle qubits (Viola et al. 1999)
+```
+scpn_quantum_control/
+├── analysis/       41 modules — synchronization probes
+├── phase/          14 modules — time evolution + variational
+├── bridge/         11 modules — K_nm → quantum objects + cross-repo
+├── applications/   10 modules — physical system benchmarks
+├── hardware/        9 modules — IBM runner, trapped-ion, GPU, cutting
+├── identity/        6 modules — identity continuity analysis
+├── control/         5 modules — QAOA-MPC, VQLS-GS, Petri, ITER
+├── qsnn/            5 modules — quantum spiking neural networks
+├── gauge/           5 modules — U(1) gauge theory probes
+├── qec/             4 modules — error correction
+├── mitigation/      4 modules — ZNE, PEC, DD, Z₂
+├── crypto/          4 modules — QKD, Bell tests
+├── benchmarks/      4 modules — performance baselines
+├── ssgf/            4 modules — SSGF quantum integration
+├── tcbo/            1 module  — TCBO quantum observer
+├── pgbo/            1 module  — PGBO quantum bridge
+├── l16/             1 module  — Layer 16 quantum director
+└── scpn_quantum_engine/  Rust crate (PyO3 0.25)
+```
 
 ## Dependencies
 
@@ -288,36 +352,13 @@ Topology-authenticated QKD using K_nm as shared secret:
 | qiskit | >= 1.0.0 | Circuit construction, transpilation |
 | qiskit-aer | >= 0.14.0 | Statevector + noise simulation |
 | numpy | >= 1.24 | Array operations |
-| scipy | >= 1.10 | Sparse linear algebra, optimization |
+| scipy | >= 1.10 | Sparse linear algebra, optimisation |
 | networkx | >= 3.0 | Graph algorithms (QEC decoder) |
 
 Optional:
-- `matplotlib >= 3.5` for visualization
+- `matplotlib >= 3.5` for visualisation
 - `qiskit-ibm-runtime >= 0.20.0` for hardware execution
-
-## Notebooks
-
-Interactive Jupyter notebooks in [`notebooks/`](notebooks/):
-
-| Notebook | Covers |
-|----------|--------|
-| `01_kuramoto_xy_dynamics` | Kuramoto → XY mapping, Trotter evolution, 4-osc and 8-osc |
-| `02_vqe_ground_state` | VQE with Knm-informed ansatz, ansatz comparison, 4q and 8q |
-| `03_error_mitigation` | ZNE (unitary folding + Richardson), noisy simulator |
-| `04_upde_16_layer` | Full 16-layer SCPN, per-layer coherence analysis |
-| `05_crypto_and_entanglement` | CHSH Bell test, correlator matrix, QKD QBER |
-| `06_pec_error_cancellation` | PEC quasi-probability, Monte Carlo, overhead scaling |
-| `07_quantum_advantage_scaling` | Classical vs quantum timing, crossover extrapolation |
-
-All run on local AerSimulator. No IBM credentials needed.
-
-## Documentation
-
-Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/scpn-quantum-control)** — equations, architecture, API reference, hardware guide, experiment roadmap.
-
-Integration reference:
-- [`docs/orchestrator_integration.md`](docs/orchestrator_integration.md) — fusion/orchestrator-defined Kuramoto/UPDE specs into quantum bridge artifacts, with non-collision policy vs `scpn-control`.
-- Includes `scpn-control` plasma-native Knm compatibility bridge (`build_knm_plasma*`, `plasma_omega`).
+- `cupy >= 12.0` for GPU-accelerated simulation
 
 ## Limitations
 
@@ -334,13 +375,33 @@ Integration reference:
   ODE solvers outperform quantum simulation in both speed and accuracy.
   Potential quantum advantage requires N>>20 with error-corrected qubits
   (post-2030 hardware).
+- **IBM hardware results incomplete.** 7 of 9 campaign jobs still queued
+  (budget resets ~March 27).
+
+## Documentation
+
+Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/scpn-quantum-control)**:
+
+- [Installation](docs/installation.md) — pip install + dev setup
+- [Quickstart](docs/quickstart.md) — first experiment in 5 minutes
+- [Tutorials](docs/tutorials.md) — 4-level learning path, 14 tutorials
+- [Research Gems](docs/research_gems.md) — **33 novel modules with full theory and API**
+- [Equations](docs/equations.md) — every equation in the codebase
+- [Architecture](docs/architecture.md) — 107-module dependency graph
+- [Analysis API](docs/analysis_api.md) — 41 analysis modules
+- [Phase API](docs/phase_api.md) — 14 evolution algorithms
+- [Hardware Guide](docs/hardware_guide.md) — IBM Quantum setup
+- [Notebooks](docs/notebooks.md) — 13 interactive notebooks
+- [Bridges](docs/bridges_api.md) — cross-repo integrations
 
 ## Related Repositories
 
 | Repository | Description |
 |-----------|-------------|
-| [scpn-fusion-core](https://github.com/anulum/scpn-fusion-core) | Classical SCPN algorithms: Kuramoto solvers, coupling matrix calibration, transport models (v3.9.2, 1899 tests) |
-| [scpn-phase-orchestrator](https://github.com/anulum/scpn-phase-orchestrator) | SCPN phase orchestration: regime detection, UPDE engine, Petri-net supervisor (v0.1.0, 225 tests) |
+| [sc-neurocore](https://github.com/anulum/sc-neurocore) | Classical SCPN spiking neural network engine (v3.13.3, 2155+ tests) |
+| [scpn-fusion-core](https://github.com/anulum/scpn-fusion-core) | Classical SCPN algorithms: Kuramoto solvers, coupling calibration, transport (v3.9.3, 3300+ tests) |
+| [scpn-phase-orchestrator](https://github.com/anulum/scpn-phase-orchestrator) | SCPN phase orchestration: regime detection, UPDE engine, Petri-net supervisor (v0.4.1, 1305+ tests) |
+| [scpn-control](https://github.com/anulum/scpn-control) | SCPN control systems: plasma MPC, disruption mitigation (v0.18.0, 3015 tests) |
 
 ## Citation
 

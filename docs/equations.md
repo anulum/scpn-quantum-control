@@ -7,6 +7,47 @@ it and the physical intuition behind it.
 
 ---
 
+## Equation Dependency Tree
+
+Every equation in the codebase descends from the foundational Kuramoto → XY
+mapping. The tree below shows which equations feed into which — follow any path
+from root to leaf to trace a complete physical argument.
+
+```mermaid
+graph TD
+    KODE["Kuramoto ODE\nd θ/dt = ω + ΣK sin(Δθ)"] --> HXY["XY Hamiltonian\nH = -ΣK(XX+YY) - Σω Z"]
+    HXY --> TROTTER["Trotter evolution\nU(t) ≈ [e^{-iH_XY Δt} e^{-iH_Z Δt}]^n"]
+    HXY --> VQE["VQE ground state\nmin ⟨ψ(θ)|H|ψ(θ)⟩"]
+    HXY --> ORDER["Order parameter\nR = |Σ(⟨X⟩+i⟨Y⟩)|/N"]
+    HXY --> XXZ["XXZ extension\nH + Δ·ΣK·ZZ"]
+
+    TROTTER --> UPDE["16-qubit UPDE\nspin chain"]
+    TROTTER --> FLOQUET["Floquet DTC\nK(t) = K₀(1+δ cos Ωt)"]
+    VQE --> QFI["QFI\nF_Q ∝ 1/Δ²"]
+    VQE --> ENTROPY["Entanglement entropy\nS ~ (c/3) ln L"]
+    VQE --> MAGIC["Magic\nM₂ = -log₂(ΣP⟨P⟩⁴/2^N)"]
+    VQE --> KRYLOV["Krylov complexity\nC_K = Σ n|φ_n|²"]
+    VQE --> PERCOLATION["Entanglement percolation\nλ₂(L_C) > 0"]
+    VQE --> PAIRING["Richardson pairing\n⟨S⁺S⁻⟩"]
+
+    ORDER --> WITNESS["Sync witnesses\nW = R_c I - C̄"]
+    ORDER --> SFF["Spectral form factor\nr̄: Poisson → GOE"]
+    ORDER --> LOSCHMIDT["Loschmidt echo\nDQPT zeros"]
+    ORDER --> LINDBLAD["Lindblad NESS\nL[ρ_ss] = 0"]
+    ORDER --> MPEMBA["Quantum Mpemba\nF_far > F_near"]
+
+    HXY --> DLA["DLA dimension\n2^(2N-1) - 2"]
+    DLA --> PARITY["Z₂ parity\nP = Z⊗N"]
+
+    style HXY fill:#6929C4,color:#fff
+    style VQE fill:#6929C4,color:#fff
+    style DLA fill:#d4a017,color:#000
+    style KRYLOV fill:#d4a017,color:#000
+    style MAGIC fill:#d4a017,color:#000
+```
+
+---
+
 ## 1. Foundational: Kuramoto → XY Hamiltonian
 
 ### Classical Kuramoto (the UPDE core)
@@ -478,20 +519,56 @@ exact for perturbations around the synchronized fixed point.
 ## Convergence of All Probes at $K_c$
 
 The critical point concordance (Gem 19) demonstrates that all independent diagnostics
-agree on the same $K_c$:
+agree on the same $K_c$. This is the central empirical result of the package: eight
+independent observables, computed from different mathematical frameworks, all point to
+the same coupling strength.
 
+```mermaid
+graph LR
+    subgraph "Monotonic probes"
+        R["R (order parameter)\n0 → 1"]
+        L2["λ₂ (Fiedler)\n0 → connected"]
+        GAP["Δ (spectral gap)\nclose → open"]
+    end
+
+    subgraph "Peak probes"
+        QFI["F_Q (QFI)\npeak at K_c"]
+        M2["M₂ (magic)\npeak at K_c"]
+        CK["C_K (Krylov)\npeak at K_c"]
+        CHI["χ_F (fidelity susc.)\npeak at K_c"]
+    end
+
+    subgraph "Decay probes"
+        PH1["p_H1 (topology)\nhigh → 0"]
+        RBAR["r̄ (chaos)\n0.386 → 0.536"]
+    end
+
+    R --> KC["K_c\ncritical coupling"]
+    L2 --> KC
+    GAP --> KC
+    QFI --> KC
+    M2 --> KC
+    CK --> KC
+    CHI --> KC
+    PH1 --> KC
+    RBAR --> KC
+
+    style KC fill:#6929C4,color:#fff
 ```
-    K →  0          K_c          2.0
-         |           |            |
-    R    ·····───────╱────────── 1.0
-    QFI  ·····──────╱╲·········
-    gap  ─────╲─────╱──────────
-    λ₂   ·····──────╱────────── > 0
-    M₂   ·····──────╱╲·········
-    C_K  ·····──────╱╲·········
-    χ_F  ·····──────╱╲·········
-    p_H1 ─────╲─────╱·········· 0
-```
+
+**Behaviour of each probe across the transition:**
+
+| Probe | Below $K_c$ | At $K_c$ | Above $K_c$ | Type |
+|-------|-------------|----------|-------------|------|
+| $R$ (order parameter) | $\approx 0$ | $\sim 0.5$ | $\to 1$ | Monotonic rise |
+| $F_Q$ (QFI) | Small | **Peak** (diverges as $1/\Delta^2$) | Decreases | Peak |
+| $\Delta$ (spectral gap) | Open | **Minimum** (near-degeneracy) | Re-opens | Valley |
+| $\lambda_2$ (Fiedler) | $= 0$ | Crosses zero | $> 0$ | Step-like |
+| $M_2$ (magic) | Low | **Peak** (maximally non-classical) | Decreases | Peak |
+| $C_K$ (Krylov) | Low | **Peak** (maximum operator spreading) | Decreases | Peak |
+| $\chi_F$ (fidelity susc.) | Low | **Peak** (gauge-invariant) | Decreases | Peak |
+| $p_{H_1}$ (persistent homology) | High (many holes) | $\approx 0.72$ | $\to 0$ (no holes) | Monotonic decay |
+| $\bar{r}$ (level spacing) | $0.386$ (Poisson) | Crossover | $0.536$ (GOE) | Step-like |
 
 Every probe — order parameter, Fisher information, spectral gap, Fiedler connectivity,
 magic, Krylov complexity, fidelity susceptibility, persistent homology — independently
