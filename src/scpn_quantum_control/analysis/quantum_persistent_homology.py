@@ -76,23 +76,26 @@ def correlation_matrix_from_counts(
     """
     xx = _correlator_from_counts(x_counts, n_qubits)
     yy = _correlator_from_counts(y_counts, n_qubits)
-    return xx + yy
+    result: np.ndarray = xx + yy
+    return result
 
 
 def _correlator_from_counts(counts: dict[str, int], n_qubits: int) -> np.ndarray:
     """Compute ⟨Z_iZ_j⟩ from measurement counts in a given basis."""
     total = sum(counts.values())
     if total == 0:
-        return np.zeros((n_qubits, n_qubits))
+        zeros: np.ndarray = np.zeros((n_qubits, n_qubits))
+        return zeros
 
-    corr = np.zeros((n_qubits, n_qubits))
+    corr: np.ndarray = np.zeros((n_qubits, n_qubits))
     for bitstring, count in counts.items():
         bits = bitstring.replace(" ", "")
         n = min(n_qubits, len(bits))
         vals = np.array([1 - 2 * int(bits[-(q + 1)]) for q in range(n)])
         corr += count * np.outer(vals, vals)
     corr /= total
-    return corr
+    result: np.ndarray = corr
+    return result
 
 
 def correlation_to_distance(corr: np.ndarray) -> np.ndarray:
@@ -105,11 +108,12 @@ def correlation_to_distance(corr: np.ndarray) -> np.ndarray:
     """
     abs_corr = np.abs(corr)
     np.fill_diagonal(abs_corr, 0.0)
-    max_corr = np.max(abs_corr)
+    max_corr: float = float(np.max(abs_corr))
     if max_corr < 1e-15:
-        return np.ones_like(corr) - np.eye(corr.shape[0])
+        ones_minus_eye: np.ndarray = np.ones_like(corr) - np.eye(corr.shape[0])
+        return ones_minus_eye
 
-    dist = 1.0 - abs_corr / max_corr
+    dist: np.ndarray = 1.0 - abs_corr / max_corr
     np.fill_diagonal(dist, 0.0)
     return dist
 
@@ -179,13 +183,11 @@ def compare_quantum_classical_ph(
 
     Returns dict with both results and the delta.
     """
-    from .persistent_homology import compute_persistence
     from ..hardware.classical import classical_kuramoto_reference
+    from .persistent_homology import compute_persistence
 
     # Quantum path
-    q_result = quantum_persistent_homology(
-        x_counts, y_counts, n_qubits, persistence_threshold
-    )
+    q_result = quantum_persistent_homology(x_counts, y_counts, n_qubits, persistence_threshold)
 
     # Classical path: evolve Kuramoto ODE, extract final phases
     cl = classical_kuramoto_reference(n_qubits, t_max=t, dt=0.01, K=K, omega=omega)
@@ -223,9 +225,7 @@ def ph_sync_scan(
     n_h1_values = []
 
     for x_counts, y_counts in zip(x_counts_list, y_counts_list):
-        result = quantum_persistent_homology(
-            x_counts, y_counts, n_qubits, persistence_threshold
-        )
+        result = quantum_persistent_homology(x_counts, y_counts, n_qubits, persistence_threshold)
         p_h1_values.append(result.p_h1)
         n_h1_values.append(result.n_h1_persistent)
 

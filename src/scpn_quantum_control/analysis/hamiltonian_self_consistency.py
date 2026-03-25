@@ -62,7 +62,7 @@ def correlators_from_counts(
     """
     xx = _two_point_from_counts(x_counts, n_qubits)
     yy = _two_point_from_counts(y_counts, n_qubits)
-    C = xx + yy
+    C: np.ndarray = xx + yy
     np.fill_diagonal(C, 0.0)
     return C
 
@@ -71,15 +71,17 @@ def _two_point_from_counts(counts: dict[str, int], n: int) -> np.ndarray:
     """Compute ⟨Z_iZ_j⟩ from measurement counts in one basis."""
     total = sum(counts.values())
     if total == 0:
-        return np.zeros((n, n))
+        zeros: np.ndarray = np.zeros((n, n))
+        return zeros
 
-    corr = np.zeros((n, n))
+    corr: np.ndarray = np.zeros((n, n))
     for bitstring, count in counts.items():
         bits = bitstring.replace(" ", "")
         vals = np.array([1 - 2 * int(bits[-(q + 1)]) for q in range(min(n, len(bits)))])
         corr += count * np.outer(vals, vals)
     corr /= total
-    return corr
+    result: np.ndarray = corr
+    return result
 
 
 def correlator_shot_noise(

@@ -30,7 +30,7 @@ from dataclasses import dataclass
 
 import numpy as np
 from qiskit import QuantumCircuit
-from qiskit.quantum_info import Clifford, Statevector
+from qiskit.quantum_info import Statevector
 
 
 @dataclass
@@ -81,7 +81,7 @@ def generate_training_circuits(
             rotation_indices.append(i)
 
     training_circuits = []
-    for t in range(n_training):
+    for _t in range(n_training):
         qc = base.copy()
         data = list(qc.data)
         for idx in rotation_indices:
@@ -178,8 +178,8 @@ def fit_regression(
 
     slope, intercept = np.polyfit(x, y, 1)
     y_pred = slope * x + intercept
-    ss_res = np.sum((y - y_pred) ** 2)
-    ss_tot = np.sum((y - np.mean(y)) ** 2)
+    ss_res: float = float(np.sum((y - y_pred) ** 2))
+    ss_tot: float = float(np.sum((y - np.mean(y)) ** 2))
     r_sq = 1.0 - ss_res / max(ss_tot, 1e-15)
 
     return float(slope), float(intercept), float(r_sq)
@@ -243,13 +243,9 @@ def cpdr_full_pipeline(
 
     # Run training circuits on noisy backend
     training_counts = run_on_backend(training_circuits)
-    noisy_values = compute_noisy_values_from_counts(
-        training_counts, n_qubits, observable_qubits
-    )
+    noisy_values = compute_noisy_values_from_counts(training_counts, n_qubits, observable_qubits)
 
     # Extract raw target value
-    raw_value = compute_noisy_values_from_counts(
-        [target_counts], n_qubits, observable_qubits
-    )[0]
+    raw_value = compute_noisy_values_from_counts([target_counts], n_qubits, observable_qubits)[0]
 
     return cpdr_mitigate(raw_value, ideal_values, noisy_values)
