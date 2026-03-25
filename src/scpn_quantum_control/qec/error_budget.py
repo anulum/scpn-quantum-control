@@ -154,7 +154,7 @@ def compute_error_budget(
     total_phys = n * phys_per_osc
     qec_rounds = n_steps * d
 
-    freq_het = float(np.std(omega) / max(np.mean(np.abs(omega)), 1e-15))
+    freq_het = float(np.std(omega) / max(float(np.mean(np.abs(omega))), 1e-15))
 
     return ErrorBudget(
         n_oscillators=n,

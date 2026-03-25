@@ -7,8 +7,6 @@
 
 from __future__ import annotations
 
-import numpy as np
-import pytest
 from qiskit.quantum_info import Statevector
 
 from scpn_quantum_control.analysis.entanglement_enhanced_sync import (
@@ -121,7 +119,7 @@ class TestCompareAllStates:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         results = compare_all_initial_states(K, omega, t_max=0.5, n_steps=3)
-        for name, traj in results.items():
+        for _name, traj in results.items():
             assert len(traj.R_values) == 4
             assert all(0 <= r <= 1 + 1e-10 for r in traj.R_values)
 
@@ -141,7 +139,7 @@ class TestEntanglementAdvantage:
         omega = OMEGA_N_16[:3]
         results = compare_all_initial_states(K, omega, t_max=0.5, n_steps=5)
         adv = entanglement_advantage(results)
-        for name, data in adv.items():
+        for _name, data in adv.items():
             assert "delta_R_final" in data
             assert "convergence_speedup" in data
 

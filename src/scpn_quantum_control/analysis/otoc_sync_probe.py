@@ -30,8 +30,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from ..bridge.knm_hamiltonian import build_knm_paper27, OMEGA_N_16
-from .otoc import OTOCResult, compute_otoc
+from .otoc import compute_otoc
 
 
 @dataclass
@@ -79,8 +78,11 @@ def otoc_sync_scan(
         K_scaled = K * k_base
 
         otoc_result = compute_otoc(
-            K_scaled, omega, times=times,
-            w_qubit=w_qubit, v_qubit=v_qubit,
+            K_scaled,
+            omega,
+            times=times,
+            w_qubit=w_qubit,
+            v_qubit=v_qubit,
         )
         lyapunov_vals.append(otoc_result.lyapunov_estimate)
         scrambling_vals.append(otoc_result.scrambling_time)

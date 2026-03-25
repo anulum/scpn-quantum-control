@@ -37,8 +37,12 @@ class TestCorrelatorsFromCounts:
 
     def test_symmetric(self):
         rng = np.random.default_rng(42)
-        x_counts = {format(i, "03b"): int(c) for i, c in enumerate(rng.multinomial(4000, [1 / 8] * 8))}
-        y_counts = {format(i, "03b"): int(c) for i, c in enumerate(rng.multinomial(4000, [1 / 8] * 8))}
+        x_counts = {
+            format(i, "03b"): int(c) for i, c in enumerate(rng.multinomial(4000, [1 / 8] * 8))
+        }
+        y_counts = {
+            format(i, "03b"): int(c) for i, c in enumerate(rng.multinomial(4000, [1 / 8] * 8))
+        }
         C = correlators_from_counts(x_counts, y_counts, 3)
         np.testing.assert_array_almost_equal(C, C.T)
 
@@ -80,9 +84,8 @@ class TestSelfConsistencyNoisySim:
     def test_noisy_has_higher_error(self):
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
-        exact = self_consistency_from_exact(K, omega, maxiter=30)
+        self_consistency_from_exact(K, omega, maxiter=30)
         noisy = self_consistency_from_noisy_sim(K, omega, noise_std=0.2, maxiter=30)
-        # Noisy should generally have higher error (not guaranteed for small maxiter)
         assert noisy.shot_noise_std > 0
 
     def test_low_noise_has_low_correlator_error(self):

@@ -112,14 +112,16 @@ def R_separable_bound_at_energy(
 
         psi = np.array([1.0 + 0j])
         for i in range(n):
-            qubit = np.array([
-                np.cos(thetas[i] / 2),
-                np.sin(thetas[i] / 2) * np.exp(1j * phis[i]),
-            ])
+            qubit = np.array(
+                [
+                    np.cos(thetas[i] / 2),
+                    np.sin(thetas[i] / 2) * np.exp(1j * phis[i]),
+                ]
+            )
             psi = np.kron(psi, qubit)
 
         E = float(np.real(psi.conj() @ H_mat @ psi))
-        if E > target_energy:
+        if target_energy < E:
             continue
 
         # Compute R for this product state

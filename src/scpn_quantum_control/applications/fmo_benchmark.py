@@ -115,8 +115,8 @@ def fmo_benchmark(
     rho_freq = float(np.corrcoef(omega_s_norm, omega_f_norm)[0, 1])
 
     # Ratios
-    coupling_ratio = float(np.mean(k_s_flat) / max(np.mean(k_f_flat), 1e-10))
-    freq_ratio = float(np.mean(np.abs(omega_s)) / max(np.mean(np.abs(omega_f)), 1e-10))
+    coupling_ratio = float(np.mean(k_s_flat) / max(float(np.mean(k_f_flat)), 1e-10))
+    freq_ratio = float(np.mean(np.abs(omega_s)) / max(float(np.mean(np.abs(omega_f))), 1e-10))
 
     # Interpret
     if abs(rho_topo) > 0.5:

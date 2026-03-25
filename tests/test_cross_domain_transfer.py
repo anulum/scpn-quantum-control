@@ -8,7 +8,6 @@
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from scpn_quantum_control.phase.cross_domain_transfer import (
     PhysicalSystem,
