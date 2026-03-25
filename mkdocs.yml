@@ -62,7 +62,9 @@ nav:
       - Experiment Roadmap: EXPERIMENT_ROADMAP.md
       - Results & Claims: PAPER_CLAIMS.md
       - Crypto Research: QUANTUM_CRYPTO_RESEARCH_BRANCH.md
-  - Notebooks: notebooks.md
+  - Learning:
+      - Tutorials: tutorials.md
+      - Notebooks: notebooks.md
   - Contributing: contributing.md
   - Changelog: changelog.md
 
