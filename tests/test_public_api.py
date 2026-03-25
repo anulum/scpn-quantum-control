@@ -15,7 +15,7 @@ def test_top_level_version():
     import scpn_quantum_control
 
     assert hasattr(scpn_quantum_control, "__version__")
-    assert scpn_quantum_control.__version__ == "0.9.0"
+    assert scpn_quantum_control.__version__ == "0.9.1"
 
 
 def _check_exports(submod: str) -> None:

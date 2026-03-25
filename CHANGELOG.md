@@ -3,7 +3,41 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.9.1] - 2026-03-25
+
+### Added (Rounds 1-8: 33 research gems, ~9,772 lines, 350+ tests)
+
+- `analysis/sync_witness.py`: 3 synchronization witness constructions (correlation, Fiedler, topological)
+- `mitigation/symmetry_verification.py`: Z₂ parity post-selection from DLA proof
+- `analysis/quantum_persistent_homology.py`: full PH pipeline from hardware counts to p_h1
+- `phase/cpdr_simulation.py`: CPDR for XY Hamiltonian simulation
+- `phase/coupling_topology_ansatz.py`: K_nm-topology-informed VQE ansatz
+- `analysis/sync_entanglement_witness.py`: R as entanglement witness (Kuramoto 1975 → quantum)
+- `analysis/entanglement_sync.py`: entanglement-enhanced synchronization
+- `phase/cross_domain_transfer.py`: cross-domain VQE parameter transfer
+- `analysis/otoc_sync_probe.py`: OTOC as sync transition probe
+- `analysis/hamiltonian_self_consistency.py`: Hamiltonian self-consistency loop for K_nm validation
+- `analysis/quantum_speed_limit.py`: quantum speed limit for BKT synchronization
+- `analysis/qfi_criticality.py`: QFI metrological sweet spot at K_c
+- `analysis/entanglement_percolation.py`: entanglement percolation = sync threshold conjecture
+- `analysis/qrc_phase_detector.py`: QRC self-probing phase detection (reservoir IS the system)
+- `phase/floquet_kuramoto.py`: Floquet-Kuramoto DTC (heterogeneous frequencies)
+- `analysis/critical_concordance.py`: multi-probe K_c agreement
+- `analysis/berry_fidelity.py`: Berry phase / fidelity susceptibility at BKT
+- `analysis/quantum_mpemba.py`: quantum Mpemba effect in synchronization dynamics
+- `analysis/lindblad_ness.py`: Lindblad NESS for driven-dissipative Kuramoto-XY
+- `analysis/adiabatic_gap.py`: adiabatic preparation gap analysis at BKT
+- `bridge/knm_hamiltonian.py`: XXZ Hamiltonian (Kouchekian-Teodorescu S² embedding)
+- `analysis/pairing_correlator.py`: Richardson pairing correlators ⟨S⁺S⁻⟩
+- `analysis/xxz_phase_diagram.py`: anisotropy phase diagram K_c vs Δ
+- `analysis/spectral_form_factor.py`: SFF at synchronization transition
+- `analysis/loschmidt_echo.py`: Loschmidt echo / DQPT for quenches across K_c
+- `analysis/entanglement_entropy.py`: entanglement entropy + Schmidt gap at sync transition
+- `analysis/krylov_complexity.py`: Krylov complexity at synchronization transition
+- `analysis/magic_sre.py`: magic (SRE M₂) + finite-size scaling for K_c
+- `analysis/finite_size_scaling.py`: BKT ansatz K_c(∞) + a/(log N)² extraction
+- `tests/test_round4_8_coverage.py`: 36 coverage gap tests for Rounds 4-8 modules
+- IBM Quantum hardware campaign: 9 jobs submitted to ibm_fez (2 completed, 7 queued)
 
 ### Added (March 20-22 marathon: 60 commits, 56 new modules)
 
