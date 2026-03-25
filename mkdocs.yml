@@ -36,6 +36,8 @@ theme:
     - navigation.top
     - content.code.copy
     - search.highlight
+  logo: assets/anulum_logo.png
+  favicon: assets/anulum_logo_company.jpg
   icon:
     repo: fontawesome/brands/github
 
