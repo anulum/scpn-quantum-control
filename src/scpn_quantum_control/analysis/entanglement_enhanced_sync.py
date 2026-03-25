@@ -55,7 +55,9 @@ class SyncTrajectory:
     n_qubits: int
 
 
-def prepare_initial_state(n_qubits: int, state_type: InitialState, omega: np.ndarray) -> QuantumCircuit:
+def prepare_initial_state(
+    n_qubits: int, state_type: InitialState, omega: np.ndarray
+) -> QuantumCircuit:
     """Prepare the specified initial state on n qubits."""
     qc = QuantumCircuit(n_qubits)
 
@@ -135,7 +137,9 @@ def simulate_sync_trajectory(
 def _matrix_exp(A: np.ndarray) -> np.ndarray:
     """Matrix exponential via scipy."""
     from scipy.linalg import expm
-    return expm(A)
+
+    result: np.ndarray = expm(A)
+    return result
 
 
 def _state_order_parameter(psi: np.ndarray, n_qubits: int) -> float:
@@ -170,9 +174,7 @@ def compare_all_initial_states(
     """Run synchronization dynamics for all four initial state types."""
     results = {}
     for state_type in InitialState:
-        results[state_type.value] = simulate_sync_trajectory(
-            K, omega, state_type, t_max, n_steps
-        )
+        results[state_type.value] = simulate_sync_trajectory(K, omega, state_type, t_max, n_steps)
     return results
 
 

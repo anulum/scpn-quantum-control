@@ -64,7 +64,7 @@ def initial_state_parity(omega: np.ndarray) -> int:
     For small angles (ω_i ≪ π), the state is near |00...0⟩ → even parity.
     """
     p_ones = np.sin(np.asarray(omega, dtype=float) / 2.0) ** 2
-    expected_ones = np.sum(p_ones)
+    expected_ones: float = float(np.sum(p_ones))
     return int(round(expected_ones)) % 2
 
 
@@ -200,9 +200,7 @@ def parity_verified_R(
     y_expanded = symmetry_expand(y_counts, expected_parity)
 
     # Recompute R from verified Z, expanded X/Y
-    R_ver, R_ver_std = _R_from_xyz(
-        z_ver.verified_counts, x_expanded, y_expanded, n_qubits
-    )[:2]
+    R_ver, R_ver_std = _R_from_xyz(z_ver.verified_counts, x_expanded, y_expanded, n_qubits)[:2]
 
     return {
         "R_raw": R_raw,

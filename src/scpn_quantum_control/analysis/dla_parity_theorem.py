@@ -61,7 +61,7 @@ class DLAParityTheoremResult:
 
 def predicted_dla_dimension(n_qubits: int) -> int:
     """DLA(N) = 2^(2N-1) - 2 for heterogeneous XY on N qubits."""
-    return 2 ** (2 * n_qubits - 1) - 2
+    return int(2 ** (2 * n_qubits - 1) - 2)
 
 
 def parity_sector_dimensions(n_qubits: int) -> tuple[int, int]:
@@ -129,7 +129,8 @@ def parity_operator(n_qubits: int) -> np.ndarray:
     for i in range(d):
         parity = bin(i).count("1") % 2
         P[i, i] = 1.0 - 2.0 * parity
-    return P
+    result: np.ndarray = P
+    return result
 
 
 def project_to_parity_sector(state: np.ndarray, parity: int, n_qubits: int) -> np.ndarray:
@@ -148,7 +149,8 @@ def project_to_parity_sector(state: np.ndarray, parity: int, n_qubits: int) -> n
     for i in range(d):
         if bin(i).count("1") % 2 == parity:
             projected[i] = state[i]
-    return projected
+    result: np.ndarray = projected
+    return result
 
 
 def decompose_state_by_parity(state: np.ndarray, n_qubits: int) -> dict:

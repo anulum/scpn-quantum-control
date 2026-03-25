@@ -116,7 +116,8 @@ def _two_point_correlator(counts: dict[str, int], n_qubits: int) -> np.ndarray:
         corr += count * np.outer(vals, vals)
 
     corr /= total
-    return corr
+    result: np.ndarray = corr
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -206,9 +207,7 @@ def topological_witness_from_correlator(
     try:
         import ripser
     except ImportError:
-        return WitnessResult(
-            "topological", float("nan"), threshold, False, float("nan"), n
-        )
+        return WitnessResult("topological", float("nan"), threshold, False, float("nan"), n)
 
     # Distance matrix from correlations
     abs_corr = np.abs(corr_matrix)
@@ -268,9 +267,7 @@ def evaluate_all_witnesses(
             x_counts, y_counts, n_qubits, corr_threshold
         ),
         "fiedler": fiedler_witness_from_correlator(corr_matrix, fiedler_threshold),
-        "topological": topological_witness_from_correlator(
-            corr_matrix, topo_threshold
-        ),
+        "topological": topological_witness_from_correlator(corr_matrix, topo_threshold),
     }
 
 
