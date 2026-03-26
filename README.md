@@ -8,7 +8,7 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://python.org)
 [![Qiskit 1.0+](https://img.shields.io/badge/qiskit-1.0%2B-6929C4.svg)](https://qiskit.org)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue.svg)](https://anulum.github.io/scpn-quantum-control)
-[![Tests: 1789](https://img.shields.io/badge/tests-1789%20passing-brightgreen.svg)]()
+[![Tests: 1932](https://img.shields.io/badge/tests-1932%20passing-brightgreen.svg)]()
 [![Version: 0.9.1](https://img.shields.io/badge/version-0.9.1-orange.svg)](https://pypi.org/project/scpn-quantum-control/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18821929.svg)](https://doi.org/10.5281/zenodo.18821929)
 [![Hardware: ibm_fez](https://img.shields.io/badge/hardware-ibm__fez%20Heron%20r2-blueviolet.svg)]()
@@ -375,8 +375,8 @@ Optional:
   ODE solvers outperform quantum simulation in both speed and accuracy.
   Potential quantum advantage requires N>>20 with error-corrected qubits
   (post-2030 hardware).
-- **IBM hardware results incomplete.** 7 of 9 campaign jobs still queued
-  (budget resets ~March 27).
+- **IBM hardware results incomplete.** 20 experiments implemented and tested
+  on AerSimulator; none submitted to QPU yet (awaiting IBM Quantum budget).
 
 ## Documentation
 
@@ -400,7 +400,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 |-----------|-------------|
 | [sc-neurocore](https://github.com/anulum/sc-neurocore) | Classical SCPN spiking neural network engine (v3.13.3, 2155+ tests) |
 | [scpn-fusion-core](https://github.com/anulum/scpn-fusion-core) | Classical SCPN algorithms: Kuramoto solvers, coupling calibration, transport (v3.9.3, 3300+ tests) |
-| [scpn-phase-orchestrator](https://github.com/anulum/scpn-phase-orchestrator) | SCPN phase orchestration: regime detection, UPDE engine, Petri-net supervisor (v0.4.1, 1305+ tests) |
+| [scpn-phase-orchestrator](https://github.com/anulum/scpn-phase-orchestrator) | SCPN phase orchestration: regime detection, UPDE engine, Petri-net supervisor (v0.5.0, 2321 tests) |
 | [scpn-control](https://github.com/anulum/scpn-control) | SCPN control systems: plasma MPC, disruption mitigation (v0.18.0, 3015 tests) |
 
 ## Citation

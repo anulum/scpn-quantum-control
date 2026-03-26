@@ -97,8 +97,8 @@ for name, w in results.items():
   mapping is standard; the specific coupling structure is not independently validated.
 - **No quantum advantage at this scale.** At $N=4$–16, classical exact diagonalisation
   is faster. Advantage requires $N \gg 20$ with error-corrected qubits.
-- **IBM hardware results incomplete.** 7 of 9 campaign jobs still queued (budget
-  resets ~March 27).
+- **IBM hardware results incomplete.** 20 experiments implemented and tested
+  on AerSimulator; none submitted to QPU yet (awaiting IBM Quantum budget).
 
 ## Documentation
 
