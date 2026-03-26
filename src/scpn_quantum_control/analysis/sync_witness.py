@@ -316,12 +316,10 @@ def calibrate_thresholds(
         eigs = np.sort(np.linalg.eigvalsh(lap))
         fiedler_vals.append(float(eigs[1]) if n > 1 else 0.0)
 
-    R_vals = np.array(R_vals)
-    corr_vals = np.array(corr_vals)
-    fiedler_vals = np.array(fiedler_vals)
+    R_arr: np.ndarray = np.array(R_vals)
 
     # Find transition index (R crosses 0.5)
-    above = R_vals >= 0.5
+    above = R_arr >= 0.5
     if np.any(above) and not np.all(above):
         trans_idx = int(np.argmax(above))
     else:

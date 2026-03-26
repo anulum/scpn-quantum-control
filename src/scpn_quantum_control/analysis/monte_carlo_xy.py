@@ -114,7 +114,7 @@ def mc_simulate(
     beta = 1.0 / max(temperature, 1e-15)
     rng = np.random.default_rng(seed)
 
-    theta = rng.uniform(0, 2 * np.pi, n)
+    theta = np.asarray(rng.uniform(0, 2 * np.pi, n))
 
     # Thermalise
     for _ in range(n_thermalize):

@@ -14,7 +14,7 @@ from __future__ import annotations
 import numpy as np
 from scipy.linalg import expm
 from scipy.sparse import csc_matrix
-from scipy.sparse.linalg import eigsh
+from scipy.sparse.linalg import eigsh, expm_multiply
 
 from ..bridge.knm_hamiltonian import (
     OMEGA_N_16,
@@ -154,6 +154,10 @@ def classical_exact_evolution(
 
     Returns per-qubit X,Y expectations and reconstructed R(t).
     This is the gold standard the Trotter evolution should match.
+
+    For n_osc >= 13, uses scipy.sparse.linalg.expm_multiply (Krylov
+    subspace) to avoid materialising the full 2^n × 2^n propagator.
+    Memory: O(2^n) instead of O(2^2n).
     """
     if K is None:
         K = build_knm_paper27(L=n_osc)
@@ -161,8 +165,6 @@ def classical_exact_evolution(
         omega = OMEGA_N_16[:n_osc].copy()
 
     H_op = knm_to_hamiltonian(K, omega)
-    H_mat = np.array(H_op.to_matrix())
-
     psi = _build_initial_state(n_osc, omega)
 
     n_steps = max(1, round(t_max / dt))
@@ -170,10 +172,21 @@ def classical_exact_evolution(
     R_history = np.zeros(n_steps + 1)
     R_history[0] = _state_order_param(psi, n_osc)
 
-    U_dt = expm(-1j * H_mat * dt)
-    for s in range(1, n_steps + 1):
-        psi = U_dt @ psi
-        R_history[s] = _state_order_param(psi, n_osc)
+    if n_osc >= 13:
+        # Sparse Krylov path: O(2^n) memory
+        raw = H_op.to_matrix(sparse=True)
+        H_sparse = csc_matrix(raw) if not hasattr(raw, "tocsc") else raw.tocsc()
+        A = -1j * H_sparse * dt
+        for s in range(1, n_steps + 1):
+            psi = expm_multiply(A, psi)
+            R_history[s] = _state_order_param_sparse(psi, n_osc)
+    else:
+        # Dense path: build U_dt once, reuse
+        H_mat = np.array(H_op.to_matrix())
+        U_dt = expm(-1j * H_mat * dt)
+        for s in range(1, n_steps + 1):
+            psi = U_dt @ psi
+            R_history[s] = _state_order_param(psi, n_osc)
 
     return {"times": times, "R": R_history}
 
@@ -200,6 +213,38 @@ def _state_order_param(psi: np.ndarray, n_osc: int) -> float:
         # Build single-qubit Pauli projected into full Hilbert space
         exp_x = _expectation_pauli(psi, n_osc, q, "X")
         exp_y = _expectation_pauli(psi, n_osc, q, "Y")
+        z_complex += exp_x + 1j * exp_y
+
+    z_complex /= n_osc
+    return float(abs(z_complex))
+
+
+def _state_order_param_sparse(psi: np.ndarray, n_osc: int) -> float:
+    """Compute R from statevector using vectorised bitwise Pauli application.
+
+    Avoids building dense 2^n × 2^n Pauli matrices. Applies single-qubit
+    X and Y via numpy index arrays with bit-flip permutations.
+    O(2^n) time and O(2^n) memory per qubit, fully vectorised.
+    """
+    dim = len(psi)
+    indices = np.arange(dim, dtype=np.int64)
+    psi_conj = psi.conj()
+    z_complex = 0.0 + 0.0j
+
+    for q in range(n_osc):
+        mask = 1 << q
+        flipped = indices ^ mask
+        psi_flipped = psi[flipped]
+
+        # <psi|X_q|psi> = Re[sum_k psi[k]* psi[k^mask]]
+        exp_x = np.sum(psi_conj * psi_flipped).real
+
+        # <psi|Y_q|psi>: Y|b> = i(-1)^b |1-b>
+        # sign[k] = +1 if bit q of k is 0, -1 if bit q is 1
+        bits = (indices >> q) & 1
+        signs = 1.0 - 2.0 * bits
+        exp_y = np.sum(psi_conj * (1j * signs) * psi_flipped).real
+
         z_complex += exp_x + 1j * exp_y
 
     z_complex /= n_osc
