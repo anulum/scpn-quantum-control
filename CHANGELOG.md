@@ -3,6 +3,25 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.9.2] - 2026-03-26
+
+### Added
+
+- 38 runner coverage tests (all simulator-path methods)
+- 22 experiment coverage tests (all 20 experiment functions)
+- `requirements.txt` and `requirements-dev.txt` with pinned versions
+
+### Changed
+
+- Removed coverage omit for `runner.py` and `experiments.py` (now fully tested)
+- Updated README cross-refs: phase-orchestrator v0.5.0/2321 tests, test badge 1932+, hardware campaign status
+- Updated ROADMAP with v0.9.1 and v0.9.2 sections
+- Cleaned failed/cancelled CI runs
+
+### Fixed
+
+- Rust engine `build_knm` parity test (rebuilt `scpn_quantum_engine` wheel)
+
 ## [0.9.1] - 2026-03-25
 
 ### Added (Rounds 1-8: 33 research gems, ~9,772 lines, 350+ tests)
