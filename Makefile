@@ -34,10 +34,16 @@ docs-serve:
 	mkdocs serve
 
 preflight:
-	python tools/preflight.py
+	ruff check src/ tests/ examples/
+	ruff format --check src/ tests/ examples/
+	mypy
+	bandit -r src/ scripts/ -ll -q
+	pytest tests/ -v --tb=short -x --ignore=tests/test_hardware_runner.py
 
 preflight-quick:
-	python tools/preflight.py --no-tests
+	ruff check src/ tests/ examples/
+	ruff format --check src/ tests/ examples/
+	mypy
 
 clean:
 	rm -rf .mypy_cache .pytest_cache .ruff_cache dist build site *.egg-info

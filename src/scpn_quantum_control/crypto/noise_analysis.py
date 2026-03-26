@@ -22,7 +22,9 @@ import logging
 import numpy as np
 from qiskit.quantum_info import DensityMatrix, Statevector, partial_trace
 
-from .._constants import CONCURRENCE_EPS, QBER_SECURITY_THRESHOLD  # noqa: F401
+from .._constants import CONCURRENCE_EPS, QBER_SECURITY_THRESHOLD
+
+__all__ = ["CONCURRENCE_EPS", "QBER_SECURITY_THRESHOLD"]
 
 _log = logging.getLogger(__name__)
 

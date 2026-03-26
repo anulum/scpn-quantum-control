@@ -3,6 +3,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
+# scpn-quantum-control — Quantum Control Systems
 from .q_disruption import QuantumDisruptionClassifier
 from .q_disruption_iter import (
     DisruptionBenchmark,

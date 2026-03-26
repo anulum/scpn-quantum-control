@@ -3,6 +3,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
+# scpn-quantum-control — SSGF Quantum Extensions
 """SSGF quantum extensions: gradient, cost, outer cycle."""
 
 from .quantum_costs import QuantumCosts, compute_quantum_costs

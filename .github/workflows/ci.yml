@@ -24,7 +24,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: 'pip'
-      - run: pip install ruff
+      - run: pip install ruff==0.15.6
       - run: ruff check src/ tests/
       - run: ruff format --check src/ tests/
 
@@ -65,7 +65,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: 'pip'
-      - run: pip install -e ".[dev]" mypy
+      - run: pip install -e ".[dev]" mypy==1.19.1
       - run: mypy
 
   wheel-check:
@@ -96,9 +96,9 @@ jobs:
         with:
           python-version: "3.12"
           cache: 'pip'
-      - run: pip install bandit pip-audit
+      - run: pip install bandit==1.9.4 pip-audit
       - run: bandit -r src/ scripts/ -ll -q
-      - run: pip install -e ".[dev]" && pip-audit --desc on --ignore-vuln CVE-2026-4539
+      - run: pip install -e ".[dev]" && pip-audit --desc on
 
   hardware-smoke:
     needs: test

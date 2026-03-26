@@ -28,8 +28,8 @@ repos:
         pass_filenames: false
 
       - id: preflight
-        name: preflight (full CI mirror)
-        entry: python tools/preflight.py
+        name: preflight (lint + format + type-check)
+        entry: bash -c 'ruff check src/ tests/ && ruff format --check src/ tests/ && mypy'
         language: system
         always_run: true
         pass_filenames: false
