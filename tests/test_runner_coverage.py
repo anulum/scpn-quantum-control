@@ -9,7 +9,7 @@
 from __future__ import annotations
 
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import numpy as np
 import pytest
@@ -426,13 +426,10 @@ class TestRunnerRetrieveJob:
 
 class TestRunnerSaveToken:
     def test_save_token_calls_qiskit(self):
-        with patch(
-            "scpn_quantum_control.hardware.runner.QiskitRuntimeService",
-            create=True,
-        ) as mock_cls:
-            mock_svc = MagicMock()
-            mock_cls.return_value = mock_svc
-            # save_token imports QiskitRuntimeService inside the function
-            with patch("qiskit_ibm_runtime.QiskitRuntimeService") as mock_runtime:
-                HardwareRunner.save_token("test_token", instance="ibm-q/open/main")
-                mock_runtime.save_account.assert_called_once()
+        try:
+            import qiskit_ibm_runtime  # noqa: F401
+        except ImportError:
+            pytest.skip("qiskit-ibm-runtime not installed")
+        with patch("qiskit_ibm_runtime.QiskitRuntimeService") as mock_runtime:
+            HardwareRunner.save_token("test_token", instance="ibm-q/open/main")
+            mock_runtime.save_account.assert_called_once()
