@@ -21,7 +21,6 @@ RUN pip install --no-cache-dir ".[dev]"
 
 COPY tests/ tests/
 COPY examples/ examples/
-COPY tools/ tools/
 
 USER sqc
 

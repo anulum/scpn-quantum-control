@@ -3,6 +3,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
+# scpn-quantum-control — U(1) Gauge Theory Observables
 """U(1) gauge theory observables for the Kuramoto-XY quantum model."""
 
 from .cft_analysis import CFTResult, cft_analysis, extract_central_charge, find_critical_coupling

@@ -96,43 +96,6 @@ def build_kuramoto_ring(
     return K, np.asarray(omega, dtype=np.float64)
 
 
-def knm_to_hamiltonian(K: np.ndarray, omega: np.ndarray) -> SparsePauliOp:
-    """Convert Knm coupling matrix + natural frequencies to SparsePauliOp.
-
-    H = -sum_{i<j} K[i,j] * (X_i X_j + Y_i Y_j) - sum_i omega_i * Z_i
-
-    Uses Qiskit little-endian qubit ordering.
-    """
-    n = len(omega)
-    if K.shape[0] != n:
-        raise ValueError(f"K has {K.shape[0]} rows but omega has {n} elements")
-    pauli_list = []
-
-    for i in range(n):
-        if abs(omega[i]) > KNM_SPARSITY_EPS:
-            z_str = ["I"] * n
-            z_str[i] = "Z"
-            pauli_list.append(("".join(reversed(z_str)), -omega[i]))
-
-    for i in range(n):
-        for j in range(i + 1, n):
-            if abs(K[i, j]) < KNM_SPARSITY_EPS:
-                continue
-            # XX term
-            xx = ["I"] * n
-            xx[i] = "X"
-            xx[j] = "X"
-            pauli_list.append(("".join(reversed(xx)), -K[i, j]))
-            # YY term
-            yy = ["I"] * n
-            yy[i] = "Y"
-            yy[j] = "Y"
-            pauli_list.append(("".join(reversed(yy)), -K[i, j]))
-
-    labels, coeffs = zip(*pauli_list)
-    return SparsePauliOp(list(labels), list(coeffs)).simplify()
-
-
 def knm_to_xxz_hamiltonian(
     K: np.ndarray,
     omega: np.ndarray,
@@ -187,6 +150,17 @@ def knm_to_xxz_hamiltonian(
 
     labels, coeffs = zip(*pauli_list)
     return SparsePauliOp(list(labels), list(coeffs)).simplify()
+
+
+def knm_to_hamiltonian(K: np.ndarray, omega: np.ndarray) -> SparsePauliOp:
+    """Convert Knm coupling matrix + natural frequencies to SparsePauliOp.
+
+    H = -sum_{i<j} K[i,j] * (X_i X_j + Y_i Y_j) - sum_i omega_i * Z_i
+
+    Uses Qiskit little-endian qubit ordering. Equivalent to
+    ``knm_to_xxz_hamiltonian(K, omega, delta=0.0)``.
+    """
+    return knm_to_xxz_hamiltonian(K, omega, delta=0.0)
 
 
 def knm_to_ansatz(K: np.ndarray, reps: int = 2, threshold: float = 0.01) -> QuantumCircuit:

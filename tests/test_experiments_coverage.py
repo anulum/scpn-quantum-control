@@ -1,3 +1,9 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# scpn-quantum-control — Hardware Experiments Coverage Tests
 """Coverage tests for hardware.experiments — statevector-only functions."""
 
 import numpy as np
@@ -69,14 +75,16 @@ class TestRFromXYZ:
         z = {"00": 1000}
         x = {"00": 1000}
         y = {"00": 1000}
-        R = _R_from_xyz(z, x, y, 2)
+        result = _R_from_xyz(z, x, y, 2)
+        R = result[0]
         assert R > 0.5
 
     def test_returns_float(self):
         z = {"00": 500, "11": 500}
         x = {"00": 500, "11": 500}
         y = {"00": 500, "11": 500}
-        R = _R_from_xyz(z, x, y, 2)
+        result = _R_from_xyz(z, x, y, 2)
+        R = result[0]
         assert isinstance(R, float)
         assert 0 <= R <= 1.0 + 1e-6
 
@@ -106,6 +114,6 @@ class TestCorrelatorFromCounts:
 class TestRunVQE:
     def test_returns_result(self):
         result = _run_vqe(2, maxiter=30)
-        assert "ground_energy" in result
-        assert "exact_energy" in result
-        assert "relative_error_pct" in result
+        assert "vqe_energy" in result
+        assert "exact_ground_energy" in result
+        assert "energy_gap" in result

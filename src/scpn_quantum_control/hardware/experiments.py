@@ -1130,8 +1130,8 @@ def decoherence_scaling_experiment(
             float(np.var(log_ratios)), 1e-10
         )
     else:
-        gamma = float("nan")  # type: ignore[assignment]
-        r_squared = float("nan")  # type: ignore[assignment]
+        gamma = np.float64("nan")
+        r_squared = np.float64("nan")
 
     print(f"  Fit: gamma={gamma:.6f} per gate, R²={r_squared:.4f}")
 

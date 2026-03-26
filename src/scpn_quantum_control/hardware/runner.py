@@ -69,12 +69,7 @@ class HardwareRunner:
         result = runner.run_sampler(circuit, shots=10000, name="my_experiment")
     """
 
-    DEFAULT_INSTANCE = os.environ.get(
-        "SCPN_IBM_INSTANCE",
-        "crn:v1:bluemix:public:quantum-computing:us-east:"
-        "a/78db885720334fd19191b33a839d0c35:"
-        "841cc36d-0afd-4f96-ada2-8c56e1c443a0::",
-    )
+    DEFAULT_INSTANCE = os.environ.get("SCPN_IBM_INSTANCE", "")
 
     def __init__(
         self,
