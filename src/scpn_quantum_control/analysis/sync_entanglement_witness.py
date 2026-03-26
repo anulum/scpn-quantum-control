@@ -107,8 +107,8 @@ def R_separable_bound_at_energy(
 
     for _ in range(n_samples):
         # Random product state: ⊗_i Ry(θ_i) Rz(φ_i) |0⟩
-        thetas = rng.uniform(0, np.pi, n)
-        phis = rng.uniform(0, 2 * np.pi, n)
+        thetas = np.asarray(rng.uniform(0, np.pi, n))
+        phis = np.asarray(rng.uniform(0, 2 * np.pi, n))
 
         psi = np.array([1.0 + 0j])
         for i in range(n):

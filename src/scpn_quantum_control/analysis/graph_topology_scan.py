@@ -109,7 +109,7 @@ def _measure_p_h1_at_transition(
     for t in temps:
         beta = 1.0 / t
         rng = np.random.default_rng(seed + int(t * 1000))
-        theta = rng.uniform(0, 2 * np.pi, n)
+        theta = np.asarray(rng.uniform(0, 2 * np.pi, n))
         for _ in range(n_thermalize):
             theta = _mc_sweep(theta, K, beta, rng)
         pr = compute_persistence(theta, persistence_threshold)
@@ -120,7 +120,7 @@ def _measure_p_h1_at_transition(
     # Measure p_h1 at best temperature with multiple samples
     beta = 1.0 / best_t
     rng = np.random.default_rng(seed + 999)
-    theta = rng.uniform(0, 2 * np.pi, n)
+    theta = np.asarray(rng.uniform(0, 2 * np.pi, n))
     for _ in range(n_thermalize):
         theta = _mc_sweep(theta, K, beta, rng)
 

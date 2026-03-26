@@ -136,7 +136,7 @@ def p_h1_vs_temperature(
     for temp in temps:
         beta = 1.0 / max(temp, 1e-15)
         rng = np.random.default_rng(seed + int(temp * 1000))
-        theta = rng.uniform(0, 2 * np.pi, n)
+        theta = np.asarray(rng.uniform(0, 2 * np.pi, n))
 
         # Thermalise
         for _ in range(n_thermalize):

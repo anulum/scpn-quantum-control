@@ -77,7 +77,7 @@ def ieee_5bus_coupling_matrix() -> tuple[np.ndarray, np.ndarray]:
     """
     omega_0 = 2 * np.pi * 60.0
     n = 5
-    K = np.zeros((n, n))
+    K: np.ndarray = np.zeros((n, n))
     for i in range(n):
         for j in range(n):
             if IEEE_5BUS_SUSCEPTANCE[i, j] > 0:
