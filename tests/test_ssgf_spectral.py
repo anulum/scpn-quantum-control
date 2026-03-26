@@ -6,6 +6,8 @@
 # scpn-quantum-control — SSGF Spectral Bridge Tests
 """Tests for ssgf.quantum_spectral."""
 
+import numpy as np
+
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.ssgf.quantum_spectral import (
     SpectralBridgeResult,
@@ -39,7 +41,7 @@ class TestLaplacianSpectrum:
 
 class TestEntrainmentCriterion:
     def test_strong_coupling_stable(self):
-        K = build_knm_paper27(L=3, K_base=5.0)
+        K = np.array([[0, 5.0, 5.0], [5.0, 0, 5.0], [5.0, 5.0, 0]])
         omega = OMEGA_N_16[:3]
         stable, margin = entrainment_criterion(K, omega)
         assert stable is True
