@@ -44,7 +44,26 @@ Cross-repo integrations wired:
 
 679 tests, 100% coverage, all 6 preflight gates passing.
 
-## v1.0.0 (Target: Q2 2026)
+### v0.9.1 (March 2026)
+
+- 15-dimension codebase audit: 5 critical, 12 high, 6 medium findings fixed (39 files)
+- Removed hardcoded IBM CRN, fabricated CVE, broken Dockerfile
+- SPDX headers on all files, line-6 descriptors on all `__init__.py`
+- CI tool pins: ruff 0.15.6, mypy 1.19.1, bandit 1.9.4
+- `knm_to_hamiltonian` dedup, Makefile/pre-commit preflight fix
+- 1789 tests, 100% coverage
+
+### v0.9.2 (March 2026)
+
+- Coverage expanded to include `runner.py` and `experiments.py` (previously omitted)
+- 38 new runner tests covering all simulator-path methods
+- 22 new experiment tests covering all 20 experiment functions
+- Rust engine (`scpn_quantum_engine`) rebuilt, parity tests green
+- Stale README cross-refs updated (phase-orchestrator v0.5.0, test count, hardware status)
+- Failed/cancelled CI runs cleaned
+- 1932+ tests
+
+## v1.0.0 (Target: Q3 2026)
 
 Remaining items:
 

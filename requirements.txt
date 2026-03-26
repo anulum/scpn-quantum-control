@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# scpn-quantum-control — Pinned Runtime Dependencies
+qiskit==1.4.5
+qiskit-aer==0.15.1
+numpy==2.2.6
+scipy==1.17.1
+networkx==3.6.1
