@@ -25,13 +25,29 @@ pip install -e ".[viz]"
 # IBM Quantum hardware execution
 pip install -e ".[ibm]"
 
+# Rust acceleration (158-5401x faster Hamiltonian construction)
+pip install scpn-quantum-engine
+
+# Or build from source (requires Rust toolchain):
+cd scpn_quantum_engine && maturin develop --release && cd ..
+
 # Everything
-pip install -e ".[dev,viz,ibm]"
+pip install -e ".[dev,viz,ibm,rust]"
 ```
+
+## Rust Acceleration
+
+The optional `scpn-quantum-engine` package provides 15 Rust-accelerated functions
+via PyO3. When installed, all analysis modules transparently use the Rust fast
+paths. When not installed, everything works via pure Python/NumPy.
+
+Pre-built wheels are available for Linux (x86_64, aarch64), macOS (x86_64, ARM),
+and Windows (x64). See [Rust Engine docs](rust_engine.md) for the full API and
+benchmark results.
 
 ## Requirements
 
-- Python 3.9+
+- Python 3.10+
 - Qiskit 1.0+
 - qiskit-aer 0.14+
 - NumPy 1.24+

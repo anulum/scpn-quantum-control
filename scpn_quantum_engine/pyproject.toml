@@ -9,5 +9,29 @@
 requires = ["maturin>=1.0,<2.0"]
 build-backend = "maturin"
 
+[project]
+name = "scpn-quantum-engine"
+version = "0.2.0"
+description = "Rust acceleration engine for scpn-quantum-control (PyO3 + rayon)"
+readme = "../README.md"
+license = "AGPL-3.0-or-later"
+requires-python = ">=3.10"
+authors = [
+    { name = "Miroslav Sotek", email = "protoscience@anulum.li" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+keywords = ["quantum", "kuramoto", "rust", "pyo3", "acceleration"]
+
+[project.urls]
+Repository = "https://github.com/anulum/scpn-quantum-control"
+Documentation = "https://anulum.github.io/scpn-quantum-control/rust_engine/"
+
 [tool.maturin]
 features = ["pyo3/extension-module"]
