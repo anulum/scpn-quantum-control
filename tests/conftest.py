@@ -193,6 +193,8 @@ _REFERENCE_PATH = Path(__file__).parent.parent / "results" / "classical_16q_refe
 @pytest.fixture(scope="session")
 def classical_reference():
     """Load pre-computed classical reference data (session-scoped for speed)."""
+    if not _REFERENCE_PATH.exists():
+        pytest.skip(f"Reference file not found: {_REFERENCE_PATH}")
     with open(_REFERENCE_PATH) as f:
         return json.load(f)
 
