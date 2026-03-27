@@ -37,7 +37,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.linalg import expm
 
-from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 
 
 @dataclass
@@ -166,7 +166,7 @@ def mpemba_experiment(
 
     # Near initial state: ground state of H(K_base*0.8) — close to NESS
     K_near = (K_base * 0.8) * K_topology
-    H_near = knm_to_hamiltonian(K_near, omega).to_matrix()
+    H_near = knm_to_dense_matrix(K_near, omega)
     eigvals, eigvecs = np.linalg.eigh(H_near)
     psi_near = np.ascontiguousarray(eigvecs[:, 0])
     rho_near = np.outer(psi_near, psi_near.conj())

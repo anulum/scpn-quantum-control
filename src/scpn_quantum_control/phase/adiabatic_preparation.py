@@ -30,7 +30,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.linalg import expm
 
-from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 
 
 @dataclass
@@ -62,7 +62,7 @@ def adiabatic_ramp(
     # Initial state: ground state of H(K≈0) — product state
     # Use small K to avoid degeneracy at K=0
     K_init = 0.01 * K_topology
-    H_init = knm_to_hamiltonian(K_init, omega).to_matrix()
+    H_init = knm_to_dense_matrix(K_init, omega)
     eigvals_init, eigvecs_init = np.linalg.eigh(H_init)
     psi = np.ascontiguousarray(eigvecs_init[:, 0]).astype(complex)
 
@@ -79,8 +79,7 @@ def adiabatic_ramp(
         # Hamiltonian at midpoint
         K_mid = K_target * (times[step] + dt / 2) / T_total
         K_mat = K_mid * K_topology
-        H_op = knm_to_hamiltonian(K_mat, omega)
-        H_mat = H_op.to_matrix()
+        H_mat = knm_to_dense_matrix(K_mat, omega)
 
         # Evolve: |ψ(t+dt)⟩ = exp(-iHdt)|ψ(t)⟩
         U = expm(-1j * H_mat * dt)
@@ -89,7 +88,7 @@ def adiabatic_ramp(
         # Current ground state and gap
         K_now = K_schedule[step + 1]
         K_now_mat = K_now * K_topology
-        H_now = knm_to_hamiltonian(K_now_mat, omega).to_matrix()
+        H_now = knm_to_dense_matrix(K_now_mat, omega)
         eigvals, eigvecs = np.linalg.eigh(H_now)
         psi_gs = eigvecs[:, 0]
         gaps[step + 1] = float(eigvals[1] - eigvals[0])

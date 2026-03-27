@@ -26,7 +26,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 
 
 @dataclass
@@ -59,13 +59,13 @@ def loschmidt_quench(
 
     # Initial ground state
     K_i = K_initial * K_topology
-    H_i = knm_to_hamiltonian(K_i, omega).to_matrix()
+    H_i = knm_to_dense_matrix(K_i, omega)
     eigvals_i, eigvecs_i = np.linalg.eigh(H_i)
     psi_i = eigvecs_i[:, 0]
 
     # Final Hamiltonian eigenbasis
     K_f = K_final * K_topology
-    H_f = knm_to_hamiltonian(K_f, omega).to_matrix()
+    H_f = knm_to_dense_matrix(K_f, omega)
     eigvals_f, eigvecs_f = np.linalg.eigh(H_f)
 
     # Overlaps |⟨n_f|ψ_i⟩|²

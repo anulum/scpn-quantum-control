@@ -28,7 +28,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from ..bridge.knm_hamiltonian import OMEGA_N_16, knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import OMEGA_N_16, knm_to_dense_matrix
 
 
 @dataclass
@@ -54,7 +54,7 @@ def _find_kc_from_gap(
     gaps = np.zeros(len(k_range))
     for idx, kb in enumerate(k_range):
         K = float(kb) * K_topology
-        H = knm_to_hamiltonian(K, omega).to_matrix()
+        H = knm_to_dense_matrix(K, omega)
         eigvals = np.linalg.eigvalsh(H)
         gaps[idx] = float(eigvals[1] - eigvals[0])
 
