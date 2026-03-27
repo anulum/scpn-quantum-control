@@ -93,7 +93,8 @@ cd scpn_quantum_engine && maturin build --release && pip install target/wheels/*
 | `classical_brute_mpc` | `brute_mpc` | 5-50x (horizon>=10) | rayon parallel enumeration of 2^horizon actions |
 | `lanczos_coefficients` | `lanczos_b_coefficients` | 5-10x (dim<=256) | Complex matrix commutator loop without Python overhead |
 | `compute_otoc` | `otoc_from_eigendecomp` | 10-50x | Eigendecomp once + O(d²) per time point + rayon parallel |
-| `_order_parameter` (Floquet) | `expectation_pauli_fast` | 5-20x | Bitwise Pauli replaces Qiskit SparsePauliOp overhead |
+| `_order_parameter` (Floquet) | `all_xy_expectations` | 5-20x | Batch bitwise Pauli, 1 FFI call instead of 2n |
+| `knm_to_hamiltonian.to_matrix` | `build_xy_hamiltonian_dense` | 10-50x | Direct bitwise construction, bypasses Qiskit entirely |
 
 All Rust functions accept split real/imaginary arrays (no complex64 across FFI).
 The Python fallback is always available when the Rust crate is not installed.

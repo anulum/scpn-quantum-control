@@ -39,7 +39,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 from ..hardware.gpu_accel import expm
 
 
@@ -100,9 +100,7 @@ def compute_otoc(
     if v_qubit is None:
         v_qubit = min(w_qubit + 1, n - 1)
 
-    H_op = knm_to_hamiltonian(K, omega)
-    H_raw = H_op.to_matrix()
-    H_mat = H_raw.toarray() if hasattr(H_raw, "toarray") else np.array(H_raw)
+    H_mat = knm_to_dense_matrix(K, omega)
 
     W = _pauli_matrix(w_pauli, w_qubit, n)
     V = _pauli_matrix(v_pauli, v_qubit, n)

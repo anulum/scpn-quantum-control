@@ -163,6 +163,31 @@ def knm_to_hamiltonian(K: np.ndarray, omega: np.ndarray) -> SparsePauliOp:
     return knm_to_xxz_hamiltonian(K, omega, delta=0.0)
 
 
+def knm_to_dense_matrix(K: np.ndarray, omega: np.ndarray) -> np.ndarray:
+    """Build dense XY Hamiltonian matrix, Rust fast path with Qiskit fallback.
+
+    Returns complex ndarray of shape (2^n, 2^n).
+    """
+    n = len(omega)
+    try:
+        import scpn_quantum_engine as _engine
+
+        h_flat = np.asarray(
+            _engine.build_xy_hamiltonian_dense(
+                K.ravel().astype(np.float64),
+                omega.astype(np.float64),
+                n,
+            )
+        )
+        return h_flat.reshape(2**n, 2**n).astype(complex)
+    except (ImportError, AttributeError):
+        pass
+
+    H_op = knm_to_hamiltonian(K, omega)
+    H_raw = H_op.to_matrix()
+    return H_raw.toarray() if hasattr(H_raw, "toarray") else np.array(H_raw)
+
+
 def knm_to_ansatz(K: np.ndarray, reps: int = 2, threshold: float = 0.01) -> QuantumCircuit:
     """Build physics-informed ansatz: CZ entanglement only between Knm-connected pairs.
 
