@@ -26,7 +26,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.linalg import expm
 
-from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 
 
 @dataclass
@@ -42,9 +42,7 @@ class FloquetResult:
 
 def _build_H_matrix(K: np.ndarray, omega: np.ndarray) -> np.ndarray:
     """Build dense Hamiltonian matrix."""
-    H_op = knm_to_hamiltonian(K, omega)
-    result: np.ndarray = H_op.to_matrix()
-    return result
+    return knm_to_dense_matrix(K, omega)
 
 
 def _order_parameter(psi: np.ndarray, n: int) -> float:
@@ -57,11 +55,8 @@ def _order_parameter(psi: np.ndarray, n: int) -> float:
 
         psi_re = np.ascontiguousarray(psi.real)
         psi_im = np.ascontiguousarray(psi.imag)
-        phases = np.zeros(n)
-        for k in range(n):
-            ex = _engine.expectation_pauli_fast(psi_re, psi_im, n, k, 0)
-            ey = _engine.expectation_pauli_fast(psi_re, psi_im, n, k, 1)
-            phases[k] = np.arctan2(ey, ex)
+        exp_x, exp_y = _engine.all_xy_expectations(psi_re, psi_im, n)
+        phases = np.arctan2(np.asarray(exp_y), np.asarray(exp_x))
         return float(abs(np.mean(np.exp(1j * phases))))
     except (ImportError, AttributeError):
         pass

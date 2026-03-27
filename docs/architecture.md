@@ -270,12 +270,14 @@ l16/                                       ← Layer 16 quantum director
 └── quantum_director.py                        Loschmidt echo, stability score
 
 scpn_quantum_engine/                       ← Rust crate (PyO3 0.25, rayon parallel)
-└── src/lib.rs                                 13 functions: kuramoto_euler, kuramoto_trajectory,
+└── src/lib.rs                                 15 functions: kuramoto_euler, kuramoto_trajectory,
                                                order_parameter, build_knm, pec_coefficients,
                                                pec_sample_parallel, dla_dimension, mc_xy_simulate,
                                                state_order_param_sparse, expectation_pauli_fast,
                                                brute_mpc, lanczos_b_coefficients,
-                                               otoc_from_eigendecomp
+                                               otoc_from_eigendecomp,
+                                               build_xy_hamiltonian_dense,
+                                               all_xy_expectations
 ```
 
 ★ marks modules from the 33 Research Gems (Rounds 1-8, March 2026).

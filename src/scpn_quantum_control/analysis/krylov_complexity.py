@@ -35,7 +35,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 
 
 @dataclass
@@ -218,7 +218,7 @@ def krylov_vs_coupling(
 
     for kb in k_range:
         K = float(kb) * K_topology
-        H = knm_to_hamiltonian(K, omega).to_matrix()
+        H = knm_to_dense_matrix(K, omega)
         kr = krylov_complexity(H, Z0, t_max, n_times)
         results["K_base"].append(float(kb))
         results["peak_complexity"].append(kr.peak_complexity)

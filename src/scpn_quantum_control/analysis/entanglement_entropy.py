@@ -30,7 +30,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 
 
 @dataclass
@@ -105,8 +105,7 @@ def entanglement_at_coupling(
         n_A = 1
 
     K = K_base * K_topology
-    H_op = knm_to_hamiltonian(K, omega)
-    H_mat = H_op.to_matrix()
+    H_mat = knm_to_dense_matrix(K, omega)
     eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
     psi0 = eigenvectors[:, 0]
     gap = float(eigenvalues[1] - eigenvalues[0])

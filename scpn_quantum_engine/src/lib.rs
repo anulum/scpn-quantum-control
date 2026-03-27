@@ -773,6 +773,97 @@ fn otoc_from_eigendecomp<'py>(
     PyArray1::from_owned_array(py, Array1::from_vec(results))
 }
 
+/// Build dense XY Hamiltonian directly from K coupling and omega frequencies.
+///
+/// H = -Σ_{i<j} K[i,j](X_iX_j + Y_iY_j) - Σ_i ω_i Z_i
+///
+/// Uses bitwise flip-flop: (XX+YY)|↑↓⟩ = 2|↓↑⟩, zero when same spin.
+/// Returns flat real array (XY Hamiltonian is real in computational basis).
+/// Eliminates Qiskit SparsePauliOp construction + to_matrix() overhead.
+#[pyfunction]
+fn build_xy_hamiltonian_dense<'py>(
+    py: Python<'py>,
+    k_flat: PyReadonlyArray1<'_, f64>,
+    omega: PyReadonlyArray1<'_, f64>,
+    n: usize,
+) -> Bound<'py, PyArray1<f64>> {
+    let k = k_flat.as_slice().unwrap();
+    let w = omega.as_slice().unwrap();
+    let dim = 1usize << n;
+    let mut h = vec![0.0f64; dim * dim];
+
+    for idx in 0..dim {
+        // Diagonal: -ω_i Z_i, where Z eigenvalue = 1-2·bit
+        let mut diag = 0.0;
+        for i in 0..n {
+            let bit = ((idx >> i) & 1) as f64;
+            diag -= w[i] * (1.0 - 2.0 * bit);
+        }
+        h[idx * dim + idx] = diag;
+
+        // Off-diagonal: -K[i,j]·(XX+YY) flip-flop
+        for i in 0..n {
+            for j in (i + 1)..n {
+                let kij = k[i * n + j];
+                if kij.abs() < 1e-15 {
+                    continue;
+                }
+                let bi = (idx >> i) & 1;
+                let bj = (idx >> j) & 1;
+                if bi != bj {
+                    let flipped = idx ^ ((1 << i) | (1 << j));
+                    h[idx * dim + flipped] -= 2.0 * kij;
+                }
+            }
+        }
+    }
+
+    PyArray1::from_vec(py, h)
+}
+
+/// Batch compute per-qubit X and Y expectations for all n qubits in one call.
+///
+/// Returns (exp_x[n], exp_y[n]). Avoids 2n FFI roundtrips vs calling
+/// expectation_pauli_fast individually per qubit per Pauli.
+#[pyfunction]
+fn all_xy_expectations<'py>(
+    py: Python<'py>,
+    psi_re: PyReadonlyArray1<'_, f64>,
+    psi_im: PyReadonlyArray1<'_, f64>,
+    n_osc: usize,
+) -> (Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>) {
+    let re = psi_re.as_slice().unwrap();
+    let im = psi_im.as_slice().unwrap();
+    let dim = re.len();
+
+    let mut exp_x = vec![0.0f64; n_osc];
+    let mut exp_y = vec![0.0f64; n_osc];
+
+    for q in 0..n_osc {
+        let mask = 1usize << q;
+        let mut ex = 0.0;
+        let mut ey = 0.0;
+
+        for k in 0..dim {
+            let f = k ^ mask;
+            ex += re[k] * re[f] + im[k] * im[f];
+
+            let bit = ((k >> q) & 1) as f64;
+            let sign = 2.0 * bit - 1.0;
+            let prod_im = re[k] * im[f] - im[k] * re[f];
+            ey += sign * (-prod_im);
+        }
+
+        exp_x[q] = ex;
+        exp_y[q] = ey;
+    }
+
+    (
+        PyArray1::from_vec(py, exp_x),
+        PyArray1::from_vec(py, exp_y),
+    )
+}
+
 #[pymodule]
 fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(pec_coefficients, m)?)?;
@@ -788,5 +879,7 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(brute_mpc, m)?)?;
     m.add_function(wrap_pyfunction!(lanczos_b_coefficients, m)?)?;
     m.add_function(wrap_pyfunction!(otoc_from_eigendecomp, m)?)?;
+    m.add_function(wrap_pyfunction!(build_xy_hamiltonian_dense, m)?)?;
+    m.add_function(wrap_pyfunction!(all_xy_expectations, m)?)?;
     Ok(())
 }
