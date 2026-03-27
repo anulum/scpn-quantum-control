@@ -129,9 +129,32 @@ def entanglement_vs_coupling(
     """Scan entanglement entropy and Schmidt gap across coupling.
 
     At K_c: entropy should peak (log scaling), Schmidt gap should close.
+    JAX GPU fast path when available (vectorised scan via jax.vmap).
     """
     if k_range is None:
         k_range = np.linspace(0.5, 5.0, 20)
+
+    # JAX GPU fast path: entire scan as one GPU kernel
+    try:
+        from ..hardware.jax_accel import entanglement_scan_jax, is_jax_gpu_available
+
+        if is_jax_gpu_available():
+            jax_result = entanglement_scan_jax(K_topology, omega, k_range)
+            entropy = jax_result["entropy"]
+            schmidt_gap = jax_result["schmidt_gap"]
+            spec_gap = jax_result["spectral_gap"]
+            entropy_peak = float(k_range[int(np.argmax(entropy))]) if np.max(entropy) > 0 else None
+            sg_min = float(k_range[int(np.argmin(schmidt_gap))])
+            return EntanglementScanResult(
+                k_values=k_range,
+                entropy=entropy,
+                schmidt_gap=schmidt_gap,
+                spectral_gap=spec_gap,
+                entropy_peak_K=entropy_peak,
+                schmidt_gap_min_K=sg_min,
+            )
+    except (ImportError, RuntimeError):
+        pass
 
     n_k = len(k_range)
     entropy = np.zeros(n_k)
