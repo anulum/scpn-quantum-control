@@ -73,3 +73,24 @@ R = (1/N) * |sum_i (X_i + i*Y_i)|
 where X_i = 2*P(|0>) - 1 for X-basis measurement, etc.
 
 Compare `hw_R` against `exact_R` (from AerSimulator statevector) to quantify hardware error.
+
+## Rust Acceleration
+
+`hardware.classical` functions transparently use Rust (via `scpn_quantum_engine`)
+when available, falling back to pure Python/NumPy otherwise. Install with:
+
+```bash
+cd scpn_quantum_engine && maturin build --release && pip install target/wheels/*.whl
+```
+
+### Accelerated functions
+
+| Python function | Rust function | Speedup | Method |
+|-----------------|---------------|---------|--------|
+| `_state_order_param` | `state_order_param_sparse` | 2-5x (n>=8) | Bitwise Pauli application instead of kron |
+| `_state_order_param_sparse` | `state_order_param_sparse` | 2-5x (n>=8) | SIMD-friendly inner loop over 2^n states |
+| `_expectation_pauli` | `expectation_pauli_fast` | 3-10x (n>=6) | Bitwise ops instead of dense 2^n x 2^n kron |
+| `classical_brute_mpc` | `brute_mpc` | 5-50x (horizon>=10) | rayon parallel enumeration of 2^horizon actions |
+
+All Rust functions accept split real/imaginary arrays (no complex64 across FFI).
+The Python fallback is always available when the Rust crate is not installed.

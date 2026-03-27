@@ -206,11 +206,26 @@ def _build_initial_state(n_osc: int, omega: np.ndarray) -> np.ndarray:
 
 
 def _state_order_param(psi: np.ndarray, n_osc: int) -> float:
-    """Compute R from statevector via X,Y expectations per qubit."""
-    z_complex = 0.0 + 0.0j
+    """Compute R from statevector via X,Y expectations per qubit.
 
+    Tries Rust fast path first (vectorised bitwise ops), falls back to
+    Python kron-based implementation.
+    """
+    try:
+        import scpn_quantum_engine as _engine
+
+        return float(
+            _engine.state_order_param_sparse(
+                np.ascontiguousarray(psi.real),
+                np.ascontiguousarray(psi.imag),
+                n_osc,
+            )
+        )
+    except (ImportError, AttributeError):
+        pass
+
+    z_complex = 0.0 + 0.0j
     for q in range(n_osc):
-        # Build single-qubit Pauli projected into full Hilbert space
         exp_x = _expectation_pauli(psi, n_osc, q, "X")
         exp_y = _expectation_pauli(psi, n_osc, q, "Y")
         z_complex += exp_x + 1j * exp_y
@@ -222,10 +237,23 @@ def _state_order_param(psi: np.ndarray, n_osc: int) -> float:
 def _state_order_param_sparse(psi: np.ndarray, n_osc: int) -> float:
     """Compute R from statevector using vectorised bitwise Pauli application.
 
-    Avoids building dense 2^n × 2^n Pauli matrices. Applies single-qubit
-    X and Y via numpy index arrays with bit-flip permutations.
-    O(2^n) time and O(2^n) memory per qubit, fully vectorised.
+    Tries Rust fast path first (SIMD-friendly loop), falls back to numpy
+    vectorised bit-flip implementation.
+    O(n_osc * 2^n) time, O(2^n) memory.
     """
+    try:
+        import scpn_quantum_engine as _engine
+
+        return float(
+            _engine.state_order_param_sparse(
+                np.ascontiguousarray(psi.real),
+                np.ascontiguousarray(psi.imag),
+                n_osc,
+            )
+        )
+    except (ImportError, AttributeError):
+        pass
+
     dim = len(psi)
     indices = np.arange(dim, dtype=np.int64)
     psi_conj = psi.conj()
@@ -236,11 +264,8 @@ def _state_order_param_sparse(psi: np.ndarray, n_osc: int) -> float:
         flipped = indices ^ mask
         psi_flipped = psi[flipped]
 
-        # <psi|X_q|psi> = Re[sum_k psi[k]* psi[k^mask]]
         exp_x = np.sum(psi_conj * psi_flipped).real
 
-        # <psi|Y_q|psi>: Y|b> = i(-1)^b |1-b>
-        # sign[k] = +1 if bit q of k is 0, -1 if bit q is 1
         bits = (indices >> q) & 1
         signs = 1.0 - 2.0 * bits
         exp_y = np.sum(psi_conj * (1j * signs) * psi_flipped).real
@@ -254,9 +279,24 @@ def _state_order_param_sparse(psi: np.ndarray, n_osc: int) -> float:
 def _expectation_pauli(psi: np.ndarray, n: int, qubit: int, pauli: str) -> float:
     """<psi| P_qubit |psi> where P acts on one qubit, identity elsewhere.
 
-    Qiskit little-endian: qubit 0 is the rightmost (LSB) position in the
-    kron product.  Position from the left in the kron is (n - 1 - qubit).
+    Tries Rust bitwise fast path first, falls back to kron-based Python.
     """
+    try:
+        import scpn_quantum_engine as _engine
+
+        pauli_idx = {"X": 0, "Y": 1, "Z": 2}[pauli]
+        return float(
+            _engine.expectation_pauli_fast(
+                np.ascontiguousarray(psi.real),
+                np.ascontiguousarray(psi.imag),
+                n,
+                qubit,
+                pauli_idx,
+            )
+        )
+    except (ImportError, AttributeError):
+        pass
+
     if pauli == "X":
         p = np.array([[0, 1], [1, 0]], dtype=complex)
     elif pauli == "Y":
@@ -304,8 +344,28 @@ def classical_brute_mpc(
 ) -> dict:
     """Brute-force optimal binary MPC: enumerate all 2^horizon action sequences.
 
+    Tries Rust parallel path first (rayon), falls back to Python.
     Returns optimal actions, optimal cost, all costs for comparison.
     """
+    try:
+        import scpn_quantum_engine as _engine
+
+        dim = B_matrix.shape[0]
+        actions, cost, all_costs, n_eval = _engine.brute_mpc(
+            B_matrix.ravel().astype(np.float64),
+            target.astype(np.float64),
+            dim,
+            horizon,
+        )
+        return {
+            "optimal_actions": np.asarray(actions, dtype=int),
+            "optimal_cost": float(cost),
+            "all_costs": np.asarray(all_costs),
+            "n_evaluated": int(n_eval),
+        }
+    except (ImportError, AttributeError):
+        pass
+
     n_actions = 2**horizon
     best_cost = np.inf
     best_actions: np.ndarray = np.zeros(horizon, dtype=int)
