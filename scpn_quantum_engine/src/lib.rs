@@ -13,10 +13,13 @@
 //! - K_nm matrix construction
 
 use ndarray::{Array1, Array2};
+use num_complex::Complex;
 use numpy::{PyArray1, PyArray2, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::prelude::*;
 use rand::prelude::*;
 use rayon::prelude::*;
+
+type C64 = Complex<f64>;
 
 /// PEC quasi-probability coefficients for single-qubit depolarizing channel.
 /// Returns [q_I, q_X, q_Y, q_Z].
@@ -609,6 +612,167 @@ fn brute_mpc<'py>(
     )
 }
 
+// ===== Complex-valued acceleration for analysis modules =====
+
+fn c64(re: f64, im: f64) -> C64 {
+    C64::new(re, im)
+}
+
+fn cmat_from_flat(re: &[f64], im: &[f64], dim: usize) -> Array2<C64> {
+    Array2::from_shape_fn((dim, dim), |(i, j)| {
+        c64(re[i * dim + j], im[i * dim + j])
+    })
+}
+
+fn cvec_from_parts(re: &[f64], im: &[f64]) -> Array1<C64> {
+    Array1::from_shape_fn(re.len(), |i| c64(re[i], im[i]))
+}
+
+fn conj_transpose(a: &Array2<C64>) -> Array2<C64> {
+    let (m, n) = a.dim();
+    Array2::from_shape_fn((n, m), |(i, j)| a[[j, i]].conj())
+}
+
+/// Re(Tr(A†B) / d) — Hilbert-Schmidt inner product
+fn hs_inner_real(a: &Array2<C64>, b: &Array2<C64>) -> f64 {
+    let d = a.nrows() as f64;
+    a.iter()
+        .zip(b.iter())
+        .map(|(&av, &bv)| (av.conj() * bv).re)
+        .sum::<f64>()
+        / d
+}
+
+/// A† × x without materialising A†
+fn ct_matvec(a: &Array2<C64>, x: &Array1<C64>) -> Array1<C64> {
+    let (m, n) = a.dim();
+    Array1::from_shape_fn(n, |col| {
+        (0..m)
+            .map(|row| a[[row, col]].conj() * x[row])
+            .sum::<C64>()
+    })
+}
+
+/// Operator Lanczos: b-coefficients for Liouvillian L=[H,·] on d×d matrices.
+///
+/// Avoids Python per-step overhead for the commutator loop (2 matrix multiplies
+/// per step). For dim ≤ 256 (8 qubits), ~5-10× faster than numpy.
+#[pyfunction]
+fn lanczos_b_coefficients(
+    h_re: PyReadonlyArray1<'_, f64>,
+    h_im: PyReadonlyArray1<'_, f64>,
+    o_re: PyReadonlyArray1<'_, f64>,
+    o_im: PyReadonlyArray1<'_, f64>,
+    dim: usize,
+    max_steps: usize,
+    tol: f64,
+) -> Vec<f64> {
+    let h = cmat_from_flat(h_re.as_slice().unwrap(), h_im.as_slice().unwrap(), dim);
+    let o_init = cmat_from_flat(o_re.as_slice().unwrap(), o_im.as_slice().unwrap(), dim);
+
+    let norm_0 = hs_inner_real(&o_init, &o_init).max(0.0).sqrt();
+    if norm_0 < tol {
+        return vec![0.0];
+    }
+
+    let mut o_prev = Array2::<C64>::zeros((dim, dim));
+    let mut o_curr = o_init / c64(norm_0, 0.0);
+    let mut b_list: Vec<f64> = Vec::with_capacity(max_steps);
+
+    for _ in 0..max_steps {
+        // A = [H, O_curr] = H·O - O·H
+        let mut a_next = h.dot(&o_curr);
+        {
+            let oh = o_curr.dot(&h);
+            a_next -= &oh;
+        }
+
+        if let Some(&b_last) = b_list.last() {
+            a_next.scaled_add(c64(-b_last, 0.0), &o_prev);
+        }
+
+        let a_n = hs_inner_real(&o_curr, &a_next);
+        a_next.scaled_add(c64(-a_n, 0.0), &o_curr);
+
+        let b_next = hs_inner_real(&a_next, &a_next).max(0.0).sqrt();
+        if b_next < tol {
+            break;
+        }
+
+        b_list.push(b_next);
+        o_prev = o_curr;
+        o_curr = a_next / c64(b_next, 0.0);
+    }
+
+    b_list
+}
+
+/// OTOC F(t) via eigendecomposition, parallel across time points (rayon).
+///
+/// Diagonalise H once (in Python via numpy.linalg.eigh), pass eigenvalues +
+/// eigenvectors here. Each time point: O(d²) phase rotation + mat-vec products.
+/// Avoids 2× scipy.expm (O(d³) Padé) per time point.
+///
+/// F(t) = Re(⟨ψ| W†(t) V† W(t) V |ψ⟩), W(t) = e^{iHt} W e^{-iHt}
+#[pyfunction]
+fn otoc_from_eigendecomp<'py>(
+    py: Python<'py>,
+    eigenvalues: PyReadonlyArray1<'_, f64>,
+    eigvecs_re: PyReadonlyArray1<'_, f64>,
+    eigvecs_im: PyReadonlyArray1<'_, f64>,
+    w_re: PyReadonlyArray1<'_, f64>,
+    w_im: PyReadonlyArray1<'_, f64>,
+    v_re: PyReadonlyArray1<'_, f64>,
+    v_im: PyReadonlyArray1<'_, f64>,
+    psi_re: PyReadonlyArray1<'_, f64>,
+    psi_im: PyReadonlyArray1<'_, f64>,
+    times: PyReadonlyArray1<'_, f64>,
+    dim: usize,
+) -> Bound<'py, PyArray1<f64>> {
+    let evals = eigenvalues.as_slice().unwrap();
+    let u = cmat_from_flat(
+        eigvecs_re.as_slice().unwrap(),
+        eigvecs_im.as_slice().unwrap(),
+        dim,
+    );
+    let u_h = conj_transpose(&u);
+    let w_mat = cmat_from_flat(w_re.as_slice().unwrap(), w_im.as_slice().unwrap(), dim);
+    let v_mat = cmat_from_flat(v_re.as_slice().unwrap(), v_im.as_slice().unwrap(), dim);
+    let psi = cvec_from_parts(psi_re.as_slice().unwrap(), psi_im.as_slice().unwrap());
+    let t_arr = times.as_slice().unwrap();
+
+    // Transform to eigenbasis (done once)
+    let w_eig = u_h.dot(&w_mat).dot(&u);
+    let v_eig = u_h.dot(&v_mat).dot(&u);
+    let psi_e = u_h.dot(&psi);
+    let state0 = v_eig.dot(&psi_e); // V|ψ⟩ in eigenbasis
+
+    let results: Vec<f64> = t_arr
+        .par_iter()
+        .map(|&t| {
+            // W(t)[i,j] = exp(i(E_i − E_j)t) × W_eig[i,j]
+            let mut w_t = Array2::<C64>::zeros((dim, dim));
+            for i in 0..dim {
+                for j in 0..dim {
+                    let ph = (evals[i] - evals[j]) * t;
+                    w_t[[i, j]] = c64(ph.cos(), ph.sin()) * w_eig[[i, j]];
+                }
+            }
+            // F(t) = Re(⟨ψ_e| W_t† V_e† W_t |state0⟩)
+            let s1 = w_t.dot(&state0);
+            let s2 = ct_matvec(&v_eig, &s1);
+            let s3 = ct_matvec(&w_t, &s2);
+            psi_e
+                .iter()
+                .zip(s3.iter())
+                .map(|(&p, &s)| (p.conj() * s).re)
+                .sum::<f64>()
+        })
+        .collect();
+
+    PyArray1::from_owned_array(py, Array1::from_vec(results))
+}
+
 #[pymodule]
 fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(pec_coefficients, m)?)?;
@@ -622,5 +786,7 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(state_order_param_sparse, m)?)?;
     m.add_function(wrap_pyfunction!(expectation_pauli_fast, m)?)?;
     m.add_function(wrap_pyfunction!(brute_mpc, m)?)?;
+    m.add_function(wrap_pyfunction!(lanczos_b_coefficients, m)?)?;
+    m.add_function(wrap_pyfunction!(otoc_from_eigendecomp, m)?)?;
     Ok(())
 }

@@ -48,7 +48,24 @@ def _build_H_matrix(K: np.ndarray, omega: np.ndarray) -> np.ndarray:
 
 
 def _order_parameter(psi: np.ndarray, n: int) -> float:
-    """R from statevector via single-qubit expectations."""
+    """R from statevector via single-qubit expectations.
+
+    Rust fast path uses bitwise Pauli expectations (no Qiskit overhead).
+    """
+    try:
+        import scpn_quantum_engine as _engine
+
+        psi_re = np.ascontiguousarray(psi.real)
+        psi_im = np.ascontiguousarray(psi.imag)
+        phases = np.zeros(n)
+        for k in range(n):
+            ex = _engine.expectation_pauli_fast(psi_re, psi_im, n, k, 0)
+            ey = _engine.expectation_pauli_fast(psi_re, psi_im, n, k, 1)
+            phases[k] = np.arctan2(ey, ex)
+        return float(abs(np.mean(np.exp(1j * phases))))
+    except (ImportError, AttributeError):
+        pass
+
     from qiskit.quantum_info import SparsePauliOp, Statevector
 
     sv = Statevector(np.ascontiguousarray(psi))

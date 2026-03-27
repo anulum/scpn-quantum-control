@@ -279,3 +279,126 @@ class TestTrotterConvergence:
         # Errors should decrease monotonically
         assert errors[1] < errors[0]
         assert errors[2] < errors[1]
+
+
+class TestRustLanczosParity:
+    """Rust lanczos_b_coefficients vs Python operator Lanczos."""
+
+    @pytest.mark.parametrize("n", [2, 3, 4])
+    def test_lanczos_coefficients_match(self, n: int) -> None:
+        import scpn_quantum_engine as engine
+        from scpn_quantum_control.analysis.krylov_complexity import (
+            _liouvillian_action,
+            _operator_inner_product,
+        )
+
+        K = build_knm_paper27(L=n)
+        omega = OMEGA_N_16[:n]
+        H = knm_to_hamiltonian(K, omega).to_matrix()
+        H = H.toarray() if hasattr(H, "toarray") else np.array(H)
+        dim = H.shape[0]
+
+        Z0 = np.zeros((dim, dim), dtype=complex)
+        for i in range(dim):
+            Z0[i, i] = 1.0 - 2.0 * ((i >> 0) & 1)
+
+        # Python Lanczos
+        tol = 1e-12
+        norm_0 = np.sqrt(_operator_inner_product(Z0, Z0))
+        O_prev = np.zeros_like(Z0)
+        O_curr = Z0 / norm_0
+        b_py: list[float] = []
+        for _ in range(50):
+            A = _liouvillian_action(H, O_curr)
+            if b_py:
+                A -= b_py[-1] * O_prev
+            a_n = _operator_inner_product(O_curr, A)
+            A -= a_n * O_curr
+            b_n = np.sqrt(max(0, _operator_inner_product(A, A)))
+            if b_n < tol:
+                break
+            b_py.append(b_n)
+            O_prev = O_curr.copy()
+            O_curr = A / b_n
+
+        # Rust Lanczos
+        H_c = np.asarray(H, dtype=complex)
+        Z_c = np.asarray(Z0, dtype=complex)
+        b_rs = engine.lanczos_b_coefficients(
+            np.ascontiguousarray(H_c.real).ravel(),
+            np.ascontiguousarray(H_c.imag).ravel(),
+            np.ascontiguousarray(Z_c.real).ravel(),
+            np.ascontiguousarray(Z_c.imag).ravel(),
+            dim,
+            50,
+            tol,
+        )
+
+        assert len(b_rs) == len(b_py)
+        # First ~40 coefficients match to machine precision; late ones diverge
+        # due to Lanczos numerical instability (no reorthogonalization)
+        n_check = min(len(b_rs), 40)
+        np.testing.assert_allclose(b_rs[:n_check], b_py[:n_check], atol=1e-10)
+
+
+class TestRustOTOCParity:
+    """Rust otoc_from_eigendecomp vs scipy.expm loop."""
+
+    @pytest.mark.parametrize("n", [2, 3])
+    def test_otoc_values_match(self, n: int) -> None:
+        import scpn_quantum_engine as engine
+
+        K = build_knm_paper27(L=n)
+        omega = OMEGA_N_16[:n]
+        H = knm_to_hamiltonian(K, omega).to_matrix()
+        H = H.toarray() if hasattr(H, "toarray") else np.array(H)
+        dim = H.shape[0]
+
+        # Pauli Z_0 and X_1
+        I2 = np.eye(2, dtype=complex)
+        Z = np.array([[1, 0], [0, -1]], dtype=complex)
+        X = np.array([[0, 1], [1, 0]], dtype=complex)
+
+        def _nqubit_pauli(P: np.ndarray, qubit: int, n_q: int) -> np.ndarray:
+            result = np.eye(1, dtype=complex)
+            for i in range(n_q):
+                result = np.kron(result, P if i == qubit else I2)
+            return result
+
+        W = _nqubit_pauli(Z, 0, n)
+        V = _nqubit_pauli(X, min(1, n - 1), n)
+        psi = np.zeros(dim, dtype=complex)
+        psi[0] = 1.0
+        times = np.linspace(0, 1.0, 10)
+
+        # Python reference via scipy.expm
+        otoc_ref = np.zeros(len(times))
+        for idx, t in enumerate(times):
+            U = expm(-1j * H * t)
+            U_dag = expm(1j * H * t)
+            W_t = U_dag @ W @ U
+            state = V @ psi
+            state = W_t @ state
+            state = V.conj().T @ state
+            state = W_t.conj().T @ state
+            otoc_ref[idx] = float(np.real(psi.conj() @ state))
+
+        # Rust via eigendecomposition
+        eigenvalues, eigvecs = np.linalg.eigh(H)
+        otoc_rs = np.asarray(
+            engine.otoc_from_eigendecomp(
+                eigenvalues,
+                np.ascontiguousarray(eigvecs.real).ravel(),
+                np.ascontiguousarray(eigvecs.imag).ravel(),
+                np.ascontiguousarray(W.real).ravel(),
+                np.ascontiguousarray(W.imag).ravel(),
+                np.ascontiguousarray(V.real).ravel(),
+                np.ascontiguousarray(V.imag).ravel(),
+                np.ascontiguousarray(psi.real),
+                np.ascontiguousarray(psi.imag),
+                times,
+                dim,
+            )
+        )
+
+        np.testing.assert_allclose(otoc_rs, otoc_ref, atol=1e-10)

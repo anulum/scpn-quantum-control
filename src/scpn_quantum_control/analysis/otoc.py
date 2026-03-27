@@ -110,22 +110,37 @@ def compute_otoc(
     psi = np.zeros(2**n, dtype=complex)
     psi[0] = 1.0
 
-    otoc_vals = np.zeros(len(times))
+    try:
+        import scpn_quantum_engine as _engine
 
-    for idx, t in enumerate(times):
-        # U(t) = exp(-iHt), U†(t) = exp(iHt)
-        U = expm(-1j * H_mat * t)
-        U_dag = expm(1j * H_mat * t)
-
-        # W(t) = U† W U
-        W_t = U_dag @ W @ U
-
-        # F(t) = <ψ| W†(t) V† W(t) V |ψ>
-        state = V @ psi
-        state = W_t @ state
-        state = V.conj().T @ state
-        state = W_t.conj().T @ state
-        otoc_vals[idx] = float(np.real(psi.conj() @ state))
+        dim = 2**n
+        eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
+        otoc_vals = np.asarray(
+            _engine.otoc_from_eigendecomp(
+                eigenvalues,
+                np.ascontiguousarray(eigenvectors.real).ravel(),
+                np.ascontiguousarray(eigenvectors.imag).ravel(),
+                np.ascontiguousarray(W.real).ravel(),
+                np.ascontiguousarray(W.imag).ravel(),
+                np.ascontiguousarray(V.real).ravel(),
+                np.ascontiguousarray(V.imag).ravel(),
+                np.ascontiguousarray(psi.real),
+                np.ascontiguousarray(psi.imag),
+                times,
+                dim,
+            )
+        )
+    except (ImportError, AttributeError):
+        otoc_vals = np.zeros(len(times))
+        for idx, t in enumerate(times):
+            U = expm(-1j * H_mat * t)
+            U_dag = expm(1j * H_mat * t)
+            W_t = U_dag @ W @ U
+            state = V @ psi
+            state = W_t @ state
+            state = V.conj().T @ state
+            state = W_t.conj().T @ state
+            otoc_vals[idx] = float(np.real(psi.conj() @ state))
 
     # Estimate Lyapunov exponent from initial decay
     lyapunov = _estimate_lyapunov(times, otoc_vals)
