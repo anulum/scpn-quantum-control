@@ -52,6 +52,7 @@ nav:
       - Orchestrator Integration: orchestrator_integration.md
   - API Reference:
       - Full Reference: api.md
+      - Rust Engine: rust_engine.md
       - Auto-Generated: autodoc.md
       - Analysis API: analysis_api.md
       - Phase API: phase_api.md

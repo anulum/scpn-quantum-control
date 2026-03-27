@@ -175,6 +175,8 @@ from scpn_quantum_control.analysis.entanglement_entropy import (
 `EntanglementEntropyResult` with: `K_values`, `entropy_values`, `schmidt_gaps`,
 `schmidt_spectra`.
 
+**Rust acceleration:** Hamiltonian construction via `build_xy_hamiltonian_dense` (Qiskit-free).
+
 ### `entanglement_spectrum` — Full Entanglement Spectrum
 
 Computes the full entanglement spectrum (all Schmidt coefficients) and estimates the
@@ -219,6 +221,10 @@ from scpn_quantum_control.analysis.otoc import (
 
 `compute_otoc(K, omega, times, w_qubit=0, v_qubit=None)` → `OTOCResult` with:
 `times`, `otoc_values`, `lyapunov_estimate`, `scrambling_time`.
+
+**Rust acceleration:** When `scpn_quantum_engine` is installed, OTOC uses eigendecomposition
++ rayon-parallel time loop ($O(d^2)$ per time point vs $O(d^3)$ `scipy.expm`). Hamiltonian
+construction uses `build_xy_hamiltonian_dense` (bitwise, Qiskit-free). 10-50× faster for n ≤ 8.
 
 ### `otoc_sync_probe` — OTOC Scan Across $K_c$
 
@@ -268,6 +274,8 @@ from scpn_quantum_control.analysis.loschmidt_echo import (
 `loschmidt_echo(K, omega, K_i, K_f, times)` → `LoschmidtResult` with:
 `times`, `echo_values`, `return_rate`, `dqpt_times` (cusp locations).
 
+**Rust acceleration:** Hamiltonian construction via `build_xy_hamiltonian_dense` (Qiskit-free).
+
 ### `krylov_complexity` — Operator Spreading Complexity
 
 Lanczos coefficients $b_n$ and Krylov complexity $C_K(t) = \sum_n n |\phi_n(t)|^2$.
@@ -283,6 +291,9 @@ from scpn_quantum_control.analysis.krylov_complexity import (
 `krylov_complexity_scan(K, omega, operator=None, K_base_range=None, n_K=15, t_max=2.0)`
 → `KrylovResult` with: `K_values`, `lanczos_b`, `complexity_values`,
 `peak_complexity_K`.
+
+**Rust acceleration:** Lanczos b-coefficients computed via `lanczos_b_coefficients` (complex
+matrix commutator loop in Rust, 5-10× for dim ≤ 256). Hamiltonian via `build_xy_hamiltonian_dense`.
 
 ---
 

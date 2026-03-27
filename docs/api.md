@@ -7,8 +7,23 @@
 ```python
 knm_to_hamiltonian(K: np.ndarray, omega: np.ndarray) -> SparsePauliOp
 ```
-Convert Knm coupling matrix and natural frequencies to XY Hamiltonian.
-K[i,j] -> J_ij(X_iX_j + Y_iY_j), omega_i -> h_i * Z_i.
+Convert Knm coupling matrix and natural frequencies to XY Hamiltonian as Qiskit `SparsePauliOp`.
+$H = -\sum_{i<j} K_{ij}(X_iX_j + Y_iY_j) - \sum_i \omega_i Z_i$. Use when you need the
+`SparsePauliOp` for circuit construction. For dense matrix operations, use `knm_to_dense_matrix`.
+
+```python
+knm_to_dense_matrix(K: np.ndarray, omega: np.ndarray) -> np.ndarray
+```
+Build dense XY Hamiltonian matrix (shape `2^n × 2^n`, complex). Uses Rust bitwise flip-flop
+construction when `scpn_quantum_engine` is installed (10-50× faster than Qiskit for n≤10),
+falls back to `knm_to_hamiltonian(...).to_matrix()`. Preferred for eigendecomposition, OTOC,
+entanglement entropy, Krylov complexity, and any code that needs a numpy matrix.
+
+```python
+knm_to_xxz_hamiltonian(K: np.ndarray, omega: np.ndarray, delta: float = 0.0) -> SparsePauliOp
+```
+XXZ Hamiltonian with anisotropy $\Delta$: $H = -\sum_{i<j} K_{ij}(X_iX_j + Y_iY_j + \Delta Z_iZ_j) - \sum_i \omega_i Z_i$.
+At $\Delta=0$: XY model (standard Kuramoto mapping). At $\Delta=1$: isotropic Heisenberg.
 
 ```python
 knm_to_ansatz(K: np.ndarray, reps: int = 2) -> QuantumCircuit
@@ -16,8 +31,17 @@ knm_to_ansatz(K: np.ndarray, reps: int = 2) -> QuantumCircuit
 Build physics-informed ansatz: CZ entanglement only between pairs where K[i,j] > threshold.
 
 ```python
+build_knm_paper27(L: int = 16, K_base: float = 0.45, K_alpha: float = 0.3) -> np.ndarray
+```
+Canonical $K_{nm}$ coupling matrix from Paper 27 with exponential decay, calibration anchors, and cross-hierarchy boosts.
+
+```python
+build_kuramoto_ring(n: int, coupling: float = 1.0, omega: np.ndarray | None = None) -> tuple[np.ndarray, np.ndarray]
+```
+Nearest-neighbour ring topology. Returns `(K, omega)`.
+
+```python
 OMEGA_N_16: np.ndarray  # 16 canonical frequencies (rad/s)
-build_knm_paper27() -> np.ndarray  # 16x16 coupling matrix
 ```
 
 ### `phase_artifact`
@@ -289,3 +313,20 @@ build_qaoa_circuit(cost_hamiltonian, p_layers, params) -> QuantumCircuit
 ```python
 classical_kuramoto_reference(n_osc, t_max, dt, K=None, omega=None, theta0=None) -> dict
 ```
+Euler integration of classical Kuramoto with Paper 27 parameters. Returns `{times, theta, R}`.
+Rust fast path via `kuramoto_trajectory` when available.
+
+```python
+classical_exact_diag(n_osc, K=None, omega=None, k_eigenvalues=None) -> dict
+```
+Exact diagonalisation of the XY Hamiltonian. Sparse eigsh for n≥14. Returns `{eigenvalues, ground_energy, ground_state, spectral_gap}`.
+
+```python
+classical_exact_evolution(n_osc, t_max, dt, K=None, omega=None) -> dict
+```
+Exact matrix exponential evolution. Sparse Krylov path for n≥13. Returns `{times, R}`.
+
+```python
+classical_brute_mpc(B_matrix, target, horizon) -> dict
+```
+Brute-force optimal binary MPC. Rust rayon parallel for horizon≥10. Returns `{optimal_actions, optimal_cost, all_costs}`.

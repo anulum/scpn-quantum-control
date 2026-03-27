@@ -254,6 +254,9 @@ the path. At the BKT transition ($K \approx K_c$), the gap closes exponentially 
 making adiabatic preparation exponentially slow. This module is most useful for
 $K \neq K_c$, where the gap remains open and adiabatic preparation is efficient.
 
+**Rust acceleration:** Hamiltonian construction at each adiabatic step via
+`build_xy_hamiltonian_dense` (Qiskit-free).
+
 ---
 
 ## Periodically Driven Systems
@@ -280,6 +283,10 @@ $\Omega/2$ divided by power at $\Omega$, computed via FFT).
 
 `FloquetResult` fields: `times`, `R_values`, `drive_signal`, `subharmonic_ratio`,
 `is_dtc_candidate` (True when `subharmonic_ratio > 1`).
+
+**Rust acceleration:** Hamiltonian construction via `build_xy_hamiltonian_dense` (Qiskit-free).
+Order parameter R computed via `all_xy_expectations` (batch bitwise Pauli, 1 FFI call instead
+of 2n Qiskit SparsePauliOp evaluations).
 
 **`scan_drive_amplitude(K_topology, omega, K_base, drive_frequency, amplitudes=None, ...) → dict`**
 
