@@ -112,6 +112,40 @@ Time points are parallelised with rayon.
 |----------|-------------|------------|
 | `brute_mpc(B_flat, target, dim, horizon)` | Brute-force binary MPC (rayon parallel) | O(2^horizon × horizon) |
 
+## Measured Benchmarks (2026-03-28)
+
+Windows 11, Python 3.12, Rust release build, i7 CPU.
+
+### Hamiltonian Construction
+
+| System | Rust `build_xy_hamiltonian_dense` | Qiskit `SparsePauliOp.to_matrix()` | Speedup |
+|--------|------|--------|---------|
+| n=4 (16×16) | 0.004 ms | 20.9 ms | **5401×** |
+| n=6 (64×64) | 0.008 ms | 37.1 ms | **4589×** |
+| n=8 (256×256) | 0.399 ms | 63.0 ms | **158×** |
+
+### OTOC (30 time points)
+
+| System | Rust eigendecomp + rayon | scipy.expm loop (60 calls) | Speedup |
+|--------|------|--------|---------|
+| n=4 (16 dim) | 0.3 ms | 74.7 ms | **264×** |
+| n=6 (64 dim) | 47.9 ms | 5662.5 ms | **118×** |
+
+### Lanczos (50 steps)
+
+| System | Rust complex commutator | numpy commutator loop | Speedup |
+|--------|------|--------|---------|
+| n=3 (8 dim) | 0.05 ms | 1.3 ms | **27×** |
+| n=4 (16 dim) | 0.5 ms | 4.8 ms | **10×** |
+
+### Batch Pauli Expectations
+
+| System | `all_xy_expectations` (1 call) | 2n × `expectation_pauli_fast` | Speedup |
+|--------|------|--------|---------|
+| n=4 | 3.2 µs | 19.6 µs | **6.2×** |
+| n=6 | 2.5 µs | 10.4 µs | **4.2×** |
+| n=8 | 6.2 µs | 15.6 µs | **2.5×** |
+
 ## Python Integration Pattern
 
 All modules use the same pattern for transparent Rust/Python fallback:
