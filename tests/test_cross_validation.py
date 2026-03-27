@@ -286,7 +286,7 @@ class TestRustLanczosParity:
 
     @pytest.mark.parametrize("n", [2, 3, 4])
     def test_lanczos_coefficients_match(self, n: int) -> None:
-        import scpn_quantum_engine as engine
+        engine = pytest.importorskip("scpn_quantum_engine")
         from scpn_quantum_control.analysis.krylov_complexity import (
             _liouvillian_action,
             _operator_inner_product,
@@ -346,7 +346,7 @@ class TestRustOTOCParity:
 
     @pytest.mark.parametrize("n", [2, 3])
     def test_otoc_values_match(self, n: int) -> None:
-        import scpn_quantum_engine as engine
+        engine = pytest.importorskip("scpn_quantum_engine")
 
         K = build_knm_paper27(L=n)
         omega = OMEGA_N_16[:n]
