@@ -8,40 +8,44 @@
 import numpy as np
 import pytest
 
+from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.phase.xy_kuramoto import QuantumKuramotoSolver
 
-
-@pytest.fixture
-def small_solver():
-    K = np.array([[0, 0.5], [0.5, 0]])
-    omega = np.array([1.0, 1.0])
-    return QuantumKuramotoSolver(2, K, omega)
+SIZES = [2, 3, 4]
 
 
-def test_build_hamiltonian(small_solver):
-    H = small_solver.build_hamiltonian()
-    assert H.num_qubits == 2
+@pytest.fixture(params=SIZES)
+def solver(request):
+    n = request.param
+    K = build_knm_paper27(L=n)
+    omega = OMEGA_N_16[:n]
+    return QuantumKuramotoSolver(n, K, omega)
 
 
-def test_evolve_circuit(small_solver):
-    small_solver.build_hamiltonian()
-    qc = small_solver.evolve(1.0, trotter_steps=5)
-    assert qc.num_qubits == 2
+def test_build_hamiltonian(solver):
+    H = solver.build_hamiltonian()
+    assert H.num_qubits == solver.n
 
 
-def test_order_parameter_range(small_solver):
-    small_solver.build_hamiltonian()
+def test_evolve_circuit(solver):
+    solver.build_hamiltonian()
+    qc = solver.evolve(1.0, trotter_steps=5)
+    assert qc.num_qubits == solver.n
+
+
+def test_order_parameter_range(solver):
+    solver.build_hamiltonian()
     from qiskit import QuantumCircuit
     from qiskit.quantum_info import Statevector
 
-    qc = QuantumCircuit(2)
+    qc = QuantumCircuit(solver.n)
     sv = Statevector.from_instruction(qc)
-    R, psi = small_solver.measure_order_parameter(sv)
+    R, psi = solver.measure_order_parameter(sv)
     assert 0.0 <= R <= 1.0
 
 
-def test_run_returns_trajectory(small_solver):
-    result = small_solver.run(t_max=0.5, dt=0.1)
+def test_run_returns_trajectory(solver):
+    result = solver.run(t_max=0.5, dt=0.1)
     assert "R" in result
     assert "times" in result
     assert len(result["R"]) == len(result["times"])
