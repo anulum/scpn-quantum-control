@@ -431,6 +431,184 @@ fn xy_observables(theta: &[f64], k: &[f64], n: usize) -> (f64, f64, f64) {
     (energy, cos_sum, sin_sum)
 }
 
+/// Compute quantum order parameter R from a complex statevector using
+/// sparse bitwise Pauli application.
+///
+/// For each qubit q, computes <psi|X_q|psi> and <psi|Y_q|psi> via index
+/// bit-flips (psi[k ^ (1<<q)]) instead of building dense 2^n Pauli matrices.
+/// O(n_osc * 2^n) time, O(2^n) memory.
+///
+/// Takes real and imaginary parts separately since PyO3 numpy complex support
+/// varies across platforms.
+#[pyfunction]
+fn state_order_param_sparse(
+    psi_re: PyReadonlyArray1<'_, f64>,
+    psi_im: PyReadonlyArray1<'_, f64>,
+    n_osc: usize,
+) -> f64 {
+    let re = psi_re.as_slice().unwrap();
+    let im = psi_im.as_slice().unwrap();
+    let dim = re.len();
+
+    let mut z_re = 0.0_f64;
+    let mut z_im = 0.0_f64;
+
+    for q in 0..n_osc {
+        let mask: usize = 1 << q;
+        let mut exp_x = 0.0_f64;
+        let mut exp_y = 0.0_f64;
+
+        for k in 0..dim {
+            let flipped = k ^ mask;
+            // psi_conj[k] * psi[flipped]
+            // (re_k - i*im_k) * (re_f + i*im_f) = (re_k*re_f + im_k*im_f) + i*(re_k*im_f - im_k*re_f)
+            let prod_re = re[k] * re[flipped] + im[k] * im[flipped];
+
+            // <X_q> = Re[sum_k conj(psi[k]) * psi[k^mask]]
+            exp_x += prod_re;
+
+            // <Y_q>: sign = 1 - 2*bit_q(k)
+            let bit = ((k >> q) & 1) as f64;
+            let sign = 1.0 - 2.0 * bit;
+            // i * sign * psi[flipped] → multiply by i*sign then take conj(psi[k]) dot
+            // conj(psi[k]) * (i * sign * psi[flipped])
+            // = sign * [(re_k - i*im_k) * (i*re_f - im_f)]... simplify:
+            // = sign * [(-re_k*im_f - im_k*re_f) is imaginary part... but we want Re of whole sum]
+            // Actually: conj(psi[k]) * (i*sign) * psi[flipped]
+            // = sign * (conj(psi[k]) * i * psi[flipped])
+            // conj(psi[k]) * psi[flipped] = prod_re + i*prod_im
+            // prod_im = re_k*im_f - im_k*re_f
+            // multiply by i: i*(prod_re + i*prod_im) = -prod_im + i*prod_re
+            // Re of that = -prod_im = -(re_k*im_f - im_k*re_f) = im_k*re_f - re_k*im_f
+            // Wait, we want Re[sum conj(psi[k]) * (i*sign*psi[flipped])]
+            // = sign * Re[i * (prod_re + i*prod_im)]
+            // = sign * Re[-prod_im + i*prod_re]
+            // = sign * (-prod_im)
+            // = sign * (im_k*re_f - re_k*im_f)
+            let prod_im = re[k] * im[flipped] - im[k] * re[flipped];
+            exp_y += sign * (-prod_im);
+        }
+
+        z_re += exp_x;
+        z_im += exp_y;
+    }
+
+    z_re /= n_osc as f64;
+    z_im /= n_osc as f64;
+    (z_re * z_re + z_im * z_im).sqrt()
+}
+
+/// Compute single-qubit Pauli expectation <psi|P_qubit|psi> using bitwise ops.
+///
+/// pauli: 0=X, 1=Y, 2=Z
+#[pyfunction]
+fn expectation_pauli_fast(
+    psi_re: PyReadonlyArray1<'_, f64>,
+    psi_im: PyReadonlyArray1<'_, f64>,
+    _n: usize,
+    qubit: usize,
+    pauli: usize,
+) -> f64 {
+    let re = psi_re.as_slice().unwrap();
+    let im = psi_im.as_slice().unwrap();
+    let dim = re.len();
+
+    match pauli {
+        0 => {
+            // X: <psi|X_q|psi> = Re[sum_k conj(psi[k]) * psi[k ^ (1<<qubit)]]
+            let mask = 1usize << qubit;
+            let mut result = 0.0;
+            for k in 0..dim {
+                let f = k ^ mask;
+                result += re[k] * re[f] + im[k] * im[f];
+            }
+            result
+        }
+        1 => {
+            // Y|b> = i(-1)^b |1-b>. The phase (-1)^b uses the bit of the
+            // target index (after flip), so sign = 2*bit_k - 1 = -(1-2*bit_k).
+            let mask = 1usize << qubit;
+            let mut result = 0.0;
+            for k in 0..dim {
+                let f = k ^ mask;
+                let bit = ((k >> qubit) & 1) as f64;
+                let sign = 2.0 * bit - 1.0;
+                let prod_im = re[k] * im[f] - im[k] * re[f];
+                result += sign * (-prod_im);
+            }
+            result
+        }
+        _ => {
+            // Z: <psi|Z_q|psi> = sum_k |psi[k]|^2 * (-1)^bit_q(k)
+            let mut result = 0.0;
+            for k in 0..dim {
+                let bit = ((k >> qubit) & 1) as f64;
+                let sign = 1.0 - 2.0 * bit;
+                result += sign * (re[k] * re[k] + im[k] * im[k]);
+            }
+            result
+        }
+    }
+}
+
+/// Brute-force optimal binary MPC: enumerate all 2^horizon action sequences.
+/// Parallelised with rayon for horizon > 10.
+///
+/// Returns (optimal_actions, optimal_cost, all_costs, n_evaluated).
+#[pyfunction]
+fn brute_mpc<'py>(
+    py: Python<'py>,
+    b_flat: PyReadonlyArray1<'_, f64>,
+    target: PyReadonlyArray1<'_, f64>,
+    _dim: usize,
+    horizon: usize,
+) -> (Bound<'py, PyArray1<i64>>, f64, Bound<'py, PyArray1<f64>>, usize) {
+    let b_data = b_flat.as_slice().unwrap();
+    let t_data = target.as_slice().unwrap();
+    let n_actions = 1usize << horizon;
+
+    let b_norm: f64 = b_data.iter().map(|x| x * x).sum::<f64>().sqrt();
+    let t_norm: f64 = t_data.iter().map(|x| x * x).sum::<f64>().sqrt();
+
+    // Parallel cost evaluation
+    let costs: Vec<f64> = (0..n_actions)
+        .into_par_iter()
+        .map(|idx| {
+            let mut cost = 0.0;
+            for t in 0..horizon {
+                let action = ((idx >> t) & 1) as f64;
+                let diff = b_norm * action - t_norm / horizon as f64;
+                cost += diff * diff;
+            }
+            cost
+        })
+        .collect();
+
+    // Find minimum
+    let mut best_idx = 0usize;
+    let mut best_cost = costs[0];
+    for (idx, &cost) in costs.iter().enumerate() {
+        if cost < best_cost {
+            best_cost = cost;
+            best_idx = idx;
+        }
+    }
+
+    let best_actions: Vec<i64> = (0..horizon)
+        .map(|bit| ((best_idx >> bit) & 1) as i64)
+        .collect();
+
+    let actions_arr = Array1::from_vec(best_actions);
+    let costs_arr = Array1::from_vec(costs);
+
+    (
+        PyArray1::from_owned_array(py, actions_arr),
+        best_cost,
+        PyArray1::from_owned_array(py, costs_arr),
+        n_actions,
+    )
+}
+
 #[pymodule]
 fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(pec_coefficients, m)?)?;
@@ -441,5 +619,8 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(kuramoto_trajectory, m)?)?;
     m.add_function(wrap_pyfunction!(dla_dimension, m)?)?;
     m.add_function(wrap_pyfunction!(mc_xy_simulate, m)?)?;
+    m.add_function(wrap_pyfunction!(state_order_param_sparse, m)?)?;
+    m.add_function(wrap_pyfunction!(expectation_pauli_fast, m)?)?;
+    m.add_function(wrap_pyfunction!(brute_mpc, m)?)?;
     Ok(())
 }
