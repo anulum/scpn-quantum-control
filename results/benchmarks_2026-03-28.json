@@ -1,0 +1,84 @@
+{
+  "hamiltonian_n4": {
+    "n": 4,
+    "dim": 16,
+    "reps": 100,
+    "rust_ms": 0.004,
+    "qiskit_ms": 20.876,
+    "speedup": 5401.3
+  },
+  "hamiltonian_n6": {
+    "n": 6,
+    "dim": 64,
+    "reps": 100,
+    "rust_ms": 0.008,
+    "qiskit_ms": 37.1,
+    "speedup": 4589.4
+  },
+  "hamiltonian_n8": {
+    "n": 8,
+    "dim": 256,
+    "reps": 20,
+    "rust_ms": 0.399,
+    "qiskit_ms": 63.044,
+    "speedup": 157.9
+  },
+  "otoc_n4": {
+    "n": 4,
+    "dim": 16,
+    "n_times": 30,
+    "reps": 50,
+    "rust_ms": 0.283,
+    "scipy_ms": 74.726,
+    "speedup": 263.7
+  },
+  "otoc_n6": {
+    "n": 6,
+    "dim": 64,
+    "n_times": 30,
+    "reps": 10,
+    "rust_ms": 47.934,
+    "scipy_ms": 5662.505,
+    "speedup": 118.1
+  },
+  "pauli_batch_n4": {
+    "n": 4,
+    "dim": 16,
+    "reps": 1000,
+    "batch_us": 3.2,
+    "individual_us": 19.6,
+    "speedup": 6.15
+  },
+  "pauli_batch_n6": {
+    "n": 6,
+    "dim": 64,
+    "reps": 1000,
+    "batch_us": 2.5,
+    "individual_us": 10.4,
+    "speedup": 4.21
+  },
+  "pauli_batch_n8": {
+    "n": 8,
+    "dim": 256,
+    "reps": 100,
+    "batch_us": 6.2,
+    "individual_us": 15.6,
+    "speedup": 2.51
+  },
+  "lanczos_n3": {
+    "n": 3,
+    "dim": 8,
+    "reps": 20,
+    "rust_ms": 0.05,
+    "python_ms": 1.344,
+    "speedup": 26.9
+  },
+  "lanczos_n4": {
+    "n": 4,
+    "dim": 16,
+    "reps": 5,
+    "rust_ms": 0.487,
+    "python_ms": 4.806,
+    "speedup": 9.9
+  }
+}
