@@ -16,10 +16,13 @@ from scpn_quantum_control.bridge.knm_hamiltonian import (
     knm_to_hamiltonian,
 )
 
+SIZES = [2, 3, 4, 6, 8, 16]
 
-def test_knm_paper27_symmetric():
-    K = build_knm_paper27()
-    assert K.shape == (16, 16)
+
+@pytest.mark.parametrize("n", SIZES)
+def test_knm_paper27_symmetric(n):
+    K = build_knm_paper27(L=n)
+    assert K.shape == (n, n)
     np.testing.assert_allclose(K, K.T, atol=1e-12)
 
 
@@ -29,31 +32,35 @@ def test_knm_paper27_cross_hierarchy():
     assert K[4, 6] >= 0.15
 
 
-def test_hamiltonian_hermitian():
-    K = np.array([[0, 0.3], [0.3, 0]])
-    omega = np.array([1.0, 2.0])
+@pytest.mark.parametrize("n", [2, 3, 4, 6])
+def test_hamiltonian_hermitian(n):
+    K = build_knm_paper27(L=n)
+    omega = OMEGA_N_16[:n]
     H = knm_to_hamiltonian(K, omega)
     mat = H.to_matrix()
     np.testing.assert_allclose(mat, mat.conj().T, atol=1e-12)
 
 
-def test_hamiltonian_small_system():
-    K = np.array([[0, 0.5], [0.5, 0]])
-    omega = np.array([1.0, 0.0])
+@pytest.mark.parametrize("n", [2, 3, 4, 6])
+def test_hamiltonian_qubit_count(n):
+    K = build_knm_paper27(L=n)
+    omega = OMEGA_N_16[:n]
     H = knm_to_hamiltonian(K, omega)
-    assert H.num_qubits == 2
+    assert H.num_qubits == n
 
 
-def test_ansatz_qubit_count():
-    K = build_knm_paper27(L=4)
+@pytest.mark.parametrize("n", [2, 3, 4, 6])
+def test_ansatz_qubit_count(n):
+    K = build_knm_paper27(L=n)
     qc = knm_to_ansatz(K, reps=1)
-    assert qc.num_qubits == 4
+    assert qc.num_qubits == n
 
 
-def test_ansatz_has_parameters():
-    K = build_knm_paper27(L=4)
-    qc = knm_to_ansatz(K, reps=2)
-    assert qc.num_parameters == 4 * 2 * 2  # n * 2 * reps
+@pytest.mark.parametrize("n,reps", [(2, 1), (3, 2), (4, 2), (6, 1)])
+def test_ansatz_has_parameters(n, reps):
+    K = build_knm_paper27(L=n)
+    qc = knm_to_ansatz(K, reps=reps)
+    assert qc.num_parameters == n * 2 * reps
 
 
 def test_pauli_ordering_energy_on_zero_state():
@@ -102,19 +109,20 @@ def test_pauli_ordering_single_flip():
     np.testing.assert_allclose(E1, -4.0, atol=1e-12)
 
 
-def test_kuramoto_ring_symmetric():
-    K, omega = build_kuramoto_ring(6, coupling=0.5, rng_seed=0)
-    assert K.shape == (6, 6)
+@pytest.mark.parametrize("n", [3, 4, 6, 8])
+def test_kuramoto_ring_symmetric(n):
+    K, omega = build_kuramoto_ring(n, coupling=0.5, rng_seed=0)
+    assert K.shape == (n, n)
     np.testing.assert_allclose(K, K.T, atol=1e-15)
-    assert len(omega) == 6
-    # Ring: each node connected to 2 neighbours
-    assert np.count_nonzero(K) == 12  # 6 pairs * 2
+    assert len(omega) == n
+    assert np.count_nonzero(K) == 2 * n
 
 
-def test_kuramoto_ring_hamiltonian():
-    K, omega = build_kuramoto_ring(4, coupling=1.0, rng_seed=42)
+@pytest.mark.parametrize("n", [3, 4, 6])
+def test_kuramoto_ring_hamiltonian(n):
+    K, omega = build_kuramoto_ring(n, coupling=1.0, rng_seed=42)
     H = knm_to_hamiltonian(K, omega)
-    assert H.num_qubits == 4
+    assert H.num_qubits == n
     mat = H.to_matrix()
     np.testing.assert_allclose(mat, mat.conj().T, atol=1e-12)
 

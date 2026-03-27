@@ -22,18 +22,23 @@ from scpn_quantum_control.hardware.classical import (
     classical_kuramoto_reference,
 )
 
+SIZES = [2, 3, 4, 6]
+
 # --- classical_kuramoto_reference ---
 
 
-def test_kuramoto_returns_correct_shapes():
-    result = classical_kuramoto_reference(4, t_max=0.5, dt=0.1)
-    assert result["times"].shape == (6,)
-    assert result["theta"].shape == (6, 4)
-    assert result["R"].shape == (6,)
+@pytest.mark.parametrize("n", SIZES)
+def test_kuramoto_returns_correct_shapes(n):
+    result = classical_kuramoto_reference(n, t_max=0.5, dt=0.1)
+    n_steps = 6
+    assert result["times"].shape == (n_steps,)
+    assert result["theta"].shape == (n_steps, n)
+    assert result["R"].shape == (n_steps,)
 
 
-def test_kuramoto_R_bounded():
-    result = classical_kuramoto_reference(4, t_max=1.0, dt=0.05)
+@pytest.mark.parametrize("n", SIZES)
+def test_kuramoto_R_bounded(n):
+    result = classical_kuramoto_reference(n, t_max=1.0, dt=0.05)
     for r in result["R"]:
         assert 0.0 <= r <= 1.0 + 1e-10
 
@@ -67,31 +72,37 @@ def test_kuramoto_default_params():
 # --- classical_exact_diag ---
 
 
-def test_exact_diag_returns_real_eigenvalues():
-    result = classical_exact_diag(3)
+@pytest.mark.parametrize("n", SIZES)
+def test_exact_diag_returns_real_eigenvalues(n):
+    result = classical_exact_diag(n)
     assert np.all(np.isreal(result["eigenvalues"]))
 
 
-def test_exact_diag_ground_below_first_excited():
-    result = classical_exact_diag(3)
+@pytest.mark.parametrize("n", SIZES)
+def test_exact_diag_ground_below_first_excited(n):
+    result = classical_exact_diag(n)
     assert result["spectral_gap"] > 0.0
 
 
-def test_exact_diag_eigenvalues_sorted():
-    result = classical_exact_diag(4)
+@pytest.mark.parametrize("n", SIZES)
+def test_exact_diag_eigenvalues_sorted(n):
+    result = classical_exact_diag(n)
     evals = result["eigenvalues"]
     np.testing.assert_array_less(evals[:-1], evals[1:] + 1e-12)
 
 
-def test_exact_diag_sparse_path():
-    """k_eigenvalues triggers sparse solver even for small systems."""
-    result = classical_exact_diag(3, k_eigenvalues=3)
-    assert len(result["eigenvalues"]) == 3
+@pytest.mark.parametrize("n", [3, 4, 6])
+def test_exact_diag_sparse_path(n):
+    """k_eigenvalues triggers sparse solver. Needs k < 2^n - 1."""
+    k = min(3, 2**n - 2)
+    result = classical_exact_diag(n, k_eigenvalues=k)
+    assert len(result["eigenvalues"]) == k
     assert result["ground_energy"] == pytest.approx(result["eigenvalues"][0])
 
 
-def test_exact_diag_ground_state_normalised():
-    result = classical_exact_diag(3)
+@pytest.mark.parametrize("n", SIZES)
+def test_exact_diag_ground_state_normalised(n):
+    result = classical_exact_diag(n)
     norm = np.linalg.norm(result["ground_state"])
     np.testing.assert_allclose(norm, 1.0, atol=1e-12)
 
@@ -99,46 +110,51 @@ def test_exact_diag_ground_state_normalised():
 # --- classical_exact_evolution ---
 
 
-def test_exact_evolution_shapes():
-    result = classical_exact_evolution(3, t_max=0.3, dt=0.1)
+@pytest.mark.parametrize("n", SIZES)
+def test_exact_evolution_shapes(n):
+    result = classical_exact_evolution(n, t_max=0.3, dt=0.1)
     assert result["times"].shape == (4,)
     assert result["R"].shape == (4,)
 
 
-def test_exact_evolution_R_bounded():
-    result = classical_exact_evolution(3, t_max=0.5, dt=0.05)
+@pytest.mark.parametrize("n", SIZES)
+def test_exact_evolution_R_bounded(n):
+    result = classical_exact_evolution(n, t_max=0.5, dt=0.05)
     for r in result["R"]:
         assert 0.0 <= r <= 1.0 + 1e-10
 
 
-def test_exact_evolution_unitarity():
+@pytest.mark.parametrize("n", SIZES)
+def test_exact_evolution_unitarity(n):
     """Exact evolution preserves initial R at t=0."""
-    result = classical_exact_evolution(3, t_max=0.3, dt=0.1)
-    # R(0) should be well-defined and positive (Ry-initialised state)
+    result = classical_exact_evolution(n, t_max=0.3, dt=0.1)
     assert result["R"][0] > 0.0
 
 
-def test_exact_evolution_default_params():
+@pytest.mark.parametrize("n", SIZES)
+def test_exact_evolution_default_params(n):
     """Default K and omega from Paper 27."""
-    result = classical_exact_evolution(4, t_max=0.2, dt=0.1)
+    result = classical_exact_evolution(n, t_max=0.2, dt=0.1)
     assert len(result["R"]) == 3
 
 
 # --- classical_brute_mpc ---
 
 
-def test_brute_mpc_optimal_cost_minimal():
+@pytest.mark.parametrize("horizon", [2, 3, 4, 5])
+def test_brute_mpc_optimal_cost_minimal(horizon):
     B = np.eye(2)
     target = np.array([0.8, 0.6])
-    result = classical_brute_mpc(B, target, horizon=3)
+    result = classical_brute_mpc(B, target, horizon=horizon)
     assert result["optimal_cost"] <= np.min(result["all_costs"]) + 1e-12
 
 
-def test_brute_mpc_binary_actions():
+@pytest.mark.parametrize("horizon", [2, 3, 4, 5])
+def test_brute_mpc_binary_actions(horizon):
     B = np.array([[1.0]])
     target = np.array([1.0])
-    result = classical_brute_mpc(B, target, horizon=4)
-    assert result["optimal_actions"].shape == (4,)
+    result = classical_brute_mpc(B, target, horizon=horizon)
+    assert result["optimal_actions"].shape == (horizon,)
     assert set(np.unique(result["optimal_actions"])).issubset({0, 1})
 
 
