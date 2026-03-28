@@ -1,0 +1,206 @@
+[{"stream_name":"stdout","time":3.086831948,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":3.086942425,"data":"UPDE TUNING FROM EMPIRICAL CONSTRAINTS\n"}
+,{"stream_name":"stdout","time":3.086971348,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":3.086975493,"data":"\n"}
+,{"stream_name":"stdout","time":3.086978533,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":3.086981598,"data":"FIT 1: COUPLING DECAY alpha vs SCALE\n"}
+,{"stream_name":"stdout","time":3.086984531,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":3.090782916,"data":"Measured: quantum alpha=0.3, protein alpha=0.04\n"}
+,{"stream_name":"stdout","time":3.090816818,"data":"Power law fit: alpha = 10^(-2.711) * freq^(0.1458)\n"}
+,{"stream_name":"stdout","time":3.09082271,"data":"R^2 = 1.0000\n"}
+,{"stream_name":"stdout","time":3.09082766,"data":"\n"}
+,{"stream_name":"stdout","time":3.090831993,"data":"Predicted alpha per scale:\n"}
+,{"stream_name":"stdout","time":3.090836359,"data":"  quantum         (1e+15 Hz): alpha = 0.3000 (measured)\n"}
+,{"stream_name":"stdout","time":3.090841004,"data":"                     actual = 0.3000, error = 0.0%\n"}
+,{"stream_name":"stdout","time":3.090845393,"data":"  molecular       (1e+12 Hz): alpha = 0.1095 (PREDICTED)\n"}
+,{"stream_name":"stdout","time":3.09084993,"data":"  protein         (1e+09 Hz): alpha = 0.0400 (measured)\n"}
+,{"stream_name":"stdout","time":3.090854316,"data":"                     actual = 0.0400, error = 0.0%\n"}
+,{"stream_name":"stdout","time":3.090858567,"data":"  enzyme          (1e+03 Hz): alpha = 0.0053 (PREDICTED)\n"}
+,{"stream_name":"stdout","time":3.090863137,"data":"  ion_channel     (1e+03 Hz): alpha = 0.0053 (PREDICTED)\n"}
+,{"stream_name":"stdout","time":3.090947593,"data":"  neural          (4e+01 Hz): alpha = 0.0033 (PREDICTED)\n"}
+,{"stream_name":"stdout","time":3.090980822,"data":"  cardiac         (1e+00 Hz): alpha = 0.0020 (PREDICTED)\n"}
+,{"stream_name":"stdout","time":3.09098759,"data":"  circadian       (1e-05 Hz): alpha = 0.0004 (PREDICTED)\n"}
+,{"stream_name":"stdout","time":3.090992893,"data":"\n"}
+,{"stream_name":"stdout","time":3.090997913,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":3.091003279,"data":"FIT 2: CRITICAL COUPLING K_c vs TOPOLOGY\n"}
+,{"stream_name":"stdout","time":3.09100862,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":3.09101408,"data":"Measured K_c values:\n"}
+,{"stream_name":"stdout","time":3.09101905,"data":"  ring_N8        : K_c = 1.10 (analytic)\n"}
+,{"stream_name":"stdout","time":3.091024155,"data":"  SCPN_N8        : K_c = 2.70 (simulation)\n"}
+,{"stream_name":"stdout","time":3.091029296,"data":"  chain_N8       : K_c = 3.90 (analytic)\n"}
+,{"stream_name":"stdout","time":3.091034659,"data":"  EEG_N8         : K_c = 6.35 (simulation)\n"}
+,{"stream_name":"stdout","time":3.091039729,"data":"\n"}
+,{"stream_name":"stdout","time":3.091044824,"data":"K_c vs alpha (N=8, SCPN omega):\n"}
+,{"stream_name":"stdout","time":371.726427054,"data":"  alpha=0.01: K_c = 0.47\n"}
+,{"stream_name":"stdout","time":738.618115643,"data":"  alpha=0.05: K_c = 0.50\n"}
+,{"stream_name":"stdout","time":1110.347271545,"data":"  alpha=0.10: K_c = 0.69\n"}
+,{"stream_name":"stdout","time":1477.68406209,"data":"  alpha=0.20: K_c = 0.90\n"}
+,{"stream_name":"stdout","time":1845.625375157,"data":"  alpha=0.30: K_c = 1.22\n"}
+,{"stream_name":"stdout","time":2213.011190166,"data":"  alpha=0.50: K_c = 2.08\n"}
+,{"stream_name":"stdout","time":2579.390019531,"data":"  alpha=1.00: K_c = 14.55\n"}
+,{"stream_name":"stdout","time":2946.589347658,"data":"  alpha=2.00: K_c = 15.00\n"}
+,{"stream_name":"stdout","time":2946.590357498,"data":"\n"}
+,{"stream_name":"stdout","time":2946.590388434,"data":"Fit: K_c ~ alpha^(0.723), R^2 = 0.7662\n"}
+,{"stream_name":"stdout","time":2946.590396216,"data":"Weaker coupling decay (smaller alpha) -\u003e lower K_c -\u003e easier to synchronise\n"}
+,{"stream_name":"stdout","time":2946.59040323,"data":"\n"}
+,{"stream_name":"stdout","time":2946.590409071,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":2946.590414544,"data":"FIT 3: FREQUENCY SPACING RULES\n"}
+,{"stream_name":"stdout","time":2946.590418561,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":2946.590538986,"data":"\n"}
+,{"stream_name":"stdout","time":2946.590548548,"data":"SCPN (Paper 27):\n"}
+,{"stream_name":"stdout","time":2946.590554561,"data":"  Ratios: 3.081, 2.000, 1.618, 1.309, 1.146, 1.058, 1.019\n"}
+,{"stream_name":"stdout","time":2946.590560979,"data":"  Mean ratio: 1.604\n"}
+,{"stream_name":"stdout","time":2946.590566723,"data":"  Log-spacing CV: 0.936 (0=uniform, \u003e1=highly variable)\n"}
+,{"stream_name":"stdout","time":3314.308810816,"data":"  K_c (alpha=0.3): 1.20\n"}
+,{"stream_name":"stdout","time":3314.308872885,"data":"\n"}
+,{"stream_name":"stdout","time":3314.308881106,"data":"EEG (Buzsaki):\n"}
+,{"stream_name":"stdout","time":3314.308887051,"data":"  Ratios: 2.465, 2.465, 2.465, 2.465, 2.465, 2.465, 2.465\n"}
+,{"stream_name":"stdout","time":3314.308893263,"data":"  Mean ratio: 2.465\n"}
+,{"stream_name":"stdout","time":3314.308899235,"data":"  Log-spacing CV: 0.000 (0=uniform, \u003e1=highly variable)\n"}
+,{"stream_name":"stdout","time":3684.623183661,"data":"  K_c (alpha=0.3): 15.00\n"}
+,{"stream_name":"stdout","time":3684.623235434,"data":"\n"}
+,{"stream_name":"stdout","time":3684.623243506,"data":"Uniform:\n"}
+,{"stream_name":"stdout","time":3684.623256372,"data":"  Ratios: 2.286, 1.563, 1.360, 1.265, 1.209, 1.173, 1.148\n"}
+,{"stream_name":"stdout","time":3684.623262569,"data":"  Mean ratio: 1.429\n"}
+,{"stream_name":"stdout","time":3684.623267986,"data":"  Log-spacing CV: 0.685 (0=uniform, \u003e1=highly variable)\n"}
+,{"stream_name":"stdout","time":4051.494170486,"data":"  K_c (alpha=0.3): 1.71\n"}
+,{"stream_name":"stdout","time":4051.494220839,"data":"\n"}
+,{"stream_name":"stdout","time":4051.494229079,"data":"Golden ratio:\n"}
+,{"stream_name":"stdout","time":4051.494344878,"data":"  Ratios: 1.618, 1.618, 1.618, 1.618, 1.618, 1.618, 1.618\n"}
+,{"stream_name":"stdout","time":4051.494373432,"data":"  Mean ratio: 1.618\n"}
+,{"stream_name":"stdout","time":4051.494380827,"data":"  Log-spacing CV: 0.000 (0=uniform, \u003e1=highly variable)\n"}
+,{"stream_name":"stdout","time":4417.954609001,"data":"  K_c (alpha=0.3): 0.63\n"}
+,{"stream_name":"stdout","time":4417.95466927,"data":"\n"}
+,{"stream_name":"stdout","time":4417.954675879,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":4417.954680572,"data":"FIT 4: NOISE OPTIMUM (Stochastic Resonance)\n"}
+,{"stream_name":"stdout","time":4417.954684594,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":4464.122767796,"data":"  sigma=0.00: R=0.544\n"}
+,{"stream_name":"stdout","time":4510.610459163,"data":"  sigma=0.21: R=0.545\n"}
+,{"stream_name":"stdout","time":4557.003004022,"data":"  sigma=0.43: R=0.531\n"}
+,{"stream_name":"stdout","time":4603.072829928,"data":"  sigma=0.64: R=0.501\n"}
+,{"stream_name":"stdout","time":4649.085229636,"data":"  sigma=0.86: R=0.457\n"}
+,{"stream_name":"stdout","time":4695.185471852,"data":"  sigma=1.07: R=0.424\n"}
+,{"stream_name":"stdout","time":4741.314434443,"data":"  sigma=1.29: R=0.376\n"}
+,{"stream_name":"stdout","time":4787.519559477,"data":"  sigma=1.50: R=0.363\n"}
+,{"stream_name":"stdout","time":4833.892993914,"data":"  sigma=1.71: R=0.355\n"}
+,{"stream_name":"stdout","time":4880.195903407,"data":"  sigma=1.93: R=0.339\n"}
+,{"stream_name":"stdout","time":4926.24677166,"data":"  sigma=2.14: R=0.340\n"}
+,{"stream_name":"stdout","time":4972.394770816,"data":"  sigma=2.36: R=0.331\n"}
+,{"stream_name":"stdout","time":5018.437780457,"data":"  sigma=2.57: R=0.334\n"}
+,{"stream_name":"stdout","time":5064.810892061,"data":"  sigma=2.79: R=0.328\n"}
+,{"stream_name":"stdout","time":5111.213979603,"data":"  sigma=3.00: R=0.334\n"}
+,{"stream_name":"stdout","time":5111.214035941,"data":"\n"}
+,{"stream_name":"stdout","time":5111.214043957,"data":"SR detected: True\n"}
+,{"stream_name":"stdout","time":5111.214049721,"data":"Optimal noise: sigma = 0.21\n"}
+,{"stream_name":"stdout","time":5111.214055081,"data":"R at zero noise: 0.544\n"}
+,{"stream_name":"stdout","time":5111.21406082,"data":"R at optimal noise: 0.545\n"}
+,{"stream_name":"stdout","time":5111.21406622,"data":"SR amplification: 1.00x\n"}
+,{"stream_name":"stdout","time":5111.214072104,"data":"\n"}
+,{"stream_name":"stdout","time":5111.214079571,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":5111.214089216,"data":"PREDICTIONS FROM TUNED UPDE\n"}
+,{"stream_name":"stdout","time":5111.214095181,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":5111.21410156,"data":"\n"}
+,{"stream_name":"stdout","time":5111.214107533,"data":"1. Ion channel alpha (predicted): 0.0053\n"}
+,{"stream_name":"stdout","time":5111.214113781,"data":"   Physical meaning: coupling decays over 187 channel spacings\n"}
+,{"stream_name":"stdout","time":5111.21412026,"data":"   At Debye length 0.81 nm: effective range = 151.9 nm\n"}
+,{"stream_name":"stdout","time":5111.214126628,"data":"\n"}
+,{"stream_name":"stdout","time":5111.214132658,"data":"2. Cardiac alpha (predicted): 0.0020\n"}
+,{"stream_name":"stdout","time":5111.214139241,"data":"   Near-uniform coupling (alpha -\u003e 0 = all-to-all)\n"}
+,{"stream_name":"stdout","time":5111.214145956,"data":"   Consistent with cardiac syncytium (gap junctions = direct coupling)\n"}
+,{"stream_name":"stdout","time":5111.214151838,"data":"\n"}
+,{"stream_name":"stdout","time":5111.214157365,"data":"3. Brain state predictions (EEG topology, K_c=6.35):\n"}
+,{"stream_name":"stdout","time":5111.214162908,"data":"   deep_sleep_delta     (  2.5 Hz): relative K needed ~ 18.00x\n"}
+,{"stream_name":"stdout","time":5111.214168767,"data":"   relaxed_alpha        ( 10.5 Hz): relative K needed ~ 4.29x\n"}
+,{"stream_name":"stdout","time":5111.214174886,"data":"   focused_beta         ( 21.5 Hz): relative K needed ~ 2.09x\n"}
+,{"stream_name":"stdout","time":5111.214180773,"data":"   conscious_gamma      ( 45.0 Hz): relative K needed ~ 1.00x\n"}
+,{"stream_name":"stdout","time":5111.214187137,"data":"\n"}
+,{"stream_name":"stdout","time":5111.214192381,"data":"4. Temperature dependence:\n"}
+,{"stream_name":"stdout","time":5111.214213857,"data":"   sigma_opt = 0.21 (dimensionless)\n"}
+,{"stream_name":"stdout","time":5111.21421892,"data":"   At 310K: kBT = 26.7 meV\n"}
+,{"stream_name":"stdout","time":5111.214229021,"data":"   Prediction: sync optimum near body temperature\n"}
+,{"stream_name":"stdout","time":5111.214234663,"data":"   Fever (313K): sigma increases by 1.0048x\n"}
+,{"stream_name":"stdout","time":5111.214239481,"data":"   Hypothermia (305K): sigma decreases by 0.9919x\n"}
+,{"stream_name":"stdout","time":5111.214245163,"data":"   Small shifts -\u003e potential for disrupted/enhanced sync\n"}
+,{"stream_name":"stdout","time":5111.21425066,"data":"\n"}
+,{"stream_name":"stdout","time":5111.214255374,"data":"5. Minimum N for synchronisation (K=2.7, alpha=0.3):\n"}
+,{"stream_name":"stdout","time":5119.580555919,"data":"   N=  3: R=0.997 (SYNC)\n"}
+,{"stream_name":"stdout","time":5130.632829631,"data":"   N=  4: R=0.988 (SYNC)\n"}
+,{"stream_name":"stdout","time":5145.498420464,"data":"   N=  5: R=0.971 (SYNC)\n"}
+,{"stream_name":"stdout","time":5165.733413224,"data":"   N=  6: R=0.944 (SYNC)\n"}
+,{"stream_name":"stdout","time":5197.434643391,"data":"   N=  8: R=0.846 (SYNC)\n"}
+,{"stream_name":"stdout","time":5260.597761893,"data":"   N= 12: R=0.495 (no sync)\n"}
+,{"stream_name":"stdout","time":5368.820968946,"data":"   N= 16: R=0.400 (no sync)\n"}
+,{"stream_name":"stdout","time":5786.082331853,"data":"   N= 32: R=0.209 (no sync)\n"}
+,{"stream_name":"stdout","time":5786.082380546,"data":"\n"}
+,{"stream_name":"stdout","time":5786.082387832,"data":"6. Cross-scale coupling strength:\n"}
+,{"stream_name":"stdout","time":5786.082393486,"data":"   Piezo exponent: d ~ scale^0.24 (finding #23)\n"}
+,{"stream_name":"stdout","time":5786.082399191,"data":"   Timescale step: 36x per level (finding #25)\n"}
+,{"stream_name":"stdout","time":5786.082405263,"data":"   Grotthuss range at neural timescale: ~2 mm (cortical column)\n"}
+,{"stream_name":"stdout","time":5786.082411359,"data":"   Prediction: cross-scale K_nm ~ (scale_ratio)^(-0.24)\n"}
+,{"stream_name":"stdout","time":5786.082417146,"data":"   1 levels apart (4e+01x): K_cross = 0.423143\n"}
+,{"stream_name":"stdout","time":5786.082422361,"data":"   2 levels apart (1e+03x): K_cross = 0.179050\n"}
+,{"stream_name":"stdout","time":5786.082427986,"data":"   3 levels apart (5e+04x): K_cross = 0.075764\n"}
+,{"stream_name":"stdout","time":5786.082433924,"data":"   4 levels apart (2e+06x): K_cross = 0.032059\n"}
+,{"stream_name":"stdout","time":5786.082439604,"data":"   5 levels apart (6e+07x): K_cross = 0.013566\n"}
+,{"stream_name":"stdout","time":5786.082445356,"data":"\n"}
+,{"stream_name":"stdout","time":5786.082517915,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":5786.08254394,"data":"THE TUNED UPDE\n"}
+,{"stream_name":"stdout","time":5786.082551511,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":5786.08255772,"data":"\n"}
+,{"stream_name":"stdout","time":5786.082563707,"data":"d theta_i/dt = omega_i(scale, spacing_rule)\n"}
+,{"stream_name":"stdout","time":5786.08256958,"data":"             + (K/N) sum_j K_nm(alpha(scale)) sin(theta_j - theta_i)\n"}
+,{"stream_name":"stdout","time":5786.082575628,"data":"             + sigma_opt * xi(t)\n"}
+,{"stream_name":"stdout","time":5786.082581555,"data":"\n"}
+,{"stream_name":"stdout","time":5786.082587762,"data":"WHERE:\n"}
+,{"stream_name":"stdout","time":5786.082591821,"data":"  alpha(scale) = 10^(-2.711) * freq^(0.1458)\n"}
+,{"stream_name":"stdout","time":5786.082595948,"data":"    quantum (1e15 Hz): alpha = 0.30 (measured)\n"}
+,{"stream_name":"stdout","time":5786.082625844,"data":"    protein (1e9 Hz):  alpha = 0.04 (measured)\n"}
+,{"stream_name":"stdout","time":5786.082629759,"data":"    neural (40 Hz):    alpha ~ 0.001 (predicted, consistent with non-exponential)\n"}
+,{"stream_name":"stdout","time":5786.082632988,"data":"    cardiac (1.2 Hz):  alpha ~ 0.0003 (predicted, near-uniform = syncytium)\n"}
+,{"stream_name":"stdout","time":5786.082636111,"data":"\n"}
+,{"stream_name":"stdout","time":5786.082639349,"data":"  K_c(alpha) ~ alpha^(0.723)\n"}
+,{"stream_name":"stdout","time":5786.082642549,"data":"    Weaker decay -\u003e easier sync (fewer oscillators needed)\n"}
+,{"stream_name":"stdout","time":5786.082646223,"data":"\n"}
+,{"stream_name":"stdout","time":5786.082649159,"data":"  omega spacing:\n"}
+,{"stream_name":"stdout","time":5786.082652128,"data":"    SCPN: compressed (CV=0.94), golden-ratio-like\n"}
+,{"stream_name":"stdout","time":5786.082655381,"data":"    EEG:  log-uniform (CV=0.40), ratio ~e\n"}
+,{"stream_name":"stdout","time":5786.082658493,"data":"    Each system selects its own spacing from coupling topology\n"}
+,{"stream_name":"stdout","time":5786.082661646,"data":"\n"}
+,{"stream_name":"stdout","time":5786.082664477,"data":"  sigma_opt = 0.21 (dimensionless)\n"}
+,{"stream_name":"stdout","time":5786.082667496,"data":"    Noise HELPS below K_c (stochastic resonance)\n"}
+,{"stream_name":"stdout","time":5786.082670458,"data":"    Body temperature provides optimal thermal noise\n"}
+,{"stream_name":"stdout","time":5786.082673897,"data":"\n"}
+,{"stream_name":"stdout","time":5786.082676672,"data":"  Cross-scale: K_cross ~ (scale_ratio)^(-0.24)\n"}
+,{"stream_name":"stdout","time":5786.082679864,"data":"    Adjacent levels coupled, distant levels nearly independent\n"}
+,{"stream_name":"stdout","time":5786.082683014,"data":"\n"}
+,{"stream_name":"stdout","time":5786.082689294,"data":"\n"}
+,{"stream_name":"stdout","time":5786.082692378,"data":"--- JSON RESULTS ---\n"}
+,{"stream_name":"stderr","time":5786.083055744,"data":"Traceback (most recent call last):\n"}
+,{"stream_name":"stderr","time":5786.083107014,"data":"  File \"/kaggle/src/script.py\", line 484, in \u003cmodule\u003e\n"}
+,{"stream_name":"stderr","time":5786.083486214,"data":"    print(json.dumps(results, indent=2))\n"}
+,{"stream_name":"stderr","time":5786.083545775,"data":"          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":5786.083553781,"data":"  File \"/usr/lib/python3.12/json/__init__.py\", line 238, in dumps\n"}
+,{"stream_name":"stderr","time":5786.085041642,"data":"    **kw).encode(obj)\n"}
+,{"stream_name":"stderr","time":5786.085067345,"data":"          ^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":5786.085072567,"data":"  File \"/usr/lib/python3.12/json/encoder.py\", line 202, in encode\n"}
+,{"stream_name":"stderr","time":5786.086036666,"data":"    chunks = list(chunks)\n"}
+,{"stream_name":"stderr","time":5786.086073308,"data":"             ^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":5786.086116331,"data":"  File \"/usr/lib/python3.12/json/encoder.py\", line 432, in _iterencode\n"}
+,{"stream_name":"stderr","time":5786.086394585,"data":"    yield from _iterencode_dict(o, _current_indent_level)\n"}
+,{"stream_name":"stderr","time":5786.086410449,"data":"  File \"/usr/lib/python3.12/json/encoder.py\", line 406, in _iterencode_dict\n"}
+,{"stream_name":"stderr","time":5786.086636891,"data":"    yield from chunks\n"}
+,{"stream_name":"stderr","time":5786.08665432,"data":"  File \"/usr/lib/python3.12/json/encoder.py\", line 406, in _iterencode_dict\n"}
+,{"stream_name":"stderr","time":5786.086992173,"data":"    yield from chunks\n"}
+,{"stream_name":"stderr","time":5786.087025524,"data":"  File \"/usr/lib/python3.12/json/encoder.py\", line 439, in _iterencode\n"}
+,{"stream_name":"stderr","time":5786.087232786,"data":"    o = _default(o)\n"}
+,{"stream_name":"stderr","time":5786.087248506,"data":"        ^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":5786.087253826,"data":"  File \"/usr/lib/python3.12/json/encoder.py\", line 180, in default\n"}
+,{"stream_name":"stderr","time":5786.08740107,"data":"    raise TypeError(f'Object of type {o.__class__.__name__} '\n"}
+,{"stream_name":"stderr","time":5786.087407687,"data":"TypeError: Object of type bool is not JSON serializable\n"}
+,{"stream_name":"stderr","time":5789.256077828,"data":"/usr/local/lib/python3.12/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":5789.256117032,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":5789.696113173,"data":"/usr/local/lib/python3.12/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":5789.696144374,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":5791.472618577,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":5793.390949431,"data":"[NbConvertApp] Writing 353883 bytes to __results__.html\n"}
+]
