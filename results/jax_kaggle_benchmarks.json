@@ -1,0 +1,36 @@
+{
+  "platform": "Kaggle P100 GPU",
+  "jax_version": "0.7.2",
+  "note": "Python-loop Hamiltonian construction in JAX is catastrophically slow due to XLA trace overhead. Fixed approach: build H in numpy/Rust, only use JAX GPU for eigh+SVD.",
+  "n4": {
+    "dim": 16,
+    "numpy_s": 0.0118,
+    "jax_cold_s": 3.73,
+    "jax_warm_s": 2.903,
+    "speedup_warm": 0.004,
+    "max_entropy_err": 5.57e-07,
+    "max_gap_err": 4.74e-07,
+    "verdict": "JAX 245x SLOWER (trace overhead dominates at small dim)"
+  },
+  "n6": {
+    "dim": 64,
+    "numpy_s": 0.0398,
+    "jax_cold_s": 20.99,
+    "jax_warm_s": 20.515,
+    "speedup_warm": 0.002,
+    "max_entropy_err": 6.06e-07,
+    "max_gap_err": 6.38e-07,
+    "verdict": "JAX 515x SLOWER"
+  },
+  "n8": {
+    "dim": 256,
+    "numpy_s": 0.4482,
+    "jax_cold_s": 808.395,
+    "jax_warm_s": 775.87,
+    "speedup_warm": 0.0006,
+    "max_entropy_err": 8.24e-07,
+    "max_gap_err": 8.19e-07,
+    "verdict": "JAX 1731x SLOWER (7168 .at[].set() ops traced individually)"
+  },
+  "lesson": "JAX GPU only beneficial when eigh/SVD dominates (n>=14, dim>=16384). For n<=10, numpy+Rust is orders of magnitude faster. Fixed jax_accel.py to build H in numpy/Rust and only send to GPU for linear algebra."
+}
