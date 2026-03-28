@@ -1,7 +1,7 @@
 {
-  "id": "anulum/scpn-enzyme-extended-validation",
-  "title": "SCPN Extended Enzyme Rate Validation 8 Layers",
-  "code_file": "kaggle_enzyme_extended_validation.py",
+  "id": "anulum/scpn-universal-correlations",
+  "title": "SCPN Universal Correlation Hunt 7 Tests",
+  "code_file": "kaggle_universal_correlations.py",
   "language": "python",
   "kernel_type": "script",
   "is_private": false,
