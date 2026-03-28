@@ -1,0 +1,12 @@
+{
+  "notebook": "scpn-water-as-coupling-medium-grotthuss-debye",
+  "date": "2026-03-28",
+  "findings": {
+    "34_water_frequency_hierarchy": "6 decades (GHz to PHz), same logarithmic architecture",
+    "35_grotthuss_speed": "187 m/s proton hopping — enzyme timescale reaches cell diameter (200um)",
+    "36_debye_screening": "lambda_D = 0.81 nm, SCPN step maps to 0.24 nm",
+    "37_ez_water_potential": "-100 mV = 1.43x membrane potential",
+    "38_H_bond_energy": "7.5 kBT — collectively ordered despite individual turnover"
+  },
+  "interpretation": "Water implements K_nm coupling via H-bond network oscillations, Grotthuss phase transport, and Debye screening. Proton hopping provides physical wire for coupling across biological length scales."
+}
