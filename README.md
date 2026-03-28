@@ -8,7 +8,7 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://python.org)
 [![Qiskit 1.0+](https://img.shields.io/badge/qiskit-1.0%2B-6929C4.svg)](https://qiskit.org)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue.svg)](https://anulum.github.io/scpn-quantum-control)
-[![Tests: 1932](https://img.shields.io/badge/tests-1932%20passing-brightgreen.svg)]()
+[![Tests: 2500+](https://img.shields.io/badge/tests-2500%2B%20passing-brightgreen.svg)]()
 [![Version: 0.9.3](https://img.shields.io/badge/version-0.9.3-orange.svg)](https://pypi.org/project/scpn-quantum-control/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18821929.svg)](https://doi.org/10.5281/zenodo.18821929)
 [![Hardware: ibm_fez](https://img.shields.io/badge/hardware-ibm__fez%20Heron%20r2-blueviolet.svg)]()
@@ -45,16 +45,42 @@ topology reveals*, and *where classical simulation fails*.
 
 ## Key Results
 
+### Hardware (IBM ibm_fez, Heron r2, 156 qubits)
+
 | Result | Value |
 |--------|-------|
-| VQE ground-state error | **0.05%** (4-qubit, ibm_fez) |
-| 16-layer UPDE snapshot | 46% error at depth 770 (NISQ-consistent) |
-| Coherence wall | depth 250–400 (Heron r2) |
-| DLA dimension formula | 2^(2N-1) − 2 (exact, all N) |
-| Novel research modules | 33 (21 with no prior art) |
-| IBM hardware jobs | 9 submitted to ibm_fez (2 completed) |
-| Test suite | **1,789 passing**, 7 skipped |
-| Python modules | 107 + 1 Rust crate |
+| Bell inequality (CHSH) | **S = 2.165** (>8σ above classical limit) |
+| QKD bit error rate | **5.5%** (below BB84 threshold of 11%) |
+| State preparation fidelity | **94.6%** |
+| 16-qubit UPDE | 13/16 qubits with \|⟨Z⟩\| > 0.3 |
+| ZNE stability | <2% variation across fold levels 1–9 |
+| Experiments completed | **20/20** (22 jobs, 176K+ shots) |
+
+### Simulation
+
+| Result | Value |
+|--------|-------|
+| Critical coupling K_c(∞) | **≈ 2.2** (BKT finite-size scaling) |
+| DTC with heterogeneous ω | **15/15** amplitudes show subharmonic response |
+| OTOC scrambling | **4× faster** at K=4 vs K=1 (n=8) |
+| Schmidt gap transition | **K = 3.44** (n=8, 60-point resolution) |
+| DLA dimension formula | **2^(2N-1) − 2** (exact, all N) |
+
+### Software
+
+| Metric | Value |
+|--------|-------|
+| Rust engine functions | **15** (5,401× faster Hamiltonian construction) |
+| Novel research modules | **33** (21 with no prior art) |
+| Python modules | **154** + Rust crate (885 lines) |
+| Publication figures | **14** (simulation + hardware) |
+| Test suite | **2,500+** passing |
+
+### Publications
+
+- [Preprint: Quantum Kuramoto-XY on 156-qubit processor](https://anulum.github.io/scpn-quantum-control/preprint/)
+- [Paper: Synchronisation Witness Operators](https://anulum.github.io/scpn-quantum-control/paper_sync_witnesses/) (no prior art)
+- [Paper: DLA Parity Theorem](https://anulum.github.io/scpn-quantum-control/paper_dla_parity/) (exact closed-form)
 
 ## Background: Kuramoto → XY Mapping
 
