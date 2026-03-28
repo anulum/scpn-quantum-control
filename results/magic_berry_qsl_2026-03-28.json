@@ -1,0 +1,22 @@
+{
+  "source": "Kaggle (anulum/scpn-magic-berry-phase-quantum-speed-limit)",
+  "magic": {
+    "n4": {"M2_range": [0.0, 1.492], "peak_K": 2.64, "note": "peaks at K_c"},
+    "n6": {"M2_range": [0.0, 2.449], "peak_K": 3.71, "note": "peaks at K_c"}
+  },
+  "berry_phase": {
+    "n4": {"total": 0.0, "note": "zero — no topological protection"},
+    "n6": {"total": 0.0},
+    "n8": {"total": 0.0}
+  },
+  "quantum_speed_limit": {
+    "n4": {"t_QSL_range": [0.286, 40.037], "note": "diverges at gap minimum"},
+    "n6": {"t_QSL_range": [0.393, 14.749]},
+    "n8": {"t_QSL_range": [0.413, 19.182]}
+  },
+  "findings": {
+    "15": "Magic M2 peaks at K_c — maximum quantum resources at transition",
+    "16": "Berry phase = 0 — no topological protection (consistent with BKT)",
+    "17": "QSL diverges at K_c — quantum critical slowing down"
+  }
+}
