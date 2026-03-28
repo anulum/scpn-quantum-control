@@ -1,7 +1,7 @@
 {
-  "id": "anulum/scpn-water-coupling-medium",
-  "title": "SCPN Water as Coupling Medium Grotthuss Debye",
-  "code_file": "kaggle_water_coupling.py",
+  "id": "anulum/scpn-cancer-hypersync-goldilocks",
+  "title": "SCPN Cancer Hypersync Goldilocks Zone",
+  "code_file": "kaggle_cancer_hypersync.py",
   "language": "python",
   "kernel_type": "script",
   "is_private": false,
