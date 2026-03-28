@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
-# © Concepts 1996-2026 Miroslav Sotek. All rights reserved.
-# © Code 2020-2026 Miroslav Sotek. All rights reserved.
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control -- Morphogenesis Clock as Kuramoto Synchronisation
+# scpn-quantum-control — Morphogenesis Clock as Kuramoto Synchronisation
 #
 # The somitogenesis clock (vertebrate segmentation) is a textbook case
 # of coupled oscillators in development. Cells oscillate with ~2hr period
