@@ -63,6 +63,24 @@ Cross-repo integrations wired:
 - Failed/cancelled CI runs cleaned
 - 1932+ tests
 
+### v0.9.3 (March 2026)
+
+- Rust engine expanded 11→15 functions: `lanczos_b_coefficients`, `otoc_from_eigendecomp`,
+  `build_xy_hamiltonian_dense`, `all_xy_expectations`
+- Measured benchmarks: 5401× Hamiltonian (n=4), 264× OTOC (n=4), 27× Lanczos (n=3) vs Python
+- 8 modules migrated to Rust Hamiltonian path (`knm_to_dense_matrix`), zero `.to_matrix()` callers
+- **IBM hardware campaign complete: 20/20 experiments on ibm_fez (Heron r2)**
+  - CHSH S=2.165 (Bell inequality violated, >8σ)
+  - QKD QBER 5.5% (below BB84 threshold)
+  - 16-qubit Kuramoto with dynamical decoupling
+  - ZNE stable across fold levels 1-9
+  - Knm ansatz outperforms TwoLocal by 32% entropy
+- 14 publication figures (simulation + hardware)
+- JAX GPU backend (`jax_accel.py`) — vectorised coupling scans
+- PyPI Rust wheel CI for 5 platforms (`rust-wheels.yml`)
+- Kaggle registered, notebook pushed, ORCID profile filled
+- New docs: `rust_engine.md` with benchmark tables, API updates across 4 doc pages
+
 ## v1.0.0 (Target: Q3 2026)
 
 Remaining items:

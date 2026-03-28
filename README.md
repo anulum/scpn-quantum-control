@@ -9,7 +9,7 @@
 [![Qiskit 1.0+](https://img.shields.io/badge/qiskit-1.0%2B-6929C4.svg)](https://qiskit.org)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue.svg)](https://anulum.github.io/scpn-quantum-control)
 [![Tests: 1932](https://img.shields.io/badge/tests-1932%20passing-brightgreen.svg)]()
-[![Version: 0.9.2](https://img.shields.io/badge/version-0.9.2-orange.svg)](https://pypi.org/project/scpn-quantum-control/)
+[![Version: 0.9.3](https://img.shields.io/badge/version-0.9.3-orange.svg)](https://pypi.org/project/scpn-quantum-control/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18821929.svg)](https://doi.org/10.5281/zenodo.18821929)
 [![Hardware: ibm_fez](https://img.shields.io/badge/hardware-ibm__fez%20Heron%20r2-blueviolet.svg)]()
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/anulum/scpn-quantum-control/blob/main/notebooks/01_kuramoto_xy_dynamics.ipynb)
