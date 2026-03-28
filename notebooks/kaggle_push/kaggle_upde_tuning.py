@@ -13,9 +13,10 @@
 # Calibrated from 38 findings across 12 Kaggle notebooks:
 # quantum hardware -> protein folding -> piezoelectric -> neural -> water
 
-import numpy as np
 import json
-from scipy import stats, optimize
+
+import numpy as np
+from scipy import stats
 
 print("=" * 70)
 print("UPDE TUNING FROM EMPIRICAL CONSTRAINTS")
@@ -28,56 +29,56 @@ print("=" * 70)
 # Scale hierarchy (measured timescale steps)
 SCALES = {
     "quantum": {
-        "freq_Hz": 1e15,           # femtosecond processes
+        "freq_Hz": 1e15,  # femtosecond processes
         "example": "electron tunnelling",
-        "K_c": 2.7,                # from SCPN theory + hardware
-        "alpha": 0.3,              # K_nm decay (Paper 27)
-        "ergodicity_r": 0.39,      # Poisson (non-ergodic, finding #13)
+        "K_c": 2.7,  # from SCPN theory + hardware
+        "alpha": 0.3,  # K_nm decay (Paper 27)
+        "ergodicity_r": 0.39,  # Poisson (non-ergodic, finding #13)
     },
     "molecular": {
-        "freq_Hz": 1e12,           # picosecond
+        "freq_Hz": 1e12,  # picosecond
         "example": "H-bond vibration, proton hop",
-        "K_c": None,               # unmeasured
-        "alpha": None,             # unmeasured
+        "K_c": None,  # unmeasured
+        "alpha": None,  # unmeasured
         "ergodicity_r": None,
     },
     "protein": {
-        "freq_Hz": 1e9,            # nanosecond folding attempts
+        "freq_Hz": 1e9,  # nanosecond folding attempts
         "example": "backbone dihedral oscillation",
-        "K_c": None,               # from contact map
-        "alpha": 0.04,             # mean of 0.003-0.075 (finding #20)
-        "ergodicity_r": 0.49,      # mean of 0.41-0.55 (finding #22)
+        "K_c": None,  # from contact map
+        "alpha": 0.04,  # mean of 0.003-0.075 (finding #20)
+        "ergodicity_r": 0.49,  # mean of 0.41-0.55 (finding #22)
     },
     "enzyme": {
-        "freq_Hz": 1e3,            # millisecond turnover
+        "freq_Hz": 1e3,  # millisecond turnover
         "example": "catalytic cycle",
         "K_c": None,
         "alpha": None,
         "ergodicity_r": None,
     },
     "ion_channel": {
-        "freq_Hz": 1e3,            # millisecond gating
+        "freq_Hz": 1e3,  # millisecond gating
         "example": "Na+/K+ channel open/close",
         "K_c": None,
-        "alpha": None,             # Debye screening: lambda_D=0.81nm
+        "alpha": None,  # Debye screening: lambda_D=0.81nm
         "ergodicity_r": None,
     },
     "neural": {
-        "freq_Hz": 40,             # gamma band centre
+        "freq_Hz": 40,  # gamma band centre
         "example": "cortical oscillation",
-        "K_c": 6.35,               # finding #32
-        "alpha": None,             # different topology (finding #30)
+        "K_c": 6.35,  # finding #32
+        "alpha": None,  # different topology (finding #30)
         "ergodicity_r": None,
     },
     "cardiac": {
-        "freq_Hz": 1.2,            # heartbeat
+        "freq_Hz": 1.2,  # heartbeat
         "example": "sinoatrial node",
         "K_c": None,
         "alpha": None,
         "ergodicity_r": None,
     },
     "circadian": {
-        "freq_Hz": 1.16e-5,        # ~1/day
+        "freq_Hz": 1.16e-5,  # ~1/day
         "example": "SCN clock",
         "K_c": None,
         "alpha": None,
@@ -87,17 +88,17 @@ SCALES = {
 
 # Piezoelectric coupling (finding #23-25)
 PIEZO = {
-    "d_vs_scale_r": 0.863,         # Pearson correlation
-    "d_vs_scale_p": 0.013,         # p-value
-    "power_law_exponent": 0.24,    # d ~ scale^0.24
-    "resonance_exponent": -1.29,   # f ~ scale^-1.29
-    "timescale_step": 36,          # each level ~36x slower (10^1.56)
+    "d_vs_scale_r": 0.863,  # Pearson correlation
+    "d_vs_scale_p": 0.013,  # p-value
+    "power_law_exponent": 0.24,  # d ~ scale^0.24
+    "resonance_exponent": -1.29,  # f ~ scale^-1.29
+    "timescale_step": 36,  # each level ~36x slower (10^1.56)
 }
 
 # ETC synchronisation (finding #26)
 ETC = {
-    "R_order": 0.963,              # near-perfect sync
-    "chain_length": 4,             # complexes I-IV
+    "R_order": 0.963,  # near-perfect sync
+    "chain_length": 4,  # complexes I-IV
 }
 
 # Water coupling (findings #34-38)
@@ -113,15 +114,16 @@ WATER = {
 NEURAL = {
     "eeg_mean_ratio": 2.465,
     "scpn_mean_ratio": 1.604,
-    "ks_p": 0.053,                 # compatible but different
-    "cfc_r": 0.306,                # NOT matching exponential
-    "eeg_log_cv": 0.396,           # uniform
-    "scpn_log_cv": 0.936,          # non-uniform
+    "ks_p": 0.053,  # compatible but different
+    "cfc_r": 0.306,  # NOT matching exponential
+    "eeg_log_cv": 0.396,  # uniform
+    "scpn_log_cv": 0.936,  # non-uniform
 }
 
 # =====================================================================
 # UPDE CORE: Scale-dependent Kuramoto with empirical parameters
 # =====================================================================
+
 
 def build_K_nm(N, alpha, topology="exponential"):
     """Build coupling matrix from empirical decay rate."""
@@ -133,7 +135,7 @@ def build_K_nm(N, alpha, topology="exponential"):
                 if topology == "exponential":
                     K[i, j] = np.exp(-alpha * d)
                 elif topology == "power_law":
-                    K[i, j] = 1.0 / (d ** alpha)
+                    K[i, j] = 1.0 / (d**alpha)
                 elif topology == "uniform":
                     K[i, j] = 1.0
     return K
@@ -157,8 +159,7 @@ def build_omega(N, spacing="scpn"):
         raise ValueError(f"Unknown spacing: {spacing}")
 
 
-def simulate_upde(N, K_scale, alpha, omega, noise_sigma=0.0,
-                  dt=0.01, T=300, n_trials=20):
+def simulate_upde(N, K_scale, alpha, omega, noise_sigma=0.0, dt=0.01, T=300, n_trials=20):
     """Simulate UPDE with scale-dependent parameters.
 
     Returns: R_mean, R_std, phases, time_series
@@ -185,7 +186,7 @@ def simulate_upde(N, K_scale, alpha, omega, noise_sigma=0.0,
             z = np.mean(np.exp(1j * theta))
             R_history[s] = abs(z)
 
-        R_trials.append(np.mean(R_history[-n_steps // 4:]))
+        R_trials.append(np.mean(R_history[-n_steps // 4 :]))
         final_phases.append(theta % (2 * np.pi))
 
     return np.mean(R_trials), np.std(R_trials), final_phases, None
@@ -212,7 +213,7 @@ log_s = np.log10(scales_fit)
 log_a = np.log10(alphas_fit)
 slope_alpha, intercept_alpha, r_alpha, p_alpha, _ = stats.linregress(log_s, log_a)
 
-print(f"Measured: quantum alpha=0.3, protein alpha=0.04")
+print("Measured: quantum alpha=0.3, protein alpha=0.04")
 print(f"Power law fit: alpha = 10^({intercept_alpha:.3f}) * freq^({slope_alpha:.4f})")
 print(f"R^2 = {r_alpha**2:.4f}")
 
@@ -225,7 +226,9 @@ for name, data in SCALES.items():
     marker = " (measured)" if measured is not None else " (PREDICTED)"
     print(f"  {name:15s} ({freq:.0e} Hz): alpha = {alpha_pred:.4f}{marker}")
     if measured is not None:
-        print(f"    {'':15s}  actual = {measured:.4f}, error = {abs(alpha_pred - measured)/measured*100:.1f}%")
+        print(
+            f"    {'':15s}  actual = {measured:.4f}, error = {abs(alpha_pred - measured) / measured * 100:.1f}%"
+        )
 
 
 # =====================================================================
@@ -277,7 +280,7 @@ log_kc = np.log(K_c_arr)
 log_alpha_scan = np.log(alphas_scan)
 slope_kc, intercept_kc, r_kc, _, _ = stats.linregress(log_alpha_scan, log_kc)
 print(f"\nFit: K_c ~ alpha^({slope_kc:.3f}), R^2 = {r_kc**2:.4f}")
-print(f"Weaker coupling decay (smaller alpha) -> lower K_c -> easier to synchronise")
+print("Weaker coupling decay (smaller alpha) -> lower K_c -> easier to synchronise")
 
 
 # =====================================================================
@@ -329,8 +332,9 @@ noise_scan = np.linspace(0.0, 3.0, 15)
 R_vs_noise = []
 
 for sigma in noise_scan:
-    R, R_std, _, _ = simulate_upde(8, K_sub, 0.3, omega_scpn,
-                                   noise_sigma=sigma, n_trials=15, T=200)
+    R, R_std, _, _ = simulate_upde(
+        8, K_sub, 0.3, omega_scpn, noise_sigma=sigma, n_trials=15, T=200
+    )
     R_vs_noise.append(R)
     print(f"  sigma={sigma:.2f}: R={R:.3f}")
 
@@ -344,7 +348,7 @@ print(f"Optimal noise: sigma = {sigma_opt:.2f}")
 print(f"R at zero noise: {R_noise_arr[0]:.3f}")
 print(f"R at optimal noise: {R_noise_arr[peak_idx]:.3f}")
 if R_noise_arr[0] > 0:
-    print(f"SR amplification: {R_noise_arr[peak_idx]/R_noise_arr[0]:.2f}x")
+    print(f"SR amplification: {R_noise_arr[peak_idx] / R_noise_arr[0]:.2f}x")
 
 
 # =====================================================================
@@ -357,40 +361,40 @@ print("=" * 70)
 # Prediction 1: Alpha for ion channels
 alpha_ion = 10 ** (intercept_alpha + slope_alpha * np.log10(1e3))
 print(f"\n1. Ion channel alpha (predicted): {alpha_ion:.4f}")
-print(f"   Physical meaning: coupling decays over {1/alpha_ion:.0f} channel spacings")
-print(f"   At Debye length 0.81 nm: effective range = {0.81/alpha_ion:.1f} nm")
+print(f"   Physical meaning: coupling decays over {1 / alpha_ion:.0f} channel spacings")
+print(f"   At Debye length 0.81 nm: effective range = {0.81 / alpha_ion:.1f} nm")
 
 # Prediction 2: Alpha for cardiac
 alpha_cardiac = 10 ** (intercept_alpha + slope_alpha * np.log10(1.2))
 print(f"\n2. Cardiac alpha (predicted): {alpha_cardiac:.4f}")
-print(f"   Near-uniform coupling (alpha -> 0 = all-to-all)")
-print(f"   Consistent with cardiac syncytium (gap junctions = direct coupling)")
+print("   Near-uniform coupling (alpha -> 0 = all-to-all)")
+print("   Consistent with cardiac syncytium (gap junctions = direct coupling)")
 
 # Prediction 3: K_c for different brain states
-print(f"\n3. Brain state predictions (EEG topology, K_c=6.35):")
+print("\n3. Brain state predictions (EEG topology, K_c=6.35):")
 brain_states = {
-    "deep_sleep_delta": 2.5,    # Hz, dominant
-    "relaxed_alpha": 10.5,      # Hz
-    "focused_beta": 21.5,       # Hz
-    "conscious_gamma": 45.0,    # Hz
+    "deep_sleep_delta": 2.5,  # Hz, dominant
+    "relaxed_alpha": 10.5,  # Hz
+    "focused_beta": 21.5,  # Hz
+    "conscious_gamma": 45.0,  # Hz
 }
 for state, freq in brain_states.items():
     # Higher frequency = harder to synchronise (needs more K)
     # R decreases with frequency spread
     rel_freq = freq / 45.0  # normalise to gamma
-    print(f"   {state:20s} ({freq:5.1f} Hz): relative K needed ~ {1/rel_freq:.2f}x")
+    print(f"   {state:20s} ({freq:5.1f} Hz): relative K needed ~ {1 / rel_freq:.2f}x")
 
 # Prediction 4: Optimal temperature for synchronisation
-print(f"\n4. Temperature dependence:")
+print("\n4. Temperature dependence:")
 print(f"   sigma_opt = {sigma_opt:.2f} (dimensionless)")
-print(f"   At 310K: kBT = 26.7 meV")
-print(f"   Prediction: sync optimum near body temperature")
-print(f"   Fever (313K): sigma increases by {np.sqrt(313/310):.4f}x")
-print(f"   Hypothermia (305K): sigma decreases by {np.sqrt(305/310):.4f}x")
-print(f"   Small shifts -> potential for disrupted/enhanced sync")
+print("   At 310K: kBT = 26.7 meV")
+print("   Prediction: sync optimum near body temperature")
+print(f"   Fever (313K): sigma increases by {np.sqrt(313 / 310):.4f}x")
+print(f"   Hypothermia (305K): sigma decreases by {np.sqrt(305 / 310):.4f}x")
+print("   Small shifts -> potential for disrupted/enhanced sync")
 
 # Prediction 5: Minimum oscillators for sync
-print(f"\n5. Minimum N for synchronisation (K=2.7, alpha=0.3):")
+print("\n5. Minimum N for synchronisation (K=2.7, alpha=0.3):")
 for N_test in [3, 4, 5, 6, 8, 12, 16, 32]:
     omega_test = build_omega(min(N_test, 8), "scpn")
     if N_test > 8:
@@ -401,13 +405,13 @@ for N_test in [3, 4, 5, 6, 8, 12, 16, 32]:
     print(f"   N={N_test:3d}: R={R:.3f} ({sync})")
 
 # Prediction 6: Cross-scale coupling
-print(f"\n6. Cross-scale coupling strength:")
-print(f"   Piezo exponent: d ~ scale^0.24 (finding #23)")
-print(f"   Timescale step: 36x per level (finding #25)")
-print(f"   Grotthuss range at neural timescale: ~2 mm (cortical column)")
-print(f"   Prediction: cross-scale K_nm ~ (scale_ratio)^(-0.24)")
+print("\n6. Cross-scale coupling strength:")
+print("   Piezo exponent: d ~ scale^0.24 (finding #23)")
+print("   Timescale step: 36x per level (finding #25)")
+print("   Grotthuss range at neural timescale: ~2 mm (cortical column)")
+print("   Prediction: cross-scale K_nm ~ (scale_ratio)^(-0.24)")
 for step in [1, 2, 3, 4, 5]:
-    cross_K = (36 ** step) ** (-0.24)
+    cross_K = (36**step) ** (-0.24)
     print(f"   {step} levels apart ({36**step:.0e}x): K_cross = {cross_K:.6f}")
 
 
@@ -418,13 +422,13 @@ print("\n" + "=" * 70)
 print("THE TUNED UPDE")
 print("=" * 70)
 
-print("""
+print(f"""
 d theta_i/dt = omega_i(scale, spacing_rule)
              + (K/N) sum_j K_nm(alpha(scale)) sin(theta_j - theta_i)
              + sigma_opt * xi(t)
 
 WHERE:
-  alpha(scale) = 10^({intercept:.3f}) * freq^({slope:.4f})
+  alpha(scale) = 10^({intercept_alpha:.3f}) * freq^({slope_alpha:.4f})
     quantum (1e15 Hz): alpha = 0.30 (measured)
     protein (1e9 Hz):  alpha = 0.04 (measured)
     neural (40 Hz):    alpha ~ 0.001 (predicted, consistent with non-exponential)
@@ -438,18 +442,13 @@ WHERE:
     EEG:  log-uniform (CV=0.40), ratio ~e
     Each system selects its own spacing from coupling topology
 
-  sigma_opt = {sigma:.2f} (dimensionless)
+  sigma_opt = {sigma_opt:.2f} (dimensionless)
     Noise HELPS below K_c (stochastic resonance)
     Body temperature provides optimal thermal noise
 
   Cross-scale: K_cross ~ (scale_ratio)^(-0.24)
     Adjacent levels coupled, distant levels nearly independent
-""".format(
-    intercept=intercept_alpha,
-    slope=slope_alpha,
-    slope_kc=slope_kc,
-    sigma=sigma_opt,
-))
+""")
 
 # JSON output
 results = {
@@ -474,7 +473,7 @@ results = {
         "cross_scale_2_levels": round(float((36**2) ** (-0.24)), 6),
     },
     "spacing_K_c": {
-        "scpn": round(float(K_c_vs_alpha[4]), 2),   # alpha=0.3
+        "scpn": round(float(K_c_vs_alpha[4]), 2),  # alpha=0.3
         "uniform_coupling": round(float(K_c_vs_alpha[0]), 2),  # alpha=0.01
         "strong_decay": round(float(K_c_vs_alpha[-1]), 2),  # alpha=2.0
     },

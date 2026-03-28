@@ -21,17 +21,19 @@
 # - Heart block: K between SA and AV nodes drops below threshold
 # - Defibrillation: electrical reset forces all phases to theta=0
 
-import numpy as np
-from scipy.integrate import solve_ivp
 import json
 
+import numpy as np
+
 FINDINGS = []
+
 
 def add_finding(tag, description, data):
     FINDINGS.append({"tag": tag, "description": description, "data": data})
     print(f"[FINDING] {tag}: {description}")
     for k, v in data.items():
         print(f"  {k}: {v}")
+
 
 # --- Test 1: SA node as Kuramoto network ---
 N = 500  # reduced from 10,000 for compute
@@ -65,12 +67,15 @@ print(f"=== Test 1: SA node Kuramoto ({N} cells, mean {mean_neighbours:.1f} neig
 g_gap = 5.0  # nS (typical)
 K_gap = g_gap * 0.1  # conversion to rad/s coupling (phenomenological)
 
+
 def order_param(theta):
     z = np.mean(np.exp(1j * theta))
     return np.abs(z), np.angle(z)
 
+
 # Sparse Kuramoto
 theta0 = np.random.uniform(0, 2 * np.pi, N)
+
 
 def sa_node_rhs(t, theta, K):
     dtheta = np.copy(omegas)
@@ -79,6 +84,7 @@ def sa_node_rhs(t, theta, K):
         if len(neighbours) > 0:
             dtheta[i] += K * np.mean(np.sin(theta[neighbours] - theta[i]))
     return dtheta
+
 
 # Sweep K to find K_c for sparse network
 K_values = np.linspace(0, 3.0, 25)
@@ -96,16 +102,20 @@ for K in K_values:
 
 r_vs_K = np.array(r_vs_K)
 idx_sync = np.where(r_vs_K > 0.5)[0]
-K_c_sa = K_values[idx_sync[0]] if len(idx_sync) > 0 else float('nan')
+K_c_sa = K_values[idx_sync[0]] if len(idx_sync) > 0 else float("nan")
 
-add_finding("SA_NODE_KC", "Critical coupling for SA node sync", {
-    "K_c_sparse": round(float(K_c_sa), 4),
-    "N_cells": N,
-    "mean_neighbours": round(float(mean_neighbours), 1),
-    "natural_freq_Hz": 1.2,
-    "freq_spread_Hz": 0.15,
-    "r_at_max_K": round(float(r_vs_K[-1]), 4),
-})
+add_finding(
+    "SA_NODE_KC",
+    "Critical coupling for SA node sync",
+    {
+        "K_c_sparse": round(float(K_c_sa), 4),
+        "N_cells": N,
+        "mean_neighbours": round(float(mean_neighbours), 1),
+        "natural_freq_Hz": 1.2,
+        "freq_spread_Hz": 0.15,
+        "r_at_max_K": round(float(r_vs_K[-1]), 4),
+    },
+)
 
 # --- Test 2: Sick sinus syndrome (gap junction degradation) ---
 print("\n=== Test 2: Sick Sinus Syndrome — progressive K decay ===")
@@ -128,19 +138,29 @@ for frac in degradation_fractions:
 
     r_mean = np.mean(r_trace[-50:])
     r_std = np.std(r_trace[-50:])
-    rhythm_quality.append({
-        "K_fraction": frac,
-        "K_value": round(K_sick, 3),
-        "r_mean": round(float(r_mean), 4),
-        "r_variability": round(float(r_std), 4),
-        "clinical": "normal" if r_mean > 0.8 else "bradycardia" if r_mean > 0.4 else "sick_sinus",
-    })
+    rhythm_quality.append(
+        {
+            "K_fraction": frac,
+            "K_value": round(K_sick, 3),
+            "r_mean": round(float(r_mean), 4),
+            "r_variability": round(float(r_std), 4),
+            "clinical": "normal"
+            if r_mean > 0.8
+            else "bradycardia"
+            if r_mean > 0.4
+            else "sick_sinus",
+        }
+    )
 
-add_finding("SICK_SINUS", "Gap junction degradation → rhythm collapse", {
-    "results": rhythm_quality,
-    "K_healthy": K_healthy,
-    "prediction": "gradual r decay then sharp collapse at ~40% gap junction loss",
-})
+add_finding(
+    "SICK_SINUS",
+    "Gap junction degradation → rhythm collapse",
+    {
+        "results": rhythm_quality,
+        "K_healthy": K_healthy,
+        "prediction": "gradual r decay then sharp collapse at ~40% gap junction loss",
+    },
+)
 
 # --- Test 3: Atrial fibrillation as spatial chaos ---
 print("\n=== Test 3: Atrial fibrillation — re-entrant spiral waves ===")
@@ -204,14 +224,20 @@ for step in range(8000):
         r, _ = order_param(theta_s)
         r_scar_trace.append(r)
 
-add_finding("AFIB_SCAR", "Scar tissue creates AF substrate", {
-    "r_healthy_final": round(float(np.mean(r_healthy_trace[-20:])), 4),
-    "r_scarred_final": round(float(np.mean(r_scar_trace[-20:])), 4),
-    "r_reduction": round(float(1 - np.mean(r_scar_trace[-20:]) / max(np.mean(r_healthy_trace[-20:]), 0.01)), 3),
-    "scar_fraction": round(float(np.sum(in_scar) / N_af), 3),
-    "K_coupling": K_af,
-    "N": N_af,
-})
+add_finding(
+    "AFIB_SCAR",
+    "Scar tissue creates AF substrate",
+    {
+        "r_healthy_final": round(float(np.mean(r_healthy_trace[-20:])), 4),
+        "r_scarred_final": round(float(np.mean(r_scar_trace[-20:])), 4),
+        "r_reduction": round(
+            float(1 - np.mean(r_scar_trace[-20:]) / max(np.mean(r_healthy_trace[-20:]), 0.01)), 3
+        ),
+        "scar_fraction": round(float(np.sum(in_scar) / N_af), 3),
+        "K_coupling": K_af,
+        "N": N_af,
+    },
+)
 
 # --- Test 4: Defibrillation as phase reset ---
 print("\n=== Test 4: Defibrillation = forced phase reset ===")
@@ -256,13 +282,17 @@ for i, r in enumerate(r_post_trace):
         recovery_time = i * 20 * dt
         break
 
-add_finding("DEFIBRILLATION", "Phase reset restores rhythm", {
-    "r_before_defib": round(float(r_pre), 4),
-    "r_after_defib": round(float(r_post), 4),
-    "recovery_time_s": round(float(recovery_time), 2) if recovery_time else "never",
-    "defib_phase_noise_rad": defib_noise,
-    "model": "phase reset + healthy coupling restores order",
-})
+add_finding(
+    "DEFIBRILLATION",
+    "Phase reset restores rhythm",
+    {
+        "r_before_defib": round(float(r_pre), 4),
+        "r_after_defib": round(float(r_post), 4),
+        "recovery_time_s": round(float(recovery_time), 2) if recovery_time else "never",
+        "defib_phase_noise_rad": defib_noise,
+        "model": "phase reset + healthy coupling restores order",
+    },
+)
 
 # --- Output ---
 print("\n" + "=" * 60)

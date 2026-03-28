@@ -20,9 +20,9 @@
 #
 # The healthy state lives in a Goldilocks zone: K_c < K < K_hyper
 
-import numpy as np
 import json
-from scipy import stats
+
+import numpy as np
 
 print("=" * 70)
 print("DISEASE AS BOTH DESYNC AND HYPERSYNC")
@@ -34,8 +34,8 @@ N = 30  # oscillators
 # MODEL: Kuramoto with UPPER critical coupling
 # =====================================================================
 
-def simulate_with_susceptibility(K, freq_spread=0.15, noise=0.1,
-                                 dt=0.005, T=300, n_trials=15):
+
+def simulate_with_susceptibility(K, freq_spread=0.15, noise=0.1, dt=0.005, T=300, n_trials=15):
     """Simulate and measure order parameter + fluctuations."""
     n_steps = int(T / dt)
     R_trials = []
@@ -59,8 +59,11 @@ def simulate_with_susceptibility(K, freq_spread=0.15, noise=0.1,
         R_trials.append(np.mean(R_history))
         R_var_trials.append(np.var(R_history))
 
-    return (np.mean(R_trials), np.std(R_trials),
-            np.mean(R_var_trials))  # variance = susceptibility proxy
+    return (
+        np.mean(R_trials),
+        np.std(R_trials),
+        np.mean(R_var_trials),
+    )  # variance = susceptibility proxy
 
 
 # TEST 1: Full K scan — find BOTH critical points
@@ -100,13 +103,13 @@ print(f"Zone width:               {K_hyper - K_c:.2f}")
 chi_peak = K_scan[np.argmax(chi_arr)]
 print(f"Susceptibility peak at:   K={chi_peak:.2f}")
 
-print(f"\nR values across the spectrum:")
+print("\nR values across the spectrum:")
 for i in range(0, len(K_scan), 5):
     K = K_scan[i]
     R = R_arr[i]
-    if K < K_c:
+    if K_c > K:
         state = "DESYNC"
-    elif K < K_hyper:
+    elif K_hyper > K:
         state = "HEALTHY"
     else:
         state = "HYPERSYNC"
@@ -242,11 +245,11 @@ for t in times:
 R_arr_seizure = np.array(R_seizure)
 preictal_start = 200 / dt
 ictal_start = 300 / dt
-R_preictal = np.mean(R_arr_seizure[int(preictal_start):int(preictal_start + 1000)])
-R_interictal = np.mean(R_arr_seizure[:int(preictal_start)])
+R_preictal = np.mean(R_arr_seizure[int(preictal_start) : int(preictal_start + 1000)])
+R_interictal = np.mean(R_arr_seizure[: int(preictal_start)])
 print(f"\nR interictal: {R_interictal:.3f}")
 print(f"R preictal (early): {R_preictal:.3f}")
-print(f"R increase: {(R_preictal/R_interictal - 1)*100:.0f}%")
+print(f"R increase: {(R_preictal / R_interictal - 1) * 100:.0f}%")
 print("PREDICTION: R increase is detectable minutes before seizure onset")
 
 
@@ -262,18 +265,36 @@ diseases = {
     "type2_diabetes": {"K_zone": "desync", "K_eff": 1.5, "mechanism": "Cx36 loss in islets"},
     "insomnia": {"K_zone": "desync", "K_eff": 1.0, "mechanism": "SCN coupling reduced"},
     "sarcopenia": {"K_zone": "desync", "K_eff": 0.8, "mechanism": "motor unit loss"},
-
     # Hypersync diseases (K > K_hyper)
     "epilepsy": {"K_zone": "hypersync", "K_eff": 12.0, "mechanism": "GABA loss -> K increases"},
-    "parkinsons_tremor": {"K_zone": "hypersync", "K_eff": 8.0, "mechanism": "dopamine loss -> beta K up"},
-    "essential_tremor": {"K_zone": "hypersync", "K_eff": 7.0, "mechanism": "olivocerebellar hypersync"},
-    "cancer_aggressive": {"K_zone": "hypersync", "K_eff": 10.0, "mechanism": "internal coupling override"},
-    "dystonia": {"K_zone": "hypersync", "K_eff": 6.0, "mechanism": "basal ganglia theta hypersync"},
-
+    "parkinsons_tremor": {
+        "K_zone": "hypersync",
+        "K_eff": 8.0,
+        "mechanism": "dopamine loss -> beta K up",
+    },
+    "essential_tremor": {
+        "K_zone": "hypersync",
+        "K_eff": 7.0,
+        "mechanism": "olivocerebellar hypersync",
+    },
+    "cancer_aggressive": {
+        "K_zone": "hypersync",
+        "K_eff": 10.0,
+        "mechanism": "internal coupling override",
+    },
+    "dystonia": {
+        "K_zone": "hypersync",
+        "K_eff": 6.0,
+        "mechanism": "basal ganglia theta hypersync",
+    },
     # Goldilocks (healthy examples)
     "healthy_heart": {"K_zone": "goldilocks", "K_eff": 5.0, "mechanism": "Cx43 gap junctions"},
     "normal_cognition": {"K_zone": "goldilocks", "K_eff": 3.0, "mechanism": "balanced E/I"},
-    "healthy_circadian": {"K_zone": "goldilocks", "K_eff": 2.0, "mechanism": "VIP coupling in SCN"},
+    "healthy_circadian": {
+        "K_zone": "goldilocks",
+        "K_eff": 2.0,
+        "mechanism": "VIP coupling in SCN",
+    },
 }
 
 print(f"{'Disease':30s} {'Zone':>10s} {'K_eff':>6s} {'R':>6s}")

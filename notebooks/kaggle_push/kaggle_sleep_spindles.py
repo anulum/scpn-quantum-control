@@ -26,10 +26,12 @@
 # - Insomnia: disrupted slow-spindle coupling (K mismatch)
 # - Aging: progressive spindle loss (another K decay phenomenon)
 
-import numpy as np
 import json
 
+import numpy as np
+
 FINDINGS = []
+
 
 def add_finding(tag, description, data):
     FINDINGS.append({"tag": tag, "description": description, "data": data})
@@ -37,15 +39,17 @@ def add_finding(tag, description, data):
     for k, v in data.items():
         print(f"  {k}: {v}")
 
+
 def order_param(theta):
     z = np.mean(np.exp(1j * theta))
     return np.abs(z), np.angle(z)
+
 
 # --- Test 1: Thalamocortical loop as coupled oscillator ---
 print("=== Test 1: Spindle generation in thalamic network ===")
 
 N_trn = 100  # TRN neurons
-N_tc = 100   # TC relay neurons
+N_tc = 100  # TC relay neurons
 N_total = N_trn + N_tc
 
 np.random.seed(42)
@@ -63,10 +67,10 @@ theta = np.random.uniform(0, 2 * np.pi, N_total)
 # TRN ↔ TRN: gap junctions (electrical), strong
 # TC ↔ TC: weak local
 
-K_trn_trn = 3.0   # gap junction coupling within TRN
-K_trn_tc = -2.0   # inhibitory TRN→TC (negative = anti-phase tendency)
-K_tc_trn = 1.5    # excitatory TC→TRN
-K_tc_tc = 0.5     # weak TC-TC
+K_trn_trn = 3.0  # gap junction coupling within TRN
+K_trn_tc = -2.0  # inhibitory TRN→TC (negative = anti-phase tendency)
+K_tc_trn = 1.5  # excitatory TC→TRN
+K_tc_tc = 0.5  # weak TC-TC
 
 dt = 1e-4  # seconds
 T = 2.0
@@ -115,16 +119,20 @@ r_tc_arr = np.array(r_tc_trace)
 # Spindle = r oscillates (not constant)
 r_trn_var = np.std(r_trn_arr[-100:])
 
-add_finding("SPINDLE_GENERATION", "Thalamocortical spindle generation", {
-    "r_TRN_mean": round(float(np.mean(r_trn_arr[-100:])), 4),
-    "r_TRN_variability": round(float(r_trn_var), 4),
-    "r_TC_mean": round(float(np.mean(r_tc_arr[-100:])), 4),
-    "spindle_like": r_trn_var > 0.05,
-    "N_TRN": N_trn,
-    "N_TC": N_tc,
-    "K_TRN_TRN": K_trn_trn,
-    "K_TRN_TC": K_trn_tc,
-})
+add_finding(
+    "SPINDLE_GENERATION",
+    "Thalamocortical spindle generation",
+    {
+        "r_TRN_mean": round(float(np.mean(r_trn_arr[-100:])), 4),
+        "r_TRN_variability": round(float(r_trn_var), 4),
+        "r_TC_mean": round(float(np.mean(r_tc_arr[-100:])), 4),
+        "spindle_like": r_trn_var > 0.05,
+        "N_TRN": N_trn,
+        "N_TC": N_tc,
+        "K_TRN_TRN": K_trn_trn,
+        "K_TRN_TC": K_trn_tc,
+    },
+)
 
 # --- Test 2: Slow oscillation modulates spindle K ---
 print("\n=== Test 2: Slow oscillation gates spindle generation ===")
@@ -181,14 +189,22 @@ t_arr = np.array(t_trace)
 slow_phase_trace = np.sin(2 * np.pi * f_slow * t_arr)
 corr = np.corrcoef(slow_phase_trace, r_gated)[0, 1]
 
-add_finding("SLOW_OSC_GATING", "Slow oscillation gates spindle generation", {
-    "r_spindle_UP_state": round(float(np.mean(r_gated[slow_phase_trace > 0.5])), 4) if np.any(slow_phase_trace > 0.5) else None,
-    "r_spindle_DOWN_state": round(float(np.mean(r_gated[slow_phase_trace < -0.5])), 4) if np.any(slow_phase_trace < -0.5) else None,
-    "correlation_slow_osc_spindle": round(float(corr), 4),
-    "nesting_confirmed": abs(corr) > 0.3,
-    "f_slow_Hz": f_slow,
-    "mechanism": "cortical UP state → thalamic depolarisation → K above K_c → spindles emerge",
-})
+add_finding(
+    "SLOW_OSC_GATING",
+    "Slow oscillation gates spindle generation",
+    {
+        "r_spindle_UP_state": round(float(np.mean(r_gated[slow_phase_trace > 0.5])), 4)
+        if np.any(slow_phase_trace > 0.5)
+        else None,
+        "r_spindle_DOWN_state": round(float(np.mean(r_gated[slow_phase_trace < -0.5])), 4)
+        if np.any(slow_phase_trace < -0.5)
+        else None,
+        "correlation_slow_osc_spindle": round(float(corr), 4),
+        "nesting_confirmed": abs(corr) > 0.3,
+        "f_slow_Hz": f_slow,
+        "mechanism": "cortical UP state → thalamic depolarisation → K above K_c → spindles emerge",
+    },
+)
 
 # --- Test 3: Aging reduces spindle density ---
 print("\n=== Test 3: Aging — progressive spindle loss ===")
@@ -216,18 +232,24 @@ for age in ages:
         if step % 500 == 0:
             r_age_trace.append(float(r))
 
-    age_results.append({
-        "age": age,
-        "K_fraction": round(float(decay), 3),
-        "r_spindle": round(float(np.mean(r_age_trace[-20:])), 4),
-    })
+    age_results.append(
+        {
+            "age": age,
+            "K_fraction": round(float(decay), 3),
+            "r_spindle": round(float(np.mean(r_age_trace[-20:])), 4),
+        }
+    )
 
-add_finding("SPINDLE_AGING", "Age-related spindle loss", {
-    "results": age_results,
-    "K_decay_rate": "1.2% per year",
-    "clinical": "spindle density predicts cognitive decline",
-    "schizophrenia": "reduced spindles at all ages — baseline K deficit",
-})
+add_finding(
+    "SPINDLE_AGING",
+    "Age-related spindle loss",
+    {
+        "results": age_results,
+        "K_decay_rate": "1.2% per year",
+        "clinical": "spindle density predicts cognitive decline",
+        "schizophrenia": "reduced spindles at all ages — baseline K deficit",
+    },
+)
 
 # --- Test 4: Memory consolidation = K-gated transfer ---
 print("\n=== Test 4: Spindle-ripple coupling for memory transfer ===")
@@ -277,13 +299,17 @@ for step in range(steps_mem):
     if step % 200 == 0:
         r_nrem.append(float(r))
 
-add_finding("MEMORY_CONSOLIDATION", "Spindle-gated ripple coupling for memory", {
-    "r_ripple_ungated_mean": round(float(np.mean(r_wake[-50:])), 4),
-    "r_ripple_gated_mean": round(float(np.mean(r_nrem[-50:])), 4),
-    "triple_nesting": "slow_osc (0.75 Hz) → spindle (13 Hz) → ripple (200 Hz)",
-    "SCPN_interpretation": "3 nested Kuramoto layers with K cascading down",
-    "clinical": "disrupted nesting → impaired memory consolidation",
-})
+add_finding(
+    "MEMORY_CONSOLIDATION",
+    "Spindle-gated ripple coupling for memory",
+    {
+        "r_ripple_ungated_mean": round(float(np.mean(r_wake[-50:])), 4),
+        "r_ripple_gated_mean": round(float(np.mean(r_nrem[-50:])), 4),
+        "triple_nesting": "slow_osc (0.75 Hz) → spindle (13 Hz) → ripple (200 Hz)",
+        "SCPN_interpretation": "3 nested Kuramoto layers with K cascading down",
+        "clinical": "disrupted nesting → impaired memory consolidation",
+    },
+)
 
 # --- Output ---
 print("\n" + "=" * 60)

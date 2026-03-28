@@ -27,10 +27,12 @@
 #    dsigma/dt = -gamma(sigma - sigma_target) + beta1*F(A_a) + beta2*H(theta_sync)
 #    gamma ~ 10^-4 s^-1
 
-import numpy as np
 import json
 
+import numpy as np
+
 FINDINGS = []
+
 
 def add_finding(tag, description, data):
     FINDINGS.append({"tag": tag, "description": description, "data": data})
@@ -38,9 +40,11 @@ def add_finding(tag, description, data):
     for k, v in data.items():
         print(f"  {k}: {v}")
 
+
 def order_param(theta):
     z = np.mean(np.exp(1j * theta))
     return np.abs(z), np.angle(z)
+
 
 # --- Test 1: Astrocytic calcium oscillator ---
 print("=== Test 1: Astrocytic Ca2+ dynamics (Paper 4 eq.) ===")
@@ -53,22 +57,22 @@ T = 300  # 5 minutes
 # Parameters from Paper 4 (p.25)
 D_Ca = 10.0  # um^2/s (diffusion coefficient)
 v_IP3R = 0.5  # uM/s (IP3 receptor release rate)
-K_IP3 = 0.3   # uM (IP3 half-activation)
-K_Ca = 0.3    # uM (Ca2+ half-activation)
-Ca_ER = 400   # uM (ER calcium store)
-v_SERCA = 0.4 # uM/s (SERCA pump rate)
-K_SERCA = 0.2 # uM (SERCA half-activation)
+K_IP3 = 0.3  # uM (IP3 half-activation)
+K_Ca = 0.3  # uM (Ca2+ half-activation)
+Ca_ER = 400  # uM (ER calcium store)
+v_SERCA = 0.4  # uM/s (SERCA pump rate)
+K_SERCA = 0.2  # uM (SERCA half-activation)
 g_gap = 0.05  # gap junction coupling
 
 # Initial conditions
 Ca = np.random.uniform(0.05, 0.15, N_astro)  # uM resting Ca2+
-IP3 = np.random.uniform(0.3, 0.8, N_astro)   # uM IP3
+IP3 = np.random.uniform(0.3, 0.8, N_astro)  # uM IP3
 
 # Adjacency (1D chain with nearest-neighbour coupling)
 G = np.zeros((N_astro, N_astro))
 for i in range(N_astro - 1):
-    G[i, i+1] = 1
-    G[i+1, i] = 1
+    G[i, i + 1] = 1
+    G[i + 1, i] = 1
 
 steps = int(T / dt)
 Ca_trace = np.zeros((N_astro, steps // 100))
@@ -82,7 +86,7 @@ for step in range(steps):
     J_release = v_IP3R * ip3_gate * ca_gate * er_drive
 
     # SERCA uptake
-    J_uptake = v_SERCA * Ca ** 2 / (K_SERCA ** 2 + Ca ** 2)
+    J_uptake = v_SERCA * Ca**2 / (K_SERCA**2 + Ca**2)
 
     # Gap junction coupling
     J_coupling = g_gap * (G @ Ca - np.sum(G, axis=1) * Ca)
@@ -105,17 +109,21 @@ Ca_std = np.std(Ca_trace[:, -100:], axis=0)
 oscillation_amplitude = np.max(Ca_mean) - np.min(Ca_mean)
 
 # Check for calcium waves (spatial coherence)
-spatial_corr = np.corrcoef(Ca_trace[0, -100:], Ca_trace[N_astro//2, -100:])[0, 1]
+spatial_corr = np.corrcoef(Ca_trace[0, -100:], Ca_trace[N_astro // 2, -100:])[0, 1]
 
-add_finding("ASTRO_CA_DYNAMICS", "Astrocytic Ca2+ oscillation from Paper 4 model", {
-    "mean_Ca_uM": round(float(np.mean(Ca)), 4),
-    "oscillation_amplitude_uM": round(float(oscillation_amplitude), 4),
-    "spatial_correlation_0_to_N2": round(float(spatial_corr), 4),
-    "N_astrocytes": N_astro,
-    "g_gap_coupling": g_gap,
-    "D_Ca_um2_s": D_Ca,
-    "parameters_from": "Paper 4, Section 3 (p.25)",
-})
+add_finding(
+    "ASTRO_CA_DYNAMICS",
+    "Astrocytic Ca2+ oscillation from Paper 4 model",
+    {
+        "mean_Ca_uM": round(float(np.mean(Ca)), 4),
+        "oscillation_amplitude_uM": round(float(oscillation_amplitude), 4),
+        "spatial_correlation_0_to_N2": round(float(spatial_corr), 4),
+        "N_astrocytes": N_astro,
+        "g_gap_coupling": g_gap,
+        "D_Ca_um2_s": D_Ca,
+        "parameters_from": "Paper 4, Section 3 (p.25)",
+    },
+)
 
 # --- Test 2: Glial modulation of neural coupling ---
 print("\n=== Test 2: Glial-neural phase coupling (Paper 4 eq.) ===")
@@ -148,9 +156,7 @@ theta_noglia = theta.copy()
 for step in range(steps):
     # With glial modulation (Paper 4 eq.)
     Ca_local = Ca[astro_assignment]
-    G_func = np.where(Ca_local > Ca_threshold,
-                      alpha_ATP * np.log(1 + Ca_local / K_threshold),
-                      0)
+    G_func = np.where(Ca_local > Ca_threshold, alpha_ATP * np.log(1 + Ca_local / K_threshold), 0)
     z = np.mean(np.exp(1j * theta))
     r = np.abs(z)
     psi = np.angle(z)
@@ -170,13 +176,21 @@ for step in range(steps):
         r_ng_t, _ = order_param(theta_noglia)
         r_trace_noglia.append(float(r_ng_t))
 
-add_finding("GLIAL_NEURAL_COUPLING", "Glial modulation enhances neural sync", {
-    "r_with_glia": round(float(np.mean(r_trace_glia[-20:])), 4),
-    "r_without_glia": round(float(np.mean(r_trace_noglia[-20:])), 4),
-    "enhancement": round(float(np.mean(r_trace_glia[-20:]) / max(np.mean(r_trace_noglia[-20:]), 0.01) - 1) * 100, 1),
-    "gamma_glia": gamma_glia,
-    "equation_source": "Paper 4, p.25: dphi/dt = omega + K*sin + gamma_glia*G([Ca2+])",
-})
+add_finding(
+    "GLIAL_NEURAL_COUPLING",
+    "Glial modulation enhances neural sync",
+    {
+        "r_with_glia": round(float(np.mean(r_trace_glia[-20:])), 4),
+        "r_without_glia": round(float(np.mean(r_trace_noglia[-20:])), 4),
+        "enhancement": round(
+            float(np.mean(r_trace_glia[-20:]) / max(np.mean(r_trace_noglia[-20:]), 0.01) - 1)
+            * 100,
+            1,
+        ),
+        "gamma_glia": gamma_glia,
+        "equation_source": "Paper 4, p.25: dphi/dt = omega + K*sin + gamma_glia*G([Ca2+])",
+    },
+)
 
 # --- Test 3: Homeostatic branching ratio maintenance ---
 print("\n=== Test 3: Branching ratio sigma homeostasis (Paper 4 eq.) ===")
@@ -207,14 +221,18 @@ for i, s in enumerate(sigma_arr):
         recovery_step = i
         break
 
-add_finding("BRANCHING_HOMEOSTASIS", "Branching ratio self-tunes to sigma=1", {
-    "mean_sigma_steady": round(float(mean_sigma), 4),
-    "sigma_fluctuations": round(float(std_sigma), 4),
-    "recovery_time_s": round(recovery_step * dt_home * 10, 1) if recovery_step else "never",
-    "kappa_s": kappa,
-    "initial_sigma": 0.5,
-    "equation": "dsigma/dt = -kappa(sigma-1) + eta (Paper 4, p.22)",
-})
+add_finding(
+    "BRANCHING_HOMEOSTASIS",
+    "Branching ratio self-tunes to sigma=1",
+    {
+        "mean_sigma_steady": round(float(mean_sigma), 4),
+        "sigma_fluctuations": round(float(std_sigma), 4),
+        "recovery_time_s": round(recovery_step * dt_home * 10, 1) if recovery_step else "never",
+        "kappa_s": kappa,
+        "initial_sigma": 0.5,
+        "equation": "dsigma/dt = -kappa(sigma-1) + eta (Paper 4, p.22)",
+    },
+)
 
 # --- Test 4: Glial slow control with perturbation ---
 print("\n=== Test 4: Glial control restores criticality after perturbation ===")
@@ -262,14 +280,18 @@ for entry in sigma_ctrl_trace:
         recovery_t = entry["t"] - 2000
         break
 
-add_finding("GLIAL_RECOVERY", "Glial slow control restores criticality after perturbation", {
-    "perturbation_sigma": 0.6,
-    "recovery_time_s": round(float(recovery_t), 0) if recovery_t else ">8000",
-    "final_sigma": sigma_ctrl_trace[-1]["sigma"],
-    "gamma_homeostatic": gamma_home,
-    "equation": "Paper 4, p.50: dsigma/dt = -gamma(sigma-target) + beta1*F(A_a) + beta2*H(sync)",
-    "clinical": "anaesthesia reduces sigma<1 → slow glial recovery explains emergence lag",
-})
+add_finding(
+    "GLIAL_RECOVERY",
+    "Glial slow control restores criticality after perturbation",
+    {
+        "perturbation_sigma": 0.6,
+        "recovery_time_s": round(float(recovery_t), 0) if recovery_t else ">8000",
+        "final_sigma": sigma_ctrl_trace[-1]["sigma"],
+        "gamma_homeostatic": gamma_home,
+        "equation": "Paper 4, p.50: dsigma/dt = -gamma(sigma-target) + beta1*F(A_a) + beta2*H(sync)",
+        "clinical": "anaesthesia reduces sigma<1 → slow glial recovery explains emergence lag",
+    },
+)
 
 # --- Test 5: Avalanche statistics at criticality ---
 print("\n=== Test 5: Power-law avalanche distributions (Paper 4: tau=3/2) ===")
@@ -291,14 +313,14 @@ propagation_probs = adj * sigma_target / row_sums[:, None]
 n_trials = 5000
 avalanche_sizes = []
 
-for trial in range(n_trials):
+for _trial in range(n_trials):
     # Seed: activate 1 random node
     active = np.zeros(N_net, dtype=bool)
     seed = np.random.randint(N_net)
     active[seed] = True
     total_size = 1
 
-    for generation in range(50):  # max 50 generations
+    for _generation in range(50):  # max 50 generations
         new_active = np.zeros(N_net, dtype=bool)
         for i in np.where(active)[0]:
             # Each active node activates neighbours with probability
@@ -329,20 +351,24 @@ if len(sizes_gt1) > 10:
         slope, intercept = np.polyfit(log_bc, log_ct, 1)
         tau_measured = -slope
     else:
-        tau_measured = float('nan')
+        tau_measured = float("nan")
 else:
-    tau_measured = float('nan')
+    tau_measured = float("nan")
 
-add_finding("AVALANCHE_POWERLAW", "Avalanche size distribution at sigma=1", {
-    "tau_measured": round(float(tau_measured), 3),
-    "tau_paper4": 1.5,
-    "tau_match": abs(tau_measured - 1.5) < 0.3 if not np.isnan(tau_measured) else False,
-    "N_network": N_net,
-    "n_avalanches": n_trials,
-    "mean_size": round(float(np.mean(sizes)), 2),
-    "max_size": int(np.max(sizes)),
-    "equation": "Paper 4, p.22: P(s) ~ s^{-3/2}, P(T) ~ T^{-2}",
-})
+add_finding(
+    "AVALANCHE_POWERLAW",
+    "Avalanche size distribution at sigma=1",
+    {
+        "tau_measured": round(float(tau_measured), 3),
+        "tau_paper4": 1.5,
+        "tau_match": abs(tau_measured - 1.5) < 0.3 if not np.isnan(tau_measured) else False,
+        "N_network": N_net,
+        "n_avalanches": n_trials,
+        "mean_size": round(float(np.mean(sizes)), 2),
+        "max_size": int(np.max(sizes)),
+        "equation": "Paper 4, p.22: P(s) ~ s^{-3/2}, P(T) ~ T^{-2}",
+    },
+)
 
 # --- Output ---
 print("\n" + "=" * 60)

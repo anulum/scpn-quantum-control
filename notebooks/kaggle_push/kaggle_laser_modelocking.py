@@ -23,10 +23,12 @@
 # Nonlinear medium provides all-to-all coupling through four-wave mixing.
 # K_nm = chi(3) * E_n * E_m (third-order susceptibility × field amplitudes).
 
-import numpy as np
 import json
 
+import numpy as np
+
 FINDINGS = []
+
 
 def add_finding(tag, description, data):
     FINDINGS.append({"tag": tag, "description": description, "data": data})
@@ -34,9 +36,11 @@ def add_finding(tag, description, data):
     for k, v in data.items():
         print(f"  {k}: {v}")
 
+
 def order_param(theta):
     z = np.mean(np.exp(1j * theta))
     return np.abs(z), np.angle(z)
+
 
 # --- Test 1: Mode-locking as Kuramoto transition ---
 print("=== Test 1: Laser mode-locking via phase synchronisation ===")
@@ -84,20 +88,26 @@ for K in K_values:
         pw = 1.0 / (N_modes * delta_f * r_final)
         pulse_widths.append(pw)
     else:
-        pulse_widths.append(float('inf'))
+        pulse_widths.append(float("inf"))
 
 # Find K_c
 idx = np.where(np.array(r_vs_K) > 0.5)[0]
-K_c_laser = K_values[idx[0]] if len(idx) > 0 else float('nan')
+K_c_laser = K_values[idx[0]] if len(idx) > 0 else float("nan")
 
-add_finding("LASER_MODELOCK", "Mode-locking as Kuramoto phase transition", {
-    "K_c": round(float(K_c_laser), 4),
-    "r_at_max_K": round(r_vs_K[-1], 4),
-    "N_modes": N_modes,
-    "mode_spacing_MHz": delta_f / 1e6,
-    "pulse_width_at_max_K_ps": round(pulse_widths[-1] * 1e12, 2) if pulse_widths[-1] < 1 else "CW",
-    "transform_limited_ps": round(1e12 / (N_modes * delta_f), 2),
-})
+add_finding(
+    "LASER_MODELOCK",
+    "Mode-locking as Kuramoto phase transition",
+    {
+        "K_c": round(float(K_c_laser), 4),
+        "r_at_max_K": round(r_vs_K[-1], 4),
+        "N_modes": N_modes,
+        "mode_spacing_MHz": delta_f / 1e6,
+        "pulse_width_at_max_K_ps": round(pulse_widths[-1] * 1e12, 2)
+        if pulse_widths[-1] < 1
+        else "CW",
+        "transform_limited_ps": round(1e12 / (N_modes * delta_f), 2),
+    },
+)
 
 # --- Test 2: Dispersion kills mode-locking ---
 print("\n=== Test 2: Dispersion vs coupling competition ===")
@@ -118,17 +128,23 @@ for b2 in beta2_values:
         theta_d += dt * dtheta
 
     r_d, _ = order_param(theta_d)
-    disp_results.append({
-        "beta2": b2,
-        "r_final": round(float(r_d), 4),
-        "locked": float(r_d) > 0.5,
-    })
+    disp_results.append(
+        {
+            "beta2": b2,
+            "r_final": round(float(r_d), 4),
+            "locked": float(r_d) > 0.5,
+        }
+    )
 
-add_finding("LASER_DISPERSION", "Dispersion competes with mode-locking", {
-    "results": disp_results,
-    "K_coupling": K_fixed,
-    "physics": "dispersion = effective frequency spread; needs K > K_c(beta2)",
-})
+add_finding(
+    "LASER_DISPERSION",
+    "Dispersion competes with mode-locking",
+    {
+        "results": disp_results,
+        "K_coupling": K_fixed,
+        "physics": "dispersion = effective frequency spread; needs K > K_c(beta2)",
+    },
+)
 
 # --- Test 3: Kerr lens mode-locking (intensity-dependent coupling) ---
 print("\n=== Test 3: Kerr lens — nonlinear coupling ===")
@@ -147,7 +163,7 @@ for step in range(10000):
     r = np.abs(z)
     psi = np.angle(z)
     # Nonlinear coupling: K = K0 * (1 + r^2)
-    K_eff = K0_kerr * (1 + r ** 2)
+    K_eff = K0_kerr * (1 + r**2)
     dtheta = omegas_kerr + K_eff * r * np.sin(psi - theta_kerr)
     theta_kerr += dt * dtheta
     if step % 50 == 0:
@@ -163,19 +179,23 @@ for K0_test in K0_sweep:
         z = np.mean(np.exp(1j * theta_locked))
         r = np.abs(z)
         psi = np.angle(z)
-        K_eff = K0_test * (1 + r ** 2)
+        K_eff = K0_test * (1 + r**2)
         dtheta = omegas_kerr + K_eff * r * np.sin(psi - theta_locked)
         theta_locked += dt * dtheta
     r_u, _ = order_param(theta_locked)
     r_unlocking.append(float(r_u))
 
-add_finding("KERR_MODELOCK", "Kerr-lens nonlinear mode-locking", {
-    "r_final_kerr": round(r_kerr_trace[-1], 4),
-    "self_starting": r_kerr_trace[-1] > 0.5,
-    "K0_below_linear_Kc": True,
-    "hysteresis": "yes" if r_unlocking[-1] > 0.3 else "no",
-    "physics": "positive feedback: r↑ → K↑ → r↑ (bootstrapping)",
-})
+add_finding(
+    "KERR_MODELOCK",
+    "Kerr-lens nonlinear mode-locking",
+    {
+        "r_final_kerr": round(r_kerr_trace[-1], 4),
+        "self_starting": r_kerr_trace[-1] > 0.5,
+        "K0_below_linear_Kc": True,
+        "hysteresis": "yes" if r_unlocking[-1] > 0.3 else "no",
+        "physics": "positive feedback: r↑ → K↑ → r↑ (bootstrapping)",
+    },
+)
 
 # --- Test 4: SCPN mapping — chi(3) as K_nm ---
 print("\n=== Test 4: SCPN K_nm from nonlinear susceptibility ===")
@@ -187,7 +207,7 @@ media = {
     "Er:fiber": {"chi3_esu": 2.5e-20, "n2_cm2_W": 2.6e-20, "bandwidth_THz": 12},
 }
 
-for name, params in media.items():
+for _name, params in media.items():
     # K_nm ~ chi3 * I (intensity inside cavity)
     # For Ti:Sapphire: I ~ 10^10 W/cm2 at focus
     I_cavity = 1e10  # W/cm2
@@ -199,10 +219,14 @@ for name, params in media.items():
     params["N_modes_supported"] = N_modes_medium
     params["transform_limit_fs"] = round(pulse_limit * 1e3, 1)
 
-add_finding("LASER_SCPN", "SCPN K_nm from chi(3) nonlinearity", {
-    "media": media,
-    "note": "Ti:Sapphire: 128 THz BW → sub-5fs pulses. Each mode = oscillator, chi3 = coupling.",
-})
+add_finding(
+    "LASER_SCPN",
+    "SCPN K_nm from chi(3) nonlinearity",
+    {
+        "media": media,
+        "note": "Ti:Sapphire: 128 THz BW → sub-5fs pulses. Each mode = oscillator, chi3 = coupling.",
+    },
+)
 
 # --- Output ---
 print("\n" + "=" * 60)

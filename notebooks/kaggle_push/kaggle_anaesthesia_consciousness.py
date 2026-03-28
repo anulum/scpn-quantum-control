@@ -15,9 +15,9 @@
 # Also: aging as progressive K decay, predicting disease onset
 # from safety margin erosion.
 
-import numpy as np
 import json
-from scipy import stats
+
+import numpy as np
 
 print("=" * 70)
 print("CONSCIOUSNESS, ANAESTHESIA, AND AGING AS K MODULATION")
@@ -29,8 +29,8 @@ print("=" * 70)
 
 N_cortical = 30  # tractable cortical column model
 
-def simulate_cortical(K_coupling, freq_spread=0.15, noise=0.1,
-                      dt=0.005, T=200, n_trials=10):
+
+def simulate_cortical(K_coupling, freq_spread=0.15, noise=0.1, dt=0.005, T=200, n_trials=10):
     """Simulate cortical gamma oscillators."""
     n_steps = int(T / dt)
     R_trials = []
@@ -76,7 +76,7 @@ R_arr = np.array(R_conscious)
 idx_kc = np.argmin(np.abs(R_arr - 0.4))
 K_c_conscious = K_scan[idx_kc]
 print(f"\nK_c for consciousness: {K_c_conscious:.2f}")
-print(f"(R > 0.4 = sufficient gamma sync for conscious processing)")
+print("(R > 0.4 = sufficient gamma sync for conscious processing)")
 
 
 # =====================================================================
@@ -122,7 +122,7 @@ for drug, data in anaesthetics.items():
     # Predict MAC for loss of consciousness
     mac_loc = (1 - K_c_conscious / K_baseline) / data["K_reduction_per_MAC"]
     print(f"  Predicted MAC for LOC: {mac_loc:.2f}")
-    print(f"  (Clinical MAC for LOC: ~1.0)")
+    print("  (Clinical MAC for LOC: ~1.0)")
 
 
 # =====================================================================
@@ -217,14 +217,17 @@ for name, sys in systems.items():
     fail_ages = ages[K_vs_age < sys["K_c"]]
     fail_age = fail_ages[0] if len(fail_ages) > 0 else float("inf")
 
-    print(f"{name:20s} {sys['K_base']:6.2f} {sys['K_c']:6.2f} {margin_30:8.2f} "
-          f"{'never' if fail_age == float('inf') else f'{fail_age:.0f}':>10s}")
+    print(
+        f"{name:20s} {sys['K_base']:6.2f} {sys['K_c']:6.2f} {margin_30:8.2f} "
+        f"{'never' if fail_age == float('inf') else f'{fail_age:.0f}':>10s}"
+    )
 
 # Simulate consciousness at different ages
 print("\nCortical sync vs age:")
 for age in [25, 40, 55, 70, 85]:
     K_at_age = systems["cortical_gamma"]["K_base"] * np.exp(
-        -systems["cortical_gamma"]["decline_rate"] * max(age - 30, 0))
+        -systems["cortical_gamma"]["decline_rate"] * max(age - 30, 0)
+    )
     R, _ = simulate_cortical(K_at_age, n_trials=8)
     state = "OK" if R > 0.4 else "IMPAIRED" if R > 0.25 else "SEVERE"
     print(f"  Age {age}: K={K_at_age:.2f}, R={R:.3f} [{state}]")
@@ -242,7 +245,8 @@ print("=" * 70)
 print("Propofol MAC needed for LOC at different ages:")
 for age in [25, 40, 55, 70, 85]:
     K_at_age = systems["cortical_gamma"]["K_base"] * np.exp(
-        -systems["cortical_gamma"]["decline_rate"] * max(age - 30, 0))
+        -systems["cortical_gamma"]["decline_rate"] * max(age - 30, 0)
+    )
     # MAC needed: K_at_age * (1 - reduction * MAC) = K_c
     reduction = anaesthetics["propofol"]["K_reduction_per_MAC"]
     if K_at_age > K_c_conscious:
@@ -296,7 +300,7 @@ conscious_steps = np.where(R_rec > 0.4)[0]
 if len(conscious_steps) > 0:
     recovery_time = conscious_steps[0] * dt
     print(f"Recovery time to R>0.4: {recovery_time:.1f} time units")
-    print(f"At 40 Hz gamma: {recovery_time/40:.3f} seconds ({recovery_time/40*1000:.0f} ms)")
+    print(f"At 40 Hz gamma: {recovery_time / 40:.3f} seconds ({recovery_time / 40 * 1000:.0f} ms)")
 else:
     recovery_time = -1
     print("Did not recover to R>0.4")
@@ -325,7 +329,7 @@ print(f"""
    Ketamine: NMDA block -> reduces excitatory coupling (different path)
    Predicted MAC for LOC: ~1.0 (matches clinical)
 
-3. HYSTERESIS: {'CONFIRMED' if hysteresis else 'not detected'}
+3. HYSTERESIS: {"CONFIRMED" if hysteresis else "not detected"}
    LOC at K = {K_loc:.2f}, ROC at K = {K_roc:.2f}
    Clinical: patients need more drug to go under than to wake up
 

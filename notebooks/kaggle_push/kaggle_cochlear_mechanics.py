@@ -19,9 +19,9 @@
 # The cochlea is the BEST biological example of a frequency-graded
 # coupled oscillator system. Direct SCPN comparison.
 
-import numpy as np
 import json
-from scipy import stats
+
+import numpy as np
 
 print("=" * 70)
 print("COCHLEAR HAIR CELLS AS KURAMOTO CHAIN")
@@ -39,9 +39,11 @@ a_green = -0.06 / 1.0  # per mm (note: negative = freq decreases toward apex)
 k_green = 0.88
 L_cochlea = 35.0  # mm
 
+
 def greenwood_freq(x_mm):
     """Greenwood function: position -> characteristic frequency."""
-    return A_green * (10**(a_green * x_mm) - k_green)
+    return A_green * (10 ** (a_green * x_mm) - k_green)
+
 
 print("Tonotopic map (Greenwood function):")
 for x in np.linspace(0, 35, 8):
@@ -50,14 +52,14 @@ for x in np.linspace(0, 35, 8):
         print(f"  x={x:5.1f} mm: f={f:8.0f} Hz")
 
 # Hair cell parameters
-N_ihc = 3500    # inner hair cells
-N_ohc = 12000   # outer hair cells (3 rows)
+N_ihc = 3500  # inner hair cells
+N_ohc = 12000  # outer hair cells (3 rows)
 spacing = L_cochlea / N_ihc  # ~10 um
 
 print(f"\nHair cell counts: {N_ihc} IHC, {N_ohc} OHC")
-print(f"Mean spacing: {spacing*1000:.1f} um")
+print(f"Mean spacing: {spacing * 1000:.1f} um")
 print(f"Frequency range: {greenwood_freq(35):.0f} Hz - {greenwood_freq(0):.0f} Hz")
-print(f"Decades: {np.log10(greenwood_freq(0)/max(greenwood_freq(35), 1)):.1f}")
+print(f"Decades: {np.log10(greenwood_freq(0) / max(greenwood_freq(35), 1)):.1f}")
 
 
 # =====================================================================
@@ -78,9 +80,11 @@ omega_cochlea = freqs / np.max(freqs)
 print(f"Simulating {N_sim} oscillators along cochlea")
 print(f"Frequency gradient: {omega_cochlea[0]:.3f} (base) -> {omega_cochlea[-1]:.3f} (apex)")
 
+
 # Nearest-neighbour coupling (basilar membrane stiffness)
-def simulate_cochlea(K_coupling, omega, input_freq=None, input_amp=0.0,
-                     noise=0.01, dt=0.01, T=200):
+def simulate_cochlea(
+    K_coupling, omega, input_freq=None, input_amp=0.0, noise=0.01, dt=0.01, T=200
+):
     N = len(omega)
     n_steps = int(T / dt)
     theta = np.random.uniform(0, 2 * np.pi, N)
@@ -96,21 +100,21 @@ def simulate_cochlea(K_coupling, omega, input_freq=None, input_amp=0.0,
             for i in range(N):
                 # Each hair cell resonates with sound near its CF
                 detuning = abs(omega[i] - input_freq / np.max(freqs))
-                resonance = np.exp(-detuning**2 / 0.01)  # sharp tuning
+                resonance = np.exp(-(detuning**2) / 0.01)  # sharp tuning
                 dtheta[i] += input_amp * resonance * np.sin(2 * np.pi * input_freq * _s * dt)
 
         # Nearest-neighbour coupling
         for i in range(N):
             if i > 0:
-                dtheta[i] += K_coupling * np.sin(theta[i-1] - theta[i])
+                dtheta[i] += K_coupling * np.sin(theta[i - 1] - theta[i])
             if i < N - 1:
-                dtheta[i] += K_coupling * np.sin(theta[i+1] - theta[i])
+                dtheta[i] += K_coupling * np.sin(theta[i + 1] - theta[i])
 
         theta += dtheta * dt + noise * np.random.randn(N) * np.sqrt(dt)
 
     # Compute local order parameter
     for i in range(N):
-        window = slice(max(0, i-3), min(N, i+4))
+        window = slice(max(0, i - 3), min(N, i + 4))
         z = np.mean(np.exp(1j * theta[window]))
         R_local[i] = abs(z)
         amplitude[i] = abs(np.sin(theta[i]))
@@ -120,7 +124,7 @@ def simulate_cochlea(K_coupling, omega, input_freq=None, input_amp=0.0,
 
 # No input (spontaneous oscillation)
 R_spont, _, _ = simulate_cochlea(0.5, omega_cochlea)
-print(f"\nSpontaneous state (no input):")
+print("\nSpontaneous state (no input):")
 print(f"  Mean R_local: {np.mean(R_spont):.3f}")
 print(f"  Base R: {np.mean(R_spont[:10]):.3f}")
 print(f"  Apex R: {np.mean(R_spont[-10:]):.3f}")
@@ -137,8 +141,7 @@ print(f"{'Input Hz':>10s} {'Peak pos':>10s} {'Peak CF':>10s} {'Width':>8s}")
 print("-" * 42)
 
 for f_input in test_freqs:
-    R_tone, amp, _ = simulate_cochlea(0.5, omega_cochlea,
-                                       input_freq=f_input, input_amp=2.0, T=100)
+    R_tone, amp, _ = simulate_cochlea(0.5, omega_cochlea, input_freq=f_input, input_amp=2.0, T=100)
     peak_idx = np.argmax(R_tone)
     peak_cf = freqs[peak_idx]
     # Width: half-max of response
@@ -158,8 +161,7 @@ print("=" * 70)
 
 print("Effect of OHC amplification (K boost):")
 for K_ohc in [0.0, 0.5, 1.0, 2.0, 5.0]:
-    R_amp, _, _ = simulate_cochlea(K_ohc, omega_cochlea,
-                                    input_freq=1000, input_amp=0.5, T=100)
+    R_amp, _, _ = simulate_cochlea(K_ohc, omega_cochlea, input_freq=1000, input_amp=0.5, T=100)
     peak_R = np.max(R_amp)
     print(f"  K_OHC={K_ohc:.1f}: peak R={peak_R:.3f}")
 
@@ -208,13 +210,13 @@ omega_scpn = np.array([0.062, 0.191, 0.382, 0.618, 0.809, 0.927, 0.981, 1.000])
 scpn_ratios = omega_scpn[1:] / omega_scpn[:-1]
 
 print(f"Cochlear mean ratio: {np.mean(cochlea_ratios):.4f}")
-print(f"Cochlear CV: {np.std(cochlea_ratios)/np.mean(cochlea_ratios):.4f}")
+print(f"Cochlear CV: {np.std(cochlea_ratios) / np.mean(cochlea_ratios):.4f}")
 print(f"SCPN mean ratio: {np.mean(scpn_ratios):.3f}")
-print(f"SCPN CV: {np.std(np.diff(np.log(omega_scpn)))/np.mean(np.diff(np.log(omega_scpn))):.3f}")
+print(f"SCPN CV: {np.std(np.diff(np.log(omega_scpn))) / np.mean(np.diff(np.log(omega_scpn))):.3f}")
 
-print(f"\nCochlea spans {np.log10(np.max(freqs)/max(np.min(freqs[freqs>0]), 1)):.1f} decades")
-print(f"SCPN spans {np.log10(omega_scpn[-1]/omega_scpn[0]):.1f} decades")
-print(f"EEG spans ~2.5 decades")
+print(f"\nCochlea spans {np.log10(np.max(freqs) / max(np.min(freqs[freqs > 0]), 1)):.1f} decades")
+print(f"SCPN spans {np.log10(omega_scpn[-1] / omega_scpn[0]):.1f} decades")
+print("EEG spans ~2.5 decades")
 
 # Key difference
 print("\nCochlea has CONSTANT ratio in log space (uniform log mapping)")
@@ -281,7 +283,9 @@ The cochlea is the clearest biological Kuramoto system:
 """)
 
 results = {
-    "frequency_range_decades": round(float(np.log10(np.max(freqs)/max(np.min(freqs[freqs>0]), 1))), 1),
+    "frequency_range_decades": round(
+        float(np.log10(np.max(freqs) / max(np.min(freqs[freqs > 0]), 1))), 1
+    ),
     "cochlea_mean_ratio": round(float(np.mean(cochlea_ratios)), 4),
     "scpn_mean_ratio": round(float(np.mean(scpn_ratios)), 3),
     "n_ihc": N_ihc,

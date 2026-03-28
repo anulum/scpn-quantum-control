@@ -15,9 +15,9 @@
 #
 # Both are Kuramoto systems with KNOWN parameters.
 
-import numpy as np
 import json
-from scipy import stats
+
+import numpy as np
 
 print("=" * 70)
 print("METABOLIC AND IMMUNE OSCILLATIONS AS KURAMOTO SYSTEMS")
@@ -36,27 +36,27 @@ print("=" * 70)
 
 glycolysis_params = {
     "yeast": {
-        "period_s": 30,         # ~30s in yeast cell extracts
+        "period_s": 30,  # ~30s in yeast cell extracts
         "coupling": "acetaldehyde (diffuses through membrane)",
-        "K_est": 1.5,           # strong (shared metabolite)
-        "N_cells_sync": 1e6,    # millions synchronise in suspension
+        "K_est": 1.5,  # strong (shared metabolite)
+        "N_cells_sync": 1e6,  # millions synchronise in suspension
     },
     "beta_cell": {
-        "period_s": 300,        # ~5 min (slow glycolytic oscillations)
+        "period_s": 300,  # ~5 min (slow glycolytic oscillations)
         "coupling": "ATP through gap junctions (Cx36)",
         "K_est": 1.0,
-        "N_cells_sync": 1000,   # per islet
+        "N_cells_sync": 1000,  # per islet
     },
     "muscle": {
-        "period_s": 60,         # ~1 min
+        "period_s": 60,  # ~1 min
         "coupling": "extracellular ATP + lactate",
-        "K_est": 0.5,           # weaker (limited diffusion)
-        "N_cells_sync": 100,    # local neighbourhood
+        "K_est": 0.5,  # weaker (limited diffusion)
+        "N_cells_sync": 100,  # local neighbourhood
     },
     "cardiac": {
-        "period_s": 5,          # fast glycolytic oscillations
+        "period_s": 5,  # fast glycolytic oscillations
         "coupling": "gap junctions (Cx43) + shared substrates",
-        "K_est": 3.0,           # strong
+        "K_est": 3.0,  # strong
         "N_cells_sync": 10000,
     },
 }
@@ -64,6 +64,7 @@ glycolysis_params = {
 # TEST A1: Glycolytic Kuramoto simulation
 print("\nGlycolytic oscillator synchronisation:")
 N_glyc = 30
+
 
 def simulate_glycolytic(K, freq_spread, dt=0.01, T=300, n_trials=10):
     n_steps = int(T / dt)
@@ -81,6 +82,7 @@ def simulate_glycolytic(K, freq_spread, dt=0.01, T=300, n_trials=10):
         z = np.mean(np.exp(1j * theta))
         R_trials.append(abs(z))
     return np.mean(R_trials)
+
 
 print(f"{'System':15s} {'Period':>8s} {'K_est':>6s} {'R_sim':>6s}")
 print("-" * 40)
@@ -120,12 +122,12 @@ print("=" * 70)
 # Single-cell tracking: digital pulses (Hoffmann et al. 2002, Nelson et al. 2004)
 
 nfkb_params = {
-    "period_min": 100,           # ~100 min per pulse
+    "period_min": 100,  # ~100 min per pulse
     "freq_Hz": 1 / (100 * 60),  # ~0.17 mHz
-    "pulse_amplitude": 1.0,      # normalised nuclear NF-kB
-    "damping_time_h": 6,        # oscillations damp in ~6 hours
-    "n_pulses_tnf": 5,          # ~5 pulses per TNF stimulation
-    "n_pulses_lps": 1,          # 1 sustained pulse for LPS
+    "pulse_amplitude": 1.0,  # normalised nuclear NF-kB
+    "damping_time_h": 6,  # oscillations damp in ~6 hours
+    "n_pulses_tnf": 5,  # ~5 pulses per TNF stimulation
+    "n_pulses_lps": 1,  # 1 sustained pulse for LPS
 }
 
 print("NF-kB oscillation parameters:")
@@ -221,21 +223,25 @@ print("=" * 70)
 # - Immune -> circadian: TNF-alpha phase-shifts the clock
 
 # Simulate 3-oscillator Kuramoto (one per system)
-omega_triangle = np.array([
-    1.0,     # circadian (reference)
-    288.0,   # glycolytic (~5 min / ~24h = 288 cycles per day)
-    14.4,    # NF-kB (~100 min / ~24h = 14.4 cycles per day)
-])
+omega_triangle = np.array(
+    [
+        1.0,  # circadian (reference)
+        288.0,  # glycolytic (~5 min / ~24h = 288 cycles per day)
+        14.4,  # NF-kB (~100 min / ~24h = 14.4 cycles per day)
+    ]
+)
 
 # Normalise
 omega_t = omega_triangle / np.max(omega_triangle)
 
 # Coupling matrix (asymmetric!)
-K_triangle = np.array([
-    [0.0, 0.1, 0.3],   # circadian: weakly couples to metabolic, strongly to immune
-    [0.2, 0.0, 0.1],   # metabolic: moderately couples to circadian, weakly to immune
-    [0.5, 0.2, 0.0],   # immune: strongly couples to circadian, moderately to metabolic
-])
+K_triangle = np.array(
+    [
+        [0.0, 0.1, 0.3],  # circadian: weakly couples to metabolic, strongly to immune
+        [0.2, 0.0, 0.1],  # metabolic: moderately couples to circadian, weakly to immune
+        [0.5, 0.2, 0.0],  # immune: strongly couples to circadian, moderately to metabolic
+    ]
+)
 
 # Simulate
 dt = 0.01

@@ -25,10 +25,12 @@
 #    Myelin sheaths as optical cladding:
 #    beta = (omega/c) * sqrt(eps_core - eps_cladding)
 
-import numpy as np
 import json
 
+import numpy as np
+
 FINDINGS = []
+
 
 def add_finding(tag, description, data):
     FINDINGS.append({"tag": tag, "description": description, "data": data})
@@ -36,9 +38,11 @@ def add_finding(tag, description, data):
     for k, v in data.items():
         print(f"  {k}: {v}")
 
+
 def order_param(theta):
     z = np.mean(np.exp(1j * theta))
     return np.abs(z), np.angle(z)
+
 
 # --- Test 1: Ephaptic coupling strength (Paper 4 values) ---
 print("=== Test 1: Ephaptic coupling — membrane potential shift ===")
@@ -61,7 +65,7 @@ omega_0 = 2 * np.pi * 40  # 40 Hz gamma
 gamma_damp = omega_0 / 5  # Q=5
 freqs = np.linspace(1, 100, 200)
 omega = 2 * np.pi * freqs
-G = 1.0 / np.sqrt((omega_0**2 - omega**2)**2 + (gamma_damp * omega)**2)
+G = 1.0 / np.sqrt((omega_0**2 - omega**2) ** 2 + (gamma_damp * omega) ** 2)
 G_norm = G / np.max(G)
 
 # Peak gain and bandwidth
@@ -69,15 +73,19 @@ peak_freq = freqs[np.argmax(G_norm)]
 half_power = np.where(G_norm > 0.707)[0]
 bandwidth = freqs[half_power[-1]] - freqs[half_power[0]] if len(half_power) > 1 else 0
 
-add_finding("EPHAPTIC_COUPLING", "Ephaptic field coupling (Paper 4 values)", {
-    "E_eph_range_mV_mm": "1-5",
-    "DeltaV_range_mV": "0.1-0.5",
-    "spike_timing_shift_ms": "0.01-0.05",
-    "resonant_peak_Hz": round(peak_freq, 1),
-    "Q_factor": round(omega_0 / gamma_damp, 1),
-    "bandwidth_Hz": round(bandwidth, 1),
-    "equation": "Paper 4, p.35: DeltaV_m = E_eph * L_cell, G(omega) = G_0/sqrt(...)",
-})
+add_finding(
+    "EPHAPTIC_COUPLING",
+    "Ephaptic field coupling (Paper 4 values)",
+    {
+        "E_eph_range_mV_mm": "1-5",
+        "DeltaV_range_mV": "0.1-0.5",
+        "spike_timing_shift_ms": "0.01-0.05",
+        "resonant_peak_Hz": round(peak_freq, 1),
+        "Q_factor": round(omega_0 / gamma_damp, 1),
+        "bandwidth_Hz": round(bandwidth, 1),
+        "equation": "Paper 4, p.35: DeltaV_m = E_eph * L_cell, G(omega) = G_0/sqrt(...)",
+    },
+)
 
 # --- Test 2: Ephaptic coupling in Kuramoto model ---
 print("\n=== Test 2: Ephaptic K_ij adds long-range sync ===")
@@ -120,7 +128,9 @@ for step in range(30000):
     # Synaptic + ephaptic
     dtheta_b = omegas.copy()
     for i in range(N):
-        dtheta_b[i] += np.sum((K_syn_matrix[i] + K_eph_matrix[i]) * np.sin(theta_both - theta_both[i])) / N
+        dtheta_b[i] += (
+            np.sum((K_syn_matrix[i] + K_eph_matrix[i]) * np.sin(theta_both - theta_both[i])) / N
+        )
     theta_both += dt * dtheta_b
 
     if step % 300 == 0:
@@ -129,15 +139,22 @@ for step in range(30000):
         r_syn_trace.append(float(r_s))
         r_both_trace.append(float(r_b))
 
-add_finding("EPHAPTIC_SYNC", "Ephaptic coupling extends synchronisation range", {
-    "r_synaptic_only": round(float(np.mean(r_syn_trace[-20:])), 4),
-    "r_synaptic_plus_ephaptic": round(float(np.mean(r_both_trace[-20:])), 4),
-    "enhancement_percent": round(float((np.mean(r_both_trace[-20:]) / max(np.mean(r_syn_trace[-20:]), 0.01) - 1) * 100), 1),
-    "K_syn": K_syn,
-    "K_eph": K_eph,
-    "lambda_syn_mm": lambda_syn,
-    "note": "ephaptic fields enable long-range sync beyond synaptic reach",
-})
+add_finding(
+    "EPHAPTIC_SYNC",
+    "Ephaptic coupling extends synchronisation range",
+    {
+        "r_synaptic_only": round(float(np.mean(r_syn_trace[-20:])), 4),
+        "r_synaptic_plus_ephaptic": round(float(np.mean(r_both_trace[-20:])), 4),
+        "enhancement_percent": round(
+            float((np.mean(r_both_trace[-20:]) / max(np.mean(r_syn_trace[-20:]), 0.01) - 1) * 100),
+            1,
+        ),
+        "K_syn": K_syn,
+        "K_eph": K_eph,
+        "lambda_syn_mm": lambda_syn,
+        "note": "ephaptic fields enable long-range sync beyond synaptic reach",
+    },
+)
 
 # --- Test 3: Mechanical stress-phase coupling ---
 print("\n=== Test 3: Mechanotransduction stress waves (Paper 4, p.39) ===")
@@ -174,7 +191,7 @@ u_trace = []
 for step in range(min(steps_mech, 10000)):
     # Finite difference wave equation
     d2u = np.zeros(Nx)
-    d2u[1:-1] = (u[2:] - 2*u[1:-1] + u[:-2]) / dx**2
+    d2u[1:-1] = (u[2:] - 2 * u[1:-1] + u[:-2]) / dx**2
     d2u[0] = (u[1] - u[0]) / dx**2
     d2u[-1] = (u[-2] - u[-1]) / dx**2
 
@@ -189,21 +206,25 @@ for step in range(min(steps_mech, 10000)):
 if len(u_trace) > 1:
     expected_time = (Nx * dx) / c_mech
 else:
-    expected_time = float('nan')
+    expected_time = float("nan")
 
-add_finding("MECHANOTRANSDUCTION", "Stress wave propagation in tissue", {
-    "c_mech_m_s": round(float(c_mech), 3),
-    "E_tissue_Pa": E_tissue,
-    "rho_kg_m3": rho_tissue,
-    "adhesion_f_resonance_Hz": round(float(f_mech), 0),
-    "wave_travel_time_5mm_ms": round(float(5e-3 / c_mech * 1000), 3),
-    "comparison": {
-        "synaptic_conduction_m_s": "1-100",
-        "ephaptic_field_m_s": "~10^8",
-        "mechanical_wave_m_s": round(float(c_mech), 1),
+add_finding(
+    "MECHANOTRANSDUCTION",
+    "Stress wave propagation in tissue",
+    {
+        "c_mech_m_s": round(float(c_mech), 3),
+        "E_tissue_Pa": E_tissue,
+        "rho_kg_m3": rho_tissue,
+        "adhesion_f_resonance_Hz": round(float(f_mech), 0),
+        "wave_travel_time_5mm_ms": round(float(5e-3 / c_mech * 1000), 3),
+        "comparison": {
+            "synaptic_conduction_m_s": "1-100",
+            "ephaptic_field_m_s": "~10^8",
+            "mechanical_wave_m_s": round(float(c_mech), 1),
+        },
+        "equation": "Paper 4, p.39: c_mech = sqrt(E/rho), d2u/dt2 = c^2 nabla^2 u - gamma du/dt",
     },
-    "equation": "Paper 4, p.39: c_mech = sqrt(E/rho), d2u/dt2 = c^2 nabla^2 u - gamma du/dt",
-})
+)
 
 # --- Test 4: Biophotonic waveguides (myelin as cladding) ---
 print("\n=== Test 4: Myelin as biophotonic waveguide (Paper 4, p.27) ===")
@@ -216,7 +237,7 @@ print("\n=== Test 4: Myelin as biophotonic waveguide (Paper 4, p.27) ===")
 # Alternative: consider unmyelinated segment as core, myelin as cladding
 # Or: cytoplasm n=1.38 vs extracellular n=1.335
 
-n_core = 1.38      # axon cytoplasm
+n_core = 1.38  # axon cytoplasm
 n_cladding = 1.335  # extracellular fluid
 # This gives total internal reflection for shallow angles
 
@@ -234,23 +255,29 @@ for lam in wavelengths:
         NA = np.sqrt(n_core**2 - n_cladding**2)
         V = (2 * np.pi * a_axon / lam) * NA
         n_modes = max(1, int(V**2 / 2))  # approximate
-        print(f"  lambda={lam*1e9:.0f}nm: beta={beta:.2e}/m, V={V:.2f}, modes~{n_modes}")
+        print(f"  lambda={lam * 1e9:.0f}nm: beta={beta:.2e}/m, V={V:.2f}, modes~{n_modes}")
 
 # Attenuation in tissue
 alpha_tissue = 10  # 1/cm (approximate for 500nm in tissue)
 L_decay = 1.0 / alpha_tissue  # cm
 L_decay_um = L_decay * 1e4  # um
 
-add_finding("BIOPHOTONIC_WAVEGUIDE", "Myelin/axon as optical waveguide", {
-    "n_core_cytoplasm": n_core,
-    "n_cladding_extracellular": n_cladding,
-    "NA": round(float(np.sqrt(n_core**2 - n_cladding**2)), 4),
-    "V_parameter_500nm": round(float((2 * np.pi * 0.5e-6 / 500e-9) * np.sqrt(n_core**2 - n_cladding**2)), 3),
-    "decay_length_um": round(L_decay_um, 0),
-    "biophoton_rate_per_cell": "10^-3/s (Paper 4, p.17)",
-    "plausibility": "waveguide physics valid; signal strength is the bottleneck",
-    "equation": "Paper 4, p.27: beta = (omega/c) sqrt(eps_core - eps_cladding)",
-})
+add_finding(
+    "BIOPHOTONIC_WAVEGUIDE",
+    "Myelin/axon as optical waveguide",
+    {
+        "n_core_cytoplasm": n_core,
+        "n_cladding_extracellular": n_cladding,
+        "NA": round(float(np.sqrt(n_core**2 - n_cladding**2)), 4),
+        "V_parameter_500nm": round(
+            float((2 * np.pi * 0.5e-6 / 500e-9) * np.sqrt(n_core**2 - n_cladding**2)), 3
+        ),
+        "decay_length_um": round(L_decay_um, 0),
+        "biophoton_rate_per_cell": "10^-3/s (Paper 4, p.17)",
+        "plausibility": "waveguide physics valid; signal strength is the bottleneck",
+        "equation": "Paper 4, p.27: beta = (omega/c) sqrt(eps_core - eps_cladding)",
+    },
+)
 
 # --- Test 5: Developmental K evolution (Paper 4, p.47) ---
 print("\n=== Test 5: Developmental coupling maturation (Paper 4, p.47) ===")
@@ -267,7 +294,11 @@ sigma_crit = 2 * 30 * 24  # 2 months width
 ages_months = np.linspace(0, 24, 100)  # 0-24 months
 ages_hours = ages_months * 30 * 24
 
-K_dev = K_max * (1 - np.exp(-ages_hours / tau_mat)) / (1 + np.exp((ages_hours - t_critical) / sigma_crit))
+K_dev = (
+    K_max
+    * (1 - np.exp(-ages_hours / tau_mat))
+    / (1 + np.exp((ages_hours - t_critical) / sigma_crit))
+)
 
 # Simulate network sync at different developmental stages
 dev_sync = []
@@ -286,20 +317,26 @@ for age_idx in range(0, len(ages_months), 10):
         dtheta = omegas_dev + K_age * r * np.sin(psi - theta_d)
         theta_d += dt * dtheta
     r_d, _ = order_param(theta_d)
-    dev_sync.append({
-        "age_months": round(float(ages_months[age_idx]), 1),
-        "K": round(float(K_age), 3),
-        "r": round(float(r_d), 4),
-    })
+    dev_sync.append(
+        {
+            "age_months": round(float(ages_months[age_idx]), 1),
+            "K": round(float(K_age), 3),
+            "r": round(float(r_d), 4),
+        }
+    )
 
-add_finding("DEVELOPMENTAL_K", "Coupling maturation during development", {
-    "results": dev_sync,
-    "K_max": K_max,
-    "tau_maturation_weeks": 3,
-    "t_critical_months": 6,
-    "equation": "Paper 4, p.47: K = K_max * (1-exp(-t/tau)) * sigmoid((t_c-t)/sigma)",
-    "clinical": "disrupted critical period → lasting sync deficits (autism, schizophrenia)",
-})
+add_finding(
+    "DEVELOPMENTAL_K",
+    "Coupling maturation during development",
+    {
+        "results": dev_sync,
+        "K_max": K_max,
+        "tau_maturation_weeks": 3,
+        "t_critical_months": 6,
+        "equation": "Paper 4, p.47: K = K_max * (1-exp(-t/tau)) * sigmoid((t_c-t)/sigma)",
+        "clinical": "disrupted critical period → lasting sync deficits (autism, schizophrenia)",
+    },
+)
 
 # --- Output ---
 print("\n" + "=" * 60)

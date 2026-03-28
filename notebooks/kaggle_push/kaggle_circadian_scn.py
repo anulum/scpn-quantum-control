@@ -22,11 +22,12 @@
 # - K_ij via VIP diffusion (paracrine, ~100 um range)
 # - External forcing: light as periodic drive with phase shift
 
-import numpy as np
-from scipy.integrate import solve_ivp
 import json
 
+import numpy as np
+
 FINDINGS = []
+
 
 def add_finding(tag, description, data):
     FINDINGS.append({"tag": tag, "description": description, "data": data})
@@ -34,9 +35,11 @@ def add_finding(tag, description, data):
     for k, v in data.items():
         print(f"  {k}: {v}")
 
+
 def order_param(theta):
     z = np.mean(np.exp(1j * theta))
     return np.abs(z), np.angle(z)
+
 
 # --- Test 1: SCN as Kuramoto network ---
 print("=== Test 1: SCN circadian synchronisation ===")
@@ -53,6 +56,7 @@ omegas = 2 * np.pi / periods  # rad/hour
 
 theta0 = np.random.uniform(0, 2 * np.pi, N)
 
+
 # Light forcing: 12h light / 12h dark
 def light_phase_response(theta, t_hours):
     """Phase response to light: advances in early subjective night,
@@ -61,6 +65,7 @@ def light_phase_response(theta, t_hours):
     if 6 <= hour_of_day <= 18:  # light on
         return 0.02 * np.sin(theta)  # advance/delay depending on phase
     return 0.0
+
 
 # Sweep K
 K_values = np.linspace(0, 0.3, 25)
@@ -86,16 +91,20 @@ for K in K_values:
 
 r_vs_K = np.array(r_vs_K)
 idx_sync = np.where(r_vs_K > 0.5)[0]
-K_c = K_values[idx_sync[0]] if len(idx_sync) > 0 else float('nan')
+K_c = K_values[idx_sync[0]] if len(idx_sync) > 0 else float("nan")
 
-add_finding("SCN_KC", "Critical VIP coupling for circadian sync", {
-    "K_c_rad_per_hr": round(float(K_c), 4),
-    "N_neurons": N,
-    "mean_period_hr": 24.2,
-    "period_spread_hr": 1.0,
-    "r_at_max_K": round(float(r_vs_K[-1]), 4),
-    "light_forcing": "12L:12D with Type 1 PRC",
-})
+add_finding(
+    "SCN_KC",
+    "Critical VIP coupling for circadian sync",
+    {
+        "K_c_rad_per_hr": round(float(K_c), 4),
+        "N_neurons": N,
+        "mean_period_hr": 24.2,
+        "period_spread_hr": 1.0,
+        "r_at_max_K": round(float(r_vs_K[-1]), 4),
+        "light_forcing": "12L:12D with Type 1 PRC",
+    },
+)
 
 # --- Test 2: VIP knockout (K → 0) ---
 print("\n=== Test 2: VIP knockout — complete desynchronisation ===")
@@ -129,13 +138,17 @@ for step in range(int(240 / dt)):
         r, _ = order_param(theta_ko)
         r_novip_trace.append(r)
 
-add_finding("VIP_KNOCKOUT", "VIP knockout desynchronises SCN", {
-    "r_healthy_day10": round(float(r_vip_trace[-1]), 4),
-    "r_knockout_day10": round(float(r_novip_trace[-1]), 4),
-    "r_ratio": round(float(r_novip_trace[-1] / max(r_vip_trace[-1], 0.01)), 3),
-    "matches_experiment": r_novip_trace[-1] < 0.3,
-    "note": "VIP KO mice show desynchronised SCN — our model should reproduce this",
-})
+add_finding(
+    "VIP_KNOCKOUT",
+    "VIP knockout desynchronises SCN",
+    {
+        "r_healthy_day10": round(float(r_vip_trace[-1]), 4),
+        "r_knockout_day10": round(float(r_novip_trace[-1]), 4),
+        "r_ratio": round(float(r_novip_trace[-1] / max(r_vip_trace[-1], 0.01)), 3),
+        "matches_experiment": r_novip_trace[-1] < 0.3,
+        "note": "VIP KO mice show desynchronised SCN — our model should reproduce this",
+    },
+)
 
 # --- Test 3: Jet lag recovery dynamics ---
 print("\n=== Test 3: Jet lag — 8-hour eastward shift ===")
@@ -180,14 +193,18 @@ for i, pe in enumerate(mean_phase_offset):
         recovery_day = i
         break
 
-add_finding("JET_LAG", "Jet lag recovery from 8-hour eastward shift", {
-    "recovery_day": recovery_day,
-    "phase_error_day1_rad": round(mean_phase_offset[0], 3) if mean_phase_offset else None,
-    "phase_error_day10_rad": round(mean_phase_offset[-1], 3) if mean_phase_offset else None,
-    "r_minimum": round(float(min(r_recovery)), 4) if r_recovery else None,
-    "clinical_expectation": "~1 day per timezone crossed ≈ 8 days",
-    "K_coupling": K_jetlag,
-})
+add_finding(
+    "JET_LAG",
+    "Jet lag recovery from 8-hour eastward shift",
+    {
+        "recovery_day": recovery_day,
+        "phase_error_day1_rad": round(mean_phase_offset[0], 3) if mean_phase_offset else None,
+        "phase_error_day10_rad": round(mean_phase_offset[-1], 3) if mean_phase_offset else None,
+        "r_minimum": round(float(min(r_recovery)), 4) if r_recovery else None,
+        "clinical_expectation": "~1 day per timezone crossed ≈ 8 days",
+        "K_coupling": K_jetlag,
+    },
+)
 
 # --- Test 4: Shift work chronic desync ---
 print("\n=== Test 4: Shift work — rotating schedule desync ===")
@@ -213,13 +230,17 @@ for week in range(8):  # 8 weeks
 
 r_chronic = [x["r"] for x in r_shift_work[-7:]]
 
-add_finding("SHIFT_WORK", "Rotating shift work chronic desynchronisation", {
-    "mean_r_final_week": round(float(np.mean(r_chronic)), 4),
-    "r_range": [round(float(min(r_chronic)), 4), round(float(max(r_chronic)), 4)],
-    "never_fully_syncs": np.mean(r_chronic) < 0.8,
-    "cancer_link": "WHO IARC: shift work = probable carcinogen (Group 2A)",
-    "mechanism": "chronic internal desync → immune suppression → cancer risk +17%",
-})
+add_finding(
+    "SHIFT_WORK",
+    "Rotating shift work chronic desynchronisation",
+    {
+        "mean_r_final_week": round(float(np.mean(r_chronic)), 4),
+        "r_range": [round(float(min(r_chronic)), 4), round(float(max(r_chronic)), 4)],
+        "never_fully_syncs": np.mean(r_chronic) < 0.8,
+        "cancer_link": "WHO IARC: shift work = probable carcinogen (Group 2A)",
+        "mechanism": "chronic internal desync → immune suppression → cancer risk +17%",
+    },
+)
 
 # --- Output ---
 print("\n" + "=" * 60)

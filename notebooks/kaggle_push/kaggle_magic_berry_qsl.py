@@ -20,12 +20,27 @@ import time
 subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", "numpy", "scipy"])
 
 import numpy as np
-from scipy.linalg import expm
 
-OMEGA_N_16 = np.array([
-    1.329, 2.610, 0.844, 1.520, 0.710, 3.780, 1.055, 0.625,
-    2.210, 1.740, 0.480, 3.210, 0.915, 1.410, 2.830, 0.991,
-])
+OMEGA_N_16 = np.array(
+    [
+        1.329,
+        2.610,
+        0.844,
+        1.520,
+        0.710,
+        3.780,
+        1.055,
+        0.625,
+        2.210,
+        1.740,
+        0.480,
+        3.210,
+        0.915,
+        1.410,
+        2.830,
+        0.991,
+    ]
+)
 
 
 def build_knm(L, K_base=0.45, K_alpha=0.3):
@@ -109,11 +124,16 @@ for n in [4, 6]:
 
     dt = time.perf_counter() - t0
     peak_K = float(k_range[np.argmax(magic_vals)])
-    print(f"n={n}: M2=[{min(magic_vals):.3f}, {max(magic_vals):.3f}], peak at K={peak_K:.2f} ({dt:.1f}s)")
+    print(
+        f"n={n}: M2=[{min(magic_vals):.3f}, {max(magic_vals):.3f}], peak at K={peak_K:.2f} ({dt:.1f}s)"
+    )
 
     results[f"magic_n{n}"] = {
-        "n": n, "K_base": k_range.tolist(), "magic_M2": magic_vals,
-        "peak_K": peak_K, "time_s": round(dt, 1),
+        "n": n,
+        "K_base": k_range.tolist(),
+        "magic_M2": magic_vals,
+        "peak_K": peak_K,
+        "time_s": round(dt, 1),
     }
 
 # ============================================================
@@ -151,7 +171,8 @@ for n in [4, 6, 8]:
     print(f"n={n}: total Berry phase = {total_berry:.4f} rad ({dt:.1f}s)")
 
     results[f"berry_n{n}"] = {
-        "n": n, "K_base": k_range.tolist(),
+        "n": n,
+        "K_base": k_range.tolist(),
         "berry_segments": [float(b) for b in berry_phases],
         "cumulative": cumulative.tolist(),
         "total_phase": total_berry,
@@ -194,11 +215,13 @@ for n in [4, 6, 8]:
 
     dt = time.perf_counter() - t0
     print(f"n={n}: t_QSL range [{min(qsl_vals):.3f}, {max(qsl_vals):.3f}] ({dt:.1f}s)")
-    print(f"  At K_c: t_QSL -> infinity (gap closes)")
+    print("  At K_c: t_QSL -> infinity (gap closes)")
 
     results[f"qsl_n{n}"] = {
-        "n": n, "K_base": k_range.tolist(),
-        "t_QSL": qsl_vals, "spectral_gap": energy_vars,
+        "n": n,
+        "K_base": k_range.tolist(),
+        "t_QSL": qsl_vals,
+        "spectral_gap": energy_vars,
         "time_s": round(dt, 1),
     }
 

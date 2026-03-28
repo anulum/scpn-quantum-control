@@ -21,9 +21,9 @@
 # 4. Our ibm_fez experiments: running Kuramoto ON Kuramoto
 # 5. Superconducting Kuramoto arrays (Wiesenfeld & Swift 1995)
 
-import numpy as np
 import json
-from scipy import stats
+
+import numpy as np
 
 print("=" * 70)
 print("JOSEPHSON JUNCTIONS = EXACT KURAMOTO MODEL")
@@ -32,10 +32,10 @@ print("=" * 70)
 # =====================================================================
 # Physical constants
 # =====================================================================
-hbar = 1.055e-34    # J*s
-e = 1.602e-19       # C
-Phi_0 = 2.068e-15   # Wb (flux quantum = h/2e)
-kB = 1.381e-23      # J/K
+hbar = 1.055e-34  # J*s
+e = 1.602e-19  # C
+Phi_0 = 2.068e-15  # Wb (flux quantum = h/2e)
+kB = 1.381e-23  # J/K
 
 # =====================================================================
 # TEST 1: Josephson equation IS Kuramoto
@@ -64,22 +64,22 @@ E_J = 15e9 * hbar * 2 * np.pi  # Josephson energy ~15 GHz
 E_C = 0.3e9 * hbar * 2 * np.pi  # charging energy ~300 MHz
 omega_01 = np.sqrt(8 * E_J * E_C) / hbar  # qubit frequency
 
-print(f"Transmon qubit parameters:")
-print(f"  E_J = {E_J/hbar/2/np.pi/1e9:.1f} GHz")
-print(f"  E_C = {E_C/hbar/2/np.pi/1e9:.2f} GHz")
-print(f"  omega_01 = {omega_01/2/np.pi/1e9:.2f} GHz")
-print(f"  E_J/E_C = {E_J/E_C:.0f} (transmon regime: >>1)")
+print("Transmon qubit parameters:")
+print(f"  E_J = {E_J / hbar / 2 / np.pi / 1e9:.1f} GHz")
+print(f"  E_C = {E_C / hbar / 2 / np.pi / 1e9:.2f} GHz")
+print(f"  omega_01 = {omega_01 / 2 / np.pi / 1e9:.2f} GHz")
+print(f"  E_J/E_C = {E_J / E_C:.0f} (transmon regime: >>1)")
 
 # Coupling between transmons
 # Capacitive coupling: g ~ 10-100 MHz
 g_coupling = 50e6 * 2 * np.pi * hbar  # 50 MHz coupling
 K_transmon = g_coupling / E_J  # dimensionless coupling
 
-print(f"\n  Coupling g = {g_coupling/hbar/2/np.pi/1e6:.0f} MHz")
+print(f"\n  Coupling g = {g_coupling / hbar / 2 / np.pi / 1e6:.0f} MHz")
 print(f"  K = g/E_J = {K_transmon:.4f}")
-print(f"  This is WEAK coupling (K << 1)")
-print(f"  Transmons are in the DESYNCHRONISED regime (by design!)")
-print(f"  If they synchronised, the qubits would lose independence")
+print("  This is WEAK coupling (K << 1)")
+print("  Transmons are in the DESYNCHRONISED regime (by design!)")
+print("  If they synchronised, the qubits would lose independence")
 
 
 # TEST 2: Superconducting Kuramoto array
@@ -95,16 +95,18 @@ N_jj = 8  # match SCPN size
 
 # Map SCPN to Josephson parameters
 omega_scpn = np.array([0.062, 0.191, 0.382, 0.618, 0.809, 0.927, 0.981, 1.000])
-K_nm_scpn = np.array([
-    [0.000, 0.951, 0.588, 0.309, 0.191, 0.118, 0.073, 0.045],
-    [0.951, 0.000, 0.951, 0.588, 0.309, 0.191, 0.118, 0.073],
-    [0.588, 0.951, 0.000, 0.951, 0.588, 0.309, 0.191, 0.118],
-    [0.309, 0.588, 0.951, 0.000, 0.951, 0.588, 0.309, 0.191],
-    [0.191, 0.309, 0.588, 0.951, 0.000, 0.951, 0.588, 0.309],
-    [0.118, 0.191, 0.309, 0.588, 0.951, 0.000, 0.951, 0.588],
-    [0.073, 0.118, 0.191, 0.309, 0.588, 0.951, 0.000, 0.951],
-    [0.045, 0.073, 0.118, 0.191, 0.309, 0.588, 0.951, 0.000],
-])
+K_nm_scpn = np.array(
+    [
+        [0.000, 0.951, 0.588, 0.309, 0.191, 0.118, 0.073, 0.045],
+        [0.951, 0.000, 0.951, 0.588, 0.309, 0.191, 0.118, 0.073],
+        [0.588, 0.951, 0.000, 0.951, 0.588, 0.309, 0.191, 0.118],
+        [0.309, 0.588, 0.951, 0.000, 0.951, 0.588, 0.309, 0.191],
+        [0.191, 0.309, 0.588, 0.951, 0.000, 0.951, 0.588, 0.309],
+        [0.118, 0.191, 0.309, 0.588, 0.951, 0.000, 0.951, 0.588],
+        [0.073, 0.118, 0.191, 0.309, 0.588, 0.951, 0.000, 0.951],
+        [0.045, 0.073, 0.118, 0.191, 0.309, 0.588, 0.951, 0.000],
+    ]
+)
 
 # Physical mapping
 V_range = 0.5e-3  # 0.5 mV voltage range (typical JJ array)
@@ -115,9 +117,14 @@ I_c_max = 100e-6  # 100 uA critical current
 I_c_matrix = K_nm_scpn * I_c_max
 
 print("SCPN -> Josephson junction mapping (N=8):")
-print(f"  Voltage range: 0 - {V_range*1e3:.1f} mV")
-print(f"  Frequency range: {omega_jj[0]/2/np.pi/1e9:.2f} - {omega_jj[-1]/2/np.pi/1e9:.2f} GHz")
-print(f"  Critical current range: {I_c_matrix[I_c_matrix>0].min()*1e6:.1f} - {I_c_matrix.max()*1e6:.1f} uA")
+print(f"  Voltage range: 0 - {V_range * 1e3:.1f} mV")
+print(
+    f"  Frequency range: {omega_jj[0] / 2 / np.pi / 1e9:.2f} - {omega_jj[-1] / 2 / np.pi / 1e9:.2f} GHz"
+)
+print(
+    f"  Critical current range: {I_c_matrix[I_c_matrix > 0].min() * 1e6:.1f} - {I_c_matrix.max() * 1e6:.1f} uA"
+)
+
 
 # Simulate the Josephson Kuramoto array
 def simulate_jj_array(K_scale, omega, K_nm, noise_T=0.01, dt=0.01, T=300, n_trials=15):
@@ -165,29 +172,28 @@ print("=" * 70)
 # T1 (energy relaxation) and T2 (dephasing) are desynchronisation timescales
 # T2 is the Kuramoto dephasing time: how fast phases randomise
 
-T1_typical = 100e-6   # 100 us (state of art 2024)
-T2_typical = 50e-6    # 50 us
-T2_star = 10e-6       # 10 us (inhomogeneous, without echo)
+T1_typical = 100e-6  # 100 us (state of art 2024)
+T2_typical = 50e-6  # 50 us
+T2_star = 10e-6  # 10 us (inhomogeneous, without echo)
 
-print(f"Transmon decoherence times:")
-print(f"  T1 = {T1_typical*1e6:.0f} us (energy relaxation)")
-print(f"  T2 = {T2_typical*1e6:.0f} us (coherent dephasing)")
-print(f"  T2* = {T2_star*1e6:.0f} us (inhomogeneous dephasing)")
+print("Transmon decoherence times:")
+print(f"  T1 = {T1_typical * 1e6:.0f} us (energy relaxation)")
+print(f"  T2 = {T2_typical * 1e6:.0f} us (coherent dephasing)")
+print(f"  T2* = {T2_star * 1e6:.0f} us (inhomogeneous dephasing)")
 print(f"  Qubit freq ~ 5 GHz -> {5e9 * T2_typical:.0f} oscillations before dephasing")
 
 # Effective noise from decoherence
 gamma_dephasing = 1 / T2_typical
 print(f"\n  Dephasing rate: gamma = {gamma_dephasing:.0f} Hz")
-print(f"  In Kuramoto terms: noise sigma ~ gamma / omega")
+print("  In Kuramoto terms: noise sigma ~ gamma / omega")
 print(f"  sigma ~ {gamma_dephasing / (5e9 * 2 * np.pi):.6f}")
-print(f"  This is VERY weak noise -> transmons stay coherent for many cycles")
+print("  This is VERY weak noise -> transmons stay coherent for many cycles")
 
 # Simulate effect of increasing noise (= temperature/decoherence)
 print("\nDecoherence effect on JJ array sync:")
 noise_scan = [0.0, 0.01, 0.05, 0.1, 0.5, 1.0, 2.0]
 for noise in noise_scan:
-    R, _, _ = simulate_jj_array(K_c_jj * 1.2, omega_scpn, K_nm_scpn,
-                                 noise_T=noise, n_trials=8)
+    R, _, _ = simulate_jj_array(K_c_jj * 1.2, omega_scpn, K_nm_scpn, noise_T=noise, n_trials=8)
     print(f"  noise={noise:.2f}: R={R:.3f}")
 
 
@@ -227,10 +233,10 @@ ibm_fez = {
     "coupling_MHz": 50,
     "T1_us": 100,
     "T2_us": 50,
-    "gate_error": 0.003,     # ~0.3% CNOT error
-    "readout_error": 0.01,   # ~1% readout error
-    "K_hardware": 0.01,      # weak (by design)
-    "K_c_simulated": 2.7,    # what we measured
+    "gate_error": 0.003,  # ~0.3% CNOT error
+    "readout_error": 0.01,  # ~1% readout error
+    "K_hardware": 0.01,  # weak (by design)
+    "K_c_simulated": 2.7,  # what we measured
 }
 
 print("ibm_fez parameters:")

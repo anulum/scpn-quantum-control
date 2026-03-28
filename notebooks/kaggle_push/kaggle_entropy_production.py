@@ -17,8 +17,9 @@
 # 4. Free energy landscape of the Kuramoto order parameter
 # 5. Comparison to Prigogine's minimum entropy production theorem
 
-import numpy as np
 import json
+
+import numpy as np
 from scipy import stats
 
 print("=" * 70)
@@ -27,20 +28,21 @@ print("=" * 70)
 
 N = 8
 omega = np.array([0.062, 0.191, 0.382, 0.618, 0.809, 0.927, 0.981, 1.000])
-K_nm = np.array([
-    [0.000, 0.951, 0.588, 0.309, 0.191, 0.118, 0.073, 0.045],
-    [0.951, 0.000, 0.951, 0.588, 0.309, 0.191, 0.118, 0.073],
-    [0.588, 0.951, 0.000, 0.951, 0.588, 0.309, 0.191, 0.118],
-    [0.309, 0.588, 0.951, 0.000, 0.951, 0.588, 0.309, 0.191],
-    [0.191, 0.309, 0.588, 0.951, 0.000, 0.951, 0.588, 0.309],
-    [0.118, 0.191, 0.309, 0.588, 0.951, 0.000, 0.951, 0.588],
-    [0.073, 0.118, 0.191, 0.309, 0.588, 0.951, 0.000, 0.951],
-    [0.045, 0.073, 0.118, 0.191, 0.309, 0.588, 0.951, 0.000],
-])
+K_nm = np.array(
+    [
+        [0.000, 0.951, 0.588, 0.309, 0.191, 0.118, 0.073, 0.045],
+        [0.951, 0.000, 0.951, 0.588, 0.309, 0.191, 0.118, 0.073],
+        [0.588, 0.951, 0.000, 0.951, 0.588, 0.309, 0.191, 0.118],
+        [0.309, 0.588, 0.951, 0.000, 0.951, 0.588, 0.309, 0.191],
+        [0.191, 0.309, 0.588, 0.951, 0.000, 0.951, 0.588, 0.309],
+        [0.118, 0.191, 0.309, 0.588, 0.951, 0.000, 0.951, 0.588],
+        [0.073, 0.118, 0.191, 0.309, 0.588, 0.951, 0.000, 0.951],
+        [0.045, 0.073, 0.118, 0.191, 0.309, 0.588, 0.951, 0.000],
+    ]
+)
 
 
-def simulate_with_entropy(K_scale, noise_sigma=0.0, dt=0.01, T=500,
-                          n_trials=15, n_bins=36):
+def simulate_with_entropy(K_scale, noise_sigma=0.0, dt=0.01, T=500, n_trials=15, n_bins=36):
     """Simulate Kuramoto and track entropy measures."""
     n_steps = int(T / dt)
     results_per_trial = []
@@ -96,9 +98,7 @@ def simulate_with_entropy(K_scale, noise_sigma=0.0, dt=0.01, T=500,
         p_uniform = np.ones(n_bins) / n_bins
         KL = np.sum(p_f * np.log(p_f / p_uniform))
 
-        results_per_trial.append({
-            "R": R_ss, "S": S_ss, "ep": ep_ss, "KL": KL
-        })
+        results_per_trial.append({"R": R_ss, "S": S_ss, "ep": ep_ss, "KL": KL})
 
     return {
         "R": np.mean([r["R"] for r in results_per_trial]),
@@ -119,8 +119,7 @@ results_scan = []
 for K in K_scan:
     res = simulate_with_entropy(K, n_trials=10)
     results_scan.append(res)
-    print(f"K={K:.2f}: R={res['R']:.3f}, S={res['S']:.3f}, "
-          f"ep={res['ep']:.3f}, KL={res['KL']:.3f}")
+    print(f"K={K:.2f}: R={res['R']:.3f}, S={res['S']:.3f}, ep={res['ep']:.3f}, KL={res['KL']:.3f}")
 
 R_arr = np.array([r["R"] for r in results_scan])
 S_arr = np.array([r["S"] for r in results_scan])
@@ -135,7 +134,7 @@ print(f"\nK_c (R=0.5 crossing): {K_c:.2f}")
 # Entropy at K_c
 print(f"Shannon entropy at K_c: {S_arr[idx_kc]:.3f}")
 print(f"Max Shannon entropy (uniform): {np.log(36):.3f}")
-print(f"S/S_max at K_c: {S_arr[idx_kc]/np.log(36):.3f}")
+print(f"S/S_max at K_c: {S_arr[idx_kc] / np.log(36):.3f}")
 
 # Entropy production at K_c
 print(f"\nEntropy production at K_c: {ep_arr[idx_kc]:.3f}")
@@ -185,19 +184,19 @@ for K_test in [K_c * 0.5, K_c, K_c * 1.5]:
 
     if len(R_samples) > 10:
         R_samples = np.array(R_samples)
-        print(f"\nK={K_test:.2f} (K/K_c={K_test/K_c:.2f}):")
+        print(f"\nK={K_test:.2f} (K/K_c={K_test / K_c:.2f}):")
         print(f"  <R> = {np.mean(R_samples):.3f}")
         print(f"  std(R) = {np.std(R_samples):.3f}")
         print(f"  R_min = {np.min(R_samples):.3f}, R_max = {np.max(R_samples):.3f}")
 
         # Landau coefficients: F(R) = a*R^2 + b*R^4
         # a < 0 for K > K_c (symmetry breaking)
-        mean_R2 = np.mean(R_samples ** 2)
-        mean_R4 = np.mean(R_samples ** 4)
+        mean_R2 = np.mean(R_samples**2)
+        mean_R4 = np.mean(R_samples**4)
         # Binder cumulant: U = 1 - <R^4>/(3*<R^2>^2)
-        binder = 1 - mean_R4 / (3 * mean_R2 ** 2) if mean_R2 > 0 else 0
+        binder = 1 - mean_R4 / (3 * mean_R2**2) if mean_R2 > 0 else 0
         print(f"  Binder cumulant U = {binder:.4f}")
-        print(f"    (U=2/3 at K_c for 2nd order transition)")
+        print("    (U=2/3 at K_c for 2nd order transition)")
 
 
 # TEST 4: Entropy in noisy regime (biological)
@@ -208,8 +207,7 @@ print("=" * 70)
 noise_levels = [0.0, 0.1, 0.3, 0.5, 1.0, 2.0]
 for sigma in noise_levels:
     res = simulate_with_entropy(K_c, noise_sigma=sigma, n_trials=10)
-    print(f"sigma={sigma:.1f}: R={res['R']:.3f}, S={res['S']:.3f}, "
-          f"ep={res['ep']:.3f}")
+    print(f"sigma={sigma:.1f}: R={res['R']:.3f}, S={res['S']:.3f}, ep={res['ep']:.3f}")
 
 
 # TEST 5: Prigogine minimum entropy production
@@ -238,8 +236,8 @@ else:
     prigogine = "inconclusive"
 
 # Entropy production per oscillator
-print(f"\nep per oscillator below K_c: {ep_below/N:.4f}")
-print(f"ep per oscillator above K_c: {ep_above/N:.4f}")
+print(f"\nep per oscillator below K_c: {ep_below / N:.4f}")
+print(f"ep per oscillator above K_c: {ep_above / N:.4f}")
 
 
 # TEST 6: Information-theoretic measures
@@ -273,8 +271,9 @@ for K_test in [K_c * 0.3, K_c * 0.7, K_c, K_c * 1.5, K_c * 3.0]:
                 MI_total += circ_corr
                 n_pairs += 1
         MI_mean = MI_total / n_pairs
-        print(f"K={K_test:.2f} (K/K_c={K_test/K_c:.2f}): "
-              f"mean circular correlation = {MI_mean:.4f}")
+        print(
+            f"K={K_test:.2f} (K/K_c={K_test / K_c:.2f}): mean circular correlation = {MI_mean:.4f}"
+        )
 
 
 # SYNTHESIS
@@ -284,7 +283,7 @@ print("=" * 70)
 
 print(f"""
 1. Shannon entropy DROPS at K_c (phase concentration)
-   S/S_max at K_c = {S_arr[idx_kc]/np.log(36):.3f}
+   S/S_max at K_c = {S_arr[idx_kc] / np.log(36):.3f}
 
 2. Entropy production: {prigogine}
    Below K_c: ep = {ep_below:.3f}

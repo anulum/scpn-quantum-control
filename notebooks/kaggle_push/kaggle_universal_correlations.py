@@ -16,12 +16,28 @@ import sys
 subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", "numpy", "scipy"])
 
 import numpy as np
-from scipy import stats
 
-OMEGA_N_16 = np.array([
-    1.329, 2.610, 0.844, 1.520, 0.710, 3.780, 1.055, 0.625,
-    2.210, 1.740, 0.480, 3.210, 0.915, 1.410, 2.830, 0.991,
-])
+OMEGA_N_16 = np.array(
+    [
+        1.329,
+        2.610,
+        0.844,
+        1.520,
+        0.710,
+        3.780,
+        1.055,
+        0.625,
+        2.210,
+        1.740,
+        0.480,
+        3.210,
+        0.915,
+        1.410,
+        2.830,
+        0.991,
+    ]
+)
+
 
 def build_knm(L, K_base=0.45, K_alpha=0.3):
     idx = np.arange(L)
@@ -31,6 +47,7 @@ def build_knm(L, K_base=0.45, K_alpha=0.3):
         if i < L and j < L:
             K[i, j] = K[j, i] = val
     return K
+
 
 results = {}
 
@@ -54,9 +71,15 @@ ratios = np.array(ratios)
 
 # Check proximity to musical intervals
 musical = {
-    "unison": 1.0, "octave": 2.0, "fifth": 3/2, "fourth": 4/3,
-    "major_third": 5/4, "minor_third": 6/5, "major_sixth": 5/3,
-    "minor_seventh": 16/9, "tritone": np.sqrt(2),
+    "unison": 1.0,
+    "octave": 2.0,
+    "fifth": 3 / 2,
+    "fourth": 4 / 3,
+    "major_third": 5 / 4,
+    "minor_third": 6 / 5,
+    "major_sixth": 5 / 3,
+    "minor_seventh": 16 / 9,
+    "tritone": np.sqrt(2),
 }
 
 print("\nClosest musical intervals in SCPN frequency ratios:")
@@ -67,7 +90,9 @@ for name, target in musical.items():
     best_diff = diffs[best_idx]
     if best_diff < 0.05:  # within 5%
         hits += 1
-        print(f"  {ratio_labels[best_idx]} = {ratios[best_idx]:.4f} ~ {name} ({target:.4f}), err={best_diff:.4f}")
+        print(
+            f"  {ratio_labels[best_idx]} = {ratios[best_idx]:.4f} ~ {name} ({target:.4f}), err={best_diff:.4f}"
+        )
 
 # Check proximity to simple fractions n/m for n,m <= 10
 print(f"\nMusical interval hits (within 5%): {hits}/{len(musical)}")
@@ -100,7 +125,8 @@ print(f"p-value (permutation): {p_musical:.4f}")
 print(f"{'SIGNIFICANT' if p_musical < 0.05 else 'NOT SIGNIFICANT'}")
 
 results["musical_intervals"] = {
-    "hits": real_hits, "random_mean": round(np.mean(random_hits_list), 1),
+    "hits": real_hits,
+    "random_mean": round(np.mean(random_hits_list), 1),
     "p_value": round(p_musical, 4),
 }
 
@@ -110,6 +136,7 @@ results["musical_intervals"] = {
 print("\n" + "=" * 70)
 print("TEST 2: HAMILTONIAN EIGENVALUES vs PHYSICAL ENERGY SCALES")
 print("=" * 70)
+
 
 def build_hamiltonian(K, omega, n):
     dim = 1 << n
@@ -127,6 +154,7 @@ def build_hamiltonian(K, omega, n):
                     h[idx, idx ^ mask] -= 2.0 * K[i, j]
     return h
 
+
 K8 = build_knm(8)
 H8 = build_hamiltonian(K8, OMEGA_N_16[:8], 8)
 evals = np.sort(np.linalg.eigvalsh(H8))
@@ -134,12 +162,14 @@ spacings = np.diff(evals)
 spacing_ratios = spacings[1:] / spacings[:-1]
 
 # Compare eigenvalue spacings with known physical spectra
-print(f"\nSpectral statistics (n=8, K=Paper27):")
+print("\nSpectral statistics (n=8, K=Paper27):")
 print(f"  Ground energy: {evals[0]:.4f}")
-print(f"  Spectral gap: {evals[1]-evals[0]:.4f}")
-print(f"  Bandwidth: {evals[-1]-evals[0]:.4f}")
+print(f"  Spectral gap: {evals[1] - evals[0]:.4f}")
+print(f"  Bandwidth: {evals[-1] - evals[0]:.4f}")
 print(f"  Mean spacing: {np.mean(spacings):.6f}")
-print(f"  Spacing ratio <r>: {np.mean(np.minimum(spacings[:-1], spacings[1:]) / np.maximum(spacings[:-1], spacings[1:])):.4f}")
+print(
+    f"  Spacing ratio <r>: {np.mean(np.minimum(spacings[:-1], spacings[1:]) / np.maximum(spacings[:-1], spacings[1:])):.4f}"
+)
 
 # Hydrogen atom energy levels: E_n = -13.6/n^2 eV
 # Spacings: 13.6*(1/n^2 - 1/(n+1)^2) ~ 1/n^3
@@ -149,7 +179,7 @@ log_idx = np.log(np.arange(1, len(log_spacings) + 1))
 if len(log_spacings) > 5:
     slope, intercept = np.polyfit(log_idx[:20], log_spacings[:20], 1)
     print(f"  Spacing power law (first 20): exponent = {slope:.3f}")
-    print(f"  (Hydrogen-like would be -3, harmonic would be 0)")
+    print("  (Hydrogen-like would be -3, harmonic would be 0)")
 
 results["spectral_statistics"] = {
     "ground_energy": round(evals[0], 4),
@@ -186,7 +216,7 @@ K_evals = np.sort(np.linalg.eigvalsh(K16))[::-1]
 spectral_gap_K = K_evals[0] - K_evals[1]
 algebraic_conn = K_evals[-2]  # Fiedler value
 
-print(f"K_nm (16x16) graph properties:")
+print("K_nm (16x16) graph properties:")
 print(f"  Mean degree: {np.mean(degree):.1f}")
 print(f"  Max coupling: {np.max(K16):.3f}")
 print(f"  Spectral radius: {K_evals[0]:.3f}")
@@ -194,12 +224,12 @@ print(f"  Spectral gap: {spectral_gap_K:.3f}")
 print(f"  Mean clustering: {np.mean(clustering):.3f}")
 
 # Compare with known network models
-print(f"\nComparison:")
-print(f"  Random graph (ER, p=0.5): clustering ~ 0.5, mean degree ~ 7.5")
-print(f"  Small-world (WS): clustering ~ 0.5+, short path length")
-print(f"  Scale-free (BA): power-law degree, low clustering")
+print("\nComparison:")
+print("  Random graph (ER, p=0.5): clustering ~ 0.5, mean degree ~ 7.5")
+print("  Small-world (WS): clustering ~ 0.5+, short path length")
+print("  Scale-free (BA): power-law degree, low clustering")
 print(f"  SCPN: clustering = {np.mean(clustering):.3f}, degree = {np.mean(degree):.1f}")
-print(f"  -> SCPN is DENSE (near-complete) with exponential weight decay")
+print("  -> SCPN is DENSE (near-complete) with exponential weight decay")
 
 results["graph_properties"] = {
     "mean_degree": round(np.mean(degree), 1),
@@ -260,9 +290,13 @@ print(f"Consecutive ratios: {[round(r, 4) for r in K_ratios]}")
 
 # Check against known constants
 constants = {
-    "e": np.e, "pi": np.pi, "phi (golden)": (1 + np.sqrt(5)) / 2,
-    "sqrt(2)": np.sqrt(2), "sqrt(3)": np.sqrt(3),
-    "2": 2.0, "3": 3.0,
+    "e": np.e,
+    "pi": np.pi,
+    "phi (golden)": (1 + np.sqrt(5)) / 2,
+    "sqrt(2)": np.sqrt(2),
+    "sqrt(3)": np.sqrt(3),
+    "2": 2.0,
+    "3": 3.0,
 }
 
 print("\nClosest fundamental constant matches in K_nm ratios:")
@@ -291,9 +325,13 @@ print("=" * 70)
 
 # Test K_c for different coupling structures
 topologies = {
-    "ring": lambda n: np.eye(n, k=1) + np.eye(n, k=-1) + np.eye(n, k=n-1) + np.eye(n, k=-(n-1)),
+    "ring": lambda n: (
+        np.eye(n, k=1) + np.eye(n, k=-1) + np.eye(n, k=n - 1) + np.eye(n, k=-(n - 1))
+    ),
     "chain": lambda n: np.eye(n, k=1) + np.eye(n, k=-1),
-    "star": lambda n: np.array([[1 if i == 0 or j == 0 else 0 for j in range(n)] for i in range(n)]) - np.eye(n),
+    "star": lambda n: (
+        np.array([[1 if i == 0 or j == 0 else 0 for j in range(n)] for i in range(n)]) - np.eye(n)
+    ),
     "complete": lambda n: np.ones((n, n)) - np.eye(n),
     "paper27": lambda n: build_knm(n),
 }
@@ -338,7 +376,9 @@ relative_entropy = entropy_omega / max_entropy
 print(f"Shannon entropy of omega distribution: {entropy_omega:.4f} bits")
 print(f"Maximum (uniform): {max_entropy:.4f} bits")
 print(f"Relative entropy: {relative_entropy:.4f}")
-print(f"{'NEAR-UNIFORM' if relative_entropy > 0.95 else 'STRUCTURED' if relative_entropy < 0.85 else 'MODERATE'}")
+print(
+    f"{'NEAR-UNIFORM' if relative_entropy > 0.95 else 'STRUCTURED' if relative_entropy < 0.85 else 'MODERATE'}"
+)
 
 # Compare with random frequencies
 rng = np.random.default_rng(42)
@@ -350,7 +390,9 @@ for _ in range(10000):
 
 p_entropy = np.mean([re >= entropy_omega for re in random_entropies])
 print(f"Permutation test: p = {p_entropy:.4f}")
-print(f"SCPN frequencies are {'MORE UNIFORM' if p_entropy > 0.5 else 'MORE STRUCTURED'} than random")
+print(
+    f"SCPN frequencies are {'MORE UNIFORM' if p_entropy > 0.5 else 'MORE STRUCTURED'} than random"
+)
 
 results["omega_entropy"] = {
     "entropy_bits": round(entropy_omega, 4),

@@ -97,6 +97,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "notebooks/*.py" = ["E402"]  # notebooks install deps before importing them
+"notebooks/kaggle_push/*.py" = ["E402", "B007"]  # kaggle scripts: iteration loops without using index
 
 [tool.ruff.lint.isort]
 known-first-party = ["scpn_quantum_control"]

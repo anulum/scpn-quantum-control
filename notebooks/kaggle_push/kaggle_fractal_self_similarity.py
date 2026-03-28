@@ -16,8 +16,9 @@
 # 4. Renormalisation group flow of K_c
 # 5. Compare to known fractal networks (Sierpinski, hierarchical)
 
-import numpy as np
 import json
+
+import numpy as np
 from scipy import stats
 
 print("=" * 70)
@@ -25,21 +26,24 @@ print("FRACTAL SELF-SIMILARITY OF K_nm ACROSS SCALES")
 print("=" * 70)
 
 # SCPN K_nm from Paper 27 (8x8)
-K_nm_8 = np.array([
-    [0.000, 0.951, 0.588, 0.309, 0.191, 0.118, 0.073, 0.045],
-    [0.951, 0.000, 0.951, 0.588, 0.309, 0.191, 0.118, 0.073],
-    [0.588, 0.951, 0.000, 0.951, 0.588, 0.309, 0.191, 0.118],
-    [0.309, 0.588, 0.951, 0.000, 0.951, 0.588, 0.309, 0.191],
-    [0.191, 0.309, 0.588, 0.951, 0.000, 0.951, 0.588, 0.309],
-    [0.118, 0.191, 0.309, 0.588, 0.951, 0.000, 0.951, 0.588],
-    [0.073, 0.118, 0.191, 0.309, 0.588, 0.951, 0.000, 0.951],
-    [0.045, 0.073, 0.118, 0.191, 0.309, 0.588, 0.951, 0.000],
-])
+K_nm_8 = np.array(
+    [
+        [0.000, 0.951, 0.588, 0.309, 0.191, 0.118, 0.073, 0.045],
+        [0.951, 0.000, 0.951, 0.588, 0.309, 0.191, 0.118, 0.073],
+        [0.588, 0.951, 0.000, 0.951, 0.588, 0.309, 0.191, 0.118],
+        [0.309, 0.588, 0.951, 0.000, 0.951, 0.588, 0.309, 0.191],
+        [0.191, 0.309, 0.588, 0.951, 0.000, 0.951, 0.588, 0.309],
+        [0.118, 0.191, 0.309, 0.588, 0.951, 0.000, 0.951, 0.588],
+        [0.073, 0.118, 0.191, 0.309, 0.588, 0.951, 0.000, 0.951],
+        [0.045, 0.073, 0.118, 0.191, 0.309, 0.588, 0.951, 0.000],
+    ]
+)
 
 # TEST 1: Coarse-graining self-similarity
 print("\n" + "=" * 70)
 print("TEST 1: COARSE-GRAINING (block averaging)")
 print("=" * 70)
+
 
 # Coarse-grain 8x8 -> 4x4 by averaging 2x2 blocks
 def coarse_grain(K, block_size=2):
@@ -48,9 +52,10 @@ def coarse_grain(K, block_size=2):
     K_cg = np.zeros((N_new, N_new))
     for i in range(N_new):
         for j in range(N_new):
-            block = K[i*block_size:(i+1)*block_size, j*block_size:(j+1)*block_size]
+            block = K[i * block_size : (i + 1) * block_size, j * block_size : (j + 1) * block_size]
             K_cg[i, j] = np.mean(block)
     return K_cg
+
 
 K_4 = coarse_grain(K_nm_8, 2)
 K_2 = coarse_grain(K_4, 2)
@@ -67,6 +72,7 @@ print("\n2x2 K_nm (coarse-grained):")
 for row in K_2:
     print("  " + " ".join(f"{v:.3f}" for v in row))
 
+
 # Self-similarity test: normalise each matrix and compare structure
 def normalise_offdiag(K):
     mask = ~np.eye(K.shape[0], dtype=bool)
@@ -78,9 +84,11 @@ def normalise_offdiag(K):
     np.fill_diagonal(K_norm, 0)
     return K_norm
 
+
 K8_norm = normalise_offdiag(K_nm_8)
 K4_norm = normalise_offdiag(K_4)
 K2_norm = normalise_offdiag(K_2)
+
 
 # Extract decay profiles (coupling vs distance)
 def decay_profile(K):
@@ -95,6 +103,7 @@ def decay_profile(K):
                 vals.append(K[i, j])
         profile.append(np.mean(vals))
     return np.array(profile)
+
 
 prof8 = decay_profile(K8_norm)
 prof4 = decay_profile(K4_norm)
@@ -133,7 +142,7 @@ for i in range(len(eigenvalues) - 1):
     if abs(eigenvalues[i + 1]) > 1e-10:
         ratio = eigenvalues[i] / eigenvalues[i + 1]
         ev_ratios.append(ratio)
-        print(f"  lambda_{i}/lambda_{i+1} = {ratio:.4f}")
+        print(f"  lambda_{i}/lambda_{i + 1} = {ratio:.4f}")
 
 # Power law test: lambda_k ~ k^(-beta)
 k_vals = np.arange(1, len(eigenvalues) + 1)
@@ -189,15 +198,15 @@ for q in q_vals:
         # Shannon entropy dimension
         D_q = -np.sum(p * np.log(p + 1e-15)) / np.log(len(p))
     else:
-        D_q = np.log(np.sum(p ** q)) / ((q - 1) * np.log(len(p)))
+        D_q = np.log(np.sum(p**q)) / ((q - 1) * np.log(len(p)))
     print(f"  D_{q:+3.0f} = {D_q:.4f}")
 
 # Multifractal width
-D_inf_pos = np.log(np.sum(p ** 10)) / (9 * np.log(len(p)))
+D_inf_pos = np.log(np.sum(p**10)) / (9 * np.log(len(p)))
 D_inf_neg = np.log(np.sum(p ** (-5))) / ((-6) * np.log(len(p)))
 mf_width = abs(D_inf_neg - D_inf_pos)
 print(f"\nMultifractal width: Delta_D = {mf_width:.4f}")
-print(f"(0 = monofractal, >0.1 = multifractal)")
+print("(0 = monofractal, >0.1 = multifractal)")
 is_multifractal = mf_width > 0.05
 
 
@@ -210,8 +219,9 @@ print("=" * 70)
 # If self-similar, K_c should scale predictably
 
 omega_8 = np.array([0.062, 0.191, 0.382, 0.618, 0.809, 0.927, 0.981, 1.000])
-omega_4 = np.array([np.mean(omega_8[i:i+2]) for i in range(0, 8, 2)])
-omega_2 = np.array([np.mean(omega_4[i:i+2]) for i in range(0, 4, 2)])
+omega_4 = np.array([np.mean(omega_8[i : i + 2]) for i in range(0, 8, 2)])
+omega_2 = np.array([np.mean(omega_4[i : i + 2]) for i in range(0, 4, 2)])
+
 
 def find_K_c(N, K_nm, omega, n_trials=15, T=200, dt=0.01):
     """Binary search for K_c where R crosses 0.5."""
@@ -238,6 +248,7 @@ def find_K_c(N, K_nm, omega, n_trials=15, T=200, dt=0.01):
         else:
             K_lo = K_mid
     return K_mid
+
 
 print("Computing K_c at each RG scale...")
 K_c_8 = find_K_c(8, K_nm_8, omega_8, n_trials=10)
@@ -266,6 +277,7 @@ print("\n" + "=" * 70)
 print("TEST 5: COMPARISON TO FRACTAL NETWORKS")
 print("=" * 70)
 
+
 # Build known fractal coupling matrices for comparison
 # Hierarchical: K_ij = 2^(-level(i,j))
 def hierarchical_K(N):
@@ -279,6 +291,7 @@ def hierarchical_K(N):
                 K[i, j] = 2.0 ** (-level)
     return K
 
+
 # Small-world: exponential decay + random long-range
 def small_world_K(N, alpha=0.3, p_long=0.1, seed=42):
     rng = np.random.RandomState(seed)
@@ -291,6 +304,7 @@ def small_world_K(N, alpha=0.3, p_long=0.1, seed=42):
                 if rng.random() < p_long:
                     K[i, j] = max(K[i, j], 0.5)
     return K
+
 
 networks = {
     "SCPN": K_nm_8,
@@ -312,7 +326,7 @@ for name, K in networks.items():
 
     mask_ut = np.triu(np.ones_like(K, dtype=bool), k=1)
     elems = K[mask_ut]
-    entropy = -np.sum((elems/np.sum(elems)) * np.log(elems/np.sum(elems) + 1e-15))
+    entropy = -np.sum((elems / np.sum(elems)) * np.log(elems / np.sum(elems) + 1e-15))
 
     print(f"\n{name}:")
     print(f"  Spectral exponent: {spec_exp:.3f}")
@@ -335,8 +349,10 @@ print("\n" + "=" * 70)
 print("SYNTHESIS: FRACTAL STRUCTURE OF K_nm")
 print("=" * 70)
 
-print(f"\n1. Coarse-graining self-similarity: r={r_self:.4f}" +
-      (f", p={p_self:.4f}" if not np.isnan(p_self) else ""))
+print(
+    f"\n1. Coarse-graining self-similarity: r={r_self:.4f}"
+    + (f", p={p_self:.4f}" if not np.isnan(p_self) else "")
+)
 if not np.isnan(r_self) and r_self > 0.9:
     print("   SELF-SIMILAR: decay profile preserved under coarse-graining")
 elif not np.isnan(r_self):
@@ -345,7 +361,7 @@ else:
     print("   Insufficient data")
 
 print(f"2. Spectral exponent: {slope_ev:.3f}")
-print(f"   (Sierpinski: -0.68, 1D chain: -2.0, random: -0.5)")
+print("   (Sierpinski: -0.68, 1D chain: -2.0, random: -0.5)")
 
 print(f"3. Multifractal: {'YES' if is_multifractal else 'NO'} (width={mf_width:.4f})")
 
@@ -355,7 +371,7 @@ if slope_rg > 0:
 else:
     print("   K_c DECREASES with system size -> easier to sync larger systems")
 
-print(f"5. Closest known network: ", end="")
+print("5. Closest known network: ", end="")
 # Determine closest match based on spectral exponent
 
 # JSON output

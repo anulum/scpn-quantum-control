@@ -22,10 +22,12 @@
 #    Revival: K(t) = K_0[1 + eps*cos(omega_revival*t)]
 #    Aging transition: P_active(t) = exp(-t/tau_aging)
 
-import numpy as np
 import json
 
+import numpy as np
+
 FINDINGS = []
+
 
 def add_finding(tag, description, data):
     FINDINGS.append({"tag": tag, "description": description, "data": data})
@@ -33,9 +35,11 @@ def add_finding(tag, description, data):
     for k, v in data.items():
         print(f"  {k}: {v}")
 
+
 def order_param(theta):
     z = np.mean(np.exp(1j * theta))
     return np.abs(z), np.angle(z)
+
 
 # === PART A: Lunar-Cellular Phase Locking ===
 print("=== Part A: Lunar-cellular phase locking (Paper 4, p.30) ===")
@@ -44,7 +48,7 @@ np.random.seed(42)
 
 # Paper 4 parameters
 omega_lunar = 2 * np.pi / (29.5 * 24)  # rad/hour (29.5 day period)
-eps1 = 0.1   # tidal modulation
+eps1 = 0.1  # tidal modulation
 eps2 = 0.01  # gravitational second harmonic
 V_0 = 1.0
 
@@ -94,13 +98,17 @@ for ki in range(len(K_lunar_values)):
         K_c_lunar = K_lunar_values[ki]
         break
 
-add_finding("LUNAR_ARNOLD", "Arnold tongue for lunar-cellular coupling", {
-    "K_c_zero_detuning": round(float(K_c_lunar), 4) if K_c_lunar else "no locking",
-    "omega_cell_rad_hr": round(float(omega_cell), 6),
-    "omega_lunar_rad_hr": round(float(omega_lunar), 8),
-    "ratio_cell_lunar": round(float(omega_cell / omega_lunar), 1),
-    "equation": "Paper 4, p.30: |omega_cell - omega_lunar| < K",
-})
+add_finding(
+    "LUNAR_ARNOLD",
+    "Arnold tongue for lunar-cellular coupling",
+    {
+        "K_c_zero_detuning": round(float(K_c_lunar), 4) if K_c_lunar else "no locking",
+        "omega_cell_rad_hr": round(float(omega_cell), 6),
+        "omega_lunar_rad_hr": round(float(omega_lunar), 8),
+        "ratio_cell_lunar": round(float(omega_cell / omega_lunar), 1),
+        "equation": "Paper 4, p.30: |omega_cell - omega_lunar| < K",
+    },
+)
 
 # --- Test A2: Mitosis rate modulation ---
 print("\n--- A2: Lunar modulation of mitosis rate ---")
@@ -121,20 +129,26 @@ for alpha in alpha_lunar_values:
     Ca_modulation = 0.1 * np.cos(omega_lunar * t_hours)  # uM
     Ca_above_threshold = Ca_modulation > 0  # threshold at 0
 
-    mitosis_data.append({
-        "alpha_lunar": alpha,
-        "R_max": round(float(np.max(R_t)), 1),
-        "R_min": round(float(np.min(R_t)), 1),
-        "modulation_depth_percent": round(alpha * 100, 1),
-        "full_moon_enhancement": round(float(R_0 * (1 + alpha) / R_0), 3),
-    })
+    mitosis_data.append(
+        {
+            "alpha_lunar": alpha,
+            "R_max": round(float(np.max(R_t)), 1),
+            "R_min": round(float(np.min(R_t)), 1),
+            "modulation_depth_percent": round(alpha * 100, 1),
+            "full_moon_enhancement": round(float(R_0 * (1 + alpha) / R_0), 3),
+        }
+    )
 
-add_finding("LUNAR_MITOSIS", "Lunar modulation of cell division rate", {
-    "results": mitosis_data,
-    "equation": "Paper 4, p.30: R(t) = R_0 [1 + alpha*cos(omega_lunar*t)]",
-    "biological_evidence": "coral spawning, sea urchin division, human menstrual cycle (~29.5 days)",
-    "mechanism": "calcium tide via ion channel sensitivity to tidal forces",
-})
+add_finding(
+    "LUNAR_MITOSIS",
+    "Lunar modulation of cell division rate",
+    {
+        "results": mitosis_data,
+        "equation": "Paper 4, p.30: R(t) = R_0 [1 + alpha*cos(omega_lunar*t)]",
+        "biological_evidence": "coral spawning, sea urchin division, human menstrual cycle (~29.5 days)",
+        "mechanism": "calcium tide via ion channel sensitivity to tidal forces",
+    },
+)
 
 # === PART B: Temperature-Dependent Coupling ===
 print("\n=== Part B: Temperature-dependent oscillators (Paper 4, p.24) ===")
@@ -154,18 +168,27 @@ DeltaG = 0.3  # eV (protein conformational change)
 temperatures = np.linspace(293, 315, 50)  # 20°C to 42°C
 T_celcius = temperatures - 273.15
 
-omega_vs_T = omega_0_body * np.exp(-E_activation / (k_B * temperatures)) / np.exp(-E_activation / (k_B * T_0))
-omega_vs_T *= (1 + alpha_thermal * (temperatures - T_0))
+omega_vs_T = (
+    omega_0_body
+    * np.exp(-E_activation / (k_B * temperatures))
+    / np.exp(-E_activation / (k_B * T_0))
+)
+omega_vs_T *= 1 + alpha_thermal * (temperatures - T_0)
 
-K_vs_T = K_0 * (temperatures / T_0) ** alpha_temp * np.exp(-DeltaG / (k_B * temperatures)) / np.exp(-DeltaG / (k_B * T_0))
+K_vs_T = (
+    K_0
+    * (temperatures / T_0) ** alpha_temp
+    * np.exp(-DeltaG / (k_B * temperatures))
+    / np.exp(-DeltaG / (k_B * T_0))
+)
 
 # Simulate sync at different temperatures
 N_th = 50
 temp_sync = []
 
 for Ti, T in enumerate(temperatures[::5]):
-    omegas_T = np.random.normal(omega_vs_T[Ti*5], omega_vs_T[Ti*5] * 0.1, N_th)
-    K_T = K_vs_T[Ti*5]
+    omegas_T = np.random.normal(omega_vs_T[Ti * 5], omega_vs_T[Ti * 5] * 0.1, N_th)
+    K_T = K_vs_T[Ti * 5]
     theta_T = np.random.uniform(0, 2 * np.pi, N_th)
 
     dt = 0.001
@@ -177,20 +200,26 @@ for Ti, T in enumerate(temperatures[::5]):
         theta_T += dt * dtheta
 
     r_T, _ = order_param(theta_T)
-    temp_sync.append({
-        "T_celsius": round(float(T - 273.15), 1),
-        "omega_Hz": round(float(omega_vs_T[Ti*5] / (2 * np.pi)), 2),
-        "K_effective": round(float(K_T), 3),
-        "r_sync": round(float(r_T), 4),
-    })
+    temp_sync.append(
+        {
+            "T_celsius": round(float(T - 273.15), 1),
+            "omega_Hz": round(float(omega_vs_T[Ti * 5] / (2 * np.pi)), 2),
+            "K_effective": round(float(K_T), 3),
+            "r_sync": round(float(r_T), 4),
+        }
+    )
 
 # Fever and hypothermia effects
-add_finding("THERMAL_OSCILLATORS", "Temperature modulates frequency and coupling", {
-    "results": temp_sync,
-    "fever_40C_omega_change": f"+{round((omega_vs_T[np.argmin(np.abs(temperatures-313))] / omega_vs_T[np.argmin(np.abs(temperatures-310))] - 1) * 100, 1)}%",
-    "hypothermia_32C_omega_change": f"{round((omega_vs_T[np.argmin(np.abs(temperatures-305))] / omega_vs_T[np.argmin(np.abs(temperatures-310))] - 1) * 100, 1)}%",
-    "equation": "Paper 4, p.24: omega(T) = omega_0*exp(-Ea/kT), K(T) = K_0*(T/T_0)^a*exp(-DG/kT)",
-})
+add_finding(
+    "THERMAL_OSCILLATORS",
+    "Temperature modulates frequency and coupling",
+    {
+        "results": temp_sync,
+        "fever_40C_omega_change": f"+{round((omega_vs_T[np.argmin(np.abs(temperatures - 313))] / omega_vs_T[np.argmin(np.abs(temperatures - 310))] - 1) * 100, 1)}%",
+        "hypothermia_32C_omega_change": f"{round((omega_vs_T[np.argmin(np.abs(temperatures - 305))] / omega_vs_T[np.argmin(np.abs(temperatures - 310))] - 1) * 100, 1)}%",
+        "equation": "Paper 4, p.24: omega(T) = omega_0*exp(-Ea/kT), K(T) = K_0*(T/T_0)^a*exp(-DG/kT)",
+    },
+)
 
 # --- Circadian temperature as synchroniser ---
 print("\n--- B2: Circadian temperature rhythm as sync drive ---")
@@ -206,14 +235,18 @@ omega_cir = 2 * np.pi / 24  # rad/hour
 domega_dT = omega_0_body * (E_activation / (k_B * T_core**2) + alpha_thermal)
 Gamma_thermal = domega_dT * A_temp
 
-add_finding("CIRCADIAN_TEMP", "Circadian temperature rhythm as synchroniser", {
-    "T_core_C": round(T_core - 273.15, 1),
-    "A_temp_C": A_temp,
-    "domega_dT_Hz_per_K": round(float(domega_dT / (2 * np.pi)), 2),
-    "frequency_modulation_Hz": round(float(Gamma_thermal / (2 * np.pi)), 3),
-    "as_fraction_of_omega": round(float(Gamma_thermal / omega_0_body * 100), 2),
-    "equation": "Paper 4, p.24: Omega_thermal = (domega/dT) * A_temp * cos(omega_cir*t)",
-})
+add_finding(
+    "CIRCADIAN_TEMP",
+    "Circadian temperature rhythm as synchroniser",
+    {
+        "T_core_C": round(T_core - 273.15, 1),
+        "A_temp_C": A_temp,
+        "domega_dT_Hz_per_K": round(float(domega_dT / (2 * np.pi)), 2),
+        "frequency_modulation_Hz": round(float(Gamma_thermal / (2 * np.pi)), 3),
+        "as_fraction_of_omega": round(float(Gamma_thermal / omega_0_body * 100), 2),
+        "equation": "Paper 4, p.24: Omega_thermal = (domega/dT) * A_temp * cos(omega_cir*t)",
+    },
+)
 
 # === PART C: Oscillation Death and Revival ===
 print("\n=== Part C: Oscillation death and revival (Paper 4, p.49) ===")
@@ -237,18 +270,20 @@ for K_d in K_death_values:
     z = np.exp(1j * theta_d)  # unit amplitude
 
     for step in range(10000):
-        dz = (1 + 1j * omegas_d) * z - np.abs(z)**2 * z + (K_d / N_death) * (np.mean(z) - z)
+        dz = (1 + 1j * omegas_d) * z - np.abs(z) ** 2 * z + (K_d / N_death) * (np.mean(z) - z)
         z += dt * dz
 
     mean_amplitude = np.mean(np.abs(z))
     r_d, _ = order_param(np.angle(z))
 
-    death_results.append({
-        "K": round(float(K_d), 2),
-        "mean_amplitude": round(float(mean_amplitude), 4),
-        "r_phase": round(float(r_d), 4),
-        "amplitude_death": mean_amplitude < 0.3,
-    })
+    death_results.append(
+        {
+            "K": round(float(K_d), 2),
+            "mean_amplitude": round(float(mean_amplitude), 4),
+            "r_phase": round(float(r_d), 4),
+            "amplitude_death": mean_amplitude < 0.3,
+        }
+    )
 
 # Find K_critical for amplitude death
 K_crit_death = None
@@ -257,12 +292,16 @@ for res in death_results:
         K_crit_death = res["K"]
         break
 
-add_finding("AMPLITUDE_DEATH", "Oscillation death from excessive coupling", {
-    "K_critical": K_crit_death,
-    "results_sample": death_results[::5],
-    "equation": "Paper 4, p.49: K > K_crit → stable fixed point",
-    "clinical": "over-synchronisation can kill oscillations (pathological)",
-})
+add_finding(
+    "AMPLITUDE_DEATH",
+    "Oscillation death from excessive coupling",
+    {
+        "K_critical": K_crit_death,
+        "results_sample": death_results[::5],
+        "equation": "Paper 4, p.49: K > K_crit → stable fixed point",
+        "clinical": "over-synchronisation can kill oscillations (pathological)",
+    },
+)
 
 # --- Revival via periodic coupling modulation ---
 print("\n--- C2: Oscillation revival via coupling modulation ---")
@@ -283,7 +322,11 @@ amp_trace_modulated = []
 z_static = z_rev.copy()
 for step in range(20000):
     K_static = K_0_rev
-    dz = (1 + 1j * omegas_rev) * z_static - np.abs(z_static)**2 * z_static + (K_static / N_death) * (np.mean(z_static) - z_static)
+    dz = (
+        (1 + 1j * omegas_rev) * z_static
+        - np.abs(z_static) ** 2 * z_static
+        + (K_static / N_death) * (np.mean(z_static) - z_static)
+    )
     z_static += dt * dz
     if step % 100 == 0:
         amp_trace_static.append(float(np.mean(np.abs(z_static))))
@@ -293,19 +336,27 @@ z_mod = z_rev.copy()
 for step in range(20000):
     t = step * dt
     K_mod = K_0_rev * (1 + eps_rev * np.cos(omega_rev * t))
-    dz = (1 + 1j * omegas_rev) * z_mod - np.abs(z_mod)**2 * z_mod + (K_mod / N_death) * (np.mean(z_mod) - z_mod)
+    dz = (
+        (1 + 1j * omegas_rev) * z_mod
+        - np.abs(z_mod) ** 2 * z_mod
+        + (K_mod / N_death) * (np.mean(z_mod) - z_mod)
+    )
     z_mod += dt * dz
     if step % 100 == 0:
         amp_trace_modulated.append(float(np.mean(np.abs(z_mod))))
 
-add_finding("OSCILLATION_REVIVAL", "Coupling modulation revives dead oscillations", {
-    "K_0_above_death": round(float(K_0_rev), 2),
-    "eps_modulation": eps_rev,
-    "amplitude_static_final": round(float(amp_trace_static[-1]), 4),
-    "amplitude_modulated_final": round(float(amp_trace_modulated[-1]), 4),
-    "revival_success": amp_trace_modulated[-1] > 3 * amp_trace_static[-1],
-    "equation": "Paper 4, p.49: K(t) = K_0[1 + eps*cos(omega*t)]",
-})
+add_finding(
+    "OSCILLATION_REVIVAL",
+    "Coupling modulation revives dead oscillations",
+    {
+        "K_0_above_death": round(float(K_0_rev), 2),
+        "eps_modulation": eps_rev,
+        "amplitude_static_final": round(float(amp_trace_static[-1]), 4),
+        "amplitude_modulated_final": round(float(amp_trace_modulated[-1]), 4),
+        "revival_success": amp_trace_modulated[-1] > 3 * amp_trace_static[-1],
+        "equation": "Paper 4, p.49: K(t) = K_0[1 + eps*cos(omega*t)]",
+    },
+)
 
 # --- Aging transition ---
 print("\n--- C3: Aging transition — progressive oscillator death ---")
@@ -335,19 +386,25 @@ for t_age in t_ages[::5]:
         theta_act += dt * dtheta
 
     r_age, _ = order_param(theta_act)
-    aging_results.append({
-        "t": round(float(t_age), 0),
-        "P_active": round(float(P_active), 3),
-        "N_active": N_active,
-        "r_sync": round(float(r_age), 4),
-    })
+    aging_results.append(
+        {
+            "t": round(float(t_age), 0),
+            "P_active": round(float(P_active), 3),
+            "N_active": N_active,
+            "r_sync": round(float(r_age), 4),
+        }
+    )
 
-add_finding("AGING_TRANSITION", "Progressive oscillator death with aging", {
-    "results": aging_results,
-    "tau_aging": tau_aging,
-    "equation": "Paper 4, p.49: P_active(t) = exp(-t/tau_aging)",
-    "sync_collapse_at": "~50% active oscillators lost",
-})
+add_finding(
+    "AGING_TRANSITION",
+    "Progressive oscillator death with aging",
+    {
+        "results": aging_results,
+        "tau_aging": tau_aging,
+        "equation": "Paper 4, p.49: P_active(t) = exp(-t/tau_aging)",
+        "sync_collapse_at": "~50% active oscillators lost",
+    },
+)
 
 # --- Output ---
 print("\n" + "=" * 60)
