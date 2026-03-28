@@ -29,11 +29,13 @@ def _dense_H(K: float = 1.0):
 class TestMagicNonstabilizerness:
     def test_magic_at_coupling(self):
         from scpn_quantum_control.analysis.magic_nonstabilizerness import magic_at_coupling
+
         result = magic_at_coupling(OMEGA_2, K_TOPO_2, K_base=1.0)
         assert result.sre_m2 >= 0
 
     def test_magic_scan(self):
         from scpn_quantum_control.analysis.magic_nonstabilizerness import magic_vs_coupling
+
         scan = magic_vs_coupling(OMEGA_2, K_TOPO_2, k_range=np.array([0.5, 1.0, 2.0]))
         assert len(scan.k_values) == 3
         assert len(scan.sre_m2) == 3
@@ -42,6 +44,7 @@ class TestMagicNonstabilizerness:
 class TestKrylovComplexity:
     def test_lanczos_coefficients(self):
         from scpn_quantum_control.analysis.krylov_complexity import lanczos_coefficients
+
         H = _dense_H()
         op = np.zeros((4, 4))
         op[0, 1] = 1.0
@@ -50,6 +53,7 @@ class TestKrylovComplexity:
 
     def test_krylov_at_coupling(self):
         from scpn_quantum_control.analysis.krylov_complexity import krylov_complexity
+
         H = _dense_H()
         op = np.zeros((4, 4))
         op[0, 1] = 1.0
@@ -60,24 +64,37 @@ class TestKrylovComplexity:
 class TestLoschmidtEcho:
     def test_quench(self):
         from scpn_quantum_control.analysis.loschmidt_echo import loschmidt_quench
-        result = loschmidt_quench(OMEGA_2, K_TOPO_2, K_initial=0.5, K_final=2.0, t_max=1.0, n_times=5)
+
+        result = loschmidt_quench(
+            OMEGA_2, K_TOPO_2, K_initial=0.5, K_final=2.0, t_max=1.0, n_times=5
+        )
         assert len(result.loschmidt_amplitude) == 5
 
     def test_quench_scan(self):
         from scpn_quantum_control.analysis.loschmidt_echo import quench_scan
-        scan = quench_scan(OMEGA_2, K_TOPO_2, K_initial=0.5, K_final_range=np.array([1.0, 2.0]), t_max=0.5, n_times=5)
+
+        scan = quench_scan(
+            OMEGA_2,
+            K_TOPO_2,
+            K_initial=0.5,
+            K_final_range=np.array([1.0, 2.0]),
+            t_max=0.5,
+            n_times=5,
+        )
         assert "K_final" in scan
 
 
 class TestLindbladNESS:
     def test_compute_ness(self):
         from scpn_quantum_control.analysis.lindblad_ness import compute_ness
+
         result = compute_ness(OMEGA_2, K_TOPO_2, K_base=1.0, gamma=0.1)
         assert 0 <= result.R_ness <= 1
         assert result.purity > 0
 
     def test_ness_scan(self):
         from scpn_quantum_control.analysis.lindblad_ness import ness_vs_coupling
+
         scan = ness_vs_coupling(OMEGA_2, K_TOPO_2, k_range=np.array([0.5, 1.0]), gamma=0.1)
         assert len(scan.R_ness) == 2
 
@@ -85,11 +102,13 @@ class TestLindbladNESS:
 class TestEntanglementEntropy:
     def test_at_coupling(self):
         from scpn_quantum_control.analysis.entanglement_entropy import entanglement_at_coupling
+
         result = entanglement_at_coupling(OMEGA_2, K_TOPO_2, K_base=1.0)
         assert result.entropy >= 0
 
     def test_scan(self):
         from scpn_quantum_control.analysis.entanglement_entropy import entanglement_vs_coupling
+
         scan = entanglement_vs_coupling(OMEGA_2, K_TOPO_2, k_range=np.array([0.5, 1.0, 2.0]))
         assert len(scan.entropy) == 3
 
@@ -97,24 +116,34 @@ class TestEntanglementEntropy:
 class TestPairingCorrelator:
     def test_pairing_map(self):
         from scpn_quantum_control.analysis.pairing_correlator import pairing_map
+
         result = pairing_map(OMEGA_2, K_TOPO_2, K_base=1.0)
         assert result is not None
 
     def test_pairing_vs_anisotropy(self):
         from scpn_quantum_control.analysis.pairing_correlator import pairing_vs_anisotropy
-        scan = pairing_vs_anisotropy(OMEGA_2, K_TOPO_2, K_base=1.0, delta_range=np.array([0.0, 0.5]))
+
+        scan = pairing_vs_anisotropy(
+            OMEGA_2, K_TOPO_2, K_base=1.0, delta_range=np.array([0.0, 0.5])
+        )
         assert "delta" in scan
 
 
 class TestOTOCSyncProbe:
     def test_otoc_sync_scan(self):
         from scpn_quantum_control.analysis.otoc_sync_probe import otoc_sync_scan
-        scan = otoc_sync_scan(K_TOPO_2, OMEGA_2, K_base_range=np.array([0.5, 1.0]), n_time_points=5)
+
+        scan = otoc_sync_scan(
+            K_TOPO_2, OMEGA_2, K_base_range=np.array([0.5, 1.0]), n_time_points=5
+        )
         assert len(scan.K_base_values) == 2
 
     def test_compare_otoc_vs_R(self):
         from scpn_quantum_control.analysis.otoc_sync_probe import compare_otoc_vs_R, otoc_sync_scan
-        scan = otoc_sync_scan(K_TOPO_2, OMEGA_2, K_base_range=np.array([0.5, 1.0, 2.0]), n_time_points=5)
+
+        scan = otoc_sync_scan(
+            K_TOPO_2, OMEGA_2, K_base_range=np.array([0.5, 1.0, 2.0]), n_time_points=5
+        )
         result = compare_otoc_vs_R(scan)
         assert "K_c_otoc" in result
 
@@ -122,6 +151,7 @@ class TestOTOCSyncProbe:
 class TestPersistentHomology:
     def test_phase_distance_matrix(self):
         from scpn_quantum_control.analysis.persistent_homology import phase_distance_matrix
+
         theta = np.array([0.0, 1.0, 2.0, 3.0])
         D = phase_distance_matrix(theta)
         assert D.shape == (4, 4)
