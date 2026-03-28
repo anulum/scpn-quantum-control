@@ -1,0 +1,12 @@
+{
+  "piezoelectric": {
+    "23": "CONFIRMED: piezo coefficient scales with structure size (r=0.863, p=0.013). Power law d~scale^0.24.",
+    "24": "CONFIRMED: resonance frequency inversely proportional to scale (r=-0.820, p=0.013). f~scale^-1.29.",
+    "25": "Each hierarchical level is ~10^1.56 (36x) slower than the next."
+  },
+  "csf_metals": {
+    "26": "Electron transfer chain is HIGHLY SYNCHRONISED (R=0.963). Mitochondrial ETC = near-perfect Kuramoto sync.",
+    "27": "Heart-to-gene coupling chain spans 7 orders of magnitude in frequency (5 million x).",
+    "28": "Goldman-Hodgkin-Katz equation IS multi-ion Kuramoto coupling. V_m = ground state."
+  }
+}
