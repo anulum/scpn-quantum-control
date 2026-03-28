@@ -1,0 +1,13 @@
+{
+  "source": "Kaggle (anulum/scpn-extended-enzyme-rate-validation-8-layers)",
+  "verdict": "FALSIFIED — r=0.89 was a small-sample artefact",
+  "n_layers": 8,
+  "pearson_r": 0.232,
+  "pearson_p": 0.5803,
+  "spearman_rho": 0.3571,
+  "spearman_p": 0.3851,
+  "permutation_p": 0.5909,
+  "original_4enzyme_r": 0.8934,
+  "original_4enzyme_p": 0.1066,
+  "conclusion": "SCPN frequencies do NOT correlate with biological rate hierarchies across 8 layers. The n=4 enzyme correlation was coincidental. SCPN parameters encode coupling TOPOLOGY, not biological timescales."
+}
