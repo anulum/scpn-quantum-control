@@ -1,0 +1,11 @@
+{
+  "source": "Kaggle (anulum/scpn-biochemical-validation-of-knm-parameters)",
+  "enzyme_correlation": 0.8934,
+  "omega_Hz_range": [0.076, 0.602],
+  "coupling_alpha_scpn": 0.3,
+  "coupling_alpha_bio": 0.693,
+  "ATP_coupling_kT": 19.4,
+  "findings": {
+    "18": "Enzyme rate vs SCPN frequency correlation r=0.89 — unexpected structural match with neurotransmitter cascade timescales"
+  }
+}
