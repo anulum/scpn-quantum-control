@@ -1,0 +1,192 @@
+[{"stream_name":"stdout","time":1.10650167,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":1.106571925,"data":"STOCHASTIC RESONANCE IN SCPN KURAMOTO MODEL\n"}
+,{"stream_name":"stdout","time":1.1065779629999999,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":1.106581715,"data":"\n"}
+,{"stream_name":"stdout","time":1.106584834,"data":"--- Finding K_c (no noise) ---\n"}
+,{"stream_name":"stdout","time":30.019223595,"data":"K=0.50: R=0.380\n"}
+,{"stream_name":"stdout","time":58.921500179,"data":"K=0.74: R=0.305\n"}
+,{"stream_name":"stdout","time":87.699122869,"data":"K=0.97: R=0.427\n"}
+,{"stream_name":"stdout","time":116.446322326,"data":"K=1.21: R=0.428\n"}
+,{"stream_name":"stdout","time":145.221506168,"data":"K=1.45: R=0.610\n"}
+,{"stream_name":"stdout","time":173.929303426,"data":"K=1.68: R=0.523\n"}
+,{"stream_name":"stdout","time":202.60644957,"data":"K=1.92: R=0.628\n"}
+,{"stream_name":"stdout","time":231.169807078,"data":"K=2.16: R=0.664\n"}
+,{"stream_name":"stdout","time":259.79894908,"data":"K=2.39: R=0.643\n"}
+,{"stream_name":"stdout","time":288.429211476,"data":"K=2.63: R=0.520\n"}
+,{"stream_name":"stdout","time":317.112890465,"data":"K=2.87: R=0.482\n"}
+,{"stream_name":"stdout","time":345.617957199,"data":"K=3.11: R=0.731\n"}
+,{"stream_name":"stdout","time":374.146386588,"data":"K=3.34: R=0.794\n"}
+,{"stream_name":"stdout","time":402.625327394,"data":"K=3.58: R=0.832\n"}
+,{"stream_name":"stdout","time":431.085774975,"data":"K=3.82: R=0.859\n"}
+,{"stream_name":"stdout","time":459.532153916,"data":"K=4.05: R=0.880\n"}
+,{"stream_name":"stdout","time":488.003825511,"data":"K=4.29: R=0.895\n"}
+,{"stream_name":"stdout","time":516.501155898,"data":"K=4.53: R=0.908\n"}
+,{"stream_name":"stdout","time":544.96479966,"data":"K=4.76: R=0.918\n"}
+,{"stream_name":"stdout","time":573.422509321,"data":"K=5.00: R=0.927\n"}
+,{"stream_name":"stdout","time":573.424009019,"data":"\n"}
+,{"stream_name":"stdout","time":573.424043217,"data":"Estimated K_c ~ 2.87 (R=0.5 crossing)\n"}
+,{"stream_name":"stdout","time":573.424050705,"data":"\n"}
+,{"stream_name":"stdout","time":573.424057081,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":573.424064079,"data":"TEST 1: STOCHASTIC RESONANCE HEATMAP\n"}
+,{"stream_name":"stdout","time":573.424070942,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":616.771616657,"data":"K=0.86, sigma=0.00: R=0.439 ± 0.178\n"}
+,{"stream_name":"stdout","time":660.198469368,"data":"K=0.86, sigma=0.05: R=0.500 ± 0.211\n"}
+,{"stream_name":"stdout","time":703.915913905,"data":"K=0.86, sigma=0.10: R=0.509 ± 0.201\n"}
+,{"stream_name":"stdout","time":747.756418672,"data":"K=0.86, sigma=0.20: R=0.448 ± 0.161\n"}
+,{"stream_name":"stdout","time":791.561762927,"data":"K=0.86, sigma=0.50: R=0.468 ± 0.170\n"}
+,{"stream_name":"stdout","time":835.321344462,"data":"K=0.86, sigma=1.00: R=0.338 ± 0.153\n"}
+,{"stream_name":"stdout","time":879.075270711,"data":"K=0.86, sigma=2.00: R=0.338 ± 0.210\n"}
+,{"stream_name":"stdout","time":922.932658338,"data":"K=0.86, sigma=5.00: R=0.324 ± 0.196\n"}
+,{"stream_name":"stdout","time":922.932723639,"data":"  \u003e\u003e\u003e SR DETECTED at K=0.86: peak R at sigma=0.10\n"}
+,{"stream_name":"stdout","time":966.599664934,"data":"K=1.43, sigma=0.00: R=0.561 ± 0.203\n"}
+,{"stream_name":"stdout","time":1010.40940851,"data":"K=1.43, sigma=0.05: R=0.399 ± 0.184\n"}
+,{"stream_name":"stdout","time":1054.062074809,"data":"K=1.43, sigma=0.10: R=0.430 ± 0.196\n"}
+,{"stream_name":"stdout","time":1097.728393385,"data":"K=1.43, sigma=0.20: R=0.426 ± 0.261\n"}
+,{"stream_name":"stdout","time":1141.536458992,"data":"K=1.43, sigma=0.50: R=0.431 ± 0.248\n"}
+,{"stream_name":"stdout","time":1185.319842423,"data":"K=1.43, sigma=1.00: R=0.469 ± 0.238\n"}
+,{"stream_name":"stdout","time":1229.102140624,"data":"K=1.43, sigma=2.00: R=0.388 ± 0.188\n"}
+,{"stream_name":"stdout","time":1272.91419317,"data":"K=1.43, sigma=5.00: R=0.254 ± 0.125\n"}
+,{"stream_name":"stdout","time":1316.504008726,"data":"K=2.01, sigma=0.00: R=0.497 ± 0.246\n"}
+,{"stream_name":"stdout","time":1360.176194542,"data":"K=2.01, sigma=0.05: R=0.399 ± 0.129\n"}
+,{"stream_name":"stdout","time":1403.914309531,"data":"K=2.01, sigma=0.10: R=0.455 ± 0.211\n"}
+,{"stream_name":"stdout","time":1447.505794722,"data":"K=2.01, sigma=0.20: R=0.577 ± 0.177\n"}
+,{"stream_name":"stdout","time":1491.120723385,"data":"K=2.01, sigma=0.50: R=0.590 ± 0.258\n"}
+,{"stream_name":"stdout","time":1534.883454536,"data":"K=2.01, sigma=1.00: R=0.408 ± 0.191\n"}
+,{"stream_name":"stdout","time":1578.693550084,"data":"K=2.01, sigma=2.00: R=0.337 ± 0.073\n"}
+,{"stream_name":"stdout","time":1622.543818337,"data":"K=2.01, sigma=5.00: R=0.433 ± 0.157\n"}
+,{"stream_name":"stdout","time":1622.543870617,"data":"  \u003e\u003e\u003e SR DETECTED at K=2.01: peak R at sigma=0.50\n"}
+,{"stream_name":"stdout","time":1666.153048513,"data":"K=2.58, sigma=0.00: R=0.804 ± 0.118\n"}
+,{"stream_name":"stdout","time":1709.74240857,"data":"K=2.58, sigma=0.05: R=0.599 ± 0.251\n"}
+,{"stream_name":"stdout","time":1753.562120736,"data":"K=2.58, sigma=0.10: R=0.542 ± 0.234\n"}
+,{"stream_name":"stdout","time":1797.231821933,"data":"K=2.58, sigma=0.20: R=0.551 ± 0.199\n"}
+,{"stream_name":"stdout","time":1840.878565576,"data":"K=2.58, sigma=0.50: R=0.590 ± 0.199\n"}
+,{"stream_name":"stdout","time":1884.551937666,"data":"K=2.58, sigma=1.00: R=0.485 ± 0.181\n"}
+,{"stream_name":"stdout","time":1928.247103818,"data":"K=2.58, sigma=2.00: R=0.338 ± 0.176\n"}
+,{"stream_name":"stdout","time":1972.069420549,"data":"K=2.58, sigma=5.00: R=0.357 ± 0.197\n"}
+,{"stream_name":"stdout","time":2015.663118847,"data":"K=2.87, sigma=0.00: R=0.456 ± 0.042\n"}
+,{"stream_name":"stdout","time":2059.297934854,"data":"K=2.87, sigma=0.05: R=0.621 ± 0.119\n"}
+,{"stream_name":"stdout","time":2103.031616249,"data":"K=2.87, sigma=0.10: R=0.530 ± 0.101\n"}
+,{"stream_name":"stdout","time":2146.710488525,"data":"K=2.87, sigma=0.20: R=0.665 ± 0.165\n"}
+,{"stream_name":"stdout","time":2190.265294235,"data":"K=2.87, sigma=0.50: R=0.671 ± 0.174\n"}
+,{"stream_name":"stdout","time":2234.014619597,"data":"K=2.87, sigma=1.00: R=0.589 ± 0.141\n"}
+,{"stream_name":"stdout","time":2277.689079998,"data":"K=2.87, sigma=2.00: R=0.400 ± 0.192\n"}
+,{"stream_name":"stdout","time":2321.341770995,"data":"K=2.87, sigma=5.00: R=0.361 ± 0.173\n"}
+,{"stream_name":"stdout","time":2364.934748212,"data":"K=3.44, sigma=0.00: R=0.812 ± 0.000\n"}
+,{"stream_name":"stdout","time":2408.494154224,"data":"K=3.44, sigma=0.05: R=0.809 ± 0.010\n"}
+,{"stream_name":"stdout","time":2452.139286471,"data":"K=3.44, sigma=0.10: R=0.810 ± 0.023\n"}
+,{"stream_name":"stdout","time":2495.811796532,"data":"K=3.44, sigma=0.20: R=0.795 ± 0.043\n"}
+,{"stream_name":"stdout","time":2539.471527451,"data":"K=3.44, sigma=0.50: R=0.644 ± 0.184\n"}
+,{"stream_name":"stdout","time":2583.429483413,"data":"K=3.44, sigma=1.00: R=0.724 ± 0.148\n"}
+,{"stream_name":"stdout","time":2627.461728898,"data":"K=3.44, sigma=2.00: R=0.414 ± 0.217\n"}
+,{"stream_name":"stdout","time":2671.439439133,"data":"K=3.44, sigma=5.00: R=0.388 ± 0.122\n"}
+,{"stream_name":"stdout","time":2715.112525049,"data":"K=4.30, sigma=0.00: R=0.896 ± 0.000\n"}
+,{"stream_name":"stdout","time":2758.716276966,"data":"K=4.30, sigma=0.05: R=0.896 ± 0.009\n"}
+,{"stream_name":"stdout","time":2802.245522992,"data":"K=4.30, sigma=0.10: R=0.889 ± 0.014\n"}
+,{"stream_name":"stdout","time":2845.850789458,"data":"K=4.30, sigma=0.20: R=0.890 ± 0.029\n"}
+,{"stream_name":"stdout","time":2889.439893176,"data":"K=4.30, sigma=0.50: R=0.795 ± 0.131\n"}
+,{"stream_name":"stdout","time":2933.106407149,"data":"K=4.30, sigma=1.00: R=0.702 ± 0.208\n"}
+,{"stream_name":"stdout","time":2976.811675142,"data":"K=4.30, sigma=2.00: R=0.391 ± 0.201\n"}
+,{"stream_name":"stdout","time":3020.540121695,"data":"K=4.30, sigma=5.00: R=0.358 ± 0.151\n"}
+,{"stream_name":"stdout","time":3020.540171375,"data":"\n"}
+,{"stream_name":"stdout","time":3020.540179061,"data":"Stochastic resonance detected: True\n"}
+,{"stream_name":"stdout","time":3020.540185286,"data":"\n"}
+,{"stream_name":"stdout","time":3020.540190618,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":3020.540196346,"data":"TEST 2: SIGNAL-TO-NOISE RATIO (subthreshold K)\n"}
+,{"stream_name":"stdout","time":3020.540202872,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":3078.703227593,"data":"sigma=0.01: R=0.492, std=0.205, SNR=2.41\n"}
+,{"stream_name":"stdout","time":3136.907115761,"data":"sigma=0.11: R=0.528, std=0.232, SNR=2.27\n"}
+,{"stream_name":"stdout","time":3195.281356071,"data":"sigma=0.22: R=0.484, std=0.203, SNR=2.38\n"}
+,{"stream_name":"stdout","time":3253.52045568,"data":"sigma=0.32: R=0.592, std=0.247, SNR=2.40\n"}
+,{"stream_name":"stdout","time":3312.118325061,"data":"sigma=0.42: R=0.552, std=0.243, SNR=2.27\n"}
+,{"stream_name":"stdout","time":3609.036086134,"data":"sigma=0.94: R=0.451, std=0.239, SNR=1.89\n"}
+,{"stream_name":"stdout","time":3668.26955213,"data":"sigma=1.04: R=0.399, std=0.234, SNR=1.70\n"}
+,{"stream_name":"stdout","time":3726.923790271,"data":"sigma=1.14: R=0.369, std=0.198, SNR=1.87\n"}
+,{"stream_name":"stdout","time":4547.675962975,"data":"sigma=2.59: R=0.347, std=0.157, SNR=2.21\n"}
+,{"stream_name":"stdout","time":4605.877497552,"data":"sigma=2.69: R=0.302, std=0.160, SNR=1.88\n"}
+,{"stream_name":"stdout","time":4664.256388836,"data":"sigma=2.79: R=0.352, std=0.204, SNR=1.72\n"}
+,{"stream_name":"stdout","time":4722.621083752,"data":"sigma=2.90: R=0.297, std=0.177, SNR=1.68\n"}
+,{"stream_name":"stdout","time":4780.897869443,"data":"sigma=3.00: R=0.307, std=0.168, SNR=1.82\n"}
+,{"stream_name":"stdout","time":4780.89791233,"data":"\n"}
+,{"stream_name":"stdout","time":4780.897917124,"data":"Optimal noise (max SNR): sigma=1.45, SNR=3.08\n"}
+,{"stream_name":"stdout","time":4780.897921258,"data":"Zero-noise SNR: 2.41\n"}
+,{"stream_name":"stdout","time":4780.897926418,"data":"SR amplification: 1.28x\n"}
+,{"stream_name":"stdout","time":4780.897931956,"data":"\n"}
+,{"stream_name":"stdout","time":4780.897937742,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":4780.897943831,"data":"TEST 3: THERMAL NOISE AT BIOLOGICAL TEMPERATURES\n"}
+,{"stream_name":"stdout","time":4780.897949692,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":4824.521199044,"data":"deep_space           (   2.7 K): sigma=0.093, R=0.531 ± 0.203\n"}
+,{"stream_name":"stdout","time":4868.254490723,"data":"liquid_N2            (  77.0 K): sigma=0.498, R=0.663 ± 0.236\n"}
+,{"stream_name":"stdout","time":4911.907229457,"data":"room_temp            ( 293.0 K): sigma=0.972, R=0.462 ± 0.212\n"}
+,{"stream_name":"stdout","time":4955.626843282,"data":"body_37C             ( 310.0 K): sigma=1.000, R=0.409 ± 0.239\n"}
+,{"stream_name":"stdout","time":4999.327400841,"data":"fever_40C            ( 313.0 K): sigma=1.005, R=0.493 ± 0.238\n"}
+,{"stream_name":"stdout","time":5042.975442609,"data":"hyperthermia         ( 315.0 K): sigma=1.008, R=0.460 ± 0.239\n"}
+,{"stream_name":"stdout","time":5086.855877828,"data":"protein_denature     ( 340.0 K): sigma=1.047, R=0.417 ± 0.176\n"}
+,{"stream_name":"stdout","time":5086.855927979,"data":"\n"}
+,{"stream_name":"stdout","time":5086.8559348,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":5086.855940655,"data":"TEST 4: NOISE-ASSISTED QUANTUM TRANSPORT (FMO ANALOGY)\n"}
+,{"stream_name":"stdout","time":5086.85594661,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":5773.179727194,"data":"Peak transport at dephasing gamma=0.00\n"}
+,{"stream_name":"stdout","time":5773.179777813,"data":"Zero-dephasing transport: 0.853\n"}
+,{"stream_name":"stdout","time":5773.179855427,"data":"Peak transport: 0.853\n"}
+,{"stream_name":"stdout","time":5773.179861977,"data":"NAQT enhancement: 1.00x\n"}
+,{"stream_name":"stdout","time":5773.179868227,"data":"\n"}
+,{"stream_name":"stdout","time":5773.179874394,"data":"NAQT confirmed (\u003e10% enhancement): False\n"}
+,{"stream_name":"stdout","time":5773.179881197,"data":"\n"}
+,{"stream_name":"stdout","time":5773.179887334,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":5773.179893852,"data":"TEST 5: NOISE-INDUCED ORDER (pure noise, no deterministic coupling)\n"}
+,{"stream_name":"stdout","time":5773.179900357,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":5922.20648683,"data":"sigma=0.0: R=0.297 ± 0.161\n"}
+,{"stream_name":"stdout","time":6070.416212594,"data":"sigma=0.5: R=0.329 ± 0.174\n"}
+,{"stream_name":"stdout","time":6217.724173591,"data":"sigma=1.1: R=0.286 ± 0.091\n"}
+,{"stream_name":"stdout","time":6365.317425986,"data":"sigma=1.6: R=0.349 ± 0.143\n"}
+,{"stream_name":"stdout","time":6512.639309694,"data":"sigma=2.1: R=0.377 ± 0.149\n"}
+,{"stream_name":"stdout","time":6660.007604115,"data":"sigma=2.6: R=0.405 ± 0.149\n"}
+,{"stream_name":"stdout","time":6807.61859955,"data":"sigma=3.2: R=0.247 ± 0.138\n"}
+,{"stream_name":"stdout","time":6955.244547903,"data":"sigma=3.7: R=0.311 ± 0.188\n"}
+,{"stream_name":"stdout","time":7102.562997536,"data":"sigma=4.2: R=0.330 ± 0.139\n"}
+,{"stream_name":"stdout","time":7249.677427061,"data":"sigma=4.7: R=0.302 ± 0.148\n"}
+,{"stream_name":"stdout","time":7397.132204091,"data":"sigma=5.3: R=0.336 ± 0.191\n"}
+,{"stream_name":"stdout","time":7544.357038321,"data":"sigma=5.8: R=0.357 ± 0.176\n"}
+,{"stream_name":"stdout","time":7691.679433406,"data":"sigma=6.3: R=0.325 ± 0.128\n"}
+,{"stream_name":"stdout","time":7838.816721685,"data":"sigma=6.8: R=0.248 ± 0.130\n"}
+,{"stream_name":"stdout","time":7986.050426377,"data":"sigma=7.4: R=0.341 ± 0.201\n"}
+,{"stream_name":"stdout","time":8133.527301723,"data":"sigma=7.9: R=0.356 ± 0.159\n"}
+,{"stream_name":"stdout","time":8280.799482679,"data":"sigma=8.4: R=0.328 ± 0.175\n"}
+,{"stream_name":"stdout","time":8428.536222248,"data":"sigma=8.9: R=0.323 ± 0.142\n"}
+,{"stream_name":"stdout","time":8576.077814444,"data":"sigma=9.5: R=0.321 ± 0.165\n"}
+,{"stream_name":"stdout","time":8723.124066875,"data":"sigma=10.0: R=0.306 ± 0.203\n"}
+,{"stream_name":"stdout","time":8723.124113752,"data":"\n"}
+,{"stream_name":"stdout","time":8723.124120968,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":8723.124127071,"data":"SYNTHESIS: STOCHASTIC RESONANCE IN SCPN\n"}
+,{"stream_name":"stdout","time":8723.124153201,"data":"======================================================================\n"}
+,{"stream_name":"stdout","time":8723.124184978,"data":"\n"}
+,{"stream_name":"stdout","time":8723.124190595,"data":"1. Stochastic resonance detected: True\n"}
+,{"stream_name":"stdout","time":8723.124196628,"data":"2. Optimal noise for subthreshold signal: sigma=1.45\n"}
+,{"stream_name":"stdout","time":8723.124202296,"data":"3. SR amplification factor: 1.28x\n"}
+,{"stream_name":"stdout","time":8723.124208863,"data":"4. NAQT (noise-assisted transport) confirmed: False\n"}
+,{"stream_name":"stdout","time":8723.12421518,"data":"5. Peak NAQT enhancement: 1.00x\n"}
+,{"stream_name":"stdout","time":8723.124221053,"data":"\n"}
+,{"stream_name":"stdout","time":8723.124226776,"data":"--- BIOLOGICAL IMPLICATIONS ---\n"}
+,{"stream_name":"stdout","time":8723.12423277,"data":"If SR confirmed: biological systems operate at OPTIMAL noise level.\n"}
+,{"stream_name":"stdout","time":8723.124237336,"data":"Body temperature (310K) provides thermal noise that HELPS synchronisation.\n"}
+,{"stream_name":"stdout","time":8723.12424126,"data":"Fever (313-315K) changes the noise — potentially disrupting OR enhancing sync.\n"}
+,{"stream_name":"stdout","time":8723.124245491,"data":"This is WHY life operates at ~310K — it's the SR optimum for the coupling topology.\n"}
+,{"stream_name":"stdout","time":8723.124249644,"data":"Validates sc-neurocore noise-as-resource: SNN computation NEEDS noise.\n"}
+,{"stream_name":"stdout","time":8723.124253681,"data":"\n"}
+,{"stream_name":"stdout","time":8723.124257366,"data":"--- JSON RESULTS ---\n"}
+,{"stream_name":"stdout","time":8723.124264401,"data":"{\n"}
+,{"stream_name":"stdout","time":8723.124268139,"data":"  \"sr_detected\": true,\n"}
+,{"stream_name":"stdout","time":8723.124272119,"data":"  \"K_c_estimate\": 2.868,\n"}
+,{"stream_name":"stdout","time":8723.124275896,"data":"  \"optimal_noise_sigma\": 1.453,\n"}
+,{"stream_name":"stdout","time":8723.124279743,"data":"  \"sr_amplification\": 1.278,\n"}
+,{"stream_name":"stdout","time":8723.124283565,"data":"  \"naqt_confirmed\": false,\n"}
+,{"stream_name":"stdout","time":8723.124287328,"data":"  \"naqt_enhancement\": 1.0,\n"}
+,{"stream_name":"stdout","time":8723.124292466,"data":"  \"naqt_peak_dephasing\": 0.0\n"}
+,{"stream_name":"stdout","time":8723.124298004,"data":"}\n"}
+,{"stream_name":"stderr","time":8726.078601838,"data":"/usr/local/lib/python3.12/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":8726.078642435,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":8726.469031378,"data":"/usr/local/lib/python3.12/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":8726.469063529,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":8728.002354378,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":8729.704471286,"data":"[NbConvertApp] Writing 325254 bytes to __results__.html\n"}
+]
