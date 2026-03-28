@@ -61,7 +61,8 @@ nav:
       - Mitigation API: mitigation_api.md
       - Bridges API: bridges_api.md
       - Benchmarks API: benchmarks_api.md
-  - Results:
+  - Publications:
+      - "Preprint: Quantum Kuramoto-XY on Hardware": preprint.md
       - Results Gallery: results.md
   - Hardware:
       - IBM Guide: hardware_guide.md
