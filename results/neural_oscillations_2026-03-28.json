@@ -1,0 +1,12 @@
+{
+  "notebook": "scpn-neural-oscillation-bands-eeg-layers",
+  "date": "2026-03-28",
+  "findings": {
+    "29_eeg_ratios_compatible": "KS p=0.053 — CANNOT DISTINGUISH from SCPN (borderline)",
+    "30_cfc_not_match": "r=0.306, p=0.55 — cross-frequency coupling does NOT match SCPN exponential decay",
+    "31_eeg_log_spacing": "EEG CV=0.396 (relatively uniform), SCPN CV=0.936 (highly non-uniform)",
+    "32_K_c_ratio": "EEG K_c=6.35, SCPN K_c=2.7 — EEG needs 2.35x stronger coupling",
+    "33_buzsaki_rule": "EEG mean ratio 2.465 (~9% off from e=2.718)"
+  },
+  "interpretation": "Frequency architectures compatible but different uniformity. EEG has near-uniform log spacing (Buzsaki), SCPN has exponential compression. Brain coupling topology differs from SCPN exponential decay."
+}
