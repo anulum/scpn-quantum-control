@@ -1,7 +1,7 @@
 {
-  "id": "anulum/scpn-magic-berry-qsl",
-  "title": "SCPN Magic Berry Phase Quantum Speed Limit",
-  "code_file": "kaggle_magic_berry_qsl.py",
+  "id": "anulum/scpn-biochemical-validation",
+  "title": "SCPN Biochemical Validation of Knm Parameters",
+  "code_file": "kaggle_biochemical_validation.py",
   "language": "python",
   "kernel_type": "script",
   "is_private": false,
