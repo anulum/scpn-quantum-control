@@ -1,0 +1,101 @@
+{
+  "n6_K1.0": {
+    "n": 6,
+    "K_base": 1.0,
+    "dim": 64,
+    "S_ground": 0.9971,
+    "S_mean_excited": 1.3501,
+    "S_max": 2.4251,
+    "S_mean_all": 1.2255,
+    "S_volume_law": 3,
+    "ratio_to_volume": 0.45
+  },
+  "n6_K3.0": {
+    "n": 6,
+    "K_base": 3.0,
+    "dim": 64,
+    "S_ground": 1.3255,
+    "S_mean_excited": 1.4949,
+    "S_max": 2.3852,
+    "S_mean_all": 1.3765,
+    "S_volume_law": 3,
+    "ratio_to_volume": 0.4983
+  },
+  "n6_K6.0": {
+    "n": 6,
+    "K_base": 6.0,
+    "dim": 64,
+    "S_ground": 1.3836,
+    "S_mean_excited": 1.4199,
+    "S_max": 2.5376,
+    "S_mean_all": 1.3787,
+    "S_volume_law": 3,
+    "ratio_to_volume": 0.4733
+  },
+  "n8_K1.0": {
+    "n": 8,
+    "K_base": 1.0,
+    "dim": 256,
+    "S_ground": 1.3048,
+    "S_mean_excited": 1.7902,
+    "S_max": 2.9461,
+    "S_mean_all": 1.6227,
+    "S_volume_law": 4,
+    "ratio_to_volume": 0.4475
+  },
+  "n8_K3.0": {
+    "n": 8,
+    "K_base": 3.0,
+    "dim": 256,
+    "S_ground": 1.4533,
+    "S_mean_excited": 1.9904,
+    "S_max": 2.9004,
+    "S_mean_all": 1.8043,
+    "S_volume_law": 4,
+    "ratio_to_volume": 0.4976
+  },
+  "n8_K6.0": {
+    "n": 8,
+    "K_base": 6.0,
+    "dim": 256,
+    "S_ground": 1.4876,
+    "S_mean_excited": 1.9649,
+    "S_max": 3.0924,
+    "S_mean_all": 1.845,
+    "S_volume_law": 4,
+    "ratio_to_volume": 0.4912
+  },
+  "n10_K1.0": {
+    "n": 10,
+    "K_base": 1.0,
+    "dim": 1024,
+    "S_ground": 1.4755,
+    "S_mean_excited": 2.5741,
+    "S_max": 3.9474,
+    "S_mean_all": 2.2464,
+    "S_volume_law": 5,
+    "ratio_to_volume": 0.5148
+  },
+  "n10_K3.0": {
+    "n": 10,
+    "K_base": 3.0,
+    "dim": 1024,
+    "S_ground": 1.58,
+    "S_mean_excited": 2.8501,
+    "S_max": 4.0324,
+    "S_mean_all": 2.5907,
+    "S_volume_law": 5,
+    "ratio_to_volume": 0.57
+  },
+  "n10_K6.0": {
+    "n": 10,
+    "K_base": 6.0,
+    "dim": 1024,
+    "S_ground": 1.6043,
+    "S_mean_excited": 2.8839,
+    "S_max": 4.0148,
+    "S_mean_all": 2.6664,
+    "S_volume_law": 5,
+    "ratio_to_volume": 0.5768
+  }
+}
