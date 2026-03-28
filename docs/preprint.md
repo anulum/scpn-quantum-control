@@ -238,13 +238,24 @@ distinguishes integrable ($\bar{r} \approx 0.386$, Poisson) from chaotic
 - $n = 6$: stays mostly below GOE, chaos onset only at $K = 8.0$
 - $n = 8$: **never reaches GOE** (max $\bar{r} = 0.43$)
 
-As system size increases, MBL protection *strengthens*. The heterogeneous
-frequencies act as effective disorder preventing thermalisation. This is the
-physics behind identity persistence: the coupling topology is protected from
-thermal decoherence by its own frequency disorder.
+As system size increases, the level spacing narrows toward Poisson. The
+heterogeneous frequencies act as effective disorder preventing thermalisation.
 
-**No prior art.** This is the first MBL diagnostic for heterogeneous-frequency
-Kuramoto-XY systems.
+**Cross-validation via eigenstate entanglement** (Figure 16) reveals a nuanced
+picture: excited-state entanglement is 30–40% below the thermal (Page) expectation,
+confirming non-ergodicity. However, the entanglement grows with $N$ (sub-volume
+law, not area law), ruling out deep MBL. The correct characterisation is a
+**non-ergodic regime** where heterogeneous frequencies protect the coupling
+topology from thermal scrambling without producing true many-body localisation.
+
+![Eigenstate entanglement](figures/publication/fig16_eigenstate_entanglement.png)
+
+*Figure 16. Eigenstate entanglement ratio $S_{\text{excited}}/S_{\max}$ vs
+system size. Our data (coloured) sits 30–40% below the thermal expectation
+(black dashed). Non-ergodic but not deep MBL.*
+
+**No prior art.** This is the first non-ergodicity diagnostic for
+heterogeneous-frequency Kuramoto-XY systems.
 
 ---
 
@@ -258,13 +269,29 @@ preserve the BKT universality class, shifting $K_c$ but not changing the
 order of the transition. Confirmation requires larger system sizes ($N \geq 12$)
 via tensor network methods or error-corrected quantum hardware.
 
+### Non-Ergodicity and Identity Persistence
+
+The Poisson level statistics (Figure 15) combined with sub-thermal eigenstate
+entanglement (Figure 16) establish that the heterogeneous Kuramoto-XY system
+occupies a non-ergodic regime. This is not deep MBL (which would require
+area-law entanglement for all eigenstates), but a weaker form of ergodicity
+breaking where the coupling topology is protected from thermal scrambling.
+
+For the SCPN framework, this has direct implications: the network's frequency
+disorder — a structural feature, not a defect — provides a natural mechanism
+for identity persistence. Perturbations below the spectral gap $\Delta = E_1 - E_0$
+cannot change the ground state, and the non-ergodic spectrum ensures that
+thermal fluctuations do not explore the full Hilbert space.
+
 ### DTC Resilience to Frequency Disorder
 
 The observation that all 15 drive amplitudes show subharmonic response with
 heterogeneous frequencies contradicts the naive expectation that frequency
-disorder destroys time-crystalline order. This resilience may be related to
-many-body localisation (MBL) stabilisation, where the heterogeneous frequencies
-provide effective disorder that prevents thermalisation.
+disorder destroys time-crystalline order. The non-ergodic spectrum (Section 4.7)
+provides the mechanism: the heterogeneous frequencies prevent thermalisation,
+which is the same physics that stabilises MBL-protected DTCs in disordered
+spin chains. Our system is not deep MBL, but the non-ergodicity is sufficient
+to protect the subharmonic response.
 
 ### Hardware Noise Budget
 
