@@ -25,10 +25,12 @@
 #
 # 5. Recovery: transcranial stimulation, pharmacology, sensory entrainment.
 
-import numpy as np
 import json
 
+import numpy as np
+
 FINDINGS = []
+
 
 def add_finding(tag, description, data):
     FINDINGS.append({"tag": tag, "description": description, "data": data})
@@ -36,9 +38,11 @@ def add_finding(tag, description, data):
     for k, v in data.items():
         print(f"  {k}: {v}")
 
+
 def order_param(theta):
     z = np.mean(np.exp(1j * theta))
     return np.abs(z), np.angle(z)
+
 
 np.random.seed(42)
 
@@ -50,7 +54,7 @@ omega_0 = 2 * np.pi * 10
 omegas = np.random.normal(omega_0, omega_0 * 0.1, N)
 
 # Random network
-adj = (np.random.rand(N, N) < 6.0/N).astype(float)
+adj = (np.random.rand(N, N) < 6.0 / N).astype(float)
 adj = np.maximum(adj, adj.T)
 np.fill_diagonal(adj, 0)
 
@@ -64,11 +68,11 @@ for sigma_br in sigma_values:
 
     # Run avalanches
     avalanche_sizes = []
-    for trial in range(2000):
+    for _trial in range(2000):
         active = np.zeros(N, dtype=bool)
         active[np.random.randint(N)] = True
         total = 1
-        for gen in range(30):
+        for _gen in range(30):
             new_active = np.zeros(N, dtype=bool)
             for i in np.where(active)[0]:
                 for j in np.where(adj[i] > 0)[0]:
@@ -88,7 +92,7 @@ for sigma_br in sigma_values:
 
     # Fit power law exponent
     sizes_gt1 = sizes[sizes > 1]
-    tau_est = float('nan')
+    tau_est = float("nan")
     if len(sizes_gt1) > 20:
         bins = np.logspace(0, np.log10(max(sizes_gt1)), 15)
         counts, edges = np.histogram(sizes_gt1, bins=bins)
@@ -98,22 +102,32 @@ for sigma_br in sigma_values:
             slope, _ = np.polyfit(np.log10(bc[valid]), np.log10(counts[valid]), 1)
             tau_est = -slope
 
-    epilepsy_results.append({
-        "sigma": sigma_br,
-        "mean_avalanche_size": round(float(mean_size), 1),
-        "max_avalanche_size": max_size,
-        "spanning_fraction": round(float(spanning), 4),
-        "tau_exponent": round(float(tau_est), 3) if not np.isnan(tau_est) else "nan",
-        "regime": "subcritical" if sigma_br < 0.9 else "critical" if sigma_br < 1.1 else "supercritical",
-    })
+    epilepsy_results.append(
+        {
+            "sigma": sigma_br,
+            "mean_avalanche_size": round(float(mean_size), 1),
+            "max_avalanche_size": max_size,
+            "spanning_fraction": round(float(spanning), 4),
+            "tau_exponent": round(float(tau_est), 3) if not np.isnan(tau_est) else "nan",
+            "regime": "subcritical"
+            if sigma_br < 0.9
+            else "critical"
+            if sigma_br < 1.1
+            else "supercritical",
+        }
+    )
 
-add_finding("EPILEPSY_SIGMA", "Epilepsy: supercritical sigma drives system-spanning avalanches", {
-    "results": epilepsy_results,
-    "paper4_prediction": "tau < 1.5 at sigma > 1 (supercritical)",
-    "healthy_sigma": 1.0,
-    "epileptic_sigma": "1.5-2.0",
-    "equation": "Paper 4, p.67: sigma_epileptic > sigma_critical, tau < 1.5",
-})
+add_finding(
+    "EPILEPSY_SIGMA",
+    "Epilepsy: supercritical sigma drives system-spanning avalanches",
+    {
+        "results": epilepsy_results,
+        "paper4_prediction": "tau < 1.5 at sigma > 1 (supercritical)",
+        "healthy_sigma": 1.0,
+        "epileptic_sigma": "1.5-2.0",
+        "equation": "Paper 4, p.67: sigma_epileptic > sigma_critical, tau < 1.5",
+    },
+)
 
 # --- Test 2: Parkinson's as pathological beta lock ---
 print("\n=== Test 2: Parkinson's — excessive beta-band phase locking ===")
@@ -132,7 +146,9 @@ K_stn_m1_values = [0.1, 0.3, 0.5, 1.0, 2.0, 3.0]  # inter-population
 pd_results = []
 for K_cross in K_stn_m1_values:
     omegas_stn = np.random.normal(omega_beta, omega_beta * 0.05, N_stn)
-    omegas_m1 = np.random.normal(omega_beta * 0.9, omega_beta * 0.08, N_m1)  # M1 slightly different
+    omegas_m1 = np.random.normal(
+        omega_beta * 0.9, omega_beta * 0.08, N_m1
+    )  # M1 slightly different
 
     theta_stn = np.random.uniform(0, 2 * np.pi, N_stn)
     theta_m1 = np.random.uniform(0, 2 * np.pi, N_m1)
@@ -158,21 +174,27 @@ for K_cross in K_stn_m1_values:
     r_m1, _ = order_param(theta_m1)
     plv = np.abs(np.mean(np.exp(1j * (theta_stn[:N_m1] - theta_m1))))
 
-    pd_results.append({
-        "K_STN_M1": round(K_cross, 2),
-        "PLV_STN_M1": round(float(plv), 4),
-        "r_STN": round(float(r_stn), 4),
-        "r_M1": round(float(r_m1), 4),
-        "clinical": "healthy" if plv < 0.3 else "parkinsonian" if plv > 0.6 else "borderline",
-    })
+    pd_results.append(
+        {
+            "K_STN_M1": round(K_cross, 2),
+            "PLV_STN_M1": round(float(plv), 4),
+            "r_STN": round(float(r_stn), 4),
+            "r_M1": round(float(r_m1), 4),
+            "clinical": "healthy" if plv < 0.3 else "parkinsonian" if plv > 0.6 else "borderline",
+        }
+    )
 
-add_finding("PARKINSON_BETA", "Parkinson's: excessive STN-M1 beta coupling", {
-    "results": pd_results,
-    "PLV_threshold_healthy": "<0.3",
-    "PLV_threshold_parkinsonian": ">0.6",
-    "DBS_mechanism": "deep brain stimulation disrupts pathological PLV",
-    "equation": "Paper 4, p.67: PLV_STN-M1(beta) > 0.6",
-})
+add_finding(
+    "PARKINSON_BETA",
+    "Parkinson's: excessive STN-M1 beta coupling",
+    {
+        "results": pd_results,
+        "PLV_threshold_healthy": "<0.3",
+        "PLV_threshold_parkinsonian": ">0.6",
+        "DBS_mechanism": "deep brain stimulation disrupts pathological PLV",
+        "equation": "Paper 4, p.67: PLV_STN-M1(beta) > 0.6",
+    },
+)
 
 # --- Test 3: Alzheimer's hierarchical desynchronisation ---
 print("\n=== Test 3: Alzheimer's — progressive long-range desync ===")
@@ -213,20 +235,26 @@ for K_long in K_long_values:
     # Long-range gamma coherence
     C_long = np.abs(np.mean(np.exp(1j * (theta_r1 - theta_r2))))
 
-    alz_results.append({
-        "K_long_range": round(K_long, 3),
-        "C_gamma_long_range": round(float(C_long), 4),
-        "r_local_1": round(float(r1), 4),
-        "r_local_2": round(float(r2), 4),
-        "clinical": "healthy" if C_long > 0.3 else "MCI" if C_long > 0.15 else "Alzheimers",
-    })
+    alz_results.append(
+        {
+            "K_long_range": round(K_long, 3),
+            "C_gamma_long_range": round(float(C_long), 4),
+            "r_local_1": round(float(r1), 4),
+            "r_local_2": round(float(r2), 4),
+            "clinical": "healthy" if C_long > 0.3 else "MCI" if C_long > 0.15 else "Alzheimers",
+        }
+    )
 
-add_finding("ALZHEIMER_DESYNC", "Alzheimer's: progressive long-range gamma desync", {
-    "results": alz_results,
-    "paper4_criteria": "C_long < 0.2, local theta/delta > 2x, MI(theta,gamma) < 0.1",
-    "mechanism": "amyloid plaques disrupt long-range axonal coupling",
-    "local_stays_high": "local r remains high while long-range C drops",
-})
+add_finding(
+    "ALZHEIMER_DESYNC",
+    "Alzheimer's: progressive long-range gamma desync",
+    {
+        "results": alz_results,
+        "paper4_criteria": "C_long < 0.2, local theta/delta > 2x, MI(theta,gamma) < 0.1",
+        "mechanism": "amyloid plaques disrupt long-range axonal coupling",
+        "local_stays_high": "local r remains high while long-range C drops",
+    },
+)
 
 # --- Test 4: Autism E/I balance shift ---
 print("\n=== Test 4: Autism — shifted E/I balance ===")
@@ -263,20 +291,26 @@ for ei in ei_ratios:
     r_arr = np.array(r_trace_asd)
     mi_metastability = float(np.std(r_arr))
 
-    asd_results.append({
-        "EI_ratio": round(ei, 2),
-        "r_mean": round(float(np.mean(r_arr)), 4),
-        "MI_metastability": round(mi_metastability, 4),
-        "regime": "subcritical" if ei < 0.85 else "critical" if ei < 1.15 else "supercritical",
-        "sensitivity": "hypo" if ei < 0.85 else "optimal" if ei < 1.15 else "hyper",
-    })
+    asd_results.append(
+        {
+            "EI_ratio": round(ei, 2),
+            "r_mean": round(float(np.mean(r_arr)), 4),
+            "MI_metastability": round(mi_metastability, 4),
+            "regime": "subcritical" if ei < 0.85 else "critical" if ei < 1.15 else "supercritical",
+            "sensitivity": "hypo" if ei < 0.85 else "optimal" if ei < 1.15 else "hyper",
+        }
+    )
 
-add_finding("AUTISM_EI_BALANCE", "Autism: shifted E/I balance alters criticality", {
-    "results": asd_results,
-    "paper4_sigma_ASD": "0.7-0.8 (subcritical) or 1.2-1.3 (supercritical)",
-    "optimal_EI": 1.0,
-    "clinical": "explains both hypo-sensitive and hyper-sensitive ASD phenotypes",
-})
+add_finding(
+    "AUTISM_EI_BALANCE",
+    "Autism: shifted E/I balance alters criticality",
+    {
+        "results": asd_results,
+        "paper4_sigma_ASD": "0.7-0.8 (subcritical) or 1.2-1.3 (supercritical)",
+        "optimal_EI": 1.0,
+        "clinical": "explains both hypo-sensitive and hyper-sensitive ASD phenotypes",
+    },
+)
 
 # --- Test 5: Therapeutic synchronisation recovery ---
 print("\n=== Test 5: Recovery via transcranial stimulation ===")
@@ -307,21 +341,25 @@ for step in range(20000):
     z = np.mean(np.exp(1j * theta_rec))
     dtheta = omegas_rec + K_pathological * np.abs(z) * np.sin(np.angle(z) - theta_rec)
     # DBS perturbation
-    dtheta += A_dbs * np.sin(2 * np.pi * f_dbs * t + np.random.uniform(0, 2*np.pi, N_rec))
+    dtheta += A_dbs * np.sin(2 * np.pi * f_dbs * t + np.random.uniform(0, 2 * np.pi, N_rec))
     theta_rec += dt * dtheta
 
     if step % 100 == 0:
         r, _ = order_param(theta_rec)
         r_recovery.append(float(r))
 
-add_finding("DBS_RECOVERY", "DBS desynchronises pathological beta lock", {
-    "r_before_DBS": round(float(r_before), 4),
-    "r_during_DBS": round(float(np.mean(r_recovery[-20:])), 4),
-    "reduction_percent": round(float((1 - np.mean(r_recovery[-20:]) / r_before) * 100), 1),
-    "f_DBS_Hz": f_dbs,
-    "mechanism": "high-frequency stimulation disrupts pathological phase locking",
-    "paper4": "recovery via targeted synchronisation (p.68)",
-})
+add_finding(
+    "DBS_RECOVERY",
+    "DBS desynchronises pathological beta lock",
+    {
+        "r_before_DBS": round(float(r_before), 4),
+        "r_during_DBS": round(float(np.mean(r_recovery[-20:])), 4),
+        "reduction_percent": round(float((1 - np.mean(r_recovery[-20:]) / r_before) * 100), 1),
+        "f_DBS_Hz": f_dbs,
+        "mechanism": "high-frequency stimulation disrupts pathological phase locking",
+        "paper4": "recovery via targeted synchronisation (p.68)",
+    },
+)
 
 # --- Output ---
 print("\n" + "=" * 60)

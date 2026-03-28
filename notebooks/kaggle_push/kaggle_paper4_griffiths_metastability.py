@@ -24,9 +24,9 @@
 # 5. Ephaptic coupling E_eph ~ 1-5 mV/mm
 # 6. Decoherence-protected amplification cascade (10^15 total gain)
 
-import numpy as np
 import json
-from scipy import stats
+
+import numpy as np
 
 print("=" * 70)
 print("PAPER 4 TESTS: GRIFFITHS PHASE + METASTABILITY INDEX")
@@ -44,8 +44,10 @@ print("=" * 70)
 # Paper 4: J_ij ~ N(mu, sigma^2) with sigma=0.1-0.3
 # Compare sharp transition (sigma=0) vs broadened (sigma>0)
 
-def simulate_disordered_kuramoto(K_mean, sigma_J, freq_spread=0.15,
-                                  noise=0.05, dt=0.005, T=300, n_trials=10):
+
+def simulate_disordered_kuramoto(
+    K_mean, sigma_J, freq_spread=0.15, noise=0.05, dt=0.005, T=300, n_trials=10
+):
     """Kuramoto with DISORDERED coupling (Griffiths regime)."""
     n_steps = int(T / dt)
     R_trials = []
@@ -74,7 +76,7 @@ def simulate_disordered_kuramoto(K_mean, sigma_J, freq_spread=0.15,
             theta += dtheta * dt + noise * np.random.randn(N) * np.sqrt(dt)
 
         # Steady-state R (last quarter)
-        R_ss = np.mean(R_history[-n_steps // 4:])
+        R_ss = np.mean(R_history[-n_steps // 4 :])
         R_trials.append(R_ss)
 
     return np.mean(R_trials), np.std(R_trials)
@@ -86,7 +88,7 @@ K_scan = np.linspace(0.5, 6.0, 20)
 
 print(f"{'K':>5s}", end="")
 for sigma in sigma_vals:
-    print(f" {'s='+str(sigma):>8s}", end="")
+    print(f" {'s=' + str(sigma):>8s}", end="")
 print()
 print("-" * 40)
 
@@ -131,6 +133,7 @@ print("=" * 70)
 # Low MI (~0.05): rigid (locked)
 # MI ~0.3: unstable (pathological)
 
+
 def compute_MI(K_mean, sigma_J=0.2, dt=0.005, T=500, n_trials=5):
     """Compute Metastability Index."""
     n_steps = int(T / dt)
@@ -157,11 +160,11 @@ def compute_MI(K_mean, sigma_J=0.2, dt=0.005, T=500, n_trials=5):
                 dtheta[i] += coupling / N
             theta += dtheta * dt + 0.05 * np.random.randn(N) * np.sqrt(dt)
 
-        R_ss = R_history[n_steps // 2:]
+        R_ss = R_history[n_steps // 2 :]
         MI = np.std(R_ss)
         MI_trials.append(MI)
 
-    return np.mean(MI_trials), np.mean([np.mean(R_history[n_steps//2:]) for _ in range(1)])
+    return np.mean(MI_trials), np.mean([np.mean(R_history[n_steps // 2 :]) for _ in range(1)])
 
 
 K_mi_scan = np.linspace(0.5, 8.0, 20)
@@ -190,7 +193,7 @@ MI_arr = np.array(MI_results)
 peak_MI_idx = np.argmax(MI_arr)
 K_peak_MI = K_mi_scan[peak_MI_idx]
 print(f"\nPeak MI at K = {K_peak_MI:.2f} (MI = {MI_arr[peak_MI_idx]:.4f})")
-print(f"Paper 4 prediction: MI peaks near K_c (maximum flexibility)")
+print("Paper 4 prediction: MI peaks near K_c (maximum flexibility)")
 
 
 # =====================================================================
@@ -201,12 +204,14 @@ print("TEST 3: MULTI-ORGAN COUPLING MATRIX")
 print("=" * 70)
 
 # Paper 4 specifies:
-C_organs = np.array([
-    [1.0, 0.3, 0.2, 0.1],  # Brain
-    [0.3, 1.0, 0.4, 0.2],  # Heart
-    [0.2, 0.4, 1.0, 0.1],  # Lungs
-    [0.1, 0.2, 0.1, 1.0],  # GI tract
-])
+C_organs = np.array(
+    [
+        [1.0, 0.3, 0.2, 0.1],  # Brain
+        [0.3, 1.0, 0.4, 0.2],  # Heart
+        [0.2, 0.4, 1.0, 0.1],  # Lungs
+        [0.1, 0.2, 0.1, 1.0],  # GI tract
+    ]
+)
 organ_names = ["Brain", "Heart", "Lungs", "GI"]
 
 # Paper 4 also specifies coupling parameters:
@@ -231,8 +236,9 @@ dt = 0.01
 T = 500
 n_steps = int(T / dt)
 theta_organs = np.random.uniform(0, 2 * np.pi, 4)
-R_pair_history = {f"{organ_names[i]}-{organ_names[j]}": []
-                  for i in range(4) for j in range(i+1, 4)}
+R_pair_history = {
+    f"{organ_names[i]}-{organ_names[j]}": [] for i in range(4) for j in range(i + 1, 4)
+}
 
 for _s in range(n_steps):
     dtheta = omega_organs.copy()
@@ -244,7 +250,7 @@ for _s in range(n_steps):
 
     if _s > n_steps // 2:
         for i in range(4):
-            for j in range(i+1, 4):
+            for j in range(i + 1, 4):
                 pair = f"{organ_names[i]}-{organ_names[j]}"
                 R_ij = abs(np.exp(1j * theta_organs[i]) + np.exp(1j * theta_organs[j])) / 2
                 R_pair_history[pair].append(R_ij)
@@ -277,8 +283,7 @@ for E_eph in E_eph_range:
     # Spike timing shift: dt ~ V_induced / (dV/dt at threshold)
     dVdt_threshold = 30  # mV/ms typical
     dt_shift = V_induced / dVdt_threshold  # ms
-    print(f"  E_eph={E_eph} mV/mm: V_induced={V_induced:.2f} mV, "
-          f"timing shift={dt_shift:.2f} ms")
+    print(f"  E_eph={E_eph} mV/mm: V_induced={V_induced:.2f} mV, timing shift={dt_shift:.2f} ms")
 
 print("\nPaper 4 claim: 0.1-0.5 mV sufficient for 1-5 ms timing modulation")
 print("This provides non-synaptic K_nm coupling between nearby neurons")
@@ -320,10 +325,12 @@ print(f"{'Stage':30s} {'Timescale':>20s} {'Gain':>10s} {'Cumulative':>12s}")
 print("-" * 75)
 for name, data in stages.items():
     total_gain *= data["amplification"]
-    print(f"{name:30s} {data['timescale']:>20s} {data['amplification']:>10.0e} {total_gain:>12.0e}")
+    print(
+        f"{name:30s} {data['timescale']:>20s} {data['amplification']:>10.0e} {total_gain:>12.0e}"
+    )
 
 print(f"\nTotal amplification: {total_gain:.0e}")
-print(f"Paper 4 prediction: ~10^15")
+print("Paper 4 prediction: ~10^15")
 print(f"Match: {'YES' if total_gain == 1e15 else 'NO'} ({total_gain:.0e})")
 
 print("\nThis means: a SINGLE quantum event (molecular coherence)")
@@ -343,8 +350,8 @@ print("=" * 70)
 # eta ~ 0.05
 # Test: how much does eta=0.05 shift the sync transition?
 
-def simulate_with_psi(K, eta_psi=0.0, phi_macro=0.0,
-                       dt=0.005, T=300, n_trials=10):
+
+def simulate_with_psi(K, eta_psi=0.0, phi_macro=0.0, dt=0.005, T=300, n_trials=10):
     n_steps = int(T / dt)
     R_trials = []
     for _ in range(n_trials):
@@ -362,6 +369,7 @@ def simulate_with_psi(K, eta_psi=0.0, phi_macro=0.0,
         z = np.mean(np.exp(1j * theta))
         R_trials.append(abs(z))
     return np.mean(R_trials)
+
 
 print("Effect of Psi_s modulation (eta=0.05) on sync:")
 print(f"{'K':>5s} {'eta=0':>8s} {'eta=0.05':>10s} {'Shift':>8s}")
@@ -381,7 +389,7 @@ print("\n" + "=" * 70)
 print("SYNTHESIS: PAPER 4 PREDICTIONS TESTED")
 print("=" * 70)
 
-print(f"""
+print("""
 1. GRIFFITHS PHASE: disorder DOES broaden the transition
    sigma=0: sharp K_c
    sigma=0.3: broad critical regime

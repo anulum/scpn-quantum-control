@@ -21,9 +21,9 @@
 # 4. Edge of chaos = edge of synchronisation
 # 5. SCPN K_nm vs random topology for computation
 
-import numpy as np
 import json
-from scipy import stats
+
+import numpy as np
 
 print("=" * 70)
 print("SCPN AS RESERVOIR COMPUTER")
@@ -31,16 +31,18 @@ print("=" * 70)
 
 N = 8
 omega_scpn = np.array([0.062, 0.191, 0.382, 0.618, 0.809, 0.927, 0.981, 1.000])
-K_nm_scpn = np.array([
-    [0.000, 0.951, 0.588, 0.309, 0.191, 0.118, 0.073, 0.045],
-    [0.951, 0.000, 0.951, 0.588, 0.309, 0.191, 0.118, 0.073],
-    [0.588, 0.951, 0.000, 0.951, 0.588, 0.309, 0.191, 0.118],
-    [0.309, 0.588, 0.951, 0.000, 0.951, 0.588, 0.309, 0.191],
-    [0.191, 0.309, 0.588, 0.951, 0.000, 0.951, 0.588, 0.309],
-    [0.118, 0.191, 0.309, 0.588, 0.951, 0.000, 0.951, 0.588],
-    [0.073, 0.118, 0.191, 0.309, 0.588, 0.951, 0.000, 0.951],
-    [0.045, 0.073, 0.118, 0.191, 0.309, 0.588, 0.951, 0.000],
-])
+K_nm_scpn = np.array(
+    [
+        [0.000, 0.951, 0.588, 0.309, 0.191, 0.118, 0.073, 0.045],
+        [0.951, 0.000, 0.951, 0.588, 0.309, 0.191, 0.118, 0.073],
+        [0.588, 0.951, 0.000, 0.951, 0.588, 0.309, 0.191, 0.118],
+        [0.309, 0.588, 0.951, 0.000, 0.951, 0.588, 0.309, 0.191],
+        [0.191, 0.309, 0.588, 0.951, 0.000, 0.951, 0.588, 0.309],
+        [0.118, 0.191, 0.309, 0.588, 0.951, 0.000, 0.951, 0.588],
+        [0.073, 0.118, 0.191, 0.309, 0.588, 0.951, 0.000, 0.951],
+        [0.045, 0.073, 0.118, 0.191, 0.309, 0.588, 0.951, 0.000],
+    ]
+)
 
 
 def run_reservoir(K_scale, K_nm, omega, input_signal, dt=0.01):
@@ -79,15 +81,24 @@ def train_readout(states, targets, train_frac=0.7):
 
     # Ridge regression
     ridge = 1e-4
-    W = np.linalg.solve(X_train.T @ X_train + ridge * np.eye(X_train.shape[1]),
-                        X_train.T @ y_train)
+    W = np.linalg.solve(
+        X_train.T @ X_train + ridge * np.eye(X_train.shape[1]), X_train.T @ y_train
+    )
 
     y_pred_train = X_train @ W
     y_pred_test = X_test @ W
 
     # NRMSE
-    nrmse_train = np.sqrt(np.mean((y_train - y_pred_train)**2)) / np.std(y_train) if np.std(y_train) > 0 else 1.0
-    nrmse_test = np.sqrt(np.mean((y_test - y_pred_test)**2)) / np.std(y_test) if np.std(y_test) > 0 else 1.0
+    nrmse_train = (
+        np.sqrt(np.mean((y_train - y_pred_train) ** 2)) / np.std(y_train)
+        if np.std(y_train) > 0
+        else 1.0
+    )
+    nrmse_test = (
+        np.sqrt(np.mean((y_test - y_pred_test) ** 2)) / np.std(y_test)
+        if np.std(y_test) > 0
+        else 1.0
+    )
 
     return nrmse_train, nrmse_test
 
@@ -121,7 +132,7 @@ for K in K_test:
 mc_arr = np.array(memory_capacities)
 best_K_mc = K_test[np.argmax(mc_arr)]
 print(f"\nBest memory capacity at K={best_K_mc:.2f}, MC={np.max(mc_arr):.2f}")
-print(f"K_c for SCPN: ~2.7")
+print("K_c for SCPN: ~2.7")
 print(f"MC peaks {'near K_c' if abs(best_K_mc - 2.7) < 1.5 else 'away from K_c'}")
 
 
@@ -134,7 +145,7 @@ print("=" * 70)
 binary_input = (np.random.rand(T) > 0.5).astype(float)
 xor_target = np.zeros(T)
 for t in range(3, T):
-    xor_target[t] = float(int(binary_input[t]) ^ int(binary_input[t-3]))
+    xor_target[t] = float(int(binary_input[t]) ^ int(binary_input[t - 3]))
 
 print("Nonlinear task: XOR(input(t), input(t-3))")
 for K in [1.0, 2.0, 2.7, 4.0, 6.0]:
@@ -157,8 +168,8 @@ np.fill_diagonal(K_random, 0)
 
 K_chain = np.zeros((N, N))
 for i in range(N - 1):
-    K_chain[i, i+1] = 1.0
-    K_chain[i+1, i] = 1.0
+    K_chain[i, i + 1] = 1.0
+    K_chain[i + 1, i] = 1.0
 
 K_all = np.ones((N, N)) - np.eye(N)
 
@@ -226,7 +237,7 @@ lyap_arr = np.array(lyap_proxy)
 idx_edge = np.argmin(np.abs(lyap_arr))
 K_edge = K_lyap[idx_edge]
 print(f"\nEdge of chaos at K = {K_edge:.2f}")
-print(f"K_c (sync transition): ~2.7")
+print("K_c (sync transition): ~2.7")
 print(f"Match: {'YES' if abs(K_edge - 2.7) < 1.0 else 'no'}")
 
 

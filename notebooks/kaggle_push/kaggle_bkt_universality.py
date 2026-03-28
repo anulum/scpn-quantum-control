@@ -106,14 +106,14 @@ for n in [6, 8, 10, 12]:
 
     entropies = []
     l_values = []
-    for l in range(1, n // 2 + 1):
-        dim_A = 2**l
-        dim_B = 2 ** (n - l)
+    for ell in range(1, n // 2 + 1):
+        dim_A = 2**ell
+        dim_B = 2 ** (n - ell)
         svd_sq = np.linalg.svd(psi.reshape(dim_A, dim_B), compute_uv=False) ** 2
         svd_sq = svd_sq[svd_sq > 1e-30]
         S = -np.sum(svd_sq * np.log2(svd_sq))
         entropies.append(float(S))
-        l_values.append(l)
+        l_values.append(ell)
 
     x = np.log(np.array(l_values))
     y = np.array(entropies)

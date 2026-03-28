@@ -14,8 +14,9 @@
 # These are oscillator systems with KNOWN parameters from literature.
 # Comparing their measured K_c and coupling to SCPN predictions.
 
-import numpy as np
 import json
+
+import numpy as np
 from scipy import stats
 
 print("=" * 70)
@@ -28,54 +29,54 @@ print("=" * 70)
 
 bio_oscillators = {
     "somitogenesis": {
-        "period_s": 7200,           # ~2 hours (mouse)
-        "freq_Hz": 1/7200,
-        "N_oscillators": 100,       # ~100 presomitic mesoderm cells
+        "period_s": 7200,  # ~2 hours (mouse)
+        "freq_Hz": 1 / 7200,
+        "N_oscillators": 100,  # ~100 presomitic mesoderm cells
         "coupling": "Delta-Notch",
-        "K_coupling_est": 0.5,      # dimensionless (Morelli et al. 2009)
-        "sync_R": 0.85,             # high sync in normal development
+        "K_coupling_est": 0.5,  # dimensionless (Morelli et al. 2009)
+        "sync_R": 0.85,  # high sync in normal development
         "desync_phenotype": "vertebral defects (spondylocostal dysostosis)",
     },
     "circadian_SCN": {
-        "period_s": 86400,          # ~24 hours
-        "freq_Hz": 1/86400,
-        "N_oscillators": 20000,     # ~20,000 neurons in SCN
+        "period_s": 86400,  # ~24 hours
+        "freq_Hz": 1 / 86400,
+        "N_oscillators": 20000,  # ~20,000 neurons in SCN
         "coupling": "VIP + GABA + gap junctions",
-        "K_coupling_est": 0.3,      # weak coupling (Liu et al. 2007)
-        "sync_R": 0.7,              # moderate sync
+        "K_coupling_est": 0.3,  # weak coupling (Liu et al. 2007)
+        "sync_R": 0.7,  # moderate sync
         "desync_phenotype": "jet lag, shift work disorder",
     },
     "cardiac_SA_node": {
-        "period_s": 0.83,           # ~72 bpm
+        "period_s": 0.83,  # ~72 bpm
         "freq_Hz": 1.2,
-        "N_oscillators": 10000,     # ~10,000 pacemaker cells
+        "N_oscillators": 10000,  # ~10,000 pacemaker cells
         "coupling": "gap junctions (connexin43)",
-        "K_coupling_est": 5.0,      # strong coupling (all-to-all via gap junctions)
-        "sync_R": 0.99,             # near-perfect sync (must be!)
+        "K_coupling_est": 5.0,  # strong coupling (all-to-all via gap junctions)
+        "sync_R": 0.99,  # near-perfect sync (must be!)
         "desync_phenotype": "arrhythmia, sudden cardiac death",
     },
     "pancreatic_islet": {
-        "period_s": 300,            # ~5 min (Ca2+ oscillations)
-        "freq_Hz": 1/300,
-        "N_oscillators": 1000,      # ~1000 beta cells per islet
+        "period_s": 300,  # ~5 min (Ca2+ oscillations)
+        "freq_Hz": 1 / 300,
+        "N_oscillators": 1000,  # ~1000 beta cells per islet
         "coupling": "gap junctions + paracrine",
         "K_coupling_est": 1.0,
         "sync_R": 0.8,
         "desync_phenotype": "impaired insulin pulsatility (Type 2 diabetes)",
     },
     "cortical_gamma": {
-        "period_s": 0.025,          # 40 Hz
+        "period_s": 0.025,  # 40 Hz
         "freq_Hz": 40,
-        "N_oscillators": 10000,     # cortical column
+        "N_oscillators": 10000,  # cortical column
         "coupling": "GABAergic interneurons",
         "K_coupling_est": 2.0,
-        "sync_R": 0.4,              # moderate (not full sync)
+        "sync_R": 0.4,  # moderate (not full sync)
         "desync_phenotype": "schizophrenia, autism (gamma abnormalities)",
     },
     "intestinal_ICC": {
-        "period_s": 20,             # ~3 cycles/min (slow waves)
+        "period_s": 20,  # ~3 cycles/min (slow waves)
         "freq_Hz": 0.05,
-        "N_oscillators": 5000,      # interstitial cells of Cajal
+        "N_oscillators": 5000,  # interstitial cells of Cajal
         "coupling": "gap junctions",
         "K_coupling_est": 3.0,
         "sync_R": 0.9,
@@ -89,6 +90,7 @@ bio_oscillators = {
 print("\n" + "=" * 70)
 print("TEST 1: KURAMOTO SIMULATION OF BIOLOGICAL OSCILLATORS")
 print("=" * 70)
+
 
 def simulate_bio_kuramoto(N, K_est, freq_spread=0.1, dt=0.01, T=500, n_trials=10):
     """Simulate Kuramoto for biological oscillator system."""
@@ -110,6 +112,7 @@ def simulate_bio_kuramoto(N, K_est, freq_spread=0.1, dt=0.01, T=500, n_trials=10
 
     return np.mean(R_trials), np.std(R_trials)
 
+
 # Use small N for simulation (scale K accordingly)
 N_sim = 50  # tractable size
 
@@ -122,7 +125,9 @@ for name, data in bio_oscillators.items():
     R_sim, R_std = simulate_bio_kuramoto(N_sim, data["K_coupling_est"])
     R_lit = data["sync_R"]
     match = abs(R_sim - R_lit) < 0.15
-    print(f"{name:25s} {data['K_coupling_est']:6.1f} {R_sim:6.3f} {R_lit:6.2f} {'YES' if match else 'no':>6s}")
+    print(
+        f"{name:25s} {data['K_coupling_est']:6.1f} {R_sim:6.3f} {R_lit:6.2f} {'YES' if match else 'no':>6s}"
+    )
     sim_results[name] = {
         "R_sim": round(R_sim, 3),
         "R_lit": R_lit,
@@ -150,7 +155,9 @@ for name, data in bio_oscillators.items():
             K_lo = K_mid
     K_c_bio[name] = K_mid
     above = data["K_coupling_est"] > K_mid
-    print(f"{name:25s}: K_c = {K_mid:.3f}, K_est = {data['K_coupling_est']:.1f} -> {'ABOVE K_c (sync)' if above else 'BELOW K_c (no sync)'}")
+    print(
+        f"{name:25s}: K_c = {K_mid:.3f}, K_est = {data['K_coupling_est']:.1f} -> {'ABOVE K_c (sync)' if above else 'BELOW K_c (no sync)'}"
+    )
 
 
 # =====================================================================
@@ -183,7 +190,7 @@ r_RK, p_RK = stats.pearsonr(K_ests, R_lits)
 print(f"\nCoupling vs sync level: r={r_RK:.3f}, p={p_RK:.4f}")
 
 # Compare to SCPN K_c
-print(f"\nSCPN K_c = 2.7 (N=8, alpha=0.3)")
+print("\nSCPN K_c = 2.7 (N=8, alpha=0.3)")
 print("Biological K_c values:")
 for name, kc in K_c_bio.items():
     ratio = kc / 2.7
@@ -236,14 +243,14 @@ for _s in range(n_steps):
     dtheta = omega_gradient.copy()
     for i in range(N_chain):
         if i > 0:
-            dtheta[i] += K_notch * np.sin(theta[i-1] - theta[i])
+            dtheta[i] += K_notch * np.sin(theta[i - 1] - theta[i])
         if i < N_chain - 1:
-            dtheta[i] += K_notch * np.sin(theta[i+1] - theta[i])
+            dtheta[i] += K_notch * np.sin(theta[i + 1] - theta[i])
     theta += dtheta * dt
 
 # Compute local order parameter (window of 5 cells)
 for i in range(N_chain):
-    window = slice(max(0, i-2), min(N_chain, i+3))
+    window = slice(max(0, i - 2), min(N_chain, i + 3))
     z_local = np.mean(np.exp(1j * theta[window]))
     R_local[i] = abs(z_local)
 
@@ -265,9 +272,9 @@ print(f"  Anterior R:     {np.mean(R_local[-10:]):.3f}")
 
 # Real mouse: ~65 somites formed in ~13 hours
 # Each somite = one oscillation cycle captured by the wavefront
-print(f"\n  Mouse somites: ~65 (reality)")
+print("\n  Mouse somites: ~65 (reality)")
 print(f"  Our model:     ~{len(boundaries)} boundaries")
-print(f"  The gradient creates segmentation from synchronisation")
+print("  The gradient creates segmentation from synchronisation")
 
 
 # SYNTHESIS
@@ -279,8 +286,8 @@ n_match = sum(1 for v in sim_results.values() if v["match"])
 print(f"\n1. Kuramoto reproduces {n_match}/{len(sim_results)} biological sync levels")
 print(f"2. Frequency-coupling scaling: K ~ freq^({slope_fK:.3f}), p={p_fK:.4f}")
 print(f"3. Coupling vs sync: r={r_RK:.3f}")
-print(f"4. Desynchronisation maps to specific diseases for ALL systems")
-print(f"5. Somitogenesis = Kuramoto + spatial gradient (Turing-Kuramoto)")
+print("4. Desynchronisation maps to specific diseases for ALL systems")
+print("5. Somitogenesis = Kuramoto + spatial gradient (Turing-Kuramoto)")
 
 print("\nKey insight: EVERY major biological oscillator system is a Kuramoto")
 print("system with specific K_nm topology. Disease = K drops below K_c.")

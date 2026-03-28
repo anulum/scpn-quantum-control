@@ -19,10 +19,26 @@ subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", "numpy", "s
 
 import numpy as np
 
-OMEGA_N_16 = np.array([
-    1.329, 2.610, 0.844, 1.520, 0.710, 3.780, 1.055, 0.625,
-    2.210, 1.740, 0.480, 3.210, 0.915, 1.410, 2.830, 0.991,
-])
+OMEGA_N_16 = np.array(
+    [
+        1.329,
+        2.610,
+        0.844,
+        1.520,
+        0.710,
+        3.780,
+        1.055,
+        0.625,
+        2.210,
+        1.740,
+        0.480,
+        3.210,
+        0.915,
+        1.410,
+        2.830,
+        0.991,
+    ]
+)
 
 # ============================================================
 # 1. FREQUENCY-TO-BIOLOGY MAPPING
@@ -36,31 +52,31 @@ print()
 bio_oscillations = {
     "L1 (Quantum bio)": {
         "radical_pair_lifetime_inv": 1e6,  # ~1 us lifetime -> 1 MHz
-        "enzyme_tunnelling_rate": 1e3,     # ms timescale
-        "microtubule_oscillation": 1e1,    # ~10 Hz (Hameroff)
+        "enzyme_tunnelling_rate": 1e3,  # ms timescale
+        "microtubule_oscillation": 1e1,  # ~10 Hz (Hameroff)
         "SCPN_omega": OMEGA_N_16[0],
-        "note": "SCPN omega_1 = 1.329 rad/s is macroscopic, not quantum"
+        "note": "SCPN omega_1 = 1.329 rad/s is macroscopic, not quantum",
     },
     "L2 (Neurochemical)": {
-        "dopamine_release_rate": 5.0,       # ~5 Hz burst firing
-        "serotonin_turnover": 0.1,          # ~0.1 Hz metabolic cycle
-        "GABA_decay_constant": 100.0,       # ~100 Hz synaptic
+        "dopamine_release_rate": 5.0,  # ~5 Hz burst firing
+        "serotonin_turnover": 0.1,  # ~0.1 Hz metabolic cycle
+        "GABA_decay_constant": 100.0,  # ~100 Hz synaptic
         "SCPN_omega": OMEGA_N_16[1],
-        "note": "omega_2 = 2.610 rad/s ~ 0.42 Hz, in metabolic range"
+        "note": "omega_2 = 2.610 rad/s ~ 0.42 Hz, in metabolic range",
     },
     "L3 (Genomic)": {
         "gene_expression_oscillation": 0.001,  # ~mHz (circadian: 0.0000116 Hz)
-        "epigenetic_modification_rate": 0.01,   # hours timescale
-        "cell_cycle_frequency": 0.00001,        # ~24h period
+        "epigenetic_modification_rate": 0.01,  # hours timescale
+        "cell_cycle_frequency": 0.00001,  # ~24h period
         "SCPN_omega": OMEGA_N_16[2],
-        "note": "omega_3 = 0.844 rad/s ~ 0.13 Hz, faster than genomic"
+        "note": "omega_3 = 0.844 rad/s ~ 0.13 Hz, faster than genomic",
     },
     "L4 (Cellular sync)": {
-        "gap_junction_conductance_Hz": 10.0,    # ~10 Hz voltage oscillations
-        "calcium_wave_frequency": 0.1,          # ~0.1 Hz Ca2+ waves
-        "cardiac_pacemaker": 1.2,               # ~1.2 Hz heart rhythm
+        "gap_junction_conductance_Hz": 10.0,  # ~10 Hz voltage oscillations
+        "calcium_wave_frequency": 0.1,  # ~0.1 Hz Ca2+ waves
+        "cardiac_pacemaker": 1.2,  # ~1.2 Hz heart rhythm
         "SCPN_omega": OMEGA_N_16[3],
-        "note": "omega_4 = 1.520 rad/s ~ 0.24 Hz, in Ca2+ wave range"
+        "note": "omega_4 = 1.520 rad/s ~ 0.24 Hz, in Ca2+ wave range",
     },
 }
 
@@ -90,6 +106,7 @@ print()
 # Typical cell has 100-1000 channels -> 6-100 nS total
 # Normalised coupling: G_ij / G_max ~ K_nm / K_max
 
+
 def build_knm(L, K_base=0.45, K_alpha=0.3):
     idx = np.arange(L)
     K = K_base * np.exp(-K_alpha * np.abs(idx[:, None] - idx[None, :]))
@@ -99,22 +116,23 @@ def build_knm(L, K_base=0.45, K_alpha=0.3):
             K[i, j] = K[j, i] = val
     return K
 
+
 K16 = build_knm(16)
 K_norm = K16 / np.max(K16)
 
 print("Paper 27 nearest-neighbour couplings (normalised):")
 for i in range(min(8, 15)):
-    print(f"  K[{i},{i+1}] = {K16[i, i+1]:.3f} (normalised: {K_norm[i, i+1]:.3f})")
+    print(f"  K[{i},{i + 1}] = {K16[i, i + 1]:.3f} (normalised: {K_norm[i, i + 1]:.3f})")
 
 print()
 print("Comparison with Connexin-43 gap junction coupling decay:")
 print("  Exponential model: K(d) = K_base * exp(-alpha * d)")
-print(f"  SCPN: K_base = 0.45, alpha = 0.3 -> half-coupling at d = {np.log(2)/0.3:.1f} layers")
-print(f"  Connexin-43: conductance drops ~50% per cell diameter (~20 um)")
-print(f"  If 1 SCPN layer ~ 1 cell diameter: alpha=0.3 -> 50% at {np.log(2)/0.3:.1f} layers")
+print(f"  SCPN: K_base = 0.45, alpha = 0.3 -> half-coupling at d = {np.log(2) / 0.3:.1f} layers")
+print("  Connexin-43: conductance drops ~50% per cell diameter (~20 um)")
+print(f"  If 1 SCPN layer ~ 1 cell diameter: alpha=0.3 -> 50% at {np.log(2) / 0.3:.1f} layers")
 print(f"  Biological: 50% at 1 cell -> alpha_bio ~ {np.log(2):.2f}")
-print(f"  SCPN alpha=0.3 < alpha_bio=0.69 -> SCPN layers couple MORE strongly")
-print(f"  This is physically correct: SCPN layers span ontological scales, not cells")
+print("  SCPN alpha=0.3 < alpha_bio=0.69 -> SCPN layers couple MORE strongly")
+print("  This is physically correct: SCPN layers span ontological scales, not cells")
 
 # ============================================================
 # 3. CHEMICAL REACTION RATE MATCHING
@@ -128,10 +146,10 @@ print()
 # Dopamine synthesis pathway: Tyr -> L-DOPA -> DA -> NE -> Epi
 # Each enzymatic step has a characteristic turnover rate (k_cat)
 enzyme_rates = {
-    "Tyrosine hydroxylase (TH)": 0.3,      # s^-1 (rate-limiting)
-    "AADC (L-DOPA -> DA)": 20.0,           # s^-1 (fast)
-    "Dopamine beta-hydroxylase (DBH)": 2.0, # s^-1
-    "PNMT (NE -> Epi)": 0.5,               # s^-1
+    "Tyrosine hydroxylase (TH)": 0.3,  # s^-1 (rate-limiting)
+    "AADC (L-DOPA -> DA)": 20.0,  # s^-1 (fast)
+    "Dopamine beta-hydroxylase (DBH)": 2.0,  # s^-1
+    "PNMT (NE -> Epi)": 0.5,  # s^-1
 }
 
 print("Enzymatic turnover rates as oscillator frequencies:")
@@ -145,8 +163,8 @@ omega_4 = OMEGA_N_16[:4]
 corr = np.corrcoef(rates, omega_4)[0, 1]
 print(f"\n  Pearson correlation (enzyme rates vs SCPN omega): r = {corr:.4f}")
 print(f"  {'CORRELATED' if abs(corr) > 0.5 else 'UNCORRELATED'}")
-print(f"  Note: SCPN frequencies are NOT derived from enzyme rates.")
-print(f"  A nonzero correlation would be coincidental but interesting.")
+print("  Note: SCPN frequencies are NOT derived from enzyme rates.")
+print("  A nonzero correlation would be coincidental but interesting.")
 
 # ============================================================
 # 4. ION CHANNEL COUPLING AS K_nm
@@ -166,9 +184,9 @@ kT_37C = 1.38e-23 * 310  # J at body temperature
 ATP_energy = 50e3 / 6.022e23  # J per molecule
 coupling_kT = ATP_energy / kT_37C
 
-print(f"Na/K-ATPase coupling energy:")
+print("Na/K-ATPase coupling energy:")
 print(f"  ATP hydrolysis: {ATP_energy:.2e} J = {coupling_kT:.1f} kT")
-print(f"  This is STRONG coupling (>> 1 kT)")
+print("  This is STRONG coupling (>> 1 kT)")
 print()
 
 # Voltage difference across membrane: ~70 mV
@@ -185,9 +203,9 @@ tau_cycle = 1e-3  # s
 E_cycle = P_channel * tau_cycle
 E_cycle_kT = E_cycle / kT_37C
 
-print(f"Single ion channel per gating cycle:")
-print(f"  Conductance: {g_channel*1e12:.0f} pS")
-print(f"  Current: {I_channel*1e12:.1f} pA")
+print("Single ion channel per gating cycle:")
+print(f"  Conductance: {g_channel * 1e12:.0f} pS")
+print(f"  Current: {I_channel * 1e12:.1f} pA")
 print(f"  Energy per cycle: {E_cycle:.2e} J = {E_cycle_kT:.1f} kT")
 print()
 
@@ -197,11 +215,11 @@ print()
 # a coupling of ~0.45 kT -> WEAK coupling in biological terms
 # This suggests SCPN K_nm represents normalised relative coupling,
 # not absolute energy
-print(f"SCPN K_base = 0.45 in dimensionless units")
+print("SCPN K_base = 0.45 in dimensionless units")
 print(f"Biological coupling: {coupling_kT:.1f} kT (ATP), {E_cycle_kT:.1f} kT (channel)")
-print(f"Interpretation: K_nm is NORMALISED relative coupling (0-1 scale),")
-print(f"not absolute energy. The exponential decay alpha=0.3 captures the")
-print(f"TOPOLOGY of coupling, not the absolute strength.")
+print("Interpretation: K_nm is NORMALISED relative coupling (0-1 scale),")
+print("not absolute energy. The exponential decay alpha=0.3 captures the")
+print("TOPOLOGY of coupling, not the absolute strength.")
 
 # ============================================================
 # SUMMARY
@@ -219,7 +237,7 @@ print("2. Exponential coupling decay (alpha=0.3) is WEAKER than biological")
 print("   gap junction decay (alpha~0.69), consistent with SCPN layers")
 print("   spanning ontological scales (not individual cells).")
 print()
-print("3. Enzyme rate vs SCPN frequency correlation: r = {:.4f}".format(corr))
+print(f"3. Enzyme rate vs SCPN frequency correlation: r = {corr:.4f}")
 print("   SCPN frequencies are NOT derived from enzyme kinetics.")
 print()
 print("4. K_nm represents normalised relative coupling topology,")

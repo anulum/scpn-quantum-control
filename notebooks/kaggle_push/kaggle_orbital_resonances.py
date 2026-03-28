@@ -21,11 +21,13 @@
 # - K_ij = gravitational coupling ~ m_j / a_ij^2
 # - Resonance = phase-locking at rational frequency ratio
 
-import numpy as np
-from scipy.integrate import solve_ivp
 import json
 
+import numpy as np
+from scipy.integrate import solve_ivp
+
 FINDINGS = []
+
 
 def add_finding(tag, description, data):
     FINDINGS.append({"tag": tag, "description": description, "data": data})
@@ -33,9 +35,11 @@ def add_finding(tag, description, data):
     for k, v in data.items():
         print(f"  {k}: {v}")
 
+
 def order_param(theta):
     z = np.mean(np.exp(1j * theta))
     return np.abs(z), np.angle(z)
+
 
 # --- Test 1: Laplace resonance (Io-Europa-Ganymede) ---
 print("=== Test 1: Laplace resonance 1:2:4 ===")
@@ -66,6 +70,7 @@ laplace_residual = n_io - 3 * n_europa + 2 * n_ganymede
 K_ie = 0.05  # rad/day^2 (from mass ratios)
 K_eg = 0.03
 
+
 # Simulate libration
 def laplace_rhs(t, y):
     phi_ie, dphi_ie, phi_eg, dphi_eg = y
@@ -73,22 +78,28 @@ def laplace_rhs(t, y):
     ddphi_eg = -K_eg * np.sin(phi_eg) - 0.001 * dphi_eg
     return [dphi_ie, ddphi_ie, dphi_eg, ddphi_eg]
 
+
 y0 = [0.1, 0, 0.05, 0]  # small libration
-sol = solve_ivp(laplace_rhs, (0, 1000), y0, method='RK45',
-                t_eval=np.linspace(800, 1000, 1000), rtol=1e-8)
+sol = solve_ivp(
+    laplace_rhs, (0, 1000), y0, method="RK45", t_eval=np.linspace(800, 1000, 1000), rtol=1e-8
+)
 
 lib_ie = np.max(np.abs(sol.y[0]))  # libration amplitude
 lib_eg = np.max(np.abs(sol.y[2]))
 
-add_finding("LAPLACE_RESONANCE", "Galilean moons 1:2:4 Laplace resonance", {
-    "ratio_Io_Europa": round(float(ratio_ie), 6),
-    "ratio_Europa_Ganymede": round(float(ratio_eg), 6),
-    "exact_ratio_deviation_ppm": round(float(abs(ratio_ie - 2) * 1e6), 1),
-    "laplace_residual_rad_day": round(float(laplace_residual), 8),
-    "libration_Io_Europa_rad": round(float(lib_ie), 4),
-    "libration_Europa_Ganymede_rad": round(float(lib_eg), 4),
-    "stable_for_Gyr": 4.5,
-})
+add_finding(
+    "LAPLACE_RESONANCE",
+    "Galilean moons 1:2:4 Laplace resonance",
+    {
+        "ratio_Io_Europa": round(float(ratio_ie), 6),
+        "ratio_Europa_Ganymede": round(float(ratio_eg), 6),
+        "exact_ratio_deviation_ppm": round(float(abs(ratio_ie - 2) * 1e6), 1),
+        "laplace_residual_rad_day": round(float(laplace_residual), 8),
+        "libration_Io_Europa_rad": round(float(lib_ie), 4),
+        "libration_Europa_Ganymede_rad": round(float(lib_eg), 4),
+        "stable_for_Gyr": 4.5,
+    },
+)
 
 # --- Test 2: TRAPPIST-1 resonant chain ---
 print("\n=== Test 2: TRAPPIST-1 seven-planet resonant chain ===")
@@ -122,12 +133,14 @@ for i in range(len(names) - 1):
                 best_err = err
                 best_p, best_q = p, q
 
-    resonance_chain.append({
-        "pair": f"{names[i]}-{names[i+1]}",
-        "period_ratio": round(float(ratio), 4),
-        "nearest_resonance": f"{best_p}:{best_q}",
-        "deviation_percent": round(float(best_err / (best_q / best_p) * 100), 3),
-    })
+    resonance_chain.append(
+        {
+            "pair": f"{names[i]}-{names[i + 1]}",
+            "period_ratio": round(float(ratio), 4),
+            "nearest_resonance": f"{best_p}:{best_q}",
+            "deviation_percent": round(float(best_err / (best_q / best_p) * 100), 3),
+        }
+    )
 
 # Simulate as Kuramoto with resonant coupling
 N_t = 7
@@ -148,12 +161,16 @@ for step in range(100000):
         r, _ = order_param(theta_t)
         r_trappist_trace.append(r)
 
-add_finding("TRAPPIST1_CHAIN", "TRAPPIST-1 resonant chain", {
-    "resonance_chain": resonance_chain,
-    "all_near_resonance": all(r["deviation_percent"] < 5 for r in resonance_chain),
-    "N_planets": 7,
-    "note": "longest known resonant chain — gravitational Kuramoto at its finest",
-})
+add_finding(
+    "TRAPPIST1_CHAIN",
+    "TRAPPIST-1 resonant chain",
+    {
+        "resonance_chain": resonance_chain,
+        "all_near_resonance": all(r["deviation_percent"] < 5 for r in resonance_chain),
+        "N_planets": 7,
+        "note": "longest known resonant chain — gravitational Kuramoto at its finest",
+    },
+)
 
 # --- Test 3: Tidal locking as phase locking ---
 print("\n=== Test 3: Mercury 3:2 spin-orbit resonance ===")
@@ -171,25 +188,29 @@ ratio_merc = T_orbit_merc / T_spin_merc
 eccentricities = np.linspace(0, 0.4, 20)
 # Capture probability for p:q resonance
 # P(3:2) ~ 7*e^2 for small e (Goldreich-Peale)
-p_32 = 7 * eccentricities ** 2
+p_32 = 7 * eccentricities**2
 p_32 = np.clip(p_32, 0, 1)
 # P(1:1) ~ 1 - e^2
-p_11 = 1 - eccentricities ** 2
+p_11 = 1 - eccentricities**2
 
 # Mercury's eccentricity
 e_mercury = 0.206
-p_32_mercury = min(7 * e_mercury ** 2, 1)
-p_11_mercury = 1 - e_mercury ** 2
+p_32_mercury = min(7 * e_mercury**2, 1)
+p_11_mercury = 1 - e_mercury**2
 
-add_finding("MERCURY_32", "Mercury 3:2 spin-orbit lock", {
-    "spin_orbit_ratio": round(float(ratio_merc), 4),
-    "deviation_from_1.5": round(float(abs(ratio_merc - 1.5)), 6),
-    "eccentricity": e_mercury,
-    "capture_prob_32": round(float(p_32_mercury), 4),
-    "capture_prob_11": round(float(p_11_mercury), 4),
-    "why_not_11": "high eccentricity makes 3:2 almost as probable as 1:1",
-    "Kuramoto_analogy": "spin frequency locked to 3/2 × orbital frequency",
-})
+add_finding(
+    "MERCURY_32",
+    "Mercury 3:2 spin-orbit lock",
+    {
+        "spin_orbit_ratio": round(float(ratio_merc), 4),
+        "deviation_from_1.5": round(float(abs(ratio_merc - 1.5)), 6),
+        "eccentricity": e_mercury,
+        "capture_prob_32": round(float(p_32_mercury), 4),
+        "capture_prob_11": round(float(p_11_mercury), 4),
+        "why_not_11": "high eccentricity makes 3:2 almost as probable as 1:1",
+        "Kuramoto_analogy": "spin frequency locked to 3/2 × orbital frequency",
+    },
+)
 
 # --- Test 4: Resonance capture — Kuramoto with integer coupling ---
 print("\n=== Test 4: Resonance capture dynamics ===")
@@ -217,23 +238,29 @@ for step in range(200000):
     theta1 += dt * omega1
 
     if step % 500 == 0:
-        capture_trace.append({
-            "t": round(step * dt, 1),
-            "omega_ratio": round(float(omega1 / omega2), 4),
-            "resonant_angle_mod2pi": round(float(phi % (2 * np.pi)), 4),
-        })
+        capture_trace.append(
+            {
+                "t": round(step * dt, 1),
+                "omega_ratio": round(float(omega1 / omega2), 4),
+                "resonant_angle_mod2pi": round(float(phi % (2 * np.pi)), 4),
+            }
+        )
 
 final_ratio = omega1 / omega2
 captured = abs(final_ratio - 2.0) < 0.05
 
-add_finding("RESONANCE_CAPTURE", "Tidal drift into 2:1 resonance", {
-    "initial_ratio": round(float(omega1_0 / omega2), 4),
-    "final_ratio": round(float(final_ratio), 4),
-    "captured_in_resonance": captured,
-    "tidal_decay_rate": tau,
-    "K_coupling": K_capture,
-    "analogy": "planet drifting into sync = frequency entrainment in Kuramoto",
-})
+add_finding(
+    "RESONANCE_CAPTURE",
+    "Tidal drift into 2:1 resonance",
+    {
+        "initial_ratio": round(float(omega1_0 / omega2), 4),
+        "final_ratio": round(float(final_ratio), 4),
+        "captured_in_resonance": captured,
+        "tidal_decay_rate": tau,
+        "K_coupling": K_capture,
+        "analogy": "planet drifting into sync = frequency entrainment in Kuramoto",
+    },
+)
 
 # --- Output ---
 print("\n" + "=" * 60)

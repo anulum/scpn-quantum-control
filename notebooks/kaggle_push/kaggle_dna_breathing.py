@@ -17,9 +17,9 @@
 # 4. Promoter regions as coupling topology features
 # 5. Transcription bubble dynamics
 
-import numpy as np
 import json
-from scipy import stats
+
+import numpy as np
 
 print("=" * 70)
 print("DNA BREATHING MODES AS COUPLED OSCILLATORS")
@@ -30,15 +30,15 @@ print("=" * 70)
 # =====================================================================
 
 # Base pair hydrogen bond energies
-D_AT = 0.05   # eV (2 H-bonds, weaker)
+D_AT = 0.05  # eV (2 H-bonds, weaker)
 D_GC = 0.075  # eV (3 H-bonds, stronger)
 
 # Stacking interaction (backbone coupling)
-k_stack = 0.025    # eV/A^2 (stacking spring constant)
-rho_stack = 0.35   # A^-1 (anharmonicity)
+k_stack = 0.025  # eV/A^2 (stacking spring constant)
+rho_stack = 0.35  # A^-1 (anharmonicity)
 
 # Masses
-m_bp = 300         # amu (effective base pair mass)
+m_bp = 300  # amu (effective base pair mass)
 
 # Frequencies: omega = sqrt(2*D*alpha^2/m)
 alpha_morse = 4.45  # A^-1 (Morse potential width)
@@ -48,9 +48,9 @@ omega_GC = np.sqrt(2 * D_GC * alpha_morse**2 / m_bp) * 1e12
 print("Base pair oscillation parameters:")
 print(f"  AT pair: D={D_AT:.3f} eV, omega={omega_AT:.4f} THz")
 print(f"  GC pair: D={D_GC:.3f} eV, omega={omega_GC:.4f} THz")
-print(f"  Ratio omega_GC/omega_AT = {omega_GC/omega_AT:.3f}")
+print(f"  Ratio omega_GC/omega_AT = {omega_GC / omega_AT:.3f}")
 print(f"  Stacking coupling k = {k_stack:.3f} eV/A^2")
-print(f"  Coupling/well ratio: {k_stack/D_AT:.3f} (AT), {k_stack/D_GC:.3f} (GC)")
+print(f"  Coupling/well ratio: {k_stack / D_AT:.3f} (AT), {k_stack / D_GC:.3f} (GC)")
 
 
 # =====================================================================
@@ -67,14 +67,15 @@ print("=" * 70)
 
 # Test sequences
 sequences = {
-    "TATA_box": "TATAAAATAT",       # promoter, AT-rich, flexible
-    "GC_rich": "GCGCGCGCGC",        # stable, rigid
-    "mixed": "ATGCATGCAT",          # typical coding
-    "poly_A": "AAAAAAAAAA",         # uniform AT
-    "CpG_island": "CGCGCGCGCG",    # regulatory, methylation
+    "TATA_box": "TATAAAATAT",  # promoter, AT-rich, flexible
+    "GC_rich": "GCGCGCGCGC",  # stable, rigid
+    "mixed": "ATGCATGCAT",  # typical coding
+    "poly_A": "AAAAAAAAAA",  # uniform AT
+    "CpG_island": "CGCGCGCGCG",  # regulatory, methylation
 }
 
 omega_map = {"A": 0.8, "T": 0.8, "G": 1.0, "C": 1.0}  # normalised
+
 
 def simulate_dna_kuramoto(sequence, K_stack, noise=0.05, dt=0.01, T=300, n_trials=15):
     N = len(sequence)
@@ -90,9 +91,9 @@ def simulate_dna_kuramoto(sequence, K_stack, noise=0.05, dt=0.01, T=300, n_trial
             dtheta = omega.copy()
             for i in range(N):
                 if i > 0:
-                    dtheta[i] += K_stack * np.sin(theta[i-1] - theta[i])
+                    dtheta[i] += K_stack * np.sin(theta[i - 1] - theta[i])
                 if i < N - 1:
-                    dtheta[i] += K_stack * np.sin(theta[i+1] - theta[i])
+                    dtheta[i] += K_stack * np.sin(theta[i + 1] - theta[i])
             theta += dtheta * dt + noise * np.random.randn(N) * np.sqrt(dt)
 
         z = np.mean(np.exp(1j * theta))
@@ -179,6 +180,7 @@ K_closed = np.ones(N_dna - 1) * 2.0
 K_bubble = K_closed.copy()
 K_bubble[20:37] = 0.1  # weakened coupling in bubble
 
+
 def simulate_bubble(K_array, omega, noise=0.3, dt=0.01, T=200, n_trials=10):
     N = len(omega)
     R_local = np.zeros(N)
@@ -189,19 +191,20 @@ def simulate_bubble(K_array, omega, noise=0.3, dt=0.01, T=200, n_trials=10):
             dtheta = omega.copy()
             for i in range(N):
                 if i > 0:
-                    dtheta[i] += K_array[i-1] * np.sin(theta[i-1] - theta[i])
+                    dtheta[i] += K_array[i - 1] * np.sin(theta[i - 1] - theta[i])
                 if i < N - 1:
-                    dtheta[i] += K_array[i] * np.sin(theta[i+1] - theta[i])
+                    dtheta[i] += K_array[i] * np.sin(theta[i + 1] - theta[i])
             theta += dtheta * dt + noise * np.random.randn(N) * np.sqrt(dt)
 
         # Local order parameter (window of 5)
         for i in range(N):
-            window = slice(max(0, i-2), min(N, i+3))
+            window = slice(max(0, i - 2), min(N, i + 3))
             z_loc = np.mean(np.exp(1j * theta[window]))
             R_local[i] += abs(z_loc)
 
     R_local /= n_trials
     return R_local
+
 
 R_closed = simulate_bubble(K_closed, omega_long)
 R_open = simulate_bubble(K_bubble, omega_long)
@@ -215,7 +218,7 @@ for i in range(0, 50, 5):
 # Bubble size
 open_positions = np.sum(R_open < 0.5)
 print(f"\nDesynchronised positions (R<0.5): {open_positions}")
-print(f"Expected bubble size: 17 bp")
+print("Expected bubble size: 17 bp")
 
 
 # TEST 5: Sequence-dependent flexibility
@@ -225,9 +228,15 @@ print("=" * 70)
 
 # Dinucleotide stacking energies (kcal/mol, SantaLucia 1998)
 stacking = {
-    "AA/TT": -1.0, "AT/AT": -0.88, "TA/TA": -0.58,
-    "CA/GT": -1.45, "GT/CA": -1.44, "CT/GA": -1.28,
-    "GA/CT": -1.30, "CG/CG": -2.17, "GC/GC": -2.24,
+    "AA/TT": -1.0,
+    "AT/AT": -0.88,
+    "TA/TA": -0.58,
+    "CA/GT": -1.45,
+    "GT/CA": -1.44,
+    "CT/GA": -1.28,
+    "GA/CT": -1.30,
+    "CG/CG": -2.17,
+    "GC/GC": -2.24,
     "GG/CC": -1.84,
 }
 

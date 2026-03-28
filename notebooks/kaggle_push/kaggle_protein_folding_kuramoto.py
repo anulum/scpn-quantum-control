@@ -19,15 +19,12 @@ import json
 import math
 import subprocess
 import sys
-import time
 
-subprocess.check_call(
-    [sys.executable, "-m", "pip", "install", "-q", "numpy", "scipy", "requests"]
-)
+subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", "numpy", "scipy", "requests"])
 
 import numpy as np
-from scipy import stats
 import requests
+from scipy import stats
 
 # ============================================================
 # 1. FETCH REAL PROTEIN STRUCTURES FROM RCSB PDB
@@ -112,7 +109,7 @@ for pdb_id, desc in proteins.items():
     print(f"\n--- {pdb_id}: {desc} ---")
     coords, residues = fetch_pdb_ca_coords(pdb_id)
     if coords is None or len(coords) < 5:
-        print(f"  Failed to fetch or too short")
+        print("  Failed to fetch or too short")
         continue
 
     n_res = len(coords)
@@ -196,7 +193,9 @@ for pdb_id, desc in proteins.items():
     spacings = np.diff(np.sort(evals_K))
     spacings = spacings[spacings > 1e-10]
     if len(spacings) > 2:
-        r_ratios = np.minimum(spacings[:-1], spacings[1:]) / np.maximum(spacings[:-1], spacings[1:])
+        r_ratios = np.minimum(spacings[:-1], spacings[1:]) / np.maximum(
+            spacings[:-1], spacings[1:]
+        )
         r_bar = float(np.mean(r_ratios))
     else:
         r_bar = 0
@@ -253,15 +252,17 @@ if alphas:
     alpha_diff = abs(np.mean(alphas) - 0.3)
     print(f"\n  Alpha difference from SCPN: {alpha_diff:.3f}")
     if alpha_diff < 0.1:
-        print(f"  MATCH: protein contact decay ~ SCPN coupling decay!")
+        print("  MATCH: protein contact decay ~ SCPN coupling decay!")
     else:
-        print(f"  {'CLOSE' if alpha_diff < 0.2 else 'DIFFERENT'}: alpha_protein={np.mean(alphas):.3f} vs alpha_SCPN=0.300")
+        print(
+            f"  {'CLOSE' if alpha_diff < 0.2 else 'DIFFERENT'}: alpha_protein={np.mean(alphas):.3f} vs alpha_SCPN=0.300"
+        )
 
-print(f"\nAll folded proteins show R > 0 (backbone phases are synchronised).")
-print(f"The contact map exponential decay is comparable to SCPN alpha=0.3.")
-print(f"Coupling eigenvalues show Poisson-like statistics (non-ergodic).")
-print(f"\nProtein folding IS a coupled oscillator synchronisation problem.")
-print(f"The SCPN K_nm structure captures the same topology class.")
+print("\nAll folded proteins show R > 0 (backbone phases are synchronised).")
+print("The contact map exponential decay is comparable to SCPN alpha=0.3.")
+print("Coupling eigenvalues show Poisson-like statistics (non-ergodic).")
+print("\nProtein folding IS a coupled oscillator synchronisation problem.")
+print("The SCPN K_nm structure captures the same topology class.")
 
 print("\n" + json.dumps(results, indent=2))
 print("\nDone.")

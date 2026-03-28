@@ -17,9 +17,9 @@
 # 4. Frequency encoding (amplitude vs frequency modulation)
 # 5. Pathological Ca2+ oscillations (epilepsy, arrhythmia)
 
-import numpy as np
 import json
-from scipy import stats
+
+import numpy as np
 
 print("=" * 70)
 print("CALCIUM WAVES AS SPATIAL KURAMOTO SYSTEM")
@@ -31,35 +31,35 @@ print("=" * 70)
 
 ca_params = {
     "hepatocyte": {
-        "period_s": 30,         # 20-60s typical
+        "period_s": 30,  # 20-60s typical
         "wave_speed_um_s": 20,  # 10-30 um/s
         "cell_diameter_um": 20,
         "coupling": "gap junctions (connexin32)",
         "IP3_dependent": True,
     },
     "cardiomyocyte": {
-        "period_s": 0.83,       # matches heartbeat
-        "wave_speed_um_s": 100, # fast!
+        "period_s": 0.83,  # matches heartbeat
+        "wave_speed_um_s": 100,  # fast!
         "cell_diameter_um": 100,
         "coupling": "gap junctions (connexin43) + SR release",
         "IP3_dependent": False,  # RyR-mediated
     },
     "astrocyte": {
-        "period_s": 10,         # 5-30s
+        "period_s": 10,  # 5-30s
         "wave_speed_um_s": 15,  # slow
         "cell_diameter_um": 50,
         "coupling": "gap junctions + ATP release",
         "IP3_dependent": True,
     },
     "oocyte": {
-        "period_s": 60,         # ~1 min
+        "period_s": 60,  # ~1 min
         "wave_speed_um_s": 30,
         "cell_diameter_um": 100,
         "coupling": "intracellular diffusion",
         "IP3_dependent": True,
     },
     "pancreatic_beta": {
-        "period_s": 15,         # fast Ca2+ oscillations
+        "period_s": 15,  # fast Ca2+ oscillations
         "wave_speed_um_s": 50,
         "cell_diameter_um": 10,
         "coupling": "gap junctions (connexin36)",
@@ -77,8 +77,10 @@ print("=" * 70)
 Nx, Ny = 20, 20
 N_total = Nx * Ny
 
-def simulate_2d_kuramoto(K_coupling, freq_spread=0.1, noise=0.05,
-                         dt=0.05, T=200, inject_wave=False):
+
+def simulate_2d_kuramoto(
+    K_coupling, freq_spread=0.1, noise=0.05, dt=0.05, T=200, inject_wave=False
+):
     """Simulate 2D Kuramoto on a lattice with nearest-neighbour coupling."""
     omega = np.random.normal(1.0, freq_spread, (Nx, Ny))
     theta = np.random.uniform(0, 2 * np.pi, (Nx, Ny))
@@ -119,6 +121,7 @@ def simulate_2d_kuramoto(K_coupling, freq_spread=0.1, noise=0.05,
 
     return R_final, theta, grad_x, grad_y, R_history
 
+
 # K scan for 2D lattice
 print(f"2D lattice: {Nx}x{Ny} = {N_total} oscillators")
 K_scan = np.linspace(0.5, 5.0, 15)
@@ -133,7 +136,7 @@ R_2d_arr = np.array(R_2d)
 idx_kc = np.argmin(np.abs(R_2d_arr - 0.5))
 K_c_2d = K_scan[idx_kc]
 print(f"\nK_c for 2D lattice: {K_c_2d:.2f}")
-print(f"K_c for mean-field (1D): ~2.7")
+print("K_c for mean-field (1D): ~2.7")
 print(f"2D lattice needs {'more' if K_c_2d > 2.7 else 'less'} coupling")
 
 
@@ -143,8 +146,7 @@ print("TEST 2: WAVE PROPAGATION SPEED")
 print("=" * 70)
 
 # Inject wave and measure propagation
-R_wave, theta_wave, gx, gy, _ = simulate_2d_kuramoto(
-    K_c_2d * 1.5, inject_wave=True, T=200)
+R_wave, theta_wave, gx, gy, _ = simulate_2d_kuramoto(K_c_2d * 1.5, inject_wave=True, T=200)
 
 # Phase velocity = omega / |grad(theta)|
 omega_mean = 1.0
@@ -165,14 +167,17 @@ for name, params in ca_params.items():
     # v_bio = v_phase * cell_diameter * frequency
     if v_phase < 100:
         v_mapped = v_phase * cell_d * freq
-        print(f"  {name:20s}: v_model={v_mapped:.1f} um/s, "
-              f"v_measured={params['wave_speed_um_s']:.0f} um/s")
+        print(
+            f"  {name:20s}: v_model={v_mapped:.1f} um/s, "
+            f"v_measured={params['wave_speed_um_s']:.0f} um/s"
+        )
 
 
 # TEST 3: Spiral waves (topological defects)
 print("\n" + "=" * 70)
 print("TEST 3: SPIRAL WAVE DETECTION")
 print("=" * 70)
+
 
 # Spiral waves are phase singularities: integral of grad(theta) around
 # a closed loop = +/- 2*pi
@@ -183,13 +188,18 @@ def count_spirals(theta):
         for j in range(1, Ny - 1):
             # Compute winding number around (i,j)
             phases = [
-                theta[i-1, j], theta[i-1, j+1], theta[i, j+1],
-                theta[i+1, j+1], theta[i+1, j], theta[i+1, j-1],
-                theta[i, j-1], theta[i-1, j-1]
+                theta[i - 1, j],
+                theta[i - 1, j + 1],
+                theta[i, j + 1],
+                theta[i + 1, j + 1],
+                theta[i + 1, j],
+                theta[i + 1, j - 1],
+                theta[i, j - 1],
+                theta[i - 1, j - 1],
             ]
             winding = 0
             for k in range(len(phases)):
-                diff = phases[(k+1) % len(phases)] - phases[k]
+                diff = phases[(k + 1) % len(phases)] - phases[k]
                 # Wrap to [-pi, pi]
                 diff = (diff + np.pi) % (2 * np.pi) - np.pi
                 winding += diff
@@ -198,6 +208,7 @@ def count_spirals(theta):
                 count += 1
                 charges.append(round(charge))
     return count, charges
+
 
 # Run at different K values to see where spirals form
 print("Spiral count vs coupling:")

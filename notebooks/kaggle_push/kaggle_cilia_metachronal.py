@@ -24,10 +24,12 @@
 # mucus clearance → chronic infections. Kartagener syndrome: 50%
 # have situs inversus (random L-R due to loss of nodal cilia sync).
 
-import numpy as np
 import json
 
+import numpy as np
+
 FINDINGS = []
+
 
 def add_finding(tag, description, data):
     FINDINGS.append({"tag": tag, "description": description, "data": data})
@@ -35,9 +37,11 @@ def add_finding(tag, description, data):
     for k, v in data.items():
         print(f"  {k}: {v}")
 
+
 def order_param(theta):
     z = np.mean(np.exp(1j * theta))
     return np.abs(z), np.angle(z)
+
 
 # --- Test 1: 1D ciliary array with hydrodynamic coupling ---
 print("=== Test 1: Metachronal wave in 1D ciliary array ===")
@@ -90,18 +94,22 @@ final_phases = theta % (2 * np.pi)
 # Unwrap and fit linear gradient
 phase_unwrapped = np.unwrap(final_phases)
 gradient = np.polyfit(positions, phase_unwrapped, 1)
-wavelength_um = 2 * np.pi / abs(gradient[0]) if abs(gradient[0]) > 0.01 else float('inf')
+wavelength_um = 2 * np.pi / abs(gradient[0]) if abs(gradient[0]) > 0.01 else float("inf")
 wave_speed_um_s = omega_0 * wavelength_um / (2 * np.pi)
 
-add_finding("METACHRONAL_WAVE", "Metachronal wave formation in ciliary array", {
-    "global_r": round(float(r_trace[-1]), 4),
-    "phase_gradient_rad_per_um": round(float(gradient[0]), 4),
-    "wavelength_um": round(float(wavelength_um), 2),
-    "wave_speed_um_s": round(float(wave_speed_um_s), 1),
-    "N_cilia": N,
-    "beat_frequency_Hz": 12,
-    "pattern": "metachronal" if abs(gradient[0]) > 0.1 else "synchronous",
-})
+add_finding(
+    "METACHRONAL_WAVE",
+    "Metachronal wave formation in ciliary array",
+    {
+        "global_r": round(float(r_trace[-1]), 4),
+        "phase_gradient_rad_per_um": round(float(gradient[0]), 4),
+        "wavelength_um": round(float(wavelength_um), 2),
+        "wave_speed_um_s": round(float(wave_speed_um_s), 1),
+        "N_cilia": N,
+        "beat_frequency_Hz": 12,
+        "pattern": "metachronal" if abs(gradient[0]) > 0.1 else "synchronous",
+    },
+)
 
 # --- Test 2: PCD — reduced coupling (dynein loss) ---
 print("\n=== Test 2: Primary Ciliary Dyskinesia — coupling loss ===")
@@ -127,17 +135,27 @@ for frac in K_fractions:
     residuals = phase_uw - np.polyval(grad, positions)
     phase_noise = np.std(residuals)
 
-    pcd_results.append({
-        "K_fraction": frac,
-        "r": round(float(r_pcd), 4),
-        "phase_noise_rad": round(float(phase_noise), 4),
-        "clearance": "normal" if phase_noise < 1.0 else "impaired" if phase_noise < 2.0 else "absent",
-    })
+    pcd_results.append(
+        {
+            "K_fraction": frac,
+            "r": round(float(r_pcd), 4),
+            "phase_noise_rad": round(float(phase_noise), 4),
+            "clearance": "normal"
+            if phase_noise < 1.0
+            else "impaired"
+            if phase_noise < 2.0
+            else "absent",
+        }
+    )
 
-add_finding("PCD_DESYNC", "PCD: progressive coupling loss → clearance failure", {
-    "results": pcd_results,
-    "clinical": "PCD patients have chronic sinusitis, bronchiectasis from failed clearance",
-})
+add_finding(
+    "PCD_DESYNC",
+    "PCD: progressive coupling loss → clearance failure",
+    {
+        "results": pcd_results,
+        "clinical": "PCD patients have chronic sinusitis, bronchiectasis from failed clearance",
+    },
+)
 
 # --- Test 3: Viscosity dependence (mucus vs water) ---
 print("\n=== Test 3: Mucus viscosity changes coupling ===")
@@ -159,16 +177,22 @@ for eta_ratio in viscosity_ratios:
         theta_v += dt * dtheta
 
     r_v, _ = order_param(theta_v)
-    viscosity_results.append({
-        "eta_ratio": eta_ratio,
-        "r": round(float(r_v), 4),
-    })
+    viscosity_results.append(
+        {
+            "eta_ratio": eta_ratio,
+            "r": round(float(r_v), 4),
+        }
+    )
 
-add_finding("CILIA_VISCOSITY", "Mucus viscosity modulates ciliary sync", {
-    "results": viscosity_results,
-    "CF_prediction": "CF mucus (100x viscosity) → K/100 → complete desync",
-    "therapeutic": "mucolytics reduce viscosity → restore coupling → restore clearance",
-})
+add_finding(
+    "CILIA_VISCOSITY",
+    "Mucus viscosity modulates ciliary sync",
+    {
+        "results": viscosity_results,
+        "CF_prediction": "CF mucus (100x viscosity) → K/100 → complete desync",
+        "therapeutic": "mucolytics reduce viscosity → restore coupling → restore clearance",
+    },
+)
 
 # --- Test 4: Situs inversus from nodal cilia desync ---
 print("\n=== Test 4: Nodal cilia — left-right symmetry breaking ===")
@@ -204,13 +228,17 @@ for i, f in enumerate(flow_vs_K):
         K_c_nodal = K_nodal_values[i]
         break
 
-add_finding("SITUS_INVERSUS", "Nodal cilia sync determines body asymmetry", {
-    "K_c_for_flow": round(float(K_c_nodal), 3) if K_c_nodal else "not reached",
-    "flow_at_max_K": round(flow_vs_K[-1], 4),
-    "N_cilia": N_nodal,
-    "PCD_prediction": "K=0 → r≈0 → no flow → 50% situs inversus",
-    "clinical_match": "Kartagener syndrome: ~50% situs inversus in PCD patients",
-})
+add_finding(
+    "SITUS_INVERSUS",
+    "Nodal cilia sync determines body asymmetry",
+    {
+        "K_c_for_flow": round(float(K_c_nodal), 3) if K_c_nodal else "not reached",
+        "flow_at_max_K": round(flow_vs_K[-1], 4),
+        "N_cilia": N_nodal,
+        "PCD_prediction": "K=0 → r≈0 → no flow → 50% situs inversus",
+        "clinical_match": "Kartagener syndrome: ~50% situs inversus in PCD patients",
+    },
+)
 
 # --- Output ---
 print("\n" + "=" * 60)

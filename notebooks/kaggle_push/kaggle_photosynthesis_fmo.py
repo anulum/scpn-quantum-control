@@ -20,9 +20,10 @@
 # 4. Eigenvalue spectrum comparison
 # 5. Does Kuramoto R predict FMO efficiency?
 
-import numpy as np
 import json
-from scipy import stats, linalg
+
+import numpy as np
+from scipy import linalg, stats
 
 print("=" * 70)
 print("FMO PHOTOSYNTHESIS COMPLEX AS KURAMOTO SYSTEM")
@@ -38,15 +39,17 @@ E_fmo = np.array([12410, 12530, 12210, 12320, 12480, 12630, 12440])
 
 # Coupling matrix (off-diagonal) in cm^-1
 # From Adolphs & Renger, Biophys J 2006
-J_fmo = np.array([
-    [0,    -87.7, 5.5,  -5.9,  6.7,  -13.7, -9.9],
-    [-87.7, 0,    30.8, 8.2,   0.7,   11.8,  4.3],
-    [5.5,   30.8, 0,    -53.5, -2.2,  -9.6,  6.0],
-    [-5.9,  8.2,  -53.5, 0,    -70.7, -17.0, -63.3],
-    [6.7,   0.7,  -2.2, -70.7,  0,     81.1, -1.3],
-    [-13.7, 11.8, -9.6, -17.0,  81.1,  0,     39.7],
-    [-9.9,  4.3,  6.0,  -63.3, -1.3,  39.7,   0],
-])
+J_fmo = np.array(
+    [
+        [0, -87.7, 5.5, -5.9, 6.7, -13.7, -9.9],
+        [-87.7, 0, 30.8, 8.2, 0.7, 11.8, 4.3],
+        [5.5, 30.8, 0, -53.5, -2.2, -9.6, 6.0],
+        [-5.9, 8.2, -53.5, 0, -70.7, -17.0, -63.3],
+        [6.7, 0.7, -2.2, -70.7, 0, 81.1, -1.3],
+        [-13.7, 11.8, -9.6, -17.0, 81.1, 0, 39.7],
+        [-9.9, 4.3, 6.0, -63.3, -1.3, 39.7, 0],
+    ]
+)
 
 N_fmo = 7
 
@@ -55,25 +58,27 @@ H_fmo = np.diag(E_fmo) + J_fmo
 
 print("FMO site energies (cm^-1):")
 for i, e in enumerate(E_fmo):
-    print(f"  BChl {i+1}: {e:.0f}")
+    print(f"  BChl {i + 1}: {e:.0f}")
 
 print("\nFMO coupling matrix |J_ij| (cm^-1):")
 for i in range(N_fmo):
-    row = " ".join(f"{abs(J_fmo[i,j]):6.1f}" for j in range(N_fmo))
+    row = " ".join(f"{abs(J_fmo[i, j]):6.1f}" for j in range(N_fmo))
     print(f"  {row}")
 
 # =====================================================================
 # SCPN K_nm (first 7 of 8 oscillators for comparison)
 # =====================================================================
-K_nm_scpn = np.array([
-    [0.000, 0.951, 0.588, 0.309, 0.191, 0.118, 0.073],
-    [0.951, 0.000, 0.951, 0.588, 0.309, 0.191, 0.118],
-    [0.588, 0.951, 0.000, 0.951, 0.588, 0.309, 0.191],
-    [0.309, 0.588, 0.951, 0.000, 0.951, 0.588, 0.309],
-    [0.191, 0.309, 0.588, 0.951, 0.000, 0.951, 0.588],
-    [0.118, 0.191, 0.309, 0.588, 0.951, 0.000, 0.951],
-    [0.073, 0.118, 0.191, 0.309, 0.588, 0.951, 0.000],
-])
+K_nm_scpn = np.array(
+    [
+        [0.000, 0.951, 0.588, 0.309, 0.191, 0.118, 0.073],
+        [0.951, 0.000, 0.951, 0.588, 0.309, 0.191, 0.118],
+        [0.588, 0.951, 0.000, 0.951, 0.588, 0.309, 0.191],
+        [0.309, 0.588, 0.951, 0.000, 0.951, 0.588, 0.309],
+        [0.191, 0.309, 0.588, 0.951, 0.000, 0.951, 0.588],
+        [0.118, 0.191, 0.309, 0.588, 0.951, 0.000, 0.951],
+        [0.073, 0.118, 0.191, 0.309, 0.588, 0.951, 0.000],
+    ]
+)
 
 # TEST 1: Structural comparison
 print("\n" + "=" * 70)
@@ -95,6 +100,7 @@ scpn_vals = K_norm[mask]
 r_struct, p_struct = stats.pearsonr(fmo_vals, scpn_vals)
 print(f"Structural correlation (normalised |J| vs K_nm): r={r_struct:.4f}, p={p_struct:.4f}")
 
+
 # Decay profiles
 def decay_profile(K, N):
     profile = []
@@ -107,10 +113,11 @@ def decay_profile(K, N):
         profile.append(np.mean(vals))
     return np.array(profile)
 
+
 prof_fmo = decay_profile(J_norm, N_fmo)
 prof_scpn = decay_profile(K_norm, N_fmo)
 
-print(f"\nDecay profiles (normalised):")
+print("\nDecay profiles (normalised):")
 print(f"  FMO:  {' '.join(f'{v:.3f}' for v in prof_fmo)}")
 print(f"  SCPN: {' '.join(f'{v:.3f}' for v in prof_scpn)}")
 
@@ -119,16 +126,16 @@ print(f"Decay profile correlation: r={r_decay:.4f}, p={p_decay:.4f}")
 
 # FMO topology characterisation
 print("\nFMO topology:")
-print(f"  Strongest coupling: BChl 5-6 ({abs(J_fmo[4,5]):.1f} cm^-1)")
-print(f"  Next: BChl 1-2 ({abs(J_fmo[0,1]):.1f} cm^-1)")
-print(f"  FMO is NOT a simple chain — it has specific long-range couplings")
+print(f"  Strongest coupling: BChl 5-6 ({abs(J_fmo[4, 5]):.1f} cm^-1)")
+print(f"  Next: BChl 1-2 ({abs(J_fmo[0, 1]):.1f} cm^-1)")
+print("  FMO is NOT a simple chain — it has specific long-range couplings")
 
 # Clustering coefficient
 threshold = 0.1  # normalised
 adj_fmo = (J_norm > threshold).astype(float)
 adj_scpn = (K_norm > threshold).astype(float)
-print(f"\n  FMO adjacency (>{threshold}): {np.sum(adj_fmo)/2:.0f} edges")
-print(f"  SCPN adjacency (>{threshold}): {np.sum(adj_scpn)/2:.0f} edges")
+print(f"\n  FMO adjacency (>{threshold}): {np.sum(adj_fmo) / 2:.0f} edges")
+print(f"  SCPN adjacency (>{threshold}): {np.sum(adj_scpn) / 2:.0f} edges")
 
 
 # TEST 2: Eigenvalue spectrum comparison
@@ -153,7 +160,7 @@ print(f"\nEigenvalue correlation: r={r_ev:.4f}, p={p_ev:.4f}")
 # Level spacing
 fmo_spacing = np.diff(ev_fmo_norm)
 scpn_spacing = np.diff(ev_scpn_norm)
-print(f"\nLevel spacings:")
+print("\nLevel spacings:")
 print(f"  FMO:  {' '.join(f'{s:.4f}' for s in fmo_spacing)}")
 print(f"  SCPN: {' '.join(f'{s:.4f}' for s in scpn_spacing)}")
 
@@ -169,6 +176,7 @@ print("=" * 70)
 omega_fmo_norm = (E_fmo - np.mean(E_fmo)) / np.std(E_fmo)
 K_fmo_kuramoto = J_abs / np.max(J_abs)
 
+
 def simulate_fmo_kuramoto(K_scale, dt=0.01, T=300, n_trials=15):
     n_steps = int(T / dt)
     R_trials = []
@@ -178,11 +186,14 @@ def simulate_fmo_kuramoto(K_scale, dt=0.01, T=300, n_trials=15):
             dtheta = omega_fmo_norm.copy()
             for i in range(N_fmo):
                 for j in range(N_fmo):
-                    dtheta[i] += K_scale * K_fmo_kuramoto[i, j] * np.sin(theta[j] - theta[i]) / N_fmo
+                    dtheta[i] += (
+                        K_scale * K_fmo_kuramoto[i, j] * np.sin(theta[j] - theta[i]) / N_fmo
+                    )
             theta += dtheta * dt
         z = np.mean(np.exp(1j * theta))
         R_trials.append(abs(z))
     return np.mean(R_trials), np.std(R_trials)
+
 
 # Scan K to find K_c for FMO topology
 K_scan = np.linspace(0.5, 8.0, 20)
@@ -196,8 +207,8 @@ R_arr = np.array(R_fmo_scan)
 idx_kc = np.argmin(np.abs(R_arr - 0.5))
 K_c_fmo = K_scan[idx_kc]
 print(f"\nK_c for FMO topology: {K_c_fmo:.2f}")
-print(f"K_c for SCPN topology: ~2.7")
-print(f"Ratio: {K_c_fmo/2.7:.2f}")
+print("K_c for SCPN topology: ~2.7")
+print(f"Ratio: {K_c_fmo / 2.7:.2f}")
 
 
 # TEST 4: Transport efficiency (ENAQT)
@@ -239,7 +250,7 @@ transport_arr = np.array(transport_eff)
 peak_idx = np.argmax(transport_arr)
 gamma_opt = noise_scan[peak_idx]
 
-print(f"Transport efficiency vs noise:")
+print("Transport efficiency vs noise:")
 for i in range(0, len(noise_scan), 4):
     print(f"  gamma={noise_scan[i]:.2f}: efficiency={transport_arr[i]:.3f}")
 
@@ -297,7 +308,7 @@ print("=" * 70)
 
 print(f"""
 1. Structural match FMO vs SCPN: r={r_struct:.3f}, p={p_struct:.4f}
-   {'CORRELATED' if p_struct < 0.05 else 'NOT SIGNIFICANT'}
+   {"CORRELATED" if p_struct < 0.05 else "NOT SIGNIFICANT"}
 
 2. Decay profile match: r={r_decay:.3f}, p={p_decay:.4f}
    FMO has SPECIFIC long-range couplings (not simple exponential)
@@ -305,9 +316,9 @@ print(f"""
 3. Eigenvalue correlation: r={r_ev:.3f}, p={p_ev:.4f}
 
 4. K_c: FMO={K_c_fmo:.2f}, SCPN=2.7
-   FMO topology {'easier' if K_c_fmo < 2.7 else 'harder'} to synchronise
+   FMO topology {"easier" if K_c_fmo < 2.7 else "harder"} to synchronise
 
-5. ENAQT: {'CONFIRMED' if enaqt else 'NOT DETECTED'}
+5. ENAQT: {"CONFIRMED" if enaqt else "NOT DETECTED"}
    Optimal noise gamma={gamma_opt:.2f}
    This connects directly to our stochastic resonance results
 
