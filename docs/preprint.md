@@ -7,6 +7,19 @@ ORCID: [0009-0009-3560-0851](https://orcid.org/0009-0009-3560-0851)
 
 *Preprint — March 2026*
 
+??? note "Cite this work"
+    ```bibtex
+    @software{sotek2026scpnqc,
+      author = {Šotek, Miroslav},
+      title = {scpn-quantum-control: Quantum Simulation of Coupled-Oscillator
+               Synchronisation on a 156-Qubit Superconducting Processor},
+      year = {2026},
+      version = {0.9.3},
+      url = {https://github.com/anulum/scpn-quantum-control},
+      doi = {10.5281/zenodo.18821929}
+    }
+    ```
+
 ---
 
 ## Abstract
