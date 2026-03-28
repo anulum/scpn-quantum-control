@@ -1,0 +1,19 @@
+{
+  "source": "Kaggle (anulum/scpn-bkt-universality-tests)",
+  "cft_central_charge": {
+    "n6": {"c_periodic": 0.951, "c_open": 1.901, "BKT_c": 1.0},
+    "n8": {"c_periodic": 1.039, "c_open": 2.078, "BKT_c": 1.0},
+    "n10": {"c_periodic": 1.214, "c_open": 2.428, "BKT_c": 1.0},
+    "n12": {"c_periodic": 1.305, "c_open": 2.610, "BKT_c": 1.0}
+  },
+  "bkt_gap_fit": {
+    "n4": {"K_c": 2.828, "b": 2.599, "R2": 0.9746, "verdict": "BKT CONFIRMED"},
+    "n6": {"K_c": 3.862, "b": 2.205, "R2": 0.9696, "verdict": "BKT CONFIRMED"},
+    "n8": {"K_c": 3.603, "b": 2.266, "R2": 0.9693, "verdict": "BKT CONFIRMED"},
+    "n10": {"K_c": 0.5, "b": 1.007, "R2": 0.072, "verdict": "BKT REJECTED (gap minimum misdetected)"}
+  },
+  "non_ergodicity": {
+    "n10": {"r_bar": 0.3751, "S_ratio": 0.570, "deficit_pct": 33.4},
+    "n12": {"r_bar": 0.3922, "S_ratio": 0.658, "deficit_pct": 25.3}
+  }
+}

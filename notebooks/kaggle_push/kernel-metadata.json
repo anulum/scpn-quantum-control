@@ -1,0 +1,13 @@
+{
+  "id": "anulum/scpn-bkt-universality",
+  "title": "SCPN BKT Universality Tests",
+  "code_file": "kaggle_bkt_universality.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": false,
+  "enable_gpu": false,
+  "enable_internet": true,
+  "keywords": ["quantum", "physics", "kuramoto"],
+  "competition_sources": [],
+  "dataset_sources": []
+}
