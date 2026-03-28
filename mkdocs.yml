@@ -46,6 +46,7 @@ nav:
   - Installation: installation.md
   - Quickstart: quickstart.md
   - Theory:
+      - SCPN Foundations: theory.md
       - Equations: equations.md
       - Architecture: architecture.md
       - Research Gems: research_gems.md
