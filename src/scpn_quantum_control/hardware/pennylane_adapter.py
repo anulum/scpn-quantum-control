@@ -34,7 +34,7 @@ try:
     import pennylane as qml  # type: ignore[import-untyped,import-not-found]
 
     _PL_AVAILABLE = True
-except ImportError:
+except Exception:
     _PL_AVAILABLE = False
     qml = None  # type: ignore[assignment]
 
