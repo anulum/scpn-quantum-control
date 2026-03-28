@@ -1,7 +1,7 @@
 {
-  "id": "anulum/scpn-bkt-universality",
-  "title": "SCPN BKT Universality Tests",
-  "code_file": "kaggle_bkt_universality.py",
+  "id": "anulum/scpn-magic-berry-qsl",
+  "title": "SCPN Magic Berry Phase Quantum Speed Limit",
+  "code_file": "kaggle_magic_berry_qsl.py",
   "language": "python",
   "kernel_type": "script",
   "is_private": false,

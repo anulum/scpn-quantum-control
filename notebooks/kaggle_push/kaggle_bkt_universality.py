@@ -15,16 +15,30 @@ import subprocess
 import sys
 import time
 
-subprocess.check_call(
-    [sys.executable, "-m", "pip", "install", "-q", "numpy", "scipy"]
-)
+subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", "numpy", "scipy"])
 
 import numpy as np
 
-OMEGA_N_16 = np.array([
-    1.329, 2.610, 0.844, 1.520, 0.710, 3.780, 1.055, 0.625,
-    2.210, 1.740, 0.480, 3.210, 0.915, 1.410, 2.830, 0.991,
-])
+OMEGA_N_16 = np.array(
+    [
+        1.329,
+        2.610,
+        0.844,
+        1.520,
+        0.710,
+        3.780,
+        1.055,
+        0.625,
+        2.210,
+        1.740,
+        0.480,
+        3.210,
+        0.915,
+        1.410,
+        2.830,
+        0.991,
+    ]
+)
 
 
 def build_knm(L, K_base=0.45, K_alpha=0.3):
@@ -94,7 +108,7 @@ for n in [6, 8, 10, 12]:
     l_values = []
     for l in range(1, n // 2 + 1):
         dim_A = 2**l
-        dim_B = 2**(n - l)
+        dim_B = 2 ** (n - l)
         svd_sq = np.linalg.svd(psi.reshape(dim_A, dim_B), compute_uv=False) ** 2
         svd_sq = svd_sq[svd_sq > 1e-30]
         S = -np.sum(svd_sq * np.log2(svd_sq))
@@ -116,8 +130,10 @@ for n in [6, 8, 10, 12]:
     print(f"  Time: {dt:.1f}s")
 
     results[f"cft_n{n}"] = {
-        "n": n, "K_c": K_c_est,
-        "l_values": l_values, "entropies": entropies,
+        "n": n,
+        "K_c": K_c_est,
+        "l_values": l_values,
+        "entropies": entropies,
         "c_periodic": round(c_periodic, 4),
         "c_open": round(c_open, 4),
         "time_s": round(dt, 1),
@@ -168,9 +184,12 @@ for n in [4, 6, 8, 10]:
     print(f"  Time: {dt:.1f}s")
 
     results[f"bkt_n{n}"] = {
-        "n": n, "K_c": round(K_c_local, 3),
-        "b": round(slope_bkt, 3), "R2": round(R2, 4),
-        "verdict": verdict, "time_s": round(dt, 1),
+        "n": n,
+        "K_c": round(K_c_local, 3),
+        "b": round(slope_bkt, 3),
+        "R2": round(R2, 4),
+        "verdict": verdict,
+        "time_s": round(dt, 1),
     }
 
 # ============================================================
@@ -195,7 +214,7 @@ for n in [10, 12]:
     dim = 2**n
     n_A = n // 2
     dim_A = 2**n_A
-    dim_B = 2**(n - n_A)
+    dim_B = 2 ** (n - n_A)
     quarter = dim // 4
     S_excited = []
     for idx in range(quarter, min(3 * quarter, dim)):
@@ -214,7 +233,8 @@ for n in [10, 12]:
     print(f"  Time: {dt:.1f}s")
 
     results[f"ergodicity_n{n}"] = {
-        "n": n, "r_bar": round(r_bar, 4),
+        "n": n,
+        "r_bar": round(r_bar, 4),
         "S_ratio": round(S_ratio, 4),
         "S_thermal": round(S_thermal, 4),
         "deficit_pct": round((1 - S_ratio / S_thermal) * 100, 1),
