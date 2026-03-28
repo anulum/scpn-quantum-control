@@ -18,30 +18,34 @@
 
 ## What This Package Does
 
-The classical Kuramoto model for coupled oscillators maps directly to the quantum
-XY spin Hamiltonian. Superconducting qubits are native simulators of this physics:
-each qubit is an oscillator on the Bloch sphere, and the XX+YY coupling between
-qubits reproduces the sin(theta_j - theta_i) interaction of the Kuramoto model.
+**The first quantum hardware demonstration of coupled-oscillator synchronisation
+with heterogeneous natural frequencies** — validated on IBM's ibm_fez (Heron r2,
+156 qubits) with Bell inequality violation (S=2.165), sub-threshold QKD error
+rates (5.5%), and 16-qubit Kuramoto dynamics.
 
-This package provides three things:
+The package provides:
 
-1. **A compiler** that takes any coupling matrix K_nm and natural frequencies
-   omega and produces executable Qiskit circuits for IBM hardware.
+1. **A Kuramoto-to-quantum compiler** — any coupling matrix K_nm and natural
+   frequencies omega compile directly into executable Qiskit circuits for IBM
+   hardware. Rust-accelerated Hamiltonian construction (5,401× faster than Qiskit).
 
-2. **33 research modules** (the "gems") implementing novel quantum probes of the
-   synchronization phase transition — synchronization witnesses, topological
-   diagnostics, chaos measures, computational complexity bounds, and open-system
-   dynamics. 21 of these have no prior art in the literature.
+2. **33 research modules** ("gems") implementing novel quantum probes of the
+   synchronisation phase transition — synchronisation witnesses (no prior art),
+   OTOC scrambling, Krylov complexity, persistent homology, DLA parity theorem,
+   and more. 21 of these have no prior literature.
 
-3. **The SCPN 16-layer network** as a built-in benchmark — the coupling matrix
-   from Paper 27 of the Sentient-Consciousness Projection Network framework,
-   where synchronization is the mechanism by which consciousness emerges across
-   16 ontological layers.
+3. **Hardware-validated results** — 20/20 experiments completed on ibm_fez,
+   176,000+ shots, 16 publication figures, 3 papers on GitHub Pages.
 
-Think of it as a quantum microscope for synchronization. Classical Kuramoto tells
-you *when* oscillators lock in step. This package tells you *what the quantum
-state looks like* at the transition, *how hard it is* to prepare, *what its
-topology reveals*, and *where classical simulation fails*.
+Think of it as a **quantum microscope for synchronisation**: classical Kuramoto
+tells you *when* oscillators lock in step; this package tells you *what the
+quantum state looks like* at the transition, *how entangled it is*, *how fast
+information scrambles*, and *whether the system thermalises*.
+
+> **Advanced benchmark:** The built-in SCPN 16-layer coupling matrix (Paper 27)
+> provides a heterogeneous-frequency benchmark from the Sentient-Consciousness
+> Projection Network framework, where synchronisation models consciousness
+> dynamics across ontological layers. See [SCPN Foundations](https://anulum.github.io/scpn-quantum-control/theory/).
 
 ## Key Results
 
@@ -401,8 +405,10 @@ Optional:
   ODE solvers outperform quantum simulation in both speed and accuracy.
   Potential quantum advantage requires N>>20 with error-corrected qubits
   (post-2030 hardware).
-- **IBM hardware results incomplete.** 20 experiments implemented and tested
-  on AerSimulator; none submitted to QPU yet (awaiting IBM Quantum budget).
+- **IBM hardware campaign complete.** 20/20 experiments executed on real QPU
+  (ibm_fez, Heron r2). 22 jobs, 176K+ shots. Job IDs and raw measurement
+  counts in `results/ibm_hardware_2026-03-{18,28}/`. All results are from
+  real quantum hardware, not simulator.
 
 ## Documentation
 
