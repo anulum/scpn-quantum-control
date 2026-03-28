@@ -1,7 +1,7 @@
 {
-  "id": "anulum/scpn-protein-folding-kuramoto",
-  "title": "Protein Folding as Kuramoto Synchronisation",
-  "code_file": "kaggle_protein_folding_kuramoto.py",
+  "id": "anulum/scpn-piezo-geometry-bio",
+  "title": "SCPN Piezoelectric Geometry Across Bio Scales",
+  "code_file": "kaggle_piezo_geometry_bio.py",
   "language": "python",
   "kernel_type": "script",
   "is_private": false,
