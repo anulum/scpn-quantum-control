@@ -219,7 +219,7 @@ Future work should use simulator for optimization, hardware for final evaluation
 - 16 labeled points (one per SCPN layer)
 - Spearman rho = -0.13 annotation (honest: not significant)
 - L12 (near-dead) and L3 (resilient) highlighted as outlier pair
-- **Script**: `scripts/plot_layer_coherence.py`
+- **Script**: not yet created (data in `results/ibm_hardware_2026-03-28/upde_16_dd.json`)
 
 ### Figure 4: Trotter Depth Tradeoff
 - X-axis: circuit depth

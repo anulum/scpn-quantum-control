@@ -58,7 +58,7 @@ benchmark results.
 
 ```bash
 python -c "import scpn_quantum_control; print('OK')"
-pytest tests/ -x -q  # 679 tests should pass
+pytest tests/ -x -q  # 2,715 tests should pass (13 skipped)
 ```
 
 ## IBM Quantum setup (optional)

@@ -26,9 +26,9 @@ XXZ Hamiltonian with anisotropy $\Delta$: $H = -\sum_{i<j} K_{ij}(X_iX_j + Y_iY_
 At $\Delta=0$: XY model (standard Kuramoto mapping). At $\Delta=1$: isotropic Heisenberg.
 
 ```python
-knm_to_ansatz(K: np.ndarray, reps: int = 2) -> QuantumCircuit
+knm_to_ansatz(K: np.ndarray, reps: int = 2, threshold: float = 0.01) -> QuantumCircuit
 ```
-Build physics-informed ansatz: CZ entanglement only between pairs where K[i,j] > threshold.
+Build physics-informed ansatz: CZ entanglement only between pairs where `K[i,j] > threshold`.
 
 ```python
 build_knm_paper27(L: int = 16, K_base: float = 0.45, K_alpha: float = 0.3) -> np.ndarray
@@ -294,18 +294,37 @@ Insert DD pulses on `idle_qubits` after existing gates. For transpiler-level ins
 
 ## hardware
 
-### `runner`
+### `runner.HardwareRunner`
 
 ```python
-run_experiment(experiment_name, backend_name="ibm_fez", shots=10000, **kwargs) -> dict
+HardwareRunner(token=None, channel="ibm_cloud", instance=None, backend_name=None,
+               use_simulator=False, optimization_level=2, resilience_level=2,
+               use_fractional_gates=True, results_dir="results", noise_model=None)
+    .connect()
+    .transpile(circuit) -> QuantumCircuit
+    .run_sampler(circuits, shots=10000, name="experiment") -> list[JobResult]
+    .run_estimator(circuit, observables, parameter_values=None, name="experiment") -> JobResult
+    .run_estimator_zne(circuit, observables, scales=None, order=1) -> ZNEResult
+    .transpile_with_dd(circuit, dd_sequence=None) -> QuantumCircuit
+    .save_result(result, filename=None) -> Path
 ```
 
 ### `experiments`
 
+20 pre-built experiment functions, each taking `(runner, shots=10000, ...) -> dict`:
+
 ```python
-build_kuramoto_circuits(n_qubits, t_max, dt, trotter_reps=1) -> list[QuantumCircuit]
-build_vqe_circuit(n_qubits, params, knm=None) -> QuantumCircuit
-build_qaoa_circuit(cost_hamiltonian, p_layers, params) -> QuantumCircuit
+kuramoto_4osc_experiment(runner, shots=10000, n_time_steps=8, dt=0.1)
+kuramoto_8osc_experiment(runner, shots=10000, n_time_steps=6, dt=0.1)
+vqe_4q_experiment(runner, shots=10000, maxiter=200)
+vqe_8q_experiment(runner, shots=10000, maxiter=150)
+qaoa_mpc_4_experiment(runner, shots=10000)
+upde_16_snapshot_experiment(runner, shots=20000, trotter_steps=1)
+kuramoto_4osc_zne_experiment(runner, shots=10000, ...)
+noise_baseline_experiment(runner, shots=10000)
+bell_test_4q_experiment(runner, shots=10000, maxiter=100)
+qkd_qber_4q_experiment(runner, shots=10000, maxiter=100)
+# ... and 10 more (see source for full list)
 ```
 
 ### `classical`

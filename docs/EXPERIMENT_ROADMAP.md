@@ -9,6 +9,10 @@ ITER disruption, quantum advantage, SNN/SSGF adapters, identity binding,
 QSNN training, fault-tolerant UPDE). All 20 experiments validated on
 AerSimulator. Hardware runs pending IBM Quantum API token.
 
+**Update (March 28, 2026):** All 20 experiments completed on ibm_fez hardware.
+22 jobs, 176,000+ shots. Results in `results/ibm_hardware_2026-03-28/`.
+March and April roadmap experiments are now COMPLETED, not planned.
+
 ## Experiment Inventory (20 total)
 
 | # | Experiment | Qubits | Est. QPU | Month | Science Question |

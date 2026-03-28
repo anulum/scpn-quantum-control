@@ -102,28 +102,28 @@ graph) coincides with synchronization $K_c$.
 
 ```python
 from scpn_quantum_control.analysis.entanglement_percolation import (
-    entanglement_percolation_scan,
-    PercolationResult,
+    percolation_scan,
+    PercolationScanResult,
 )
 ```
 
-`entanglement_percolation_scan(K, omega, K_base_range=None, n_K=20)` →
-`PercolationResult` with: `K_values`, `R_values`, `fiedler_values`,
+`percolation_scan(K, omega, K_base_range=None, n_K=20)` →
+`PercolationScanResult` with: `K_values`, `R_values`, `fiedler_values`,
 `concurrence_matrices`, `percolation_K`.
 
-### `berry_fidelity` — Berry Phase and Fidelity Susceptibility
+### `berry_phase` — Berry Phase and Fidelity Susceptibility
 
-Gauge-invariant fidelity susceptibility $\chi_F$ peaks at BKT transition.
+Gauge-invariant Berry phase and fidelity susceptibility peak at BKT transition.
 
 ```python
-from scpn_quantum_control.analysis.berry_fidelity import (
-    berry_fidelity_scan,
-    BerryFidelityResult,
+from scpn_quantum_control.analysis.berry_phase import (
+    berry_phase_scan,
+    BerryPhaseResult,
 )
 ```
 
-`berry_fidelity_scan(K, omega, K_base_range=None, n_K=20, dK=0.01)` →
-`BerryFidelityResult` with: `K_values`, `fidelity_values`,
+`berry_phase_scan(K, omega, K_base_range=None, n_K=20, dK=0.01)` →
+`BerryPhaseResult` with: `K_values`, `berry_phases`,
 `fidelity_susceptibility`, `berry_connection`.
 
 ### `finite_size_scaling` — BKT Finite-Size Extraction
@@ -140,20 +140,21 @@ from scpn_quantum_control.analysis.finite_size_scaling import (
 `finite_size_scaling(omega_full, K_base_fn, system_sizes=None, n_K=15)` → `FSSResult`
 with: `system_sizes`, `Kc_values`, `Kc_inf` (extrapolated), `fit_a`, `fit_residual`.
 
-### `adiabatic_gap` — Adiabatic Preparation Hardness
+### `adiabatic_preparation` — Adiabatic State Preparation
 
-Computes the minimum spectral gap along the adiabatic path to the BKT ground state.
+Adiabatic path from trivial initial state to the XY ground state. Computes
+gap along the path and estimates preparation time.
 
 ```python
-from scpn_quantum_control.analysis.adiabatic_gap import (
-    adiabatic_gap_scan,
-    AdiabaticGapResult,
+from scpn_quantum_control.phase.adiabatic_preparation import (
+    adiabatic_ramp,
+    AdiabaticResult,
 )
 ```
 
-`adiabatic_gap_scan(K, omega, n_points=50, s_range=(0.0, 1.0))` →
-`AdiabaticGapResult` with: `s_values`, `gaps`, `min_gap`, `min_gap_s`,
-`adiabatic_time_estimate`.
+`adiabatic_ramp(K, omega, n_steps=50, s_range=(0.0, 1.0))` →
+`AdiabaticResult` with: `s_values`, `gaps`, `min_gap`, `ground_fidelity`,
+`R_values`, `estimated_adiabatic_time`.
 
 ---
 
@@ -166,14 +167,14 @@ criticality, entropy follows CFT scaling $S \sim (c/3)\ln L$ with $c = 1$.
 
 ```python
 from scpn_quantum_control.analysis.entanglement_entropy import (
-    entanglement_entropy_scan,
-    EntanglementEntropyResult,
+    entanglement_vs_coupling,
+    EntanglementScanResult,
 )
 ```
 
-`entanglement_entropy_scan(K, omega, K_base_range=None, n_K=20)` →
-`EntanglementEntropyResult` with: `K_values`, `entropy_values`, `schmidt_gaps`,
-`schmidt_spectra`.
+`entanglement_vs_coupling(omega, K_topology, k_range=None)` →
+`EntanglementScanResult` with: `k_values`, `entropy`, `schmidt_gap`,
+`spectral_gap`, `entropy_peak_K`, `schmidt_gap_min_K`.
 
 **Rust acceleration:** Hamiltonian construction via `build_xy_hamiltonian_dense` (Qiskit-free).
 

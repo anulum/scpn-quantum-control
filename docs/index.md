@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/anulum/scpn-quantum-control/actions/workflows/ci.yml/badge.svg)](https://github.com/anulum/scpn-quantum-control/actions/workflows/ci.yml)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](https://github.com/anulum/scpn-quantum-control/blob/main/LICENSE)
-[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://python.org)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://python.org)
 [![Qiskit 1.0+](https://img.shields.io/badge/qiskit-1.0%2B-6929C4.svg)](https://qiskit.org)
 
 Quantum simulation of coupled Kuramoto oscillator networks on IBM superconducting
@@ -45,7 +45,7 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | DLA dimension formula | $2^{2N-1} - 2$ (exact, all $N$) |
 | Novel research modules | 33 (21 with no prior art) |
 | IBM hardware jobs | 9 submitted to ibm_fez (2 completed) |
-| Test suite | **1,789 passing**, 7 skipped |
+| Test suite | **2,715 passing**, 13 skipped, 98% coverage |
 | Python modules | 107 + 1 Rust crate |
 
 ## Package map
