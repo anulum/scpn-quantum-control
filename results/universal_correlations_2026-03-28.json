@@ -1,0 +1,14 @@
+{
+  "source": "Kaggle (anulum/scpn-universal-correlation-hunt-7-tests)",
+  "test1_musical": {"hits": 7, "random_mean": 8.4, "p": 0.967, "verdict": "NOT SIGNIFICANT"},
+  "test2_spectrum": {"spacing_exponent": -0.547, "note": "between harmonic (0) and H-atom (-3)"},
+  "test3_topology": {"clustering": 0.959, "mean_degree": 14.2, "verdict": "DENSE, near-complete, exponential decay"},
+  "test4_dimensional": {"insight": "omega is multi-scale: same dimensionless values at every physical scale"},
+  "test5_eigenratios": {"consecutive": [1.65, 1.70, 1.59, 1.55, 1.27, 1.10, 1.16], "note": "near golden ratio for top 2"},
+  "test6_Kc_topology": {
+    "ring": 1.11, "chain": 3.94, "star": 2.52, "complete": 1.72, "paper27": 2.73,
+    "verdict": "K_c is topology-dependent, not universal"
+  },
+  "test7_entropy": {"bits": 3.76, "relative": 0.94, "verdict": "NEAR-UNIFORM, more uniform than random"},
+  "synthesis": "SCPN encodes a mathematical structure (exponential hierarchy + heterogeneous frequencies) that is topology-specific but scale-invariant. Same dimensionless numbers describe ns to ks. K_nm is topology; omega is diversity."
+}
