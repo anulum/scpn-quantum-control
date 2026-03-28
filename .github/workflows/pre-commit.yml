@@ -5,6 +5,9 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 name: Pre-commit
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [main]

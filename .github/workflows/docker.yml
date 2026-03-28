@@ -6,6 +6,9 @@
 
 name: Docker
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [main]
