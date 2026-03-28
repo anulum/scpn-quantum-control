@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
-# (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved.
-# (c) Code 2020-2026 Miroslav Sotek. All rights reserved.
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control -- Schumann Resonance and EEG Theta Band
+# scpn-quantum-control — Schumann Resonance and EEG Theta Band
 #
 # Earth's electromagnetic cavity (ionosphere-surface) resonates at
 # 7.83 Hz (fundamental), 14.3, 20.8, 27.3, 33.8 Hz (harmonics).
