@@ -481,4 +481,4 @@ results = {
 }
 
 print("\n--- JSON RESULTS ---")
-print(json.dumps(results, indent=2))
+print(json.dumps(results, indent=2, default=str))

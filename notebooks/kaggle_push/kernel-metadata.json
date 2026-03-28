@@ -1,7 +1,7 @@
 {
-  "id": "anulum/scpn-cancer-hypersync-goldilocks",
-  "title": "SCPN Cancer Hypersync Goldilocks Zone",
-  "code_file": "kaggle_cancer_hypersync.py",
+  "id": "anulum/scpn-upde-tuning-from-38-empirical-findings",
+  "title": "SCPN UPDE Tuning From 38 Empirical Findings",
+  "code_file": "kaggle_upde_tuning.py",
   "language": "python",
   "kernel_type": "script",
   "is_private": false,
