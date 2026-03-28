@@ -1,7 +1,7 @@
 {
-  "id": "anulum/scpn-universal-correlations",
-  "title": "SCPN Universal Correlation Hunt 7 Tests",
-  "code_file": "kaggle_universal_correlations.py",
+  "id": "anulum/scpn-protein-folding-kuramoto",
+  "title": "Protein Folding as Kuramoto Synchronisation",
+  "code_file": "kaggle_protein_folding_kuramoto.py",
   "language": "python",
   "kernel_type": "script",
   "is_private": false,
