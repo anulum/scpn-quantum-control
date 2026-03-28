@@ -384,9 +384,10 @@ class TestAnalysisSingleLineGaps:
     def test_quantum_persistent_homology_no_ripser(self):
         from scpn_quantum_control.analysis import quantum_persistent_homology as qph
 
-        if not qph._RIPSER_AVAILABLE:
-            with pytest.raises(ImportError):
-                qph.quantum_persistent_homology(np.eye(4))
+        if qph._RIPSER_AVAILABLE:
+            pytest.skip("ripser installed — import guard not reachable")
+        with pytest.raises(ImportError):
+            qph.quantum_persistent_homology({"0": 100}, {"0": 100}, 2)
 
     def test_floquet_evolve(self):
         from scpn_quantum_control.phase.floquet_kuramoto import floquet_evolve
