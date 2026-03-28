@@ -1,7 +1,7 @@
 {
-  "id": "anulum/scpn-csf-metals-coupling-chain",
-  "title": "SCPN CSF Pressure Metal Ions Full Coupling Chain",
-  "code_file": "kaggle_csf_metals_chain.py",
+  "id": "anulum/scpn-water-coupling-medium",
+  "title": "SCPN Water as Coupling Medium Grotthuss Debye",
+  "code_file": "kaggle_water_coupling.py",
   "language": "python",
   "kernel_type": "script",
   "is_private": false,
