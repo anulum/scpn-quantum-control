@@ -3,6 +3,50 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.9.3] - 2026-03-28
+
+### Added
+
+- **Rust engine: 4 new functions** (11→15 total)
+  - `lanczos_b_coefficients`: complex Lanczos loop (27× vs numpy)
+  - `otoc_from_eigendecomp`: parallel OTOC via eigendecomp (264× vs scipy)
+  - `build_xy_hamiltonian_dense`: bitwise flip-flop (5,401× vs Qiskit)
+  - `all_xy_expectations`: batch Pauli (6.2× vs individual calls)
+- **IBM hardware campaign: 20/20 experiments complete**
+  - 22 jobs on ibm_fez (Heron r2, 156 qubits), 176,000+ shots
+  - CHSH S=2.165 (>8σ), QBER 5.5%, 16-qubit UPDE
+  - ZNE stable fold 1-9, Knm ansatz outperforms TwoLocal
+- **16 publication figures** (simulation + hardware + MBL + BKT)
+- **3 publications on GitHub Pages**: preprint, sync witnesses, DLA parity
+- **Scientific findings**:
+  - BKT universality preserved (CFT c=1.04 at n=8, gap R²>0.96)
+  - Non-ergodic regime (Poisson level spacing, 25-33% sub-thermal)
+  - DTC survives heterogeneous frequencies (15/15 amplitudes)
+  - Scrambling 4× faster at strong coupling (OTOC)
+- `knm_to_dense_matrix`: Rust fast path for dense Hamiltonian (8 modules migrated)
+- JAX GPU backend (`jax_accel.py`) for vectorised coupling scans
+- PyPI Rust wheel CI (`rust-wheels.yml`) for 5 platforms
+- SCPN theory page + biochemical foundations on GitHub Pages
+- Results gallery on GitHub Pages
+- 12 coverage tests for v0.9.3 additions
+- Kaggle notebook for JAX GPU validation + BKT universality tests
+
+### Changed
+
+- README reframed: hardware-first, SCPN as advanced benchmark
+- 12 GitHub topics added, repo description updated
+- GitHub Release v0.9.3 created
+- Merged 2 Dependabot PRs (codeql-action, codecov-action)
+
+### Fixed
+
+- Empty `pauli_list` crash in `knm_to_xxz_hamiltonian` (hypothesis edge case)
+- Rust parity tests: `pytest.importorskip` for Docker CI
+- JAX backend: build H in numpy/Rust, GPU for eigh/SVD only (was 1731× slower)
+- 3 TokenPermissions OpenSSF Scorecard alerts
+- Version test 0.9.2→0.9.3
+- Preprint MBL→non-ergodic correction (honest cross-validation)
+
 ## [0.9.2] - 2026-03-26
 
 ### Added
