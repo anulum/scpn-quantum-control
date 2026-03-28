@@ -1,7 +1,7 @@
 {
-  "id": "anulum/scpn-piezo-geometry-bio",
-  "title": "SCPN Piezoelectric Geometry Across Bio Scales",
-  "code_file": "kaggle_piezo_geometry_bio.py",
+  "id": "anulum/scpn-csf-metals-coupling-chain",
+  "title": "SCPN CSF Pressure Metal Ions Full Coupling Chain",
+  "code_file": "kaggle_csf_metals_chain.py",
   "language": "python",
   "kernel_type": "script",
   "is_private": false,
