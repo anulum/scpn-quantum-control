@@ -1,18 +1,18 @@
 # Architecture
 
-## Package Statistics (v0.9.2)
+## Package Statistics (v0.9.3)
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 107 |
+| Python modules | 155 |
 | Rust crate | 1 (PyO3 0.25) |
-| Tests | 1,789 |
-| Lines of code | ~17,500 |
+| Tests | 2,715 (98% coverage) |
+| Lines of code | ~23,800 |
 | Subpackages | 12 |
 | Research gems | 33 (21 novel, no prior art) |
 | Examples | 18 |
 | Notebooks | 13 |
-| Doc pages | 25 |
+| Doc pages | 29 |
 
 ## Subpackage Dependency Graph
 

@@ -192,8 +192,8 @@ verification, QBER estimation, Devetak-Winter key rates under noise.
 **Phase 3 — Complete**: Entanglement percolation on K_nm graph, hierarchical
 key derivation from 16-layer SCPN structure.
 
-**Phase 4 — In progress**: 3 hardware experiment wrappers implemented (v0.6.4).
-Awaiting March QPU budget for ibm_fez execution.
+**Phase 4 — Complete**: 3 hardware experiments executed on ibm_fez, March 28, 2026.
+Results in `results/ibm_hardware_2026-03-28/`.
 - `bell_test_4q`: CHSH S-value from hardware counts
 - `correlator_4q`: 4x4 connected correlation matrix
 - `qkd_qber_4q`: Z-basis and X-basis QBER

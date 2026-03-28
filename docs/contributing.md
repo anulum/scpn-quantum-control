@@ -39,7 +39,7 @@ results as JSON in `results/` with IBM job ID for reproducibility.
 
 ## Pull Request Checklist
 
-- [ ] Tests pass on Python 3.9–3.13
+- [ ] Tests pass on Python 3.10–3.13
 - [ ] Lint and type-check clean
 - [ ] No new dependencies without justification
 - [ ] CHANGELOG.md updated for user-facing changes
