@@ -63,6 +63,8 @@ nav:
       - Benchmarks API: benchmarks_api.md
   - Publications:
       - "Preprint: Quantum Kuramoto-XY on Hardware": preprint.md
+      - "Paper: Synchronisation Witnesses": paper_sync_witnesses.md
+      - "Paper: DLA Parity Theorem": paper_dla_parity.md
       - Results Gallery: results.md
   - Hardware:
       - IBM Guide: hardware_guide.md
