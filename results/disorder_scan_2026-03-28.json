@@ -1,0 +1,74 @@
+{
+  "d0.0": {
+    "disorder_factor": 0.0,
+    "r_bar": 0.1273,
+    "S_mean_excited": 1.8909,
+    "S_ratio": 0.4727
+  },
+  "d0.1": {
+    "disorder_factor": 0.1,
+    "r_bar": 0.3793,
+    "S_mean_excited": 1.8927,
+    "S_ratio": 0.4732
+  },
+  "d0.2": {
+    "disorder_factor": 0.2,
+    "r_bar": 0.3915,
+    "S_mean_excited": 1.9061,
+    "S_ratio": 0.4765
+  },
+  "d0.5": {
+    "disorder_factor": 0.5,
+    "r_bar": 0.4323,
+    "S_mean_excited": 1.9649,
+    "S_ratio": 0.4912
+  },
+  "d0.8": {
+    "disorder_factor": 0.8,
+    "r_bar": 0.3729,
+    "S_mean_excited": 1.9644,
+    "S_ratio": 0.4911
+  },
+  "d1.0": {
+    "disorder_factor": 1.0,
+    "r_bar": 0.4431,
+    "S_mean_excited": 1.9904,
+    "S_ratio": 0.4976
+  },
+  "d1.5": {
+    "disorder_factor": 1.5,
+    "r_bar": 0.4246,
+    "S_mean_excited": 2.0018,
+    "S_ratio": 0.5004
+  },
+  "d2.0": {
+    "disorder_factor": 2.0,
+    "r_bar": 0.407,
+    "S_mean_excited": 1.9342,
+    "S_ratio": 0.4835
+  },
+  "d3.0": {
+    "disorder_factor": 3.0,
+    "r_bar": 0.381,
+    "S_mean_excited": 1.7902,
+    "S_ratio": 0.4475
+  },
+  "topology_comparison": {
+    "Paper 27": {
+      "r_bar": 0.4431,
+      "S_ratio": 0.4976
+    },
+    "Random": {
+      "r_bar": 0.3738,
+      "S_ratio": 0.5835
+    },
+    "Complete": {
+      "r_bar": 0.4207,
+      "S_ratio": 0.4175
+    },
+    "Ring": {
+      "r_bar": 0.3834,
+      "S_ratio": 0.5137
+    }
+  }
+}
