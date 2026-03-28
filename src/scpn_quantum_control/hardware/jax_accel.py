@@ -135,10 +135,11 @@ def entanglement_scan_jax(
     omega: np.ndarray,
     k_range: np.ndarray,
 ) -> dict:
-    """Entanglement entropy + Schmidt gap scan, fully on GPU via JAX.
+    """Entanglement entropy + Schmidt gap scan on GPU via JAX.
 
-    For each K_base: build H → eigh → SVD of ground state → entropy.
-    Vectorised with jax.vmap for GPU parallelism.
+    Builds Hamiltonians in numpy/Rust (fast), transfers batch to GPU,
+    runs eigh + SVD on GPU via jax.vmap. Only beneficial for n >= 12
+    where eigh dominates over transfer overhead.
     """
     if not _JAX_AVAILABLE or _jnp is None:
         raise RuntimeError("JAX not available")
@@ -150,31 +151,33 @@ def entanglement_scan_jax(
     n_A = n // 2 or 1
     dim_A = 1 << n_A
     dim_B = 1 << (n - n_A)
-    K_topo_j = jnp.array(K_topo)
-    omega_j = jnp.array(omega)
+    dim = 1 << n
+
+    # Build all Hamiltonians in numpy/Rust (fast) then batch-transfer to GPU
+    from ..bridge.knm_hamiltonian import knm_to_dense_matrix
+
+    H_batch = np.zeros((len(k_range), dim, dim))
+    for idx, kb in enumerate(k_range):
+        K = float(kb) * K_topo
+        H_batch[idx] = knm_to_dense_matrix(K, omega).real
+
+    H_batch_j = jnp.array(H_batch)
 
     @jax.jit
-    def _entropy_at_k(kb):
-        K = kb * K_topo_j
-        H = _build_xy_hamiltonian_jax(K, omega_j, n)
+    def _entropy_from_H(H):
         eigvals, eigvecs = jnp.linalg.eigh(H)
         psi = eigvecs[:, 0]
-
-        # SVD of reshaped ground state
         psi_mat = psi.reshape(dim_A, dim_B)
         svd_vals = jnp.linalg.svd(psi_mat, compute_uv=False)
         svd_sq = svd_vals**2
         svd_sq = jnp.where(svd_sq > 1e-30, svd_sq, 1e-30)
         entropy = -jnp.sum(svd_sq * jnp.log2(svd_sq))
-
         sorted_vals = jnp.sort(svd_vals)[::-1]
         schmidt_gap = sorted_vals[0] - jnp.where(sorted_vals.shape[0] > 1, sorted_vals[1], 0.0)
         spectral_gap = eigvals[1] - eigvals[0]
-
         return entropy, schmidt_gap, spectral_gap
 
-    k_range_j = jnp.array(k_range)
-    entropies, gaps, spec_gaps = jax.vmap(_entropy_at_k)(k_range_j)
+    entropies, gaps, spec_gaps = jax.vmap(_entropy_from_H)(H_batch_j)
 
     return {
         "k_values": np.asarray(k_range),
