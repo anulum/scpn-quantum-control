@@ -21,7 +21,7 @@ on a 156-qubit superconducting processor (IBM ibm_fez, Heron r2).*
 | 10 | DTC survives disorder | 15/15 drive amplitudes | Floquet simulation |
 | 11 | Scrambling peak | 4× faster at K=4 vs K=1 | OTOC simulation |
 | 12 | Trotter error quantified | dt=0.1 vs dt=0.05 flips Q1 sign | ibm_fez hardware |
-| 13 | MBL protection strengthens with N | n=8 never reaches GOE (max r̄=0.43) | Level spacing scan |
+| 13 | Non-ergodic regime (not deep MBL) | Poisson level spacing + 30-40% sub-thermal eigenstate S | Level spacing + eigenstate scan |
 
 ---
 
@@ -151,7 +151,14 @@ strengthens with system size. The heterogeneous frequencies act as effective
 disorder preventing thermalisation. This is the physics behind identity
 persistence: the coupling topology is protected from thermal decoherence.
 
-No prior art for MBL in heterogeneous-frequency Kuramoto-XY.
+**Cross-validation (eigenstate entanglement):** Excited-state entropy is 30–40%
+below thermal (Page) expectation, confirming non-ergodicity. However, entropy
+grows with N (sub-volume, not area law), ruling out deep MBL. Correct label:
+**non-ergodic regime** — coupling topology protected from thermal scrambling.
+
+![Eigenstate entanglement](figures/publication/fig16_eigenstate_entanglement.png)
+
+No prior art for non-ergodicity diagnostics in heterogeneous-frequency Kuramoto-XY.
 
 ---
 
