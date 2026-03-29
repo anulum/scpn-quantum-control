@@ -14,11 +14,11 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from scipy.stats import pearsonr
 
 # ---------------------------------------------------------------------------
 # FIM core functions (as used across NB24-47)
 # ---------------------------------------------------------------------------
+
 
 def fim_gradient_all(phases: np.ndarray, eps: float = 0.01, cap: float = 50.0) -> np.ndarray:
     """FIM strange loop gradient for all oscillators."""
@@ -32,13 +32,19 @@ def fim_gradient_all(phases: np.ndarray, eps: float = 0.01, cap: float = 50.0) -
 
 
 def simulate_R(
-    N: int, K_scale: float, fim_lambda: float,
-    dt: float = 0.02, T: float = 100.0, noise: float = 0.05, seed: int = 42,
+    N: int,
+    K_scale: float,
+    fim_lambda: float,
+    dt: float = 0.02,
+    T: float = 100.0,
+    noise: float = 0.05,
+    seed: int = 42,
 ) -> float:
     """Simulate Kuramoto + FIM, return time-averaged R."""
-    from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27, OMEGA_N_16
+    from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+
     K = build_knm_paper27(L=min(N, 16)) * K_scale
-    omega = OMEGA_N_16[:min(N, 16)]
+    omega = OMEGA_N_16[: min(N, 16)]
     rng = np.random.default_rng(seed)
     theta = rng.uniform(0, 2 * np.pi, N)
     n_steps = int(T / dt)
@@ -58,6 +64,7 @@ def simulate_R(
 # ---------------------------------------------------------------------------
 # 1. FIM gradient properties
 # ---------------------------------------------------------------------------
+
 
 class TestFIMGradient:
     """Test FIM gradient mathematical properties."""
@@ -104,6 +111,7 @@ class TestFIMGradient:
 # 2. FIM solves N=16 (NB24)
 # ---------------------------------------------------------------------------
 
+
 class TestFIMSolvesN16:
     """Test that FIM enables N=16 synchronisation."""
 
@@ -122,6 +130,7 @@ class TestFIMSolvesN16:
 # 3. FIM alone synchronises (NB26)
 # ---------------------------------------------------------------------------
 
+
 class TestFIMAloneSyncs:
     """Test that FIM synchronises without any coupling."""
 
@@ -134,6 +143,7 @@ class TestFIMAloneSyncs:
 # ---------------------------------------------------------------------------
 # 4. Scaling law (NB25)
 # ---------------------------------------------------------------------------
+
 
 class TestScalingLaw:
     """Test λ_c(N) = 0.149·N^1.02 scaling law."""
@@ -162,12 +172,18 @@ class TestScalingLaw:
 # 5. IBM hardware results (IBM v1 + v2)
 # ---------------------------------------------------------------------------
 
+
 class TestIBMHardware:
     """Regression tests for IBM hardware results."""
 
     def test_ibm_v1_significant(self):
         """IBM v1 DLA parity result is statistically significant."""
-        path = Path(__file__).parent.parent / "results" / "ibm_hardware_2026-03-29" / "dla_parity_results.json"
+        path = (
+            Path(__file__).parent.parent
+            / "results"
+            / "ibm_hardware_2026-03-29"
+            / "dla_parity_results.json"
+        )
         if not path.exists():
             pytest.skip("IBM v1 results not available")
         data = json.loads(path.read_text())
@@ -178,7 +194,12 @@ class TestIBMHardware:
 
     def test_ibm_v1_fidelities_in_range(self):
         """IBM fidelities should be between 0 and 1."""
-        path = Path(__file__).parent.parent / "results" / "ibm_hardware_2026-03-29" / "dla_parity_results.json"
+        path = (
+            Path(__file__).parent.parent
+            / "results"
+            / "ibm_hardware_2026-03-29"
+            / "dla_parity_results.json"
+        )
         if not path.exists():
             pytest.skip("IBM v1 results not available")
         data = json.loads(path.read_text())
@@ -187,7 +208,12 @@ class TestIBMHardware:
 
     def test_ibm_v2_dual_protection(self):
         """FIM ground state more robust than XY on hardware."""
-        path = Path(__file__).parent.parent / "results" / "ibm_hardware_v2_2026-03-29" / "full_results.json"
+        path = (
+            Path(__file__).parent.parent
+            / "results"
+            / "ibm_hardware_v2_2026-03-29"
+            / "full_results.json"
+        )
         if not path.exists():
             pytest.skip("IBM v2 results not available")
         data = json.loads(path.read_text())
@@ -195,7 +221,12 @@ class TestIBMHardware:
 
     def test_ibm_v2_sector_separation(self):
         """Aligned states survive, mixed states don't."""
-        path = Path(__file__).parent.parent / "results" / "ibm_hardware_v2_2026-03-29" / "full_results.json"
+        path = (
+            Path(__file__).parent.parent
+            / "results"
+            / "ibm_hardware_v2_2026-03-29"
+            / "full_results.json"
+        )
         if not path.exists():
             pytest.skip("IBM v2 results not available")
         data = json.loads(path.read_text())
@@ -206,6 +237,7 @@ class TestIBMHardware:
 # ---------------------------------------------------------------------------
 # 6. Information-theoretic (NB28)
 # ---------------------------------------------------------------------------
+
 
 class TestInformationTheoretic:
     """Test Φ increase under FIM."""
@@ -225,6 +257,7 @@ class TestInformationTheoretic:
 # ---------------------------------------------------------------------------
 # 7. MBL mechanism (NB31, NB38)
 # ---------------------------------------------------------------------------
+
 
 class TestMBLMechanism:
     """Test FIM-MBL interaction."""
@@ -265,6 +298,7 @@ class TestMBLMechanism:
 # 8. Topology universality (NB36)
 # ---------------------------------------------------------------------------
 
+
 class TestTopologyUniversality:
     """Test FIM works on all topologies."""
 
@@ -274,12 +308,13 @@ class TestTopologyUniversality:
             pytest.skip("Results not available")
         data = json.loads(path.read_text())
         for entry in data["data"]:
-            assert entry["boost"] > 0, f'{entry["topology"]} has negative FIM boost'
+            assert entry["boost"] > 0, f"{entry['topology']} has negative FIM boost"
 
 
 # ---------------------------------------------------------------------------
 # 9. Thermodynamics (NB33)
 # ---------------------------------------------------------------------------
+
 
 class TestThermodynamics:
     """Test linear power cost."""
@@ -288,7 +323,8 @@ class TestThermodynamics:
         """Power should be approximately linear in λ (r > 0.95)."""
         # From NB33: P vs λ at K=12 has r=0.984
         # Verify by simulation at two points
-        from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27, OMEGA_N_16
+        from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+
         N = 8
         K = build_knm_paper27(L=N) * 8
         omega = OMEGA_N_16[:N]
@@ -308,7 +344,9 @@ class TestThermodynamics:
                     fim_force = lam * fim_gradient_all(theta)
                 dphi_total = dphi + fim_force
                 total_power += float(np.sum(fim_force * dphi_total))
-                theta = (theta + 0.02 * dphi_total + np.sqrt(0.02) * 0.05 * rng.normal(size=N)) % (2 * np.pi)
+                theta = (theta + 0.02 * dphi_total + np.sqrt(0.02) * 0.05 * rng.normal(size=N)) % (
+                    2 * np.pi
+                )
             powers.append(total_power / n_steps)
 
         # λ=3 should have higher power than λ=0
@@ -317,7 +355,8 @@ class TestThermodynamics:
     def test_phase_space_contraction(self):
         """FIM should contract phase space (negative divergence)."""
         # At sync, coupling divergence is negative
-        from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27, OMEGA_N_16
+        from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
+
         N = 4
         K = build_knm_paper27(L=N) * 10
         # Near-sync state
@@ -334,6 +373,7 @@ class TestThermodynamics:
 # 10. Critical exponents (NB43)
 # ---------------------------------------------------------------------------
 
+
 class TestCriticalExponents:
     """Test BKT universality."""
 
@@ -341,7 +381,6 @@ class TestCriticalExponents:
         """β from NB43 should be well below mean-field 0.5."""
         # Regression test: at N=16, β ≈ 0.083 (NB43 result)
         # Verify via quick R vs K sweep
-        from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27, OMEGA_N_16
         N = 8
         # R at K slightly above K_c should grow slowly (β small)
         R_low = simulate_R(N, K_scale=8, fim_lambda=0, T=80)
@@ -363,6 +402,7 @@ class TestCriticalExponents:
 # 11. Stability (NB27)
 # ---------------------------------------------------------------------------
 
+
 class TestStability:
     """Test FIM stability properties."""
 
@@ -381,6 +421,7 @@ class TestStability:
 # ---------------------------------------------------------------------------
 # 12. Topological defects (NB47)
 # ---------------------------------------------------------------------------
+
 
 class TestTopologicalDefects:
     """Test FIM suppresses vortices."""
@@ -401,6 +442,7 @@ class TestTopologicalDefects:
 # 13. Metabolic scaling (NB46)
 # ---------------------------------------------------------------------------
 
+
 class TestMetabolicScaling:
     """Test P ∝ N prediction."""
 
@@ -415,6 +457,7 @@ class TestMetabolicScaling:
 # ---------------------------------------------------------------------------
 # 14. Mean-field equation (NB37)
 # ---------------------------------------------------------------------------
+
 
 class TestMeanField:
     """Test self-consistent equation."""
@@ -441,8 +484,8 @@ class TestMeanField:
 
     def test_equation_structure(self):
         """R=0 is always a fixed point (trivial solution)."""
+
         # Verify: residual(R=0) = 0 (desync is always a solution)
-        from scipy.optimize import fsolve
         def residual(R, K_eff, lam, Delta, eps=0.01):
             if R <= 0.01:
                 return -R
@@ -450,6 +493,7 @@ class TestMeanField:
             if h <= 0:
                 return -R
             return np.sqrt(1 - 2 * Delta / h) - R
+
         # At very weak coupling and λ, R=0 should be stable
         assert abs(residual(0.001, 0.1, 0.1, 1.14)) < 0.01
 
@@ -458,15 +502,24 @@ class TestMeanField:
 # 15. Cross-frequency observables (NB22)
 # ---------------------------------------------------------------------------
 
+
 class TestCrossFrequency:
     """Test PAC, wavelet coherence, Granger results."""
 
     def test_results_exist(self):
-        path = Path(__file__).parent.parent / "results" / "cross_frequency_observables_2026-03-29.json"
+        path = (
+            Path(__file__).parent.parent
+            / "results"
+            / "cross_frequency_observables_2026-03-29.json"
+        )
         assert path.exists()
 
     def test_pac_theta_beta_strongest(self):
-        path = Path(__file__).parent.parent / "results" / "cross_frequency_observables_2026-03-29.json"
+        path = (
+            Path(__file__).parent.parent
+            / "results"
+            / "cross_frequency_observables_2026-03-29.json"
+        )
         data = json.loads(path.read_text())
         pac = data["pac"]
         # theta→beta should be strongest across records
