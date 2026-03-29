@@ -1,0 +1,5 @@
+{
+  "experiment": "Self-consistent mean-field theory of FIM-Kuramoto",
+  "equation": "R = sqrt(1 - 2*Delta / (K*R + lambda*R/(1-R^2+eps)))",
+  "Delta_fit": 1.1401
+}
