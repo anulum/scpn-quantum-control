@@ -1,0 +1,48 @@
+{
+  "experiment": "FIM topology universality \u2014 does self-observation work on any network?",
+  "N": 32,
+  "data": [
+    {
+      "topology": "Ring",
+      "R_lam0": 0.1461,
+      "R_lam1": 0.2022,
+      "R_lam5": 0.2969,
+      "boost": 0.1508
+    },
+    {
+      "topology": "Complete",
+      "R_lam0": 0.8566,
+      "R_lam1": 0.9053,
+      "R_lam5": 0.9988,
+      "boost": 0.1422
+    },
+    {
+      "topology": "Star",
+      "R_lam0": 0.2072,
+      "R_lam1": 0.227,
+      "R_lam5": 0.3284,
+      "boost": 0.1212
+    },
+    {
+      "topology": "Erdos-Renyi",
+      "R_lam0": 0.2559,
+      "R_lam1": 0.2562,
+      "R_lam5": 0.5142,
+      "boost": 0.2583
+    },
+    {
+      "topology": "Small-World",
+      "R_lam0": 0.1495,
+      "R_lam1": 0.2059,
+      "R_lam5": 0.458,
+      "boost": 0.3085
+    },
+    {
+      "topology": "Scale-Free",
+      "R_lam0": 0.1889,
+      "R_lam1": 0.2196,
+      "R_lam5": 0.3359,
+      "boost": 0.147
+    }
+  ]
+}

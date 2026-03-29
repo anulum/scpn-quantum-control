@@ -1,0 +1,58 @@
+{
+  "experiment": "Multi-scale sync dynamics under FIM",
+  "N": 16,
+  "K_scale": 12,
+  "domains": {
+    "A (L1-L4)": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "B (L5-L8)": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "C (L9-L12)": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "D (L13-L16)": [
+      12,
+      13,
+      14,
+      15
+    ]
+  },
+  "no FIM": {
+    "R_global_final": 0.8512,
+    "R_domains_final": {
+      "A (L1-L4)": 0.8985,
+      "B (L5-L8)": 0.9199,
+      "C (L9-L12)": 0.8676,
+      "D (L13-L16)": 0.8225
+    }
+  },
+  "FIM \u03bb=1": {
+    "R_global_final": 0.7327,
+    "R_domains_final": {
+      "A (L1-L4)": 0.9021,
+      "B (L5-L8)": 0.6564,
+      "C (L9-L12)": 0.8573,
+      "D (L13-L16)": 0.5586
+    }
+  },
+  "FIM \u03bb=5": {
+    "R_global_final": 0.9984,
+    "R_domains_final": {
+      "A (L1-L4)": 0.9992,
+      "B (L5-L8)": 0.9971,
+      "C (L9-L12)": 0.9985,
+      "D (L13-L16)": 0.9992
+    }
+  }
+}
