@@ -1,0 +1,152 @@
+{
+  "experiment": "SPO cross-validation experiments",
+  "gauge_invariance": "CONFIRMED",
+  "mean_field_mae": 0.3859,
+  "lyapunov_correspondence": [
+    {
+      "n": 4,
+      "K": 1,
+      "lam": 0,
+      "gap": 1.1317,
+      "lyap": -0.0002,
+      "both": "partial"
+    },
+    {
+      "n": 4,
+      "K": 1,
+      "lam": 1,
+      "gap": 4.1317,
+      "lyap": -0.0008,
+      "both": "partial"
+    },
+    {
+      "n": 4,
+      "K": 1,
+      "lam": 5,
+      "gap": 12.606,
+      "lyap": -0.0008,
+      "both": "partial"
+    },
+    {
+      "n": 4,
+      "K": 5,
+      "lam": 0,
+      "gap": 0.6487,
+      "lyap": -0.0007,
+      "both": "partial"
+    },
+    {
+      "n": 4,
+      "K": 5,
+      "lam": 1,
+      "gap": 1.1367,
+      "lyap": -0.0008,
+      "both": "partial"
+    },
+    {
+      "n": 4,
+      "K": 5,
+      "lam": 5,
+      "gap": 10.8633,
+      "lyap": -0.0008,
+      "both": "partial"
+    },
+    {
+      "n": 4,
+      "K": 10,
+      "lam": 0,
+      "gap": 1.7406,
+      "lyap": -0.0008,
+      "both": "partial"
+    },
+    {
+      "n": 4,
+      "K": 10,
+      "lam": 1,
+      "gap": 0.7406,
+      "lyap": -0.0008,
+      "both": "partial"
+    },
+    {
+      "n": 4,
+      "K": 10,
+      "lam": 5,
+      "gap": 3.7777,
+      "lyap": -0.0008,
+      "both": "partial"
+    },
+    {
+      "n": 6,
+      "K": 1,
+      "lam": 0,
+      "gap": 0.4468,
+      "lyap": -0.003,
+      "both": "no"
+    },
+    {
+      "n": 6,
+      "K": 1,
+      "lam": 1,
+      "gap": 3.7801,
+      "lyap": -0.0111,
+      "both": "partial"
+    },
+    {
+      "n": 6,
+      "K": 1,
+      "lam": 5,
+      "gap": 17.1135,
+      "lyap": -0.0115,
+      "both": "partial"
+    },
+    {
+      "n": 6,
+      "K": 5,
+      "lam": 0,
+      "gap": 1.3587,
+      "lyap": -0.0037,
+      "both": "partial"
+    },
+    {
+      "n": 6,
+      "K": 5,
+      "lam": 1,
+      "gap": 0.9774,
+      "lyap": -0.0067,
+      "both": "partial"
+    },
+    {
+      "n": 6,
+      "K": 5,
+      "lam": 5,
+      "gap": 9.3729,
+      "lyap": -0.0115,
+      "both": "partial"
+    },
+    {
+      "n": 6,
+      "K": 10,
+      "lam": 0,
+      "gap": 0.7004,
+      "lyap": 0.0034,
+      "both": "partial"
+    },
+    {
+      "n": 6,
+      "K": 10,
+      "lam": 1,
+      "gap": 0.0337,
+      "lyap": -0.0115,
+      "both": "no"
+    },
+    {
+      "n": 6,
+      "K": 10,
+      "lam": 5,
+      "gap": 0.7803,
+      "lyap": -0.0115,
+      "both": "partial"
+    }
+  ],
+  "k_symmetry": "Quantum Hamiltonian always Hermitian by Pauli construction"
+}
