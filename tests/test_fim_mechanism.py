@@ -15,6 +15,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+RESULTS_DIR = Path(__file__).parent.parent / "results"
+
 # ---------------------------------------------------------------------------
 # FIM core functions (as used across NB24-47)
 # ---------------------------------------------------------------------------
@@ -150,19 +152,19 @@ class TestScalingLaw:
 
     def test_scaling_law_file_exists(self):
         """Scaling law results file exists."""
-        path = Path(__file__).parent.parent / "results" / "fim_scaling_law_2026-03-29.json"
+        path = RESULTS_DIR / "fim_scaling_law_2026-03-29.json"
         assert path.exists()
 
     def test_scaling_exponent_near_one(self):
         """Power law exponent α should be near 1.0."""
-        path = Path(__file__).parent.parent / "results" / "fim_scaling_law_2026-03-29.json"
+        path = RESULTS_DIR / "fim_scaling_law_2026-03-29.json"
         data = json.loads(path.read_text())
         alpha = data["power_law_fit"]["alpha"]
         assert 0.8 < alpha < 1.3, f"α={alpha} outside expected range"
 
     def test_scaling_r_squared(self):
         """Power law fit R² should be > 0.9."""
-        path = Path(__file__).parent.parent / "results" / "fim_scaling_law_2026-03-29.json"
+        path = RESULTS_DIR / "fim_scaling_law_2026-03-29.json"
         data = json.loads(path.read_text())
         r2 = data["power_law_fit"]["R_squared"]
         assert r2 > 0.9
@@ -184,8 +186,6 @@ class TestIBMHardware:
             / "ibm_hardware_2026-03-29"
             / "dla_parity_results.json"
         )
-        if not path.exists():
-            pytest.skip("IBM v1 results not available")
         data = json.loads(path.read_text())
         assert data["p_value"] < 0.001
         assert data["significant"] is True
@@ -200,8 +200,6 @@ class TestIBMHardware:
             / "ibm_hardware_2026-03-29"
             / "dla_parity_results.json"
         )
-        if not path.exists():
-            pytest.skip("IBM v1 results not available")
         data = json.loads(path.read_text())
         for f in data["F_even"] + data["F_odd"]:
             assert 0 < f <= 1
@@ -214,8 +212,6 @@ class TestIBMHardware:
             / "ibm_hardware_v2_2026-03-29"
             / "full_results.json"
         )
-        if not path.exists():
-            pytest.skip("IBM v2 results not available")
         data = json.loads(path.read_text())
         assert data["C_fim"]["mean"] > data["C_xy"]["mean"]
 
@@ -227,8 +223,6 @@ class TestIBMHardware:
             / "ibm_hardware_v2_2026-03-29"
             / "full_results.json"
         )
-        if not path.exists():
-            pytest.skip("IBM v2 results not available")
         data = json.loads(path.read_text())
         assert data["B_M+4"]["mean"] > 0.9
         assert data["B_M0"]["mean"] < 0.01
@@ -243,9 +237,7 @@ class TestInformationTheoretic:
     """Test Φ increase under FIM."""
 
     def test_phi_increases_with_fim(self):
-        path = Path(__file__).parent.parent / "results" / "information_theoretic_2026-03-29.json"
-        if not path.exists():
-            pytest.skip("Results not available")
+        path = RESULTS_DIR / "information_theoretic_2026-03-29.json"
         data = json.loads(path.read_text())
         phi_data = data["phi_data"]
         # K=12: Φ(λ=0) < Φ(λ=5)
@@ -264,9 +256,7 @@ class TestMBLMechanism:
 
     def test_fim_mbl_n6_toward_poisson(self):
         """r̄ should decrease (toward Poisson 0.386) with FIM at n=6."""
-        path = Path(__file__).parent.parent / "results" / "fim_mbl_interaction_2026-03-29.json"
-        if not path.exists():
-            pytest.skip("Results not available")
+        path = RESULTS_DIR / "fim_mbl_interaction_2026-03-29.json"
         data = json.loads(path.read_text())
         results = data["results"]
         r_no = [r for r in results if r["n"] == 6 and r["lambda"] == 0][0]["r_bar"]
@@ -275,9 +265,7 @@ class TestMBLMechanism:
 
     def test_fim_mbl_entanglement_drops_n8(self):
         """Entanglement entropy should decrease with FIM at n=8."""
-        path = Path(__file__).parent.parent / "results" / "fim_mbl_interaction_2026-03-29.json"
-        if not path.exists():
-            pytest.skip("Results not available")
+        path = RESULTS_DIR / "fim_mbl_interaction_2026-03-29.json"
         data = json.loads(path.read_text())
         results = data["results"]
         s_no = [r for r in results if r["n"] == 8 and r["lambda"] == 0][0]["S_ent"]
@@ -286,7 +274,7 @@ class TestMBLMechanism:
 
     def test_fim_enhances_mbl_at_n8(self):
         """r̄ should decrease (toward Poisson) with FIM at n=8."""
-        path = Path(__file__).parent.parent / "results" / "fim_mbl_interaction_2026-03-29.json"
+        path = RESULTS_DIR / "fim_mbl_interaction_2026-03-29.json"
         data = json.loads(path.read_text())
         results = data["results"]
         r_no_fim = [r for r in results if r["n"] == 8 and r["lambda"] == 0][0]["r_bar"]
@@ -303,9 +291,7 @@ class TestTopologyUniversality:
     """Test FIM works on all topologies."""
 
     def test_all_topologies_improve(self):
-        path = Path(__file__).parent.parent / "results" / "topology_universality_2026-03-29.json"
-        if not path.exists():
-            pytest.skip("Results not available")
+        path = RESULTS_DIR / "topology_universality_2026-03-29.json"
         data = json.loads(path.read_text())
         for entry in data["data"]:
             assert entry["boost"] > 0, f"{entry['topology']} has negative FIM boost"
@@ -427,11 +413,11 @@ class TestTopologicalDefects:
     """Test FIM suppresses vortices."""
 
     def test_defect_results_exist(self):
-        path = Path(__file__).parent.parent / "results" / "topological_defects_2026-03-29.json"
+        path = RESULTS_DIR / "topological_defects_2026-03-29.json"
         assert path.exists()
 
     def test_fim_reduces_defects(self):
-        path = Path(__file__).parent.parent / "results" / "topological_defects_2026-03-29.json"
+        path = RESULTS_DIR / "topological_defects_2026-03-29.json"
         data = json.loads(path.read_text())
         d_no = [d for d in data["data"] if d["K"] == 10 and d["lam"] == 0][0]["defects"]
         d_fim = [d for d in data["data"] if d["K"] == 10 and d["lam"] == 5][0]["defects"]
@@ -447,9 +433,7 @@ class TestMetabolicScaling:
     """Test P ∝ N prediction."""
 
     def test_log_correlation(self):
-        path = Path(__file__).parent.parent / "results" / "metabolic_scaling_2026-03-29.json"
-        if not path.exists():
-            pytest.skip("Results not available")
+        path = RESULTS_DIR / "metabolic_scaling_2026-03-29.json"
         data = json.loads(path.read_text())
         assert data["log_correlation"] > 0.95
 
@@ -560,16 +544,18 @@ EXPECTED_RESULTS = [
 
 
 class TestAllResultsPresent:
-    """Verify all experimental result files exist."""
+    """Verify all experimental result files exist and are valid JSON.
+
+    These tests are skipped in Docker CI where results/ is not present.
+    """
 
     @pytest.mark.parametrize("filename", EXPECTED_RESULTS)
     def test_result_file_exists(self, filename):
-        path = Path(__file__).parent.parent / "results" / filename
+        path = RESULTS_DIR / filename
         assert path.exists(), f"Missing: {filename}"
 
     @pytest.mark.parametrize("filename", EXPECTED_RESULTS)
     def test_result_file_valid_json(self, filename):
-        path = Path(__file__).parent.parent / "results" / filename
-        if path.exists():
-            data = json.loads(path.read_text())
-            assert isinstance(data, dict)
+        path = RESULTS_DIR / filename
+        data = json.loads(path.read_text())
+        assert isinstance(data, dict)
