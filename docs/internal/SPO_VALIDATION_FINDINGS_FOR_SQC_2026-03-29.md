@@ -436,3 +436,40 @@ than exponent measurement.
 | **Total** | **108** | **100** | **8** |
 
 11 findings, 0 hard failures. Framework sound. FIM physics validated.
+
+---
+
+## ADDENDUM 2: Phase 8 Results (2026-03-29T19:45 CET)
+
+**10 passed, 0 failed, 0 xfail. Clean sweep.**
+
+| Test | Result | SQC relevance |
+|---|---|---|
+| V87 Stochastic resonance | **PASS** — noise helps FIM at weak K | Confirms NB41. Quantum noise may be beneficial. |
+| V88 Training roundtrip | **PASS** — generate→train→extract K works | VQE parameter extraction pipeline validated classically. |
+| V89 Multi-freq EEG | **PASS** — intra-band R > global R | Multi-timescale quantum simulation should show same. |
+| V90 Inverse roundtrip | **PASS** — inferred K reproduces R | Quantum→classical inverse pipeline feasible. |
+| V91 FIM + SL | **PASS** — FIM pre-sync helps amplitudes | FIM benefits extend beyond phase to amplitude dynamics. |
+| V92 Cross-freq PLV | **PASS** — same-band > cross-band | Expected for heterogeneous-ω quantum simulation. |
+| V93 OA data export | **PASS** — monotone R(K), neurocore-ready | Classical baseline dataset available for comparison. |
+| V94 Delay | **PASS** — delay reduces sync | Confirms NB42 direction. Trotter delay is real concern. |
+| V95 External drive ζ | **PASS** — ζ=5 gives R>0.8 | External drive ↔ FIM with fixed R=1. Equivalent for strong drive. |
+| V96 Bimodal FIM | **PASS** — FIM merges frequency clusters | FIM can overcome frequency mismatch in quantum multi-band simulation. |
+
+### Key implications for SQC:
+
+1. **V87 + NB41**: Quantum shot noise at σ≈0.3 could IMPROVE sync in
+   under-coupled quantum simulations. Design experiment: vary shot count
+   and measure R — look for non-monotonic peak.
+
+2. **V90**: After IBM hardware run, extract phases from measurement
+   statistics → `analytical_inverse` → recovered K. Compare with target
+   K encoded in circuit. Correlation = quantum fidelity proxy.
+
+3. **V94 + NB42**: Trotterisation introduces effective delay between
+   coupling terms. At high Trotter step count, delay→0 and sync is
+   preserved. At low step count, delay is significant → sync degrades.
+   This connects Trotter error to delay physics quantitatively.
+
+### Updated cumulative:
+**118 tests, 110 pass, 8 xfail, 11 findings.**
