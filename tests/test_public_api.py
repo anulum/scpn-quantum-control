@@ -11,11 +11,14 @@ import numpy as np
 
 
 def test_top_level_version():
-    """Package exposes __version__."""
+    """Package exposes __version__ matching pyproject.toml."""
+    import importlib.metadata
+
     import scpn_quantum_control
 
     assert hasattr(scpn_quantum_control, "__version__")
-    assert scpn_quantum_control.__version__ == "0.9.3"
+    expected = importlib.metadata.version("scpn-quantum-control")
+    assert scpn_quantum_control.__version__ == expected
 
 
 def _check_exports(submod: str) -> None:
