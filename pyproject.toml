@@ -97,6 +97,8 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "notebooks/*.py" = ["E402"]  # notebooks install deps before importing them
+"notebooks/*.ipynb" = ["E402", "F821"]  # notebooks: mid-cell imports normal, cross-cell scope invisible to linter
+"notebooks/**/*.ipynb" = ["E402", "F821"]  # colab notebooks same
 "notebooks/kaggle_push/*.py" = ["E402", "B007"]  # kaggle scripts: iteration loops without using index
 
 [tool.ruff.lint.isort]
