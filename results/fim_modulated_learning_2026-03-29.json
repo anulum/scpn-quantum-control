@@ -1,0 +1,21 @@
+{
+  "experiment": "FIM-modulated learning \u2014 does self-observation accelerate adaptation?",
+  "N": 8,
+  "results": {
+    "standard": {
+      "corr": 0.0117,
+      "step": "never",
+      "R": 0.2049
+    },
+    "fim_modulated": {
+      "corr": -0.0321,
+      "step": "never",
+      "R": 0.4428
+    },
+    "fim_gated": {
+      "corr": -0.0321,
+      "step": "never",
+      "R": 0.4428
+    }
+  }
+}
