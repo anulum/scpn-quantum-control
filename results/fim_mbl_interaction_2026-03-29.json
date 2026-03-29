@@ -1,0 +1,132 @@
+{
+  "experiment": "FIM x MBL interaction \u2014 does strange loop break localisation?",
+  "K_scale": 1.0,
+  "results": [
+    {
+      "n": 4,
+      "lambda": 0.0,
+      "r_bar": 0.4878,
+      "S_ent": 0.4413,
+      "regime": "ERGODIC"
+    },
+    {
+      "n": 4,
+      "lambda": 0.1,
+      "r_bar": 0.5501,
+      "S_ent": 0.4413,
+      "regime": "ERGODIC"
+    },
+    {
+      "n": 4,
+      "lambda": 0.5,
+      "r_bar": 0.4385,
+      "S_ent": 0.4413,
+      "regime": "MBL"
+    },
+    {
+      "n": 4,
+      "lambda": 1.0,
+      "r_bar": 0.3873,
+      "S_ent": 0.4413,
+      "regime": "MBL"
+    },
+    {
+      "n": 4,
+      "lambda": 2.0,
+      "r_bar": 0.3486,
+      "S_ent": 0.4413,
+      "regime": "MBL"
+    },
+    {
+      "n": 4,
+      "lambda": 5.0,
+      "r_bar": 0.5177,
+      "S_ent": 0.4413,
+      "regime": "ERGODIC"
+    },
+    {
+      "n": 6,
+      "lambda": 0.0,
+      "r_bar": 0.4334,
+      "S_ent": 0.7511,
+      "regime": "MBL"
+    },
+    {
+      "n": 6,
+      "lambda": 0.1,
+      "r_bar": 0.3843,
+      "S_ent": 0.7511,
+      "regime": "MBL"
+    },
+    {
+      "n": 6,
+      "lambda": 0.5,
+      "r_bar": 0.4445,
+      "S_ent": 0.7418,
+      "regime": "MBL"
+    },
+    {
+      "n": 6,
+      "lambda": 1.0,
+      "r_bar": 0.4311,
+      "S_ent": 0.7418,
+      "regime": "MBL"
+    },
+    {
+      "n": 6,
+      "lambda": 2.0,
+      "r_bar": 0.3778,
+      "S_ent": 0.7204,
+      "regime": "MBL"
+    },
+    {
+      "n": 6,
+      "lambda": 5.0,
+      "r_bar": 0.3598,
+      "S_ent": 0.7007,
+      "regime": "MBL"
+    },
+    {
+      "n": 8,
+      "lambda": 0.0,
+      "r_bar": 0.4368,
+      "S_ent": 0.9215,
+      "regime": "MBL"
+    },
+    {
+      "n": 8,
+      "lambda": 0.1,
+      "r_bar": 0.399,
+      "S_ent": 0.9107,
+      "regime": "MBL"
+    },
+    {
+      "n": 8,
+      "lambda": 0.5,
+      "r_bar": 0.4112,
+      "S_ent": 0.8876,
+      "regime": "MBL"
+    },
+    {
+      "n": 8,
+      "lambda": 1.0,
+      "r_bar": 0.3918,
+      "S_ent": 0.8537,
+      "regime": "MBL"
+    },
+    {
+      "n": 8,
+      "lambda": 2.0,
+      "r_bar": 0.4446,
+      "S_ent": 0.8232,
+      "regime": "MBL"
+    },
+    {
+      "n": 8,
+      "lambda": 5.0,
+      "r_bar": 0.4164,
+      "S_ent": 0.5784,
+      "regime": "MBL"
+    }
+  ]
+}

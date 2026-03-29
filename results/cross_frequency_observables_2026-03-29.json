@@ -1,0 +1,379 @@
+{
+  "experiment": "Cross-frequency observables on PhysioNet sleep data",
+  "records": [
+    "slp01a",
+    "slp01b",
+    "slp02a",
+    "slp02b"
+  ],
+  "sampling_rate": 250,
+  "bands": {
+    "delta": [
+      0.5,
+      4
+    ],
+    "theta": [
+      4,
+      8
+    ],
+    "alpha": [
+      8,
+      13
+    ],
+    "beta": [
+      13,
+      30
+    ],
+    "gamma": [
+      30,
+      80
+    ]
+  },
+  "pac": {
+    "slp01a": {
+      "delta\u2192alpha": 0.001136,
+      "delta\u2192beta": 9.7e-05,
+      "delta\u2192gamma": 3.1e-05,
+      "theta\u2192alpha": 3e-06,
+      "theta\u2192beta": 0.002513,
+      "theta\u2192gamma": 0.000643,
+      "alpha\u2192beta": 0.000944,
+      "alpha\u2192gamma": 0.000287
+    },
+    "slp01b": {
+      "delta\u2192alpha": 0.000126,
+      "delta\u2192beta": 0.00071,
+      "delta\u2192gamma": 0.000214,
+      "theta\u2192alpha": 2e-06,
+      "theta\u2192beta": 0.00259,
+      "theta\u2192gamma": 0.000155,
+      "alpha\u2192beta": 0.000624,
+      "alpha\u2192gamma": 4e-05
+    },
+    "slp02a": {
+      "delta\u2192alpha": 8.3e-05,
+      "delta\u2192beta": 0.000256,
+      "delta\u2192gamma": 4.3e-05,
+      "theta\u2192alpha": 3e-06,
+      "theta\u2192beta": 0.001761,
+      "theta\u2192gamma": 5.3e-05,
+      "alpha\u2192beta": 0.00027,
+      "alpha\u2192gamma": 2.6e-05
+    },
+    "slp02b": {
+      "delta\u2192alpha": 0.00021,
+      "delta\u2192beta": 0.000361,
+      "delta\u2192gamma": 0.000159,
+      "theta\u2192alpha": 4e-06,
+      "theta\u2192beta": 0.000957,
+      "theta\u2192gamma": 6.4e-05,
+      "alpha\u2192beta": 0.000215,
+      "alpha\u2192gamma": 8.3e-05
+    }
+  },
+  "wavelet_coherence": {
+    "slp01a": {
+      "EEG\u2194ECG": {
+        "delta": 0.4907,
+        "theta": 0.2505,
+        "alpha": 0.2804,
+        "beta": 0.7762
+      },
+      "EEG\u2194BP": {
+        "delta": 0.4874,
+        "theta": 0.1997,
+        "alpha": 0.0771,
+        "beta": 0.0408
+      },
+      "EEG\u2194Resp": {
+        "delta": 0.5336,
+        "theta": 0.1833,
+        "alpha": 0.1061,
+        "beta": 0.0717
+      }
+    },
+    "slp01b": {
+      "EEG\u2194ECG": {
+        "delta": 0.5287,
+        "theta": 0.3435,
+        "alpha": 0.314,
+        "beta": 0.6506
+      },
+      "EEG\u2194BP": {
+        "delta": 0.5313,
+        "theta": 0.2106,
+        "alpha": 0.0809,
+        "beta": 0.0609
+      },
+      "EEG\u2194Resp": {
+        "delta": 0.5402,
+        "theta": 0.1952,
+        "alpha": 0.1143,
+        "beta": 0.0691
+      }
+    },
+    "slp02a": {
+      "EEG\u2194ECG": {
+        "delta": 0.54,
+        "theta": 0.4257,
+        "alpha": 0.2805,
+        "beta": 0.4376
+      },
+      "EEG\u2194BP": {
+        "delta": 0.5075,
+        "theta": 0.2201,
+        "alpha": 0.0876,
+        "beta": 0.0513
+      }
+    },
+    "slp02b": {
+      "EEG\u2194ECG": {
+        "delta": 0.5138,
+        "theta": 0.3069,
+        "alpha": 0.2701,
+        "beta": 0.4277
+      },
+      "EEG\u2194BP": {
+        "delta": 0.5014,
+        "theta": 0.1944,
+        "alpha": 0.0787,
+        "beta": 0.0569
+      }
+    }
+  },
+  "granger_causality": {
+    "slp01a": {
+      "BP\u2192ECG": {
+        "delta": 1.179,
+        "theta": 0.1524,
+        "alpha": 0.0049,
+        "beta": 0.0405
+      },
+      "EEG\u2192ECG": {
+        "delta": 0.026,
+        "theta": 0.0501,
+        "alpha": 0.0572,
+        "beta": 0.0337
+      },
+      "Resp\u2192ECG": {
+        "delta": 0.0011
+      },
+      "ECG\u2192BP": {
+        "delta": 0.2573,
+        "theta": 0.4253,
+        "alpha": 0.5957,
+        "beta": 0.479
+      },
+      "EEG\u2192BP": {
+        "delta": 0.009,
+        "theta": 0.0272,
+        "alpha": 0.0104,
+        "beta": 0.0124
+      },
+      "ECG\u2192EEG": {
+        "alpha": 0.1388,
+        "beta": 1.1721
+      },
+      "BP\u2192EEG": {
+        "delta": 0.0129,
+        "theta": 0.0083,
+        "beta": 0.0285
+      },
+      "ECG\u2192Resp": {
+        "delta": 0.0223,
+        "theta": 0.0418,
+        "alpha": 0.0075,
+        "beta": 0.0019
+      },
+      "BP\u2192Resp": {
+        "delta": 0.0678,
+        "theta": 0.0489
+      },
+      "EEG\u2192Resp": {
+        "delta": 0.0038,
+        "theta": 0.0051
+      }
+    },
+    "slp01b": {
+      "BP\u2192ECG": {
+        "delta": 1.0479,
+        "theta": 0.0679,
+        "alpha": 0.0113,
+        "beta": 0.0105
+      },
+      "EEG\u2192ECG": {
+        "delta": 0.0085,
+        "theta": 0.1177,
+        "alpha": 0.0622,
+        "beta": 0.022
+      },
+      "Resp\u2192ECG": {
+        "delta": 0.0022
+      },
+      "ECG\u2192BP": {
+        "delta": 0.5067,
+        "theta": 0.9442,
+        "alpha": 0.8568,
+        "beta": 0.2137
+      },
+      "EEG\u2192BP": {
+        "delta": 0.0077,
+        "theta": 0.0913,
+        "alpha": 0.0456,
+        "beta": 0.0066
+      },
+      "Resp\u2192BP": {
+        "delta": 0.002,
+        "theta": 0.0011
+      },
+      "ECG\u2192EEG": {
+        "delta": 0.0026,
+        "alpha": 0.0241,
+        "beta": 0.8108
+      },
+      "BP\u2192EEG": {
+        "delta": 0.0295,
+        "theta": 0.0087,
+        "alpha": 0.0018,
+        "beta": 0.0071
+      },
+      "ECG\u2192Resp": {
+        "delta": 0.0132,
+        "theta": 0.0135,
+        "alpha": 0.0041,
+        "beta": 0.0011
+      },
+      "BP\u2192Resp": {
+        "delta": 0.0188,
+        "theta": 0.005
+      },
+      "EEG\u2192Resp": {
+        "theta": 0.0025,
+        "beta": 0.0014
+      }
+    },
+    "slp02a": {
+      "BP\u2192ECG": {
+        "delta": 0.2112,
+        "theta": 0.1088,
+        "alpha": 0.0207
+      },
+      "EEG\u2192ECG": {
+        "delta": 0.0024,
+        "theta": 0.0567,
+        "alpha": 0.0228,
+        "beta": 0.0174
+      },
+      "Resp\u2192ECG": {
+        "delta": 0.001
+      },
+      "ECG\u2192BP": {
+        "delta": 0.0748,
+        "theta": 0.1085,
+        "alpha": 0.0511,
+        "beta": 0.0023
+      },
+      "EEG\u2192BP": {
+        "theta": 0.0035,
+        "alpha": 0.001
+      },
+      "Resp\u2192BP": {
+        "delta": 0.0012,
+        "theta": 0.0014,
+        "alpha": 0.0012
+      },
+      "ECG\u2192EEG": {
+        "delta": 0.0123,
+        "theta": 0.15,
+        "alpha": 0.0033,
+        "beta": 0.0766
+      },
+      "BP\u2192EEG": {
+        "delta": 0.0141,
+        "theta": 0.0113
+      },
+      "Resp\u2192EEG": {
+        "delta": 0.0124,
+        "theta": 0.0036,
+        "alpha": 0.0035,
+        "beta": 0.0016
+      },
+      "ECG\u2192Resp": {
+        "delta": 0.001,
+        "theta": 0.0021
+      },
+      "BP\u2192Resp": {
+        "theta": 0.0018
+      },
+      "EEG\u2192Resp": {
+        "theta": 0.0044,
+        "alpha": 0.0063,
+        "beta": 0.0016
+      }
+    },
+    "slp02b": {
+      "BP\u2192ECG": {
+        "delta": 1.4848,
+        "theta": 0.2594,
+        "alpha": 0.0044
+      },
+      "EEG\u2192ECG": {
+        "delta": 0.0115,
+        "theta": 0.0132,
+        "alpha": 0.0525,
+        "beta": 0.0175
+      },
+      "Resp\u2192ECG": {
+        "delta": 0.0338,
+        "theta": 0.0074,
+        "alpha": 0.0014
+      },
+      "ECG\u2192BP": {
+        "delta": 0.0985,
+        "theta": 0.4105,
+        "alpha": 0.4805,
+        "beta": 0.2142
+      },
+      "EEG\u2192BP": {
+        "delta": 0.0038,
+        "theta": 0.0471,
+        "alpha": 0.0482,
+        "beta": 0.0224
+      },
+      "Resp\u2192BP": {
+        "delta": 0.0125,
+        "theta": 0.0084,
+        "alpha": 0.0032,
+        "beta": 0.0073
+      },
+      "ECG\u2192EEG": {
+        "theta": 0.0683,
+        "alpha": 0.0215,
+        "beta": 0.3113
+      },
+      "BP\u2192EEG": {
+        "delta": 0.0313,
+        "theta": 0.0075
+      },
+      "Resp\u2192EEG": {
+        "delta": 0.0097
+      },
+      "ECG\u2192Resp": {
+        "delta": 0.0076,
+        "theta": 0.0158,
+        "alpha": 0.0031,
+        "beta": 0.0016
+      },
+      "BP\u2192Resp": {
+        "delta": 0.0222,
+        "theta": 0.006,
+        "beta": 0.0046
+      },
+      "EEG\u2192Resp": {
+        "delta": 0.012,
+        "theta": 0.0066,
+        "alpha": 0.0022
+      }
+    }
+  }
+}

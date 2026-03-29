@@ -1,0 +1,217 @@
+{
+  "experiment": "Chimera states under FIM (strange loop)",
+  "N": 64,
+  "kappa": 4.0,
+  "data": [
+    {
+      "K": 0.5,
+      "lambda": 0,
+      "R": 0.1257,
+      "chi": 0.0689,
+      "type": "DESYNC"
+    },
+    {
+      "K": 0.5,
+      "lambda": 0.1,
+      "R": 0.127,
+      "chi": 0.069,
+      "type": "DESYNC"
+    },
+    {
+      "K": 0.5,
+      "lambda": 0.5,
+      "R": 0.1254,
+      "chi": 0.0693,
+      "type": "DESYNC"
+    },
+    {
+      "K": 0.5,
+      "lambda": 1.0,
+      "R": 0.1319,
+      "chi": 0.0718,
+      "type": "DESYNC"
+    },
+    {
+      "K": 0.5,
+      "lambda": 2.0,
+      "R": 0.1447,
+      "chi": 0.0734,
+      "type": "DESYNC"
+    },
+    {
+      "K": 0.5,
+      "lambda": 5.0,
+      "R": 0.1939,
+      "chi": 0.0772,
+      "type": "DESYNC"
+    },
+    {
+      "K": 1.0,
+      "lambda": 0,
+      "R": 0.1708,
+      "chi": 0.0784,
+      "type": "DESYNC"
+    },
+    {
+      "K": 1.0,
+      "lambda": 0.1,
+      "R": 0.1809,
+      "chi": 0.0779,
+      "type": "DESYNC"
+    },
+    {
+      "K": 1.0,
+      "lambda": 0.5,
+      "R": 0.2016,
+      "chi": 0.0828,
+      "type": "DESYNC"
+    },
+    {
+      "K": 1.0,
+      "lambda": 1.0,
+      "R": 0.2138,
+      "chi": 0.0832,
+      "type": "DESYNC"
+    },
+    {
+      "K": 1.0,
+      "lambda": 2.0,
+      "R": 0.2071,
+      "chi": 0.084,
+      "type": "DESYNC"
+    },
+    {
+      "K": 1.0,
+      "lambda": 5.0,
+      "R": 0.3526,
+      "chi": 0.0713,
+      "type": "PARTIAL"
+    },
+    {
+      "K": 2.0,
+      "lambda": 0,
+      "R": 0.8033,
+      "chi": 0.0471,
+      "type": "SYNC"
+    },
+    {
+      "K": 2.0,
+      "lambda": 0.1,
+      "R": 0.8066,
+      "chi": 0.046,
+      "type": "SYNC"
+    },
+    {
+      "K": 2.0,
+      "lambda": 0.5,
+      "R": 0.8173,
+      "chi": 0.0427,
+      "type": "SYNC"
+    },
+    {
+      "K": 2.0,
+      "lambda": 1.0,
+      "R": 0.8403,
+      "chi": 0.0351,
+      "type": "SYNC"
+    },
+    {
+      "K": 2.0,
+      "lambda": 2.0,
+      "R": 0.8712,
+      "chi": 0.0271,
+      "type": "SYNC"
+    },
+    {
+      "K": 2.0,
+      "lambda": 5.0,
+      "R": 0.9965,
+      "chi": 0.0005,
+      "type": "SYNC"
+    },
+    {
+      "K": 3.0,
+      "lambda": 0,
+      "R": 0.9382,
+      "chi": 0.0097,
+      "type": "SYNC"
+    },
+    {
+      "K": 3.0,
+      "lambda": 0.1,
+      "R": 0.94,
+      "chi": 0.0094,
+      "type": "SYNC"
+    },
+    {
+      "K": 3.0,
+      "lambda": 0.5,
+      "R": 0.9468,
+      "chi": 0.0082,
+      "type": "SYNC"
+    },
+    {
+      "K": 3.0,
+      "lambda": 1.0,
+      "R": 0.9553,
+      "chi": 0.0068,
+      "type": "SYNC"
+    },
+    {
+      "K": 3.0,
+      "lambda": 2.0,
+      "R": 0.9725,
+      "chi": 0.0041,
+      "type": "SYNC"
+    },
+    {
+      "K": 3.0,
+      "lambda": 5.0,
+      "R": 0.9971,
+      "chi": 0.0004,
+      "type": "SYNC"
+    },
+    {
+      "K": 5.0,
+      "lambda": 0,
+      "R": 0.9812,
+      "chi": 0.0028,
+      "type": "SYNC"
+    },
+    {
+      "K": 5.0,
+      "lambda": 0.1,
+      "R": 0.9819,
+      "chi": 0.0027,
+      "type": "SYNC"
+    },
+    {
+      "K": 5.0,
+      "lambda": 0.5,
+      "R": 0.9845,
+      "chi": 0.0023,
+      "type": "SYNC"
+    },
+    {
+      "K": 5.0,
+      "lambda": 1.0,
+      "R": 0.9877,
+      "chi": 0.0018,
+      "type": "SYNC"
+    },
+    {
+      "K": 5.0,
+      "lambda": 2.0,
+      "R": 0.9934,
+      "chi": 0.001,
+      "type": "SYNC"
+    },
+    {
+      "K": 5.0,
+      "lambda": 5.0,
+      "R": 0.9978,
+      "chi": 0.0003,
+      "type": "SYNC"
+    }
+  ]
+}
