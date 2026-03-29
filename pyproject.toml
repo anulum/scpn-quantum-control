@@ -11,7 +11,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "scpn-quantum-control"
-version = "0.9.3"
+version = "0.9.4"
 description = "NISQ quantum simulation of coupled Kuramoto oscillator networks via XY Hamiltonian mapping"
 readme = "README.md"
 license = "AGPL-3.0-or-later"

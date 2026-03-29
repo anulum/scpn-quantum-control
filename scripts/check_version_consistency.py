@@ -30,7 +30,7 @@ PATTERNS: dict[Path, re.Pattern[str]] = {
     INIT: re.compile(r'^__version__\s*=\s*"([^"]+)"', re.MULTILINE),
     CITATION: re.compile(r'^version:\s*"([^"]+)"', re.MULTILINE),
     ZENODO: re.compile(r'"version":\s*"([^"]+)"'),
-    README: re.compile(r"version-([0-9]+\.[0-9]+\.[0-9]+)-"),
+    # README uses dynamic PyPI badge — no static version to check
 }
 
 

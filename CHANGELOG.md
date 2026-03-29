@@ -3,6 +3,27 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.9.4] - 2026-03-29
+
+### Fixed
+- **PennyLane adapter**: catch `Exception` not just `ImportError` on broken JAX/PennyLane
+- **5 test failures**: skip guards for unimplemented Rust engine functions
+- **12 doc errors**: wrong function names in API docs, outdated test counts, stale version numbers
+- **CI**: correct test args for ripser mock, inject missing module attrs
+
+### Added
+- **81 new tests** across 6 test files (pennylane mock, JAX mock, ripser mock, hardware runner mock, Python fallback, edge cases)
+- **OpenSSF Best Practices badge**: 100% passing (project 12290)
+- **OpenSSF Scorecard, Ruff, mypy badges**
+- **3 benchmark API docs**: gpu_baseline, mps_baseline, appqsim_protocol
+
+### Changed
+- Coverage 95% → 98% (9601 stmts, 165 missed)
+- Tests 2634 → 2715 (0 failures)
+- Workflow permissions hardened: docs.yml `contents:write` scoped to job level, ci.yml `contents:read` at top level
+- Architecture stats updated to v0.9.4 (155 modules, 23.8k LOC, 29 doc pages)
+- Experiment roadmap + crypto branch updated to reflect completed March hardware campaign
+
 ## [0.9.3] - 2026-03-28
 
 ### Added
