@@ -1,3 +1,7 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available -->
+<!-- © Concepts 1996–2026 Miroslav Šotek. All rights reserved. -->
+<!-- © Code 2020–2026 Miroslav Šotek. All rights reserved. -->
+
 # IBM Hardware v2 — Deep Analysis of 9 Experiments on ibm_fez
 
 **Date:** 2026-03-29

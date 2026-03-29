@@ -7,7 +7,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 - **27 experiment notebooks** (NB14–47): FIM mechanism deep investigation
-- **77 FIM mechanism tests** (`test_fim_mechanism.py`): regression tests for all 19 findings
+- **81 FIM mechanism tests** (`test_fim_mechanism.py`): regression tests for all 19 findings (0 skips, 0 stubs)
 - **25 JSON result files**: complete experimental data from 27 notebooks
 - **RESULTS_SUMMARY.md**: comprehensive summary of all findings
 - **IBM hardware v2**: 9 equal-depth fair experiments on ibm_fez confirming dual protection
