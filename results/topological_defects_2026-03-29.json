@@ -1,0 +1,174 @@
+{
+  "experiment": "Winding number and topological defects under FIM",
+  "N": 16,
+  "data": [
+    {
+      "K": 2,
+      "lam": 0,
+      "R": 0.23,
+      "q_std": 1.243,
+      "defects": 8.0,
+      "q_changes": 149.0
+    },
+    {
+      "K": 2,
+      "lam": 1,
+      "R": 0.234,
+      "q_std": 1.068,
+      "defects": 8.1,
+      "q_changes": 148.7
+    },
+    {
+      "K": 2,
+      "lam": 5,
+      "R": 0.439,
+      "q_std": 0.943,
+      "defects": 7.4,
+      "q_changes": 136.7
+    },
+    {
+      "K": 5,
+      "lam": 0,
+      "R": 0.254,
+      "q_std": 1.147,
+      "defects": 8.1,
+      "q_changes": 149.3
+    },
+    {
+      "K": 5,
+      "lam": 1,
+      "R": 0.298,
+      "q_std": 1.123,
+      "defects": 8.2,
+      "q_changes": 145.7
+    },
+    {
+      "K": 5,
+      "lam": 5,
+      "R": 0.978,
+      "q_std": 0.065,
+      "defects": 0.3,
+      "q_changes": 31.3
+    },
+    {
+      "K": 8,
+      "lam": 0,
+      "R": 0.322,
+      "q_std": 1.01,
+      "defects": 7.6,
+      "q_changes": 136.7
+    },
+    {
+      "K": 8,
+      "lam": 1,
+      "R": 0.519,
+      "q_std": 0.888,
+      "defects": 6.5,
+      "q_changes": 134.3
+    },
+    {
+      "K": 8,
+      "lam": 5,
+      "R": 0.998,
+      "q_std": 0.0,
+      "defects": 0.0,
+      "q_changes": 1.7
+    },
+    {
+      "K": 10,
+      "lam": 0,
+      "R": 0.616,
+      "q_std": 0.61,
+      "defects": 5.4,
+      "q_changes": 113.0
+    },
+    {
+      "K": 10,
+      "lam": 1,
+      "R": 0.679,
+      "q_std": 0.487,
+      "defects": 4.3,
+      "q_changes": 83.7
+    },
+    {
+      "K": 10,
+      "lam": 5,
+      "R": 0.998,
+      "q_std": 0.0,
+      "defects": 0.0,
+      "q_changes": 0.3
+    },
+    {
+      "K": 12,
+      "lam": 0,
+      "R": 0.694,
+      "q_std": 0.506,
+      "defects": 4.2,
+      "q_changes": 79.0
+    },
+    {
+      "K": 12,
+      "lam": 1,
+      "R": 0.715,
+      "q_std": 0.428,
+      "defects": 4.2,
+      "q_changes": 68.0
+    },
+    {
+      "K": 12,
+      "lam": 5,
+      "R": 0.998,
+      "q_std": 0.0,
+      "defects": 0.0,
+      "q_changes": 0.3
+    },
+    {
+      "K": 16,
+      "lam": 0,
+      "R": 0.825,
+      "q_std": 0.093,
+      "defects": 1.4,
+      "q_changes": 10.7
+    },
+    {
+      "K": 16,
+      "lam": 1,
+      "R": 0.91,
+      "q_std": 0.0,
+      "defects": 0.0,
+      "q_changes": 2.3
+    },
+    {
+      "K": 16,
+      "lam": 5,
+      "R": 0.998,
+      "q_std": 0.0,
+      "defects": 0.0,
+      "q_changes": 0.3
+    },
+    {
+      "K": 20,
+      "lam": 0,
+      "R": 0.925,
+      "q_std": 0.0,
+      "defects": 0.0,
+      "q_changes": 2.0
+    },
+    {
+      "K": 20,
+      "lam": 1,
+      "R": 0.957,
+      "q_std": 0.0,
+      "defects": 0.0,
+      "q_changes": 1.7
+    },
+    {
+      "K": 20,
+      "lam": 5,
+      "R": 0.999,
+      "q_std": 0.0,
+      "defects": 0.0,
+      "q_changes": 0.3
+    }
+  ]
+}
