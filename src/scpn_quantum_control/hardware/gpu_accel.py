@@ -70,7 +70,8 @@ def eigh(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         m_gpu = _cp.asarray(matrix)
         eigs_gpu, vecs_gpu = _cp.linalg.eigh(m_gpu)
         return _cp.asnumpy(eigs_gpu), _cp.asnumpy(vecs_gpu)
-    return np.linalg.eigh(matrix)
+    eigvals, eigvecs = np.linalg.eigh(matrix)
+    return eigvals, eigvecs
 
 
 def expm(matrix: np.ndarray) -> np.ndarray:

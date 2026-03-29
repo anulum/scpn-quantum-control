@@ -95,7 +95,7 @@ def plaquette_vorticity(phases: np.ndarray, plaquette: list[int]) -> int:
         i = plaquette[idx]
         j = plaquette[(idx + 1) % len(plaquette)]
         total += _angle_diff(float(phases[i]), float(phases[j]))
-    return round(total / (2 * np.pi))
+    return int(round(total / (2 * np.pi)))
 
 
 def measure_vortex_density(
