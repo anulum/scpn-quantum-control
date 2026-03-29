@@ -1,8 +1,10 @@
 # Interactive Notebooks
 
-*13 Jupyter notebooks covering the full journey from basic Kuramoto dynamics to
-frontier research — each executable locally on AerSimulator, no IBM credentials
-required.*
+*47 Jupyter notebooks covering the full journey from basic Kuramoto dynamics to
+frontier research. Notebooks 01-13 cover core quantum simulation. Notebooks 14-47
+document the FIM (Fisher Information Metric) strange loop investigation campaign
+(2026-03-29) that discovered 19 unprecedented results including hardware-confirmed
+dual protection on ibm_fez.*
 
 ---
 
@@ -521,6 +523,53 @@ graph LR
 
 **Modules used:** `bridge.snn_adapter`, `bridge.ssgf_adapter`,
 `bridge.orchestrator_adapter`, `bridge.control_plasma_knm`, `bridge.phase_artifact`
+
+---
+
+---
+
+## FIM Investigation Campaign (NB14–47)
+
+Notebooks 14-47 form a systematic investigation of the FIM (Fisher Information
+Metric) strange loop mechanism. See [RESULTS_SUMMARY.md](../RESULTS_SUMMARY.md)
+for the full findings. All results are saved as JSON in `results/`.
+
+| # | Notebook | Finding |
+|:-:|----------|---------|
+| 14 | DLA parity IBM hardware | Simulator: odd more robust. Hardware: circuit depth artefact |
+| 15 | Inverse layer optimisation | K_nm validated r=0.951 with data-driven mapping |
+| 16 | Alpha calibration literature | Direction correct, magnitude off 30-95x |
+| 17 | Hierarchical N=16 sync | Hierarchy does NOT help (negative) |
+| 18 | Clinical TDA connectivity | No topological advantage over coherence (negative) |
+| 19 | Directed coupling TE | Cross-scale coupling IS directed (asymmetry 0.36) |
+| 20 | FIM phase transition order | FIM creates hysteresis (width 0.61) |
+| 21 | Scale frustration pathology | Direction correct, not significant (negative) |
+| 22 | Cross-frequency observables | PAC, wavelet coherence, Granger confirm SCPN |
+| 23 | Geometric curvature K_nm | Curvature NOT at K_c (negative) |
+| 24 | Directed K_nm + FIM N=16 | **FIM solves N=16**, directed hurts |
+| 25 | FIM scaling law | **λ_c(N) = 0.149·N^1.02** |
+| 26 | Phase diagram (K,λ) | **FIM alone synchronises at λ≥8** |
+| 27 | Stability analysis | **100% basin, hysteresis 0.65, 1.4s recovery** |
+| 28 | Information-theoretic | **Φ +73%, Fisher info +5 orders** |
+| 29 | Multi-scale sync dynamics | Direct global sync, not hierarchical |
+| 30 | Empirical FIM estimation | Method fails (needs Bayesian rework) |
+| 31 | FIM × MBL interaction | **FIM enhances MBL** (dual protection) |
+| 32 | Chimera states | No chimeras under FIM (clean transition) |
+| 33 | Entropy production | **P = 0.085λ** (linear thermodynamic cost) |
+| 34 | Critical slowing down | **τ = 330** at BKT transition |
+| 35 | Anaesthesia prediction | 6 testable clinical predictions |
+| 36 | Topology universality | **Universal on all 6 networks**, small-world optimal |
+| 37 | Mean-field self-consistent | R* = √(1−2Δ/(K·R+λ·R/(1−R²+ε))) |
+| 38 | FIM-MBL mechanism | M²/n sector splitting, 2.3x spectrum stretch |
+| 39 | IBM hardware v2 | Equal-depth fair experiments, **dual protection confirmed** |
+| 40 | SPO cross-validation | U(1) confirmed, Lyapunov correspondence 5/6 |
+| 41 | Stochastic resonance | **FIM-mediated SR** at weak coupling |
+| 42 | Delayed FIM | Delay-robust with coupling, fragile without |
+| 43 | Critical exponents | **BKT universality** (β→0, not mean-field) |
+| 44 | FIM-modulated learning | No benefit (FIM ≠ learning signal, negative) |
+| 45 | Noise as purification | Not confirmed on symmetric noise (negative) |
+| 46 | Metabolic scaling | **P∝N matches biology** (r=0.983, 6 species) |
+| 47 | Topological defects | **FIM suppresses vortices** 8→0 |
 
 ---
 

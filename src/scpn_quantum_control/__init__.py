@@ -81,7 +81,7 @@ from .qsnn.qstdp import QuantumSTDP
 from .qsnn.qsynapse import QuantumSynapse
 from .qsnn.training import QSNNTrainer
 
-__version__ = "0.9.4"
+__version__ = "0.9.5"
 
 __all__ = [
     "OMEGA_N_16",
