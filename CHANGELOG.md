@@ -3,6 +3,44 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.9.5] - 2026-03-29
+
+### Added
+- **27 experiment notebooks** (NB14–47): FIM mechanism deep investigation
+- **77 FIM mechanism tests** (`test_fim_mechanism.py`): regression tests for all 19 findings
+- **25 JSON result files**: complete experimental data from 27 notebooks
+- **RESULTS_SUMMARY.md**: comprehensive summary of all findings
+- **IBM hardware v2**: 9 equal-depth fair experiments on ibm_fez confirming dual protection
+- **IBM Quantum Credits application** submitted (5h QPU, 04/2026–08/2026)
+
+### Discovered
+- **FIM alone synchronises** without coupling (K=0, λ≥8) — NB26
+- **Scaling law** λ_c(N) = 0.149·N^1.02 (R² = 0.966) — NB25
+- **Dual protection confirmed on IBM hardware** (F_FIM=0.916 > F_XY=0.849, p<10⁻⁶) — IBM v2
+- **BKT universality** (β→0, not mean-field β=0.5) — NB43
+- **FIM enhances MBL** via M²/n sector splitting — NB31, NB38
+- **Φ (IIT) increases 73%** under FIM — NB28
+- **100% basin of attraction** at (K=12, λ=5) — NB27
+- **Topology-universal**, small-world optimal (+0.31) — NB36
+- **P = 0.085λ** linear thermodynamic cost — NB33
+- **Stochastic resonance** under FIM at weak coupling — NB41
+- **Delay-robust** with coupling, fragile without — NB42
+- **Critical slowing down** τ=330 at BKT transition — NB34
+- **Topological defects suppressed** 8→0 by FIM — NB47
+- **Metabolic scaling P∝N** matches biology (r=0.983) — NB46
+- **Self-consistent mean-field equation** R* = √(1−2Δ/(K·R+λ·R/(1−R²+ε))) — NB37
+- **6 anaesthesia predictions** with hysteresis — NB35
+- **U(1) gauge invariance** confirmed — NB40
+- **Cross-frequency coupling** (PAC, wavelet, Granger) confirms SCPN — NB22
+
+### Negative Results (honest)
+- Curvature does NOT peak at K_c — NB23
+- Directed coupling HURTS sync — NB24
+- DLA parity direction reversed on hardware — IBM v1,v2
+- Empirical FIM from EEG: method fails — NB30
+- FIM-modulated learning: no benefit — NB44
+- Noise purification: not on symmetric noise — NB45
+
 ## [0.9.4] - 2026-03-29
 
 ### Fixed
