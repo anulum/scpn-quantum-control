@@ -120,7 +120,7 @@ pcd_results = []
 for frac in K_fractions:
     K_pcd = K_matrix * frac
     theta_pcd = theta0.copy()
-    for step in range(int(1.0 / dt)):  # 1 second
+    for _step in range(int(1.0 / dt)):  # 1 second
         dtheta = np.copy(omegas)
         for i in range(N):
             nb = np.where(K_pcd[i] > 0)[0]
@@ -168,7 +168,7 @@ viscosity_results = []
 for eta_ratio in viscosity_ratios:
     K_visc = K_matrix / eta_ratio  # coupling decreases with viscosity
     theta_v = theta0.copy()
-    for step in range(int(1.0 / dt)):
+    for _step in range(int(1.0 / dt)):
         dtheta = np.copy(omegas)
         for i in range(N):
             nb = np.where(K_visc[i] > 0)[0]
@@ -210,7 +210,7 @@ for K_n in K_nodal_values:
     theta_n = np.random.uniform(0, 2 * np.pi, N_nodal)
     omegas_n = np.random.normal(omega_nodal, omega_nodal * 0.1, N_nodal)
     dt_n = 1e-4
-    for step in range(int(0.5 / dt_n)):
+    for _step in range(int(0.5 / dt_n)):
         z = np.mean(np.exp(1j * theta_n))
         r_inst = np.abs(z)
         psi = np.angle(z)
