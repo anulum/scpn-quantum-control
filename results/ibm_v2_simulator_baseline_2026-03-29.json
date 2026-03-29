@@ -1,0 +1,47 @@
+{
+  "experiment": "IBM Hardware Tests v2 \u2014 fair DLA parity + sector decoherence + FIM protection",
+  "n_qubits": 4,
+  "ansatz": "EfficientSU2 reps=3",
+  "exp_A_parity": {
+    "circuit_depth": 58,
+    "vqe_fidelity_even": 1.0,
+    "vqe_fidelity_odd": 0.98088,
+    "simulator": {
+      "F_even": 0.5204,
+      "F_odd": 0.5764,
+      "t_stat": -64.4762,
+      "p_value": 1.0197728712810977e-23,
+      "direction": "ODD > EVEN"
+    }
+  },
+  "exp_B_sectors": {
+    "M=+4 (|0000\u27e9)": {
+      "survival": 0.5081,
+      "entropy": 2.6302
+    },
+    "M=+2 (|0001\u27e9)": {
+      "survival": 0.0056,
+      "entropy": 2.6775
+    },
+    "M=0  (|0101\u27e9)": {
+      "survival": 0.0047,
+      "entropy": 2.7025
+    },
+    "M=-2 (|0111\u27e9)": {
+      "survival": 0.0056,
+      "entropy": 2.7218
+    },
+    "M=-4 (|1111\u27e9)": {
+      "survival": 0.4742,
+      "entropy": 2.7719
+    }
+  },
+  "exp_C_fim_protection": {
+    "simulator": {
+      "F_xy": 0.5049,
+      "F_fim": 0.5122,
+      "t_stat": -49.1293,
+      "p_value": 1.732691929939306e-21
+    }
+  }
+}
