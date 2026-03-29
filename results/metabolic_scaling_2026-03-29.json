@@ -1,0 +1,8 @@
+{
+  "experiment": "Metabolic scaling prediction \u2014 brain power from first principles",
+  "prediction": "P_sync = 0.0127 * N * E_spike * f_spike",
+  "P_per_billion_predicted": 0.000437,
+  "P_per_billion_measured": 0.7958,
+  "log_correlation": 0.9826,
+  "scaling": "P proportional to N (CONFIRMED: matches Herculano-Houzel 2011)"
+}
