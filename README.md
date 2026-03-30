@@ -21,6 +21,33 @@
 
 ---
 
+## Quick Start
+
+```bash
+pip install scpn-quantum-control
+```
+
+```python
+import numpy as np
+from scpn_quantum_control.phase.xy_kuramoto import QuantumKuramotoSolver
+
+# 8 oscillators, exponential-decay coupling, heterogeneous frequencies
+N = 8
+K = 0.5 * np.exp(-0.3 * np.abs(np.subtract.outer(range(N), range(N))))
+omega = np.linspace(0.8, 1.2, N)
+
+# Simulate: Trotter evolution → order parameter R(t)
+solver = QuantumKuramotoSolver(N, K, omega)
+result = solver.run(t_max=1.0, dt=0.1)
+print(f"Final R = {result['R'][-1]:.3f}")
+# → R rises from ~0.3 (incoherent) toward 1.0 (synchronised)
+```
+
+No IBM credentials needed — runs on local statevector simulator.
+Pass any coupling matrix; the built-in SCPN benchmark is just one example.
+
+---
+
 ## What This Package Does
 
 **The first quantum hardware demonstration of coupled-oscillator synchronisation
