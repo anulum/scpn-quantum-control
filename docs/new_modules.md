@@ -122,6 +122,57 @@ print(f"CX gates: {stats['n_cx_gates']}, Resets: {stats['n_resets']}")
 
 ## Exact Diagonalisation
 
+### `analysis/magnetisation_sectors.py` — U(1) Magnetisation Sectors
+
+The XY interaction $X_iX_j + Y_iY_j = 2(\sigma^+_i\sigma^-_j + \sigma^-_i\sigma^+_j)$ is a
+flip-flop: it swaps excitations but never creates or destroys them. Therefore the total
+magnetisation $M = \sum_i Z_i$ is conserved. This decomposes the $2^N$ Hilbert space into
+$N+1$ sectors labelled by $M$.
+
+The largest sector ($M=0$) has dimension $\binom{N}{N/2}$:
+
+| N | Full dim | Z₂ sector | U(1) largest | Reduction |
+|:-:|:--------:|:---------:|:------------:|:---------:|
+| 12 | 4,096 | 2,048 | 924 | 4.4× |
+| 16 | 65,536 | 32,768 | 12,870 | 5.1× |
+| 18 | 262,144 | 131,072 | 48,620 | 5.4× |
+| 20 | 1,048,576 | 524,288 | 184,756 | 5.7× |
+
+For N=16: full ED needs 32 GB, U(1) sector needs 2.5 GB. **13× memory reduction.**
+
+```python
+from scpn_quantum_control.analysis.magnetisation_sectors import (
+    eigh_by_magnetisation, level_spacing_by_magnetisation, memory_estimate
+)
+
+# All sectors — exact spectrum
+result = eigh_by_magnetisation(K, omega)
+print(f"Ground: E={result['ground_energy']:.4f}, M={result['ground_sector']}")
+
+# Level spacing within M=0 sector (avoids inter-sector artefact)
+ls = level_spacing_by_magnetisation(K, omega, M=0)
+print(f"r̄(M=0) = {ls['r_bar']:.3f} (Poisson=0.386, GOE=0.530)")
+
+# Memory comparison
+est = memory_estimate(16)
+print(f"Full: {est['full_ed_mb']:.0f} MB, U(1): {est['u1_largest_mb']:.0f} MB")
+```
+
+**API:**
+
+| Function | Returns |
+|----------|---------|
+| `basis_by_magnetisation(n)` | dict[M] → array of basis indices |
+| `sector_dimensions(n)` | dict[M] → dimension |
+| `eigh_by_magnetisation(K, omega, sectors)` | Full spectrum decomposed by M |
+| `level_spacing_by_magnetisation(K, omega, M)` | r̄ within single sector |
+| `memory_estimate(n)` | Comparison: full vs Z₂ vs U(1) |
+
+**Tests:** 21 (partition, binomial match, eigenvalue exact match at n=4,6,8,
+level spacing, memory estimates, N=16/20 dimensions)
+
+---
+
 ### `analysis/symmetry_sectors.py` — Z₂ Parity Sector Decomposition
 
 Exploits the Z₂ parity symmetry $P = Z_1 \otimes \cdots \otimes Z_N$ to halve

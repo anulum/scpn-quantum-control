@@ -32,7 +32,7 @@ class TestBackendSelector:
         from scpn_quantum_control.phase.backend_selector import recommend_backend
 
         rec = recommend_backend(16, ram_gb=32.0)
-        assert rec["backend"] in ("sector_ed", "statevector")
+        assert rec["backend"] in ("u1_sector_ed", "sector_ed", "statevector")
 
     def test_large_system_selects_mps(self):
         from scpn_quantum_control.phase.backend_selector import recommend_backend
