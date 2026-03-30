@@ -15,28 +15,12 @@ from scpn_quantum_control.mitigation.mitiq_integration import (
     zne_mitigated_expectation,
 )
 
-# Mitiq 1.0.0 has executor parsing issues with Qiskit 2.3+
-_MITIQ_ZNE_WORKS = True
-try:
-    from qiskit import QuantumCircuit as _QC
-
-    _c = _QC(1)
-    _c.measure_all()
-    zne_mitigated_expectation(_c, scale_factors=[1.0, 2.0])
-except Exception:
-    _MITIQ_ZNE_WORKS = False
-
-skip_if_zne_broken = pytest.mark.skipif(
-    not _MITIQ_ZNE_WORKS, reason="Mitiq ZNE incompatible with current Qiskit version"
-)
-
 
 class TestMitiqAvailable:
     def test_mitiq_installed(self):
         assert is_mitiq_available()
 
 
-@skip_if_zne_broken
 class TestZNE:
     def test_zne_returns_float(self):
         from qiskit import QuantumCircuit

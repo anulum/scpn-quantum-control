@@ -14,9 +14,7 @@ Requires: pip install mitiq
 Reference: LaRose et al., Quantum 6, 774 (2022).
 """
 
-from __future__ import annotations
-
-from typing import Any
+from typing import Any, Optional
 
 try:
     from mitiq import ddd, zne
@@ -39,12 +37,22 @@ def is_mitiq_available() -> bool:
     return _MITIQ_AVAILABLE
 
 
+def _qiskit_executor_default(circuit: QuantumCircuit) -> float:
+    """Single-arg wrapper for Mitiq compatibility."""
+    return _qiskit_executor(circuit)
+
+
 def _qiskit_executor(circuit: QuantumCircuit, shots: int = 8192) -> float:
-    """Execute a Qiskit circuit and return expectation value of Z on qubit 0."""
+    """Execute a Qiskit circuit and return parity expectation value.
+
+    Mitiq's noise folding preserves measurement gates, so we only add
+    measure_all if the circuit has no classical registers.
+    """
     if not _QISKIT_AVAILABLE:
         raise ImportError("qiskit-aer required")
     meas_circuit = circuit.copy()
-    if not meas_circuit.cregs:
+    has_meas = any(instr.operation.name == "measure" for instr in meas_circuit.data)
+    if not has_meas:
         meas_circuit.measure_all()
     backend = AerSimulator()
     job = backend.run(meas_circuit, shots=shots)
@@ -54,13 +62,13 @@ def _qiskit_executor(circuit: QuantumCircuit, shots: int = 8192) -> float:
     for bitstring, count in counts.items():
         parity = (-1) ** bitstring.count("1")
         exp_z += parity * count / total
-    return exp_z
+    return float(exp_z)
 
 
 def zne_mitigated_expectation(
     circuit: QuantumCircuit,
-    executor: Any | None = None,
-    scale_factors: list[float] | None = None,
+    executor: Optional[Any] = None,
+    scale_factors: Optional[list] = None,
     shots: int = 8192,
 ) -> float:
     """Run ZNE (Zero Noise Extrapolation) via Mitiq.
@@ -84,10 +92,7 @@ def zne_mitigated_expectation(
     if not _MITIQ_AVAILABLE:
         raise ImportError("mitiq not installed: pip install mitiq")
 
-    if executor is None:
-
-        def executor(c: QuantumCircuit) -> float:
-            return _qiskit_executor(c, shots=shots)
+    exec_fn: Any = executor if executor is not None else _qiskit_executor_default
 
     if scale_factors is None:
         scale_factors = [1.0, 3.0, 5.0]
@@ -97,7 +102,7 @@ def zne_mitigated_expectation(
     return float(
         zne.execute_with_zne(
             circuit,
-            executor=executor,
+            executor=exec_fn,
             factory=factory,
         )
     )
@@ -105,7 +110,7 @@ def zne_mitigated_expectation(
 
 def ddd_mitigated_expectation(
     circuit: QuantumCircuit,
-    executor: Any | None = None,
+    executor: Optional[Any] = None,
     shots: int = 8192,
 ) -> float:
     """Run DDD (Digital Dynamical Decoupling) via Mitiq.
@@ -115,17 +120,14 @@ def ddd_mitigated_expectation(
     if not _MITIQ_AVAILABLE:
         raise ImportError("mitiq not installed: pip install mitiq")
 
-    if executor is None:
-
-        def executor(c: QuantumCircuit) -> float:
-            return _qiskit_executor(c, shots=shots)
+    exec_fn: Any = executor if executor is not None else _qiskit_executor_default
 
     rule = ddd.rules.xx
 
     return float(
         ddd.execute_with_ddd(
             circuit,
-            executor=executor,
+            executor=exec_fn,
             rule=rule,
         )
     )
