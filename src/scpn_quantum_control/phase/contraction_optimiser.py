@@ -64,7 +64,7 @@ def optimal_contraction_path(
 
     # Fallback: numpy optimal path
     path, path_info = np.einsum_path(subscripts, *operands, optimize="optimal")
-    return path[1:], {  # skip first element (which is the 'optimal' string)
+    return path, {
         "flops": 0,  # numpy doesn't report flops
         "max_size": 0,
         "method": "numpy_optimal",
@@ -84,8 +84,7 @@ def contract(
     if _COTENGRA_AVAILABLE and optimiser == "auto":
         return np.asarray(cotengra.einsum(subscripts, *operands))
 
-    path, _ = optimal_contraction_path(subscripts, *operands, optimiser=optimiser)
-    return np.asarray(np.einsum(subscripts, *operands, optimize=path))
+    return np.asarray(np.einsum(subscripts, *operands, optimize="optimal"))
 
 
 def benchmark_contraction(
