@@ -1,0 +1,53 @@
+{
+  "4": {
+    "n": 4,
+    "dim": 16,
+    "classical_ode_ms": 0.4,
+    "exact_diag_ms": 0.1,
+    "exact_diag_mem_mb": 0.0
+  },
+  "6": {
+    "n": 6,
+    "dim": 64,
+    "classical_ode_ms": 0.5,
+    "exact_diag_ms": 24.5,
+    "exact_diag_mem_mb": 0.0
+  },
+  "8": {
+    "n": 8,
+    "dim": 256,
+    "classical_ode_ms": 1.4,
+    "exact_diag_ms": 164.0,
+    "exact_diag_mem_mb": 0.5
+  },
+  "10": {
+    "n": 10,
+    "dim": 1024,
+    "classical_ode_ms": 2.1,
+    "exact_diag_ms": 3474.1,
+    "exact_diag_mem_mb": 8.4
+  },
+  "12": {
+    "n": 12,
+    "dim": 4096,
+    "classical_ode_ms": 2.8,
+    "exact_diag_ms": 26812.1,
+    "exact_diag_mem_mb": 134.2
+  },
+  "14": {
+    "n": 14,
+    "dim": 16384,
+    "classical_ode_ms": 5.6,
+    "exact_diag_ms": null,
+    "exact_diag_mem_mb": 2147.483648,
+    "note": "eigh OOM on 32GB"
+  },
+  "16": {
+    "n": 16,
+    "dim": 65536,
+    "classical_ode_ms": 11.2,
+    "exact_diag_ms": null,
+    "exact_diag_mem_mb": 34359.738368,
+    "note": "eigh OOM"
+  }
+}

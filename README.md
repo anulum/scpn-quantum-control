@@ -114,6 +114,23 @@ information scrambles*, and *whether the system thermalises*.
 | Publication figures | **14** (simulation + hardware) |
 | Test suite | **2,813** passing |
 
+### Classical vs Quantum Wall-Time
+
+No quantum advantage at n ≤ 16. Classical ODE is faster for all accessible sizes.
+The value of the quantum approach is characterisation (entanglement, MBL, witnesses),
+not speed.
+
+| Method | n=4 | n=8 | n=12 | n=16 |
+|--------|----:|----:|-----:|-----:|
+| Classical Kuramoto ODE (scipy) | 0.4 ms | 1.4 ms | 2.8 ms | ~11 ms |
+| Exact diagonalisation (numpy eigh) | 0.1 ms | 164 ms | 26.8 s | OOM (32 GB) |
+| Qiskit statevector | ~50 ms | ~2 s | ~minutes | impractical |
+| Rust Hamiltonian + numpy eigh | 0.02 ms | 30 ms | ~5 s | ~2 min (est.) |
+| IBM hardware (per-job, 4000 shots) | ~5 s | ~10 s | ~20 s | ~40 s |
+
+Measured on Ubuntu 24.04, AMD Ryzen, 32 GB RAM. Rust speedup applies to
+Hamiltonian construction only; the eigh bottleneck is LAPACK in all cases.
+
 ### Publications
 
 - [Preprint: Quantum Kuramoto-XY on 156-qubit processor](https://anulum.github.io/scpn-quantum-control/preprint/)
