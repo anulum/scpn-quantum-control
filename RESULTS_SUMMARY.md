@@ -5,7 +5,7 @@
 # SCPN Quantum Control — Experimental Results Summary
 
 **Version:** 0.9.5 | **Date:** 2026-03-29 | **Notebooks:** 27 (NB14–47)
-**Tests:** 2,715 + 81 FIM mechanism tests = 2,813 total | **IBM Hardware:** 31 jobs on ibm_fez
+**Tests:** 2,715 + 81 FIM mechanism tests = 2,813 total | **IBM Hardware:** 33 jobs on ibm_fez
 
 ---
 

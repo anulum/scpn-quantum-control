@@ -50,8 +50,8 @@ Pass any coupling matrix; the built-in SCPN benchmark is just one example.
 
 ## What This Package Does
 
-**The first quantum hardware demonstration of coupled-oscillator synchronisation
-with heterogeneous natural frequencies** — validated on IBM's ibm_fez (Heron r2,
+**To our knowledge, the first quantum hardware demonstration of
+coupled-oscillator synchronisation with heterogeneous natural frequencies** — validated on IBM's ibm_fez (Heron r2,
 156 qubits) with Bell inequality violation (S=2.165), sub-threshold QKD error
 rates (5.5%), and 16-qubit Kuramoto dynamics.
 
