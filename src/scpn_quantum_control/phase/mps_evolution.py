@@ -101,21 +101,24 @@ def dmrg_ground_state(
 
     dmrg = qtn.DMRG2(H_mpo, bond_dims=bond_dim, cutoffs=cutoff)
     converged = False
+    last_energy = 0.0
     for _sweep in range(max_sweeps):
-        energy = dmrg.sweep_right()
-        energy = dmrg.sweep_left()  # noqa: F841 — intentional overwrite
-        if dmrg.energy_change < 1e-10:
+        dmrg.sweep_right()
+        e_left = dmrg.sweep_left()
+        current_energy = float(np.real(e_left))
+        if abs(current_energy - last_energy) < 1e-10:
             converged = True
             break
+        last_energy = current_energy
 
     mps = dmrg.state
-    bond_dims = [mps.bond_size(i, i + 1) for i in range(n - 1)]
+    bond_dims_out = [mps.bond_size(i, i + 1) for i in range(n - 1)]
 
     return {
-        "energy": float(dmrg.energy),
+        "energy": last_energy,
         "mps": mps,
         "converged": converged,
-        "bond_dims": bond_dims,
+        "bond_dims": bond_dims_out,
         "n_oscillators": n,
     }
 
@@ -170,8 +173,9 @@ def tebd_evolution(
         arrays.append(np.array([c, s], dtype=np.complex128))
     psi = qtn.MPS_product_state(arrays)
 
-    tebd = qtn.TEBD(psi, H_local, dt=dt, tol=cutoff)
+    tebd = qtn.TEBD(psi, H_local, dt=dt)
     tebd.split_opts["max_bond"] = bond_dim
+    tebd.split_opts["cutoff"] = cutoff
 
     n_steps = max(1, int(t_max / dt))
     times = np.linspace(0, t_max, n_steps + 1)
@@ -198,12 +202,12 @@ def _order_parameter_mps(mps: Any, n: int) -> float:
     """Compute Kuramoto R from MPS single-site expectations."""
     import quimb as qu
 
-    sx_op = qu.pauli("X")
-    sy_op = qu.pauli("Y")
+    sx_dense = qu.pauli("X").toarray()
+    sy_dense = qu.pauli("Y").toarray()
     z = 0.0 + 0.0j
     for i in range(n):
-        ex = float(np.real(mps.local_expectation(sx_op, i)))
-        ey = float(np.real(mps.local_expectation(sy_op, i)))
+        ex = float(np.real(mps.compute_local_expectation_canonical({(i,): sx_dense})))
+        ey = float(np.real(mps.compute_local_expectation_canonical({(i,): sy_dense})))
         z += ex + 1j * ey
     z /= n
     return float(abs(z))
