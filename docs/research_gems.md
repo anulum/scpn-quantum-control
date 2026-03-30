@@ -16,9 +16,12 @@ $$H = -\sum_{i<j} K_{ij}(X_i X_j + Y_i Y_j) - \sum_i \omega_i Z_i$$
 The 33 research gems in this package probe the **synchronization phase transition** —
 the quantum analogue of the classical Kuramoto transition — using tools from quantum
 information theory, algebraic topology, gauge theory, and computational complexity.
-Each module implements a measurement or analysis technique that is either entirely novel
-(no prior literature) or the first application of an existing technique to the
-Kuramoto-XY synchronization problem.
+Each module implements a measurement or analysis technique applied to the
+Kuramoto-XY synchronization problem. ~4 modules are novel constructions (witness
+formalism, Knm ansatz, FIM sector protection); ~8 are first applications of
+existing many-body tools to this specific system; the remainder are standard
+diagnostics (OTOC, Krylov, entanglement entropy, BKT scaling, level-spacing,
+etc.) applied competently to the Kuramoto-XY mapping.
 
 Think of it this way: classical Kuramoto models tell us *when* oscillators lock in sync.
 But they cannot tell us *what the quantum state looks like* at the transition, or *how
@@ -91,10 +94,13 @@ All three witnesses are Hermitian, efficiently measurable on current IBM hardwar
 and can be calibrated against classical Kuramoto simulations using the built-in
 `calibrate_thresholds()` function.
 
-**Prior art:** None. Synchronization witnesses are a new construction. The closest
-antecedent is entanglement witnesses (Horodecki et al., 1996) and the
-synchronization-entanglement connection (Galve et al., Sci. Rep. **3**, 1, 2013),
-but no one had combined these ideas into a witness formalism for synchronization.
+**Prior art:** Quantum synchronisation measures exist — mutual information witnesses
+(Ameri et al., Phys. Rev. A **91**, 012301, 2015), local phase criteria (Ma et al.,
+arXiv:2005.09001, 2020). Entanglement witnesses: Horodecki et al., Phys. Lett. A
+**223**, 1 (1996). Synchronization-entanglement connection: Galve et al., Sci. Rep.
+**3**, 1, 2013. **What is new here:** the specific trio of NISQ-hardware-ready
+Hermitian operators (correlation, Fiedler, topological) with calibration against
+classical Kuramoto, packaged for direct use on IBM hardware.
 
 #### API Reference
 

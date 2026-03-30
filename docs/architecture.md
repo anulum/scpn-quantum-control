@@ -9,7 +9,7 @@
 | Tests | 2,715 (98% coverage) |
 | Lines of code | ~23,800 |
 | Subpackages | 12 |
-| Research gems | 33 (21 novel, no prior art) |
+| Research gems | 33 (~4 novel, ~8 first-application) |
 | Examples | 18 |
 | Notebooks | 13 |
 | Doc pages | 29 |

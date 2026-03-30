@@ -19,9 +19,9 @@ transition on NISQ hardware: instead of measuring R (which requires
 and backward evolution). On hardware, the backward evolution can be
 approximated via Loschmidt echo or randomized benchmarking.
 
-No prior work connects OTOC to synchronization transitions.
+OTOC is a standard many-body diagnostic (Maldacena-Shenker-Stanford 2016).
+Applied here to the synchronization transition in Kuramoto-XY.
 OTOC on NISQ: Swingle (2018), Mi et al. (Google, Science 2021).
-Synchronization on quantum hardware: this work.
 """
 
 from __future__ import annotations

@@ -159,7 +159,7 @@ grows with N (sub-volume, not area law), ruling out deep MBL. Correct label:
 
 ![Eigenstate entanglement](figures/publication/fig16_eigenstate_entanglement.png)
 
-No prior art for non-ergodicity diagnostics in heterogeneous-frequency Kuramoto-XY.
+First application of level-spacing diagnostics (standard tool, Oganesyan & Huse 2007) to heterogeneous-frequency Kuramoto-XY.
 
 ### BKT Universality Confirmation
 

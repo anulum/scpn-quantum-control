@@ -17,8 +17,9 @@ coherence. The three constructions — correlation, Fiedler (algebraic connectiv
 and topological (persistent homology) — are efficiently measurable on current
 quantum hardware using only pairwise correlators. We validate all three on IBM
 ibm_fez (Heron r2) for 4-qubit Kuramoto-XY systems and demonstrate calibration
-against classical Kuramoto simulations. No prior work on synchronisation witnesses
-for quantum systems exists in the literature.
+against classical Kuramoto simulations. Prior work on quantum synchronisation
+measures exists (Ameri et al. 2013, Ma et al. 2020), but the specific trio of
+NISQ-hardware-ready witness operators with calibration is new.
 
 ---
 

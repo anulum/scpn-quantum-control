@@ -34,10 +34,12 @@ The package provides:
    frequencies omega compile directly into executable Qiskit circuits for IBM
    hardware. Rust-accelerated Hamiltonian construction (5,401× faster than Qiskit).
 
-2. **33 research modules** ("gems") implementing novel quantum probes of the
-   synchronisation phase transition — synchronisation witnesses (no prior art),
-   OTOC scrambling, Krylov complexity, persistent homology, DLA parity theorem,
-   and more. 21 of these have no prior literature.
+2. **33 research modules** ("gems") probing the synchronisation phase
+   transition — synchronisation witnesses, OTOC scrambling, Krylov complexity,
+   persistent homology, DLA parity theorem, and more. ~4 are novel constructions
+   (witness formalism, Knm ansatz, FIM sector protection); ~8 are first
+   applications of existing tools to Kuramoto-XY; the rest are standard
+   many-body diagnostics applied to this system.
 
 3. **Hardware-validated results** — 20/20 experiments completed on ibm_fez,
    176,000+ shots, 16 publication figures, 3 papers on GitHub Pages.
@@ -80,7 +82,7 @@ information scrambles*, and *whether the system thermalises*.
 | Metric | Value |
 |--------|-------|
 | Rust engine functions | **15** (5,401× faster Hamiltonian construction) |
-| Novel research modules | **33** (21 with no prior art) |
+| Research modules | **33** (~4 novel constructions, ~8 first-application) |
 | Python modules | **154** + Rust crate (885 lines) |
 | Publication figures | **14** (simulation + hardware) |
 | Test suite | **2,500+** passing |
@@ -88,7 +90,7 @@ information scrambles*, and *whether the system thermalises*.
 ### Publications
 
 - [Preprint: Quantum Kuramoto-XY on 156-qubit processor](https://anulum.github.io/scpn-quantum-control/preprint/)
-- [Paper: Synchronisation Witness Operators](https://anulum.github.io/scpn-quantum-control/paper_sync_witnesses/) (no prior art)
+- [Paper: Synchronisation Witness Operators](https://anulum.github.io/scpn-quantum-control/paper_sync_witnesses/) (novel NISQ-ready formalism)
 - [Paper: DLA Parity Theorem](https://anulum.github.io/scpn-quantum-control/paper_dla_parity/) (exact closed-form)
 
 ## Background: Kuramoto → XY Mapping
@@ -422,7 +424,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Installation](docs/installation.md) — pip install + dev setup
 - [Quickstart](docs/quickstart.md) — first experiment in 5 minutes
 - [Tutorials](docs/tutorials.md) — 4-level learning path, 14 tutorials
-- [Research Gems](docs/research_gems.md) — **33 novel modules with full theory and API**
+- [Research Gems](docs/research_gems.md) — **33 analysis modules with theory and API**
 - [Equations](docs/equations.md) — every equation in the codebase
 - [Architecture](docs/architecture.md) — 107-module dependency graph
 - [Analysis API](docs/analysis_api.md) — 41 analysis modules
