@@ -100,6 +100,8 @@ ignore = [
 "notebooks/*.ipynb" = ["E402", "F821"]  # notebooks: mid-cell imports normal, cross-cell scope invisible to linter
 "notebooks/**/*.ipynb" = ["E402", "F821"]  # colab notebooks same
 "notebooks/kaggle_push/*.py" = ["E402", "B007"]  # kaggle scripts: iteration loops without using index
+"tests/test_mps_evolution.py" = ["E402"]  # importorskip before local import
+"tests/test_mitiq_integration.py" = ["E402"]  # importorskip before local import
 
 [tool.ruff.lint.isort]
 known-first-party = ["scpn_quantum_control"]

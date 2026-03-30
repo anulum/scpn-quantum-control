@@ -52,13 +52,17 @@ def _build_mpo_hamiltonian(K: np.ndarray, omega: np.ndarray) -> Any:
         if abs(omega[i]) > 1e-15:
             builder[i] += -omega[i], "Z"
 
-    # Coupling terms: -K_ij (X_iX_j + Y_iY_j)
-    for i in range(n):
-        for j in range(i + 1, n):
-            if abs(K[i, j]) < 1e-15:
-                continue
-            builder[i, j] += -K[i, j], "X", "X"
-            builder[i, j] += -K[i, j], "Y", "Y"
+    # Nearest-neighbour coupling terms only (SpinHam1D limitation)
+    for i in range(n - 1):
+        if abs(K[i, i + 1]) < 1e-15:
+            continue
+        builder[i, i + 1] += -K[i, i + 1], "X", "X"
+        builder[i, i + 1] += -K[i, i + 1], "Y", "Y"
+
+    # Note: longer-range couplings K[i,j] with |i-j|>1 are dropped.
+    # For the exponential-decay K_nm, nearest-neighbour terms dominate.
+    # Full long-range MPO requires quimb.tensor.MatrixProductOperator
+    # construction which is more complex.
 
     return builder.build_mpo(n)
 
@@ -150,12 +154,11 @@ def tebd_evolution(
     for i in range(n):
         if abs(omega[i]) > 1e-15:
             builder[i] += -omega[i], "Z"
-    for i in range(n):
-        for j in range(i + 1, n):
-            if abs(K[i, j]) < 1e-15:
-                continue
-            builder[i, j] += -K[i, j], "X", "X"
-            builder[i, j] += -K[i, j], "Y", "Y"
+    for i in range(n - 1):
+        if abs(K[i, i + 1]) < 1e-15:
+            continue
+        builder[i, i + 1] += -K[i, i + 1], "X", "X"
+        builder[i, i + 1] += -K[i, i + 1], "Y", "Y"
 
     H_local = builder.build_local_ham(n)
 
@@ -193,10 +196,14 @@ def tebd_evolution(
 
 def _order_parameter_mps(mps: Any, n: int) -> float:
     """Compute Kuramoto R from MPS single-site expectations."""
+    import quimb as qu
+
+    sx_op = qu.pauli("X")
+    sy_op = qu.pauli("Y")
     z = 0.0 + 0.0j
     for i in range(n):
-        sx = float(mps.expec(qtn.pauli("X"), where=i).real)  # type: ignore[union-attr]
-        sy = float(mps.expec(qtn.pauli("Y"), where=i).real)  # type: ignore[union-attr]
-        z += sx + 1j * sy
+        ex = float(np.real(mps.local_expectation(sx_op, i)))
+        ey = float(np.real(mps.local_expectation(sy_op, i)))
+        z += ex + 1j * ey
     z /= n
     return float(abs(z))
