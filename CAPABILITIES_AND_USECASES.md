@@ -6,7 +6,7 @@
 ### Technical Specifications & Software Quality:
 *   **Engineering:** The repository maintains **98% test coverage** (2,813 tests across 155 modules), passing Mypy and Ruff linters.
 *   **Trotterized Hamiltonian Evolution:** It natively converts the continuous Kuramoto UPDE into an XY Spin Hamiltonian ($H_{XY} = \sum J_{ij} (\sigma_x^i \sigma_x^j + \sigma_y^i \sigma_y^j)$). It employs Trotter-Suzuki decomposition to simulate time-evolution on discrete quantum gates.
-*   **Hardware Proven:** The framework is deeply integrated with Qiskit and has been executed on physical IBM Quantum Processors. During the February 2026 campaign on `ibm_fez` (Heron r2, 156 qubits), the framework achieved an extraordinary **0.05% error rate** on a 4-qubit Variational Quantum Eigensolver (VQE) ground state.
+*   **Hardware Proven:** The framework is deeply integrated with Qiskit and has been executed on physical IBM Quantum Processors. During the February 2026 campaign on `ibm_fez` (Heron r2, 156 qubits), the framework achieved a **0.05% error rate** on a 4-qubit Variational Quantum Eigensolver (VQE) ground state.
 
 ## 2. Advanced Mitigation & Hardware Dynamics
 The codebase is designed specifically for the realities of modern quantum hardware, including robust tools for managing decoherence:

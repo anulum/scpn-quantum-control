@@ -3,7 +3,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 """Tests for the FIM (Fisher Information Metric) strange loop mechanism.
 
-Validates all 19 unprecedented findings from the 2026-03-29 experimental
+Validates all 19 experimental findings from the 2026-03-29
 campaign (27 notebooks, 25 JSON results, IBM hardware confirmation).
 """
 
