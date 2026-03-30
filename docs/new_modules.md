@@ -646,3 +646,88 @@ print(f"Speedup: {result['speedup']}×")
 | `benchmark_contraction(subscripts, *operands, n_repeats)` | `{naive_ms, optimised_ms, speedup}` |
 
 **Tests:** 4 (matches einsum, path info, benchmark, availability check)
+
+---
+
+# Rust Engine Expansion (18 functions)
+
+3 new PyO3 functions added to `scpn_quantum_engine`, bringing the total to 18.
+All wired into Python modules as automatic fast paths with Python fallback.
+
+## `build_sparse_xy_hamiltonian` — 80× faster sparse construction
+
+Returns COO triplets (rows, cols, vals) for scipy.sparse.csc_matrix.
+Same bitwise flip-flop as `build_xy_hamiltonian_dense` but outputs sparse format
+instead of dense matrix. Eliminates the Python `for k in range(2^n)` bottleneck.
+
+```python
+import scpn_quantum_engine as eng
+rows, cols, vals = eng.build_sparse_xy_hamiltonian(K.ravel(), omega, n)
+# Then: scipy.sparse.csc_matrix((vals, (rows, cols)), shape=(2**n, 2**n))
+```
+
+**Wired into:** `bridge/sparse_hamiltonian.py` — called automatically, Python fallback if engine not installed.
+
+**Measured:** 0.024 ms (Rust) vs 1.9 ms (Python) at n=8 → **80× speedup**
+
+**Tests:** 6 (triplets returned, matches dense Rust, matches Python dense, Hermitian, NNZ bounds, eigenvalue match)
+
+---
+
+## `magnetisation_labels` — 97× faster popcount
+
+Returns array of magnetisation M for all 2^N basis states using hardware
+`count_ones()` instruction. M = N − 2×popcount(k).
+
+```python
+labels = eng.magnetisation_labels(n)
+# labels[k] = total magnetisation of basis state |k⟩
+```
+
+**Wired into:** `analysis/magnetisation_sectors.py::basis_by_magnetisation()` — called automatically.
+
+**Measured:** 0.001 ms (Rust) vs 0.11 ms (Python) at n=8 → **97× speedup**
+
+**Tests:** 6 (n=2 explicit, n=4 range, all-up/all-down, matches Python, sum=0, popcount consistency)
+
+---
+
+## `order_param_from_statevector` — 851× faster order parameter
+
+Computes Kuramoto order parameter R from complex state vector via bitwise
+Pauli expectations. Critical inner loop in MCWF trajectories.
+
+```python
+R = eng.order_param_from_statevector(psi.real, psi.imag, n)
+```
+
+**Wired into:** `phase/tensor_jump.py::_order_param_vec()` — called automatically.
+
+**Measured:** 0.008 ms (Rust) vs 6.47 ms (Python) at n=8 → **851× speedup**
+
+**Tests:** 5 (all-up state, bounded, matches Python exactly, n=8 performance <1ms, deterministic)
+
+---
+
+## Complete Rust Engine (18 functions)
+
+| Function | Category | Speedup |
+|----------|----------|--------:|
+| `build_xy_hamiltonian_dense` | Hamiltonian | 5,401× |
+| `build_sparse_xy_hamiltonian` | Hamiltonian | 80× |
+| `order_param_from_statevector` | Order param | 851× |
+| `otoc_from_eigendecomp` | OTOC | 264× |
+| `lanczos_b_coefficients` | Krylov | 27× |
+| `magnetisation_labels` | Symmetry | 97× |
+| `all_xy_expectations` | Pauli | 6.2× |
+| `state_order_param_sparse` | Order param | — |
+| `expectation_pauli_fast` | Pauli | — |
+| `pec_sample_parallel` | PEC (rayon) | — |
+| `brute_mpc` | MPC (rayon) | — |
+| `dla_dimension` | DLA (rayon) | — |
+| `mc_xy_simulate` | Monte Carlo | — |
+| `kuramoto_trajectory` | Kuramoto ODE | — |
+| `kuramoto_euler` | Kuramoto ODE | — |
+| `order_parameter` | Classical R | — |
+| `build_knm` | K matrix | — |
+| `pec_coefficients` | PEC | — |
