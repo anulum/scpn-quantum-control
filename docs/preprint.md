@@ -14,7 +14,7 @@ ORCID: [0009-0009-3560-0851](https://orcid.org/0009-0009-3560-0851)
       title = {scpn-quantum-control: Quantum Simulation of Coupled-Oscillator
                Synchronisation on a 156-Qubit Superconducting Processor},
       year = {2026},
-      version = {0.9.3},
+      version = {0.9.5},
       url = {https://github.com/anulum/scpn-quantum-control},
       doi = {10.5281/zenodo.18821929}
     }
@@ -347,7 +347,7 @@ standard tools.
 
 All code, data, and figures are open-source:
 
-- **Code:** [github.com/anulum/scpn-quantum-control](https://github.com/anulum/scpn-quantum-control) (v0.9.3, AGPL-3.0)
+- **Code:** [github.com/anulum/scpn-quantum-control](https://github.com/anulum/scpn-quantum-control) (v0.9.5, AGPL-3.0)
 - **Results:** `results/publication_scans_2026-03-27.json`, `results/ibm_hardware_2026-03-{18,28}/`
 - **Docs:** [anulum.github.io/scpn-quantum-control](https://anulum.github.io/scpn-quantum-control)
 

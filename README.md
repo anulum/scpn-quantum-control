@@ -83,9 +83,9 @@ information scrambles*, and *whether the system thermalises*.
 |--------|-------|
 | Rust engine functions | **15** (5,401× faster Hamiltonian construction) |
 | Research modules | **33** (~4 novel constructions, ~8 first-application) |
-| Python modules | **154** + Rust crate (885 lines) |
+| Python modules | **155** + Rust crate (885 lines) |
 | Publication figures | **14** (simulation + hardware) |
-| Test suite | **2,500+** passing |
+| Test suite | **2,813** passing |
 
 ### Publications
 
@@ -337,8 +337,8 @@ All examples run on statevector simulation (no QPU needed).
 
 ## Notebooks
 
-13 interactive Jupyter notebooks in [`notebooks/`](notebooks/) covering every
-module from beginner to frontier research:
+47 Jupyter notebooks in [`notebooks/`](notebooks/) — 13 core tutorials
+plus 34 FIM investigation notebooks (NB14–47). Core notebooks:
 
 | # | Notebook | Level | Key Output |
 |:-:|----------|:-----:|------------|

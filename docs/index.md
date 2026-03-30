@@ -49,9 +49,9 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | Coherence wall | depth 250–400 (Heron r2) |
 | DLA dimension formula | $2^{2N-1} - 2$ (exact, all $N$) |
 | Research modules | 33 (~4 novel, ~8 first-application) |
-| IBM hardware jobs | 9 submitted to ibm_fez (2 completed) |
-| Test suite | **2,715 passing**, 13 skipped, 98% coverage |
-| Python modules | 107 + 1 Rust crate |
+| IBM hardware jobs | 33 completed on ibm_fez (Heron r2) |
+| Test suite | **2,813 passing**, 98% coverage |
+| Python modules | 155 + 1 Rust crate |
 
 ## Package map
 
@@ -102,8 +102,8 @@ for name, w in results.items():
   mapping is standard; the specific coupling structure is not independently validated.
 - **No quantum advantage at this scale.** At $N=4$–16, classical exact diagonalisation
   is faster. Advantage requires $N \gg 20$ with error-corrected qubits.
-- **IBM hardware results incomplete.** 20 experiments implemented and tested
-  on AerSimulator; none submitted to QPU yet (awaiting IBM Quantum budget).
+- **IBM hardware campaign complete.** 33 jobs on ibm_fez (Heron r2), 176K+ shots.
+  CHSH S=2.165, QBER 5.5%, 16q UPDE, dual protection confirmed.
 
 ## Documentation
 
@@ -118,7 +118,7 @@ for name, w in results.items():
 - [Hardware Guide](hardware_guide.md) — IBM Quantum setup
 - [Bridges](bridges_api.md) — cross-repo integrations
 - [Tutorials](tutorials.md) — 4-level learning path, 14 tutorials
-- [Notebooks](notebooks.md) — 13 interactive notebooks
+- [Notebooks](notebooks.md) — 47 notebooks (13 core + 34 FIM investigation)
 
 ---
 
