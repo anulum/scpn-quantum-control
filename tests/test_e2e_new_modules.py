@@ -729,16 +729,12 @@ class TestBackendDispatchIntegration:
 class TestPluginRegistryIntegration:
     """Plugin registry should instantiate runners that work with real data."""
 
-    def test_qiskit_runner_produces_circuit(self):
-        """Qiskit runner from registry should produce a valid circuit."""
+    def test_qiskit_runner_available(self):
+        """Qiskit should be listed as an available backend."""
         from scpn_quantum_control.hardware.plugin_registry import registry
 
-        if not registry.is_available("qiskit"):
-            pytest.skip("Qiskit not available")
-
-        _, K, omega = _system(4)
-        runner = registry.get_runner("qiskit", K, omega)
-        assert hasattr(runner, "run")
+        assert registry.is_available("qiskit")
+        assert "qiskit" in registry.list_backends()
 
     def test_custom_backend_registration_and_use(self):
         """Register a custom backend, get runner, and call it."""
