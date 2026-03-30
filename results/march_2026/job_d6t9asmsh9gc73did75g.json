@@ -1,0 +1,38 @@
+{
+  "job_id": "d6t9asmsh9gc73did75g",
+  "experiment": "baseline_pair_a",
+  "group": "baseline",
+  "backend": "ibm_fez",
+  "status": "DONE",
+  "creation_date": "2026-03-18 13:07:14.895520+01:00",
+  "retrieved_at": "2026-03-30T15:04:07.312379+00:00",
+  "n_pubs": 1,
+  "pubs": [
+    {
+      "pub_index": 0,
+      "n_shots": 500,
+      "n_bitstrings": 16,
+      "counts": {
+        "0110": 28,
+        "1011": 77,
+        "0100": 6,
+        "0010": 129,
+        "0001": 8,
+        "1010": 95,
+        "0011": 63,
+        "1110": 28,
+        "0000": 14,
+        "1111": 17,
+        "0111": 13,
+        "1000": 10,
+        "1001": 6,
+        "0101": 3,
+        "1100": 2,
+        "1101": 1
+      },
+      "metadata": {
+        "circuit_metadata": {}
+      }
+    }
+  ]
+}

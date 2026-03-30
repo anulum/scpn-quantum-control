@@ -1,8 +1,8 @@
 {
-  "checked_at": "2026-03-24T19:59:06.660018+00:00",
+  "checked_at": "2026-03-30T15:04:16.030408+00:00",
   "total_jobs": 9,
-  "done": 2,
-  "queued": 7,
+  "done": 9,
+  "queued": 0,
   "error": 0,
   "jobs": [
     {
@@ -10,63 +10,72 @@
       "name": "baseline_pair_a",
       "group": "baseline",
       "status": "DONE",
-      "retrieved": false
+      "retrieved": true,
+      "file": "results/march_2026/job_d6t9asmsh9gc73did75g.json"
     },
     {
       "job_id": "d6t9c8n90okc73et6ho0",
       "name": "baseline_pair_b",
       "group": "baseline",
       "status": "DONE",
-      "retrieved": false
+      "retrieved": true,
+      "file": "results/march_2026/job_d6t9c8n90okc73et6ho0.json"
     },
     {
       "job_id": "d6t9e7f90okc73et6jlg",
       "name": "noise_baseline",
       "group": "campaign",
-      "status": "QUEUED",
-      "retrieved": false
+      "status": "DONE",
+      "retrieved": true,
+      "file": "results/march_2026/job_d6t9e7f90okc73et6jlg.json"
     },
     {
       "job_id": "d6t9eabbjfas73fpbmv0",
       "name": "kuramoto_4osc_s1",
       "group": "campaign",
-      "status": "QUEUED",
-      "retrieved": false
+      "status": "DONE",
+      "retrieved": true,
+      "file": "results/march_2026/job_d6t9eabbjfas73fpbmv0.json"
     },
     {
       "job_id": "d6t9egbbjfas73fpbn40",
       "name": "kuramoto_4osc_s3_proxy",
       "group": "campaign",
-      "status": "QUEUED",
-      "retrieved": false
+      "status": "DONE",
+      "retrieved": true,
+      "file": "results/march_2026/job_d6t9egbbjfas73fpbn40.json"
     },
     {
       "job_id": "d6t9ejfgtkcc73cmemv0",
       "name": "kuramoto_8osc",
       "group": "campaign",
-      "status": "QUEUED",
-      "retrieved": false
+      "status": "DONE",
+      "retrieved": true,
+      "file": "results/march_2026/job_d6t9ejfgtkcc73cmemv0.json"
     },
     {
       "job_id": "d6t9emf90okc73et6k50",
       "name": "kuramoto_4osc_trotter2",
       "group": "campaign",
-      "status": "QUEUED",
-      "retrieved": false
+      "status": "DONE",
+      "retrieved": true,
+      "file": "results/march_2026/job_d6t9emf90okc73et6k50.json"
     },
     {
       "job_id": "d6t9eqush9gc73didba0",
       "name": "bell_test_4q",
       "group": "campaign",
-      "status": "QUEUED",
-      "retrieved": false
+      "status": "DONE",
+      "retrieved": true,
+      "file": "results/march_2026/job_d6t9eqush9gc73didba0.json"
     },
     {
       "job_id": "d6t9erfgtkcc73cmen70",
       "name": "correlator_4q",
       "group": "campaign",
-      "status": "QUEUED",
-      "retrieved": false
+      "status": "DONE",
+      "retrieved": true,
+      "file": "results/march_2026/job_d6t9erfgtkcc73cmen70.json"
     }
   ]
 }
