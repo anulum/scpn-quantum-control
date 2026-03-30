@@ -171,6 +171,20 @@ module = "cirq.*"
 ignore_missing_imports = true
 follow_imports = "skip"
 
+[[tool.mypy.overrides]]
+module = "mitiq.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "quimb.*"
+ignore_missing_imports = true
+follow_imports = "skip"
+
+[[tool.mypy.overrides]]
+module = "pennylane.*"
+ignore_missing_imports = true
+follow_imports = "skip"
+
 [tool.coverage.run]
 source = ["scpn_quantum_control"]
 
