@@ -864,6 +864,129 @@ fn all_xy_expectations<'py>(
     )
 }
 
+// =========================================================================
+// Sparse Hamiltonian construction (COO triplets)
+// Outputs (rows, cols, vals) for scipy.sparse.csc_matrix construction.
+// Same bitwise flip-flop as build_xy_hamiltonian_dense but sparse output.
+// =========================================================================
+#[pyfunction]
+fn build_sparse_xy_hamiltonian<'py>(
+    py: Python<'py>,
+    k_flat: PyReadonlyArray1<'_, f64>,
+    omega: PyReadonlyArray1<'_, f64>,
+    n: usize,
+) -> (Bound<'py, PyArray1<i64>>, Bound<'py, PyArray1<i64>>, Bound<'py, PyArray1<f64>>) {
+    let k = k_flat.as_slice().unwrap();
+    let om = omega.as_slice().unwrap();
+    let dim = 1usize << n;
+
+    let mut rows: Vec<i64> = Vec::new();
+    let mut cols: Vec<i64> = Vec::new();
+    let mut vals: Vec<f64> = Vec::new();
+
+    // Diagonal: -Σ ω_i (1 - 2·b_i(s))
+    for s in 0..dim {
+        let mut diag = 0.0f64;
+        for i in 0..n {
+            let bi = ((s >> i) & 1) as f64;
+            diag -= om[i] * (1.0 - 2.0 * bi);
+        }
+        rows.push(s as i64);
+        cols.push(s as i64);
+        vals.push(diag);
+    }
+
+    // Off-diagonal: XY flip-flop
+    for i in 0..n {
+        for j in (i + 1)..n {
+            let kij = k[i * n + j];
+            if kij.abs() < 1e-15 {
+                continue;
+            }
+            let mask = (1usize << i) | (1usize << j);
+            let val = -2.0 * kij;
+            for s in 0..dim {
+                let bi = (s >> i) & 1;
+                let bj = (s >> j) & 1;
+                if bi != bj {
+                    let s_flip = s ^ mask;
+                    rows.push(s as i64);
+                    cols.push(s_flip as i64);
+                    vals.push(val);
+                }
+            }
+        }
+    }
+
+    (
+        PyArray1::from_vec(py, rows),
+        PyArray1::from_vec(py, cols),
+        PyArray1::from_vec(py, vals),
+    )
+}
+
+// =========================================================================
+// Basis partition by magnetisation (popcount-based)
+// Returns array where result[k] = magnetisation M of basis state |k⟩.
+// M = n - 2 × popcount(k). Uses hardware popcount instruction.
+// =========================================================================
+#[pyfunction]
+fn magnetisation_labels<'py>(
+    py: Python<'py>,
+    n: usize,
+) -> Bound<'py, PyArray1<i32>> {
+    let dim = 1usize << n;
+    let mut labels = Vec::with_capacity(dim);
+    let n_i32 = n as i32;
+    for k in 0..dim {
+        let popcount = (k as u64).count_ones() as i32;
+        labels.push(n_i32 - 2 * popcount);
+    }
+    PyArray1::from_vec(py, labels)
+}
+
+// =========================================================================
+// Order parameter from state vector (complex)
+// R = (1/N)|Σ_i (<X_i> + i<Y_i>)| computed via bitwise Pauli.
+// Same logic as state_order_param_sparse but for complex state vectors
+// used in tensor_jump MCWF trajectories.
+// =========================================================================
+#[pyfunction]
+fn order_param_from_statevector(
+    psi_re: PyReadonlyArray1<'_, f64>,
+    psi_im: PyReadonlyArray1<'_, f64>,
+    n: usize,
+) -> f64 {
+    let re = psi_re.as_slice().unwrap();
+    let im = psi_im.as_slice().unwrap();
+    let dim = 1usize << n;
+
+    let mut z_re = 0.0f64;
+    let mut z_im = 0.0f64;
+
+    for i in 0..n {
+        let mut exp_x = 0.0f64;
+        let mut exp_y = 0.0f64;
+        let mask = 1usize << i;
+        for k in 0..dim {
+            let k_flip = k ^ mask;
+            // <X_i> = Σ_k Re(ψ*_k · ψ_{k^mask})
+            // ψ*_k · ψ_{k^mask} = (re_k - i·im_k)(re_f + i·im_f)
+            //                    = re_k·re_f + im_k·im_f + i(re_k·im_f - im_k·re_f)
+            let re_prod = re[k] * re[k_flip] + im[k] * im[k_flip];
+            let im_prod = re[k] * im[k_flip] - im[k] * re[k_flip];
+            exp_x += re_prod;
+            exp_y += im_prod;
+        }
+        z_re += exp_x;
+        z_im += exp_y;
+    }
+
+    z_re /= n as f64;
+    z_im /= n as f64;
+    (z_re * z_re + z_im * z_im).sqrt()
+}
+
 #[pymodule]
 fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(pec_coefficients, m)?)?;
@@ -881,5 +1004,8 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(otoc_from_eigendecomp, m)?)?;
     m.add_function(wrap_pyfunction!(build_xy_hamiltonian_dense, m)?)?;
     m.add_function(wrap_pyfunction!(all_xy_expectations, m)?)?;
+    m.add_function(wrap_pyfunction!(build_sparse_xy_hamiltonian, m)?)?;
+    m.add_function(wrap_pyfunction!(magnetisation_labels, m)?)?;
+    m.add_function(wrap_pyfunction!(order_param_from_statevector, m)?)?;
     Ok(())
 }
