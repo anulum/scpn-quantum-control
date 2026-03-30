@@ -37,3 +37,10 @@ scpn_quantum_engine/target/
 
 # Internal business docs — never commit
 docs/internal/
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.pdf
+paper/*.bib
+paper/*.bbl
+paper/*.blg

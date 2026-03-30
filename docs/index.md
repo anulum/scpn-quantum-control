@@ -51,7 +51,7 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | Research modules | 33 (~4 novel, ~8 first-application) |
 | IBM hardware jobs | 33 completed on ibm_fez (Heron r2) |
 | Test suite | **2,813 passing**, 98% coverage |
-| Python modules | 155 + 1 Rust crate |
+| Python modules | 166 + 1 Rust crate |
 
 ## Package map
 
