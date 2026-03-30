@@ -4,7 +4,7 @@
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 155 |
+| Python modules | 166 |
 | Rust crate | 1 (PyO3 0.25) |
 | Tests | 2,715 (98% coverage) |
 | Lines of code | ~23,800 |

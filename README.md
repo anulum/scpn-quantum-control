@@ -110,7 +110,7 @@ information scrambles*, and *whether the system thermalises*.
 |--------|-------|
 | Rust engine functions | **15** (5,401× faster Hamiltonian construction) |
 | Research modules | **33** (~4 novel constructions, ~8 first-application) |
-| Python modules | **155** + Rust crate (885 lines) |
+| Python modules | **166** + Rust crate (885 lines) |
 | Publication figures | **14** (simulation + hardware) |
 | Test suite | **2,813** passing |
 
