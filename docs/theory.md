@@ -119,7 +119,7 @@ The SCPN has **heterogeneous** frequencies — each layer oscillates at its own
 natural rate. This breaks translational invariance and potentially modifies
 the universality class of the transition.
 
-Our measurements (v0.9.3):
+Our measurements (v0.9.5):
 
 - **Schmidt gap minimum at $K = 3.44$ (n=8)** — cleanest transition signature
 - **$K_c(\infty)$ extrapolation:** BKT ansatz gives $K_c \approx 2.20$,
