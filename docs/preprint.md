@@ -35,7 +35,7 @@ rate of 5.5% (below the BB84 threshold of 11%), and 16-qubit Kuramoto dynamics
 with visible coupling structure at 94% state preparation fidelity. We extract
 the critical coupling $K_c(\infty) \approx 2.2$ via BKT finite-size scaling
 and demonstrate that heterogeneous frequencies preserve discrete time crystal
-order — a result with no prior literature. All code, data, and 14 figures are
+order — to our knowledge the first such measurement on hardware. All code, data, and 14 figures are
 open-source (AGPL-3.0) at
 [github.com/anulum/scpn-quantum-control](https://github.com/anulum/scpn-quantum-control).
 
@@ -62,9 +62,10 @@ tunnelling between phase configurations.
 
 **Prior work** on quantum simulation of the XY model uses homogeneous frequencies
 ($\omega_i = \omega$ for all $i$). This preserves translational invariance and
-the BKT universality class is well-characterised. **No prior work** studies the
-quantum synchronisation transition with heterogeneous frequencies — the physically
-relevant case where each oscillator has its own natural timescale.
+the BKT universality class is well-characterised. Theoretical quantum Kuramoto
+models with heterogeneity exist (Pikovsky, Ha et al.), but to our knowledge no
+prior hardware demonstration studies the quantum synchronisation transition with
+heterogeneous frequencies on a superconducting processor.
 
 We study the heterogeneous case using parameters from the SCPN framework
 (Šotek, 2025): 16 natural frequencies and a nearest-neighbour coupling matrix
@@ -267,8 +268,9 @@ topology from thermal scrambling without producing true many-body localisation.
 system size. Our data (coloured) sits 30–40% below the thermal expectation
 (black dashed). Non-ergodic but not deep MBL.*
 
-**No prior art.** This is the first non-ergodicity diagnostic for
-heterogeneous-frequency Kuramoto-XY systems.
+To our knowledge, this is the first non-ergodicity diagnostic applied to
+heterogeneous-frequency Kuramoto-XY systems. Level-spacing statistics
+themselves are standard (Oganesyan & Huse, 2007).
 
 ---
 

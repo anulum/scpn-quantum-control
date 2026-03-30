@@ -34,10 +34,10 @@ All three witnesses are:
 - Efficiently measurable on NISQ hardware
 - Calibratable against classical Kuramoto simulations
 
-Reference: No prior work on synchronization witnesses exists in the
-literature. Entanglement witnesses: Horodecki, Horodecki & Horodecki,
-Phys. Lett. A 223, 1 (1996). Synchronization-entanglement connection:
-Galve et al., Sci. Rep. 3, 1 (2013).
+Reference: Prior quantum sync measures: Ameri et al., PRA 91, 012301 (2015);
+Ma et al., arXiv:2005.09001 (2020). Entanglement witnesses: Horodecki et al.,
+PLA 223, 1 (1996). Sync-entanglement: Galve et al., Sci. Rep. 3, 1 (2013).
+This module's contribution: NISQ-hardware-ready witness trio with calibration.
 """
 
 from __future__ import annotations

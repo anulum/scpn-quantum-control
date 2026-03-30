@@ -10,7 +10,7 @@
 [![mypy](https://img.shields.io/badge/type--checked-mypy-blue.svg)](https://mypy-lang.org/)
 
 Quantum simulation of coupled Kuramoto oscillator networks on IBM superconducting
-hardware, with 33 novel research modules probing the synchronization phase transition.
+hardware, with 33 research modules probing the synchronization phase transition.
 
 ## What this package does
 
@@ -24,10 +24,11 @@ This package provides three things:
 1. **A compiler** that takes any coupling matrix $K_{nm}$ and natural frequencies
    $\omega_i$ and produces executable Qiskit circuits for IBM hardware.
 
-2. **33 research modules** (the "gems") implementing novel quantum probes of the
-   synchronization phase transition — synchronization witnesses, topological
-   diagnostics, chaos measures, computational complexity bounds, and open-system
-   dynamics. 21 of these have no prior art in the literature.
+2. **33 research modules** (the "gems") probing the synchronization phase
+   transition — synchronization witnesses, topological diagnostics, chaos
+   measures, computational complexity bounds, and open-system dynamics. ~4 are
+   novel constructions; ~8 are first applications of existing tools to
+   Kuramoto-XY; the rest are standard many-body diagnostics.
 
 3. **The SCPN 16-layer network** as a built-in benchmark — the coupling matrix from
    Paper 27 of the Sentient-Consciousness Projection Network framework, where
@@ -47,7 +48,7 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | 16-layer UPDE snapshot | 46% error at depth 770 (NISQ-consistent) |
 | Coherence wall | depth 250–400 (Heron r2) |
 | DLA dimension formula | $2^{2N-1} - 2$ (exact, all $N$) |
-| Novel research modules | 33 (21 with no prior art) |
+| Research modules | 33 (~4 novel, ~8 first-application) |
 | IBM hardware jobs | 9 submitted to ibm_fez (2 completed) |
 | Test suite | **2,715 passing**, 13 skipped, 98% coverage |
 | Python modules | 107 + 1 Rust crate |
@@ -108,7 +109,7 @@ for name, w in results.items():
 
 - [Installation](installation.md) — pip install + dev setup
 - [Quickstart](quickstart.md) — first experiment in 5 minutes
-- [Research Gems](research_gems.md) — **33 novel modules with full theory and API**
+- [Research Gems](research_gems.md) — **33 analysis modules with theory and API**
 - [Equations](equations.md) — every equation in the codebase
 - [Architecture](architecture.md) — 107-module dependency graph
 - [API Reference](api.md) — core module documentation
