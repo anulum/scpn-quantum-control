@@ -174,7 +174,21 @@ def mcwf_ensemble(
 
 
 def _order_param_vec(psi: np.ndarray, n: int) -> float:
-    """Order parameter R from state vector."""
+    """Order parameter R from state vector. Uses Rust (851×) when available."""
+    # Rust fast path
+    try:
+        import scpn_quantum_engine as eng
+
+        return float(
+            eng.order_param_from_statevector(
+                np.ascontiguousarray(psi.real),
+                np.ascontiguousarray(psi.imag),
+                n,
+            )
+        )
+    except (ImportError, Exception):
+        pass
+
     z = 0.0 + 0.0j
     dim = 2**n
     for i in range(n):
