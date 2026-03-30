@@ -1,0 +1,14 @@
+{
+  "id": "anulum/scpn-aging-k-decay",
+  "title": "SCPN Aging K Decay",
+  "code_file": "kaggle_aging_k_decay.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": false,
+  "enable_gpu": false,
+  "enable_internet": true,
+  "keywords": ["quantum", "scpn", "kuramoto", "aging", "coupling"],
+  "dataset_sources": [],
+  "competition_sources": [],
+  "kernel_sources": []
+}
