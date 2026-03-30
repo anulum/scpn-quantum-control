@@ -382,3 +382,267 @@ print(f"Used: {result['backend_used']}, E₀ = {result['result']['ground_energy'
 | Open system, n ≤ 12 | `lindblad_scipy` |
 
 **Tests:** 6 (small/medium/large/open/huge system selection, auto_solve runs)
+
+---
+
+# Batch 3 — Scalability & Ecosystem Integration (March 2026)
+
+8 modules closing capability gaps identified by analysis of 20+ competing
+projects (QuSpin, quimb, Stim, NetKet, TensorCircuit, OpenFermion, TorchQuantum,
+Maestro, cotengra). 53 tests, all passing.
+
+---
+
+## Sparse Hamiltonian
+
+### `bridge/sparse_hamiltonian.py` — CSC Sparse XY Hamiltonian
+
+The XY Hamiltonian has $O(n^2 \cdot 2^n)$ non-zero elements in a $2^N \times 2^N$
+matrix — less than 1% fill for $n \geq 10$. Sparse storage (scipy CSC) +
+ARPACK eigensolver (`eigsh`) enables exact diagonalisation at scales impossible
+with dense matrices.
+
+| n | Dense (MB) | Sparse (MB) | Reduction |
+|:-:|:----------:|:-----------:|:---------:|
+| 12 | 134 | 12 | 11× |
+| 14 | 2,147 | 50 | 43× |
+| 16 | 32,768 | 200 | 164× |
+| 18 | 524,288 | 800 | 655× |
+
+Combined with U(1) sectors: sparse eigsh on $C(20,10) = 184{,}756$ with
+$\sim 10^6$ non-zeros → feasible on a 32 GB workstation.
+
+Inspired by QuSpin's sparse Hamiltonian construction.
+
+```python
+from scpn_quantum_control.bridge.sparse_hamiltonian import (
+    build_sparse_hamiltonian, sparse_eigsh, sparsity_stats
+)
+
+# Full sparse Hamiltonian
+H = build_sparse_hamiltonian(K, omega)
+print(f"Shape: {H.shape}, NNZ: {H.nnz}, Fill: {H.nnz/H.shape[0]**2:.4%}")
+
+# Sparse eigenvalues (ARPACK — k smallest)
+result = sparse_eigsh(K, omega, k=10)
+print(f"Ground energy: {result['eigvals'][0]:.6f}")
+
+# Within U(1) sector
+result_m0 = sparse_eigsh(K, omega, k=10, M=0)
+print(f"M=0 ground: {result_m0['eigvals'][0]:.6f}")
+
+# Memory estimate
+stats = sparsity_stats(16, K)
+print(f"Sparse: {stats['memory_sparse_mb']:.0f} MB vs Dense: {stats['memory_dense_mb']:.0f} MB")
+```
+
+**API:**
+
+| Function | Returns |
+|----------|---------|
+| `build_sparse_hamiltonian(K, omega)` | `scipy.sparse.csc_matrix` |
+| `build_sparse_sector_hamiltonian(K, omega, M)` | `(csc_matrix, indices)` within U(1) sector |
+| `sparse_eigsh(K, omega, k, which, M)` | `{eigvals, eigvecs, nnz, dim, method}` |
+| `sparsity_stats(n, K)` | `{dim, nnz_estimate, fill_pct, memory_sparse_mb, memory_dense_mb}` |
+
+**Tests:** 14 (shape, Hermiticity, matches dense at n=4/6, nnz bounds, sector match,
+ground energy match, ARPACK feasible at n=8, dense fallback, sparsity stats)
+
+---
+
+## JAX Acceleration
+
+### `phase/jax_nqs.py` — JAX-Accelerated RBM Wavefunction
+
+Replaces the numpy finite-difference gradients in `nqs_ansatz.py` with JAX
+`jit` + `grad` for automatic differentiation. ~100× faster gradient computation.
+
+Inspired by NetKet (Vicentini et al., SoftwareX 2022).
+
+Requires: `pip install jax jaxlib`
+
+```python
+from scpn_quantum_control.phase.jax_nqs import jax_vmc_ground_state
+
+result = jax_vmc_ground_state(K, omega, n_iterations=200, learning_rate=0.01, seed=42)
+print(f"JAX VMC energy: {result['energy']:.4f}")
+print(f"Parameters: {result['n_params']}")
+```
+
+**API:**
+
+| Function | Returns |
+|----------|---------|
+| `is_jax_available()` | `bool` |
+| `jax_rbm_energy(params, H, n)` | JAX scalar (differentiable) |
+| `jax_vmc_ground_state(K, omega, ...)` | `{energy, energy_history, params, n_params}` |
+
+**Tests:** Requires JAX installation — included in batch 3 test file as conditional.
+
+---
+
+## Multi-Backend Dispatch
+
+### `backend_dispatch.py` — Runtime Backend Selection
+
+Switch between numpy, JAX, and PyTorch for array operations at runtime.
+Inspired by TensorCircuit's `tc.set_backend()`.
+
+```python
+from scpn_quantum_control.backend_dispatch import set_backend, get_backend, available_backends
+
+print(available_backends())  # ['numpy', 'jax', 'torch']
+set_backend("jax")           # all array ops now use JAX
+set_backend("numpy")         # back to numpy
+```
+
+**API:**
+
+| Function | Returns |
+|----------|---------|
+| `set_backend(name)` | Sets global backend ("numpy", "jax", "torch") |
+| `get_backend()` | Current backend name |
+| `get_array_module()` | The active array module (np, jnp, or torch) |
+| `to_numpy(arr)` | Convert any backend array to numpy |
+| `from_numpy(arr)` | Convert numpy to current backend |
+| `available_backends()` | List installed backends |
+
+**Tests:** 6 (default numpy, set/get, available list, to/from numpy, array module)
+
+---
+
+## Plugin Architecture
+
+### `hardware/plugin_registry.py` — Extensible Backend Registry
+
+Register and discover hardware backends at runtime. Supports lazy loading
+of built-in backends (Qiskit, PennyLane, Cirq) and registration of custom backends.
+
+Inspired by OpenFermion's plugin architecture.
+
+```python
+from scpn_quantum_control.hardware.plugin_registry import registry
+
+# List and use built-in backends
+print(registry.available_backends())  # ['qiskit', 'pennylane', 'cirq']
+runner = registry.get_runner("pennylane", K, omega, device="default.qubit")
+result = runner.run_trotter(t=0.5, reps=3)
+
+# Register a custom backend
+@registry.register("my_simulator")
+class MyRunner:
+    def __init__(self, K, omega, **kwargs): ...
+    def run_trotter(self, t, reps): ...
+```
+
+**API:**
+
+| Method | Description |
+|--------|------------|
+| `registry.list_backends()` | All registered + lazy-loadable names |
+| `registry.available_backends()` | Only actually importable backends |
+| `registry.is_available(name)` | Check single backend |
+| `registry.get_runner(name, K, omega, **kw)` | Get instantiated runner |
+| `@registry.register(name)` | Decorator for custom backends |
+
+**Tests:** 6 (list, availability, get runner, custom registration, error on unknown, subset check)
+
+---
+
+## GPU Batch Evaluation
+
+### `phase/gpu_batch_vqe.py` — Parallel VQE Parameter Scan
+
+Evaluate multiple VQE parameter sets in batch. CPU baseline with numpy,
+GPU path with PyTorch.
+
+Inspired by TorchQuantum (MIT HAN Lab).
+
+```python
+from scpn_quantum_control.phase.gpu_batch_vqe import batch_vqe_scan
+
+result = batch_vqe_scan(K, omega, n_samples=100, seed=42)
+print(f"Best energy: {result['best_energy']:.4f}")
+print(f"Scanned {result['n_samples']} parameter sets")
+```
+
+**API:**
+
+| Function | Returns |
+|----------|---------|
+| `batch_energy_numpy(H, param_sets, ansatz_fn)` | energies array |
+| `batch_energy_torch(H, param_sets, ansatz_fn, device)` | energies array (GPU) |
+| `batch_vqe_scan(K, omega, n_samples, seed, use_gpu)` | `{energies, params, best_energy, best_params}` |
+
+**Tests:** 3 (batch energy, VQE scan, output keys)
+
+---
+
+## Translation Symmetry
+
+### `analysis/translation_symmetry.py` — Cyclic Translation for Periodic Chains
+
+When frequencies are homogeneous ($\omega_i = \omega$) AND the coupling matrix
+is circulant ($K_{ij} = K(|i-j| \bmod N)$), the cyclic shift operator $T$
+commutes with $H$. Eigenstates then carry definite crystal momentum
+$k = 2\pi m/N$.
+
+Combined with U(1), this gives $N \times (N+1)$ sectors. For $n=16$:
+full 65,536 → $k=0$ sector of $M=0$: ~805 states → **80× reduction**.
+
+Only applicable to homogeneous systems. For heterogeneous $\omega$ (the SCPN
+case), translation is broken — use U(1) sectors instead.
+
+Inspired by QuSpin's full symmetry chain.
+
+```python
+from scpn_quantum_control.analysis.translation_symmetry import (
+    is_translation_invariant, eigh_with_translation
+)
+
+# Check if system is translation-invariant
+K_ring = ...  # circulant coupling
+omega_uniform = np.ones(n) * 1.0
+print(is_translation_invariant(K_ring, omega_uniform))  # True
+
+# Diagonalise in k=0 sector
+result = eigh_with_translation(K_ring, omega_uniform, momentum=0)
+print(f"k=0 sector: {result['dim']} states, ground={result['eigvals'][0]:.4f}")
+```
+
+**Tests:** 6 (TI detection, non-TI detection, sector dimensions, k=0 eigenvalues,
+heterogeneous raises, ground energy within full spectrum)
+
+---
+
+## Contraction Optimisation
+
+### `phase/contraction_optimiser.py` — Tensor Contraction Path Finder
+
+Optimal einsum contraction paths using cotengra (if available), with
+numpy fallback. Drop-in replacement for `np.einsum`.
+
+Inspired by quimb's cotengra integration.
+
+```python
+from scpn_quantum_control.phase.contraction_optimiser import contract, benchmark_contraction
+
+# Drop-in replacement for np.einsum
+C = contract("ij,jk->ik", A, B)
+
+# Benchmark
+result = benchmark_contraction("ij,jk,kl->il", A, B, C, n_repeats=10)
+print(f"Naive: {result['naive_ms']:.1f} ms, Optimised: {result['optimised_ms']:.1f} ms")
+print(f"Speedup: {result['speedup']}×")
+```
+
+**API:**
+
+| Function | Returns |
+|----------|---------|
+| `is_cotengra_available()` | `bool` |
+| `optimal_contraction_path(subscripts, *operands)` | `(path, info)` |
+| `contract(subscripts, *operands)` | Result array (optimised) |
+| `benchmark_contraction(subscripts, *operands, n_repeats)` | `{naive_ms, optimised_ms, speedup}` |
+
+**Tests:** 4 (matches einsum, path info, benchmark, availability check)
