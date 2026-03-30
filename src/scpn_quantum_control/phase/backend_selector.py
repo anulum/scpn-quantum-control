@@ -93,6 +93,19 @@ def recommend_backend(
             "feasible": True,
         }
 
+    # U(1) magnetisation sectors (strongest reduction)
+    from math import comb
+
+    u1_largest_dim = comb(n, n // 2)
+    u1_mb = u1_largest_dim * u1_largest_dim * 16 / 1e6
+    if u1_mb < ram_mb * 0.3 and n <= 20:
+        return {
+            "backend": "u1_sector_ed",
+            "reason": f"U(1) magnetisation ED: largest sector {u1_largest_dim} states, {u1_mb:.0f} MB",
+            "memory_mb": u1_mb,
+            "feasible": True,
+        }
+
     if sector_ed_mb < ram_mb * 0.3 and n <= 16:
         return {
             "backend": "sector_ed",
@@ -182,6 +195,12 @@ def auto_solve(
             "result": {"eigvals": eigvals, "eigvecs": eigvecs, "ground_energy": float(eigvals[0])},
             "recommendation": rec,
         }
+
+    if backend == "u1_sector_ed":
+        from ..analysis.magnetisation_sectors import eigh_by_magnetisation
+
+        result = eigh_by_magnetisation(K, omega)
+        return {"backend_used": backend, "result": result, "recommendation": rec}
 
     if backend == "sector_ed":
         from ..analysis.symmetry_sectors import eigh_by_sector
