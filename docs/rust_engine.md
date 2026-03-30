@@ -24,7 +24,7 @@ Requires Rust toolchain (rustup) and a C compiler for PyO3.
 All functions accept split real/imaginary arrays for complex data (no complex128
 across the FFI boundary). Python wrappers handle the conversion transparently.
 
-## Functions (15)
+## Functions (18)
 
 ### Classical Kuramoto
 
@@ -40,6 +40,13 @@ across the FFI boundary). Python wrappers handle the conversion transparently.
 | Function | Description | Complexity |
 |----------|-------------|------------|
 | `build_xy_hamiltonian_dense(K_flat, omega, n)` | Dense XY Hamiltonian via bitwise flip-flop | O(2^n × n²) |
+| `build_sparse_xy_hamiltonian(K_flat, omega, n)` | Sparse COO triplets for XY Hamiltonian | O(2^n × n²) |
+
+### Symmetry
+
+| Function | Description | Complexity |
+|----------|-------------|------------|
+| `magnetisation_labels(n)` | Total magnetisation M for all 2^N basis states via hardware popcount | O(2^n) |
 
 Constructs $H = -\sum_{i<j} K_{ij}(X_iX_j + Y_iY_j) - \sum_i \omega_i Z_i$ directly in the
 computational basis without Qiskit. The XY flip-flop interaction gives nonzero matrix element
@@ -53,6 +60,7 @@ Returns flat real array (XY Hamiltonian is real in the computational basis).
 | Function | Description | Complexity |
 |----------|-------------|------------|
 | `state_order_param_sparse(psi_re, psi_im, n_osc)` | Quantum R from statevector via bitwise Pauli | O(n × 2^n) |
+| `order_param_from_statevector(psi_re, psi_im, n)` | Kuramoto R from state vector (MCWF inner loop) | O(n × 2^n) |
 | `expectation_pauli_fast(psi_re, psi_im, n, qubit, pauli)` | Single-qubit Pauli expectation | O(2^n) |
 | `all_xy_expectations(psi_re, psi_im, n_osc)` | Batch X,Y expectations for all qubits | O(n × 2^n) |
 
@@ -161,3 +169,115 @@ except (ImportError, AttributeError):
 
 For Hamiltonian construction, use `knm_to_dense_matrix` from `bridge.knm_hamiltonian`
 which encapsulates this pattern.
+
+## New Functions (March 2026)
+
+### `build_sparse_xy_hamiltonian` — 80× faster sparse construction
+
+Returns COO triplets `(rows, cols, vals)` for `scipy.sparse.csc_matrix`.
+Same bitwise flip-flop as `build_xy_hamiltonian_dense` but outputs sparse format.
+Eliminates the Python `for k in range(2^n)` bottleneck.
+
+```python
+import scpn_quantum_engine as eng
+rows, cols, vals = eng.build_sparse_xy_hamiltonian(K.ravel(), omega, n)
+H = scipy.sparse.csc_matrix((vals, (rows, cols)), shape=(2**n, 2**n))
+```
+
+**Wired into:** `bridge/sparse_hamiltonian.py`
+**Measured:** 0.024 ms (Rust) vs 1.9 ms (Python) at n=8 → **80×**
+
+### `magnetisation_labels` — 97× faster popcount
+
+Returns array of magnetisation $M$ for all $2^N$ basis states using hardware
+`count_ones()` instruction. $M = N - 2 \times \text{popcount}(k)$.
+
+```python
+labels = eng.magnetisation_labels(n)
+# labels[k] = total magnetisation of basis state |k⟩
+```
+
+**Wired into:** `analysis/magnetisation_sectors.py::basis_by_magnetisation()`
+**Measured:** 0.001 ms (Rust) vs 0.11 ms (Python) at n=8 → **97×**
+
+### `order_param_from_statevector` — 851× faster order parameter
+
+Computes Kuramoto $R$ from complex state vector via bitwise Pauli
+expectations. Critical inner loop in MCWF trajectories.
+
+```python
+R = eng.order_param_from_statevector(psi.real, psi.imag, n)
+```
+
+**Wired into:** `phase/tensor_jump.py::_order_param_vec()`
+**Measured:** 0.008 ms (Rust) vs 6.47 ms (Python) at n=8 → **851×**
+
+## Benchmarks: New Functions (2026-03-30)
+
+Linux, Python 3.12, Rust release build, Xeon E5-2670 v2.
+
+### Sparse Hamiltonian Construction
+
+| System | Rust `build_sparse_xy_hamiltonian` | Python loop | Speedup |
+|--------|------|--------|---------|
+| n=8 (256×256) | 0.024 ms | 1.9 ms | **80×** |
+
+### Magnetisation Labels
+
+| System | Rust `magnetisation_labels` | Python popcount | Speedup |
+|--------|------|--------|---------|
+| n=8 (256 states) | 0.001 ms | 0.11 ms | **97×** |
+
+### Order Parameter from Statevector
+
+| System | Rust `order_param_from_statevector` | Python Pauli loop | Speedup |
+|--------|------|--------|---------|
+| n=8 (256 dim) | 0.008 ms | 6.47 ms | **851×** |
+
+## Python ↔ Rust Wiring Diagram
+
+Which Python module calls which Rust function:
+
+```
+bridge/knm_hamiltonian.py
+  └── build_xy_hamiltonian_dense()    → 5,401× speedup
+
+bridge/sparse_hamiltonian.py
+  └── build_sparse_xy_hamiltonian()   → 80× speedup
+
+analysis/magnetisation_sectors.py
+  └── magnetisation_labels()          → 97× speedup
+
+phase/tensor_jump.py
+  └── order_param_from_statevector()  → 851× speedup
+
+phase/quantum_kuramoto.py
+  ├── state_order_param_sparse()
+  ├── expectation_pauli_fast()
+  └── all_xy_expectations()           → 6.2× speedup
+
+analysis/otoc.py
+  └── otoc_from_eigendecomp()         → 264× speedup
+
+analysis/krylov.py
+  └── lanczos_b_coefficients()        → 27× speedup
+
+mitigation/pec.py
+  ├── pec_coefficients()
+  └── pec_sample_parallel()
+
+analysis/dla.py
+  └── dla_dimension()
+
+phase/classical_kuramoto.py
+  ├── kuramoto_euler()
+  ├── kuramoto_trajectory()
+  ├── order_parameter()
+  └── build_knm()
+
+analysis/monte_carlo.py
+  └── mc_xy_simulate()
+
+control/mpc.py
+  └── brute_mpc()
+```
