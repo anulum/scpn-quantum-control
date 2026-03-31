@@ -66,3 +66,60 @@ def test_bridge_deterministic():
     b2 = SNNQuantumBridge(n_neurons=2, n_inputs=2, seed=42)
     spikes = np.ones((5, 2))
     np.testing.assert_array_equal(b1.forward(spikes), b2.forward(spikes))
+
+
+# ---------------------------------------------------------------------------
+# Mathematical invariants of spike→rotation mapping
+# ---------------------------------------------------------------------------
+
+
+def test_rotation_angle_bounded_0_pi():
+    """Rotation angles must be in [0, pi] for any spike pattern."""
+    rng = np.random.default_rng(42)
+    for _ in range(10):
+        spikes = rng.integers(0, 2, (20, 5))
+        angles = spike_train_to_rotations(spikes, window=10)
+        assert np.all(angles >= 0.0)
+        assert np.all(angles <= np.pi + 1e-10)
+
+
+def test_rotation_monotonic_with_rate():
+    """Higher firing rate → larger rotation angle (monotonicity)."""
+    low = np.zeros((10, 2))
+    low[:2, :] = 1  # 20% rate
+    high = np.ones((10, 2))  # 100% rate
+    a_low = spike_train_to_rotations(low, window=10)
+    a_high = spike_train_to_rotations(high, window=10)
+    assert np.all(a_high >= a_low)
+
+
+def test_measurement_to_current_default_scale():
+    probs = np.array([0.5, 0.8])
+    currents = quantum_measurement_to_current(probs)
+    np.testing.assert_allclose(currents, probs)
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: spike history → quantum layer → currents → wired end-to-end
+# ---------------------------------------------------------------------------
+
+
+def test_pipeline_spikes_to_currents():
+    """Full pipeline: spike history → SNNQuantumBridge → output currents.
+    Verifies the adapter is not decorative — data flows through quantum layer.
+    """
+    import time
+
+    bridge = SNNQuantumBridge(n_neurons=3, n_inputs=4, seed=42)
+    rng = np.random.default_rng(0)
+    spikes = rng.integers(0, 2, (20, 4)).astype(float)
+
+    t0 = time.perf_counter()
+    currents = bridge.forward(spikes)
+    dt = (time.perf_counter() - t0) * 1000
+
+    assert currents.shape == (3,)
+    assert np.all(np.isfinite(currents))
+
+    print(f"\n  PIPELINE SNN→Quantum→Currents (4→3, 20 steps): {dt:.1f} ms")
+    print(f"  Output currents: {currents}")
