@@ -62,6 +62,8 @@ nav:
       - Mitigation API: mitigation_api.md
       - Bridges API: bridges_api.md
       - Benchmarks API: benchmarks_api.md
+      - Pipeline Performance: pipeline_performance.md
+      - Test Infrastructure: test_infrastructure.md
   - Publications:
       - "Preprint: Quantum Kuramoto-XY on Hardware": preprint.md
       - "Paper: Synchronisation Witnesses": paper_sync_witnesses.md
