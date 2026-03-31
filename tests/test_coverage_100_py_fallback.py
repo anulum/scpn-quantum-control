@@ -140,3 +140,57 @@ class TestClassicalPythonFallback:
 
         with pytest.raises(ValueError, match="t_max must be non-negative"):
             classical_kuramoto_reference(2, t_max=-1.0, dt=0.1)
+
+
+# ---------------------------------------------------------------------------
+# Fallback physics: Python path produces same invariants as Rust
+# ---------------------------------------------------------------------------
+
+
+class TestFallbackPhysics:
+    def test_python_R_bounded(self):
+        """Python fallback R must be in [0, 1]."""
+        from scpn_quantum_control.hardware.classical import _state_order_param
+
+        rng = np.random.default_rng(42)
+        psi = rng.standard_normal(8) + 1j * rng.standard_normal(8)
+        psi /= np.linalg.norm(psi)
+        with _hide_engine():
+            r = _state_order_param(psi, 3)
+        assert 0 <= r <= 1.0 + 1e-10
+
+    def test_python_Z_expectation_ground_state(self):
+        """<Z> = +1 for |0> state (Python fallback)."""
+        from scpn_quantum_control.hardware.classical import _expectation_pauli
+
+        psi = np.array([1, 0, 0, 0], dtype=complex)
+        with _hide_engine():
+            z = _expectation_pauli(psi, 2, 0, "Z")
+        np.testing.assert_allclose(z, 1.0, atol=1e-10)
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: fallback path → full computation → wired
+# ---------------------------------------------------------------------------
+
+
+class TestFallbackPipeline:
+    def test_pipeline_python_fallback_kuramoto(self):
+        """Full pipeline: Python Kuramoto → R trajectory (no Rust).
+        Verifies Python fallback is wired end-to-end.
+        """
+        import time
+
+        from scpn_quantum_control.hardware.classical import classical_kuramoto_reference
+
+        t0 = time.perf_counter()
+        with _hide_engine():
+            result = classical_kuramoto_reference(4, t_max=0.5, dt=0.1)
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert len(result["R"]) > 1
+        for r in result["R"]:
+            assert 0 <= r <= 1.0 + 1e-10
+
+        print(f"\n  PIPELINE Python fallback Kuramoto (4 osc): {dt:.1f} ms")
+        print(f"  R trajectory: {[f'{r:.4f}' for r in result['R']]}")
