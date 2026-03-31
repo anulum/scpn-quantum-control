@@ -115,3 +115,29 @@ def test_ansatz_qubit_count_matches_K(knm_4q):
     K, _ = knm_4q
     qc = knm_to_ansatz(K, reps=2)
     assert qc.num_qubits == K.shape[0]
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → circuit → depth regression → wired
+# ---------------------------------------------------------------------------
+
+
+def test_pipeline_depth_regression():
+    """Full pipeline: build_knm → Trotter circuit → transpile → depth metrics.
+    Verifies circuit depth module is wired and produces actionable data.
+    """
+    import time
+
+    K = build_knm_paper27(L=4)
+    omega = OMEGA_N_16[:4]
+
+    t0 = time.perf_counter()
+    qc = _build_evo_base(4, K, omega, t=0.5, trotter_reps=3)
+    d = _transpiled_depth(qc)
+    dt = (time.perf_counter() - t0) * 1000
+
+    assert d > 0
+    assert d < 500
+
+    print(f"\n  PIPELINE Knm→Trotter→Depth (4q, 3 reps): {dt:.1f} ms")
+    print(f"  Transpiled depth = {d}")
