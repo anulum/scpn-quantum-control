@@ -68,3 +68,65 @@ def test_quantum_timing_positive():
     result = quantum_benchmark(4, t_max=0.1, dt=0.1, trotter_reps=1)
     assert result["t_total_ms"] > 0
     assert result["n_trotter_steps"] > 0
+
+
+# ---------------------------------------------------------------------------
+# Scaling physics: classical should scale exponentially, quantum polynomially
+# ---------------------------------------------------------------------------
+
+
+def test_classical_time_increases_with_n():
+    """Larger systems → more classical time (exponential Hilbert space)."""
+    r4 = classical_benchmark(4, t_max=0.1, dt=0.1)
+    r8 = classical_benchmark(8, t_max=0.1, dt=0.1)
+    assert r8["t_total_ms"] > r4["t_total_ms"]
+
+
+def test_classical_beyond_limit_returns_inf():
+    """n > MAX_CLASSICAL_QUBITS → inf time."""
+    result = classical_benchmark(20, t_max=0.1, dt=0.1)
+    assert result["t_total_ms"] == float("inf")
+
+
+def test_quantum_ground_energy_finite():
+    result = quantum_benchmark(3, t_max=0.2, dt=0.1, trotter_reps=2)
+    if "ground_energy" in result:
+        assert np.isfinite(result["ground_energy"])
+
+
+def test_advantage_result_timing_positive():
+    r = AdvantageResult(n_qubits=4, t_classical_ms=10.0, t_quantum_ms=5.0)
+    assert r.t_classical_ms > 0
+    assert r.t_quantum_ms > 0
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → classical + quantum benchmark → crossover → wired
+# ---------------------------------------------------------------------------
+
+
+def test_pipeline_benchmark_to_crossover():
+    """Full pipeline: run_scaling_benchmark → estimate_crossover.
+    Verifies benchmarking module is wired end-to-end, not decorative.
+    """
+    import time
+
+    t0 = time.perf_counter()
+    results = run_scaling_benchmark(sizes=[3, 4], t_max=0.1, dt=0.1)
+    dt = (time.perf_counter() - t0) * 1000
+
+    assert len(results) == 2
+    for r in results:
+        assert r.t_classical_ms > 0
+        assert r.t_quantum_ms > 0
+
+    cross = estimate_crossover(results)
+    # May be None for only 2 data points
+    assert cross is None or isinstance(cross, int)
+
+    print(f"\n  PIPELINE scaling benchmark (n=3,4): {dt:.1f} ms")
+    for r in results:
+        print(
+            f"    n={r.n_qubits}: classical={r.t_classical_ms:.1f}ms, "
+            f"quantum={r.t_quantum_ms:.1f}ms"
+        )
