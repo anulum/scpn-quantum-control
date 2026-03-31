@@ -74,3 +74,66 @@ class TestMatmul:
         B = np.array([[5.0, 6.0], [7.0, 8.0]])
         result = matmul(A, B)
         np.testing.assert_allclose(result, A @ B, atol=1e-10)
+
+    def test_identity_matmul(self):
+        A = np.eye(4)
+        B = np.random.default_rng(42).uniform(size=(4, 4))
+        result = matmul(A, B)
+        np.testing.assert_allclose(result, B, atol=1e-10)
+
+    def test_square_matmul(self):
+        A = np.random.default_rng(42).uniform(size=(8, 8))
+        result = matmul(A, A)
+        np.testing.assert_allclose(result, A @ A, atol=1e-10)
+
+
+class TestEigvalshParity:
+    """Verify GPU/CPU parity across sizes."""
+
+    def test_4x4(self):
+        A = np.array([[4, 1, 0, 0], [1, 3, 1, 0], [0, 1, 2, 1], [0, 0, 1, 1]], dtype=float)
+        eigs = eigvalsh(A)
+        np.testing.assert_allclose(eigs, np.linalg.eigvalsh(A), atol=1e-10)
+
+    def test_random_hermitian(self):
+        rng = np.random.default_rng(42)
+        A = rng.standard_normal((6, 6))
+        A = (A + A.T) / 2
+        eigs = eigvalsh(A)
+        assert len(eigs) == 6
+        assert np.all(np.isfinite(eigs))
+
+
+class TestExpmProperties:
+    def test_expm_unitary_for_skew_hermitian(self):
+        """exp(iH) should be unitary for Hermitian H."""
+        H = np.array([[1, 0.5], [0.5, -1]], dtype=complex)
+        U = expm(1j * H)
+        identity = U @ U.conj().T
+        np.testing.assert_allclose(identity, np.eye(2), atol=1e-10)
+
+    def test_expm_determinant_one(self):
+        """det(exp(A)) = exp(tr(A)) for traceless A."""
+        A = np.array([[0, 1j], [-1j, 0]], dtype=complex)
+        U = expm(A)
+        det = np.linalg.det(U)
+        np.testing.assert_allclose(abs(det), np.exp(np.trace(A).real), atol=1e-10)
+
+
+class TestPipelineGPU:
+    def test_hamiltonian_diag_via_gpu(self):
+        """Pipeline: build H → diagonalise via gpu_accel → ground energy."""
+        from scpn_quantum_control.bridge.knm_hamiltonian import (
+            OMEGA_N_16,
+            build_knm_paper27,
+            knm_to_hamiltonian,
+        )
+
+        K = build_knm_paper27(L=4)
+        omega = OMEGA_N_16[:4]
+        H = knm_to_hamiltonian(K, omega)
+        mat = H.to_matrix()
+        if hasattr(mat, "toarray"):
+            mat = mat.toarray()
+        eigs = eigvalsh(np.array(mat, dtype=complex).real)
+        assert eigs[0] < 0  # ground energy negative
