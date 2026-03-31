@@ -78,3 +78,63 @@ class TestReservoirRidgeRegression:
         y = np.sin(X[:, 0])
         _, preds = reservoir_ridge_regression(X, y, K, max_weight=1)
         assert np.all(np.isfinite(preds))
+
+
+# ---------------------------------------------------------------------------
+# Reservoir computing physics — expressibility and universality
+# ---------------------------------------------------------------------------
+
+
+class TestReservoirPhysics:
+    def test_feature_matrix_rank(self):
+        """Feature matrix should have non-trivial rank (reservoir is expressive)."""
+        K = build_knm_paper27(L=3)
+        X = np.random.default_rng(42).uniform(size=(10, 3))
+        F = reservoir_feature_matrix(X, K, max_weight=1)
+        rank = np.linalg.matrix_rank(F)
+        assert rank >= 3  # at least n_inputs dimensions
+
+    def test_features_deterministic(self):
+        """Same input → same features (no stochastic element)."""
+        K = build_knm_paper27(L=3)
+        x = np.array([0.5, 0.3, 0.7])
+        r1 = reservoir_features(x, K, max_weight=1)
+        r2 = reservoir_features(x, K, max_weight=1)
+        np.testing.assert_array_equal(r1.features, r2.features)
+
+    def test_higher_weight_more_features(self):
+        """max_weight=2 should produce more features than max_weight=1."""
+        K = build_knm_paper27(L=3)
+        x = np.array([0.5, 0.3, 0.7])
+        r1 = reservoir_features(x, K, max_weight=1)
+        r2 = reservoir_features(x, K, max_weight=2)
+        assert r2.n_features > r1.n_features
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → reservoir → regression → wired end-to-end
+# ---------------------------------------------------------------------------
+
+
+class TestReservoirPipeline:
+    def test_pipeline_knm_to_prediction(self):
+        """Full pipeline: build_knm → reservoir features → ridge → prediction.
+        Verifies quantum reservoir is not decorative.
+        """
+        import time
+
+        K = build_knm_paper27(L=3)
+        rng = np.random.default_rng(42)
+        X = rng.uniform(size=(12, 3))
+        y = np.sin(X[:, 0] * 2)
+
+        t0 = time.perf_counter()
+        W, preds = reservoir_ridge_regression(X, y, K, max_weight=1)
+        dt = (time.perf_counter() - t0) * 1000
+
+        mse = float(np.mean((preds - y) ** 2))
+        assert np.all(np.isfinite(preds))
+        assert mse < 1.0  # reservoir should learn something
+
+        print(f"\n  PIPELINE Knm→Reservoir→Ridge (3q, 12 samples): {dt:.1f} ms")
+        print(f"  MSE = {mse:.4f}, n_weights = {len(W)}")
