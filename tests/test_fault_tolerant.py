@@ -58,3 +58,92 @@ def test_step_no_errors_clean_syndromes():
     ft = FaultTolerantUPDE(n_osc=2, code_distance=3)
     result = ft.step_with_qec(dt=0.1)
     assert result["errors_detected"] == 0
+
+
+# ---------------------------------------------------------------------------
+# Qubit layout invariants
+# ---------------------------------------------------------------------------
+
+
+def test_qubit_formula_2d_minus_1():
+    """qubits_per_osc = 2d - 1 (d data + d-1 ancilla)."""
+    for d in (3, 5, 7):
+        ft = FaultTolerantUPDE(n_osc=2, code_distance=d)
+        assert ft.qubits_per_osc == 2 * d - 1
+
+
+def test_total_qubits_scales_linearly():
+    """total_qubits = n_osc * (2d - 1)."""
+    for n in (2, 3, 4):
+        ft = FaultTolerantUPDE(n_osc=n, code_distance=3)
+        assert ft.total_qubits == n * 5
+
+
+def test_data_ancilla_ranges_non_overlapping():
+    ft = FaultTolerantUPDE(n_osc=3, code_distance=3)
+    for osc in range(3):
+        data = set(ft._osc_data_range(osc))
+        ancilla = set(ft._osc_ancilla_range(osc))
+        assert data.isdisjoint(ancilla)
+
+
+# ---------------------------------------------------------------------------
+# Circuit structure
+# ---------------------------------------------------------------------------
+
+
+def test_circuit_depth_positive():
+    ft = FaultTolerantUPDE(n_osc=2, code_distance=3)
+    qc = ft.build_step_circuit(dt=0.1)
+    assert qc.depth() > 0
+
+
+def test_circuit_contains_rzz():
+    """Coupled oscillators should produce RZZ gates."""
+    ft = FaultTolerantUPDE(n_osc=2, code_distance=3)
+    qc = ft.build_step_circuit(dt=0.1)
+    ops = qc.count_ops()
+    assert ops.get("rzz", 0) > 0
+
+
+def test_circuit_contains_cx():
+    """Encoding + syndrome extraction use CNOT gates."""
+    ft = FaultTolerantUPDE(n_osc=2, code_distance=3)
+    qc = ft.build_step_circuit(dt=0.1)
+    ops = qc.count_ops()
+    assert ops.get("cx", 0) > 0
+
+
+# ---------------------------------------------------------------------------
+# Custom K and omega
+# ---------------------------------------------------------------------------
+
+
+def test_custom_K_omega():
+    import numpy as np
+
+    K = np.array([[0, 0.5], [0.5, 0]])
+    omega = np.array([1.0, 2.0])
+    ft = FaultTolerantUPDE(n_osc=2, code_distance=3, K=K, omega=omega)
+    result = ft.step_with_qec(dt=0.1)
+    assert result["n_osc"] == 2
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → FT-UPDE → syndrome → wired end-to-end
+# ---------------------------------------------------------------------------
+
+
+def test_pipeline_knm_to_ft_syndrome():
+    """Full pipeline: build_knm → FaultTolerantUPDE → syndrome extraction."""
+    from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    ft = FaultTolerantUPDE(n_osc=3, code_distance=3, K=K, omega=omega)
+    result = ft.step_with_qec(dt=0.05)
+    assert result["n_osc"] == 3
+    assert result["code_distance"] == 3
+    assert len(result["syndromes"]) == 3
+    for syn in result["syndromes"]:
+        assert len(syn) == 2  # d-1 = 2 ancillae per oscillator
