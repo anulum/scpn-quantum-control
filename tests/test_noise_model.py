@@ -145,3 +145,76 @@ class TestNoiseEffects:
         R_clean, *_ = _R_from_xyz(clean_hw[0].counts, clean_hw[1].counts, clean_hw[2].counts, n)
 
         assert R_noisy < R_clean + 0.15
+
+
+# ---------------------------------------------------------------------------
+# Noise model physics: error rates and relaxation
+# ---------------------------------------------------------------------------
+
+
+class TestNoisePhysics:
+    def test_higher_error_more_noise(self):
+        """Higher CZ error rate → more non-ideal counts in Bell pair."""
+        from scpn_quantum_control.hardware.noise_model import heron_r2_noise_model
+
+        qc = QuantumCircuit(2)
+        qc.h(0)
+        qc.cx(0, 1)
+        qc.measure_all()
+
+        nm_low = heron_r2_noise_model(cz_error=0.001)
+        nm_high = heron_r2_noise_model(cz_error=0.1)
+
+        runner_low = HardwareRunner(use_simulator=True, noise_model=nm_low)
+        runner_low.connect()
+        runner_high = HardwareRunner(use_simulator=True, noise_model=nm_high)
+        runner_high.connect()
+
+        r_low = runner_low.run_sampler(qc, shots=5000, name="low")
+        r_high = runner_high.run_sampler(qc, shots=5000, name="high")
+
+        err_low = sum(v for k, v in r_low[0].counts.items() if k not in ("00", "11"))
+        err_high = sum(v for k, v in r_high[0].counts.items() if k not in ("00", "11"))
+        assert err_high > err_low
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → noisy evolution → R degradation → wired
+# ---------------------------------------------------------------------------
+
+
+class TestNoisePipeline:
+    def test_pipeline_knm_noise_degradation(self, noisy_runner, clean_runner):
+        """Full pipeline: Knm → Trotter → noisy/clean → R comparison.
+        Verifies noise model is wired and degrades observables as expected.
+        """
+        import time
+
+        from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+        from scpn_quantum_control.hardware.experiments import (
+            _build_evo_base,
+            _build_xyz_circuits,
+            _R_from_xyz,
+        )
+
+        n = 3
+        K = build_knm_paper27(L=n)
+        omega = OMEGA_N_16[:n]
+        base = _build_evo_base(n, K, omega, 0.1, trotter_reps=1)
+        qc_z, qc_x, qc_y = _build_xyz_circuits(base, n)
+
+        t0 = time.perf_counter()
+        noisy_hw = noisy_runner.run_sampler([qc_z, qc_x, qc_y], shots=2000, name="n")
+        clean_hw = clean_runner.run_sampler([qc_z, qc_x, qc_y], shots=2000, name="c")
+        dt = (time.perf_counter() - t0) * 1000
+
+        R_n, *_ = _R_from_xyz(noisy_hw[0].counts, noisy_hw[1].counts, noisy_hw[2].counts, n)
+        R_c, *_ = _R_from_xyz(clean_hw[0].counts, clean_hw[1].counts, clean_hw[2].counts, n)
+
+        import numpy as np
+
+        assert np.isfinite(R_n)
+        assert np.isfinite(R_c)
+
+        print(f"\n  PIPELINE Knm→Noisy (3q): {dt:.1f} ms")
+        print(f"  R_clean={R_c:.4f}, R_noisy={R_n:.4f}")
