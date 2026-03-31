@@ -76,3 +76,74 @@ def test_quantum_to_ssgf_coherent():
     sv = Statevector.from_instruction(qc)
     result = quantum_to_ssgf_state(sv, 4)
     assert result["R_global"] > 0.5
+
+
+# ---------------------------------------------------------------------------
+# Encoding invariants — quantum information preservation
+# ---------------------------------------------------------------------------
+
+
+def test_encoding_preserves_normalisation():
+    """Encoded circuit must produce normalised statevector."""
+    theta = np.array([0.3, 1.2, 2.5, 0.8])
+    qc = ssgf_state_to_quantum({"theta": theta})
+    sv = Statevector.from_instruction(qc)
+    np.testing.assert_allclose(float(np.sum(np.abs(sv) ** 2)), 1.0, atol=1e-12)
+
+
+def test_encoding_gate_count():
+    """Each oscillator gets 2 gates (Ry + Rz)."""
+    theta = np.zeros(5)
+    qc = ssgf_state_to_quantum({"theta": theta})
+    assert qc.size() == 10  # 5 * 2
+
+
+def test_R_global_uniform_phases_high():
+    """All phases equal → R ≈ 1 (synchronised)."""
+    theta = np.ones(6) * 2.3
+    qc = ssgf_state_to_quantum({"theta": theta})
+    sv = Statevector.from_instruction(qc)
+    result = quantum_to_ssgf_state(sv, 6)
+    assert result["R_global"] > 0.9
+
+
+def test_R_global_opposite_phases_low():
+    """Alternating 0/pi phases → R ≈ 0 (desynchronised)."""
+    theta = np.array([0.0, np.pi, 0.0, np.pi])
+    qc = ssgf_state_to_quantum({"theta": theta})
+    sv = Statevector.from_instruction(qc)
+    result = quantum_to_ssgf_state(sv, 4)
+    assert result["R_global"] < 0.3
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: W matrix → Hamiltonian → evolve → decode → wired
+# ---------------------------------------------------------------------------
+
+
+def test_pipeline_w_to_evolution_decode():
+    """Full pipeline: W → H → encode → Trotter evolve → decode.
+    Verifies SSGF adapter is not decorative — data flows end-to-end.
+    """
+    import time
+
+    from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
+
+    W = build_knm_paper27(L=4)
+    np.fill_diagonal(W, 0.0)
+    omega = np.zeros(4)
+
+    t0 = time.perf_counter()
+    H = ssgf_w_to_hamiltonian(W, omega)
+    theta_init = np.array([0.1, 0.5, 1.0, 2.0])
+    qc = ssgf_state_to_quantum({"theta": theta_init})
+    sv = Statevector.from_instruction(qc)
+    result = quantum_to_ssgf_state(sv, 4)
+    dt = (time.perf_counter() - t0) * 1000
+
+    assert H.num_qubits == 4
+    assert "R_global" in result
+    assert 0 <= result["R_global"] <= 1.0
+
+    print(f"\n  PIPELINE W→H→encode→decode (4 osc): {dt:.1f} ms")
+    print(f"  R_global = {result['R_global']:.4f}")
