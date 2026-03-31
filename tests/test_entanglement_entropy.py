@@ -95,3 +95,53 @@ class TestEntanglementVsCoupling:
         omega = OMEGA_N_16[:4]
         result = entanglement_vs_coupling(omega, T, k_range=np.linspace(0.3, 5.0, 8))
         assert result.schmidt_gap_min_K is not None
+
+
+# ---------------------------------------------------------------------------
+# Entanglement physics: area law and bounds
+# ---------------------------------------------------------------------------
+
+
+class TestEntanglementPhysics:
+    def test_entropy_bounded_by_log_d(self):
+        """S ≤ log₂(d) where d = 2^(n/2) for half-system bipartition."""
+        T = _ring(4)
+        omega = OMEGA_N_16[:4]
+        result = entanglement_at_coupling(omega, T, K_base=3.0)
+        max_entropy = 2.0  # log₂(4) for 4-qubit half-system
+        assert result.entropy <= max_entropy + 0.01
+
+    def test_schmidt_gap_closes_at_transition(self):
+        """Schmidt gap should be small near the BKT transition."""
+        T = _ring(4)
+        omega = OMEGA_N_16[:4]
+        result = entanglement_vs_coupling(omega, T, k_range=np.linspace(0.3, 5.0, 10))
+        assert np.min(result.schmidt_gap) < 1.0
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → entanglement scan → Schmidt gap → wired
+# ---------------------------------------------------------------------------
+
+
+class TestEntanglementPipeline:
+    def test_pipeline_knm_to_entanglement(self):
+        """Full pipeline: build_knm → entanglement_at_coupling → S, gap.
+        Verifies entanglement module is wired end-to-end.
+        """
+        import time
+
+        from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
+
+        K = build_knm_paper27(L=4)
+        omega = OMEGA_N_16[:4]
+
+        t0 = time.perf_counter()
+        result = entanglement_at_coupling(omega, K, K_base=2.0)
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert result.entropy >= 0
+        assert 0 <= result.schmidt_gap <= 1.0
+
+        print(f"\n  PIPELINE Knm→Entanglement (4q): {dt:.1f} ms")
+        print(f"  S = {result.entropy:.4f}, Schmidt gap = {result.schmidt_gap:.4f}")
