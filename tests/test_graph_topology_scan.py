@@ -63,3 +63,60 @@ class TestGraphP_H1_Result:
         )
         assert r.graph_family == "test"
         assert 0 <= r.p_h1_mean <= 1.0
+
+
+# ---------------------------------------------------------------------------
+# Graph generator invariants
+# ---------------------------------------------------------------------------
+
+
+class TestGraphInvariants:
+    def test_ring_zero_diagonal(self):
+        K = _ring_coupling(8, k=1)
+        np.testing.assert_allclose(np.diag(K), 0.0)
+
+    def test_erdos_renyi_zero_diagonal(self):
+        K = _erdos_renyi_coupling(8, 0.5)
+        np.testing.assert_allclose(np.diag(K), 0.0)
+
+    def test_watts_strogatz_zero_diagonal(self):
+        K = _watts_strogatz_coupling(8, k=2, beta=0.3)
+        np.testing.assert_allclose(np.diag(K), 0.0)
+
+    def test_ring_non_negative(self):
+        K = _ring_coupling(16, k=2)
+        assert np.all(K >= 0)
+
+    def test_erdos_renyi_non_negative(self):
+        K = _erdos_renyi_coupling(16, 0.3)
+        assert np.all(K >= 0)
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: graph → coupling → Hamiltonian wiring
+# ---------------------------------------------------------------------------
+
+
+class TestGraphPipeline:
+    def test_ring_to_hamiltonian(self):
+        """Ring topology coupling feeds into knm_to_hamiltonian without error."""
+        from scpn_quantum_control.bridge.knm_hamiltonian import (
+            OMEGA_N_16,
+            knm_to_hamiltonian,
+        )
+
+        K = _ring_coupling(4, k=1)
+        omega = OMEGA_N_16[:4]
+        H = knm_to_hamiltonian(K, omega)
+        assert H.num_qubits == 4
+
+    def test_erdos_renyi_to_hamiltonian(self):
+        from scpn_quantum_control.bridge.knm_hamiltonian import (
+            OMEGA_N_16,
+            knm_to_hamiltonian,
+        )
+
+        K = _erdos_renyi_coupling(4, 0.8)
+        omega = OMEGA_N_16[:4]
+        H = knm_to_hamiltonian(K, omega)
+        assert H.num_qubits == 4
