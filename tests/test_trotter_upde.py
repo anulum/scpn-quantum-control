@@ -109,3 +109,44 @@ def test_R_trajectory_finite():
     result = solver.run(n_steps=5, dt=0.05)
     for r in result["R"]:
         assert np.isfinite(r)
+
+
+# ---------------------------------------------------------------------------
+# UPDE physics: R trajectory and step consistency
+# ---------------------------------------------------------------------------
+
+
+def test_R_bounded_throughout():
+    """R must stay in [0, 1] for all time steps."""
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    solver = QuantumUPDESolver(K=K, omega=omega)
+    result = solver.run(n_steps=10, dt=0.05)
+    for r in result["R"]:
+        assert 0.0 <= r <= 1.0 + 1e-10
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → UPDE → R trajectory → wired
+# ---------------------------------------------------------------------------
+
+
+def test_pipeline_knm_to_upde():
+    """Full pipeline: build_knm → UPDE solver → run → R trajectory.
+    Verifies UPDE is wired end-to-end, not decorative.
+    """
+    import time
+
+    K = build_knm_paper27(L=4)
+    omega = OMEGA_N_16[:4]
+
+    t0 = time.perf_counter()
+    solver = QuantumUPDESolver(K=K, omega=omega)
+    result = solver.run(n_steps=5, dt=0.05)
+    dt = (time.perf_counter() - t0) * 1000
+
+    assert len(result["R"]) == 6
+    assert all(np.isfinite(r) for r in result["R"])
+
+    print(f"\n  PIPELINE Knm→UPDE (4q, 5 steps): {dt:.1f} ms")
+    print(f"  R: {[f'{r:.4f}' for r in result['R']]}")
