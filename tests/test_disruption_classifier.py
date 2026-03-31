@@ -68,3 +68,44 @@ class TestRunBenchmark:
         print(f"  Train/test: {result.n_train}/{result.n_test}")
         print(f"  Qubits: {result.kernel_n_qubits}")
         assert isinstance(result.accuracy, float)
+
+
+# ---------------------------------------------------------------------------
+# Classifier physics: kernel Gram matrix properties
+# ---------------------------------------------------------------------------
+
+
+class TestClassifierPhysics:
+    def test_kernel_matrix_symmetric(self):
+        X, y = generate_synthetic_disruption_data(n_samples=6)
+        _, K = train_disruption_classifier(X, y, n_qubits=3)
+        np.testing.assert_allclose(K, K.T, atol=1e-10)
+
+    def test_kernel_matrix_psd(self):
+        X, y = generate_synthetic_disruption_data(n_samples=6)
+        _, K = train_disruption_classifier(X, y, n_qubits=3)
+        eigvals = np.linalg.eigvalsh(K)
+        assert np.all(eigvals >= -1e-6)
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: data → kernel → classifier → prediction → wired
+# ---------------------------------------------------------------------------
+
+
+class TestClassifierPipeline:
+    def test_pipeline_end_to_end(self):
+        """Full pipeline: synthetic data → quantum kernel → SVM → predictions.
+        Verifies disruption classifier is wired end-to-end.
+        """
+        import time
+
+        t0 = time.perf_counter()
+        result = run_disruption_benchmark(n_train=10, n_test=5, n_qubits=3)
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert 0 <= result.accuracy <= 1.0
+        assert len(result.predictions) == 5
+
+        print(f"\n  PIPELINE DisruptionBenchmark (3q, 10+5): {dt:.1f} ms")
+        print(f"  Accuracy = {result.accuracy:.2%}")
