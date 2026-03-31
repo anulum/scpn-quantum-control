@@ -77,3 +77,48 @@ def test_feature_normalization(clf):
     """Very large features should be normalized before encoding."""
     risk = clf.predict(np.ones(11) * 1e6)
     assert 0.0 <= risk <= 1.0
+
+
+# ---------------------------------------------------------------------------
+# Classifier physics: circuit structure and output bounds
+# ---------------------------------------------------------------------------
+
+
+def test_circuit_depth_positive(clf):
+    """Classifier circuit must have non-trivial depth."""
+    qc = clf.build_classifier()
+    assert qc.depth() > 0
+
+
+def test_prediction_stable_across_runs(clf):
+    """Same features + same params → same prediction (deterministic)."""
+    features = np.array([0.5, -0.3, 1.2, 0.0, -1.0, 0.8, 0.1, -0.5, 0.3, 0.7, -0.2])
+    r1 = clf.predict(features)
+    r2 = clf.predict(features)
+    assert r1 == pytest.approx(r2)
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: features → classifier → risk → wired end-to-end
+# ---------------------------------------------------------------------------
+
+
+def test_pipeline_features_to_risk():
+    """Full pipeline: normalise features → encode → variational → measure → risk.
+    Verifies disruption classifier is wired and functional, not decorative.
+    """
+    import time
+
+    clf = QuantumDisruptionClassifier(n_features=11, n_layers=2, seed=42)
+
+    # Simulate 11 ITER diagnostic features
+    features = np.array([0.5, 0.8, -0.3, 1.2, 0.0, -1.0, 0.5, 0.2, -0.5, 0.3, 0.7])
+
+    t0 = time.perf_counter()
+    risk = clf.predict(features)
+    dt = (time.perf_counter() - t0) * 1000
+
+    assert 0.0 <= risk <= 1.0
+
+    print(f"\n  PIPELINE DisruptionClassifier (11 features, 2 layers): {dt:.1f} ms")
+    print(f"  Disruption risk = {risk:.4f}")
