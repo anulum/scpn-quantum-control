@@ -82,3 +82,58 @@ class TestComputePGBOTensor:
         print(f"  Total curvature: {result.total_curvature:.6f}")
         print(f"  Metric diag: {np.diag(result.metric_tensor)}")
         assert isinstance(result.metric_determinant, float)
+
+
+# ---------------------------------------------------------------------------
+# PGBO physics: information geometry invariants
+# ---------------------------------------------------------------------------
+
+
+class TestPGBOPhysics:
+    def test_metric_determinant_nonnegative(self):
+        """det(g) ≥ 0 for PSD metric."""
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        result = compute_pgbo_tensor(K, omega)
+        assert result.metric_determinant >= -1e-10
+
+    def test_different_K_different_metric(self):
+        """Different coupling → different quantum geometry."""
+        omega = OMEGA_N_16[:3]
+        r1 = compute_pgbo_tensor(build_knm_paper27(L=3, K_base=0.1), omega)
+        r2 = compute_pgbo_tensor(build_knm_paper27(L=3, K_base=2.0), omega)
+        assert not np.allclose(r1.metric_tensor, r2.metric_tensor)
+
+    def test_curvature_traceless(self):
+        """Antisymmetric F_μν has zero trace."""
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        result = compute_pgbo_tensor(K, omega)
+        assert abs(np.trace(result.berry_curvature)) < 1e-10
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → PGBO tensor → metric → wired
+# ---------------------------------------------------------------------------
+
+
+class TestPGBOPipeline:
+    def test_pipeline_knm_to_pgbo(self):
+        """Full pipeline: build_knm → PGBO tensor → metric + curvature.
+        Verifies PGBO module is wired and produces quantum geometric data.
+        """
+        import time
+
+        K = build_knm_paper27(L=4)
+        omega = OMEGA_N_16[:4]
+
+        t0 = time.perf_counter()
+        result = compute_pgbo_tensor(K, omega)
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert result.metric_tensor.shape == (6, 6)  # C(4,2) parameters
+        assert result.metric_determinant >= -1e-10
+
+        print(f"\n  PIPELINE Knm→PGBO (4q, 6 params): {dt:.1f} ms")
+        print(f"  det(g) = {result.metric_determinant:.6e}")
+        print(f"  Total curvature = {result.total_curvature:.6f}")
