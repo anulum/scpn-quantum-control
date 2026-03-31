@@ -105,3 +105,52 @@ class TestQSLvsCoupling:
         # (not monotonic like classical Kuramoto). Just verify finite values.
         for r in scan["R_final"]:
             assert 0.0 <= r <= 1.0 + 1e-10
+
+
+# ---------------------------------------------------------------------------
+# QSL physics: Mandelstam-Tamm and Margolus-Levitin bounds
+# ---------------------------------------------------------------------------
+
+
+class TestQSLPhysics:
+    def test_mt_bound_formula(self):
+        """τ_MT = arccos(|⟨ψ(0)|ψ(t)⟩|) / ΔE. Must be non-negative."""
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        result = compute_qsl(K, omega, t_target=0.5)
+        assert result.tau_MT >= 0
+        assert result.delta_E >= 0
+
+    def test_ml_bound_formula(self):
+        """τ_ML = π/(2⟨E⟩). Must be non-negative for positive energy."""
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        result = compute_qsl(K, omega, t_target=0.5)
+        assert result.tau_ML >= 0
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → QSL → speed bounds → wired
+# ---------------------------------------------------------------------------
+
+
+class TestQSLPipeline:
+    def test_pipeline_knm_to_qsl(self):
+        """Full pipeline: build_knm → compute_qsl → MT and ML bounds.
+        Verifies QSL module is wired end-to-end.
+        """
+        import time
+
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+
+        t0 = time.perf_counter()
+        result = compute_qsl(K, omega, t_target=1.0)
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert result.tau_MT >= 0
+        assert result.tau_ML >= 0
+
+        print(f"\n  PIPELINE Knm→QSL (3q, t=1.0): {dt:.1f} ms")
+        print(f"  τ_MT={result.tau_MT:.4f}, τ_ML={result.tau_ML:.4f}")
+        print(f"  τ_actual={result.tau_actual:.4f}, ΔE={result.delta_E:.4f}")
