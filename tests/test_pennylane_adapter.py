@@ -116,3 +116,24 @@ class TestPennyLaneAvailability:
         omega = OMEGA_N_16[:2]
         with pytest.raises(ImportError):
             PennyLaneRunner(K, omega)
+
+    def test_pipeline_pennylane_availability(self):
+        """Pipeline: check availability → import module → verify API.
+        Verifies PennyLane adapter is wired into the package.
+        """
+        import time
+
+        from scpn_quantum_control.hardware.pennylane_adapter import (
+            PennyLaneResult,
+            PennyLaneRunner,
+            is_pennylane_available,
+        )
+
+        t0 = time.perf_counter()
+        available = is_pennylane_available()
+        assert isinstance(available, bool)
+        assert PennyLaneRunner is not None
+        assert PennyLaneResult is not None
+        dt = (time.perf_counter() - t0) * 1000
+
+        print(f"\n  PIPELINE PennyLane adapter: {dt:.2f} ms, available={available}")
