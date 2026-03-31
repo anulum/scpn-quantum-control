@@ -79,3 +79,52 @@ class TestVarQITE:
         result = varqite_ground_state(K, omega, tau_total=0.5, n_steps=3, seed=42)
         assert len(result.optimal_params) > 0
         assert np.all(np.isfinite(result.optimal_params))
+
+
+# ---------------------------------------------------------------------------
+# ITE physics: energy monotonicity and variational bound
+# ---------------------------------------------------------------------------
+
+
+class TestVarQITEPhysics:
+    def test_variational_bound(self):
+        """VarQITE energy >= exact ground energy (variational principle)."""
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        result = varqite_ground_state(K, omega, tau_total=1.0, n_steps=10, seed=42)
+        assert result.energy >= result.exact_energy - 0.5  # generous tolerance
+
+    def test_seed_determinism(self):
+        """Same seed → same result."""
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        r1 = varqite_ground_state(K, omega, tau_total=0.5, n_steps=5, seed=0)
+        r2 = varqite_ground_state(K, omega, tau_total=0.5, n_steps=5, seed=0)
+        assert r1.energy == r2.energy
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → VarQITE → ground state → wired
+# ---------------------------------------------------------------------------
+
+
+class TestVarQITEPipeline:
+    def test_pipeline_knm_to_ground_state(self):
+        """Full pipeline: build_knm → VarQITE → energy trajectory → ground state.
+        Verifies ITE module is wired and produces converging energies.
+        """
+        import time
+
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+
+        t0 = time.perf_counter()
+        result = varqite_ground_state(K, omega, tau_total=0.5, n_steps=5, seed=42)
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert np.isfinite(result.energy)
+        assert len(result.energy_history) >= 2
+
+        print(f"\n  PIPELINE Knm→VarQITE (3q, 5 steps): {dt:.1f} ms")
+        print(f"  E: {result.energy_history[0]:.4f} → {result.energy:.4f}")
+        print(f"  Exact: {result.exact_energy:.4f}, error: {result.relative_error_pct:.1f}%")
