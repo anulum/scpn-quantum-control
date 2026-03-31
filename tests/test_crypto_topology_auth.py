@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+import numpy as np
+
 from scpn_quantum_control.bridge import build_knm_paper27
 from scpn_quantum_control.crypto.topology_auth import (
     spectral_fingerprint,
@@ -70,3 +72,24 @@ def test_spectral_entropy_positive():
     K = build_knm_paper27(L=8)
     fp = spectral_fingerprint(K)
     assert fp["spectral_entropy"] > 0
+
+
+def test_spectral_fingerprint_keys():
+    K = build_knm_paper27(L=4)
+    fp = spectral_fingerprint(K)
+    assert "eigenvalues" in fp
+    assert "spectral_entropy" in fp
+
+
+def test_spectral_fingerprint_deterministic():
+    K = build_knm_paper27(L=4)
+    fp1 = spectral_fingerprint(K)
+    fp2 = spectral_fingerprint(K)
+    np.testing.assert_array_equal(fp1["eigenvalues"], fp2["eigenvalues"])
+
+
+def test_spectral_fingerprint_various_sizes():
+    for L in [2, 4, 8]:
+        K = build_knm_paper27(L=L)
+        fp = spectral_fingerprint(K)
+        assert len(fp["eigenvalues"]) == L

@@ -70,3 +70,24 @@ class TestAVQDS:
         omega = OMEGA_N_16[:2]
         result = avqds_simulate(K, omega, t_total=0.01, n_steps=2, seed=42)
         assert result.final_fidelity > 0.9
+
+
+def test_avqds_finite_energies():
+    K = build_knm_paper27(L=2)
+    omega = OMEGA_N_16[:2]
+    result = avqds_simulate(K, omega, t_total=0.1, n_steps=3, seed=42)
+    assert np.all(np.isfinite(result.energies))
+
+
+def test_avqds_3q():
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    result = avqds_simulate(K, omega, t_total=0.1, n_steps=2, seed=0)
+    assert result.n_qubits == 3
+
+
+def test_avqds_fidelity_bounded():
+    K = build_knm_paper27(L=2)
+    omega = OMEGA_N_16[:2]
+    result = avqds_simulate(K, omega, t_total=0.5, n_steps=5, seed=42)
+    assert 0 <= result.final_fidelity <= 1.0 + 1e-10

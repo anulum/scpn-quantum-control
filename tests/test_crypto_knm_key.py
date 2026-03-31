@@ -69,3 +69,25 @@ def test_privacy_amplification_high_qber():
     raw = np.array([0, 1, 0, 1], dtype=np.uint8)
     key = privacy_amplification(raw, qber=0.15)
     assert key == b""  # Above threshold
+
+
+def test_prepare_key_state_returns_dict():
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    state = prepare_key_state(K, omega, ansatz_reps=1, maxiter=10)
+    assert "statevector" in state
+    assert "energy" in state
+
+
+def test_prepare_key_state_energy_finite():
+    K = build_knm_paper27(L=2)
+    omega = OMEGA_N_16[:2]
+    state = prepare_key_state(K, omega, ansatz_reps=1, maxiter=10)
+    assert np.isfinite(state["energy"])
+
+
+def test_estimate_qber_identical_keys():
+    alice = np.array([0, 1, 0, 1], dtype=np.uint8)
+    bob = np.array([0, 1, 0, 1], dtype=np.uint8)
+    qber = estimate_qber(alice, bob)
+    assert qber == 0.0
