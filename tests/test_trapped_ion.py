@@ -77,3 +77,43 @@ def test_transpile_empty_circuit():
     qc = QuantumCircuit(2)
     result = transpile_for_trapped_ion(qc)
     assert result.num_qubits == 2
+
+
+def test_transpile_ghz_circuit():
+    """GHZ state circuit should transpile without error."""
+    qc = QuantumCircuit(4)
+    qc.h(0)
+    for i in range(1, 4):
+        qc.cx(0, i)
+    result = transpile_for_trapped_ion(qc)
+    assert result.num_qubits == 4
+    assert result.depth() > 0
+
+
+def test_transpile_preserves_qubit_count():
+    """Transpiled circuit should have same number of qubits."""
+    for n in (2, 3, 4):
+        qc = QuantumCircuit(n)
+        qc.h(0)
+        qc.cx(0, n - 1)
+        result = transpile_for_trapped_ion(qc)
+        assert result.num_qubits == n
+
+
+def test_noise_model_has_error_instructions():
+    model = trapped_ion_noise_model()
+    assert len(model.noise_instructions) > 0
+
+
+def test_pipeline_knm_to_trapped_ion():
+    """Pipeline: build Kuramoto circuit → transpile to trapped-ion basis."""
+    from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+    from scpn_quantum_control.phase.xy_kuramoto import QuantumKuramotoSolver
+
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    solver = QuantumKuramotoSolver(3, K, omega)
+    qc = solver.evolve(time=0.1, trotter_steps=1)
+    result = transpile_for_trapped_ion(qc)
+    assert result.num_qubits == 3
+    assert result.depth() > 0
