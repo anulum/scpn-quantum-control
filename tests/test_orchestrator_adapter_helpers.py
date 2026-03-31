@@ -107,3 +107,21 @@ def test_telemetry_output():
     telemetry = PhaseOrchestratorAdapter.to_scpn_control_telemetry(artifact)
     assert telemetry["regime"] == "OK"
     assert len(telemetry["layers"]) == 2
+
+
+def test_pipeline_adapter_roundtrip():
+    """Full pipeline: dict → adapter → artifact → telemetry → wired."""
+    import time
+
+    state = _make_state(3, "NOMINAL")
+
+    t0 = time.perf_counter()
+    artifact = PhaseOrchestratorAdapter.from_orchestrator_state(state)
+    telemetry = PhaseOrchestratorAdapter.to_scpn_control_telemetry(artifact)
+    payload = PhaseOrchestratorAdapter.to_orchestrator_payload(artifact)
+    dt = (time.perf_counter() - t0) * 1000
+
+    assert telemetry["regime"] == "NOMINAL"
+    assert "regime_id" in payload
+
+    print(f"\n  PIPELINE Adapter roundtrip (3 layers): {dt:.2f} ms")
