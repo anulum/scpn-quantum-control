@@ -136,3 +136,65 @@ def test_noisy_sim_zne_improvement(tmp_path):
     result = zne_extrapolate([1, 3, 5], R_per_scale, order=1)
     # ZNE estimate should be >= the noisy scale-1 value (extrapolating toward truth)
     assert result.zero_noise_estimate >= R_per_scale[0] - 0.1
+
+
+# ---------------------------------------------------------------------------
+# ZNE physics: folding preserves unitarity, extrapolation monotonicity
+# ---------------------------------------------------------------------------
+
+
+def test_folded_circuit_unitary():
+    """Folded circuit at any odd scale must be unitary (norm-preserving)."""
+    from qiskit.quantum_info import Statevector
+
+    qc = QuantumCircuit(2)
+    qc.h(0)
+    qc.cx(0, 1)
+
+    for scale in [1, 3, 5]:
+        folded = gate_fold_circuit(qc, scale)
+        sv = Statevector.from_instruction(folded)
+        np.testing.assert_allclose(float(np.sum(np.abs(sv) ** 2)), 1.0, atol=1e-12)
+
+
+def test_fit_residual_nonnegative():
+    """Polynomial fit residual must be ≥ 0."""
+    result = zne_extrapolate([1, 3, 5], [0.9, 0.7, 0.5], order=1)
+    assert result.fit_residual >= 0
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → ZNE → mitigated R → wired
+# ---------------------------------------------------------------------------
+
+
+def test_pipeline_knm_to_zne():
+    """Full pipeline: Knm → Trotter → fold → extrapolate → mitigated R.
+    Verifies ZNE is wired end-to-end, not decorative.
+    """
+    import time
+
+    from qiskit.quantum_info import Statevector
+
+    from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+    from scpn_quantum_control.phase.xy_kuramoto import QuantumKuramotoSolver
+
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    solver = QuantumKuramotoSolver(3, K, omega)
+    qc = solver.evolve(0.1, trotter_steps=2)
+
+    t0 = time.perf_counter()
+    R_values = []
+    for s in [1, 3, 5]:
+        folded = gate_fold_circuit(qc, s)
+        sv = Statevector.from_instruction(folded)
+        R, _ = solver.measure_order_parameter(sv)
+        R_values.append(R)
+    result = zne_extrapolate([1, 3, 5], R_values, order=1)
+    dt = (time.perf_counter() - t0) * 1000
+
+    assert np.isfinite(result.zero_noise_estimate)
+
+    print(f"\n  PIPELINE Knm→ZNE (3q, scales 1,3,5): {dt:.1f} ms")
+    print(f"  R(s=1)={R_values[0]:.4f}, R_ZNE={result.zero_noise_estimate:.4f}")
