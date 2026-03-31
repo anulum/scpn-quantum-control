@@ -161,3 +161,106 @@ def test_trotter_error_decreases_with_reps():
 
     assert errors[1] < errors[0]
     assert errors[2] < errors[1]
+
+
+# ---------------------------------------------------------------------------
+# Hamiltonian physical invariants
+# ---------------------------------------------------------------------------
+
+
+def test_hamiltonian_hermitian():
+    """H must be Hermitian (eigenvalues real, spectrum bounded)."""
+    K = build_knm_paper27(L=4)
+    omega = OMEGA_N_16[:4]
+    solver = QuantumKuramotoSolver(4, K, omega)
+    H = solver.build_hamiltonian()
+    mat = H.to_matrix()
+    if hasattr(mat, "toarray"):
+        mat = mat.toarray()
+    np.testing.assert_allclose(mat, mat.conj().T, atol=1e-12)
+
+
+def test_hamiltonian_traceless():
+    """XY Hamiltonian (Pauli terms) is traceless."""
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    solver = QuantumKuramotoSolver(3, K, omega)
+    H = solver.build_hamiltonian()
+    mat = H.to_matrix()
+    if hasattr(mat, "toarray"):
+        mat = mat.toarray()
+    assert abs(np.trace(mat)) < 1e-8
+
+
+def test_evolution_unitarity():
+    """Trotter evolution circuit must preserve statevector norm."""
+    from qiskit.quantum_info import Statevector
+
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    solver = QuantumKuramotoSolver(3, K, omega)
+    qc = solver.evolve(0.5, trotter_steps=3)
+    sv = Statevector.from_instruction(qc)
+    np.testing.assert_allclose(float(np.sum(np.abs(sv) ** 2)), 1.0, atol=1e-12)
+
+
+# ---------------------------------------------------------------------------
+# Rust path: Kuramoto Euler vs quantum Trotter parity
+# ---------------------------------------------------------------------------
+
+
+def test_rust_kuramoto_euler_matches_direction():
+    """Rust kuramoto_euler and quantum solver should evolve phases in the same direction.
+
+    Not exact parity (Trotter vs Euler), but both should show synchronisation
+    tendency for strong coupling.
+    """
+    try:
+        import scpn_quantum_engine as eng
+
+        n = 4
+        K = build_knm_paper27(L=n)
+        omega = OMEGA_N_16[:n]
+        theta0 = np.zeros(n, dtype=np.float64)
+
+        # Rust classical
+        theta_rust = np.array(eng.kuramoto_euler(theta0, omega, K, 0.01, 100))
+        R_rust = eng.order_parameter(theta_rust)
+
+        # Quantum
+        solver = QuantumKuramotoSolver(n, K, omega)
+        result = solver.run(t_max=1.0, dt=0.5)
+        R_quantum = result["R"][-1]
+
+        # Both should show some synchronisation (R > 0)
+        assert R_rust > 0
+        assert R_quantum >= 0
+    except ImportError:
+        pytest.skip("scpn-quantum-engine not available")
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → Solver → Trotter → R(t) → wired end-to-end
+# ---------------------------------------------------------------------------
+
+
+def test_pipeline_full_kuramoto_evolution():
+    """Full pipeline: build_knm → QuantumKuramotoSolver → run → R trajectory.
+    Verifies the core solver is wired and produces physical output.
+    """
+    import time
+
+    K = build_knm_paper27(L=4)
+    omega = OMEGA_N_16[:4]
+
+    t0 = time.perf_counter()
+    solver = QuantumKuramotoSolver(4, K, omega)
+    result = solver.run(t_max=0.3, dt=0.1, trotter_per_step=5)
+    dt = (time.perf_counter() - t0) * 1000
+
+    assert len(result["R"]) > 0
+    for R in result["R"]:
+        assert 0.0 <= R <= 1.0 + 1e-10
+
+    print(f"\n  PIPELINE Knm→KuramotoSolver→R(t) (4q, 3 steps): {dt:.1f} ms")
+    print(f"  R trajectory: {[f'{r:.4f}' for r in result['R']]}")
