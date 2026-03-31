@@ -150,15 +150,15 @@ class TestZNEScaleFactors:
         assert isinstance(result, float)
         assert np.isfinite(result)
 
-    def test_single_scale_factor(self):
-        """Single scale factor = no extrapolation, just direct evaluation."""
+    def test_single_scale_factor_requires_minimum_two(self):
+        """Mitiq requires at least 2 scale factors for Richardson extrapolation."""
         from qiskit import QuantumCircuit
 
         qc = QuantumCircuit(1)
         qc.measure_all()
 
-        result = zne_mitigated_expectation(qc, scale_factors=[1.0])
-        assert isinstance(result, float)
+        with pytest.raises(ValueError, match="[Aa]t least 2"):
+            zne_mitigated_expectation(qc, scale_factors=[1.0])
 
 
 class TestZNECustomExecutor:
