@@ -19,7 +19,7 @@ build==1.4.0
 # Docs
 mkdocs==1.6.1
 mkdocs-material==9.7.3
-pymdown-extensions==10.21
+pymdown-extensions==10.21.2
 mkdocstrings[python]==1.0.3
 # IBM hardware
 qiskit-ibm-runtime==0.45.0
