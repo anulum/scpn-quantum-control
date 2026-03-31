@@ -100,3 +100,59 @@ class TestQuenchScan:
         )
         for key in result:
             assert all(np.isfinite(v) for v in result[key])
+
+
+# ---------------------------------------------------------------------------
+# DQPT physics: rate function cusps and echo properties
+# ---------------------------------------------------------------------------
+
+
+class TestLoschmidtPhysics:
+    def test_rate_function_zero_at_t_zero(self):
+        """r(0) = -ln|G(0)|²/N = -ln(1)/N = 0."""
+        T = _ring(3)
+        omega = OMEGA_N_16[:3]
+        result = loschmidt_quench(omega, T, K_initial=1.0, K_final=3.0)
+        assert abs(result.rate_function[0]) < 1e-6
+
+    def test_times_monotonic(self):
+        T = _ring(3)
+        omega = OMEGA_N_16[:3]
+        result = loschmidt_quench(omega, T, K_initial=0.5, K_final=3.0)
+        assert np.all(np.diff(result.times) > 0)
+
+    def test_has_n_cusps_attribute(self):
+        T = _ring(3)
+        omega = OMEGA_N_16[:3]
+        result = loschmidt_quench(omega, T, K_initial=0.5, K_final=3.0)
+        assert isinstance(result.n_cusps, int)
+        assert result.n_cusps >= 0
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → Loschmidt quench → DQPT → wired
+# ---------------------------------------------------------------------------
+
+
+class TestLoschmidtPipeline:
+    def test_pipeline_knm_to_dqpt(self):
+        """Full pipeline: build_knm → quench → Loschmidt echo → rate function.
+        Verifies DQPT module is wired and produces topological time data.
+        """
+        import time
+
+        from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
+
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+
+        t0 = time.perf_counter()
+        result = loschmidt_quench(omega, K, K_initial=0.5, K_final=3.0, n_times=50)
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert abs(result.loschmidt_amplitude[0] - 1.0) < 1e-6
+        assert np.all(result.rate_function >= -1e-6)
+
+        print(f"\n  PIPELINE Knm→Loschmidt (3q, 50 times): {dt:.1f} ms")
+        print(f"  n_cusps = {result.n_cusps}")
+        print(f"  min |G|² = {np.min(result.loschmidt_amplitude):.6f}")
