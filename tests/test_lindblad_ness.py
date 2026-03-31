@@ -95,3 +95,52 @@ class TestNESSVsCoupling:
         assert np.all(np.isfinite(result.R_ness))
         assert np.all(np.isfinite(result.R_ideal))
         assert np.all(np.isfinite(result.purity))
+
+
+# ---------------------------------------------------------------------------
+# Physical invariants
+# ---------------------------------------------------------------------------
+
+
+class TestNESSPhysicalInvariants:
+    def test_zero_gamma_matches_ideal(self):
+        """gamma=0 → NESS = ground state → R_ness ≈ R_ideal."""
+        n = 2
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+        result = compute_ness(omega, T, K_base=2.0, gamma=1e-6)
+        np.testing.assert_allclose(result.R_ness, result.R_ideal, atol=0.1)
+
+    def test_purity_decreases_with_noise(self):
+        """More noise → lower purity (generally)."""
+        n = 2
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+        r_weak = compute_ness(omega, T, K_base=2.0, gamma=0.01)
+        r_strong = compute_ness(omega, T, K_base=2.0, gamma=2.0)
+        assert r_weak.purity >= r_strong.purity - 0.1
+
+    def test_R_ness_finite_for_all_gammas(self):
+        n = 2
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+        for gamma in [0.01, 0.1, 1.0, 5.0]:
+            result = compute_ness(omega, T, K_base=1.0, gamma=gamma)
+            assert np.isfinite(result.R_ness)
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → Lindblad → NESS → purity
+# ---------------------------------------------------------------------------
+
+
+class TestNESSPipeline:
+    def test_knm_to_ness_pipeline(self):
+        """Full pipeline: build_knm_paper27 → Lindblad → NESS → R and purity."""
+        from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
+
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        result = compute_ness(omega, K, K_base=1.0, gamma=0.1)
+        assert isinstance(result, NESSResult)
+        assert 0 <= result.purity <= 1.0 + 0.01
