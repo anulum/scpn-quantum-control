@@ -83,3 +83,57 @@ class TestComputeKernelMatrix:
         assert result.n_samples == 6
         assert result.feature_dim == 4
         assert result.n_qubits == 3
+
+
+# ---------------------------------------------------------------------------
+# Kernel physics: Mercer conditions and Knm sensitivity
+# ---------------------------------------------------------------------------
+
+
+class TestKernelPhysics:
+    def test_different_K_different_kernel(self):
+        """Different Knm coupling → different kernel values."""
+        x1 = np.array([0.5, 0.3])
+        x2 = np.array([0.8, 0.1])
+        K_weak = build_knm_paper27(L=3, K_base=0.1)
+        K_strong = build_knm_paper27(L=3, K_base=2.0)
+        v1 = quantum_kernel_entry(x1, x2, K_weak, 3)
+        v2 = quantum_kernel_entry(x1, x2, K_strong, 3)
+        assert v1 != v2
+
+    def test_close_inputs_high_overlap(self):
+        """Very similar inputs → kernel value near 1."""
+        K = build_knm_paper27(L=3)
+        x1 = np.array([0.5, 0.5, 0.5])
+        x2 = np.array([0.501, 0.501, 0.501])
+        val = quantum_kernel_entry(x1, x2, K, 3)
+        assert val > 0.95
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → kernel matrix → SVM-ready → wired end-to-end
+# ---------------------------------------------------------------------------
+
+
+class TestKernelPipeline:
+    def test_pipeline_knm_to_kernel(self):
+        """Full pipeline: build_knm → compute_kernel_matrix → PSD matrix.
+        Verifies quantum kernel is not decorative — produces valid Gram matrix.
+        """
+        import time
+
+        K = build_knm_paper27(L=3)
+        rng = np.random.default_rng(42)
+        X = rng.uniform(size=(5, 3))
+
+        t0 = time.perf_counter()
+        result = compute_kernel_matrix(X, K, 3)
+        dt = (time.perf_counter() - t0) * 1000
+
+        # Mercer conditions: symmetric + PSD
+        np.testing.assert_allclose(result.kernel_matrix, result.kernel_matrix.T, atol=1e-10)
+        eigvals = np.linalg.eigvalsh(result.kernel_matrix)
+        assert np.all(eigvals >= -1e-6)
+
+        print(f"\n  PIPELINE Knm→QuantumKernel (3q, 5 samples): {dt:.1f} ms")
+        print(f"  Min eigenvalue: {eigvals[0]:.6f}, Max: {eigvals[-1]:.6f}")
