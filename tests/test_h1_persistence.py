@@ -77,3 +77,28 @@ class TestScanH1Persistence:
         omega = OMEGA_N_16[:4]
         result = scan_h1_persistence(omega, n_points=12)
         assert len(result.derivative) == 12
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → H1 persistence → K_c → wired
+# ---------------------------------------------------------------------------
+
+
+class TestH1Pipeline:
+    def test_pipeline_knm_to_h1(self):
+        """Full pipeline: OMEGA → H1 persistence scan → K_critical.
+        Verifies H1 persistence is wired and produces topological data.
+        """
+        import time
+
+        omega = OMEGA_N_16[:4]
+
+        t0 = time.perf_counter()
+        result = scan_h1_persistence(omega, n_points=10)
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert result.k_critical > 0
+        assert 0 <= result.p_h1_at_critical <= 1.0
+
+        print(f"\n  PIPELINE H1 persistence (4 osc, 10 pts): {dt:.1f} ms")
+        print(f"  K_c={result.k_critical:.4f}, p_h1={result.p_h1_at_critical:.4f}")
