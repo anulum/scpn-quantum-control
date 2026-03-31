@@ -9,6 +9,9 @@
 
 from __future__ import annotations
 
+import numpy as np
+import pytest
+
 from scpn_quantum_control.benchmarks.appqsim_protocol import (
     AppQSimMetrics,
     appqsim_benchmark,
@@ -64,3 +67,37 @@ class TestAppQSimBenchmark:
         print(f"  Corr fidelity: {result.correlation_fidelity:.4f}")
         print(f"  Gates: {result.n_gates}, depth: {result.circuit_depth}")
         assert isinstance(result.order_parameter_error, float)
+
+
+@pytest.mark.parametrize("L", [2, 3, 4])
+def test_appqsim_various_sizes(L):
+    K = build_knm_paper27(L=L)
+    omega = OMEGA_N_16[:L]
+    result = appqsim_benchmark(K, omega)
+    assert result.n_qubits == L
+    assert np.isfinite(result.order_parameter_error)
+
+
+def test_appqsim_energy_negative():
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    result = appqsim_benchmark(K, omega)
+    assert result.circuit_depth > 0
+
+
+def test_appqsim_result_has_all_fields():
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    result = appqsim_benchmark(K, omega)
+    assert hasattr(result, "order_parameter_error")
+    assert hasattr(result, "energy_relative_error_pct")
+    assert hasattr(result, "correlation_fidelity")
+    assert hasattr(result, "n_gates")
+    assert hasattr(result, "circuit_depth")
+
+
+def test_appqsim_error_nonnegative():
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    result = appqsim_benchmark(K, omega)
+    assert result.order_parameter_error >= 0

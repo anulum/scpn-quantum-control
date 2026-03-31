@@ -93,3 +93,40 @@ class TestMpembaExperiment:
         result = mpemba_experiment(omega, T, K_base=1.5, gamma=0.2, t_max=2.0, n_steps=8)
         assert isinstance(result, MpembaResult)
         assert len(result.R_far) == 9
+
+
+def test_mpemba_result_fields():
+    n = 2
+    T = _ring_topology(n)
+    omega = OMEGA_N_16[:n]
+    result = mpemba_experiment(omega, T, K_base=2.0, gamma=0.2, t_max=2.0, n_steps=5)
+    assert hasattr(result, "has_mpemba")
+    assert hasattr(result, "R_near")
+    assert hasattr(result, "R_far")
+    assert hasattr(result, "crossing_time")
+
+
+def test_mpemba_R_length():
+    n = 2
+    T = _ring_topology(n)
+    omega = OMEGA_N_16[:n]
+    result = mpemba_experiment(omega, T, K_base=2.0, gamma=0.2, t_max=1.0, n_steps=10)
+    assert len(result.R_near) == 11
+    assert len(result.R_far) == 11
+
+
+def test_mpemba_R_near_bounded():
+    n = 2
+    T = _ring_topology(n)
+    omega = OMEGA_N_16[:n]
+    result = mpemba_experiment(omega, T, K_base=2.0, gamma=0.2, t_max=2.0, n_steps=8)
+    assert np.all(result.R_near >= 0)
+    assert np.all(result.R_near <= 1.0 + 1e-10)
+
+
+def test_mpemba_4qubit():
+    n = 4
+    T = _ring_topology(n)
+    omega = OMEGA_N_16[:n]
+    result = mpemba_experiment(omega, T, K_base=1.5, gamma=0.2, t_max=1.0, n_steps=5)
+    assert isinstance(result, MpembaResult)

@@ -60,3 +60,32 @@ class TestComputePersistence:
         theta = np.random.default_rng(42).uniform(0, 2 * np.pi, 10)
         pr = compute_persistence(theta, persistence_threshold=0.01)
         assert 0 <= pr.p_h1 <= 1.0
+
+
+def test_persistence_all_pi():
+    """All phases at pi — should have some structure."""
+    theta = np.full(8, np.pi)
+    pr = compute_persistence(theta)
+    assert pr.n_oscillators == 8
+
+
+def test_persistence_random_phases():
+    rng = np.random.default_rng(42)
+    theta = rng.uniform(0, 2 * np.pi, 12)
+    pr = compute_persistence(theta, persistence_threshold=0.01)
+    assert 0 <= pr.p_h1 <= 1.0
+    assert pr.n_oscillators == 12
+
+
+def test_persistence_2_oscillators():
+    theta = np.array([0.0, np.pi])
+    pr = compute_persistence(theta)
+    assert pr.n_oscillators == 2
+
+
+def test_persistence_threshold_effect():
+    """Higher threshold → fewer persistent features."""
+    theta = np.random.default_rng(42).uniform(0, 2 * np.pi, 8)
+    pr_low = compute_persistence(theta, persistence_threshold=0.01)
+    pr_high = compute_persistence(theta, persistence_threshold=0.5)
+    assert pr_high.n_h1 <= pr_low.n_h1

@@ -57,3 +57,27 @@ class TestCrossDomainValidation:
         print(f"  Mean |ρ|: {result.mean_correlation:.3f}")
         print(f"  Systems with |ρ| > 0.3: {result.n_above_threshold}/5")
         assert isinstance(result.best_correlation, float)
+
+
+def test_cross_domain_system_names_nonempty():
+    result = run_cross_domain_validation()
+    assert len(result.system_names) > 0
+    for name in result.system_names:
+        assert isinstance(name, str)
+
+
+def test_cross_domain_frequency_correlations_bounded():
+    result = run_cross_domain_validation()
+    for r in result.frequency_correlations:
+        assert -1 <= r <= 1
+
+
+def test_cross_domain_best_correlation_positive():
+    result = run_cross_domain_validation()
+    assert result.best_correlation > 0
+
+
+def test_cross_domain_correlations_count():
+    result = run_cross_domain_validation()
+    assert len(result.topology_correlations) == len(result.system_names)
+    assert len(result.frequency_correlations) == len(result.system_names)

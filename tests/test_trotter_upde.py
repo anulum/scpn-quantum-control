@@ -5,7 +5,10 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Tests for Trotter Upde
-"""Tests for phase/trotter_upde.py."""
+"""Tests for phase/trotter_upde.py — elite multi-angle coverage."""
+
+import numpy as np
+import pytest
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.phase.trotter_upde import QuantumUPDESolver
@@ -66,3 +69,43 @@ def test_second_order_trotter_passthrough():
     assert solver._solver.trotter_order == 2
     result = solver.run(n_steps=3, dt=0.05)
     assert len(result["R"]) == 4
+
+
+@pytest.mark.parametrize("L", [2, 3, 4])
+def test_various_sizes(L):
+    K = build_knm_paper27(L=L)
+    omega = OMEGA_N_16[:L]
+    solver = QuantumUPDESolver(K=K, omega=omega)
+    result = solver.run(n_steps=3, dt=0.05)
+    assert len(result["R"]) == 4
+    for r in result["R"]:
+        assert np.isfinite(r)
+
+
+def test_step_returns_R_global():
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    solver = QuantumUPDESolver(K=K, omega=omega)
+    result = solver.step(dt=0.1)
+    assert "R_global" in result
+    assert 0.0 <= result["R_global"] <= 1.5
+
+
+def test_hamiltonian_hermitian():
+    K = build_knm_paper27(L=4)
+    omega = OMEGA_N_16[:4]
+    solver = QuantumUPDESolver(K=K, omega=omega)
+    H = solver.hamiltonian()
+    mat = H.to_matrix()
+    if hasattr(mat, "toarray"):
+        mat = mat.toarray()
+    np.testing.assert_allclose(mat, mat.conj().T, atol=1e-12)
+
+
+def test_R_trajectory_finite():
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    solver = QuantumUPDESolver(K=K, omega=omega)
+    result = solver.run(n_steps=5, dt=0.05)
+    for r in result["R"]:
+        assert np.isfinite(r)

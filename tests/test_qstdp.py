@@ -69,3 +69,37 @@ def test_stdp_gradient_sign_at_half():
     gradient = (exp_plus - exp_minus) / (2.0 * np.sin(np.pi / 2))
     assert np.isfinite(gradient)
     assert abs(gradient) > 0.5
+
+
+def test_stdp_no_spike_no_change():
+    """No pre spike → no weight change."""
+    syn = QuantumSynapse(0.5, w_min=0.0, w_max=1.0)
+    stdp = QuantumSTDP(learning_rate=0.1)
+    w_before = syn.weight
+    stdp.update(syn, pre_measured=0, post_measured=0)
+    assert syn.weight == w_before
+
+
+def test_stdp_learning_rate_effect():
+    """Higher learning rate → bigger weight change."""
+    syn_slow = QuantumSynapse(0.5)
+    syn_fast = QuantumSynapse(0.5)
+    QuantumSTDP(learning_rate=0.01).update(syn_slow, 1, 1)
+    QuantumSTDP(learning_rate=0.5).update(syn_fast, 1, 1)
+    assert abs(syn_fast.weight - 0.5) > abs(syn_slow.weight - 0.5)
+
+
+def test_stdp_weight_stays_bounded():
+    """Repeated LTP shouldn't exceed w_max."""
+    syn = QuantumSynapse(0.9, w_min=0.0, w_max=1.0)
+    stdp = QuantumSTDP(learning_rate=0.5)
+    for _ in range(20):
+        stdp.update(syn, pre_measured=1, post_measured=1)
+    assert syn.weight <= 1.0
+
+
+def test_stdp_expectation_z_range():
+    stdp = QuantumSTDP()
+    for theta in np.linspace(0, 2 * np.pi, 20):
+        z = stdp._expectation_z(theta)
+        assert -1.0 <= z <= 1.0 + 1e-10

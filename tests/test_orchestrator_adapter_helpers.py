@@ -79,3 +79,31 @@ def test_build_knm_zero_diagonal():
     knm = PhaseOrchestratorAdapter.build_knm_from_binding_spec(binding, zero_diagonal=True)
     assert np.all(np.diag(knm) == 0.0)
     assert knm.shape == (4, 4)
+
+
+def test_from_orchestrator_state_roundtrip():
+    state = _make_state(3, "NOMINAL")
+    artifact = PhaseOrchestratorAdapter.from_orchestrator_state(state)
+    assert artifact.regime_id == "NOMINAL"
+    assert len(artifact.layers) == 3
+
+
+def test_read_field_first_match():
+    from scpn_quantum_control.bridge.orchestrator_adapter import _read_field
+
+    d = {"a": 1, "b": 2}
+    assert _read_field(d, "a", "b") == 1
+
+
+def test_infer_layer_pair_digit_key():
+    from scpn_quantum_control.bridge.orchestrator_adapter import _infer_layer_pair
+
+    assert _infer_layer_pair("3_7", 0) == (3, 7)
+
+
+def test_telemetry_output():
+    state = _make_state(2, "OK")
+    artifact = PhaseOrchestratorAdapter.from_orchestrator_state(state)
+    telemetry = PhaseOrchestratorAdapter.to_scpn_control_telemetry(artifact)
+    assert telemetry["regime"] == "OK"
+    assert len(telemetry["layers"]) == 2

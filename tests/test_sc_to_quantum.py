@@ -8,6 +8,7 @@
 """Tests for bridge/sc_to_quantum.py."""
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.bridge.sc_to_quantum import (
     angle_to_probability,
@@ -62,3 +63,31 @@ def test_measurement_to_bitstream_seeded():
     bs1 = measurement_to_bitstream(counts, 100, rng=rng1)
     bs2 = measurement_to_bitstream(counts, 100, rng=rng2)
     np.testing.assert_array_equal(bs1, bs2)
+
+
+def test_probability_to_angle_range():
+    from scpn_quantum_control.bridge.sc_to_quantum import probability_to_angle
+
+    for p in np.linspace(0, 1, 20):
+        a = probability_to_angle(p)
+        assert 0 <= a <= np.pi + 1e-10
+
+
+def test_probability_to_angle_zero():
+    from scpn_quantum_control.bridge.sc_to_quantum import probability_to_angle
+
+    a = probability_to_angle(0.0)
+    assert a == pytest.approx(0.0)
+
+
+def test_probability_to_angle_one():
+    from scpn_quantum_control.bridge.sc_to_quantum import probability_to_angle
+
+    a = probability_to_angle(1.0)
+    assert a == pytest.approx(np.pi)
+
+
+def test_measurement_to_bitstream_length_100():
+    counts = {"0": 50, "1": 50}
+    bs = measurement_to_bitstream(counts, 100)
+    assert len(bs) == 100

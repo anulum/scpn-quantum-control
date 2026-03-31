@@ -65,3 +65,31 @@ def test_key_rate_positive_for_high_concurrence():
     conc = np.array([[0, 0.9], [0.9, 0]])
     rates = key_rate_per_channel(conc)
     assert rates[0, 1] > 0
+
+
+def test_active_channels_upper_triangle():
+    """active_channel_graph returns unique pairs (i<j)."""
+    K = build_knm_paper27(L=4)
+    channels = active_channel_graph(K, threshold=0.1)
+    for c in channels:
+        assert c[0] < c[1]  # upper triangle only
+        assert len(c) == 3  # (i, j, weight)
+
+
+def test_key_rate_shape():
+    conc = np.zeros((4, 4))
+    rates = key_rate_per_channel(conc)
+    assert rates.shape == (4, 4)
+
+
+def test_key_rate_diagonal_zero():
+    conc = np.array([[0, 0.8], [0.8, 0]])
+    rates = key_rate_per_channel(conc)
+    assert rates[0, 0] == 0 and rates[1, 1] == 0
+
+
+def test_active_channels_threshold_sweep():
+    K = build_knm_paper27(L=4)
+    n_low = len(active_channel_graph(K, threshold=0.01))
+    n_high = len(active_channel_graph(K, threshold=0.5))
+    assert n_low >= n_high

@@ -84,3 +84,33 @@ def test_knm_16x16_exponential_decay():
     assert K[0, 1] > K[0, 5] > K[0, 10]
     # Cross-hierarchy boost on L1-L16 overrides natural value
     assert K[0, 15] == pytest.approx(0.05, abs=0.001)
+
+
+def test_knm_symmetric():
+    """K_nm must be symmetric for all sizes."""
+    for L in (4, 8, 12, 16):
+        K = build_knm_paper27(L=L)
+        np.testing.assert_allclose(K, K.T, atol=1e-12)
+
+
+def test_knm_non_negative():
+    """All coupling strengths must be >= 0."""
+    K = build_knm_paper27(L=16)
+    assert np.all(K >= 0)
+
+
+@pytest.mark.parametrize("L", [2, 4, 6, 8, 12])
+def test_hamiltonian_qubit_count(L):
+    K = build_knm_paper27(L=L)
+    omega = OMEGA_N_16[:L]
+    H = knm_to_hamiltonian(K, omega)
+    assert H.num_qubits == L
+
+
+def test_ansatz_params_scale_linearly():
+    """n_params = 2 * L * reps for all sizes."""
+    for L in (4, 8, 12, 16):
+        K = build_knm_paper27(L=L)
+        for reps in (1, 2):
+            qc = knm_to_ansatz(K, reps=reps)
+            assert qc.num_parameters == 2 * L * reps

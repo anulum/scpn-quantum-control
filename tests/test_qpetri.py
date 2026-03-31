@@ -97,3 +97,40 @@ def test_multiple_transitions_preserve_bounds():
     for _ in range(5):
         marking = net.step(marking)
         assert np.all(marking >= 0) and np.all(marking <= 1.0)
+
+
+def test_from_matrices_basic():
+    W_in = np.array([[0.5, 0.3]])
+    W_out = np.array([[0.0], [0.6]])
+    thresholds = np.array([0.8])
+    net = QuantumPetriNet.from_matrices(W_in, W_out, thresholds)
+    assert net is not None
+
+
+def test_step_output_shape():
+    W_in = np.array([[0.5, 0.0], [0.0, 0.5]])
+    W_out = np.array([[0.0, 0.4], [0.4, 0.0]])
+    thresholds = np.array([0.8, 0.8])
+    net = QuantumPetriNet.from_matrices(W_in, W_out, thresholds)
+    marking = net.step(np.array([0.5, 0.5]))
+    assert len(marking) == 2
+
+
+def test_step_preserves_bounds():
+    W_in = np.array([[0.5]])
+    W_out = np.array([[0.5]])
+    thresholds = np.array([0.5])
+    net = QuantumPetriNet.from_matrices(W_in, W_out, thresholds)
+    for _ in range(10):
+        marking = net.step(np.array([0.5]))
+        assert np.all(marking >= 0)
+        assert np.all(marking <= 1.0)
+
+
+def test_zero_input_stable():
+    W_in = np.array([[0.5, 0.0]])
+    W_out = np.array([[0.0], [0.5]])
+    thresholds = np.array([0.8])
+    net = QuantumPetriNet.from_matrices(W_in, W_out, thresholds)
+    marking = net.step(np.array([0.0, 0.0]))
+    assert np.all(np.isfinite(marking))

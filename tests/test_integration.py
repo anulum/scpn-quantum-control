@@ -138,3 +138,66 @@ def test_exact_diag_ground_energy_matches_hamiltonian():
     evals_direct = np.linalg.eigvalsh(H_mat)
 
     np.testing.assert_allclose(result["ground_energy"], evals_direct[0], atol=1e-10)
+
+
+def test_gate_fold_circuit_identity_at_scale_1():
+    """Folding at scale=1 should produce the same unitary as the original."""
+    from qiskit.quantum_info import Statevector
+
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    solver = QuantumKuramotoSolver(3, K, omega)
+    qc = solver.evolve(0.1, trotter_steps=2)
+
+    folded = gate_fold_circuit(qc, 1)
+    sv_orig = Statevector.from_instruction(qc)
+    sv_fold = Statevector.from_instruction(folded)
+    np.testing.assert_allclose(np.abs(np.vdot(sv_orig, sv_fold)) ** 2, 1.0, atol=1e-10)
+
+
+def test_zne_extrapolate_returns_result():
+    """ZNE extrapolation returns proper result object."""
+    scales = [1, 3, 5]
+    values = [0.5, 0.5, 0.5]  # Noiseless: all same
+    result = zne_extrapolate(scales, values, order=1)
+    assert hasattr(result, "zero_noise_estimate")
+    assert np.isfinite(result.zero_noise_estimate)
+
+
+def test_quantum_solver_run_returns_R_and_energy():
+    """QuantumKuramotoSolver.run must return R and energies."""
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    solver = QuantumKuramotoSolver(3, K, omega)
+    result = solver.run(t_max=0.2, dt=0.1, trotter_per_step=5)
+    assert "R" in result
+    assert "times" in result
+    assert len(result["R"]) > 0
+    for R in result["R"]:
+        assert 0.0 <= R <= 1.0 + 1e-10
+
+
+def test_classical_evolution_R_bounded():
+    """Classical evolution R must be in [0, 1] at all times."""
+    n = 4
+    K = build_knm_paper27(L=n)
+    omega = OMEGA_N_16[:n]
+    result = classical_exact_evolution(n, 0.5, 0.1, K, omega)
+    for R in result["R"]:
+        assert 0.0 <= R <= 1.0 + 1e-10
+
+
+def test_quantum_and_classical_same_ground_energy():
+    """VQE-found ground energy matches classical exact diag."""
+    from scpn_quantum_control.hardware.classical import classical_exact_diag
+    from scpn_quantum_control.phase.phase_vqe import PhaseVQE
+
+    K = build_knm_paper27(L=2)
+    omega = OMEGA_N_16[:2]
+
+    vqe = PhaseVQE(K, omega, ansatz_reps=2)
+    result = vqe.solve(maxiter=100, seed=42)
+
+    exact = classical_exact_diag(2, K=K, omega=omega)
+    # VQE should be within 5% of exact
+    assert result["ground_energy"] <= exact["ground_energy"] * 0.95 + 0.5

@@ -53,3 +53,27 @@ class TestScanH1Persistence:
         print(f"  p_h1 at K_c = {result.p_h1_at_critical:.4f}")
         print(f"  |p_h1 - 0.72| = {result.deviation_from_target:.4f}")
         assert isinstance(result.p_h1_at_critical, float)
+
+    def test_3osc_scan(self):
+        omega = OMEGA_N_16[:3]
+        result = scan_h1_persistence(omega, n_points=6)
+        assert isinstance(result, H1PersistenceResult)
+        assert result.k_critical > 0
+
+    def test_k_values_sorted(self):
+        omega = OMEGA_N_16[:4]
+        result = scan_h1_persistence(omega, n_points=10)
+        import numpy as np
+
+        assert np.all(np.diff(result.k_values) > 0)
+
+    def test_vortex_densities_bounded(self):
+        omega = OMEGA_N_16[:4]
+        result = scan_h1_persistence(omega, n_points=8)
+        for v in result.vortex_densities:
+            assert 0.0 <= v <= 1.0 + 1e-10
+
+    def test_derivative_length(self):
+        omega = OMEGA_N_16[:4]
+        result = scan_h1_persistence(omega, n_points=12)
+        assert len(result.derivative) == 12

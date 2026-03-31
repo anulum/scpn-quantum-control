@@ -12,7 +12,9 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 from scpn_quantum_control.crypto.percolation import (
+    active_channel_graph,
     best_entanglement_path,
     key_rate_per_channel,
     robustness_targeted_removal,
@@ -82,3 +84,29 @@ def test_best_path_boundary_validation():
     K = np.array([[0.0, 0.5], [0.5, 0.0]])
     with pytest.raises(ValueError, match="out of range"):
         best_entanglement_path(K, source=0, target=5)
+
+
+def test_best_path_same_source_target():
+    K = np.array([[0.0, 0.5], [0.5, 0.0]])
+    result = best_entanglement_path(K, source=0, target=0)
+    assert result["path"] == [0]
+
+
+def test_best_path_direct_connection():
+    K = np.array([[0.0, 0.9], [0.9, 0.0]])
+    result = best_entanglement_path(K, source=0, target=1)
+    assert result["path"] == [0, 1]
+    assert result["bottleneck"] == pytest.approx(0.9)
+
+
+def test_best_path_3_nodes():
+    K = np.array([[0, 0.5, 0.1], [0.5, 0, 0.8], [0.1, 0.8, 0]])
+    result = best_entanglement_path(K, source=0, target=2)
+    assert result["path"][0] == 0
+    assert result["path"][-1] == 2
+
+
+def test_active_channel_graph_4_nodes():
+    K = build_knm_paper27(L=4)
+    channels = active_channel_graph(K, threshold=0.05)
+    assert len(channels) > 0

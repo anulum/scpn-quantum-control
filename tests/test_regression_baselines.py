@@ -126,3 +126,27 @@ def test_R_from_xyz_known_distribution():
     counts_z = {"0000": 5000, "1111": 5000}
     R, _, exp_x, exp_y, exp_z, *_ = _R_from_xyz(counts_z, counts_x, counts_y, n_qubits=4)
     assert abs(R) < 0.01, f"Balanced counts should give R≈0, got {R}"
+
+
+def test_R_positive_for_all_sizes():
+    for n in [2, 3, 4]:
+        R = _simulate_R(n, t=0.5, trotter_reps=2)
+        assert np.isfinite(R)
+        assert R >= 0
+
+
+def test_R_from_xyz_uniform_counts():
+    counts = {"0000": 2500, "0001": 2500, "0010": 2500, "0011": 2500}
+    R, *_ = _R_from_xyz(counts, counts, counts, n_qubits=4)
+    assert np.isfinite(R)
+
+
+def test_R_from_xyz_single_state():
+    counts = {"0000": 10000}
+    R, *_ = _R_from_xyz(counts, counts, counts, n_qubits=4)
+    assert np.isfinite(R)
+
+
+def test_simulate_R_2q():
+    R = _simulate_R(2, t=0.3, trotter_reps=3)
+    assert 0 <= R <= 1.5

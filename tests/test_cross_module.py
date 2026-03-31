@@ -95,3 +95,51 @@ def test_hamiltonian_commutes_with_total_z_parity(knm_4q):
 
     commutator = mat @ parity - parity @ mat
     assert np.allclose(commutator, 0, atol=1e-10), "H should commute with Z-parity"
+
+
+def test_solver_energy_matches_bridge_energy(knm_4q):
+    """QuantumKuramotoSolver energy matches bridge Hamiltonian matrix energy."""
+    K, omega = knm_4q
+
+    H_bridge = knm_to_hamiltonian(K, omega)
+    mat = H_bridge.to_matrix()
+    if hasattr(mat, "toarray"):
+        mat = mat.toarray()
+    eigvals = np.linalg.eigvalsh(mat)
+
+    exact_diag = classical_exact_diag(n_osc=4, K=K, omega=omega)
+    np.testing.assert_allclose(exact_diag["ground_energy"], eigvals[0], atol=1e-10)
+
+
+def test_bridge_hamiltonian_matches_solver_for_multiple_sizes():
+    """Verify Hamiltonian consistency for L=2,3,4."""
+    from scpn_quantum_control.bridge import OMEGA_N_16, build_knm_paper27
+
+    for L in [2, 3, 4]:
+        K = build_knm_paper27(L=L)
+        omega = OMEGA_N_16[:L]
+        solver = QuantumKuramotoSolver(L, K, omega)
+        H_solver = solver.build_hamiltonian()
+        H_bridge = knm_to_hamiltonian(K, omega)
+
+        mat_s = H_solver.to_matrix()
+        mat_b = H_bridge.to_matrix()
+        if hasattr(mat_s, "toarray"):
+            mat_s = mat_s.toarray()
+        if hasattr(mat_b, "toarray"):
+            mat_b = mat_b.toarray()
+
+        assert np.allclose(mat_s, mat_b, atol=1e-10), f"L={L}: mismatch"
+
+
+def test_classical_R_trajectory_all_positive():
+    """All R values in classical trajectory must be in [0, 1]."""
+    result = classical_kuramoto_reference(n_osc=4, t_max=2.0, dt=0.01)
+    for R in result["R"]:
+        assert 0.0 <= R <= 1.0 + 1e-10
+
+
+def test_classical_kuramoto_theta_finite():
+    """All theta values from classical Kuramoto must be finite."""
+    result = classical_kuramoto_reference(n_osc=4, t_max=1.0, dt=0.01)
+    assert np.all(np.isfinite(result["theta"][-1]))

@@ -91,3 +91,57 @@ def test_qec_decode_and_correct_failure():
         if not qec.decode_and_correct(err_x, err_z):
             failures += 1
     assert failures > 0, "Expected some correction failures at p=0.4"
+
+
+def test_expectation_pauli_x():
+    """Cover X Pauli expectation: |+> state <X>=+1."""
+    psi = np.array([1, 1, 0, 0], dtype=complex) / np.sqrt(2)  # qubit 0 = |+>, qubit 1 = |0>
+    x0 = _expectation_pauli(psi, 2, 0, "X")
+    assert abs(x0 - 1.0) < 1e-10
+
+
+def test_expectation_pauli_superposition():
+    """Uniform superposition <Z>=0 for all qubits."""
+    psi = np.ones(4, dtype=complex) / 2.0
+    z0 = _expectation_pauli(psi, 2, 0, "Z")
+    z1 = _expectation_pauli(psi, 2, 1, "Z")
+    assert abs(z0) < 1e-10
+    assert abs(z1) < 1e-10
+
+
+def test_qec_basic_syndrome():
+    """ControlQEC should produce syndromes with correct shape."""
+    from scpn_quantum_control.qec.control_qec import ControlQEC
+
+    qec = ControlQEC(distance=3)
+    n_data = 2 * 3**2
+    err_x = np.zeros(n_data, dtype=np.int8)
+    err_z = np.zeros(n_data, dtype=np.int8)
+    syn_z, syn_x = qec.get_syndrome(err_x, err_z)
+    assert len(syn_z) > 0
+    assert len(syn_x) > 0
+
+
+def test_qec_no_error_clean_syndrome():
+    """Zero errors should produce all-zero syndrome."""
+    from scpn_quantum_control.qec.control_qec import ControlQEC
+
+    qec = ControlQEC(distance=3)
+    n_data = 2 * 3**2
+    err_x = np.zeros(n_data, dtype=np.int8)
+    err_z = np.zeros(n_data, dtype=np.int8)
+    syn_z, syn_x = qec.get_syndrome(err_x, err_z)
+    assert int(syn_z.sum()) == 0
+    assert int(syn_x.sum()) == 0
+
+
+def test_inhibitor_multiple_inhibitors():
+    """Cover spn_to_qcircuit multi-inhibitor path."""
+    from qiskit import QuantumCircuit
+
+    from scpn_quantum_control.bridge.spn_to_qcircuit import inhibitor_anti_control
+
+    qc = QuantumCircuit(3)
+    inhibitor_anti_control(qc, [0, 1], target=2, theta=0.5)
+    ops = [inst.operation.name for inst in qc.data]
+    assert ops.count("x") == 4
