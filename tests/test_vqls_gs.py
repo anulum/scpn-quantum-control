@@ -69,3 +69,34 @@ def test_solve_seeded_deterministic():
     solver._A = None  # reset to re-discretize
     r2 = solver.solve(reps=1, maxiter=30, seed=42)
     np.testing.assert_allclose(r1, r2)
+
+
+def test_source_width_affects_solution():
+    """Different source widths → different flux profiles."""
+    s1 = VQLS_GradShafranov(n_qubits=2, source_width=0.05)
+    s2 = VQLS_GradShafranov(n_qubits=2, source_width=0.5)
+    p1 = s1.solve(reps=1, maxiter=20, seed=0)
+    p2 = s2.solve(reps=1, maxiter=20, seed=0)
+    assert not np.allclose(p1, p2, atol=0.01)
+
+
+def test_ansatz_params_increase_with_reps():
+    solver = VQLS_GradShafranov(n_qubits=3)
+    qc1 = solver.build_ansatz(reps=1)
+    qc2 = solver.build_ansatz(reps=3)
+    assert qc2.num_parameters > qc1.num_parameters
+
+
+def test_grid_size_matches_n_qubits():
+    for n in (2, 3, 4):
+        s = VQLS_GradShafranov(n_qubits=n)
+        assert s.grid_size == 2**n
+
+
+def test_pipeline_solve_to_residual():
+    """Pipeline: discretise → solve → compute A*psi - b residual."""
+    solver = VQLS_GradShafranov(n_qubits=2)
+    A, b = solver.discretize()
+    psi = solver.solve(reps=1, maxiter=30, seed=42)
+    residual = A @ psi - b * np.dot(b, A @ psi) / np.dot(b, b)
+    assert np.all(np.isfinite(residual))
