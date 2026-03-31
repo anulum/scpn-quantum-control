@@ -97,3 +97,56 @@ class TestSelfConsistencyNoisySim:
         # Correlator reconstruction should be accurate even if K recovery
         # hits the degeneracy (different K → same correlators)
         assert result.correlator_error < 0.1
+
+
+# ---------------------------------------------------------------------------
+# Self-consistency physics: K_learned properties
+# ---------------------------------------------------------------------------
+
+
+class TestSelfConsistencyPhysics:
+    def test_learned_K_symmetric(self):
+        """Learned coupling matrix must be symmetric."""
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        result = self_consistency_from_exact(K, omega, maxiter=30)
+        np.testing.assert_allclose(result.K_learned, result.K_learned.T, atol=1e-8)
+
+    def test_frobenius_error_nonnegative(self):
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        result = self_consistency_from_exact(K, omega, maxiter=20)
+        assert result.frobenius_error >= 0
+
+    def test_learning_loss_nonnegative(self):
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        result = self_consistency_from_exact(K, omega, maxiter=30)
+        assert result.learning_result.loss >= 0
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → correlators → learn K → wired
+# ---------------------------------------------------------------------------
+
+
+class TestSelfConsistencyPipeline:
+    def test_pipeline_knm_to_learned_K(self):
+        """Full pipeline: Knm → exact correlators → learn K_learned.
+        Verifies self-consistency loop is wired end-to-end.
+        """
+        import time
+
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+
+        t0 = time.perf_counter()
+        result = self_consistency_from_exact(K, omega, maxiter=50)
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert result.K_learned.shape == K.shape
+        assert result.learning_result.loss < 1.0
+
+        print(f"\n  PIPELINE Knm→Correlators→LearnK (2q): {dt:.1f} ms")
+        print(f"  Frobenius error = {result.frobenius_error:.4f}")
+        print(f"  Learning loss = {result.learning_result.loss:.6f}")
