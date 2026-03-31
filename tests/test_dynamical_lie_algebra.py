@@ -130,7 +130,8 @@ class TestDLAComputation:
 def test_dla_dimension_2q():
     K = build_knm_paper27(L=2)
     omega = OMEGA_N_16[:2]
-    result = compute_dla(K, omega)
+    gens = build_xy_generators(K, omega)
+    result = compute_dla(gens)
     assert result.dimension >= 1
     assert result.n_qubits == 2
 
@@ -138,7 +139,8 @@ def test_dla_dimension_2q():
 def test_dla_dimension_finite():
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:3]
-    result = compute_dla(K, omega)
+    gens = build_xy_generators(K, omega)
+    result = compute_dla(gens)
     assert np.isfinite(result.dimension)
 
 
