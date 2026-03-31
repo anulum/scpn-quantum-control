@@ -88,3 +88,56 @@ def test_from_binding_spec():
     fp = identity_fingerprint_from_binding_spec(spec, ansatz_reps=1, maxiter=20)
     assert fp["n_qubits"] == 3
     assert fp["n_parameters"] == 3
+
+
+# ---------------------------------------------------------------------------
+# Fingerprint determinism and structure
+# ---------------------------------------------------------------------------
+
+
+def test_fingerprint_spectral_deterministic():
+    """Same K → same spectral data (fiedler, eigenvalues)."""
+    K = build_knm_paper27(L=2)
+    omega = OMEGA_N_16[:2]
+    fp1 = identity_fingerprint(K, omega, ansatz_reps=1, maxiter=20)
+    fp2 = identity_fingerprint(K, omega, ansatz_reps=1, maxiter=20)
+    assert fp1["spectral"]["fiedler"] == fp2["spectral"]["fiedler"]
+
+
+def test_fingerprint_has_n_qubits():
+    K = build_knm_paper27(L=4)
+    omega = OMEGA_N_16[:4]
+    fp = identity_fingerprint(K, omega, ansatz_reps=1, maxiter=10)
+    assert fp["n_qubits"] == 4
+
+
+def test_challenge_response_different_challenges():
+    """Different challenges → different responses."""
+    K = build_knm_paper27(L=3)
+    c1 = os.urandom(32)
+    c2 = os.urandom(32)
+    r1 = prove_identity(K, c1)
+    r2 = prove_identity(K, c2)
+    assert r1 != r2
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → fingerprint → prove → verify wiring
+# ---------------------------------------------------------------------------
+
+
+def test_full_identity_pipeline():
+    """Knm → fingerprint → challenge-response cycle, all wired end-to-end."""
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    fp = identity_fingerprint(K, omega, ansatz_reps=1, maxiter=20)
+    assert "commitment" in fp
+    assert "spectral" in fp
+
+    challenge = os.urandom(32)
+    response = prove_identity(K, challenge)
+    assert verify_identity(K, challenge, response)
+
+    # Wrong K should fail
+    K_wrong = build_knm_paper27(L=3, K_base=0.1)
+    assert not verify_identity(K_wrong, challenge, response)
