@@ -97,3 +97,51 @@ class TestREntanglementScan:
         # R_gap can be positive (entangled) or negative (separable)
         for gap in scan["R_gap"]:
             assert np.isfinite(gap)
+
+
+# ---------------------------------------------------------------------------
+# Entanglement witness physics
+# ---------------------------------------------------------------------------
+
+
+class TestWitnessPhysics:
+    def test_R_bounded_for_random_states(self):
+        """R must be in [0,1] for any normalised state."""
+        rng = np.random.default_rng(42)
+        for _ in range(5):
+            psi = rng.standard_normal(16) + 1j * rng.standard_normal(16)
+            psi /= np.linalg.norm(psi)
+            R = R_from_statevector(np.array(psi), 4)
+            assert 0.0 <= R <= 1.0 + 1e-10
+
+    def test_separable_bound_monotonic(self):
+        """R_sep(n) should not depend on n for unconstrained case (always 1)."""
+        for n in [2, 3, 4, 6]:
+            assert R_separable_bound(n) == 1.0
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → ground state → R → witness → wired
+# ---------------------------------------------------------------------------
+
+
+class TestWitnessPipeline:
+    def test_pipeline_knm_to_entanglement_witness(self):
+        """Full pipeline: build_knm → ground state → R → separable bound → witness.
+        Verifies entanglement witness is wired end-to-end.
+        """
+        import time
+
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+
+        t0 = time.perf_counter()
+        result = detect_entanglement_from_R(K, omega, n_samples=200)
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert isinstance(result, EntanglementWitnessResult)
+        assert np.isfinite(result.R_measured)
+
+        print(f"\n  PIPELINE Knm→R_witness (3q, 200 samples): {dt:.1f} ms")
+        print(f"  R_measured = {result.R_measured:.4f}, R_sep_max = {result.R_sep_max:.4f}")
+        print(f"  Entangled: {result.is_entangled}")
