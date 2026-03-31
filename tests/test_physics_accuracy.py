@@ -155,3 +155,25 @@ def _single_qubit_op(pauli: str, qubit: int, n: int):
     label = ["I"] * n
     label[qubit] = pauli
     return SparsePauliOp("".join(reversed(label)))
+
+
+def test_3q_ground_energy_exact():
+    """3-qubit system: exact diag matches numpy eigvalsh."""
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    result = classical_exact_diag(n_osc=3, K=K, omega=omega)
+    H = knm_to_hamiltonian(K, omega)
+    mat = H.to_matrix()
+    if hasattr(mat, "toarray"):
+        mat = mat.toarray()
+    E0_direct = np.linalg.eigvalsh(mat)[0]
+    assert abs(result["ground_energy"] - E0_direct) < 1e-10
+
+
+def test_statevector_normalised():
+    """Statevector from Trotter circuit must be normalised."""
+    K = build_knm_paper27(L=4)
+    omega = OMEGA_N_16[:4]
+    qc = _build_evo_base(4, K, omega, t=0.1, trotter_reps=2)
+    sv = _statevector_from_circuit(qc)
+    np.testing.assert_allclose(float(np.sum(np.abs(sv) ** 2)), 1.0, atol=1e-10)

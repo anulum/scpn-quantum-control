@@ -93,3 +93,33 @@ class TestPairingVsAnisotropy:
         result = pairing_vs_anisotropy(omega, T, K_base=2.0, delta_range=np.array([0.0, 1.0]))
         for key in result:
             assert all(np.isfinite(v) for v in result[key])
+
+
+def test_pairing_map_2q():
+    T = _ring(2)
+    omega = OMEGA_N_16[:2]
+    result = pairing_map(omega, T, K_base=2.0)
+    assert result.n_qubits == 2
+
+
+def test_pairing_map_finite():
+    T = _ring(3)
+    omega = OMEGA_N_16[:3]
+    result = pairing_map(omega, T, K_base=2.0)
+    assert np.all(np.isfinite(result.pairing_matrix))
+
+
+def test_pairing_vs_anisotropy_length():
+    T = _ring(3)
+    omega = OMEGA_N_16[:3]
+    deltas = np.array([0.0, 0.5, 1.0, 1.5])
+    result = pairing_vs_anisotropy(omega, T, K_base=2.0, delta_range=deltas)
+    assert len(result["delta"]) == 4
+    assert len(result["max_pairing"]) == 4
+
+
+def test_pairing_map_4q():
+    T = _ring(4)
+    omega = OMEGA_N_16[:4]
+    result = pairing_map(omega, T, K_base=1.5)
+    assert result.n_qubits == 4

@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.bridge.knm_hamiltonian import (
     OMEGA_N_16,
@@ -94,3 +95,39 @@ class TestXXZHamiltonian:
         omega = OMEGA_N_16[:4]
         H = knm_to_xxz_hamiltonian(K, omega, delta=0.5)
         assert H.to_matrix().shape == (16, 16)
+
+
+def test_xxz_hermitian():
+    K = _ring(3)
+    omega = OMEGA_N_16[:3]
+    H = knm_to_xxz_hamiltonian(K, omega, delta=0.5)
+    mat = H.to_matrix()
+    if hasattr(mat, "toarray"):
+        mat = mat.toarray()
+    np.testing.assert_allclose(mat, mat.conj().T, atol=1e-12)
+
+
+def test_xxz_traceless():
+    K = _ring(3)
+    omega = OMEGA_N_16[:3]
+    H = knm_to_xxz_hamiltonian(K, omega, delta=0.0)
+    mat = H.to_matrix()
+    if hasattr(mat, "toarray"):
+        mat = mat.toarray()
+    assert abs(np.trace(mat)) < 1e-8
+
+
+def test_xxz_2q_spectrum():
+    K = _ring(2)
+    omega = OMEGA_N_16[:2]
+    H = knm_to_xxz_hamiltonian(K, omega, delta=0.5)
+    eigvals = np.linalg.eigvalsh(H.to_matrix())
+    assert np.all(np.isfinite(eigvals))
+
+
+@pytest.mark.parametrize("delta", [0.0, 0.5, 1.0, 2.0])
+def test_xxz_various_deltas(delta):
+    K = _ring(3)
+    omega = OMEGA_N_16[:3]
+    H = knm_to_xxz_hamiltonian(K, omega, delta=delta)
+    assert H.num_qubits == 3

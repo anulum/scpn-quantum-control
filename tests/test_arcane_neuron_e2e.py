@@ -18,9 +18,10 @@ from scpn_quantum_control.bridge.snn_adapter import ArcaneNeuronBridge
 
 HAS_SC_NEUROCORE = importlib.util.find_spec("sc_neurocore") is not None
 
-pytestmark = pytest.mark.skipif(not HAS_SC_NEUROCORE, reason="sc-neurocore not installed")
+_SKIP_NO_SC = pytest.mark.skipif(not HAS_SC_NEUROCORE, reason="sc-neurocore not installed")
 
 
+@_SKIP_NO_SC
 class TestArcaneNeuronE2E:
     def test_10_step_trajectory(self):
         """Run 10 steps and verify output structure at each step."""
@@ -82,3 +83,80 @@ class TestArcaneNeuronE2E:
         bridge = ArcaneNeuronBridge(n_neurons=2, n_inputs=3, seed=42)
         result = bridge.step(np.zeros(3))
         assert result["spikes"].shape == (3,)
+
+
+# ---------------------------------------------------------------------------
+# Tests that work WITHOUT sc-neurocore (pure numpy SNN bridge)
+# ---------------------------------------------------------------------------
+
+
+class TestSNNQuantumBridgeNoDeps:
+    """Test SNNQuantumBridge and utility functions without sc-neurocore."""
+
+    def test_spike_train_to_rotations_2d(self):
+        from scpn_quantum_control.bridge.snn_adapter import spike_train_to_rotations
+
+        spikes = np.array([[1, 0, 1], [1, 1, 0], [0, 1, 1]])
+        angles = spike_train_to_rotations(spikes, window=3)
+        assert angles.shape == (3,)
+        assert np.all(angles >= 0)
+        assert np.all(angles <= np.pi)
+
+    def test_spike_train_to_rotations_1d(self):
+        from scpn_quantum_control.bridge.snn_adapter import spike_train_to_rotations
+
+        spikes = np.array([1, 0, 1, 0])
+        angles = spike_train_to_rotations(spikes, window=4)
+        assert angles.shape == (4,)
+
+    def test_spike_train_to_rotations_all_zeros(self):
+        from scpn_quantum_control.bridge.snn_adapter import spike_train_to_rotations
+
+        spikes = np.zeros((10, 3))
+        angles = spike_train_to_rotations(spikes, window=5)
+        np.testing.assert_allclose(angles, 0.0)
+
+    def test_spike_train_to_rotations_all_ones(self):
+        from scpn_quantum_control.bridge.snn_adapter import spike_train_to_rotations
+
+        spikes = np.ones((10, 3))
+        angles = spike_train_to_rotations(spikes, window=5)
+        np.testing.assert_allclose(angles, np.pi)
+
+    def test_quantum_measurement_to_current(self):
+        from scpn_quantum_control.bridge.snn_adapter import quantum_measurement_to_current
+
+        values = np.array([0.5, 0.8, 0.1])
+        currents = quantum_measurement_to_current(values, scale=2.0)
+        np.testing.assert_allclose(currents, [1.0, 1.6, 0.2])
+
+    def test_quantum_measurement_to_current_default_scale(self):
+        from scpn_quantum_control.bridge.snn_adapter import quantum_measurement_to_current
+
+        values = np.array([0.5, 1.0])
+        currents = quantum_measurement_to_current(values)
+        np.testing.assert_allclose(currents, [0.5, 1.0])
+
+    def test_snn_quantum_bridge_forward(self):
+        from scpn_quantum_control.bridge.snn_adapter import SNNQuantumBridge
+
+        bridge = SNNQuantumBridge(n_neurons=2, n_inputs=3, seed=42)
+        spikes = np.array([[1, 0, 1], [1, 1, 0], [0, 1, 1]])
+        output = bridge.forward(spikes)
+        assert output.shape == (2,)
+        assert np.all(np.isfinite(output))
+
+    def test_snn_bridge_zero_spikes(self):
+        from scpn_quantum_control.bridge.snn_adapter import SNNQuantumBridge
+
+        bridge = SNNQuantumBridge(n_neurons=2, n_inputs=3, seed=42)
+        spikes = np.zeros((5, 3))
+        output = bridge.forward(spikes)
+        assert output.shape == (2,)
+
+    def test_arcane_neuron_bridge_import_error(self):
+        """Without sc-neurocore, ArcaneNeuronBridge should raise ImportError."""
+        if HAS_SC_NEUROCORE:
+            pytest.skip("sc-neurocore is installed")
+        with pytest.raises(ImportError, match="sc-neurocore"):
+            ArcaneNeuronBridge(n_neurons=2, n_inputs=3)

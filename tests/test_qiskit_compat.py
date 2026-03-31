@@ -52,3 +52,29 @@ class TestQiskitCompat:
         assert "version" in result
         assert "compatible" in result
         assert isinstance(result["compatible"], bool)
+
+
+def test_qiskit_version_string():
+    result = check_qiskit_compatibility()
+    assert isinstance(result["version"], str)
+    assert len(result["version"]) > 0
+
+
+def test_all_imports_succeed():
+    """All compatibility functions return non-None."""
+    assert get_pauli_evolution_gate() is not None
+    assert get_lie_trotter() is not None
+    assert get_statevector() is not None
+    assert get_sparse_pauli_op() is not None
+
+
+def test_statevector_class_callable():
+    SV = get_statevector()
+    sv = SV.from_label("00")
+    assert len(sv) == 4
+
+
+def test_sparse_pauli_op_constructable():
+    SPO = get_sparse_pauli_op()
+    op = SPO.from_list([("ZZ", 1.0)])
+    assert op.num_qubits == 2

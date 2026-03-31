@@ -74,3 +74,36 @@ class TestParameterShiftGradient:
         actual_output = _quantum_forward(layer, vals)
         result = parameter_shift_gradient(layer, vals, actual_output)
         assert result.loss < 1e-10
+
+
+def test_gradient_shape_matches_params():
+    layer = QuantumDenseLayer(n_neurons=2, n_inputs=3)
+    vals = np.array([0.5, 0.3, 0.8])
+    target = np.array([0.7, 0.2])
+    result = parameter_shift_gradient(layer, vals, target)
+    assert len(result.grad_params) > 0
+    assert result.grad_params.ndim == 1
+
+
+def test_gradient_finite():
+    layer = QuantumDenseLayer(n_neurons=2, n_inputs=2)
+    vals = np.array([0.5, 0.5])
+    target = np.array([0.8, 0.2])
+    result = parameter_shift_gradient(layer, vals, target)
+    assert np.all(np.isfinite(result.grad_params))
+
+
+def test_loss_nonnegative():
+    layer = QuantumDenseLayer(n_neurons=2, n_inputs=2)
+    vals = np.array([0.5, 0.5])
+    target = np.array([0.5, 0.5])
+    result = parameter_shift_gradient(layer, vals, target)
+    assert result.loss >= 0
+
+
+def test_gradient_3x3():
+    layer = QuantumDenseLayer(n_neurons=3, n_inputs=3)
+    vals = np.array([0.1, 0.5, 0.9])
+    target = np.array([0.5, 0.5, 0.5])
+    result = parameter_shift_gradient(layer, vals, target)
+    assert len(result.grad_params) > 0

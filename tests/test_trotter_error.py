@@ -5,8 +5,9 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Tests for Trotter Error
-"""Tests for Trotter error analysis."""
+"""Tests for Trotter error analysis — elite multi-angle coverage."""
 
+import numpy as np
 import pytest
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
@@ -64,3 +65,32 @@ def test_sweep_returns_2d(small_system):
     assert len(result["errors"]) == 2
     assert len(result["errors"][0]) == 2
     assert all(e >= 0 for row in result["errors"] for e in row)
+
+
+def test_error_positive_at_nonzero_time(small_system):
+    K, omega = small_system
+    err = trotter_error_norm(K, omega, t=0.5, reps=1)
+    assert err > 0
+
+
+def test_sweep_t_values_in_result(small_system):
+    K, omega = small_system
+    result = trotter_error_sweep(K, omega, t_values=[0.1, 0.2, 0.3], reps_values=[1, 2])
+    assert len(result["errors"]) == 3
+    assert len(result["errors"][0]) == 2
+
+
+@pytest.mark.parametrize("n", [2, 3, 4])
+def test_error_norm_various_sizes(n):
+    K = build_knm_paper27(L=n)
+    omega = OMEGA_N_16[:n]
+    err = trotter_error_norm(K, omega, t=0.1, reps=2)
+    assert np.isfinite(err)
+    assert err >= 0
+
+
+def test_error_norm_high_reps_small(small_system):
+    """At very high reps, error should be very small."""
+    K, omega = small_system
+    err = trotter_error_norm(K, omega, t=0.1, reps=20)
+    assert err < 0.01

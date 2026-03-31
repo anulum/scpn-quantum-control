@@ -25,9 +25,10 @@ try:
 except (ImportError, AttributeError):
     _PL_OK = False
 
-pytestmark = pytest.mark.skipif(not _PL_OK, reason="PennyLane not available or broken")
+_SKIP_NO_PL = pytest.mark.skipif(not _PL_OK, reason="PennyLane not available or broken")
 
 
+@_SKIP_NO_PL
 class TestPennyLaneRunner:
     def test_trotter_returns_result(self):
         K = build_knm_paper27(L=3)
@@ -71,3 +72,47 @@ class TestPennyLaneRunner:
         runner = PennyLaneRunner(K, omega, device="default.qubit")
         result = runner.run_trotter(t=0.1, reps=1)
         assert result.device_name == "default.qubit"
+
+
+# ---------------------------------------------------------------------------
+# Tests that work WITHOUT PennyLane
+# ---------------------------------------------------------------------------
+
+
+class TestPennyLaneAvailability:
+    """These tests always run, regardless of PennyLane installation."""
+
+    def test_is_pennylane_available_returns_bool(self):
+        from scpn_quantum_control.hardware.pennylane_adapter import is_pennylane_available
+
+        assert isinstance(is_pennylane_available(), bool)
+
+    def test_module_importable(self):
+        from scpn_quantum_control.hardware import pennylane_adapter
+
+        assert hasattr(pennylane_adapter, "is_pennylane_available")
+        assert hasattr(pennylane_adapter, "PennyLaneRunner")
+        assert hasattr(pennylane_adapter, "PennyLaneResult")
+
+    def test_pennylane_result_dataclass(self):
+        from scpn_quantum_control.hardware.pennylane_adapter import PennyLaneResult
+
+        r = PennyLaneResult(
+            energy=-1.5,
+            order_parameter=0.8,
+            n_qubits=4,
+            device_name="sim",
+            statevector=np.zeros(16),
+        )
+        assert r.energy == -1.5
+        assert r.order_parameter == 0.8
+
+    def test_runner_raises_without_pennylane(self):
+        if _PL_OK:
+            pytest.skip("PennyLane is installed")
+        from scpn_quantum_control.hardware.pennylane_adapter import PennyLaneRunner
+
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        with pytest.raises(ImportError):
+            PennyLaneRunner(K, omega)

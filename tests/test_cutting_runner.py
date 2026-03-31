@@ -51,3 +51,24 @@ class TestCuttingRunner:
         print(f"  Combined R: {result.combined_r_global:.4f}")
         print(f"  Total energy: {result.total_energy_estimate:.4f}")
         assert result.n_oscillators == 24
+
+    def test_4_single_partition(self):
+        result = run_cutting_simulation(n_oscillators=4, reps=2, max_partition_size=8)
+        assert result.n_partitions == 1
+        assert result.n_oscillators == 4
+
+    def test_partition_r_globals_length(self):
+        result = run_cutting_simulation(n_oscillators=16, reps=1, max_partition_size=8)
+        assert len(result.partition_r_globals) == result.n_partitions
+
+    def test_energy_is_float(self):
+        result = run_cutting_simulation(n_oscillators=8, reps=1, max_partition_size=8)
+        assert isinstance(result.total_energy_estimate, float)
+        import numpy as np
+
+        assert np.isfinite(result.total_energy_estimate)
+
+    def test_32_four_partitions(self):
+        result = run_cutting_simulation(n_oscillators=32, reps=1, max_partition_size=8)
+        assert result.n_partitions == 4
+        assert result.partition_sizes == [8, 8, 8, 8]

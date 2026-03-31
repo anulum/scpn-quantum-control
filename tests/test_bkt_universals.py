@@ -56,3 +56,29 @@ class TestBKTUniversals:
             )
         print(f"  Best: {result.best_expression} = {result.best_value:.6f}")
         assert result.best_deviation < 0.1
+
+
+def test_all_candidates_have_expression():
+    result = check_all_candidates()
+    for c in result.candidates:
+        assert isinstance(c.expression, str)
+        assert len(c.expression) > 0
+
+
+def test_all_candidates_have_positive_value():
+    result = check_all_candidates()
+    for c in result.candidates:
+        assert c.value > 0
+
+
+def test_deviations_all_nonnegative():
+    result = check_all_candidates()
+    for c in result.candidates:
+        assert c.deviation >= 0
+
+
+def test_result_has_best_fields():
+    result = check_all_candidates()
+    assert hasattr(result, "best_value")
+    assert hasattr(result, "best_expression")
+    assert hasattr(result, "best_deviation")

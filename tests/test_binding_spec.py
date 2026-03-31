@@ -11,6 +11,7 @@ import numpy as np
 
 from scpn_quantum_control.identity.binding_spec import (
     ARCANE_SAPIENCE_SPEC,
+    ORCHESTRATOR_MAPPING,
     _build_knm_from_spec,
     build_identity_attractor,
     solve_identity,
@@ -72,3 +73,24 @@ def test_solve_identity_small():
     result = solve_identity(spec, maxiter=20, seed=0)
     assert "ground_energy" in result
     assert np.isfinite(result["ground_energy"])
+
+
+def test_arcane_sapience_spec_structure():
+    assert "layers" in ARCANE_SAPIENCE_SPEC
+    assert "coupling" in ARCANE_SAPIENCE_SPEC
+    assert len(ARCANE_SAPIENCE_SPEC["layers"]) > 0
+
+
+def test_orchestrator_mapping_nonempty():
+    assert len(ORCHESTRATOR_MAPPING) > 0
+
+
+def test_solve_identity_returns_dict():
+    result = solve_identity(maxiter=5, seed=0)
+    assert isinstance(result, dict)
+    assert "ground_energy" in result
+
+
+def test_build_attractor_custom_reps():
+    attractor = build_identity_attractor(ansatz_reps=2)
+    assert attractor is not None

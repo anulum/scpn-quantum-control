@@ -76,3 +76,33 @@ class TestCompareOTOCvsR:
         scan = otoc_sync_scan(K, omega, n_K_values=8, n_time_points=10, t_max=1.0)
         comparison = compare_otoc_vs_R(scan)
         assert isinstance(comparison["otoc_detects_transition"], bool)
+
+    def test_k_c_values_finite(self):
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        scan = otoc_sync_scan(K, omega, n_K_values=5, n_time_points=8, t_max=0.5)
+        comparison = compare_otoc_vs_R(scan)
+        assert np.isfinite(comparison["K_c_classical"])
+
+    def test_delta_k_c_nonnegative(self):
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        scan = otoc_sync_scan(K, omega, n_K_values=5, n_time_points=8, t_max=0.5)
+        comparison = compare_otoc_vs_R(scan)
+        assert comparison["delta_K_c"] >= 0
+
+
+class TestOTOCProperties:
+    def test_lyapunov_values_finite(self):
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        result = otoc_sync_scan(K, omega, n_K_values=3, n_time_points=5, t_max=0.5)
+        for v in result.lyapunov_values:
+            assert np.isfinite(v)
+
+    def test_R_classical_bounded(self):
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        result = otoc_sync_scan(K, omega, n_K_values=4, n_time_points=8, t_max=0.5)
+        for R in result.R_classical:
+            assert 0.0 <= R <= 1.0 + 1e-10

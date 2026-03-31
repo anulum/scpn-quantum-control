@@ -91,3 +91,35 @@ def test_statevector_simulation_deterministic():
     sv1 = sim.run(qc).result().get_statevector()
     sv2 = sim.run(qc).result().get_statevector()
     assert np.allclose(sv1, sv2)
+
+
+def test_knm_deterministic_repeat():
+    K1 = build_knm_paper27(L=8)
+    K2 = build_knm_paper27(L=8)
+    np.testing.assert_array_equal(K1, K2)
+
+
+def test_hamiltonian_deterministic_repeat():
+    from scpn_quantum_control.bridge import knm_to_hamiltonian
+
+    K = build_knm_paper27(L=4)
+    omega = OMEGA_N_16[:4]
+    H1 = knm_to_hamiltonian(K, omega).to_matrix()
+    H2 = knm_to_hamiltonian(K, omega).to_matrix()
+    np.testing.assert_array_equal(np.array(H1), np.array(H2))
+
+
+def test_vqe_seed_deterministic():
+    from scpn_quantum_control.phase.phase_vqe import PhaseVQE
+
+    K = build_knm_paper27(L=2)
+    omega = OMEGA_N_16[:2]
+    r1 = PhaseVQE(K, omega, ansatz_reps=1).solve(maxiter=10, seed=42)
+    r2 = PhaseVQE(K, omega, ansatz_reps=1).solve(maxiter=10, seed=42)
+    assert r1["ground_energy"] == r2["ground_energy"]
+
+
+def test_omega_immutable():
+    omega_copy = OMEGA_N_16.copy()
+    _ = build_knm_paper27(L=4)
+    np.testing.assert_array_equal(OMEGA_N_16, omega_copy)

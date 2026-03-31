@@ -73,3 +73,37 @@ def test_cpmg_adds_gates():
     ops = result.count_ops()
     assert ops.get("y", 0) >= 2
     assert ops.get("x", 0) >= 2
+
+
+def test_xy4_adds_expected_gates():
+    qc = QuantumCircuit(2)
+    qc.h(0)
+    result = insert_dd_sequence(qc, idle_qubits=[1], sequence=DDSequence.XY4)
+    ops = result.count_ops()
+    assert ops.get("x", 0) >= 2
+    assert ops.get("y", 0) >= 2
+
+
+def test_dd_preserves_active_qubit():
+    """Active qubit should keep its original gates."""
+    qc = QuantumCircuit(2)
+    qc.h(0)
+    qc.rz(0.5, 0)
+    result = insert_dd_sequence(qc, idle_qubits=[1])
+    ops = result.count_ops()
+    assert ops.get("h", 0) >= 1
+
+
+def test_dd_single_qubit_circuit():
+    qc = QuantumCircuit(1)
+    qc.h(0)
+    result = insert_dd_sequence(qc, idle_qubits=[])
+    assert result.num_qubits == 1
+
+
+def test_dd_3_idle_3_active():
+    qc = QuantumCircuit(6)
+    for i in range(3):
+        qc.h(i)
+    result = insert_dd_sequence(qc, idle_qubits=[3, 4, 5])
+    assert result.num_qubits == 6

@@ -5,8 +5,9 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Tests for Ansatz Bench
-"""Tests for ansatz benchmark."""
+"""Tests for ansatz benchmark — elite multi-angle coverage."""
 
+import numpy as np
 import pytest
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
@@ -55,3 +56,33 @@ def test_run_benchmark_returns_three():
     assert len(results) == 3
     names = {r["ansatz"] for r in results}
     assert names == {"knm_informed", "two_local", "efficient_su2"}
+
+
+def test_benchmark_result_keys(small_system):
+    K, omega = small_system
+    result = benchmark_ansatz(K, omega, "knm_informed", maxiter=10)
+    assert "energy" in result
+    assert "n_params" in result
+    assert "ansatz" in result
+
+
+def test_all_energies_finite(small_system):
+    K, omega = small_system
+    for name in ("knm_informed", "two_local", "efficient_su2"):
+        result = benchmark_ansatz(K, omega, name, maxiter=10)
+        assert np.isfinite(result["energy"])
+
+
+@pytest.mark.parametrize("n", [2, 3, 4])
+def test_run_benchmark_various_sizes(n):
+    results = run_ansatz_benchmark(n_qubits=n, maxiter=10)
+    assert len(results) == 3
+    for r in results:
+        assert np.isfinite(r["energy"])
+
+
+def test_knm_informed_negative_energy_2q():
+    K = build_knm_paper27(L=2)
+    omega = OMEGA_N_16[:2]
+    result = benchmark_ansatz(K, omega, "knm_informed", maxiter=30)
+    assert result["energy"] < 0

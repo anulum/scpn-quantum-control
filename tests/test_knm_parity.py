@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Tests for Knm Parity
-"""Cross-implementation parity tests for Knm definitions."""
+"""Cross-implementation parity tests for Knm definitions — elite multi-angle coverage."""
 
 from __future__ import annotations
 
@@ -123,3 +123,51 @@ def test_plasma_knm_from_config_bridge_parity_with_scpn_control() -> None:
     k_quantum = build_knm_plasma_from_config(repo_src=repo_src, **cfg)
     k_control = np.asarray(mod.build_knm_plasma_from_config(**cfg).K, dtype=np.float64)
     np.testing.assert_allclose(k_quantum, k_control, atol=1e-12)
+
+
+# ---------------------------------------------------------------------------
+# Self-contained Knm property tests (no external repos needed)
+# ---------------------------------------------------------------------------
+
+
+class TestKnmSelfContainedProperties:
+    """Knm invariants that must hold regardless of external implementations."""
+
+    def test_knm_paper27_symmetric(self):
+        for L in (4, 8, 16):
+            K = build_knm_paper27(L=L)
+            np.testing.assert_allclose(K, K.T, atol=1e-12)
+
+    def test_knm_paper27_non_negative(self):
+        for L in (4, 8, 16):
+            K = build_knm_paper27(L=L)
+            assert np.all(K >= 0)
+
+    def test_knm_paper27_shape(self):
+        for L in (2, 4, 8, 16):
+            K = build_knm_paper27(L=L)
+            assert K.shape == (L, L)
+
+    def test_omega_n_16_length(self):
+        assert len(OMEGA_N_16) == 16
+
+    def test_omega_n_16_finite(self):
+        assert np.all(np.isfinite(OMEGA_N_16))
+
+    def test_omega_n_16_positive(self):
+        assert np.all(OMEGA_N_16 > 0)
+
+    @pytest.mark.parametrize("L", [4, 8, 16])
+    def test_knm_exponential_decay(self, L):
+        """Coupling decays with distance: K[0,1] > K[0,L//2]."""
+        K = build_knm_paper27(L=L)
+        assert K[0, 1] > K[0, L // 2]
+
+    def test_knm_deterministic(self):
+        K1 = build_knm_paper27(L=8)
+        K2 = build_knm_paper27(L=8)
+        np.testing.assert_array_equal(K1, K2)
+
+    def test_knm_dtype_float64(self):
+        K = build_knm_paper27(L=4)
+        assert K.dtype == np.float64

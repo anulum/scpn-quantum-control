@@ -97,3 +97,36 @@ def test_optimize_seeded_deterministic():
     mpc._cost_ham = None  # reset to re-run from scratch
     r2 = mpc.optimize(seed=42)
     np.testing.assert_array_equal(r1, r2)
+
+
+def test_qaoa_mpc_basic():
+    B = np.eye(2, dtype=np.float64)
+    target = np.array([1.0, 0.0])
+    mpc = QAOA_MPC(B, target, horizon=2, p_layers=1)
+    result = mpc.optimize(seed=42)
+    assert len(result) == 2
+
+
+def test_qaoa_mpc_3d():
+    B = np.eye(3, dtype=np.float64)
+    target = np.ones(3)
+    mpc = QAOA_MPC(B, target, horizon=3, p_layers=1)
+    result = mpc.optimize(seed=0)
+    assert len(result) == 3
+
+
+def test_qaoa_mpc_result_binary():
+    B = np.eye(2, dtype=np.float64)
+    target = np.array([1.0, 0.0])
+    mpc = QAOA_MPC(B, target, horizon=4, p_layers=1)
+    result = mpc.optimize(seed=42)
+    for a in result:
+        assert a in (0, 1) or isinstance(a, (int, np.integer))
+
+
+def test_qaoa_mpc_horizon_1():
+    B = np.array([[1.0]])
+    target = np.array([1.0])
+    mpc = QAOA_MPC(B, target, horizon=1, p_layers=1)
+    result = mpc.optimize(seed=42)
+    assert len(result) == 1

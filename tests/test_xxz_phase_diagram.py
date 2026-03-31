@@ -95,3 +95,35 @@ class TestAnisotropyPhaseDiagram:
         )
         for scan in result.scans:
             assert np.all(scan.gaps > 0)
+
+    def test_delta_values_match_input(self):
+        n = 3
+        T = _ring(n)
+        omega = OMEGA_N_16[:n]
+        deltas = np.array([0.0, 0.5, 1.0])
+        result = anisotropy_phase_diagram(
+            omega, T, delta_range=deltas, k_range=np.array([1.0, 2.0])
+        )
+        np.testing.assert_array_equal(result.delta_values, deltas)
+
+
+class TestScanGapProperties:
+    def test_gap_finite(self):
+        T = _ring(3)
+        omega = OMEGA_N_16[:3]
+        result = scan_coupling_at_delta(omega, T, delta=0.0, k_range=np.linspace(0.5, 3.0, 5))
+        assert np.all(np.isfinite(result.gaps))
+
+    def test_2osc_scan(self):
+        T = _ring(2)
+        omega = OMEGA_N_16[:2]
+        result = scan_coupling_at_delta(omega, T, delta=0.0, k_range=np.array([1.0, 2.0]))
+        assert len(result.gaps) == 2
+
+    def test_heisenberg_delta_one(self):
+        """At delta=1, Hamiltonian is Heisenberg XXX."""
+        T = _ring(3)
+        omega = OMEGA_N_16[:3]
+        result = scan_coupling_at_delta(omega, T, delta=1.0, k_range=np.linspace(0.5, 3.0, 4))
+        assert result.delta == 1.0
+        assert len(result.gaps) == 4

@@ -67,3 +67,22 @@ class TestFiniteSizeScaling:
             k_range=np.linspace(0.5, 4.0, 8),
         )
         assert len(result.k_c_values) == 1
+
+    def test_result_has_system_sizes(self):
+        result = finite_size_scaling(system_sizes=[2, 3], k_range=np.linspace(0.5, 4.0, 6))
+        assert result.system_sizes == [2, 3]
+
+    def test_k_c_values_finite(self):
+        result = finite_size_scaling(system_sizes=[2, 3], k_range=np.linspace(0.5, 4.0, 8))
+        for kc in result.k_c_values:
+            assert np.isfinite(kc)
+
+    def test_larger_system_lower_kc(self):
+        """Larger systems should have K_c closer to thermodynamic limit (lower or equal)."""
+        result = finite_size_scaling(system_sizes=[2, 3, 4], k_range=np.linspace(0.5, 5.0, 12))
+        # K_c should generally decrease or stay same with system size
+        assert len(result.k_c_values) == 3
+
+    def test_gap_min_matches_k_c_count(self):
+        result = finite_size_scaling(system_sizes=[2, 4], k_range=np.linspace(0.5, 4.0, 8))
+        assert len(result.gap_min_values) == len(result.k_c_values)

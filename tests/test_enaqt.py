@@ -70,3 +70,32 @@ class TestENAQT:
         print(f"  Coherent R = {result.coherent_r:.4f}")
         print(f"  Enhancement = {result.enhancement:.2f}x")
         assert isinstance(result.optimal_gamma, float)
+
+
+def test_enaqt_coherent_r_positive():
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    result = enaqt_scan(K, omega, gamma_range=np.array([0.0, 0.5]), n_steps=5)
+    assert result.coherent_r >= 0
+
+
+def test_enaqt_r_values_bounded():
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    result = enaqt_scan(K, omega, gamma_range=np.linspace(0.01, 2.0, 5), n_steps=5)
+    for r in result.r_values:
+        assert 0 <= r <= 1.0 + 1e-10
+
+
+def test_enaqt_optimal_gamma_positive():
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    result = enaqt_scan(K, omega, gamma_range=np.logspace(-2, 1, 5), n_steps=5)
+    assert result.optimal_gamma >= 0
+
+
+def test_enaqt_enhancement_finite():
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    result = enaqt_scan(K, omega, gamma_range=np.logspace(-2, 1, 5), n_steps=5)
+    assert np.isfinite(result.enhancement)

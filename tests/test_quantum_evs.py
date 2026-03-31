@@ -52,3 +52,27 @@ class TestQuantumEVS:
         features = np.array([0.5, -0.3, 0.8])
         result = quantum_evs_enhance(features, n_osc=4)
         np.testing.assert_allclose(result.classical_features, features)
+
+
+def test_quantum_evs_2_features():
+    features = np.array([0.5, 0.3])
+    result = quantum_evs_enhance(features, n_osc=3)
+    assert len(result.quantum_features) > 0
+
+
+def test_quantum_evs_single_feature():
+    features = np.array([0.7])
+    result = quantum_evs_enhance(features, n_osc=2)
+    assert np.isfinite(result.enhancement_factor)
+
+
+def test_quantum_evs_zero_features():
+    features = np.zeros(3)
+    result = quantum_evs_enhance(features, n_osc=4)
+    assert np.all(np.isfinite(result.quantum_features))
+
+
+def test_quantum_evs_negative_features():
+    features = np.array([-0.5, 0.3, -0.8])
+    result = quantum_evs_enhance(features, n_osc=4)
+    np.testing.assert_allclose(result.classical_features, features)
