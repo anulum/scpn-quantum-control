@@ -104,3 +104,63 @@ class TestBerryPhaseScan:
         result = berry_phase_scan(omega, T, k_range=np.linspace(1.0, 3.0, 10))
         assert np.all(np.isfinite(result.berry_connection))
         assert np.all(np.isfinite(result.berry_curvature))
+
+
+# ---------------------------------------------------------------------------
+# Berry phase physics: gauge invariance and topological invariants
+# ---------------------------------------------------------------------------
+
+
+class TestBerryPhasePhysics:
+    def test_fidelity_bounded_0_1(self):
+        """Fidelity |<ψ(K)|ψ(K+dK)>|² must be in [0, 1]."""
+        n = 3
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+        result = berry_phase_scan(omega, T, k_range=np.linspace(0.5, 4.0, 8))
+        assert np.all(result.fidelity >= -1e-10)
+        assert np.all(result.fidelity <= 1.0 + 1e-10)
+
+    def test_spectral_gap_positive(self):
+        """Energy gap E_1 - E_0 > 0 (non-degenerate ground state)."""
+        n = 3
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+        result = berry_phase_scan(omega, T, k_range=np.linspace(0.5, 5.0, 6))
+        assert np.all(np.array(result.spectral_gap) > 0)
+
+    def test_berry_curvature_finite(self):
+        n = 2
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+        result = berry_phase_scan(omega, T, k_range=np.linspace(1.0, 3.0, 5))
+        assert np.all(np.isfinite(result.berry_curvature))
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → Berry phase → curvature peak → wired
+# ---------------------------------------------------------------------------
+
+
+class TestBerryPipeline:
+    def test_pipeline_knm_to_berry_curvature(self):
+        """Full pipeline: Knm topology → Berry phase scan → curvature → peak K_c.
+        Verifies Berry phase module is wired and produces topological data.
+        """
+        import time
+
+        from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
+
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+
+        t0 = time.perf_counter()
+        result = berry_phase_scan(omega, K, k_range=np.linspace(0.5, 5.0, 10))
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert len(result.berry_curvature) > 0
+        assert np.all(np.isfinite(result.fidelity_susceptibility))
+
+        print(f"\n  PIPELINE Knm→BerryPhase (3q, 10 K points): {dt:.1f} ms")
+        print(f"  Curvature peak K = {result.curvature_peak_k}")
+        print(f"  Max χ_F = {np.max(result.fidelity_susceptibility):.6f}")
