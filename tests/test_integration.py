@@ -201,3 +201,46 @@ def test_quantum_and_classical_same_ground_energy():
     exact = classical_exact_diag(2, K=K, omega=omega)
     # VQE should be within 5% of exact
     assert result["ground_energy"] <= exact["ground_energy"] * 0.95 + 0.5
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: full integration quantum ↔ classical ↔ mitigation
+# ---------------------------------------------------------------------------
+
+
+def test_pipeline_full_integration():
+    """Full integration pipeline: Knm → quantum Trotter → ZNE → classical comparison.
+    Verifies all three subsystems (quantum, classical, mitigation) are wired together.
+    """
+    import time
+
+    n = 3
+    K = build_knm_paper27(L=n)
+    omega = OMEGA_N_16[:n]
+
+    t0 = time.perf_counter()
+    # Quantum path
+    solver = QuantumKuramotoSolver(n, K, omega)
+    q_result = solver.run(t_max=0.2, dt=0.1, trotter_per_step=5)
+    # Classical path
+    c_result = classical_exact_evolution(n, 0.2, 0.1, K, omega)
+    # ZNE path
+    qc = solver.evolve(0.1, trotter_steps=2)
+    R_values = []
+    for s in [1, 3]:
+        folded = gate_fold_circuit(qc, s)
+        from qiskit.quantum_info import Statevector
+
+        sv = Statevector.from_instruction(folded)
+        R, _ = solver.measure_order_parameter(sv)
+        R_values.append(R)
+    zne = zne_extrapolate([1, 3], R_values, order=1)
+    dt = (time.perf_counter() - t0) * 1000
+
+    assert len(q_result["R"]) > 0
+    assert len(c_result["R"]) > 0
+    assert np.isfinite(zne.zero_noise_estimate)
+
+    print(f"\n  PIPELINE full integration (3q): {dt:.1f} ms")
+    print(f"  Q_R={q_result['R'][-1]:.4f}, C_R={c_result['R'][-1]:.4f}")
+    print(f"  ZNE_R={zne.zero_noise_estimate:.4f}")
