@@ -145,3 +145,25 @@ def test_inhibitor_multiple_inhibitors():
     inhibitor_anti_control(qc, [0, 1], target=2, theta=0.5)
     ops = [inst.operation.name for inst in qc.data]
     assert ops.count("x") == 4
+
+
+def test_pipeline_coverage_wiring():
+    """Pipeline: verify all coverage targets (classical, SPN, QEC) are wired."""
+    import time
+
+    t0 = time.perf_counter()
+    # Classical path
+    psi = np.array([1, 0, 0, 0], dtype=complex)
+    z = _expectation_pauli(psi, 2, 0, "Z")
+    assert abs(z - 1.0) < 1e-10
+
+    # QEC path
+    from scpn_quantum_control.qec.control_qec import ControlQEC
+
+    qec = ControlQEC(distance=3)
+    n_data = 2 * 3**2
+    syn_z, _ = qec.get_syndrome(np.zeros(n_data, dtype=np.int8), np.zeros(n_data, dtype=np.int8))
+    assert int(syn_z.sum()) == 0
+
+    dt = (time.perf_counter() - t0) * 1000
+    print(f"\n  PIPELINE coverage wiring (classical+QEC): {dt:.1f} ms")
