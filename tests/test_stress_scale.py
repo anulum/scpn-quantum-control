@@ -114,3 +114,58 @@ def test_ansatz_params_scale_linearly():
         for reps in (1, 2):
             qc = knm_to_ansatz(K, reps=reps)
             assert qc.num_parameters == 2 * L * reps
+
+
+# ---------------------------------------------------------------------------
+# Stress scale physics: spectrum grows with system size
+# ---------------------------------------------------------------------------
+
+
+def test_ground_energy_decreases_with_size():
+    """Larger systems → more negative ground energy (more coupling terms)."""
+    energies = []
+    for L in [2, 4, 8]:
+        K = build_knm_paper27(L=L)
+        omega = OMEGA_N_16[:L]
+        H = knm_to_hamiltonian(K, omega)
+        mat = H.to_matrix()
+        if hasattr(mat, "toarray"):
+            mat = mat.toarray()
+        energies.append(np.linalg.eigvalsh(mat)[0])
+    assert energies[0] > energies[1] > energies[2]
+
+
+def test_16q_hamiltonian_hermitian():
+    """16-qubit Hamiltonian must be Hermitian (Pauli structure)."""
+    K = build_knm_paper27(L=16)
+    omega = OMEGA_N_16
+    H = knm_to_hamiltonian(K, omega)
+    # SparsePauliOp is always Hermitian by construction — verify via coefficients
+    assert np.all(np.isreal(H.coeffs))
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: stress test → wired at scale
+# ---------------------------------------------------------------------------
+
+
+def test_pipeline_stress_16q():
+    """Full pipeline: 16-qubit Knm → Hamiltonian → Pauli structure.
+    Verifies the system compiles at full SCPN scale.
+    """
+    import time
+
+    K = build_knm_paper27(L=16)
+    omega = OMEGA_N_16
+
+    t0 = time.perf_counter()
+    H = knm_to_hamiltonian(K, omega)
+    ansatz = knm_to_ansatz(K, reps=1)
+    dt = (time.perf_counter() - t0) * 1000
+
+    assert H.num_qubits == 16
+    assert ansatz.num_qubits == 16
+    assert ansatz.num_parameters == 32
+
+    print(f"\n  PIPELINE 16q stress test: {dt:.1f} ms")
+    print(f"  H terms: {len(H.paulis)}, ansatz params: {ansatz.num_parameters}")
