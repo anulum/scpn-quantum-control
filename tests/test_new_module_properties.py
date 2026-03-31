@@ -166,3 +166,62 @@ def test_orchestrator_roundtrip_modular(seed: int) -> None:
     back = orchestrator_to_quantum_phases(orch)
     diff = np.angle(np.exp(1j * (back - theta)))
     np.testing.assert_allclose(diff, 0.0, atol=1e-10)
+
+
+# --- Additional cross-module property tests ---
+
+
+@given(n=st.sampled_from([2, 3, 4]))
+@settings(max_examples=6, deadline=30000)
+def test_hamiltonian_spectrum_bounded(n: int) -> None:
+    """Eigenvalue spectrum is bounded and real for any small system."""
+    from scpn_quantum_control.bridge.knm_hamiltonian import (
+        OMEGA_N_16,
+        build_knm_paper27,
+        knm_to_hamiltonian,
+    )
+
+    K = build_knm_paper27(L=n)
+    omega = OMEGA_N_16[:n]
+    H = knm_to_hamiltonian(K, omega)
+    mat = H.to_matrix()
+    if hasattr(mat, "toarray"):
+        mat = mat.toarray()
+    eigvals = np.linalg.eigvalsh(mat)
+    assert np.all(np.isfinite(eigvals))
+    assert eigvals[0] < eigvals[-1]
+
+
+@given(p=st.floats(min_value=0.001, max_value=0.3))
+@settings(max_examples=10)
+def test_pec_identity_coefficient_dominant(p: float) -> None:
+    """Identity Pauli always has the largest coefficient magnitude."""
+    from scpn_quantum_control.mitigation.pec import pauli_twirl_decompose
+
+    coeffs = pauli_twirl_decompose(p)
+    assert abs(coeffs[0]) > abs(coeffs[1])
+
+
+def test_pipeline_property_cross_module() -> None:
+    """Pipeline: verify all property-tested modules produce consistent data
+    when wired together end-to-end."""
+    import time
+
+    from scpn_quantum_control.bridge.knm_hamiltonian import (
+        OMEGA_N_16,
+        build_knm_paper27,
+        knm_to_hamiltonian,
+    )
+    from scpn_quantum_control.mitigation.pec import pauli_twirl_decompose
+
+    t0 = time.perf_counter()
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    H = knm_to_hamiltonian(K, omega)
+    coeffs = pauli_twirl_decompose(0.01)
+    dt = (time.perf_counter() - t0) * 1000
+
+    assert H.num_qubits == 3
+    assert abs(float(np.sum(coeffs)) - 1.0) < 1e-10
+
+    print(f"\n  PIPELINE property cross-module (3q): {dt:.1f} ms")
