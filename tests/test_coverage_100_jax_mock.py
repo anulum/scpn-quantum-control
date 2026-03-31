@@ -203,3 +203,36 @@ def test_entanglement_scan_jax(mock_jax, monkeypatch):
     assert "schmidt_gap" in result
     assert "spectral_gap" in result
     assert len(result["k_values"]) == 2
+
+
+# ---------------------------------------------------------------------------
+# JAX accel physics: Hamiltonian structure
+# ---------------------------------------------------------------------------
+
+
+def test_jax_hamiltonian_hermitian(mock_jax):
+    """JAX-built H must be Hermitian (real symmetric for XY model)."""
+    K = _FakeJnpArray(np.array([[0, 0.3, 0.1], [0.3, 0, 0.2], [0.1, 0.2, 0]]))
+    omega = _FakeJnpArray(np.array([1.0, 1.5, 2.0]))
+    H = jax_mod._build_xy_hamiltonian_jax(K, omega, 3)
+    np.testing.assert_allclose(H, H.T, atol=1e-12)
+
+
+def test_jax_hamiltonian_traceless(mock_jax):
+    """XY Hamiltonian should be traceless (all Pauli terms)."""
+    K = _FakeJnpArray(np.array([[0, 0.5], [0.5, 0]]))
+    omega = _FakeJnpArray(np.array([1.0, 2.0]))
+    H = jax_mod._build_xy_hamiltonian_jax(K, omega, 2)
+    assert abs(np.trace(H)) < 1e-8
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: JAX fallback behaviour
+# ---------------------------------------------------------------------------
+
+
+def test_jax_unavailable_fallback(monkeypatch):
+    """When JAX unavailable, is_jax_available returns False."""
+    monkeypatch.setattr(jax_mod, "_JAX_AVAILABLE", False)
+    assert jax_mod.is_jax_available() is False
+    assert jax_mod.is_jax_gpu_available() is False
