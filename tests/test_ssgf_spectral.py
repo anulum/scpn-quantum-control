@@ -77,3 +77,62 @@ class TestSpectralBridgeAnalysis:
         assert result.fiedler_value >= 0
         assert result.qpe_bits_needed >= 1
         assert len(result.laplacian_spectrum) == 3
+
+
+# ---------------------------------------------------------------------------
+# Spectral graph theory invariants
+# ---------------------------------------------------------------------------
+
+
+class TestSpectralInvariants:
+    def test_fiedler_positive_for_connected(self):
+        """Fiedler value (λ_2) > 0 iff graph is connected."""
+        K, omega = _small_system()
+        result = spectral_bridge_analysis(K, omega)
+        # paper27 coupling is fully connected → fiedler > 0
+        assert result.fiedler_value > 0
+
+    def test_laplacian_eigenvalues_nonnegative(self):
+        """All Laplacian eigenvalues must be ≥ 0 (positive semi-definite)."""
+        K, _ = _small_system()
+        spec = laplacian_spectrum(K)
+        assert np.all(np.array(spec) >= -1e-10)
+
+    def test_laplacian_trace_positive(self):
+        """tr(L) > 0 for non-trivial coupling (sum of eigenvalues)."""
+        K, _ = _small_system()
+        spec = laplacian_spectrum(K)
+        assert np.sum(spec) > 0
+
+    def test_zero_coupling_fiedler_zero(self):
+        """Disconnected graph → fiedler = 0."""
+        K_zero = np.zeros((3, 3))
+        omega = OMEGA_N_16[:3]
+        result = spectral_bridge_analysis(K_zero, omega)
+        assert result.fiedler_value < 1e-10
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → spectral analysis → QPE estimate → wired
+# ---------------------------------------------------------------------------
+
+
+class TestSpectralPipeline:
+    def test_pipeline_knm_to_qpe(self):
+        """Full pipeline: build_knm → spectral analysis → QPE resource estimate.
+        Not decorative — produces actionable QPE circuit parameters.
+        """
+        import time
+
+        K = build_knm_paper27(L=4)
+        omega = OMEGA_N_16[:4]
+
+        t0 = time.perf_counter()
+        result = spectral_bridge_analysis(K, omega)
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert result.fiedler_value > 0
+        assert result.qpe_bits_needed >= 1
+        print(f"\n  PIPELINE Knm→Spectral→QPE (4 osc): {dt:.1f} ms")
+        print(f"  Fiedler = {result.fiedler_value:.4f}")
+        print(f"  QPE bits = {result.qpe_bits_needed}")
