@@ -87,12 +87,14 @@ def test_orchestrator_mapping_nonempty():
     assert len(ORCHESTRATOR_MAPPING) > 0
 
 
+@pytest.mark.slow
 def test_solve_identity_returns_dict():
     result = solve_identity(maxiter=5, seed=0)
     assert isinstance(result, dict)
     assert "ground_energy" in result
 
 
+@pytest.mark.slow
 def test_build_attractor_custom_reps():
     attractor = build_identity_attractor(ansatz_reps=2)
     assert attractor is not None
