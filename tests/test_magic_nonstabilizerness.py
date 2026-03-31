@@ -83,3 +83,47 @@ class TestMagicVsCoupling:
         omega = OMEGA_N_16[:3]
         result = magic_vs_coupling(omega, T, k_range=np.linspace(0.1, 5.0, 8))
         assert result.peak_magic > 0
+
+
+# ---------------------------------------------------------------------------
+# Physical invariants
+# ---------------------------------------------------------------------------
+
+
+class TestMagicInvariants:
+    def test_sre_all_finite(self):
+        T = _ring(3)
+        omega = OMEGA_N_16[:3]
+        result = magic_vs_coupling(omega, T, k_range=np.linspace(0.5, 4.0, 5))
+        assert np.all(np.isfinite(result.sre_m2))
+
+    def test_k_values_match_input(self):
+        T = _ring(2)
+        omega = OMEGA_N_16[:2]
+        k_range = np.array([1.0, 2.0, 3.0])
+        result = magic_vs_coupling(omega, T, k_range=k_range)
+        np.testing.assert_array_equal(result.k_values, k_range)
+
+    def test_peak_magic_at_valid_k(self):
+        T = _ring(3)
+        omega = OMEGA_N_16[:3]
+        k_range = np.linspace(0.5, 5.0, 6)
+        result = magic_vs_coupling(omega, T, k_range=k_range)
+        assert result.peak_K in k_range
+
+
+# ---------------------------------------------------------------------------
+# Pipeline wiring
+# ---------------------------------------------------------------------------
+
+
+class TestMagicPipeline:
+    def test_knm_to_magic(self):
+        """Pipeline: build_knm_paper27 → magic_at_coupling → SRE."""
+        from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
+
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        result = magic_at_coupling(omega, K, K_base=2.0)
+        assert isinstance(result, MagicResult)
+        assert result.sre_m2 >= 0
