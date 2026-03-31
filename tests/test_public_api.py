@@ -70,3 +70,44 @@ def test_no_private_in_all():
         if hasattr(mod, "__all__"):
             private = [n for n in mod.__all__ if n.startswith("_")]
             assert not private, f"{submod_name}.__all__ has private names: {private}"
+
+
+# ---------------------------------------------------------------------------
+# Top-level __all__ completeness
+# ---------------------------------------------------------------------------
+
+
+def test_top_level_all_nonempty():
+    import scpn_quantum_control
+
+    assert len(scpn_quantum_control.__all__) > 50
+
+
+def test_top_level_all_no_duplicates():
+    import scpn_quantum_control
+
+    names = scpn_quantum_control.__all__
+    assert len(names) == len(set(names))
+
+
+def test_qec_exports():
+    """qec.__all__ exports are importable and typed."""
+    _check_exports("qec")
+
+
+def test_all_submodules_importable():
+    """Every known subpackage imports without error."""
+    for submod in [
+        "bridge",
+        "phase",
+        "control",
+        "qsnn",
+        "mitigation",
+        "hardware",
+        "qec",
+        "analysis",
+        "identity",
+        "crypto",
+    ]:
+        mod = __import__(f"scpn_quantum_control.{submod}")
+        assert mod is not None
