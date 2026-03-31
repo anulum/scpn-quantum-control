@@ -119,3 +119,55 @@ class TestQFIVsCoupling:
         result = qfi_vs_coupling(omega, T, k_range=np.array([1.0, 3.0]))
         assert result.peak_qfi > 0
         assert len(result.total_qfi) == 2
+
+
+# ---------------------------------------------------------------------------
+# QFI physics: multipartite entanglement witness
+# ---------------------------------------------------------------------------
+
+
+class TestQFIPhysics:
+    def test_qfi_nonnegative(self):
+        """QFI ≥ 0 always (it's a Fisher information)."""
+        n = 3
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+        result = qfi_vs_coupling(omega, T, k_range=np.linspace(0.5, 4.0, 5))
+        assert np.all(np.array(result.max_qfi) >= -1e-10)
+
+    def test_total_qfi_geq_max_qfi(self):
+        """Total QFI ≥ max single-generator QFI."""
+        n = 3
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+        result = qfi_vs_coupling(omega, T, k_range=np.array([2.0, 4.0]))
+        for mq, tq in zip(result.max_qfi, result.total_qfi):
+            assert tq >= mq - 1e-10
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → QFI scan → peak → wired
+# ---------------------------------------------------------------------------
+
+
+class TestQFIPipeline:
+    def test_pipeline_knm_to_qfi(self):
+        """Full pipeline: build_knm → QFI scan → peak detection.
+        Verifies QFI module is wired end-to-end, not decorative.
+        """
+        import time
+
+        from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
+
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+
+        t0 = time.perf_counter()
+        result = qfi_vs_coupling(omega, K, k_range=np.linspace(0.5, 5.0, 8))
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert result.peak_qfi > 0
+        assert result.peak_k > 0
+
+        print(f"\n  PIPELINE Knm→QFI (3q, 8 K values): {dt:.1f} ms")
+        print(f"  Peak QFI = {result.peak_qfi:.4f} at K = {result.peak_k:.2f}")
