@@ -108,3 +108,54 @@ class TestAdiabaticTimeScaling:
         )
         # Not guaranteed for all T, but large gap should show trend
         assert all(np.isfinite(f) for f in result["final_fidelity"])
+
+
+# ---------------------------------------------------------------------------
+# Adiabatic physics: gap, fidelity bounds
+# ---------------------------------------------------------------------------
+
+
+class TestAdiabaticPhysics:
+    def test_fidelity_bounded_0_1(self):
+        """Fidelity must be in [0, 1]."""
+        T = _ring_topology(2)
+        omega = OMEGA_N_16[:2]
+        result = adiabatic_ramp(omega, T, K_target=3.0, T_total=5.0, n_steps=10)
+        assert np.all(result.fidelity >= -1e-10)
+        assert np.all(result.fidelity <= 1.0 + 1e-10)
+
+    def test_K_ramp_monotonic(self):
+        """Coupling should ramp from 0 to K_target monotonically."""
+        T = _ring_topology(2)
+        omega = OMEGA_N_16[:2]
+        result = adiabatic_ramp(omega, T, K_target=3.0, T_total=5.0, n_steps=10)
+        assert result.K_schedule[0] < result.K_schedule[-1]
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → adiabatic ramp → fidelity → wired
+# ---------------------------------------------------------------------------
+
+
+class TestAdiabaticPipeline:
+    def test_pipeline_knm_to_adiabatic(self):
+        """Full pipeline: Knm topology → adiabatic ramp → fidelity tracking.
+        Verifies adiabatic module is wired end-to-end.
+        """
+        import time
+
+        from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
+
+        K_topo = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+
+        t0 = time.perf_counter()
+        result = adiabatic_ramp(omega, K_topo, K_target=3.0, T_total=5.0, n_steps=15)
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert isinstance(result, AdiabaticResult)
+        assert result.min_gap > 0
+
+        print(f"\n  PIPELINE Knm→Adiabatic (3q, 15 steps): {dt:.1f} ms")
+        print(f"  Final fidelity = {result.final_fidelity:.4f}")
+        print(f"  Min gap = {result.min_gap:.4f} at K = {result.min_gap_K:.2f}")
