@@ -18,7 +18,7 @@ pre-commit==4.2.0
 build==1.4.2
 # Docs
 mkdocs==1.6.1
-mkdocs-material==9.7.3
+mkdocs-material==9.7.6
 pymdown-extensions==10.21.2
 mkdocstrings[python]==1.0.3
 # IBM hardware
