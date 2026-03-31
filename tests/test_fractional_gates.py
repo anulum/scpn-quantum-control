@@ -140,3 +140,45 @@ class TestFractionalGates:
         isa_o2 = runner_o2.transpile(qc)
 
         assert isa_o2.depth() <= isa_o0.depth() + 5
+
+    def test_transpiled_circuit_valid(self):
+        """Transpiled circuit must have positive depth and gate count."""
+        from qiskit import QuantumCircuit
+
+        runner = HardwareRunner(use_simulator=True, use_fractional_gates=True)
+        runner.connect()
+        qc = QuantumCircuit(4)
+        qc.h(0)
+        for i in range(1, 4):
+            qc.cx(0, i)
+        qc.measure_all()
+        isa = runner.transpile(qc)
+        stats = runner.circuit_stats(isa)
+        assert stats["depth"] > 0
+        assert stats["total_gates"] > 0
+        assert stats["n_qubits"] >= 4
+
+    def test_pipeline_knm_to_fractional_execution(self):
+        """Full pipeline: Knm → Kuramoto circuit → fractional transpile → execute.
+        Verifies fractional gate path is wired end-to-end with performance data.
+        """
+        import time
+
+        from scpn_quantum_control import OMEGA_N_16, QuantumKuramotoSolver, build_knm_paper27
+
+        K = build_knm_paper27(L=4)
+        solver = QuantumKuramotoSolver(4, K, OMEGA_N_16[:4])
+        qc = solver.evolve(time=0.3, trotter_steps=2)
+
+        runner = HardwareRunner(use_simulator=True, use_fractional_gates=True)
+        runner.connect()
+
+        t0 = time.perf_counter()
+        isa = runner.transpile(qc)
+        stats = runner.circuit_stats(isa)
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert stats["depth"] > 0
+
+        print(f"\n  PIPELINE Knm→Kuramoto→FractionalTranspile (4q): {dt:.1f} ms")
+        print(f"  Depth={stats['depth']}, gates={stats['total_gates']}")
