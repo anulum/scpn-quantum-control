@@ -60,3 +60,37 @@ def test_default_weights_seeded_deterministic():
     layer1 = QuantumDenseLayer(n_neurons=2, n_inputs=2, seed=42)
     layer2 = QuantumDenseLayer(n_neurons=2, n_inputs=2, seed=42)
     np.testing.assert_array_equal(layer1.get_weights(), layer2.get_weights())
+
+
+def test_different_seeds_different_weights():
+    layer1 = QuantumDenseLayer(n_neurons=2, n_inputs=2, seed=1)
+    layer2 = QuantumDenseLayer(n_neurons=2, n_inputs=2, seed=999)
+    assert not np.array_equal(layer1.get_weights(), layer2.get_weights())
+
+
+def test_forward_binary_output():
+    """Forward output must be strictly 0 or 1."""
+    layer = QuantumDenseLayer(n_neurons=3, n_inputs=2, seed=42)
+    for _ in range(5):
+        out = layer.forward(np.array([0.5, 0.5]))
+        assert set(np.unique(out)).issubset({0, 1})
+
+
+def test_n_qubits_formula():
+    """n_qubits = n_neurons + n_inputs."""
+    for n, m in [(2, 3), (4, 2), (1, 5)]:
+        layer = QuantumDenseLayer(n_neurons=n, n_inputs=m)
+        assert layer.n_qubits == n + m
+
+
+def test_high_weight_high_fire_rate():
+    """Neurons with weight=1 and input=1 should fire more than weight=0."""
+    layer_high = QuantumDenseLayer(
+        n_neurons=1, n_inputs=1, weights=np.array([[1.0]]), spike_threshold=0.3
+    )
+    layer_low = QuantumDenseLayer(
+        n_neurons=1, n_inputs=1, weights=np.array([[0.01]]), spike_threshold=0.3
+    )
+    fires_high = sum(layer_high.forward(np.array([1.0]))[0] for _ in range(20))
+    fires_low = sum(layer_low.forward(np.array([1.0]))[0] for _ in range(20))
+    assert fires_high >= fires_low
