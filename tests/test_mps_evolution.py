@@ -80,3 +80,54 @@ class TestTEBD:
     def test_tebd_bond_dims(self):
         result = tebd_evolution(self.K, self.omega, t_max=0.2, dt=0.05, bond_dim=16)
         assert len(result["bond_dims_final"]) == self.n - 1
+
+
+# ---------------------------------------------------------------------------
+# MPS physics: bond dimension and entanglement
+# ---------------------------------------------------------------------------
+
+
+class TestMPSPhysics:
+    def test_higher_bond_dim_lower_energy(self):
+        """More bond dim → better variational energy (more entanglement captured)."""
+        n = 4
+        K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
+        omega = np.linspace(0.8, 1.2, n)
+        r8 = dmrg_ground_state(K, omega, bond_dim=8, max_sweeps=10)
+        r32 = dmrg_ground_state(K, omega, bond_dim=32, max_sweeps=10)
+        assert r32["energy"] <= r8["energy"] + 0.1  # generous tolerance
+
+    def test_tebd_times_monotonic(self):
+        n = 4
+        K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
+        omega = np.linspace(0.8, 1.2, n)
+        result = tebd_evolution(K, omega, t_max=0.2, dt=0.05, bond_dim=16)
+        assert np.all(np.diff(result["times"]) > 0)
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → DMRG → ground energy → wired
+# ---------------------------------------------------------------------------
+
+
+class TestMPSPipeline:
+    def test_pipeline_knm_to_dmrg(self):
+        """Full pipeline: Knm → DMRG ground state → energy.
+        Verifies MPS backend is wired and produces physical energies.
+        """
+        import time
+
+        from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+
+        K = build_knm_paper27(L=4)
+        omega = OMEGA_N_16[:4]
+
+        t0 = time.perf_counter()
+        result = dmrg_ground_state(K, omega, bond_dim=16, max_sweeps=10)
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert result["energy"] < 0
+        assert result["n_oscillators"] == 4
+
+        print(f"\n  PIPELINE Knm→DMRG (4q, χ=16): {dt:.1f} ms")
+        print(f"  E_0 = {result['energy']:.4f}, bond_dims = {result['bond_dims']}")
