@@ -86,3 +86,48 @@ def test_knm_informed_negative_energy_2q():
     omega = OMEGA_N_16[:2]
     result = benchmark_ansatz(K, omega, "knm_informed", maxiter=30)
     assert result["energy"] < 0
+
+
+# ---------------------------------------------------------------------------
+# Ansatz physics: parameter efficiency and expressibility
+# ---------------------------------------------------------------------------
+
+
+def test_knm_informed_depth_lower_than_two_local(small_system):
+    """Knm-informed ansatz should use fewer or equal parameters than two_local."""
+    K, omega = small_system
+    r_knm = benchmark_ansatz(K, omega, "knm_informed", maxiter=5)
+    r_tl = benchmark_ansatz(K, omega, "two_local", maxiter=5)
+    assert r_knm["n_params"] <= r_tl["n_params"]
+
+
+def test_all_ansatz_names_in_result(small_system):
+    """Each result must contain the ansatz name."""
+    K, omega = small_system
+    for name in ("knm_informed", "two_local", "efficient_su2"):
+        result = benchmark_ansatz(K, omega, name, maxiter=5)
+        assert result["ansatz"] == name
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → ansatz benchmark → comparison → wired
+# ---------------------------------------------------------------------------
+
+
+def test_pipeline_ansatz_comparison():
+    """Full pipeline: build_knm → benchmark 3 ansätze → compare.
+    Verifies ansatz benchmark is wired and produces comparative data.
+    """
+    import time
+
+    t0 = time.perf_counter()
+    results = run_ansatz_benchmark(n_qubits=3, maxiter=20)
+    dt = (time.perf_counter() - t0) * 1000
+
+    assert len(results) == 3
+    energies = {r["ansatz"]: r["energy"] for r in results}
+    params = {r["ansatz"]: r["n_params"] for r in results}
+
+    print(f"\n  PIPELINE AnsatzBenchmark (3q, 3 ansätze): {dt:.1f} ms")
+    for name in ("knm_informed", "two_local", "efficient_su2"):
+        print(f"    {name}: E={energies[name]:.4f}, params={params[name]}")
