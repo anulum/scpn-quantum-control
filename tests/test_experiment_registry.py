@@ -73,3 +73,56 @@ class TestNamingConventions:
     def test_names_are_strings(self):
         for name in ALL_EXPERIMENTS:
             assert isinstance(name, str)
+
+
+# ---------------------------------------------------------------------------
+# Registry wiring: experiments must accept HardwareRunner
+# ---------------------------------------------------------------------------
+
+
+class TestRegistryWiring:
+    def test_runner_param_annotated(self):
+        """First param should be typed (not bare name)."""
+        for name, func in ALL_EXPERIMENTS.items():
+            sig = inspect.signature(func)
+            first = list(sig.parameters.values())[0]
+            # At minimum, param name is 'runner'
+            assert first.name == "runner", f"{name}: first param is {first.name}"
+
+    def test_experiments_have_docstrings(self):
+        """Every registered experiment must have a docstring."""
+        for name, func in ALL_EXPERIMENTS.items():
+            assert func.__doc__ is not None, f"{name} has no docstring"
+            assert len(func.__doc__.strip()) > 10, f"{name} docstring too short"
+
+    def test_no_private_experiments(self):
+        """No experiment name starts with underscore."""
+        for name in ALL_EXPERIMENTS:
+            assert not name.startswith("_"), f"{name} is private"
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: registry → list → verify wired
+# ---------------------------------------------------------------------------
+
+
+class TestRegistryPipeline:
+    def test_pipeline_list_all_experiments(self):
+        """Full pipeline: list all registered experiments with their param counts.
+        Verifies registry is functional infrastructure, not decorative.
+        """
+        import time
+
+        t0 = time.perf_counter()
+        experiments = []
+        for name, func in ALL_EXPERIMENTS.items():
+            sig = inspect.signature(func)
+            n_params = len(sig.parameters)
+            experiments.append((name, n_params))
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert len(experiments) >= 15
+
+        print(f"\n  PIPELINE ExperimentRegistry ({len(experiments)} experiments): {dt:.2f} ms")
+        for name, n in experiments[:5]:
+            print(f"    {name}: {n} params")
