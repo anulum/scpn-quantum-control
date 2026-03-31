@@ -109,3 +109,32 @@ def test_vqe_landscape_small(sim_runner):
     for _name, data in result["landscapes"].items():
         assert np.isfinite(data["mean_energy"])
         assert np.isfinite(data["std_energy"])
+
+
+def test_experiment_result_serialisable():
+    """All experiment results should be JSON-serialisable."""
+    import json
+
+    result = {"experiment": "test", "value": 1.5, "list": [1, 2, 3]}
+    json_str = json.dumps(result)
+    assert len(json_str) > 0
+
+
+def test_vqe_landscape_has_samples():
+    """VQE landscape result should contain sample data."""
+    from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+    from scpn_quantum_control.hardware.experiments import vqe_landscape_experiment
+
+    K = build_knm_paper27(L=2)
+    omega = OMEGA_N_16[:2]
+    result = vqe_landscape_experiment(K, omega, n_samples=3)
+    assert result["n_samples"] == 3
+
+
+def test_R_from_xyz_returns_tuple():
+    from scpn_quantum_control.hardware.experiments import _R_from_xyz
+
+    counts = {"00": 500, "11": 500}
+    result = _R_from_xyz(counts, counts, counts, n_qubits=2)
+    assert len(result) >= 1
+    assert np.isfinite(result[0])

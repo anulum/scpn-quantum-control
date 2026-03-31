@@ -8,6 +8,7 @@
 """Tests for identity/binding_spec.py."""
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.identity.binding_spec import (
     ARCANE_SAPIENCE_SPEC,
@@ -57,6 +58,7 @@ def test_small_spec_attractor():
     assert result["robustness_gap"] >= 0.0
 
 
+@pytest.mark.slow
 def test_build_attractor_default_spec():
     attractor = build_identity_attractor(ansatz_reps=1)
     assert attractor.K.shape == (18, 18)

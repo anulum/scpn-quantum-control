@@ -125,3 +125,25 @@ class TestDLAComputation:
         xy_gens = build_xy_generators(K, omega)
         ssgf_gens = build_ssgf_generators(K, omega, W, sigma_g=0.3)
         assert len(ssgf_gens) >= len(xy_gens)
+
+
+def test_dla_dimension_2q():
+    K = build_knm_paper27(L=2)
+    omega = OMEGA_N_16[:2]
+    result = compute_dla(K, omega)
+    assert result.dimension >= 1
+    assert result.n_qubits == 2
+
+
+def test_dla_dimension_finite():
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    result = compute_dla(K, omega)
+    assert np.isfinite(result.dimension)
+
+
+def test_xy_generators_nonempty():
+    K = build_knm_paper27(L=2)
+    omega = OMEGA_N_16[:2]
+    gens = build_xy_generators(K, omega)
+    assert len(gens) > 0

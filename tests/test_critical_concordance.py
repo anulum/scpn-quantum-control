@@ -96,3 +96,28 @@ class TestCriticalConcordance:
         result = critical_concordance(omega, T, k_range=np.linspace(0.3, 6.0, 10))
         # Gap should vary across the scan
         assert result.gap_values[0] != result.gap_values[-1]
+
+
+def test_concordance_k_range_length():
+    n = 3
+    T = _ring_topology(n)
+    omega = OMEGA_N_16[:n]
+    k_range = np.linspace(0.5, 5.0, 8)
+    result = critical_concordance(omega, T, k_range=k_range)
+    assert len(result.k_values) == 8
+
+
+def test_concordance_gap_positive():
+    n = 3
+    T = _ring_topology(n)
+    omega = OMEGA_N_16[:n]
+    result = critical_concordance(omega, T, k_range=np.linspace(0.5, 5.0, 6))
+    assert np.all(np.array(result.gap_values) > 0)
+
+
+def test_concordance_2q():
+    n = 2
+    T = _ring_topology(n)
+    omega = OMEGA_N_16[:n]
+    result = critical_concordance(omega, T, k_range=np.array([1.0, 3.0]))
+    assert len(result.gap_values) == 2
