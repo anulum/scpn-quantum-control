@@ -84,3 +84,43 @@ class TestFMOBenchmark:
         result = fmo_benchmark(K, omega)
         assert "SCPN vs FMO" in result.summary
         assert "topology" in result.summary
+
+
+# ---------------------------------------------------------------------------
+# FMO physics: biological coupling structure
+# ---------------------------------------------------------------------------
+
+
+class TestFMOPhysics:
+    def test_fmo_coupling_non_negative(self):
+        """FMO coupling (absolute) must be non-negative."""
+        K, _ = fmo_coupling_matrix()
+        assert np.all(K >= 0)
+
+    def test_fmo_site_energies_ordered(self):
+        """FMO site energies span a range (not all equal)."""
+        assert FMO_SITE_ENERGIES.max() > FMO_SITE_ENERGIES.min()
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: FMO coupling → benchmark → correlation → wired
+# ---------------------------------------------------------------------------
+
+
+class TestFMOPipeline:
+    def test_pipeline_fmo_to_benchmark(self):
+        """Full pipeline: FMO coupling → benchmark → topology correlation.
+        Verifies FMO benchmark is wired and produces cross-domain data.
+        """
+        import time
+
+        K_fmo, omega_fmo = fmo_coupling_matrix()
+
+        t0 = time.perf_counter()
+        result = fmo_benchmark(K_fmo, omega_fmo)
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert result.topology_correlation == pytest.approx(1.0, abs=0.01)
+
+        print(f"\n  PIPELINE FMO→Benchmark (7 sites): {dt:.1f} ms")
+        print(f"  ρ_topo={result.topology_correlation:.4f}")
