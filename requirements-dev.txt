@@ -15,7 +15,7 @@ ruff==0.15.6
 mypy==1.19.1
 bandit==1.9.4
 pre-commit==4.2.0
-build==1.4.0
+build==1.4.2
 # Docs
 mkdocs==1.6.1
 mkdocs-material==9.7.3
