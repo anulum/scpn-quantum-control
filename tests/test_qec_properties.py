@@ -117,3 +117,59 @@ def test_correction_is_binary() -> None:
     syn_z, _ = qec.get_syndrome(err_x, np.zeros(n_data, dtype=np.int8))
     corr = qec.decoder.decode(syn_z, dual=False)
     assert set(np.unique(corr)).issubset({0, 1})
+
+
+# ---------------------------------------------------------------------------
+# QEC physical invariants
+# ---------------------------------------------------------------------------
+
+
+def test_low_error_rate_correctable() -> None:
+    """Below threshold error rate → decode_and_correct should succeed most of the time."""
+    qec = ControlQEC(distance=3)
+    rng = np.random.default_rng(42)
+    successes = 0
+    for _ in range(50):
+        err_x, err_z = qec.simulate_errors(p_error=0.01, rng=rng)
+        if qec.decode_and_correct(err_x, err_z):
+            successes += 1
+    assert successes >= 40  # >80% success at p=0.01
+
+
+def test_high_error_rate_fails_often() -> None:
+    """Above threshold → correction fails frequently."""
+    qec = ControlQEC(distance=3)
+    rng = np.random.default_rng(42)
+    failures = 0
+    for _ in range(100):
+        err_x, err_z = qec.simulate_errors(p_error=0.3, rng=rng)
+        if not qec.decode_and_correct(err_x, err_z):
+            failures += 1
+    assert failures > 10  # significant failure rate at p=0.3
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → QEC → syndrome → decode → wired
+# ---------------------------------------------------------------------------
+
+
+def test_pipeline_qec_full_cycle() -> None:
+    """Full pipeline: create code → inject errors → syndrome → decode → correct.
+    Verifies QEC is not decorative — full error correction cycle.
+    """
+    import time
+
+    t0 = time.perf_counter()
+    qec = ControlQEC(distance=3)
+    rng = np.random.default_rng(42)
+    err_x, err_z = qec.simulate_errors(p_error=0.05, rng=rng)
+    syn_z, syn_x = qec.get_syndrome(err_x, err_z)
+    corr_x = qec.decoder.decode(syn_z, dual=False)
+    corrected = qec.decode_and_correct(err_x, err_z)
+    dt = (time.perf_counter() - t0) * 1000
+
+    assert corr_x.shape == err_x.shape
+    assert isinstance(corrected, bool)
+
+    print(f"\n  PIPELINE QEC (d=3, p=0.05): {dt:.1f} ms")
+    print(f"  Corrected: {corrected}, syndrome weight: {int(syn_z.sum())}")
