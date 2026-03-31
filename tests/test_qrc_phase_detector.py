@@ -126,3 +126,53 @@ class TestQRCPhaseDetection:
         result = qrc_phase_detection(omega, T, k_train, k_test, k_threshold=1.5)
         # Should get at least 50% (better than random)
         assert result.accuracy >= 0.5
+
+
+# ---------------------------------------------------------------------------
+# QRC physics: self-probing and feature expressiveness
+# ---------------------------------------------------------------------------
+
+
+class TestQRCPhysics:
+    def test_features_finite(self):
+        """All reservoir features must be finite."""
+        n = 2
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+        X, _ = generate_training_data(omega, T, np.array([1.0, 3.0]), k_threshold=2.0)
+        assert np.all(np.isfinite(X))
+
+    def test_readout_weights_finite(self):
+        X = np.random.default_rng(42).standard_normal((8, 4))
+        y = np.array([0, 0, 0, 0, 1, 1, 1, 1], dtype=float)
+        W = train_linear_readout(X, y, alpha=1.0)
+        assert np.all(np.isfinite(W))
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: topology → reservoir → readout → wired
+# ---------------------------------------------------------------------------
+
+
+class TestQRCPipeline:
+    def test_pipeline_topology_to_phase_detection(self):
+        """Full pipeline: ring topology → QRC features → linear readout → phase.
+        Verifies QRC phase detector is wired end-to-end.
+        """
+        import time
+
+        n = 3
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+        k_train = np.linspace(0.5, 5.0, 8)
+        k_test = np.array([1.0, 4.0])
+
+        t0 = time.perf_counter()
+        result = qrc_phase_detection(omega, T, k_train, k_test, k_threshold=2.0)
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert 0 <= result.accuracy <= 1.0
+        assert result.n_features > 0
+
+        print(f"\n  PIPELINE QRC phase detector (3q, 8 train, 2 test): {dt:.1f} ms")
+        print(f"  Accuracy = {result.accuracy:.2%}, n_features = {result.n_features}")
