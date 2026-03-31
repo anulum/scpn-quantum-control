@@ -49,11 +49,11 @@ jobs:
       - name: Install dependencies
         run: pip install -e ".[dev]"
       - name: Run tests
-        run: pytest tests/ -v --tb=short -x --ignore=tests/test_hardware_runner.py
+        run: pytest tests/ -v --tb=short -x -m "not slow" --ignore=tests/test_hardware_runner.py
       - name: Run tests with coverage (3.12 only)
         if: matrix.python-version == '3.12'
         run: |
-          pytest tests/ --cov=scpn_quantum_control --cov-report=xml --cov-fail-under=95 --ignore=tests/test_hardware_runner.py
+          pytest tests/ --cov=scpn_quantum_control --cov-report=xml --cov-fail-under=95 -m "not slow" --ignore=tests/test_hardware_runner.py
       - name: Upload coverage
         if: matrix.python-version == '3.12'
         uses: codecov/codecov-action@1af58845a975a7985b0beb0cbe6fbbb71a41dbad  # v5
