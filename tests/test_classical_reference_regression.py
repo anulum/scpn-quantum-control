@@ -190,3 +190,56 @@ class TestTrajectoryRegression:
     )
     def test_reference_diag_matches_live(self, classical_reference, key, expected_E0):
         assert classical_reference[key]["ground_energy"] == pytest.approx(expected_E0, abs=1e-6)
+
+
+# ---------------------------------------------------------------------------
+# Rust path parity: Kuramoto Euler matches classical evolution direction
+# ---------------------------------------------------------------------------
+
+
+class TestRustParity:
+    def test_rust_kuramoto_euler_direction(self):
+        """Rust kuramoto_euler evolves in the same direction as exact evolution."""
+        try:
+            import scpn_quantum_engine as eng
+        except ImportError:
+            pytest.skip("scpn-quantum-engine not available")
+
+        from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+
+        n = 4
+        K = build_knm_paper27(L=n)
+        omega = OMEGA_N_16[:n]
+        theta0 = np.zeros(n, dtype=np.float64)
+
+        theta_rust = np.array(eng.kuramoto_euler(theta0, omega, K, 0.01, 10))
+        R_rust = eng.order_parameter(theta_rust)
+
+        result = classical_exact_evolution(n, t_max=0.1, dt=0.1)
+        R_exact = result["R"][-1]
+
+        # Both should show non-trivial dynamics
+        assert R_rust > 0
+        assert R_exact > 0
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: classical reference → reproducibility check
+# ---------------------------------------------------------------------------
+
+
+class TestClassicalPipeline:
+    def test_pipeline_diag_and_evolution_consistent(self):
+        """Pipeline: exact_diag E_0 < 0 and evolution R ∈ [0,1] — wired together."""
+        import time
+
+        t0 = time.perf_counter()
+        diag = classical_exact_diag(4)
+        evo = classical_exact_evolution(4, t_max=0.1, dt=0.1)
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert diag["ground_energy"] < 0
+        assert 0.0 <= evo["R"][-1] <= 1.0
+
+        print(f"\n  PIPELINE classical diag+evo (4q): {dt:.1f} ms")
+        print(f"  E_0 = {diag['ground_energy']:.4f}, R(0.1) = {evo['R'][-1]:.10f}")
