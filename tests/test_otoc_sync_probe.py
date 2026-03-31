@@ -106,3 +106,22 @@ class TestOTOCProperties:
         result = otoc_sync_scan(K, omega, n_K_values=4, n_time_points=8, t_max=0.5)
         for R in result.R_classical:
             assert 0.0 <= R <= 1.0 + 1e-10
+
+
+class TestOTOCPipeline:
+    def test_pipeline_knm_to_otoc(self):
+        """Full pipeline: Knm → OTOC scan → compare → K_c detection."""
+        import time
+
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+
+        t0 = time.perf_counter()
+        scan = otoc_sync_scan(K, omega, n_K_values=4, n_time_points=8, t_max=0.5)
+        comparison = compare_otoc_vs_R(scan)
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert np.isfinite(comparison["K_c_classical"])
+
+        print(f"\n  PIPELINE Knm→OTOC (2q, 4K×8t): {dt:.1f} ms")
+        print(f"  K_c_classical={comparison['K_c_classical']:.2f}")
