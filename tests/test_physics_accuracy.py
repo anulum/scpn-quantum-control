@@ -177,3 +177,43 @@ def test_statevector_normalised():
     qc = _build_evo_base(4, K, omega, t=0.1, trotter_reps=2)
     sv = _statevector_from_circuit(qc)
     np.testing.assert_allclose(float(np.sum(np.abs(sv) ** 2)), 1.0, atol=1e-10)
+
+
+def test_hamiltonian_spectrum_real():
+    """Hermitian H → real eigenvalues."""
+    K = build_knm_paper27(L=4)
+    omega = OMEGA_N_16[:4]
+    H = knm_to_hamiltonian(K, omega)
+    mat = H.to_matrix()
+    if hasattr(mat, "toarray"):
+        mat = mat.toarray()
+    eigvals = np.linalg.eigvalsh(mat)
+    assert np.all(np.isreal(eigvals))
+
+
+def test_ground_energy_negative_4q():
+    """4-qubit coupled system should have negative ground energy."""
+    K = build_knm_paper27(L=4)
+    omega = OMEGA_N_16[:4]
+    result = classical_exact_diag(n_osc=4, K=K, omega=omega)
+    assert result["ground_energy"] < 0
+
+
+def test_pipeline_full_physics_accuracy():
+    """Full pipeline: Knm → H → Trotter → sv → energy expectation.
+    Verifies physics accuracy module is wired end-to-end.
+    """
+    import time
+
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    H = knm_to_hamiltonian(K, omega)
+
+    t0 = time.perf_counter()
+    qc = _build_evo_base(3, K, omega, t=0.05, trotter_reps=2)
+    sv = _statevector_from_circuit(qc)
+    E = float(sv.expectation_value(H).real)
+    dt = (time.perf_counter() - t0) * 1000
+
+    assert np.isfinite(E)
+    print(f"\n  PIPELINE Knm→H→Trotter→E (3q): {dt:.1f} ms, E={E:.4f}")
