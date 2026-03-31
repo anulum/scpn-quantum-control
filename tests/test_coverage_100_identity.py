@@ -110,3 +110,41 @@ class TestRobustness:
         delta_K = K * 0.01  # 1% perturbation
         fid = perturbation_fidelity(K, omega, delta_K)
         assert np.isfinite(fid)
+
+
+# =====================================================================
+# Pipeline: Knm → robustness certificate → wired
+# =====================================================================
+
+
+class TestIdentityPipeline:
+    def test_pipeline_knm_to_robustness(self):
+        """Full pipeline: build_knm → robustness certificate → bounds.
+        Verifies identity protection module is wired end-to-end.
+        """
+        import time
+
+        from scpn_quantum_control.identity.robustness import (
+            compute_robustness_certificate,
+        )
+
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+
+        t0 = time.perf_counter()
+        cert = compute_robustness_certificate(K, omega)
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert cert.energy_gap >= 0
+        assert 0 <= cert.transition_probability <= 1.0
+
+        print(f"\n  PIPELINE Knm→Robustness (3q): {dt:.1f} ms")
+        print(f"  Gap={cert.energy_gap:.4f}, P_transition={cert.transition_probability:.6f}")
+
+    def test_fidelity_at_depth_decreases(self):
+        """Deeper circuits → lower fidelity (decoherence)."""
+        from scpn_quantum_control.identity.coherence_budget import fidelity_at_depth
+
+        f_shallow = fidelity_at_depth(n_qubits=4, depth=10)
+        f_deep = fidelity_at_depth(n_qubits=4, depth=100)
+        assert f_shallow >= f_deep
