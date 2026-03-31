@@ -153,3 +153,64 @@ def test_runner_3qubit(mock_pl):
     runner = pl_mod.PennyLaneRunner(K, omega)
     result = runner.run_trotter(t=0.5, reps=1)
     assert result.n_qubits == 3
+
+
+# ---------------------------------------------------------------------------
+# PennyLane adapter physics: result structure invariants
+# ---------------------------------------------------------------------------
+
+
+def test_result_energy_type(mock_pl):
+    """Energy from Trotter must be a float, not complex or None."""
+    K = np.array([[0, 0.5], [0.5, 0]])
+    omega = np.array([1.0, 2.0])
+    runner = pl_mod.PennyLaneRunner(K, omega)
+    result = runner.run_trotter(t=0.5, reps=1)
+    assert isinstance(result.energy, float)
+    assert np.isfinite(result.energy)
+
+
+def test_result_order_parameter_type(mock_pl):
+    """R from Trotter must be a float."""
+    K = np.array([[0, 0.5], [0.5, 0]])
+    omega = np.array([1.0, 2.0])
+    runner = pl_mod.PennyLaneRunner(K, omega)
+    result = runner.run_trotter(t=0.5, reps=1)
+    assert isinstance(result.order_parameter, float)
+
+
+def test_vqe_energy_is_float(mock_pl):
+    """VQE must return float energy."""
+    K = np.array([[0, 0.3], [0.3, 0]])
+    omega = np.array([1.0, 1.5])
+    runner = pl_mod.PennyLaneRunner(K, omega)
+    result = runner.run_vqe(ansatz_depth=1, maxiter=2, seed=0)
+    assert isinstance(result.energy, float)
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → PennyLane mock → result → wired
+# ---------------------------------------------------------------------------
+
+
+def test_pipeline_knm_to_pennylane(mock_pl):
+    """Full pipeline: build_knm → PennyLane runner → Trotter → result.
+    Verifies PennyLane adapter is wired end-to-end (via mock).
+    """
+    import time
+
+    from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+
+    t0 = time.perf_counter()
+    runner = pl_mod.PennyLaneRunner(K, omega)
+    result = runner.run_trotter(t=0.5, reps=2)
+    dt = (time.perf_counter() - t0) * 1000
+
+    assert result.n_qubits == 3
+    assert isinstance(result.energy, float)
+
+    print(f"\n  PIPELINE Knm→PennyLane (3q, mock): {dt:.1f} ms")
+    print(f"  E={result.energy:.4f}, R={result.order_parameter:.4f}")
