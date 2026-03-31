@@ -72,3 +72,22 @@ class TestCuttingRunner:
         result = run_cutting_simulation(n_oscillators=32, reps=1, max_partition_size=8)
         assert result.n_partitions == 4
         assert result.partition_sizes == [8, 8, 8, 8]
+
+    def test_pipeline_cutting_with_performance(self):
+        """Full pipeline: large system → partition → simulate → combine.
+        Verifies cutting runner is wired end-to-end with performance data.
+        """
+        import time
+
+        t0 = time.perf_counter()
+        result = run_cutting_simulation(n_oscillators=16, reps=2, max_partition_size=8)
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert result.n_partitions == 2
+        assert 0 <= result.combined_r_global <= 1.0
+        import numpy as np
+
+        assert np.isfinite(result.total_energy_estimate)
+
+        print(f"\n  PIPELINE Cutting (16 osc, 2 partitions): {dt:.1f} ms")
+        print(f"  R={result.combined_r_global:.4f}, E={result.total_energy_estimate:.4f}")
