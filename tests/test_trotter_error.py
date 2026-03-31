@@ -94,3 +94,46 @@ def test_error_norm_high_reps_small(small_system):
     K, omega = small_system
     err = trotter_error_norm(K, omega, t=0.1, reps=20)
     assert err < 0.01
+
+
+# ---------------------------------------------------------------------------
+# Trotter error physics: scaling laws
+# ---------------------------------------------------------------------------
+
+
+def test_error_scales_quadratically_with_t(small_system):
+    """First-order Trotter: ε ~ O(t²/n) at fixed reps."""
+    K, omega = small_system
+    err_t1 = trotter_error_norm(K, omega, t=0.1, reps=1)
+    err_t2 = trotter_error_norm(K, omega, t=0.2, reps=1)
+    # Doubling t should roughly quadruple error
+    ratio = err_t2 / max(err_t1, 1e-15)
+    assert ratio > 2.0
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → Trotter error → sweep → wired
+# ---------------------------------------------------------------------------
+
+
+def test_pipeline_knm_to_trotter_sweep(small_system):
+    """Full pipeline: Knm → error sweep → 2D error map.
+    Verifies Trotter error module is wired and produces actionable data.
+    """
+    import time
+
+    K, omega = small_system
+
+    t0 = time.perf_counter()
+    result = trotter_error_sweep(K, omega, t_values=[0.05, 0.1, 0.2], reps_values=[1, 2, 5])
+    dt = (time.perf_counter() - t0) * 1000
+
+    assert len(result["errors"]) == 3
+    assert len(result["errors"][0]) == 3
+    # Error should decrease with more reps
+    for row in result["errors"]:
+        assert row[0] >= row[-1] - 1e-10  # reps=1 ≥ reps=5
+
+    print(f"\n  PIPELINE Knm→TrotterSweep (3q, 3×3): {dt:.1f} ms")
+    print(f"  ε(t=0.05,reps=1)={result['errors'][0][0]:.6f}")
+    print(f"  ε(t=0.2,reps=5)={result['errors'][2][2]:.6f}")
