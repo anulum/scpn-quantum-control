@@ -127,3 +127,57 @@ class TestScanGapProperties:
         result = scan_coupling_at_delta(omega, T, delta=1.0, k_range=np.linspace(0.5, 3.0, 4))
         assert result.delta == 1.0
         assert len(result.gaps) == 4
+
+
+# ---------------------------------------------------------------------------
+# Phase diagram physics: XY vs Heisenberg
+# ---------------------------------------------------------------------------
+
+
+class TestPhaseDiagramPhysics:
+    def test_xy_and_heisenberg_different_gaps(self):
+        """XY (Δ=0) and Heisenberg (Δ=1) produce different gap structure."""
+        T = _ring(3)
+        omega = OMEGA_N_16[:3]
+        k_range = np.array([1.0, 3.0])
+        r_xy = scan_coupling_at_delta(omega, T, delta=0.0, k_range=k_range)
+        r_heis = scan_coupling_at_delta(omega, T, delta=1.0, k_range=k_range)
+        assert not np.allclose(r_xy.gaps, r_heis.gaps)
+
+    def test_gaps_all_positive(self):
+        """Non-degenerate spectrum → all gaps > 0."""
+        T = _ring(3)
+        omega = OMEGA_N_16[:3]
+        result = scan_coupling_at_delta(omega, T, delta=0.5, k_range=np.linspace(0.5, 4.0, 6))
+        assert np.all(result.gaps > 0)
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: XXZ → phase diagram → K_c → wired
+# ---------------------------------------------------------------------------
+
+
+class TestXXZPipeline:
+    def test_pipeline_xxz_phase_diagram(self):
+        """Full pipeline: topology → XXZ scan → K_c across anisotropies.
+        Verifies XXZ module is wired end-to-end.
+        """
+        import time
+
+        T = _ring(3)
+        omega = OMEGA_N_16[:3]
+
+        t0 = time.perf_counter()
+        result = anisotropy_phase_diagram(
+            omega,
+            T,
+            delta_range=np.array([0.0, 0.5, 1.0]),
+            k_range=np.linspace(0.5, 4.0, 6),
+        )
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert len(result.k_c_values) == 3
+        assert len(result.scans) == 3
+
+        print(f"\n  PIPELINE XXZ phase diagram (3q, 3δ×6K): {dt:.1f} ms")
+        print(f"  K_c values: {result.k_c_values}")
