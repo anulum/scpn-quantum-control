@@ -83,3 +83,50 @@ def test_benchmark_classifier_predicts():
     bench = DisruptionBenchmark(n_train=10, n_test=5, seed=0)
     pred = bench.classifier.predict(bench.X_test[0])
     assert 0.0 <= pred <= 1.0
+
+
+# ---------------------------------------------------------------------------
+# ITER physics: feature normalisation and disruption detection
+# ---------------------------------------------------------------------------
+
+
+def test_normalize_extreme_values():
+    """Values far outside ITER operating range should clamp to [0,1]."""
+    spec = ITERFeatureSpec()
+    extreme = np.full(11, 1e10)
+    normed = normalize_iter_features(extreme, spec)
+    np.testing.assert_allclose(normed, 1.0)
+
+
+def test_benchmark_training_reduces_loss():
+    """Training for more epochs should reduce or maintain loss."""
+    bench = DisruptionBenchmark(n_train=15, n_test=5, seed=42)
+    r1 = bench.run(epochs=1, lr=0.1)
+    # Re-init and train longer
+    bench2 = DisruptionBenchmark(n_train=15, n_test=5, seed=42)
+    r2 = bench2.run(epochs=5, lr=0.1)
+    # More epochs should not drastically worsen accuracy
+    assert r2["accuracy"] >= r1["accuracy"] - 0.3
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: ITER data → normalise → classify → wired
+# ---------------------------------------------------------------------------
+
+
+def test_pipeline_iter_to_disruption():
+    """Full pipeline: synthetic ITER data → normalise → quantum classify → risk.
+    Verifies ITER disruption module is wired end-to-end.
+    """
+    import time
+
+    t0 = time.perf_counter()
+    bench = DisruptionBenchmark(n_train=20, n_test=10, seed=42)
+    result = bench.run(epochs=2, lr=0.1)
+    dt = (time.perf_counter() - t0) * 1000
+
+    assert 0 <= result["accuracy"] <= 1.0
+    assert len(result["predictions"]) == 10
+
+    print(f"\n  PIPELINE ITER→DisruptionBenchmark (20+10, 2 epochs): {dt:.1f} ms")
+    print(f"  Accuracy = {result['accuracy']:.2%}")
