@@ -91,3 +91,53 @@ class TestLearnHamiltonian:
         C = measure_correlators(K, omega)
         result = learn_hamiltonian(C, omega, maxiter=10)
         assert result.loss >= 0
+
+
+# ---------------------------------------------------------------------------
+# Learning physics: inverse problem structure
+# ---------------------------------------------------------------------------
+
+
+class TestLearningPhysics:
+    def test_3qubit_correlators_stronger(self):
+        """Stronger coupling → larger off-diagonal correlators."""
+        omega = OMEGA_N_16[:3]
+        from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
+
+        C_weak = measure_correlators(build_knm_paper27(L=3, K_base=0.1), omega)
+        C_strong = measure_correlators(build_knm_paper27(L=3, K_base=2.0), omega)
+        assert np.max(np.abs(C_strong)) > np.max(np.abs(C_weak))
+
+    def test_learned_K_shape(self):
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        C = measure_correlators(K, omega)
+        result = learn_hamiltonian(C, omega, maxiter=10)
+        assert result.K_learned.shape == (3, 3)
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → correlators → learn K → wired
+# ---------------------------------------------------------------------------
+
+
+class TestLearningPipeline:
+    def test_pipeline_knm_to_learned_K(self):
+        """Full pipeline: build_knm → measure correlators → learn K.
+        Verifies Hamiltonian learning is wired end-to-end.
+        """
+        import time
+
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+
+        t0 = time.perf_counter()
+        C = measure_correlators(K, omega)
+        result = learn_hamiltonian(C, omega, maxiter=30)
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert result.K_learned.shape == (3, 3)
+        assert result.loss >= 0
+
+        print(f"\n  PIPELINE Knm→Correlators→LearnK (3q): {dt:.1f} ms")
+        print(f"  Loss = {result.loss:.6f}, corr_error = {result.correlator_error:.4f}")
