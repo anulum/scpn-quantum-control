@@ -86,3 +86,17 @@ class TestFiniteSizeScaling:
     def test_gap_min_matches_k_c_count(self):
         result = finite_size_scaling(system_sizes=[2, 4], k_range=np.linspace(0.5, 4.0, 8))
         assert len(result.gap_min_values) == len(result.k_c_values)
+
+
+class TestFSSPipeline:
+    def test_pipeline_fss_to_kc(self):
+        """Full pipeline: system sizes → FSS → K_c extraction."""
+        import time
+
+        t0 = time.perf_counter()
+        result = finite_size_scaling(system_sizes=[2, 3, 4], k_range=np.linspace(0.5, 5.0, 8))
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert len(result.k_c_values) == 3
+        print(f"\n  PIPELINE FSS (L=2,3,4, 8 K): {dt:.1f} ms")
+        print(f"  K_c = {result.k_c_values}")
