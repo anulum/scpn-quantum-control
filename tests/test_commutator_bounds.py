@@ -101,3 +101,52 @@ class TestCommutatorBounds:
         # Should require many steps for t=5.0 at epsilon=0.01
         assert result["n_steps"] > 100
         assert result["dt"] < 0.1
+
+
+# ---------------------------------------------------------------------------
+# Commutator physics: scaling and universality
+# ---------------------------------------------------------------------------
+
+
+class TestCommutatorPhysics:
+    def test_heterogeneity_drives_error(self):
+        """More frequency spread → larger commutator norm → larger Trotter error."""
+        K = build_knm_paper27(L=4)
+        omega_narrow = np.array([1.0, 1.1, 1.2, 1.3])
+        omega_wide = np.array([0.5, 1.0, 2.0, 3.0])
+        gamma_narrow = commutator_norm_bound(K, omega_narrow)
+        gamma_wide = commutator_norm_bound(K, omega_wide)
+        assert gamma_wide > gamma_narrow
+
+    def test_error_bound_nonnegative(self):
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        b = trotter_error_bound(K, omega, 1.0, 5, order=1)
+        assert b >= 0
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → commutator → optimal dt → wired
+# ---------------------------------------------------------------------------
+
+
+class TestCommutatorPipeline:
+    def test_pipeline_knm_to_optimal_dt(self):
+        """Full pipeline: build_knm → commutator norm → optimal dt for ε=0.01.
+        Verifies Trotter error module is wired and produces actionable circuit params.
+        """
+        import time
+
+        K = build_knm_paper27(L=4)
+        omega = OMEGA_N_16[:4]
+
+        t0 = time.perf_counter()
+        gamma = commutator_norm_bound(K, omega)
+        result = optimal_dt(K, omega, epsilon=0.01, t_total=1.0, order=1)
+        dt_ms = (time.perf_counter() - t0) * 1000
+
+        assert gamma > 0
+        assert result["n_steps"] >= 1
+
+        print(f"\n  PIPELINE Knm→Commutator→dt* (4q): {dt_ms:.1f} ms")
+        print(f"  γ = {gamma:.4f}, dt* = {result['dt']:.4f}, n_steps = {result['n_steps']}")
