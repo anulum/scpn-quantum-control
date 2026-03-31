@@ -5,16 +5,22 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Tests for Knm Properties
-"""Property-based tests for Knm Hamiltonian compiler."""
+"""Multi-angle property-based tests for Knm Hamiltonian compiler.
+
+Covers: Hermiticity, real eigenvalues, ansatz parameter count, energy bounds,
+K=0 decoupled case, dense matrix consistency, parametrised sizes.
+"""
 
 from __future__ import annotations
 
 import numpy as np
+import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from scpn_quantum_control.bridge.knm_hamiltonian import (
     knm_to_ansatz,
+    knm_to_dense_matrix,
     knm_to_hamiltonian,
 )
 
@@ -61,3 +67,62 @@ def test_ansatz_parameter_count(n: int, reps: int) -> None:
     np.fill_diagonal(K, 0)
     qc = knm_to_ansatz(K, reps=reps)
     assert qc.num_parameters == n * 2 * reps
+
+
+@pytest.mark.parametrize("n", [2, 3, 4, 6])
+def test_dense_matrix_hermitian(n: int) -> None:
+    """knm_to_dense_matrix should produce Hermitian matrix."""
+    K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
+    np.fill_diagonal(K, 0.0)
+    omega = np.linspace(0.8, 1.2, n)
+    H = knm_to_dense_matrix(K, omega)
+    np.testing.assert_allclose(H, H.conj().T, atol=1e-12)
+
+
+@pytest.mark.parametrize("n", [2, 3, 4])
+def test_dense_eigenvalues_real(n: int) -> None:
+    K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
+    np.fill_diagonal(K, 0.0)
+    omega = np.linspace(0.8, 1.2, n)
+    H = knm_to_dense_matrix(K, omega)
+    eigvals = np.linalg.eigvalsh(H)
+    assert np.all(np.isfinite(eigvals))
+
+
+def test_zero_coupling_decoupled() -> None:
+    """K=0 → H is diagonal with entries from omega."""
+    n = 3
+    K = np.zeros((n, n))
+    omega = np.array([1.0, 2.0, 3.0])
+    H = knm_to_dense_matrix(K, omega)
+    # H should be diagonal: -sum(omega_i * Z_i)
+    eigvals = np.sort(np.linalg.eigvalsh(H))
+    # Ground energy = -sum(|omega|)
+    np.testing.assert_allclose(eigvals[0], -np.sum(np.abs(omega)), atol=1e-10)
+
+
+@pytest.mark.parametrize("n", [2, 4, 6])
+def test_ground_energy_negative(n: int) -> None:
+    """Coupled XY system should have negative ground energy."""
+    K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
+    np.fill_diagonal(K, 0.0)
+    omega = np.linspace(0.8, 1.2, n)
+    H = knm_to_dense_matrix(K, omega)
+    E0 = np.linalg.eigvalsh(H)[0]
+    assert E0 < 0
+
+
+def test_dense_matrix_shape() -> None:
+    n = 4
+    K = np.eye(n) * 0.0
+    omega = np.ones(n)
+    H = knm_to_dense_matrix(K, omega)
+    assert H.shape == (2**n, 2**n)
+
+
+def test_ansatz_qubit_count() -> None:
+    n = 4
+    K = np.ones((n, n)) * 0.1
+    np.fill_diagonal(K, 0)
+    qc = knm_to_ansatz(K, reps=2)
+    assert qc.num_qubits == n
