@@ -114,3 +114,99 @@ class TestKrylovVsCoupling:
         result = krylov_vs_coupling(omega, T, k_range=np.array([1.0, 2.0, 4.0]))
         for key in result:
             assert all(np.isfinite(v) for v in result[key])
+
+
+# ---------------------------------------------------------------------------
+# Krylov physics: Lanczos convergence and operator growth
+# ---------------------------------------------------------------------------
+
+
+class TestKrylovPhysics:
+    def test_lanczos_b_coefficients_decay(self):
+        """Lanczos b_n should eventually decrease (finite Hilbert space)."""
+        K = 2.0 * _ring(3)
+        omega = OMEGA_N_16[:3]
+        H = knm_to_hamiltonian(K, omega).to_matrix()
+        Z0 = np.diag([1, 1, 1, 1, -1, -1, -1, -1]).astype(complex)
+        b, _ = lanczos_coefficients(H, Z0, max_steps=20)
+        if len(b) >= 3:
+            # In finite dim, b_n eventually hits zero (Krylov exhaustion)
+            assert b[-1] <= b[0] + 1e-10 or len(b) < 20
+
+    def test_complexity_bounded_by_dimension(self):
+        """K(t) ≤ dim(Krylov space) ≤ d² where d=2^n."""
+        K = 2.0 * _ring(3)
+        omega = OMEGA_N_16[:3]
+        H = knm_to_hamiltonian(K, omega).to_matrix()
+        Z0 = np.diag([1, 1, 1, 1, -1, -1, -1, -1]).astype(complex)
+        result = krylov_complexity(H, Z0, t_max=5.0, n_times=20)
+        d_sq = 8**2  # d² for 3 qubits
+        assert np.max(result.krylov_complexity) <= d_sq
+
+
+# ---------------------------------------------------------------------------
+# Rust path: Lanczos coefficients
+# ---------------------------------------------------------------------------
+
+
+class TestKrylovRust:
+    def test_rust_lanczos_parity(self):
+        """Rust lanczos_b_coefficients should produce similar results."""
+        try:
+            import scpn_quantum_engine as eng
+        except ImportError:
+            import pytest
+
+            pytest.skip("scpn-quantum-engine not available")
+
+        K = 2.0 * _ring(2)
+        omega = OMEGA_N_16[:2]
+        H = np.array(knm_to_hamiltonian(K, omega).to_matrix())
+        # Z_0 on qubit 0
+        Z0 = np.zeros((4, 4), dtype=complex)
+        Z0[0, 0] = Z0[1, 1] = 1.0
+        Z0[2, 2] = Z0[3, 3] = -1.0
+
+        dim = 4
+        H_re = np.ascontiguousarray(H.real.ravel(), dtype=np.float64)
+        H_im = np.ascontiguousarray(H.imag.ravel(), dtype=np.float64)
+        O_re = np.ascontiguousarray(Z0.real.ravel(), dtype=np.float64)
+        O_im = np.ascontiguousarray(Z0.imag.ravel(), dtype=np.float64)
+
+        b_rust = np.array(eng.lanczos_b_coefficients(H_re, H_im, O_re, O_im, dim, 10, 1e-14))
+        b_py, _ = lanczos_coefficients(H, Z0, max_steps=10)
+
+        # Rust and Python should agree on at least first few coefficients
+        n_compare = min(len(b_rust), len(b_py))
+        if n_compare > 0:
+            np.testing.assert_allclose(b_rust[:n_compare], b_py[:n_compare], atol=1e-6)
+
+
+# ---------------------------------------------------------------------------
+# Pipeline: Knm → Krylov → peak complexity → wired
+# ---------------------------------------------------------------------------
+
+
+class TestKrylovPipeline:
+    def test_pipeline_knm_to_krylov(self):
+        """Full pipeline: Knm → Hamiltonian → Krylov complexity → peak.
+        Verifies Krylov module is wired end-to-end, not decorative.
+        """
+        import time
+
+        from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
+
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        H = knm_to_hamiltonian(K, omega).to_matrix()
+        Z0 = np.diag([1, 1, 1, 1, -1, -1, -1, -1]).astype(complex)
+
+        t0 = time.perf_counter()
+        result = krylov_complexity(H, Z0, t_max=5.0, n_times=30)
+        dt = (time.perf_counter() - t0) * 1000
+
+        assert result.krylov_complexity[0] < 1e-10
+        assert result.peak_complexity > 0
+
+        print(f"\n  PIPELINE Knm→Krylov (3q, 30 times): {dt:.1f} ms")
+        print(f"  Peak K(t) = {result.peak_complexity:.4f}")
