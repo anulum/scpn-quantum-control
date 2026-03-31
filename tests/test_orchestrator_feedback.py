@@ -70,3 +70,49 @@ class TestOrchestratorFeedback:
         print(f"  Stability: {fb.stability_score:.4f}")
         print(f"  Reason: {fb.reason}")
         assert isinstance(fb.action, str)
+
+
+# ---------------------------------------------------------------------------
+# Stability and threshold behaviour
+# ---------------------------------------------------------------------------
+
+
+class TestFeedbackThresholds:
+    def test_threshold_logic_consistent(self):
+        """Feedback action must be one of the three valid values."""
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        fb = compute_orchestrator_feedback(K, omega, r_advance=0.5, r_hold=0.3)
+        assert fb.action in ("advance", "hold", "rollback")
+
+    def test_very_low_threshold_triggers_advance(self):
+        """r_advance=0.0 → always reachable → action should be advance."""
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        fb = compute_orchestrator_feedback(K, omega, r_advance=0.0, r_hold=0.0)
+        assert fb.action == "advance"
+
+    def test_stability_score_finite(self):
+        import numpy as np
+
+        K = build_knm_paper27(L=4)
+        omega = OMEGA_N_16[:4]
+        fb = compute_orchestrator_feedback(K, omega)
+        assert isinstance(fb.stability_score, float)
+        assert np.isfinite(fb.stability_score)
+
+
+# ---------------------------------------------------------------------------
+# Pipeline wiring
+# ---------------------------------------------------------------------------
+
+
+class TestFeedbackPipeline:
+    def test_full_pipeline_knm_to_feedback(self):
+        """Pipeline: build_knm → VQE → R → feedback decision."""
+        K = build_knm_paper27(L=4)
+        omega = OMEGA_N_16[:4]
+        fb = compute_orchestrator_feedback(K, omega)
+        assert fb.r_global >= 0
+        assert fb.confidence >= 0
+        assert fb.action in ("advance", "hold", "rollback")
