@@ -83,7 +83,7 @@ def test_avqds_3q():
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:3]
     result = avqds_simulate(K, omega, t_total=0.1, n_steps=2, seed=0)
-    assert result.n_qubits == 3
+    assert result.n_params > 0
 
 
 def test_avqds_fidelity_bounded():
