@@ -61,3 +61,28 @@ class TestDeriveP_H1:
         )
         print(f"  Derivable:      {result.is_derivable}")
         assert result.is_derivable
+
+
+# ---------------------------------------------------------------------------
+# Derivation invariants
+# ---------------------------------------------------------------------------
+
+
+class TestDerivationInvariants:
+    def test_absolute_deviation_nonnegative(self):
+        result = derive_p_h1()
+        assert result.absolute_deviation >= 0
+
+    def test_target_is_072(self):
+        result = derive_p_h1()
+        assert result.p_h1_target == pytest.approx(0.72)
+
+    def test_derivation_chain_strings(self):
+        result = derive_p_h1()
+        for step in result.derivation_chain:
+            assert isinstance(step, str)
+            assert len(step) > 0
+
+    def test_predicted_positive(self):
+        result = derive_p_h1()
+        assert result.p_h1_predicted > 0
