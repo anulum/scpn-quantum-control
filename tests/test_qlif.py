@@ -80,3 +80,34 @@ def test_stochastic_mode_fires():
     )
     total = sum(neuron.step(1.0) for _ in range(50))
     assert total >= 5
+
+
+def test_spike_output_binary():
+    """Spike must be 0 or 1."""
+    neuron = QuantumLIFNeuron(n_shots=0)
+    for _ in range(20):
+        s = neuron.step(0.8)
+        assert s in (0, 1)
+
+
+def test_membrane_voltage_finite():
+    """Membrane voltage must stay finite even under strong input."""
+    neuron = QuantumLIFNeuron(tau_mem=5.0, dt=1.0, n_shots=0)
+    for _ in range(100):
+        neuron.step(10.0)
+    assert np.isfinite(neuron.v)
+
+
+def test_zero_input_membrane_decays():
+    """No input → membrane decays toward v_rest."""
+    neuron = QuantumLIFNeuron(v_rest=0.0, v_threshold=5.0, tau_mem=2.0, dt=1.0, n_shots=0)
+    neuron.v = 2.0  # artificially set high
+    neuron.step(0.0)
+    assert neuron.v < 2.0  # decayed
+
+
+def test_custom_v_rest():
+    neuron = QuantumLIFNeuron(v_rest=-0.5)
+    assert neuron.v_rest == -0.5
+    neuron.reset()
+    assert neuron.v == -0.5
