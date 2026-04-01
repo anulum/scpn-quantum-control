@@ -143,3 +143,21 @@ for name, w in results.items():
   <br>
   <em>Developed by <a href="https://www.anulum.li">ANULUM</a> / Fortis Studio</em>
 </p>
+
+**Contact:** [protoscience@anulum.li](mailto:protoscience@anulum.li) |
+[GitHub Discussions](https://github.com/anulum/scpn-quantum-control/discussions) |
+[www.anulum.li](https://www.anulum.li)
+
+---
+
+<p align="center">
+  <a href="https://www.anulum.li">
+    <img src="assets/anulum_logo_company.jpg" width="180" alt="ANULUM">
+  </a>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="https://www.anulum.li">
+    <img src="assets/fortis_studio_logo.jpg" width="180" alt="Fortis Studio">
+  </a>
+  <br>
+  <em>Developed by <a href="https://www.anulum.li">ANULUM</a> / Fortis Studio</em>
+</p>

@@ -1,10 +1,9 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later
-# Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-
+# scpn-quantum-control — EEG Classification
 """EEG state classification via structured VQE and quantum kernels.
 
 Maps EEG functional connectivity matrices (Phase Locking Value - PLV)
@@ -56,16 +55,13 @@ def eeg_plv_to_vqe(
     """
     n = plv_matrix.shape[0]
 
-    # 1. Build the physical Hamiltonian representation of the brain state
-    # We use the fast Rust-accelerated dense matrix builder
+    # Use fast Rust-accelerated dense matrix builder
     knm_to_dense_matrix(plv_matrix, natural_frequencies)
 
-    # 2. Build the topology-informed ansatz tailored to this specific brain state
     ansatz = build_structured_ansatz(plv_matrix, reps=reps, threshold=threshold)
     n_params = ansatz.num_parameters
 
-    # 3. Run VQE (using scipy.optimize internally via PhaseVQE logic)
-    # We inject the structured ansatz into the VQE solver
+    # Inject the structured ansatz into the VQE solver
     vqe = PhaseVQE(plv_matrix, natural_frequencies, ansatz_reps=reps)
     vqe.ansatz = ansatz  # Override with our threshold-filtered ansatz
     vqe.n_params = n_params

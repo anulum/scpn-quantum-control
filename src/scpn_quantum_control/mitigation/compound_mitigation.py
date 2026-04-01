@@ -1,10 +1,9 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later
-# Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-
+# scpn-quantum-control — Compound Mitigation
 """Compound Error Mitigation: CPDR + Z2 Symmetry Verification.
 
 Combines Clifford Perturbation Data Regression (CPDR) with Z2 Symmetry
@@ -69,16 +68,13 @@ def compound_mitigate_pipeline(
     """
     n_qubits = target_circuit.num_qubits
 
-    # 1. Generate and simulate training circuits
     training_circuits = generate_training_circuits(
         target_circuit, n_training, perturbation_scale, seed
     )
     ideal_values = compute_ideal_values(training_circuits, observable_qubits)
 
-    # 2. Run training circuits on noisy backend
     training_counts = run_on_backend(training_circuits)
 
-    # 3. Apply Z2 Symmetry Verification (Post-selection) to training counts
     verified_training_counts = []
     rejection_rates = []
     for counts in training_counts:
@@ -88,18 +84,15 @@ def compound_mitigate_pipeline(
 
     mean_rejection = sum(rejection_rates) / max(len(rejection_rates), 1)
 
-    # 4. Extract noisy values from symmetry-verified training counts
     noisy_values = compute_noisy_values_from_counts(
         verified_training_counts, n_qubits, observable_qubits
     )
 
-    # 5. Extract raw target value with symmetry verification
     sym_target = parity_postselect(target_counts, expected_parity=expected_parity)
     raw_verified_value = compute_noisy_values_from_counts(
         [sym_target.verified_counts], n_qubits, observable_qubits
     )[0]
 
-    # 6. Apply CPDR regression
     cpdr_res = cpdr_mitigate(raw_verified_value, ideal_values, noisy_values)
 
     return CompoundMitigationResult(

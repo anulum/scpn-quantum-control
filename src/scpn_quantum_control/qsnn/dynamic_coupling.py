@@ -1,10 +1,9 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later
-# Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-
+# scpn-quantum-control — Dynamic Coupling
 """Dynamic Quantum-Classical Co-Evolution (Quantum Hebbian Learning).
 
 Traditional quantum simulation takes a static physical coupling matrix K_nm
@@ -85,15 +84,11 @@ class DynamicCouplingEngine:
 
         Evolve state for time dt -> Measure Correlators -> Update K.
         """
-        # 1. Quantum Evolution (using the high-performance sparse engine)
         res = fast_sparse_evolution(self.K, self.omega, t_total=dt, n_steps=1)
         psi_final = res["final_state"]
 
-        # 2. Measurement
         C_nm = self._measure_correlation_matrix(psi_final)
 
-        # 3. Classical Hebbian Update
-        # Increase coupling where quantum correlation is high; decay everywhere
         self.K = (1.0 - self.decay) * self.K + self.lr * C_nm
 
         # Enforce physical constraints (symmetry, no self-loops, non-negative)

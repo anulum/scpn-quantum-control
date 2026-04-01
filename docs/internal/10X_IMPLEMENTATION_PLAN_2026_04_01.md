@@ -20,7 +20,7 @@
 **Implementation:** Ensure `quantum_persistent_homology.py` is fully operational, taking raw IBM hardware count dictionaries, reconstructing the phase-difference manifold, and outputting Betti number intervals.
 
 ## 5. Real-World Biological Pipeline (EEG Data)
-**Implementation:** Implement robust PLV matrix ingestion and a structured VQE state classification workflow in `applications/eeg_classification.py`.
+**Implementation:** Implement stabilized PLV matrix ingestion and a structured VQE state classification workflow in `applications/eeg_classification.py`.
 
 ## 6. High-Performance Sparse Statevector Engine (Triton / JAX)
 **Implementation:** We will bypass Qiskit completely for Trotter simulation by building a high-performance JAX/GPU statevector propagator in `hardware/jax_trotter.py` capable of taking `N=20` in under 10 seconds.

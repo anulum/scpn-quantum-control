@@ -1,10 +1,9 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later
-# Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-
+# scpn-quantum-control — Topological Optimizer
 """Topological Quantum Reinforcement Learning / Optimizer.
 
 This module provides an optimizer that iteratively rewires the physical
@@ -79,12 +78,10 @@ class TopologicalCouplingOptimizer:
         if not _RIPSER_AVAILABLE:
             raise ImportError("ripser not installed: pip install ripser")
 
-        # 1. Baseline p_h1
         res_base = fast_sparse_evolution(self.K, self.omega, t_total=self.dt, n_steps=1)
         x_c, y_c = self._simulate_measurement_counts(res_base["final_state"])
         ph_base = quantum_persistent_homology(x_c, y_c, self.n, persistence_threshold=0.1).p_h1
 
-        # 2. Gradient estimation via random perturbations (SPSA-like)
         grad_K = np.zeros_like(self.K)
         perturbation_scale = 0.05
 
@@ -116,7 +113,6 @@ class TopologicalCouplingOptimizer:
 
         grad_K /= n_samples
 
-        # 3. Update Coupling Matrix
         self.K = self.K - self.lr * grad_K
 
         # Enforce physical constraints
