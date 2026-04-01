@@ -515,3 +515,17 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
   <br>
   <em>Developed by <a href="https://www.anulum.li">ANULUM</a> / Fortis Studio</em>
 </p>
+
+---
+
+<p align="center">
+  <a href="https://www.anulum.li">
+    <img src="docs/assets/anulum_logo_company.jpg" width="180" alt="ANULUM">
+  </a>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="https://www.anulum.li">
+    <img src="docs/assets/fortis_studio_logo.jpg" width="180" alt="Fortis Studio">
+  </a>
+  <br>
+  <em>Developed by <a href="https://www.anulum.li">ANULUM</a> / Fortis Studio</em>
+</p>
