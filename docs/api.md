@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — API Reference
+# SCPN Quantum Control — API Reference
 
 # API Reference
 
@@ -16,11 +16,11 @@
 knm_to_hamiltonian(K: np.ndarray, omega: np.ndarray) -> SparsePauliOp
 ```
 Convert Knm coupling matrix and natural frequencies to XY Hamiltonian as Qiskit `SparsePauliOp`.
-$H = -\sum_{i<j} K_{ij}(X_iX_j + Y_iY_j) - \sum_i \omega_i Z_i$. Use when you need the
+H = -\sum_{i<j} K_{ij}(X_iX_j + Y_iY_j) - \sum_i \omega_i Z_i$. Use when you need the
 `SparsePauliOp` for circuit construction. For dense matrix operations, use `knm_to_dense_matrix`.
 
 ```python
-knm_to_dense_matrix(K: np.ndarray, omega: np.ndarray) -> np.ndarray
+knm_to_dense_matrix(K: np.ndarray, omega: np.ndarray, delta: float = 0.0) -> np.ndarray
 ```
 Build dense XY Hamiltonian matrix (shape `2^n × 2^n`, complex). Uses Rust bitwise flip-flop
 construction when `scpn_quantum_engine` is installed (10-50× faster than Qiskit for n≤10),
@@ -28,9 +28,14 @@ falls back to `knm_to_hamiltonian(...).to_matrix()`. Preferred for eigendecompos
 entanglement entropy, Krylov complexity, and any code that needs a numpy matrix.
 
 ```python
+knm_to_sparse_matrix(K: np.ndarray, omega: np.ndarray, delta: float = 0.0) -> csc_matrix
+```
+Build sparse XY/XXZ Hamiltonian matrix in CSC format for large-scale memory-efficient simulation.
+
+```python
 knm_to_xxz_hamiltonian(K: np.ndarray, omega: np.ndarray, delta: float = 0.0) -> SparsePauliOp
 ```
-XXZ Hamiltonian with anisotropy $\Delta$: $H = -\sum_{i<j} K_{ij}(X_iX_j + Y_iY_j + \Delta Z_iZ_j) - \sum_i \omega_i Z_i$.
+XXZ Hamiltonian with anisotropy $\Delta$: H = -\sum_{i<j} K_{ij}(X_iX_j + Y_iY_j + \Delta Z_iZ_j) - \sum_i \omega_i Z_i$.
 At $\Delta=0$: XY model (standard Kuramoto mapping). At $\Delta=1$: isotropic Heisenberg.
 
 ```python
@@ -41,7 +46,7 @@ Build physics-informed ansatz: CZ entanglement only between pairs where `K[i,j] 
 ```python
 build_knm_paper27(L: int = 16, K_base: float = 0.45, K_alpha: float = 0.3) -> np.ndarray
 ```
-Canonical $K_{nm}$ coupling matrix from Paper 27 with exponential decay, calibration anchors, and cross-hierarchy boosts.
+Canonical {nm}$ coupling matrix from Paper 27 with exponential decay, calibration anchors, and cross-hierarchy boosts.
 
 ```python
 build_kuramoto_ring(n: int, coupling: float = 1.0, omega: np.ndarray | None = None) -> tuple[np.ndarray, np.ndarray]
@@ -90,9 +95,6 @@ build_knm_plasma_from_config(R0, a, B0, Ip, n_e, ..., repo_src=None) -> np.ndarr
 plasma_omega(L=8, repo_src=None) -> np.ndarray
 ```
 
-If `scpn-control` is not importable, these functions raise `ImportError` with
-setup guidance.
-
 ### `sc_to_quantum`
 
 ```python
@@ -109,6 +111,15 @@ spn_to_circuit(W_in, W_out, thresholds) -> QuantumCircuit
 ```
 
 ## qsnn
+
+### `dynamic_coupling.DynamicCouplingEngine`
+
+```python
+DynamicCouplingEngine(n_qubits, initial_K, omega, learning_rate=0.1, decay_rate=0.05)
+    .step(dt: float) -> dict  # K_updated, correlation_matrix, statevector
+    .run_coevolution(steps, dt) -> list[dict]
+```
+Quantum Hebbian Learning: macroscopic topology evolves according to microscopic quantum correlations.
 
 ### `qlif.QuantumLIFNeuron`
 
@@ -142,7 +153,31 @@ QuantumDenseLayer(n_neurons: int, n_inputs: int, weights: np.ndarray | None = No
     .get_weights() -> np.ndarray  # (n_neurons, n_inputs)
 ```
 
+### `training.QSNNTrainer`
+
+```python
+QSNNTrainer(layer: QuantumDenseLayer, lr: float = 0.01)
+    .parameter_shift_gradient(inputs, target) -> np.ndarray
+    .train_epoch(X, y) -> float  # mean loss
+    .train(X, y, epochs=10) -> list[float]  # loss history
+```
+
 ## phase
+
+### `structured_ansatz`
+
+```python
+build_structured_ansatz(coupling_matrix, reps=2, entanglement_gate="cz", threshold=1e-6) -> QuantumCircuit
+```
+Generalized topology-informed ansatz. Places entangling gates only between physically connected qubits.
+
+### `lindblad_engine.LindbladSyncEngine`
+
+```python
+LindbladSyncEngine(K, omega, gamma=0.1)
+    .evolve(t_max, n_steps=100, method="trajectory", initial_state=None, n_traj=20, observables=None) -> dict
+```
+Open quantum system solver. Supports memory-efficient Monte Carlo Wavefunction (MCWF) trajectory path for N=16 simulation.
 
 ### `xy_kuramoto.QuantumKuramotoSolver`
 
@@ -168,12 +203,22 @@ QuantumUPDESolver(n_layers=16, knm=None, omega=None)
 ```python
 PhaseVQE(K: np.ndarray, omega: np.ndarray, ansatz_reps: int = 2, threshold: float = 0.01)
     .solve(optimizer="COBYLA", maxiter=200, seed: int | None = None) -> dict
-        # ground_energy, exact_energy, energy_gap, relative_error_pct,
-        # optimal_params, n_evals, n_params, converged
-    .ground_state() -> Statevector | None
 ```
 
 ## control
+
+### `topological_optimizer.TopologicalCouplingOptimizer`
+
+```python
+TopologicalCouplingOptimizer(n_qubits, initial_K, omega, learning_rate=0.05, dt=1.0)
+    .step(n_samples=5) -> dict  # K_updated, p_h1_current, gradient_norm
+    .optimize(steps=10, n_samples=3) -> list[dict]
+```
+Rewires graph topology to minimize topological defects ($p_{h1}$)  in the quantum state.
+
+### `hardware_topological_optimizer.HardwareTopologicalOptimizer`
+
+Hardware-in-the-loop variant using real IBM QPU measurement counts for topological optimization.
 
 ### `qaoa_mpc.QAOA_MPC`
 
@@ -218,18 +263,73 @@ from_fusion_core_shot(shot_data: dict) -> (features, label, warnings)
 DisruptionBenchmark(n_train=100, n_test=50).run(epochs=10) -> dict
 ```
 
-## qsnn (continued)
+## applications
 
-### `training.QSNNTrainer`
+### `eeg_classification`
 
 ```python
-QSNNTrainer(layer: QuantumDenseLayer, lr: float = 0.01)
-    .parameter_shift_gradient(inputs, target) -> np.ndarray
-    .train_epoch(X, y) -> float  # mean loss
-    .train(X, y, epochs=10) -> list[float]  # loss history
+eeg_plv_to_vqe(plv_matrix, natural_frequencies, reps=2, threshold=0.1) -> EEGVQEResult
+eeg_quantum_kernel(state_a, state_b) -> float
+```
+EEG state classification pipeline using Phase Locking Value (PLV) matrices and Structured VQE.
+
+## mitigation
+
+### `compound_mitigation`
+
+```python
+compound_mitigate_pipeline(target_circuit, target_counts, run_on_backend, expected_parity, ...)
+```
+Combines CPDR with Z2 Symmetry Verification for order-of-magnitude noise reduction.
+
+### `zne`
+
+```python
+zne_extrapolate(noise_scales: list[int], expectation_values: list[float], order: int = 1) -> ZNEResult
+```
+Richardson extrapolation to zero noise.
+
+### `dd`
+
+```python
+insert_dd_sequence(circuit: QuantumCircuit, idle_qubits: list[int], sequence: DDSequence = DDSequence.XY4) -> QuantumCircuit
+```
+
+## hardware
+
+### `fast_classical`
+
+```python
+fast_sparse_evolution(K, omega, t_total, n_steps, initial_state=None, delta=0.0) -> dict
+```
+High-performance sparse evolution engine. Bypasses circuit overhead; supports N=20 systems.
+
+### `runner.HardwareRunner`
+
+```python
+HardwareRunner(...)
+    .connect()
+    .transpile(circuit) -> QuantumCircuit
+    .run_sampler(circuits, shots=10000, name="experiment") -> list[JobResult]
 ```
 
 ## qec
+
+### `biological_surface_code.BiologicalSurfaceCode`
+
+```python
+BiologicalSurfaceCode(K, threshold=1e-5)
+    .verify_css_commutation() -> bool
+```
+Native topological error correction code mapped directly to the hierarchical SCPN coupling graph.
+
+### `biological_surface_code.BiologicalMWPMDecoder`
+
+```python
+BiologicalMWPMDecoder(code)
+    .decode_z_errors(syndrome_x) -> np.ndarray
+```
+Minimum Weight Perfect Matching decoder using biological coupling strengths as distance metrics.
 
 ### `control_qec.ControlQEC`
 
@@ -238,122 +338,3 @@ ControlQEC(distance=3)
     .protect_signal(circuit) -> QuantumCircuit
     .decode_syndrome(syndrome) -> np.ndarray  # correction
 ```
-
-### `fault_tolerant.RepetitionCodeUPDE`
-
-Bit-flip protected UPDE. Does NOT correct phase errors.
-
-```python
-RepetitionCodeUPDE(n_osc, code_distance=3, K=None, omega=None)
-    .build_step_circuit(dt=0.1) -> QuantumCircuit
-    .step_with_qec(dt=0.1) -> dict  # syndromes, errors_detected
-    .physical_qubit_count() -> int
-```
-
-Alias: `FaultTolerantUPDE = RepetitionCodeUPDE`
-
-### `surface_code_upde.SurfaceCodeUPDE`
-
-Structural model for resource estimation. NOT executable QEC.
-
-```python
-SurfaceCodeSpec.from_distance(d: int) -> SurfaceCodeSpec  # d must be odd >= 3
-SurfaceCodeUPDE(n_osc, code_distance=3, K=None, omega=None)
-    .build_step_circuit(dt=0.1) -> QuantumCircuit
-    .physical_qubit_budget() -> dict  # total_physical, correctable_errors, etc.
-```
-
-## mitigation
-
-### `zne`
-
-```python
-@dataclass
-class ZNEResult:
-    noise_scales: list[int]
-    expectation_values: list[float]
-    zero_noise_estimate: float
-    fit_residual: float
-```
-
-```python
-gate_fold_circuit(circuit: QuantumCircuit, scale: int) -> QuantumCircuit
-```
-Global unitary folding: G → G (G†G)^((scale-1)/2). `scale` must be an odd positive integer. Measurements are stripped before folding and re-appended.
-
-```python
-zne_extrapolate(noise_scales: list[int], expectation_values: list[float], order: int = 1) -> ZNEResult
-```
-Richardson extrapolation to zero noise. `order` controls polynomial degree (1=linear, 2=quadratic).
-
-### `dd`
-
-```python
-class DDSequence(Enum):
-    XY4 = "XY4"
-    X2 = "X2"
-    CPMG = "CPMG"
-```
-
-```python
-insert_dd_sequence(circuit: QuantumCircuit, idle_qubits: list[int], sequence: DDSequence = DDSequence.XY4) -> QuantumCircuit
-```
-Insert DD pulses on `idle_qubits` after existing gates. For transpiler-level insertion, use `HardwareRunner.transpile_with_dd()`.
-
-## hardware
-
-### `runner.HardwareRunner`
-
-```python
-HardwareRunner(token=None, channel="ibm_cloud", instance=None, backend_name=None,
-               use_simulator=False, optimization_level=2, resilience_level=2,
-               use_fractional_gates=True, results_dir="results", noise_model=None)
-    .connect()
-    .transpile(circuit) -> QuantumCircuit
-    .run_sampler(circuits, shots=10000, name="experiment") -> list[JobResult]
-    .run_estimator(circuit, observables, parameter_values=None, name="experiment") -> JobResult
-    .run_estimator_zne(circuit, observables, scales=None, order=1) -> ZNEResult
-    .transpile_with_dd(circuit, dd_sequence=None) -> QuantumCircuit
-    .save_result(result, filename=None) -> Path
-```
-
-### `experiments`
-
-20 pre-built experiment functions, each taking `(runner, shots=10000, ...) -> dict`:
-
-```python
-kuramoto_4osc_experiment(runner, shots=10000, n_time_steps=8, dt=0.1)
-kuramoto_8osc_experiment(runner, shots=10000, n_time_steps=6, dt=0.1)
-vqe_4q_experiment(runner, shots=10000, maxiter=200)
-vqe_8q_experiment(runner, shots=10000, maxiter=150)
-qaoa_mpc_4_experiment(runner, shots=10000)
-upde_16_snapshot_experiment(runner, shots=20000, trotter_steps=1)
-kuramoto_4osc_zne_experiment(runner, shots=10000, ...)
-noise_baseline_experiment(runner, shots=10000)
-bell_test_4q_experiment(runner, shots=10000, maxiter=100)
-qkd_qber_4q_experiment(runner, shots=10000, maxiter=100)
-# ... and 10 more (see source for full list)
-```
-
-### `classical`
-
-```python
-classical_kuramoto_reference(n_osc, t_max, dt, K=None, omega=None, theta0=None) -> dict
-```
-Euler integration of classical Kuramoto with Paper 27 parameters. Returns `{times, theta, R}`.
-Rust fast path via `kuramoto_trajectory` when available.
-
-```python
-classical_exact_diag(n_osc, K=None, omega=None, k_eigenvalues=None) -> dict
-```
-Exact diagonalisation of the XY Hamiltonian. Sparse eigsh for n≥14. Returns `{eigenvalues, ground_energy, ground_state, spectral_gap}`.
-
-```python
-classical_exact_evolution(n_osc, t_max, dt, K=None, omega=None) -> dict
-```
-Exact matrix exponential evolution. Sparse Krylov path for n≥13. Returns `{times, R}`.
-
-```python
-classical_brute_mpc(B_matrix, target, horizon) -> dict
-```
-Brute-force optimal binary MPC. Rust rayon parallel for horizon≥10. Returns `{optimal_actions, optimal_cost, all_costs}`.
