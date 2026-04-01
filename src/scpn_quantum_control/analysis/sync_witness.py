@@ -332,3 +332,37 @@ def calibrate_thresholds(
         "fiedler": float(fiedler_vals[trans_idx]),
         "topological": 0.5,  # empirical default for p_H1
     }
+
+
+def build_correlation_witness_operator(n_qubits: int, threshold: float = 0.0):
+    """Build the formal quantum synchronization witness operator W_corr.
+
+    W_corr = R_c * I - (1/M) Σ_{i<j} (X_i X_j + Y_i Y_j)
+
+    where M = N(N-1)/2 is the number of pairs.
+    Returns a SparsePauliOp.
+    """
+    from qiskit.quantum_info import SparsePauliOp
+
+    n_pairs = n_qubits * (n_qubits - 1) // 2
+    if n_pairs == 0:
+        return SparsePauliOp("I" * n_qubits, [threshold])
+
+    pauli_list = [("I" * n_qubits, threshold)]
+
+    coeff = -1.0 / n_pairs
+    for i in range(n_qubits):
+        for j in range(i + 1, n_qubits):
+            # XX
+            x_str = ["I"] * n_qubits
+            x_str[i] = "X"
+            x_str[j] = "X"
+            pauli_list.append(("".join(reversed(x_str)), coeff))
+
+            # YY
+            y_str = ["I"] * n_qubits
+            y_str[i] = "Y"
+            y_str[j] = "Y"
+            pauli_list.append(("".join(reversed(y_str)), coeff))
+
+    return SparsePauliOp.from_list(pauli_list)
