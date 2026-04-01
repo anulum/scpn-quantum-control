@@ -77,6 +77,7 @@ class PhaseVQE:
 
         return {
             "ground_energy": self._ground_energy,
+            "vqe_energy": self._ground_energy,  # alias for backward compatibility
             "exact_energy": exact_e,
             "energy_gap": gap,
             "relative_error_pct": gap / abs(exact_e) * 100

@@ -35,7 +35,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 from ..bridge.ssgf_adapter import quantum_to_ssgf_state
 from ..hardware.classical import classical_exact_diag
 from ..hardware.gpu_accel import expm
@@ -70,8 +70,8 @@ def loschmidt_echo(
     exact = classical_exact_diag(n, K=K, omega=omega)
     psi_0 = np.ascontiguousarray(exact["ground_state"])
 
-    H_op = knm_to_hamiltonian(K, omega)
-    H_raw = H_op.to_matrix()
+    knm_to_hamiltonian(K, omega)
+    H_raw = knm_to_dense_matrix(K, omega)
     H_mat = H_raw.toarray() if hasattr(H_raw, "toarray") else np.array(H_raw)
 
     psi_t = _evolve_exact(psi_0, H_mat, t)
@@ -87,8 +87,8 @@ def energy_variance(
     exact = classical_exact_diag(n, K=K, omega=omega)
     psi = np.ascontiguousarray(exact["ground_state"])
 
-    H_op = knm_to_hamiltonian(K, omega)
-    H_raw = H_op.to_matrix()
+    knm_to_hamiltonian(K, omega)
+    H_raw = knm_to_dense_matrix(K, omega)
     H_mat = H_raw.toarray() if hasattr(H_raw, "toarray") else np.array(H_raw)
 
     e_mean = float(np.real(psi.conj() @ H_mat @ psi))

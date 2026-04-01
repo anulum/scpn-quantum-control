@@ -45,7 +45,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.linalg import expm
 
-from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 from ..hardware.classical import classical_exact_diag
 
 
@@ -78,8 +78,8 @@ def compute_qsl(
     Computes both Mandelstam-Tamm and Margolus-Levitin bounds.
     """
     n = K.shape[0]
-    H_op = knm_to_hamiltonian(K, omega)
-    H_raw = H_op.to_matrix()
+    knm_to_hamiltonian(K, omega)
+    H_raw = knm_to_dense_matrix(K, omega)
     H_mat = H_raw.toarray() if hasattr(H_raw, "toarray") else np.array(H_raw)
 
     # Initial state: |0...0⟩

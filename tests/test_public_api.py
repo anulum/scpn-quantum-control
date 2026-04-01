@@ -19,8 +19,13 @@ def test_top_level_version():
     import scpn_quantum_control
 
     assert hasattr(scpn_quantum_control, "__version__")
-    expected = importlib.metadata.version("scpn-quantum-control")
-    assert scpn_quantum_control.__version__ == expected
+    try:
+        expected = importlib.metadata.version("scpn-quantum-control")
+        assert scpn_quantum_control.__version__ == expected
+    except importlib.metadata.PackageNotFoundError:
+        # Fallback for development environments where package is not installed
+        assert isinstance(scpn_quantum_control.__version__, str)
+        assert len(scpn_quantum_control.__version__.split(".")) >= 3
 
 
 def _check_exports(submod: str) -> None:

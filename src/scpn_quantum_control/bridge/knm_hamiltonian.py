@@ -121,6 +121,10 @@ def knm_to_xxz_hamiltonian(
     n = len(omega)
     if K.shape[0] != n:
         raise ValueError(f"K has {K.shape[0]} rows but omega has {n} elements")
+
+    # Enforce symmetry (Finding #7: K Symmetry Broken by Gradient Training)
+    K = (K + K.T) / 2.0
+
     pauli_list = []
 
     for i in range(n):
@@ -167,27 +171,33 @@ def knm_to_hamiltonian(K: np.ndarray, omega: np.ndarray) -> SparsePauliOp:
     return knm_to_xxz_hamiltonian(K, omega, delta=0.0)
 
 
-def knm_to_dense_matrix(K: np.ndarray, omega: np.ndarray) -> np.ndarray:
+def knm_to_dense_matrix(K: np.ndarray, omega: np.ndarray, delta: float = 0.0) -> np.ndarray:
     """Build dense XY Hamiltonian matrix, Rust fast path with Qiskit fallback.
 
     Returns complex ndarray of shape (2^n, 2^n).
     """
     n = len(omega)
-    try:
-        import scpn_quantum_engine as _engine
 
-        h_flat = np.asarray(
-            _engine.build_xy_hamiltonian_dense(
-                K.ravel().astype(np.float64),
-                omega.astype(np.float64),
-                n,
+    # Enforce symmetry (Finding #7: K Symmetry Broken by Gradient Training)
+    K = (K + K.T) / 2.0
+
+    # Rust engine only supports delta=0.0 for now
+    if abs(delta) < 1e-12:
+        try:
+            import scpn_quantum_engine as _engine
+
+            h_flat = np.asarray(
+                _engine.build_xy_hamiltonian_dense(
+                    K.ravel().astype(np.float64),
+                    omega.astype(np.float64),
+                    n,
+                )
             )
-        )
-        return h_flat.reshape(2**n, 2**n).astype(complex)
-    except (ImportError, AttributeError):
-        pass
+            return h_flat.reshape(2**n, 2**n).astype(complex)
+        except (ImportError, AttributeError):
+            pass
 
-    H_op = knm_to_hamiltonian(K, omega)
+    H_op = knm_to_xxz_hamiltonian(K, omega, delta)
     H_raw = H_op.to_matrix()
     return H_raw.toarray() if hasattr(H_raw, "toarray") else np.array(H_raw)
 

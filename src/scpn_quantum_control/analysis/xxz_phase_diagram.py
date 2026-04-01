@@ -30,7 +30,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from ..bridge.knm_hamiltonian import knm_to_xxz_hamiltonian
+from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 
 
 @dataclass
@@ -61,8 +61,7 @@ def _ground_state_properties(
 
     Returns (gap, R, E_gs).
     """
-    H_op = knm_to_xxz_hamiltonian(K, omega, delta)
-    H_mat = H_op.to_matrix()
+    H_mat = knm_to_dense_matrix(K, omega, delta=delta)
     eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
     gap = float(eigenvalues[1] - eigenvalues[0])
     psi0 = np.ascontiguousarray(eigenvectors[:, 0])

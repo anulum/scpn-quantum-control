@@ -30,7 +30,7 @@ from dataclasses import dataclass
 import numpy as np
 from qiskit.quantum_info import DensityMatrix, Statevector, partial_trace
 
-from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 
 
 @dataclass
@@ -136,8 +136,8 @@ def percolation_scan(
 
     for idx, kb in enumerate(k_range):
         K = float(kb) * K_topology
-        H_op = knm_to_hamiltonian(K, omega)
-        H_mat = H_op.to_matrix()
+        knm_to_hamiltonian(K, omega)
+        H_mat = knm_to_dense_matrix(K, omega)
         eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
         psi0 = eigenvectors[:, 0]
 

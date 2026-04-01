@@ -35,7 +35,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 
 
 @dataclass
@@ -54,8 +54,8 @@ class BerryPhaseResult:
 
 def _ground_state(K: np.ndarray, omega: np.ndarray) -> tuple[np.ndarray, float]:
     """Return (ground state vector, spectral gap)."""
-    H_op = knm_to_hamiltonian(K, omega)
-    H_mat = H_op.to_matrix()
+    knm_to_hamiltonian(K, omega)
+    H_mat = knm_to_dense_matrix(K, omega)
     eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
     psi0 = np.ascontiguousarray(eigenvectors[:, 0])
     gap = float(eigenvalues[1] - eigenvalues[0])

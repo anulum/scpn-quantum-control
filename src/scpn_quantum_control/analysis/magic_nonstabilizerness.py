@@ -32,7 +32,7 @@ from itertools import product as iterproduct
 import numpy as np
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
-from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 
 
 @dataclass
@@ -89,8 +89,8 @@ def magic_at_coupling(
     """Compute SRE M_2 of ground state at given coupling."""
     n = len(omega)
     K = K_base * K_topology
-    H_op = knm_to_hamiltonian(K, omega)
-    H_mat = H_op.to_matrix()
+    knm_to_hamiltonian(K, omega)
+    H_mat = knm_to_dense_matrix(K, omega)
     eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
     psi0 = eigenvectors[:, 0]
 

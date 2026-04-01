@@ -28,7 +28,7 @@ from dataclasses import dataclass
 import numpy as np
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
-from ..bridge.knm_hamiltonian import knm_to_xxz_hamiltonian
+from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 
 
 @dataclass
@@ -75,8 +75,7 @@ def pairing_map(
     """Compute full pairing correlator matrix from XXZ ground state."""
     n = len(omega)
     K = K_base * K_topology
-    H_op = knm_to_xxz_hamiltonian(K, omega, delta)
-    H_mat = H_op.to_matrix()
+    H_mat = knm_to_dense_matrix(K, omega, delta=delta)
     eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
     psi0 = eigenvectors[:, 0]
 

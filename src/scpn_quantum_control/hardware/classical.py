@@ -21,6 +21,7 @@ from scipy.sparse.linalg import eigsh, expm_multiply
 from ..bridge.knm_hamiltonian import (
     OMEGA_N_16,
     build_knm_paper27,
+    knm_to_dense_matrix,
     knm_to_hamiltonian,
 )
 
@@ -184,7 +185,7 @@ def classical_exact_evolution(
             R_history[s] = _state_order_param_sparse(psi, n_osc)
     else:
         # Dense path: build U_dt once, reuse
-        H_mat = np.array(H_op.to_matrix())
+        H_mat = knm_to_dense_matrix(K, omega)
         U_dt = expm(-1j * H_mat * dt)
         for s in range(1, n_steps + 1):
             psi = U_dt @ psi
