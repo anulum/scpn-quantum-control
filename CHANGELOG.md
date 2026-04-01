@@ -3,6 +3,27 @@
 All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+
+## [0.9.6] - 2026-04-01
+
+### Added
+- **10X Architecture**: Transitioned from static VQE to a dynamic 'Strange Loop' co-evolution engine.
+- **Dynamic Coupling**: 'DynamicCouplingEngine' for Quantum Hebbian Learning (micro-entanglement driving macro-topology).
+- **Topological Optimization**: 'TopologicalCouplingOptimizer' and 'HardwareTopologicalOptimizer' using Persistent Homology ({h1}$) as a loss function on IBM hardware.
+- **Native Topological QEC**: 'BiologicalSurfaceCode' mapping stabilizers directly to the SCPN 16-layer graph topology.
+- **Open Systems**: 'LindbladSyncEngine' with memory-efficient Quantum Trajectory (MCWF) path for large-N simulation.
+- **Biological Ingestion**: EEG PLV-to-Quantum pipeline for brain state classification via structured VQE and quantum kernels.
+- **Performance**: High-performance sparse evolution engine bypassing Qiskit circuit overhead.
+- **Generalization**: 'StructuredAnsatz' class for topology-informed variational circuits on arbitrary coupling graphs.
+
+### Fixed
+- Enforced K-symmetry in 'knm_hamiltonian.py' to ensure physical Hermiticity across all variational modules (Finding #7).
+- Wrapped all example scripts in 'if __name__ == "__main__":' to prevent 'pytest' collection crashes.
+- Fixed 'delta' (anisotropy) parameter propagation in 'pairing_correlator.py' and 'xxz_phase_diagram.py'.
+- Resolved infinite recursion in 'knm_to_dense_matrix' fallback logic.
+- Added 'vqe_energy' alias in 'PhaseVQE' for backward compatibility.
+- Migrated 25+ analysis modules to Rust-accelerated dense matrix path.
+
 ## [0.9.5] - 2026-03-29
 
 ### Added
