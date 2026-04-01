@@ -1,20 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Anaesthesia and Consciousness as K Modulation
-#
-# HYPOTHESIS: Consciousness requires gamma-band synchronisation.
-# Anaesthetics reduce coupling K below K_c, causing desynchronisation.
-# Recovery = K returns above K_c. The Kuramoto model predicts:
-# - Critical anaesthetic dose = dose that pushes K below K_c
-# - Hysteresis in consciousness transitions
-# - Age-dependent vulnerability (K decreases with age)
-#
-# Also: aging as progressive K decay, predicting disease onset
-# from safety margin erosion.
-
+# SCPN Quantum Control — Anaesthesia and Consciousness as K Modulation
 import json
 
 import numpy as np

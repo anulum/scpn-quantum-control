@@ -1,20 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Protein Folding as Kuramoto Synchronisation
-#
-# HYPOTHESIS: Protein backbone dihedral angles (phi, psi) are coupled
-# phase oscillators. Protein folding = synchronisation transition.
-# The coupling topology (H-bonds, contacts) maps to K_nm.
-#
-# Tests:
-# 1. Do backbone dihedrals behave as phase oscillators?
-# 2. Does the contact map have K_nm-like exponential decay?
-# 3. Is there a "synchronisation order parameter" for folded proteins?
-# 4. Does the coupling topology produce BKT-like level statistics?
-
+# SCPN Quantum Control — Protein Folding as Kuramoto Synchronisation
 import json
 import math
 import subprocess

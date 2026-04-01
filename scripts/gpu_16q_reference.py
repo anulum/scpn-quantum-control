@@ -1,9 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — 16-qubit Classical Reference via Sparse Krylov
+# SCPN Quantum Control — 16-qubit Classical Reference via Sparse Krylov
 """Compute exact classical references for n=2..16 experiments.
 
 Uses scipy.sparse.linalg.expm_multiply (Krylov subspace) for the time

@@ -1,20 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Metabolic + Immune Oscillations as Kuramoto
-#
-# Glycolytic oscillations: PFK enzyme creates ~1 min metabolic pulses.
-# Known since Chance & Hess 1960. Cells synchronise through shared
-# metabolites (acetaldehyde in yeast, ATP in muscle).
-#
-# NF-kB oscillations: ~100 min period. THE master regulator of
-# inflammation. Single-cell tracking shows digital oscillations.
-# Number of pulses = gene expression level. This is FREQUENCY CODING.
-#
-# Both are Kuramoto systems with KNOWN parameters.
-
+# SCPN Quantum Control — Metabolic + Immune Oscillations as Kuramoto
 import json
 
 import numpy as np

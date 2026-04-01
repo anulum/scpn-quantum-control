@@ -1,22 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Calcium Waves as Spatial Kuramoto
-#
-# Intracellular Ca2+ oscillations are the universal second messenger.
-# IP3-mediated Ca2+ release creates waves that propagate through
-# gap junctions. This is SPATIAL Kuramoto: oscillators on a lattice
-# with nearest-neighbour coupling.
-#
-# Tests:
-# 1. Ca2+ wave speed vs Kuramoto phase velocity
-# 2. Spiral waves as topological defects in phase field
-# 3. Intercellular coupling via gap junctions
-# 4. Frequency encoding (amplitude vs frequency modulation)
-# 5. Pathological Ca2+ oscillations (epilepsy, arrhythmia)
-
+# SCPN Quantum Control — Calcium Waves as Spatial Kuramoto
 import json
 
 import numpy as np

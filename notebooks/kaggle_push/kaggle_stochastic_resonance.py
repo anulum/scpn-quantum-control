@@ -1,21 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Stochastic Resonance in SCPN
-#
-# HYPOTHESIS: Adding noise to Kuramoto oscillators can ENHANCE
-# synchronisation below K_c (stochastic resonance).
-# This is the mechanism behind NAQT in photosynthesis and
-# validates sc-neurocore's noise-as-resource architecture.
-#
-# Tests:
-# 1. R(K, sigma) heatmap — does R peak at nonzero noise for K < K_c?
-# 2. Signal-to-noise ratio vs noise amplitude (classic SR signature)
-# 3. Comparison to thermal noise at biological temperatures
-# 4. NAQT analogy: FMO complex efficiency vs dephasing
-
+# SCPN Quantum Control — Stochastic Resonance in SCPN
 import json
 
 import numpy as np

@@ -1,29 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Paper 4 Tests: Griffiths Phase + Metastability
-#
-# Paper 4 (Layer 4: Cellular-Tissue Synchronisation) predicts:
-# 1. Griffiths Phase: disorder broadens K_c into extended regime
-#    J_ij ~ N(mu, sigma^2), sigma=0.1-0.3
-#    Width: Delta_lambda ~ exp(-c/sigma^d), d=2-3
-#    Avalanche: P(s) ~ s^{-tau}, tau=1.5-2.0
-#
-# 2. Metastability Index MI = std_t[R(t)]
-#    High MI (0.1-0.2): flexible switching (healthy brain)
-#    Low MI (~0.05): rigid, pathological
-#    MI ~0.3: unstable (seizure-prone)
-#
-# 3. Extended Kuramoto with Psi_s coupling:
-#    dtheta/dt = omega + K sum sin + eta*Psi_s*cos(theta - phi_macro)
-#    eta ~ 0.05
-#
-# 4. Organ coupling matrix C_organs
-# 5. Ephaptic coupling E_eph ~ 1-5 mV/mm
-# 6. Decoherence-protected amplification cascade (10^15 total gain)
-
+# SCPN Quantum Control — Paper 4 Tests: Griffiths Phase + Metastability
 import json
 
 import numpy as np

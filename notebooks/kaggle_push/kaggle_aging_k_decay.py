@@ -1,21 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Aging as Progressive K Decay
-#
-# If disease = desynchronisation (finding #46), then aging =
-# progressive coupling decay. As K decreases with age, different
-# organ systems cross their K_c thresholds at different ages.
-# The order of failure is predicted by the safety margin.
-#
-# Uses measured safety margins from morphogenesis notebook (#46)
-# and measured coupling strengths from bio clocks.
-#
-# Also: circadian disruption, sarcopenia, neurodegeneration,
-# cardiac aging — all as K(age) crossing K_c.
-
+# SCPN Quantum Control — Aging as Progressive K Decay
 import json
 
 import numpy as np

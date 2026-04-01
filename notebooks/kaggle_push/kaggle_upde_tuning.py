@@ -1,18 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — UPDE Tuning from Empirical Constraints
-#
-# Universal Phase Dynamics Equation, empirically grounded:
-#   d theta_i/dt = omega_i(scale)
-#                + (K/N) sum_j K_nm(alpha_scale) sin(theta_j - theta_i)
-#                + sigma_opt(T) * xi(t)
-#
-# Calibrated from 38 findings across 12 Kaggle notebooks:
-# quantum hardware -> protein folding -> piezoelectric -> neural -> water
-
+# SCPN Quantum Control — UPDE Tuning from Empirical Constraints
 import json
 
 import numpy as np

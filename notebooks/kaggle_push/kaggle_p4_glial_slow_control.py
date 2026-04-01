@@ -1,32 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Paper 4 Test: Glial Slow Control of Criticality
-#
-# Paper 4, Section 3 (p.24-25): Astrocytic calcium waves form a slow
-# control layer that maintains quasicriticality (sigma ~ 1).
-#
-# Key equations from Paper 4:
-# 1. Astrocytic Ca2+ dynamics (reaction-diffusion):
-#    d[Ca2+]_i/dt = D_Ca nabla^2 [Ca2+] + J_release - J_uptake + J_coupling
-#    J_release = v_IP3R * ([IP3]/(K_IP3+[IP3]))^3 * ([Ca2+]/(K_Ca+[Ca2+]))^3 * (1 - [Ca2+]/[Ca2+]_ER)
-#    J_uptake = v_SERCA * [Ca2+]^2 / (K_SERCA^2 + [Ca2+]^2)
-#    J_coupling = g_gap * sum_j G_ij * ([Ca2+]_j - [Ca2+]_i)
-#
-# 2. Glial-neural phase coupling:
-#    dphi_i/dt = omega_i + (K/N) sum sin(phi_j - phi_i) + gamma_glia * G([Ca2+])
-#    G([Ca2+]) = alpha_ATP * log(1 + [Ca2+]/K_threshold) * Theta([Ca2+] - [Ca2+]_threshold)
-#
-# 3. Homeostatic control:
-#    dsigma/dt = -kappa(sigma - 1) + eta(t)
-#    with kappa ~ 0.01 s^-1
-#
-# 4. Slow control stability:
-#    dsigma/dt = -gamma(sigma - sigma_target) + beta1*F(A_a) + beta2*H(theta_sync)
-#    gamma ~ 10^-4 s^-1
-
+# SCPN Quantum Control — Paper 4 Test: Glial Slow Control of Criticality
 import json
 
 import numpy as np

@@ -1,30 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Paper 4 Test: Synchronopathies (Disease as Desync)
-#
-# Paper 4 (p.67-68) defines diseases as synchronisation failures:
-#
-# 1. Epilepsy = HYPER-synchrony: sigma > sigma_c, typically 1.5-2.0
-#    Avalanches: tau < 1.5 (vs 1.5 healthy). System escapes critical regime.
-#
-# 2. Parkinson's = pathological BETA synchrony:
-#    PLV_STN-M1(beta) > 0.6 (vs <0.3 healthy)
-#    "Frozen" network state — movement initiation blocked.
-#
-# 3. Alzheimer's = hierarchical DESYNCHRONISATION:
-#    Decreased long-range gamma coherence: C_long < 0.2
-#    Increased local theta/delta power: P(theta/delta) > 2x baseline
-#    Loss of cross-freq coupling: MI(theta,gamma) < 0.1 bits
-#
-# 4. Autism = altered E/I balance:
-#    sigma_ASD ~ 0.7-0.8 (subcritical) or 1.2-1.3 (supercritical)
-#    Hypo- or hyper-sensitivity depending on direction.
-#
-# 5. Recovery: transcranial stimulation, pharmacology, sensory entrainment.
-
+# SCPN Quantum Control — Paper 4 Test: Synchronopathies (Disease as Desync)
 import json
 
 import numpy as np

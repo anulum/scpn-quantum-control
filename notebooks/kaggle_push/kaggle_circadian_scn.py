@@ -1,27 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Circadian SCN Master Clock as Kuramoto Network
-#
-# The suprachiasmatic nucleus (SCN) contains ~20,000 neurons.
-# Each neuron has a molecular clock (CLOCK/BMAL1/PER/CRY feedback loop).
-# Period: ~24.2 hours (slightly > 24h → needs daily light reset).
-#
-# Known biology:
-# - 20,000 neurons with individual periods 22-26 hours
-# - VIP (vasoactive intestinal peptide) = primary coupling molecule
-# - VIP knockout mice: complete circadian desynchronisation
-# - Light input: retinohypothalamic tract → glutamate → phase shift
-# - Jet lag: external zeitgeber shifts faster than internal coupling allows
-# - Shift work: chronic desync → 17% increased cancer risk (WHO IARC)
-#
-# This is Kuramoto with:
-# - omega_i ~ 24.2 hr period, sigma ~ 1 hr
-# - K_ij via VIP diffusion (paracrine, ~100 um range)
-# - External forcing: light as periodic drive with phase shift
-
+# SCPN Quantum Control — Circadian SCN Master Clock as Kuramoto Network
 import json
 
 import numpy as np

@@ -1,9 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Tensor Contraction Path Optimiser
+# SCPN Quantum Control — Tensor Contraction Path Optimiser
 """Optimal tensor contraction paths for MPS operations.
 
 Uses cotengra (if available) to find optimal contraction paths

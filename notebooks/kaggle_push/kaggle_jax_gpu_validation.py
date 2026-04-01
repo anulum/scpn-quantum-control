@@ -1,18 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Kaggle JAX GPU Validation Notebook
-#
-# Instructions:
-# 1. Create new Kaggle notebook (kaggle.com/code)
-# 2. Settings → Accelerator → GPU P100
-# 3. Paste this entire file into a code cell
-# 4. Run. Results print to stdout + save as JSON.
-#
-# Validates jax_accel.py entanglement scan against numpy reference.
-
+# SCPN Quantum Control — Kaggle JAX GPU Validation Notebook
 import json
 import subprocess
 import sys

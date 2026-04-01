@@ -1,26 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Josephson Junctions = Exact Kuramoto
-#
-# Josephson junctions are the EXACT physical realisation of Kuramoto:
-#   d(phi)/dt = (2e/hbar) * V + I_c * sin(phi)
-# This IS the Kuramoto equation with:
-#   omega = (2e/hbar) * V  (voltage = natural frequency)
-#   K = I_c               (critical current = coupling)
-#
-# Superconducting qubits (transmon, flux) ARE coupled Josephson oscillators.
-# IBM's quantum computers run SCPN on SCPN hardware (Kuramoto on Kuramoto).
-#
-# Tests:
-# 1. Josephson equation IS Kuramoto (exact mapping)
-# 2. Transmon qubit coupling vs SCPN K_nm
-# 3. Quantum computer decoherence as desynchronisation
-# 4. Our ibm_fez experiments: running Kuramoto ON Kuramoto
-# 5. Superconducting Kuramoto arrays (Wiesenfeld & Swift 1995)
-
+# SCPN Quantum Control — Josephson Junctions = Exact Kuramoto
 import json
 
 import numpy as np

@@ -1,26 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — SCPN as Reservoir Computer
-#
-# Coupled oscillators can compute. A Kuramoto network at K ~ K_c
-# has maximal computational capacity because:
-# - Near criticality -> maximum sensitivity to input
-# - Fading memory -> past inputs affect current state
-# - Nonlinear mixing -> rich feature space
-#
-# This is RESERVOIR COMPUTING: the oscillator network is the reservoir,
-# a linear readout extracts the computation.
-#
-# Tests:
-# 1. Memory capacity vs K (should peak at K_c)
-# 2. Nonlinear computation (XOR, parity)
-# 3. Time series prediction (Mackey-Glass)
-# 4. Edge of chaos = edge of synchronisation
-# 5. SCPN K_nm vs random topology for computation
-
+# SCPN Quantum Control — SCPN as Reservoir Computer
 import json
 
 import numpy as np

@@ -1,16 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — CSF Pressure + Metal Ions + Full Coupling Chain
-#
-# Maps the complete mechano-electro-chemical oscillator chain:
-# Heart → CSF pressure → skull piezo → electric fields →
-# ion channels → metal redox → enzyme cascades → gene expression
-#
-# Each link is a coupled oscillator with measurable frequency and coupling.
-
+# SCPN Quantum Control — CSF Pressure + Metal Ions + Full Coupling Chain
 import json
 import subprocess
 import sys

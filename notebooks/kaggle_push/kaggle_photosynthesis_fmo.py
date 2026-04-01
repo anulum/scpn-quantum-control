@@ -1,25 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — FMO Photosynthesis as Kuramoto System
-#
-# The Fenna-Matthews-Olson complex is the best-studied quantum
-# biological system. 7 bacteriochlorophyll chromophores transfer
-# excitation energy with ~99% efficiency. KNOWN coupling matrix.
-# Direct comparison to SCPN K_nm.
-#
-# Key: Fleming et al. 2007 showed quantum coherence at 77K and 277K.
-# Engel et al. Nature 2007 — the paper that launched quantum biology.
-#
-# Tests:
-# 1. FMO coupling matrix vs SCPN K_nm structure
-# 2. Transport efficiency vs coupling topology
-# 3. Noise-assisted transport (ENAQT) — connects to our SR results
-# 4. Eigenvalue spectrum comparison
-# 5. Does Kuramoto R predict FMO efficiency?
-
+# SCPN Quantum Control — FMO Photosynthesis as Kuramoto System
 import json
 
 import numpy as np

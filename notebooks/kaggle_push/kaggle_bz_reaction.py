@@ -1,23 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Belousov-Zhabotinsky Reaction as Chemical Kuramoto
-#
-# The BZ reaction is THE canonical chemical oscillator:
-# - Ce3+/Ce4+ or Ru(bpy)3 redox oscillation
-# - Period: 30-300 s depending on concentrations
-# - In 2D: spontaneous spiral wave formation
-# - Coupled BZ droplets: exact Kuramoto realisation
-#
-# Vanag & Epstein (2001): BZ droplets in oil = coupled oscillators.
-# Each droplet is an oscillator, diffusion through oil = coupling.
-# They observed: sync, anti-sync, chimera states, spiral waves.
-#
-# KEY: K_ij depends on inter-droplet distance (diffusion coupling).
-# K_ij ~ exp(-d_ij / lambda), lambda = diffusion length ~0.5 mm.
-
+# SCPN Quantum Control — Belousov-Zhabotinsky Reaction as Chemical Kuramoto
 import json
 
 import numpy as np

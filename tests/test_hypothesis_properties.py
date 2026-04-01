@@ -1,9 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Hypothesis Property-Based Tests
+# SCPN Quantum Control — Hypothesis Property-Based Tests
 """Property-based tests using hypothesis for stochastic invariant checking.
 
 These tests generate random inputs and verify that physical and mathematical

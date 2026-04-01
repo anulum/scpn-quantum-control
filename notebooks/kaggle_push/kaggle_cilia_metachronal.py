@@ -1,29 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Cilia Metachronal Waves as Kuramoto
-#
-# Cilia are ~10 um hair-like structures that beat at 10-40 Hz.
-# Neighbouring cilia synchronise through hydrodynamic coupling
-# to form metachronal waves (travelling phase waves).
-#
-# Biology:
-# - Airway cilia: 200 cilia/cell, 10-15 Hz, mucociliary clearance
-# - Ependymal cilia: CSF flow in brain ventricles
-# - Oviduct cilia: egg transport
-# - Paramecium: ~5000 cilia, metachronal wave = locomotion
-#
-# Physics: Golestanian (2011) showed hydrodynamic coupling between
-# cilia is EXACTLY Kuramoto with distance-dependent K:
-#   K_ij ~ 1/(eta * d_ij)  (Stokes flow, eta = viscosity)
-#
-# Disease: Primary Ciliary Dyskinesia (PCD) = genetic loss of
-# dynein → cilia still beat but can't synchronise. Desync → no
-# mucus clearance → chronic infections. Kartagener syndrome: 50%
-# have situs inversus (random L-R due to loss of nodal cilia sync).
-
+# SCPN Quantum Control — Cilia Metachronal Waves as Kuramoto
 import json
 
 import numpy as np

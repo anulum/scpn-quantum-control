@@ -1,14 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Extended Enzyme Rate Validation
-#
-# Tests the r=0.89 enzyme-SCPN frequency correlation with a much larger
-# dataset of biological oscillatory processes across all 16 SCPN layers.
-# The question: is the correlation real or a n=4 artefact?
-
+# SCPN Quantum Control — Extended Enzyme Rate Validation
 import json
 import subprocess
 import sys

@@ -1,9 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Xy Kuramoto
+# SCPN Quantum Control — Xy Kuramoto
 """Quantum Kuramoto solver via XY spin Hamiltonian + Trotter evolution.
 
 The Kuramoto model d(theta_i)/dt = omega_i + K*sum_j sin(theta_j - theta_i)

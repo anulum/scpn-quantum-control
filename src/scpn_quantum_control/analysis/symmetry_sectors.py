@@ -1,9 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Z2 Parity Sector Decomposition
+# SCPN Quantum Control — Z2 Parity Sector Decomposition
 """Symmetry-aware exact diagonalisation for the XY Hamiltonian.
 
 The heterogeneous Kuramoto-XY Hamiltonian H = -Σ K_ij(X_iX_j + Y_iY_j) - Σ ω_i Z_i

@@ -1,20 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Water as Coupling Medium
-#
-# HYPOTHESIS: Water is not passive — it actively mediates K_nm coupling
-# through structured domains and collective oscillations.
-#
-# Tests:
-# 1. H-bond network oscillation frequencies vs SCPN timescales
-# 2. Proton hopping (Grotthuss) as phase transport mechanism
-# 3. Coherence domains (Del Giudice QED) — coupling length scales
-# 4. EZ water (Pollack) as coupling interface at membranes
-# 5. Dielectric relaxation spectrum of water vs SCPN structure
-
+# SCPN Quantum Control — Water as Coupling Medium
 import json
 
 import numpy as np

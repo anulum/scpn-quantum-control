@@ -1,30 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Paper 4 Test: Ephaptic Coupling + Mechanotransduction
-#
-# Paper 4 specifies THREE coupling mechanisms beyond synapses:
-#
-# 1. Ephaptic coupling (p.27, 35):
-#    E_eph ~ V/d ~ mV/mm (endogenous electric fields)
-#    DeltaV_m = -integral E_eph . dl ~ E_eph * L_cell
-#    E_eph ~ 1-5 mV/mm, L_cell ~ 100 um → DeltaV ~ 0.1-0.5 mV
-#    This shifts spike timing by 1-5 ms.
-#    Resonant amplification: G(omega) = G_0/sqrt((omega_0^2-omega^2)^2 + (gamma*omega)^2)
-#    Q factor: Q = omega_0/gamma ~ 2-10
-#
-# 2. Mechanotransduction (p.39):
-#    H_adhesion = sum (1/2)m_eff r_dot^2 + (1/2)k_adh(r-r0)^2 + V_coupling
-#    m_eff ~ 10^-15 kg, k_adh ~ 0.1-1 pN/nm
-#    Stress waves: d^2u/dt^2 = c_mech^2 nabla^2 u - gamma_damp du/dt
-#    c_mech = sqrt(E_tissue/rho) ~ 10-100 m/s
-#
-# 3. Biophotonic waveguides (p.27):
-#    Myelin sheaths as optical cladding:
-#    beta = (omega/c) * sqrt(eps_core - eps_cladding)
-
+# SCPN Quantum Control — Paper 4 Test: Ephaptic Coupling + Mechanotransduction
 import json
 
 import numpy as np
