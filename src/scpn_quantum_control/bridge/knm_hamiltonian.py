@@ -171,6 +171,14 @@ def knm_to_hamiltonian(K: np.ndarray, omega: np.ndarray) -> SparsePauliOp:
     return knm_to_xxz_hamiltonian(K, omega, delta=0.0)
 
 
+def knm_to_sparse_matrix(K: np.ndarray, omega: np.ndarray, delta: float = 0.0):
+    """Build sparse XY/XXZ Hamiltonian matrix in CSC format."""
+    H_op = knm_to_xxz_hamiltonian(K, omega, delta)
+    # to_matrix(sparse=True) returns a scipy.sparse.csr_matrix
+    raw = H_op.to_matrix(sparse=True)
+    return raw.tocsc()
+
+
 def knm_to_dense_matrix(K: np.ndarray, omega: np.ndarray, delta: float = 0.0) -> np.ndarray:
     """Build dense XY Hamiltonian matrix, Rust fast path with Qiskit fallback.
 
