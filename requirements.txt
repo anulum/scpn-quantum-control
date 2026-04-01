@@ -4,7 +4,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Pinned Runtime Dependencies
-qiskit==1.4.5
+qiskit==2.3.1
 qiskit-aer==0.15.1
 numpy==2.2.6
 scipy==1.17.1
