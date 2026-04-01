@@ -1,9 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Quantum Outer Cycle
+# SCPN Quantum Control — Quantum Outer Cycle
 """Quantum SSGF outer cycle: variational geometry descent via quantum cost.
 
 The SSGF outer cycle optimises a latent vector z that parameterises

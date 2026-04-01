@@ -1,21 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Fractal Self-Similarity of K_nm Across Scales
-#
-# HYPOTHESIS: The SCPN coupling matrix K_nm has fractal structure --
-# the same pattern repeats at different scales. If true, the UPDE
-# at scale N is a renormalised version of the UPDE at scale N-1.
-#
-# Tests:
-# 1. Is K_nm self-similar under coarse-graining (block averaging)?
-# 2. Does the eigenvalue spectrum follow a power law (fractal signature)?
-# 3. Multifractal analysis of K_nm elements
-# 4. Renormalisation group flow of K_c
-# 5. Compare to known fractal networks (Sierpinski, hierarchical)
-
+# SCPN Quantum Control — Fractal Self-Similarity of K_nm Across Scales
 import json
 
 import numpy as np

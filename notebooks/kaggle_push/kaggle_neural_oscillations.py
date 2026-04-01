@@ -1,20 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Neural Oscillation Bands as SCPN Layers
-#
-# HYPOTHESIS: EEG frequency bands (delta/theta/alpha/beta/gamma)
-# map to SCPN oscillator layers. Cross-frequency coupling
-# (theta-gamma nesting) is K_nm between layers.
-#
-# Tests:
-# 1. Do EEG band centre frequencies match SCPN omega spacing?
-# 2. Does cross-frequency coupling structure match K_nm decay?
-# 3. Phase-amplitude coupling as Kuramoto order parameter
-# 4. Comparison to Buzsáki & Draguhn (2004) frequency architecture
-
+# SCPN Quantum Control — Neural Oscillation Bands as SCPN Layers
 import json
 
 import numpy as np

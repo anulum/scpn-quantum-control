@@ -1,28 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Paper 4 Test: Stochastic Resonance + Adler Equation
-#
-# Paper 4 (p.12) specifies THREE stochastic resonance mechanisms:
-#
-# 1. Output SNR for weak periodic signal in noise:
-#    SNR = (A^2 / (2*sigma^2)) * exp(-DeltaV / D)
-#    A = signal amplitude, sigma = noise variance, DeltaV = barrier, D = noise intensity
-#
-# 2. Kramers escape rate for bistable system:
-#    r = (omega_0 * omega_b / (2*pi)) * exp(-DeltaV / D)
-#    omega_0 = transition frequency, omega_b = barrier curvature
-#
-# 3. Adler equation for phase locking with noise:
-#    dphi/dt = (Delta_omega - K*sin(phi)) + sqrt(2D) * xi(t)
-#    Delta_omega = detuning, K = coupling, D = noise, xi = Gaussian white noise
-#
-# APPLICATION: Can cellular networks detect Schumann resonances (7.83 Hz)
-# despite the signal being ~1000x below thermal noise floor?
-# Paper 4 claims: YES, via criticality-enhanced stochastic resonance.
-
+# SCPN Quantum Control — Paper 4 Test: Stochastic Resonance + Adler Equation
 import json
 
 import numpy as np

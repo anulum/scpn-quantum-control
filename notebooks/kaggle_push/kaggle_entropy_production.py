@@ -1,22 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Entropy Production in SCPN
-#
-# Prigogine: living systems are dissipative structures that maintain
-# order by producing entropy. Is the SCPN at minimum or maximum
-# entropy production? Does the sync transition correspond to a
-# thermodynamic phase transition?
-#
-# Tests:
-# 1. Shannon entropy of phase distribution vs K
-# 2. Entropy production rate (phase space contraction)
-# 3. Kullback-Leibler divergence from uniform (disorder measure)
-# 4. Free energy landscape of the Kuramoto order parameter
-# 5. Comparison to Prigogine's minimum entropy production theorem
-
+# SCPN Quantum Control — Entropy Production in SCPN
 import json
 
 import numpy as np

@@ -1,9 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Classical Reference Regression Tests
+# SCPN Quantum Control — Classical Reference Regression Tests
 """Pin pre-computed classical reference values from results/classical_16q_reference.json.
 
 These tests verify that the classical simulation code continues to produce

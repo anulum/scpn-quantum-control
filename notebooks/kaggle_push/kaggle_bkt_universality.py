@@ -1,15 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — BKT Universality Tests on Kaggle
-#
-# Tests two predictions:
-# 1. CFT central charge c=1 from entanglement scaling S ~ (c/3)ln(L)
-# 2. Spectral gap BKT essential singularity Delta ~ exp(-b/sqrt(K-K_c))
-# Plus: non-ergodicity (level spacing + eigenstate entanglement) at n=10,12
-
+# SCPN Quantum Control — BKT Universality Tests on Kaggle
 import json
 import subprocess
 import sys

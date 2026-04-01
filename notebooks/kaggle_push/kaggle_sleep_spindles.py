@@ -1,31 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Sleep Spindles + Thalamocortical Oscillations
-#
-# During NREM sleep, the thalamus generates:
-# - Sleep spindles: 11-16 Hz bursts lasting 0.5-2 s
-# - Slow oscillations: 0.5-1 Hz cortical UP/DOWN states
-# - Delta waves: 1-4 Hz
-#
-# These nest hierarchically: spindles ride on slow oscillation UP states.
-# This is EXACTLY cross-frequency coupling (CFC) via Kuramoto.
-#
-# Mechanism:
-# - Thalamic reticular nucleus (TRN): GABAergic, generates spindle rhythm
-# - Thalamocortical (TC) relay cells: burst mode during sleep
-# - Cortical slow oscillation drives thalamic excitability (K modulation)
-#
-# Memory consolidation: spindle-ripple coupling during UP state
-# transfers hippocampal memory → neocortex. This is K_nm-gated transfer.
-#
-# Diseases:
-# - Schizophrenia: reduced spindle density and amplitude
-# - Insomnia: disrupted slow-spindle coupling (K mismatch)
-# - Aging: progressive spindle loss (another K decay phenomenon)
-
+# SCPN Quantum Control — Sleep Spindles + Thalamocortical Oscillations
 import json
 
 import numpy as np

@@ -1,25 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Power Grid Synchronisation = Kuramoto
-#
-# Dörfler & Bullo (2012) proved EXACT Kuramoto equivalence:
-#   M_i * d2(delta_i)/dt2 + D_i * d(delta_i)/dt = P_i - sum_j K_ij sin(delta_i - delta_j)
-# where delta_i = rotor angle of generator i.
-#
-# The swing equation IS second-order Kuramoto with inertia.
-# - omega_i = P_i / D_i (power injection / damping → natural frequency)
-# - K_ij = V_i * V_j * B_ij (voltage product × susceptance)
-# - Blackout = desynchronisation cascade (K drops below K_c)
-#
-# European grid: 50 Hz, ~3000 generators, renewable intermittency
-# threatens sync stability. SCPN framework predicts:
-# - K_c depends on network topology (not just mean coupling)
-# - Renewable fluctuations increase effective sigma(omega)
-# - Cascading failure = progressive K_ij loss (line tripping)
-
+# SCPN Quantum Control — Power Grid Synchronisation = Kuramoto
 import json
 
 import numpy as np

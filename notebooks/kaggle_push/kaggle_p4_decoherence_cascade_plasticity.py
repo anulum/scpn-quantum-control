@@ -1,28 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Paper 4: Decoherence Cascade + Adaptive Plasticity
-#
-# Paper 4 specifies:
-#
-# A. Decoherence-Protected Amplification Cascade (p.66-67):
-#    Stage 1: Molecular coherence (10^-15 - 10^-12 s)
-#    Stage 2: Protein conformational waves (10^-9 - 10^-6 s), v~1000 m/s
-#    Stage 3: Cellular calcium oscillations (10^-3 - 10^0 s)
-#    Stage 4: Tissue synchronisation (10^0 - 10^3 s)
-#    Total amplification: A_total = 10^3 * 10^4 * 10^5 * 10^3 = 10^15
-#
-# B. Adaptive Synchronisation Plasticity (p.75-76):
-#    dK_ij/dt = eta_K * [R_ij - R_target] * H(|i-j| - r_local)
-#    domega_i/dt = eta_omega * sum K_ij * sin(phi_j - phi_i - Delta_ij)
-#    Memory: M_ij = integral W(t) * cos(phi_i - phi_j) dt
-#
-# C. Ghost Stochastic Resonance (p.72):
-#    P(f_ghost) = P_0 * [J_0(A/D)]^2 * delta(f - f_ghost)
-#    Detects frequencies NOT present in input via nonlinear mixing
-
+# SCPN Quantum Control — Paper 4: Decoherence Cascade + Adaptive Plasticity
 import json
 
 import numpy as np

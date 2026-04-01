@@ -1,25 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Cancer + Parkinson's: Both Sides of K_c
-#
-# Disease is NOT always desynchronisation. Two failure modes:
-#   K < K_c: desync (aging, arrhythmia, jet lag)
-#   K > K_c_hyper: hypersync (epilepsy, Parkinson's tremor, cancer)
-#
-# Cancer: cell cycle oscillators (CDK/cyclin) lose coupling to
-# tissue-level signals but GAIN internal coupling -> uncontrolled
-# synchronised division.
-#
-# Parkinson's: basal ganglia beta oscillations become pathologically
-# strong (15-30 Hz). DBS disrupts this hypersynchrony.
-#
-# Epilepsy: cortical hypersynchrony. Seizure = R -> 1.
-#
-# The healthy state lives in a Goldilocks zone: K_c < K < K_hyper
-
+# SCPN Quantum Control — Cancer + Parkinson's: Both Sides of K_c
 import json
 
 import numpy as np

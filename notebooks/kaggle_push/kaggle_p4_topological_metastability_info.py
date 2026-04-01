@@ -1,30 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Paper 4 Test: Topological Phases + Metastability + Phi
-#
-# Paper 4 specifies:
-#
-# A. Topological phase transitions (p.71-72):
-#    Winding number W = (1/2pi) oint nabla phi . dl = n (integer)
-#    Topological Synchronization Index TSI (Chern number)
-#    Phase diagram: TSI=1 (sync) vs TSI=0 (chimera/async)
-#    Edge states: psi_edge ~ exp(-x/xi_loc) * exp(ik_edge*x)
-#
-# B. Metastability Index (p.53-55):
-#    MI = std_t[R(t)], R(t) = (1/N)|sum exp(i theta_j)|
-#    High MI (0.1-0.2) = flexible switching
-#    Low MI (~0.05) = rigid, less adaptable
-#    MI ~ 0.3 = unstable desynchronisation
-#
-# C. Integrated Information Phi (p.73-74):
-#    Phi peaks at sigma=1 (criticality)
-#    Phi(sigma) ~ Phi_max * exp(-(sigma-1)^2 / (2*sigma_Phi^2))
-#    sigma_Phi ~ 0.1
-#    Transfer entropy: TE_max at Delta_phi = pi/2 (excitatory)
-
+# SCPN Quantum Control — Paper 4 Test: Topological Phases + Metastability + Phi
 import json
 
 import numpy as np

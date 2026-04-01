@@ -1,9 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Multi-Platform Circuit Export
+# SCPN Quantum Control — Multi-Platform Circuit Export
 """Export Kuramoto-XY Trotter circuits to multiple quantum platforms.
 
 Supports: OpenQASM 3.0, Cirq JSON, PyQuil Quil, PennyLane tape.

@@ -1,23 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Schumann Resonance and EEG Theta Band
-#
-# Earth's electromagnetic cavity (ionosphere-surface) resonates at
-# 7.83 Hz (fundamental), 14.3, 20.8, 27.3, 33.8 Hz (harmonics).
-# These fall EXACTLY in the EEG bands: theta, alpha, beta, gamma.
-# Coincidence? Or has the brain evolved to resonate with its
-# electromagnetic environment?
-#
-# Tests:
-# 1. Schumann frequencies vs EEG band centres
-# 2. Statistical test: random match probability
-# 3. Coupling mechanism: can Earth's field affect neural oscillators?
-# 4. Schumann as external K_nm driver for circadian/ultradian rhythms
-# 5. Planetary scale in the SCPN frequency hierarchy
-
+# SCPN Quantum Control — Schumann Resonance and EEG Theta Band
 import json
 
 import numpy as np

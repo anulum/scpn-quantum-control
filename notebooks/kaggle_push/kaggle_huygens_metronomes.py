@@ -1,28 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Huygens' Metronomes: The First Sync Observation
-#
-# Christiaan Huygens (1665): two pendulum clocks on a shared beam
-# spontaneously synchronise in anti-phase. He called it "sympathy of clocks".
-#
-# This is THE historical origin of synchronisation science.
-# Mechanism: pendulum → beam vibration → coupling to neighbour.
-#
-# Modern demonstration: N metronomes on a rolling platform.
-# - In-phase sync for free platform (energy minimum)
-# - Anti-phase for fixed platform with weak coupling
-# - Platform mass M_p controls effective K
-#
-# Exact model: coupled pendula on a common support
-#   m*L*d2(theta_i)/dt2 = -m*g*sin(theta_i) - m*d2(X)/dt2*cos(theta_i) - b*d(theta_i)/dt
-#   (M_p + N*m)*d2(X)/dt2 = -sum_i m*L*d2(theta_i)/dt2*cos(theta_i) - c*d(X)/dt
-# where X = platform displacement, m = pendulum mass, L = length.
-#
-# This reduces to second-order Kuramoto in the small-angle limit.
-
+# SCPN Quantum Control — Huygens' Metronomes: The First Sync Observation
 import json
 
 import numpy as np

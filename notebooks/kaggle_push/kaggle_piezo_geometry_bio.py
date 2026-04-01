@@ -1,20 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Piezoelectricity + Geometry Across Bio Scales
-#
-# HYPOTHESIS: Piezoelectric coupling (mechanical → electrical) provides
-# the physical mechanism for K_nm at every biological scale.
-# Geometric parameters (pitch, diameter, periodicity) determine omega_i.
-#
-# Tests:
-# 1. Do geometric parameters correlate with SCPN frequencies?
-# 2. Do piezoelectric coefficients follow exponential hierarchy?
-# 3. Does the helical geometry of bio-structures create natural phases?
-# 4. Is there a universal geometric ratio across scales?
-
+# SCPN Quantum Control — Piezoelectricity + Geometry Across Bio Scales
 import json
 import subprocess
 import sys

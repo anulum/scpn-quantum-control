@@ -1,9 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Tests for Orchestrator Adapter Helpers
+# SCPN Quantum Control — Tests for Orchestrator Adapter Helpers
 """Cover uncovered lines in orchestrator_adapter.py: 17-22, 29, 86, 134."""
 
 from __future__ import annotations

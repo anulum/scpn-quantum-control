@@ -1,28 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Laser Mode-Locking = Photon Phase Kuramoto
-#
-# A laser cavity supports N longitudinal modes with frequencies:
-#   f_n = n * c / (2L), spacing Δf = c / (2L)
-# Mode-locking = all modes synchronise their phases.
-# When locked: constructive interference → ultrashort pulses (fs-ps).
-# When unlocked: random phases → CW noise.
-#
-# The coupling mechanism:
-# - Passive: saturable absorber (intensity-dependent loss favours pulses)
-# - Active: acousto-optic modulator at Δf
-# - Kerr lens: nonlinear refractive index (self-focusing at high intensity)
-#
-# Haus (1975): mode-locking equations reduce to coupled oscillators.
-# The pulse IS the order parameter (r=1 → perfect pulse, r=0 → CW noise).
-#
-# SCPN connection: each mode is an oscillator with frequency nΔf.
-# Nonlinear medium provides all-to-all coupling through four-wave mixing.
-# K_nm = chi(3) * E_n * E_m (third-order susceptibility × field amplitudes).
-
+# SCPN Quantum Control — Laser Mode-Locking = Photon Phase Kuramoto
 import json
 
 import numpy as np

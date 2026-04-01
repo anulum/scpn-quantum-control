@@ -1,26 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Orbital Resonances as Planetary Kuramoto
-#
-# Orbital resonances are Kuramoto synchronisation at cosmic scale:
-# - Io:Europa:Ganymede = 1:2:4 (Laplace resonance, stable for 4 Gyr)
-# - Pluto:Neptune = 2:3 (prevents close encounters)
-# - Mercury spin-orbit = 3:2 (tidal locking with resonance)
-# - TRAPPIST-1: 7 planets in near-resonant chain
-#
-# The coupling mechanism: gravitational torques at conjunction.
-# When two orbits approach integer ratio, periodic gravitational
-# kicks drive the system toward (or away from) exact resonance.
-#
-# Kuramoto mapping:
-# - theta_i = orbital phase (mean anomaly)
-# - omega_i = mean motion (2*pi/orbital_period)
-# - K_ij = gravitational coupling ~ m_j / a_ij^2
-# - Resonance = phase-locking at rational frequency ratio
-
+# SCPN Quantum Control — Orbital Resonances as Planetary Kuramoto
 import json
 
 import numpy as np

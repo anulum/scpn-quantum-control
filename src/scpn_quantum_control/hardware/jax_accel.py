@@ -1,9 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — JAX GPU Acceleration
+# SCPN Quantum Control — JAX GPU Acceleration
 """JAX-accelerated quantum analysis for large systems (n=16-25 qubits).
 
 Provides vectorised coupling scans via jax.vmap — runs the full scan

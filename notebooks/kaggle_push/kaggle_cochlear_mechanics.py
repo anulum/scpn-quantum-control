@@ -1,24 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Cochlear Hair Cells as Kuramoto Chain
-#
-# The cochlea is a frequency-sorted oscillator array:
-# - 3,500 inner hair cells, each tuned to a specific frequency
-# - Base: 20 kHz. Apex: 20 Hz. Logarithmic mapping.
-# - Outer hair cells actively amplify via electromotility (prestin)
-# - Otoacoustic emissions: the ear EMITS sound (active oscillation!)
-#
-# This is a 1D Kuramoto chain with:
-# - omega gradient (tonotopic map)
-# - nearest-neighbour coupling (basilar membrane)
-# - active amplification (OHC gain = K boost)
-#
-# The cochlea is the BEST biological example of a frequency-graded
-# coupled oscillator system. Direct SCPN comparison.
-
+# SCPN Quantum Control — Cochlear Hair Cells as Kuramoto Chain
 import json
 
 import numpy as np

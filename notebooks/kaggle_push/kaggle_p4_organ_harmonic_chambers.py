@@ -1,26 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Paper 4 Test: Organ Harmonic Chambers
-#
-# Paper 4, Section 6 (p.28-29): Organs as resonant chambers with
-# specific harmonic signatures. Each organ has eigenmodes determined
-# by its geometry and tissue properties.
-#
-# Key equations:
-# 1. Organ resonance: nabla^2 p + (omega^2/c^2)p = -rho_0 dq/dt
-# 2. Heart (ellipsoid): psi_nlm = j_l(k_n r) Y_l^m(theta, phi)
-#    Resonances: 0.5-2 Hz (heartbeat), 20-200 Hz (sounds)
-# 3. Lungs (fractal bronchial): Z_acoustic = Z_0 (i*omega/omega_0)^{-(1-D_f)/2}
-#    D_f ~ 1.7, resonances: 100-1000 Hz
-# 4. Brain (sphere+ventricles): psi = R_nl(r) Y_l^m * [1 - V_ventricle(r)]
-#    Resonances: 0.1-100 Hz (neural oscillations)
-# 5. Liver (lobed): psi = sum_lobes psi_lobe * exp(i*delta_lobe)
-#    Resonances: 0.01-1 Hz (metabolic)
-# 6. Organ-organ coupling: H = sum g_12 integral psi_1* psi_2 d^3r
-
+# SCPN Quantum Control — Paper 4 Test: Organ Harmonic Chambers
 import json
 
 import numpy as np

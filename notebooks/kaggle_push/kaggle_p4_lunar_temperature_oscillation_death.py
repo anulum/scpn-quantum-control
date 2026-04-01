@@ -1,27 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Paper 4 Tests: Lunar Phase-Locking + Thermal K + Oscillation Death
-#
-# Three specific Paper 4 predictions tested:
-#
-# A. Lunar-cellular phase locking (p.30):
-#    V_lunar(t) = V_0 [1 + eps1*cos(omega_lunar*t) + eps2*cos(2*omega_lunar*t)]
-#    Arnold tongue: |omega_cell - omega_lunar| < K
-#    Mitosis modulation: R(t) = R_0 [1 + alpha_lunar*cos(omega_lunar*t - phi_0)]
-#    alpha_lunar ~ 0.05-0.15
-#
-# B. Temperature-dependent oscillators (p.24):
-#    omega_i(T) = omega_0 * exp(-E_a/(k_B*T)) * (1 + alpha_T*DeltaT)
-#    K(T) = K_0 * (T/T_0)^alpha_temp * exp(-DeltaG/(k_B*T))
-#
-# C. Oscillation death and revival (p.49):
-#    Amplitude death: K > K_critical → stable fixed point
-#    Revival: K(t) = K_0[1 + eps*cos(omega_revival*t)]
-#    Aging transition: P_active(t) = exp(-t/tau_aging)
-
+# SCPN Quantum Control — Paper 4 Tests: Lunar Phase-Locking + Thermal K + Oscillation Death
 import json
 
 import numpy as np

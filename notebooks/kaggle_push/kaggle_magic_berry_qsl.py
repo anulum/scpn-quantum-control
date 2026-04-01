@@ -1,17 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Magic + Berry Phase + Quantum Speed Limit
-#
-# Three novel probes of the synchronisation transition:
-# 1. Magic (non-stabilizerness) M2 — quantum resource cost
-# 2. Berry phase — geometric phase across K_c
-# 3. Quantum speed limit — minimum time for state evolution
-#
-# Run on Kaggle CPU (no GPU needed, pure numpy)
-
+# SCPN Quantum Control — Magic + Berry Phase + Quantum Speed Limit
 import json
 import subprocess
 import sys

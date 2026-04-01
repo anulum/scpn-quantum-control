@@ -1,22 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — DNA Breathing Modes as Coupled Oscillators
-#
-# DNA base pairs open and close ("breathe") on ~10 ps timescale.
-# The Peyrard-Bishop-Dauxois (PBD) model treats this as coupled
-# nonlinear oscillators along the backbone. This IS a Kuramoto-like
-# system where the coupling is through stacking interactions.
-#
-# Tests:
-# 1. PBD model parameters vs SCPN K_nm structure
-# 2. Denaturation bubble as phase slip (desynchronisation)
-# 3. AT vs GC base pair frequencies (different omega)
-# 4. Promoter regions as coupling topology features
-# 5. Transcription bubble dynamics
-
+# SCPN Quantum Control — DNA Breathing Modes as Coupled Oscillators
 import json
 
 import numpy as np

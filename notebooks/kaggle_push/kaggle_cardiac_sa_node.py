@@ -1,26 +1,10 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Cardiac SA Node as Kuramoto Network
-#
-# The sinoatrial (SA) node contains ~10,000 pacemaker cells.
-# Each cell is an autonomous oscillator (HCN channels → funny current).
-# Gap junctions (connexin-43) provide electrical coupling K_ij.
-#
-# Known biology:
-# - Natural freq: 60-100 bpm (1.0-1.67 Hz), spread ~0.2 Hz
-# - Gap junction conductance: 1-10 nS per junction
-# - Each cell connects to ~6 neighbours (hexagonal packing)
-# - Coupling converts 10,000 noisy oscillators → one clean rhythm
-#
-# Diseases as Kuramoto failures:
-# - Sick sinus syndrome: K_ij degrades (fibrosis blocks gap junctions)
-# - Atrial fibrillation: spatial chaos from re-entrant waves
-# - Heart block: K between SA and AV nodes drops below threshold
-# - Defibrillation: electrical reset forces all phases to theta=0
-
+# SCPN Quantum Control — Cardiac SA Node as Kuramoto Network
 import json
 
 import numpy as np
