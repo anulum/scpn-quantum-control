@@ -25,7 +25,7 @@ from __future__ import annotations
 import numpy as np
 from scipy.linalg import expm
 
-from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 
 
 def trotter_error_norm(
@@ -43,7 +43,7 @@ def trotter_error_norm(
         raise ValueError(f"n={n} too large for exact unitary comparison (max 10)")
 
     H_op = knm_to_hamiltonian(K, omega)
-    H_mat = np.array(H_op.to_matrix())
+    H_mat = knm_to_dense_matrix(K, omega)
 
     U_exact = expm(-1j * H_mat * t)
 

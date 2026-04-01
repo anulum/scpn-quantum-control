@@ -35,7 +35,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 
 
 @dataclass
@@ -128,8 +128,8 @@ def enaqt_scan(
     if gamma_range is None:
         gamma_range = np.logspace(-3, 1, 20)
 
-    H_op = knm_to_hamiltonian(K, omega)
-    H_raw = H_op.to_matrix()
+    knm_to_hamiltonian(K, omega)
+    H_raw = knm_to_dense_matrix(K, omega)
     H_mat = H_raw.toarray() if hasattr(H_raw, "toarray") else np.array(H_raw)
 
     dim = 2**n

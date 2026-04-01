@@ -39,7 +39,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.linalg import expm
 
-from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 
 
 @dataclass
@@ -152,8 +152,7 @@ def mpemba_experiment(
     dim = 2**n
     K = K_base * K_topology
 
-    H_op = knm_to_hamiltonian(K, omega)
-    H_mat = H_op.to_matrix()
+    H_mat = knm_to_dense_matrix(K, omega)
 
     # Steady state: evolve |0⟩ for long time under Lindblad
     L_super = _lindblad_superoperator(H_mat, gamma, n)

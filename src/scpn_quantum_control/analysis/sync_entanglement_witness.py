@@ -55,7 +55,7 @@ from dataclasses import dataclass
 import numpy as np
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
-from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 
 
 @dataclass
@@ -101,8 +101,8 @@ def R_separable_bound_at_energy(
     Computed via random sampling of product state parameters.
     """
     n = K.shape[0]
-    H_op = knm_to_hamiltonian(K, omega)
-    H_mat = np.array(H_op.to_matrix())
+    knm_to_hamiltonian(K, omega)
+    H_mat = knm_to_dense_matrix(K, omega)
 
     rng = np.random.default_rng(seed)
     best_R = 0.0

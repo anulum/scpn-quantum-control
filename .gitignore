@@ -44,3 +44,7 @@ paper/*.pdf
 paper/*.bib
 paper/*.bbl
 paper/*.blg
+
+# Claude Code local config — never commit
+CLAUDE.md
+.claude/

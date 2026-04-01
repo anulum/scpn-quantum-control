@@ -36,7 +36,7 @@ import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
-from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 
 
 class InitialState(Enum):
@@ -109,8 +109,8 @@ def simulate_sync_trajectory(
     Uses exact matrix exponential (no Trotter error).
     """
     n = K.shape[0]
-    H_op = knm_to_hamiltonian(K, omega)
-    H_mat = np.array(H_op.to_matrix())
+    knm_to_hamiltonian(K, omega)
+    H_mat = knm_to_dense_matrix(K, omega)
 
     init_qc = prepare_initial_state(n, state_type, omega)
     psi = np.array(Statevector.from_instruction(init_qc))

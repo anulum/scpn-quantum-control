@@ -31,7 +31,7 @@ from dataclasses import dataclass
 import numpy as np
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
-from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 
 
 @dataclass
@@ -56,8 +56,8 @@ def _pauli_features_from_hamiltonian(
     Uses exact diagonalization (no circuit evolution needed for ground state).
     """
     n = len(omega)
-    H_op = knm_to_hamiltonian(K, omega)
-    H_mat = H_op.to_matrix()
+    knm_to_hamiltonian(K, omega)
+    H_mat = knm_to_dense_matrix(K, omega)
     eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
     psi0 = np.ascontiguousarray(eigenvectors[:, 0])
     sv = Statevector(psi0)

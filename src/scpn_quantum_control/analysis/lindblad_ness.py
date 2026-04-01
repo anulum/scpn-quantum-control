@@ -27,7 +27,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.linalg import expm
 
-from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 from .quantum_mpemba import _R_from_density_matrix
 
 
@@ -105,8 +105,8 @@ def compute_ness(
     dim = 2**n
     K = K_base * K_topology
 
-    H_op = knm_to_hamiltonian(K, omega)
-    H_mat = H_op.to_matrix()
+    knm_to_hamiltonian(K, omega)
+    H_mat = knm_to_dense_matrix(K, omega)
     L_super = _lindblad_superoperator(H_mat, gamma, n)
 
     # NESS: evolve |0⟩ for long time
