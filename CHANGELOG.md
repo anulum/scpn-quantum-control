@@ -4,7 +4,7 @@ All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 
-## [0.9.6] - 2026-04-01
+## [0.9.5] - 2026-04-01
 
 ### Added
 - **10X Architecture**: Transitioned from static VQE to a dynamic 'Strange Loop' co-evolution engine.
