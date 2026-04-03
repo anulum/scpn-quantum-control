@@ -32,4 +32,4 @@ class TestLindbladSyncEngine:
         omega = np.array([1.0, 1.0, 1.0])
         engine = LindbladSyncEngine(K, omega)
         # Should have 4 jump operators (0->1, 1->0, 1->2, 2->1)
-        assert len(engine.L_ops) == 4
+        assert len(engine.L_ops_dense) == 4
