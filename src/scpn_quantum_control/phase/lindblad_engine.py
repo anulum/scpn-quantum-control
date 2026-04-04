@@ -26,6 +26,13 @@ from scipy.sparse.linalg import expm_multiply
 
 from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_sparse_matrix
 
+try:
+    import scpn_quantum_engine as _engine
+
+    _HAS_RUST = True
+except ImportError:
+    _HAS_RUST = False
+
 
 class LindbladSyncEngine:
     """Solves the Lindblad master equation for open quantum system sync."""
@@ -66,22 +73,48 @@ class LindbladSyncEngine:
     def _build_jump_operators_sparse(self) -> list:
         from scipy.sparse import csr_matrix
 
-        L_ops = []
+        if _HAS_RUST:
+            r_rows, r_cols, r_starts, r_n_ops = _engine.lindblad_jump_ops_coo(
+                self.K.ravel(), self.n, 1e-5
+            )
+            r_rows_a = np.array(r_rows)
+            r_cols_a = np.array(r_cols)
+            r_starts_a = np.array(r_starts)
+            rust_ops: list = []
+            for k in range(r_n_ops):
+                s, e = int(r_starts_a[k]), int(r_starts_a[k + 1])
+                r_data = np.ones(e - s, dtype=complex)
+                L = csr_matrix(
+                    (r_data, (r_rows_a[s:e], r_cols_a[s:e])),
+                    shape=(self.dim, self.dim),
+                    dtype=complex,
+                )
+                rust_ops.append(L)
+            return rust_ops
+
+        L_ops: list = []
         for i in range(self.n):
             for j in range(self.n):
                 if i != j and abs(self.K[i, j]) > 1e-5:
-                    row, col, data = [], [], []
+                    row_l: list[int] = []
+                    col_l: list[int] = []
+                    data_l: list[float] = []
                     for idx in range(self.dim):
                         if ((idx >> i) & 1) == 1 and ((idx >> j) & 1) == 0:
                             flipped = idx ^ ((1 << i) | (1 << j))
-                            row.append(flipped)
-                            col.append(idx)
-                            data.append(1.0)
-                    L = csr_matrix((data, (row, col)), shape=(self.dim, self.dim), dtype=complex)
+                            row_l.append(flipped)
+                            col_l.append(idx)
+                            data_l.append(1.0)
+                    L = csr_matrix(
+                        (data_l, (row_l, col_l)), shape=(self.dim, self.dim), dtype=complex
+                    )
                     L_ops.append(L)
         return L_ops
 
     def _build_anti_hermitian_sum(self) -> np.ndarray:
+        if _HAS_RUST:
+            return np.array(_engine.lindblad_anti_hermitian_diag(self.K.ravel(), self.n, 1e-5))
+
         diag = np.zeros(self.dim, dtype=float)
         for i in range(self.n):
             for j in range(self.n):

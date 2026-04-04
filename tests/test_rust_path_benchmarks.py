@@ -556,3 +556,218 @@ class TestStateOrderParamSparse:
         R2 = eng.state_order_param_sparse(psi_re, psi_im, n)
         # Allow small deviation due to different computation paths
         np.testing.assert_allclose(R1, R2, atol=0.01)
+
+
+# ---------------------------------------------------------------------------
+# 19. correlation_matrix_xy — XY correlation matrix from statevector
+# ---------------------------------------------------------------------------
+
+
+class TestCorrelationMatrixXY:
+    @pytest.mark.parametrize("n", [2, 3, 4, 5])
+    def test_shape_and_symmetry(self, n):
+        rng = np.random.default_rng(42)
+        psi = rng.standard_normal(2**n) + 1j * rng.standard_normal(2**n)
+        psi /= np.linalg.norm(psi)
+        C = np.array(eng.correlation_matrix_xy(psi.real.copy(), psi.imag.copy(), n))
+        assert C.shape == (n, n)
+        np.testing.assert_allclose(C, C.T, atol=1e-12)
+
+    def test_diagonal_zero(self):
+        n = 4
+        rng = np.random.default_rng(42)
+        psi = rng.standard_normal(2**n) + 1j * rng.standard_normal(2**n)
+        psi /= np.linalg.norm(psi)
+        C = np.array(eng.correlation_matrix_xy(psi.real.copy(), psi.imag.copy(), n))
+        np.testing.assert_allclose(np.diag(C), 0.0)
+
+    def test_parity_with_qiskit(self):
+        """Rust correlation matrix matches Qiskit expectation values."""
+        from qiskit.quantum_info import SparsePauliOp, Statevector
+
+        n = 3
+        rng = np.random.default_rng(42)
+        psi = rng.standard_normal(2**n) + 1j * rng.standard_normal(2**n)
+        psi /= np.linalg.norm(psi)
+
+        C_rust, dt_r = _timed(eng.correlation_matrix_xy, psi.real.copy(), psi.imag.copy(), n)
+        C_rust = np.array(C_rust)
+
+        t0 = time.perf_counter()
+        sv = Statevector(psi)
+        C_py = np.zeros((n, n))
+        for i in range(n):
+            for j in range(i + 1, n):
+                x_str = ["I"] * n
+                x_str[i] = "X"
+                x_str[j] = "X"
+                xx = sv.expectation_value(SparsePauliOp("".join(reversed(x_str)))).real
+                y_str = ["I"] * n
+                y_str[i] = "Y"
+                y_str[j] = "Y"
+                yy = sv.expectation_value(SparsePauliOp("".join(reversed(y_str)))).real
+                C_py[i, j] = xx + yy
+                C_py[j, i] = xx + yy
+        dt_p = (time.perf_counter() - t0) * 1000
+
+        np.testing.assert_allclose(C_rust, C_py, atol=1e-10)
+        _perf(f"correlation_matrix_xy (n={n})", dt_r, dt_p)
+
+    def test_benchmark_scaling(self):
+        """Benchmark correlation_matrix_xy for increasing system sizes."""
+        for n in [4, 6, 8]:
+            rng = np.random.default_rng(42)
+            psi = rng.standard_normal(2**n) + 1j * rng.standard_normal(2**n)
+            psi /= np.linalg.norm(psi)
+            _, dt = _timed(eng.correlation_matrix_xy, psi.real.copy(), psi.imag.copy(), n)
+            _perf(f"correlation_matrix_xy (n={n})", dt)
+
+
+# ---------------------------------------------------------------------------
+# 20. lindblad_jump_ops_coo — Lindblad jump operator COO data
+# ---------------------------------------------------------------------------
+
+
+class TestLindbladJumpOpsCOO:
+    def test_operator_count(self):
+        """Number of jump operators matches Python construction."""
+        K = np.array([[0, 0.5, 0.1], [0.5, 0, 0.3], [0.1, 0.3, 0]])
+        n = 3
+        _, _, starts, n_ops = eng.lindblad_jump_ops_coo(K.ravel(), n, 1e-5)
+        # 6 active directed pairs (i,j): (0,1),(1,0),(0,2),(2,0),(1,2),(2,1)
+        assert n_ops == 6
+
+    def test_sparse_matrix_reconstruction(self):
+        """COO data can reconstruct valid sparse matrices."""
+        from scipy.sparse import csr_matrix
+
+        K = np.array([[0, 0.5], [0.5, 0]])
+        n = 2
+        dim = 4
+        rows, cols, starts, n_ops = eng.lindblad_jump_ops_coo(K.ravel(), n, 1e-5)
+        rows = np.array(rows)
+        cols = np.array(cols)
+        starts = np.array(starts)
+
+        for k in range(n_ops):
+            s, e = int(starts[k]), int(starts[k + 1])
+            data = np.ones(e - s)
+            L = csr_matrix((data, (rows[s:e], cols[s:e])), shape=(dim, dim))
+            # Each L should have exactly 1 non-zero per column (at most)
+            assert L.nnz <= dim
+
+    def test_parity_with_python(self):
+        """Rust COO data matches Python loop construction."""
+        K = np.array([[0, 0.5, 0], [0.5, 0, 0.3], [0, 0.3, 0]])
+        n = 3
+        dim = 1 << n
+
+        rows_r, cols_r, starts_r, n_ops = eng.lindblad_jump_ops_coo(K.ravel(), n, 1e-5)
+        rows_r = np.array(rows_r)
+        cols_r = np.array(cols_r)
+        starts_r = np.array(starts_r)
+
+        t0 = time.perf_counter()
+        py_ops = []
+        for i in range(n):
+            for j in range(n):
+                if i != j and abs(K[i, j]) > 1e-5:
+                    r_py, c_py = [], []
+                    for idx in range(dim):
+                        if ((idx >> i) & 1) == 1 and ((idx >> j) & 1) == 0:
+                            r_py.append(idx ^ ((1 << i) | (1 << j)))
+                            c_py.append(idx)
+                    py_ops.append((sorted(r_py), sorted(c_py)))
+        dt_p = (time.perf_counter() - t0) * 1000
+
+        _, dt_r = _timed(eng.lindblad_jump_ops_coo, K.ravel(), n, 1e-5)
+
+        assert n_ops == len(py_ops)
+        for k in range(n_ops):
+            s, e = int(starts_r[k]), int(starts_r[k + 1])
+            assert sorted(rows_r[s:e]) == py_ops[k][0]
+            assert sorted(cols_r[s:e]) == py_ops[k][1]
+
+        _perf(f"lindblad_jump_ops_coo (n={n})", dt_r, dt_p)
+
+    def test_benchmark_scaling(self):
+        for n in [3, 5, 7]:
+            rng = np.random.default_rng(42)
+            K = rng.random((n, n)) * 0.3
+            K = (K + K.T) / 2
+            np.fill_diagonal(K, 0)
+            _, dt = _timed(eng.lindblad_jump_ops_coo, K.ravel(), n, 1e-5)
+            _perf(f"lindblad_jump_ops_coo (n={n})", dt)
+
+
+# ---------------------------------------------------------------------------
+# 21. lindblad_anti_hermitian_diag — anti-Hermitian sum diagonal
+# ---------------------------------------------------------------------------
+
+
+class TestLindbladAntiHermitianDiag:
+    def test_parity_with_python(self):
+        K = np.array([[0, 0.5, 0.1], [0.5, 0, 0.3], [0.1, 0.3, 0]])
+        n = 3
+        dim = 1 << n
+
+        diag_rust, dt_r = _timed(eng.lindblad_anti_hermitian_diag, K.ravel(), n, 1e-5)
+        diag_rust = np.array(diag_rust)
+
+        t0 = time.perf_counter()
+        diag_py = np.zeros(dim)
+        for i in range(n):
+            for j in range(n):
+                if i != j and abs(K[i, j]) > 1e-5:
+                    for idx in range(dim):
+                        if ((idx >> i) & 1) == 1 and ((idx >> j) & 1) == 0:
+                            diag_py[idx] += 1.0
+        dt_p = (time.perf_counter() - t0) * 1000
+
+        np.testing.assert_allclose(diag_rust, diag_py)
+        _perf(f"lindblad_anti_hermitian_diag (n={n})", dt_r, dt_p)
+
+    def test_non_negative(self):
+        n = 4
+        rng = np.random.default_rng(42)
+        K = rng.random((n, n)) * 0.5
+        K = (K + K.T) / 2
+        np.fill_diagonal(K, 0)
+        diag = np.array(eng.lindblad_anti_hermitian_diag(K.ravel(), n, 1e-5))
+        assert np.all(diag >= 0)
+
+    def test_ground_state_zero(self):
+        """All-zeros state |0...0> has zero jump channels."""
+        K = np.ones((3, 3)) - np.eye(3)
+        n = 3
+        diag = np.array(eng.lindblad_anti_hermitian_diag(K.ravel(), n, 1e-5))
+        assert diag[0] == 0.0  # |000> — no excitations to transfer
+
+
+# ---------------------------------------------------------------------------
+# 22. parity_filter_mask — Z2 parity classification
+# ---------------------------------------------------------------------------
+
+
+class TestParityFilterMask:
+    def test_known_parities(self):
+        bs = np.array([0, 1, 2, 3, 4, 5, 6, 7], dtype=np.uint64)
+        even = np.array(eng.parity_filter_mask(bs, 0))
+        odd = np.array(eng.parity_filter_mask(bs, 1))
+        # popcount: 0→0, 1→1, 2→1, 3→2, 4→1, 5→2, 6→2, 7→3
+        expected_even = [True, False, False, True, False, True, True, False]
+        expected_odd = [False, True, True, False, True, False, False, True]
+        assert list(even) == expected_even
+        assert list(odd) == expected_odd
+
+    def test_empty_input(self):
+        bs = np.array([], dtype=np.uint64)
+        result = np.array(eng.parity_filter_mask(bs, 0))
+        assert len(result) == 0
+
+    def test_benchmark_large(self):
+        """Benchmark parity filtering on 10k bitstrings."""
+        rng = np.random.default_rng(42)
+        bs = rng.integers(0, 2**20, size=10_000).astype(np.uint64)
+        _, dt = _timed(eng.parity_filter_mask, bs, 0)
+        _perf("parity_filter_mask (10k × 20-bit)", dt)

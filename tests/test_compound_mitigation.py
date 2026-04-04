@@ -47,3 +47,73 @@ class TestCompoundMitigation:
         # 20% odd parity should be rejected
         assert abs(res.mean_rejection_rate - 0.2) < 1e-6
         assert np.isfinite(res.mitigated_value)
+
+    def test_odd_parity_expectation(self):
+        """Parity postselect correctly filters with expected_parity=1."""
+        from scpn_quantum_control.mitigation.symmetry_verification import parity_postselect
+
+        counts = {"01": 700, "10": 200, "00": 100}
+        res = parity_postselect(counts, expected_parity=1)
+        # "01" and "10" are odd parity → verified
+        assert res.verified_shots == 900
+        assert res.rejected_shots == 100
+        assert abs(res.rejection_rate - 0.1) < 1e-6
+
+    def test_zero_rejection_rate(self):
+        """All-correct parity yields zero rejection."""
+        qc = QuantumCircuit(2)
+        target_counts = {"00": 500, "11": 500}
+
+        def mock_backend(circuits):
+            return [{"00": 500, "11": 500} for _ in circuits]
+
+        res = compound_mitigate_pipeline(
+            target_circuit=qc,
+            target_counts=target_counts,
+            run_on_backend=mock_backend,
+            expected_parity=0,
+            n_training=5,
+            seed=42,
+        )
+        assert res.mean_rejection_rate == 0.0
+
+    def test_full_rejection_rate(self):
+        """All-wrong parity yields 100% rejection."""
+        qc = QuantumCircuit(2)
+        target_counts = {"01": 500, "10": 500}
+
+        def mock_backend(circuits):
+            return [{"01": 500, "10": 500} for _ in circuits]
+
+        res = compound_mitigate_pipeline(
+            target_circuit=qc,
+            target_counts=target_counts,
+            run_on_backend=mock_backend,
+            expected_parity=0,
+            n_training=5,
+            seed=42,
+        )
+        assert res.mean_rejection_rate == 1.0
+
+    def test_result_fields_finite(self):
+        """All numeric result fields must be finite."""
+        qc = QuantumCircuit(2)
+        qc.h(0)
+        target_counts = {"00": 400, "01": 100, "10": 100, "11": 400}
+
+        def mock_backend(circuits):
+            return [{"00": 400, "01": 100, "10": 100, "11": 400} for _ in circuits]
+
+        res = compound_mitigate_pipeline(
+            target_circuit=qc,
+            target_counts=target_counts,
+            run_on_backend=mock_backend,
+            expected_parity=0,
+            n_training=10,
+            seed=42,
+        )
+        assert np.isfinite(res.raw_value)
+        assert np.isfinite(res.mitigated_value)
+        assert np.isfinite(res.regression_r_squared)
+        assert np.isfinite(res.regression_slope)
+        assert np.isfinite(res.regression_intercept)
