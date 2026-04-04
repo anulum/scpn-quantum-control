@@ -50,3 +50,47 @@ def test_biological_mwpm_decoder_single_error():
 
     # Check if correction matches error (or is equivalent up to stabilizer)
     assert np.array_equal(correction, err_z)
+
+
+def test_mwpm_decoder_no_defects():
+    """Empty syndrome → zero correction."""
+    K = np.array(
+        [[0.0, 1.0, 0.0, 0.0], [1.0, 0.0, 1.0, 0.0], [0.0, 1.0, 0.0, 1.0], [0.0, 0.0, 1.0, 0.0]]
+    )
+    code = BiologicalSurfaceCode(K)
+    decoder = BiologicalMWPMDecoder(code)
+    syn_x = np.zeros(code.num_x_stabs, dtype=np.int8)
+    correction = decoder.decode_z_errors(syn_x)
+    assert np.all(correction == 0)
+
+
+def test_mwpm_decoder_odd_defects():
+    """Odd number of defects triggers truncation to even."""
+    K = np.array(
+        [[0.0, 1.0, 0.0, 0.0], [1.0, 0.0, 1.0, 0.0], [0.0, 1.0, 0.0, 1.0], [0.0, 0.0, 1.0, 0.0]]
+    )
+    code = BiologicalSurfaceCode(K)
+    decoder = BiologicalMWPMDecoder(code)
+    # Manually create syndrome with 3 defects (odd)
+    syn_x = np.zeros(code.num_x_stabs, dtype=np.int8)
+    syn_x[0] = 1
+    syn_x[1] = 1
+    syn_x[2] = 1
+    correction = decoder.decode_z_errors(syn_x)
+    assert correction.shape == (code.num_data,)
+
+
+def test_mwpm_decoder_disconnected_nodes():
+    """Two disconnected components cannot form a path → NetworkXNoPath branch."""
+    # Block-diagonal coupling: nodes {0,1} coupled, nodes {2,3} coupled, no cross
+    K = np.array(
+        [[0.0, 1.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0], [0.0, 0.0, 1.0, 0.0]]
+    )
+    code = BiologicalSurfaceCode(K)
+    decoder = BiologicalMWPMDecoder(code)
+    # Defects in different components: node 0 and node 2
+    syn_x = np.zeros(code.num_x_stabs, dtype=np.int8)
+    syn_x[0] = 1
+    syn_x[2] = 1
+    correction = decoder.decode_z_errors(syn_x)
+    assert correction.shape == (code.num_data,)
