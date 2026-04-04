@@ -31,7 +31,7 @@ class TestEEGClassification:
 
         assert isinstance(res, EEGVQEResult)
         assert res.n_channels == n
-        assert res.success is True
+        assert res.success
         # 6 single-qubit ops + 2 CZs = 8 params?
         # Actually 6 single-qubit ops => 6 parameters per rep. reps=1 => 6 params.
         assert res.n_params == 6
