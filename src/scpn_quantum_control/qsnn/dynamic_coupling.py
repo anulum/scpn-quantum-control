@@ -33,9 +33,9 @@ from qiskit.quantum_info import SparsePauliOp, Statevector
 from scpn_quantum_control.hardware.fast_classical import fast_sparse_evolution
 
 try:
-    import scpn_quantum_engine as _engine
+    import scpn_quantum_engine as _engine  # pragma: no cover
 
-    _HAS_RUST = True
+    _HAS_RUST = True  # pragma: no cover
 except ImportError:
     _HAS_RUST = False
 
@@ -68,7 +68,7 @@ class DynamicCouplingEngine:
         falling back to Qiskit SparsePauliOp expectations otherwise.
         """
         psi = np.asarray(statevector, dtype=complex)
-        if _HAS_RUST:
+        if _HAS_RUST:  # pragma: no cover
             return np.array(
                 _engine.correlation_matrix_xy(psi.real.copy(), psi.imag.copy(), self.n)
             )

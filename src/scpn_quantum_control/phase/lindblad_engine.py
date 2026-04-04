@@ -27,9 +27,9 @@ from scipy.sparse.linalg import expm_multiply
 from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_sparse_matrix
 
 try:
-    import scpn_quantum_engine as _engine
+    import scpn_quantum_engine as _engine  # pragma: no cover
 
-    _HAS_RUST = True
+    _HAS_RUST = True  # pragma: no cover
 except ImportError:
     _HAS_RUST = False
 
@@ -73,7 +73,7 @@ class LindbladSyncEngine:
     def _build_jump_operators_sparse(self) -> list:
         from scipy.sparse import csr_matrix
 
-        if _HAS_RUST:
+        if _HAS_RUST:  # pragma: no cover
             r_rows, r_cols, r_starts, r_n_ops = _engine.lindblad_jump_ops_coo(
                 self.K.ravel(), self.n, 1e-5
             )
@@ -112,7 +112,7 @@ class LindbladSyncEngine:
         return L_ops
 
     def _build_anti_hermitian_sum(self) -> np.ndarray:
-        if _HAS_RUST:
+        if _HAS_RUST:  # pragma: no cover
             return np.array(_engine.lindblad_anti_hermitian_diag(self.K.ravel(), self.n, 1e-5))
 
         diag = np.zeros(self.dim, dtype=float)
