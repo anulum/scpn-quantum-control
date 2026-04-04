@@ -19,6 +19,11 @@
 [![Hardware: ibm_fez](https://img.shields.io/badge/hardware-ibm__fez%20Heron%20r2-blueviolet.svg)]()
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/anulum/scpn-quantum-control/blob/main/notebooks/01_kuramoto_xy_dynamics.ipynb)
 
+> **Active Development** — scpn-quantum-control is under intensive development. The quantum simulation engine, all 17 subpackages (165 modules), and the full pipeline (K_nm coupling → Hamiltonian → Trotter/VQE → IBM hardware → analysis) are fully functional, tested (2,813+ passing tests, 95% coverage), and validated on IBM Heron r2 hardware. We are currently pushing coverage toward 100%, preparing the arXiv preprint, and awaiting IBM Quantum Credits allocation. APIs may evolve as this work progresses.
+
+**Version:** 0.9.5
+**Status:** 165 Python Modules + 22 Rust Functions | 47 Notebooks | 21 Examples | 95% Coverage | IBM Hardware Validated
+
 ---
 
 ## Quick Start
