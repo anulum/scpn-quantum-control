@@ -133,3 +133,52 @@ class TestKoopmanToHamiltonian:
         H = koopman_to_hamiltonian(L)
         eigs = np.linalg.eigvalsh(H)
         assert np.all(np.isreal(eigs))
+
+
+# ---------------------------------------------------------------------------
+# Coverage: 2-oscillator, edge cases, generator structure
+# ---------------------------------------------------------------------------
+
+
+class TestKoopman2Oscillator:
+    def test_2osc_dimension(self):
+        assert koopman_dimension(2) == 4
+
+    def test_2osc_generator(self):
+        K = np.array([[0, 0.5], [0.5, 0]])
+        omega = np.array([1.0, 1.5])
+        L, labels = build_koopman_generator(K, omega)
+        # 2 theta + 1 cos + 1 sin = 4
+        assert L.shape == (4, 4)
+        assert len(labels) == 4
+
+    def test_2osc_analysis(self):
+        K = np.array([[0, 0.5], [0.5, 0]])
+        omega = np.array([1.0, 1.5])
+        result = koopman_analysis(K, omega)
+        assert result.n_oscillators == 2
+        assert result.n_observables == 4
+
+    def test_2osc_hamiltonian_size(self):
+        K = np.array([[0, 0.5], [0.5, 0]])
+        omega = np.array([1.0, 1.5])
+        L, _ = build_koopman_generator(K, omega)
+        H = koopman_to_hamiltonian(L)
+        assert H.shape == (4, 4)
+
+
+class TestKoopmanGeneratorPhysics:
+    def test_identical_frequencies_block(self):
+        """Identical frequencies → Δω=0 → cos-sin coupling vanishes."""
+        K = np.array([[0, 1.0], [1.0, 0]])
+        omega = np.array([1.0, 1.0])
+        L, _ = build_koopman_generator(K, omega)
+        # cos-sin block: L[2,3] and L[3,2] should be 0 (Δω=0)
+        assert abs(L[2, 3]) < 1e-10
+        assert abs(L[3, 2]) < 1e-10
+
+    def test_generator_finite(self):
+        K = build_knm_paper27(L=4)
+        omega = OMEGA_N_16[:4]
+        L, _ = build_koopman_generator(K, omega)
+        assert np.all(np.isfinite(L))

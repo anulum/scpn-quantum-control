@@ -210,3 +210,92 @@ class TestKrylovPipeline:
 
         print(f"\n  PIPELINE Knm→Krylov (3q, 30 times): {dt:.1f} ms")
         print(f"  Peak K(t) = {result.peak_complexity:.4f}")
+
+
+# ---------------------------------------------------------------------------
+# Coverage: internal helpers, edge cases, default parameters
+# ---------------------------------------------------------------------------
+
+
+class TestInternalHelpers:
+    def test_liouvillian_action_commutator(self):
+        from scpn_quantum_control.analysis.krylov_complexity import _liouvillian_action
+
+        H = np.array([[1, 0], [0, -1]], dtype=complex)
+        X = np.array([[0, 1], [1, 0]], dtype=complex)
+        L_X = _liouvillian_action(H, X)
+        expected = H @ X - X @ H
+        np.testing.assert_allclose(L_X, expected, atol=1e-12)
+
+    def test_liouvillian_identity_is_zero(self):
+        from scpn_quantum_control.analysis.krylov_complexity import _liouvillian_action
+
+        H = np.diag([1.0, 2.0, 3.0, 4.0]).astype(complex)
+        I_op = np.eye(4, dtype=complex)
+        L_I = _liouvillian_action(H, I_op)
+        np.testing.assert_allclose(L_I, 0.0, atol=1e-12)
+
+    def test_operator_inner_product_self(self):
+        from scpn_quantum_control.analysis.krylov_complexity import (
+            _operator_inner_product,
+        )
+
+        A = np.array([[1, 0], [0, -1]], dtype=complex)
+        ip = _operator_inner_product(A, A)
+        assert ip > 0
+
+    def test_operator_inner_product_orthogonal(self):
+        from scpn_quantum_control.analysis.krylov_complexity import (
+            _operator_inner_product,
+        )
+
+        X = np.array([[0, 1], [1, 0]], dtype=complex)
+        Z = np.array([[1, 0], [0, -1]], dtype=complex)
+        ip = _operator_inner_product(X, Z)
+        assert abs(ip) < 1e-10  # Tr(X†Z)/d = 0
+
+    def test_operator_inner_product_normalisation(self):
+        from scpn_quantum_control.analysis.krylov_complexity import (
+            _operator_inner_product,
+        )
+
+        I2 = np.eye(2, dtype=complex)
+        ip = _operator_inner_product(I2, I2)
+        np.testing.assert_allclose(ip, 1.0, atol=1e-12)  # Tr(I)/2 = 1
+
+
+class TestLanczosEdgeCases:
+    def test_zero_operator(self):
+        K = 2.0 * _ring(2)
+        omega = OMEGA_N_16[:2]
+        H = knm_to_hamiltonian(K, omega).to_matrix()
+        zero_op = np.zeros((4, 4), dtype=complex)
+        b, basis = lanczos_coefficients(H, zero_op)
+        assert len(b) == 1
+        assert b[0] == 0.0
+
+    def test_max_steps_respected(self):
+        K = 2.0 * _ring(3)
+        omega = OMEGA_N_16[:3]
+        H = knm_to_hamiltonian(K, omega).to_matrix()
+        Z0 = np.diag([1, 1, 1, 1, -1, -1, -1, -1]).astype(complex)
+        b, _ = lanczos_coefficients(H, Z0, max_steps=3)
+        assert len(b) <= 3
+
+
+class TestKrylovComplexityEdgeCases:
+    def test_trivial_operator(self):
+        """Operator that commutes with H → constant zero complexity."""
+        H = np.diag([1.0, 2.0, 3.0, 4.0]).astype(complex)
+        D = np.diag([0.5, 0.3, 0.1, 0.7]).astype(complex)
+        result = krylov_complexity(H, D, t_max=5.0, n_times=10)
+        assert result.peak_complexity < 1e-6
+
+
+class TestKrylovVsCouplingDefaults:
+    def test_default_k_range(self):
+        T = _ring(2)
+        omega = OMEGA_N_16[:2]
+        result = krylov_vs_coupling(omega, T)
+        assert len(result["K_base"]) == 10  # default linspace 0.5-5.0, 10 pts
+        assert "mean_b" in result

@@ -126,3 +126,67 @@ class TestPercolationScan:
         omega = OMEGA_N_16[:n]
         result = percolation_scan(omega, T, k_range=np.array([2.0, 5.0]))
         assert len(result.n_entangled_pairs) == 2
+
+
+# ---------------------------------------------------------------------------
+# Coverage: internal helpers, concurrence edge cases
+# ---------------------------------------------------------------------------
+
+
+class TestConcurrence2Qubit:
+    def test_product_state(self):
+        from scpn_quantum_control.analysis.entanglement_percolation import (
+            _concurrence_2qubit,
+        )
+
+        rho = np.diag([1.0, 0, 0, 0]).astype(complex)
+        assert _concurrence_2qubit(rho) < 1e-6
+
+    def test_bell_state(self):
+        from scpn_quantum_control.analysis.entanglement_percolation import (
+            _concurrence_2qubit,
+        )
+
+        psi = np.array([1, 0, 0, 1], dtype=complex) / np.sqrt(2)
+        rho = np.outer(psi, psi.conj())
+        c = _concurrence_2qubit(rho)
+        np.testing.assert_allclose(c, 1.0, atol=0.01)
+
+    def test_maximally_mixed(self):
+        from scpn_quantum_control.analysis.entanglement_percolation import (
+            _concurrence_2qubit,
+        )
+
+        rho = np.eye(4, dtype=complex) / 4.0
+        assert _concurrence_2qubit(rho) < 1e-6
+
+
+class TestOrderParameterFromState:
+    def test_all_up_r_one(self):
+        from scpn_quantum_control.analysis.entanglement_percolation import (
+            _order_parameter_from_state,
+        )
+
+        psi = np.zeros(4, dtype=complex)
+        psi[0] = 1.0  # |00⟩
+        r = _order_parameter_from_state(psi, 2)
+        assert 0 <= r <= 1.0
+
+    def test_superposition(self):
+        from scpn_quantum_control.analysis.entanglement_percolation import (
+            _order_parameter_from_state,
+        )
+
+        psi = np.ones(4, dtype=complex) / 2.0
+        r = _order_parameter_from_state(psi, 2)
+        assert 0 <= r <= 1.0 + 1e-6
+
+
+class TestFiedlerEdgeCases:
+    def test_single_node(self):
+        adj = np.zeros((1, 1))
+        assert fiedler_eigenvalue(adj) == 0.0
+
+    def test_two_connected(self):
+        adj = np.array([[0, 1], [1, 0]], dtype=float)
+        assert fiedler_eigenvalue(adj) > 0
