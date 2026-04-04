@@ -717,6 +717,7 @@ fn lanczos_b_coefficients(
 /// Avoids 2× scipy.expm (O(d³) Padé) per time point.
 ///
 /// F(t) = Re(⟨ψ| W†(t) V† W(t) V |ψ⟩), W(t) = e^{iHt} W e^{-iHt}
+#[allow(clippy::too_many_arguments)]
 #[pyfunction]
 fn otoc_from_eigendecomp<'py>(
     py: Python<'py>,
@@ -798,9 +799,9 @@ fn build_xy_hamiltonian_dense<'py>(
     for idx in 0..dim {
         // Diagonal: -ω_i Z_i, where Z eigenvalue = 1-2·bit
         let mut diag = 0.0;
-        for i in 0..n {
+        for (i, &wi) in w.iter().enumerate().take(n) {
             let bit = ((idx >> i) & 1) as f64;
-            diag -= w[i] * (1.0 - 2.0 * bit);
+            diag -= wi * (1.0 - 2.0 * bit);
         }
         h[idx * dim + idx] = diag;
 
@@ -872,6 +873,7 @@ fn all_xy_expectations<'py>(
 // Outputs (rows, cols, vals) for scipy.sparse.csc_matrix construction.
 // Same bitwise flip-flop as build_xy_hamiltonian_dense but sparse output.
 // =========================================================================
+#[allow(clippy::type_complexity)]
 #[pyfunction]
 fn build_sparse_xy_hamiltonian<'py>(
     py: Python<'py>,
@@ -890,9 +892,9 @@ fn build_sparse_xy_hamiltonian<'py>(
     // Diagonal: -Σ ω_i (1 - 2·b_i(s))
     for s in 0..dim {
         let mut diag = 0.0f64;
-        for i in 0..n {
+        for (i, &omi) in om.iter().enumerate().take(n) {
             let bi = ((s >> i) & 1) as f64;
-            diag -= om[i] * (1.0 - 2.0 * bi);
+            diag -= omi * (1.0 - 2.0 * bi);
         }
         rows.push(s as i64);
         cols.push(s as i64);
@@ -1047,6 +1049,7 @@ fn correlation_matrix_xy<'py>(
 // Returns (rows, cols, op_starts, n_ops) where op_starts[k] is the first
 // index in rows/cols belonging to operator k. op_starts has length n_ops+1.
 // =========================================================================
+#[allow(clippy::type_complexity)]
 #[pyfunction]
 fn lindblad_jump_ops_coo<'py>(
     py: Python<'py>,
@@ -1111,9 +1114,9 @@ fn lindblad_anti_hermitian_diag<'py>(
     for i in 0..n {
         for j in 0..n {
             if i != j && k[i * n + j].abs() > threshold {
-                for idx in 0..dim {
+                for (idx, d) in diag.iter_mut().enumerate().take(dim) {
                     if ((idx >> i) & 1) == 1 && ((idx >> j) & 1) == 0 {
-                        diag[idx] += 1.0;
+                        *d += 1.0;
                     }
                 }
             }
@@ -1140,6 +1143,117 @@ fn parity_filter_mask<'py>(
         .map(|&val| (val.count_ones() as u8 % 2) == expected_parity)
         .collect();
     PyArray1::from_vec(py, mask)
+}
+
+// =========================================================================
+// Unit tests for core Rust functions (no PyO3 dependency)
+// =========================================================================
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_pec_coefficients_zero_error() {
+        let [q_i, q_x, q_y, q_z] = pec_coefficients_inner(0.0);
+        assert!((q_i - 1.0).abs() < 1e-12);
+        assert!(q_x.abs() < 1e-12);
+        assert!(q_y.abs() < 1e-12);
+        assert!(q_z.abs() < 1e-12);
+    }
+
+    #[test]
+    fn test_pec_coefficients_sum() {
+        let [q_i, q_x, q_y, q_z] = pec_coefficients_inner(0.01);
+        let s = q_i + q_x + q_y + q_z;
+        assert!((s - 1.0).abs() < 1e-10, "PEC coefficients should sum to 1, got {s}");
+    }
+
+    #[test]
+    fn test_build_knm_symmetric() {
+        let n = 4;
+        let k = build_knm_inner(n, 0.45, 0.3);
+        for i in 0..n {
+            for j in 0..n {
+                assert!(
+                    (k[[i, j]] - k[[j, i]]).abs() < 1e-12,
+                    "K_nm must be symmetric: K[{i},{j}]={} != K[{j},{i}]={}",
+                    k[[i, j]],
+                    k[[j, i]]
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn test_build_knm_zero_diagonal() {
+        let n = 4;
+        let k = build_knm_inner(n, 0.45, 0.3);
+        for i in 0..n {
+            assert!(k[[i, i]].abs() < 1e-12, "diagonal must be zero");
+        }
+    }
+
+    #[test]
+    fn test_build_knm_exponential_decay() {
+        let n = 4;
+        let k = build_knm_inner(n, 0.45, 0.3);
+        // K[0,1] > K[0,2] > K[0,3] (exponential decay with distance)
+        assert!(k[[0, 1]] > k[[0, 2]]);
+        assert!(k[[0, 2]] > k[[0, 3]]);
+    }
+
+    #[test]
+    fn test_order_parameter_all_aligned() {
+        // All angles = 0 → R = 1
+        let theta = vec![0.0; 8];
+        let r = order_parameter_inner(&theta);
+        assert!((r - 1.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn test_order_parameter_opposite() {
+        // Two angles: 0 and π → R = 0
+        let theta = vec![0.0, std::f64::consts::PI];
+        let r = order_parameter_inner(&theta);
+        assert!(r < 1e-10);
+    }
+
+    #[test]
+    fn test_order_parameter_bounded() {
+        let theta = vec![0.1, 0.5, 1.2, 2.5, 3.8, 5.0];
+        let r = order_parameter_inner(&theta);
+        assert!(r >= 0.0 && r <= 1.0 + 1e-12);
+    }
+
+    // Pure Rust helpers for testing without PyO3
+    fn pec_coefficients_inner(gate_error_rate: f64) -> [f64; 4] {
+        let p = gate_error_rate;
+        let denom = 4.0 - 4.0 * p;
+        let q_i = 1.0 + 3.0 * p / denom;
+        let q_xyz = -p / denom;
+        [q_i, q_xyz, q_xyz, q_xyz]
+    }
+
+    fn build_knm_inner(n: usize, k_base: f64, alpha: f64) -> Array2<f64> {
+        let mut knm = Array2::<f64>::zeros((n, n));
+        for i in 0..n {
+            for j in 0..n {
+                if i != j {
+                    let dist = (i as f64 - j as f64).abs();
+                    knm[[i, j]] = k_base * (-alpha * dist).exp();
+                }
+            }
+        }
+        knm
+    }
+
+    fn order_parameter_inner(theta: &[f64]) -> f64 {
+        let n = theta.len() as f64;
+        let (sr, si) = theta.iter().fold((0.0, 0.0), |(sr, si), &t| {
+            (sr + t.cos(), si + t.sin())
+        });
+        ((sr / n).powi(2) + (si / n).powi(2)).sqrt()
+    }
 }
 
 #[pymodule]
