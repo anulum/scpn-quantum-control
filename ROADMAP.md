@@ -81,14 +81,39 @@ Cross-repo integrations wired:
 - Kaggle registered, notebook pushed, ORCID profile filled
 - New docs: `rust_engine.md` with benchmark tables, API updates across 4 doc pages
 
+### v0.9.4 (March 2026)
+
+- 81 new tests (PennyLane mock, JAX mock, ripser mock, hardware runner mock, fallbacks)
+- OpenSSF Best Practices badge (100% passing)
+- 3 benchmark API docs: gpu_baseline, mps_baseline, appqsim_protocol
+- Coverage 95%→98%, 2715 tests
+- Experiment roadmap + crypto branch updated for completed March hardware campaign
+
+### v0.9.5 (March–April 2026)
+
+- **10X Architecture:** Strange Loop co-evolution engine (DynamicCouplingEngine, TopologicalCouplingOptimizer)
+- **BiologicalSurfaceCode:** native topological QEC on SCPN 16-layer graph
+- **LindbladSyncEngine:** MCWF trajectory path for large-N open systems
+- **StructuredAnsatz:** topology-informed variational circuits for arbitrary coupling graphs
+- **EEG Classification:** PLV-to-quantum pipeline for brain state analysis
+- **27 FIM notebooks** (NB14–47): 19 discoveries, 6 honest negative results
+- **IBM hardware v2:** 9 equal-depth fair experiments on ibm_fez confirming dual protection
+- **Rust engine expanded:** 15→22 functions (correlation_matrix_xy, lindblad_jump_ops_coo, lindblad_anti_hermitian_diag, parity_filter_mask)
+- **Documentation audit:** 21 discrepancies fixed, 26 analysis + 10 phase + 3 bridge exports added
+- Fixed backend_dispatch jax.numpy AttributeError
+- 165 Python modules, 22 Rust functions, 47 notebooks, 21 examples
+- 2813+ tests, 95% coverage
+
 ## v1.0.0 (Target: Q3 2026)
 
 Remaining items:
 
-- [ ] Version bump to 1.0.0
-- [ ] IBM Heron r2 hardware campaign (20 experiments, 10 min QPU/month)
+- [x] IBM Heron r2 hardware campaign (20/20 experiments complete)
+- [ ] Coverage push to 100% (currently 95%, 572 uncovered lines)
 - [ ] arXiv preprint: "Quantum simulation of coupled-oscillator synchronization on a 156-qubit superconducting processor"
 - [ ] Quantum advantage figure: exponential crossover curve (hardware data)
+- [ ] IBM Quantum Credits campaign (applied 2026-03-29, pending review)
+- [ ] Version bump to 1.0.0
 
 ## Future
 
