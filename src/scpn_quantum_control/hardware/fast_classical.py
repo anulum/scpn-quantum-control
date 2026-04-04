@@ -56,7 +56,7 @@ def fast_sparse_evolution(
     dim = 1 << n
 
     if initial_state is None:
-        psi = np.zeros(dim, dtype=complex)
+        psi: np.ndarray = np.zeros(dim, dtype=complex)
         psi[0] = 1.0
     else:
         psi = np.ascontiguousarray(initial_state, dtype=complex)
