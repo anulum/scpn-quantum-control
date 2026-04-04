@@ -54,3 +54,48 @@ class TestStructuredAnsatz:
         K = np.ones((2, 2))
         with pytest.raises(ValueError):
             build_structured_ansatz(K, entanglement_gate="rx")
+
+    def test_parameter_count(self):
+        """Total parameters = n_qubits * 2 * reps."""
+        for n in [2, 3, 4]:
+            for reps in [1, 2, 3]:
+                K = np.ones((n, n))
+                qc = build_structured_ansatz(K, reps=reps)
+                assert qc.num_parameters == n * 2 * reps
+
+    def test_threshold_boundary(self):
+        """Coupling exactly at threshold IS included."""
+        K = np.array([[0, 0.5], [0.5, 0]])
+        qc = build_structured_ansatz(K, reps=1, threshold=0.5)
+        ops = qc.count_ops()
+        assert ops.get("cz", 0) == 1
+
+    def test_below_threshold_excluded(self):
+        """Coupling just below threshold is excluded."""
+        K = np.array([[0, 0.499], [0.499, 0]])
+        qc = build_structured_ansatz(K, reps=1, threshold=0.5)
+        ops = qc.count_ops()
+        assert ops.get("cz", 0) == 0
+
+    def test_asymmetric_matrix_symmetrised(self):
+        """Asymmetric input is symmetrised before gate placement."""
+        K = np.array([[0, 1.0, 0], [0, 0, 0], [0, 0, 0]])
+        qc = build_structured_ansatz(K, reps=1, threshold=0.1)
+        ops = qc.count_ops()
+        # (K + K.T)/2 gives K[0,1]=K[1,0]=0.5 → above threshold
+        assert ops.get("cz", 0) == 1
+
+    def test_multiple_reps_gate_count(self):
+        """Each rep adds its own layer of entangling gates."""
+        K = np.array([[0, 1], [1, 0]])
+        for reps in [1, 2, 4]:
+            qc = build_structured_ansatz(K, reps=reps)
+            ops = qc.count_ops()
+            assert ops["cz"] == reps  # 1 pair × reps layers
+
+    def test_cnot_alias(self):
+        """'cnot' is accepted as alias for 'cx'."""
+        K = np.array([[0, 1], [1, 0]])
+        qc = build_structured_ansatz(K, reps=1, entanglement_gate="cnot")
+        ops = qc.count_ops()
+        assert ops.get("cx", 0) == 1

@@ -32,6 +32,13 @@ from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from scpn_quantum_control.hardware.fast_classical import fast_sparse_evolution
 
+try:
+    import scpn_quantum_engine as _engine
+
+    _HAS_RUST = True
+except ImportError:
+    _HAS_RUST = False
+
 
 class DynamicCouplingEngine:
     """Engine for Quantum-Classical Co-evolution."""
@@ -55,25 +62,32 @@ class DynamicCouplingEngine:
         np.fill_diagonal(self.K, 0.0)
 
     def _measure_correlation_matrix(self, statevector: np.ndarray) -> np.ndarray:
-        """Measure the XY correlation matrix from the quantum state."""
-        sv = Statevector(statevector)
+        """Measure the XY correlation matrix from the quantum state.
+
+        Uses Rust-accelerated bitwise computation when available,
+        falling back to Qiskit SparsePauliOp expectations otherwise.
+        """
+        psi = np.asarray(statevector, dtype=complex)
+        if _HAS_RUST:
+            return np.array(
+                _engine.correlation_matrix_xy(psi.real.copy(), psi.imag.copy(), self.n)
+            )
+
+        sv = Statevector(psi)
         C = np.zeros((self.n, self.n))
 
         for i in range(self.n):
             for j in range(i + 1, self.n):
-                # XX
                 x_str = ["I"] * self.n
                 x_str[i] = "X"
                 x_str[j] = "X"
                 xx = sv.expectation_value(SparsePauliOp("".join(reversed(x_str)))).real
 
-                # YY
                 y_str = ["I"] * self.n
                 y_str[i] = "Y"
                 y_str[j] = "Y"
                 yy = sv.expectation_value(SparsePauliOp("".join(reversed(y_str)))).real
 
-                # Total XY correlation
                 corr = xx + yy
                 C[i, j] = corr
                 C[j, i] = corr

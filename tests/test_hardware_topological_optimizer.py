@@ -45,3 +45,41 @@ class TestHardwareTopologicalOptimizer:
         assert "gradient_norm" in res
         assert res["K_updated"].shape == (n, n)
         np.testing.assert_allclose(res["K_updated"], res["K_updated"].T)
+
+    def test_hardware_optimizer_multi_step(self):
+        """Multiple steps produce expected history length."""
+        if not _RIPSER_AVAILABLE:
+            pytest.skip("ripser not available")
+        n = 2
+        initial_K = np.array([[0.0, 0.2], [0.2, 0.0]])
+        omega = np.array([5.0, 10.0])
+        runner = HardwareRunner(use_simulator=True)
+        runner.connect()
+        opt = HardwareTopologicalOptimizer(
+            runner=runner, n_qubits=n, initial_K=initial_K, omega=omega, dt=0.5
+        )
+        history = opt.optimize(steps=2, n_samples=1)
+        assert len(history) == 2
+        for step in history:
+            np.testing.assert_allclose(step["K_updated"], step["K_updated"].T, atol=1e-12)
+            assert np.all(step["K_updated"] >= -1e-15)
+
+    def test_hardware_optimizer_k_non_negative(self):
+        """K entries must remain >= 0 with hardware path."""
+        if not _RIPSER_AVAILABLE:
+            pytest.skip("ripser not available")
+        n = 2
+        initial_K = np.array([[0.0, 0.05], [0.05, 0.0]])
+        omega = np.array([5.0, 10.0])
+        runner = HardwareRunner(use_simulator=True)
+        runner.connect()
+        opt = HardwareTopologicalOptimizer(
+            runner=runner,
+            n_qubits=n,
+            initial_K=initial_K,
+            omega=omega,
+            learning_rate=1.0,
+            dt=0.5,
+        )
+        res = opt.step(n_samples=1)
+        assert np.all(res["K_updated"] >= -1e-15)

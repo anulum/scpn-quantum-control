@@ -18,9 +18,17 @@ and enables simulation of N=20 systems on standard hardware in seconds.
 from __future__ import annotations
 
 import numpy as np
+from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import expm_multiply
 
 from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_xxz_hamiltonian
+
+try:
+    import scpn_quantum_engine as _engine
+
+    _HAS_RUST = True
+except ImportError:
+    _HAS_RUST = False
 
 
 def fast_sparse_evolution(
@@ -53,9 +61,16 @@ def fast_sparse_evolution(
     else:
         psi = np.ascontiguousarray(initial_state, dtype=complex)
 
-    # Use Qiskit's SparsePauliOp to easily generate the sparse matrix
-    H_op = knm_to_xxz_hamiltonian(K, omega, delta)
-    H_sparse = H_op.to_matrix(sparse=True).tocsc()
+    # Rust-accelerated Hamiltonian construction for XY model (delta=0)
+    if _HAS_RUST and delta == 0.0:
+        rows, cols, vals = _engine.build_sparse_xy_hamiltonian(K.ravel(), omega, n)
+        rows = np.array(rows)
+        cols = np.array(cols)
+        vals = np.array(vals)
+        H_sparse = csc_matrix((vals, (rows, cols)), shape=(dim, dim))
+    else:
+        H_op = knm_to_xxz_hamiltonian(K, omega, delta)
+        H_sparse = H_op.to_matrix(sparse=True).tocsc()
 
     # The evolution operator is U = exp(-i H t)
     # We want to evolve by dt = t_total / n_steps

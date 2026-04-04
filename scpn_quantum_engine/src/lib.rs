@@ -990,6 +990,158 @@ fn order_param_from_statevector(
     (z_re * z_re + z_im * z_im).sqrt()
 }
 
+// =========================================================================
+// XY correlation matrix C[i,j] = <XX_ij + YY_ij> from statevector.
+// Used by DynamicCouplingEngine for Hebbian learning.
+// Parallelised over qubit pairs via rayon.
+// =========================================================================
+#[pyfunction]
+fn correlation_matrix_xy<'py>(
+    py: Python<'py>,
+    psi_re: PyReadonlyArray1<'_, f64>,
+    psi_im: PyReadonlyArray1<'_, f64>,
+    n_osc: usize,
+) -> Bound<'py, PyArray2<f64>> {
+    let re = psi_re.as_slice().unwrap();
+    let im = psi_im.as_slice().unwrap();
+    let dim = 1usize << n_osc;
+
+    // Collect all upper-triangle pairs for parallel iteration
+    let pairs: Vec<(usize, usize)> = (0..n_osc)
+        .flat_map(|i| ((i + 1)..n_osc).map(move |j| (i, j)))
+        .collect();
+
+    // XX + YY = 2 * sum_{k: b_i XOR b_j = 1} Re(psi*_k * psi_{k^mask})
+    // Derivation: XX flips both bits, YY flips both with phase -(-1)^{b_i+b_j}.
+    // When b_i == b_j: XX + YY = 0. When b_i != b_j: XX + YY = 2 * overlap.
+    let results: Vec<(usize, usize, f64)> = pairs
+        .par_iter()
+        .map(|&(i, j)| {
+            let mask = (1usize << i) | (1usize << j);
+            let mut corr = 0.0f64;
+            for k in 0..dim {
+                let bi = (k >> i) & 1;
+                let bj = (k >> j) & 1;
+                if bi != bj {
+                    let k_flip = k ^ mask;
+                    corr += 2.0 * (re[k] * re[k_flip] + im[k] * im[k_flip]);
+                }
+            }
+            (i, j, corr)
+        })
+        .collect();
+
+    let mut c = Array2::<f64>::zeros((n_osc, n_osc));
+    for (i, j, corr) in results {
+        c[(i, j)] = corr;
+        c[(j, i)] = corr;
+    }
+
+    PyArray2::from_owned_array(py, c)
+}
+
+// =========================================================================
+// Lindblad jump operator COO data + anti-Hermitian diagonal.
+// Builds all jump operators L_k for pairs (i,j) where |K[i,j]| > threshold.
+// Each L_k: |...0_i...1_j...> <- |...1_i...0_j...> (excitation transfer).
+// Returns (rows, cols, op_starts, n_ops) where op_starts[k] is the first
+// index in rows/cols belonging to operator k. op_starts has length n_ops+1.
+// =========================================================================
+#[pyfunction]
+fn lindblad_jump_ops_coo<'py>(
+    py: Python<'py>,
+    k_flat: PyReadonlyArray1<'_, f64>,
+    n: usize,
+    threshold: f64,
+) -> (
+    Bound<'py, PyArray1<i64>>,
+    Bound<'py, PyArray1<i64>>,
+    Bound<'py, PyArray1<i64>>,
+    usize,
+) {
+    let k = k_flat.as_slice().unwrap();
+    let dim = 1usize << n;
+
+    let mut rows: Vec<i64> = Vec::new();
+    let mut cols: Vec<i64> = Vec::new();
+    let mut op_starts: Vec<i64> = Vec::new();
+    let mut op_count = 0usize;
+
+    for i in 0..n {
+        for j in 0..n {
+            if i != j && k[i * n + j].abs() > threshold {
+                op_starts.push(rows.len() as i64);
+                for idx in 0..dim {
+                    if ((idx >> i) & 1) == 1 && ((idx >> j) & 1) == 0 {
+                        let flipped = idx ^ ((1 << i) | (1 << j));
+                        rows.push(flipped as i64);
+                        cols.push(idx as i64);
+                    }
+                }
+                op_count += 1;
+            }
+        }
+    }
+    // Sentinel: marks end of last operator
+    op_starts.push(rows.len() as i64);
+
+    (
+        PyArray1::from_vec(py, rows),
+        PyArray1::from_vec(py, cols),
+        PyArray1::from_vec(py, op_starts),
+        op_count,
+    )
+}
+
+// =========================================================================
+// Anti-Hermitian diagonal for Lindblad trajectory path.
+// diag[idx] = number of active jump channels that can fire from state |idx>.
+// =========================================================================
+#[pyfunction]
+fn lindblad_anti_hermitian_diag<'py>(
+    py: Python<'py>,
+    k_flat: PyReadonlyArray1<'_, f64>,
+    n: usize,
+    threshold: f64,
+) -> Bound<'py, PyArray1<f64>> {
+    let k = k_flat.as_slice().unwrap();
+    let dim = 1usize << n;
+    let mut diag = vec![0.0f64; dim];
+
+    for i in 0..n {
+        for j in 0..n {
+            if i != j && k[i * n + j].abs() > threshold {
+                for idx in 0..dim {
+                    if ((idx >> i) & 1) == 1 && ((idx >> j) & 1) == 0 {
+                        diag[idx] += 1.0;
+                    }
+                }
+            }
+        }
+    }
+
+    PyArray1::from_vec(py, diag)
+}
+
+// =========================================================================
+// Z2 parity filter for measurement counts (compound mitigation).
+// Takes a flat array of bitstring values and returns a boolean mask
+// indicating which bitstrings match the expected parity.
+// =========================================================================
+#[pyfunction]
+fn parity_filter_mask<'py>(
+    py: Python<'py>,
+    bitstrings: PyReadonlyArray1<'_, u64>,
+    expected_parity: u8,
+) -> Bound<'py, PyArray1<bool>> {
+    let bs = bitstrings.as_slice().unwrap();
+    let mask: Vec<bool> = bs
+        .par_iter()
+        .map(|&val| (val.count_ones() as u8 % 2) == expected_parity)
+        .collect();
+    PyArray1::from_vec(py, mask)
+}
+
 #[pymodule]
 fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(pec_coefficients, m)?)?;
@@ -1010,5 +1162,9 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(build_sparse_xy_hamiltonian, m)?)?;
     m.add_function(wrap_pyfunction!(magnetisation_labels, m)?)?;
     m.add_function(wrap_pyfunction!(order_param_from_statevector, m)?)?;
+    m.add_function(wrap_pyfunction!(correlation_matrix_xy, m)?)?;
+    m.add_function(wrap_pyfunction!(lindblad_jump_ops_coo, m)?)?;
+    m.add_function(wrap_pyfunction!(lindblad_anti_hermitian_diag, m)?)?;
+    m.add_function(wrap_pyfunction!(parity_filter_mask, m)?)?;
     Ok(())
 }

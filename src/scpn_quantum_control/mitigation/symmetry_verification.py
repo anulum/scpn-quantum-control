@@ -33,6 +33,13 @@ from dataclasses import dataclass
 
 import numpy as np
 
+try:
+    import scpn_quantum_engine as _engine
+
+    _HAS_RUST = True
+except ImportError:
+    _HAS_RUST = False
+
 
 @dataclass
 class SymmetryVerificationResult:
@@ -89,11 +96,22 @@ def parity_postselect(
     verified: dict[str, int] = {}
     rejected: dict[str, int] = {}
 
-    for bitstring, count in counts.items():
-        if bitstring_parity(bitstring) == expected_parity:
-            verified[bitstring] = count
-        else:
-            rejected[bitstring] = count
+    if _HAS_RUST and counts:
+        keys = list(counts.keys())
+        vals = [counts[k] for k in keys]
+        bs_ints = np.array([int(k.replace(" ", ""), 2) for k in keys], dtype=np.uint64)
+        mask = np.array(_engine.parity_filter_mask(bs_ints, expected_parity))
+        for i, k in enumerate(keys):
+            if mask[i]:
+                verified[k] = vals[i]
+            else:
+                rejected[k] = vals[i]
+    else:
+        for bitstring, count in counts.items():
+            if bitstring_parity(bitstring) == expected_parity:
+                verified[bitstring] = count
+            else:
+                rejected[bitstring] = count
 
     raw_shots = sum(counts.values())
     verified_shots = sum(verified.values())
