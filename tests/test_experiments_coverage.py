@@ -324,7 +324,7 @@ class TestUPDE16Snapshot:
             "exp_y": np.zeros((1, 16)),
         }
         with patch(
-            "scpn_quantum_control.hardware.experiments.classical_exact_evolution",
+            "scpn_quantum_control.hardware.experiment_control.classical_exact_evolution",
             return_value=fake_classical,
         ):
             result = upde_16_snapshot_experiment(mock_runner, shots=100, trotter_steps=1)
@@ -381,7 +381,7 @@ class TestUPDE16DD:
             "exp_y": np.zeros((1, 16)),
         }
         with patch(
-            "scpn_quantum_control.hardware.experiments.classical_exact_evolution",
+            "scpn_quantum_control.hardware.experiment_mitigation.classical_exact_evolution",
             return_value=fake_classical,
         ):
             result = upde_16_dd_experiment(mock_runner, shots=100, trotter_steps=1)
