@@ -12,7 +12,14 @@ coherence budgets, entanglement structure, and cryptographic
 fingerprinting of coupling topologies.
 """
 
-from .binding_spec import ARCANE_SAPIENCE_SPEC, build_identity_attractor, solve_identity
+from .binding_spec import (
+    ARCANE_SAPIENCE_SPEC,
+    ORCHESTRATOR_MAPPING,
+    build_identity_attractor,
+    orchestrator_to_quantum_phases,
+    quantum_to_orchestrator_phases,
+    solve_identity,
+)
 from .coherence_budget import coherence_budget, fidelity_at_depth
 from .entanglement_witness import chsh_from_statevector, disposition_entanglement_map
 from .ground_state import IdentityAttractor
@@ -39,4 +46,7 @@ __all__ = [
     "compute_robustness_certificate",
     "perturbation_fidelity",
     "gap_vs_perturbation_scan",
+    "ORCHESTRATOR_MAPPING",
+    "quantum_to_orchestrator_phases",
+    "orchestrator_to_quantum_phases",
 ]
