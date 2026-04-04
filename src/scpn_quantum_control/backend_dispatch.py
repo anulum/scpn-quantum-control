@@ -99,9 +99,9 @@ def available_backends() -> list[str]:
     """List all available backends on this system."""
     backends = ["numpy"]
     try:
-        import jax.numpy
+        import jax.numpy as _jnp
 
-        del jax.numpy  # used only for availability check
+        del _jnp
         backends.append("jax")
     except ImportError:
         pass
