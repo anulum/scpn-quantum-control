@@ -69,9 +69,11 @@ def _watts_strogatz_coupling(
     for i in range(n):
         for j in range(1, k // 2 + 1):
             if rng.random() < beta:
-                new_j = rng.integers(n)
-                while new_j == i or K[i, new_j] > 0:
-                    new_j = rng.integers(n)
+                # Find a node not already connected to i
+                candidates = [c for c in range(n) if c != i and K[i, c] == 0]
+                if not candidates:
+                    continue  # graph too dense to rewire
+                new_j = rng.choice(candidates)
                 K[i, (i + j) % n] = 0
                 K[(i + j) % n, i] = 0
                 K[i, new_j] = K[new_j, i] = strength
