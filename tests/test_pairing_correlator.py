@@ -123,3 +123,46 @@ def test_pairing_map_4q():
     omega = OMEGA_N_16[:4]
     result = pairing_map(omega, T, K_base=1.5)
     assert result.n_qubits == 4
+
+
+# ---------------------------------------------------------------------------
+# Coverage: internal _pairing_correlator, default delta_range, edge cases
+# ---------------------------------------------------------------------------
+
+
+class TestPairingCorrelatorInternal:
+    def test_product_state_low_pairing(self):
+        from scpn_quantum_control.analysis.pairing_correlator import _pairing_correlator
+
+        psi = np.array([1, 0, 0, 0], dtype=complex)  # |00⟩
+        c = _pairing_correlator(psi, 0, 1, 2)
+        assert abs(c) < 0.1
+
+    def test_bell_state_nonzero(self):
+        from scpn_quantum_control.analysis.pairing_correlator import _pairing_correlator
+
+        psi = np.array([0, 1, 1, 0], dtype=complex) / np.sqrt(2)  # |01⟩+|10⟩
+        c = _pairing_correlator(psi, 0, 1, 2)
+        assert abs(c) > 0.1  # singlet-like state has pairing
+
+
+class TestPairingVsAnisotropyDefaults:
+    def test_default_delta_range(self):
+        T = _ring(2)
+        omega = OMEGA_N_16[:2]
+        result = pairing_vs_anisotropy(omega, T, K_base=2.0)
+        assert len(result["delta"]) == 6  # default linspace 0-1, 6 pts
+
+    def test_topology_correlation_bounded(self):
+        T = _ring(3)
+        omega = OMEGA_N_16[:3]
+        result = pairing_vs_anisotropy(omega, T, K_base=2.0, delta_range=np.array([0.5]))
+        assert -1.0 <= result["topology_correlation"][0] <= 1.0
+
+
+class TestPairingZeroCoupling:
+    def test_zero_coupling_low_pairing(self):
+        K_zero = np.zeros((3, 3))
+        omega = OMEGA_N_16[:3]
+        result = pairing_map(omega, K_zero, K_base=0.0)
+        assert result.mean_pairing < 0.01

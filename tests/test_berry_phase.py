@@ -164,3 +164,59 @@ class TestBerryPipeline:
         print(f"\n  PIPELINE Knm→BerryPhase (3q, 10 K points): {dt:.1f} ms")
         print(f"  Curvature peak K = {result.curvature_peak_k}")
         print(f"  Max χ_F = {np.max(result.fidelity_susceptibility):.6f}")
+
+
+# ---------------------------------------------------------------------------
+# Coverage: internal helpers, default k_range, gauge fixing
+# ---------------------------------------------------------------------------
+
+
+class TestGroundState:
+    def test_returns_vector_and_gap(self):
+        from scpn_quantum_control.analysis.berry_phase import _ground_state
+
+        T = _ring_topology(2)
+        omega = OMEGA_N_16[:2]
+        K = 2.0 * T
+        psi, gap = _ground_state(K, omega)
+        assert psi.shape == (4,)
+        assert gap > 0
+        np.testing.assert_allclose(np.linalg.norm(psi), 1.0, atol=1e-10)
+
+
+class TestFixGauge:
+    def test_aligned_overlap_real_positive(self):
+        from scpn_quantum_control.analysis.berry_phase import _fix_gauge
+
+        psi_ref = np.array([1, 0, 0, 0], dtype=complex)
+        # Rotated by phase
+        psi = np.array([1j, 0, 0, 0], dtype=complex)
+        psi_fixed = _fix_gauge(psi, psi_ref)
+        overlap = np.vdot(psi_ref, psi_fixed)
+        assert overlap.real > 0.99
+
+    def test_zero_overlap_unchanged(self):
+        from scpn_quantum_control.analysis.berry_phase import _fix_gauge
+
+        psi_ref = np.array([1, 0, 0, 0], dtype=complex)
+        psi = np.array([0, 0, 0, 1], dtype=complex)
+        psi_fixed = _fix_gauge(psi, psi_ref)
+        # Orthogonal → returned as-is
+        np.testing.assert_allclose(psi_fixed, psi)
+
+
+class TestBerryPhaseDefaults:
+    def test_default_k_range(self):
+        T = _ring_topology(2)
+        omega = OMEGA_N_16[:2]
+        result = berry_phase_scan(omega, T)
+        assert len(result.k_values) == 29  # default 30 points → 29 midpoints
+
+
+class TestBerryPhaseSingleStep:
+    def test_two_k_values(self):
+        T = _ring_topology(2)
+        omega = OMEGA_N_16[:2]
+        result = berry_phase_scan(omega, T, k_range=np.array([1.0, 2.0]))
+        assert len(result.berry_connection) == 1
+        assert len(result.berry_curvature) == 1

@@ -176,3 +176,120 @@ class TestMemoryEstimate:
         est = memory_estimate(20)
         assert est["full_dim"] == 2**20
         assert est["u1_largest_dim"] == comb(20, 10)
+
+
+# ---------------------------------------------------------------------------
+# Coverage: internal helpers, project_to_sector, build_sector_hamiltonian,
+# edge cases, odd-N, Rust fallback
+# ---------------------------------------------------------------------------
+
+
+class TestMagnetisationFunction:
+    def test_all_up(self):
+        from scpn_quantum_control.analysis.magnetisation_sectors import _magnetisation
+
+        # |0000⟩ = k=0, all spin-up → M = +N
+        assert _magnetisation(0, 4) == 4
+
+    def test_all_down(self):
+        from scpn_quantum_control.analysis.magnetisation_sectors import _magnetisation
+
+        # |1111⟩ = k=15 → M = -4
+        assert _magnetisation(15, 4) == -4
+
+    def test_single_flip(self):
+        from scpn_quantum_control.analysis.magnetisation_sectors import _magnetisation
+
+        # |0001⟩ = k=1 → 1 one → M = 4-2 = 2
+        assert _magnetisation(1, 4) == 2
+
+    def test_half_filled(self):
+        from scpn_quantum_control.analysis.magnetisation_sectors import _magnetisation
+
+        # |0011⟩ = k=3 → 2 ones → M = 4-4 = 0
+        assert _magnetisation(3, 4) == 0
+
+
+class TestProjectToSector:
+    def test_sector_matrix_shape(self):
+        from scpn_quantum_control.analysis.magnetisation_sectors import project_to_sector
+
+        H = np.random.default_rng(42).random((8, 8))
+        H = (H + H.T) / 2
+        indices = np.array([1, 2, 4])  # M=0 sector for 3 qubits
+        H_sec = project_to_sector(H, indices)
+        assert H_sec.shape == (3, 3)
+
+    def test_full_hilbert_identity(self):
+        from scpn_quantum_control.analysis.magnetisation_sectors import project_to_sector
+
+        H = np.eye(4)
+        indices = np.array([0, 1, 2, 3])
+        H_sec = project_to_sector(H, indices)
+        np.testing.assert_allclose(H_sec, np.eye(4))
+
+
+class TestBuildSectorHamiltonian:
+    def test_m0_sector_4qubit(self):
+        from scpn_quantum_control.analysis.magnetisation_sectors import (
+            build_sector_hamiltonian,
+        )
+
+        K, omega = _system(4)
+        H_sec, indices = build_sector_hamiltonian(K, omega, M=0)
+        assert H_sec.shape[0] == comb(4, 2)  # C(4,2) = 6
+        assert len(indices) == 6
+
+    def test_invalid_m_raises(self):
+        import pytest
+
+        from scpn_quantum_control.analysis.magnetisation_sectors import (
+            build_sector_hamiltonian,
+        )
+
+        K, omega = _system(4)
+        with pytest.raises(ValueError, match="not valid"):
+            build_sector_hamiltonian(K, omega, M=3)  # 3 not in {-4,-2,0,2,4}
+
+    def test_sector_hermitian(self):
+        from scpn_quantum_control.analysis.magnetisation_sectors import (
+            build_sector_hamiltonian,
+        )
+
+        K, omega = _system(4)
+        H_sec, _ = build_sector_hamiltonian(K, omega, M=0)
+        np.testing.assert_allclose(H_sec, H_sec.conj().T, atol=1e-12)
+
+
+class TestOddN:
+    def test_odd_n_default_m_is_one(self):
+        K, omega = _system(3)
+        result = level_spacing_by_magnetisation(K, omega)
+        assert result["M"] == 1  # odd N → default M=1
+
+    def test_odd_n_sectors(self):
+        sectors = basis_by_magnetisation(3)
+        assert set(sectors.keys()) == {-3, -1, 1, 3}
+
+    def test_odd_n_eigenvalues(self):
+        K, omega = _system(3)
+        result = eigh_by_magnetisation(K, omega)
+        from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
+
+        H = knm_to_dense_matrix(K, omega)
+        e_full = np.sort(np.linalg.eigvalsh(H))
+        np.testing.assert_allclose(result["eigvals_all"], e_full, atol=1e-10)
+
+
+class TestLevelSpacingEdgeCases:
+    def test_invalid_sector_nan(self):
+        K, omega = _system(4)
+        result = level_spacing_by_magnetisation(K, omega, M=4)
+        # M=4 sector has only 1 state → not enough gaps → r_bar = nan
+        assert np.isnan(result["r_bar"]) or result["dim"] == 1
+
+    def test_n_gaps_present(self):
+        K, omega = _system(6)
+        result = level_spacing_by_magnetisation(K, omega, M=0)
+        assert "n_gaps" in result
+        assert result["n_gaps"] > 0

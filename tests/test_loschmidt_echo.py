@@ -156,3 +156,49 @@ class TestLoschmidtPipeline:
         print(f"\n  PIPELINE Knm→Loschmidt (3q, 50 times): {dt:.1f} ms")
         print(f"  n_cusps = {result.n_cusps}")
         print(f"  min |G|² = {np.min(result.loschmidt_amplitude):.6f}")
+
+
+# ---------------------------------------------------------------------------
+# Coverage: default parameters, quench scan defaults, cusp detection
+# ---------------------------------------------------------------------------
+
+
+class TestQuenchScanDefaults:
+    def test_default_k_final_range(self):
+        T = _ring(3)
+        omega = OMEGA_N_16[:3]
+        result = quench_scan(omega, T, K_initial=0.5, n_times=20)
+        assert len(result["K_final"]) == 10  # default linspace 0.5-5.0, 10 pts
+
+    def test_max_rate_positive(self):
+        T = _ring(3)
+        omega = OMEGA_N_16[:3]
+        result = quench_scan(omega, T, K_initial=0.5, K_final_range=np.array([3.0]), n_times=50)
+        assert result["max_rate"][0] >= 0
+
+
+class TestLoschmidtCuspDetection:
+    def test_cusp_times_sorted(self):
+        T = _ring(4)
+        omega = OMEGA_N_16[:4]
+        result = loschmidt_quench(omega, T, K_initial=1.0, K_final=5.0, t_max=10.0, n_times=200)
+        if result.n_cusps > 1:
+            for i in range(len(result.cusp_times) - 1):
+                assert result.cusp_times[i] < result.cusp_times[i + 1]
+
+    def test_stores_ki_kf(self):
+        T = _ring(3)
+        omega = OMEGA_N_16[:3]
+        result = loschmidt_quench(omega, T, K_initial=1.5, K_final=3.5)
+        assert result.K_initial == 1.5
+        assert result.K_final == 3.5
+
+
+class TestLoschmidtSmallNtimes:
+    def test_n_times_4(self):
+        """Very few time steps should still work (edge for cusp detection)."""
+        T = _ring(3)
+        omega = OMEGA_N_16[:3]
+        result = loschmidt_quench(omega, T, K_initial=1.0, K_final=3.0, n_times=4)
+        assert len(result.times) == 4
+        assert result.n_cusps >= 0
