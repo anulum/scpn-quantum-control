@@ -11,6 +11,11 @@ and Z2 symmetry verification with parity post-selection.
 
 from .cpdr import CPDRResult, cpdr_full_pipeline, cpdr_mitigate, generate_training_circuits
 from .dd import DDSequence, insert_dd_sequence
+from .mitiq_integration import (
+    ddd_mitigated_expectation,
+    is_mitiq_available,
+    zne_mitigated_expectation,
+)
 from .pec import PECResult, pauli_twirl_decompose, pec_sample
 from .symmetry_verification import (
     SymmetryVerificationResult,
@@ -43,4 +48,7 @@ __all__ = [
     "parity_verified_expectation",
     "parity_verified_R",
     "symmetry_expand",
+    "is_mitiq_available",
+    "zne_mitigated_expectation",
+    "ddd_mitigated_expectation",
 ]
