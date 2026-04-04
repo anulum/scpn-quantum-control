@@ -514,6 +514,21 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 
 [AGPL-3.0-or-later](LICENSE) — commercial license available.
 
+### Commercial Licensing
+
+AGPL-3.0 requires derivative works to be open-sourced. If you need to
+integrate scpn-quantum-control into proprietary software without
+publishing your source code, a commercial license is available:
+
+| Tier | Price | Includes |
+|------|-------|----------|
+| **Indie** | CHF 49/month | Single developer, one product |
+| **Pro** | CHF 199/month | Team up to 10, unlimited products |
+| **Perpetual** | CHF 999 one-time | Permanent license, one major version |
+| **Enterprise** | Custom | SLA, priority support, custom modules |
+
+Contact: **protoscience@anulum.li** | [polar.sh/anulum](https://polar.sh/anulum)
+
 ---
 
 <p align="center">
