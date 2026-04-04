@@ -108,9 +108,9 @@ information scrambles*, and *whether the system thermalises*.
 
 | Metric | Value |
 |--------|-------|
-| Rust engine functions | **15** (5,401× faster Hamiltonian construction) |
+| Rust engine functions | **22** (5,401× faster Hamiltonian construction) |
 | Research modules | **33** (~4 novel constructions, ~8 first-application) |
-| Python modules | **166** + Rust crate (885 lines) |
+| Python modules | **165** + Rust crate (1,170 lines) |
 | Publication figures | **14** (simulation + hardware) |
 | Test suite | **2,813** passing |
 
@@ -268,19 +268,23 @@ graph TD
 
 | Subpackage | Modules | Purpose |
 |------------|:-------:|---------|
-| `analysis` | 41 | Synchronization probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
-| `phase` | 14 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC |
-| `bridge` | 11 | K_nm → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
-| `applications` | 10 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS |
-| `hardware` | 9 | IBM Quantum runner, trapped-ion backend, GPU offload, circuit cutting |
+| `analysis` | 44 | Synchronization probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
+| `phase` | 26 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
+| `hardware` | 17 | IBM Quantum runner, trapped-ion backend, GPU offload, circuit cutting, fast sparse |
+| `bridge` | 12 | K_nm → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
+| `applications` | 11 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS |
+| `control` | 7 | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, ITER disruption, topological optimizer |
+| `mitigation` | 7 | ZNE, PEC, dynamical decoupling, Z₂ parity, CPDR, symmetry verification |
 | `identity` | 6 | VQE attractor, coherence budget, entanglement witness, fingerprint |
-| `control` | 5 | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, ITER disruption classifier |
-| `qsnn` | 5 | Quantum spiking neural networks (LIF, STDP, synapses, training) |
+| `qsnn` | 6 | Quantum spiking neural networks (LIF, STDP, synapses, dynamic coupling, training) |
+| `crypto` | 6 | BB84, Bell tests, topology-authenticated QKD, key hierarchy |
 | `gauge` | 5 | U(1) Wilson loops, vortex detection, CFT, universality, confinement |
-| `qec` | 4 | Toric code, repetition code UPDE, surface code estimation, error budget |
-| `mitigation` | 4 | ZNE, PEC, dynamical decoupling, Z₂ parity post-selection |
-| `crypto` | 4 | BB84, Bell tests, topology-authenticated QKD |
+| `qec` | 5 | Toric code, repetition code UPDE, surface code, biological surface code, error budget |
+| `ssgf` | 4 | SSGF quantum integration |
 | `benchmarks` | 4 | Classical vs quantum scaling, MPS baseline, GPU baseline, AppQSim |
+| `tcbo` | 1 | TCBO quantum observer |
+| `pgbo` | 1 | PGBO quantum bridge |
+| `l16` | 1 | Layer 16 quantum director |
 
 ## Quick Start
 
@@ -354,7 +358,7 @@ graph LR
 
 ## Examples
 
-18 standalone scripts in [`examples/`](examples/):
+21 standalone scripts in [`examples/`](examples/):
 
 | # | Script | What it demonstrates |
 |:-:|--------|---------------------|
@@ -376,6 +380,9 @@ graph LR
 | 16 | `fault_tolerant_demo` | Repetition code UPDE |
 | 17 | `snn_ssgf_bridges_demo` | Cross-repo bridge roundtrips |
 | 18 | `end_to_end_pipeline` | Complete K_nm → IBM → analysis pipeline |
+| 19 | `sync_witness_operator` | Synchronisation witness operator demo |
+| 20 | `quantum_persistent_homology` | Persistent homology analysis |
+| 21 | `biological_qec_scpn16` | Biological surface code on 16-layer SCPN |
 
 All examples run on statevector simulation (no QPU needed).
 
@@ -406,24 +413,24 @@ All run on local AerSimulator. No IBM credentials needed.
 
 ```
 scpn_quantum_control/
-├── analysis/       41 modules — synchronization probes
-├── phase/          14 modules — time evolution + variational
-├── bridge/         11 modules — K_nm → quantum objects + cross-repo
-├── applications/   10 modules — physical system benchmarks
-├── hardware/        9 modules — IBM runner, trapped-ion, GPU, cutting
+├── analysis/       44 modules — synchronization probes
+├── phase/          26 modules — time evolution + variational + Lindblad
+├── hardware/       17 modules — IBM runner, trapped-ion, GPU, cutting, fast sparse
+├── bridge/         12 modules — K_nm → quantum objects + cross-repo
+├── applications/   11 modules — physical system benchmarks
+├── control/         7 modules — QAOA-MPC, VQLS-GS, Petri, ITER, topological
+├── mitigation/      7 modules — ZNE, PEC, DD, Z₂, CPDR, symmetry
 ├── identity/        6 modules — identity continuity analysis
-├── control/         5 modules — QAOA-MPC, VQLS-GS, Petri, ITER
-├── qsnn/            5 modules — quantum spiking neural networks
+├── qsnn/            6 modules — quantum spiking neural networks
+├── crypto/          6 modules — QKD, Bell tests, key hierarchy
 ├── gauge/           5 modules — U(1) gauge theory probes
-├── qec/             4 modules — error correction
-├── mitigation/      4 modules — ZNE, PEC, DD, Z₂
-├── crypto/          4 modules — QKD, Bell tests
-├── benchmarks/      4 modules — performance baselines
+├── qec/             5 modules — error correction + biological surface code
 ├── ssgf/            4 modules — SSGF quantum integration
+├── benchmarks/      4 modules — performance baselines
 ├── tcbo/            1 module  — TCBO quantum observer
 ├── pgbo/            1 module  — PGBO quantum bridge
 ├── l16/             1 module  — Layer 16 quantum director
-└── scpn_quantum_engine/  Rust crate (PyO3 0.25)
+└── scpn_quantum_engine/  Rust crate (PyO3 0.25, 22 functions)
 ```
 
 ## Dependencies
@@ -501,20 +508,6 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 ## License
 
 [AGPL-3.0-or-later](LICENSE) — commercial license available.
-
----
-
-<p align="center">
-  <a href="https://www.anulum.li">
-    <img src="docs/assets/anulum_logo_company.jpg" width="180" alt="ANULUM">
-  </a>
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <a href="https://www.anulum.li">
-    <img src="docs/assets/fortis_studio_logo.jpg" width="180" alt="Fortis Studio">
-  </a>
-  <br>
-  <em>Developed by <a href="https://www.anulum.li">ANULUM</a> / Fortis Studio</em>
-</p>
 
 ---
 

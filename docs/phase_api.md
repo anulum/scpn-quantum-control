@@ -118,12 +118,12 @@ This avoids the fixed-ansatz depth problem of standard VQE.
 
 ```python
 from scpn_quantum_control.phase.adapt_vqe import (
-    adapt_vqe_solve,
+    adapt_vqe,
     ADAPTResult,
 )
 ```
 
-`adapt_vqe_solve(K, omega, operator_pool=None, max_layers=20, grad_threshold=1e-3)` →
+`adapt_vqe(K, omega, operator_pool=None, max_layers=20, grad_threshold=1e-3)` →
 `ADAPTResult` with: `energy`, `exact_energy`, `n_layers`, `selected_operators`,
 `gradient_norms`.
 
@@ -139,12 +139,12 @@ via McLachlan's principle.
 
 ```python
 from scpn_quantum_control.phase.varqite import (
-    varqite_solve,
+    varqite_ground_state,
     VarQITEResult,
 )
 ```
 
-`varqite_solve(K, omega, tau_max=5.0, dt=0.1, reps=2)` → `VarQITEResult` with:
+`varqite_ground_state(K, omega, tau_max=5.0, dt=0.1, reps=2)` → `VarQITEResult` with:
 `tau_values`, `energies`, `final_energy`, `exact_energy`, `params_history`.
 
 Imaginary time evolution is the quantum physicist's gradient descent: it suppresses
@@ -159,12 +159,12 @@ simulation time $t$ (unlike Trotter, where depth $\propto t/\Delta t$).
 
 ```python
 from scpn_quantum_control.phase.avqds import (
-    avqds_evolve,
+    avqds_simulate,
     AVQDSResult,
 )
 ```
 
-`avqds_evolve(K, omega, t_max=5.0, dt=0.1, reps=2)` → `AVQDSResult` with:
+`avqds_simulate(K, omega, t_max=5.0, dt=0.1, reps=2)` → `AVQDSResult` with:
 `times`, `energies`, `R_values`, `params_history`.
 
 ---
@@ -252,7 +252,7 @@ Hamiltonian: $H(s) = (1-s)H_0 + s \cdot H_{XY}$, with $s \in [0, 1]$.
 
 ```python
 from scpn_quantum_control.phase.adiabatic_preparation import (
-    adiabatic_prepare,
+    adiabatic_ramp,
     AdiabaticResult,
 )
 ```

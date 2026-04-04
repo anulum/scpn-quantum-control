@@ -115,3 +115,73 @@ Generated from source docstrings via mkdocstrings.
 ::: scpn_quantum_control.hardware.trapped_ion
     options:
       members: [trapped_ion_noise_model, transpile_for_trapped_ion]
+
+::: scpn_quantum_control.hardware.fast_classical
+    options:
+      members: [fast_sparse_evolution]
+
+::: scpn_quantum_control.hardware.runner
+    options:
+      members: [HardwareRunner, JobResult]
+
+## Analysis
+
+::: scpn_quantum_control.analysis.sync_witness
+    options:
+      members: [WitnessResult, evaluate_all_witnesses]
+
+::: scpn_quantum_control.analysis.quantum_persistent_homology
+    options:
+      members: [QuantumPHResult, quantum_persistent_homology, ph_sync_scan]
+
+::: scpn_quantum_control.analysis.berry_phase
+    options:
+      members: [BerryPhaseResult, berry_phase_scan]
+
+::: scpn_quantum_control.analysis.finite_size_scaling
+    options:
+      members: [FSSResult, finite_size_scaling]
+
+::: scpn_quantum_control.analysis.krylov_complexity
+    options:
+      members: [KrylovResult, krylov_vs_coupling]
+
+::: scpn_quantum_control.analysis.magic_nonstabilizerness
+    options:
+      members: [MagicResult, magic_vs_coupling]
+
+## Crypto
+
+::: scpn_quantum_control.crypto
+    options:
+      show_root_heading: true
+
+## Applications
+
+::: scpn_quantum_control.applications
+    options:
+      show_root_heading: true
+
+## Gauge
+
+::: scpn_quantum_control.gauge
+    options:
+      show_root_heading: true
+
+## TCBO
+
+::: scpn_quantum_control.tcbo
+    options:
+      show_root_heading: true
+
+## PGBO
+
+::: scpn_quantum_control.pgbo
+    options:
+      show_root_heading: true
+
+## L16
+
+::: scpn_quantum_control.l16
+    options:
+      show_root_heading: true

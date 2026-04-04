@@ -418,7 +418,8 @@ synchronization.
 
 ```python
 from scpn_quantum_control.analysis.quantum_persistent_homology import (
-    coupling_scan_persistence,
+    quantum_persistent_homology,
+    ph_sync_scan,
 )
 from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27, OMEGA_N_16
 import numpy as np
@@ -426,16 +427,18 @@ import numpy as np
 K = build_knm_paper27(L=4)
 omega = OMEGA_N_16[:4]
 
-result = coupling_scan_persistence(
-    K, omega,
-    K_range=np.linspace(0.1, 3.0, 15),
-)
+# ph_sync_scan takes hardware measurement counts at various K_base values.
+# For a local simulation demo, compute persistent homology at a single point:
+from scpn_quantum_control.hardware.fast_classical import fast_sparse_evolution
 
-print("K_base    p_H1     Interpretation")
-print("-" * 45)
-for K_val, p_h1 in zip(result.K_values, result.p_h1_values):
-    topology = "holes (incoherent)" if p_h1 > 0.3 else "simple (synchronized)"
-    print(f"{K_val:.2f}     {p_h1:.3f}    {topology}")
+psi = fast_sparse_evolution(K, omega, dt=0.1, n_steps=10)
+result = quantum_persistent_homology(
+    x_counts={"0000": 500, "0001": 500},  # placeholder counts
+    y_counts={"0000": 500, "0001": 500},
+    n_qubits=4,
+)
+print(f"p_H1 = {result.p_h1:.3f}")
+print(f"Persistent 1-cycles: {result.n_h1_persistent}")
 ```
 
 In the synchronized phase, the correlation matrix is nearly rank-1 — all oscillators
@@ -575,20 +578,26 @@ $R(t)$ oscillates at a *subharmonic* of the drive frequency — the system break
 discrete time-translation symmetry. This is a discrete time crystal.
 
 ```python
-from scpn_quantum_control.phase.floquet_kuramoto import FloquetKuramotoSolver
+from scpn_quantum_control.phase.floquet_kuramoto import floquet_evolve
 from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27, OMEGA_N_16
 
 K = build_knm_paper27(L=4)
 omega = OMEGA_N_16[:4]
 
-solver = FloquetKuramotoSolver(
-    n_qubits=4, K=K, omega=omega,
+# Normalize K topology, pass base coupling separately
+K_topology = K / K.max()
+result = floquet_evolve(
+    K_topology=K_topology,
+    omega=omega,
+    K_base=2.0,
     drive_amplitude=0.3,   # delta
     drive_frequency=2.0,   # Omega
+    n_periods=20,
+    steps_per_period=10,
 )
-result = solver.run(n_periods=20, steps_per_period=10)
 
-# Look for period-doubling in R(t)
+print(f"Subharmonic ratio: {result.subharmonic_ratio:.3f}")
+print(f"DTC candidate: {result.is_dtc_candidate}")
 # DTC signature: R oscillates at Omega/2 instead of Omega
 ```
 
@@ -644,7 +653,7 @@ in JSON alongside the QASM files.
 
 ## Examples
 
-18 standalone scripts in `examples/`, each runnable with `python examples/XX_*.py`:
+21 standalone scripts in `examples/`, each runnable with `python examples/XX_*.py`:
 
 | # | Script | What it demonstrates |
 |---|--------|---------------------|
@@ -666,3 +675,6 @@ in JSON alongside the QASM files.
 | 16 | `fault_tolerant_demo` | Repetition code UPDE |
 | 17 | `snn_ssgf_bridges_demo` | Cross-repo bridge demo |
 | 18 | `end_to_end_pipeline` | Complete K_nm → IBM → analysis pipeline |
+| 19 | `sync_witness_operator` | Synchronisation witness operator demo |
+| 20 | `quantum_persistent_homology` | Persistent homology analysis |
+| 21 | `biological_qec_scpn16` | Biological surface code on 16-layer SCPN |

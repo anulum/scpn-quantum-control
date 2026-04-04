@@ -5,6 +5,10 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Quantum Error Correction
+"""Quantum error correction: surface codes, MWPM decoding, error budgets,
+fault-tolerant UPDE, and repetition code logical qubits.
+"""
+
 from .control_qec import ControlQEC, MWPMDecoder, SurfaceCode
 from .error_budget import (
     ErrorBudget,

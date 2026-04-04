@@ -4,35 +4,25 @@ All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 
-## [0.9.5] - 2026-04-01
+## [0.9.5] - 2026-03-29 / 2026-04-01
 
 ### Added
 - **10X Architecture**: Transitioned from static VQE to a dynamic 'Strange Loop' co-evolution engine.
 - **Dynamic Coupling**: 'DynamicCouplingEngine' for Quantum Hebbian Learning (micro-entanglement driving macro-topology).
-- **Topological Optimization**: 'TopologicalCouplingOptimizer' and 'HardwareTopologicalOptimizer' using Persistent Homology ({h1}$) as a loss function on IBM hardware.
+- **Topological Optimization**: 'TopologicalCouplingOptimizer' and 'HardwareTopologicalOptimizer' using Persistent Homology ($p_{h1}$) as a loss function on IBM hardware.
 - **Native Topological QEC**: 'BiologicalSurfaceCode' mapping stabilizers directly to the SCPN 16-layer graph topology.
 - **Open Systems**: 'LindbladSyncEngine' with memory-efficient Quantum Trajectory (MCWF) path for large-N simulation.
 - **Biological Ingestion**: EEG PLV-to-Quantum pipeline for brain state classification via structured VQE and quantum kernels.
 - **Performance**: High-performance sparse evolution engine bypassing Qiskit circuit overhead.
 - **Generalization**: 'StructuredAnsatz' class for topology-informed variational circuits on arbitrary coupling graphs.
-
-### Fixed
-- Enforced K-symmetry in 'knm_hamiltonian.py' to ensure physical Hermiticity across all variational modules (Finding #7).
-- Wrapped all example scripts in 'if __name__ == "__main__":' to prevent 'pytest' collection crashes.
-- Fixed 'delta' (anisotropy) parameter propagation in 'pairing_correlator.py' and 'xxz_phase_diagram.py'.
-- Resolved infinite recursion in 'knm_to_dense_matrix' fallback logic.
-- Added 'vqe_energy' alias in 'PhaseVQE' for backward compatibility.
-- Migrated 25+ analysis modules to Rust-accelerated dense matrix path.
-
-## [0.9.5] - 2026-03-29
-
-### Added
 - **27 experiment notebooks** (NB14–47): FIM mechanism deep investigation
 - **81 FIM mechanism tests** (`test_fim_mechanism.py`): regression tests for all 19 findings (0 skips, 0 stubs)
 - **25 JSON result files**: complete experimental data from 27 notebooks
 - **RESULTS_SUMMARY.md**: comprehensive summary of all findings
 - **IBM hardware v2**: 9 equal-depth fair experiments on ibm_fez confirming dual protection
 - **IBM Quantum Credits application** submitted (5h QPU, 04/2026–08/2026)
+- **Rust engine**: 4 new functions (correlation_matrix_xy, lindblad_jump_ops_coo, lindblad_anti_hermitian_diag, parity_filter_mask) — 18→22 total
+- **115 multi-angle tests** for 9 Gemini 10X modules
 
 ### Discovered
 - **FIM alone synchronises** without coupling (K=0, λ≥8) — NB26
@@ -53,6 +43,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **6 anaesthesia predictions** with hysteresis — NB35
 - **U(1) gauge invariance** confirmed — NB40
 - **Cross-frequency coupling** (PAC, wavelet, Granger) confirms SCPN — NB22
+
+### Fixed
+- Enforced K-symmetry in 'knm_hamiltonian.py' to ensure physical Hermiticity across all variational modules (Finding #7).
+- Wrapped all example scripts in 'if __name__ == "__main__":' to prevent 'pytest' collection crashes.
+- Fixed 'delta' (anisotropy) parameter propagation in 'pairing_correlator.py' and 'xxz_phase_diagram.py'.
+- Resolved infinite recursion in 'knm_to_dense_matrix' fallback logic.
+- Added 'vqe_energy' alias in 'PhaseVQE' for backward compatibility.
+- Migrated 25+ analysis modules to Rust-accelerated dense matrix path.
+- Excluded optional Rust acceleration branches from coverage counts.
 
 ### Negative Results (honest)
 - Curvature does NOT peak at K_c — NB23
