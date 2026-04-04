@@ -5,6 +5,10 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Quantum Spiking Neural Network
+"""Quantum spiking neural network: LIF neurons, synapses with STDP learning,
+dense quantum layers, and the QSNNTrainer orchestrator.
+"""
+
 from .qlayer import QuantumDenseLayer
 from .qlif import QuantumLIFNeuron
 from .qstdp import QuantumSTDP

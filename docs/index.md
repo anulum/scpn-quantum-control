@@ -57,21 +57,29 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | Research modules | 33 (~4 novel, ~8 first-application) |
 | IBM hardware jobs | 33 completed on ibm_fez (Heron r2) |
 | Test suite | **2,813 passing**, 98% coverage |
-| Python modules | 166 + 1 Rust crate |
+| Python modules | 165 + 1 Rust crate (22 functions) |
 
 ## Package map
 
 | Subpackage | Modules | Purpose |
 |------------|:-------:|---------|
-| `analysis` | 41 | Synchronization probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
-| `phase` | 14 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC |
-| `bridge` | 11 | $K_{nm}$ → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
-| `control` | 5 | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, ITER disruption classifier |
-| `qsnn` | 5 | Quantum spiking neural networks (LIF, STDP, synapses, training) |
-| `hardware` | 9 | IBM Quantum runner, trapped-ion backend, GPU offload, circuit cutting |
-| `mitigation` | 4 | ZNE, PEC, dynamical decoupling, Z₂ parity post-selection |
-| `gauge` | 5 | U(1) Wilson loops, vortex detection, CFT, universality, confinement |
+| `analysis` | 44 | Synchronization probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
+| `phase` | 26 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
+| `hardware` | 17 | IBM Quantum runner, trapped-ion backend, GPU offload, circuit cutting, fast sparse |
+| `bridge` | 12 | $K_{nm}$ → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
+| `applications` | 11 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS |
+| `control` | 7 | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, ITER disruption, topological optimizer |
+| `mitigation` | 7 | ZNE, PEC, dynamical decoupling, Z₂ parity, CPDR, symmetry verification |
 | `identity` | 6 | VQE attractor, coherence budget, entanglement witness, fingerprint |
+| `qsnn` | 6 | Quantum spiking neural networks (LIF, STDP, synapses, dynamic coupling, training) |
+| `crypto` | 6 | BB84, Bell tests, topology-authenticated QKD, key hierarchy |
+| `gauge` | 5 | U(1) Wilson loops, vortex detection, CFT, universality, confinement |
+| `qec` | 5 | Toric code, repetition code UPDE, surface code, biological surface code, error budget |
+| `ssgf` | 4 | SSGF quantum integration |
+| `benchmarks` | 4 | Classical vs quantum scaling, MPS baseline, GPU baseline, AppQSim |
+| `tcbo` | 1 | TCBO quantum observer |
+| `pgbo` | 1 | PGBO quantum bridge |
+| `l16` | 1 | Layer 16 quantum director |
 | `qec` | 4 | Toric code, repetition code UPDE, surface code estimation, error budget |
 | `applications` | 10 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS |
 | `crypto` | 4 | BB84, Bell tests, topology-authenticated QKD |

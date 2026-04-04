@@ -8,43 +8,46 @@
 
 # Architecture
 
-## Package Statistics (v0.9.4)
+## Package Statistics (v0.9.5)
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 166 |
-| Rust crate | 1 (PyO3 0.25) |
-| Tests | 2,715 (98% coverage) |
-| Lines of code | ~23,800 |
-| Subpackages | 12 |
+| Python modules | 165 |
+| Rust crate | 1 (PyO3 0.25, 22 functions) |
+| Tests | 2,813+ (95% coverage) |
+| Lines of code | ~25,000 |
+| Subpackages | 17 |
 | Research gems | 33 (~4 novel, ~8 first-application) |
-| Examples | 18 |
-| Notebooks | 13 |
-| Doc pages | 29 |
+| Examples | 21 |
+| Notebooks | 47 |
+| Doc pages | 49 |
 
 ## Subpackage Dependency Graph
 
-The 12 subpackages form a directed acyclic graph. `bridge/` is the foundation —
+The 17 subpackages form a directed acyclic graph. `bridge/` is the foundation —
 every other subpackage depends on it for Hamiltonian construction and data
 conversion. `analysis/` is the largest consumer, using `phase/` for state
 preparation and `bridge/` for Hamiltonian access.
 
 ```mermaid
 graph TD
-    bridge["bridge/ (11)\nK_nm → quantum objects"]
-    phase["phase/ (14)\nTime evolution"]
-    analysis["analysis/ (41)\nSync probes"]
-    control["control/ (5)\nQuantum control"]
-    qsnn["qsnn/ (5)\nQuantum SNN"]
+    bridge["bridge/ (12)\nK_nm → quantum objects"]
+    phase["phase/ (26)\nTime evolution"]
+    analysis["analysis/ (44)\nSync probes"]
+    control["control/ (7)\nQuantum control"]
+    qsnn["qsnn/ (6)\nQuantum SNN"]
     identity["identity/ (6)\nIdentity analysis"]
-    hardware["hardware/ (9)\nBackends"]
-    mitigation["mitigation/ (4)\nError mitigation"]
-    qec["qec/ (4)\nError correction"]
+    hardware["hardware/ (17)\nBackends"]
+    mitigation["mitigation/ (7)\nError mitigation"]
+    qec["qec/ (5)\nError correction"]
     gauge["gauge/ (5)\nGauge theory"]
-    apps["applications/ (10)\nBenchmarks"]
-    crypto["crypto/ (4)\nQKD"]
+    apps["applications/ (11)\nBenchmarks"]
+    crypto["crypto/ (6)\nQKD"]
     benchmarks["benchmarks/ (4)\nPerformance"]
     ssgf["ssgf/ (4)\nGeometry"]
+    tcbo["tcbo/ (1)\nTCBO observer"]
+    pgbo["pgbo/ (1)\nPGBO bridge"]
+    l16["l16/ (1)\nLayer 16 director"]
 
     bridge --> phase
     bridge --> analysis
@@ -65,6 +68,11 @@ graph TD
     qec --> hardware
     benchmarks --> phase
     benchmarks --> hardware
+    bridge --> tcbo
+    bridge --> pgbo
+    bridge --> l16
+    phase --> tcbo
+    analysis --> pgbo
 
     style bridge fill:#6929C4,color:#fff
     style analysis fill:#d4a017,color:#000

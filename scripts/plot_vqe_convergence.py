@@ -1,3 +1,10 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — VQE Convergence Plotter
 """Plot VQE convergence for 3 ansatze + final energy gap bar chart (Figure 2).
 
 Produces: figures/vqe_convergence.png

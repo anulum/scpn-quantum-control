@@ -5,6 +5,10 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Quantum Control Systems
+"""Quantum control systems: QAOA-MPC, VQ linear solvers, disruption classification,
+topological optimisation, and Petri net scheduling.
+"""
+
 from .q_disruption import QuantumDisruptionClassifier
 from .q_disruption_iter import (
     DisruptionBenchmark,

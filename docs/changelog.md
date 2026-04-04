@@ -13,6 +13,66 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-control/blob/main/CHANGELOG.md)
 
+## [0.9.5] - 2026-03-29 / 2026-04-01
+
+**10X Architecture, FIM investigation, Rust engine 22 functions.**
+
+- 10X Strange Loop co-evolution engine (DynamicCouplingEngine, TopologicalCouplingOptimizer)
+- BiologicalSurfaceCode, LindbladSyncEngine (MCWF), StructuredAnsatz
+- 27 FIM experiment notebooks (NB14–47), 81 FIM tests, IBM hardware v2
+- 4 new Rust functions (18→22): correlation_matrix_xy, lindblad_jump_ops_coo, lindblad_anti_hermitian_diag, parity_filter_mask
+- 115 multi-angle tests for 9 Gemini 10X modules
+- 19 scientific discoveries + 6 honest negative results
+
+## [0.9.4] - 2026-03-29
+
+**Coverage 98%, OpenSSF badge, 2715 tests.**
+
+- 81 new tests, PennyLane/JAX/ripser mock guards
+- OpenSSF Best Practices badge (100%)
+- 3 benchmark API docs
+
+## [0.9.3] - 2026-03-28
+
+**Rust engine 15 functions, IBM 20/20 experiments, 16 figures.**
+
+- 4 new Rust functions (11→15): lanczos, OTOC, dense Hamiltonian, batch Pauli
+- IBM hardware: 22 jobs on ibm_fez, CHSH S=2.165, 16q UPDE
+- JAX GPU backend, PyPI Rust wheel CI, BKT universality
+
+## [0.9.2] - 2026-03-26
+
+**Runner + experiment test coverage.**
+
+- 38 runner + 22 experiment coverage tests
+- requirements.txt pinned versions
+
+## [0.9.1] - 2026-03-25
+
+**33 research gems, 56 new modules, 9,772 lines.**
+
+- 33 research modules (Rounds 1–8): witnesses, PH, OTOC, ADAPT-VQE, VarQITE, AVQDS, Floquet DTC, BKT, DLA parity
+- 14 analysis modules, 9 phase modules, 6 hardware/bridge modules
+- IBM hardware campaign: 9 jobs on ibm_fez
+
+## [0.9.0] - 2026-03-22
+
+**SCPN-native quantum control.**
+
+- Analysis: shadow tomography, Koopman, DLA, entanglement spectrum, QFI
+- Hardware: GPU offload, circuit cutting, trapped-ion, PennyLane/Cirq
+- Identity: VQE attractor, coherence budget, entanglement witness
+- Gauge: U(1) Wilson loops, vortex detection, CFT, universality
+- 1789 tests, 100% coverage
+
+## [0.8.0] - 2026-03-15
+
+**Cross-repo bridges, crypto, QEC expansion.**
+
+- Bridge: SSGF, SPN-to-circuit, SNN adapter, orchestrator
+- Crypto: BB84, Bell tests, topology QKD
+- QEC: fault-tolerant UPDE, surface code, error budget
+
 ## [0.7.0] - 2026-03-02
 
 **Packaging, RNG hygiene, CI, exports hardening.**

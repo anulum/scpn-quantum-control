@@ -63,6 +63,9 @@ nav:
       - Bridges API: bridges_api.md
       - Benchmarks API: benchmarks_api.md
       - Pipeline Performance: pipeline_performance.md
+      - "Bench: Dynamic Coupling": bench_dynamic_coupling.md
+      - "Bench: Structured Ansatz": bench_structured_ansatz.md
+      - "Bench: HW Topological Optimizer": bench_hw_topological_optimizer.md
       - Test Infrastructure: test_infrastructure.md
   - Publications:
       - "Preprint: Quantum Kuramoto-XY on Hardware": preprint.md

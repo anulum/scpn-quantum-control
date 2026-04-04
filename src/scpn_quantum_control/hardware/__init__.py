@@ -5,6 +5,10 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Hardware Backends
+"""Hardware backend layer: classical exact solvers, IBM Quantum runner,
+noise models, trapped-ion transpilation, and experiment definitions.
+"""
+
 from .classical import (
     bloch_vectors_from_json,
     classical_brute_mpc,

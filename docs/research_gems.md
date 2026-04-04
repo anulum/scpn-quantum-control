@@ -346,7 +346,7 @@ These modules connect existing codebase infrastructure to novel research applica
 
 ### Gem 7: Entanglement-Enhanced Synchronization
 
-**Module:** `analysis/entanglement_sync.py`
+**Module:** `analysis/entanglement_enhanced_sync.py`
 
 The classical Kuramoto model predicts a critical coupling $K_c$ above which oscillators
 synchronize. A natural question: does prior entanglement *lower* $K_c$? This module
@@ -557,7 +557,7 @@ crossover.
 
 ### Gem 20: Berry Phase and Fidelity Susceptibility at BKT
 
-**Module:** `analysis/berry_fidelity.py`
+**Module:** `analysis/berry_phase.py`
 
 The Berry phase accumulated along a path in parameter space, and the closely related
 fidelity susceptibility $\chi_F = -\partial^2 F / \partial K^2$ (where
@@ -600,7 +600,7 @@ non-trivial NESS that retains synchronization signatures.
 
 ### Gem 23: Adiabatic Preparation Hardness at BKT
 
-**Module:** `analysis/adiabatic_gap.py`
+**Module:** `phase/adiabatic_preparation.py`
 
 The BKT (Berezinskii-Kosterlitz-Thouless) transition has a spectral gap that closes
 *exponentially* — fundamentally different from second-order transitions where the gap
@@ -711,7 +711,7 @@ the Kuramoto-XY synchronization transition.
 
 ### Gem 32: Stabilizer Rényi Entropy (Magic)
 
-**Module:** `analysis/magic_sre.py`
+**Module:** `analysis/magic_nonstabilizerness.py`
 
 "Magic" (non-stabilizerness) quantifies how far a quantum state is from being
 classically simulable. The Stabilizer Rényi Entropy:
@@ -744,7 +744,7 @@ predictions and for publication-quality phase diagrams.
 | 1 | Sync witnesses | `analysis/sync_witness` | **5/5** | None |
 | 2 | Z₂ verification | `mitigation/symmetry_verification` | 3/5 | Bonet-Monroig 2018 |
 | 5 | Quantum PH pipeline | `analysis/quantum_persistent_homology` | 4/5 | Stolz 2025 (classical) |
-| 7 | Entanglement-enhanced sync | `analysis/entanglement_sync` | 3/5 | Galve 2013 |
+| 7 | Entanglement-enhanced sync | `analysis/entanglement_enhanced_sync` | 3/5 | Galve 2013 |
 | 8 | Cross-domain VQE transfer | `phase/cross_domain_transfer` | 3/5 | — |
 | 9 | OTOC sync probe | `analysis/otoc_sync_probe` | 3/5 | — |
 | 10 | Hamiltonian self-consistency | `analysis/hamiltonian_self_consistency` | 4/5 | — |
@@ -754,10 +754,10 @@ predictions and for publication-quality phase diagrams.
 | 17 | QRC self-probing | `analysis/qrc_phase_detector` | 4/5 | Kobayashi 2025 (external) |
 | 18 | Floquet-Kuramoto DTC | `phase/floquet_kuramoto` | 4/5 | — |
 | 19 | Critical concordance | `analysis/critical_concordance` | 3/5 | — |
-| 20 | Berry phase / $\chi_F$ at BKT | `analysis/berry_fidelity` | **5/5** | — |
+| 20 | Berry phase / $\chi_F$ at BKT | `analysis/berry_phase` | **5/5** | — |
 | 21 | Quantum Mpemba | `analysis/quantum_mpemba` | **5/5** | — |
 | 22 | Lindblad NESS | `analysis/lindblad_ness` | 4/5 | Jaseem 2020 (single engine) |
-| 23 | Adiabatic gap at BKT | `analysis/adiabatic_gap` | 4/5 | — |
+| 23 | Adiabatic gap at BKT | `phase/adiabatic_preparation` | 4/5 | — |
 | 24 | XXZ Hamiltonian | `bridge/knm_hamiltonian` | 3/5 | K-T 2025 |
 | 25 | Pairing correlators | `analysis/pairing_correlator` | 3/5 | K-T 2025 |
 | 26 | Anisotropy phase diagram | `analysis/xxz_phase_diagram` | 3/5 | — |
@@ -765,5 +765,5 @@ predictions and for publication-quality phase diagrams.
 | 28 | Loschmidt echo / DQPT | `analysis/loschmidt_echo` | 3/5 | Zunkovic 2016 |
 | 29–30 | Entanglement entropy + Schmidt gap | `analysis/entanglement_entropy` | 3/5 | — |
 | 31 | Krylov complexity | `analysis/krylov_complexity` | **4.5/5** | — |
-| 32 | Magic (SRE $M_2$) | `analysis/magic_sre` | 4/5 | — |
+| 32 | Magic (SRE $M_2$) | `analysis/magic_nonstabilizerness` | 4/5 | — |
 | 33 | Finite-size scaling | `analysis/finite_size_scaling` | 2/5 | Standard technique |

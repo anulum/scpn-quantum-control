@@ -5,6 +5,13 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Classical-Quantum Bridge
+"""Classical-Quantum bridge for mapping oscillator networks to XY Hamiltonians.
+
+Provides Kuramoto coupling matrix (K_nm) construction, Hamiltonian compilation,
+plasma control adapters, SPN-to-circuit translation, SNN bridging, and SSGF
+state conversion.
+"""
+
 from .control_plasma_knm import (
     build_knm_plasma,
     build_knm_plasma_from_config,
@@ -16,7 +23,10 @@ from .knm_hamiltonian import (
     build_knm_paper27,
     build_kuramoto_ring,
     knm_to_ansatz,
+    knm_to_dense_matrix,
     knm_to_hamiltonian,
+    knm_to_sparse_matrix,
+    knm_to_xxz_hamiltonian,
 )
 from .orchestrator_adapter import PhaseOrchestratorAdapter
 from .phase_artifact import LayerStateArtifact, LockSignatureArtifact, UPDEPhaseArtifact
@@ -36,6 +46,9 @@ __all__ = [
     "OMEGA_N_16",
     "build_knm_paper27",
     "build_kuramoto_ring",
+    "knm_to_dense_matrix",
+    "knm_to_sparse_matrix",
+    "knm_to_xxz_hamiltonian",
     "build_knm_plasma",
     "build_knm_plasma_spec",
     "build_knm_plasma_from_config",
