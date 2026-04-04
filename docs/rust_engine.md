@@ -32,7 +32,7 @@ Requires Rust toolchain (rustup) and a C compiler for PyO3.
 All functions accept split real/imaginary arrays for complex data (no complex128
 across the FFI boundary). Python wrappers handle the conversion transparently.
 
-## Functions (18)
+## Functions (22)
 
 ### Classical Kuramoto
 
@@ -242,6 +242,81 @@ Linux, Python 3.12, Rust release build, Xeon E5-2670 v2.
 |--------|------|--------|---------|
 | n=8 (256 dim) | 0.008 ms | 6.47 ms | **851×** |
 
+## New Functions (April 2026)
+
+### `correlation_matrix_xy` — rayon-parallel XY correlation matrix
+
+Computes $C_{ij} = \langle X_iX_j + Y_iY_j \rangle$ for all qubit pairs from a
+statevector via bitwise operators. Parallelised over pairs with rayon.
+
+The XY flip-flop interaction is nonzero only when bits $i$ and $j$ differ:
+$\langle XX + YY \rangle = 2 \sum_{k: b_i \oplus b_j = 1} \text{Re}(\psi^*_k \psi_{k \oplus \text{mask}})$.
+
+```python
+C = eng.correlation_matrix_xy(psi.real, psi.imag, n_osc)
+# C[i,j] = <XX_ij + YY_ij>, symmetric, zero diagonal
+```
+
+**Wired into:** `qsnn/dynamic_coupling.py::DynamicCouplingEngine._measure_correlation_matrix()`
+**Measured:** 3.7 ms (Rust) vs 10.7 ms (Qiskit) at n=3 → **2.9×** (scales with $O(n^2 \cdot 2^n)$)
+
+### `lindblad_jump_ops_coo` — Lindblad jump operator COO data
+
+Builds all jump operators as COO triplets in a single pass. Each operator $L_k$
+flips $|...1_i...0_j...\rangle \to |...0_i...1_j...\rangle$ (excitation transfer).
+Returns `(rows, cols, op_starts, n_ops)` where `op_starts[k]` marks the first
+entry belonging to operator $k$.
+
+```python
+rows, cols, starts, n_ops = eng.lindblad_jump_ops_coo(K.ravel(), n, threshold)
+```
+
+**Wired into:** `phase/lindblad_engine.py::LindbladSyncEngine._build_jump_operators_sparse()`
+**Measured:** 0.008 ms (Rust) vs 0.1 ms (Python) at n=3 → **12×**
+
+### `lindblad_anti_hermitian_diag` — anti-Hermitian diagonal sum
+
+Computes the diagonal of $\sum_k L_k^\dagger L_k$ for the effective non-Hermitian
+Hamiltonian in quantum trajectory evolution. Each entry counts the number of
+active jump channels that can fire from that basis state.
+
+```python
+diag = eng.lindblad_anti_hermitian_diag(K.ravel(), n, threshold)
+```
+
+**Wired into:** `phase/lindblad_engine.py::LindbladSyncEngine._build_anti_hermitian_sum()`
+
+### `parity_filter_mask` — Z2 parity classification (rayon)
+
+Classifies bitstrings by popcount parity using hardware `count_ones()`.
+Returns boolean mask for each bitstring matching the expected parity sector.
+
+```python
+mask = eng.parity_filter_mask(bitstring_ints, expected_parity)
+```
+
+**Wired into:** `mitigation/symmetry_verification.py::parity_postselect()`
+
+## Benchmarks: New Functions (2026-04-04)
+
+Linux, Python 3.12, Rust release build, i5-11600K.
+
+### XY Correlation Matrix
+
+| System | Rust `correlation_matrix_xy` | Qiskit SparsePauliOp loop | Speedup |
+|--------|------|--------|---------|
+| n=3 (8 dim) | 3.7 ms | 10.7 ms | **2.9×** |
+| n=4 (16 dim) | 3.1 ms | — | — |
+| n=8 (256 dim) | 1.7 ms | — | — |
+
+### Lindblad Jump Operators
+
+| System | Rust `lindblad_jump_ops_coo` | Python loop | Speedup |
+|--------|------|--------|---------|
+| n=3 (8 dim) | 0.008 ms | 0.1 ms | **12×** |
+| n=5 (32 dim) | 0.05 ms | — | — |
+| n=7 (128 dim) | 0.09 ms | — | — |
+
 ## Python ↔ Rust Wiring Diagram
 
 Which Python module calls which Rust function:
@@ -253,16 +328,29 @@ bridge/knm_hamiltonian.py
 bridge/sparse_hamiltonian.py
   └── build_sparse_xy_hamiltonian()   → 80× speedup
 
+hardware/fast_classical.py
+  └── build_sparse_xy_hamiltonian()   → 80× (Hamiltonian construction)
+
 analysis/magnetisation_sectors.py
   └── magnetisation_labels()          → 97× speedup
 
 phase/tensor_jump.py
   └── order_param_from_statevector()  → 851× speedup
 
+phase/lindblad_engine.py
+  ├── lindblad_jump_ops_coo()         → 12× speedup
+  └── lindblad_anti_hermitian_diag()
+
 phase/quantum_kuramoto.py
   ├── state_order_param_sparse()
   ├── expectation_pauli_fast()
   └── all_xy_expectations()           → 6.2× speedup
+
+qsnn/dynamic_coupling.py
+  └── correlation_matrix_xy()         → 2.9× speedup
+
+mitigation/symmetry_verification.py
+  └── parity_filter_mask()
 
 analysis/otoc.py
   └── otoc_from_eigendecomp()         → 264× speedup
