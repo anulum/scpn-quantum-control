@@ -24,9 +24,9 @@ from scipy.sparse.linalg import expm_multiply
 from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_xxz_hamiltonian
 
 try:
-    import scpn_quantum_engine as _engine
+    import scpn_quantum_engine as _engine  # pragma: no cover
 
-    _HAS_RUST = True
+    _HAS_RUST = True  # pragma: no cover
 except ImportError:
     _HAS_RUST = False
 
@@ -62,7 +62,7 @@ def fast_sparse_evolution(
         psi = np.ascontiguousarray(initial_state, dtype=complex)
 
     # Rust-accelerated Hamiltonian construction for XY model (delta=0)
-    if _HAS_RUST and delta == 0.0:
+    if _HAS_RUST and delta == 0.0:  # pragma: no cover
         rows, cols, vals = _engine.build_sparse_xy_hamiltonian(K.ravel(), omega, n)
         rows = np.array(rows)
         cols = np.array(cols)

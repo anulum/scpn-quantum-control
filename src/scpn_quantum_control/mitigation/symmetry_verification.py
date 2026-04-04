@@ -34,9 +34,9 @@ from dataclasses import dataclass
 import numpy as np
 
 try:
-    import scpn_quantum_engine as _engine
+    import scpn_quantum_engine as _engine  # pragma: no cover
 
-    _HAS_RUST = True
+    _HAS_RUST = True  # pragma: no cover
 except ImportError:
     _HAS_RUST = False
 
@@ -96,7 +96,7 @@ def parity_postselect(
     verified: dict[str, int] = {}
     rejected: dict[str, int] = {}
 
-    if _HAS_RUST and counts:
+    if _HAS_RUST and counts:  # pragma: no cover
         keys = list(counts.keys())
         vals = [counts[k] for k in keys]
         bs_ints = np.array([int(k.replace(" ", ""), 2) for k in keys], dtype=np.uint64)
