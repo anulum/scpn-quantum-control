@@ -22,6 +22,6 @@ mkdocs-material==9.7.6
 pymdown-extensions==10.21.2
 mkdocstrings[python]==1.0.3
 # IBM hardware
-qiskit-ibm-runtime==0.45.0
+qiskit-ibm-runtime==0.46.1
 # Visualization
 matplotlib==3.10.8
