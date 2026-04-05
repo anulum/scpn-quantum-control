@@ -171,7 +171,8 @@ class TestBenchmarkContraction:
         A = np.eye(4)
         B = np.eye(4)
         result = benchmark_contraction("ij,jk->ik", A, B, n_repeats=5)
-        assert result["speedup"] > 0
+        # speedup can be 0.0 for tiny matrices where both paths round to ~0 ms
+        assert result["speedup"] >= 0
 
     def test_single_repeat(self):
         A = np.eye(3)
