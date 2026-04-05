@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import numpy as np
+from scipy.optimize import minimize
 
 from ..bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from ..crypto.entanglement_qkd import (
@@ -45,7 +46,6 @@ def qaoa_mpc_4_experiment(runner, shots: int = 10000) -> dict:
             qaoa_p1 (dict): p=1 results (qaoa_cost, qaoa_actions, n_iterations).
             qaoa_p2 (dict): p=2 results (qaoa_cost, qaoa_actions, n_iterations).
     """
-    from scipy.optimize import minimize
 
     B = np.eye(2)
     target = np.array([0.8, 0.6])
