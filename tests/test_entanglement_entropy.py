@@ -193,3 +193,32 @@ class TestScanEntanglementCoverage:
         assert len(result.k_values) == 5
         assert result.entropy_peak_K is not None
         assert result.schmidt_gap_min_K is not None
+
+    def test_jax_gpu_runtime_error_fallback(self):
+        """Cover lines 158-159: JAX GPU raises RuntimeError → fall back to NumPy."""
+        from unittest.mock import patch
+
+        from scpn_quantum_control.bridge.knm_hamiltonian import (
+            OMEGA_N_16,
+            build_knm_paper27,
+        )
+
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        k_range = np.linspace(0.5, 2.0, 3)
+
+        with (
+            patch(
+                "scpn_quantum_control.hardware.jax_accel.entanglement_scan_jax",
+                side_effect=RuntimeError("GPU OOM"),
+            ),
+            patch(
+                "scpn_quantum_control.hardware.jax_accel.is_jax_gpu_available",
+                return_value=True,
+            ),
+        ):
+            result = entanglement_vs_coupling(omega, K, k_range=k_range)
+
+        # Falls back to NumPy path — still produces valid results
+        assert len(result.k_values) == 3
+        assert np.all(np.isfinite(result.entropy))
