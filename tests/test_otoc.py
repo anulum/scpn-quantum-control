@@ -105,3 +105,67 @@ class TestComputeOTOC:
         print(f"  Lyapunov estimate: {result.lyapunov_estimate}")
         print(f"  Scrambling time: {result.scrambling_time}")
         assert isinstance(result.otoc_values[0], float)
+
+
+# ---------------------------------------------------------------------------
+# Coverage: Python fallback, edge cases
+# ---------------------------------------------------------------------------
+
+
+class TestOTOCCoverage:
+    """Cover missing lines: Python fallback, Lyapunov/scrambling None paths."""
+
+    def test_default_times(self):
+        """Cover line 101: times=None defaults to linspace(0, 2, 30)."""
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        result = compute_otoc(K, omega, times=None)
+        assert len(result.times) == 30
+
+    def test_python_fallback(self):
+        """Cover lines 133-143: Python OTOC when Rust unavailable."""
+        from unittest.mock import patch
+
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        times = np.linspace(0, 0.5, 5)
+        with patch.dict("sys.modules", {"scpn_quantum_engine": None}):
+            result = compute_otoc(K, omega, times=times)
+        assert len(result.otoc_values) == 5
+        assert np.isfinite(result.otoc_values).all()
+
+    def test_lyapunov_none_zero_f0(self):
+        """Cover line 167: F(0) ≈ 0 → Lyapunov returns None."""
+        from scpn_quantum_control.analysis.otoc import _estimate_lyapunov
+
+        times = np.linspace(0, 1, 10)
+        otoc = np.zeros(10)
+        result = _estimate_lyapunov(times, otoc)
+        assert result is None
+
+    def test_lyapunov_none_too_few_decay_points(self):
+        """Cover line 178: fewer than 3 positive decay points."""
+        from scpn_quantum_control.analysis.otoc import _estimate_lyapunov
+
+        times = np.linspace(0, 1, 10)
+        otoc = np.ones(10) * 0.99
+        result = _estimate_lyapunov(times, otoc)
+        assert result is None
+
+    def test_scrambling_none_zero_f0(self):
+        """Cover line 191: F(0) ≈ 0 → scrambling returns None."""
+        from scpn_quantum_control.analysis.otoc import _estimate_scrambling_time
+
+        times = np.linspace(0, 1, 10)
+        otoc = np.zeros(10)
+        result = _estimate_scrambling_time(times, otoc)
+        assert result is None
+
+    def test_scrambling_none_no_threshold(self):
+        """Cover line 197: OTOC never drops below 1/e → None."""
+        from scpn_quantum_control.analysis.otoc import _estimate_scrambling_time
+
+        times = np.linspace(0, 1, 10)
+        otoc = np.ones(10)
+        result = _estimate_scrambling_time(times, otoc)
+        assert result is None

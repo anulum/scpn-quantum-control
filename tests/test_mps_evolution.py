@@ -110,6 +110,67 @@ class TestMPSPhysics:
 # ---------------------------------------------------------------------------
 
 
+class TestMPSImportErrors:
+    """Cover ImportError paths when quimb unavailable (lines 45, 97, 151)."""
+
+    def test_build_mpo_raises_without_quimb(self):
+        import scpn_quantum_control.phase.mps_evolution as mps_mod
+
+        orig = mps_mod._QUIMB_AVAILABLE
+        try:
+            mps_mod._QUIMB_AVAILABLE = False
+            with pytest.raises(ImportError, match="quimb not installed"):
+                mps_mod._build_mpo_hamiltonian(np.eye(2), np.ones(2))
+        finally:
+            mps_mod._QUIMB_AVAILABLE = orig
+
+    def test_dmrg_raises_without_quimb(self):
+        import scpn_quantum_control.phase.mps_evolution as mps_mod
+
+        orig = mps_mod._QUIMB_AVAILABLE
+        try:
+            mps_mod._QUIMB_AVAILABLE = False
+            with pytest.raises(ImportError, match="quimb not installed"):
+                mps_mod.dmrg_ground_state(np.eye(2), np.ones(2))
+        finally:
+            mps_mod._QUIMB_AVAILABLE = orig
+
+    def test_tebd_raises_without_quimb(self):
+        import scpn_quantum_control.phase.mps_evolution as mps_mod
+
+        orig = mps_mod._QUIMB_AVAILABLE
+        try:
+            mps_mod._QUIMB_AVAILABLE = False
+            with pytest.raises(ImportError, match="quimb not installed"):
+                mps_mod.tebd_evolution(np.eye(2), np.ones(2))
+        finally:
+            mps_mod._QUIMB_AVAILABLE = orig
+
+
+class TestMPSZeroCoupling:
+    """Cover 'continue' paths when K[i, i+1] ≈ 0 (lines 58, 162)."""
+
+    def test_dmrg_sparse_coupling(self):
+        """K with zero nearest-neighbour entry → continue in _build_mpo_hamiltonian."""
+        n = 4
+        K = np.zeros((n, n))
+        # Only K[0,1] non-zero, K[1,2] = K[2,3] = 0
+        K[0, 1] = K[1, 0] = 0.5
+        omega = np.ones(n)
+        result = dmrg_ground_state(K, omega, bond_dim=8, max_sweeps=3)
+        assert "energy" in result
+
+    def test_tebd_with_zero_omega(self):
+        """TEBD with zero omega — only coupling terms, no Z field."""
+        n = 4
+        K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
+        np.fill_diagonal(K, 0.0)
+        omega = np.zeros(n)
+        result = tebd_evolution(K, omega, t_max=0.1, dt=0.05, bond_dim=8)
+        assert "R" in result
+        assert len(result["R"]) > 0
+
+
 class TestMPSPipeline:
     def test_pipeline_knm_to_dmrg(self):
         """Full pipeline: Knm → DMRG ground state → energy.

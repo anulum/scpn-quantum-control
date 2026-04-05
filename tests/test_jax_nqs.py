@@ -180,6 +180,32 @@ class TestJaxVMCGroundState:
         assert r1["energy"] == pytest.approx(r2["energy"], abs=1e-5)
 
 
+class TestJaxNQSImportErrors:
+    """Cover ImportError paths when JAX unavailable (lines 50, 89)."""
+
+    def test_jax_rbm_energy_raises_without_jax(self):
+        import scpn_quantum_control.phase.jax_nqs as jax_mod
+
+        orig = jax_mod._JAX_AVAILABLE
+        try:
+            jax_mod._JAX_AVAILABLE = False
+            with pytest.raises(ImportError, match="JAX not installed"):
+                jax_mod.jax_rbm_energy({}, None, 2)
+        finally:
+            jax_mod._JAX_AVAILABLE = orig
+
+    def test_jax_vmc_raises_without_jax(self):
+        import scpn_quantum_control.phase.jax_nqs as jax_mod
+
+        orig = jax_mod._JAX_AVAILABLE
+        try:
+            jax_mod._JAX_AVAILABLE = False
+            with pytest.raises(ImportError, match="JAX not installed"):
+                jax_mod.jax_vmc_ground_state(np.eye(2), np.ones(2))
+        finally:
+            jax_mod._JAX_AVAILABLE = orig
+
+
 @_SKIP
 class TestJaxNQSPipeline:
     """Pipeline integration tests."""

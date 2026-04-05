@@ -292,6 +292,63 @@ class TestKrylovComplexityEdgeCases:
         assert result.peak_complexity < 1e-6
 
 
+class TestLanczosPythonFallback:
+    """Cover lines 98-133: Python Lanczos when Rust unavailable."""
+
+    def test_python_lanczos_no_rust(self):
+        """Mock Rust import to fail → Python Lanczos executes."""
+        from unittest.mock import patch
+
+        T = _ring(2)
+        omega = OMEGA_N_16[:2]
+        K = 2.0 * T
+        H = knm_to_hamiltonian(K, omega).to_matrix()
+        # X_0 operator: off-diagonal, doesn't commute with H
+        X0 = np.zeros((4, 4), dtype=complex)
+        X0[0, 2] = X0[2, 0] = 1.0
+        X0[1, 3] = X0[3, 1] = 1.0
+
+        with patch.dict("sys.modules", {"scpn_quantum_engine": None}):
+            b, basis = lanczos_coefficients(H, X0, max_steps=10)
+
+        assert len(b) > 0
+        assert all(bi >= 0 for bi in b)
+        # Python path returns actual basis vectors
+        assert len(basis) == len(b) + 1
+
+    def test_python_lanczos_zero_operator(self):
+        """Zero initial operator → b=[0], basis=[zero]."""
+        from unittest.mock import patch
+
+        H = np.eye(4, dtype=complex)
+        O_zero = np.zeros((4, 4), dtype=complex)
+
+        with patch.dict("sys.modules", {"scpn_quantum_engine": None}):
+            b, basis = lanczos_coefficients(H, O_zero, max_steps=5)
+
+        assert len(b) == 1
+        assert b[0] == 0.0
+
+    def test_krylov_complexity_python_fallback(self):
+        """Full krylov_complexity via Python Lanczos path."""
+        from unittest.mock import patch
+
+        T = _ring(2)
+        omega = OMEGA_N_16[:2]
+        K = 2.0 * T
+        H = knm_to_hamiltonian(K, omega).to_matrix()
+        X0 = np.zeros((4, 4), dtype=complex)
+        X0[0, 2] = X0[2, 0] = 1.0
+        X0[1, 3] = X0[3, 1] = 1.0
+
+        with patch.dict("sys.modules", {"scpn_quantum_engine": None}):
+            result = krylov_complexity(H, X0, t_max=2.0, n_times=10, max_lanczos=10)
+
+        assert isinstance(result, KrylovResult)
+        assert result.peak_complexity >= 0
+        assert len(result.times) == 10
+
+
 class TestKrylovVsCouplingDefaults:
     def test_default_k_range(self):
         T = _ring(2)
