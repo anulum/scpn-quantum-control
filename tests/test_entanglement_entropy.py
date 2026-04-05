@@ -145,3 +145,51 @@ class TestEntanglementPipeline:
 
         print(f"\n  PIPELINE Knm→Entanglement (4q): {dt:.1f} ms")
         print(f"  S = {result.entropy:.4f}, Schmidt gap = {result.schmidt_gap:.4f}")
+
+
+# ---------------------------------------------------------------------------
+# Coverage: JAX GPU fast path (mocked) and default k_range
+# ---------------------------------------------------------------------------
+
+
+class TestScanEntanglementCoverage:
+    def test_default_k_range(self):
+        """Cover line 137: k_range=None defaults to linspace(0.5, 5.0, 20)."""
+        from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
+
+        K = build_knm_paper27(L=3)
+        omega = np.asarray(OMEGA_N_16[:3], dtype=np.float64)
+        result = entanglement_vs_coupling(omega, K, k_range=None)
+        assert len(result.k_values) == 20
+
+    def test_jax_gpu_fast_path(self):
+        """Cover lines 144-157: JAX GPU fast path via mocked jax_accel."""
+        from unittest.mock import patch
+
+        from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
+
+        K = build_knm_paper27(L=3)
+        omega = np.asarray(OMEGA_N_16[:3], dtype=np.float64)
+        k_range = np.linspace(1.0, 3.0, 5)
+
+        mock_result = {
+            "entropy": np.array([0.5, 0.8, 1.0, 0.9, 0.6]),
+            "schmidt_gap": np.array([0.3, 0.2, 0.05, 0.15, 0.25]),
+            "spectral_gap": np.array([0.5, 0.3, 0.1, 0.2, 0.4]),
+        }
+
+        with (
+            patch(
+                "scpn_quantum_control.hardware.jax_accel.entanglement_scan_jax",
+                return_value=mock_result,
+            ),
+            patch(
+                "scpn_quantum_control.hardware.jax_accel.is_jax_gpu_available",
+                return_value=True,
+            ),
+        ):
+            result = entanglement_vs_coupling(omega, K, k_range=k_range)
+
+        assert len(result.k_values) == 5
+        assert result.entropy_peak_K is not None
+        assert result.schmidt_gap_min_K is not None

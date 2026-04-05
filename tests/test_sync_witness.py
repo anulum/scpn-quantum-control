@@ -172,3 +172,59 @@ class TestCalibrateThresholds:
         assert "fiedler" in thresholds
         assert "topological" in thresholds
         assert all(isinstance(v, float) for v in thresholds.values())
+
+
+# ---------------------------------------------------------------------------
+# Coverage: edge cases, topological witness, operator builder
+# ---------------------------------------------------------------------------
+
+
+class TestSyncWitnessCoverage:
+    """Cover missing lines: n_pairs=0, topological witness, operator builder."""
+
+    def test_correlation_witness_single_qubit(self):
+        """Cover line 91: n_pairs=0 for single qubit system."""
+        x_counts = {"0": 500, "1": 500}
+        y_counts = {"0": 500, "1": 500}
+        result = correlation_witness_from_counts(x_counts, y_counts, n_qubits=1)
+        assert isinstance(result, WitnessResult)
+        assert result.n_qubits == 1
+
+    def test_topological_witness_with_ripser(self):
+        """Cover lines 219-231: topological witness using ripser (installed)."""
+        rng = np.random.default_rng(42)
+        corr = rng.uniform(0.1, 0.9, (4, 4))
+        corr = (corr + corr.T) / 2
+        np.fill_diagonal(corr, 1.0)
+        result = topological_witness_from_correlator(corr)
+        assert isinstance(result, WitnessResult)
+        assert result.witness_name == "topological"
+
+    def test_topological_witness_h1_features(self):
+        """Cover lines 223-229: H1 branch with uniform phases on circle.
+
+        Uniformly spaced phases produce a clear 1-cycle in persistent homology.
+        """
+        theta = np.linspace(0, 2 * np.pi, 8, endpoint=False)
+        corr = np.cos(np.subtract.outer(theta, theta))
+        result = topological_witness_from_correlator(corr, threshold=0.1)
+        assert isinstance(result, WitnessResult)
+        assert isinstance(result.expectation_value, float)
+
+    def test_build_correlation_witness_operator(self):
+        """Cover lines 345-368: build SparsePauliOp witness operator."""
+        from scpn_quantum_control.analysis.sync_witness import (
+            build_correlation_witness_operator,
+        )
+
+        W = build_correlation_witness_operator(3, threshold=0.5)
+        assert W.num_qubits == 3
+
+    def test_build_correlation_witness_operator_single_qubit(self):
+        """Cover line 349: n_pairs=0 for single qubit."""
+        from scpn_quantum_control.analysis.sync_witness import (
+            build_correlation_witness_operator,
+        )
+
+        W = build_correlation_witness_operator(1, threshold=0.5)
+        assert W.num_qubits == 1

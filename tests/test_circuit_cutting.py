@@ -85,3 +85,9 @@ class TestScalingAnalysis:
     def test_cuts_increase_with_n(self):
         results = scaling_analysis(n_values=[16, 32, 64])
         assert results["n_cuts"][0] <= results["n_cuts"][1] <= results["n_cuts"][2]
+
+    def test_default_n_values(self):
+        """Cover n_values=None default branch (line 121)."""
+        results = scaling_analysis()
+        assert len(results["n_oscillators"]) == 5
+        assert results["n_oscillators"] == [16, 24, 32, 48, 64]

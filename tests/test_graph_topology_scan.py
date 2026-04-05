@@ -349,3 +349,49 @@ class TestParametricSensitivity:
         K = _ring_coupling(n, k=2)
         degrees = np.sum(K > 0, axis=1)
         np.testing.assert_array_equal(degrees, 4)
+
+
+# ---------------------------------------------------------------------------
+# Angle 6: Coverage gap — dense graph rewiring, Python MC fallback
+# ---------------------------------------------------------------------------
+
+
+class TestWattsStrogatzDenseGraph:
+    """Cover line 75: 'continue' when graph too dense to rewire."""
+
+    def test_complete_graph_no_candidates(self):
+        """n=4, k=4 → ring lattice is complete K4 → no candidates for rewiring."""
+        K = _watts_strogatz_coupling(4, k=4, beta=1.0, seed=42)
+        assert K.shape == (4, 4)
+        np.testing.assert_allclose(K, K.T, atol=1e-12)
+        # Every pair connected in K4, so rewiring has no effect
+        assert np.all(K[np.eye(4) == 0] > 0)
+
+    def test_nearly_complete(self):
+        """n=5, k=4 → nearly complete, most rewiring skipped."""
+        K = _watts_strogatz_coupling(5, k=4, beta=1.0, seed=42)
+        assert K.shape == (5, 5)
+        np.testing.assert_allclose(K, K.T, atol=1e-12)
+
+
+class TestMeasurePH1PythonFallback:
+    """Cover lines 122-123, 134-143: Python MC fallback when Rust unavailable."""
+
+    @_MOCK_CP
+    def test_python_fallback_no_rust(self, _mock):
+        """Mock Rust import to fail → Python MC fallback executes."""
+        K = _ring_coupling(6, k=1)
+        with patch.dict("sys.modules", {"scpn_quantum_engine": None}):
+            mean, std = _measure_p_h1_at_transition(K, n_thermalize=5, n_samples=3, seed=42)
+        assert isinstance(mean, float)
+        assert 0 <= mean <= 1
+        assert isinstance(std, float)
+        assert std >= 0
+
+    @_MOCK_CP
+    def test_python_fallback_finds_best_temperature(self, _mock):
+        """Python fallback iterates temperatures and selects best."""
+        K = _erdos_renyi_coupling(6, 0.5, seed=42)
+        with patch.dict("sys.modules", {"scpn_quantum_engine": None}):
+            mean, std = _measure_p_h1_at_transition(K, n_thermalize=5, n_samples=3, seed=99)
+        assert 0 <= mean <= 1
