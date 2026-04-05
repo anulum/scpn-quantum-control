@@ -293,3 +293,36 @@ class TestLevelSpacingEdgeCases:
         result = level_spacing_by_magnetisation(K, omega, M=0)
         assert "n_gaps" in result
         assert result["n_gaps"] > 0
+
+
+class TestPythonFallback:
+    def test_basis_by_magnetisation_python_path(self):
+        """Force Python fallback by mocking Rust import failure."""
+        from unittest.mock import patch
+
+        with patch.dict("sys.modules", {"scpn_quantum_engine": None}):
+            # Re-import to trigger fallback — but module is already loaded.
+            # Instead, call the function directly with Rust unavailable.
+            import importlib
+
+            import scpn_quantum_control.analysis.magnetisation_sectors as _mod
+
+            importlib.reload(_mod)
+            sectors = _mod.basis_by_magnetisation(4)
+            total = sum(len(v) for v in sectors.values())
+            assert total == 16
+            assert set(sectors.keys()) == {-4, -2, 0, 2, 4}
+
+            # Reload back to normal
+            importlib.reload(_mod)
+
+
+class TestEighInvalidSector:
+    def test_invalid_sector_skipped(self):
+        """Requesting a non-existent M value is silently skipped."""
+        K, omega = _system(4)
+        result = eigh_by_magnetisation(K, omega, sectors=[0, 99])
+        # M=99 doesn't exist, only M=0 computed
+        assert 0 in result["results"]
+        assert 99 not in result["results"]
+        assert result["n_sectors_computed"] == 1
