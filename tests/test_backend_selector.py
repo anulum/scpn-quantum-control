@@ -158,17 +158,24 @@ class TestAutoSolve:
 
     def test_mps_dmrg_path(self):
         """n=20 with quimb → DMRG path."""
-        from unittest.mock import patch
+        from unittest.mock import MagicMock, patch
 
         K, omega = _system(20)
-        with patch(
-            "scpn_quantum_control.phase.backend_selector.recommend_backend",
-            return_value={
-                "backend": "mps_dmrg",
-                "reason": "test",
-                "memory_mb": 100,
-                "feasible": True,
-            },
+        mock_dmrg = MagicMock(return_value={"energy": -1.0, "bond_dim": 64})
+        with (
+            patch(
+                "scpn_quantum_control.phase.backend_selector.recommend_backend",
+                return_value={
+                    "backend": "mps_dmrg",
+                    "reason": "test",
+                    "memory_mb": 100,
+                    "feasible": True,
+                },
+            ),
+            patch(
+                "scpn_quantum_control.phase.mps_evolution.dmrg_ground_state",
+                mock_dmrg,
+            ),
         ):
             result = auto_solve(K, omega)
             assert result["backend_used"] == "mps_dmrg"
