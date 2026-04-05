@@ -100,3 +100,25 @@ class TestFSSPipeline:
         assert len(result.k_c_values) == 3
         print(f"\n  PIPELINE FSS (L=2,3,4, 8 K): {dt:.1f} ms")
         print(f"  K_c = {result.k_c_values}")
+
+
+class TestFSSCoverage:
+    """Cover default parameter branches and fit error paths."""
+
+    def test_default_parameters(self):
+        """Cover lines 85, 87: system_sizes=None, k_range=None defaults."""
+        result = finite_size_scaling()
+        assert len(result.k_c_values) == 3
+        assert len(result.system_sizes) == 3
+
+    def test_fit_power_ansatz_single_point(self):
+        """Cover line 132: _fit_power_ansatz with len(sizes) < 2 returns None.
+
+        Lines 125-126, 139-140 (LinAlgError) are defensive guards —
+        np.linalg.lstsq is extremely robust and doesn't raise LinAlgError
+        for typical inputs. These are effectively unreachable.
+        """
+        import scpn_quantum_control.analysis.finite_size_scaling as fss
+
+        result = fss._fit_power_ansatz([2], [1.5])
+        assert result is None
