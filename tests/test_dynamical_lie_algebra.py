@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.analysis.dynamical_lie_algebra import (
     DLAResult,
@@ -41,6 +42,7 @@ class TestDLAComputation:
         assert result.dimension > len(gens)
         assert result.n_qubits == 2
 
+    @pytest.mark.slow
     def test_xy_4qubit_dla_dimension(self):
         """4-qubit XY model DLA dimension: characterize the algebra.
 
@@ -56,6 +58,7 @@ class TestDLAComputation:
         assert result.dimension >= 4  # at least the generators
         assert result.dimension <= 255  # at most su(2^4)
 
+    @pytest.mark.slow
     def test_tcbo_zz_expands_dla(self):
         """Adding ZZ terms (TCBO) should expand the DLA beyond pure XY."""
         K = build_knm_paper27(L=4)
@@ -69,6 +72,7 @@ class TestDLAComputation:
 
         assert tcbo_result.dimension >= xy_result.dimension
 
+    @pytest.mark.slow
     def test_full_scpn_generators(self):
         """Full SCPN generators include XY + SSGF + PGBO + TCBO."""
         K = build_knm_paper27(L=4)
@@ -99,6 +103,7 @@ class TestDLAComputation:
         assert result.classical_simulable is True
         assert result.dimension == 16
 
+    @pytest.mark.slow
     def test_xy_vs_full_scpn_comparison(self):
         """Full SCPN should have equal or larger DLA than pure XY."""
         K = build_knm_paper27(L=3)
