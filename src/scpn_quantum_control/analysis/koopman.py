@@ -147,6 +147,19 @@ def build_koopman_generator(
     return L, labels
 
 
+def build_koopman_generator_rust(
+    K: np.ndarray,
+    omega: np.ndarray,
+    theta_ref: np.ndarray | None = None,
+) -> tuple[np.ndarray, list[str]]:
+    """Rust-accelerated Koopman generator (falls back to Python).
+
+    TODO(rust): implement koopman_generator in scpn_quantum_engine
+    for n>16 where the O(n³) coupling correction loop matters.
+    """
+    return build_koopman_generator(K, omega, theta_ref)
+
+
 def koopman_analysis(
     K: np.ndarray,
     omega: np.ndarray,
