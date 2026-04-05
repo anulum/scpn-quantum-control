@@ -107,6 +107,86 @@ class TestFeedbackThresholds:
 # ---------------------------------------------------------------------------
 
 
+class TestFeedbackBranchCoverage:
+    """Use mocked L16 to cover all three decision branches."""
+
+    def _mock_l16(self, r: float, stability: float, action: str):
+        from scpn_quantum_control.l16.quantum_director import L16Result
+
+        return L16Result(
+            loschmidt_echo=0.9,
+            energy_variance=0.01,
+            fidelity_susceptibility=0.1,
+            order_parameter=r,
+            stability_score=stability,
+            action=action,
+        )
+
+    def test_hold_branch(self):
+        """R in [r_hold, r_advance) → hold."""
+        from unittest.mock import patch
+
+        l16 = self._mock_l16(0.65, 0.5, "adjust")
+        with patch(
+            "scpn_quantum_control.bridge.orchestrator_feedback.compute_l16_lyapunov",
+            return_value=l16,
+        ):
+            K = build_knm_paper27(L=3)
+            omega = OMEGA_N_16[:3]
+            fb = compute_orchestrator_feedback(K, omega)
+            assert fb.action == "hold"
+            assert "monitoring" in fb.reason
+
+    def test_rollback_branch(self):
+        """R < r_hold → rollback."""
+        from unittest.mock import patch
+
+        l16 = self._mock_l16(0.2, 0.1, "halt")
+        with patch(
+            "scpn_quantum_control.bridge.orchestrator_feedback.compute_l16_lyapunov",
+            return_value=l16,
+        ):
+            K = build_knm_paper27(L=3)
+            omega = OMEGA_N_16[:3]
+            fb = compute_orchestrator_feedback(K, omega)
+            assert fb.action == "rollback"
+            assert "desynchronised" in fb.reason
+
+    def test_rollback_confidence_formula(self):
+        """Rollback confidence = 1 - r/r_hold."""
+        from unittest.mock import patch
+
+        import numpy as np
+
+        l16 = self._mock_l16(0.25, 0.1, "halt")
+        with patch(
+            "scpn_quantum_control.bridge.orchestrator_feedback.compute_l16_lyapunov",
+            return_value=l16,
+        ):
+            fb = compute_orchestrator_feedback(build_knm_paper27(L=3), OMEGA_N_16[:3], r_hold=0.5)
+            np.testing.assert_allclose(fb.confidence, 1.0 - 0.25 / 0.5)
+
+    def test_hold_confidence_formula(self):
+        """Hold confidence = (r - r_hold) / (r_advance - r_hold)."""
+        from unittest.mock import patch
+
+        import numpy as np
+
+        l16 = self._mock_l16(0.65, 0.6, "adjust")
+        with patch(
+            "scpn_quantum_control.bridge.orchestrator_feedback.compute_l16_lyapunov",
+            return_value=l16,
+        ):
+            fb = compute_orchestrator_feedback(
+                build_knm_paper27(L=3),
+                OMEGA_N_16[:3],
+                r_advance=0.8,
+                r_hold=0.5,
+            )
+            expected = (0.65 - 0.5) / (0.8 - 0.5)
+            np.testing.assert_allclose(fb.confidence, expected)
+
+
 class TestFeedbackPipeline:
     def test_full_pipeline_knm_to_feedback(self):
         """Pipeline: build_knm → VQE → R → feedback decision."""
