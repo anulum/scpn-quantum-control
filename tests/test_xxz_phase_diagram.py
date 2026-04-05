@@ -181,3 +181,22 @@ class TestXXZPipeline:
 
         print(f"\n  PIPELINE XXZ phase diagram (3q, 3δ×6K): {dt:.1f} ms")
         print(f"  K_c values: {result.k_c_values}")
+
+
+class TestXXZCoverage:
+    """Cover default parameter branches."""
+
+    def test_scan_coupling_default_k_range(self):
+        """Cover line 96: k_range=None default."""
+        K_topo = np.array([[0, 1.0], [1.0, 0]])
+        omega = OMEGA_N_16[:2]
+        result = scan_coupling_at_delta(omega, K_topo, delta=0.5)
+        assert len(result.k_values) == 15
+
+    def test_phase_diagram_defaults(self):
+        """Cover lines 130, 132: delta_range=None, k_range=None."""
+        K_topo = np.array([[0, 1.0], [1.0, 0]])
+        omega = OMEGA_N_16[:2]
+        result = anisotropy_phase_diagram(omega, K_topo)
+        assert len(result.delta_values) == 6
+        assert len(result.scans) == 6
