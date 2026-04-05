@@ -91,7 +91,7 @@ $\theta_i$ that evolves according to:
 
 $$\frac{d\theta_i}{dt} = \omega_i + \sum_j K_{ij}\sin(\theta_j - \theta_i)$$
 
-When the coupling is strong enough, the oscillators synchronize — their phases
+When the coupling is strong enough, the oscillators synchronise — their phases
 align, and the order parameter $R$ rises from 0 (incoherent) toward 1 (perfect sync).
 
 Think of four pendulums hanging from a shared beam. Each swings at its own natural
@@ -251,7 +251,7 @@ the coupling topology.
 ### Tutorial 5: Detecting Synchronization with Witnesses
 
 **Goal:** Use the three synchronization witnesses to certify whether a quantum state
-is synchronized.
+is synchronised.
 
 ```python
 from scpn_quantum_control.analysis.sync_witness import (
@@ -441,7 +441,7 @@ print(f"p_H1 = {result.p_h1:.3f}")
 print(f"Persistent 1-cycles: {result.n_h1_persistent}")
 ```
 
-In the synchronized phase, the correlation matrix is nearly rank-1 — all oscillators
+In the synchronised phase, the correlation matrix is nearly rank-1 — all oscillators
 are correlated with all others. The Vietoris-Rips complex is a single connected clique
 with no topological holes ($H_1 = 0$). In the incoherent phase, partial correlations
 create persistent 1-cycles — loops in the correlation landscape that signal
@@ -561,7 +561,7 @@ print(f"Fraction:              {dim / (4**3 - 1):.2%}")
 ```
 
 **Key insight:** Magic peaks where synchronization happens. The quantum state
-that describes synchronized oscillators is precisely the state that is hardest
+that describes synchronised oscillators is precisely the state that is hardest
 to simulate classically. In the SCPN framework, this means consciousness emerges
 at the computational complexity boundary.
 

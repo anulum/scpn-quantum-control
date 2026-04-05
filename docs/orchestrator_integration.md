@@ -19,7 +19,7 @@ Fusion control needs **cause-specific** phase semantics:
 - hierarchy layers
 - coupling (`Knm`), phase lags (`alpha`), drivers (`zeta`, `Psi`)
 - objectives (`R_good`, `R_bad`)
-- boundary and regime behavior
+- boundary and regime behaviour
 
 Those semantics are owned by the orchestrator/domain spec layer.
 `scpn-quantum-control` should execute quantum mappings from that spec, not

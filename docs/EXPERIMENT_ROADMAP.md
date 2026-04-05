@@ -115,8 +115,8 @@ Contributes to the error mitigation literature.
 R_hw = R_exact * exp(-γ * depth) to extract per-gate depolarization
 rate γ.
 
-Science value: γ is a single number that characterizes the backend for
-our circuit family. Enables predictive modeling: "at depth D, expect
+Science value: γ is a single number that characterises the backend for
+our circuit family. Enables predictive modelling: "at depth D, expect
 error E." Compares to IBM published T1/T2 and gate errors.
 
 **11. vqe_landscape** (0s QPU, sim only) — Sample 50 random parameter

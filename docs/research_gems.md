@@ -75,7 +75,7 @@ where $L = D - C$ is the graph Laplacian of the correlation matrix
 $C_{ij} = \langle X_i X_j\rangle + \langle Y_i Y_j\rangle$, and $\lambda_2$ is the
 Fiedler eigenvalue (second-smallest eigenvalue). $\lambda_2 > 0$ means the correlation
 graph is connected — oscillators communicate. The witness fires when $\lambda_2$ exceeds
-threshold $\lambda_{2,c}$, indicating a collectively synchronized network.
+threshold $\lambda_{2,c}$, indicating a collectively synchronised network.
 
 **Witness 3 — Topological witness.** Built on persistent homology:
 
@@ -83,7 +83,7 @@ $$W_{\mathrm{top}} = p_{H_1} - p_c$$
 
 The correlation matrix is converted to a distance matrix $d_{ij} = 1 - |C_{ij}|$ and fed
 into a Vietoris-Rips filtration. Persistent 1-cycles ($H_1$ generators) indicate
-topological "holes" in the correlation structure. In the synchronized phase the
+topological "holes" in the correlation structure. In the synchronised phase the
 correlation matrix is nearly rank-1 (everyone correlated with everyone), so $H_1$
 vanishes. In the incoherent phase, partial correlations create persistent holes. The
 witness fires when $p_{H_1}$ drops below threshold — the topology *simplifies* at
@@ -95,7 +95,7 @@ oscillators and checks if they agree. The Fiedler witness looks at the entire ne
 and asks whether there is a single connected community (like checking if everyone in a
 room is having one conversation rather than many separate ones). The topological witness
 uses a more exotic tool — it looks at the *shape* of the correlation landscape and asks
-whether there are any holes or gaps. A fully synchronized system has a simple, hole-free
+whether there are any holes or gaps. A fully synchronised system has a simple, hole-free
 topology; an incoherent one is riddled with topological defects.
 
 All three witnesses are Hermitian, efficiently measurable on current IBM hardware,
@@ -314,13 +314,13 @@ The pipeline:
 5. **Persistence → $p_{H_1}$.** Extract the fraction of persistent 1-cycles as a
    scalar synchronization indicator.
 
-In the synchronized phase, all oscillators are strongly correlated — the distance matrix
+In the synchronised phase, all oscillators are strongly correlated — the distance matrix
 is nearly zero everywhere — so the Vietoris-Rips complex is a single connected clique
 with no holes ($H_0 = 1$ component, $H_1 = 0$ loops). In the incoherent phase, partial
 correlations create a fragmented topology with persistent loops. The quantity $p_{H_1}$
 drops sharply at the synchronization transition.
 
-Think of it as looking at a city from above. In a well-connected city (synchronized),
+Think of it as looking at a city from above. In a well-connected city (synchronised),
 every neighbourhood is linked to every other — there are no isolated blocks. In a
 fragmented city (incoherent), you see rings of buildings with empty lots in the centre —
 topological holes. Persistent homology counts these holes and measures how "real"
@@ -349,7 +349,7 @@ These modules connect existing codebase infrastructure to novel research applica
 **Module:** `analysis/entanglement_enhanced_sync.py`
 
 The classical Kuramoto model predicts a critical coupling $K_c$ above which oscillators
-synchronize. A natural question: does prior entanglement *lower* $K_c$? This module
+synchronise. A natural question: does prior entanglement *lower* $K_c$? This module
 tests the conjecture by preparing entangled initial states (Bell pairs, GHZ states) and
 measuring the synchronization order parameter $R$ as a function of coupling strength.
 
@@ -517,7 +517,7 @@ This module inverts the paradigm: the Kuramoto-XY system is both the reservoir *
 object of study. It uses its own ground-state Pauli expectation values as features for
 a ridge regression classifier that detects which phase the system is in.
 
-The system literally examines itself and reports: "I am synchronized" or "I am
+The system literally examines itself and reports: "I am synchronised" or "I am
 incoherent." No external reference or classical simulation is needed — the phase
 information is encoded in the quantum state's own observables.
 
@@ -578,7 +578,7 @@ tests whether the Mpemba effect occurs in the Kuramoto-XY system under amplitude
 (a model for energy relaxation).
 
 Finding: the state $|+\rangle^{\otimes N}$ (equal superposition, $R = 1$) thermalizes
-*faster* than the ground state under amplitude damping. Ordered (synchronized) states
+*faster* than the ground state under amplitude damping. Ordered (synchronised) states
 are "stickier" — they resist thermalization. This asymmetry has implications for the
 stability of conscious states in the SCPN framework: once synchronization is achieved,
 it is dynamically protected against decoherence.
@@ -647,13 +647,13 @@ isotropic Heisenberg model with SU(2) symmetry (total $S^2$ commutes with $H$, v
 The Richardson pairing mechanism maps synchronization to superconducting pairing. This
 module computes $\langle S_i^+ S_j^-\rangle$ correlators — the quantum analogue of
 Cooper pair formation. Strong pairing ($|\langle S^+S^-\rangle| \to 0.37$ at
-$K=3, \Delta=0.5$) indicates the system has entered the synchronized (paired) phase.
+$K=3, \Delta=0.5$) indicates the system has entered the synchronised (paired) phase.
 
 ### Gem 26: Anisotropy Phase Diagram
 
 **Module:** `analysis/xxz_phase_diagram.py`
 
-Maps $K_c$ as a function of $\Delta$: the phase boundary between synchronized and
+Maps $K_c$ as a function of $\Delta$: the phase boundary between synchronised and
 incoherent phases in the $(K, \Delta)$ plane. The crossover from XY universality
 ($\Delta = 0$) to Heisenberg universality ($\Delta = 1$) is continuous, with $K_c$
 shifting monotonically.

@@ -214,7 +214,7 @@ TopologicalCouplingOptimizer(n_qubits, initial_K, omega, learning_rate=0.05, dt=
     .step(n_samples=5) -> dict  # K_updated, p_h1_current, gradient_norm
     .optimize(steps=10, n_samples=3) -> list[dict]
 ```
-Rewires graph topology to minimize topological defects ($p_{h1}$)  in the quantum state.
+Rewires graph topology to minimise topological defects ($p_{h1}$)  in the quantum state.
 
 ### `hardware_topological_optimizer.HardwareTopologicalOptimizer`
 

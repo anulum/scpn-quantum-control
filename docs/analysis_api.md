@@ -41,7 +41,7 @@ from scpn_quantum_control.analysis.sync_witness import (
 | `evaluate_all_witnesses` | X/Y counts, `n_qubits`, thresholds | `dict[str, WitnessResult]` | All three witnesses from one measurement set |
 | `calibrate_thresholds` | `K`, `omega`, `K_base_range`, `n_samples` | `dict[str, float]` | Classical Kuramoto calibration of thresholds |
 
-`WitnessResult` fields: `witness_name`, `expectation_value` (negative = synchronized),
+`WitnessResult` fields: `witness_name`, `expectation_value` (negative = synchronised),
 `threshold`, `is_synchronized`, `raw_observable`, `n_qubits`.
 
 Full theory and examples: [Research Gems — Gem 1](research_gems.md#gem-1-synchronization-witness-operators).
@@ -201,7 +201,7 @@ from scpn_quantum_control.analysis.entanglement_spectrum import (
 ### `pairing_correlator` — Richardson Pairing $\langle S^+_i S^-_j\rangle$
 
 Detects Richardson pairing (the superconducting analogue of synchronization) via
-spin-raising/lowering correlators. Strong pairing = synchronized phase.
+spin-raising/lowering correlators. Strong pairing = synchronised phase.
 
 ```python
 from scpn_quantum_control.analysis.pairing_correlator import (

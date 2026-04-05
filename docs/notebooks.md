@@ -315,7 +315,7 @@ graph LR
 
 **File:** [`notebooks/08_identity_continuity.ipynb`](https://github.com/anulum/scpn-quantum-control/blob/main/notebooks/08_identity_continuity.ipynb)
 
-Explores the SCPN identity hypothesis: that a synchronized ground state
+Explores the SCPN identity hypothesis: that a synchronised ground state
 constitutes a stable attractor representing a persistent "identity" in the
 Kuramoto-XY framework. This notebook runs five analyses:
 
