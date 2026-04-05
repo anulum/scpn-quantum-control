@@ -103,25 +103,46 @@ def _measure_p_h1_at_transition(
 
     Uses a range of temperatures and picks the one where vortex
     density changes fastest (proxy for T_BKT).
+
+    Rust acceleration: uses mc_xy_simulate for the temperature scan
+    (order parameter proxy) when available, falls back to Python MC.
     """
     n = K.shape[0]
-    # Scan a few temperatures to find the transition region
     temps = [0.05, 0.1, 0.2, 0.5, 1.0, 2.0]
-    best_t = 0.5  # default
+    best_t = 0.5
     max_p_h1 = 0.0
 
-    for t in temps:
-        beta = 1.0 / t
-        rng = np.random.default_rng(seed + int(t * 1000))
-        theta = np.asarray(rng.uniform(0, 2 * np.pi, n))
-        for _ in range(n_thermalize):
-            theta = _mc_sweep(theta, K, beta, rng)
-        pr = compute_persistence(theta, persistence_threshold)
-        if pr.p_h1 > max_p_h1:
-            max_p_h1 = pr.p_h1
-            best_t = t
+    # Rust fast path for temperature scan: use order parameter as proxy
+    # for p_h1 to find best temperature, then measure p_h1 at that T
+    _use_rust = False
+    try:
+        from scpn_quantum_engine import mc_xy_simulate  # type: ignore[import-not-found]
 
-    # Measure p_h1 at best temperature with multiple samples
+        _use_rust = True
+    except ImportError:
+        pass
+
+    if _use_rust:
+        k_flat: np.ndarray = K.ravel().astype(np.float64)
+        best_r = 0.0
+        for t in temps:
+            _, r, _ = mc_xy_simulate(k_flat, n, t, n_thermalize, 10, seed + int(t * 1000))
+            if r > best_r:
+                best_r = r
+                best_t = t
+    else:
+        for t in temps:
+            rng = np.random.default_rng(seed + int(t * 1000))
+            theta = np.asarray(rng.uniform(0, 2 * np.pi, n))
+            beta = 1.0 / t
+            for _ in range(n_thermalize):
+                theta = _mc_sweep(theta, K, beta, rng)
+            pr = compute_persistence(theta, persistence_threshold)
+            if pr.p_h1 > max_p_h1:
+                max_p_h1 = pr.p_h1
+                best_t = t
+
+    # Measurement phase: need explicit theta for persistence homology
     beta = 1.0 / best_t
     rng = np.random.default_rng(seed + 999)
     theta = np.asarray(rng.uniform(0, 2 * np.pi, n))

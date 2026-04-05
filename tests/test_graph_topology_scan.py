@@ -225,11 +225,14 @@ class TestMeasurePH1AtTransition:
         assert 0 <= mean <= 1
 
     @_MOCK_CP
-    def test_multiple_temperatures_scanned(self, _mock):
-        """Internally scans 6 temperatures — mock called at least 6 times."""
+    def test_measurement_samples_collected(self, _mock):
+        """Measurement phase collects n_samples persistence measurements."""
         K = _ring_coupling(6, k=1)
         _measure_p_h1_at_transition(K, n_thermalize=5, n_samples=3, seed=42)
-        assert _mock.call_count >= 6
+        # With Rust path: temp scan uses order parameter (no compute_persistence),
+        # measurement phase calls compute_persistence n_samples=3 times.
+        # Without Rust: temp scan (6) + measurement (3) = 9.
+        assert _mock.call_count >= 3
 
 
 # ---------------------------------------------------------------------------
