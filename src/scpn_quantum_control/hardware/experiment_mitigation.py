@@ -341,7 +341,7 @@ def decoherence_scaling_experiment(
     R_hw = R_exact * exp(-gamma * depth).
 
     Science: extracts per-gate depolarization rate gamma from a single
-    calibration run. Enables predictive modeling of experiment fidelity.
+    calibration run. Enables predictive modelling of experiment fidelity.
 
     Returns:
         dict with keys:

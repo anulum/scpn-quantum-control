@@ -65,7 +65,7 @@ def build_systems(n_qubits: int = 4) -> list[PhysicalSystem]:
     """Build a set of physical systems for transfer learning experiments.
 
     All systems use the same number of oscillators but different coupling
-    structures and frequencies, modeling different physics domains.
+    structures and frequencies, modelling different physics domains.
     """
     from ..bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 

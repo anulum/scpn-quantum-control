@@ -15,7 +15,7 @@ measuring the effect on synchronization dynamics.
 
 Hamaguchi, Zheng & Yunger Halpern (Nature Physics, July 2025) proved
 that entangled initial states reduce Trotter simulation error. We test
-whether entanglement also changes the PHYSICAL synchronization behavior
+whether entanglement also changes the PHYSICAL synchronization behaviour
 (speed, final R, critical coupling K_c).
 
 Initial states compared:

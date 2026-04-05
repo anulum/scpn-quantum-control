@@ -13,11 +13,11 @@ The quantum version was observed experimentally (Nature Comms 2024)
 and studied at Ising criticality (Wei et al. 2025).
 
 Nobody has asked: does a state prepared far from synchronization
-reach the synchronized state faster than one prepared close to it?
+reach the synchronised state faster than one prepared close to it?
 
 Protocol:
 1. Prepare initial states at different "distances" from the
-   synchronized ground state (measured by 1 - fidelity)
+   synchronised ground state (measured by 1 - fidelity)
 2. Evolve under Lindblad dynamics: H(K) + depolarizing noise
 3. Track the approach to the steady state (measured by R or fidelity)
 4. Mpemba effect: if initial distance d_far > d_close but

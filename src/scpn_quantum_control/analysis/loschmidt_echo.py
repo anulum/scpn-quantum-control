@@ -15,7 +15,7 @@ DQPTs manifest as cusps (non-analyticities) in g(t) at critical times t*.
 For quenches across the BKT point K_c:
 - Zunkovic et al. (2016) showed DQPTs are NOT guaranteed at BKT for the
   infinite-range XY model — they depend on the quench protocol.
-- The specific behavior for the Kuramoto Hamiltonian with heterogeneous
+- The specific behaviour for the Kuramoto Hamiltonian with heterogeneous
   frequencies is unstudied.
 
 Ref: Heyl et al. PRL 110, 135704 (2013) — foundational DQPT paper.

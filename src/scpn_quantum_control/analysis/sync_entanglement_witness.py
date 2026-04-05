@@ -44,7 +44,7 @@ The key bound: R_sep_max(E) < R_entangled(E) at the same energy.
 References:
     Kuramoto (1975): original order parameter definition.
     Galve et al., Sci. Rep. 3 (2013): synchronization → entanglement.
-    Nature Comms 2025 (transmon): synchronized qubits are entangled.
+    Nature Comms 2025 (transmon): synchronised qubits are entangled.
     Gühne & Tóth, Physics Reports 474 (2009): entanglement witnesses.
 """
 

@@ -21,8 +21,8 @@ Note: 2D U(1) pure gauge is always confining (no deconfined phase).
 The XY model with matter fields has a genuine confinement transition.
 For our Kuramoto system, the coupling K plays the role of inverse
 temperature, so:
-    - K > K_c: synchronized = ordered = deconfined (perimeter)
-    - K < K_c: desynchronized = disordered = confined (area)
+    - K > K_c: synchronised = ordered = deconfined (perimeter)
+    - K < K_c: desynchronised = disordered = confined (area)
 
 The string tension σ(K) is extracted from the ratio of Wilson loops
 of different sizes:

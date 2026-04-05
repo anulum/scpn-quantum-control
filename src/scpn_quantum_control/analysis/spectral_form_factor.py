@@ -15,7 +15,7 @@ of quantum chaos:
 At the BKT synchronization critical point K_c:
 - Does the SFF transition from Poisson to RMT?
 - Is the synchronization transition also a chaos transition?
-- The BKT essential singularity may produce anomalous SFF behavior
+- The BKT essential singularity may produce anomalous SFF behaviour
 
 Prior art: Joshi et al. PRL 2025 (SFF on hardware for chaos/MBL).
 Andersen et al. Nature 2025 (BKT on hardware, no SFF).

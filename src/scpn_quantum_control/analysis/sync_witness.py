@@ -9,7 +9,7 @@
 
 A synchronization witness W is a Hermitian observable such that:
 
-    ⟨W⟩ < 0  →  system is synchronized (collective phase coherence)
+    ⟨W⟩ < 0  →  system is synchronised (collective phase coherence)
     ⟨W⟩ ≥ 0  →  system is incoherent
 
 This is analogous to entanglement witnesses (Horodecki et al., 1996)
@@ -18,7 +18,7 @@ but detects collective synchronization instead of quantum correlations.
 Three witness constructions are provided:
 
 1. **Correlation witness** W_corr = R_c·I - (1/N²)Σ_{ij}(X_iX_j + Y_iY_j)
-   Threshold R_c separates synchronized from incoherent.
+   Threshold R_c separates synchronised from incoherent.
    Measurable with 2-qubit correlators (no tomography needed).
 
 2. **Fiedler witness** W_F = λ₂_c·I - L̃(ρ)
@@ -29,7 +29,7 @@ Three witness constructions are provided:
 3. **Topological witness** W_top = p_c·I - P̂_H1
    Based on persistent homology H1 cycle count. Fires when the
    fraction of persistent 1-cycles exceeds threshold, indicating
-   vortex-free (synchronized) topology.
+   vortex-free (synchronised) topology.
 
 All three witnesses are:
 - Hermitian (self-adjoint)
@@ -196,13 +196,13 @@ def topological_witness_from_correlator(
     computed from the Vietoris-Rips complex of the correlation distance
     matrix d_ij = 1 - |C_ij|.
 
-    In the synchronized phase, the correlation matrix is nearly
+    In the synchronised phase, the correlation matrix is nearly
     rank-1 (all-to-all connected), so there are no persistent 1-cycles
     (p_H1 ≈ 0). In the incoherent phase, partial correlations create
     holes (p_H1 > 0). The witness fires when p_H1 drops below threshold.
 
-    Note: inverted polarity — low p_H1 = synchronized. So:
-    W_top = p_H1 - p_c → negative when p_H1 < p_c (synchronized).
+    Note: inverted polarity — low p_H1 = synchronised. So:
+    W_top = p_H1 - p_c → negative when p_H1 < p_c (synchronised).
     """
     n = corr_matrix.shape[0]
 
@@ -230,7 +230,7 @@ def topological_witness_from_correlator(
     else:
         p_h1 = 0.0
 
-    # Low p_H1 = synchronized → witness = p_H1 - threshold → negative when synced
+    # Low p_H1 = synchronised → witness = p_H1 - threshold → negative when synced
     witness_val = p_h1 - threshold
 
     return WitnessResult(

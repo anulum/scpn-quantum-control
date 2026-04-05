@@ -17,7 +17,7 @@ where the sum is over all n-qubit Pauli strings P (4^n terms).
 At a QPT: magic typically peaks at criticality (the critical state
 is maximally non-classical). For BKT (infinite-order): the scaling
 of magic is unknown — the infinite-order character may produce
-different behavior from the power-law peaks seen at 2nd-order QPTs.
+different behaviour from the power-law peaks seen at 2nd-order QPTs.
 
 Prior art: Tarabunga et al. 2024 (magic at QPTs in XXZ chain, but
 Ising-type transitions, not BKT). Hoshino et al. 2025 (SRE + CFT

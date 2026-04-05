@@ -13,7 +13,7 @@ chaos theory to the Kuramoto phase transition:
 
     K < K_c: incoherent phase, weak scrambling (integrable-like)
     K = K_c: critical point, maximum scrambling (quantum chaos peak)
-    K > K_c: synchronized phase, reduced scrambling (ordered, less chaotic)
+    K > K_c: synchronised phase, reduced scrambling (ordered, less chaotic)
 
 This provides a new experimental observable for detecting the sync
 transition on NISQ hardware: instead of measuring R (which requires

@@ -11,8 +11,8 @@ Maps the synchronization-decoherence phase boundary for the
 XY-Kuramoto model on a finite graph. Three regimes:
 
     1. Incoherent (K < K_c): no synchronization, R → 0
-    2. Partially synchronized (K ≈ K_c): BKT transition, vortex unbinding
-    3. Fully synchronized (K >> K_c): R → 1, entanglement saturated
+    2. Partially synchronised (K ≈ K_c): BKT transition, vortex unbinding
+    3. Fully synchronised (K >> K_c): R → 1, entanglement saturated
 
 The effective temperature T_eff combines frequency heterogeneity
 (classical thermal noise analog) and quantum decoherence (T1, T2).

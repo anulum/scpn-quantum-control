@@ -8,7 +8,7 @@
 """Topological Quantum Reinforcement Learning / Optimizer.
 
 This module provides an optimizer that iteratively rewires the physical
-coupling matrix K_nm to minimize the topological defects (persistent
+coupling matrix K_nm to minimise the topological defects (persistent
 1-cycles, p_h1) of the resulting quantum state.
 
 Instead of traditional energy minimization (VQE), this optimizes for
@@ -16,7 +16,7 @@ macroscopic coherence and the absence of phase vortices, bridging
 Topological Data Analysis (TDA) and Quantum Optimal Control.
 
 It simulates a biological system dynamically evolving its synaptic
-topology to achieve a globally synchronized, vortex-free 'conscious' state.
+topology to achieve a globally synchronised, vortex-free 'conscious' state.
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ from scpn_quantum_control.hardware.fast_classical import fast_sparse_evolution
 
 
 class TopologicalCouplingOptimizer:
-    """Optimizes a coupling graph to minimize quantum persistent homology."""
+    """Optimizes a coupling graph to minimise quantum persistent homology."""
 
     def __init__(
         self,
@@ -108,7 +108,7 @@ class TopologicalCouplingOptimizer:
 
             # Finite difference gradient contribution
             # We want to MINIMIZE p_h1. So if ph_plus > ph_minus, the gradient is positive in direction of delta_K.
-            # To minimize, we step in the NEGATIVE gradient direction.
+            # To minimise, we step in the NEGATIVE gradient direction.
             diff = (ph_plus - ph_minus) / (2.0 * perturbation_scale)
             grad_K += diff * delta_K
 
