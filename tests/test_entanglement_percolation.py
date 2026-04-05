@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.analysis.entanglement_percolation import (
     PercolationScanResult,
@@ -180,6 +181,18 @@ class TestOrderParameterFromState:
         psi = np.ones(4, dtype=complex) / 2.0
         r = _order_parameter_from_state(psi, 2)
         assert 0 <= r <= 1.0 + 1e-6
+
+
+class TestPercolationScanDefaults:
+    def test_default_k_range(self):
+        """percolation_scan with k_range=None uses default linspace(0.1, 5.0, 20)."""
+        n = 2
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+        result = percolation_scan(omega, T, k_range=None)
+        assert len(result.k_values) == 20
+        assert result.k_values[0] == pytest.approx(0.1)
+        assert result.k_values[-1] == pytest.approx(5.0)
 
 
 class TestFiedlerEdgeCases:

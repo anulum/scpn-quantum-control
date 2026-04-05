@@ -202,3 +202,19 @@ class TestLoschmidtSmallNtimes:
         result = loschmidt_quench(omega, T, K_initial=1.0, K_final=3.0, n_times=4)
         assert len(result.times) == 4
         assert result.n_cusps >= 0
+
+
+class TestRateFunctionCap:
+    def test_rate_cap_for_near_zero_amplitude(self):
+        """Rate function caps at 30/N when amplitude is near zero.
+
+        Construct a quench where overlaps with final eigenstates sum
+        to produce near-cancellation at specific times.  The rate function
+        should cap rather than diverge.
+        """
+        T = _ring(4)
+        omega = OMEGA_N_16[:4]
+        # Large quench across transition — some time points will have very small |G|
+        result = loschmidt_quench(omega, T, K_initial=0.1, K_final=10.0, t_max=20.0, n_times=500)
+        # Rate should never exceed cap
+        assert np.all(result.rate_function <= 30.0 / 4 + 1e-6)
