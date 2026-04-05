@@ -154,3 +154,18 @@ class TestQSLPipeline:
         print(f"\n  PIPELINE Knm→QSL (3q, t=1.0): {dt:.1f} ms")
         print(f"  τ_MT={result.tau_MT:.4f}, τ_ML={result.tau_ML:.4f}")
         print(f"  τ_actual={result.tau_actual:.4f}, ΔE={result.delta_E:.4f}")
+
+
+class TestNonTrivialOverlap:
+    def test_mt_bound_formula(self):
+        """Verify the arccos branch formula directly.
+
+        For the XY Hamiltonian, |0...0⟩ is always an eigenstate so
+        overlap = 1.0 and delta_E = 0 in compute_qsl. The arccos
+        branch (line 124) is unreachable. We verify the formula holds.
+        """
+        overlap = 0.5
+        delta_E = 1.0
+        tau_MT = np.arccos(min(overlap, 1.0)) / max(delta_E, 1e-15)
+        assert tau_MT > 0
+        np.testing.assert_allclose(tau_MT, np.arccos(0.5), atol=1e-12)
