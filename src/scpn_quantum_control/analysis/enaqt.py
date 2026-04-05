@@ -51,31 +51,48 @@ class ENAQTResult:
     enhancement: float  # optimal_r / coherent_r
 
 
+def _build_z_signs(n_qubits: int) -> np.ndarray:
+    """Precompute Z_k sign vectors for vectorised dephasing.
+
+    Z_k is diagonal with entries ±1. Z_k ρ Z_k flips signs:
+    (Z_k ρ Z_k)[i,j] = z_k[i] * z_k[j] * ρ[i,j].
+
+    Returns shape (n_qubits, 2^n_qubits) — sign vector per qubit.
+    """
+    dim = 1 << n_qubits
+    signs = np.ones((n_qubits, dim), dtype=np.float64)
+    for k in range(n_qubits):
+        for idx in range(dim):
+            if (idx >> k) & 1:
+                signs[k, idx] = -1.0
+    return signs
+
+
 def _lindblad_evolve(
     rho: np.ndarray,
     H_mat: np.ndarray,
     gamma: float,
     dt: float,
     n_qubits: int,
+    z_signs: np.ndarray | None = None,
 ) -> np.ndarray:
     """One step of Lindblad master equation with Z-dephasing.
 
     dρ/dt = -i[H, ρ] + γ Σ_k (Z_k ρ Z_k - ρ)
 
-    Uses first-order Euler for simplicity (dt should be small).
+    Uses vectorised sign-flip for Z-dephasing (no matrix multiply).
+    Pass precomputed z_signs from _build_z_signs to avoid rebuild.
     """
     commutator = -1j * (H_mat @ rho - rho @ H_mat)
 
-    # Dephasing: Z_k ρ Z_k - ρ for each qubit
+    if z_signs is None:
+        z_signs = _build_z_signs(n_qubits)
+
+    # Vectorised dephasing: Z_k ρ Z_k = sign_k[:,None] * sign_k[None,:] * ρ
     dephasing = np.zeros_like(rho)
     for k in range(n_qubits):
-        Z_k = np.eye(1, dtype=complex)
-        for q in range(n_qubits):
-            if q == k:
-                Z_k = np.kron(Z_k, np.array([[1, 0], [0, -1]], dtype=complex))
-            else:
-                Z_k = np.kron(Z_k, np.eye(2, dtype=complex))
-        dephasing += Z_k @ rho @ Z_k - rho
+        sign_matrix = z_signs[k, :, None] * z_signs[k, None, :]
+        dephasing += sign_matrix * rho - rho
 
     drho = commutator + gamma * dephasing
     rho_new = rho + dt * drho
@@ -140,10 +157,13 @@ def enaqt_scan(
     dt = t_evolve / n_steps
     r_values = np.zeros(len(gamma_range))
 
+    # Precompute Z sign vectors once (avoids kron per step)
+    z_signs = _build_z_signs(n)
+
     for idx, gamma in enumerate(gamma_range):
         rho = rho_init.copy()
         for _step in range(n_steps):
-            rho = _lindblad_evolve(rho, H_mat, gamma, dt, n)
+            rho = _lindblad_evolve(rho, H_mat, gamma, dt, n, z_signs=z_signs)
         r_values[idx] = _r_from_density_matrix(rho, n)
 
     best_idx = int(np.argmax(r_values))
