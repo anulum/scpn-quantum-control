@@ -318,3 +318,49 @@ class TestBuildFullScpnNoneInputs:
         xy_gens = build_xy_generators(K, omega)
         # Only XY + TCBO (nearest), no SSGF/PGBO
         assert len(gens) >= len(xy_gens)
+
+
+class TestDLACoverage:
+    """Cover polynomial degree branches and sparse coupling continues."""
+
+    def test_sparse_coupling_skips_zero_entries(self):
+        """Cover lines 231, 263: continue when K[i,j] < eps."""
+        K = np.zeros((3, 3))
+        K[0, 1] = K[1, 0] = 0.5  # Only one pair coupled
+        omega = np.array([1.0, 1.5, 2.0])
+        gens = build_xy_generators(K, omega)
+        # Only one XX + one YY pair (not 3 pairs)
+        xx_yy_count = sum(1 for g in gens if g.num_qubits == 3 and len(g) == 1)
+        assert xx_yy_count < 6  # fewer than all-to-all
+
+    def test_ssgf_generators_sparse_W(self):
+        """Cover line 263: continue when sigma_g * W < eps in SSGF generators."""
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        W = np.zeros((3, 3))  # All zero → all SSGF terms skipped
+        gens = build_ssgf_generators(K, omega, W, sigma_g=0.3)
+        xy_only = build_xy_generators(K, omega)
+        assert len(gens) == len(xy_only)  # No SSGF terms added
+
+    def test_full_scpn_sparse_W_and_h(self):
+        """Cover lines 373, 389: continue when W/h_munu coupling < eps."""
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        W = np.zeros((3, 3))
+        h = np.zeros((3, 3))
+        gens = build_full_scpn_generators(K, omega, W=W, h_munu=h)
+        # Only XY + TCBO terms (no SSGF/PGBO)
+        assert len(gens) > 0
+
+    def test_compute_dla_rust_fallback(self):
+        """Cover Rust fallback in compute_dla_rust."""
+        from unittest.mock import patch
+
+        from scpn_quantum_control.analysis.dynamical_lie_algebra import compute_dla_rust
+
+        K = np.array([[0, 0.5], [0.5, 0]])
+        omega = np.array([1.0, 1.5])
+        gens = build_xy_generators(K, omega)
+        with patch.dict("sys.modules", {"scpn_quantum_engine": None}):
+            result = compute_dla_rust(gens)
+        assert result.dimension > 0

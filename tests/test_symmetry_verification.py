@@ -256,3 +256,24 @@ class TestIntegrationWithExperiments:
         for bs, p in probs.items():
             if p > 1e-10:
                 assert bitstring_parity(bs) == 0, f"Bitstring {bs} has wrong parity (p={p:.4f})"
+
+
+class TestSymmetryVerificationPythonFallback:
+    """Cover lines 110-114: Python parity verification when Rust unavailable."""
+
+    def test_parity_postselect_no_rust(self):
+        """Mock _HAS_RUST=False → Python bitstring parity path."""
+        import scpn_quantum_control.mitigation.symmetry_verification as sv_mod
+
+        counts = {"00": 500, "01": 100, "10": 100, "11": 300}
+        orig = sv_mod._HAS_RUST
+        try:
+            sv_mod._HAS_RUST = False
+            result = parity_postselect(counts, expected_parity=0)
+        finally:
+            sv_mod._HAS_RUST = orig
+
+        assert result.verified_counts["00"] == 500
+        assert result.verified_counts["11"] == 300
+        assert "01" not in result.verified_counts
+        assert result.rejection_rate > 0

@@ -145,3 +145,15 @@ class TestWitnessPipeline:
         print(f"\n  PIPELINE Knm→R_witness (3q, 200 samples): {dt:.1f} ms")
         print(f"  R_measured = {result.R_measured:.4f}, R_sep_max = {result.R_sep_max:.4f}")
         print(f"  Entangled: {result.is_entangled}")
+
+
+class TestSyncEntanglementCoverage:
+    """Cover lines 130-135: product state R computation in R_separable_bound_at_energy."""
+
+    def test_high_target_energy_allows_all_product_states(self):
+        """High target_energy ensures product states pass energy filter → lines 130-135."""
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        R_max = R_separable_bound_at_energy(K, omega, target_energy=100.0, n_samples=50)
+        assert isinstance(R_max, float)
+        assert 0 < R_max <= 1.0
