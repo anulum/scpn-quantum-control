@@ -165,36 +165,36 @@ def test_kuramoto_4osc_on_simulator(sim_runner):
 
 def test_qaoa_mpc_on_simulator(sim_runner):
     """Quick QAOA test with minimal iterations."""
-    import scpn_quantum_control.hardware.experiments as exp_mod
+    import scpn_quantum_control.hardware.experiment_control as _ctl_mod
     from scpn_quantum_control.hardware.experiments import qaoa_mpc_4_experiment
 
-    original = exp_mod.minimize
+    original = _ctl_mod.minimize
 
     def limited_minimize(fn, x0, **kwargs):
         kwargs.setdefault("options", {})["maxiter"] = 5
         return original(fn, x0, **kwargs)
 
-    exp_mod.minimize = limited_minimize
+    _ctl_mod.minimize = limited_minimize
     try:
         result = qaoa_mpc_4_experiment(sim_runner, shots=200)
         assert "brute_force_cost" in result
         assert "qaoa_p1" in result
     finally:
-        exp_mod.minimize = original
+        _ctl_mod.minimize = original
 
 
 def test_vqe_4q_on_simulator(sim_runner):
     """VQE should converge below exact ground energy + tolerance."""
-    import scpn_quantum_control.hardware.experiments as exp_mod
+    import scpn_quantum_control.hardware.experiment_vqe as _vqe_mod
     from scpn_quantum_control.hardware.experiments import vqe_4q_experiment
 
-    original = exp_mod.minimize
+    original = _vqe_mod.minimize
 
     def limited_minimize(fn, x0, **kwargs):
         kwargs.setdefault("options", {})["maxiter"] = 20
         return original(fn, x0, **kwargs)
 
-    exp_mod.minimize = limited_minimize
+    _vqe_mod.minimize = limited_minimize
     try:
         result = vqe_4q_experiment(sim_runner, shots=100, maxiter=20)
         assert result["experiment"] == "vqe_4q"
@@ -204,7 +204,7 @@ def test_vqe_4q_on_simulator(sim_runner):
         assert result["energy_std"] >= 0.0
         assert len(result["energy_history"]) > 0
     finally:
-        exp_mod.minimize = original
+        _vqe_mod.minimize = original
 
 
 @pytest.mark.slow
@@ -266,16 +266,16 @@ def test_kuramoto_8osc_zne_on_simulator(sim_runner):
 
 def test_vqe_8q_hardware_on_simulator(sim_runner):
     """VQE 8q hardware path: returns hw_energy, sim_energy, exact_energy."""
-    import scpn_quantum_control.hardware.experiments as exp_mod
+    import scpn_quantum_control.hardware.experiment_vqe as _vqe_mod
     from scpn_quantum_control.hardware.experiments import vqe_8q_hardware_experiment
 
-    original = exp_mod.minimize
+    original = _vqe_mod.minimize
 
     def limited_minimize(fn, x0, **kwargs):
         kwargs.setdefault("options", {})["maxiter"] = 20
         return original(fn, x0, **kwargs)
 
-    exp_mod.minimize = limited_minimize
+    _vqe_mod.minimize = limited_minimize
     try:
         result = vqe_8q_hardware_experiment(sim_runner, shots=100, maxiter=20)
         assert result["experiment"] == "vqe_8q_hardware"
@@ -284,7 +284,7 @@ def test_vqe_8q_hardware_on_simulator(sim_runner):
         assert np.isfinite(result["sim_energy"])
         assert np.isfinite(result["exact_energy"])
     finally:
-        exp_mod.minimize = original
+        _vqe_mod.minimize = original
 
 
 @pytest.mark.slow
@@ -331,16 +331,16 @@ def test_sync_threshold_on_simulator(sim_runner):
 
 def test_ansatz_comparison_hw_on_simulator(sim_runner):
     """Ansatz comparison: all three produce finite hw_energy."""
-    import scpn_quantum_control.hardware.experiments as exp_mod
+    import scpn_quantum_control.hardware.experiment_vqe as _vqe_mod
     from scpn_quantum_control.hardware.experiments import ansatz_comparison_hw_experiment
 
-    original = exp_mod.minimize
+    original = _vqe_mod.minimize
 
     def limited_minimize(fn, x0, **kwargs):
         kwargs.setdefault("options", {})["maxiter"] = 15
         return original(fn, x0, **kwargs)
 
-    exp_mod.minimize = limited_minimize
+    _vqe_mod.minimize = limited_minimize
     try:
         result = ansatz_comparison_hw_experiment(sim_runner, shots=100, maxiter=15)
         assert result["experiment"] == "ansatz_comparison_hw"
@@ -349,7 +349,7 @@ def test_ansatz_comparison_hw_on_simulator(sim_runner):
             assert np.isfinite(entry["hw_energy"])
             assert np.isfinite(entry["sim_energy"])
     finally:
-        exp_mod.minimize = original
+        _vqe_mod.minimize = original
 
 
 def test_zne_higher_order_on_simulator(sim_runner):
