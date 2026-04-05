@@ -84,7 +84,7 @@ from a wrong K_nm' produce statistically distinguishable correlations
 
 **Core idea**: The Laplacian spectrum of K_nm (already computed by
 SSGF's `spectral.py`) provides a public authentication token.
-The Fiedler value λ₁ and spectral gap λ₁/λ₂ uniquely characterize
+The Fiedler value λ₁ and spectral gap λ₁/λ₂ uniquely characterise
 the coupling topology without revealing K_nm itself.
 
 **Functions:**

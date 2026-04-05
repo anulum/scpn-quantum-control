@@ -66,7 +66,7 @@ frequencies $\omega_i$ and coupling matrix $K_{ij}$:
 $$\frac{d\theta_i}{dt} = \omega_i + \sum_j K_{ij} \sin(\theta_j - \theta_i)$$
 
 Each oscillator has a phase $\theta_i$ on the circle $S^1$. When the coupling $K_{ij}$
-is strong enough, the oscillators lock into a common rhythm — they synchronize.
+is strong enough, the oscillators lock into a common rhythm — they synchronise.
 
 Think of $N$ metronomes on a shared table. Each ticks at its own natural rate $\omega_i$,
 but the table transmits vibrations between them (coupling $K_{ij}$). If the table is
@@ -494,7 +494,7 @@ $$\langle S_i^+ S_j^-\rangle = \langle\psi| \sigma_i^+ \sigma_j^- |\psi\rangle$$
 where $\sigma_i^+ = (X_i + iY_i)/2$. Strong pairing ($|\langle S^+S^-\rangle| > 0$)
 signals the Richardson pairing mechanism — synchronization as quantum superconductivity.
 The Kouchekian-Teodorescu paper (arXiv:2601.00113) proves that this connection is
-exact for perturbations around the synchronized fixed point.
+exact for perturbations around the synchronised fixed point.
 
 **Module:** `analysis/pairing_correlator.py`
 
