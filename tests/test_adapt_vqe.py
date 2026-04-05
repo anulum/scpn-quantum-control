@@ -98,3 +98,18 @@ class TestAdaptVQE:
         result = adapt_vqe(K, omega, max_iterations=3, seed=42)
         for idx in result.selected_operators:
             assert 0 <= idx < len(pool)
+
+
+class TestAdaptVQECoverage:
+    """Lines 156-172 (operator selection + re-optimisation) are unreachable
+    with XY Hamiltonian: |0...0⟩ is eigenstate → gradient always 0 → ADAPT
+    terminates immediately. Same root cause as quantum_speed_limit line 124."""
+
+    def test_adapt_immediate_convergence_documented(self):
+        """Verify ADAPT converges immediately (gradient=0) for XY model."""
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        result = adapt_vqe(K, omega, max_iterations=3, gradient_threshold=1e-12, seed=42)
+        assert result.converged
+        assert len(result.selected_operators) == 0
+        assert result.gradient_norms[0] == 0.0

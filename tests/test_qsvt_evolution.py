@@ -137,3 +137,23 @@ class TestQSPPhaseAngles:
     def test_symmetric(self):
         phases = qsp_phase_angles(8)
         assert phases[0] == pytest.approx(phases[-1])
+
+
+class TestQSVTCoverage:
+    """Cover sparse eigensolver path for n >= 14."""
+
+    def test_spectral_norm_large_system(self):
+        """Cover lines 87-91: n=14 sparse eigsh path."""
+        from scpn_quantum_control.bridge.knm_hamiltonian import (
+            OMEGA_N_16,
+            build_knm_paper27,
+        )
+        from scpn_quantum_control.phase.qsvt_evolution import hamiltonian_spectral_norm
+
+        K = build_knm_paper27(L=14)
+        omega = OMEGA_N_16[:14]
+        alpha = hamiltonian_spectral_norm(K, omega)
+        assert alpha > 0
+        import numpy as np_
+
+        assert np_.isfinite(alpha)
