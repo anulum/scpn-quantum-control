@@ -122,6 +122,84 @@ class TestSparseEigsh:
         assert result["method"] == "dense_fallback"
 
 
+class TestPythonFallback:
+    """Cover Python fallback when Rust is unavailable."""
+
+    def test_python_fallback_matches_dense(self):
+        """Force Python path and verify against dense reference."""
+        from unittest.mock import patch
+
+        from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
+
+        K, omega = _system(4)
+        H_dense = knm_to_dense_matrix(K, omega)
+
+        with patch(
+            "scpn_quantum_control.bridge.sparse_hamiltonian._try_rust_sparse",
+            return_value=None,
+        ):
+            H_sparse = build_sparse_hamiltonian(K, omega).toarray()
+            np.testing.assert_allclose(H_sparse, H_dense, atol=1e-12)
+
+    def test_python_fallback_hermitian(self):
+        from unittest.mock import patch
+
+        K, omega = _system(4)
+        with patch(
+            "scpn_quantum_control.bridge.sparse_hamiltonian._try_rust_sparse",
+            return_value=None,
+        ):
+            H = build_sparse_hamiltonian(K, omega)
+            diff = (H - H.T).toarray()
+            np.testing.assert_allclose(diff, 0, atol=1e-12)
+
+    def test_python_fallback_zero_coupling_skip(self):
+        """Zero coupling entries should be skipped (fewer nnz)."""
+        from unittest.mock import patch
+
+        n = 4
+        K = np.zeros((n, n))
+        K[0, 1] = K[1, 0] = 0.5  # only one coupling
+        omega = np.ones(n)
+        with patch(
+            "scpn_quantum_control.bridge.sparse_hamiltonian._try_rust_sparse",
+            return_value=None,
+        ):
+            H = build_sparse_hamiltonian(K, omega)
+            assert H.nnz < 2**n * 2**n
+
+    def test_rust_exception_falls_back(self):
+        """_try_rust_sparse returns None on exception."""
+        # Mock scpn_quantum_engine to raise inside
+        from unittest.mock import MagicMock, patch
+
+        from scpn_quantum_control.bridge.sparse_hamiltonian import _try_rust_sparse
+
+        mock_eng = MagicMock()
+        mock_eng.build_sparse_xy_hamiltonian.side_effect = RuntimeError("test")
+        with patch.dict("sys.modules", {"scpn_quantum_engine": mock_eng}):
+            result = _try_rust_sparse(np.eye(2), np.ones(2), 2)
+            assert result is None
+
+
+class TestSectorErrors:
+    def test_invalid_m_raises(self):
+        import pytest
+
+        K, omega = _system(4)
+        with pytest.raises(ValueError, match="not valid"):
+            build_sparse_sector_hamiltonian(K, omega, M=3)
+
+    def test_sector_zero_coupling_skip(self):
+        """Sector with zero coupling has fewer off-diagonal entries."""
+        n = 4
+        K = np.zeros((n, n))  # no coupling
+        omega = np.ones(n)
+        H, indices = build_sparse_sector_hamiltonian(K, omega, M=0)
+        # Without coupling, only diagonal entries
+        assert H.nnz == H.shape[0]
+
+
 class TestSparsityStats:
     def test_n16_reduction(self):
         n = 16
