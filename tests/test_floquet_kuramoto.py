@@ -280,3 +280,29 @@ class TestFloquetPipeline:
         )
         assert len(result["amplitude"]) == 5
         assert len(result["subharmonic_ratio"]) == 5
+
+
+class TestFloquetCoverage:
+    """Cover Python fallback and edge cases."""
+
+    def test_order_param_qiskit_fallback(self):
+        """Cover lines 63-78: Qiskit SparsePauliOp path when Rust unavailable."""
+        from unittest.mock import patch
+
+        from scpn_quantum_control.phase.floquet_kuramoto import _order_parameter
+
+        psi = np.zeros(4, dtype=complex)
+        psi[0] = 1.0
+
+        with patch.dict("sys.modules", {"scpn_quantum_engine": None}):
+            R = _order_parameter(psi, 2)
+
+        assert 0 <= R <= 1.0
+
+    def test_subharmonic_ratio_short_signal(self):
+        """Cover line 167: len(freqs) < 2 → return 0.0."""
+        from scpn_quantum_control.phase.floquet_kuramoto import _subharmonic_ratio
+
+        # Single-point signal
+        result = _subharmonic_ratio(np.array([1.0]), dt=0.1, drive_freq=1.0)
+        assert result == 0.0

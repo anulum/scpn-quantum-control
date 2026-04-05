@@ -298,3 +298,36 @@ class TestDDD:
 
         result = ddd_mitigated_expectation(qc, shots=8192)
         assert -1.05 <= result <= 1.05
+
+
+class TestMitiqCoverage:
+    """Cover default parameters and circuit-without-measurements path."""
+
+    def test_executor_circuit_without_measurements(self):
+        """Cover line 56: measure_all() added when circuit has no measures."""
+        from qiskit import QuantumCircuit
+
+        from scpn_quantum_control.mitigation.mitiq_integration import _qiskit_executor
+
+        qc = QuantumCircuit(1)
+        qc.x(0)
+        # No measure_all — executor adds it
+        result = _qiskit_executor(qc, shots=1000)
+        assert -1.05 <= result <= 1.05
+
+    def test_zne_default_scale_factors(self):
+        """Cover line 98: scale_factors=None defaults to [1, 3, 5]."""
+        from qiskit import QuantumCircuit
+
+        try:
+            from scpn_quantum_control.mitigation.mitiq_integration import (
+                zne_mitigated_expectation,
+            )
+        except ImportError:
+            pytest.skip("mitiq not available")
+
+        qc = QuantumCircuit(1)
+        qc.x(0)
+        qc.measure_all()
+        result = zne_mitigated_expectation(qc, scale_factors=None, shots=1000)
+        assert -1.05 <= result <= 1.05
