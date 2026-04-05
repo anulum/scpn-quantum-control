@@ -1254,6 +1254,158 @@ mod tests {
         });
         ((sr / n).powi(2) + (si / n).powi(2)).sqrt()
     }
+
+    // --- commutator_dense ---
+
+    #[test]
+    fn test_commutator_antisymmetric() {
+        // [A, B] = -[B, A]
+        let a = vec![0.0, 1.0, 0.0, 0.0]; // 2x2 upper
+        let b = vec![0.0, 0.0, 1.0, 0.0]; // 2x2 lower
+        let ab = commutator_dense(&a, &b, 2);
+        let ba = commutator_dense(&b, &a, 2);
+        for i in 0..4 {
+            assert!((ab[i] + ba[i]).abs() < 1e-12, "[A,B] != -[B,A] at {i}");
+        }
+    }
+
+    #[test]
+    fn test_commutator_diagonal_zero() {
+        let a = vec![1.0, 0.0, 0.0, 2.0];
+        let result = commutator_dense(&a, &a, 2);
+        for v in &result {
+            assert!(v.abs() < 1e-12, "[A,A] must be zero");
+        }
+    }
+
+    #[test]
+    fn test_commutator_pauli_xz() {
+        // [X, Z] = -2iY, but real matrices: X=[[0,1],[1,0]], Z=[[1,0],[0,-1]]
+        // [X,Z] = XZ - ZX = [[0,-1],[1,0]] - [[0,1],[-1,0]] = [[0,-2],[2,0]]
+        let x = vec![0.0, 1.0, 1.0, 0.0];
+        let z = vec![1.0, 0.0, 0.0, -1.0];
+        let c = commutator_dense(&x, &z, 2);
+        assert!((c[0]).abs() < 1e-12);
+        assert!((c[1] - (-2.0)).abs() < 1e-12);
+        assert!((c[2] - 2.0).abs() < 1e-12);
+        assert!((c[3]).abs() < 1e-12);
+    }
+
+    // --- is_independent_fast ---
+
+    #[test]
+    fn test_independent_empty_basis() {
+        let op = vec![1.0, 0.0, 0.0, 1.0];
+        assert!(is_independent_fast(&op, &[], 2, 1e-10));
+    }
+
+    #[test]
+    fn test_independent_zero_op() {
+        let op = vec![0.0, 0.0, 0.0, 0.0];
+        assert!(!is_independent_fast(&op, &[], 2, 1e-10));
+    }
+
+    #[test]
+    fn test_independent_duplicate() {
+        let op = vec![1.0, 0.0, 0.0, 1.0];
+        assert!(!is_independent_fast(&op, &[op.clone()], 2, 1e-10));
+    }
+
+    #[test]
+    fn test_independent_orthogonal() {
+        let a = vec![1.0, 0.0, 0.0, 0.0];
+        let b = vec![0.0, 0.0, 0.0, 1.0];
+        assert!(is_independent_fast(&b, &[a], 2, 1e-10));
+    }
+
+    // --- mc_sweep + xy_observables ---
+
+    #[test]
+    fn test_mc_sweep_preserves_length() {
+        use rand::SeedableRng;
+        let n = 4;
+        let k = vec![0.0; n * n]; // zero coupling
+        let mut theta = vec![0.0, 1.0, 2.0, 3.0];
+        let mut rng = StdRng::seed_from_u64(42);
+        mc_sweep(&mut theta, &k, n, 1.0, &mut rng);
+        assert_eq!(theta.len(), n);
+    }
+
+    #[test]
+    fn test_xy_observables_zero_coupling() {
+        let n = 3;
+        let k = vec![0.0; n * n];
+        let theta = vec![0.1, 0.5, 1.2];
+        let (e, cos_s, sin_s) = xy_observables(&theta, &k, n);
+        assert!(e.abs() < 1e-12, "zero coupling → zero energy");
+        assert!(cos_s.abs() < 1e-12);
+        assert!(sin_s.abs() < 1e-12);
+    }
+
+    #[test]
+    fn test_xy_observables_aligned() {
+        // All angles equal → cos(0) = 1 for each pair
+        let n = 3;
+        let mut k = vec![0.0; n * n];
+        k[0 * n + 1] = 1.0; k[1 * n + 0] = 1.0;
+        k[0 * n + 2] = 1.0; k[2 * n + 0] = 1.0;
+        k[1 * n + 2] = 1.0; k[2 * n + 1] = 1.0;
+        let theta = vec![0.0, 0.0, 0.0]; // all aligned
+        let (e, cos_s, _) = xy_observables(&theta, &k, n);
+        // E = -Σ K_ij cos(0) = -3.0
+        assert!((e - (-3.0)).abs() < 1e-12);
+        assert!((cos_s - 3.0).abs() < 1e-12);
+    }
+
+    // --- complex helpers ---
+
+    #[test]
+    fn test_c64_constructor() {
+        let z = c64(3.0, 4.0);
+        assert!((z.re - 3.0).abs() < 1e-12);
+        assert!((z.im - 4.0).abs() < 1e-12);
+        assert!((z.norm() - 5.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn test_conj_transpose_hermitian() {
+        let a = Array2::from_shape_vec((2, 2), vec![
+            c64(1.0, 0.0), c64(2.0, 3.0),
+            c64(2.0, -3.0), c64(4.0, 0.0),
+        ]).unwrap();
+        let ah = conj_transpose(&a);
+        // Hermitian: A = A†
+        for i in 0..2 {
+            for j in 0..2 {
+                assert!((a[[i, j]] - ah[[i, j]]).norm() < 1e-12);
+            }
+        }
+    }
+
+    #[test]
+    fn test_hs_inner_real_identity() {
+        let d = 2;
+        let id = Array2::from_shape_fn((d, d), |(i, j)| {
+            if i == j { c64(1.0, 0.0) } else { c64(0.0, 0.0) }
+        });
+        let ip = hs_inner_real(&id, &id);
+        // Tr(I†I)/d = Tr(I)/d = d/d = 1
+        assert!((ip - 1.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn test_hs_inner_real_orthogonal_paulis() {
+        let x = Array2::from_shape_vec((2, 2), vec![
+            c64(0.0, 0.0), c64(1.0, 0.0),
+            c64(1.0, 0.0), c64(0.0, 0.0),
+        ]).unwrap();
+        let z = Array2::from_shape_vec((2, 2), vec![
+            c64(1.0, 0.0), c64(0.0, 0.0),
+            c64(0.0, 0.0), c64(-1.0, 0.0),
+        ]).unwrap();
+        let ip = hs_inner_real(&x, &z);
+        assert!(ip.abs() < 1e-12, "Tr(X†Z)/d = 0");
+    }
 }
 
 #[pymodule]
