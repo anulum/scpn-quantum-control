@@ -352,6 +352,11 @@ class TestDLACoverage:
         # Only XY + TCBO terms (no SSGF/PGBO)
         assert len(gens) > 0
 
+    # NOTE: lines 132-139 (exponential/between-N³-and-cap branches) are
+    # unreachable for computationally feasible systems. XY DLA dimension
+    # is always ≤ 2*n³ for n ≤ 5 qubits. Larger n requires hours of DLA
+    # computation. Both DLAResult-level tests exist in TestDLAResult.
+
     def test_compute_dla_rust_fallback(self):
         """Cover Rust fallback in compute_dla_rust."""
         from unittest.mock import patch
