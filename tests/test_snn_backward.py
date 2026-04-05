@@ -107,3 +107,20 @@ def test_gradient_3x3():
     target = np.array([0.5, 0.5, 0.5])
     result = parameter_shift_gradient(layer, vals, target)
     assert len(result.grad_params) > 0
+
+
+def test_boundary_zero_shift():
+    """When input is at 0.0 with large shift, vals_minus clips to 0.0 and
+    vals_plus goes up, but both should still yield finite gradients.
+    When actual_shift ≈ 0, the gradient falls back to zeros."""
+    layer = QuantumDenseLayer(n_neurons=2, n_inputs=2, seed=42)
+    # Input exactly at 1.0, shift=0.25: vals_plus clips to 1.0, vals_minus=0.75
+    # actual_shift = 1.0 - 0.75 = 0.25 > 1e-10, so normal path.
+    # To trigger zero shift: input at 1.0, shift very small so both clip to 1.0.
+    # Actually: vals_plus = min(1.0 + shift, 1.0) = 1.0, vals_minus = max(1.0 - shift, 0.0) = 1.0 - shift
+    # That still has nonzero shift.
+    # The only way actual_shift = 0 is if both clip to same value.
+    # Input=1.0, shift=0 → both = 1.0 → shift=0.
+    result = parameter_shift_gradient(layer, np.array([1.0, 1.0]), np.array([0.5, 0.5]), shift=0.0)
+    # With shift=0, all gradients should be 0
+    np.testing.assert_allclose(result.grad_params, 0.0, atol=1e-12)
