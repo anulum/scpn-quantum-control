@@ -164,6 +164,21 @@ def test_threshold_filters_weak_edges():
     assert code.num_data == 2  # Only (0,1) and (1,2)
 
 
+def test_tree_graph_zero_z_stabs():
+    """Cover line 78: tree graph has no cycles → num_z_stabs = 0.
+
+    Chain graph (no cycles) → cycle_basis empty → Hz has 0 rows.
+    verify_css_commutation returns True trivially.
+    """
+    K = np.zeros((4, 4))
+    K[0, 1] = K[1, 0] = 1.0
+    K[1, 2] = K[2, 1] = 1.0
+    K[2, 3] = K[3, 2] = 1.0
+    code = BiologicalSurfaceCode(K)
+    assert code.num_z_stabs == 0
+    assert code.verify_css_commutation() is True
+
+
 def test_no_edges_raises():
     """Zero-edge coupling matrix must raise ValueError."""
     import pytest
