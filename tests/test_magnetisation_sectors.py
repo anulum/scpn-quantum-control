@@ -294,6 +294,11 @@ class TestLevelSpacingEdgeCases:
         assert "n_gaps" in result
         assert result["n_gaps"] > 0
 
+    # NOTE: line 231 (M not in result["results"]) is dead code — when
+    # level_spacing_by_magnetisation passes sectors=[invalid_M] to
+    # eigh_by_magnetisation, the latter crashes with IndexError on
+    # empty all_eigvals_sorted before control returns to line 230.
+
 
 class TestPythonFallback:
     def test_basis_by_magnetisation_python_path(self):

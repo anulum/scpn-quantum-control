@@ -147,3 +147,16 @@ class TestSFFPipeline:
 
         print(f"\n  PIPELINE Knm→SFF (4q, 20 time points): {dt:.1f} ms")
         print(f"  r̄ = {result.level_spacing_ratio:.4f}, gap = {result.spectral_gap:.4f}")
+
+
+class TestSFFSingleTimeDipDepth:
+    """Cover line 137: dip_depths = 1.0 when SFF has single element."""
+
+    def test_single_time_point(self):
+        from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
+
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        scan = sff_vs_coupling(omega, K, k_range=np.array([1.0, 2.0]), n_times=1)
+        # With n_times=1, sff has exactly 1 element → dip_depth = 1.0
+        assert np.all(scan.sff_dip_depth == 1.0)

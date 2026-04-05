@@ -111,3 +111,15 @@ class TestUniversalityAnalysis:
         print(f"  NK deviation: {result.nk_deviation:.4f}")
         print(f"  BKT consistent: {result.is_bkt_consistent}")
         assert isinstance(result.is_bkt_consistent, bool)
+
+
+class TestNelsonKosterlitzZeroCoupling:
+    """Cover line 148: ratio = 0.0 when T_BKT below precision."""
+
+    def test_zero_coupling_gives_zero_ratio(self):
+        import numpy as np
+
+        K = np.zeros((4, 4))
+        omega = OMEGA_N_16[:4]
+        ratio, deviation = check_nelson_kosterlitz(K, omega)
+        assert ratio == 0.0

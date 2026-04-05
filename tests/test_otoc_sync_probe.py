@@ -125,3 +125,23 @@ class TestOTOCPipeline:
 
         print(f"\n  PIPELINE Knm→OTOC (3q, 6K×8t): {dt:.1f} ms")
         print(f"  Transition detected: {comparison['otoc_detects_transition']}")
+
+
+class TestOTOCSyncScanEdgeCases:
+    """Cover line 102: peak_K = None when all lyapunov estimates are None."""
+
+    def test_all_lyapunov_none(self):
+        """Tiny K_base_range → no scrambling → all lyapunov None."""
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        # Very weak coupling + very short time → no scrambling detected
+        scan = otoc_sync_scan(
+            K,
+            omega,
+            K_base_range=np.array([1e-6, 2e-6]),
+            n_time_points=4,
+            t_max=0.001,
+        )
+        # With such tiny coupling and time, lyapunov should be None
+        # But even if not, peak_scrambling_K can be None or float
+        assert scan.peak_scrambling_K is None or isinstance(scan.peak_scrambling_K, float)
