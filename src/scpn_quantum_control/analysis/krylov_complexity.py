@@ -24,7 +24,7 @@ At a QPT, b_n may show universal scaling. For second-order
 transitions: del Campo et al. (arXiv:2510.13947) established
 Kibble-Zurek scaling of Krylov cumulants. For BKT (infinite-order):
 the KZ mechanism breaks down due to the essential singularity in
-the correlation length. The Krylov complexity behavior at BKT
+the correlation length. The Krylov complexity behaviour at BKT
 is completely open.
 
 Prior art: Krylov + QPT for Ising (del Campo 2025), XXZ chaos

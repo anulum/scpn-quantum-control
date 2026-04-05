@@ -239,7 +239,7 @@ def sync_threshold_experiment(
 
     Sweeps coupling strength K_base and measures R at fixed t=0.1.
     Maps the bifurcation: below K_c, R~0 (incoherent); above K_c,
-    R grows (synchronized). K_c depends on frequency spread.
+    R grows (synchronised). K_c depends on frequency spread.
 
     Science: first measurement of Kuramoto phase transition on
     superconducting qubits. Validates quantum XY <-> classical Kuramoto

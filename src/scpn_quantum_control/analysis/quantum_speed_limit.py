@@ -158,7 +158,7 @@ def qsl_vs_coupling(
 ) -> dict:
     """Scan QSL across coupling strengths to reveal BKT singularity.
 
-    At K_c, the QSL should show anomalous behavior:
+    At K_c, the QSL should show anomalous behaviour:
     - Second-order QPT: τ ~ |K-K_c|^{-zν} (power law divergence)
     - BKT: τ ~ exp(b/√(K-K_c)) (essential singularity → log divergence)
 

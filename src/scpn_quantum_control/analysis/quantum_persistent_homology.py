@@ -22,7 +22,7 @@ Pipeline:
     4. H1 persistence diagram → p_h1 (synchronization indicator)
     5. Compare quantum p_h1 vs classical p_h1 at same parameters
 
-When the system is synchronized:
+When the system is synchronised:
     - Correlation matrix is nearly rank-1 (all-to-all)
     - Distance matrix has small entries (close to 0)
     - Few persistent 1-cycles (vortices)

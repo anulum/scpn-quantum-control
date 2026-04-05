@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Pairing Correlator
-"""Richardson-Gaudin pairing correlators in the synchronized state.
+"""Richardson-Gaudin pairing correlators in the synchronised state.
 
 Kouchekian & Teodorescu (arXiv:2601.00113) proved that off-plane
 perturbations of the Kuramoto model map to the semiclassical
@@ -13,7 +13,7 @@ Gaudin model, connecting oscillator synchronization to the
 Richardson spin-pairing mechanism.
 
 The pairing correlator ⟨S_i⁺ S_j⁻⟩ = ⟨(X_i + iY_i)(X_j - iY_j)⟩/4
-detects this pairing structure. In the synchronized (paired) phase:
+detects this pairing structure. In the synchronised (paired) phase:
 - Nearest-neighbor pairing should be enhanced
 - Pairing should correlate with the coupling topology K_nm
 

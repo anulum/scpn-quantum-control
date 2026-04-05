@@ -14,7 +14,7 @@ At a quantum phase transition, the Berry curvature develops a
 singularity because the ground state changes character rapidly.
 For BKT transitions specifically, the infinite-order nature
 (essential singularity in correlation length) should produce
-Berry curvature behavior qualitatively different from power-law
+Berry curvature behaviour qualitatively different from power-law
 QPTs.
 
 We compute:

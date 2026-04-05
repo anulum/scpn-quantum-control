@@ -10,7 +10,7 @@
 Uses IBM Quantum hardware (or noisy simulators) to perform topological
 reinforcement learning. The optimizer measures p_h1 directly from the
 live quantum processor and adjusts the biological coupling matrix to
-minimize topological vortices in the real hardware environment.
+minimise topological vortices in the real hardware environment.
 """
 
 from __future__ import annotations
