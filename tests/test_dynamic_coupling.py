@@ -147,3 +147,49 @@ class TestDynamicCoupling:
                 C_py[j, i] = xx + yy
 
         np.testing.assert_allclose(C_rust, C_py, atol=1e-10)
+
+
+class TestDynamicCouplingPythonFallback:
+    """Cover lines 76-95: Qiskit fallback when Rust unavailable."""
+
+    def test_measure_correlation_no_rust(self):
+        """Mock _HAS_RUST=False → Qiskit SparsePauliOp path executes."""
+        import scpn_quantum_control.qsnn.dynamic_coupling as dc_mod
+
+        n = 3
+        K = np.array([[0, 0.5, 0.2], [0.5, 0, 0.3], [0.2, 0.3, 0]])
+        omega = np.array([1.0, 1.5, 2.0])
+        engine = DynamicCouplingEngine(n, K, omega)
+
+        psi = np.zeros(2**n, dtype=complex)
+        psi[0] = 1.0  # |000⟩
+
+        orig = dc_mod._HAS_RUST
+        try:
+            dc_mod._HAS_RUST = False
+            C = engine._measure_correlation_matrix(psi)
+        finally:
+            dc_mod._HAS_RUST = orig
+
+        assert C.shape == (n, n)
+        np.testing.assert_allclose(C, C.T, atol=1e-12)
+        np.testing.assert_allclose(np.diag(C), 0.0, atol=1e-12)
+
+    def test_step_no_rust(self):
+        """Full step via Qiskit fallback path."""
+        import scpn_quantum_control.qsnn.dynamic_coupling as dc_mod
+
+        n = 2
+        K = np.array([[0, 0.5], [0.5, 0]])
+        omega = np.array([1.0, 1.5])
+        engine = DynamicCouplingEngine(n, K, omega)
+
+        orig = dc_mod._HAS_RUST
+        try:
+            dc_mod._HAS_RUST = False
+            result = engine.step(dt=0.1)
+        finally:
+            dc_mod._HAS_RUST = orig
+
+        assert "K_updated" in result
+        assert "correlation_matrix" in result

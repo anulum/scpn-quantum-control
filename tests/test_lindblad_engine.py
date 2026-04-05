@@ -169,3 +169,69 @@ class TestLindbladSyncEngine:
             s, e = int(starts[k]), int(starts[k + 1])
             np.testing.assert_array_equal(sorted(rows[s:e]), sorted(py_ops[k][0]))
             np.testing.assert_array_equal(sorted(cols[s:e]), sorted(py_ops[k][1]))
+
+
+class TestLindbladPythonFallback:
+    """Cover Python fallback paths when Rust unavailable."""
+
+    def test_build_jump_operators_no_rust(self):
+        """Cover lines 95-112: Python jump operator construction."""
+        import scpn_quantum_control.phase.lindblad_engine as le_mod
+
+        K = np.array([[0.0, 0.5], [0.5, 0.0]])
+        omega = np.array([1.0, 1.5])
+        engine = LindbladSyncEngine(K, omega, gamma=0.1)
+
+        orig = le_mod._HAS_RUST
+        try:
+            le_mod._HAS_RUST = False
+            L_ops = engine._build_jump_operators_dense()
+        finally:
+            le_mod._HAS_RUST = orig
+
+        assert len(L_ops) > 0
+        for L in L_ops:
+            assert L.shape == (4, 4)
+
+    def test_build_anti_hermitian_no_rust(self):
+        """Cover lines 118-125: Python anti-Hermitian sum."""
+        import scpn_quantum_control.phase.lindblad_engine as le_mod
+
+        K = np.array([[0.0, 0.5], [0.5, 0.0]])
+        omega = np.array([1.0, 1.5])
+        engine = LindbladSyncEngine(K, omega, gamma=0.1)
+
+        orig = le_mod._HAS_RUST
+        try:
+            le_mod._HAS_RUST = False
+            diag = engine._build_anti_hermitian_sum()
+        finally:
+            le_mod._HAS_RUST = orig
+
+        assert diag.shape == (4,)
+        assert np.all(diag >= 0)
+
+    def test_evolve_with_initial_rho(self):
+        """Cover line 171: initial_rho provided (not None)."""
+        K = np.array([[0.0, 0.5], [0.5, 0.0]])
+        omega = np.array([1.0, 1.5])
+        engine = LindbladSyncEngine(K, omega, gamma=0.1)
+
+        rho0 = np.zeros((4, 4), dtype=complex)
+        rho0[0, 0] = 0.5
+        rho0[3, 3] = 0.5
+
+        result = engine.evolve(t_max=0.2, n_steps=5, method="density_matrix", initial_state=rho0)
+        assert "times" in result
+
+    def test_mcwf_quantum_jump(self):
+        """Cover lines 243-245: quantum jump branch in MCWF.
+
+        High gamma with strong coupling increases jump probability.
+        """
+        K = np.array([[0.0, 2.0], [2.0, 0.0]])
+        omega = np.array([1.0, 1.5])
+        engine = LindbladSyncEngine(K, omega, gamma=5.0)
+
+        result = engine.evolve(t_max=2.0, n_steps=20, method="trajectory", n_traj=50, seed=42)
+        assert "times" in result
