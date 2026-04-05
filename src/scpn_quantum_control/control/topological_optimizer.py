@@ -65,10 +65,12 @@ class TopologicalCouplingOptimizer:
             sv_x = sv_x.evolve(qi.Operator.from_label("H"), [q])
         x_counts = sv_x.sample_counts(shots)
 
-        # Measure in Y basis (apply Sdg then H to all)
+        # Measure in Y basis (apply S† then H to all)
+        # S† = diag(1, -i); from_label only accepts single-char labels
+        _sdg = qi.Operator(np.array([[1, 0], [0, -1j]]))
         sv_y = sv.copy()
         for q in range(self.n):
-            sv_y = sv_y.evolve(qi.Operator.from_label("Sdg"), [q])
+            sv_y = sv_y.evolve(_sdg, [q])
             sv_y = sv_y.evolve(qi.Operator.from_label("H"), [q])
         y_counts = sv_y.sample_counts(shots)
 
