@@ -228,3 +228,18 @@ class TestSyncWitnessCoverage:
 
         W = build_correlation_witness_operator(1, threshold=0.5)
         assert W.num_qubits == 1
+
+    def test_calibrate_thresholds_r_always_above_half(self):
+        """Cover line 328: R stays > 0.5 for all K → trans_idx = midpoint."""
+        from scpn_quantum_control.bridge.knm_hamiltonian import (
+            OMEGA_N_16,
+            build_knm_paper27,
+        )
+
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        # Very weak coupling range → R stays ~1.0 (near initial coherent state)
+        thresholds = calibrate_thresholds(
+            K, omega, K_base_range=np.array([0.001, 0.002, 0.003]), n_samples=3
+        )
+        assert "correlation" in thresholds
