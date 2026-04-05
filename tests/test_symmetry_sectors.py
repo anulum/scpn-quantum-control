@@ -127,3 +127,15 @@ class TestMemory:
 
     def test_n16_sector_fits_32gb(self):
         assert memory_estimate_mb(16, use_sectors=True) < 32000
+
+
+class TestLevelSpacingSmallSector:
+    def test_n2_has_nan_sector(self):
+        """n=2: each Z2 sector has only 2 eigenvalues → 1 gap → r̄=nan."""
+        from scpn_quantum_control.analysis.symmetry_sectors import level_spacing_by_sector
+
+        K = np.array([[0.0, 0.5], [0.5, 0.0]])
+        omega = np.array([1.0, 1.0])
+        result = level_spacing_by_sector(K, omega)
+        # With 2 eigenvalues per sector, only 1 gap, so r_bar = nan
+        assert np.isnan(result["r_bar_even"]) or np.isnan(result["r_bar_odd"])
