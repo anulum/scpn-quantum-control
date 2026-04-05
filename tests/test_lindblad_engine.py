@@ -235,3 +235,46 @@ class TestLindbladPythonFallback:
 
         result = engine.evolve(t_max=2.0, n_steps=20, method="trajectory", n_traj=50, seed=42)
         assert "times" in result
+
+    def test_build_jump_operators_sparse_no_rust(self):
+        """Cover lines 95-112: Python sparse jump operator construction."""
+        import scpn_quantum_control.phase.lindblad_engine as le_mod
+
+        K = np.array([[0.0, 0.5], [0.5, 0.0]])
+        omega = np.array([1.0, 1.5])
+
+        orig = le_mod._HAS_RUST
+        try:
+            le_mod._HAS_RUST = False
+            engine = LindbladSyncEngine(K, omega, gamma=0.1)
+            # Sparse path was used during __init__
+            L_sparse = engine._build_jump_operators_sparse()
+        finally:
+            le_mod._HAS_RUST = orig
+
+        assert len(L_sparse) == 2  # 2 bidirectional jump ops for 2 qubits
+        for L in L_sparse:
+            assert L.shape == (4, 4)
+
+    def test_trajectory_quantum_jump_no_rust(self):
+        """Cover lines 243-245: quantum jump with Python sparse ops.
+
+        Forces Rust off before constructing engine so sparse ops use
+        the Python path, then runs trajectory evolution with high gamma
+        to trigger jumps.
+        """
+        import scpn_quantum_control.phase.lindblad_engine as le_mod
+
+        K = np.array([[0.0, 2.0], [2.0, 0.0]])
+        omega = np.array([1.0, 1.5])
+
+        orig = le_mod._HAS_RUST
+        try:
+            le_mod._HAS_RUST = False
+            engine = LindbladSyncEngine(K, omega, gamma=5.0)
+            result = engine.evolve(t_max=2.0, n_steps=20, method="trajectory", n_traj=50, seed=42)
+        finally:
+            le_mod._HAS_RUST = orig
+
+        assert "times" in result
+        assert len(result["times"]) == 21
