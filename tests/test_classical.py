@@ -212,3 +212,21 @@ def test_bloch_vectors_pure_state():
     Path(path).unlink()
 
     np.testing.assert_allclose(result["bloch_magnitudes"], [1.0], atol=1e-12)
+
+
+class TestSparseKrylovEvolution:
+    """Cover lines 180-185: sparse Krylov path for n >= 13."""
+
+    def test_sparse_krylov_13_qubit(self):
+        """n=13 triggers sparse expm_multiply instead of dense matrix exp.
+
+        Cover lines 180-185: sparse Krylov path with expm_multiply.
+        Takes ~0.3s for dim=8192 with 1 time step.
+        """
+        from scpn_quantum_control.hardware.classical import classical_exact_evolution
+
+        result = classical_exact_evolution(13, t_max=0.01, dt=0.01)
+        assert "R" in result
+        assert len(result["R"]) == 2
+        assert np.isfinite(result["R"][0])
+        assert np.isfinite(result["R"][1])
