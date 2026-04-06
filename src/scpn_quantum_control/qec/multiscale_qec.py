@@ -104,17 +104,6 @@ class MultiscaleQECResult:
     summary: str
 
 
-@dataclass
-class SyndromeFlow:
-    """Syndrome propagation between QEC levels."""
-
-    source_level: int
-    target_level: int
-    syndrome_weight: float  # K_nm coupling strength
-    correction_capacity: float  # max correctable weight at target
-    information_flow: float  # bits of syndrome per QEC round
-
-
 def knm_between_domains(
     K: np.ndarray,
     domain_a: tuple[int, int],
@@ -167,32 +156,6 @@ def concatenated_logical_rate(
         rates.append(p_logical)
         p_current = p_logical
     return rates
-
-
-def syndrome_flow_between_levels(
-    K: np.ndarray,
-    level_a: QECLevel,
-    level_b: QECLevel,
-) -> SyndromeFlow:
-    """Compute syndrome information flow between two QEC levels.
-
-    The syndrome weight is proportional to K_nm coupling between
-    the corresponding SCPN domains. Higher coupling means more
-    syndrome information can flow, enabling better correction.
-    """
-    coupling = knm_between_domains(K, level_a.layer_range, level_b.layer_range)
-    # Correction capacity: (d-1)/2 errors correctable
-    correction_cap = (level_b.code_distance - 1) / 2.0
-    # Information flow: coupling × log2(d) syndrome bits per round
-    info_flow = coupling * np.log2(max(level_b.code_distance, 2))
-
-    return SyndromeFlow(
-        source_level=level_a.level,
-        target_level=level_b.level,
-        syndrome_weight=coupling,
-        correction_capacity=correction_cap,
-        information_flow=info_flow,
-    )
 
 
 def _active_domains(n: int) -> list[tuple[str, tuple[int, int]]]:
@@ -275,6 +238,38 @@ def _check_double_exponential(rates: list[float], below_threshold: bool) -> bool
     return all(r > 1.5 for r in ratios) if ratios else False
 
 
+def _make_result(
+    levels: list[QECLevel],
+    total_phys: int,
+    rates: list[float],
+    distances: list[int],
+    p_physical: float,
+) -> MultiscaleQECResult:
+    """Assemble MultiscaleQECResult from computed components."""
+    effective_rate = rates[-1] if rates else p_physical
+    below_threshold = p_physical < SURFACE_CODE_THRESHOLD
+    double_exp = _check_double_exponential(rates, below_threshold)
+    n_levels = len(levels)
+    summary = "; ".join(
+        [
+            f"MS-QEC: {n_levels} levels, {total_phys} physical qubits",
+            f"p_phys={p_physical:.1e} → p_L={effective_rate:.1e}",
+            f"distances={distances}",
+            f"below threshold: {below_threshold}",
+            f"double-exp suppression: {double_exp}",
+        ]
+    )
+    return MultiscaleQECResult(
+        levels=levels,
+        effective_logical_rate=effective_rate,
+        total_physical_qubits=total_phys,
+        concatenation_depth=n_levels,
+        below_threshold=below_threshold,
+        double_exponential_suppression=double_exp,
+        summary=summary,
+    )
+
+
 def build_multiscale_qec(
     K: np.ndarray,
     n_oscillators_per_level: int | None = None,
@@ -304,43 +299,4 @@ def build_multiscale_qec(
         p_physical,
         n_oscillators_per_level,
     )
-
-    effective_rate = rates[-1] if rates else p_physical
-    below_threshold = p_physical < SURFACE_CODE_THRESHOLD
-    double_exp = _check_double_exponential(rates, below_threshold)
-
-    summary = "; ".join(
-        [
-            f"MS-QEC: {n_levels} levels, {total_phys} physical qubits",
-            f"p_phys={p_physical:.1e} → p_L={effective_rate:.1e}",
-            f"distances={distances}",
-            f"below threshold: {below_threshold}",
-            f"double-exp suppression: {double_exp}",
-        ]
-    )
-
-    return MultiscaleQECResult(
-        levels=levels,
-        effective_logical_rate=effective_rate,
-        total_physical_qubits=total_phys,
-        concatenation_depth=n_levels,
-        below_threshold=below_threshold,
-        double_exponential_suppression=double_exp,
-        summary=summary,
-    )
-
-
-def syndrome_flow_analysis(
-    K: np.ndarray,
-    result: MultiscaleQECResult,
-) -> list[SyndromeFlow]:
-    """Analyse syndrome information flow between all adjacent levels.
-
-    Returns a list of SyndromeFlow objects describing how error
-    correction information propagates through the SCPN hierarchy.
-    """
-    flows: list[SyndromeFlow] = []
-    for i in range(len(result.levels) - 1):
-        flow = syndrome_flow_between_levels(K, result.levels[i], result.levels[i + 1])
-        flows.append(flow)
-    return flows
+    return _make_result(levels, total_phys, rates, distances, p_physical)
