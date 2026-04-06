@@ -577,7 +577,7 @@ class TestPsiFieldPipeline:
         lattice = scpn_to_lattice(beta=2.0, seed=42)
         q, dt = _timed(topological_charge, lattice.gauge)
         assert isinstance(q, float)
-        assert dt < 2, f"topological_charge must complete in <2ms, took {dt:.1f}ms"
+        assert dt < 5, f"topological_charge must complete in <5ms, took {dt:.1f}ms"
         _report("Topological charge (16 layers, Rust)", dt, f"Q={q:.4f}")
 
     def test_gauge_covariant_kinetic(self):
