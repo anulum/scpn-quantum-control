@@ -478,10 +478,8 @@ class TestMSQECPipeline:
         _report("Concatenated rates (5 levels)", dt, f"p_L_final={result[-1]:.2e}")
 
     def test_syndrome_flow(self):
-        from scpn_quantum_control.qec.multiscale_qec import (
-            build_multiscale_qec,
-            syndrome_flow_analysis,
-        )
+        from scpn_quantum_control.qec.multiscale_qec import build_multiscale_qec
+        from scpn_quantum_control.qec.syndrome_flow import syndrome_flow_analysis
 
         K = build_knm_paper27()
         ms = build_multiscale_qec(K, p_physical=0.001, distances=[3, 3, 3, 3, 3])
