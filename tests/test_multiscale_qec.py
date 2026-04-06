@@ -24,8 +24,8 @@ from scpn_quantum_control.qec.multiscale_qec import (
     build_multiscale_qec,
     concatenated_logical_rate,
     knm_between_domains,
-    syndrome_flow_analysis,
 )
+from scpn_quantum_control.qec.syndrome_flow import syndrome_flow_analysis
 
 # ===== Fixtures =====
 

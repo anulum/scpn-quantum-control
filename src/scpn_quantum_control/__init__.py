@@ -88,9 +88,9 @@ from .qec.multiscale_qec import (
     QECLevel,
     build_multiscale_qec,
     concatenated_logical_rate,
-    syndrome_flow_analysis,
 )
 from .qec.surface_code_upde import SurfaceCodeSpec, SurfaceCodeUPDE
+from .qec.syndrome_flow import syndrome_flow_analysis
 from .qsnn.dynamic_coupling import DynamicCouplingEngine
 from .qsnn.qlayer import QuantumDenseLayer
 from .qsnn.qlif import QuantumLIFNeuron
