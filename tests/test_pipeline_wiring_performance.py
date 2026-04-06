@@ -446,3 +446,148 @@ class TestBenchmarkPipeline:
         result, dt = _timed(sqc.run_scaling_benchmark, sizes=[2, 3])
         assert len(result) > 0
         _report("Scaling benchmark (L=2,3)", dt, f"n_results={len(result)}")
+
+
+# ---------------------------------------------------------------------------
+# 16. MS-QEC Multi-Scale — hierarchical concatenated QEC
+# ---------------------------------------------------------------------------
+
+
+class TestMSQECPipeline:
+    def test_build_multiscale_qec(self):
+        from scpn_quantum_control.qec.multiscale_qec import build_multiscale_qec
+
+        K = build_knm_paper27()
+        result, dt = _timed(build_multiscale_qec, K, p_physical=0.001)
+        assert result.concatenation_depth == 5
+        assert result.total_physical_qubits > 0
+        assert dt < 100, f"build_multiscale_qec must complete in <100ms, took {dt:.1f}ms"
+        _report(
+            "MS-QEC build",
+            dt,
+            f"levels={result.concatenation_depth}, qubits={result.total_physical_qubits}",
+        )
+
+    def test_concatenated_logical_rate(self):
+        from scpn_quantum_control.qec.multiscale_qec import concatenated_logical_rate
+
+        result, dt = _timed(concatenated_logical_rate, 0.001, [5, 5, 5, 5, 5])
+        assert len(result) == 5
+        assert all(r < 1.0 for r in result)
+        assert dt < 1, f"concatenated_logical_rate must complete in <1ms, took {dt:.1f}ms"
+        _report("Concatenated rates (5 levels)", dt, f"p_L_final={result[-1]:.2e}")
+
+    def test_syndrome_flow(self):
+        from scpn_quantum_control.qec.multiscale_qec import (
+            build_multiscale_qec,
+            syndrome_flow_analysis,
+        )
+
+        K = build_knm_paper27()
+        ms = build_multiscale_qec(K, p_physical=0.001, distances=[3, 3, 3, 3, 3])
+        flows, dt = _timed(syndrome_flow_analysis, K, ms)
+        assert len(flows) == 4
+        assert dt < 10, f"syndrome_flow_analysis must complete in <10ms, took {dt:.1f}ms"
+        _report(
+            "Syndrome flow (4 edges)",
+            dt,
+            f"max_weight={max(f.syndrome_weight for f in flows):.4f}",
+        )
+
+
+# ---------------------------------------------------------------------------
+# 17. FEP — Free Energy Principle
+# ---------------------------------------------------------------------------
+
+
+class TestFEPPipeline:
+    def test_variational_free_energy(self):
+        from scpn_quantum_control.fep.variational_free_energy import variational_free_energy
+
+        K = build_knm_paper27()
+        n = K.shape[0]
+        mu = np.zeros(n)
+        sigma = 0.1 * np.eye(n)
+        x = np.random.default_rng(42).standard_normal(n) * 0.1
+        result, dt = _timed(variational_free_energy, mu, sigma, x, K)
+        assert isinstance(result.free_energy, float)
+        assert dt < 5, f"variational_free_energy must complete in <5ms, took {dt:.1f}ms"
+        _report("Variational free energy (n=16)", dt, f"F={result.free_energy:.4f}")
+
+    def test_predictive_coding_step(self):
+        from scpn_quantum_control.fep.predictive_coding import predictive_coding_step
+
+        K = build_knm_paper27(L=4)
+        x = np.array([0.5, 0.3, -0.2, 0.1])
+        beliefs = np.zeros(4)
+        result, dt = _timed(predictive_coding_step, x, beliefs, K, learning_rate=0.001)
+        assert isinstance(result.free_energy, float)
+        assert dt < 5, f"predictive_coding_step must complete in <5ms, took {dt:.1f}ms"
+        _report(
+            "PC step (n=4)",
+            dt,
+            f"F={result.free_energy:.4f}, error_norm={result.total_error_norm:.4f}",
+        )
+
+    def test_free_energy_gradient(self):
+        from scpn_quantum_control.fep.variational_free_energy import free_energy_gradient
+
+        K = build_knm_paper27()
+        n = K.shape[0]
+        mu = np.zeros(n)
+        sigma = 0.1 * np.eye(n)
+        x = np.random.default_rng(42).standard_normal(n) * 0.1
+        grad, dt = _timed(free_energy_gradient, mu, sigma, x, K)
+        assert grad.shape == (n,)
+        assert dt < 2, f"free_energy_gradient must complete in <2ms, took {dt:.1f}ms"
+        _report("FE gradient (n=16, Rust)", dt, f"||grad||={np.linalg.norm(grad):.4f}")
+
+
+# ---------------------------------------------------------------------------
+# 18. Ψ-field — Lattice Gauge Simulator
+# ---------------------------------------------------------------------------
+
+
+class TestPsiFieldPipeline:
+    def test_scpn_to_lattice(self):
+        from scpn_quantum_control.psi_field.scpn_mapping import scpn_to_lattice
+
+        lattice, dt = _timed(scpn_to_lattice, beta=2.0, seed=42)
+        assert lattice.n_layers == 16
+        assert lattice.gauge.n_edges == 120
+        assert dt < 50, f"scpn_to_lattice must complete in <50ms, took {dt:.1f}ms"
+        _report(
+            "SCPN→lattice (16 layers)",
+            dt,
+            f"edges={lattice.gauge.n_edges}, plaq={len(lattice.gauge.plaquettes)}",
+        )
+
+    def test_hmc_update(self):
+        from scpn_quantum_control.psi_field.lattice import U1LatticGauge, hmc_update
+
+        K = build_knm_paper27(L=4)
+        g = U1LatticGauge(K, beta=2.0, seed=42)
+        (accepted, dH), dt = _timed(hmc_update, g, n_leapfrog=10, step_size=0.02)
+        assert isinstance(accepted, bool)
+        assert dt < 10, f"HMC step must complete in <10ms, took {dt:.1f}ms"
+        _report("HMC step (n=4, 10 leapfrog)", dt, f"accepted={accepted}, dH={dH:.4f}")
+
+    def test_topological_charge(self):
+        from scpn_quantum_control.psi_field.observables import topological_charge
+        from scpn_quantum_control.psi_field.scpn_mapping import scpn_to_lattice
+
+        lattice = scpn_to_lattice(beta=2.0, seed=42)
+        q, dt = _timed(topological_charge, lattice.gauge)
+        assert isinstance(q, float)
+        assert dt < 2, f"topological_charge must complete in <2ms, took {dt:.1f}ms"
+        _report("Topological charge (16 layers, Rust)", dt, f"Q={q:.4f}")
+
+    def test_gauge_covariant_kinetic(self):
+        from scpn_quantum_control.psi_field.infoton import gauge_covariant_kinetic
+        from scpn_quantum_control.psi_field.scpn_mapping import scpn_to_lattice
+
+        lattice = scpn_to_lattice(beta=2.0, seed=42)
+        T, dt = _timed(gauge_covariant_kinetic, lattice.infoton, lattice.gauge)
+        assert T >= 0.0
+        assert dt < 5, f"gauge_covariant_kinetic must complete in <5ms, took {dt:.1f}ms"
+        _report("Gauge kinetic (16 layers)", dt, f"T={T:.4f}")
