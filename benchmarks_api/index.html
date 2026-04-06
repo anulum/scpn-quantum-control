@@ -1,0 +1,2207 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Quantum simulation of coupled oscillators on IBM hardware">
+      
+      
+        <meta name="author" content="Miroslav Šotek">
+      
+      
+        <link rel="canonical" href="https://anulum.github.io/scpn-quantum-control/benchmarks_api/">
+      
+      
+        <link rel="prev" href="../bridges_api/">
+      
+      
+        <link rel="next" href="../pipeline_performance/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/anulum_logo_company.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Benchmarks API - scpn-quantum-control</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#spdx-license-identifier-agpl-30-or-later" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="scpn-quantum-control" class="md-header__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            scpn-quantum-control
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Benchmarks API
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="scpn-quantum-control" class="md-nav__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    scpn-quantum-control
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SCPN Foundations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../equations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../research_gems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research Gems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../orchestrator_integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestrator Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rust_engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../autodoc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auto-Generated
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analysis_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../identity_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mitigation_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mitigation API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bridges_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridges API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipeline_performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_dynamic_coupling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Dynamic Coupling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_structured_ansatz/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Structured Ansatz
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_hw_topological_optimizer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: HW Topological Optimizer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../test_infrastructure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publications
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Publications
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprint/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprint: Quantum Kuramoto-XY on Hardware
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_sync_witnesses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: Synchronisation Witnesses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: DLA Parity Theorem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results Gallery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hardware_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IBM Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXPERIMENT_ROADMAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PAPER_CLAIMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results & Claims
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../QUANTUM_CRYPTO_RESEARCH_BRANCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Crypto Research
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Learning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notebooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="spdx-license-identifier-agpl-30-or-later">SPDX-License-Identifier: AGPL-3.0-or-later<a class="headerlink" href="#spdx-license-identifier-agpl-30-or-later" title="Permanent link">&para;</a></h1>
+<h1 id="commercial-license-available">Commercial license available<a class="headerlink" href="#commercial-license-available" title="Permanent link">&para;</a></h1>
+<h1 id="concepts-19962026-miroslav-sotek-all-rights-reserved">© Concepts 1996–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#concepts-19962026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="code-20202026-miroslav-sotek-all-rights-reserved">© Code 2020–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#code-20202026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="orcid-0009-0009-3560-0851">ORCID: 0009-0009-3560-0851<a class="headerlink" href="#orcid-0009-0009-3560-0851" title="Permanent link">&para;</a></h1>
+<h1 id="contact-wwwanulumli-protoscienceanulumli">Contact: www.anulum.li | protoscience@anulum.li<a class="headerlink" href="#contact-wwwanulumli-protoscienceanulumli" title="Permanent link">&para;</a></h1>
+<h1 id="scpn-quantum-control-benchmarks-api-reference">scpn-quantum-control — Benchmarks API Reference<a class="headerlink" href="#scpn-quantum-control-benchmarks-api-reference" title="Permanent link">&para;</a></h1>
+<h1 id="benchmarks-api-reference">Benchmarks API Reference<a class="headerlink" href="#benchmarks-api-reference" title="Permanent link">&para;</a></h1>
+<p>The <code>benchmarks</code> package measures the computational frontier: at what
+system size does quantum hardware outperform the best classical methods
+for simulating Kuramoto-XY dynamics? Four modules answer this from
+different angles — exact diagonalisation, GPU statevector, MPS tensor
+networks, and application-oriented metrics.</p>
+<p>4 modules, 10 public symbols, 3 crossover estimates.</p>
+<h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Classical Methods                    Comparison                     Quantum Methods
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>──────────────────                  ──────────                      ───────────────
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>Exact diag + expm       ← quantum_advantage →  Trotter on statevector
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  O(2^n × 2^n × 2^n)                              O(n^2 × reps × 2^n)
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  Limit: n ≈ 14                                    Limit: n ≈ 23 (RAM)
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>GPU statevector (A100)  ← gpu_baseline →        QPU gate execution
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>  O(2^n × n_gates)                                 O(n_gates × gate_time)
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>  Memory: 2^n × 16B                                Unlimited
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>  Limit: n ≈ 33 (80 GB)                           Limit: decoherence
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>MPS tensor network      ← mps_baseline →        Quantum correlations
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>  O(chi^3 × n × gates)                            Native entanglement
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>  chi ~ 2^S (entropy)                              No truncation needed
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>  Fails: volume-law S
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>AppQSim protocol        ← appqsim_benchmark →   Application fidelity
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>  Exact ground truth                                VQE / Trotter output
+</code></pre></div>
+<h2 id="module-reference">Module Reference<a class="headerlink" href="#module-reference" title="Permanent link">&para;</a></h2>
+<h3 id="1-quantum_advantage-classical-vs-quantum-scaling">1. <code>quantum_advantage</code> — Classical vs Quantum Scaling<a class="headerlink" href="#1-quantum_advantage-classical-vs-quantum-scaling" title="Permanent link">&para;</a></h3>
+<p>Measures wall-clock time for exact classical simulation (exact
+diagonalisation + matrix exponential) against Trotter evolution on
+the statevector simulator.</p>
+<h4 id="classical_benchmarkn-t_max10-dt01"><code>classical_benchmark(n, t_max=1.0, dt=0.1)</code><a class="headerlink" href="#classical_benchmarkn-t_max10-dt01" title="Permanent link">&para;</a></h4>
+<p>Times classical exact evolution of the XY Hamiltonian:
+1. Build K_nm (Paper 27) and compile to dense matrix
+2. Compute matrix exponential exp(-iHdt) for each time step
+3. Evolve state by matrix-vector multiplication
+4. Also performs exact diagonalisation for ground energy</p>
+<p>For n &gt; 14, returns <code>t_total_ms = inf</code> (2^14 = 16,384 state dimension;
+matrix expm requires O(2^3n) operations, ~4.4 trillion for n=14).</p>
+<p>Returns: <code>{t_total_ms, ground_energy, R_final}</code></p>
+<h4 id="quantum_benchmarkn-t_max10-dt01-trotter_reps5"><code>quantum_benchmark(n, t_max=1.0, dt=0.1, trotter_reps=5)</code><a class="headerlink" href="#quantum_benchmarkn-t_max10-dt01-trotter_reps5" title="Permanent link">&para;</a></h4>
+<p>Times Trotter evolution on statevector:
+1. Build Kuramoto initial state: <code>Ry(omega_i)|0&gt;</code> per qubit
+2. Compile Hamiltonian to <code>SparsePauliOp</code>
+3. Construct <code>PauliEvolutionGate</code> with <code>LieTrotter</code> synthesis
+4. Evolve for n_steps = t_max / dt, each with <code>trotter_reps</code> repetitions</p>
+<p>Returns: <code>{t_total_ms, n_trotter_steps}</code></p>
+<p>Statevector simulation is O(2^n × n_gates) — exponential in n but polynomial
+in circuit depth. For n=20, the statevector is 16 MB (feasible); for n=30
+it is 16 GB (GPU territory).</p>
+<h4 id="estimate_crossoverresults"><code>estimate_crossover(results)</code><a class="headerlink" href="#estimate_crossoverresults" title="Permanent link">&para;</a></h4>
+<p>Fits exponential scaling <code>t = a * exp(b * n)</code> to both classical and quantum
+timings. The crossover is where the curves intersect:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>n_cross = log(a_q / a_c) / (b_c - b_q)
+</code></pre></div>
+<p>Returns <code>int | None</code>. Returns None if fewer than 3 data points or if
+quantum scaling is not slower than classical (unexpected).</p>
+<h4 id="run_scaling_benchmarksizesnone-t_max10-dt01"><code>run_scaling_benchmark(sizes=None, t_max=1.0, dt=0.1)</code><a class="headerlink" href="#run_scaling_benchmarksizesnone-t_max10-dt01" title="Permanent link">&para;</a></h4>
+<p>Full scaling benchmark across system sizes. Default: <code>[4, 8, 12, 16, 20]</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.benchmarks</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_scaling_benchmark</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">results</span> <span class="o">=</span> <span class="n">run_scaling_benchmark</span><span class="p">(</span><span class="n">sizes</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">12</span><span class="p">])</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;n=</span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">n_qubits</span><span class="si">}</span><span class="s2">: classical=</span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">t_classical_ms</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">ms, &quot;</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>          <span class="sa">f</span><span class="s2">&quot;quantum=</span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">t_quantum_ms</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">ms&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="k">if</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">crossover_predicted</span><span class="p">:</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Predicted crossover: n=</span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">crossover_predicted</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>Warns if n &gt; 23 (statevector memory &gt; 128 MB).</p>
+<h4 id="advantageresult"><code>AdvantageResult</code><a class="headerlink" href="#advantageresult" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>n_qubits</code></td>
+<td>int</td>
+<td>System size</td>
+</tr>
+<tr>
+<td><code>t_classical_ms</code></td>
+<td>float</td>
+<td>Classical exact evolution time (inf if infeasible)</td>
+</tr>
+<tr>
+<td><code>t_quantum_ms</code></td>
+<td>float</td>
+<td>Trotter statevector evolution time</td>
+</tr>
+<tr>
+<td><code>errors</code></td>
+<td>dict</td>
+<td>Error metrics (optional)</td>
+</tr>
+<tr>
+<td><code>crossover_predicted</code></td>
+<td>int or None</td>
+<td>Extrapolated crossover qubit count</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="2-gpu_baseline-gpu-vs-qpu-comparison">2. <code>gpu_baseline</code> — GPU vs QPU Comparison<a class="headerlink" href="#2-gpu_baseline-gpu-vs-qpu-comparison" title="Permanent link">&para;</a></h3>
+<p>Estimates GPU resources needed for statevector simulation and compares
+with QPU execution time.</p>
+<h4 id="gpu-model">GPU Model<a class="headerlink" href="#gpu-model" title="Permanent link">&para;</a></h4>
+<p>NVIDIA A100 80 GB:
+- 312 TFLOPS FP64
+- 80 GB HBM2e</p>
+<p>Statevector simulation:
+- Memory: <code>2^n × 16 bytes</code> (complex128)
+- FLOPs: <code>n_gates × 2^n × 10</code> (matrix-vector with constant factor)
+- Time: FLOPs / TFLOPS</p>
+<table>
+<thead>
+<tr>
+<th>n</th>
+<th>Memory</th>
+<th>GPU Time (A100)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>16</td>
+<td>1 MB</td>
+<td>0.003 ms</td>
+</tr>
+<tr>
+<td>24</td>
+<td>256 MB</td>
+<td>0.8 ms</td>
+</tr>
+<tr>
+<td>30</td>
+<td>16 GB</td>
+<td>50 s</td>
+</tr>
+<tr>
+<td>33</td>
+<td>128 GB</td>
+<td>OOM</td>
+</tr>
+<tr>
+<td>40</td>
+<td>16 TB</td>
+<td>Infeasible</td>
+</tr>
+</tbody>
+</table>
+<h4 id="qpu-model">QPU Model<a class="headerlink" href="#qpu-model" title="Permanent link">&para;</a></h4>
+<p>Conservative sequential gate execution:
+- Gate time: 0.5 us (Heron r2 CZ)
+- Time: <code>n_gates × 0.5 us</code></p>
+<p>For XY Trotter circuit: <code>n_gates = reps × (n(n-1)/2 CZ + 2n RZ)</code></p>
+<h4 id="gpu_baseline_comparisonn-trotter_reps10"><code>gpu_baseline_comparison(n, trotter_reps=10)</code><a class="headerlink" href="#gpu_baseline_comparisonn-trotter_reps10" title="Permanent link">&para;</a></h4>
+<p>Returns <code>GPUBaselineResult</code> with GPU time, QPU time, and crossover.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.benchmarks.gpu_baseline</span><span class="w"> </span><span class="kn">import</span> <span class="n">gpu_baseline_comparison</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">result</span> <span class="o">=</span> <span class="n">gpu_baseline_comparison</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">trotter_reps</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GPU: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">estimated_gpu_time_s</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;QPU: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">qpu_time_s</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GPU faster: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">gpu_faster</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Crossover: n=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">crossover_n</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="scaling_comparisonn_valuesnone"><code>scaling_comparison(n_values=None)</code><a class="headerlink" href="#scaling_comparisonn_valuesnone" title="Permanent link">&para;</a></h4>
+<p>Batch comparison across system sizes. Default: <code>[4, 8, 16, 24, 32, 40]</code>.
+Returns dict with columns: n, gpu_time_s, qpu_time_s, memory_gb, gpu_faster.</p>
+<h4 id="utility-functions">Utility Functions<a class="headerlink" href="#utility-functions" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Returns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>statevector_memory_gb(n)</code></td>
+<td>GPU memory in GB</td>
+</tr>
+<tr>
+<td><code>statevector_flops(n, n_gates)</code></td>
+<td>Total FLOPs</td>
+</tr>
+<tr>
+<td><code>estimate_gpu_time(n, n_gates, tflops)</code></td>
+<td>Wall time in seconds</td>
+</tr>
+<tr>
+<td><code>estimate_qpu_time(n, n_gates, gate_time_us)</code></td>
+<td>Wall time in seconds</td>
+</tr>
+<tr>
+<td><code>gate_count_xy_trotter(n, reps)</code></td>
+<td>Total gate count</td>
+</tr>
+</tbody>
+</table>
+<h4 id="gpubaselineresult"><code>GPUBaselineResult</code><a class="headerlink" href="#gpubaselineresult" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>n_qubits</code></td>
+<td>int</td>
+<td>System size</td>
+</tr>
+<tr>
+<td><code>n_gates</code></td>
+<td>int</td>
+<td>Total gate count</td>
+</tr>
+<tr>
+<td><code>statevector_memory_gb</code></td>
+<td>float</td>
+<td>GPU memory requirement</td>
+</tr>
+<tr>
+<td><code>statevector_flops</code></td>
+<td>float</td>
+<td>Computation cost</td>
+</tr>
+<tr>
+<td><code>estimated_gpu_time_s</code></td>
+<td>float</td>
+<td>A100 wall time</td>
+</tr>
+<tr>
+<td><code>qpu_time_s</code></td>
+<td>float</td>
+<td>QPU wall time</td>
+</tr>
+<tr>
+<td><code>gpu_faster</code></td>
+<td>bool</td>
+<td>True if GPU is faster</td>
+</tr>
+<tr>
+<td><code>crossover_n</code></td>
+<td>int</td>
+<td>n where QPU wins</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="3-mps_baseline-tensor-network-comparison">3. <code>mps_baseline</code> — Tensor Network Comparison<a class="headerlink" href="#3-mps_baseline-tensor-network-comparison" title="Permanent link">&para;</a></h3>
+<p>Matrix Product State (MPS) resource estimation for the Kuramoto-XY
+system. MPS provides the classical baseline: if MPS at affordable bond
+dimension matches the quantum simulation, there is no quantum advantage.</p>
+<h4 id="mps-theory">MPS Theory<a class="headerlink" href="#mps-theory" title="Permanent link">&para;</a></h4>
+<p>Bond dimension chi controls MPS expressibility:
+- chi = 1: product states only (zero entanglement)
+- chi = 2^(n/2): exact representation (full Hilbert space)
+- chi ~ poly(n): efficient classical simulation</p>
+<p>The required chi is set by the half-chain entanglement entropy S:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>chi &gt;= 2^S
+</code></pre></div>
+<p>For the Kuramoto-XY system at different coupling regimes:
+- Below BKT (weak coupling): S ~ log(n), chi ~ poly(n) — MPS efficient
+- At BKT critical point: S ~ (c/3) log(n) with c=1, chi ~ n^(1/3) — MPS efficient
+- Above BKT (strong coupling): S ~ n/2 (volume law), chi ~ 2^(n/2) — MPS fails</p>
+<p>The quantum advantage boundary is where MPS fails: when the half-chain
+entropy implies chi &gt; chi_max (limited by available RAM).</p>
+<h4 id="required_bond_dimensionentropy"><code>required_bond_dimension(entropy)</code><a class="headerlink" href="#required_bond_dimensionentropy" title="Permanent link">&para;</a></h4>
+<p>Minimum chi from entanglement entropy: <code>chi = ceil(2^S)</code>.</p>
+<h4 id="mps_memoryn-chi"><code>mps_memory(n, chi)</code><a class="headerlink" href="#mps_memoryn-chi" title="Permanent link">&para;</a></h4>
+<p>Memory for MPS: <code>n × 2 × chi^2 × 16 bytes</code> (n tensors of shape
+(chi, 2, chi) in complex128).</p>
+<h4 id="quantum_advantage_nchi_max1024-entropy_per_qubit05"><code>quantum_advantage_n(chi_max=1024, entropy_per_qubit=0.5)</code><a class="headerlink" href="#quantum_advantage_nchi_max1024-entropy_per_qubit05" title="Permanent link">&para;</a></h4>
+<p>Estimates system size where MPS fails under volume-law entanglement:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>S = entropy_per_qubit × n/2
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>chi = 2^S &gt; chi_max  ⟹  n &gt; 2 × log2(chi_max) / entropy_per_qubit
+</code></pre></div>
+<p>For chi_max=1024, entropy_per_qubit=0.5: n &gt; 40.
+For chi_max=256: n &gt; 32.</p>
+<h4 id="mps_baseline_comparisonk-omega-chi_max256"><code>mps_baseline_comparison(K, omega, chi_max=256)</code><a class="headerlink" href="#mps_baseline_comparisonk-omega-chi_max256" title="Permanent link">&para;</a></h4>
+<p>Full comparison for a specific system:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.benchmarks.mps_baseline</span><span class="w"> </span><span class="kn">import</span> <span class="n">mps_baseline_comparison</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.bridge.knm_hamiltonian</span><span class="w"> </span><span class="kn">import</span> <span class="n">OMEGA_N_16</span><span class="p">,</span> <span class="n">build_knm_paper27</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">K</span> <span class="o">=</span> <span class="n">build_knm_paper27</span><span class="p">(</span><span class="n">L</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="n">omega</span> <span class="o">=</span> <span class="n">OMEGA_N_16</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="n">result</span> <span class="o">=</span> <span class="n">mps_baseline_comparison</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">omega</span><span class="p">)</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Entropy S = </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">half_chain_entropy</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Required chi = </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">required_bond_dim</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;MPS memory: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">mps_memory_bytes</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Exact memory: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">exact_memory_bytes</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Compression: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">compression_ratio</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">x&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;MPS tractable: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">mps_tractable</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="mpsbaselineresult"><code>MPSBaselineResult</code><a class="headerlink" href="#mpsbaselineresult" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>n_qubits</code></td>
+<td>int</td>
+<td>System size</td>
+</tr>
+<tr>
+<td><code>half_chain_entropy</code></td>
+<td>float</td>
+<td>S(n/2) from exact ground state</td>
+</tr>
+<tr>
+<td><code>required_bond_dim</code></td>
+<td>int</td>
+<td>chi = ceil(2^S)</td>
+</tr>
+<tr>
+<td><code>mps_memory_bytes</code></td>
+<td>int</td>
+<td>MPS storage requirement</td>
+</tr>
+<tr>
+<td><code>exact_memory_bytes</code></td>
+<td>int</td>
+<td>Full statevector storage</td>
+</tr>
+<tr>
+<td><code>compression_ratio</code></td>
+<td>float</td>
+<td>exact/MPS memory ratio</td>
+</tr>
+<tr>
+<td><code>quantum_advantage_threshold</code></td>
+<td>int</td>
+<td>n where MPS at chi_max fails</td>
+</tr>
+<tr>
+<td><code>mps_tractable</code></td>
+<td>bool</td>
+<td>chi_required &lt;= chi_max</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="4-appqsim_protocol-application-oriented-metrics">4. <code>appqsim_protocol</code> — Application-Oriented Metrics<a class="headerlink" href="#4-appqsim_protocol-application-oriented-metrics" title="Permanent link">&para;</a></h3>
+<p>Reference: Lubinski et al., QST 8, 024003 (2023).</p>
+<p>Measures simulation quality via application-relevant metrics, not just
+circuit fidelity. For the Kuramoto-XY system:</p>
+<ol>
+<li><strong>Order parameter accuracy</strong>: <code>|R_quantum - R_exact|</code></li>
+<li><strong>Energy accuracy</strong>: <code>|E_q - E_exact| / |E_exact| × 100%</code></li>
+<li><strong>Correlation fidelity</strong>: <code>1 - ||C_q - C_exact||_F / ||C_exact||_F</code></li>
+</ol>
+<p>These answer the physics question: does the quantum simulation correctly
+reproduce the synchronisation transition? A VQE that gets the energy
+right but the correlators wrong is not useful for studying phase transitions.</p>
+<h4 id="appqsim_benchmarkk-omega-circuit_svnone-n_gates0-circuit_depth0"><code>appqsim_benchmark(K, omega, circuit_sv=None, n_gates=0, circuit_depth=0)</code><a class="headerlink" href="#appqsim_benchmarkk-omega-circuit_svnone-n_gates0-circuit_depth0" title="Permanent link">&para;</a></h4>
+<p>Full AppQSim evaluation:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.benchmarks.appqsim_protocol</span><span class="w"> </span><span class="kn">import</span> <span class="n">appqsim_benchmark</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.bridge.knm_hamiltonian</span><span class="w"> </span><span class="kn">import</span> <span class="n">OMEGA_N_16</span><span class="p">,</span> <span class="n">build_knm_paper27</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">K</span> <span class="o">=</span> <span class="n">build_knm_paper27</span><span class="p">(</span><span class="n">L</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">omega</span> <span class="o">=</span> <span class="n">OMEGA_N_16</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="n">metrics</span> <span class="o">=</span> <span class="n">appqsim_benchmark</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">omega</span><span class="p">)</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;R error: </span><span class="si">{</span><span class="n">metrics</span><span class="o">.</span><span class="n">order_parameter_error</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Energy error: </span><span class="si">{</span><span class="n">metrics</span><span class="o">.</span><span class="n">energy_relative_error_pct</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Correlation fidelity: </span><span class="si">{</span><span class="n">metrics</span><span class="o">.</span><span class="n">correlation_fidelity</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>If <code>circuit_sv</code> is not provided, internally runs VQE (ansatz_reps=2,
+maxiter=100) to generate the quantum state.</p>
+<p>The correlation fidelity computes the Frobenius-norm distance between
+quantum and exact <code>&lt;X_i X_j + Y_i Y_j&gt;</code> correlator matrices over all
+qubit pairs.</p>
+<h4 id="appqsimmetrics"><code>AppQSimMetrics</code><a class="headerlink" href="#appqsimmetrics" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>order_parameter_error</code></td>
+<td>float</td>
+<td></td>
+</tr>
+<tr>
+<td><code>energy_relative_error_pct</code></td>
+<td>float</td>
+<td></td>
+</tr>
+<tr>
+<td><code>correlation_fidelity</code></td>
+<td>float</td>
+<td>1 -</td>
+</tr>
+<tr>
+<td><code>n_qubits</code></td>
+<td>int</td>
+<td>System size</td>
+</tr>
+<tr>
+<td><code>n_gates</code></td>
+<td>int</td>
+<td>Circuit gate count</td>
+</tr>
+<tr>
+<td><code>circuit_depth</code></td>
+<td>int</td>
+<td>Circuit depth</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="crossover-summary">Crossover Summary<a class="headerlink" href="#crossover-summary" title="Permanent link">&para;</a></h2>
+<p>The three crossover estimates address different classical methods:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Classical Cost</th>
+<th>Crossover n</th>
+<th>Bottleneck</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Exact diag + expm</td>
+<td>O(8^n)</td>
+<td>~14</td>
+<td>RAM + FLOPs</td>
+</tr>
+<tr>
+<td>GPU statevector</td>
+<td>O(2^n × gates)</td>
+<td>~33 (A100)</td>
+<td>GPU memory</td>
+</tr>
+<tr>
+<td>MPS tensor network</td>
+<td>O(chi^3 × n × gates)</td>
+<td>32-40 (chi_max=256-1024)</td>
+<td>Entanglement</td>
+</tr>
+</tbody>
+</table>
+<p>Below n=14, classical exact methods win. Between 14 and 33, GPU
+simulation is fastest. Above n=33-40, only quantum hardware (or
+approximate classical methods with uncontrolled error) can solve the
+full Kuramoto-XY dynamics.</p>
+<h2 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Internal</th>
+<th>External</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>quantum_advantage</code></td>
+<td>bridge.knm_hamiltonian, hardware.classical</td>
+<td>scipy (curve_fit)</td>
+</tr>
+<tr>
+<td><code>gpu_baseline</code></td>
+<td>—</td>
+<td>— (pure estimates)</td>
+</tr>
+<tr>
+<td><code>mps_baseline</code></td>
+<td>analysis.entanglement_spectrum</td>
+<td>numpy</td>
+</tr>
+<tr>
+<td><code>appqsim_protocol</code></td>
+<td>bridge.<em>, hardware.classical, analysis.</em></td>
+<td>qiskit</td>
+</tr>
+</tbody>
+</table>
+<p>No optional external dependencies. All benchmarks run with the base
+installation.</p>
+<h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
+<p>35 tests across 4 test files:</p>
+<ul>
+<li><code>test_quantum_advantage.py</code> — Scaling correctness, crossover estimation, edge cases</li>
+<li><code>test_gpu_baseline.py</code> — Memory estimates, time estimates, comparison logic</li>
+<li><code>test_mps_baseline.py</code> — Bond dimension, memory, tractability threshold</li>
+<li><code>test_appqsim_protocol.py</code> — Metric ranges, VQE fallback, correlator fidelity</li>
+</ul>
+<h2 id="pipeline-performance">Pipeline Performance<a class="headerlink" href="#pipeline-performance" title="Permanent link">&para;</a></h2>
+<p>Measured on ML350 Gen8 (128 GB RAM, Xeon E5-2620v2):</p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Wall Time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classical_benchmark</code></td>
+<td>4 qubits</td>
+<td>8 ms</td>
+</tr>
+<tr>
+<td><code>classical_benchmark</code></td>
+<td>8 qubits</td>
+<td>120 ms</td>
+</tr>
+<tr>
+<td><code>classical_benchmark</code></td>
+<td>12 qubits</td>
+<td>8,500 ms</td>
+</tr>
+<tr>
+<td><code>classical_benchmark</code></td>
+<td>14 qubits</td>
+<td>~45,000 ms</td>
+</tr>
+<tr>
+<td><code>quantum_benchmark</code></td>
+<td>4 qubits</td>
+<td>15 ms</td>
+</tr>
+<tr>
+<td><code>quantum_benchmark</code></td>
+<td>8 qubits</td>
+<td>45 ms</td>
+</tr>
+<tr>
+<td><code>quantum_benchmark</code></td>
+<td>12 qubits</td>
+<td>350 ms</td>
+</tr>
+<tr>
+<td><code>quantum_benchmark</code></td>
+<td>16 qubits</td>
+<td>3,200 ms</td>
+</tr>
+<tr>
+<td><code>gpu_baseline_comparison</code></td>
+<td>any n</td>
+<td>0.01 ms (pure estimate)</td>
+</tr>
+<tr>
+<td><code>mps_baseline_comparison</code></td>
+<td>8 qubits</td>
+<td>25 ms</td>
+</tr>
+<tr>
+<td><code>appqsim_benchmark</code></td>
+<td>4 qubits</td>
+<td>350 ms</td>
+</tr>
+</tbody>
+</table>
+<p>The classical benchmark hits a wall at n=14 (45 seconds). The quantum
+benchmark scales polynomially in 2^n, reaching 3.2 seconds at n=16.
+GPU and MPS baselines are pure estimates (no actual simulation).</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+    
+  </body>
+</html>

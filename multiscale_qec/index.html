@@ -1,0 +1,2634 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Quantum simulation of coupled oscillators on IBM hardware">
+      
+      
+        <meta name="author" content="Miroslav Šotek">
+      
+      
+        <link rel="canonical" href="https://anulum.github.io/scpn-quantum-control/multiscale_qec/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/anulum_logo_company.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>SPDX-License-Identifier: AGPL-3.0-or-later - scpn-quantum-control</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#spdx-license-identifier-agpl-30-or-later" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="scpn-quantum-control" class="md-header__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            scpn-quantum-control
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              SPDX-License-Identifier: AGPL-3.0-or-later
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="scpn-quantum-control" class="md-nav__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    scpn-quantum-control
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SCPN Foundations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../equations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../research_gems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research Gems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../orchestrator_integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestrator Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rust_engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../autodoc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auto-Generated
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analysis_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../identity_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mitigation_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mitigation API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bridges_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridges API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmarks_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipeline_performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_dynamic_coupling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Dynamic Coupling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_structured_ansatz/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Structured Ansatz
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_hw_topological_optimizer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: HW Topological Optimizer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../test_infrastructure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publications
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Publications
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprint/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprint: Quantum Kuramoto-XY on Hardware
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_sync_witnesses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: Synchronisation Witnesses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: DLA Parity Theorem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results Gallery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hardware_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IBM Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXPERIMENT_ROADMAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PAPER_CLAIMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results & Claims
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../QUANTUM_CRYPTO_RESEARCH_BRANCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Crypto Research
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Learning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notebooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="spdx-license-identifier-agpl-30-or-later">SPDX-License-Identifier: AGPL-3.0-or-later<a class="headerlink" href="#spdx-license-identifier-agpl-30-or-later" title="Permanent link">&para;</a></h1>
+<h1 id="commercial-license-available">Commercial license available<a class="headerlink" href="#commercial-license-available" title="Permanent link">&para;</a></h1>
+<h1 id="concepts-19962026-miroslav-sotek-all-rights-reserved">© Concepts 1996–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#concepts-19962026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="code-20202026-miroslav-sotek-all-rights-reserved">© Code 2020–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#code-20202026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="orcid-0009-0009-3560-0851">ORCID: 0009-0009-3560-0851<a class="headerlink" href="#orcid-0009-0009-3560-0851" title="Permanent link">&para;</a></h1>
+<h1 id="contact-wwwanulumli-protoscienceanulumli">Contact: www.anulum.li | protoscience@anulum.li<a class="headerlink" href="#contact-wwwanulumli-protoscienceanulumli" title="Permanent link">&para;</a></h1>
+<h1 id="scpn-quantum-control-multi-scale-quantum-error-correction">scpn-quantum-control — Multi-Scale Quantum Error Correction<a class="headerlink" href="#scpn-quantum-control-multi-scale-quantum-error-correction" title="Permanent link">&para;</a></h1>
+<h1 id="multi-scale-quantum-error-correction-ms-qec">Multi-Scale Quantum Error Correction (MS-QEC)<a class="headerlink" href="#multi-scale-quantum-error-correction-ms-qec" title="Permanent link">&para;</a></h1>
+<h2 id="1-mathematical-formalism">1. Mathematical Formalism<a class="headerlink" href="#1-mathematical-formalism" title="Permanent link">&para;</a></h2>
+<h3 id="concatenated-code-structure">Concatenated Code Structure<a class="headerlink" href="#concatenated-code-structure" title="Permanent link">&para;</a></h3>
+<p>MS-QEC implements hierarchical quantum error correction through concatenated
+surface codes. Each SCPN domain operates an independent surface code whose
+logical qubits serve as the physical qubits of the next domain's code.</p>
+<p>The logical error rate at concatenation level <span class="arithmatex">\(k\)</span> follows the threshold
+theorem (Knill 2005, Aharonov &amp; Ben-Or 1997):</p>
+<div class="arithmatex">\[p_L^{(k)} = A \cdot \left(\frac{p_L^{(k-1)}}{p_\text{th}}\right)^{(d_k + 1)/2}\]</div>
+<p>where:</p>
+<ul>
+<li><span class="arithmatex">\(p_L^{(0)} = A \cdot (p_\text{phys} / p_\text{th})^{(d_0 + 1)/2}\)</span> (base level)</li>
+<li><span class="arithmatex">\(A \approx 0.1\)</span> — empirical prefactor (Raussendorf et al. 2007)</li>
+<li><span class="arithmatex">\(p_\text{th} \approx 0.01\)</span> — surface code threshold (Google Willow 2024: <span class="arithmatex">\(p_\text{phys} = 0.003\)</span> below threshold at <span class="arithmatex">\(d=7\)</span>)</li>
+<li><span class="arithmatex">\(d_k\)</span> — code distance at level <span class="arithmatex">\(k\)</span> (odd integer <span class="arithmatex">\(\geq 3\)</span>)</li>
+</ul>
+<p>This produces <strong>doubly-exponential error suppression</strong>: each concatenation
+level squares the logarithm of the error rate. For <span class="arithmatex">\(p_\text{phys} = 0.001\)</span>
+and <span class="arithmatex">\(d = 5\)</span> at all levels:</p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th><span class="arithmatex">\(p_L\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td><span class="arithmatex">\(3.16 \times 10^{-5}\)</span></td>
+</tr>
+<tr>
+<td>1</td>
+<td><span class="arithmatex">\(9.99 \times 10^{-9}\)</span></td>
+</tr>
+<tr>
+<td>2</td>
+<td><span class="arithmatex">\(9.97 \times 10^{-16}\)</span></td>
+</tr>
+</tbody>
+</table>
+<h3 id="threshold-derivation">Threshold Derivation<a class="headerlink" href="#threshold-derivation" title="Permanent link">&para;</a></h3>
+<p>The doubly-exponential suppression arises from the recursive structure.
+Define <span class="arithmatex">\(\lambda = p_\text{phys} / p_\text{th}\)</span> (ratio below threshold, <span class="arithmatex">\(\lambda &lt; 1\)</span>).
+At level 0 with code distance <span class="arithmatex">\(d\)</span>:</p>
+<div class="arithmatex">\[p_L^{(0)} = A \cdot \lambda^{(d+1)/2}\]</div>
+<p>At level 1 (using <span class="arithmatex">\(p_L^{(0)}\)</span> as input):</p>
+<div class="arithmatex">\[p_L^{(1)} = A \cdot \left(\frac{A \cdot \lambda^{(d+1)/2}}{p_\text{th}}\right)^{(d+1)/2} = A \cdot \left(\frac{A}{p_\text{th}}\right)^{(d+1)/2} \cdot \lambda^{((d+1)/2)^2}\]</div>
+<p>The exponent grows as <span class="arithmatex">\(((d+1)/2)^k\)</span> at level <span class="arithmatex">\(k\)</span> — doubly-exponential in <span class="arithmatex">\(k\)</span>.
+For <span class="arithmatex">\(d = 5\)</span>, the exponent sequence is <span class="arithmatex">\(3, 9, 27, 81, 243\)</span>. At <span class="arithmatex">\(\lambda = 0.1\)</span>
+(<span class="arithmatex">\(p_\text{phys} = 0.001\)</span>):</p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Exponent</th>
+<th><span class="arithmatex">\(\lambda^\text{exp}\)</span></th>
+<th><span class="arithmatex">\(p_L\)</span> (approx)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>3</td>
+<td><span class="arithmatex">\(10^{-3}\)</span></td>
+<td><span class="arithmatex">\(10^{-4}\)</span></td>
+</tr>
+<tr>
+<td>1</td>
+<td>9</td>
+<td><span class="arithmatex">\(10^{-9}\)</span></td>
+<td><span class="arithmatex">\(10^{-10}\)</span></td>
+</tr>
+<tr>
+<td>2</td>
+<td>27</td>
+<td><span class="arithmatex">\(10^{-27}\)</span></td>
+<td><span class="arithmatex">\(10^{-28}\)</span></td>
+</tr>
+<tr>
+<td>3</td>
+<td>81</td>
+<td><span class="arithmatex">\(10^{-81}\)</span></td>
+<td><span class="arithmatex">\(10^{-82}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>This is why concatenation is so powerful: even modest code distances
+produce astronomically low error rates after a few levels. The tradeoff
+is qubit count, which grows as <span class="arithmatex">\((2d^2 - 1)^k\)</span>.</p>
+<h3 id="distance-selection-algorithm">Distance Selection Algorithm<a class="headerlink" href="#distance-selection-algorithm" title="Permanent link">&para;</a></h3>
+<p>The auto-distance selection divides the target logical rate equally
+across concatenation levels. For target <span class="arithmatex">\(p_L^\text{target}\)</span> across <span class="arithmatex">\(L\)</span> levels:</p>
+<ol>
+<li>Compute per-level target: <span class="arithmatex">\(p_\text{level} = (p_L^\text{target})^{1/L}\)</span></li>
+<li>For each level <span class="arithmatex">\(k = 0, 1, \ldots, L-1\)</span>:</li>
+<li>Find minimum odd <span class="arithmatex">\(d_k\)</span> such that <span class="arithmatex">\(p_L^{(k)} \leq p_\text{level}\)</span></li>
+<li>Use <span class="arithmatex">\(p_L^{(k)}\)</span> as input to level <span class="arithmatex">\(k+1\)</span></li>
+</ol>
+<p>This greedy algorithm does NOT produce the globally optimal distance
+allocation. An optimal allocation would minimise total qubit count
+<span class="arithmatex">\(\sum_k n_\text{osc} (2d_k^2 - 1)\)</span> subject to the final <span class="arithmatex">\(p_L\)</span> constraint.
+The greedy approach overestimates distances at early levels.</p>
+<h3 id="surface-code-at-each-level">Surface Code at Each Level<a class="headerlink" href="#surface-code-at-each-level" title="Permanent link">&para;</a></h3>
+<p>Each level uses the rotated surface code with:</p>
+<ul>
+<li><strong>Physical qubits per logical:</strong> <span class="arithmatex">\(2d^2 - 1\)</span> (data + ancilla qubits)</li>
+<li><strong>Syndrome extraction rounds:</strong> <span class="arithmatex">\(d\)</span> per Trotter step (full cycle)</li>
+<li><strong>Error types corrected:</strong> X (bit-flip) and Z (phase-flip)</li>
+<li><strong>Decoder:</strong> Minimum-weight perfect matching (MWPM)</li>
+<li><strong>Correctable errors:</strong> up to <span class="arithmatex">\(\lfloor(d-1)/2\rfloor\)</span> per round</li>
+</ul>
+<p>The qubit overhead per level for <span class="arithmatex">\(n_\text{osc}\)</span> logical qubits:</p>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\(d\)</span></th>
+<th>Qubits/logical</th>
+<th>4 oscillators</th>
+<th>16 oscillators</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3</td>
+<td>17</td>
+<td>68</td>
+<td>272</td>
+</tr>
+<tr>
+<td>5</td>
+<td>49</td>
+<td>196</td>
+<td>784</td>
+</tr>
+<tr>
+<td>7</td>
+<td>97</td>
+<td>388</td>
+<td>1,552</td>
+</tr>
+<tr>
+<td>9</td>
+<td>161</td>
+<td>644</td>
+<td>2,576</td>
+</tr>
+<tr>
+<td>11</td>
+<td>241</td>
+<td>964</td>
+<td>3,856</td>
+</tr>
+</tbody>
+</table>
+<h3 id="scpn-domain-mapping">SCPN Domain Mapping<a class="headerlink" href="#scpn-domain-mapping" title="Permanent link">&para;</a></h3>
+<p>The 15+1 SCPN layers are grouped into 5 domains, each becoming one
+concatenation level:</p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Domain</th>
+<th>SCPN Layers</th>
+<th>Physical Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Biological</td>
+<td>L1–L4</td>
+<td>Quantum bio, cellular sync</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Organismal</td>
+<td>L5–L8</td>
+<td>Self to cosmic phase-locking</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Collective</td>
+<td>L9–L12</td>
+<td>Memory, control, collective</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Meta</td>
+<td>L13–L15</td>
+<td>Source-field, meta-universal</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Closure</td>
+<td>L16</td>
+<td>Cybernetic closure (Anulum)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="syndrome-flow">Syndrome Flow<a class="headerlink" href="#syndrome-flow" title="Permanent link">&para;</a></h3>
+<p>Error syndromes propagate upward through the hierarchy, weighted by
+inter-domain K_nm coupling. The syndrome flow between adjacent levels
+<span class="arithmatex">\(a\)</span> and <span class="arithmatex">\(b\)</span> is characterised by:</p>
+<ul>
+<li><strong>Syndrome weight:</strong> <span class="arithmatex">\(\bar{K}_{ab} = \frac{1}{|D_a||D_b|} \sum_{i \in D_a, j \in D_b} K_{ij}\)</span></li>
+<li><strong>Correction capacity:</strong> <span class="arithmatex">\((d_b - 1) / 2\)</span> errors correctable at level <span class="arithmatex">\(b\)</span></li>
+<li><strong>Information flow:</strong> <span class="arithmatex">\(\bar{K}_{ab} \cdot \log_2(d_b)\)</span> syndrome bits per round</li>
+</ul>
+<p>Measured syndrome flow for standard K_nm (Paper 27):</p>
+<table>
+<thead>
+<tr>
+<th>Flow</th>
+<th><span class="arithmatex">\(\bar{K}\)</span></th>
+<th>Capacity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L0 → L1 (bio → org)</td>
+<td>0.1403</td>
+<td><span class="arithmatex">\((d_1 - 1)/2\)</span></td>
+</tr>
+<tr>
+<td>L1 → L2 (org → col)</td>
+<td>0.1515</td>
+<td><span class="arithmatex">\((d_2 - 1)/2\)</span></td>
+</tr>
+<tr>
+<td>L2 → L3 (col → meta)</td>
+<td>0.1715</td>
+<td><span class="arithmatex">\((d_3 - 1)/2\)</span></td>
+</tr>
+<tr>
+<td>L3 → L4 (meta → close)</td>
+<td>0.2544</td>
+<td><span class="arithmatex">\((d_4 - 1)/2\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The increasing coupling toward higher levels means stronger syndrome
+correction at the top of the hierarchy — consistent with the SCPN
+principle that higher layers provide more coherent error correction.</p>
+<h2 id="2-theoretical-context">2. Theoretical Context<a class="headerlink" href="#2-theoretical-context" title="Permanent link">&para;</a></h2>
+<h3 id="why-multi-scale-qec">Why Multi-Scale QEC?<a class="headerlink" href="#why-multi-scale-qec" title="Permanent link">&para;</a></h3>
+<p>Standard quantum error correction operates at a single scale: physical
+qubits encode logical qubits via a fixed code. The SCPN, however,
+describes reality as a multi-scale hierarchy where each layer operates
+at a different characteristic scale. MS-QEC is the natural QEC structure
+for this hierarchy.</p>
+<p>The key insight is that concatenation maps directly onto the SCPN layer
+structure: errors at the biological level (L1–L4) are first corrected
+by the organismal level (L5–L8), then any residual errors are corrected
+by the collective level (L9–L12), and so on. This mirrors how biological
+systems maintain coherence across scales.</p>
+<h3 id="historical-context">Historical Context<a class="headerlink" href="#historical-context" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Threshold theorem</strong> (Aharonov &amp; Ben-Or 1997): fault-tolerant quantum
+  computation is possible if the physical error rate is below a threshold.</li>
+<li><strong>Concatenated codes</strong> (Knill 2005): achieving threshold through recursive
+  encoding. The MS-QEC module uses this framework directly.</li>
+<li><strong>Surface codes</strong> (Kitaev 2003): topological codes with high threshold
+  (<span class="arithmatex">\(\sim 1\%\)</span>) and efficient MWPM decoding. Used as the inner code at each level.</li>
+<li><strong>Google Willow</strong> (2024): first experimental demonstration of below-threshold
+  surface code operation at <span class="arithmatex">\(d = 3, 5, 7\)</span>.</li>
+</ul>
+<h3 id="what-ms-qec-does-not-claim">What MS-QEC Does NOT Claim<a class="headerlink" href="#what-ms-qec-does-not-claim" title="Permanent link">&para;</a></h3>
+<p>This module provides the <strong>framework</strong> for hierarchical QEC analysis on
+the SCPN topology. It does NOT:</p>
+<ul>
+<li>Execute on quantum hardware (resource estimates only)</li>
+<li>Claim that biological systems perform literal quantum error correction</li>
+<li>Prove that the SCPN hierarchy is optimal for concatenation</li>
+<li>Implement lattice surgery or other advanced logical operations</li>
+</ul>
+<p>The module is a tool for analysing what resources would be needed to
+fault-tolerantly simulate the SCPN Hamiltonian on future quantum hardware.</p>
+<h3 id="comparison-concatenated-vs-flat-qec">Comparison: Concatenated vs Flat QEC<a class="headerlink" href="#comparison-concatenated-vs-flat-qec" title="Permanent link">&para;</a></h3>
+<p>Why not use a single surface code with large distance instead of
+concatenation? Consider targeting <span class="arithmatex">\(p_L = 10^{-15}\)</span> at <span class="arithmatex">\(p_\text{phys} = 0.001\)</span>:</p>
+<p><strong>Flat surface code (single level):</strong></p>
+<div class="arithmatex">\[d_\text{flat}: A \cdot (\lambda)^{(d+1)/2} \leq 10^{-15}$$
+$$0.1 \cdot (0.1)^{(d+1)/2} \leq 10^{-15} \implies (d+1)/2 \geq 14 \implies d \geq 27\]</div>
+<p>Total qubits (4 osc): <span class="arithmatex">\(4 \times (2 \times 27^2 - 1) = 5,828\)</span></p>
+<p><strong>Concatenated (3 levels, <span class="arithmatex">\(d = 5\)</span>):</strong></p>
+<div class="arithmatex">\[p_L = 10^{-28} \ll 10^{-15}\]</div>
+<p>Total qubits: <span class="arithmatex">\(3 \times 4 \times 49 = 588\)</span> — <strong>10× fewer qubits for
+better error rate.</strong> This is the power of concatenation.</p>
+<p>The tradeoff: concatenation requires <span class="arithmatex">\(L\)</span> rounds of syndrome extraction
+(one per level), increasing circuit depth. For NISQ hardware where depth
+is limited, flat codes may be preferred despite higher qubit count.</p>
+<h2 id="3-pipeline-position">3. Pipeline Position<a class="headerlink" href="#3-pipeline-position" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>bridge/knm_hamiltonian.py → build_knm_paper27() → K_nm matrix
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>        ↓
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>qec/error_budget.py → logical_error_rate(), minimum_code_distance()
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>        ↓
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>qec/multiscale_qec.py → build_multiscale_qec() → MultiscaleQECResult
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        ↓                 ↓
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        ↓           syndrome_flow_analysis() → [SyndromeFlow]
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>        ↓
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>qec/surface_code_upde.py → SurfaceCodeUPDE (per-level circuit)
+</code></pre></div>
+<p><strong>Inputs:</strong> K_nm coupling matrix (from <code>bridge/</code>), physical error rate,
+target logical rate.</p>
+<p><strong>Outputs:</strong> <code>MultiscaleQECResult</code> with per-level code distances,
+logical error rates, physical qubit counts, and syndrome flow analysis.</p>
+<p><strong>Dependencies:</strong>
+- <code>qec/error_budget.py</code> — <code>logical_error_rate()</code>, <code>minimum_code_distance()</code>
+- <code>bridge/knm_hamiltonian.py</code> — <code>build_knm_paper27()</code>
+- Rust engine: <code>scpn_quantum_engine.concatenated_logical_rate_rust</code>,
+  <code>scpn_quantum_engine.knm_domain_coupling</code></p>
+<h2 id="4-features">4. Features<a class="headerlink" href="#4-features" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Automatic distance selection:</strong> given target logical rate and physical
+  error rate, auto-computes code distances for equal suppression allocation
+  across levels.</li>
+<li><strong>Explicit distance override:</strong> specify distances per level for custom
+  resource analysis.</li>
+<li><strong>Concatenated threshold computation:</strong> iterative logical error rates
+  with doubly-exponential suppression below threshold.</li>
+<li><strong>Syndrome flow analysis:</strong> inter-domain K_nm coupling weights determine
+  syndrome information flow between QEC levels.</li>
+<li><strong>Double-exponential detection:</strong> automatically checks if error rates
+  decrease faster than exponentially across levels.</li>
+<li><strong>Rust acceleration:</strong> <code>concatenated_logical_rate</code> and <code>knm_domain_coupling</code>
+  use Rust engine for 19.5× speedup on test suite.</li>
+<li><strong>Full backward compatibility:</strong> integrates with existing
+  <code>SurfaceCodeUPDE</code>, <code>FaultTolerantUPDE</code>, <code>ErrorBudget</code> modules.</li>
+</ul>
+<h2 id="5-usage-examples">5. Usage Examples<a class="headerlink" href="#5-usage-examples" title="Permanent link">&para;</a></h2>
+<h3 id="basic-build-ms-qec-for-standard-scpn">Basic: Build MS-QEC for Standard SCPN<a class="headerlink" href="#basic-build-ms-qec-for-standard-scpn" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.bridge.knm_hamiltonian</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_knm_paper27</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.qec.multiscale_qec</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_multiscale_qec</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">K</span> <span class="o">=</span> <span class="n">build_knm_paper27</span><span class="p">()</span>  <span class="c1"># 16×16 K_nm matrix</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># Auto-select distances for target p_L = 1e-10</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">result</span> <span class="o">=</span> <span class="n">build_multiscale_qec</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">p_physical</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">target_logical_rate</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Levels: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">concatenation_depth</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total physical qubits: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">total_physical_qubits</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Effective logical rate: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">effective_logical_rate</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Below threshold: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">below_threshold</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">levels</span><span class="p">:</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  L</span><span class="si">{</span><span class="n">level</span><span class="o">.</span><span class="n">level</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">level</span><span class="o">.</span><span class="n">domain_name</span><span class="si">}</span><span class="s2">): &quot;</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>          <span class="sa">f</span><span class="s2">&quot;d=</span><span class="si">{</span><span class="n">level</span><span class="o">.</span><span class="n">code_distance</span><span class="si">}</span><span class="s2">, &quot;</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>          <span class="sa">f</span><span class="s2">&quot;p_L=</span><span class="si">{</span><span class="n">level</span><span class="o">.</span><span class="n">logical_error_rate</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="explicit-distances">Explicit Distances<a class="headerlink" href="#explicit-distances" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">build_multiscale_qec</span><span class="p">(</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">K</span><span class="p">,</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">p_physical</span><span class="o">=</span><span class="mf">0.003</span><span class="p">,</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">distances</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>  <span class="c1"># one per domain</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="p">)</span>
+</code></pre></div>
+<h3 id="syndrome-flow-analysis">Syndrome Flow Analysis<a class="headerlink" href="#syndrome-flow-analysis" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.qec.multiscale_qec</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">build_multiscale_qec</span><span class="p">,</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">syndrome_flow_analysis</span><span class="p">,</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="p">)</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">K</span> <span class="o">=</span> <span class="n">build_knm_paper27</span><span class="p">()</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">result</span> <span class="o">=</span> <span class="n">build_multiscale_qec</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">p_physical</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">distances</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">flows</span> <span class="o">=</span> <span class="n">syndrome_flow_analysis</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="k">for</span> <span class="n">flow</span> <span class="ow">in</span> <span class="n">flows</span><span class="p">:</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;L</span><span class="si">{</span><span class="n">flow</span><span class="o">.</span><span class="n">source_level</span><span class="si">}</span><span class="s2"> → L</span><span class="si">{</span><span class="n">flow</span><span class="o">.</span><span class="n">target_level</span><span class="si">}</span><span class="s2">: &quot;</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>          <span class="sa">f</span><span class="s2">&quot;weight=</span><span class="si">{</span><span class="n">flow</span><span class="o">.</span><span class="n">syndrome_weight</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, &quot;</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>          <span class="sa">f</span><span class="s2">&quot;capacity=</span><span class="si">{</span><span class="n">flow</span><span class="o">.</span><span class="n">correction_capacity</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">, &quot;</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>          <span class="sa">f</span><span class="s2">&quot;info=</span><span class="si">{</span><span class="n">flow</span><span class="o">.</span><span class="n">information_flow</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> bits/round&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="concatenated-rate-computation">Concatenated Rate Computation<a class="headerlink" href="#concatenated-rate-computation" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.qec.multiscale_qec</span><span class="w"> </span><span class="kn">import</span> <span class="n">concatenated_logical_rate</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1"># 5 levels of d=5 surface codes at p_phys=0.001</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">rates</span> <span class="o">=</span> <span class="n">concatenated_logical_rate</span><span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rates</span><span class="p">):</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Level </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: p_L = </span><span class="si">{</span><span class="n">r</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="hardware-generation-comparison">Hardware Generation Comparison<a class="headerlink" href="#hardware-generation-comparison" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Compare MS-QEC resources across hardware generations</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="k">for</span> <span class="n">p_phys</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[(</span><span class="mf">0.003</span><span class="p">,</span> <span class="s2">&quot;Heron r2&quot;</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="s2">&quot;Willow-like&quot;</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.0001</span><span class="p">,</span> <span class="s2">&quot;Future&quot;</span><span class="p">)]:</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">build_multiscale_qec</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">p_physical</span><span class="o">=</span><span class="n">p_phys</span><span class="p">,</span> <span class="n">target_logical_rate</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> (p=</span><span class="si">{</span><span class="n">p_phys</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">total_physical_qubits</span><span class="si">}</span><span class="s2"> qubits, &quot;</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>          <span class="sa">f</span><span class="s2">&quot;p_L=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">effective_logical_rate</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">, &quot;</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>          <span class="sa">f</span><span class="s2">&quot;distances=</span><span class="si">{</span><span class="p">[</span><span class="n">l</span><span class="o">.</span><span class="n">code_distance</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">result</span><span class="o">.</span><span class="n">levels</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="small-system-4-layers">Small System (4 Layers)<a class="headerlink" href="#small-system-4-layers" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">K_small</span> <span class="o">=</span> <span class="n">build_knm_paper27</span><span class="p">(</span><span class="n">L</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">build_multiscale_qec</span><span class="p">(</span><span class="n">K_small</span><span class="p">,</span> <span class="n">p_physical</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">target_logical_rate</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;4-layer system: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">concatenation_depth</span><span class="si">}</span><span class="s2"> levels, &quot;</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>      <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">total_physical_qubits</span><span class="si">}</span><span class="s2"> qubits&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="6-technical-reference">6. Technical Reference<a class="headerlink" href="#6-technical-reference" title="Permanent link">&para;</a></h2>
+<h3 id="classes">Classes<a class="headerlink" href="#classes" title="Permanent link">&para;</a></h3>
+<h4 id="qeclevel"><code>QECLevel</code><a class="headerlink" href="#qeclevel" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>level</code></td>
+<td><code>int</code></td>
+<td>Concatenation level index</td>
+</tr>
+<tr>
+<td><code>domain_name</code></td>
+<td><code>str</code></td>
+<td>SCPN domain name</td>
+</tr>
+<tr>
+<td><code>code_distance</code></td>
+<td><code>int</code></td>
+<td>Surface code distance</td>
+</tr>
+<tr>
+<td><code>layer_range</code></td>
+<td><code>tuple[int, int]</code></td>
+<td>SCPN layer range (0-indexed)</td>
+</tr>
+<tr>
+<td><code>physical_error_rate</code></td>
+<td><code>float</code></td>
+<td>Input error rate to this level</td>
+</tr>
+<tr>
+<td><code>logical_error_rate</code></td>
+<td><code>float</code></td>
+<td>Output error rate from this level</td>
+</tr>
+<tr>
+<td><code>physical_qubits_per_logical</code></td>
+<td><code>int</code></td>
+<td><span class="arithmatex">\(2d^2 - 1\)</span></td>
+</tr>
+<tr>
+<td><code>n_logical_qubits</code></td>
+<td><code>int</code></td>
+<td>Logical qubits at this level</td>
+</tr>
+<tr>
+<td><code>total_physical_qubits</code></td>
+<td><code>int</code></td>
+<td><span class="arithmatex">\(n_\text{logical} \times (2d^2 - 1)\)</span></td>
+</tr>
+<tr>
+<td><code>knm_coupling_to_next</code></td>
+<td><code>float</code></td>
+<td>Mean K_nm to next level</td>
+</tr>
+</tbody>
+</table>
+<h4 id="multiscaleqecresult"><code>MultiscaleQECResult</code><a class="headerlink" href="#multiscaleqecresult" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>levels</code></td>
+<td><code>list[QECLevel]</code></td>
+<td>Per-level analysis</td>
+</tr>
+<tr>
+<td><code>effective_logical_rate</code></td>
+<td><code>float</code></td>
+<td>Final logical error rate</td>
+</tr>
+<tr>
+<td><code>total_physical_qubits</code></td>
+<td><code>int</code></td>
+<td>Sum across all levels</td>
+</tr>
+<tr>
+<td><code>concatenation_depth</code></td>
+<td><code>int</code></td>
+<td>Number of levels</td>
+</tr>
+<tr>
+<td><code>below_threshold</code></td>
+<td><code>bool</code></td>
+<td><span class="arithmatex">\(p_\text{phys} &lt; p_\text{th}\)</span></td>
+</tr>
+<tr>
+<td><code>double_exponential_suppression</code></td>
+<td><code>bool</code></td>
+<td>Rates decrease doubly-exponentially</td>
+</tr>
+<tr>
+<td><code>summary</code></td>
+<td><code>str</code></td>
+<td>Human-readable summary</td>
+</tr>
+</tbody>
+</table>
+<h4 id="syndromeflow"><code>SyndromeFlow</code><a class="headerlink" href="#syndromeflow" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source_level</code></td>
+<td><code>int</code></td>
+<td>Error source level</td>
+</tr>
+<tr>
+<td><code>target_level</code></td>
+<td><code>int</code></td>
+<td>Correction target level</td>
+</tr>
+<tr>
+<td><code>syndrome_weight</code></td>
+<td><code>float</code></td>
+<td>K_nm coupling strength</td>
+</tr>
+<tr>
+<td><code>correction_capacity</code></td>
+<td><code>float</code></td>
+<td><span class="arithmatex">\((d - 1) / 2\)</span></td>
+</tr>
+<tr>
+<td><code>information_flow</code></td>
+<td><code>float</code></td>
+<td>Syndrome bits per round</td>
+</tr>
+</tbody>
+</table>
+<h3 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h3>
+<h4 id="build_multiscale_qeck-n_oscillators_per_level-p_physical-target_logical_rate-distances"><code>build_multiscale_qec(K, n_oscillators_per_level, p_physical, target_logical_rate, distances)</code><a class="headerlink" href="#build_multiscale_qeck-n_oscillators_per_level-p_physical-target_logical_rate-distances" title="Permanent link">&para;</a></h4>
+<p>Build the full MS-QEC hierarchy. Returns <code>MultiscaleQECResult</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>K</code></td>
+<td><code>ndarray</code></td>
+<td>required</td>
+<td>K_nm coupling matrix (<span class="arithmatex">\(n \times n\)</span>)</td>
+</tr>
+<tr>
+<td><code>n_oscillators_per_level</code></td>
+<td><code>int \| None</code></td>
+<td><code>4</code></td>
+<td>Logical qubits per level</td>
+</tr>
+<tr>
+<td><code>p_physical</code></td>
+<td><code>float</code></td>
+<td><code>0.003</code></td>
+<td>Hardware physical error rate</td>
+</tr>
+<tr>
+<td><code>target_logical_rate</code></td>
+<td><code>float</code></td>
+<td><code>1e-10</code></td>
+<td>Target effective <span class="arithmatex">\(p_L\)</span></td>
+</tr>
+<tr>
+<td><code>distances</code></td>
+<td><code>list[int] \| None</code></td>
+<td>auto</td>
+<td>Code distance per level</td>
+</tr>
+</tbody>
+</table>
+<p>Raises <code>ValueError</code> if <code>distances</code> length does not match number of active domains.</p>
+<h4 id="concatenated_logical_ratep_physical-distances-p_threshold-prefactor"><code>concatenated_logical_rate(p_physical, distances, p_threshold, prefactor)</code><a class="headerlink" href="#concatenated_logical_ratep_physical-distances-p_threshold-prefactor" title="Permanent link">&para;</a></h4>
+<p>Compute iterative logical error rates. Returns <code>list[float]</code>.
+Rust-accelerated when engine available.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>p_physical</code></td>
+<td><code>float</code></td>
+<td>required</td>
+<td>Base physical error rate</td>
+</tr>
+<tr>
+<td><code>distances</code></td>
+<td><code>list[int]</code></td>
+<td>required</td>
+<td>Code distance per level</td>
+</tr>
+<tr>
+<td><code>p_threshold</code></td>
+<td><code>float</code></td>
+<td><code>0.01</code></td>
+<td>Surface code threshold</td>
+</tr>
+<tr>
+<td><code>prefactor</code></td>
+<td><code>float</code></td>
+<td><code>0.1</code></td>
+<td>Empirical prefactor <span class="arithmatex">\(A\)</span></td>
+</tr>
+</tbody>
+</table>
+<h4 id="syndrome_flow_analysisk-result"><code>syndrome_flow_analysis(K, result)</code><a class="headerlink" href="#syndrome_flow_analysisk-result" title="Permanent link">&para;</a></h4>
+<p>Analyse syndrome information flow between adjacent levels.
+Returns <code>list[SyndromeFlow]</code> with <span class="arithmatex">\(L - 1\)</span> entries for <span class="arithmatex">\(L\)</span> levels.</p>
+<h4 id="knm_between_domainsk-domain_a-domain_b"><code>knm_between_domains(K, domain_a, domain_b)</code><a class="headerlink" href="#knm_between_domainsk-domain_a-domain_b" title="Permanent link">&para;</a></h4>
+<p>Mean K_nm coupling between two SCPN domain ranges.
+Rust-accelerated when engine available. Returns <code>float</code>.</p>
+<h3 id="constants">Constants<a class="headerlink" href="#constants" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Constant</th>
+<th>Value</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SURFACE_CODE_THRESHOLD</code></td>
+<td>0.01</td>
+<td>Raussendorf et al. 2007</td>
+</tr>
+<tr>
+<td><code>SURFACE_CODE_PREFACTOR</code></td>
+<td>0.1</td>
+<td>Empirical fit</td>
+</tr>
+<tr>
+<td><code>SCPN_DOMAINS</code></td>
+<td>5 domains</td>
+<td>SCPN Paper 27</td>
+</tr>
+</tbody>
+</table>
+<h3 id="rust-engine-api">Rust Engine API<a class="headerlink" href="#rust-engine-api" title="Permanent link">&para;</a></h3>
+<p>The following functions are available via <code>import scpn_quantum_engine</code>:</p>
+<h4 id="concatenated_logical_rate_rustp_physical-distances-p_threshold-prefactor"><code>concatenated_logical_rate_rust(p_physical, distances, p_threshold, prefactor)</code><a class="headerlink" href="#concatenated_logical_rate_rustp_physical-distances-p_threshold-prefactor" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>p_physical</code></td>
+<td><code>f64</code></td>
+<td>Base physical error rate</td>
+</tr>
+<tr>
+<td><code>distances</code></td>
+<td><code>ndarray[i64]</code></td>
+<td>Code distances per level</td>
+</tr>
+<tr>
+<td><code>p_threshold</code></td>
+<td><code>f64</code></td>
+<td>Surface code threshold</td>
+</tr>
+<tr>
+<td><code>prefactor</code></td>
+<td><code>f64</code></td>
+<td>Empirical prefactor</td>
+</tr>
+</tbody>
+</table>
+<p>Returns <code>ndarray[f64]</code> of logical error rates.</p>
+<h4 id="knm_domain_couplingk-a_start-a_end-b_start-b_end"><code>knm_domain_coupling(k, a_start, a_end, b_start, b_end)</code><a class="headerlink" href="#knm_domain_couplingk-a_start-a_end-b_start-b_end" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>k</code></td>
+<td><code>ndarray[f64, 2D]</code></td>
+<td>K_nm coupling matrix</td>
+</tr>
+<tr>
+<td><code>a_start</code>, <code>a_end</code></td>
+<td><code>usize</code></td>
+<td>Domain A layer range (inclusive)</td>
+</tr>
+<tr>
+<td><code>b_start</code>, <code>b_end</code></td>
+<td><code>usize</code></td>
+<td>Domain B layer range (inclusive)</td>
+</tr>
+</tbody>
+</table>
+<p>Returns <code>f64</code> — mean coupling between domains.</p>
+<h3 id="internal-functions">Internal Functions<a class="headerlink" href="#internal-functions" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Visibility</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>_active_domains(n)</code></td>
+<td>private</td>
+<td>Determine SCPN domains from K size</td>
+</tr>
+<tr>
+<td><code>_auto_distances(n_levels, p_phys, target)</code></td>
+<td>private</td>
+<td>Greedy distance selection</td>
+</tr>
+<tr>
+<td><code>_build_levels(...)</code></td>
+<td>private</td>
+<td>Construct QECLevel objects</td>
+</tr>
+<tr>
+<td><code>_check_double_exponential(rates, below)</code></td>
+<td>private</td>
+<td>Detect doubly-exp suppression</td>
+</tr>
+</tbody>
+</table>
+<h2 id="7-performance-benchmarks">7. Performance Benchmarks<a class="headerlink" href="#7-performance-benchmarks" title="Permanent link">&para;</a></h2>
+<p>All benchmarks measured on Intel i5-11600K, Python 3.12, Rust engine
+(scpn-quantum-engine 0.2.0, PyO3 0.25).</p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>n=16</th>
+<th>Engine</th>
+<th>Budget</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>concatenated_logical_rate</code> (5 levels)</td>
+<td>22 μs</td>
+<td>Rust</td>
+<td>&lt; 1 ms</td>
+</tr>
+<tr>
+<td><code>knm_between_domains</code></td>
+<td>24 μs</td>
+<td>Rust</td>
+<td>&lt; 1 ms</td>
+</tr>
+<tr>
+<td><code>build_multiscale_qec</code></td>
+<td>0.18 ms</td>
+<td>Rust (inner)</td>
+<td>&lt; 100 ms</td>
+</tr>
+<tr>
+<td><code>syndrome_flow_analysis</code> (4 flows)</td>
+<td>0.13 ms</td>
+<td>Rust (inner)</td>
+<td>&lt; 10 ms</td>
+</tr>
+</tbody>
+</table>
+<h3 id="rust-vs-python-speedup">Rust vs Python Speedup<a class="headerlink" href="#rust-vs-python-speedup" title="Permanent link">&para;</a></h3>
+<p>Test suite (23 tests) timing:
+- Without Rust engine: 6.23 s
+- With Rust engine: 0.32 s
+- <strong>Speedup: 19.5×</strong></p>
+<p>The speedup comes from two Rust functions in <code>scpn_quantum_engine</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Rust Function</th>
+<th>Python Equivalent</th>
+<th>Speedup Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>concatenated_logical_rate_rust</code></td>
+<td><code>concatenated_logical_rate</code></td>
+<td>Avoids Python loop + float overhead</td>
+</tr>
+<tr>
+<td><code>knm_domain_coupling</code></td>
+<td><code>knm_between_domains</code></td>
+<td>Avoids nested Python loop over K matrix</td>
+</tr>
+</tbody>
+</table>
+<p>Both are bound via PyO3 0.25 with numpy integration. The Rust functions
+are in <code>scpn_quantum_engine/src/concat_qec.rs</code> (164 lines, 7 unit tests).</p>
+<h3 id="scaling-with-number-of-levels">Scaling with Number of Levels<a class="headerlink" href="#scaling-with-number-of-levels" title="Permanent link">&para;</a></h3>
+<p>The computation cost is <span class="arithmatex">\(O(L)\)</span> where <span class="arithmatex">\(L\)</span> is the number of concatenation
+levels. For the standard 5-level SCPN hierarchy, all operations complete
+in sub-millisecond time.</p>
+<p>Measured scaling (1000 calls each, Intel i5-11600K):</p>
+<table>
+<thead>
+<tr>
+<th>Levels</th>
+<th><code>concatenated_logical_rate</code></th>
+<th><code>build_multiscale_qec</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>8 μs</td>
+<td>0.05 ms</td>
+</tr>
+<tr>
+<td>3</td>
+<td>14 μs</td>
+<td>0.10 ms</td>
+</tr>
+<tr>
+<td>5</td>
+<td>22 μs</td>
+<td>0.18 ms</td>
+</tr>
+<tr>
+<td>10</td>
+<td>38 μs</td>
+<td>0.35 ms</td>
+</tr>
+</tbody>
+</table>
+<p>Linear scaling as expected — no superlinear cost from concatenation.</p>
+<h3 id="test-coverage">Test Coverage<a class="headerlink" href="#test-coverage" title="Permanent link">&para;</a></h3>
+<p>23 tests across 6 dimensions:
+- Empty/null inputs: 5 tests (empty distances, single level, minimal matrix)
+- Error handling: 3 tests (mismatched distances, above threshold)
+- Negative cases: 3 tests (zero coupling, uniform coupling, d=1)
+- Pipeline integration: 5 tests (K_nm, syndrome flow, domain names, imports)
+- Roundtrip: 4 tests (monotonic rates, qubit counts, formula, double-exp)
+- Performance: 3 tests (wall-clock budgets for all hot paths)</p>
+<h3 id="resource-estimates-not-executable">Resource Estimates (Not Executable)<a class="headerlink" href="#resource-estimates-not-executable" title="Permanent link">&para;</a></h3>
+<p>For <span class="arithmatex">\(p_\text{phys} = 0.001\)</span>, target <span class="arithmatex">\(p_L = 10^{-10}\)</span>:</p>
+<table>
+<thead>
+<tr>
+<th>Configuration</th>
+<th>Total Physical Qubits</th>
+<th>Effective <span class="arithmatex">\(p_L\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Auto distances</td>
+<td>Varies (typically <span class="arithmatex">\(d = 3\)</span>–<span class="arithmatex">\(5\)</span>)</td>
+<td><span class="arithmatex">\(\leq 10^{-10}\)</span></td>
+</tr>
+<tr>
+<td>All <span class="arithmatex">\(d = 3\)</span></td>
+<td><span class="arithmatex">\(5 \times 4 \times 17 = 340\)</span></td>
+<td>Varies</td>
+</tr>
+<tr>
+<td>All <span class="arithmatex">\(d = 5\)</span></td>
+<td><span class="arithmatex">\(5 \times 4 \times 49 = 980\)</span></td>
+<td>Much lower</td>
+</tr>
+</tbody>
+</table>
+<p>Caveat: these are idealised estimates. Real hardware requires additional
+qubits for routing, ancilla preparation, and magic state distillation.</p>
+<h3 id="hardware-generation-projections">Hardware Generation Projections<a class="headerlink" href="#hardware-generation-projections" title="Permanent link">&para;</a></h3>
+<p>Resource requirements for 4 oscillators, 5 concatenation levels, target
+<span class="arithmatex">\(p_L = 10^{-10}\)</span>:</p>
+<table>
+<thead>
+<tr>
+<th>Hardware</th>
+<th><span class="arithmatex">\(p_\text{phys}\)</span></th>
+<th>Auto distances</th>
+<th>Total qubits</th>
+<th>Effective <span class="arithmatex">\(p_L\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IBM Heron r2 (2024)</td>
+<td>0.003</td>
+<td><span class="arithmatex">\([3, 43, 51, 51, 51]\)</span></td>
+<td>77,268</td>
+<td>above threshold at L1</td>
+</tr>
+<tr>
+<td>Google Willow-like</td>
+<td>0.001</td>
+<td><span class="arithmatex">\([3, 3, 3, 3, 3]\)</span></td>
+<td>340</td>
+<td><span class="arithmatex">\(\sim 10^{-10}\)</span></td>
+</tr>
+<tr>
+<td>Future (<span class="arithmatex">\(10^{-4}\)</span>)</td>
+<td>0.0001</td>
+<td><span class="arithmatex">\([3, 3, 3, 3, 3]\)</span></td>
+<td>340</td>
+<td><span class="arithmatex">\(\sim 10^{-40}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The dramatic difference: at <span class="arithmatex">\(p_\text{phys} = 0.003\)</span> (close to threshold),
+the first level produces <span class="arithmatex">\(p_L = 0.009\)</span> which is itself near threshold.
+Subsequent levels require huge distances to compensate. At <span class="arithmatex">\(p_\text{phys} = 0.001\)</span>
+(well below threshold), even <span class="arithmatex">\(d = 3\)</span> suffices at every level.</p>
+<h3 id="scaling-levels-vs-qubits-vs-error-rate">Scaling: Levels vs Qubits vs Error Rate<a class="headerlink" href="#scaling-levels-vs-qubits-vs-error-rate" title="Permanent link">&para;</a></h3>
+<p>For <span class="arithmatex">\(p_\text{phys} = 0.001\)</span>, all <span class="arithmatex">\(d = 5\)</span>:</p>
+<table>
+<thead>
+<tr>
+<th>Levels</th>
+<th>Total qubits</th>
+<th><span class="arithmatex">\(p_L\)</span></th>
+<th>Use case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>196</td>
+<td><span class="arithmatex">\(3.2 \times 10^{-5}\)</span></td>
+<td>Noisy demonstration</td>
+</tr>
+<tr>
+<td>2</td>
+<td>392</td>
+<td><span class="arithmatex">\(1.0 \times 10^{-8}\)</span></td>
+<td>Short computation</td>
+</tr>
+<tr>
+<td>3</td>
+<td>588</td>
+<td><span class="arithmatex">\(1.0 \times 10^{-15}\)</span></td>
+<td>Medium computation</td>
+</tr>
+<tr>
+<td>4</td>
+<td>784</td>
+<td><span class="arithmatex">\(&lt; 10^{-30}\)</span></td>
+<td>Long computation</td>
+</tr>
+<tr>
+<td>5</td>
+<td>980</td>
+<td><span class="arithmatex">\(&lt; 10^{-60}\)</span></td>
+<td>Arbitrary precision</td>
+</tr>
+</tbody>
+</table>
+<h2 id="8-citations">8. Citations<a class="headerlink" href="#8-citations" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>Knill, E. "Quantum computing with realistically noisy devices."
+   <em>Nature</em> <strong>434</strong>, 39–44 (2005). DOI: 10.1038/nature03350</p>
+</li>
+<li>
+<p>Aharonov, D. &amp; Ben-Or, M. "Fault-tolerant quantum computation with
+   constant error." <em>Proc. 29th Annual ACM Symposium on Theory of
+   Computing (STOC)</em>, 176–188 (1997). DOI: 10.1145/258533.258579</p>
+</li>
+<li>
+<p>Kitaev, A. "Fault-tolerant quantum computation by anyons."
+   <em>Annals of Physics</em> <strong>303</strong>, 2–30 (2003). DOI: 10.1016/S0003-4916(02)00018-0</p>
+</li>
+<li>
+<p>Gottesman, D. "An introduction to quantum error correction and
+   fault-tolerant quantum computation." arXiv:0904.2557 (2009).</p>
+</li>
+<li>
+<p>Raussendorf, R., Harrington, J. &amp; Goyal, K. "Topological
+   fault-tolerance in cluster state quantum computation."
+   <em>New J. Phys.</em> <strong>9</strong>, 199 (2007). DOI: 10.1088/1367-2630/9/6/199</p>
+</li>
+<li>
+<p>Google Quantum AI. "Quantum error correction below the surface code
+   threshold." arXiv:2408.13687 (2024).</p>
+</li>
+<li>
+<p>Šotek, M. "God of the Math — The SCPN Master Publications."
+   Zenodo (2025). DOI: 10.5281/zenodo.17419678</p>
+</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+    
+  </body>
+</html>
