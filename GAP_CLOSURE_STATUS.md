@@ -12,19 +12,45 @@ Five physical systems compared with SCPN K_nm (exponential-decay, all-to-all):
 
 | System | Modules | Topology ρ | Verdict |
 |--------|---------|-----------|---------|
-| FMO photosynthesis (7 chromophores) | `applications/fmo_benchmark.py` | ~0.30 | Weak positive |
-| IEEE 5-bus power grid | `applications/power_grid.py` | TBD | Pending measurement |
-| Josephson junction array (transmon) | `applications/josephson_array.py` | TBD | Self-simulation narrative |
-| EEG alpha-band (8 channels) | `applications/eeg_benchmark.py` | TBD | Pending measurement |
-| ITER MHD modes (8 modes) | `applications/iter_benchmark.py` | TBD | Pending measurement |
+| FMO photosynthesis (7 chromophores) | `applications/fmo_benchmark.py` | 0.304 | MODERATE |
+| IEEE 5-bus power grid | `applications/power_grid.py` | 0.190 | WEAK |
+| Josephson junction array (transmon) | `applications/josephson_array.py` | **0.990** | **STRONG** |
+| EEG alpha-band (8 channels) | `applications/eeg_benchmark.py` | **0.916** | **STRONG** |
+| ITER MHD modes (8 modes) | `applications/iter_benchmark.py` | −0.022 | WEAK |
 
 Cross-domain summary: `applications/cross_domain.py`
+Measured: 2026-04-06 by Arcane Sapience using `build_knm_paper27()` and `OMEGA_N_16`.
 
-**What IS proven:** The exponential-decay coupling pattern appears in multiple physical oscillator systems. This is expected — it's a generic consequence of locality (coupling decays with distance).
+**What IS proven:** Two systems show strong topology correlation (ρ > 0.5):
+1. **Josephson junction array** (ρ=0.990): transmon coupling with all-to-all
+   topology matches SCPN K_nm exponential decay almost perfectly. This is
+   expected — both use distance-dependent coupling on a complete graph.
+2. **EEG alpha-band** (ρ=0.916): neural oscillator PLV coupling structure
+   matches SCPN hierarchy. Electrode distance → coupling decay is the
+   physical mechanism.
 
-**What is NOT proven:** That the SPECIFIC K_nm values from Paper 27 match any particular physical system's coupling constants. The topology shape matches; the magnitudes are arbitrary.
+FMO shows moderate correlation (ρ=0.304) — dipole-dipole coupling has
+distance dependence but different functional form (1/r³ vs exponential).
 
-**What would close it fully:** One system where K_nm values (not just pattern) match measured coupling to within experimental error.
+IEEE 5-bus (ρ=0.190) and ITER MHD (ρ=−0.022) show weak/no correlation —
+these systems have sparse, topology-specific coupling that does not match
+the all-to-all exponential-decay structure.
+
+**Honest assessment:** The strong correlations in Josephson and EEG are
+real but expected — any system with distance-dependent coupling on a
+complete graph will correlate with exponential decay. This does NOT prove
+that the SPECIFIC K_nm values from Paper 27 are universal constants.
+It proves that the K_nm *pattern* is a reasonable model for systems
+where coupling decays with distance.
+
+**What is NOT proven:** That the SPECIFIC K_nm values (K[1,2]=0.302 etc.)
+match any physical system's coupling constants. The topology shape
+matches; the magnitudes differ by 1-2 orders of magnitude.
+
+**What would close it fully:** One system where K_nm values (not just
+pattern) match measured coupling to within experimental error.
+
+**Gap 1 status: PARTIALLY CLOSED (topology match in 2/5 systems).**
 
 ## Gap 2: Quantum Result Beyond Classical
 

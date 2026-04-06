@@ -8,7 +8,7 @@
 """NISQ quantum simulation of coupled Kuramoto oscillator networks via XY Hamiltonian mapping."""
 
 # Subpackage-level access for new modules
-from . import analysis, applications, gauge, l16, pgbo, ssgf, tcbo
+from . import analysis, applications, fep, gauge, l16, pgbo, psi_field, ssgf, tcbo
 from .applications.eeg_classification import eeg_plv_to_vqe, eeg_quantum_kernel
 from .benchmarks.quantum_advantage import (
     AdvantageResult,
@@ -83,6 +83,13 @@ from .phase.xy_kuramoto import QuantumKuramotoSolver
 from .qec.biological_surface_code import BiologicalMWPMDecoder, BiologicalSurfaceCode
 from .qec.control_qec import ControlQEC
 from .qec.fault_tolerant import FaultTolerantUPDE, LogicalQubit
+from .qec.multiscale_qec import (
+    MultiscaleQECResult,
+    QECLevel,
+    build_multiscale_qec,
+    concatenated_logical_rate,
+    syndrome_flow_analysis,
+)
 from .qec.surface_code_upde import SurfaceCodeSpec, SurfaceCodeUPDE
 from .qsnn.dynamic_coupling import DynamicCouplingEngine
 from .qsnn.qlayer import QuantumDenseLayer
@@ -147,6 +154,11 @@ __all__ = [
     "LogicalQubit",
     "SurfaceCodeSpec",
     "SurfaceCodeUPDE",
+    "MultiscaleQECResult",
+    "QECLevel",
+    "build_multiscale_qec",
+    "concatenated_logical_rate",
+    "syndrome_flow_analysis",
     "QuantumLIFNeuron",
     "QuantumSynapse",
     "QuantumSTDP",
@@ -183,5 +195,7 @@ __all__ = [
     "ssgf",
     "tcbo",
     "pgbo",
+    "psi_field",
+    "fep",
     "l16",
 ]

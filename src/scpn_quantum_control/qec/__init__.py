@@ -18,6 +18,14 @@ from .error_budget import (
     minimum_code_distance,
 )
 from .fault_tolerant import FaultTolerantUPDE, LogicalQubit, RepetitionCodeUPDE
+from .multiscale_qec import (
+    MultiscaleQECResult,
+    QECLevel,
+    SyndromeFlow,
+    build_multiscale_qec,
+    concatenated_logical_rate,
+    syndrome_flow_analysis,
+)
 from .surface_code_upde import SurfaceCodeSpec, SurfaceCodeUPDE
 
 __all__ = [
@@ -34,4 +42,10 @@ __all__ = [
     "LogicalQubit",
     "SurfaceCodeSpec",
     "SurfaceCodeUPDE",
+    "MultiscaleQECResult",
+    "QECLevel",
+    "SyndromeFlow",
+    "build_multiscale_qec",
+    "concatenated_logical_rate",
+    "syndrome_flow_analysis",
 ]
