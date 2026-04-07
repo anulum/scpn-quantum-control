@@ -18,6 +18,8 @@ use ndarray::Array1;
 use numpy::{PyArray1, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::prelude::*;
 
+use crate::validation::validate_positive;
+
 /// Classical Kuramoto ODE step (vectorised, no Python overhead).
 /// θ' = ω + K @ sin(��_outer − θ_inner)
 /// Returns new θ after n_steps of Euler integration.
@@ -29,7 +31,8 @@ pub fn kuramoto_euler<'py>(
     k: PyReadonlyArray2<'_, f64>,
     dt: f64,
     n_steps: usize,
-) -> Bound<'py, PyArray1<f64>> {
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    validate_positive(dt, "dt")?;
     let mut theta = theta0.as_array().to_owned();
     let omega = omega.as_array();
     let k = k.as_array();
@@ -48,7 +51,7 @@ pub fn kuramoto_euler<'py>(
         }
     }
 
-    PyArray1::from_owned_array(py, theta)
+    Ok(PyArray1::from_owned_array(py, theta))
 }
 
 /// Compute Kuramoto order parameter R from phase array.
@@ -80,7 +83,8 @@ pub fn kuramoto_trajectory<'py>(
     k: PyReadonlyArray2<'_, f64>,
     dt: f64,
     n_steps: usize,
-) -> (Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>) {
+) -> PyResult<(Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>)> {
+    validate_positive(dt, "dt")?;
     let mut theta = theta0.as_array().to_owned();
     let omega_arr = omega.as_array();
     let k_arr = k.as_array();
@@ -108,10 +112,10 @@ pub fn kuramoto_trajectory<'py>(
         r_values[step + 1] = order_parameter_inner(theta.as_slice().unwrap());
     }
 
-    (
+    Ok((
         PyArray1::from_owned_array(py, times),
         PyArray1::from_owned_array(py, r_values),
-    )
+    ))
 }
 
 #[cfg(test)]
