@@ -58,6 +58,11 @@ from .control.qpetri import QuantumPetriNet
 from .control.topological_optimizer import TopologicalCouplingOptimizer
 from .control.vqls_gs import VQLS_GradShafranov
 from .hardware.fast_classical import fast_sparse_evolution
+from .hardware.qubit_mapper import (
+    ExecutionRegion,
+    QubitMappingResult,
+    dynq_initial_layout,
+)
 from .hardware.runner import HardwareRunner, JobResult
 from .hardware.trapped_ion import transpile_for_trapped_ion, trapped_ion_noise_model
 from .identity.binding_spec import (
@@ -74,6 +79,12 @@ from .identity.ground_state import IdentityAttractor
 from .identity.identity_key import identity_fingerprint, prove_identity, verify_identity
 from .mitigation.compound_mitigation import compound_mitigate_pipeline
 from .mitigation.pec import PECResult, pauli_twirl_decompose, pec_sample
+from .mitigation.symmetry_decay import (
+    GUESSResult,
+    SymmetryDecayModel,
+    guess_extrapolate,
+    learn_symmetry_decay,
+)
 from .mitigation.zne import ZNEResult, gate_fold_circuit, zne_extrapolate
 from .phase.lindblad_engine import LindbladSyncEngine
 from .phase.phase_vqe import PhaseVQE
@@ -159,6 +170,13 @@ __all__ = [
     "build_multiscale_qec",
     "concatenated_logical_rate",
     "syndrome_flow_analysis",
+    "ExecutionRegion",
+    "QubitMappingResult",
+    "dynq_initial_layout",
+    "GUESSResult",
+    "SymmetryDecayModel",
+    "guess_extrapolate",
+    "learn_symmetry_decay",
     "QuantumLIFNeuron",
     "QuantumSynapse",
     "QuantumSTDP",
