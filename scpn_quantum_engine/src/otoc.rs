@@ -107,7 +107,7 @@ mod tests {
 
     #[test]
     fn test_otoc_t_zero_identity_w() {
-        // Identity check for logic
+        // W = V = I, F(0) = |⟨ψ|ψ⟩|² = 1
         let dim = 2;
         let evals: Vec<f64> = vec![0.0, 1.0];
         let w_eig = ndarray::Array2::eye(dim);
@@ -140,6 +140,6 @@ mod tests {
             f0 += (psi_e[j].conj() * s3[j]).re;
         }
 
-        assert!((f0 - 1.0).abs() < 1e-10);
+        assert!((f0 - 1.0).abs() < 1e-10, "F(0) with W=V=I should be 1, got {f0}");
     }
 }
