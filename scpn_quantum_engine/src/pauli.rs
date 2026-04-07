@@ -33,6 +33,9 @@ pub fn state_order_param_sparse(
 }
 
 /// Pure Rust order parameter from statevector (no PyO3).
+///
+/// Optimised via half-loop: iterate only over k with bit q=0, process
+/// pair (k, k|mask) together. Halves inner loop iterations.
 pub fn state_order_param_inner(re: &[f64], im: &[f64], n_osc: usize) -> f64 {
     let dim = re.len();
     let mut z_re = 0.0_f64;
@@ -44,15 +47,14 @@ pub fn state_order_param_inner(re: &[f64], im: &[f64], n_osc: usize) -> f64 {
         let mut exp_y = 0.0_f64;
 
         for k in 0..dim {
-            let flipped = k ^ mask;
-            let prod_re = re[k] * re[flipped] + im[k] * im[flipped];
-
-            exp_x += prod_re;
-
-            let bit = ((k >> q) & 1) as f64;
-            let sign = 1.0 - 2.0 * bit;
-            let prod_im = re[k] * im[flipped] - im[k] * re[flipped];
-            exp_y += sign * (-prod_im);
+            if (k & mask) != 0 {
+                continue;
+            }
+            let f = k | mask;
+            // ⟨ψ|X_q|ψ⟩ = 2 Re(ψ*[k] ψ[f]) for paired states
+            exp_x += 2.0 * (re[k] * re[f] + im[k] * im[f]);
+            // ⟨ψ|Y_q|ψ⟩ = 2 Im(ψ*[k] ψ[f]) (bit q=0→1 sign)
+            exp_y += 2.0 * (re[k] * im[f] - im[k] * re[f]);
         }
 
         z_re += exp_x;
@@ -79,33 +81,37 @@ pub fn expectation_pauli_fast(
     let im = psi_im.as_slice().unwrap();
     let dim = re.len();
 
+    let mask = 1usize << qubit;
     match pauli {
         0 => {
-            let mask = 1usize << qubit;
+            // ⟨X⟩: half-loop over pairs (k, k|mask)
             let mut result = 0.0;
             for k in 0..dim {
-                let f = k ^ mask;
-                result += re[k] * re[f] + im[k] * im[f];
+                if (k & mask) != 0 {
+                    continue;
+                }
+                let f = k | mask;
+                result += 2.0 * (re[k] * re[f] + im[k] * im[f]);
             }
             result
         }
         1 => {
-            let mask = 1usize << qubit;
+            // ⟨Y⟩: half-loop, sign from bit q=0→1
             let mut result = 0.0;
             for k in 0..dim {
-                let f = k ^ mask;
-                let bit = ((k >> qubit) & 1) as f64;
-                let sign = 2.0 * bit - 1.0;
-                let prod_im = re[k] * im[f] - im[k] * re[f];
-                result += sign * (-prod_im);
+                if (k & mask) != 0 {
+                    continue;
+                }
+                let f = k | mask;
+                result += 2.0 * (re[k] * im[f] - im[k] * re[f]);
             }
             result
         }
         _ => {
+            // ⟨Z⟩: full loop (each basis state contributes independently)
             let mut result = 0.0;
             for k in 0..dim {
-                let bit = ((k >> qubit) & 1) as f64;
-                let sign = 1.0 - 2.0 * bit;
+                let sign = if (k & mask) == 0 { 1.0 } else { -1.0 };
                 result += sign * (re[k] * re[k] + im[k] * im[k]);
             }
             result
@@ -137,13 +143,12 @@ pub fn all_xy_expectations<'py>(
         let mut ey = 0.0;
 
         for k in 0..dim {
-            let f = k ^ mask;
-            ex += re[k] * re[f] + im[k] * im[f];
-
-            let bit = ((k >> q) & 1) as f64;
-            let sign = 2.0 * bit - 1.0;
-            let prod_im = re[k] * im[f] - im[k] * re[f];
-            ey += sign * (-prod_im);
+            if (k & mask) != 0 {
+                continue;
+            }
+            let f = k | mask;
+            ex += 2.0 * (re[k] * re[f] + im[k] * im[f]);
+            ey += 2.0 * (re[k] * im[f] - im[k] * re[f]);
         }
 
         exp_x[q] = ex;
@@ -210,36 +215,33 @@ mod tests {
         assert!((x_exp - 1.0).abs() < 1e-10);
     }
 
-    /// Helper: pure Rust single-qubit Pauli expectation.
+    /// Helper: pure Rust single-qubit Pauli expectation (mirrors production code).
     fn expectation_pauli_fast_inner(re: &[f64], im: &[f64], qubit: usize, pauli: usize) -> f64 {
         let dim = re.len();
+        let mask = 1usize << qubit;
         match pauli {
             0 => {
-                let mask = 1usize << qubit;
                 let mut result = 0.0;
                 for k in 0..dim {
-                    let f = k ^ mask;
-                    result += re[k] * re[f] + im[k] * im[f];
+                    if (k & mask) != 0 { continue; }
+                    let f = k | mask;
+                    result += 2.0 * (re[k] * re[f] + im[k] * im[f]);
                 }
                 result
             }
             1 => {
-                let mask = 1usize << qubit;
                 let mut result = 0.0;
                 for k in 0..dim {
-                    let f = k ^ mask;
-                    let bit = ((k >> qubit) & 1) as f64;
-                    let sign = 2.0 * bit - 1.0;
-                    let prod_im = re[k] * im[f] - im[k] * re[f];
-                    result += sign * (-prod_im);
+                    if (k & mask) != 0 { continue; }
+                    let f = k | mask;
+                    result += 2.0 * (re[k] * im[f] - im[k] * re[f]);
                 }
                 result
             }
             _ => {
                 let mut result = 0.0;
                 for k in 0..dim {
-                    let bit = ((k >> qubit) & 1) as f64;
-                    let sign = 1.0 - 2.0 * bit;
+                    let sign = if (k & mask) == 0 { 1.0 } else { -1.0 };
                     result += sign * (re[k] * re[k] + im[k] * im[k]);
                 }
                 result

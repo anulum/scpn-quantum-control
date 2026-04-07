@@ -73,12 +73,26 @@ class QuantumKuramotoSolver:
 
         R*exp(i*psi) = (1/N) sum_j (<X_j> + i<Y_j>)
         """
-        z_complex = 0.0 + 0.0j
-        for j in range(self.n):
-            exp_x = float(sv.expectation_value(self._pauli_op("X", j)).real)
-            exp_y = float(sv.expectation_value(self._pauli_op("Y", j)).real)
-            z_complex += exp_x + 1j * exp_y
-        z_complex /= self.n
+        try:
+            import scpn_quantum_engine as _engine
+
+            # Fast Rust path: compute all X,Y expectations in one parallel pass
+            sv_arr = np.asarray(sv.data)
+            exp_x, exp_y = _engine.all_xy_expectations(
+                sv_arr.real.astype(np.float64),
+                sv_arr.imag.astype(np.float64),
+                self.n,
+            )
+            z_complex = complex(np.sum(exp_x) + 1j * np.sum(exp_y)) / self.n
+        except (ImportError, AttributeError):
+            # Fallback to slow Qiskit path
+            z_complex = 0.0 + 0.0j
+            for j in range(self.n):
+                exp_x = float(sv.expectation_value(self._pauli_op("X", j)).real)
+                exp_y = float(sv.expectation_value(self._pauli_op("Y", j)).real)
+                z_complex += exp_x + 1j * exp_y
+            z_complex /= self.n
+
         R = float(abs(z_complex))
         psi = float(np.angle(z_complex))
         return R, psi
