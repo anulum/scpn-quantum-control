@@ -4,7 +4,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 
-FROM python:3.12-slim
+FROM python:3.12-slim@sha256:3d5ed973e45820f5ba5e46bd065bd88b3a504ff0724d85980dcd05eab361fcf4
 
 LABEL org.opencontainers.image.title="scpn-quantum-control"
 LABEL org.opencontainers.image.description="NISQ quantum simulation of coupled Kuramoto oscillator networks"
