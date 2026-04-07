@@ -15,6 +15,8 @@
 use pyo3::prelude::*;
 use rand::prelude::*;
 
+use crate::validation::{validate_n, validate_positive};
+
 /// Monte Carlo XY model simulation on arbitrary coupling graph.
 ///
 /// Returns (energy, order_parameter, helicity_modulus) averaged over n_measure sweeps.
@@ -26,7 +28,9 @@ pub fn mc_xy_simulate(
     n_thermalize: usize,
     n_measure: usize,
     seed: u64,
-) -> (f64, f64, f64) {
+) -> PyResult<(f64, f64, f64)> {
+    validate_n(n, "n")?;
+    validate_positive(temperature, "temperature")?;
     let k_data = k_flat.as_slice().unwrap();
     let beta = if temperature > 1e-15 {
         1.0 / temperature
@@ -67,7 +71,7 @@ pub fn mc_xy_simulate(
     let order = r_sum / nm;
     let rho_s = (cos_sum_acc / nm - beta * sin2_sum_acc / nm) / n as f64;
 
-    (energy, order, rho_s)
+    Ok((energy, order, rho_s))
 }
 
 /// Single Metropolis sweep over all sites.
