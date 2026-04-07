@@ -4,9 +4,27 @@ All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 
-## [0.9.5] - 2026-03-29 / 2026-04-01
+## [0.9.5] - 2026-03-29 / 2026-04-07
 
-### Added
+### Added (2026-04-06 — 2026-04-07)
+- **Multi-Scale QEC** (`qec/multiscale_qec.py`, `qec/syndrome_flow.py`): concatenated surface codes across 5 SCPN domains. Knill 2005 threshold, K_nm-weighted syndrome flow, Rust-accelerated via `concat_qec.rs`. 23 STRONG tests.
+- **Free Energy Principle** (`fep/variational_free_energy.py`, `fep/predictive_coding.py`): Friston 2010 variational F = complexity + accuracy, hierarchical prediction errors, KL divergence, ELBO gradient. Rust-accelerated via `fep.rs`. 16 STRONG tests.
+- **Ψ-field Lattice Gauge** (`psi_field/lattice.py`, `psi_field/infoton.py`, `psi_field/scpn_mapping.py`, `psi_field/observables.py`): U(1) compact gauge theory with HMC, gauge-covariant kinetic (Rothe convention), Polyakov loops, topological charge, string tension. Rust-accelerated via `gauge_lattice.rs`. 22 STRONG tests.
+- **K_nm validation completed**: IEEE 5-bus (ρ=0.881), Josephson (ρ=0.990), EEG (ρ=0.916), ITER MHD (ρ=0.944) — all 5 physical systems now measured.
+- **SUPERIOR documentation**: 567+ line docs for MS-QEC, FEP, and Ψ-field (8 mandatory sections each).
+- **ripser** added to `[topology]` optional-dependencies in pyproject.toml.
+
+### Changed (2026-04-06 — 2026-04-07)
+- **Rust engine refactored**: `lib.rs` god file (1436 lines) split into 16 focused modules + 3 new Rust paths (`concat_qec.rs`, `fep.rs`, `gauge_lattice.rs`). 22→25 exported functions.
+- **OTOC optimised**: avoid full W(t) matrix construction per time point — O(d) phase rotation instead of O(d²) matrix build. 4.4× faster (benchmarked n=4, 50 time points).
+- **Pauli expectations optimised**: half-loop over paired states halves inner iterations. 2–10× faster across `state_order_param_sparse` and `all_xy_expectations`.
+- **Kuramoto order parameter**: Rust fast path via `all_xy_expectations` eliminates 2n individual Qiskit `expectation_value` calls per Trotter step.
+- **CI dependencies pinned**: Dockerfile base image SHA256, `build==1.4.2`, `pip-audit==2.9.0`, `sc-neurocore==3.14.0`.
+- **Dev deps bumped**: ruff 0.15.6→0.15.9, mypy 1.19.1→1.20.0, hypothesis 6.151.10→6.151.11.
+- **God file split**: `multiscale_qec.py` (346 lines) → `multiscale_qec.py` (292) + `syndrome_flow.py` (66).
+- Tests 2715 → 4445+ (0 failures), Rust tests 47 → 65.
+
+### Added (2026-03-29 — 2026-04-01)
 - **10X Architecture**: Transitioned from static VQE to a dynamic 'Strange Loop' co-evolution engine.
 - **Dynamic Coupling**: 'DynamicCouplingEngine' for Quantum Hebbian Learning (micro-entanglement driving macro-topology).
 - **Topological Optimization**: 'TopologicalCouplingOptimizer' and 'HardwareTopologicalOptimizer' using Persistent Homology ($p_{h1}$) as a loss function on IBM hardware.
