@@ -57,6 +57,7 @@ docs = ["mkdocs>=1.6,<2.0", "mkdocs-material>=9.0,<10.0", "pymdown-extensions>=1
 ibm = ["qiskit-ibm-runtime>=0.20.0,<1.0"]
 tensor = ["quimb>=1.10,<2.0"]
 mitigation = ["mitiq>=0.30,<2.0"]
+topology = ["ripser>=0.6,<1.0"]
 opensys = ["qutip>=5.0,<6.0"]
 pennylane = ["pennylane>=0.40,<1.0"]
 all = ["scpn-quantum-control[viz,gpu,ibm,rust,tensor,mitigation,opensys,pennylane]"]
