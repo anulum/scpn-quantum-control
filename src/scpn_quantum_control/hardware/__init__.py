@@ -40,6 +40,14 @@ from .experiments import (
     zne_higher_order_experiment,
 )
 from .noise_model import heron_r2_noise_model
+from .qubit_mapper import (
+    ExecutionRegion,
+    QubitMappingResult,
+    build_calibration_graph,
+    detect_execution_regions,
+    dynq_initial_layout,
+    select_best_region,
+)
 from .runner import HardwareRunner, JobResult
 from .trapped_ion import transpile_for_trapped_ion, trapped_ion_noise_model
 
@@ -75,4 +83,10 @@ __all__ = [
     "JobResult",
     "trapped_ion_noise_model",
     "transpile_for_trapped_ion",
+    "ExecutionRegion",
+    "QubitMappingResult",
+    "build_calibration_graph",
+    "detect_execution_regions",
+    "dynq_initial_layout",
+    "select_best_region",
 ]
