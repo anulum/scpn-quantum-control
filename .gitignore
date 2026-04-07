@@ -48,3 +48,7 @@ paper/*.blg
 # Claude Code local config — never commit
 CLAUDE.md
 .claude/
+
+# Local backups — never committed
+BACKUP/
+ARCHIVE/
