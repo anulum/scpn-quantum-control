@@ -17,6 +17,13 @@ from .mitiq_integration import (
     zne_mitigated_expectation,
 )
 from .pec import PECResult, pauli_twirl_decompose, pec_sample
+from .symmetry_decay import (
+    GUESSResult,
+    SymmetryDecayModel,
+    guess_extrapolate,
+    learn_symmetry_decay,
+    xy_magnetisation_ideal,
+)
 from .symmetry_verification import (
     SymmetryVerificationResult,
     bitstring_parity,
@@ -51,4 +58,9 @@ __all__ = [
     "is_mitiq_available",
     "zne_mitigated_expectation",
     "ddd_mitigated_expectation",
+    "SymmetryDecayModel",
+    "GUESSResult",
+    "learn_symmetry_decay",
+    "guess_extrapolate",
+    "xy_magnetisation_ideal",
 ]
