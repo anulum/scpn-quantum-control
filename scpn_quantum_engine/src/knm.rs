@@ -16,6 +16,8 @@ use ndarray::Array2;
 use numpy::PyArray2;
 use pyo3::prelude::*;
 
+use crate::validation::{validate_n, validate_positive};
+
 /// Build K_nm coupling matrix from Paper 27 parameters.
 /// K_nm = K_base × exp(-alpha × |n - m|) with calibration anchors.
 #[pyfunction]
@@ -24,9 +26,12 @@ pub fn build_knm<'py>(
     n: usize,
     k_base: f64,
     alpha: f64,
-) -> Bound<'py, PyArray2<f64>> {
+) -> PyResult<Bound<'py, PyArray2<f64>>> {
+    validate_n(n, "n")?;
+    validate_positive(k_base, "k_base")?;
+    validate_positive(alpha, "alpha")?;
     let k = build_knm_inner(n, k_base, alpha);
-    PyArray2::from_owned_array(py, k)
+    Ok(PyArray2::from_owned_array(py, k))
 }
 
 /// Pure Rust implementation (no PyO3) for testing and internal use.

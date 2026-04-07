@@ -15,6 +15,12 @@ license = "AGPL-3.0-or-later"
 name = "scpn_quantum_engine"
 crate-type = ["cdylib"]
 
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+strip = "debuginfo"
+
 [dependencies]
 pyo3 = { version = "0.25", features = ["extension-module"] }
 ndarray = "0.16"

@@ -25,6 +25,7 @@
 use pyo3::prelude::*;
 
 pub mod complex_utils;
+pub mod validation;
 pub mod concat_qec;
 pub mod dla;
 pub mod fep;

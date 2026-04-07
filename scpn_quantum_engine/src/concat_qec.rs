@@ -17,6 +17,8 @@
 use numpy::{PyArray1, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::prelude::*;
 
+use crate::validation::{validate_domain_range, validate_positive, validate_range};
+
 /// Surface code logical error rate at given distance and physical rate.
 /// p_L = A × (p_phys / p_th)^((d+1)/2)
 fn logical_error_rate(
@@ -45,10 +47,13 @@ pub fn concatenated_logical_rate_rust<'py>(
     distances: PyReadonlyArray1<'_, i64>,
     p_threshold: f64,
     prefactor: f64,
-) -> Bound<'py, PyArray1<f64>> {
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    validate_range(p_physical, 0.0, 1.0, "p_physical")?;
+    validate_positive(p_threshold, "p_threshold")?;
+    validate_positive(prefactor, "prefactor")?;
     let dists = distances.as_slice().unwrap();
     let rates = concatenated_rates_inner(p_physical, dists, p_threshold, prefactor);
-    PyArray1::from_vec(py, rates)
+    Ok(PyArray1::from_vec(py, rates))
 }
 
 /// Pure Rust implementation (no PyO3).
@@ -79,17 +84,17 @@ pub fn knm_domain_coupling(
     a_end: usize,
     b_start: usize,
     b_end: usize,
-) -> f64 {
+) -> PyResult<f64> {
     let k_arr = k.as_array();
     let n = k_arr.nrows();
+    validate_domain_range(a_start, a_end, n, "domain_a")?;
+    validate_domain_range(b_start, b_end, n, "domain_b")?;
+
     let mut total = 0.0f64;
     let mut count = 0usize;
 
-    let a_end_clamped = a_end.min(n - 1);
-    let b_end_clamped = b_end.min(n - 1);
-
-    for i in a_start..=a_end_clamped {
-        for j in b_start..=b_end_clamped {
+    for i in a_start..=a_end {
+        for j in b_start..=b_end {
             if i != j && i < n && j < n {
                 total += k_arr[[i, j]];
                 count += 1;
@@ -97,11 +102,11 @@ pub fn knm_domain_coupling(
         }
     }
 
-    if count > 0 {
+    Ok(if count > 0 {
         total / count as f64
     } else {
         0.0
-    }
+    })
 }
 
 #[cfg(test)]

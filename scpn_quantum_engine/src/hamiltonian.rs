@@ -16,6 +16,8 @@
 use numpy::{PyArray1, PyReadonlyArray1};
 use pyo3::prelude::*;
 
+use crate::validation::{validate_finite, validate_flat_square, validate_n};
+
 /// Build dense XY Hamiltonian directly from K coupling and ω frequencies.
 ///
 /// Returns flat real array (XY Hamiltonian is real in computational basis).
@@ -26,9 +28,13 @@ pub fn build_xy_hamiltonian_dense<'py>(
     k_flat: PyReadonlyArray1<'_, f64>,
     omega: PyReadonlyArray1<'_, f64>,
     n: usize,
-) -> Bound<'py, PyArray1<f64>> {
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    validate_n(n, "n")?;
     let k = k_flat.as_slice().unwrap();
     let w = omega.as_slice().unwrap();
+    validate_flat_square(k, n, "k_flat")?;
+    validate_finite(k, "k_flat")?;
+    validate_finite(w, "omega")?;
     let dim = 1usize << n;
     let mut h = vec![0.0f64; dim * dim];
 
@@ -58,7 +64,7 @@ pub fn build_xy_hamiltonian_dense<'py>(
         }
     }
 
-    PyArray1::from_vec(py, h)
+    Ok(PyArray1::from_vec(py, h))
 }
 
 /// Build sparse XY Hamiltonian as COO triplets (rows, cols, vals).
@@ -72,13 +78,15 @@ pub fn build_sparse_xy_hamiltonian<'py>(
     k_flat: PyReadonlyArray1<'_, f64>,
     omega: PyReadonlyArray1<'_, f64>,
     n: usize,
-) -> (
+) -> PyResult<(
     Bound<'py, PyArray1<i64>>,
     Bound<'py, PyArray1<i64>>,
     Bound<'py, PyArray1<f64>>,
-) {
+)> {
+    validate_n(n, "n")?;
     let k = k_flat.as_slice().unwrap();
     let om = omega.as_slice().unwrap();
+    validate_flat_square(k, n, "k_flat")?;
     let dim = 1usize << n;
 
     let mut rows: Vec<i64> = Vec::new();
@@ -119,11 +127,11 @@ pub fn build_sparse_xy_hamiltonian<'py>(
         }
     }
 
-    (
+    Ok((
         PyArray1::from_vec(py, rows),
         PyArray1::from_vec(py, cols),
         PyArray1::from_vec(py, vals),
-    )
+    ))
 }
 
 #[cfg(test)]
