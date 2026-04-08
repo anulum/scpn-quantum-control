@@ -21,7 +21,7 @@ use numpy::{PyArray1, PyReadonlyArray1};
 use pyo3::prelude::*;
 use rayon::prelude::*;
 
-use crate::complex_utils::{c64, cmat_from_flat, conj_transpose, ct_matvec, cvec_from_parts, C64};
+use crate::complex_utils::{c64, cmat_from_flat, conj_transpose, ct_matvec, cvec_from_parts};
 
 /// OTOC F(t) via eigendecomposition, parallel across time points (rayon).
 /// Highly optimized O(d) phase applications + O(d²) mat-vec.
@@ -40,7 +40,8 @@ pub fn otoc_from_eigendecomp<'py>(
     psi_im: PyReadonlyArray1<'_, f64>,
     times: PyReadonlyArray1<'_, f64>,
     dim: usize,
-) -> Bound<'py, PyArray1<f64>> {
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    crate::validation::validate_n(dim, "dim")?;
     let evals = eigenvalues.as_slice().unwrap();
     let u = cmat_from_flat(
         eigvecs_re.as_slice().unwrap(),
@@ -98,7 +99,7 @@ pub fn otoc_from_eigendecomp<'py>(
         })
         .collect();
 
-    PyArray1::from_owned_array(py, Array1::from_vec(results))
+    Ok(PyArray1::from_owned_array(py, Array1::from_vec(results)))
 }
 
 #[cfg(test)]

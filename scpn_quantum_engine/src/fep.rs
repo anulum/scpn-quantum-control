@@ -19,6 +19,8 @@ use ndarray::Array1;
 use numpy::{PyArray1, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::prelude::*;
 
+use crate::validation::validate_n;
+
 /// Free energy gradient ∂F/∂μ for belief update dynamics.
 ///
 /// ∂F/∂μ = K_reg × μ − Γ × (x − μ)
@@ -33,12 +35,13 @@ pub fn free_energy_gradient_rust<'py>(
     k_precision: PyReadonlyArray2<'_, f64>,
     sensory_precision: PyReadonlyArray2<'_, f64>,
     ridge: f64,
-) -> Bound<'py, PyArray1<f64>> {
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
     let mu_arr = mu.as_array();
     let x_arr = x_observed.as_array();
     let k_arr = k_precision.as_array();
     let gamma = sensory_precision.as_array();
     let n = mu_arr.len();
+    validate_n(n, "mu")?;
 
     let mut grad = Array1::<f64>::zeros(n);
 
@@ -59,7 +62,7 @@ pub fn free_energy_gradient_rust<'py>(
         grad[i] -= error_contrib;
     }
 
-    PyArray1::from_owned_array(py, grad)
+    Ok(PyArray1::from_owned_array(py, grad))
 }
 
 /// Hierarchical prediction error across SCPN layers.
@@ -73,14 +76,15 @@ pub fn hierarchical_prediction_error_rust<'py>(
     observations: PyReadonlyArray1<'_, f64>,
     beliefs: PyReadonlyArray1<'_, f64>,
     k: PyReadonlyArray2<'_, f64>,
-) -> Bound<'py, PyArray1<f64>> {
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
     let x = observations.as_array();
     let mu = beliefs.as_array();
     let k_arr = k.as_array();
     let n = x.len();
+    validate_n(n, "observations")?;
 
     let errors = prediction_error_inner(x.as_slice().unwrap(), mu.as_slice().unwrap(), &k_arr, n);
-    PyArray1::from_owned_array(py, Array1::from_vec(errors))
+    Ok(PyArray1::from_owned_array(py, Array1::from_vec(errors)))
 }
 
 /// Pure Rust prediction error (no PyO3).
@@ -127,8 +131,11 @@ pub fn variational_free_energy_rust(
     sensory_precision: PyReadonlyArray2<'_, f64>,
     sigma_diag: f64,
     ridge: f64,
-) -> (f64, f64, f64) {
+) -> PyResult<(f64, f64, f64)> {
+    crate::validation::validate_positive(sigma_diag, "sigma_diag")?;
+
     let mu_arr = mu.as_array();
+    validate_n(mu_arr.len(), "mu")?;
     let x_arr = x_observed.as_array();
     let k_arr = k_precision.as_array();
     let gamma = sensory_precision.as_array();
@@ -171,7 +178,7 @@ pub fn variational_free_energy_rust(
     accuracy *= 0.5;
 
     let free_energy = complexity + accuracy;
-    (free_energy, complexity, accuracy)
+    Ok((free_energy, complexity, accuracy))
 }
 
 #[cfg(test)]

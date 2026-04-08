@@ -17,6 +17,8 @@ use numpy::{PyArray1, PyReadonlyArray1};
 use pyo3::prelude::*;
 use rayon::prelude::*;
 
+use crate::validation::validate_n;
+
 /// Brute-force optimal binary MPC: enumerate all 2^horizon action sequences.
 /// Parallelised with rayon for horizon > 10.
 ///
@@ -28,14 +30,22 @@ pub fn brute_mpc<'py>(
     target: PyReadonlyArray1<'_, f64>,
     _dim: usize,
     horizon: usize,
-) -> (
+) -> PyResult<(
     Bound<'py, PyArray1<i64>>,
     f64,
     Bound<'py, PyArray1<f64>>,
     usize,
-) {
+)> {
+    validate_n(horizon, "horizon")?;
+    if horizon > 25 {
+        return Err(pyo3::exceptions::PyValueError::new_err(format!(
+            "horizon={horizon} too large (max 25, would allocate 2^{horizon} entries)"
+        )));
+    }
     let b_data = b_flat.as_slice().unwrap();
     let t_data = target.as_slice().unwrap();
+    validate_n(b_data.len(), "b_flat")?;
+    validate_n(t_data.len(), "target")?;
     let n_actions = 1usize << horizon;
 
     let b_norm: f64 = b_data.iter().map(|x| x * x).sum::<f64>().sqrt();
@@ -70,12 +80,12 @@ pub fn brute_mpc<'py>(
     let actions_arr = Array1::from_vec(best_actions);
     let costs_arr = Array1::from_vec(costs);
 
-    (
+    Ok((
         PyArray1::from_owned_array(py, actions_arr),
         best_cost,
         PyArray1::from_owned_array(py, costs_arr),
         n_actions,
-    )
+    ))
 }
 
 #[cfg(test)]

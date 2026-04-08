@@ -33,11 +33,14 @@ pub fn lanczos_b_coefficients(
     dim: usize,
     max_steps: usize,
     tol: f64,
-) -> Vec<f64> {
+) -> PyResult<Vec<f64>> {
+    crate::validation::validate_n(dim, "dim")?;
+    crate::validation::validate_n(max_steps, "max_steps")?;
+    crate::validation::validate_positive(tol, "tol")?;
     let h = cmat_from_flat(h_re.as_slice().unwrap(), h_im.as_slice().unwrap(), dim);
     let o_init = cmat_from_flat(o_re.as_slice().unwrap(), o_im.as_slice().unwrap(), dim);
 
-    lanczos_b_inner(&h, &o_init, max_steps, tol)
+    Ok(lanczos_b_inner(&h, &o_init, max_steps, tol))
 }
 
 /// Pure Rust Lanczos (no PyO3) for testing and internal use.
