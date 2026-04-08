@@ -18,6 +18,8 @@
 use numpy::{PyArray1, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::prelude::*;
 
+use crate::validation::validate_positive;
+
 /// Compute total plaquette action and mean plaquette for triangle plaquettes.
 ///
 /// Each plaquette (i,j,k) contributes Re(U_ij U_jk U_ki†) = cos(A_ij + A_jk − A_ik).
@@ -36,7 +38,8 @@ pub fn plaquette_action_batch(
     triangle_signs: PyReadonlyArray1<'_, f64>,
     n_triangles: usize,
     beta: f64,
-) -> (f64, f64) {
+) -> PyResult<(f64, f64)> {
+    validate_positive(beta, "beta")?;
     let a = links.as_slice().unwrap();
     let tri = triangles.as_slice().unwrap();
     let signs = triangle_signs.as_slice().unwrap();
@@ -60,7 +63,7 @@ pub fn plaquette_action_batch(
         0.0
     };
     let action = -beta * total;
-    (mean, action)
+    Ok((mean, action))
 }
 
 /// Compute force dS/dA for each link from triangle plaquettes.
@@ -76,7 +79,9 @@ pub fn gauge_force_batch<'py>(
     n_triangles: usize,
     n_edges: usize,
     beta: f64,
-) -> Bound<'py, PyArray1<f64>> {
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    validate_positive(beta, "beta")?;
+    crate::validation::validate_n(n_edges, "n_edges")?;
     let a = links.as_slice().unwrap();
     let tri = triangles.as_slice().unwrap();
     let signs = triangle_signs.as_slice().unwrap();
@@ -100,7 +105,7 @@ pub fn gauge_force_batch<'py>(
         }
     }
 
-    PyArray1::from_vec(py, force)
+    Ok(PyArray1::from_vec(py, force))
 }
 
 /// Gauge-covariant kinetic energy (hopping term).
@@ -115,7 +120,7 @@ pub fn gauge_covariant_kinetic_rust(
     links: PyReadonlyArray1<'_, f64>,
     edges: PyReadonlyArray2<'_, i64>,
     g_coupling: f64,
-) -> f64 {
+) -> PyResult<f64> {
     let pr = phi_re.as_slice().unwrap();
     let pi = phi_im.as_slice().unwrap();
     let a = links.as_slice().unwrap();
@@ -144,7 +149,7 @@ pub fn gauge_covariant_kinetic_rust(
         total += rho_i + rho_j - 2.0 * hopping_re;
     }
 
-    total
+    Ok(total)
 }
 
 /// Topological charge Q = (1/2π) Σ_plaq wrap(phase_plaq).
@@ -154,7 +159,7 @@ pub fn topological_charge_rust(
     triangles: PyReadonlyArray1<'_, i64>,
     triangle_signs: PyReadonlyArray1<'_, f64>,
     n_triangles: usize,
-) -> f64 {
+) -> PyResult<f64> {
     let a = links.as_slice().unwrap();
     let tri = triangles.as_slice().unwrap();
     let signs = triangle_signs.as_slice().unwrap();
@@ -176,7 +181,7 @@ pub fn topological_charge_rust(
         q += wrapped;
     }
 
-    q / two_pi
+    Ok(q / two_pi)
 }
 
 #[cfg(test)]

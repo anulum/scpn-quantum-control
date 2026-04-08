@@ -17,10 +17,18 @@ use pyo3::prelude::*;
 use rand::prelude::*;
 use rayon::prelude::*;
 
+use crate::validation::validate_range;
+
 /// PEC quasi-probability coefficients for single-qubit depolarising channel.
 /// Returns [q_I, q_X, q_Y, q_Z].
 #[pyfunction]
-pub fn pec_coefficients(gate_error_rate: f64) -> [f64; 4] {
+pub fn pec_coefficients(gate_error_rate: f64) -> PyResult<[f64; 4]> {
+    validate_range(gate_error_rate, 0.0, 0.749, "gate_error_rate")?;
+    Ok(pec_coefficients_inner(gate_error_rate))
+}
+
+/// Pure Rust PEC coefficients (no PyO3).
+pub fn pec_coefficients_inner(gate_error_rate: f64) -> [f64; 4] {
     let p = gate_error_rate;
     let denom = 4.0 - 4.0 * p;
     let q_i = 1.0 + 3.0 * p / denom;
@@ -43,8 +51,23 @@ pub fn pec_sample_parallel(
     n_samples: usize,
     base_exp_z: f64,
     seed: u64,
+) -> PyResult<(f64, f64, Vec<f64>)> {
+    validate_range(gate_error_rate, 0.0, 0.749, "gate_error_rate")?;
+    crate::validation::validate_n(n_gates, "n_gates")?;
+    crate::validation::validate_n(n_samples, "n_samples")?;
+
+    Ok(pec_sample_parallel_inner(gate_error_rate, n_gates, n_samples, base_exp_z, seed))
+}
+
+/// Pure Rust PEC sampling (no PyO3).
+pub fn pec_sample_parallel_inner(
+    gate_error_rate: f64,
+    n_gates: usize,
+    n_samples: usize,
+    base_exp_z: f64,
+    seed: u64,
 ) -> (f64, f64, Vec<f64>) {
-    let coeffs = pec_coefficients(gate_error_rate);
+    let coeffs = pec_coefficients_inner(gate_error_rate);
     let abs_coeffs: Vec<f64> = coeffs.iter().map(|c| c.abs()).collect();
     let gamma_single: f64 = abs_coeffs.iter().sum();
     let probs: Vec<f64> = abs_coeffs.iter().map(|a| a / gamma_single).collect();
@@ -92,7 +115,7 @@ mod tests {
 
     #[test]
     fn test_pec_coefficients_zero_error() {
-        let [q_i, q_x, q_y, q_z] = pec_coefficients(0.0);
+        let [q_i, q_x, q_y, q_z] = pec_coefficients_inner(0.0);
         assert!((q_i - 1.0).abs() < 1e-12);
         assert!(q_x.abs() < 1e-12);
         assert!(q_y.abs() < 1e-12);
@@ -101,7 +124,7 @@ mod tests {
 
     #[test]
     fn test_pec_coefficients_sum() {
-        let [q_i, q_x, q_y, q_z] = pec_coefficients(0.01);
+        let [q_i, q_x, q_y, q_z] = pec_coefficients_inner(0.01);
         let s = q_i + q_x + q_y + q_z;
         assert!(
             (s - 1.0).abs() < 1e-10,
@@ -111,7 +134,7 @@ mod tests {
 
     #[test]
     fn test_pec_coefficients_high_error() {
-        let [q_i, q_x, q_y, q_z] = pec_coefficients(0.5);
+        let [q_i, q_x, q_y, q_z] = pec_coefficients_inner(0.5);
         let s = q_i + q_x + q_y + q_z;
         assert!(
             (s - 1.0).abs() < 1e-10,
@@ -125,15 +148,15 @@ mod tests {
 
     #[test]
     fn test_pec_sample_parallel_deterministic() {
-        let (v1, o1, _) = pec_sample_parallel(0.01, 5, 100, 0.9, 42);
-        let (v2, o2, _) = pec_sample_parallel(0.01, 5, 100, 0.9, 42);
+        let (v1, o1, _) = pec_sample_parallel_inner(0.01, 5, 100, 0.9, 42);
+        let (v2, o2, _) = pec_sample_parallel_inner(0.01, 5, 100, 0.9, 42);
         assert!((v1 - v2).abs() < 1e-12, "same seed must give same result");
         assert!((o1 - o2).abs() < 1e-12);
     }
 
     #[test]
     fn test_pec_sample_parallel_zero_error() {
-        let (val, overhead, _) = pec_sample_parallel(0.0, 5, 1000, 0.8, 42);
+        let (val, overhead, _) = pec_sample_parallel_inner(0.0, 5, 1000, 0.8, 42);
         assert!(
             (overhead - 1.0).abs() < 1e-12,
             "zero error → overhead = 1"

@@ -19,6 +19,8 @@
 use pyo3::prelude::*;
 use rayon::prelude::*;
 
+use crate::validation::{validate_n, validate_positive};
+
 /// DLA: compute dynamical Lie algebra dimension via commutator closure.
 ///
 /// Takes a flat array of generator matrices (each dim×dim, row-major)
@@ -34,8 +36,38 @@ pub fn dla_dimension(
     max_iterations: usize,
     max_dimension: usize,
     tol: f64,
-) -> usize {
+) -> PyResult<usize> {
+    validate_n(dim, "dim")?;
+    validate_n(n_generators, "n_generators")?;
+    validate_n(max_iterations, "max_iterations")?;
+    validate_n(max_dimension, "max_dimension")?;
+    validate_positive(tol, "tol")?;
+
     let data = generators_flat.as_slice().unwrap();
+    let mat_size = dim * dim;
+    let expected_len = n_generators * mat_size;
+    if data.len() < expected_len {
+        return Err(pyo3::exceptions::PyValueError::new_err(format!(
+            "generators_flat too short: {} < {} (n_generators={} × dim²={})",
+            data.len(),
+            expected_len,
+            n_generators,
+            mat_size
+        )));
+    }
+
+    Ok(dla_dimension_inner(data, dim, n_generators, max_iterations, max_dimension, tol))
+}
+
+/// Pure Rust DLA dimension computation (testable without Python).
+pub fn dla_dimension_inner(
+    data: &[f64],
+    dim: usize,
+    n_generators: usize,
+    max_iterations: usize,
+    max_dimension: usize,
+    tol: f64,
+) -> usize {
     let mat_size = dim * dim;
 
     let mut basis: Vec<Vec<f64>> = Vec::new();
@@ -200,5 +232,17 @@ mod tests {
         let a = vec![1.0, 0.0, 0.0, 1.0];
         let b = vec![2.0, 0.0, 0.0, 2.0]; // 2×a → dependent
         assert!(!is_independent_fast(&b, &[a], 1e-10));
+    }
+
+    #[test]
+    fn test_dla_dimension_inner_pauli() {
+        // Pauli X and Z generate su(2), dimension 3
+        let x = vec![0.0, 1.0, 1.0, 0.0];
+        let z = vec![1.0, 0.0, 0.0, -1.0];
+        let mut data = Vec::new();
+        data.extend_from_slice(&x);
+        data.extend_from_slice(&z);
+        let dim = dla_dimension_inner(&data, 2, 2, 100, 100, 1e-10);
+        assert_eq!(dim, 3, "Pauli X,Z should generate su(2) with dim=3");
     }
 }

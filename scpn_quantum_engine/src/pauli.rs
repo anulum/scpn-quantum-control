@@ -15,6 +15,8 @@
 use numpy::{PyArray1, PyReadonlyArray1};
 use pyo3::prelude::*;
 
+use crate::validation::validate_n;
+
 /// Compute quantum order parameter R from a complex statevector using
 /// sparse bitwise Pauli application.
 ///
@@ -26,10 +28,11 @@ pub fn state_order_param_sparse(
     psi_re: PyReadonlyArray1<'_, f64>,
     psi_im: PyReadonlyArray1<'_, f64>,
     n_osc: usize,
-) -> f64 {
+) -> PyResult<f64> {
+    validate_n(n_osc, "n_osc")?;
     let re = psi_re.as_slice().unwrap();
     let im = psi_im.as_slice().unwrap();
-    state_order_param_inner(re, im, n_osc)
+    Ok(state_order_param_inner(re, im, n_osc))
 }
 
 /// Pure Rust order parameter from statevector (no PyO3).
@@ -76,13 +79,13 @@ pub fn expectation_pauli_fast(
     _n: usize,
     qubit: usize,
     pauli: usize,
-) -> f64 {
+) -> PyResult<f64> {
     let re = psi_re.as_slice().unwrap();
     let im = psi_im.as_slice().unwrap();
     let dim = re.len();
 
     let mask = 1usize << qubit;
-    match pauli {
+    let val = match pauli {
         0 => {
             // ⟨X⟩: half-loop over pairs (k, k|mask)
             let mut result = 0.0;
@@ -116,7 +119,8 @@ pub fn expectation_pauli_fast(
             }
             result
         }
-    }
+    };
+    Ok(val)
 }
 
 /// Batch compute per-qubit X and Y expectations for all n qubits in one call.
@@ -129,7 +133,8 @@ pub fn all_xy_expectations<'py>(
     psi_re: PyReadonlyArray1<'_, f64>,
     psi_im: PyReadonlyArray1<'_, f64>,
     n_osc: usize,
-) -> (Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>) {
+) -> PyResult<(Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>)> {
+    validate_n(n_osc, "n_osc")?;
     let re = psi_re.as_slice().unwrap();
     let im = psi_im.as_slice().unwrap();
     let dim = re.len();
@@ -155,10 +160,10 @@ pub fn all_xy_expectations<'py>(
         exp_y[q] = ey;
     }
 
-    (
+    Ok((
         PyArray1::from_vec(py, exp_x),
         PyArray1::from_vec(py, exp_y),
-    )
+    ))
 }
 
 #[cfg(test)]

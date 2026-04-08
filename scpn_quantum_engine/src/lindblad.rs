@@ -15,6 +15,8 @@
 use numpy::{PyArray1, PyReadonlyArray1};
 use pyo3::prelude::*;
 
+use crate::validation::validate_n;
+
 /// Lindblad jump operator COO data + anti-Hermitian diagonal.
 ///
 /// Builds all jump operators L_k for pairs (i,j) where |K[i,j]| > threshold.
@@ -27,12 +29,19 @@ pub fn lindblad_jump_ops_coo<'py>(
     k_flat: PyReadonlyArray1<'_, f64>,
     n: usize,
     threshold: f64,
-) -> (
+) -> PyResult<(
     Bound<'py, PyArray1<i64>>,
     Bound<'py, PyArray1<i64>>,
     Bound<'py, PyArray1<i64>>,
     usize,
-) {
+)> {
+    validate_n(n, "n")?;
+    if n > 20 {
+        return Err(pyo3::exceptions::PyValueError::new_err(format!(
+            "n={n} too large for jump operators (max 20)"
+        )));
+    }
+    crate::validation::validate_flat_square(k_flat.as_slice().unwrap(), n, "k_flat")?;
     let k = k_flat.as_slice().unwrap();
     let dim = 1usize << n;
 
@@ -59,12 +68,12 @@ pub fn lindblad_jump_ops_coo<'py>(
     // Sentinel: marks end of last operator
     op_starts.push(rows.len() as i64);
 
-    (
+    Ok((
         PyArray1::from_vec(py, rows),
         PyArray1::from_vec(py, cols),
         PyArray1::from_vec(py, op_starts),
         op_count,
-    )
+    ))
 }
 
 /// Anti-Hermitian diagonal for Lindblad trajectory path.
@@ -76,7 +85,8 @@ pub fn lindblad_anti_hermitian_diag<'py>(
     k_flat: PyReadonlyArray1<'_, f64>,
     n: usize,
     threshold: f64,
-) -> Bound<'py, PyArray1<f64>> {
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    validate_n(n, "n")?;
     let k = k_flat.as_slice().unwrap();
     let dim = 1usize << n;
     let mut diag = vec![0.0f64; dim];
@@ -93,7 +103,7 @@ pub fn lindblad_anti_hermitian_diag<'py>(
         }
     }
 
-    PyArray1::from_vec(py, diag)
+    Ok(PyArray1::from_vec(py, diag))
 }
 
 #[cfg(test)]
