@@ -24,6 +24,13 @@ from dataclasses import dataclass
 
 import numpy as np
 
+try:
+    from scpn_quantum_engine import fit_symmetry_decay as _fit_rust
+
+    _HAS_RUST = True
+except ImportError:
+    _HAS_RUST = False
+
 
 @dataclass
 class SymmetryDecayModel:
@@ -67,22 +74,26 @@ def learn_symmetry_decay(
     if abs(ideal_symmetry_value) < 1e-15:
         raise ValueError("ideal_symmetry_value too close to zero")
 
-    # log(⟨S⟩_g / ⟨S⟩_ideal) = -α × (g - 1)
-    ratios = np.array(noisy_symmetry_values) / ideal_symmetry_value
-    # Clamp ratios to avoid log(0) or log(negative)
-    ratios = np.clip(ratios, 1e-15, None)
-    log_ratios = np.log(ratios)
-    g_shifted = np.array(noise_scales, dtype=float) - 1.0
-
-    # Linear fit: log_ratio = -α × g_shifted + offset
-    # offset should be ~0 for g=1, but fit anyway for robustness
-    if np.std(g_shifted) < 1e-15:
-        alpha = 0.0
-        residual = 0.0
+    if _HAS_RUST:
+        alpha, residual = _fit_rust(
+            ideal_symmetry_value,
+            np.array(noisy_symmetry_values, dtype=np.float64),
+            np.array(noise_scales, dtype=np.float64),
+        )
     else:
-        coeffs = np.polyfit(g_shifted, log_ratios, 1)
-        alpha = -float(coeffs[0])
-        residual = float(np.sqrt(np.mean((np.polyval(coeffs, g_shifted) - log_ratios) ** 2)))
+        # log(⟨S⟩_g / ⟨S⟩_ideal) = -α × (g - 1)
+        ratios = np.array(noisy_symmetry_values) / ideal_symmetry_value
+        ratios = np.clip(ratios, 1e-15, None)
+        log_ratios = np.log(ratios)
+        g_shifted = np.array(noise_scales, dtype=float) - 1.0
+
+        if np.std(g_shifted) < 1e-15:
+            alpha = 0.0
+            residual = 0.0
+        else:
+            coeffs = np.polyfit(g_shifted, log_ratios, 1)
+            alpha = -float(coeffs[0])
+            residual = float(np.sqrt(np.mean((np.polyval(coeffs, g_shifted) - log_ratios) ** 2)))
 
     return SymmetryDecayModel(
         ideal_symmetry_value=ideal_symmetry_value,

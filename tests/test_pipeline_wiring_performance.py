@@ -589,3 +589,76 @@ class TestPsiFieldPipeline:
         assert T >= 0.0
         assert dt < 5, f"gauge_covariant_kinetic must complete in <5ms, took {dt:.1f}ms"
         _report("Gauge kinetic (16 layers)", dt, f"T={T:.4f}")
+
+
+# ---------------------------------------------------------------------------
+# 19. GUESS — Symmetry Decay ZNE
+# ---------------------------------------------------------------------------
+
+
+class TestGUESSPipeline:
+    def test_learn_decay(self):
+        from scpn_quantum_control.mitigation.symmetry_decay import learn_symmetry_decay
+
+        model, dt = _timed(learn_symmetry_decay, 4.0, [3.8, 3.5, 3.0, 2.5, 2.0], [1, 3, 5, 7, 9])
+        assert model.alpha > 0.0
+        assert dt < 2, f"learn_symmetry_decay must complete in <2ms, took {dt:.1f}ms"
+        _report("GUESS learn (5 scales, Rust)", dt, f"alpha={model.alpha:.4f}")
+
+    def test_extrapolate(self):
+        from scpn_quantum_control.mitigation.symmetry_decay import (
+            guess_extrapolate,
+            learn_symmetry_decay,
+        )
+
+        model = learn_symmetry_decay(4.0, [3.8, 3.0], [1, 3])
+        result, dt = _timed(guess_extrapolate, 0.5, 3.8, model)
+        assert isinstance(result.mitigated_value, float)
+        assert dt < 1, f"guess_extrapolate must complete in <1ms, took {dt:.1f}ms"
+        _report("GUESS extrapolate", dt, f"correction={result.correction_factor:.4f}")
+
+
+# ---------------------------------------------------------------------------
+# 20. DynQ — Topology-Agnostic Qubit Mapper
+# ---------------------------------------------------------------------------
+
+
+class TestDynQPipeline:
+    def test_community_detection(self):
+        import numpy as np
+
+        from scpn_quantum_control.hardware.qubit_mapper import (
+            build_calibration_graph,
+            detect_execution_regions,
+        )
+
+        rng = np.random.default_rng(42)
+        errors = {}
+        for i in range(156):
+            for j in [i + 1, i + 2]:
+                if j < 156:
+                    errors[(i, j)] = rng.uniform(0.001, 0.02)
+        G = build_calibration_graph(errors)
+        regions, dt = _timed(detect_execution_regions, G, 3, 1.0, 42)
+        assert len(regions) > 0
+        assert dt < 50, f"156-qubit detection must complete in <50ms, took {dt:.1f}ms"
+        _report("DynQ detection (156 qubits)", dt, f"n_regions={len(regions)}")
+
+    def test_full_pipeline(self):
+        import numpy as np
+
+        from scpn_quantum_control.hardware.qubit_mapper import dynq_initial_layout
+
+        rng = np.random.default_rng(42)
+        errors = {}
+        for i in range(20):
+            for j in [i + 1, i + 2]:
+                if j < 20:
+                    errors[(i, j)] = rng.uniform(0.001, 0.02)
+        result, dt = _timed(dynq_initial_layout, errors, 5, None, 1.0, 3, 42)
+        assert result is not None
+        assert len(result.initial_layout) == 5
+        assert dt < 20, f"DynQ pipeline must complete in <20ms, took {dt:.1f}ms"
+        _report(
+            "DynQ full pipeline (20 qubits)", dt, f"region_size={result.selected_region.n_qubits}"
+        )
