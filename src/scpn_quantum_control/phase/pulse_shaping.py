@@ -28,6 +28,13 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.special import hyp2f1
 
+try:
+    from scpn_quantum_engine import hypergeometric_envelope_batch as _envelope_rust
+
+    _HAS_RUST = True
+except ImportError:
+    _HAS_RUST = False
+
 # ============================================================
 # Data structures
 # ============================================================
@@ -261,15 +268,20 @@ def hypergeometric_envelope(
     if alpha < 0 or beta < 0:
         raise ValueError(f"alpha, beta must be >= 0, got ({alpha}, {beta})")
 
+    if _HAS_RUST:
+        result: np.ndarray = np.asarray(
+            _envelope_rust(np.asarray(t, dtype=np.float64), alpha, beta, gamma_width)
+        )
+        return result
+
+    # Python fallback: element-wise ₂F₁ via scipy
     gt = gamma_width * t
     sech = 1.0 / np.cosh(gt)
     z = 0.5 * (1.0 + np.tanh(gt))
     c = (alpha + beta + 1.0) / 2.0
-
-    # ₂F₁ is evaluated element-wise via scipy
     f21 = np.array([float(hyp2f1(alpha, beta, c, zi)) for zi in z])
 
-    result: np.ndarray = sech * f21
+    result = sech * f21
     return result
 
 

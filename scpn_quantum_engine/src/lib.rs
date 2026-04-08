@@ -42,6 +42,7 @@ pub mod mpc;
 pub mod otoc;
 pub mod pauli;
 pub mod pec;
+pub mod pulse_shaping;
 pub mod sectors;
 
 #[pymodule]
@@ -113,6 +114,10 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // Community scoring (DynQ)
     m.add_function(wrap_pyfunction!(community::score_regions_batch, m)?)?;
+
+    // Pulse shaping (hypergeometric + ICI)
+    m.add_function(wrap_pyfunction!(pulse_shaping::hypergeometric_envelope_batch, m)?)?;
+    m.add_function(wrap_pyfunction!(pulse_shaping::ici_mixing_angle_batch, m)?)?;
 
     Ok(())
 }
