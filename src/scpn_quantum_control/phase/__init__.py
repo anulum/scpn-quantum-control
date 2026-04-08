@@ -18,6 +18,17 @@ from .cross_domain_transfer import TransferResult, build_systems, transfer_exper
 from .floquet_kuramoto import FloquetResult, floquet_evolve, scan_drive_amplitude
 from .lindblad_engine import LindbladSyncEngine
 from .phase_vqe import PhaseVQE
+from .pulse_shaping import (
+    HypergeometricPulse,
+    ICIPulse,
+    PulseSchedule,
+    build_hypergeometric_pulse,
+    build_ici_pulse,
+    build_trotter_pulse_schedule,
+    hypergeometric_envelope,
+    ici_three_level_evolution,
+    infidelity_bound,
+)
 from .qsvt_evolution import QSVTResourceEstimate
 from .structured_ansatz import build_structured_ansatz
 from .trotter_error import trotter_error_norm, trotter_error_sweep
@@ -51,4 +62,13 @@ __all__ = [
     "TransferResult",
     "AnsatzBenchmarkResult",
     "QSVTResourceEstimate",
+    "ICIPulse",
+    "HypergeometricPulse",
+    "PulseSchedule",
+    "build_ici_pulse",
+    "build_hypergeometric_pulse",
+    "build_trotter_pulse_schedule",
+    "hypergeometric_envelope",
+    "ici_three_level_evolution",
+    "infidelity_bound",
 ]
