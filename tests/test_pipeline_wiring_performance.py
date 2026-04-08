@@ -662,3 +662,44 @@ class TestDynQPipeline:
         _report(
             "DynQ full pipeline (20 qubits)", dt, f"region_size={result.selected_region.n_qubits}"
         )
+
+
+# ===== Pulse Shaping (ICI + Hypergeometric) =====
+
+
+class TestPulseShapingPipeline:
+    """Pipeline wiring tests for pulse_shaping module."""
+
+    def test_ici_pulse_build(self):
+        from scpn_quantum_control.phase.pulse_shaping import build_ici_pulse
+
+        pulse, dt = _timed(build_ici_pulse, 1.0, 10.0, 0.1)
+        assert pulse.fidelity > 0.5
+        assert len(pulse.times) == 200
+        assert dt < 5, f"ICI build must complete in <5ms, took {dt:.1f}ms"
+        _report("ICI pulse build", dt, f"fidelity={pulse.fidelity:.4f}")
+
+    def test_hypergeometric_envelope(self):
+        import numpy as np
+
+        from scpn_quantum_control.phase.pulse_shaping import build_hypergeometric_pulse
+
+        pulse, dt = _timed(build_hypergeometric_pulse, 1.0, 10.0, 0.5, 0.5)
+        assert isinstance(pulse.envelope, np.ndarray)
+        assert len(pulse.envelope) == 200
+        assert dt < 50, f"Hypergeometric build must complete in <50ms, took {dt:.1f}ms"
+        _report("Hypergeometric pulse build", dt, f"peak={np.max(pulse.envelope):.4f}")
+
+    def test_trotter_pulse_schedule(self):
+        import numpy as np
+
+        from scpn_quantum_control.phase.pulse_shaping import build_trotter_pulse_schedule
+
+        n = 4
+        k = 0.5 * np.ones((n, n))
+        np.fill_diagonal(k, 0.0)
+        schedule, dt = _timed(build_trotter_pulse_schedule, n, k, 0.1)
+        assert len(schedule.pulses) == 6
+        assert schedule.infidelity_bound > 0
+        assert dt < 500, f"Schedule build must complete in <500ms, took {dt:.1f}ms"
+        _report("Trotter pulse schedule (4q)", dt, f"n_pulses={len(schedule.pulses)}")
