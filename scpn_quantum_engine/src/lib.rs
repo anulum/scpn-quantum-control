@@ -24,9 +24,11 @@
 
 use pyo3::prelude::*;
 
+pub mod community;
 pub mod complex_utils;
 pub mod validation;
 pub mod concat_qec;
+pub mod symmetry_decay;
 pub mod dla;
 pub mod fep;
 pub mod gauge_lattice;
@@ -104,6 +106,13 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(sectors::order_param_from_statevector, m)?)?;
     m.add_function(wrap_pyfunction!(sectors::correlation_matrix_xy, m)?)?;
     m.add_function(wrap_pyfunction!(sectors::parity_filter_mask, m)?)?;
+
+    // Symmetry decay (GUESS)
+    m.add_function(wrap_pyfunction!(symmetry_decay::guess_extrapolate_batch, m)?)?;
+    m.add_function(wrap_pyfunction!(symmetry_decay::fit_symmetry_decay, m)?)?;
+
+    // Community scoring (DynQ)
+    m.add_function(wrap_pyfunction!(community::score_regions_batch, m)?)?;
 
     Ok(())
 }
