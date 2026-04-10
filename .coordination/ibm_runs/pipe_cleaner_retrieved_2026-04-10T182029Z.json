@@ -1,0 +1,55 @@
+{
+  "experiment": "pipe_cleaner_ibm_kingston",
+  "timestamp_utc": "2026-04-10T182029Z",
+  "job_id": "d7cju9u5nvhs73a4ngn0",
+  "backend": "ibm_kingston",
+  "n_qubits": 4,
+  "circuits": [
+    {
+      "label": "even",
+      "counts": {
+        "0000": 923,
+        "1000": 16,
+        "1100": 4,
+        "0100": 11,
+        "0010": 36,
+        "0011": 12,
+        "0001": 12,
+        "1010": 8,
+        "0101": 1,
+        "0110": 1
+      },
+      "stats": {
+        "total_shots": 1024,
+        "mean_magnetisation": 3.751953125,
+        "std_magnetisation": 0.7985558827049829,
+        "even_fraction": 0.9267578125,
+        "odd_fraction": 0.0732421875
+      }
+    },
+    {
+      "label": "odd",
+      "counts": {
+        "0001": 924,
+        "1001": 9,
+        "0000": 14,
+        "0010": 17,
+        "0101": 11,
+        "0011": 36,
+        "0100": 2,
+        "0110": 3,
+        "0111": 3,
+        "1111": 2,
+        "1011": 2,
+        "1101": 1
+      },
+      "stats": {
+        "total_shots": 1024,
+        "mean_magnetisation": 1.876953125,
+        "std_magnetisation": 0.6588461250950288,
+        "even_fraction": 0.0732421875,
+        "odd_fraction": 0.9267578125
+      }
+    }
+  ]
+}

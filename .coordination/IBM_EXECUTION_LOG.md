@@ -28,3 +28,15 @@ Read `IBM_CAMPAIGN_STATE.md` first for context.
   - results_file
   - notes
 -->
+
+## 2026-04-10T182029Z — RETRIEVED
+
+- **Experiment:** pipe_cleaner_ibm_kingston
+- **Backend:** ibm_kingston
+- **Job ID:** `d7cju9u5nvhs73a4ngn0`
+- **Qubits:** 4, Shots per circuit: 1024
+- **Circuits:** 2
+- **even:** mean M = 3.7520, even frac = 0.9268
+- **odd:** mean M = 1.8770, even frac = 0.0732
+- **Results file:** `.coordination/ibm_runs/pipe_cleaner_retrieved_2026-04-10T182029Z.json`
+- **Outcome:** Pipeline verified. Pipe cleaner submitted + parsed successfully on ibm_kingston.
