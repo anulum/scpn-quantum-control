@@ -108,7 +108,7 @@ characterise the noise profile for GUESS model calibration.
 
 ---
 
-## Immediate Action (today, 2026-04-10)
+## Immediate Action (today, 2026-04-10) — ✅ DONE
 
 **Target:** Burn remaining 3m 15s on current cycle before UTC midnight.
 
@@ -117,8 +117,37 @@ characterise the noise profile for GUESS model calibration.
 on Heron r2 156-qubit before Phase 2 real experiments.
 
 **Script:** `scripts/pipe_cleaner_ibm_kingston.py`
-**Results:** `.coordination/ibm_runs/pipe_cleaner_2026-04-10.json`
+**Retrieve:** `scripts/retrieve_ibm_job.py <job_id>`
+**Results:** `.coordination/ibm_runs/pipe_cleaner_retrieved_2026-04-10T182029Z.json`
 **Log:** `.coordination/IBM_EXECUTION_LOG.md`
+
+### Execution Summary (2026-04-10T18:18 UTC)
+
+**Job ID:** `d7cju9u5nvhs73a4ngn0`
+**Backend:** ibm_kingston (156-qubit Heron r2)
+**Circuits:** 2 × 4-qubit Trotter (2 steps, shots=1024)
+**Status:** DONE, results retrieved
+
+**Results:**
+| Sector | Initial | Top bitstring | Correct | Leakage | ⟨M⟩ |
+|--------|---------|---------------|---------|---------|-----|
+| Even | `\|0000⟩` | `0000` (923/1024) | 90.1% | 7.32% | 3.75 (ideal 4.0) |
+| Odd | `\|0001⟩` | `0001` (924/1024) | 90.2% | 7.32% | 1.88 (ideal 2.0) |
+
+**Observations:**
+- Pipeline verified end-to-end on new Heron r2 hardware
+- No DLA parity asymmetry signal at this depth (expected — near-identity
+  circuit with t_step=0.1, θ≈3.8°/gate)
+- Leakage rate ~7.3% per sector = decoherence + readout noise baseline
+- Classical register is named `c` not `meas` in newer qiskit-ibm-runtime
+  (fixed in `runner.py`, commit 5fe9998)
+
+### Bug fixes from this run
+- `runner.py`: robust counts extraction for qiskit-ibm-runtime 0.46+
+  (now handles any register name, not just 'meas')
+- Known dependency issue: qiskit was upgraded from 1.4.5 → 2.3.1 when
+  installing qiskit-ibm-runtime; pyproject.toml still says `qiskit<2.0`.
+  Should reconcile before CI runs (may fail tests on CI matrix).
 
 ---
 
