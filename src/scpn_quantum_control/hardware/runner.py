@@ -32,6 +32,34 @@ if TYPE_CHECKING:
     from ..mitigation.zne import ZNEResult
 
 
+def _extract_counts(pub_result: Any) -> dict:
+    """Extract counts from a SamplerV2 PubResult DataBin.
+
+    Handles both 'meas' (legacy) and user-named classical registers
+    ('c', 'cr', 'c0', etc.) robustly. Qiskit-ibm-runtime 0.46+ uses the
+    actual register name from the circuit, not a hard-coded 'meas'.
+    """
+    data = pub_result.data
+    # Try common register names first (fast path)
+    for reg_name in ("meas", "c", "cr", "c0"):
+        reg = getattr(data, reg_name, None)
+        if reg is not None and hasattr(reg, "get_counts"):
+            counts: dict = reg.get_counts()
+            return counts
+    # Fallback: introspect all attributes
+    for attr in dir(data):
+        if attr.startswith("_"):
+            continue
+        obj = getattr(data, attr, None)
+        if obj is not None and hasattr(obj, "get_counts"):
+            counts_fb: dict = obj.get_counts()
+            return counts_fb
+    raise RuntimeError(
+        f"Could not find classical register with counts in DataBin "
+        f"(attrs: {[a for a in dir(data) if not a.startswith('_')]})"
+    )
+
+
 @dataclass
 class JobResult:
     """Result from a single hardware or simulator job."""
@@ -265,7 +293,7 @@ class HardwareRunner:
 
         results = []
         for i, pub_result in enumerate(result):
-            counts = pub_result.data.meas.get_counts()
+            counts = _extract_counts(pub_result)
             jr = JobResult(
                 job_id=job_id,
                 backend_name=self.backend_name,
