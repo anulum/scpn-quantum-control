@@ -98,3 +98,22 @@ Read `IBM_CAMPAIGN_STATE.md` first for context.
   - depth  30: leak_even=0.2771, leak_odd=0.2576, asym_rel=+0.0758 (n=12 reps)
 - **Purpose:** Exhaust current Open Plan cycle to trigger 180-minute promo unlock.
 - **Next action:** Check IBM dashboard. If usage ≥ 10m, opt in to 180-min promo.
+
+## 2026-04-10T190136Z — PHASE 2.5 FINAL BURN
+
+- **Experiment:** phase2_5_final_burn
+- **Backend:** ibm_kingston
+- **Circuits:** 90 (n=4 strongest depths, 9 new reps)
+- **Job ID:** `d7ckide5nvhs73a4o780`
+- **Wall time:** 65.1s
+- **Results file:** `.coordination/ibm_runs/phase2_5_final_burn_2026-04-10T190136Z.json`
+- **Final joint DLA parity (all phases):**
+  - depth   2: leak_even=0.0806, leak_odd=0.0827, asym_rel=-0.0251 (n=12 reps)
+  - depth   4: leak_even=0.0982, leak_odd=0.0862, asym_rel=+0.1398 (n=21 reps) [REINFORCED]
+  - depth   6: leak_even=0.1291, leak_odd=0.1099, asym_rel=+0.1748 (n=21 reps) [REINFORCED]
+  - depth   8: leak_even=0.1443, leak_odd=0.1284, asym_rel=+0.1241 (n=21 reps) [REINFORCED]
+  - depth  10: leak_even=0.1658, leak_odd=0.1495, asym_rel=+0.1091 (n=21 reps) [REINFORCED]
+  - depth  14: leak_even=0.1898, leak_odd=0.1797, asym_rel=+0.0558 (n=21 reps) [REINFORCED]
+  - depth  20: leak_even=0.2295, leak_odd=0.2114, asym_rel=+0.0855 (n=12 reps)
+  - depth  30: leak_even=0.2771, leak_odd=0.2576, asym_rel=+0.0758 (n=12 reps)
+- **Purpose:** Complete cycle exhaust → 180-min promo unlock.
