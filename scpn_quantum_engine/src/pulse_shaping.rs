@@ -127,6 +127,185 @@ pub fn ici_mixing_angle_batch<'py>(
     Ok(PyArray1::from_vec(py, theta))
 }
 
+/// Simulate 3-level Lambda system under an ICI pulse sequence with
+/// Lindblad decay from the excited state.
+///
+/// Hamiltonian in the rotating frame:
+///   H(t) = Omega_P(t) |e><g| + Omega_S(t) |e><s| + h.c.
+///
+/// Lindblad operator: L = sqrt(gamma) |g><e| (decay from |e> to |g>)
+///
+/// Returns populations [P_g, P_e, P_s] at each time point as a
+/// flattened (n_t, 3) array stored row-major.
+#[pyfunction]
+pub fn ici_three_level_evolution_batch<'py>(
+    py: Python<'py>,
+    times: PyReadonlyArray1<'_, f64>,
+    omega_p: PyReadonlyArray1<'_, f64>,
+    omega_s: PyReadonlyArray1<'_, f64>,
+    gamma: f64,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    crate::validation::validate_positive(gamma + 1.0, "gamma + 1")?; // gamma >= 0
+    let t = times.as_slice().unwrap();
+    let op = omega_p.as_slice().unwrap();
+    let os = omega_s.as_slice().unwrap();
+    let n_t = t.len();
+    if n_t < 2 {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "times must have at least 2 points",
+        ));
+    }
+    if op.len() != n_t || os.len() != n_t {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "omega_p and omega_s must match times length",
+        ));
+    }
+
+    // Density matrix rho[3][3] stored as (re, im) pairs.
+    // 9 complex entries = 18 f64 slots.
+    // rho[i][j] = (re[i*3+j], im[i*3+j])
+    let mut rho_re = [0.0_f64; 9];
+    let mut rho_im = [0.0_f64; 9];
+    rho_re[0] = 1.0; // start in ground state |g><g|
+
+    let mut populations = vec![0.0_f64; n_t * 3];
+    populations[0] = 1.0; // P_g(0) = 1
+                          // populations[1..3] already zero
+
+    for i in 1..n_t {
+        let dt = t[i] - t[i - 1];
+        let p = op[i];
+        let s = os[i];
+
+        // H is real symmetric 3x3: rows are
+        //   row 0: [0, p, 0]
+        //   row 1: [p, 0, s]
+        //   row 2: [0, s, 0]
+        // H @ rho:  (3x3 real) x (3x3 complex) = 3x3 complex
+        // drho = -i [H, rho] = -i (H rho - rho H)
+
+        let mut comm_re = [0.0_f64; 9];
+        let mut comm_im = [0.0_f64; 9];
+
+        // Compute H*rho
+        // (H*rho)[i][j] = sum_k H[i][k] * rho[k][j]
+        // H[0] = [0, p, 0]   so (H*rho)[0][j] = p * rho[1][j]
+        // H[1] = [p, 0, s]   so (H*rho)[1][j] = p * rho[0][j] + s * rho[2][j]
+        // H[2] = [0, s, 0]   so (H*rho)[2][j] = s * rho[1][j]
+        for j in 0..3 {
+            let hr0 = p * rho_re[1 * 3 + j];
+            let hi0 = p * rho_im[1 * 3 + j];
+            let hr1 = p * rho_re[0 * 3 + j] + s * rho_re[2 * 3 + j];
+            let hi1 = p * rho_im[0 * 3 + j] + s * rho_im[2 * 3 + j];
+            let hr2 = s * rho_re[1 * 3 + j];
+            let hi2 = s * rho_im[1 * 3 + j];
+
+            // rho*H: (rho*H)[i][j] = sum_k rho[i][k] * H[k][j]
+            // H[k][0]: H[0][0]=0, H[1][0]=p, H[2][0]=0  => column 0 = [0, p, 0]
+            // H[k][1]: H[0][1]=p, H[1][1]=0, H[2][1]=s  => column 1 = [p, 0, s]
+            // H[k][2]: H[0][2]=0, H[1][2]=s, H[2][2]=0  => column 2 = [0, s, 0]
+            // So (rho*H)[i][0] = p * rho[i][1]
+            //    (rho*H)[i][1] = p * rho[i][0] + s * rho[i][2]
+            //    (rho*H)[i][2] = s * rho[i][1]
+            // But we need [i][j] here, not just j. Redo this loop differently.
+
+            // For each i (row of comm):
+            // comm[i][j] = (H*rho)[i][j] - (rho*H)[i][j]
+            // (H*rho)[i][j] depends on i via H row
+            // (rho*H)[i][j] depends on j via H column
+            //
+            // I computed (H*rho)[0][j], [1][j], [2][j] above. Good.
+            // Now need (rho*H)[0][j], [1][j], [2][j] for same j.
+            let rh0 = match j {
+                0 => p * rho_re[0 * 3 + 1],
+                1 => p * rho_re[0 * 3 + 0] + s * rho_re[0 * 3 + 2],
+                _ => s * rho_re[0 * 3 + 1],
+            };
+            let ri0 = match j {
+                0 => p * rho_im[0 * 3 + 1],
+                1 => p * rho_im[0 * 3 + 0] + s * rho_im[0 * 3 + 2],
+                _ => s * rho_im[0 * 3 + 1],
+            };
+            let rh1 = match j {
+                0 => p * rho_re[1 * 3 + 1],
+                1 => p * rho_re[1 * 3 + 0] + s * rho_re[1 * 3 + 2],
+                _ => s * rho_re[1 * 3 + 1],
+            };
+            let ri1 = match j {
+                0 => p * rho_im[1 * 3 + 1],
+                1 => p * rho_im[1 * 3 + 0] + s * rho_im[1 * 3 + 2],
+                _ => s * rho_im[1 * 3 + 1],
+            };
+            let rh2 = match j {
+                0 => p * rho_re[2 * 3 + 1],
+                1 => p * rho_re[2 * 3 + 0] + s * rho_re[2 * 3 + 2],
+                _ => s * rho_re[2 * 3 + 1],
+            };
+            let ri2 = match j {
+                0 => p * rho_im[2 * 3 + 1],
+                1 => p * rho_im[2 * 3 + 0] + s * rho_im[2 * 3 + 2],
+                _ => s * rho_im[2 * 3 + 1],
+            };
+
+            comm_re[0 * 3 + j] = hr0 - rh0;
+            comm_im[0 * 3 + j] = hi0 - ri0;
+            comm_re[1 * 3 + j] = hr1 - rh1;
+            comm_im[1 * 3 + j] = hi1 - ri1;
+            comm_re[2 * 3 + j] = hr2 - rh2;
+            comm_im[2 * 3 + j] = hi2 - ri2;
+        }
+
+        // drho = -i * commutator:  multiplying by -i flips real/imag and
+        // negates the new real part.
+        //   (-i) * (a + ib) = b - ia
+        let mut drho_re = [0.0_f64; 9];
+        let mut drho_im = [0.0_f64; 9];
+        for k in 0..9 {
+            drho_re[k] = comm_im[k];
+            drho_im[k] = -comm_re[k];
+        }
+
+        // Lindblad decay from |e>: rho[1][1] population transfers to rho[0][0]
+        // plus off-diagonal dephasing at rate gamma/2.
+        if gamma > 0.0 {
+            let pop_e = rho_re[1 * 3 + 1]; // real, diagonal
+            drho_re[0 * 3 + 0] += gamma * pop_e;
+            drho_re[1 * 3 + 1] -= gamma * pop_e;
+
+            // Off-diagonal dephasing: rows/cols involving |e>
+            drho_re[0 * 3 + 1] -= 0.5 * gamma * rho_re[0 * 3 + 1];
+            drho_im[0 * 3 + 1] -= 0.5 * gamma * rho_im[0 * 3 + 1];
+            drho_re[1 * 3 + 0] -= 0.5 * gamma * rho_re[1 * 3 + 0];
+            drho_im[1 * 3 + 0] -= 0.5 * gamma * rho_im[1 * 3 + 0];
+            drho_re[1 * 3 + 2] -= 0.5 * gamma * rho_re[1 * 3 + 2];
+            drho_im[1 * 3 + 2] -= 0.5 * gamma * rho_im[1 * 3 + 2];
+            drho_re[2 * 3 + 1] -= 0.5 * gamma * rho_re[2 * 3 + 1];
+            drho_im[2 * 3 + 1] -= 0.5 * gamma * rho_im[2 * 3 + 1];
+        }
+
+        // Forward Euler step
+        for k in 0..9 {
+            rho_re[k] += drho_re[k] * dt;
+            rho_im[k] += drho_im[k] * dt;
+        }
+
+        // Trace preservation (same normalisation as Python implementation)
+        let trace = rho_re[0] + rho_re[4] + rho_re[8];
+        if trace > 1e-15 {
+            for k in 0..9 {
+                rho_re[k] /= trace;
+                rho_im[k] /= trace;
+            }
+        }
+
+        populations[i * 3] = rho_re[0];
+        populations[i * 3 + 1] = rho_re[4];
+        populations[i * 3 + 2] = rho_re[8];
+    }
+
+    Ok(PyArray1::from_vec(py, populations))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
