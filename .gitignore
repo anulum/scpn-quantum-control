@@ -16,6 +16,9 @@ coverage.xml
 .coverage
 
 .venv/
+.venv-linux/
+.venv-rocm/
+.venv-cuda/
 venv/
 env/
 .env
@@ -52,3 +55,15 @@ CLAUDE.md
 # Local backups — never committed
 BACKUP/
 ARCHIVE/
+
+# Local IBM runs results cache — the authoritative copies live in
+# .coordination/ibm_runs/ (committed). This directory is a scratch
+# location for the HardwareRunner to dump intermediate JSON files.
+results/
+
+# Working TODO scratch files — superseded by sessions/handovers
+.coordination/TODO_*.md
+
+# Research summary PDFs generated for private email attachments — not
+# for public distribution from the repository
+.coordination/*.pdf
