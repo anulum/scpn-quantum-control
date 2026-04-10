@@ -117,3 +117,10 @@ Read `IBM_CAMPAIGN_STATE.md` first for context.
   - depth  20: leak_even=0.2295, leak_odd=0.2114, asym_rel=+0.0855 (n=12 reps)
   - depth  30: leak_even=0.2771, leak_odd=0.2576, asym_rel=+0.0758 (n=12 reps)
 - **Purpose:** Complete cycle exhaust → 180-min promo unlock.
+
+## 2026-04-10T190616Z — MICRO PROBE (failed)
+
+- **Attempted:** 4 circuits (n=4, d=6, 2 sectors, 2 reps)
+- **Result:** SUBMISSION FAILED
+- **Error:** `'Timed out waiting for job to complete after 900 secs.'`
+- **Interpretation:** Cycle likely exhausted. Check dashboard for 180-min promo availability.
