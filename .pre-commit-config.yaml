@@ -6,6 +6,12 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — .Pre Commit Config
 repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+        name: gitleaks (secret scan)
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.6
     hooks:
@@ -22,6 +28,13 @@ repos:
 
   - repo: local
     hooks:
+      - id: check-secrets
+        name: vault-pattern secret scan
+        entry: python tools/check_secrets.py
+        language: python
+        always_run: true
+        pass_filenames: false
+
       - id: version-consistency
         name: version consistency
         entry: python scripts/check_version_consistency.py
