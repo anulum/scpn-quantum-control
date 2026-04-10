@@ -59,3 +59,22 @@ Read `IBM_CAMPAIGN_STATE.md` first for context.
   - depth  20: leak_even=0.2026, leak_odd=0.2131, asym_rel=-0.0493
   - depth  30: leak_even=0.2517, leak_odd=0.2559, asym_rel=-0.0162
 - **Outcome:** Phase 1 primary DLA parity data on Heron r2.
+
+## 2026-04-10T184909Z — PHASE 1.5 REINFORCEMENT
+
+- **Experiment:** phase1_5_reinforce
+- **Backend:** ibm_kingston
+- **Circuits:** 72 (D: 64, E: 8)
+- **Job ID:** `d7ckcrh5a5qc73dosbmg`
+- **Wall time:** 56.7s
+- **Results file:** `.coordination/ibm_runs/phase1_5_reinforce_2026-04-10T184909Z.json`
+- **Joint DLA parity (Phase 1 + 1.5):**
+  - depth   2: leak_even=0.0773, leak_odd=0.0856, asym_rel=-0.0970 (n=6 reps)
+  - depth   4: leak_even=0.0995, leak_odd=0.0866, asym_rel=+0.1494 (n=6 reps)
+  - depth   6: leak_even=0.1173, leak_odd=0.1136, asym_rel=+0.0322 (n=6 reps)
+  - depth   8: leak_even=0.1453, leak_odd=0.1284, asym_rel=+0.1312 (n=6 reps)
+  - depth  10: leak_even=0.1679, leak_odd=0.1463, asym_rel=+0.1474 (n=6 reps)
+  - depth  14: leak_even=0.1863, leak_odd=0.1803, asym_rel=+0.0329 (n=6 reps)
+  - depth  20: leak_even=0.2314, leak_odd=0.2174, asym_rel=+0.0644 (n=6 reps)
+  - depth  30: leak_even=0.2839, leak_odd=0.2652, asym_rel=+0.0703 (n=6 reps)
+- **Outcome:** Phase 1 data reinforced with 4 extra reps; n=8 scaling data collected.
