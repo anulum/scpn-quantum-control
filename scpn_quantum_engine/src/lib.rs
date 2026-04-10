@@ -118,6 +118,7 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Pulse shaping (hypergeometric + ICI)
     m.add_function(wrap_pyfunction!(pulse_shaping::hypergeometric_envelope_batch, m)?)?;
     m.add_function(wrap_pyfunction!(pulse_shaping::ici_mixing_angle_batch, m)?)?;
+    m.add_function(wrap_pyfunction!(pulse_shaping::ici_three_level_evolution_batch, m)?)?;
 
     Ok(())
 }

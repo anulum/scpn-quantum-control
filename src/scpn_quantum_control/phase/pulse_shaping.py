@@ -29,7 +29,15 @@ import numpy as np
 from scipy.special import hyp2f1
 
 try:
-    from scpn_quantum_engine import hypergeometric_envelope_batch as _envelope_rust
+    from scpn_quantum_engine import (
+        hypergeometric_envelope_batch as _envelope_rust,
+    )
+    from scpn_quantum_engine import (
+        ici_mixing_angle_batch as _ici_mixing_rust,
+    )
+    from scpn_quantum_engine import (
+        ici_three_level_evolution_batch as _ici_evol_rust,
+    )
 
     _HAS_RUST = True
 except ImportError:
@@ -99,6 +107,13 @@ def ici_mixing_angle(
         t_total: total pulse duration
         theta_jump: jump angle at boundaries (controls speed vs. loss)
     """
+    if _HAS_RUST:
+        result: np.ndarray = np.asarray(
+            _ici_mixing_rust(np.asarray(t, dtype=np.float64), t_total, theta_jump)
+        )
+        return result
+
+    # Python fallback
     theta = np.zeros_like(t)
     t1 = 0.05 * t_total  # first jump duration (5% of total)
     t2 = 0.95 * t_total  # start of last jump
@@ -186,6 +201,19 @@ def ici_three_level_evolution(
     Returns state population vector [P_g, P_e, P_s] at each time step.
     """
     gamma = gamma_decay if gamma_decay is not None else pulse.gamma_decay
+
+    if _HAS_RUST:
+        flat: np.ndarray = np.asarray(
+            _ici_evol_rust(
+                np.asarray(pulse.times, dtype=np.float64),
+                np.asarray(pulse.omega_p, dtype=np.float64),
+                np.asarray(pulse.omega_s, dtype=np.float64),
+                float(gamma),
+            )
+        )
+        return flat.reshape(-1, 3)
+
+    # Python fallback — forward-Euler integration of the 3-level Lindblad master eq.
     n_t = len(pulse.times)
     populations = np.zeros((n_t, 3))
     populations[0] = [1.0, 0.0, 0.0]  # start in ground
