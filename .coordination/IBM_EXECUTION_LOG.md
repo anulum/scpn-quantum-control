@@ -78,3 +78,23 @@ Read `IBM_CAMPAIGN_STATE.md` first for context.
   - depth  20: leak_even=0.2314, leak_odd=0.2174, asym_rel=+0.0644 (n=6 reps)
   - depth  30: leak_even=0.2839, leak_odd=0.2652, asym_rel=+0.0703 (n=6 reps)
 - **Outcome:** Phase 1 data reinforced with 4 extra reps; n=8 scaling data collected.
+
+## 2026-04-10T185634Z — PHASE 2 CYCLE EXHAUST
+
+- **Experiment:** phase2_exhaust_cycle
+- **Backend:** ibm_kingston
+- **Circuits:** 138 (F: 96, G: 18, H: 8, I: 16)
+- **Job ID:** `d7ckft95a5qc73doseu0`
+- **Wall time:** 97.5s
+- **Results file:** `.coordination/ibm_runs/phase2_exhaust_2026-04-10T185634Z.json`
+- **Joint DLA parity (all phases):**
+  - depth   2: leak_even=0.0806, leak_odd=0.0827, asym_rel=-0.0251 (n=12 reps)
+  - depth   4: leak_even=0.0963, leak_odd=0.0850, asym_rel=+0.1325 (n=12 reps)
+  - depth   6: leak_even=0.1228, leak_odd=0.1116, asym_rel=+0.1007 (n=12 reps)
+  - depth   8: leak_even=0.1410, leak_odd=0.1245, asym_rel=+0.1324 (n=12 reps)
+  - depth  10: leak_even=0.1624, leak_odd=0.1478, asym_rel=+0.0986 (n=12 reps)
+  - depth  14: leak_even=0.1857, leak_odd=0.1788, asym_rel=+0.0382 (n=12 reps)
+  - depth  20: leak_even=0.2295, leak_odd=0.2114, asym_rel=+0.0855 (n=12 reps)
+  - depth  30: leak_even=0.2771, leak_odd=0.2576, asym_rel=+0.0758 (n=12 reps)
+- **Purpose:** Exhaust current Open Plan cycle to trigger 180-minute promo unlock.
+- **Next action:** Check IBM dashboard. If usage ≥ 10m, opt in to 180-min promo.
