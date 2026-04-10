@@ -40,3 +40,22 @@ Read `IBM_CAMPAIGN_STATE.md` first for context.
 - **odd:** mean M = 1.8770, even frac = 0.0732
 - **Results file:** `.coordination/ibm_runs/pipe_cleaner_retrieved_2026-04-10T182029Z.json`
 - **Outcome:** Pipeline verified. Pipe cleaner submitted + parsed successfully on ibm_kingston.
+
+## 2026-04-10T183728Z — PHASE 1 MINI-BENCH
+
+- **Experiment:** phase1_dla_parity_mini_bench
+- **Backend:** ibm_kingston
+- **Circuits:** 42 (A: 32, B: 6, C: 4)
+- **Job IDs:** `d7ck79m5nvhs73a4nr10`, `d7ck7hb0g7hs73dqvbg0`
+- **Wall time:** 44.1s
+- **Results file:** `.coordination/ibm_runs/phase1_bench_2026-04-10T183728Z.json`
+- **DLA parity summary (exp A):**
+  - depth   2: leak_even=0.0725, leak_odd=0.0828, asym_rel=-0.1239
+  - depth   4: leak_even=0.0881, leak_odd=0.0811, asym_rel=+0.0873
+  - depth   6: leak_even=0.0942, leak_odd=0.1008, asym_rel=-0.0654
+  - depth   8: leak_even=0.1201, leak_odd=0.1223, asym_rel=-0.0180
+  - depth  10: leak_even=0.1562, leak_odd=0.1299, asym_rel=+0.2030
+  - depth  14: leak_even=0.1626, leak_odd=0.1707, asym_rel=-0.0472
+  - depth  20: leak_even=0.2026, leak_odd=0.2131, asym_rel=-0.0493
+  - depth  30: leak_even=0.2517, leak_odd=0.2559, asym_rel=-0.0162
+- **Outcome:** Phase 1 primary DLA parity data on Heron r2.
