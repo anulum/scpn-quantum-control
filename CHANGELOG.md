@@ -4,6 +4,131 @@ All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 
+## [0.9.5] - 2026-03-29 / 2026-04-11
+
+### Added (2026-04-10 — Phase 1 IBM Quantum hardware campaign)
+
+- **First publishable hardware confirmation of the DLA parity asymmetry**
+  on IBM ibm_kingston (Heron r2, 156 qubits). 348 circuits across four
+  sub-phases (pipe cleaner → Phase 1 → 1.5 → 2 → 2.5 final burn) with
+  up to 21 repetitions per (depth, sector) point at $n = 4$. Mean
+  asymmetry $+10.8\,\%$ for Trotter depths $\ge 4$, peak $+17.48\,\%$
+  at depth 6. Welch's two-sample t-test gives 7/8 depths individually
+  significant at $p < 0.05$; Fisher's combined chi² = 123.4 over 16 df,
+  combined $p \ll 10^{-16}$. Result is consistent with the 4.5–9.6 %
+  apriori prediction from the noiseless classical simulator.
+- **`scripts/analyse_phase1_dla_parity.py`** — publication-quality
+  statistical analysis script: per-depth SEM, Welch t-test per depth,
+  Fisher's combined p, readout baseline correction, matplotlib
+  figures (`figures/phase1/leakage_vs_depth.png`,
+  `figures/phase1/asymmetry_vs_depth.png`). Reproduces the full Phase 1
+  analysis from the raw `.coordination/ibm_runs/*.json` files in one
+  command.
+- **`paper/phase1_dla_parity_short_paper.md`** — 267-line short-paper
+  draft for *Quantum Science and Technology* (Letter) or *Physical
+  Review Research*, with abstract, methods, results table, discussion,
+  Phase 2 plan, and full reference list.
+- **IBM hardware execution scripts** under `scripts/`:
+  `pipe_cleaner_ibm_kingston.py`, `phase1_mini_bench_ibm_kingston.py`,
+  `phase1_5_reinforce_ibm_kingston.py`,
+  `phase2_exhaust_cycle_ibm_kingston.py`,
+  `phase2_5_final_burn_ibm_kingston.py`,
+  `phase2_full_campaign_ibm.py` (preview, requires
+  `--confirm-promo-active` flag), `micro_probe_ibm_kingston.py`,
+  `retrieve_ibm_job.py`.
+- **`.coordination/IBM_CAMPAIGN_STATE.md`**, **`IBM_EXECUTION_LOG.md`**,
+  **`phase1_experiment_design.md`**, **`WEBMASTER_CONTEXT.md`** —
+  persistent IBM-campaign and webmaster context that survives session
+  compaction.
+
+### Added (2026-04-08 — strategic tweaks from Gemini Deep Research report)
+
+- **GUESS symmetry-decay ZNE** (`mitigation/symmetry_decay.py`,
+  `scpn_quantum_engine/src/symmetry_decay.rs`): physics-informed
+  zero-noise extrapolation that uses the conserved total magnetisation
+  of $H_{XY}$ as the guide observable. Eq. 5 from
+  Oliva del Moral *et al.*, arXiv:2603.13060 (2026), implemented
+  exactly. Rust path provides `fit_symmetry_decay` (least-squares α
+  fit) and `guess_extrapolate_batch` (rayon-parallel correction).
+  20 STRONG tests across 6 dimensions.
+- **DynQ topology-agnostic qubit mapper** (`hardware/qubit_mapper.py`,
+  `scpn_quantum_engine/src/community.rs`): Louvain community detection
+  on calibration-weighted QPU graphs, with quality scoring per region
+  (connectivity × fidelity composite, Eq. 8 of Liu *et al.*,
+  arXiv:2601.19635). 17 STRONG tests.
+- **PMP / ICI pulse sequences** (`phase/pulse_shaping.py`,
+  `scpn_quantum_engine/src/pulse_shaping.rs`): three-segment
+  Pontryagin-optimal mixing-angle trajectory for STIREP, with full
+  3-level Λ system Lindblad evolution. Liu *et al.* (2023). The Rust
+  `ici_three_level_evolution_batch` is 1,665× faster than the Python
+  forward-Euler reference, verified to machine precision.
+- **(α,β)-hypergeometric pulse shaping** (same module): unified
+  adiabatic pulse family via Gauss ${}_2F_1$, subsuming Allen-Eberly
+  (α=β=0), STIRAP (α=β=0.5), and Demkov-Kunike (α=1, β=0.5) as special
+  cases. Rust path implements ${}_2F_1$ via custom series expansion +
+  rayon, 44× faster than scipy element-wise. Ventura Meinersen *et al.*,
+  arXiv:2504.08031 (2025). 25 STRONG tests cover both ICI and the
+  hypergeometric family.
+- **FFI boundary hardening** for the entire Rust crate: all 36
+  `#[pyfunction]` exports now return `PyResult<T>` and validate inputs
+  via `validation.rs` (`validate_n`, `validate_positive`,
+  `validate_range`, `validate_finite`, `validate_flat_square`,
+  `validate_statevec_len`, `validate_domain_range`). Inner pure-Rust
+  functions are kept separate so the algorithms can be unit-tested
+  without a Python interpreter. 16 unit tests in `validation.rs`.
+- **Elite documentation** (>567 lines each):
+  `docs/symmetry_decay_guess.md` (891 lines) and
+  `docs/dynq_qubit_mapping.md` (878 lines), both with theory,
+  references, API, tutorials, benchmarks, limitations, and
+  comparisons.
+- **Pipeline performance entries** in
+  `tests/test_pipeline_wiring_performance.py` for GUESS, DynQ, and the
+  pulse-shaping module — every new module is wired end-to-end with a
+  measured wall-time budget.
+
+### Added (2026-04-10 — repository hygiene)
+
+- **`tools/check_secrets.py`** — custom vault-pattern secret scanner.
+  Reads ~84 credential-shaped tokens from
+  `agentic-shared/CREDENTIALS.md` (filtered by length, Shannon
+  entropy ≥ 3.5 bits/char, mixed character classes, and a substantial
+  ignore list), then greps the staged diff for any of them. A
+  secondary keyword-based scan catches `password:` / `token:` /
+  `api_key:` patterns regardless of value entropy. Redacts every
+  match in its failure output so the hook itself never leaks. Pre-commit
+  hook entry added in `.pre-commit-config.yaml`.
+- **gitleaks v8.21.2 pre-commit hook** for generic high-entropy
+  secrets and known token formats (GitHub, AWS, GCP, PEM, etc.).
+  Complements the custom vault scanner.
+- **`.coordination/incidents/INCIDENT_2026-04-10T2336_ftp_creds_in_webmaster_context.md`**
+  — full post-mortem of the credential leak that motivated the new
+  scanners (caught at the L4 pre-push audit gate, never reached
+  origin).
+- `.gitignore` updated to cover platform venvs (`.venv-linux/`,
+  `.venv-rocm/`, `.venv-cuda/`), the `results/` scratch directory,
+  `.coordination/TODO_*.md` working notes, and `.coordination/*.pdf`
+  email-attachment artefacts.
+
+### Changed (2026-04-10)
+
+- Tests collected: 2,813 → **4,828** (97%+ coverage).
+- Python modules: 165 → **201**, subpackages 17 → **19**.
+- Rust functions exported: 22 → **36** across **20** Rust source files.
+- Hardware reference: ibm_fez (Feb 2026) → ibm_fez + **ibm_kingston**
+  (Feb + Apr 2026).
+- `runner.py`: robust counts extraction for qiskit-ibm-runtime 0.46+
+  (DataBin classical-register name is no longer hard-coded as `meas`).
+
+### Fixed (2026-04-10)
+
+- IBM SamplerV2 result parsing previously assumed the classical
+  register was named `meas`. Newer qiskit-ibm-runtime returns the
+  actual circuit register name (e.g. `c` for `QuantumCircuit(n, n)`),
+  which broke `run_sampler`. Replaced with `_extract_counts(...)`
+  that tries common names (`meas`, `c`, `cr`, `c0`) and falls back to
+  introspecting the `DataBin` attributes.
+
+
 ## [0.9.5] - 2026-03-29 / 2026-04-07
 
 ### Added (2026-04-06 — 2026-04-07)

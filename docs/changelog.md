@@ -13,16 +13,70 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-control/blob/main/CHANGELOG.md)
 
-## [0.9.5] - 2026-03-29 / 2026-04-01
+## [0.9.5] - 2026-03-29 / 2026-04-11
 
-**10X Architecture, FIM investigation, Rust engine 22 functions.**
+**Phase 1 IBM hardware confirmation of the DLA parity asymmetry +
+five strategic tweaks (GUESS, DynQ, ICI, hypergeometric, FFI hardening)
++ repository hygiene (gitleaks + custom secret scanner).**
 
-- 10X Strange Loop co-evolution engine (DynamicCouplingEngine, TopologicalCouplingOptimizer)
-- BiologicalSurfaceCode, LindbladSyncEngine (MCWF), StructuredAnsatz
-- 27 FIM experiment notebooks (NB14–47), 81 FIM tests, IBM hardware v2
-- 4 new Rust functions (18→22): correlation_matrix_xy, lindblad_jump_ops_coo, lindblad_anti_hermitian_diag, parity_filter_mask
-- 115 multi-angle tests for 9 Gemini 10X modules
-- 19 scientific discoveries + 6 honest negative results
+### Phase 1 IBM ibm_kingston campaign (2026-04-10)
+
+- **First publishable hardware confirmation** of the DLA parity
+  asymmetry on IBM ibm_kingston (Heron r2, 156 qubits). 348 circuits
+  with up to 21 reps per (depth, sector) point at $n = 4$. Mean
+  asymmetry $+10.8\,\%$ for Trotter depths $\ge 4$, peak $+17.48\,\%$
+  at depth 6. Welch's t-test 7/8 depths at $p < 0.05$, Fisher's
+  combined $p \ll 10^{-16}$. Consistent with the $4.5\text{–}9.6\,\%$
+  apriori simulator prediction.
+- Full statistical analysis script with error bars, Welch t-test, and
+  matplotlib figures (`scripts/analyse_phase1_dla_parity.py`,
+  `figures/phase1/`).
+- 267-line short-paper draft for *Quantum Science and Technology* /
+  *Physical Review Research* in `paper/`.
+
+### Strategic tweaks from Gemini Deep Research report (2026-04-08)
+
+- **GUESS symmetry-decay ZNE** (`mitigation/symmetry_decay.py`,
+  `scpn_quantum_engine/src/symmetry_decay.rs`) — physics-informed
+  zero-noise extrapolation using $\sum Z_i$ as the guide observable.
+  Oliva del Moral *et al.*, arXiv:2603.13060. 20 STRONG tests.
+- **DynQ topology-agnostic qubit mapper**
+  (`hardware/qubit_mapper.py`,
+  `scpn_quantum_engine/src/community.rs`) — Louvain community
+  detection on calibration-weighted QPU graphs. Liu *et al.*,
+  arXiv:2601.19635. 17 STRONG tests.
+- **PMP / ICI pulse sequences + (α,β)-hypergeometric pulse shaping**
+  (`phase/pulse_shaping.py`,
+  `scpn_quantum_engine/src/pulse_shaping.rs`) — Liu *et al.* (2023)
+  and Ventura Meinersen *et al.*, arXiv:2504.08031. Rust paths give
+  44× hypergeometric envelope speedup and 1,665× ICI three-level
+  evolution speedup, both verified to machine precision.
+- **FFI boundary hardening** — every `#[pyfunction]` returns
+  `PyResult<T>` and validates inputs via `validation.rs`. 16 unit
+  tests.
+- Elite docs ≥ 567 lines: `docs/symmetry_decay_guess.md` (891) and
+  `docs/dynq_qubit_mapping.md` (878).
+
+### Repository hygiene (2026-04-10)
+
+- **`tools/check_secrets.py`** — custom vault-pattern secret scanner
+  with Shannon-entropy filter and keyword-based password detection.
+- **gitleaks v8.21.2** pre-commit hook for generic secret detection.
+- Incident report
+  (`.coordination/incidents/INCIDENT_2026-04-10T2336_...`) for the
+  prevented FTP-credentials leak that motivated the new scanners.
+- Tests collected: 2,813 → **4,828** (97%+ coverage).
+- Python modules 165 → **201**, subpackages 17 → **19**, Rust
+  functions 22 → **36** across 20 source files.
+
+### Earlier v0.9.5 work (2026-03-29 — 2026-04-07)
+
+- Multi-Scale QEC, Free Energy Principle, Ψ-field lattice gauge theory.
+- 10X Strange Loop co-evolution engine, DynamicCouplingEngine,
+  TopologicalCouplingOptimizer, BiologicalSurfaceCode,
+  LindbladSyncEngine (MCWF), StructuredAnsatz.
+- 27 FIM experiment notebooks (NB14–47), 81 FIM tests, IBM hardware v2.
+- 19 scientific discoveries + 6 honest negative results.
 
 ## [0.9.4] - 2026-03-29
 
