@@ -29,7 +29,7 @@ The classical Kuramoto model of coupled oscillators maps exactly onto the XY spi
 
 - 155 Python modules + 1 Rust crate (PyO3)
 - 33 research modules (~4 novel constructions, ~8 first-application, rest standard diagnostics)
-- 18 subpackages: analysis, applications, benchmarks, bridge, control, crypto, gauge, hardware, identity, l16, mitigation, pgbo, phase, qec, qsnn, ssgf, tcbo
+- 19 subpackages: analysis, applications, benchmarks, bridge, control, crypto, gauge, hardware, identity, l16, mitigation, pgbo, phase, qec, qsnn, ssgf, tcbo
 - 2,813 tests, 98% coverage
 - 18 example scripts, 13 Jupyter notebooks
 - 0.05% VQE ground-state error on 4-qubit XY Hamiltonian (measured)
