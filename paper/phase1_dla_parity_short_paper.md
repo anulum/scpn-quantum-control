@@ -200,6 +200,75 @@ expected given the smaller rep count and the larger intrinsic
 decoherence at 8 qubits; a more statistically powerful follow-up is
 proposed in the next section.
 
+### Statistical caveats
+
+Three points of statistical hygiene are worth flagging because a real
+referee will ask about them.
+
+First, **Fisher's combined statistic assumes the eight per-depth
+$p$-values are independent**. Successive Trotter depths share the
+same four physical qubits and were submitted in the same Open Plan
+session, which introduces a small but non-zero correlation through
+shared calibration drift and shared thermal context. The combined
+$p \ll 10^{-16}$ should therefore be read as an upper bound on
+significance under the strongest possible independence assumption.
+A correlation-aware combination (Simes test, block bootstrap) is
+deferred to the Phase 2 follow-up; the per-depth Welch significances
+are unaffected by the independence question and seven of eight are
+already individually below $p = 0.01$.
+
+Second, **Welch's $t$-test is parametric and assumes approximately
+normally distributed sector means**. As an internal cross-check on
+the most critical depth ($d = 6$, 21 reps per sector), we ran a
+two-sided permutation test on the observed mean difference using
+$10^{5}$ random label shuffles. The permutation $p$-value is
+$2.0 \times 10^{-5}$, the same order of magnitude as the parametric
+Welch result of $6.6 \times 10^{-6}$ and consistent in sign and
+significance.
+
+Third, the Experiment C readout calibration we report is a
+per-state mean retention rather than the full confusion-matrix
+inversion that is standard practice for production readout
+mitigation. We did not apply confusion-matrix inversion to the
+counts in this paper because the calibration spread (0.014, see
+above) is already an order of magnitude smaller than the observed
+asymmetry. A full inversion is a planned cross-check for the Phase
+2 dataset and we will note any sign or magnitude change in the
+follow-up paper.
+
+### Possible confounds the protocol does not yet rule out
+
+Two confounds remain open and are deferred to Phase 2.
+
+**Excitation-count confound.** The two initial states differ by one
+excitation: $|\psi_e\rangle = |0011\rangle$ has popcount 2 while
+$|\psi_o\rangle = |0001\rangle$ has popcount 1. Under a pure
+amplitude-damping ($T_1$) channel, the higher-excitation state
+decays into the lower-excitation manifold roughly twice as fast,
+which on its own would predict an asymmetry of order $\Delta n /
+\langle n \rangle$ in the leakage rate. To rule out the trivial
+popcount explanation, Phase 2 will repeat the protocol with two
+**popcount-matched** initial states drawn from the same sector
+(e.g.\ $|0011\rangle$ vs $|0101\rangle$ in the even sector at
+popcount 2, and $|0001\rangle$ vs $|0010\rangle$ in the odd sector
+at popcount 1) and verify that the within-sector spread is much
+smaller than the between-sector difference.
+
+**Temporal drift between sub-phases.** The 342 circuits were
+submitted across four sub-phases between 2026-04-10 18:37 UTC and
+19:01 UTC. Splitting the dataset by sub-phase and recomputing the
+unweighted mean asymmetry across the depths actually present in
+each sub-phase gives $-0.4\,\%$, $+9.9\,\%$, $+9.5\,\%$ and
+$+14.8\,\%$ for phase1\_bench, phase1\_5\_reinforce, phase2\_exhaust
+and phase2\_5\_final\_burn respectively. The first sub-phase has
+only two repetitions per (depth, sector) point and is dominated by
+single-shot count noise, including a $-12\,\%$ outlier at the
+near-identity depth $d = 2$. The three sub-phases with $\ge 4$
+repetitions per point give consistent aggregates in the
+$+9$–$+15\,\%$ range. A fully randomised Phase 2 schedule (depths
+and sectors fully shuffled, not interleaved within sub-phases) is
+part of the proposed protocol below.
+
 ## 5. Phase 2 campaign
 
 A follow-up campaign has been prepared and is ready to run once a
