@@ -6,7 +6,32 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Error Mitigation Documentation
 
-# Error Mitigation via Mitiq
+# Error Mitigation
+
+scpn-quantum-control ships three complementary error-mitigation
+backends. Choose based on whether you have a known symmetry observable,
+how much shot budget you can spend, and whether you want a generic
+black-box wrapper.
+
+| Backend | Module | Best for | Overhead | Reference |
+|---------|--------|----------|----------|-----------|
+| **GUESS symmetry-decay ZNE** | `mitigation.symmetry_decay` | XY Hamiltonian (uses conserved $\sum Z_i$) | None — symmetry observable comes for free | [symmetry_decay_guess.md](symmetry_decay_guess.md), arXiv:2603.13060 |
+| **Mitiq ZNE / DDD** | `mitigation.mitiq_integration` | Generic circuits with no known symmetry | 2–4× shots per scale factor | this page |
+| **PEC** | `mitigation.pec` | Highest accuracy when you have a noise model | Exponential in circuit depth | `mitigation_api.md` |
+
+**For the SCPN Kuramoto-XY framework specifically, GUESS is the
+preferred default**: the XY Hamiltonian commutes with the total
+magnetisation operator $S = \sum_i Z_i$, so the symmetry observable
+is measured for free in the same Z-basis run as the target observable.
+The Phase 1 hardware campaign on ibm_kingston in April 2026 used the
+parity leakage rate measured this way as both the noise calibration
+and the headline scientific result. See
+[`symmetry_decay_guess.md`](symmetry_decay_guess.md) for the full
+GUESS theory and tutorial.
+
+---
+
+# Mitiq integration (generic ZNE / DDD)
 
 `scpn_quantum_control.mitigation.mitiq_integration`
 

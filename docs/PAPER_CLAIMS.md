@@ -14,25 +14,56 @@ Physical Review Research, Quantum Science and Technology, or npj Quantum Informa
 
 ## Proposed Title
 
-"Quantum simulation of coupled-oscillator synchronization on a 156-qubit superconducting processor"
+"Quantum simulation of coupled-oscillator synchronization on a 156-qubit
+superconducting processor: VQE accuracy, decoherence scaling, and the
+first hardware confirmation of the DLA parity asymmetry"
 
 ## Abstract Draft
 
-We implement quantum simulation of Kuramoto-type coupled oscillators on IBM's
-Heron r2 processor (ibm_fez, 156 qubits) by mapping the Kuramoto model to the
-XY spin Hamiltonian and evolving via Lie-Trotter decomposition. Five principal
-results emerge: (1) a simulator-optimized, hardware-verified VQE ansatz whose
-entanglement topology mirrors the coupling graph achieves 0.05% ground-state
-energy error on 4 qubits, outperforming generic ansatze (TwoLocal, EfficientSU2)
-on the same Hamiltonian; (2) a 12-point decoherence scaling curve from depth 5
-to 770 identifies three distinct regimes with a coherence wall at depth 250-400;
-(3) a 16-oscillator snapshot shows outlier resilience — L12 (weakest coupling)
-collapses to near-zero coherence while L3 (strongest) maintains |<X>|=0.55,
-though global Spearman rho = -0.13 (p=0.62) confirms hardware noise dominates
-mid-range layers; (4) a Trotter-depth tradeoff shows single-step evolution
-outperforms multi-step on current hardware; (5) QAOA-based model predictive
-control explores the Ising-encoded action space. All experiments ran within a
-10-minute free-tier QPU budget.
+We implement quantum simulation of Kuramoto-type coupled oscillators on
+IBM's Heron r2 processor (ibm_fez and ibm_kingston, 156 qubits) by mapping
+the Kuramoto model to the XY spin Hamiltonian and evolving via Lie-Trotter
+decomposition. **Six principal results** emerge: (1) a simulator-optimised,
+hardware-verified VQE ansatz whose entanglement topology mirrors the
+coupling graph achieves 0.05% ground-state energy error on 4 qubits,
+outperforming generic ansatze (TwoLocal, EfficientSU2) on the same
+Hamiltonian; (2) a 12-point decoherence scaling curve from depth 5 to 770
+identifies three distinct regimes with a coherence wall at depth 250-400;
+(3) a 16-oscillator snapshot shows outlier resilience — L12 (weakest
+coupling) collapses to near-zero coherence while L3 (strongest) maintains
+$|\langle X\rangle|=0.55$, though global Spearman $\rho = -0.13$ (p=0.62)
+confirms hardware noise dominates mid-range layers; (4) a Trotter-depth
+tradeoff shows single-step evolution outperforms multi-step on current
+hardware; (5) QAOA-based model predictive control explores the
+Ising-encoded action space; **(6) the first hardware confirmation of the
+dynamical Lie algebra parity asymmetry of $H_{XY}$**: across 342 circuits
+on ibm_kingston (April 2026 Phase 1) at $n = 4$ with up to 21 reps per
+point and Welch's two-sample t-test, the odd ("feedback") $\mathfrak{su}$
+sub-block of the DLA is on average $(10.8 \pm 1.1)\,\%$ more robust to
+decoherence than the even ("projection") sub-block for Trotter depths
+$\ge 4$, with strongest signal $+17.48\,\%$ at depth 6 and Fisher's
+combined $p \ll 10^{-16}$. The observed magnitude is consistent with the
+4.5–9.6 % apriori prediction of the noiseless classical simulator. All
+experiments ran within the IBM Quantum Open Plan free-tier budget.
+
+## Phase 1 hardware result (Apr 2026, ibm_kingston)
+
+Full draft: [`paper/phase1_dla_parity_short_paper.md`](../paper/phase1_dla_parity_short_paper.md)
+Analysis script: `scripts/analyse_phase1_dla_parity.py`
+Figures: `figures/phase1/leakage_vs_depth.png`,
+         `figures/phase1/asymmetry_vs_depth.png`
+Raw data: `.coordination/ibm_runs/phase*_*.json` (4 files, 342 circuits)
+
+| Trotter depth | Leak even | Leak odd | Asym | Welch $p$ | Reps |
+|---:|---:|---:|---:|---:|---:|
+| 2 | 0.0806 | 0.0827 | $-2.5\%$ | 0.45 | 12 |
+| 4 | 0.0982 | 0.0862 | $+14.0\%$ | $1.4 \times 10^{-6}$ | 21 |
+| 6 | 0.1291 | 0.1099 | $+17.5\%$ | $6.6 \times 10^{-6}$ | 21 |
+| 8 | 0.1443 | 0.1284 | $+12.4\%$ | $8.9 \times 10^{-5}$ | 21 |
+| 10 | 0.1658 | 0.1495 | $+10.9\%$ | $6.7 \times 10^{-6}$ | 21 |
+| 14 | 0.1898 | 0.1797 | $+5.6\%$ | 0.010 | 21 |
+| 20 | 0.2295 | 0.2114 | $+8.6\%$ | 0.0067 | 12 |
+| 30 | 0.2771 | 0.2576 | $+7.6\%$ | 0.0095 | 12 |
 
 
 ## Claim 1: Physics-Informed VQE Achieves 0.05% Ground-State Error

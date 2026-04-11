@@ -411,6 +411,92 @@ value = ddd_mitigated_expectation(circuit)
 
 ---
 
+### 7. `symmetry_decay` — GUESS (symmetry-decay ZNE)
+
+Reference: Oliva del Moral *et al.*, arXiv:2603.13060 (2026). See
+[`symmetry_decay_guess.md`](symmetry_decay_guess.md) for the full theory
+and tutorial.
+
+Physics-informed zero-noise extrapolation that uses a Hamiltonian
+symmetry observable with a known ideal value as the noise guide.
+For the SCPN Kuramoto-XY framework, the conserved total magnetisation
+$\sum Z_i$ is the natural choice — it commutes with $H_{XY}$ and is
+measured for free in any Z-basis run.
+
+Rust-accelerated via `scpn_quantum_engine.fit_symmetry_decay` and
+`scpn_quantum_engine.guess_extrapolate_batch` (rayon-parallel batch
+correction).
+
+#### `learn_symmetry_decay(ideal_symmetry_value, noisy_symmetry_values, noise_scales)`
+
+Fit the noise-decay exponent $\alpha$ from log-linear regression on
+the symmetry observable measurements at multiple noise scale factors:
+
+```math
+\langle S \rangle_g \;=\; \langle S \rangle_{\text{ideal}} \,
+                          e^{-\alpha (g-1)}
+```
+
+Returns a `SymmetryDecayModel` with the learned `alpha` and
+`fit_residual`.
+
+```python
+from scpn_quantum_control.mitigation.symmetry_decay import (
+    learn_symmetry_decay,
+    xy_magnetisation_ideal,
+)
+
+n = 4
+s_ideal = xy_magnetisation_ideal(n, "ground")  # = +n
+model = learn_symmetry_decay(
+    ideal_symmetry_value=s_ideal,
+    noisy_symmetry_values=[3.92, 3.65, 3.10],   # measured ⟨ΣZ⟩ at g=1,3,5
+    noise_scales=[1, 3, 5],
+)
+print(model.alpha, model.fit_residual)
+```
+
+#### `guess_extrapolate(target_noisy_value, symmetry_noisy_value, decay_model)`
+
+Apply the GUESS correction (Eq. 5 of Oliva del Moral *et al.*) to a
+single target observable:
+
+```math
+\langle O \rangle_{\text{mitigated}} \;\approx\;
+  \langle O \rangle_{\text{noisy}} \,
+  \left( \frac{|\langle S \rangle_{\text{ideal}}|}
+              {|\langle S \rangle_{\text{noisy}}|} \right)^{\alpha}
+```
+
+```python
+from scpn_quantum_control.mitigation.symmetry_decay import guess_extrapolate
+
+result = guess_extrapolate(
+    target_noisy_value=0.45,
+    symmetry_noisy_value=3.92,
+    decay_model=model,
+)
+print(result.mitigated_value, result.correction_factor)
+```
+
+#### `xy_magnetisation_ideal(n_qubits, initial_state="ground")`
+
+Helper that returns the ideal $\langle \sum Z_i \rangle$ for the
+standard initial states used in the SCPN framework: `"ground"`
+(returns $+n$) or `"neel"` (returns $n \bmod 2$).
+
+#### Phase 1 hardware result (April 2026)
+
+GUESS was used in the Phase 1 ibm_kingston campaign as both the noise
+calibration and the headline scientific result. With $\alpha$ learned
+from the parity-leakage decay across depths 2–30, the corrected
+sector-resolved leakage rates produced the first hardware confirmation
+of the DLA parity asymmetry: 7 of 8 depths individually significant
+at Welch $p < 0.05$, Fisher's combined $p \ll 10^{-16}$, mean
+asymmetry $+10.8\,\%$ for depths $\ge 4$.
+
+---
+
 ## Comparison of Techniques
 
 | Technique | Circuit Overhead | Shot Overhead | Best For |

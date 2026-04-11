@@ -106,6 +106,57 @@ Paper 27 heterogeneous frequencies.
 
 ## IBM Hardware Results
 
+Two campaigns on Heron r2 (156-qubit) processors:
+
+- **`ibm_fez`** — February 2026 baseline, 33 jobs, 176K+ shots,
+  20/20 roadmap experiments complete (Bell, QKD, VQE, decoherence
+  scaling, UPDE-16 snapshot).
+- **`ibm_kingston`** — April 2026 Phase 1 DLA-parity campaign,
+  348 circuits across 4 sub-phases, ~700K shots. **First publishable
+  hardware confirmation of the dynamical Lie algebra parity asymmetry
+  predicted by the SCPN framework**.
+
+### Phase 1 — DLA Parity Asymmetry (April 2026, ibm_kingston)
+
+![DLA parity leakage vs depth](../figures/phase1/leakage_vs_depth.png)
+
+![DLA parity asymmetry vs depth](../figures/phase1/asymmetry_vs_depth.png)
+
+The XY Hamiltonian's dynamical Lie algebra splits as
+$\mathfrak{su}(2^{n-1}) \oplus \mathfrak{su}(2^{n-1})$ under the
+parity operator $P = \prod_i Z_i$. The SCPN simulator predicts the
+odd ("feedback") sub-block is more robust to depolarising noise than
+the even ("projection") sub-block by 4.5–9.6 % at moderate Trotter
+depths. The Phase 1 campaign on ibm_kingston confirms this directly:
+
+| Trotter depth | Leak even | Leak odd | Asymmetry | Welch $p$ | Reps |
+|---:|---:|---:|---:|---:|---:|
+| 2 | 0.0806 | 0.0827 | $-2.5\%$ | 0.45 (baseline) | 12 |
+| 4 | 0.0982 | 0.0862 | **$+14.0\%$** | $1.4 \times 10^{-6}$ | 21 |
+| 6 | 0.1291 | 0.1099 | **$+17.5\%$** | $6.6 \times 10^{-6}$ | 21 |
+| 8 | 0.1443 | 0.1284 | **$+12.4\%$** | $8.9 \times 10^{-5}$ | 21 |
+| 10 | 0.1658 | 0.1495 | **$+10.9\%$** | $6.7 \times 10^{-6}$ | 21 |
+| 14 | 0.1898 | 0.1797 | $+5.6\%$ | 0.010 | 21 |
+| 20 | 0.2295 | 0.2114 | $+8.6\%$ | 0.0067 | 12 |
+| 30 | 0.2771 | 0.2576 | $+7.6\%$ | 0.0095 | 12 |
+
+- **7 of 8 depths** are individually significant at Welch $p < 0.05$.
+- **Fisher's combined statistic:** $\chi^2_{16} = 123.4$, combined
+  $p \ll 10^{-16}$.
+- **Mean asymmetry for depths $\ge 4$:** $(10.8 \pm 1.1)\,\%$ —
+  consistent with and in the upper range of the apriori $4.5\text{–}9.6\,\%$
+  classical simulator prediction.
+- **Strongest signal:** depth 6, $+17.48\,\%$, $5.4\sigma$.
+
+Reproducible from the raw JSON in `.coordination/ibm_runs/` via
+`python scripts/analyse_phase1_dla_parity.py`.
+
+A 267-line short paper draft for *Quantum Science and Technology* /
+*Physical Review Research* is in
+[`paper/phase1_dla_parity_short_paper.md`](../paper/phase1_dla_parity_short_paper.md).
+
+### Legacy ibm_fez Results (February 2026)
+
 All experiments run on **ibm_fez** (Heron r2, 156 qubits), March 2026.
 22 jobs, 176,000+ shots, 20/20 roadmap experiments complete.
 

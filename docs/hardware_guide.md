@@ -10,8 +10,16 @@
 
 The `hardware` package provides the full stack from circuit compilation
 to QPU execution, noise modelling, classical reference computation, and
-multi-backend support. 16 modules covering IBM superconducting, trapped
-ion, PennyLane, Cirq, GPU acceleration, and circuit cutting.
+multi-backend support. 17 modules (April 2026: added `qubit_mapper.py`
+for DynQ topology-agnostic placement) covering IBM superconducting,
+trapped ion, PennyLane, Cirq, GPU acceleration, and circuit cutting.
+
+**Validated devices:**
+
+| Device | Family | Campaign | Highlight |
+|--------|--------|----------|-----------|
+| `ibm_fez` | Heron r2, 156 q | February 2026, 33 jobs, 176K+ shots | VQE 0.05% error, Bell S = 2.165, BB84 QBER 5.5% |
+| `ibm_kingston` | Heron r2, 156 q | April 2026 Phase 1, 348 circuits, ~700K shots | First hardware confirmation of the DLA parity asymmetry: $+10.8\,\%$ mean for depths $\ge 4$, peak $+17.48\,\%$ at depth 6, Welch combined $p \ll 10^{-16}$ |
 
 ## Architecture
 
@@ -420,6 +428,54 @@ Compare `hw_R` against `exact_R` (from `classical_kuramoto_reference` or
 - `test_circuit_cutting.py` — Partitioning, recombination, overhead bounds
 - `test_qcvv.py` — RB, gate set tomography, fidelity extraction
 
+## DynQ Topology-Agnostic Qubit Placement
+
+`scpn_quantum_control.hardware.qubit_mapper` (added April 2026) implements
+the DynQ method (Liu *et al.*, arXiv:2601.19635) for selecting an
+execution region on a heavy-hex device based on the live calibration
+data. The QPU is modelled as a graph weighted by inverse two-qubit gate
+errors, and Louvain community detection partitions it into high-fidelity
+sub-regions; the sub-region with the best composite quality score is
+chosen for the circuit. Quality scoring is Rust-accelerated.
+
+See [`dynq_qubit_mapping.md`](dynq_qubit_mapping.md) for the full
+theory, the `dynq_initial_layout()` API, and a Qiskit transpiler
+integration recipe.
+
+## GUESS Symmetry-Decay Error Mitigation
+
+`scpn_quantum_control.mitigation.symmetry_decay` (added April 2026)
+provides physics-informed zero-noise extrapolation specifically for the
+XY Hamiltonian, using its conserved $\sum Z_i$ as the guide observable.
+GUESS is the recommended default for any SCPN Kuramoto-XY hardware run
+because the symmetry observable is measured for free in the standard
+Z-basis read-out, so the mitigation adds zero shot overhead.
+
+See [`symmetry_decay_guess.md`](symmetry_decay_guess.md) for the full
+theory, API, and a worked example calibrating $\alpha$ from the Phase 1
+ibm_kingston dataset.
+
+## Phase 1 Campaign Protocol (April 2026)
+
+The Phase 1 campaign is recorded in
+`.coordination/IBM_CAMPAIGN_STATE.md` and `IBM_EXECUTION_LOG.md`, and
+the analysis is reproduced by `scripts/analyse_phase1_dla_parity.py`.
+The four sub-phases progressively increased the per-point repetition
+count from 2 to 21 to drive the per-depth uncertainty below the 5 %
+asymmetry signal:
+
+| Sub-phase | Circuits | Wall time | Reps per (depth, sector) point |
+|-----------|---------:|----------:|-------------------------------:|
+| Pipe cleaner | 2 | ~0.1 s | sanity check |
+| Phase 1 (A/B/C) | 42 | 44.1 s | 2 |
+| Phase 1.5 (D/E) | 72 | 56.7 s | +4 → 6 |
+| Phase 2 exhaust (F/G/H/I) | 138 | 97.5 s | +6 → 12 |
+| Phase 2.5 final burn (J) | 90 | 65.1 s | +9 → 21 (at the 5 strongest depths) |
+| **Total $n=4$** | **342** | **~264 s wall** | up to **21** |
+
+Headline result: $+10.8\,\%$ mean asymmetry for depths $\ge 4$, peak
+$+17.48\,\%$ at depth 6, Welch combined $p \ll 10^{-16}$.
+
 ## Pipeline Performance
 
 Measured on ML350 Gen8 (128 GB RAM, Xeon E5-2620v2):
@@ -436,3 +492,8 @@ Measured on ML350 Gen8 (128 GB RAM, Xeon E5-2620v2):
 | `heron_r2_noise_model` | — | 5 ms |
 | `PennyLaneRunner.run_trotter` | 3 qubits | 50 ms |
 | `partition_circuit` | 16 → 2×8 qubits | 25 ms |
+| `dynq_initial_layout` (156-qubit graph, 5-qubit circuit) | — | < 100 ms |
+| `learn_symmetry_decay` (5 noise scales, Rust) | — | < 1 µs |
+| `guess_extrapolate_batch` (1,000 observables, Rust) | — | < 50 µs |
+| `hypergeometric_envelope` (10,000 points, Rust) | — | 2.6 ms |
+| `ici_three_level_evolution` (2,000 points, Rust) | — | 0.04 ms |
