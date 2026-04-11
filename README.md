@@ -456,7 +456,7 @@ scpn_quantum_control/
 ├── phase/          28 modules — time evolution + variational + Lindblad
 ├── hardware/       24 modules — IBM runner, trapped-ion, GPU, cutting, fast sparse
 ├── bridge/         13 modules — K_nm → quantum objects + cross-repo
-├── applications/   11 modules — physical system benchmarks
+├── applications/   12 modules — physical system benchmarks
 ├── control/         7 modules — QAOA-MPC, VQLS-GS, Petri, ITER, topological
 ├── mitigation/      7 modules — ZNE, PEC, DD, Z₂, CPDR, symmetry
 ├── identity/        6 modules — identity continuity analysis
