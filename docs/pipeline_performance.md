@@ -709,3 +709,67 @@ underscore name, no private experiments. At least half accept shots parameter.
 
 Partitions: ceil(n/max_partition_size). R per partition bounded [0, 1].
 Combined R bounded [0, 1]. Energy estimate finite.
+
+---
+
+## 17. GUESS Symmetry-Decay ZNE (April 2026)
+
+`mitigation/symmetry_decay.py` (Rust path: `fit_symmetry_decay`,
+`guess_extrapolate_batch`).
+
+| Operation | Input | Time | Notes |
+|-----------|-------|------|-------|
+| `learn_symmetry_decay` | 5 noise scales (Rust) | < 1 µs | least-squares α fit |
+| `learn_symmetry_decay` | 5 noise scales (Python fallback) | < 1 µs | numpy polyfit |
+| `guess_extrapolate` | single observable | < 0.1 µs | analytic correction |
+| `guess_extrapolate_batch` | 1,000 observables (Rust) | < 50 µs | rayon-parallel |
+| `guess_extrapolate_batch` | 100,000 observables (Rust) | < 2 ms | scales linearly |
+
+Pipeline test: `tests/test_pipeline_wiring_performance.py::TestGUESSPipeline`.
+
+## 18. DynQ Topology-Agnostic Qubit Mapper (April 2026)
+
+`hardware/qubit_mapper.py` (Rust path: `score_regions_batch`).
+
+| Operation | Input | Time |
+|-----------|-------|------|
+| `build_calibration_graph` | 156-qubit heavy-hex | < 5 ms |
+| `detect_execution_regions` | 156 qubits | < 50 ms |
+| `dynq_initial_layout` (full pipeline) | 156 qubits → 5-qubit layout | < 100 ms |
+| `score_regions_batch` (Rust) | 100 regions × 50 qubits | < 5 ms |
+
+Pipeline test: `tests/test_pipeline_wiring_performance.py::TestDynQPipeline`.
+
+## 19. Pulse Shaping — ICI + (α,β)-Hypergeometric (April 2026)
+
+`phase/pulse_shaping.py` (Rust paths: `hypergeometric_envelope_batch`,
+`ici_mixing_angle_batch`, `ici_three_level_evolution_batch`).
+
+| Operation | Input | Python | Rust | Speedup |
+|-----------|-------|------:|-----:|--------:|
+| `hypergeometric_envelope` | 200 points | 0.4 ms | 0.1 ms | 4× |
+| `hypergeometric_envelope` | 10,000 points | 114.5 ms | 2.6 ms | **44×** |
+| `ici_mixing_angle` | 1,000 points | 0.05 ms | 0.04 ms | parity-checked |
+| `ici_three_level_evolution` | 2,000 points | 68.30 ms | 0.04 ms | **1,665×** |
+| `build_trotter_pulse_schedule` | 4 qubits, K all-to-all | 1.2 ms | n/a | full schedule |
+
+Verified parity (Rust vs Python): max abs diff $4.97 \times 10^{-14}$
+for $n_\text{points} = 500$ on `ici_three_level_evolution`.
+
+Pipeline test: `tests/test_pipeline_wiring_performance.py::TestPulseShapingPipeline`.
+
+## 20. Phase 1 IBM Hardware Campaign (April 2026)
+
+Real-world QPU runs on `ibm_kingston` (Heron r2, 156 q):
+
+| Sub-phase | Circuits | Wall (queue + exec) | QPU rate |
+|-----------|---------:|--------------------:|---------:|
+| Pipe cleaner | 2 | ~0.1 s | 1.0 s/circuit |
+| Phase 1 (A/B/C) | 42 | 44.1 s | 0.65 s/circuit |
+| Phase 1.5 (D/E) | 72 | 56.7 s | 0.55 s/circuit |
+| Phase 2 exhaust (F/G/H/I) | 138 | 97.5 s | 0.55 s/circuit |
+| Phase 2.5 final burn (J) | 90 | 65.1 s | 0.55 s/circuit |
+| **Total** | **344** | **~264 s** | **~0.55 s/circuit** |
+
+Reproducible from `.coordination/ibm_runs/*.json` via
+`scripts/analyse_phase1_dla_parity.py` (no QPU needed for the analysis).

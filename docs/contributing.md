@@ -20,14 +20,34 @@ pytest tests/ -x -q
 
 ## Code Quality Gates
 
-All contributions must pass the full CI pipeline:
+All contributions must pass the full CI pipeline. The pre-commit hooks
+mirror the CI gates so you catch issues locally before push:
 
 ```bash
+gitleaks                                            # generic secret scan (v8.21.2)
+python tools/check_secrets.py                       # vault-pattern + keyword scan
 ruff check src/ tests/
 ruff format --check src/ tests/
 mypy src/
 pytest tests/ -v --ignore=tests/test_hardware_runner.py
+python scripts/check_version_consistency.py
 ```
+
+The pre-commit configuration in `.pre-commit-config.yaml` runs all of
+the above on every `git commit`. The pre-push hook additionally runs
+`tools/preflight.py` which executes the same gates plus the full
+test+coverage matrix.
+
+**Secret hygiene (Tier 0 rule).** Never write credentials, API tokens,
+or passwords into any committed file — including documentation,
+internal notes, and CLAUDE.md files. Read credentials from
+`agentic-shared/CREDENTIALS.md` at runtime or from environment
+variables. The `tools/check_secrets.py` hook will block any commit
+containing an inline credential keyword (`password:`, `token:`,
+`api_key:` ...) with a non-placeholder value, or any high-entropy
+substring extracted from the local credentials vault. See
+`.coordination/incidents/INCIDENT_2026-04-10T2336_ftp_creds_in_webmaster_context.md`
+for the post-mortem of the leak that motivated these scanners.
 
 ## Testing Requirements
 
