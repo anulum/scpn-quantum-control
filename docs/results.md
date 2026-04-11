@@ -148,7 +148,7 @@ depths. The Phase 1 campaign on ibm_kingston confirms this directly:
   classical simulator prediction.
 - **Strongest signal:** depth 6, $+17.48\,\%$, $5.4\sigma$.
 
-Reproducible from the raw JSON in `.coordination/ibm_runs/` via
+Reproducible from the raw JSON in `data/phase1_dla_parity/` via
 `python scripts/analyse_phase1_dla_parity.py`.
 
 A 267-line short paper draft for *Quantum Science and Technology* /

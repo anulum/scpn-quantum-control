@@ -46,10 +46,10 @@ from scipy import stats
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 PHASE1_FILES = [
-    REPO_ROOT / ".coordination/ibm_runs/phase1_bench_2026-04-10T183728Z.json",
-    REPO_ROOT / ".coordination/ibm_runs/phase1_5_reinforce_2026-04-10T184909Z.json",
-    REPO_ROOT / ".coordination/ibm_runs/phase2_exhaust_2026-04-10T185634Z.json",
-    REPO_ROOT / ".coordination/ibm_runs/phase2_5_final_burn_2026-04-10T190136Z.json",
+    REPO_ROOT / "data/phase1_dla_parity/phase1_bench_2026-04-10T183728Z.json",
+    REPO_ROOT / "data/phase1_dla_parity/phase1_5_reinforce_2026-04-10T184909Z.json",
+    REPO_ROOT / "data/phase1_dla_parity/phase2_exhaust_2026-04-10T185634Z.json",
+    REPO_ROOT / "data/phase1_dla_parity/phase2_5_final_burn_2026-04-10T190136Z.json",
 ]
 
 

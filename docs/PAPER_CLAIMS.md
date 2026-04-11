@@ -52,7 +52,7 @@ Full draft: [`paper/phase1_dla_parity_short_paper.md`](../paper/phase1_dla_parit
 Analysis script: `scripts/analyse_phase1_dla_parity.py`
 Figures: `figures/phase1/leakage_vs_depth.png`,
          `figures/phase1/asymmetry_vs_depth.png`
-Raw data: `.coordination/ibm_runs/phase*_*.json` (4 files, 342 circuits)
+Raw data: `data/phase1_dla_parity/phase*_*.json` (4 files, 342 circuits)
 
 | Trotter depth | Leak even | Leak odd | Asym | Welch $p$ | Reps |
 |---:|---:|---:|---:|---:|---:|

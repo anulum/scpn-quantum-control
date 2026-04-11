@@ -56,9 +56,12 @@ CLAUDE.md
 BACKUP/
 ARCHIVE/
 
-# Local IBM runs results cache — the authoritative copies live in
-# .coordination/ibm_runs/ (committed). This directory is a scratch
-# location for the HardwareRunner to dump intermediate JSON files.
+# Local IBM runs results cache — the authoritative, curated copies
+# of published datasets live in `data/<experiment>/` (committed; see
+# `data/phase1_dla_parity/` for the Phase 1 campaign). `.coordination/ibm_runs/`
+# is a scratch location for the HardwareRunner to dump intermediate
+# JSON files during live runs; `results/` below is the legacy cache
+# directory for older experiments (pre-2026-04) and is not committed.
 results/
 
 # Working TODO scratch files — superseded by sessions/handovers
