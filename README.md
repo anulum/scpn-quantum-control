@@ -469,7 +469,7 @@ scpn_quantum_control/
 ├── tcbo/            1 module  — TCBO quantum observer
 ├── pgbo/            1 module  — PGBO quantum bridge
 ├── l16/             1 module  — Layer 16 quantum director
-└── scpn_quantum_engine/  Rust crate (PyO3 0.25, 22 functions)
+└── scpn_quantum_engine/  Rust crate (PyO3 0.25, 37 functions)
 ```
 
 ## Dependencies
