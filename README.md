@@ -7,6 +7,7 @@
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://python.org)
 [![Qiskit 1.0+](https://img.shields.io/badge/qiskit-1.0%2B-6929C4.svg)](https://qiskit.org)
+[![Website](https://img.shields.io/badge/website-anulum.li%2Fscpn--quantum--control-38bdf8.svg)](https://anulum.li/scpn-quantum-control/)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue.svg)](https://anulum.github.io/scpn-quantum-control)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12290/badge)](https://www.bestpractices.dev/projects/12290)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/anulum/scpn-quantum-control/badge)](https://securityscorecards.dev/viewer/?uri=github.com/anulum/scpn-quantum-control)
@@ -23,6 +24,39 @@
 
 **Version:** 0.9.5
 **Status:** 201 Python Modules + 36 Rust Functions | 47 Notebooks | 21 Examples | 97%+ Coverage | IBM Hardware Validated (DLA parity confirmed)
+
+---
+
+## Richer Presentation
+
+For a richer presentation of the Phase 1 hardware results, methodology
+deep-dives, interactive plots, and architecture diagrams, see the
+project website:
+
+**[anulum.li/scpn-quantum-control](https://anulum.li/scpn-quantum-control/)**
+
+Direct entry points:
+
+- [Phase 1 Results](https://anulum.li/scpn-quantum-control/phase1-results.html)
+  — first hardware observation of the DLA parity asymmetry on
+  ibm_kingston, April 2026, with full Welch table and interactive
+  Plotly plot
+- [Reproducibility Manifest](https://anulum.li/scpn-quantum-control/reproducibility.html)
+  — per-commit pinning, IBM job IDs, dependency constraints, rerun
+  protocol
+- [Method: GUESS Mitigation](https://anulum.li/scpn-quantum-control/method-guess.html)
+  — symmetry-guided ZNE, shot-budget-free for the XY Hamiltonian
+- [Method: DLA Parity Theorem](https://anulum.li/scpn-quantum-control/method-dla-parity.html)
+  — $\mathfrak{su}(2^{n-1}) \oplus \mathfrak{su}(2^{n-1})$
+  decomposition and hardware confirmation
+- [Method: Pulse Shaping](https://anulum.li/scpn-quantum-control/method-pulse-shaping.html)
+  — ICI three-level (1,665× Rust) and (α, β)-hypergeometric
+  (44× Rust)
+- [The Science](https://anulum.li/scpn-quantum-control/science.html)
+  — plain-language primer on SCPN, Kuramoto-XY, and why the DLA
+  parity result matters
+- [Research Timeline](https://anulum.li/scpn-quantum-control/timeline.html)
+  — past milestones, current blockers, planned Phase 2
 
 ---
 
