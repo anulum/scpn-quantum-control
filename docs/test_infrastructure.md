@@ -24,7 +24,7 @@ tests/
   test_pipeline_wiring_performance.py  # ~120 tests — every __all__ export verified functional
                                        # (now includes TestGUESSPipeline, TestDynQPipeline,
                                        # TestPulseShapingPipeline)
-  test_rust_path_benchmarks.py         # 51+ tests — all 36 Rust functions benchmarked
+  test_rust_path_benchmarks.py         # 51+ tests — all 37 Rust functions benchmarked
   test_symmetry_decay.py               # 20 STRONG tests — GUESS (April 2026)
   test_qubit_mapper.py                 # 17 STRONG tests — DynQ (April 2026)
   test_pulse_shaping.py                # 25 STRONG tests — ICI + (α,β)-hypergeometric (April 2026)
