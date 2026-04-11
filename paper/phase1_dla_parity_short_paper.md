@@ -241,8 +241,8 @@ All raw count dictionaries, per-circuit metadata, analysis scripts,
 and figure-generation code are open-sourced at
 `https://github.com/anulum/scpn-quantum-control` under the AGPL-3.0
 licence. The Phase 1 dataset is in
-`.coordination/ibm_runs/phase*_bench*.json` (four files, 342 circuits
-at $n = 4$), and the full analysis can be reproduced with
+`data/phase1_dla_parity/` (four JSON files, 342 circuits at $n = 4$),
+and the full analysis can be reproduced with
 
 ```bash
 python scripts/analyse_phase1_dla_parity.py

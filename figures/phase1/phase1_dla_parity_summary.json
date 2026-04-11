@@ -1,9 +1,9 @@
 {
   "source_files": [
-    ".coordination/ibm_runs/phase1_bench_2026-04-10T183728Z.json",
-    ".coordination/ibm_runs/phase1_5_reinforce_2026-04-10T184909Z.json",
-    ".coordination/ibm_runs/phase2_exhaust_2026-04-10T185634Z.json",
-    ".coordination/ibm_runs/phase2_5_final_burn_2026-04-10T190136Z.json"
+    "data/phase1_dla_parity/phase1_bench_2026-04-10T183728Z.json",
+    "data/phase1_dla_parity/phase1_5_reinforce_2026-04-10T184909Z.json",
+    "data/phase1_dla_parity/phase2_exhaust_2026-04-10T185634Z.json",
+    "data/phase1_dla_parity/phase2_5_final_burn_2026-04-10T190136Z.json"
   ],
   "n_circuits_loaded": 342,
   "n_qubits": 4,

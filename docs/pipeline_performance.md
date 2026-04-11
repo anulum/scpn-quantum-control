@@ -771,5 +771,5 @@ Real-world QPU runs on `ibm_kingston` (Heron r2, 156 q):
 | Phase 2.5 final burn (J) | 90 | 65.1 s | 0.55 s/circuit |
 | **Total** | **344** | **~264 s** | **~0.55 s/circuit** |
 
-Reproducible from `.coordination/ibm_runs/*.json` via
+Reproducible from `data/phase1_dla_parity/*.json` via
 `scripts/analyse_phase1_dla_parity.py` (no QPU needed for the analysis).
