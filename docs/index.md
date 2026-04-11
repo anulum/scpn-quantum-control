@@ -133,7 +133,7 @@ for name, w in results.items():
 - [Hardware Guide](hardware_guide.md) — IBM Quantum setup
 - [Bridges](bridges_api.md) — cross-repo integrations
 - [Tutorials](tutorials.md) — 4-level learning path, 14 tutorials
-- [Notebooks](notebooks.md) — 47 notebooks (13 core + 34 FIM investigation)
+- [Notebooks](notebooks.md) — 98 notebooks (13 core + 34 FIM investigation)
 
 ---
 
