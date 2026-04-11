@@ -32,7 +32,8 @@ $d \ge 4$. Seven of eight depths are individually significant at
 Welch's $p < 0.05$ (combined Fisher's $p \ll 10^{-16}$), and the
 strongest signal of $+17.5\,\%$ at depth 6 sits at $5.4\sigma$. The
 observed magnitude falls within the 4.5–9.6 % prediction band of our
-noiseless classical simulator once the circuit enters the saturation
+classical Lindblad simulator (calibrated with the published ibm\_fez
+$T_1/T_2$ and gate-error rates) once the circuit enters the saturation
 regime at depth $\ge 14$.
 
 ---
@@ -168,7 +169,7 @@ readout baseline on both sides. As the circuit enters the coherent
 transition regime ($d \in [4, 10]$, ISA gate counts 88–202) the
 asymmetry peaks at $+17.5\,\%$. At larger depths ($d \in [14, 30]$,
 ISA gate counts 278–582) the signal settles into the
-$(4.5$–$9.6)\,\%$ band of the noiseless simulator prediction,
+$(4.5$–$9.6)\,\%$ band of the classical Lindblad simulator prediction,
 consistent with a saturation regime where the sector distinction
 begins to wash out but remains visible above the noise floor.
 
