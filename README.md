@@ -149,7 +149,7 @@ information scrambles*, and *whether the system thermalises*.
 |--------|-------|
 | Rust engine functions | **36** (5,401× faster Hamiltonian construction; 1,665× faster ICI three-level evolution; 44× faster (α,β)-hypergeometric envelope) |
 | Research modules | **35** (≈ 5 novel constructions, ≈ 10 first-application, including GUESS symmetry-decay ZNE and DynQ topology-agnostic placement) |
-| Python modules | **201** + Rust crate (3,600+ lines, 20 source files) |
+| Python modules | **201** + Rust crate (3,983 lines, 21 source files) |
 | Publication figures | **16** (simulation + hardware, including the Phase 1 DLA parity panels) |
 | Test suite | **4,828** passing (97%+ coverage) |
 
