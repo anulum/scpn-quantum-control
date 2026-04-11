@@ -585,3 +585,128 @@ the synchronization transition is a genuine quantum phase transition of the BKT 
 not an artifact of any single observable.
 
 **Module:** `analysis/critical_concordance.py`
+
+## GUESS Symmetry-Decay ZNE (April 2026)
+
+Reference: Oliva del Moral *et al.*, arXiv:2603.13060 (2026), Eq. 5.
+For a Hamiltonian symmetry observable $S$ with $[H, S] = 0$ and known
+ideal value $\langle S\rangle_{\text{ideal}}$, the noise-induced decay
+under noise scale $g$ obeys
+
+```math
+\langle S \rangle_g \;=\; \langle S \rangle_{\text{ideal}} \,
+                          e^{-\alpha (g - 1)}.
+```
+
+The exponent $\alpha$ is fitted by log-linear regression on
+$(g - 1, \ln \lvert\langle S\rangle_g/\langle S\rangle_{\text{ideal}}\rvert)$
+pairs. The mitigated target observable is
+
+```math
+\langle O \rangle_{\text{mitigated}} \;\approx\;
+  \langle O \rangle_{\text{noisy}} \,
+  \left( \frac{\lvert\langle S\rangle_{\text{ideal}}\rvert}
+              {\lvert\langle S\rangle_{\text{noisy}}\rvert} \right)^{\alpha}.
+```
+
+For SCPN Kuramoto-XY, the natural symmetry is the conserved total
+magnetisation $S = \sum_i Z_i$ (since $[H_{XY}, \sum Z_i] = 0$), so
+$\langle S\rangle_{\text{ideal}} = +n$ for the ground state.
+
+**Module:** `mitigation/symmetry_decay.py` (Rust path:
+`scpn_quantum_engine.fit_symmetry_decay`,
+`scpn_quantum_engine.guess_extrapolate_batch`).
+
+## DynQ Quality Score (April 2026)
+
+Reference: Liu *et al.*, arXiv:2601.19635 (2026), Eqs. 1 and 8.
+The QPU is modelled as a graph $G = (V, E, W)$ with edge weights
+inversely proportional to the two-qubit gate error rates:
+
+```math
+w_{ij} \;=\; \frac{1}{e_{ij} + \epsilon_0}, \quad \epsilon_0 = 10^{-6}.
+```
+
+Louvain community detection partitions $G$ into sub-regions, and each
+sub-region $R$ is scored by
+
+```math
+S_{\text{conn}}(R) = \frac{|E_R|}{|V_R|(|V_R|-1)/2}, \qquad
+S_{\text{fid}}(R)  = 1 - \frac{1}{|E_R|}\sum_{(i,j)\in E_R} e_{ij},
+```
+
+with the composite quality
+
+```math
+Q(R) \;=\; S_{\text{conn}}(R) \cdot S_{\text{fid}}(R).
+```
+
+The chosen execution region maximises $Q(R)$ subject to $|V_R| \ge $
+the circuit width.
+
+**Module:** `hardware/qubit_mapper.py` (Rust path:
+`scpn_quantum_engine.score_regions_batch`).
+
+## ICI Mixing Angle (April 2026)
+
+Reference: Liu *et al.* (2023), STIREP optimal control.
+The Pontryagin Maximum Principle solution for stimulated Raman exact
+passage with Lindblad decay from the excited state is a three-segment
+trajectory in the mixing angle $\theta(t)$ between pump and Stokes:
+
+```math
+\theta(t) =
+  \begin{cases}
+    \theta_J\, t / t_1 & 0 \le t < t_1 \quad (\text{intuitive}) \\
+    \theta_J + (\tfrac{\pi}{2} - 2\theta_J)\dfrac{t - t_1}{t_2 - t_1} & t_1 \le t < t_2 \quad (\text{counter-intuitive}) \\
+    \tfrac{\pi}{2} - \theta_J + \theta_J\dfrac{t - t_2}{T - t_2} & t_2 \le t \le T \quad (\text{intuitive})
+  \end{cases}
+```
+
+with $t_1 = 0.05\,T$, $t_2 = 0.95\,T$, and the boundary jump angle
+$\theta_J = \theta_{\text{jump}}$. The Rabi frequencies satisfy the
+total power constraint $\Omega_P^2 + \Omega_S^2 = \Omega_0^2$ with
+
+```math
+\Omega_P(t) = \Omega_0 \sin\theta(t), \qquad
+\Omega_S(t) = \Omega_0 \cos\theta(t).
+```
+
+**Module:** `phase/pulse_shaping.py` (Rust path:
+`scpn_quantum_engine.ici_mixing_angle_batch`).
+
+## (α,β)-Hypergeometric Pulse Envelope (April 2026)
+
+Reference: Ventura Meinersen *et al.*, arXiv:2504.08031 (2025), Eq. 14.
+The unified adiabatic pulse family parameterised by the Gauss
+hypergeometric function ${}_2F_1$:
+
+```math
+\frac{\Omega(t)}{\Omega_0}
+  = \mathrm{sech}(\gamma t)
+    \cdot {}_2F_1\!\left(
+      \alpha,\, \beta;\,
+      \tfrac{\alpha + \beta + 1}{2};\,
+      \tfrac{1 + \tanh(\gamma t)}{2}
+    \right).
+```
+
+Special cases:
+
+| Protocol | $\alpha$ | $\beta$ |
+|----------|---------:|--------:|
+| Allen-Eberly (pure $\mathrm{sech}$) | 0 | 0 |
+| STIRAP-optimal | 0.5 | 0.5 |
+| Demkov-Kunike | 1.0 | 0.5 |
+
+The analytical infidelity bound in the adiabatic limit is
+
+```math
+1 - F \;\lesssim\; \left(\frac{\gamma}{\Omega_0}\right)^2 \,
+                   \frac{\Gamma(\alpha+1)\,\Gamma(\beta+1)}
+                        {\Gamma\!\left(\tfrac{\alpha+\beta}{2}+1\right)^2}.
+```
+
+**Module:** `phase/pulse_shaping.py` (Rust path:
+`scpn_quantum_engine.hypergeometric_envelope_batch`, custom ${}_2F_1$
+series expansion + rayon, **44× faster** than scipy element-wise).

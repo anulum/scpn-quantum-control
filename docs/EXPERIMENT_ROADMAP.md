@@ -80,6 +80,44 @@ accuracy faster than decoherence penalty from deeper circuits?
 **Total: ~370s. Buffer: ~230s for reruns or calibration.**
 
 
+## April 2026 — Phase 1 EXECUTED (10 April 2026, ibm_kingston)
+
+The April 2026 plan was executed on the Open Plan free-tier on
+**ibm_kingston** (Heron r2, 156 qubits) on 2026-04-10 instead of
+ibm_fez. The campaign focused on the **DLA parity asymmetry** as the
+single highest-priority hardware claim. **First publishable hardware
+confirmation achieved** — see
+[`docs/results.md`](results.md#phase-1--dla-parity-asymmetry-april-2026-ibm_kingston)
+and
+[`paper/phase1_dla_parity_short_paper.md`](../paper/phase1_dla_parity_short_paper.md).
+
+**Phase 1 deliverables (DONE):**
+
+- 348 circuits across 4 sub-phases on $n = 4$, plus $n = 6$ and $n = 8$
+  scaling probes
+- Up to 21 reps per (depth, sector) point at the 5 strongest depths
+  ($d \in \{4, 6, 8, 10, 14\}$)
+- Welch's t-test 7/8 depths individually significant at $p < 0.05$
+- Fisher's combined $\chi^2_{16} = 123.4$, combined $p \ll 10^{-16}$
+- Mean asymmetry $+10.8\,\%$ for depths $\ge 4$, peak $+17.48\,\%$ at
+  depth 6 — consistent with the 4.5–9.6 % apriori simulator prediction
+- Wall time ~264 s, all within the Open Plan 10-min cycle
+- Full reproducible analysis: `scripts/analyse_phase1_dla_parity.py`
+- 267-line short-paper draft: `paper/phase1_dla_parity_short_paper.md`
+
+**Phase 2 plan (ready, requires 180-min promo):**
+
+- `scripts/phase2_full_campaign_ibm.py` — 1,192 circuits, requires
+  `--confirm-promo-active` flag, est. ~11 min QPU time
+- High-statistics $n = 4$ run (30 reps × 10 depths), scaling at
+  $n = 6, 8, 10, 12$, GUESS noise-scale calibration sub-sweep, expanded
+  readout baseline
+- Stretch: independent replication on a different Heron r2 device
+  (e.g. ibm_marrakesh) to rule out device-specific artefacts
+
+The original April 2026 plan below is preserved for reference. Several
+of those experiments were superseded by the Phase 1 DLA parity focus.
+
 ## April 2026 Plan (~380s QPU)
 
 ### Priority experiments
