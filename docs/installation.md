@@ -31,9 +31,15 @@ This installs pytest, ruff, and pytest-cov for development.
 pip install -e ".[viz]"
 
 # IBM Quantum hardware execution
+# Pulls in qiskit-ibm-runtime (>=0.20, <1.0). The current pinned working
+# version on the dev machine is 0.46.x. Note that 0.46+ changed the
+# DataBin classical-register name handling — runner.py was updated to
+# handle both legacy 'meas' and per-circuit names ('c', 'cr', 'c0').
 pip install -e ".[ibm]"
 
-# Rust acceleration (158-5401x faster Hamiltonian construction)
+# Rust acceleration (158–5,401× faster Hamiltonian construction;
+# 1,665× faster ICI three-level evolution; 44× faster (α,β)-hypergeometric
+# envelope; 2–10× across Pauli expectations and OTOC)
 pip install scpn-quantum-engine
 
 # Or build from source (requires Rust toolchain):

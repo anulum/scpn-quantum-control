@@ -205,6 +205,94 @@ PhaseVQE(K: np.ndarray, omega: np.ndarray, ansatz_reps: int = 2, threshold: floa
     .solve(optimizer="COBYLA", maxiter=200, seed: int | None = None) -> dict
 ```
 
+### `pulse_shaping` (added April 2026)
+
+PMP-optimal ICI pulse sequences (Liu *et al.* 2023) and the unified
+$(\alpha,\beta)$-hypergeometric pulse family (Ventura Meinersen *et al.*,
+arXiv:2504.08031). All compute paths are Rust-accelerated:
+
+| Function | Speedup vs Python |
+|----------|------------------:|
+| `hypergeometric_envelope_batch` (10k points) | 44× |
+| `ici_three_level_evolution_batch` (2k points) | 1,665× |
+| `ici_mixing_angle_batch` | parity-checked |
+
+```python
+from scpn_quantum_control.phase.pulse_shaping import (
+    build_ici_pulse,
+    build_hypergeometric_pulse,
+    ici_three_level_evolution,
+    hypergeometric_envelope,
+    build_trotter_pulse_schedule,
+)
+
+# ICI pulse with Lindblad decay simulation
+pulse = build_ici_pulse(t_total=2.0, omega_0=20.0, gamma_decay=0.05, n_points=500)
+populations = ici_three_level_evolution(pulse)  # shape (500, 3) — P_g, P_e, P_s
+
+# (α,β)-hypergeometric envelope (STIRAP-optimal: α=β=0.5)
+hpulse = build_hypergeometric_pulse(t_total=1.0, omega_0=10.0, alpha=0.5, beta=0.5)
+
+# Build a complete Trotter pulse schedule from a coupling matrix
+schedule = build_trotter_pulse_schedule(n_qubits=4, k_matrix=K, t_step=0.1)
+```
+
+## hardware
+
+### `qubit_mapper.dynq_initial_layout` (added April 2026)
+
+Topology-agnostic qubit placement via Louvain community detection on a
+calibration-weighted QPU graph. Implements the DynQ method
+(Liu *et al.*, arXiv:2601.19635). Quality scoring is Rust-accelerated.
+
+```python
+from scpn_quantum_control.hardware.qubit_mapper import dynq_initial_layout
+
+result = dynq_initial_layout(
+    gate_errors={(i, j): error_rate for ...},
+    circuit_width=4,
+    readout_errors={i: error_rate for ...},
+    seed=42,
+)
+result.initial_layout       # list[int] — physical qubits to use
+result.selected_region      # ExecutionRegion — quality_score, connectivity, etc.
+```
+
+See [`dynq_qubit_mapping.md`](dynq_qubit_mapping.md) for the full
+theory and Qiskit transpiler integration recipe.
+
+## mitigation (highlights — see also `mitigation_api.md`)
+
+### `symmetry_decay` — GUESS (added April 2026)
+
+Physics-informed zero-noise extrapolation using the conserved
+$\sum Z_i$ as the guide observable for the XY Hamiltonian. Used as
+both the noise calibration and the headline scientific result of the
+April 2026 ibm_kingston Phase 1 campaign.
+
+```python
+from scpn_quantum_control.mitigation.symmetry_decay import (
+    learn_symmetry_decay,
+    guess_extrapolate,
+    xy_magnetisation_ideal,
+)
+
+n = 4
+s_ideal = xy_magnetisation_ideal(n, "ground")
+model = learn_symmetry_decay(
+    ideal_symmetry_value=s_ideal,
+    noisy_symmetry_values=[3.92, 3.65, 3.10],   # at noise scales 1, 3, 5
+    noise_scales=[1, 3, 5],
+)
+result = guess_extrapolate(target_noisy_value=0.45,
+                            symmetry_noisy_value=3.92,
+                            decay_model=model)
+result.mitigated_value     # corrected target observable
+```
+
+See [`symmetry_decay_guess.md`](symmetry_decay_guess.md) for the full
+theory and a worked Phase 1 example.
+
 ## control
 
 ### `topological_optimizer.TopologicalCouplingOptimizer`

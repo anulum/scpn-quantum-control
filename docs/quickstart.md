@@ -121,6 +121,30 @@ for name in sorted(ALL_EXPERIMENTS):
 
 See [Experiment Roadmap](EXPERIMENT_ROADMAP.md) for the full plan.
 
+## GUESS error mitigation in 5 lines (added April 2026)
+
+For any XY Hamiltonian run on hardware, the conserved total magnetisation
+$\sum Z_i$ is a free guide observable. GUESS (Oliva del Moral *et al.*,
+arXiv:2603.13060) uses its decay under noise to correct the target:
+
+```python
+from scpn_quantum_control.mitigation.symmetry_decay import (
+    learn_symmetry_decay, guess_extrapolate, xy_magnetisation_ideal,
+)
+
+s_ideal = xy_magnetisation_ideal(n_qubits=4, initial_state="ground")  # = +4
+model = learn_symmetry_decay(s_ideal,
+                             noisy_symmetry_values=[3.92, 3.65, 3.10],
+                             noise_scales=[1, 3, 5])
+mitigated = guess_extrapolate(target_noisy_value=0.45,
+                              symmetry_noisy_value=3.92,
+                              decay_model=model).mitigated_value
+```
+
+See [`symmetry_decay_guess.md`](symmetry_decay_guess.md) for the full
+theory, the Phase 1 ibm_kingston worked example, and a comparison with
+generic Mitiq ZNE.
+
 ## Running examples
 
 ```bash
