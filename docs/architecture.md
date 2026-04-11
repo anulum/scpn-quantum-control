@@ -12,19 +12,19 @@
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 165 |
-| Rust crate | 1 (PyO3 0.25, 22 functions) |
-| Tests | 2,813+ (95% coverage) |
-| Lines of code | ~25,000 |
-| Subpackages | 17 |
-| Research gems | 33 (~4 novel, ~8 first-application) |
+| Python modules | 201 |
+| Rust crate | 1 (PyO3 0.25, **36 functions**, 20 source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
+| Tests | 4,828+ (97%+ coverage) |
+| Lines of code | ~35,000 |
+| Subpackages | 19 |
+| Research gems | 35 (≈ 5 novel, ≈ 10 first-application, including GUESS symmetry-decay ZNE and DynQ topology-agnostic placement) |
 | Examples | 21 |
 | Notebooks | 47 |
-| Doc pages | 49 |
+| Doc pages | 50+ |
 
 ## Subpackage Dependency Graph
 
-The 17 subpackages form a directed acyclic graph. `bridge/` is the foundation —
+The 19 subpackages form a directed acyclic graph. `bridge/` is the foundation —
 every other subpackage depends on it for Hamiltonian construction and data
 conversion. `analysis/` is the largest consumer, using `phase/` for state
 preparation and `bridge/` for Hamiltonian access.
