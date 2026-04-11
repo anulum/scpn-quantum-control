@@ -41,7 +41,7 @@ unit-tested without a Python interpreter.
 
 ## Functions (36)
 
-The Rust crate exports 36 functions across 20 source files. They are organised
+The Rust crate exports 37 functions across 20 source files. They are organised
 below by topic.
 
 ### Classical Kuramoto
