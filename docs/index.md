@@ -54,10 +54,11 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | 16-layer UPDE snapshot | 46% error at depth 770 (NISQ-consistent) |
 | Coherence wall | depth 250–400 (Heron r2) |
 | DLA dimension formula | $2^{2N-1} - 2$ (exact, all $N$) |
-| Research modules | 33 (~4 novel, ~8 first-application) |
-| IBM hardware jobs | 33 completed on ibm_fez (Heron r2) |
-| Test suite | **2,813 passing**, 98% coverage |
-| Python modules | 165 + 1 Rust crate (22 functions) |
+| Research modules | 35 (≈ 5 novel, ≈ 10 first-application) |
+| IBM hardware jobs | 33 on ibm_fez (Feb 2026) + 348 on ibm_kingston (Apr 2026, Phase 1 DLA-parity campaign) |
+| DLA parity asymmetry (hardware) | $+10.8\,\%$ mean for depths $\ge 4$, peak $+17.5\,\%$ at depth 6 (Welch combined $p \ll 10^{-16}$) |
+| Test suite | **4,828 passing**, 97%+ coverage |
+| Python modules | 201 + 1 Rust crate (36 functions) |
 
 ## Package map
 
