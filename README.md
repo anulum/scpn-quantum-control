@@ -453,7 +453,7 @@ All run on local AerSimulator. No IBM credentials needed.
 ```
 scpn_quantum_control/
 ├── analysis/       45 modules — synchronization probes
-├── phase/          26 modules — time evolution + variational + Lindblad
+├── phase/          28 modules — time evolution + variational + Lindblad
 ├── hardware/       17 modules — IBM runner, trapped-ion, GPU, cutting, fast sparse
 ├── bridge/         12 modules — K_nm → quantum objects + cross-repo
 ├── applications/   11 modules — physical system benchmarks
