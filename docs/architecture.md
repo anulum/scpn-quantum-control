@@ -13,7 +13,7 @@
 | Metric | Count |
 |--------|-------|
 | Python modules | 201 |
-| Rust crate | 1 (PyO3 0.25, **37 functions**, 20 source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
+| Rust crate | 1 (PyO3 0.25, **37 functions**, 21 source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Tests | 4,828+ (97%+ coverage) |
 | Lines of code | ~35,000 |
 | Subpackages | 19 |
