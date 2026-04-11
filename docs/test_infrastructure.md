@@ -10,7 +10,7 @@
 
 ## Overview
 
-scpn-quantum-control has **4,828 collected tests** across **248 test
+scpn-quantum-control has **4,771 collected tests** across **248 test
 files** with **97%+ branch coverage**. Every file contains at least 11
 tests, the new modules from April 2026 each ship with 17–25 STRONG
 tests across 6 dimensions (empty/null, error handling, negative cases,
