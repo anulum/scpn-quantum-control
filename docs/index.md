@@ -58,7 +58,7 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | IBM hardware jobs | 33 on ibm_fez (Feb 2026) + 348 on ibm_kingston (Apr 2026, Phase 1 DLA-parity campaign) |
 | DLA parity asymmetry (hardware) | $+10.8\,\%$ mean for depths $\ge 4$, peak $+17.5\,\%$ at depth 6 (Welch combined $p \ll 10^{-16}$) |
 | Test suite | **4,828 passing**, 97%+ coverage |
-| Python modules | 201 + 1 Rust crate (36 functions) |
+| Python modules | 201 + 1 Rust crate (37 functions) |
 
 ## Package map
 
