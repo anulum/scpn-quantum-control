@@ -61,6 +61,30 @@ jobs:
           files: coverage.xml
           fail_ci_if_error: false
 
+  # Non-blocking cross-platform probe. Runs Python 3.12 on
+  # windows-latest and macos-latest so drift between platforms is
+  # visible. Failures here do NOT gate main — they are tracked
+  # externally (audit item A3) until a release cycle proves the
+  # surface is stable, at which point these move into `test`.
+  test-extra-platforms:
+    needs: lint
+    runs-on: ${{ matrix.os }}
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+      - name: Run tests (non-slow, non-hardware)
+        run: pytest tests/ -v --tb=short -m "not slow" --ignore=tests/test_hardware_runner.py
+
   type-check:
     needs: lint
     runs-on: ubuntu-latest
