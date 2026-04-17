@@ -20,12 +20,18 @@ the pre-defined convenience wrappers (``order_parameter`` etc.).
 Measuring the order
 -------------------
 
-The ordering in this file reflects wall-time micro-benchmarks on the
-default GitHub Actions runner class, for the input sizes we actually
-see in production. It is not a claim that any given tier is globally
-fastest; it is a claim that for **these inputs on this runner** the
-ordering is correct. When a new tier lands, its entry is inserted at
-the measured position — never above unmeasured.
+The ordering MUST be supported by a wall-time micro-benchmark
+recorded in ``docs/pipeline_performance.md``. Until a tier has been
+benchmarked head-to-head against the others, its position in the
+chain is declared "unmeasured" and the provisional rule is:
+
+* Rust-above-Python — PyO3 always wins the Python floor on any
+  non-trivial input size (this is a structural fact, not a
+  measurement claim).
+* Any unmeasured tier sits **below** every measured tier.
+
+See the per-chain comment on each registered ``_*_CHAIN`` below
+for which cells are measured vs provisional.
 """
 
 from __future__ import annotations
@@ -102,9 +108,18 @@ def _python_order_parameter(theta: np.ndarray) -> float:
     return float(abs(z))
 
 
-# Ordering: Rust first (measured fastest for N ≤ 1024, no warm-up cost),
-# then Julia (fastest after JIT warm-up for N ≥ 16 384 on BLAS-friendly
-# inputs but pays a one-off boot cost), then the Python floor.
+# Ordering for order_parameter (as of 2026-04-17):
+#
+#   - Rust above Python: structural (PyO3 + Rust always wins the
+#     Python floor on any non-trivial input size).
+#   - Rust vs Julia: NOT yet measured head-to-head on this runner.
+#     Julia is provisionally placed second pending measurement;
+#     Julia pays a one-off JIT boot cost (~20 s) on first call
+#     which would bias a cold benchmark against it.
+#
+# The full wall-time comparison across tiers is tracked in
+# ``docs/pipeline_performance.md`` §"Multi-language accel chain".
+# When measurements land, swap Rust and Julia if warranted.
 _ORDER_PARAMETER_CHAIN: list[tuple[str, Callable[[np.ndarray], float]]] = [
     ("rust", _rust_order_parameter),
     ("julia", _julia_order_parameter),
