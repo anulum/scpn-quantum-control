@@ -102,6 +102,10 @@ markdown_extensions:
 extra_javascript:
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
   - https://unpkg.com/mermaid@10/dist/mermaid.min.js
+  # GoatCounter (privacy-friendly, no cookies, no personal data).
+  # Shared `anulum.goatcounter.com` site covers every anulum project
+  # page; per-host and per-path breakdown is available in the dashboard.
+  - js/goatcounter.js
 
 plugins:
   - search
