@@ -87,7 +87,7 @@ The April 2026 plan was executed on the Open Plan free-tier on
 ibm_fez. The campaign focused on the **DLA parity asymmetry** as the
 single highest-priority hardware claim. **First publishable hardware
 confirmation achieved** — see
-[`docs/results.md`](results.md#phase-1--dla-parity-asymmetry-april-2026-ibm_kingston)
+[`docs/results.md`](results.md#phase-1-dla-parity-asymmetry-april-2026-ibm_kingston)
 and the short-paper draft at
 [`paper/phase1_dla_parity_short_paper.md`](https://github.com/anulum/scpn-quantum-control/blob/main/paper/phase1_dla_parity_short_paper.md).
 
