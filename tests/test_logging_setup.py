@@ -236,6 +236,46 @@ class TestPipelineLogging:
 # ---------------------------------------------------------------------------
 
 
+class TestCoverageEdgePaths:
+    """Exercise the branches that don't hit under default pytest buffered
+    stderr — the console renderer when stderr is a TTY, and the
+    `_resolve` exception path when SCPNConfig cannot be imported."""
+
+    def test_console_renderer_when_stderr_is_tty(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        # Pretend stderr is a TTY so _resolve doesn't downgrade to JSON
+        # and the console-branch renderer is selected.
+        fake_stderr = type(
+            "TTYBuffer",
+            (),
+            {
+                "isatty": lambda self: True,
+                "write": lambda self, s: None,
+                "flush": lambda self: None,
+            },
+        )()
+        monkeypatch.setattr(sys, "stderr", fake_stderr)
+        ls.configure_logging(level="INFO", format="console", force=True)
+        # If we got here without raising, the console-renderer branch ran.
+        assert ls._CONFIGURED == ("INFO", "console")
+
+    def test_resolve_falls_back_when_config_import_fails(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        import sys as _sys
+
+        monkeypatch.setitem(_sys.modules, "scpn_quantum_control.config", None)
+        # Now call the resolver via configure_logging; the except-branch
+        # in _resolve must take the "INFO" / "console" defaults.
+        ls.reset_for_testing()
+        ls.configure_logging(force=True)
+        # Buffered stderr → console downgrades to json, so (INFO, json).
+        assert ls._CONFIGURED[0] == "INFO"
+
+
 class TestStructlogSurface:
     def test_has_filtering_bound_logger(self) -> None:
         assert hasattr(structlog, "make_filtering_bound_logger")
