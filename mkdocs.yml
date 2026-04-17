@@ -80,7 +80,6 @@ nav:
   - Learning:
       - Tutorials: tutorials.md
       - Notebooks: notebooks.md
-  - Contributing: contributing.md
   - Changelog: changelog.md
 
 markdown_extensions:
