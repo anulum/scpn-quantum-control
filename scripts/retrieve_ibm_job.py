@@ -110,7 +110,7 @@ def main() -> int:
 
     vault = Path("/media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md")
     api_key, instance = parse_vault(vault)
-    print(f"Instance: {instance[:50]}...")
+    print("IBM credentials loaded from vault.")
 
     from qiskit_ibm_runtime import QiskitRuntimeService
 
