@@ -214,7 +214,7 @@ follow_imports = "skip"
 # (~250 lines), self-contained, 34 dedicated tests including the 13
 # input-validation tests from commit c7d4ccd. Extend
 # `paths_to_mutate` as tests harden other modules (audit item B7 in
-# `docs/internal/audit_2026-04-17T0800_claude_gap_audit.md`).
+# the internal gap audit).
 #
 # `runner` is a single executable command mutmut invokes per mutant.
 # Keep it tight: only the tests that cover the target module.

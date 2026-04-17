@@ -34,7 +34,7 @@ five strategic tweaks (GUESS, DynQ, ICI, hypergeometric, FFI hardening)
 - 267-line short-paper draft for *Quantum Science and Technology* /
   *Physical Review Research* in `paper/`.
 
-### Strategic tweaks from Gemini Deep Research report (2026-04-08)
+### Strategic tweaks from deep-research audit (2026-04-08)
 
 - **GUESS symmetry-decay ZNE** (`mitigation/symmetry_decay.py`,
   `scpn_quantum_engine/src/symmetry_decay.rs`) — physics-informed

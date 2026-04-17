@@ -91,6 +91,7 @@ scpn_quantum_engine/*.cdx.json
 .coordination/sessions/
 .coordination/handovers/
 .coordination/handover_*.md
+.coordination/contributing.md
 
 # Paper-extraction working files (raw pdftotext dumps, structured
 # extractions, per-paper assessments, archived under-fidelity v1

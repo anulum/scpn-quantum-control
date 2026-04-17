@@ -200,6 +200,6 @@ Annual (April). Or sooner if:
 - **Swiss Güterkontrollgesetz (GKG) + Annex 2 GKV** —
   <https://www.seco.admin.ch/seco/de/home/Aussenwirtschaftspolitik_Wirtschaftliche_Zusammenarbeit/Wirtschaftsbeziehungen/exportkontrollen-und-sanktionen.html>
 
-Audit item **C4** in `docs/internal/audit_2026-04-17T0800_claude_gap_audit.md`
+Audit item **C4** in the internal gap audit
 closes when the BIS / ENC notification is emailed and a receipt
 timestamp is recorded here.

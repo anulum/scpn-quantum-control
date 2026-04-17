@@ -155,4 +155,4 @@ We explicitly do **not** plan against:
 
 Each of these degrades the confidence of one or more mitigations
 above and is logged as an open item in
-`docs/internal/audit_2026-04-17T0800_claude_gap_audit.md`.
+the internal gap audit.

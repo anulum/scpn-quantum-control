@@ -75,7 +75,7 @@ BANNED_WORDS_RE = re.compile(r"\b(" + "|".join(re.escape(w) for w in BANNED_WORD
 HISTORICAL_EXEMPT_SHAS: frozenset[str] = frozenset(
     {
         # 2026-04-17: seven Dependabot PRs squash-merged without
-        # Co-Authored-By. Documented in audit_2026-04-17T0800_claude_gap_audit.md.
+        # Co-Authored-By. Documented in the internal gap audit.
         "2a7d604",
         "001d30b",
         "8ce9324",

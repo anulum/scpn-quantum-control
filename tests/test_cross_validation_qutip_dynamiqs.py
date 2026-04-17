@@ -7,7 +7,7 @@
 # SCPN Quantum Control — Cross-validation vs QuTiP / Dynamiqs
 """Cross-validation of the XY Hamiltonian against public baselines.
 
-Closes audit item C7 (``docs/internal/audit_2026-04-17T0800_claude_gap_audit.md``).
+Closes audit item C7 (`the internal gap audit`).
 
 The heterogeneous XY Hamiltonian
     H = Σ_i ω_i Z_i + Σ_{i<j} K_ij (X_i X_j + Y_i Y_j)

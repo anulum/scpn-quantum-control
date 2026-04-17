@@ -544,7 +544,7 @@ class HardwareRunner:
         output document describing the git state, installed package
         versions, Python runtime, and host of the writer. Outsiders
         use it to trace published numbers back to a specific commit;
-        see `docs/internal/audit_2026-04-17T0800_claude_gap_audit.md`
+        see the internal gap audit
         §C8 for the motivation.
         """
         from .provenance import capture_provenance

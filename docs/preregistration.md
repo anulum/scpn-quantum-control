@@ -140,6 +140,6 @@ we do instead:
   Princeton University Press.
 
 Audit item **C9** in
-`docs/internal/audit_2026-04-17T0800_claude_gap_audit.md` closes
+the internal gap audit closes
 when the first campaign (Phase 2) completes this workflow end to
 end, including the OSF DOI in `docs/results.md`.

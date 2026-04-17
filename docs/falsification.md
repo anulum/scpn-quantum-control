@@ -42,7 +42,7 @@ Each claim has four fields:
 - **Evidence.** Verified computationally for $N = 2, 3, 4, 5$ in
   `analysis/dla_parity_theorem.py` and `tests/test_dla_parity_theorem.py`.
   Representation-theoretic argument for all $N$ (not yet formalised
-  in Lean 4 — `docs/internal/audit_2026-04-17T0800_claude_gap_audit.md`
+  in Lean 4 — the internal gap audit
   §C Lean 4 entry).
 
 ## C2 — DLA parity asymmetry on hardware

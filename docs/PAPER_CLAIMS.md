@@ -218,7 +218,7 @@ provides a concrete protocol for choosing Trotter depth on Heron-class hardware.
 | QAOA p=1 (hardware) | -0.034 | — | [1,1,0,0] |
 | QAOA p=2 (hardware) | -0.514 | — | [1,1,1,0] |
 
-**Caveat (Gemini audit finding 1.3)**: The Ising encoding includes constant
+**Caveat (internal audit finding 1.3)**: The Ising encoding includes constant
 offsets and scaling factors. QAOA minimises the Ising cost, brute-force minimises
 the original MPC cost — these are different reference frames. The QAOA-found
 bitstrings should be mapped back through the original MPC cost function for a
