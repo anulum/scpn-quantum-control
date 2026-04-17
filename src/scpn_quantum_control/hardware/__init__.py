@@ -9,6 +9,7 @@
 noise models, trapped-ion transpilation, and experiment definitions.
 """
 
+from .async_runner import AsyncHardwareRunner, AsyncJobHandle
 from .backends import (
     BackendProtocol,
     BackendRegistrationError,
@@ -63,6 +64,8 @@ from .runner import HardwareRunner, JobResult
 from .trapped_ion import transpile_for_trapped_ion, trapped_ion_noise_model
 
 __all__ = [
+    "AsyncHardwareRunner",
+    "AsyncJobHandle",
     "BackendProtocol",
     "BackendRegistrationError",
     "BackendRegistry",
