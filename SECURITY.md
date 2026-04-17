@@ -1,5 +1,10 @@
 # Security Policy
 
+Machine-readable contact information is served at
+[`.well-known/security.txt`](.well-known/security.txt)
+(RFC 9116) and at
+<https://anulum.github.io/scpn-quantum-control/.well-known/security.txt>.
+
 ## Supported Versions
 
 | Version | Supported |
@@ -9,10 +14,20 @@
 
 ## Reporting
 
-Report vulnerabilities via email to protoscience@anulum.li.
-Do not open public issues for security bugs.
+Two supported channels:
 
-Expected response: 48 hours acknowledgment, 7-day fix timeline.
+1. **Email** — `protoscience@anulum.li`. Encrypt with PGP if you have
+   a published key; plain-text is acceptable.
+2. **GitHub Security Advisory** —
+   <https://github.com/anulum/scpn-quantum-control/security/advisories/new>.
+   Private to project maintainers until published.
+
+Do not open a public issue or pull request for a suspected security
+bug — either of the channels above keeps the disclosure coordinated.
+
+Expected response: 48 h acknowledgment, 7-day initial triage, fix or
+mitigation timeline communicated in the acknowledgement. A CVE number
+is assigned for any issue that results in a published advisory.
 
 ## Hardening Measures
 
