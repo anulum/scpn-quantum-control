@@ -773,3 +773,50 @@ Real-world QPU runs on `ibm_kingston` (Heron r2, 156 q):
 
 Reproducible from `data/phase1_dla_parity/*.json` via
 `scripts/analyse_phase1_dla_parity.py` (no QPU needed for the analysis).
+
+---
+
+## 21. Measured Rust speedups vs. Python baseline
+
+Re-run from `tests/test_rust_path_benchmarks.py` on 2026-04-17
+(ML350 Gen8, scpn-quantum-engine 0.2.0, PyO3 0.25 + rayon 1.10).
+These are the only cross-language acceleration numbers we publish;
+they are measured, not estimated.
+
+| Function | Python | Rust | Speedup |
+|----------|-------:|-----:|--------:|
+| `build_knm` (16×16) | 0.1 ms | 0.01 ms | **18.4×** |
+| `kuramoto_euler` (8 osc, 1 000 steps) | 2.3 ms | 0.25 ms | **9.3×** |
+| `correlation_matrix_xy` (n=3) | 0.7 ms | 0.04 ms | **19.5×** |
+| `lindblad_jump_ops_coo` (n=3) | 0.0 ms | 0.0 ms | **9.2×** |
+| `lindblad_anti_hermitian_diag` (n=3) | 0.0 ms | 0.0 ms | **4.7×** |
+
+Standalone Rust paths (no Python parity comparison; absolute wall time):
+
+| Function | Configuration | Wall time |
+|----------|---------------|----------:|
+| `kuramoto_trajectory` | 16 osc, 10 000 steps | 11.79 ms |
+| `expectation_pauli_fast` | 10 qubits, single-Z | 0.02 ms |
+| `pec_sample_parallel` | 100 000 samples, 5 gates | 14.04 ms |
+| `mc_xy_simulate` | 8 osc, 5k therm + 2k meas | 1.39 ms |
+| `brute_mpc` | dim=3, horizon=4 | 0.27 ms |
+| `parity_filter_mask` | 10 000 × 20-bit | 0.14 ms |
+
+### Cross-language outlook
+
+These measured numbers are the verification baseline against which
+any future Mojo / Julia / Lean 4 investment is judged. As of
+2026-04-17 we have **not** benchmarked Mojo or Julia in this
+codebase; speedup claims of "5–12× (Mojo)" and "10–40× (Julia)" that
+appear in vendor literature are not reproducible here without a
+matching local prototype, and we do not publish unmeasured ranges.
+
+Decision criteria for adopting a new acceleration backend:
+
+1. Identify a specific compute-hot Python module that does **not**
+   already have a Rust path. (Currently every module flagged in the
+   internal Rust audit already has one — see `docs/rust_engine.md`.)
+2. Build a minimal port and re-run the relevant section of
+   `tests/test_rust_path_benchmarks.py` shape.
+3. Publish the measured number in this table. Vague "X–Y faster"
+   ranges are explicitly out of scope.
