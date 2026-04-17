@@ -22,6 +22,12 @@ RUN pip install --no-cache-dir ".[dev]"
 COPY tests/ tests/
 COPY examples/ examples/
 COPY results/ results/
+# `data/` holds curated hardware-result JSONs that
+# `tests/test_phase1_dla_parity_reproduces.py` asserts against; the
+# reproducer ERRORs out without the fixture. `scripts/` holds the
+# analysis module the reproducer imports.
+COPY data/ data/
+COPY scripts/ scripts/
 
 USER sqc
 

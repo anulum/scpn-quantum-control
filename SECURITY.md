@@ -1,9 +1,14 @@
 # Security Policy
 
 Machine-readable contact information is served at
-[`docs/.well-known/security.txt`](docs/.well-known/security.txt)
-(RFC 9116) and published at
-<https://anulum.github.io/scpn-quantum-control/.well-known/security.txt>.
+[`.well-known/security.txt`](.well-known/security.txt)
+(RFC 9116). Canonical URL:
+<https://raw.githubusercontent.com/anulum/scpn-quantum-control/main/.well-known/security.txt>.
+
+mkdocs omits dot-prefixed directories from the GH-Pages build, so
+the canonical URL points at `raw.githubusercontent.com` rather than
+`anulum.github.io/scpn-quantum-control`; automated scanners resolve
+both locations equally and RFC 9116 allows any stable HTTPS URL.
 
 ## Supported Versions
 

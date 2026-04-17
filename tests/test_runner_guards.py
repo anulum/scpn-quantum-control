@@ -111,7 +111,11 @@ class TestSaveResult:
         path = runner.save_result(results, filename="batch.json")
         with open(path) as f:
             data = json.load(f)
-        assert len(data) == 3
+        # Batch results are wrapped in { results: [...], provenance: {...} }
+        # since the C8 provenance change (commit 819aded).
+        assert set(data.keys()) == {"results", "provenance"}
+        assert len(data["results"]) == 3
+        assert "git" in data["provenance"]
 
     def test_auto_filename(self, tmp_path):
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path))
