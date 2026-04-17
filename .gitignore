@@ -77,6 +77,15 @@ docs/internal/gemini/
 # Agent metadata (Gemini audit state, etc.)
 .agent_metadata.json
 
+# Mutation testing artefacts (mutmut 2.5 cache + HTML report + per-file
+# backups it writes during a run). The weekly CI job uploads the cache
+# as an artifact; local runs keep it out of git.
+.mutmut-cache
+mutmut-html/
+src/**/*.py.bak
+mutmut-results.txt
+scpn_quantum_engine/*.cdx.json
+
 # Session logs and handovers — local-only, never committed.
 # Historic logs were untracked via `git rm --cached` 2026-04-17.
 .coordination/sessions/

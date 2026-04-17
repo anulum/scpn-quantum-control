@@ -201,6 +201,19 @@ module = "pennylane.*"
 ignore_missing_imports = true
 follow_imports = "skip"
 
+[tool.mutmut]
+# Mutmut 2.x config. Baseline target: `analysis/koopman.py` — small
+# (~250 lines), self-contained, 34 dedicated tests including the 13
+# input-validation tests from commit c7d4ccd. Extend
+# `paths_to_mutate` as tests harden other modules (audit item B7 in
+# `docs/internal/audit_2026-04-17T0800_claude_gap_audit.md`).
+#
+# `runner` is a single executable command mutmut invokes per mutant.
+# Keep it tight: only the tests that cover the target module.
+paths_to_mutate = "src/scpn_quantum_control/analysis/koopman.py"
+tests_dir = "tests/"
+runner = "python -m pytest -x -q tests/test_koopman.py"
+
 [tool.coverage.run]
 source = ["scpn_quantum_control"]
 
