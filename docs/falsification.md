@@ -80,7 +80,7 @@ Each claim has four fields:
 - **Evidence.** Josephson array $\rho = 0.990$, EEG alpha
   $\rho = 0.916$, IEEE 5-bus $\rho = 0.881$, ITER MHD $\rho = 0.944$,
   FMO $\rho = 0.304$. See
-  [`GAP_CLOSURE_STATUS.md`](../GAP_CLOSURE_STATUS.md).
+  [`GAP_CLOSURE_STATUS.md`](https://github.com/anulum/scpn-quantum-control/blob/main/GAP_CLOSURE_STATUS.md).
 
 ## C4 — Rust acceleration factors
 

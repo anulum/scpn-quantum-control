@@ -539,7 +539,7 @@ graph LR
 ## FIM Investigation Campaign (NB14–47)
 
 Notebooks 14-47 form a systematic investigation of the FIM (Fisher Information
-Metric) strange loop mechanism. See [RESULTS_SUMMARY.md](../RESULTS_SUMMARY.md)
+Metric) strange loop mechanism. See [RESULTS_SUMMARY.md](https://github.com/anulum/scpn-quantum-control/blob/main/RESULTS_SUMMARY.md)
 for the full findings. All results are saved as JSON in `results/`.
 
 | # | Notebook | Finding |

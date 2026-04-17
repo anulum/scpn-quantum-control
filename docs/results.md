@@ -118,9 +118,9 @@ Two campaigns on Heron r2 (156-qubit) processors:
 
 ### Phase 1 — DLA Parity Asymmetry (April 2026, ibm_kingston)
 
-![DLA parity leakage vs depth](../figures/phase1/leakage_vs_depth.png)
+![DLA parity leakage vs depth](https://raw.githubusercontent.com/anulum/scpn-quantum-control/main/figures/phase1/leakage_vs_depth.png)
 
-![DLA parity asymmetry vs depth](../figures/phase1/asymmetry_vs_depth.png)
+![DLA parity asymmetry vs depth](https://raw.githubusercontent.com/anulum/scpn-quantum-control/main/figures/phase1/asymmetry_vs_depth.png)
 
 The XY Hamiltonian's dynamical Lie algebra splits as
 $\mathfrak{su}(2^{n-1}) \oplus \mathfrak{su}(2^{n-1})$ under the
@@ -153,7 +153,7 @@ Reproducible from the raw JSON in `data/phase1_dla_parity/` via
 
 A 267-line short paper draft for *Quantum Science and Technology* /
 *Physical Review Research* is in
-[`paper/phase1_dla_parity_short_paper.md`](../paper/phase1_dla_parity_short_paper.md).
+[`paper/phase1_dla_parity_short_paper.md`](https://github.com/anulum/scpn-quantum-control/blob/main/paper/phase1_dla_parity_short_paper.md).
 
 ### Legacy ibm_fez Results (February 2026)
 
