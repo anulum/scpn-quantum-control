@@ -60,7 +60,8 @@ mitigation = ["mitiq>=0.30,<2.0"]
 topology = ["ripser>=0.6,<1.0"]
 opensys = ["qutip>=5.0,<6.0"]
 pennylane = ["pennylane>=0.40,<1.0"]
-all = ["scpn-quantum-control[viz,gpu,ibm,rust,tensor,mitigation,opensys,pennylane]"]
+xvalidate = ["qutip>=5.0,<6.0", "dynamiqs>=0.3,<1.0"]
+all = ["scpn-quantum-control[viz,gpu,ibm,rust,tensor,mitigation,opensys,pennylane,xvalidate]"]
 
 [project.urls]
 Homepage = "https://github.com/anulum/scpn-quantum-control"
