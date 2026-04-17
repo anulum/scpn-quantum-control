@@ -5,6 +5,11 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Async hardware runner
+# Language policy: EXEMPT from the Rust-path rule. This module is an
+# asyncio-based hardware-bridge / I/O adapter over the IBM Python
+# client. The compute happens inside Qiskit and IBM's cloud; the role
+# here is orchestration. See docs/language_policy.md §"Current-state
+# audit" and feedback_rustify_all.md (memory) carve-out.
 """Concurrent IBM job submission via asyncio.
 
 Closes audit item C13. The synchronous :class:`HardwareRunner` submits

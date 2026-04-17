@@ -5,6 +5,9 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Backend plugin registry
+# Language policy: EXEMPT from the Rust-path rule. This module is a
+# `dict[str, Callable]` registry with no numeric compute. See
+# docs/language_policy.md §"Current-state audit" for the rationale.
 """Plugin / backend extension API.
 
 Closes audit item C10. Third parties may now register additional quantum

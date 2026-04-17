@@ -5,6 +5,10 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Unified configuration
+# Language policy: EXEMPT from the Rust-path rule. pydantic-settings
+# delegates to pydantic-core which is itself Rust; re-wrapping in PyO3
+# would add boundary cost without new compute. See
+# docs/language_policy.md §"Current-state audit".
 """Single source of truth for runtime configuration.
 
 Closes audit item C11. Every ``SCPN_*`` environment variable, every
