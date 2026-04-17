@@ -25,4 +25,26 @@ jobs:
           python-version: "3.12"
       - run: pip install build
       - run: python -m build
+      # Sign the sdist + wheels with Sigstore (Fulcio + Rekor,
+      # OIDC-based keyless signing). `.sigstore` bundle files land
+      # next to each artefact in `dist/`. PyPI respects
+      # `attestations: true` and attaches the bundle server-side for
+      # trusted-publisher flows.
+      - uses: sigstore/gh-action-sigstore-python@f514d46b907ebcd5bedc05145c03b69c1edd8b46  # v3.0.1
+        with:
+          inputs: >-
+            ./dist/*.tar.gz
+            ./dist/*.whl
       - uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b  # release/v1
+        with:
+          attestations: true
+      # Attach the bundles + sdist + wheels to the GitHub Release so
+      # consumers can verify without a PyPI round-trip via
+      # `sigstore verify identity --bundle <file>.sigstore`.
+      - uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844  # v2.1.0
+        if: github.ref_type == 'tag'
+        with:
+          files: |
+            dist/*.tar.gz
+            dist/*.whl
+            dist/*.sigstore
