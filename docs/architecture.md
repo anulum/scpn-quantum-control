@@ -14,17 +14,17 @@
 |--------|-------|
 | Python modules | 201 |
 | Rust crate | 1 (PyO3 0.25, **37 functions**, 21 source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
-| Tests | 4,828+ (97%+ coverage) |
-| Lines of code | ~35,000 |
-| Subpackages | 19 |
+| Tests | 4,841 (97%+ coverage) |
+| Lines of code | ~30,000 |
+| Subpackages | 20 |
 | Research gems | 35 (≈ 5 novel, ≈ 10 first-application, including GUESS symmetry-decay ZNE and DynQ topology-agnostic placement) |
 | Examples | 21 |
-| Notebooks | 47 |
+| Notebooks | 47 (`notebooks/`) + 51 (`notebooks/colab/`) |
 | Doc pages | 50+ |
 
 ## Subpackage Dependency Graph
 
-The 19 subpackages form a directed acyclic graph. `bridge/` is the foundation —
+The 20 subpackages form a directed acyclic graph. `bridge/` is the foundation —
 every other subpackage depends on it for Hamiltonian construction and data
 conversion. `analysis/` is the largest consumer, using `phase/` for state
 preparation and `bridge/` for Hamiltonian access.
@@ -32,19 +32,21 @@ preparation and `bridge/` for Hamiltonian access.
 ```mermaid
 graph TD
     bridge["bridge/ (12)\nK_nm → quantum objects"]
-    phase["phase/ (26)\nTime evolution"]
+    phase["phase/ (27)\nTime evolution"]
     analysis["analysis/ (44)\nSync probes"]
     control["control/ (7)\nQuantum control"]
     qsnn["qsnn/ (6)\nQuantum SNN"]
     identity["identity/ (6)\nIdentity analysis"]
-    hardware["hardware/ (17)\nBackends"]
-    mitigation["mitigation/ (7)\nError mitigation"]
-    qec["qec/ (5)\nError correction"]
+    hardware["hardware/ (23)\nBackends"]
+    mitigation["mitigation/ (8)\nError mitigation"]
+    qec["qec/ (7)\nError correction"]
     gauge["gauge/ (5)\nGauge theory"]
     apps["applications/ (11)\nBenchmarks"]
     crypto["crypto/ (6)\nQKD"]
     benchmarks["benchmarks/ (4)\nPerformance"]
     ssgf["ssgf/ (4)\nGeometry"]
+    psi_field["psi_field/ (4)\nU(1) lattice gauge"]
+    fep["fep/ (2)\nFree Energy Principle"]
     tcbo["tcbo/ (1)\nTCBO observer"]
     pgbo["pgbo/ (1)\nPGBO bridge"]
     l16["l16/ (1)\nLayer 16 director"]

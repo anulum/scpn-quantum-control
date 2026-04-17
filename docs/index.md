@@ -57,7 +57,7 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | Research modules | 35 (≈ 5 novel, ≈ 10 first-application) |
 | IBM hardware jobs | 33 on ibm_fez (Feb 2026) + 348 on ibm_kingston (Apr 2026, Phase 1 DLA-parity campaign) |
 | DLA parity asymmetry (hardware) | $+10.8\,\%$ mean for depths $\ge 4$, peak $+17.5\,\%$ at depth 6 (Welch combined $p \ll 10^{-16}$) |
-| Test suite | **4,828 passing**, 97%+ coverage |
+| Test suite | **4,841 passing**, 97%+ coverage |
 | Python modules | 201 + 1 Rust crate (37 functions) |
 
 ## Package map
@@ -65,25 +65,24 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | Subpackage | Modules | Purpose |
 |------------|:-------:|---------|
 | `analysis` | 44 | Synchronization probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
-| `phase` | 26 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
-| `hardware` | 17 | IBM Quantum runner, trapped-ion backend, GPU offload, circuit cutting, fast sparse |
+| `phase` | 27 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
+| `hardware` | 23 | IBM Quantum runner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ) |
 | `bridge` | 12 | $K_{nm}$ → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
 | `applications` | 11 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS |
+| `mitigation` | 8 | ZNE, PEC, dynamical decoupling, Z₂ parity, CPDR, symmetry verification, GUESS, compound |
+| `qec` | 7 | Toric code, repetition code UPDE, surface code, biological surface code, error budget, multi-scale, syndrome flow |
 | `control` | 7 | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, ITER disruption, topological optimizer |
-| `mitigation` | 7 | ZNE, PEC, dynamical decoupling, Z₂ parity, CPDR, symmetry verification |
 | `identity` | 6 | VQE attractor, coherence budget, entanglement witness, fingerprint |
 | `qsnn` | 6 | Quantum spiking neural networks (LIF, STDP, synapses, dynamic coupling, training) |
 | `crypto` | 6 | BB84, Bell tests, topology-authenticated QKD, key hierarchy |
 | `gauge` | 5 | U(1) Wilson loops, vortex detection, CFT, universality, confinement |
-| `qec` | 5 | Toric code, repetition code UPDE, surface code, biological surface code, error budget |
 | `ssgf` | 4 | SSGF quantum integration |
 | `benchmarks` | 4 | Classical vs quantum scaling, MPS baseline, GPU baseline, AppQSim |
+| `psi_field` | 4 | U(1) compact lattice gauge: lattice, infoton, observables, SCPN mapping |
+| `fep` | 2 | Friston Free Energy Principle: variational free energy, predictive coding |
 | `tcbo` | 1 | TCBO quantum observer |
 | `pgbo` | 1 | PGBO quantum bridge |
 | `l16` | 1 | Layer 16 quantum director |
-| `qec` | 4 | Toric code, repetition code UPDE, surface code estimation, error budget |
-| `applications` | 10 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS |
-| `crypto` | 4 | BB84, Bell tests, topology-authenticated QKD |
 
 ## Quick example
 
@@ -128,7 +127,7 @@ for name, w in results.items():
 - [Equations](equations.md) — every equation in the codebase
 - [Architecture](architecture.md) — 107-module dependency graph
 - [API Reference](api.md) — core module documentation
-- [Analysis API](analysis_api.md) — 41 analysis modules
+- [Analysis API](analysis_api.md) — 44 analysis modules
 - [Phase API](phase_api.md) — 14 evolution algorithms
 - [Hardware Guide](hardware_guide.md) — IBM Quantum setup
 - [Bridges](bridges_api.md) — cross-repo integrations
