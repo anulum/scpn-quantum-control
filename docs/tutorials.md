@@ -623,7 +623,7 @@ is Gem 18, and has not been previously observed in the Kuramoto-XY context.
 | ZNE error bars | `mitigation.zne` | Bootstrapped confidence intervals |
 | Raw data archival | `hardware.qasm_export` | OpenQASM 3.0 circuits |
 
-**Citation format:** See the main [README](../README.md#citation) for BibTeX.
+**Citation format:** See the main [README](https://github.com/anulum/scpn-quantum-control/blob/main/README.md#citation) for BibTeX.
 
 **Data availability:** Export all circuits as OpenQASM 3.0 via
 `hardware.qasm_export.export_qasm3()` for reproducibility. Archive raw counts
