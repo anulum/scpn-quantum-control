@@ -49,6 +49,9 @@ jobs:
             --verbose
             --no-progress
             --max-redirects 5
+            --max-retries 3
+            --retry-wait-time 5
+            --timeout 20
             --accept 200,204,206,301,302,308,403,429,500,502,503
             --exclude-path .coordination
             --exclude-path site
@@ -58,7 +61,11 @@ jobs:
           # 403/429/500/502/503 are accepted because many journals and
           # vendor pages return those for anonymous HEAD requests yet
           # work for human readers. A zero-false-positive rate matters
-          # more than catching every deep dead link.
+          # more than catching every deep dead link. `--max-retries 3`
+          # with a 5 s backoff absorbs transient network errors
+          # (`contributor-covenant.org` hit this on the 2026-04-17
+          # 06:44 UTC run); a hard-dead URL still fails after the
+          # retries so the gate remains meaningful.
           fail: true
       - name: Create issue on failure
         if: failure() && github.event_name == 'schedule'
