@@ -1,0 +1,50 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — Strict docs build
+#
+# Runs `mkdocs build --strict` with the full optional-deps install so
+# mkdocstrings can actually load every module referenced in
+# `docs/autodoc.md`. This job GATES on warnings — broken internal
+# anchors, dangling relative links, navigation inconsistencies, and
+# mkdocstrings import failures all fail the build.
+#
+# `docs.yml` (deploy) stays separate and keeps running without
+# `--strict` + without full deps so the GH-Pages site continues to
+# publish even during short periods of doc flux.
+name: Docs Strict Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "mkdocs.yml"
+      - "src/**"
+      - ".github/workflows/docs-strict.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "mkdocs.yml"
+      - "src/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-strict:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - run: pip install -e ".[dev]"
+      - run: pip install mkdocs-material "mkdocstrings[python]>=0.24,<1.0" pymdown-extensions
+      - run: mkdocs build --strict --site-dir /tmp/site-strict
