@@ -113,6 +113,25 @@ class HardwareRunner:
         result = runner.run_sampler(circuit, shots=10000, name="my_experiment")
     """
 
+    # Lazy accessor so test monkeypatch.setenv + reload_config() works.
+    @staticmethod
+    def _default_instance() -> str:
+        """IBM instance CRN from SCPNConfig (preferred) or env-var fallback.
+
+        Reads via :class:`scpn_quantum_control.config.SCPNConfig` when
+        that extra is installed so the rest of the codebase sees a single
+        source of truth; falls back to the raw ``SCPN_IBM_INSTANCE`` env
+        var for minimal installs without the ``[config]`` extra.
+        """
+        try:
+            from ..config import get_config
+
+            return get_config().ibm_instance
+        except Exception:
+            return os.environ.get("SCPN_IBM_INSTANCE", "")
+
+    # Backward-compat class attribute — existing callers treat it like a
+    # static lookup. The staticmethod above is the authoritative path.
     DEFAULT_INSTANCE = os.environ.get("SCPN_IBM_INSTANCE", "")
 
     def __init__(
@@ -141,7 +160,7 @@ class HardwareRunner:
         """
         self.token = token
         self.channel = channel
-        self.instance = instance or self.DEFAULT_INSTANCE
+        self.instance = instance or self._default_instance()
         self._backend_name = backend_name
         self.use_simulator = use_simulator
         self.optimization_level = optimization_level
@@ -190,7 +209,12 @@ class HardwareRunner:
             backend=self._backend,
             optimization_level=self.optimization_level,
         )
-        print(f"Connected: {self._backend.name} ({self._backend.num_qubits}q)")
+        _slog.info(
+            "backend_connected",
+            backend=self._backend.name,
+            qubits=self._backend.num_qubits,
+            mode="hardware",
+        )
 
     def _connect_simulator(self) -> None:
         from qiskit_aer import AerSimulator
@@ -206,8 +230,12 @@ class HardwareRunner:
             optimization_level=self.optimization_level,
             basis_gates=basis,
         )
-        noisy_tag = ", noisy" if self._noise_model is not None else ""
-        print(f"Connected: AerSimulator (local{noisy_tag})")
+        _slog.info(
+            "backend_connected",
+            backend="AerSimulator",
+            mode="simulator",
+            noisy=self._noise_model is not None,
+        )
 
     @property
     def backend(self):
@@ -284,8 +312,12 @@ class HardwareRunner:
         if self._calls <= 3:
             for i, isa in enumerate(isa_circuits):
                 stats = self.circuit_stats(isa)
-                print(
-                    f"  Circuit {i}: depth={stats['depth']}, ECR={stats['ecr_gates']}, qubits={stats['n_qubits']}"
+                _slog.debug(
+                    "circuit_stats",
+                    circuit_index=i,
+                    depth=stats["depth"],
+                    ecr_gates=stats["ecr_gates"],
+                    qubits=stats["n_qubits"],
                 )
 
         if self.use_simulator:
@@ -339,8 +371,12 @@ class HardwareRunner:
         isa_circuit = self.transpile(circuit)
         isa_obs = [self.transpile_observable(obs, isa_circuit) for obs in observables]
         stats = self.circuit_stats(isa_circuit)
-        print(
-            f"  Circuit: depth={stats['depth']}, ECR={stats['ecr_gates']}, qubits={stats['n_qubits']}"
+        _slog.debug(
+            "circuit_stats",
+            depth=stats["depth"],
+            ecr_gates=stats["ecr_gates"],
+            qubits=stats["n_qubits"],
+            mode="estimator",
         )
 
         if self.use_simulator:
@@ -360,7 +396,14 @@ class HardwareRunner:
         t0 = time.time()
         job = estimator.run(pubs)
         job_id = job.job_id()
-        print(f"  Job submitted: {job_id}")
+        _slog.info(
+            "job_submitted",
+            job_id=job_id,
+            backend=self.backend_name,
+            experiment=name,
+            mode="estimator",
+            n_pubs=len(pubs),
+        )
         self._log_job(job_id, name)
 
         result = job.result(timeout=timeout_s)
@@ -524,7 +567,7 @@ class HardwareRunner:
         path = self.results_dir / filename
         with open(path, "w") as f:
             json.dump(payload, f, indent=2)
-        print(f"  Saved: {path}")
+        _slog.info("result_saved", path=str(path))
         return path
 
     @staticmethod
@@ -532,11 +575,11 @@ class HardwareRunner:
         """Save IBM Quantum API token to disk (one-time setup)."""
         from qiskit_ibm_runtime import QiskitRuntimeService
 
-        inst = instance or HardwareRunner.DEFAULT_INSTANCE
+        inst = instance or HardwareRunner._default_instance()
         QiskitRuntimeService.save_account(
             channel=channel,
             token=token,
             instance=inst,
             overwrite=True,
         )
-        print("Token saved. Future runs need no token argument.")
+        _slog.info("token_saved", channel=channel)
