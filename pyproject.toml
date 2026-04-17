@@ -224,6 +224,13 @@ runner = "python -m pytest -x -q tests/test_koopman.py"
 
 [tool.coverage.run]
 source = ["scpn_quantum_control"]
+omit = [
+    # Julia tier requires juliacall + Julia runtime; not installed in
+    # CI (would add ~4 min JIT boot per run). Dispatcher covers the
+    # fallthrough path; the Julia-side wrapper is exercised locally
+    # via the [julia] extra.
+    "*/scpn_quantum_control/accel/julia/*",
+]
 
 [tool.coverage.report]
 exclude_lines = [
