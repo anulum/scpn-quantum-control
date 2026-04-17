@@ -13,14 +13,14 @@
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/anulum/scpn-quantum-control/badge)](https://securityscorecards.dev/viewer/?uri=github.com/anulum/scpn-quantum-control)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![mypy](https://img.shields.io/badge/type--checked-mypy-blue.svg)](https://mypy-lang.org/)
-[![Tests: 4771](https://img.shields.io/badge/tests-4771%20passing-brightgreen.svg)]()
+[![Tests: 4841](https://img.shields.io/badge/tests-4841%20passing-brightgreen.svg)]()
 [![PyPI](https://img.shields.io/pypi/v/scpn-quantum-control)](https://pypi.org/project/scpn-quantum-control/)
 [![PyPI Downloads](https://img.shields.io/pypi/dm/scpn-quantum-control)](https://pypi.org/project/scpn-quantum-control/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18821929.svg)](https://doi.org/10.5281/zenodo.18821929)
 [![Hardware: ibm_kingston](https://img.shields.io/badge/hardware-ibm__kingston%20Heron%20r2-blueviolet.svg)]()
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/anulum/scpn-quantum-control/blob/main/notebooks/01_kuramoto_xy_dynamics.ipynb)
 
-> **Active Development** — scpn-quantum-control is under intensive development. The quantum simulation engine, all 19 subpackages (201 modules), and the full pipeline (K_nm coupling → Hamiltonian → Trotter/VQE → IBM hardware → GUESS error mitigation → DLA-parity analysis) are fully functional, tested (4,771 passing tests, 97%+ coverage), and validated on IBM Heron r2 hardware (ibm_fez Feb 2026 + ibm_kingston Apr 2026). The April 2026 ibm_kingston campaign provided the first hardware confirmation of the DLA parity asymmetry predicted by the SCPN framework (Welch combined p ≪ 10⁻¹⁶ across 8 depth points). APIs may evolve as this work progresses.
+> **Active Development** — scpn-quantum-control is under intensive development. The quantum simulation engine, all 20 subpackages (201 modules), and the full pipeline (K_nm coupling → Hamiltonian → Trotter/VQE → IBM hardware → GUESS error mitigation → DLA-parity analysis) are fully functional, tested (4,841 passing tests, 97%+ coverage), and validated on IBM Heron r2 hardware (ibm_fez Feb 2026 + ibm_kingston Apr 2026). The April 2026 ibm_kingston campaign provided the first hardware confirmation of the DLA parity asymmetry predicted by the SCPN framework (Welch combined p ≪ 10⁻¹⁶ across 8 depth points). APIs may evolve as this work progresses.
 
 **Version:** 0.9.5
 **Status:** 201 Python Modules + 36 Rust Functions | 47 Notebooks | 21 Examples | 97%+ Coverage | IBM Hardware Validated (DLA parity confirmed)
@@ -151,7 +151,7 @@ information scrambles*, and *whether the system thermalises*.
 | Research modules | **35** (≈ 5 novel constructions, ≈ 10 first-application, including GUESS symmetry-decay ZNE and DynQ topology-agnostic placement) |
 | Python modules | **201** + Rust crate (3,983 lines, 21 source files) |
 | Publication figures | **16** (simulation + hardware, including the Phase 1 DLA parity panels) |
-| Test suite | **4,771** passing (97%+ coverage) |
+| Test suite | **4,841** passing (97%+ coverage) |
 
 ### Classical vs Quantum Wall-Time
 
@@ -308,19 +308,21 @@ graph TD
 | Subpackage | Modules | Purpose |
 |------------|:-------:|---------|
 | `analysis` | 44 | Synchronization probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
-| `phase` | 26 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
-| `hardware` | 17 | IBM Quantum runner, trapped-ion backend, GPU offload, circuit cutting, fast sparse |
+| `phase` | 27 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
+| `hardware` | 23 | IBM Quantum runner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ) |
 | `bridge` | 12 | K_nm → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
 | `applications` | 11 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS |
+| `mitigation` | 8 | ZNE, PEC, dynamical decoupling, Z₂ parity, CPDR, symmetry verification, GUESS, compound |
+| `qec` | 7 | Toric code, repetition code UPDE, surface code, biological surface code, error budget, multi-scale, syndrome flow |
 | `control` | 7 | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, ITER disruption, topological optimizer |
-| `mitigation` | 7 | ZNE, PEC, dynamical decoupling, Z₂ parity, CPDR, symmetry verification |
 | `identity` | 6 | VQE attractor, coherence budget, entanglement witness, fingerprint |
 | `qsnn` | 6 | Quantum spiking neural networks (LIF, STDP, synapses, dynamic coupling, training) |
 | `crypto` | 6 | BB84, Bell tests, topology-authenticated QKD, key hierarchy |
 | `gauge` | 5 | U(1) Wilson loops, vortex detection, CFT, universality, confinement |
-| `qec` | 5 | Toric code, repetition code UPDE, surface code, biological surface code, error budget |
 | `ssgf` | 4 | SSGF quantum integration |
 | `benchmarks` | 4 | Classical vs quantum scaling, MPS baseline, GPU baseline, AppQSim |
+| `psi_field` | 4 | U(1) compact lattice gauge: lattice, infoton, observables, SCPN mapping |
+| `fep` | 2 | Friston Free Energy Principle: variational free energy, predictive coding |
 | `tcbo` | 1 | TCBO quantum observer |
 | `pgbo` | 1 | PGBO quantum bridge |
 | `l16` | 1 | Layer 16 quantum director |
@@ -517,7 +519,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Research Gems](docs/research_gems.md) — **33 analysis modules with theory and API**
 - [Equations](docs/equations.md) — every equation in the codebase
 - [Architecture](docs/architecture.md) — 107-module dependency graph
-- [Analysis API](docs/analysis_api.md) — 41 analysis modules
+- [Analysis API](docs/analysis_api.md) — 44 analysis modules
 - [Phase API](docs/phase_api.md) — 14 evolution algorithms
 - [Hardware Guide](docs/hardware_guide.md) — IBM Quantum setup
 - [Notebooks](docs/notebooks.md) — 13 interactive notebooks

@@ -10,7 +10,7 @@
 
 ## Overview
 
-scpn-quantum-control has **4,771 collected tests** across **248 test
+scpn-quantum-control has **4,841 collected tests** across **248 test
 files** with **97%+ branch coverage**. Every file contains at least 11
 tests, the new modules from April 2026 each ship with 17–25 multi-angle
 tests across 6 dimensions (empty/null, error handling, negative cases,
@@ -21,10 +21,10 @@ benchmarks.
 ```
 tests/
   conftest.py              # Shared fixtures: knm_Nq, coupling_variant, hypothesis strategies
-  test_pipeline_wiring_performance.py  # ~120 tests — every __all__ export verified functional
+  test_pipeline_wiring_performance.py  # 155 tests — every __all__ export verified functional
                                        # (now includes TestGUESSPipeline, TestDynQPipeline,
                                        # TestPulseShapingPipeline)
-  test_rust_path_benchmarks.py         # 51+ tests — all 37 Rust functions benchmarked
+  test_rust_path_benchmarks.py         # 68 tests — all 37 Rust functions benchmarked
   test_symmetry_decay.py               # 20 multi-angle tests — GUESS (April 2026)
   test_qubit_mapper.py                 # 17 multi-angle tests — DynQ (April 2026)
   test_pulse_shaping.py                # 25 multi-angle tests — ICI + (α,β)-hypergeometric (April 2026)
@@ -54,7 +54,7 @@ pytest tests/ --cov=scpn_quantum_control --cov-report=html -m "not slow"
 
 ### 1. Pipeline Wiring Tests (`test_pipeline_wiring_performance.py`)
 
-113 tests that verify **every** symbol in `scpn_quantum_control.__all__` (77 symbols)
+155 tests that verify **every** symbol in `scpn_quantum_control.__all__` (104 symbols)
 is importable, callable, and produces valid output when wired into a data pipeline.
 
 Each test follows the pattern:
@@ -90,7 +90,7 @@ class TestTopLevelExports:
 
 ### 2. Rust Path Benchmarks (`test_rust_path_benchmarks.py`)
 
-51 tests covering all 18 functions in `scpn_quantum_engine` (PyO3 + rayon).
+68 tests covering all 37 functions in `scpn_quantum_engine` (PyO3 + rayon).
 
 Each Rust function is tested for:
 - **Correctness:** Output shape, dtype, physical bounds
@@ -276,7 +276,7 @@ Key regression indicators:
 - Kuramoto solver (4q): should be < 50 ms
 - VQE solve (2q): should be < 300 ms
 - Rust kuramoto_euler: should show > 20× speedup
-- Pipeline wiring: all 113 tests should pass in < 10 s total
+- Pipeline wiring: all 155 tests should pass in < 10 s total
 
 ## Dependencies
 
