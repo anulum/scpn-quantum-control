@@ -1,0 +1,76 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — Notebook CI
+#
+# Runs the 13 core tutorial notebooks (notebooks/01..13) through
+# `pytest-nbmake` so they stay executable. Non-blocking for now —
+# `continue-on-error: true` — because some notebooks pull large
+# backends (Qiskit Aer simulators up to 18 qubits) and may flake on
+# the default GitHub runner memory budget. Promotion to a blocking
+# gate happens after one full release cycle of green runs (same
+# staged-rollout as `test-extra-platforms` in `ci.yml`).
+#
+# The 34 FIM investigation notebooks (NB14-47) are NOT run here:
+# they produce per-notebook JSON in `results/` and are intended for
+# long-running exploratory analysis, not as publication gates. They
+# can be added per-batch once infrastructure is more mature.
+#
+# Schedule: weekly Monday 06:00 UTC, plus on-demand dispatch. A
+# failed scheduled run opens an issue via
+# `peter-evans/create-issue-from-file`.
+name: Notebook CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "notebooks/*.ipynb"
+      - "src/**"
+      - "pyproject.toml"
+      - ".github/workflows/notebooks.yml"
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  execute:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install project + notebook dependencies
+        run: |
+          pip install -e ".[dev,viz,ibm,tensor,mitigation,opensys,pennylane]"
+          pip install nbmake
+      - name: Execute core tutorial notebooks (01..13)
+        run: |
+          pytest \
+            --nbmake \
+            --nbmake-timeout=600 \
+            --nbmake-kernel=python3 \
+            notebooks/01_kuramoto_xy_dynamics.ipynb \
+            notebooks/02_vqe_ground_state.ipynb \
+            notebooks/03_error_mitigation.ipynb \
+            notebooks/04_upde_16_layer.ipynb \
+            notebooks/05_crypto_and_entanglement.ipynb \
+            notebooks/06_pec_error_cancellation.ipynb \
+            notebooks/07_quantum_advantage_scaling.ipynb \
+            notebooks/08_identity_continuity.ipynb \
+            notebooks/09_iter_disruption.ipynb \
+            notebooks/10_qsnn_training.ipynb \
+            notebooks/11_surface_code_budget.ipynb \
+            notebooks/12_trapped_ion_comparison.ipynb \
+            notebooks/13_cross_repo_bridges.ipynb
