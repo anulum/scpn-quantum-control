@@ -150,8 +150,21 @@ class TestPythonFloor:
 
 
 class TestRustTier:
-    def test_rust_available(self) -> None:
-        assert d._rust_available() is True
+    def test_rust_probe_reflects_engine(self) -> None:
+        """Probe must return True iff `scpn_quantum_engine` is importable.
+
+        The Rust wheel is optional (ships via the `[rust]` extra). When
+        it is installed, the probe is True and the engine must match the
+        Python floor (covered below). When it is missing — minimal
+        install, Docker without the wheel, a CI image without maturin —
+        the probe must cleanly say False and the dispatcher must fall
+        through to the next tier."""
+        try:
+            import scpn_quantum_engine  # noqa: F401
+        except Exception:
+            assert d._rust_available() is False
+        else:
+            assert d._rust_available() is True
 
     @_GLOBAL_SETTINGS
     @given(
@@ -159,6 +172,7 @@ class TestRustTier:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_rust_matches_python_floor(self, n: int, seed: int) -> None:
+        pytest.importorskip("scpn_quantum_engine")
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-10 * math.pi, 10 * math.pi, size=n)
         r_rust = d._rust_order_parameter(theta)
