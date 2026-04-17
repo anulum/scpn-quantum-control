@@ -19,6 +19,42 @@ surface has no meaningful compiled-language path; forcing one is an
 anti-pattern. This policy document is the explicit carve-out that rule
 3 anticipates.
 
+## Multi-language acceleration chain (CRITICAL)
+
+Per the ecosystem-wide rule codified in
+`feedback_multi_language_accel.md` (2026-04-17), every compute function
+in every ANULUM project may have **one or more** acceleration backends
+drawn from this palette:
+
+| Tier | Language | Niche |
+|---|---|---|
+| 1 | **Rust** | Systems-tier, predictable performance, zero-cost abstractions, graph traversal, tight integer loops |
+| 2 | **Julia** | Numerics-tier, BLAS/LAPACK, autodiff, dense matrix ops at scale, scientific computing |
+| 3 | **Go** | Concurrency-tier, goroutines + channels for massively-concurrent I/O glue |
+| 4 | **Mojo** | AI-tier, MLIR + Python compat, GPU/AI hot-paths, ML inference paths with autodiff |
+| ∞ | **Python** | Correctness floor, reproducibility ground truth — ALWAYS the last fallback |
+
+**Fallback chain ordering rule:** the *measured fastest* path runs
+first; next-fastest runs on fallback; Python is last. The dispatcher
+must measure (or know from prior measurement) which language wins on
+a given module's hot loop and put that one at the top.
+
+**Target directory layout** for future compute modules:
+
+```
+src/scpn_quantum_control/accel/
+  rust/              # Rust extensions (exists via scpn_quantum_engine)
+  julia/             # Julia bindings (PyJulia / JuliaCall)
+  go/                # Go cgo or shared-lib FFI
+  mojo/              # Mojo callable bindings
+  dispatch.py        # central dispatcher, fastest-at-top
+```
+
+This repository currently ships only the Rust tier
+(`scpn_quantum_engine`, 37 PyO3 functions). Julia / Go / Mojo tiers
+are tracked as future work — see the per-module audit table below
+for which compute functions are candidates.
+
 ## Language matrix
 
 | Language | When | Examples in this repo |
@@ -62,18 +98,26 @@ docstring, citing this policy.
 
 ## Current-state audit (2026-04-17)
 
-| Module | Compute? | Compiled path | Rationale |
-|---|---|---|---|
-| `src/scpn_quantum_control/bridge/knm_hamiltonian.py` | Yes | Rust (`build_knm_paper27`, `knm_to_dense_matrix`) | Hot path, on every circuit build. |
-| `src/scpn_quantum_control/hardware/classical.py` | Yes | Rust (`kuramoto_trajectory`, `kuramoto_euler`) | Hot path, Euler integrator. |
-| `src/scpn_quantum_control/analysis/dynamical_lie_algebra.py` | Yes | Rust (commutator + DLA closure) | Hot path, exponential-dimension loop. |
-| `src/scpn_quantum_control/hardware/backends.py` | **No** | **Exempt** | Plugin registry is a `dict[str, Callable]`. Python dict is already C-level; a PyO3 HashMap wrapper would be slower. See module docstring. |
-| `src/scpn_quantum_control/config.py` | **No** | **Exempt** | Pydantic-settings parses env / `.env` / kwargs. pydantic-core is itself Rust; re-wrapping in Rust would add PyO3 cost without new compute. |
-| `src/scpn_quantum_control/logging_setup.py` | **No** | **Exempt** | structlog assembles records from Python primitives and hands them to the stdlib logger. No numeric compute surface. |
-| `src/scpn_quantum_control/hardware/async_runner.py` | **No** | **Exempt** | asyncio orchestration over the IBM Python client. I/O bridge per the `feedback_rustify_all.md` carve-out. |
+Columns: `Rust` / `Julia` / `Go` / `Mojo` show which accel tier is
+currently wired (✓) or tracked as a future tier (TBD); `—` means not
+applicable for this module.
+
+| Module | Compute? | Rust | Julia | Go | Mojo | Rationale / niche |
+|---|---|---|---|---|---|---|
+| `bridge/knm_hamiltonian.py` | Yes | ✓ | TBD | — | TBD | Dense matrix build; Julia LAPACK is a strong candidate for the Julia tier. |
+| `hardware/classical.py` | Yes | ✓ (`kuramoto_trajectory`, `kuramoto_euler`) | TBD | — | TBD | Tight integer-scale integrator; Rust wins on small N, Mojo on GPU for large N. |
+| `analysis/dynamical_lie_algebra.py` | Yes | ✓ (commutator + DLA closure) | TBD | — | — | Graph / symbolic loop; Rust is the natural primary, Julia secondary for spectral checks. |
+| `hardware/backends.py` | **No** | **Exempt** | — | — | — | Plugin registry is a `dict[str, Callable]`. No compute surface. |
+| `config.py` | **No** | **Exempt** | — | — | — | pydantic-settings → pydantic-core is already Rust; re-wrapping adds PyO3 cost. |
+| `logging_setup.py` | **No** | **Exempt** | — | — | — | structlog composes records from Python primitives. No compute. |
+| `hardware/async_runner.py` | **No** | **Exempt** | — | — | Go (future) | asyncio orchestration over IBM Python client. If a fan-out daemon pattern emerges, Go is the candidate tier. |
 
 Every new module added to this repository must appear in this audit
 table as either a compiled-path row or an explicit exempt row.
+
+**Follow-up — when a `TBD` cell gets wired**, the commit must attach
+a microbenchmark that compares wall-time against the incumbent tier,
+and the dispatcher's fallback order must be updated accordingly.
 
 ## Cross-validation addenda
 
@@ -84,10 +128,15 @@ reproduced in an independently implemented framework:
   Already wired in `tests/test_cross_validation_qutip_dynamiqs.py`.
 * **Dynamiqs (Python + JAX)** — JAX backend, auto-diff. Already wired.
 * **Yao.jl / QuantumOptics.jl (Julia)** — third-party Julia stack,
-  different numerics, different compiler. Tracked as a follow-up.
+  different numerics, different compiler. Will additionally double
+  as the Julia-tier accel path per the multi-language rule. Tracked
+  as a follow-up.
 * **QSharp (.NET)** — Microsoft's stack, different LLVM toolchain.
   Low-priority follow-up.
 
 Cross-validation does not replace the Python / Rust pair of this
 repo; it triangulates scientific claims so that a bug in any single
-stack cannot silently falsify a published number.
+stack cannot silently falsify a published number. With the
+multi-language rule landed, an in-tree Julia implementation closes
+both gaps at once (accel path + cross-validation) for the modules
+that get a Julia tier wired in.
