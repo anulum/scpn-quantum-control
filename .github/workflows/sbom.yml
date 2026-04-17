@@ -1,0 +1,89 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — SBOM (Software Bill of Materials)
+#
+# Emits CycloneDX SBOMs for both the Python package graph and the
+# Rust crate graph on every push to main, every PR, every release
+# (`published`), and on-demand. On release, both files are attached
+# to the GitHub Release as assets so consumers can audit the exact
+# dependency closure that produced the wheel.
+#
+# Tools:
+#   - `cyclonedx-py`  — Python BOM from the installed `[dev]` env.
+#   - `cargo-cyclonedx` — Rust BOM from `scpn_quantum_engine/Cargo.lock`.
+#
+# SBOM format: CycloneDX 1.5 JSON. Consumers use `grype`, `osv-scanner`,
+# or any CycloneDX-compliant scanner.
+name: SBOM
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python-sbom:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - run: pip install -e ".[dev]"
+      - run: pip install cyclonedx-bom
+      - name: Generate Python CycloneDX SBOM
+        run: |
+          cyclonedx-py environment \
+            --output-format JSON \
+            --output-file sbom-python.cdx.json \
+            --schema-version 1.5
+      - name: Upload Python SBOM artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: sbom-python
+          path: sbom-python.cdx.json
+          retention-days: 90
+      - name: Attach to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844  # v2.1.0
+        with:
+          files: sbom-python.cdx.json
+
+  rust-sbom:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: scpn_quantum_engine
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      # Ubuntu runners come with a recent stable rustc + cargo in
+      # PATH (`rustup show` resolves to 1.80+). No separate toolchain
+      # install needed for the SBOM step.
+      - run: cargo install cargo-cyclonedx --locked --version 0.5.7
+      - name: Generate Rust CycloneDX SBOM
+        run: cargo cyclonedx --format json --spec-version 1.5 --output-pattern package
+      - name: Normalise filename
+        run: mv *.cdx.json ../sbom-rust.cdx.json
+      - name: Upload Rust SBOM artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: sbom-rust
+          path: sbom-rust.cdx.json
+          retention-days: 90
+      - name: Attach to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844  # v2.1.0
+        with:
+          files: sbom-rust.cdx.json
