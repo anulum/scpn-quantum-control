@@ -299,3 +299,115 @@ class TestPipelineAccel:
         r = order_parameter(theta)
         assert 0.0 <= r <= 1.0
         assert last_tier_used() in {"rust", "julia", "python"}
+
+
+# ---------------------------------------------------------------------------
+# Error-path coverage — the False branches of _rust_available /
+# _julia_available and the "unreachable" RuntimeError of the dispatcher
+# are exercised here so coverage doesn't bottom out below the 95% gate.
+# ---------------------------------------------------------------------------
+
+
+class TestProbeNegativePaths:
+    def test_rust_probe_false_when_import_fails(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        import builtins
+
+        real_import = builtins.__import__
+
+        def _fail(name: str, *args: object, **kwargs: object) -> object:
+            if name == "scpn_quantum_engine":
+                raise ImportError("simulated")
+            return real_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", _fail)
+        assert d._rust_available() is False
+
+    def test_julia_probe_false_when_import_fails(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        import builtins
+
+        real_import = builtins.__import__
+
+        def _fail(name: str, *args: object, **kwargs: object) -> object:
+            if name == "juliacall":
+                raise ImportError("simulated")
+            return real_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", _fail)
+        assert d._julia_available() is False
+
+    def test_dispatcher_raises_when_every_tier_fails(self) -> None:
+        """The 'python floor unreachable' branch is exercised by
+        constructing a chain whose floor itself raises ImportError.
+        This is the documented-as-unreachable path."""
+
+        def _raise_import(*_: object, **__: object) -> object:
+            raise ImportError("simulated floor failure")
+
+        disp = d.MultiLangDispatcher(
+            [
+                ("alt", _raise_import),
+                ("python", _raise_import),  # named 'python' to pass the last-entry check
+            ],
+        )
+        with pytest.raises(RuntimeError, match="every tier failed"):
+            disp(None)
+
+
+class TestJuliaNegativePaths:
+    def test_julia_load_raises_when_juliacall_missing(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        import builtins
+
+        from scpn_quantum_control.accel import julia as jl_mod
+
+        real_import = builtins.__import__
+
+        def _fail(name: str, *args: object, **kwargs: object) -> object:
+            if name == "juliacall":
+                raise ImportError("simulated")
+            return real_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", _fail)
+        # Force a fresh load so the patched import is hit.
+        monkeypatch.setattr(jl_mod, "_JL", None)
+        monkeypatch.setattr(jl_mod, "_INCLUDED", False)
+        with pytest.raises(ImportError, match="juliacall"):
+            jl_mod._load()
+
+    def test_julia_is_available_returns_false_on_missing_juliacall(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        import builtins
+
+        from scpn_quantum_control.accel import julia as jl_mod
+
+        real_import = builtins.__import__
+
+        def _fail(name: str, *args: object, **kwargs: object) -> object:
+            if name == "juliacall":
+                raise ImportError("simulated")
+            return real_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", _fail)
+        monkeypatch.setattr(jl_mod, "_JL", None)
+        monkeypatch.setattr(jl_mod, "_INCLUDED", False)
+        assert jl_mod.is_available() is False
+
+    def test_order_parameters_batch_delegates_through_load(self) -> None:
+        """The batched variant shares the same lazy-load path — run it
+        once to cover the batch line."""
+        pytest.importorskip("juliacall")
+        from scpn_quantum_control.accel.julia import order_parameters_batch
+
+        theta_batch = np.zeros((3, 4))
+        out = order_parameters_batch(theta_batch)
+        np.testing.assert_allclose(out, np.ones(3), atol=1e-12)
