@@ -93,8 +93,24 @@ def classical_kuramoto_reference(
 
 
 def _order_param(theta: np.ndarray) -> float:
-    z = np.mean(np.exp(1j * theta))
-    return float(abs(z))
+    """Kuramoto order parameter R = |<exp(i theta)>|.
+
+    Delegates to :func:`scpn_quantum_control.accel.order_parameter`,
+    which dispatches through the multi-language accel chain
+    (Rust → Julia → Python floor). Per the 2026-04-17 benchmark
+    (docs/pipeline_performance.md §"Multi-language accel chain"),
+    Rust wins at every measured N; callers need not think about
+    tier selection.
+
+    Falls back to an inline NumPy implementation only if the accel
+    package itself fails to import — keeps minimal installs working.
+    """
+    try:
+        from ..accel import order_parameter as _op
+    except Exception:
+        z = np.mean(np.exp(1j * theta))
+        return float(abs(z))
+    return _op(theta)
 
 
 def classical_exact_diag(
