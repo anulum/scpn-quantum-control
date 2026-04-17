@@ -4,6 +4,20 @@ All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 
+## Unreleased
+
+### Added
+
+- **Input validation in `analysis/koopman.py`** — `build_koopman_generator`
+  and `koopman_analysis` now reject malformed input (non-square `K`,
+  length-mismatched `omega`/`theta_ref`, NaN/Inf entries) and cap the
+  problem size at `MAX_OSCILLATORS_DEFAULT = 32` oscillators by default.
+  Larger sizes require an explicit `max_oscillators=` argument so a
+  stray caller cannot trigger an unbounded `n²×n²` allocation followed
+  by a multi-minute `eigvals` call. 13 new tests cover every guard
+  branch.
+
+
 ## [0.9.5] - 2026-03-29 / 2026-04-11
 
 ### Added (2026-04-10 — Phase 1 IBM Quantum hardware campaign)
