@@ -401,6 +401,66 @@ HardwareRunner(...)
     .run_sampler(circuits, shots=10000, name="experiment") -> list[JobResult]
 ```
 
+The default IBM instance CRN is read via `SCPNConfig.ibm_instance`
+(see `config` below) when the `[config]` extra is installed, falling
+back to the raw `SCPN_IBM_INSTANCE` environment variable otherwise.
+
+### `backends` — plugin registry
+
+```python
+from scpn_quantum_control.hardware import (
+    get_backend, list_backends, register_backend, discover_backends,
+)
+
+list_backends()                         # ['qiskit_ibm', 'pennylane', ...]
+backend = get_backend("qiskit_ibm")     # BackendProtocol instance
+backend.name                            # 'qiskit_ibm'
+backend.is_available()                  # True iff installed + importable
+
+# Third-party plugin — register via entry_points in pyproject.toml
+# [project.entry-points."scpn_quantum_control.backends"]
+# acme_trapped_ion = "acme_plugin:AcmeBackend"
+discover_backends()                     # scan entry_points group
+```
+
+Every registered backend exposes `name: str` and `is_available() ->
+bool`. Discovery is lazy; one broken plugin never blocks the rest.
+
+### `async_runner.AsyncHardwareRunner`
+
+```python
+import asyncio
+from scpn_quantum_control.hardware import AsyncHardwareRunner
+
+async def main():
+    async_runner = AsyncHardwareRunner([runner_a, runner_b], max_concurrent=2)
+    handles = await async_runner.submit_batch_async(
+        [circuits_a, circuits_b], shots=4096, name="dla_parity",
+    )
+    results = await async_runner.wait_all_async(handles)
+
+asyncio.run(main())
+```
+
+Fans out `sampler.run(...)` calls across one or more
+`HardwareRunner` instances via `asyncio.to_thread`. Bounded by an
+`asyncio.Semaphore`; round-robin across runners. Legacy sync
+`HardwareRunner` remains unchanged.
+
+### `provenance.capture_provenance`
+
+```python
+from scpn_quantum_control.hardware.provenance import capture_provenance
+
+prov = capture_provenance()             # returns a JSON-serialisable dict
+# prov["git"]["commit"], prov["runtime"]["python"], etc.
+```
+
+Records git commit + branch + dirty flag, Python / package /
+`scpn_quantum_engine` versions, hostname (hashed when
+`SCPN_ANONYMOUS_HOSTNAME=1`, also available via
+`SCPNConfig.anonymous_hostname`), and UTC timestamp.
+
 ## qec
 
 ### `biological_surface_code.BiologicalSurfaceCode`
@@ -426,3 +486,100 @@ ControlQEC(distance=3)
     .protect_signal(circuit) -> QuantumCircuit
     .decode_syndrome(syndrome) -> np.ndarray  # correction
 ```
+
+## config — unified runtime configuration
+
+Available via the `[config]` extra (pydantic-settings).
+
+### `SCPNConfig`
+
+```python
+from scpn_quantum_control.config import SCPNConfig, get_config, reload_config
+
+cfg = get_config()                  # process-wide singleton
+cfg.anonymous_hostname              # bool — SCPN_ANONYMOUS_HOSTNAME
+cfg.ibm_instance                    # str  — SCPN_IBM_INSTANCE
+cfg.ibm_backend                     # str  — SCPN_IBM_BACKEND
+cfg.ibm_channel                     # str  — "ibm_cloud" | "ibm_quantum"
+cfg.ibm_shots                       # int  — default shot count
+cfg.gpu_enable                      # bool — SCPN_GPU_ENABLE
+cfg.jax_disable                     # bool — SCPN_JAX_DISABLE
+cfg.result_dir                      # Path — results directory
+cfg.figure_dir                      # Path — figure output directory
+cfg.log_level                       # "DEBUG"|"INFO"|"WARNING"|"ERROR"|"CRITICAL"
+cfg.log_format                      # "console" | "json"
+
+# Tests that mutate os.environ must call reload_config():
+monkeypatch.setenv("SCPN_IBM_SHOTS", "1024")
+cfg = reload_config()               # discards cached instance
+```
+
+Layered sources, highest priority first:
+
+1. Explicit kwargs: `SCPNConfig(ibm_shots=8192)`.
+2. `SCPN_*`-prefixed environment variables.
+3. A `.env` file in the current working directory.
+4. Pydantic-declared defaults.
+
+## logging_setup — structlog bootstrap
+
+Available via the `[logging]` extra (structlog).
+
+```python
+from scpn_quantum_control.logging_setup import configure_logging, get_logger
+
+configure_logging()                 # once, at application start
+log = get_logger(__name__)
+log.info("submitted_job", backend="ibm_kingston", shots=4096)
+```
+
+`configure_logging(level=None, format=None, force=False)`:
+
+* `level` defaults to `SCPNConfig.log_level`.
+* `format` defaults to `SCPNConfig.log_format`; non-TTY stderr
+  auto-downgrades `console` → `json`.
+* `force=True` reconfigures even if the same arguments have been
+  applied before.
+
+Stdlib `logging.getLogger(...).info(...)` calls route through the
+same structlog processor chain — ISO-UTC timestamps, log-level tag,
+stack info, context-var merging.
+
+## accel — multi-language dispatcher
+
+The `accel/` package exposes compute functions through a
+Rust → Julia → Python chain. Rust is the default when the optional
+`scpn-quantum-engine` wheel is installed. Julia kicks in via the
+`[julia]` extra. Python is the always-available correctness floor.
+
+```python
+from scpn_quantum_control.accel import (
+    order_parameter, last_tier_used, available_tiers,
+    MultiLangDispatcher, dispatch,
+)
+
+r = order_parameter(theta)          # Rust (default) → Julia → Python
+last_tier_used()                    # 'rust' | 'julia' | 'python' | None
+available_tiers()                   # ['rust', 'julia'] on a full install
+
+# Generic name-based dispatch
+r = dispatch("order_parameter", theta)
+```
+
+Custom chain for a new compute function:
+
+```python
+from scpn_quantum_control.accel import MultiLangDispatcher
+
+disp = MultiLangDispatcher([
+    ("rust",   _rust_impl),         # ImportError falls through
+    ("julia",  _julia_impl),        # RuntimeError falls through
+    ("python", _python_impl),       # floor — MUST be last
+])
+result = disp(arg)
+disp.last_tier                      # which tier served the call
+```
+
+See `docs/pipeline_performance.md` §"Multi-language accel chain" for
+wall-time measurements and `docs/language_policy.md` for the
+ordering rules.

@@ -20,7 +20,7 @@
 [![Hardware: ibm_kingston](https://img.shields.io/badge/hardware-ibm__kingston%20Heron%20r2-blueviolet.svg)]()
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/anulum/scpn-quantum-control/blob/main/notebooks/01_kuramoto_xy_dynamics.ipynb)
 
-> **Active Development** — scpn-quantum-control is under intensive development. The quantum simulation engine, all 20 subpackages (201 modules), and the full pipeline (K_nm coupling → Hamiltonian → Trotter/VQE → IBM hardware → GUESS error mitigation → DLA-parity analysis) are fully functional, tested (4,841 passing tests, 97%+ coverage), and validated on IBM Heron r2 hardware (ibm_fez Feb 2026 + ibm_kingston Apr 2026). The April 2026 ibm_kingston campaign provided the first hardware confirmation of the DLA parity asymmetry predicted by the SCPN framework (Welch combined p ≪ 10⁻¹⁶ across 8 depth points). APIs may evolve as this work progresses.
+> **Active Development** — scpn-quantum-control is under intensive development. The quantum simulation engine, all 20 subpackages (209 modules), and the full pipeline (K_nm coupling → Hamiltonian → Trotter/VQE → IBM hardware → GUESS error mitigation → DLA-parity analysis) are fully functional, tested (4,841 passing tests, 97%+ coverage), and validated on IBM Heron r2 hardware (ibm_fez Feb 2026 + ibm_kingston Apr 2026). The April 2026 ibm_kingston campaign provided the first hardware confirmation of the DLA parity asymmetry predicted by the SCPN framework (Welch combined p ≪ 10⁻¹⁶ across 8 depth points). APIs may evolve as this work progresses.
 
 **Version:** 0.9.5
 **Status:** 201 Python Modules + 36 Rust Functions | 47 Notebooks | 21 Examples | 97%+ Coverage | IBM Hardware Validated (DLA parity confirmed)
@@ -307,25 +307,26 @@ graph TD
 
 | Subpackage | Modules | Purpose |
 |------------|:-------:|---------|
-| `analysis` | 44 | Synchronization probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
-| `phase` | 27 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
-| `hardware` | 23 | IBM Quantum runner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ) |
-| `bridge` | 12 | K_nm → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
-| `applications` | 11 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS |
-| `mitigation` | 8 | ZNE, PEC, dynamical decoupling, Z₂ parity, CPDR, symmetry verification, GUESS, compound |
-| `qec` | 7 | Toric code, repetition code UPDE, surface code, biological surface code, error budget, multi-scale, syndrome flow |
-| `control` | 7 | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, ITER disruption, topological optimizer |
-| `identity` | 6 | VQE attractor, coherence budget, entanglement witness, fingerprint |
-| `qsnn` | 6 | Quantum spiking neural networks (LIF, STDP, synapses, dynamic coupling, training) |
-| `crypto` | 6 | BB84, Bell tests, topology-authenticated QKD, key hierarchy |
-| `gauge` | 5 | U(1) Wilson loops, vortex detection, CFT, universality, confinement |
-| `ssgf` | 4 | SSGF quantum integration |
-| `benchmarks` | 4 | Classical vs quantum scaling, MPS baseline, GPU baseline, AppQSim |
-| `psi_field` | 4 | U(1) compact lattice gauge: lattice, infoton, observables, SCPN mapping |
-| `fep` | 2 | Friston Free Energy Principle: variational free energy, predictive coding |
-| `tcbo` | 1 | TCBO quantum observer |
-| `pgbo` | 1 | PGBO quantum bridge |
-| `l16` | 1 | Layer 16 quantum director |
+| `analysis` | 45 | Synchronisation probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
+| `phase` | 28 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
+| `hardware` | 27 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
+| `bridge` | 13 | K_nm → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
+| `applications` | 12 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS |
+| `mitigation` | 9 | ZNE, PEC, dynamical decoupling, Z₂ parity, CPDR, symmetry verification, GUESS, compound |
+| `qec` | 8 | Toric code, repetition code UPDE, surface code, biological surface code, error budget, multi-scale, syndrome flow |
+| `control` | 8 | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, ITER disruption, topological optimiser |
+| `identity` | 7 | VQE attractor, coherence budget, entanglement witness, fingerprint |
+| `qsnn` | 7 | Quantum spiking neural networks (LIF, STDP, synapses, dynamic coupling, training) |
+| `crypto` | 7 | BB84, Bell tests, topology-authenticated QKD, key hierarchy |
+| `gauge` | 6 | U(1) Wilson loops, vortex detection, CFT, universality, confinement |
+| `ssgf` | 5 | SSGF quantum integration |
+| `benchmarks` | 5 | Classical vs quantum scaling, MPS baseline, GPU baseline, AppQSim |
+| `psi_field` | 5 | U(1) compact lattice gauge: lattice, infoton, observables, SCPN mapping |
+| `accel` | 3 | Multi-language dispatcher + Julia tier (Rust → Julia → Python fallback chain) |
+| `fep` | 3 | Friston Free Energy Principle: variational free energy, predictive coding |
+| `tcbo` | 2 | TCBO quantum observer |
+| `pgbo` | 2 | PGBO quantum bridge |
+| `l16` | 2 | Layer 16 quantum director |
 
 ## Quick Start
 
@@ -513,17 +514,22 @@ Optional:
 
 Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/scpn-quantum-control)**:
 
-- [Installation](docs/installation.md) — pip install + dev setup
+- [Installation](docs/installation.md) — pip install + all optional extras
 - [Quickstart](docs/quickstart.md) — first experiment in 5 minutes
 - [Tutorials](docs/tutorials.md) — 4-level learning path, 14 tutorials
+- [API Reference](docs/api.md) — every public symbol, including `config`, `logging_setup`, `accel`, `hardware.backends`, `hardware.async_runner`
 - [Research Gems](docs/research_gems.md) — **33 analysis modules with theory and API**
 - [Equations](docs/equations.md) — every equation in the codebase
-- [Architecture](docs/architecture.md) — 107-module dependency graph
-- [Analysis API](docs/analysis_api.md) — 44 analysis modules
-- [Phase API](docs/phase_api.md) — 14 evolution algorithms
+- [Architecture](docs/architecture.md) — dependency graph + 20 subpackages
+- [Analysis API](docs/analysis_api.md) — 45 analysis modules
+- [Phase API](docs/phase_api.md) — 28 evolution algorithms
 - [Hardware Guide](docs/hardware_guide.md) — IBM Quantum setup
 - [Notebooks](docs/notebooks.md) — 13 interactive notebooks
 - [Bridges](docs/bridges_api.md) — cross-repo integrations
+- [Language Policy](docs/language_policy.md) — Rust / Julia / Go / Mojo accel chain
+- [Pipeline Performance](docs/pipeline_performance.md) — every module's measured wall-time + multi-language benchmarks
+- [Issue Triage](docs/triage.md) — label taxonomy, SLAs, routing
+- [Falsification](docs/falsification.md) — 8 named claims + falsifiers
 
 ## Related Repositories
 

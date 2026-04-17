@@ -8,13 +8,14 @@
 
 # Architecture
 
-## Package Statistics (v0.9.5)
+## Package Statistics (v0.9.6)
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 201 |
+| Python modules | 209 |
 | Rust crate | 1 (PyO3 0.25, **37 functions**, 21 source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
-| Tests | 4,841 (97%+ coverage) |
+| Julia tier | 1 (`accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `[julia]` extra) |
+| Tests | 4,841+ (97%+ coverage) |
 | Lines of code | ~30,000 |
 | Subpackages | 20 |
 | Research gems | 35 (≈ 5 novel, ≈ 10 first-application, including GUESS symmetry-decay ZNE and DynQ topology-agnostic placement) |
@@ -31,25 +32,26 @@ preparation and `bridge/` for Hamiltonian access.
 
 ```mermaid
 graph TD
-    bridge["bridge/ (12)\nK_nm → quantum objects"]
-    phase["phase/ (27)\nTime evolution"]
-    analysis["analysis/ (44)\nSync probes"]
-    control["control/ (7)\nQuantum control"]
-    qsnn["qsnn/ (6)\nQuantum SNN"]
-    identity["identity/ (6)\nIdentity analysis"]
-    hardware["hardware/ (23)\nBackends"]
-    mitigation["mitigation/ (8)\nError mitigation"]
-    qec["qec/ (7)\nError correction"]
-    gauge["gauge/ (5)\nGauge theory"]
-    apps["applications/ (11)\nBenchmarks"]
-    crypto["crypto/ (6)\nQKD"]
-    benchmarks["benchmarks/ (4)\nPerformance"]
-    ssgf["ssgf/ (4)\nGeometry"]
-    psi_field["psi_field/ (4)\nU(1) lattice gauge"]
-    fep["fep/ (2)\nFree Energy Principle"]
-    tcbo["tcbo/ (1)\nTCBO observer"]
-    pgbo["pgbo/ (1)\nPGBO bridge"]
-    l16["l16/ (1)\nLayer 16 director"]
+    bridge["bridge/ (13)\nK_nm → quantum objects"]
+    phase["phase/ (28)\nTime evolution"]
+    analysis["analysis/ (45)\nSync probes"]
+    control["control/ (8)\nQuantum control"]
+    qsnn["qsnn/ (7)\nQuantum SNN"]
+    identity["identity/ (7)\nIdentity analysis"]
+    hardware["hardware/ (27)\nBackends + registry + async + provenance"]
+    mitigation["mitigation/ (9)\nError mitigation"]
+    qec["qec/ (8)\nError correction"]
+    gauge["gauge/ (6)\nGauge theory"]
+    apps["applications/ (12)\nBenchmarks"]
+    crypto["crypto/ (7)\nQKD"]
+    benchmarks["benchmarks/ (5)\nPerformance"]
+    ssgf["ssgf/ (5)\nGeometry"]
+    psi_field["psi_field/ (5)\nU(1) lattice gauge"]
+    accel["accel/ (3)\nRust → Julia → Python dispatcher"]
+    fep["fep/ (3)\nFree Energy Principle"]
+    tcbo["tcbo/ (2)\nTCBO observer"]
+    pgbo["pgbo/ (2)\nPGBO bridge"]
+    l16["l16/ (2)\nLayer 16 director"]
 
     bridge --> phase
     bridge --> analysis
@@ -66,6 +68,7 @@ graph TD
     analysis --> gauge
     hardware --> phase
     hardware --> apps
+    accel --> hardware
     mitigation --> hardware
     qec --> hardware
     benchmarks --> phase
@@ -80,6 +83,7 @@ graph TD
     style analysis fill:#d4a017,color:#000
     style phase fill:#6929C4,color:#fff
     style hardware fill:#2ecc71,color:#000
+    style accel fill:#e67e22,color:#000
 ```
 
 ## Hardware Execution Pipeline

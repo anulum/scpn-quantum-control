@@ -58,31 +58,32 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | IBM hardware jobs | 33 on ibm_fez (Feb 2026) + 348 on ibm_kingston (Apr 2026, Phase 1 DLA-parity campaign) |
 | DLA parity asymmetry (hardware) | $+10.8\,\%$ mean for depths $\ge 4$, peak $+17.5\,\%$ at depth 6 (Welch combined $p \ll 10^{-16}$) |
 | Test suite | **4,841 passing**, 97%+ coverage |
-| Python modules | 201 + 1 Rust crate (37 functions) |
+| Python modules | 209 + 1 Rust crate (37 functions) + Julia tier (`accel/julia/*.jl`) |
 
 ## Package map
 
 | Subpackage | Modules | Purpose |
 |------------|:-------:|---------|
-| `analysis` | 44 | Synchronization probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
-| `phase` | 27 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
-| `hardware` | 23 | IBM Quantum runner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ) |
-| `bridge` | 12 | $K_{nm}$ → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
-| `applications` | 11 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS |
-| `mitigation` | 8 | ZNE, PEC, dynamical decoupling, Z₂ parity, CPDR, symmetry verification, GUESS, compound |
-| `qec` | 7 | Toric code, repetition code UPDE, surface code, biological surface code, error budget, multi-scale, syndrome flow |
-| `control` | 7 | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, ITER disruption, topological optimizer |
-| `identity` | 6 | VQE attractor, coherence budget, entanglement witness, fingerprint |
-| `qsnn` | 6 | Quantum spiking neural networks (LIF, STDP, synapses, dynamic coupling, training) |
-| `crypto` | 6 | BB84, Bell tests, topology-authenticated QKD, key hierarchy |
-| `gauge` | 5 | U(1) Wilson loops, vortex detection, CFT, universality, confinement |
-| `ssgf` | 4 | SSGF quantum integration |
-| `benchmarks` | 4 | Classical vs quantum scaling, MPS baseline, GPU baseline, AppQSim |
-| `psi_field` | 4 | U(1) compact lattice gauge: lattice, infoton, observables, SCPN mapping |
-| `fep` | 2 | Friston Free Energy Principle: variational free energy, predictive coding |
-| `tcbo` | 1 | TCBO quantum observer |
-| `pgbo` | 1 | PGBO quantum bridge |
-| `l16` | 1 | Layer 16 quantum director |
+| `analysis` | 45 | Synchronisation probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
+| `phase` | 28 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
+| `hardware` | 27 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
+| `bridge` | 13 | $K_{nm}$ → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
+| `applications` | 12 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS |
+| `mitigation` | 9 | ZNE, PEC, dynamical decoupling, Z₂ parity, CPDR, symmetry verification, GUESS, compound |
+| `qec` | 8 | Toric code, repetition code UPDE, surface code, biological surface code, error budget, multi-scale, syndrome flow |
+| `control` | 8 | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, ITER disruption, topological optimiser |
+| `identity` | 7 | VQE attractor, coherence budget, entanglement witness, fingerprint |
+| `qsnn` | 7 | Quantum spiking neural networks (LIF, STDP, synapses, dynamic coupling, training) |
+| `crypto` | 7 | BB84, Bell tests, topology-authenticated QKD, key hierarchy |
+| `gauge` | 6 | U(1) Wilson loops, vortex detection, CFT, universality, confinement |
+| `ssgf` | 5 | SSGF quantum integration |
+| `benchmarks` | 5 | Classical vs quantum scaling, MPS baseline, GPU baseline, AppQSim |
+| `psi_field` | 5 | U(1) compact lattice gauge: lattice, infoton, observables, SCPN mapping |
+| `accel` | 3 | Multi-language dispatcher + Julia tier (Rust → Julia → Python fallback chain) |
+| `fep` | 3 | Friston Free Energy Principle: variational free energy, predictive coding |
+| `tcbo` | 2 | TCBO quantum observer |
+| `pgbo` | 2 | PGBO quantum bridge |
+| `l16` | 2 | Layer 16 quantum director |
 
 ## Quick example
 
@@ -121,18 +122,22 @@ for name, w in results.items():
 
 ## Documentation
 
-- [Installation](installation.md) — pip install + dev setup
+- [Installation](installation.md) — pip install + all optional extras
 - [Quickstart](quickstart.md) — first experiment in 5 minutes
+- [API Reference](api.md) — every public symbol, including `config`, `logging_setup`, `accel`, `hardware.backends`, `hardware.async_runner`
 - [Research Gems](research_gems.md) — **33 analysis modules with theory and API**
 - [Equations](equations.md) — every equation in the codebase
-- [Architecture](architecture.md) — 107-module dependency graph
-- [API Reference](api.md) — core module documentation
-- [Analysis API](analysis_api.md) — 44 analysis modules
-- [Phase API](phase_api.md) — 14 evolution algorithms
+- [Architecture](architecture.md) — dependency graph + 20 subpackages
+- [Analysis API](analysis_api.md) — 45 analysis modules
+- [Phase API](phase_api.md) — 28 evolution algorithms
 - [Hardware Guide](hardware_guide.md) — IBM Quantum setup
 - [Bridges](bridges_api.md) — cross-repo integrations
 - [Tutorials](tutorials.md) — 4-level learning path, 14 tutorials
 - [Notebooks](notebooks.md) — 98 notebooks (13 core + 34 FIM investigation)
+- [Language Policy](language_policy.md) — Rust / Julia / Go / Mojo accel-chain rules
+- [Pipeline Performance](pipeline_performance.md) — measured wall-times + multi-language benchmarks
+- [Issue Triage](triage.md) — label taxonomy, SLAs, routing
+- [Falsification](falsification.md) — 8 named claims + falsifiers
 
 ---
 
