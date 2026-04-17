@@ -209,6 +209,11 @@ module = "pennylane.*"
 ignore_missing_imports = true
 follow_imports = "skip"
 
+[[tool.mypy.overrides]]
+module = "juliacall"
+ignore_missing_imports = true
+follow_imports = "skip"
+
 [tool.mutmut]
 # Mutmut 2.x config. Baseline target: `analysis/koopman.py` — small
 # (~250 lines), self-contained, 34 dedicated tests including the 13
