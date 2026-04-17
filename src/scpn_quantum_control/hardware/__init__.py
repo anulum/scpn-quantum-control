@@ -9,6 +9,17 @@
 noise models, trapped-ion transpilation, and experiment definitions.
 """
 
+from .backends import (
+    BackendProtocol,
+    BackendRegistrationError,
+    BackendRegistry,
+    discover_backends,
+    get_backend,
+    get_registry,
+    list_backends,
+    register_backend,
+    unregister_backend,
+)
 from .classical import (
     bloch_vectors_from_json,
     classical_brute_mpc,
@@ -52,7 +63,16 @@ from .runner import HardwareRunner, JobResult
 from .trapped_ion import transpile_for_trapped_ion, trapped_ion_noise_model
 
 __all__ = [
+    "BackendProtocol",
+    "BackendRegistrationError",
+    "BackendRegistry",
     "HardwareRunner",
+    "discover_backends",
+    "get_backend",
+    "get_registry",
+    "list_backends",
+    "register_backend",
+    "unregister_backend",
     "heron_r2_noise_model",
     "ALL_EXPERIMENTS",
     "ansatz_comparison_hw_experiment",
