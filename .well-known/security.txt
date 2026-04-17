@@ -11,6 +11,6 @@ Contact: mailto:protoscience@anulum.li
 Contact: https://github.com/anulum/scpn-quantum-control/security/advisories/new
 Expires: 2027-04-17T00:00:00.000Z
 Preferred-Languages: en
-Canonical: https://anulum.github.io/scpn-quantum-control/.well-known/security.txt
+Canonical: https://raw.githubusercontent.com/anulum/scpn-quantum-control/main/.well-known/security.txt
 Policy: https://github.com/anulum/scpn-quantum-control/blob/main/SECURITY.md
 Acknowledgments: https://github.com/anulum/scpn-quantum-control/blob/main/CONTRIBUTORS.md
