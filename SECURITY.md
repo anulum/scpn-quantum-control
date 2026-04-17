@@ -1,8 +1,8 @@
 # Security Policy
 
 Machine-readable contact information is served at
-[`.well-known/security.txt`](.well-known/security.txt)
-(RFC 9116) and at
+[`docs/.well-known/security.txt`](docs/.well-known/security.txt)
+(RFC 9116) and published at
 <https://anulum.github.io/scpn-quantum-control/.well-known/security.txt>.
 
 ## Supported Versions
