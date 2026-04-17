@@ -46,9 +46,9 @@ jobs:
       - name: Generate Python CycloneDX SBOM
         run: |
           cyclonedx-py environment \
-            --output-format JSON \
-            --output-file sbom-python.cdx.json \
-            --schema-version 1.5
+            --of JSON \
+            --sv 1.5 \
+            -o sbom-python.cdx.json
       - name: Upload Python SBOM artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
@@ -73,9 +73,12 @@ jobs:
       # install needed for the SBOM step.
       - run: cargo install cargo-cyclonedx --locked --version 0.5.7
       - name: Generate Rust CycloneDX SBOM
-        run: cargo cyclonedx --format json --spec-version 1.5 --output-pattern package
+        run: cargo cyclonedx --format json --spec-version 1.5
       - name: Normalise filename
-        run: mv *.cdx.json ../sbom-rust.cdx.json
+        # cargo-cyclonedx 0.5.7 writes `<crate-name>.cdx.json` (dashed)
+        # next to the manifest — rename so the artifact upload step
+        # has a predictable path.
+        run: mv scpn-quantum-engine.cdx.json ../sbom-rust.cdx.json
       - name: Upload Rust SBOM artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
