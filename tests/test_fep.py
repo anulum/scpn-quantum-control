@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for Free Energy Principle
-"""STRONG tests for fep/ subpackage.
+"""Multi-angle tests for fep/ subpackage.
 
 6 dimensions: empty/null, error handling, negative cases, pipeline
 integration, roundtrip, performance.

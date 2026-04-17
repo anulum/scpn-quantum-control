@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for Crypto Entanglement Qkd
-"""Tests for entanglement_qkd: SCPN-QKD protocol — elite multi-angle coverage."""
+"""Tests for entanglement_qkd: SCPN-QKD protocol — multi-angle coverage."""
 
 from __future__ import annotations
 

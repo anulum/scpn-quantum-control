@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for Control Plasma Knm
-"""Tests for bridge/control_plasma_knm.py — elite multi-angle coverage."""
+"""Tests for bridge/control_plasma_knm.py — multi-angle coverage."""
 
 from __future__ import annotations
 

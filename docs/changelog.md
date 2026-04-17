@@ -39,12 +39,12 @@ five strategic tweaks (GUESS, DynQ, ICI, hypergeometric, FFI hardening)
 - **GUESS symmetry-decay ZNE** (`mitigation/symmetry_decay.py`,
   `scpn_quantum_engine/src/symmetry_decay.rs`) — physics-informed
   zero-noise extrapolation using $\sum Z_i$ as the guide observable.
-  Oliva del Moral *et al.*, arXiv:2603.13060. 20 STRONG tests.
+  Oliva del Moral *et al.*, arXiv:2603.13060. 20 multi-angle tests.
 - **DynQ topology-agnostic qubit mapper**
   (`hardware/qubit_mapper.py`,
   `scpn_quantum_engine/src/community.rs`) — Louvain community
   detection on calibration-weighted QPU graphs. Liu *et al.*,
-  arXiv:2601.19635. 17 STRONG tests.
+  arXiv:2601.19635. 17 multi-angle tests.
 - **PMP / ICI pulse sequences + (α,β)-hypergeometric pulse shaping**
   (`phase/pulse_shaping.py`,
   `scpn_quantum_engine/src/pulse_shaping.rs`) — Liu *et al.* (2023)
@@ -54,7 +54,7 @@ five strategic tweaks (GUESS, DynQ, ICI, hypergeometric, FFI hardening)
 - **FFI boundary hardening** — every `#[pyfunction]` returns
   `PyResult<T>` and validates inputs via `validation.rs`. 16 unit
   tests.
-- Elite docs ≥ 567 lines: `docs/symmetry_decay_guess.md` (891) and
+- Long-form docs ≥ 567 lines: `docs/symmetry_decay_guess.md` (891) and
   `docs/dynq_qubit_mapping.md` (878).
 
 ### Repository hygiene (2026-04-10)

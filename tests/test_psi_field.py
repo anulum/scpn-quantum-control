@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for Ψ-field Lattice Gauge
-"""STRONG tests for psi_field/ subpackage.
+"""Multi-angle tests for psi_field/ subpackage.
 
 6 dimensions: empty/null, error handling, negative cases, pipeline
 integration, roundtrip, performance.

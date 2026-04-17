@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for Knm Parity
-"""Cross-implementation parity tests for Knm definitions — elite multi-angle coverage."""
+"""Cross-implementation parity tests for Knm definitions — multi-angle coverage."""
 
 from __future__ import annotations
 

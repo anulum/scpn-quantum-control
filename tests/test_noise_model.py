@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for Noise Model
-"""Tests for noisy simulator support — elite multi-angle coverage."""
+"""Tests for noisy simulator support — multi-angle coverage."""
 
 import pytest
 from qiskit import QuantumCircuit

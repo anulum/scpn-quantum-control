@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for Vqls Edge Cases
-"""Edge-case and multi-angle tests for vqls_gs.py — elite coverage."""
+"""Edge-case and multi-angle tests for vqls_gs.py."""
 
 from __future__ import annotations
 

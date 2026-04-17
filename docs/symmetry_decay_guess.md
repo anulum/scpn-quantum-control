@@ -714,7 +714,7 @@ checking `fit_residual`: if $r > 0.1$, the exponential model is suspect.
 
 ## 10. Test Coverage
 
-20 tests across 6 STRONG dimensions in `tests/test_symmetry_decay.py`:
+20 tests across 6 dimensions in `tests/test_symmetry_decay.py`:
 
 ### 10.1 Empty/Null Inputs (3 tests)
 

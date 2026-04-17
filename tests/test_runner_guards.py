@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for Runner Guards
-"""Guard tests: HardwareRunner methods raise before connect() — elite coverage."""
+"""Guard tests: HardwareRunner methods raise before connect()."""
 
 from __future__ import annotations
 

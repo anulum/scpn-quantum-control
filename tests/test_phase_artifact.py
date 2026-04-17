@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for Phase Artifact
-"""Tests for shared phase artifact schema — elite multi-angle coverage."""
+"""Tests for shared phase artifact schema — multi-angle coverage."""
 
 from __future__ import annotations
 

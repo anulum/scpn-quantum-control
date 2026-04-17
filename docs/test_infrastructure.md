@@ -12,7 +12,7 @@
 
 scpn-quantum-control has **4,771 collected tests** across **248 test
 files** with **97%+ branch coverage**. Every file contains at least 11
-tests, the new modules from April 2026 each ship with 17–25 STRONG
+tests, the new modules from April 2026 each ship with 17–25 multi-angle
 tests across 6 dimensions (empty/null, error handling, negative cases,
 pipeline integration, roundtrip, performance). The test suite verifies
 correctness, pipeline wiring, Rust acceleration parity, and performance
@@ -25,9 +25,9 @@ tests/
                                        # (now includes TestGUESSPipeline, TestDynQPipeline,
                                        # TestPulseShapingPipeline)
   test_rust_path_benchmarks.py         # 51+ tests — all 37 Rust functions benchmarked
-  test_symmetry_decay.py               # 20 STRONG tests — GUESS (April 2026)
-  test_qubit_mapper.py                 # 17 STRONG tests — DynQ (April 2026)
-  test_pulse_shaping.py                # 25 STRONG tests — ICI + (α,β)-hypergeometric (April 2026)
+  test_symmetry_decay.py               # 20 multi-angle tests — GUESS (April 2026)
+  test_qubit_mapper.py                 # 17 multi-angle tests — DynQ (April 2026)
+  test_pulse_shaping.py                # 25 multi-angle tests — ICI + (α,β)-hypergeometric (April 2026)
   test_*.py                            # 240+ module-specific test files (11+ tests each)
 ```
 

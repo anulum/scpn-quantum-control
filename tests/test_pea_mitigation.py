@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for Pea Mitigation
-"""Tests for PEA error mitigation and HardwareRunner config — elite coverage."""
+"""Tests for PEA error mitigation and HardwareRunner config."""
 
 from __future__ import annotations
 
