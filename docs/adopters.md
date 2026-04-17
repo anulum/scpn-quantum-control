@@ -76,5 +76,5 @@ Annual. If the adopters table hits more than 25 rows, split it
 into academic / industrial / educational subsections.
 
 Audit item **C15** in
-`docs/internal/audit_2026-04-17T0800_claude_gap_audit.md` stays
+the internal gap audit stays
 partly open until the first external-adopter row lands.

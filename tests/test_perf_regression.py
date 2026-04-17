@@ -22,7 +22,7 @@ if the ratio ever falls below 2×, something in the Rust path has
 genuinely regressed.
 
 This is the companion to audit item **C1** in
-`docs/internal/audit_2026-04-17T0800_claude_gap_audit.md` and the
+the internal gap audit and the
 falsifier for claim **C4** in `docs/falsification.md`.
 """
 

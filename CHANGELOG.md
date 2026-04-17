@@ -74,14 +74,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Internal
 
-- Cleared 13 internal `docs/internal/gemini/` audit files after
-  verification — see session log
-  `claude_2026-04-17T0317_pr_security_hygiene.md` for per-file
-  decisions. Two cross-ecosystem outputs persist:
+- Cleared 13 internal audit files after verification. Two
+  cross-ecosystem outputs persist:
   `agentic-shared/configs/agent_metadata_schema.json` (cross-repo
   metadata schema 1.0.0) and
   `agentic-shared/research_reports/architectural_pillars_2026-04-17.md`
-  (verified deferral criteria for the five pillars Gemini proposed).
+  (verified deferral criteria for the five proposed pillars).
 
 
 ## [0.9.5] - 2026-03-29 / 2026-04-11
@@ -121,7 +119,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   persistent IBM-campaign and webmaster context that survives session
   compaction.
 
-### Added (2026-04-08 — strategic tweaks from Gemini Deep Research report)
+### Added (2026-04-08 — strategic tweaks from deep-research audit)
 
 - **GUESS symmetry-decay ZNE** (`mitigation/symmetry_decay.py`,
   `scpn_quantum_engine/src/symmetry_decay.rs`): physics-informed
@@ -245,7 +243,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **IBM hardware v2**: 9 equal-depth fair experiments on ibm_fez confirming dual protection
 - **IBM Quantum Credits application** submitted (5h QPU, 04/2026–08/2026)
 - **Rust engine**: 4 new functions (correlation_matrix_xy, lindblad_jump_ops_coo, lindblad_anti_hermitian_diag, parity_filter_mask) — 18→22 total
-- **115 multi-angle tests** for 9 Gemini 10X modules
+- **115 multi-angle tests** for 9 10X-programme modules
 
 ### Discovered
 - **FIM alone synchronises** without coupling (K=0, λ≥8) — NB26

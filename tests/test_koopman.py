@@ -189,9 +189,9 @@ class TestKoopmanGeneratorPhysics:
 class TestKoopmanInputValidation:
     """Guards against malformed or pathologically large input.
 
-    Fixes the unbounded eigvals / dense allocation surface that
-    Gemini's `docs/internal/gemini/security_audit.md` flagged as
-    VULN-SQC-001 on 2026-04-15.
+    Fixes the unbounded eigvals / dense allocation surface that the
+    internal security audit (docs/internal/security_audit.md) flagged
+    as VULN-SQC-001 on 2026-04-15.
     """
 
     @pytest.fixture

@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Project Configuration
-"""Generate VQE ansatz comparison figure for publication (Gemini finding 7.1)."""
+"""Generate VQE ansatz comparison figure for publication (internal finding 7.1)."""
 
 from __future__ import annotations
 

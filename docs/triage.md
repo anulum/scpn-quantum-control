@@ -306,9 +306,8 @@ keep the timer running.
 ## Collaborators and access
 
 As of 2026-04-17 the repository has one maintainer (Miroslav
-Šotek) with write access, plus Dependabot and the Claude Code
-/ Arcane Sapience agent identity as GitHub Actions–scoped
-collaborators.
+Šotek) with write access, plus Dependabot and the Arcane Sapience
+agent identity as GitHub Actions–scoped collaborators.
 
 Paths toward further collaborator access:
 

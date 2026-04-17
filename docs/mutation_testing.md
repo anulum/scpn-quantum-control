@@ -124,6 +124,6 @@ When a new survivor shows up on the weekly run:
    is itself a public interface.
 
 Audit item **B7** in
-`docs/internal/audit_2026-04-17T0800_claude_gap_audit.md` closes
+the internal gap audit closes
 when the CI workflow has completed three consecutive green weekly
 runs and the target-module list has expanded beyond `koopman.py`.
