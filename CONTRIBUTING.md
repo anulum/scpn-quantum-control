@@ -148,6 +148,39 @@ historical-exempt list in that file.
 4. Open a PR against `main` with a clear description
 5. Reference any related issues
 
+## Issue Triage
+
+Labels live in two taxonomies:
+
+- **Priority** — `P0` (blocks a release), `P1` (this week),
+  `P2` (this month), `P3` (this quarter). Every non-trivial issue
+  gets exactly one. Missing label defaults to `P3`.
+- **Area / kind** — `bug`, `enhancement`, `documentation`,
+  `question`, `hardware`, `security`, `rust`, `science`, `ci`,
+  `performance`, `dependencies`, `python`, `github_actions`. Apply
+  whichever match; no cap.
+
+Two workflow labels:
+
+- `triage` — issue has not been seen by a maintainer yet. Removed
+  when the first priority label goes on.
+- `blocked` — issue cannot progress until something external
+  resolves (upstream fix, IBM Quantum queue, CEO decision).
+  Maintainers add a comment pointing at the blocker.
+
+Service-level commitments, effective 2026-04-17:
+
+| Event | SLA |
+|-------|-----|
+| First maintainer response on a new issue | 5 working days |
+| First response on a `security`-labelled issue | 48 hours (see `SECURITY.md`) |
+| First response on a `P0` issue | 24 hours |
+| Weekly triage sweep of `triage`-labelled issues | every Monday |
+
+Stale policy: non-`security`, non-`P0` issues with no activity for
+90 days get a `status:stale` comment from `stale.yml`; auto-close
+after another 14 days unless a maintainer re-labels.
+
 ## CI Pipeline
 
 | Job | What it checks |
