@@ -5,6 +5,10 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Structured logging bootstrap
+# Language policy: EXEMPT from the Rust-path rule. structlog composes
+# log records from Python primitives and hands them to the stdlib
+# logger; no numeric compute surface exists to rustify. See
+# docs/language_policy.md §"Current-state audit".
 """Structlog-backed logging bootstrap.
 
 Closes audit item C12. Debugging HardwareRunner jobs used to mean
