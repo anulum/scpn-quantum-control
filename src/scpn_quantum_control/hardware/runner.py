@@ -474,12 +474,26 @@ class HardwareRunner:
     def save_result(
         self, result: JobResult | list[JobResult], filename: str | None = None
     ) -> Path:
-        """Save result(s) to JSON in results_dir."""
-        data: dict | list[dict]
+        """Save result(s) to JSON in `results_dir` with provenance.
+
+        A `provenance` block is embedded at the top level of the
+        output document describing the git state, installed package
+        versions, Python runtime, and host of the writer. Outsiders
+        use it to trace published numbers back to a specific commit;
+        see `docs/internal/audit_2026-04-17T0800_claude_gap_audit.md`
+        §C8 for the motivation.
+        """
+        from .provenance import capture_provenance
+
+        payload: dict
         if isinstance(result, list):
-            data = [r.to_dict() for r in result]
+            payload = {
+                "results": [r.to_dict() for r in result],
+                "provenance": capture_provenance(),
+            }
         else:
-            data = result.to_dict()
+            payload = result.to_dict()
+            payload["provenance"] = capture_provenance()
 
         if filename is None:
             ts = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -488,7 +502,7 @@ class HardwareRunner:
 
         path = self.results_dir / filename
         with open(path, "w") as f:
-            json.dump(data, f, indent=2)
+            json.dump(payload, f, indent=2)
         print(f"  Saved: {path}")
         return path
 
