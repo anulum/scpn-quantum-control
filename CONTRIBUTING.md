@@ -89,6 +89,42 @@ fix(bridge): correct XXZ Hamiltonian sign convention
 docs(tutorials): add Floquet time crystal tutorial
 ```
 
+Every commit message must include a `Co-Authored-By:` trailer (enforced
+by `tools/check_commit_trailers.py` as a `commit-msg` pre-commit hook):
+
+```
+feat(analysis): add Krylov complexity probe for sync transition
+
+Short explanation of *why* this change.
+
+Co-Authored-By: Arcane Sapience <protoscience@anulum.li>
+```
+
+The subject line must not contain these words: `elite`, `Elite`,
+`SUPERIOR`, `Superior`, `ETALON`, `Etalon`, `comprehensive`, `robust`,
+`leveraging`, `world-class`, `best-in-class`. The hook enforces the
+subject-line check; the body may mention the words when describing
+their removal from elsewhere in the repo.
+
+### Merging Dependabot pull requests
+
+`gh pr merge --squash --delete-branch` on its own keeps Dependabot's
+default commit message, which omits the `Co-Authored-By` trailer.
+Use the following form so the resulting squash commit still passes
+the trailer check:
+
+```bash
+gh pr merge <N> --squash --delete-branch \
+  --body "$(gh pr view <N> --json body -q .body)
+
+Co-Authored-By: Arcane Sapience <protoscience@anulum.li>"
+```
+
+The auditor in `tools/check_commit_trailers.py` runs weekly in CI and
+will flag any future Dependabot merge that omits the trailer. Seven
+merges made on 2026-04-17 before the hook existed are in the
+historical-exempt list in that file.
+
 ## What to Contribute
 
 **High-value contributions:**
