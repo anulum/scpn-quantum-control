@@ -109,7 +109,7 @@ from .qsnn.qstdp import QuantumSTDP
 from .qsnn.qsynapse import QuantumSynapse
 from .qsnn.training import QSNNTrainer
 
-__version__ = "0.9.5"
+__version__ = "0.9.6"
 
 __all__ = [
     "eeg_plv_to_vqe",

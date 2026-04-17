@@ -4,18 +4,84 @@ All notable changes to scpn-quantum-control are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 
-## Unreleased
+## [0.9.6] - 2026-04-17
+
+### Security
+
+- **rand 0.9.2 → 0.9.4** in `scpn_quantum_engine/Cargo.lock` to address
+  RUSTSEC-2026-0097 (Rand unsoundness with custom logger calling
+  `rand::rng()` from inside the logger; aliased `&mut BlockRng` from
+  the public API). Resolves Dependabot alert #2 and code-scanning
+  alert #81. All 92 Rust unit tests pass with the bumped dependency.
+- **`scripts/retrieve_ibm_job.py`** no longer prints the first 50
+  characters of the IBM Cloud CRN read from the vault. The CRN
+  contains the account ID, region and project prefix; the truncation
+  was insufficient. Replaced with a content-free confirmation
+  message. Resolves CodeQL alert #79
+  (`py/clear-text-logging-sensitive-data`).
+- **`pytest 9.0.2 → 9.0.3`** (PR #37) — addresses CVE-2025-71176
+  (`/tmp/pytest-of-{user}` directory pattern allows local users to
+  cause a denial of service or possibly gain privileges on UNIX).
+  Resolves Dependabot alert #1.
 
 ### Added
 
 - **Input validation in `analysis/koopman.py`** — `build_koopman_generator`
   and `koopman_analysis` now reject malformed input (non-square `K`,
   length-mismatched `omega`/`theta_ref`, NaN/Inf entries) and cap the
-  problem size at `MAX_OSCILLATORS_DEFAULT = 32` oscillators by default.
-  Larger sizes require an explicit `max_oscillators=` argument so a
-  stray caller cannot trigger an unbounded `n²×n²` allocation followed
-  by a multi-minute `eigvals` call. 13 new tests cover every guard
-  branch.
+  problem size at `MAX_OSCILLATORS_DEFAULT = 32` oscillators by
+  default. Larger sizes require an explicit `max_oscillators=`
+  argument so a stray caller cannot trigger an unbounded n²×n²
+  allocation followed by a multi-minute `eigvals` call. 13 new tests
+  cover every guard branch.
+- **`docs/pipeline_performance.md` §21 — measured Rust speedups vs
+  Python baseline** plus an explicit decision rule for when a new
+  acceleration backend (Mojo / Julia / Lean 4) enters the build
+  matrix.
+
+### Changed
+
+- **CI dev-tool matrix** synced to current upstreams (PRs #36–#42):
+  `pytest 9.0.3`, `mypy 1.20.1`, `ruff 0.15.10`, `hypothesis 6.151.13`,
+  `build 1.4.3`, `actions/upload-artifact 7.0.1`,
+  `pypa/gh-action-pypi-publish 1.14.0`.
+- **Public-facing docs scrubbed** of self-applied quality labels
+  (`elite`, `Elite documentation`, `STRONG tests`, `SUPERIOR
+  documentation`) in `CHANGELOG.md`, `docs/changelog.md`,
+  `docs/test_infrastructure.md`, `docs/symmetry_decay_guess.md`,
+  `docs/dynq_qubit_mapping.md` and 27 test docstrings. Domain-technical
+  uses (`STRONG correlation` verdict in stats tables, `STRONG coupling`
+  in biochemical notebooks) are kept — they are field terminology.
+- **Stale counts refreshed** across `README.md`, `docs/architecture.md`,
+  `docs/index.md`, `docs/pipeline_performance.md` and
+  `docs/test_infrastructure.md`: subpackages 19 → 20 (with the
+  April-2026 `psi_field/` and `fep/` rows added), test suite 4 771 /
+  4 828 → 4 841, pipeline-wiring 113 → 155, Rust path 51 → 68 tests
+  over 37 functions, `__all__` 77 → 104 symbols, three duplicate
+  phantom rows removed from the `docs/index.md` package map.
+
+### Repository hygiene
+
+- **`.coordination/sessions/` and `.coordination/handovers/` are now
+  local-only.** The 16 historical session logs and handovers tracked
+  in this repo were untracked via `git rm --cached`. Local working
+  copies and git history are preserved; new logs no longer ship with
+  the public repo.
+- **New `.gitignore` patterns** for paper-extraction working files
+  (raw `pdftotext` dumps, structured per-paper extractions, per-paper
+  assessments, archived under-fidelity `_v1_archive/`),
+  `.agent_metadata.json`, and root-level misplaced `handover_*.md`.
+
+### Internal
+
+- Cleared 13 internal `docs/internal/gemini/` audit files after
+  verification — see session log
+  `claude_2026-04-17T0317_pr_security_hygiene.md` for per-file
+  decisions. Two cross-ecosystem outputs persist:
+  `agentic-shared/configs/agent_metadata_schema.json` (cross-repo
+  metadata schema 1.0.0) and
+  `agentic-shared/research_reports/architectural_pillars_2026-04-17.md`
+  (verified deferral criteria for the five pillars Gemini proposed).
 
 
 ## [0.9.5] - 2026-03-29 / 2026-04-11
