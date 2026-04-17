@@ -563,7 +563,7 @@ publishing your source code, a commercial license is available:
 | **Perpetual** | CHF 999 one-time | Permanent license, one major version |
 | **Enterprise** | Custom | SLA, priority support, custom modules |
 
-Contact: **protoscience@anulum.li** | [polar.sh/anulum](https://polar.sh/anulum)
+Contact: **protoscience@anulum.li** | [anulum.li](https://www.anulum.li)
 
 ---
 

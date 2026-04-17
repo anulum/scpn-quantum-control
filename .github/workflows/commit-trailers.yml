@@ -27,10 +27,37 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
         with:
-          # Need full history so v0.9.0..HEAD range resolves
+          # Full history so we can resolve any ref, including the
+          # rule-introduction SHA `0c510b4` and PR base SHAs.
           fetch-depth: 0
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
         with:
           python-version: "3.12"
+      - name: Decide audit range
+        id: range
+        run: |
+          set -eu
+          case "${{ github.event_name }}" in
+            pull_request)
+              # All commits in the PR.
+              RANGE="${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+              ;;
+            push)
+              # Just the commits introduced by this push.
+              if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+                RANGE="${{ github.event.after }}~1..${{ github.event.after }}"
+              else
+                RANGE="${{ github.event.before }}..${{ github.event.after }}"
+              fi
+              ;;
+            *)
+              # Scheduled / workflow_dispatch: everything since the
+              # rule was introduced (`0c510b4`). Pre-rule commits
+              # remain grandfathered in HISTORICAL_EXEMPT_SHAS.
+              RANGE="0c510b4..HEAD"
+              ;;
+          esac
+          echo "range=$RANGE" >> "$GITHUB_OUTPUT"
+          echo "Audit range: $RANGE"
       - name: Run commit-trailer auditor
-        run: python tools/check_commit_trailers.py --range v0.9.0..HEAD
+        run: python tools/check_commit_trailers.py --range "${{ steps.range.outputs.range }}"
