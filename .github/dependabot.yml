@@ -17,3 +17,8 @@ updates:
     schedule:
       interval: weekly
       day: monday
+  - package-ecosystem: cargo
+    directory: "/scpn_quantum_engine"
+    schedule:
+      interval: weekly
+      day: monday
