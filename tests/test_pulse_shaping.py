@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for Pulse Shaping (ICI + Hypergeometric)
-"""STRONG tests for phase/pulse_shaping.py.
+"""Multi-angle tests for phase/pulse_shaping.py.
 
 6 dimensions: empty/null, error handling, negative cases, pipeline
 integration, roundtrip, performance.

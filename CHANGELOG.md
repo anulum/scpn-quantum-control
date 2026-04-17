@@ -50,12 +50,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   Oliva del Moral *et al.*, arXiv:2603.13060 (2026), implemented
   exactly. Rust path provides `fit_symmetry_decay` (least-squares α
   fit) and `guess_extrapolate_batch` (rayon-parallel correction).
-  20 STRONG tests across 6 dimensions.
+  20 multi-angle tests across 6 dimensions.
 - **DynQ topology-agnostic qubit mapper** (`hardware/qubit_mapper.py`,
   `scpn_quantum_engine/src/community.rs`): Louvain community detection
   on calibration-weighted QPU graphs, with quality scoring per region
   (connectivity × fidelity composite, Eq. 8 of Liu *et al.*,
-  arXiv:2601.19635). 17 STRONG tests.
+  arXiv:2601.19635). 17 multi-angle tests.
 - **PMP / ICI pulse sequences** (`phase/pulse_shaping.py`,
   `scpn_quantum_engine/src/pulse_shaping.rs`): three-segment
   Pontryagin-optimal mixing-angle trajectory for STIREP, with full
@@ -67,7 +67,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   (α=β=0), STIRAP (α=β=0.5), and Demkov-Kunike (α=1, β=0.5) as special
   cases. Rust path implements ${}_2F_1$ via custom series expansion +
   rayon, 44× faster than scipy element-wise. Ventura Meinersen *et al.*,
-  arXiv:2504.08031 (2025). 25 STRONG tests cover both ICI and the
+  arXiv:2504.08031 (2025). 25 multi-angle tests cover both ICI and the
   hypergeometric family.
 - **FFI boundary hardening** for the entire Rust crate: all 36
   `#[pyfunction]` exports now return `PyResult<T>` and validate inputs
@@ -76,7 +76,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `validate_statevec_len`, `validate_domain_range`). Inner pure-Rust
   functions are kept separate so the algorithms can be unit-tested
   without a Python interpreter. 16 unit tests in `validation.rs`.
-- **Elite documentation** (>567 lines each):
+- **Long-form documentation** (>567 lines each):
   `docs/symmetry_decay_guess.md` (891 lines) and
   `docs/dynq_qubit_mapping.md` (878 lines), both with theory,
   references, API, tutorials, benchmarks, limitations, and
@@ -132,11 +132,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [0.9.5] - 2026-03-29 / 2026-04-07
 
 ### Added (2026-04-06 — 2026-04-07)
-- **Multi-Scale QEC** (`qec/multiscale_qec.py`, `qec/syndrome_flow.py`): concatenated surface codes across 5 SCPN domains. Knill 2005 threshold, K_nm-weighted syndrome flow, Rust-accelerated via `concat_qec.rs`. 23 STRONG tests.
-- **Free Energy Principle** (`fep/variational_free_energy.py`, `fep/predictive_coding.py`): Friston 2010 variational F = complexity + accuracy, hierarchical prediction errors, KL divergence, ELBO gradient. Rust-accelerated via `fep.rs`. 16 STRONG tests.
-- **Ψ-field Lattice Gauge** (`psi_field/lattice.py`, `psi_field/infoton.py`, `psi_field/scpn_mapping.py`, `psi_field/observables.py`): U(1) compact gauge theory with HMC, gauge-covariant kinetic (Rothe convention), Polyakov loops, topological charge, string tension. Rust-accelerated via `gauge_lattice.rs`. 22 STRONG tests.
+- **Multi-Scale QEC** (`qec/multiscale_qec.py`, `qec/syndrome_flow.py`): concatenated surface codes across 5 SCPN domains. Knill 2005 threshold, K_nm-weighted syndrome flow, Rust-accelerated via `concat_qec.rs`. 23 multi-angle tests.
+- **Free Energy Principle** (`fep/variational_free_energy.py`, `fep/predictive_coding.py`): Friston 2010 variational F = complexity + accuracy, hierarchical prediction errors, KL divergence, ELBO gradient. Rust-accelerated via `fep.rs`. 16 multi-angle tests.
+- **Ψ-field Lattice Gauge** (`psi_field/lattice.py`, `psi_field/infoton.py`, `psi_field/scpn_mapping.py`, `psi_field/observables.py`): U(1) compact gauge theory with HMC, gauge-covariant kinetic (Rothe convention), Polyakov loops, topological charge, string tension. Rust-accelerated via `gauge_lattice.rs`. 22 multi-angle tests.
 - **K_nm validation completed**: IEEE 5-bus (ρ=0.881), Josephson (ρ=0.990), EEG (ρ=0.916), ITER MHD (ρ=0.944) — all 5 physical systems now measured.
-- **SUPERIOR documentation**: 567+ line docs for MS-QEC, FEP, and Ψ-field (8 mandatory sections each).
+- **Long-form documentation**: 567+ line docs for MS-QEC, FEP, and Ψ-field (8 mandatory sections each).
 - **ripser** added to `[topology]` optional-dependencies in pyproject.toml.
 
 ### Changed (2026-04-06 — 2026-04-07)

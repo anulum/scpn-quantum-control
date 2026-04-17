@@ -705,7 +705,7 @@ by avoiding the high-error bridge coupler entirely.
 
 ## 9. Test Coverage
 
-17 tests across 6 STRONG dimensions in `tests/test_qubit_mapper.py`:
+17 tests across 6 dimensions in `tests/test_qubit_mapper.py`:
 
 ### 9.1 Empty/Null Inputs (3 tests)
 

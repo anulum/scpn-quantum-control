@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for DynQ Qubit Mapper
-"""STRONG tests for hardware/qubit_mapper.py.
+"""Multi-angle tests for hardware/qubit_mapper.py.
 
 6 dimensions: empty/null, error handling, negative cases, pipeline
 integration, roundtrip, performance.

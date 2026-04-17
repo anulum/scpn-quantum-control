@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for Phase Artifact Errors
-"""Error-path tests for phase_artifact dataclass validation — elite coverage."""
+"""Error-path tests for phase_artifact dataclass validation."""
 
 from __future__ import annotations
 

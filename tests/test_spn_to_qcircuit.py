@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for Spn To Qcircuit
-"""Tests for bridge/spn_to_qcircuit.py — elite multi-angle coverage."""
+"""Tests for bridge/spn_to_qcircuit.py — multi-angle coverage."""
 
 import numpy as np
 from qiskit import QuantumCircuit
