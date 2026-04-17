@@ -13,7 +13,10 @@ license = "AGPL-3.0-or-later"
 
 [lib]
 name = "scpn_quantum_engine"
-crate-type = ["cdylib"]
+# `cdylib` is the Python extension module built by `maturin`.
+# `rlib` is required to link the crate into `benches/`, `tests/`
+# and any other Rust binary — criterion benchmarks depend on it.
+crate-type = ["cdylib", "rlib"]
 
 [profile.release]
 opt-level = 3
@@ -21,10 +24,26 @@ lto = "fat"
 codegen-units = 1
 strip = "debuginfo"
 
+[features]
+# PyO3 `extension-module` is only needed when compiling the Python
+# shared object. `cargo bench` / `cargo test` without `--features
+# extension-module` link against a regular libpython (or no libpython
+# at all for non-PyO3 targets). `maturin develop` / `maturin build`
+# must be invoked with `--features extension-module`.
+default = []
+extension-module = ["pyo3/extension-module"]
+
 [dependencies]
-pyo3 = { version = "0.25", features = ["extension-module"] }
+pyo3 = { version = "0.25", default-features = false, features = ["macros"] }
 ndarray = "0.16"
 numpy = "0.25"
 num-complex = "0.4"
 rand = "0.9"
 rayon = "1.10"
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "hot_paths"
+harness = false
