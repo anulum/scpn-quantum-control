@@ -48,7 +48,7 @@ experiments ran within the IBM Quantum Open Plan free-tier budget.
 
 ## Phase 1 hardware result (Apr 2026, ibm_kingston)
 
-Full draft: [`paper/phase1_dla_parity_short_paper.md`](../paper/phase1_dla_parity_short_paper.md)
+Full draft: [`paper/phase1_dla_parity_short_paper.md`](https://github.com/anulum/scpn-quantum-control/blob/main/paper/phase1_dla_parity_short_paper.md)
 Analysis script: `scripts/analyse_phase1_dla_parity.py`
 Figures: `figures/phase1/leakage_vs_depth.png`,
          `figures/phase1/asymmetry_vs_depth.png`
