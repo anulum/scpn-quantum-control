@@ -82,9 +82,26 @@ def _hostname() -> str:
         host = socket.gethostname()
     except OSError:
         return "unknown"
-    if os.environ.get("SCPN_ANONYMOUS_HOSTNAME") == "1":
+    if _anonymous_hostname_enabled():
         return "h" + hashlib.sha256(host.encode("utf-8")).hexdigest()[:8]
     return host
+
+
+def _anonymous_hostname_enabled() -> bool:
+    """Single point for the anonymous-hostname toggle.
+
+    Prefers the typed :class:`SCPNConfig` when ``pydantic-settings`` is
+    available; otherwise falls back to the legacy
+    ``SCPN_ANONYMOUS_HOSTNAME=1`` environment variable. The fallback
+    keeps ``capture_provenance()`` working on minimal installs that
+    haven't pulled the ``[config]`` extra.
+    """
+    try:
+        from ..config import get_config
+
+        return bool(get_config().anonymous_hostname)
+    except Exception:
+        return os.environ.get("SCPN_ANONYMOUS_HOSTNAME") == "1"
 
 
 def capture_provenance() -> dict:

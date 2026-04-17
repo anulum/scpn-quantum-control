@@ -79,6 +79,10 @@ class TestFreshnessAndSerialisation:
 class TestHostnameAnonymisation:
     def test_raw_hostname_by_default(self, monkeypatch):
         monkeypatch.delenv("SCPN_ANONYMOUS_HOSTNAME", raising=False)
+        # SCPNConfig is cached; flush before every env-dependent read.
+        from scpn_quantum_control.config import reload_config
+
+        reload_config()
         try:
             expected = socket.gethostname()
         except OSError:
@@ -87,6 +91,10 @@ class TestHostnameAnonymisation:
 
     def test_hashed_hostname_when_env_set(self, monkeypatch):
         monkeypatch.setenv("SCPN_ANONYMOUS_HOSTNAME", "1")
+        # SCPNConfig is cached; flush so the new env var takes effect.
+        from scpn_quantum_control.config import reload_config
+
+        reload_config()
         host = capture_provenance()["runtime"]["hostname"]
         assert host.startswith("h")
         assert len(host) == 9  # "h" + 8 hex chars
