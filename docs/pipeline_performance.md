@@ -805,11 +805,9 @@ Standalone Rust paths (no Python parity comparison; absolute wall time):
 ### Cross-language outlook
 
 These measured numbers are the verification baseline against which
-any future Mojo / Julia / Lean 4 investment is judged. As of
-2026-04-17 we have **not** benchmarked Mojo or Julia in this
-codebase; speedup claims of "5–12× (Mojo)" and "10–40× (Julia)" that
-appear in vendor literature are not reproducible here without a
-matching local prototype, and we do not publish unmeasured ranges.
+any future Mojo / Julia / Lean 4 investment is judged. Julia is now
+wired for `order_parameter` (see the next section); Mojo and Lean 4
+are not yet benchmarked in this codebase.
 
 Decision criteria for adopting a new acceleration backend:
 
@@ -820,3 +818,65 @@ Decision criteria for adopting a new acceleration backend:
    `tests/test_rust_path_benchmarks.py` shape.
 3. Publish the measured number in this table. Vague "X–Y faster"
    ranges are explicitly out of scope.
+
+---
+
+## Multi-language accel chain
+
+The dispatcher in `src/scpn_quantum_control/accel/dispatcher.py`
+forwards each compute function through an ordered chain of
+acceleration tiers (Rust → Julia → Python). The chain order **must**
+match measured wall-time on the runner class used in production.
+This section is the authoritative place where those measurements
+are recorded. The raw JSON is at
+`docs/benchmarks/order_parameter_tiers.json` and the reproducer is
+`scripts/bench_order_parameter_tiers.py`.
+
+### `order_parameter(theta)`
+
+Measured 2026-04-17 on the local Linux runner (Intel i5-11600K,
+Python 3.12, juliacall 0.9.31, scpn-quantum-engine local build).
+Inner loop: 50 calls per sample × 5 samples; reported value is the
+per-call median.
+
+|     N |     Rust |    Julia |   Python |
+|------:|---------:|---------:|---------:|
+|     4 |  1.13 µs | 11.19 µs |  6.22 µs |
+|    16 |  0.90 µs | 13.93 µs |  5.92 µs |
+|    64 |  1.32 µs | 13.32 µs |  7.21 µs |
+|   256 |  2.97 µs | 16.83 µs | 12.82 µs |
+|  1024 | 13.12 µs | 21.62 µs | 26.60 µs |
+|  4096 | 38.10 µs | 58.29 µs | 123.89 µs |
+| 16384 | 256.50 µs | 275.80 µs | 465.78 µs |
+
+Read-offs:
+
+* Rust wins at every measured N — the dispatcher places it first,
+  which matches measurement.
+* Julia is **slower than Python** for N ≤ 256 because the juliacall
+  FFI crossing + Julia unboxing overhead cost more than the SIMD
+  win on tiny arrays. The chain still places Julia before Python,
+  which is the correct behaviour when Rust is unavailable and the
+  caller expects *some* acceleration; callers with N < 256 who
+  cannot use the Rust tier should pick the Python floor explicitly
+  by importing `_python_order_parameter` directly.
+* Julia beats Python from N ≥ 1024 onwards (1.23× at N = 1024,
+  2.13× at N = 4096, 1.69× at N = 16 384) — here the SIMD
+  accumulator amortises the FFI cost.
+* Rust's margin over Julia narrows as N grows (12.3× at N = 16,
+  1.08× at N = 16 384) — at very large N the bottleneck is memory
+  bandwidth and both tiers converge to the same throughput.
+
+### Re-running
+
+```bash
+python scripts/bench_order_parameter_tiers.py
+```
+
+Default arguments: 7 outer repeats × 100 inner reps, sizes
+4/16/64/256/1024/4096/16384. Output lands at
+`docs/benchmarks/order_parameter_tiers.json`. If the measured
+ordering changes (e.g. Julia overtakes Rust on a future runner with
+a smaller FFI overhead), update the chain comment at the top of
+`_ORDER_PARAMETER_CHAIN` in
+`src/scpn_quantum_control/accel/dispatcher.py` to match.

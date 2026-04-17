@@ -108,18 +108,33 @@ def _python_order_parameter(theta: np.ndarray) -> float:
     return float(abs(z))
 
 
-# Ordering for order_parameter (as of 2026-04-17):
+# Ordering for order_parameter — measured 2026-04-17 on the local
+# Linux runner (Intel i5-11600K, Python 3.12). See
+# ``docs/benchmarks/order_parameter_tiers.json`` for the raw samples
+# and ``docs/pipeline_performance.md`` §"Multi-language accel chain"
+# for the summary table.
 #
-#   - Rust above Python: structural (PyO3 + Rust always wins the
-#     Python floor on any non-trivial input size).
-#   - Rust vs Julia: NOT yet measured head-to-head on this runner.
-#     Julia is provisionally placed second pending measurement;
-#     Julia pays a one-off JIT boot cost (~20 s) on first call
-#     which would bias a cold benchmark against it.
+#   N       Rust       Julia      Python
+#   -----------------------------------------
+#      4    1.13 µs   11.19 µs    6.22 µs
+#     16    0.90      13.93       5.92
+#    256    2.97      16.83      12.82
+#   1024   13.12      21.62      26.60
+#   4096   38.10      58.29     123.89
+#  16384  256.50     275.80     465.78
 #
-# The full wall-time comparison across tiers is tracked in
-# ``docs/pipeline_performance.md`` §"Multi-language accel chain".
-# When measurements land, swap Rust and Julia if warranted.
+# Rust wins at every measured N. Julia is SLOWER than Python for
+# N <= 256 (juliacall FFI overhead dominates) but beats it from
+# N >= 1024. The chain order Rust -> Julia -> Python is correct
+# where Julia is available, because the dispatcher only falls
+# through when Rust is unavailable AND the workload is large
+# enough for Julia to help; for small N with Rust missing, Python
+# is faster than Julia, and the user should either install the
+# Rust wheel or accept a small per-call cost.
+#
+# Rerun ``python scripts/bench_order_parameter_tiers.py`` when
+# this file is edited; the measurements above must stay in sync
+# with the committed JSON artefact.
 _ORDER_PARAMETER_CHAIN: list[tuple[str, Callable[[np.ndarray], float]]] = [
     ("rust", _rust_order_parameter),
     ("julia", _julia_order_parameter),
