@@ -63,7 +63,8 @@ pennylane = ["pennylane>=0.40,<1.0"]
 xvalidate = ["qutip>=5.0,<6.0", "dynamiqs>=0.3,<1.0"]
 config = ["pydantic-settings>=2.0,<3"]
 logging = ["structlog>=24.0,<26"]
-all = ["scpn-quantum-control[viz,gpu,ibm,rust,tensor,mitigation,opensys,pennylane,xvalidate,config,logging]"]
+julia = ["juliacall>=0.9,<2"]
+all = ["scpn-quantum-control[viz,gpu,ibm,rust,tensor,mitigation,opensys,pennylane,xvalidate,config,logging,julia]"]
 
 [project.entry-points."scpn_quantum_control.backends"]
 qiskit_ibm = "scpn_quantum_control.hardware.backends:qiskit_ibm_factory"
