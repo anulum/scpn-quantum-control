@@ -32,6 +32,20 @@ if TYPE_CHECKING:
     from ..mitigation.zne import ZNEResult
 
 
+def _get_structured_logger(name: str) -> Any:
+    """Return a structlog logger, or a stdlib fallback if structlog is
+    absent. Keeps the optional ``[logging]`` extra truly optional."""
+    try:
+        from ..logging_setup import get_logger
+
+        return get_logger(name)
+    except Exception:
+        return logging.getLogger(name)
+
+
+_slog = _get_structured_logger(__name__)
+
+
 def _extract_counts(pub_result: Any) -> dict:
     """Extract counts from a SamplerV2 PubResult DataBin.
 
@@ -285,7 +299,14 @@ class HardwareRunner:
         t0 = time.time()
         job = sampler.run(isa_circuits)
         job_id = job.job_id()
-        print(f"  Job submitted: {job_id}")
+        _slog.info(
+            "job_submitted",
+            job_id=job_id,
+            backend=self.backend_name,
+            experiment=name,
+            shots=shots,
+            n_circuits=len(isa_circuits),
+        )
         self._log_job(job_id, name)
 
         result = job.result(timeout=timeout_s)
