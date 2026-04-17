@@ -227,7 +227,7 @@ When adding new cross-module functionality:
 
 ## See Also
 
-- [Contributing Guide](contributing.md) — how to run the full test suite
+- [Contributing Guide](../CONTRIBUTING.md) — how to run the full test suite
 - [Symmetry Sectors](symmetry.md) — theory behind Pipeline 2
 - [Lindblad Solver](lindblad.md) — theory behind Pipeline 1
 - [Backend Selector](backend_selector.md) — theory behind Pipeline 6
