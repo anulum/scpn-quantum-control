@@ -70,3 +70,25 @@ results/
 # Research summary PDFs generated for private email attachments — not
 # for public distribution from the repository
 .coordination/*.pdf
+
+# Gemini Internal
+docs/internal/gemini/
+
+# Agent metadata (Gemini audit state, etc.)
+.agent_metadata.json
+
+# Session logs and handovers — local-only, never committed.
+# Historic logs were untracked via `git rm --cached` 2026-04-17.
+.coordination/sessions/
+.coordination/handovers/
+.coordination/handover_*.md
+
+# Paper-extraction working files (raw pdftotext dumps, structured
+# extractions, per-paper assessments, archived under-fidelity v1
+# attempts) — local-only research artefacts; the publication-ready
+# manuscripts live in `paper/main.tex` and similar tracked files.
+paper/paper*_full_dump_*.txt
+paper/paper*_extraction_*.md
+paper/paper*_assessment.md
+paper/_v1_archive/
+paper/paper*_assessment_*.md
