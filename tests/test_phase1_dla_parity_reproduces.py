@@ -139,8 +139,10 @@ class TestAnalysisScriptEndToEnd:
         # Avoid polluting the working tree with figure artefacts; the
         # test contract is only that main() completes and prints the
         # headline combined-p line, not that it produces PNGs.
-        import matplotlib
-
+        # matplotlib is in the `viz` extra, not `dev`, so the CI matrix
+        # may not have it; skip cleanly in that case — the other seven
+        # tests in this file exercise the statistics without it.
+        matplotlib = pytest.importorskip("matplotlib")
         matplotlib.use("Agg")
         monkeypatch.setattr(
             "sys.argv", ["analyse_phase1_dla_parity.py", "--out-dir", str(tmp_path)]
