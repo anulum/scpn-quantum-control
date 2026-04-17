@@ -40,6 +40,42 @@ from dataclasses import dataclass
 
 import numpy as np
 
+# Upper bound on n_oscillators for routines that allocate the full n²×n²
+# Koopman generator. At n=32 the dense generator is 1024×1024 (8 MB) and
+# `eigvals` returns in ~1 s on commodity hardware. Larger sizes may be
+# legitimate (sparse / structured methods) but must be opted in via the
+# `max_oscillators` parameter; otherwise a stray call with n=200 would
+# allocate 320 MB and run `eigvals` for many minutes.
+MAX_OSCILLATORS_DEFAULT = 32
+
+
+def _validate_inputs(
+    K: np.ndarray,
+    omega: np.ndarray,
+    theta_ref: np.ndarray | None,
+    max_oscillators: int,
+) -> None:
+    """Validate Koopman inputs. Raises ValueError on any violation."""
+    if K.ndim != 2 or K.shape[0] != K.shape[1]:
+        raise ValueError(f"K must be a square 2-D matrix, got shape {K.shape}")
+    n = K.shape[0]
+    if n == 0:
+        raise ValueError("K must have at least one oscillator")
+    if not np.all(np.isfinite(K)):
+        raise ValueError("K contains non-finite entries (NaN or Inf)")
+    if omega.ndim != 1 or omega.shape[0] != n:
+        raise ValueError(f"omega must be 1-D with length {n}, got shape {omega.shape}")
+    if not np.all(np.isfinite(omega)):
+        raise ValueError("omega contains non-finite entries (NaN or Inf)")
+    if theta_ref is not None and (theta_ref.ndim != 1 or theta_ref.shape[0] != n):
+        raise ValueError(f"theta_ref must be 1-D with length {n}, got shape {theta_ref.shape}")
+    if n > max_oscillators:
+        raise ValueError(
+            f"n_oscillators={n} exceeds max_oscillators={max_oscillators}; "
+            f"the dense Koopman generator is n² × n² = {n * n}² entries. "
+            f"Pass max_oscillators={n} explicitly to confirm the allocation."
+        )
+
 
 @dataclass
 class KoopmanResult:
@@ -56,6 +92,7 @@ def build_koopman_generator(
     K: np.ndarray,
     omega: np.ndarray,
     theta_ref: np.ndarray | None = None,
+    max_oscillators: int = MAX_OSCILLATORS_DEFAULT,
 ) -> tuple[np.ndarray, list[str]]:
     """Build the Koopman generator matrix L_K for the Kuramoto system.
 
@@ -78,7 +115,11 @@ def build_koopman_generator(
         K: coupling matrix (n×n, symmetric, zero diagonal)
         omega: natural frequencies
         theta_ref: reference phase configuration (default: zeros)
+        max_oscillators: hard cap on n to prevent unbounded n²×n²
+            allocation. Raise it explicitly when working with structured
+            problems where the dense generator is genuinely needed.
     """
+    _validate_inputs(K, omega, theta_ref, max_oscillators)
     n = K.shape[0]
     if theta_ref is None:
         theta_ref = np.zeros(n)
@@ -151,23 +192,31 @@ def build_koopman_generator_rust(
     K: np.ndarray,
     omega: np.ndarray,
     theta_ref: np.ndarray | None = None,
+    max_oscillators: int = MAX_OSCILLATORS_DEFAULT,
 ) -> tuple[np.ndarray, list[str]]:
     """Rust-accelerated Koopman generator (falls back to Python).
 
     TODO(rust): implement koopman_generator in scpn_quantum_engine
     for n>16 where the O(n³) coupling correction loop matters.
     """
-    return build_koopman_generator(K, omega, theta_ref)
+    return build_koopman_generator(K, omega, theta_ref, max_oscillators)
 
 
 def koopman_analysis(
     K: np.ndarray,
     omega: np.ndarray,
     theta_ref: np.ndarray | None = None,
+    max_oscillators: int = MAX_OSCILLATORS_DEFAULT,
 ) -> KoopmanResult:
-    """Full Koopman linearisation and spectral analysis."""
+    """Full Koopman linearisation and spectral analysis.
+
+    `max_oscillators` is forwarded to `build_koopman_generator` and
+    bounds the dense n²×n² eigendecomposition. The default keeps a
+    pathological caller (n=200, eigvals ≫ minutes, ~320 MB) from
+    silently exhausting the host.
+    """
     n = K.shape[0]
-    L, labels = build_koopman_generator(K, omega, theta_ref)
+    L, labels = build_koopman_generator(K, omega, theta_ref, max_oscillators)
     eigenvalues = np.linalg.eigvals(L)
     eigenvalues = eigenvalues[np.argsort(-np.abs(eigenvalues))]
 

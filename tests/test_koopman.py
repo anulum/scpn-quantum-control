@@ -10,8 +10,10 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.analysis.koopman import (
+    MAX_OSCILLATORS_DEFAULT,
     KoopmanResult,
     build_koopman_generator,
     koopman_analysis,
@@ -182,3 +184,99 @@ class TestKoopmanGeneratorPhysics:
         omega = OMEGA_N_16[:4]
         L, _ = build_koopman_generator(K, omega)
         assert np.all(np.isfinite(L))
+
+
+class TestKoopmanInputValidation:
+    """Guards against malformed or pathologically large input.
+
+    Fixes the unbounded eigvals / dense allocation surface that
+    Gemini's `docs/internal/gemini/security_audit.md` flagged as
+    VULN-SQC-001 on 2026-04-15.
+    """
+
+    @pytest.fixture
+    def valid_inputs(self):
+        return np.array([[0.0, 0.5], [0.5, 0.0]]), np.array([1.0, 1.5])
+
+    def test_default_max_oscillators_is_sane(self):
+        # 32 oscillators → dim=1024, ~8 MB. Higher would let a stray
+        # caller silently allocate hundreds of MB and queue eigvals
+        # for many minutes.
+        assert MAX_OSCILLATORS_DEFAULT == 32
+
+    def test_non_square_matrix_rejected(self):
+        K = np.zeros((3, 4))
+        omega = np.array([1.0, 1.5, 2.0])
+        with pytest.raises(ValueError, match="square 2-D matrix"):
+            build_koopman_generator(K, omega)
+
+    def test_one_dimensional_K_rejected(self):
+        K = np.array([0.0, 0.5, 0.0, 0.0])
+        omega = np.array([1.0, 1.5])
+        with pytest.raises(ValueError, match="square 2-D matrix"):
+            build_koopman_generator(K, omega)
+
+    def test_empty_K_rejected(self):
+        K = np.zeros((0, 0))
+        omega = np.array([])
+        with pytest.raises(ValueError, match="at least one oscillator"):
+            build_koopman_generator(K, omega)
+
+    def test_K_with_nan_rejected(self, valid_inputs):
+        K, omega = valid_inputs
+        K = K.copy()
+        K[0, 1] = np.nan
+        with pytest.raises(ValueError, match="non-finite"):
+            build_koopman_generator(K, omega)
+
+    def test_K_with_inf_rejected(self, valid_inputs):
+        K, omega = valid_inputs
+        K = K.copy()
+        K[1, 0] = np.inf
+        with pytest.raises(ValueError, match="non-finite"):
+            build_koopman_generator(K, omega)
+
+    def test_omega_length_mismatch_rejected(self, valid_inputs):
+        K, _ = valid_inputs
+        with pytest.raises(ValueError, match="omega"):
+            build_koopman_generator(K, np.array([1.0, 1.5, 2.0]))
+
+    def test_omega_with_nan_rejected(self, valid_inputs):
+        K, omega = valid_inputs
+        with pytest.raises(ValueError, match="non-finite"):
+            build_koopman_generator(K, np.array([1.0, np.nan]))
+
+    def test_theta_ref_length_mismatch_rejected(self, valid_inputs):
+        K, omega = valid_inputs
+        with pytest.raises(ValueError, match="theta_ref"):
+            build_koopman_generator(K, omega, theta_ref=np.array([0.0, 0.0, 0.0]))
+
+    def test_n_above_default_rejected(self):
+        n = MAX_OSCILLATORS_DEFAULT + 1
+        K = np.zeros((n, n))
+        omega = np.zeros(n)
+        with pytest.raises(ValueError, match="exceeds max_oscillators"):
+            build_koopman_generator(K, omega)
+
+    def test_explicit_max_oscillators_allows_larger_n(self):
+        # Caller explicitly opts in. Use a modestly larger size that
+        # still completes quickly so the test stays fast.
+        n = MAX_OSCILLATORS_DEFAULT + 1
+        K = np.zeros((n, n))
+        omega = np.zeros(n)
+        L, labels = build_koopman_generator(K, omega, max_oscillators=n)
+        assert L.shape == (n * n, n * n)
+        assert len(labels) == n * n
+
+    def test_koopman_analysis_propagates_validation(self):
+        K = np.zeros((3, 4))
+        omega = np.array([1.0, 1.5, 2.0])
+        with pytest.raises(ValueError, match="square 2-D matrix"):
+            koopman_analysis(K, omega)
+
+    def test_koopman_analysis_propagates_max_oscillators(self):
+        n = MAX_OSCILLATORS_DEFAULT + 1
+        K = np.zeros((n, n))
+        omega = np.zeros(n)
+        with pytest.raises(ValueError, match="exceeds max_oscillators"):
+            koopman_analysis(K, omega)
