@@ -1,0 +1,98 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — Native Rust benchmarks (Criterion)
+#
+# Runs `cargo bench --bench hot_paths` against the `scpn_quantum_engine`
+# inner helpers (not the `#[pyfunction]` surface — that is covered by
+# `tests/test_perf_regression.py` + `test_rust_path_benchmarks.py`
+# on the Python side).
+#
+# Baseline behaviour:
+# - On push to main: the bench run is saved as Criterion baseline
+#   "main" to the workflow's artefact store for later comparison.
+# - On pull_request: run the benches, upload the report, and emit
+#   a job summary with the headline mean times. A full
+#   critcmp-based diff vs the main baseline is a follow-up once
+#   the baseline has had a few runs to stabilise.
+# - Weekly Monday 07:00 UTC + manual dispatch for on-demand drift
+#   checks.
+#
+# The suite is non-blocking for now (`continue-on-error: true`).
+# Staged promotion to blocking happens after one release cycle
+# of green runs on both push and PR, matching the pattern used
+# for `test-extra-platforms` in `ci.yml`.
+name: Rust Benches
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scpn_quantum_engine/src/**"
+      - "scpn_quantum_engine/benches/**"
+      - "scpn_quantum_engine/Cargo.toml"
+      - "scpn_quantum_engine/Cargo.lock"
+      - ".github/workflows/rust-benches.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "scpn_quantum_engine/src/**"
+      - "scpn_quantum_engine/benches/**"
+      - "scpn_quantum_engine/Cargo.toml"
+      - "scpn_quantum_engine/Cargo.lock"
+  schedule:
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  criterion:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    defaults:
+      run:
+        working-directory: scpn_quantum_engine
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - name: Cache cargo registry + target
+        uses: actions/cache@2f8e54208210a422b2efd51efaa6bd6d7ca8920f  # v3.4.3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            scpn_quantum_engine/target
+          key: ${{ runner.os }}-cargo-bench-${{ hashFiles('scpn_quantum_engine/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-bench-
+      - name: Run Criterion benchmarks
+        run: |
+          # --quick reduces measurement time to ~2 s/bench; enough to
+          # spot > 30 % regressions, light enough for every PR.
+          cargo bench --bench hot_paths -- --quick --output-format bencher | tee bench-output.txt
+      - name: Upload Criterion HTML report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: criterion-report
+          path: scpn_quantum_engine/target/criterion/
+          retention-days: 90
+      - name: Upload raw bencher output
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: bench-output-txt
+          path: scpn_quantum_engine/bench-output.txt
+          retention-days: 365
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Rust Criterion benchmarks"
+            echo
+            echo '```'
+            head -80 bench-output.txt || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
