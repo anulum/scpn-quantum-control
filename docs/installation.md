@@ -27,7 +27,7 @@ This installs pytest, ruff, and pytest-cov for development.
 ## Optional dependencies
 
 ```bash
-# Visualization (matplotlib)
+# Visualisation (matplotlib)
 pip install -e ".[viz]"
 
 # IBM Quantum hardware execution
@@ -45,13 +45,30 @@ pip install scpn-quantum-engine
 # Or build from source (requires Rust toolchain):
 cd scpn_quantum_engine && maturin develop --release && cd ..
 
-# Everything
-pip install -e ".[dev,viz,ibm,rust]"
+# Unified configuration (pydantic-settings → SCPNConfig)
+pip install -e ".[config]"
+
+# Structured logging (structlog → configure_logging + get_logger)
+pip install -e ".[logging]"
+
+# Julia acceleration tier (juliacall → accel/julia/order_parameter.jl)
+# First call pays a one-off ~20 s JIT boot cost; subsequent calls are
+# steady-state. Rust tier is measured faster on every N we have
+# benchmarked (see docs/pipeline_performance.md §"Multi-language accel
+# chain"), so Julia is a secondary tier — install when you need a
+# second independent solver for cross-validation.
+pip install -e ".[julia]"
+
+# Cross-validation (QuTiP + Dynamiqs-JAX for XY Hamiltonian diff checks)
+pip install -e ".[xvalidate]"
+
+# Everything — all extras including config, logging, julia, xvalidate
+pip install -e ".[all]"
 ```
 
 ## Rust Acceleration
 
-The optional `scpn-quantum-engine` package provides 15 Rust-accelerated functions
+The optional `scpn-quantum-engine` package provides 37 Rust-accelerated functions
 via PyO3. When installed, all analysis modules transparently use the Rust fast
 paths. When not installed, everything works via pure Python/NumPy.
 
@@ -72,7 +89,7 @@ benchmark results.
 
 ```bash
 python -c "import scpn_quantum_control; print('OK')"
-pytest tests/ -x -q  # 4,771 tests should pass (9 deselected)
+pytest tests/ -x -q  # 4,841+ tests should pass (9 deselected)
 ```
 
 ## IBM Quantum setup (optional)

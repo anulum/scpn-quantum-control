@@ -8,10 +8,39 @@
 
 # Changelog
 
-All notable changes to scpn-quantum-control are documented here.
-Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-control/blob/main/CHANGELOG.md)
+Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-control/blob/main/CHANGELOG.md).
+
+## [0.9.6] - 2026-04-17
+
+### Security
+- Bumped `rand` 0.9.2 → 0.9.4 (RUSTSEC-2026-0097).
+- Removed IBM Cloud CRN prefix log in `scripts/retrieve_ibm_job.py`.
+- Bumped `pytest` 9.0.2 → 9.0.3 (CVE-2025-71176).
+
+### Added
+- `SCPNConfig` via `pydantic-settings` ([config] extra) — unified runtime config.
+- `structlog` bootstrap ([logging] extra) — `configure_logging` + `get_logger`.
+- `AsyncHardwareRunner` — concurrent IBM submission over asyncio.
+- Plugin `backends` registry via `entry_points` group `scpn_quantum_control.backends`.
+- `accel/` package — multi-language dispatcher with Rust → Julia → Python chain. [julia] extra adds juliacall-bridged `order_parameter`.
+- `provenance.capture_provenance()` — git hash + runtime + hostname on every result JSON.
+- Cross-validation test suite vs QuTiP + JAX/Dynamiqs ([xvalidate] extra).
+- Criterion Rust benches + GitHub workflow.
+- Issue triage policy (`docs/triage.md`), language policy (`docs/language_policy.md`).
+- `docs/pipeline_performance.md` §"Multi-language accel chain" with measured wall-times.
+
+### Changed
+- CI dev-tool matrix (`pytest 9.0.3`, `mypy 1.20.1`, `ruff 0.15.10`, `hypothesis 6.151.13`, `build 1.4.3`).
+- `_order_param` in `hardware/classical.py` now dispatches through the accel chain.
+- `hardware/runner.py` print() calls migrated to structured events.
+- `HardwareRunner.DEFAULT_INSTANCE` → `_default_instance()` reads `SCPNConfig`.
+
+### Repository hygiene
+- Public tracked files stripped of agent-name mentions; internal logs keep identity.
+- `CHANGELOG.md` terse-rewritten (dates + changes only, no attributions).
+- `docs/contributing.md` moved to `.coordination/` (gitignored).
 
 ## [0.9.5] - 2026-03-29 / 2026-04-11
 
