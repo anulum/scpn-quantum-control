@@ -75,13 +75,12 @@ class BenchmarkRun:
 
     @property
     def name(self) -> BenchmarkRunName:
-        """Infer the canonical short run name from the ``experiment`` field.
+        """Canonical short run name for this record.
 
-        The published DLA-parity campaign uses four ``experiment``
-        labels: ``phase1_dla_parity_mini_bench``,
-        ``phase1_5_reinforce``, ``phase2_exhaust``,
-        ``phase2_5_final_burn``. Map each to a short, content-named
-        :data:`BenchmarkRunName` value.
+        Maps the published ``experiment`` field (an opaque string
+        written into the JSON by the original runner) to one of the
+        four content-named :data:`BenchmarkRunName` values. Raises
+        :class:`ValueError` on an unrecognised experiment string.
         """
         mapping: dict[str, BenchmarkRunName] = {
             "phase1_dla_parity_mini_bench": "bench",
