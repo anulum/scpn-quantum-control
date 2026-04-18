@@ -47,13 +47,16 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
       - name: Install dependencies
-        run: pip install -e ".[dev,config,logging]"
+        run: pip install -e ".[dev,config,logging,dla-parity]"
       - name: Run tests
         run: pytest tests/ -v --tb=short -x -m "not slow" --ignore=tests/test_hardware_runner.py
       - name: Run tests with coverage (3.12 only)
         if: matrix.python-version == '3.12'
         run: |
           pytest tests/ --cov=scpn_quantum_control --cov-report=xml --cov-fail-under=95 -m "not slow" --ignore=tests/test_hardware_runner.py
+      - name: Smoke-test DLA-parity validation CLI (3.12 only)
+        if: matrix.python-version == '3.12'
+        run: python scripts/run_dla_parity_suite.py --json > /tmp/dla_parity_result.json
       - name: Upload coverage
         if: matrix.python-version == '3.12'
         uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2  # v5
