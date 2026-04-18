@@ -5,14 +5,16 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Benchmark harness — schema
-"""Typed dataclasses for the Phase 1 DLA-parity campaign dataset.
+"""Typed dataclasses for the DLA-parity benchmark dataset.
 
 Types only — no I/O, no computation. Read by :mod:`.dataset` when
-loading the four sub-phase JSON files, and by :mod:`.reproduce`
-and :mod:`.baselines` when consuming the loaded records.
+loading the sub-phase JSON files, and by :mod:`.reproduce` and
+:mod:`.baselines` when consuming the loaded records.
 
 The JSON schema these types mirror is documented in
-``data/phase1_dla_parity/README.md``.
+``data/phase1_dla_parity/README.md`` (directory name kept for the
+published dataset; new code is named by scientific content, not
+campaign timing).
 """
 
 from __future__ import annotations
@@ -20,18 +22,18 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Literal
 
-Sector = Literal["even", "odd"]
-SubphaseName = Literal[
-    "phase1_bench",
-    "phase1_5_reinforce",
-    "phase2_exhaust",
-    "phase2_5_final_burn",
+Sector = Literal["even", "odd", "baseline"]
+BenchmarkRunName = Literal[
+    "bench",
+    "reinforce",
+    "exhaust",
+    "final_burn",
 ]
 
 
 @dataclass(frozen=True, slots=True)
-class PhaseOneCircuitMeta:
-    """Metadata attached to every circuit in the Phase 1 dataset."""
+class BenchmarkCircuitMeta:
+    """Metadata attached to every circuit in the benchmark dataset."""
 
     experiment: str
     n_qubits: int
@@ -44,22 +46,21 @@ class PhaseOneCircuitMeta:
 
 
 @dataclass(frozen=True, slots=True)
-class PhaseOneCircuit:
-    """A single Phase 1 circuit: metadata + measured counts."""
+class BenchmarkCircuit:
+    """A single benchmark circuit: metadata + measured counts."""
 
-    meta: PhaseOneCircuitMeta
+    meta: BenchmarkCircuitMeta
     counts: dict[str, int]
 
 
 @dataclass(frozen=True, slots=True)
-class PhaseOneSubphase:
-    """A Phase 1 sub-phase file (one of four).
+class BenchmarkRun:
+    """One published sub-phase file (one of four for the DLA-parity campaign).
 
-    Fields mirror the JSON top level:
-    ``experiment``, ``timestamp_utc``, ``backend``, ``job_ids``,
-    ``wall_time_s``, ``n_circuits``, ``t_step``, ``circuits``.
-    Any fields not critical to the reproducer are kept as typed
-    primitives; free-form extensions land in :attr:`extra`.
+    Fields mirror the JSON top level: ``experiment``,
+    ``timestamp_utc``, ``backend``, ``job_ids``, ``wall_time_s``,
+    ``n_circuits``, ``t_step``, ``circuits``. Any top-level JSON keys
+    not required by the reproducer land in :attr:`extra`.
     """
 
     experiment: str
@@ -69,45 +70,44 @@ class PhaseOneSubphase:
     wall_time_s: float
     n_circuits: int
     t_step: float
-    circuits: tuple[PhaseOneCircuit, ...]
+    circuits: tuple[BenchmarkCircuit, ...]
     extra: dict[str, object] = field(default_factory=dict)
 
     @property
-    def name(self) -> SubphaseName:
-        """Infer the sub-phase name from the ``experiment`` field.
+    def name(self) -> BenchmarkRunName:
+        """Infer the canonical short run name from the ``experiment`` field.
 
-        The Phase 1 campaign uses four sub-phase experiment names:
-        ``phase1_dla_parity_mini_bench``,
-        ``phase1_5_reinforce``,
-        ``phase2_exhaust``,
-        ``phase2_5_final_burn``. Map the first to the shorter
-        canonical name :data:`SubphaseName` uses elsewhere.
+        The published DLA-parity campaign uses four ``experiment``
+        labels: ``phase1_dla_parity_mini_bench``,
+        ``phase1_5_reinforce``, ``phase2_exhaust``,
+        ``phase2_5_final_burn``. Map each to a short, content-named
+        :data:`BenchmarkRunName` value.
         """
-        mapping: dict[str, SubphaseName] = {
-            "phase1_dla_parity_mini_bench": "phase1_bench",
-            "phase1_5_reinforce": "phase1_5_reinforce",
-            "phase2_exhaust": "phase2_exhaust",
-            "phase2_5_final_burn": "phase2_5_final_burn",
+        mapping: dict[str, BenchmarkRunName] = {
+            "phase1_dla_parity_mini_bench": "bench",
+            "phase1_5_reinforce": "reinforce",
+            "phase2_exhaust_cycle": "exhaust",
+            "phase2_5_final_burn": "final_burn",
         }
         try:
             return mapping[self.experiment]
         except KeyError as exc:
             raise ValueError(
-                f"Unknown sub-phase experiment name: {self.experiment!r}. "
-                "If a new sub-phase was added, extend the mapping in "
-                "PhaseOneSubphase.name.",
+                f"Unknown benchmark-run experiment name: {self.experiment!r}. "
+                "If a new run was added, extend the mapping in "
+                "BenchmarkRun.name.",
             ) from exc
 
 
 @dataclass(frozen=True, slots=True)
-class PhaseOneDataset:
-    """Full Phase 1 dataset — four sub-phases composed together."""
+class BenchmarkDataset:
+    """Full benchmark dataset — the sub-phase runs composed together."""
 
-    subphases: tuple[PhaseOneSubphase, ...]
+    subphases: tuple[BenchmarkRun, ...]
 
     @property
-    def circuits(self) -> tuple[PhaseOneCircuit, ...]:
-        """Every circuit across every sub-phase."""
+    def circuits(self) -> tuple[BenchmarkCircuit, ...]:
+        """Every circuit across every run."""
         return tuple(c for sp in self.subphases for c in sp.circuits)
 
     @property
@@ -118,9 +118,9 @@ class PhaseOneDataset:
     def backends(self) -> frozenset[str]:
         """Distinct hardware backends named in the dataset.
 
-        Phase 1 is a single-backend campaign (`ibm_kingston`); this
-        property returns a set for forward-compatibility with a
-        multi-backend Phase 2.
+        The published DLA-parity dataset is single-backend
+        (``ibm_kingston``); this property returns a set for
+        forward-compatibility with a multi-backend re-run.
         """
         return frozenset(sp.backend for sp in self.subphases)
 
