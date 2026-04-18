@@ -179,3 +179,31 @@ Scientific directions — batch 4 (S29–S35):
 - **S33** Quantum-enhanced Lyapunov spectra for chaotic Kuramoto
 - **S34** Self-organising Kuramoto (autonomous drive engineering)
 - **S35** Quantum Kuramoto native simulator for active matter
+
+Foundational tracks (S36–S53) — geometric, categorical, field-theoretic, foundations:
+
+- **S36** Information geometry on quantum sync manifolds
+- **S37** Categorical / compositional quantum Kuramoto
+- **S38** Quantum Kuramoto field theory continuum limit + RG flows
+- **S39** Autopoietic / self-referential networks
+- **S40** Holographic duals via quantum synchronisation
+- **S41** Quantum causal discovery with intervention
+- **S42** Symplectic structure-preserving Trotterisation
+- **S43** Full resource theory of quantum synchronisation
+- **S44** Objective collapse / macroscopic foundations testbed
+- **S45** Biologically faithful Kuramoto simulator + IIT
+- **S46** Phase-transition / attractor-landscape quantum programming
+- **S47** Analogue gravity (relativistic, cosmological, baryogenesis, emergent spacetime)
+- **S48** Self-healing qubit fabrics + continuous QEC via sync
+- **S49** Quantum fluctuation theorems across sync transitions
+- **S50** Quantum kernels from sync manifolds (ML)
+- **S51** Hayden–Preskill / black-hole information dynamics simulator
+- **S52** Distributed quantum consensus via global sync (quantum internet)
+- **S53** Engineered self-organised criticality
+
+Applied verticals (cross-cutting over S1–S53, no separate physics
+tracks): fusion plasma stabilisation; tipping-point early-warning;
+IIT consciousness testbed; quantum biology engineering; quantum
+internet infrastructure; autonomous AI physicist (discovery
+engine). Each applied vertical is an activation target for one or
+more physics tracks listed above.
