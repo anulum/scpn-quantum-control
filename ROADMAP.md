@@ -122,3 +122,18 @@ Remaining items:
 - Quantum disruption classifier on ITER disruption database
 - Trapped-ion hardware runs (IonQ Aria / Quantinuum H2)
 - SSGF quantum-in-the-loop with live SSGFEngine on GPU
+
+## Strategic Differentiation (post-v1.0)
+
+Seven post-v1.0 differentiation tracks are scoped in
+[`docs/strategic_roadmap.md`](docs/strategic_roadmap.md). All are
+**DEFERRED / CEO-gated**; no execution until individually activated.
+Quarterly review cadence.
+
+- **S1** Hybrid classical–quantum feedback loop
+- **S2** Quantum advantage benchmarks at scale (N = 4 → 20+)
+- **S3** ML-augmented pulse / ansatz design
+- **S4** Multi-hardware backend + pulse-level control
+- **S5** Open-data + classical validation harness
+- **S6** Decoupled `quantum-kuramoto` subpackage
+- **S7** Fault-tolerant / logical-level extension roadmap
