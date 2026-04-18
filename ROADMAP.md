@@ -125,10 +125,12 @@ Remaining items:
 
 ## Strategic Differentiation (post-v1.0)
 
-Seven post-v1.0 differentiation tracks are scoped in
+Fourteen post-v1.0 differentiation tracks are scoped in
 [`docs/strategic_roadmap.md`](docs/strategic_roadmap.md). All are
 **DEFERRED / CEO-gated**; no execution until individually activated.
 Quarterly review cadence.
+
+Infrastructure + ML:
 
 - **S1** Hybrid classical–quantum feedback loop
 - **S2** Quantum advantage benchmarks at scale (N = 4 → 20+)
@@ -137,3 +139,13 @@ Quarterly review cadence.
 - **S5** Open-data + classical validation harness
 - **S6** Decoupled `quantum-kuramoto` subpackage
 - **S7** Fault-tolerant / logical-level extension roadmap
+
+Scientific / novel directions:
+
+- **S8** Mid-circuit adaptive branching (Dynamic Circuits follow-up to S1)
+- **S9** Quantum thermodynamics of synchronisation transitions
+- **S10** Analog-native Kuramoto backends (Rydberg / neutral-atom / CV photonic)
+- **S11** DLA-driven quantum sensing via sync order parameter
+- **S12** Automated phase-diagram exploration via Bayesian optimisation
+- **S13** Bosonic / continuous-variable quantum Kuramoto
+- **S14** Hybrid quantum-classical forecasting engine
