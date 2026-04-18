@@ -1,13 +1,23 @@
 # Roadmap
 
-## In progress
+## Recently closed
 
 - **S5** Open-data + classical validation for the DLA-parity dataset
-  — **active from 2026-04-18**. New code lives under
-  `scpn_quantum_control.dla_parity` (see `docs/strategic_roadmap.md`).
+  — **closed 2026-04-18**. New subpackage `scpn_quantum_control.dla_parity`:
+  schema, JSON loader + SHA-256 integrity check, statistical reproducer
+  against the published summary, classical (numpy + qutip) leakage
+  reference, one-call `run_full_harness`, CLI at
+  `scripts/run_dla_parity_suite.py`, docs page, `[dla-parity]` extra,
+  CI smoke step. 100 % line coverage across all modules; 128 / 128
+  tests green.
 - **B1** arXiv LaTeX preprint — **closed 2026-04-18** (commit
   `457b734`): `paper/phase1_dla_parity.tex` compiles to a 4-page
   PDF; `paper/README.md` documents the submission packaging.
+- **Qiskit 1.x → 2.x migration** — **closed 2026-04-18** (commit
+  `b786fc2`): pin bump to `qiskit>=2.2,<3.0`, closed the Dependabot
+  PR #44 technical debt, misleading PauliEvolutionGate comment
+  corrected. No source changes needed (our call sites were already
+  2.x-compatible). Full test suite 5045 / 0 / 95.
 
 ## Completed
 
