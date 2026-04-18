@@ -65,6 +65,24 @@ scientific landscape moves.
 | S33 | Quantum-enhanced Lyapunov spectra for chaotic Kuramoto | medium | 5–6 weeks | OTOC ✓, DLA ✓, classical large-N solver |
 | S34 | Self-organising Kuramoto (autonomous drive engineering) | medium | 4–5 weeks | S1 + S8 feedback plumbing (prerequisite) |
 | S35 | Quantum Kuramoto native simulator for active matter (non-reciprocal) | medium | 5–6 weeks | non-reciprocal K extension, S22 dilation primitive |
+| **S36** | Information geometry on quantum sync manifolds (Fisher tensor) | medium-high | 5–6 weeks | QFI ✓, Rust engine ✓ |
+| **S37** | Categorical / compositional quantum Kuramoto | medium | 5–7 weeks | mapper refactor, category-theory formalism |
+| **S38** | Quantum Kuramoto field theory (QKFT) continuum limit + RG flows | high | 8–12 weeks | tensor networks (quimb ✓), DLA ✓, QuTiP ✓ |
+| **S39** | Autopoietic / self-referential networks (sync-driven K rewriting) | medium | 5–6 weeks | S1 feedback + S34 autonomous (prereq) |
+| **S40** | Holographic duals via quantum sync (AdS/CFT-style) | strategic / exploratory | 8–12 weeks | DLA invariants ✓, theorist pass |
+| **S41** | Quantum causal discovery with intervention | medium-high | 5–7 weeks | extends S16, requires Dynamic Circuits ✓ |
+| **S42** | Symplectic structure-preserving Trotterization | medium | 5–7 weeks | Rust pulse ✓, geometric-integrator theory |
+| **S43** | Full resource theory of quantum synchronisation | medium-high | 6–8 weeks | witnesses ✓, OTOC ✓, DLA ✓ |
+| **S44** | Objective collapse / macroscopic foundations testbed (GRW, Penrose OR, CSL; Quantum Darwinism angle) | high (foundations) | 8–12 weeks | DLA parity ✓, large-N hardware time |
+| **S45** | Biologically faithful Kuramoto simulator + IIT consciousness angle | medium-high | 6–8 weeks | EEG / connectome benchmarks ✓, applications/ ✓ |
+| **S46** | Phase-transition / attractor-landscape quantum programming | medium-high (paradigm) | 6–8 weeks | witnesses ✓, floquet_kuramoto ✓ |
+| **S47** | Analogue gravity: relativistic metrics, cosmological phase transitions, baryogenesis, emergent spacetime | high (foundations) | 10–12 weeks | QKFT (S38), theorist pass |
+| **S48** | Self-healing qubit fabrics + continuous QEC via sync | medium-high | 6–8 weeks | qec/ ✓, S18 sync memories (prereq) |
+| **S49** | Quantum fluctuation theorems (Jarzynski, Crooks) across sync transitions | medium-high | 5–6 weeks | extends S9 thermodynamics, LindbladSyncEngine ✓ |
+| **S50** | Quantum kernels from sync manifolds (ML) | medium-high | 4–5 weeks | DLA ✓, Rust forward mapper ✓ |
+| **S51** | Hayden–Preskill / black-hole info dynamics simulator | medium-high | 5–6 weeks | OTOC ✓, DLA scrambling ✓ |
+| **S52** | Distributed quantum consensus via global sync (quantum internet timing) | high (infrastructure) | 8–10 weeks | S1 async runner ✓, Bell pair ✓, modular topology |
+| **S53** | Engineered self-organised criticality in oscillator networks | medium-high | 5–7 weeks | SOC literature, OTOC ✓, witness ✓ |
 
 ---
 
@@ -2261,6 +2279,570 @@ benchmark.
 
 ---
 
+# Foundational tracks (S36–S53) — compact format
+
+The tracks below are scoped in a compact-but-rigorous format
+(motivation, deliverables, risks, prerequisites, acceptance,
+falsifier — no long-form narrative). Each still demands the same
+activation-gate rigour as S1–S35. On activation, the responsible
+session expands the compact entry into the full S1–S35-style form
+before execution starts.
+
+**Source archive.** The original full-length source text for every
+track below is preserved in
+`.coordination/strategic_roadmap_sources/2026-04-18_differentiation_tracks_s36_plus_RAW.md`
+(gitignored). Deduplication collapsed seven proposal rounds from
+2026-04-18 into this block; tracks that appeared in multiple rounds
+are merged with cross-references.
+
+## S36 — Information geometry on quantum sync manifolds
+
+**Motivation.** The manifold of reachable sync states, parameterised
+by (K_nm, ω, DLA generators), is a Riemannian manifold with the
+quantum Fisher information tensor as natural metric. Geodesics,
+sectional curvature, and natural-gradient flows give provably
+optimal control paths across the sync transition. Information
+geometry exists for single-qubit and simple VQE landscapes; no
+application to collective Kuramoto order parameters on hardware has
+surfaced in the literature surveyed through 2026-04.
+
+**Deliverables.** `analysis/sync_information_geometry.py` with
+Fisher-tensor computation from observables; Rust-side geodesic
+integrator; natural-gradient-flow optimal-control demo on N = 4.
+
+**Risks.** Fisher-tensor estimation is shot-hungry; natural-gradient
+directions can diverge near singular points.
+
+**Prerequisites.** `analysis/qfi_criticality.py` (done), Rust accel
+(done).
+
+**Acceptance.** Natural-gradient path from incoherent to full sync
+on hardware beats straight-line Trotter on final R at matched depth
+on a pre-registered benchmark.
+
+**Falsification.** **C39**: natural-gradient path beats straight-line
+Trotter at matched depth. Falsifier — no measurable R advantage on
+the benchmark.
+
+## S37 — Categorical / compositional quantum Kuramoto
+
+**Motivation.** Oscillator networks can be formalised as objects in
+a symmetric monoidal category, with sync-preserving DLA-invariant
+morphisms as arrows. Compositional composition of sub-networks —
+hierarchical SCPN layers — enables modular circuit construction
+without exponential growth. Categorical QM is mature but has not
+been applied to synchronisation phenomena.
+
+**Deliverables.** `bridge/category_theory.py` encoding network
+objects + morphisms; compositional K_nm builder; demo of a 2-layer
+hierarchical SCPN network compiled through the category.
+
+**Risks.** Category-theoretic formalism has steep onboarding cost;
+practical payoff only at ≥ 3 hierarchical layers (where the
+hardware budget constrains the demo).
+
+**Prerequisites.** mapper refactor, theorist pass on the category
+definition.
+
+**Acceptance.** 2-layer hierarchical SCPN network compiles to a
+circuit of depth ≤ the flat-compilation depth by a documented
+fraction.
+
+**Falsification.** Infrastructure track — no scientific claim; no
+falsifier.
+
+## S38 — Quantum Kuramoto field theory continuum limit + RG flows
+
+**Motivation.** Large-N limit of the lattice Kuramoto-XY mapping
+yields an effective scalar QFT (φ⁴-like with DLA-protected
+symmetries). Tensor-network + DLA truncation compresses it. Running
+low-energy dynamics on hardware and extracting RG flows of the
+order parameter provides the first experimental bridge between
+many-body oscillators and genuine QFT phenomenology.
+
+**Deliverables.** `phase/qkft_continuum.py` with tensor-network
+compression; RG-flow extractor using coarse-graining from DLA
+invariants; hardware demo at N = 4 — 6 measuring effective coupling
+renormalisation.
+
+**Risks.** The φ⁴-effective-theory derivation is analytically
+demanding; a loose identification of the effective-field parameters
+invalidates the RG readout.
+
+**Prerequisites.** quimb tensor-network tier (done), DLA (done),
+QuTiP baseline (done).
+
+**Acceptance.** Published RG-flow diagram with a hardware-measured
+critical exponent agreeing with the classical Kuramoto mean-field
+prediction within a pre-registered tolerance.
+
+**Falsification.** **C40**: hardware-measured RG flow matches
+mean-field critical exponent to pre-registered tolerance. Falsifier —
+exponent off by > tolerance.
+
+## S39 — Autopoietic / self-referential oscillator networks
+
+**Motivation.** Sync order parameter dynamically rewrites K_nm
+without external controller. Extension of S34 (autonomous drive)
+where the *coupling matrix itself* is the feedback target rather
+than just the drive amplitude. Closed self-maintaining loops
+directly model origins-of-life, synthetic biology, and consciousness
+patterns as physical realisations inside quantum hardware.
+
+**Deliverables.** `control/autopoietic_loop.py` — closed loop where
+measurement at shot n computes the K_nm to use at shot n+1; demo at
+N = 4 showing maintained non-trivial sync pattern without external
+input.
+
+**Risks.** Autopoietic loops can collapse to trivial fixed points
+(R = 0 or R = 1) instead of sustaining a non-trivial pattern;
+parameter-regime search needed.
+
+**Prerequisites.** S34 (autonomous drive) + S1 (feedback plumbing).
+
+**Acceptance.** Autopoietic loop sustains a non-trivial sync pattern
+(0 < R < 1, chimera-type) for ≥ 20 feedback cycles without external
+input.
+
+**Falsification.** **C41**: autopoietic loop sustains non-trivial
+pattern for ≥ 20 cycles. Falsifier — collapse to trivial R on ≥ 50 %
+of runs on the pre-registered benchmark.
+
+## S40 — Holographic duals via quantum synchronisation
+
+**Motivation.** Boundary oscillator network sync mapped to a bulk
+gravitational-like degree of freedom, with DLA invariants as the
+holographic dictionary. Measure boundary order parameters on
+hardware, extract bulk geometry proxies. AdS/CFT in many-body
+quantum sync has not surfaced in the literature surveyed.
+
+**Deliverables.** `analysis/holographic_dual.py` —
+boundary-to-bulk map using DLA invariants; hardware demo at N = 4
+extracting a bulk-metric proxy from boundary observables.
+
+**Risks.** Holographic interpretation is ambitious. The result may
+be unfalsifiable without a consensus holographic dictionary for
+heterogeneous Kuramoto-XY; clearly mark any "bulk metric" extracted
+as proxy, not derived.
+
+**Prerequisites.** DLA machinery (done), theorist pass on the dual
+map construction.
+
+**Acceptance.** Published theory note + hardware-measured bulk-metric
+proxy, with the mapping clearly framed as conjectural pending
+community validation.
+
+**Falsification.** **C42**: self-consistency of the boundary ↔ bulk
+mapping under RG flow (tested in S38 + S40 together). Falsifier —
+inconsistency in the RG-flow fixed points between boundary and bulk
+at the pre-registered precision.
+
+## S41 — Quantum causal discovery with intervention
+
+**Motivation.** OTOC growth + DLA parity asymmetry + targeted
+mid-circuit interventions (conditional drives, projective
+measurements) infer causal directionality and hidden couplings in
+unknown networks. Extends S16 (network tomography) from passive
+observation to active intervention — a genuine do-calculus over
+quantum oscillator networks.
+
+**Deliverables.** `analysis/causal_discovery.py` with intervention
+scheduler; integrates with Dynamic Circuits (S8 prereq);
+applied demo: infer directed EEG connectivity from passive + active
+measurements.
+
+**Risks.** Causal discovery is data-hungry; the quantum advantage
+over classical do-calculus requires a demonstration on a
+pre-registered hard instance.
+
+**Prerequisites.** S16 (observational tomography), Dynamic Circuits
+(S8), witnesses (done).
+
+**Acceptance.** Directed connectivity on a pre-registered synthetic
+graph recovered within a documented tolerance, beating the best
+classical observational-only baseline.
+
+**Falsification.** **C43**: quantum-assisted do-calculus beats
+classical observational baseline on pre-registered benchmark.
+Falsifier — classical ties or wins.
+
+## S42 — Symplectic structure-preserving Trotterisation
+
+**Motivation.** Almost every quantum mapping of classical dynamics
+destroys the symplectic structure of the phase space. Reformulating
+Trotter + pulse shaping to exactly preserve symplecticity (geometric
+integrator analogue in the quantum domain) enables faithful
+long-time simulation of Hamiltonian chaos without artificial
+dissipation. No open-source or hardware Kuramoto pipeline enforces
+this.
+
+**Deliverables.** `phase/symplectic_trotter.py` — geometric-integrator
+variant of the Trotter decomposition; Rust-side implementation that
+guarantees symplectic norm preservation; long-time chaos-demo
+comparison vs. standard Trotter on a pre-registered chaotic
+Kuramoto benchmark.
+
+**Risks.** Symplectic Trotter adds gate count; coherence budget may
+not permit the "long-time" demo on current hardware.
+
+**Prerequisites.** Rust pulse engine (done), geometric-integrator
+theory pass.
+
+**Acceptance.** Long-time energy / norm drift on the chaotic
+benchmark bounded below a pre-registered fraction of the standard-
+Trotter drift at matched depth.
+
+**Falsification.** **C44**: symplectic Trotter bounds long-time
+drift below standard Trotter at matched depth. Falsifier — drift
+exceeds standard Trotter on ≥ 50 % of benchmark instances.
+
+## S43 — Full resource theory of quantum synchronisation
+
+**Motivation.** Formalise synchronisation (sharpness of R + DLA
+subspace dimension + witness robustness) as a quantum resource.
+Define sync-distillable entanglement, sync cost of gates,
+conversion rates between sync and entanglement / magic. Resource
+theories exist for entanglement, coherence, magic — not for
+collective synchronisation.
+
+**Deliverables.** `analysis/sync_resource_theory.py` formalising
+sync as resource; conversion-rate measurement protocol; hardware
+demo at N = 4 showing conversion of entanglement → sync and back.
+
+**Risks.** Resource theory framework must be formally sound (free
+operations, monotones) before experimental measurement means
+anything.
+
+**Prerequisites.** witnesses (done), OTOC (done), DLA (done),
+theorist pass on the resource-theory axiomatisation.
+
+**Acceptance.** Theory note + hardware-measured conversion rate with
+error bars; paper note fits the v1.0 release cycle.
+
+**Falsification.** **C45**: sync-to-entanglement conversion rate is
+non-zero (i.e. sync is a distinct resource from existing ones).
+Falsifier — conversion rate consistent with zero on the benchmark.
+
+## S44 — Objective-collapse / macroscopic-foundations testbed
+
+**Motivation.** Merges three related proposals: objective-collapse
+models (GRW, Penrose OR, CSL) stress-tested at mesoscopic scales;
+Quantum Darwinism — sync manifold as redundant encoding of
+"classical" information into environmental degrees; macroscopic
+measurement as the quantum-to-classical transition witness. All
+three use the same instrument: DLA-parity asymmetry as a
+smoking-gun observable for collapse-induced desynchronisation or
+redundant classical imprinting.
+
+**Deliverables.** `phase/foundations_testbed.py` with collapse-model
+simulator + Darwinism redundancy estimator; scaled-hardware
+campaign at N = 4 → 8 measuring DLA asymmetry decay; paper note on
+bounds derived for GRW / CSL parameters.
+
+**Risks.** Collapse signals are exponentially small at accessible
+N. Darwinism redundancy estimator is shot-hungry. Setting
+meaningful bounds may require hardware access far beyond Phase 2
+budget.
+
+**Prerequisites.** Large-N hardware time, DLA parity asymmetry
+(hardware-validated — done).
+
+**Acceptance.** Published paper with a documented bound on CSL rate
+(or GRW parameters) from mesoscopic-scale sync stability on
+hardware.
+
+**Falsification.** **C46**: sync stability on hardware places a
+bound on CSL collapse rate tighter than the pre-registered
+reference benchmark. Falsifier — no tightening beyond reference
+within the campaign budget.
+
+## S45 — Biologically faithful Kuramoto simulator + IIT consciousness angle
+
+**Motivation.** Ingest real structural-biology data (protein
+interaction graphs, microtubule lattices, photosynthetic antenna
+complexes, C. elegans / human connectomes) as K_nm + ω inputs.
+Compute Φ (integrated information, IIT) and cause-effect structures
+directly from DLA-protected sync manifolds on hardware; compare
+against classical baselines + experimental bio-data (2D
+spectroscopy, magnetoreception, EEG). Merges the biology-data
+ingestion and the IIT-testbed proposals from multiple rounds.
+
+**Deliverables.** `applications/bio_kuramoto.py` with
+connectome/microtubule ingestion; IIT Φ estimator on
+DLA-protected manifold; applied comparison against 2D
+photosynthesis spectroscopy or an EEG integrated-information
+dataset.
+
+**Risks.** "Quantum biology" is a contentious field. Over-claims
+("quantum consciousness", "quantum coherence in protein folding")
+must not appear in the commit messages, paper, or documentation.
+The clean deliverable is a hardware-validated quantum-simulator
+readout of a bio-sourced coupling matrix — no metaphysical claims
+beyond that.
+
+**Prerequisites.** `applications/eeg_benchmark.py` (done),
+`applications/fmo_benchmark.py` (done), bio-data licences.
+
+**Acceptance.** Hardware-measured sync signature on a published
+connectome (or microtubule / FMO graph) within pre-registered
+agreement with classical baseline; IIT Φ estimator returns
+documented values with error bars.
+
+**Falsification.** **C47**: hardware-measured sync signature on a
+bio-sourced K_nm agrees with classical mean-field within
+tolerance. Falsifier — significant disagreement on ≥ 2 of 3
+bio-benchmarks.
+
+## S46 — Phase-transition / attractor-landscape quantum programming
+
+**Motivation.** Encode computation directly into the attractor
+landscape: incoherent → chimera → partial → full sync phases each
+implement different logic or signal-processing primitives, without
+explicit gates. All current quantum computing is gate / annealing;
+this is "thermodynamic quantum software" where computation emerges
+from the physics of sync itself.
+
+**Deliverables.** `control/attractor_programming.py` — target-pattern
+→ drive schedule compiler; demo: 2-bit AND / OR implemented as
+attractor-selection on N = 4; scaling-of-capacity characterisation.
+
+**Risks.** Limited computational expressiveness at small N;
+demonstration of any non-trivial computation beyond what a
+classical Kuramoto attractor already provides is required to be
+useful.
+
+**Prerequisites.** witnesses (done), floquet_kuramoto (done).
+
+**Acceptance.** A pre-registered non-trivial classical task (e.g.
+simple classification) solved via attractor-selection on hardware
+at matched or better accuracy than a classical Kuramoto attractor
+solver.
+
+**Falsification.** **C48**: attractor-programming beats classical
+Kuramoto attractor solver on a pre-registered classification task.
+Falsifier — parity or worse performance on the benchmark.
+
+## S47 — Analogue gravity on synchronised oscillator arrays
+
+**Motivation.** Merges relativistic / curved-spacetime metrics,
+cosmological phase transitions + baryogenesis + defect formation,
+and emergent spacetime from sync. Position-dependent couplings and
+drives simulate quantum fields on curved backgrounds (analogue
+black-hole horizons, expanding universes) on flat superconducting
+hardware. Analogue gravity is mature in optics / BECs — not on
+Kuramoto-XY with DLA protection.
+
+**Deliverables.** `phase/analogue_gravity.py` with curved-metric
+compiler; baryogenesis-analogue simulation on N = 4 — 6; table-top
+Kibble–Zurek defect-density measurement on hardware.
+
+**Risks.** The analogy is qualitative unless a specific
+curved-background QFT claim is pre-registered. Resist
+over-interpreting hardware results as "quantum cosmology".
+
+**Prerequisites.** S38 (QKFT), `gauge/vortex_detector.py` (done).
+
+**Acceptance.** Published Kibble–Zurek defect-density scaling on
+hardware, matching the theoretical prediction for the chosen
+analogue-gravity mapping within a pre-registered tolerance.
+
+**Falsification.** **C49**: Kibble–Zurek scaling exponent on
+hardware matches theory within tolerance. Falsifier — exponent off
+by > tolerance on the pre-registered benchmark.
+
+## S48 — Self-healing qubit fabrics + continuous sync QEC
+
+**Motivation.** Merges two closely related proposals: self-healing
+qubit fabrics via engineered Kuramoto sync, and continuous analog
+QEC via the sync manifold. Local defects / errors trigger
+desynchronisation signals that propagate as corrective feedback
+through the network, restoring global sync and coherence without
+external classical control. Complements S18 (sync-as-memory) by
+treating sync as an error-correction *process* rather than a
+stored state.
+
+**Deliverables.** `qec/self_healing_fabric.py` — always-on sync
+drive with built-in error-response feedback; hardware demo showing
+recovery from a simulated defect on N = 4 — 8.
+
+**Risks.** Continuous feedback loops on hardware face latency
+bounds; the "healing time" must be less than the coherence time of
+the unhealed qubit fabric.
+
+**Prerequisites.** S1 / S8 feedback plumbing, `qec/` (done), S18
+(sync-memory precursor).
+
+**Acceptance.** Measured coherence-extension on a hardware fabric
+with injected defects vs. an unhealed baseline, exceeding a
+pre-registered factor.
+
+**Falsification.** **C50**: self-healing fabric extends coherence
+over unhealed baseline on the pre-registered benchmark. Falsifier
+— no documented extension beyond statistical noise.
+
+## S49 — Quantum fluctuation theorems across sync transitions
+
+**Motivation.** Experimentally test the quantum Jarzynski equality,
+Crooks fluctuation theorem, and thermodynamic uncertainty relations
+by driving across the Kuramoto sync transition and measuring
+work/heat distributions via DLA parity witnesses + OTOCs. Refines
+S9 (quantum thermodynamics) with the specific fluctuation-theorem
+observables.
+
+**Deliverables.** `thermodynamics/fluctuation_theorems.py` —
+Jarzynski / Crooks estimators; hardware demo at N = 4 across a
+K-sweep spanning the sync transition.
+
+**Risks.** Fluctuation-theorem tails are heavy-tailed; shot-budget
+for convergence is substantial.
+
+**Prerequisites.** S9 (thermodynamics framework — prereq), GUESS ✓,
+OTOC ✓.
+
+**Acceptance.** Published experimental confirmation of Jarzynski
+equality on the Kuramoto transition within a pre-registered
+statistical tolerance; work-distribution tails within predicted
+bounds.
+
+**Falsification.** **C51**: measured Jarzynski average agrees with
+the free-energy-difference prediction within tolerance. Falsifier
+— significant deviation on the benchmark.
+
+## S50 — Quantum kernels from sync manifolds (ML)
+
+**Motivation.** Define quantum kernels directly from the inner
+product structure of DLA-generated sync states; evaluate on
+hardware for classification / regression on real-world complex
+time-series. Quantum kernels exist for simple feature maps; none
+exploit the geometric structure of heterogeneous Kuramoto sync
+manifolds.
+
+**Deliverables.** `ml/sync_kernel.py` with hardware kernel evaluator;
+plasma / brain / power-grid time-series classification benchmark.
+
+**Risks.** Kernel methods are a crowded space; demonstrable quantum
+advantage on a *pre-registered* benchmark (not post-hoc selected)
+is required.
+
+**Prerequisites.** DLA (done), Rust forward mapper (done), ML
+dataset access.
+
+**Acceptance.** Kernel SVM using the hardware-measured sync kernel
+beats a classical Gaussian kernel baseline on a pre-registered
+time-series benchmark.
+
+**Falsification.** **C52**: sync-manifold quantum kernel beats
+classical kernel on pre-registered benchmark. Falsifier — parity
+or worse on the benchmark.
+
+## S51 — Hayden–Preskill scrambling / black-hole information simulator
+
+**Motivation.** OTOC growth rate + DLA-protected scrambling in
+synchronised oscillator arrays to model Hayden–Preskill information
+recovery protocols. First table-top Kuramoto-based simulator of
+black-hole information dynamics.
+
+**Deliverables.** `analysis/hayden_preskill.py` — recovery-protocol
+simulation + hardware observable extraction; demo at N = 4 — 6
+measuring a recovery fidelity consistent with Hayden–Preskill
+prediction.
+
+**Risks.** Small-N black-hole analogues capture information
+scrambling but not full quantum-gravity dynamics; do not overclaim.
+
+**Prerequisites.** OTOC (done), DLA (done).
+
+**Acceptance.** Measured information recovery fidelity on hardware
+agrees with Hayden–Preskill prediction within a pre-registered
+tolerance for the scrambling time.
+
+**Falsification.** **C53**: recovery fidelity agrees with
+Hayden–Preskill within tolerance. Falsifier — significant deviation
+from the predicted curve on the pre-registered benchmark.
+
+## S52 — Distributed quantum consensus via global sync (quantum internet)
+
+**Motivation.** Use sharp global order-parameter transition as a
+consensus primitive across modular QPUs or quantum-internet nodes.
+Distant oscillator subsets synchronise via shared entanglement or
+mediated couplings; DLA witnesses certify consensus. Merges the
+multiple "quantum internet sync layer" proposals.
+
+**Deliverables.** `hardware/distributed_sync.py` — multi-runner
+orchestrator using the existing AsyncHardwareRunner; Bell-pair-
+seeded distant oscillator demo on two Heron r2 regions; documented
+consensus primitive.
+
+**Risks.** True "quantum internet" requires networking
+infrastructure not yet accessible on today's QPUs; the demo can
+only use multi-region of a single QPU or two QPUs with manual
+entanglement distribution.
+
+**Prerequisites.** S1 async runner (done), Bell-pair preparation
+(done in crypto/).
+
+**Acceptance.** Consensus primitive demonstrated across two
+independent Heron-r2 regions at a pre-registered consensus-fidelity
+threshold.
+
+**Falsification.** **C54**: distant-region consensus fidelity
+exceeds classical clock-sync baseline on the pre-registered
+benchmark. Falsifier — consensus fidelity ≤ classical baseline.
+
+## S53 — Engineered self-organised criticality
+
+**Motivation.** Tune (heterogeneity, topology, drive) so the system
+sits at the critical point of a non-equilibrium phase transition;
+measure avalanche statistics, power-law distributions, and
+information-processing capacity. SOC is classical / mean-field;
+no quantum hardware pipeline engineers or quantifies it in
+heterogeneous oscillator arrays.
+
+**Deliverables.** `analysis/self_organised_criticality.py` — SOC
+detector + avalanche statistics; tuned-criticality demo on N = 6;
+information-processing capacity measurement at criticality.
+
+**Risks.** SOC requires a separation of timescales that small-N
+hardware cannot provide unambiguously; the demo may show only SOC
+*precursors*, not full SOC.
+
+**Prerequisites.** witnesses (done), OTOC (done), SOC-literature
+theorist pass.
+
+**Acceptance.** Documented power-law avalanche-size distribution on
+hardware over at least two decades of scale.
+
+**Falsification.** **C55**: avalanche distribution on tuned hardware
+follows a power law over ≥ 2 decades. Falsifier — cut-off at ≤ 1
+decade on the pre-registered benchmark.
+
+---
+
+# Applied verticals (cross-cutting over S1–S53)
+
+Rounds 9 and 10 of the 2026-04-18 proposal sitting named five
+"applied verticals" that do not define new physics tracks but
+rather specific application targets any of S1–S53 can be
+directed at. These are cross-cutting; they do not get their own
+`Sxx` number but are documented here for the activation session
+to target.
+
+| Applied vertical | Most relevant physics tracks |
+|---|---|
+| Fusion plasma stabilisation (ITER disruption forecasting + real-time control) | S1 + S8 + S27 (feedback + branching + inverse design), S41 (causal discovery of plasma mode coupling), S48 (self-healing qubit fabric for control-loop latency) |
+| Tipping-point early-warning (power grids, climate, neural seizures) | S14 (hybrid forecasting), S24 (quantum speed limits for early warning), S31 (MBL / tipping precursor), S53 (SOC + avalanche statistics) |
+| IIT consciousness testbed (connectomes, microtubules) | S45 (direct) + S21 (multi-scale) + S50 (kernels on connectome sync data) |
+| Quantum biology engineering (photosynthesis, protein folding, collective cell) | S45 + S43 (sync-as-resource for bio-simulation) + S10 / S13 (analog + CV platforms) |
+| Quantum internet infrastructure | S4 (multi-vendor) + S26 (entanglement-mediated sync) + S52 (distributed consensus) |
+| Autonomous AI physicist (discovery engine) | S12 (Bayesian phase-diagram) + S39 (autopoietic) + S58-class concepts from S34 / S53 + S50 ML kernel |
+
+An applied vertical is **not** a separate track; activating an
+applied vertical means activating one or more of the physics tracks
+listed, with the applied-vertical dataset as the target and the
+applied-vertical metric as the acceptance criterion.
+
+---
+
 ## Cross-cutting dependencies
 
 Several tracks share prerequisites. If any of these prerequisites
@@ -2347,14 +2929,31 @@ Summary of claim IDs to be added on track activation:
 | S33 | C36 | Quantum-extracted Lyapunov spectrum agrees with classical truth within tolerance |
 | S34 | C37 | Autonomous drive loop converges without external tuning on ≥ 70 % of runs |
 | S35 | C38 | Non-reciprocal sync transition distinguishable from Hermitian baseline |
+| S36 | C39 | Natural-gradient path beats straight-line Trotter at matched depth |
+| S38 | C40 | Hardware-measured RG flow matches mean-field critical exponent within tolerance |
+| S39 | C41 | Autopoietic loop sustains non-trivial sync pattern ≥ 20 cycles |
+| S40 | C42 | Boundary ↔ bulk holographic mapping self-consistent under RG flow |
+| S41 | C43 | Quantum-assisted do-calculus beats classical observational baseline |
+| S42 | C44 | Symplectic Trotter bounds long-time drift below standard Trotter at matched depth |
+| S43 | C45 | Sync-to-entanglement conversion rate non-zero (sync is a distinct resource) |
+| S44 | C46 | Sync stability bounds CSL collapse rate tighter than reference |
+| S45 | C47 | Hardware sync signature on bio-sourced K_nm agrees with classical mean-field within tolerance |
+| S46 | C48 | Attractor-programming beats classical Kuramoto attractor solver on classification |
+| S47 | C49 | Kibble–Zurek defect-density scaling exponent on hardware matches theory within tolerance |
+| S48 | C50 | Self-healing fabric extends coherence over unhealed baseline |
+| S49 | C51 | Measured Jarzynski average agrees with free-energy-difference prediction within tolerance |
+| S50 | C52 | Sync-manifold quantum kernel beats classical kernel on time-series benchmark |
+| S51 | C53 | Recovery fidelity agrees with Hayden–Preskill prediction within tolerance |
+| S52 | C54 | Distant-region consensus fidelity exceeds classical clock-sync baseline |
+| S53 | C55 | Avalanche size distribution on tuned hardware follows a power law over ≥ 2 decades |
 
-S1, S2, S5, S6, S20 are infrastructure / engineering tracks; they
-have internal acceptance criteria but no scientific claim that
+S1, S2, S5, S6, S20, S37 are infrastructure / engineering tracks;
+they have internal acceptance criteria but no scientific claim that
 needs falsification.
 
 ## Activation checklist (for the future session that picks one up)
 
-Before starting execution on any of S1–S35:
+Before starting execution on any of S1–S53:
 
 1. Re-read this document top to bottom.
 2. Confirm the CEO has activated the specific track (none is
