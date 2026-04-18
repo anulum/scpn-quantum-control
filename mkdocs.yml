@@ -72,6 +72,7 @@ nav:
       - "Paper: Synchronisation Witnesses": paper_sync_witnesses.md
       - "Paper: DLA Parity Theorem": paper_dla_parity.md
       - "DLA-parity Validation": dla_parity.md
+      - "Classical Irreproducibility": classical_irreproducibility.md
       - Results Gallery: results.md
   - Hardware:
       - IBM Guide: hardware_guide.md
