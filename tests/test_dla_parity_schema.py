@@ -4,16 +4,16 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — benchmark_harness.schema tests
-"""Tests for `scpn_quantum_control.benchmark_harness.schema`.
+# SCPN Quantum Control — dla_parity.schema tests
+"""Tests for `scpn_quantum_control.dla_parity.schema`.
 
 Types only; no I/O to test. Cover:
 
 * Happy-path construction of each dataclass.
 * Immutability (frozen=True) — construction is the only mutation.
-* `BenchmarkRun.name` — known experiment names map to the canonical
+* `DlaParityRun.name` — known experiment names map to the canonical
   short run label; unknown names raise `ValueError`.
-* `BenchmarkDataset.circuits` / `n_circuits_total` / `backends`
+* `DlaParityDataset.circuits` / `n_circuits_total` / `backends`
   aggregate correctly across runs.
 * Dataclass equality (slots=True does not break eq).
 """
@@ -22,17 +22,17 @@ from __future__ import annotations
 
 import pytest
 
-from scpn_quantum_control.benchmark_harness.schema import (
-    BenchmarkCircuit,
-    BenchmarkCircuitMeta,
-    BenchmarkDataset,
-    BenchmarkRun,
+from scpn_quantum_control.dla_parity.schema import (
+    DlaParityCircuit,
+    DlaParityCircuitMeta,
+    DlaParityDataset,
+    DlaParityRun,
     StatisticalSummary,
 )
 
 
-def _make_meta(depth: int = 2, sector: str = "even") -> BenchmarkCircuitMeta:
-    return BenchmarkCircuitMeta(
+def _make_meta(depth: int = 2, sector: str = "even") -> DlaParityCircuitMeta:
+    return DlaParityCircuitMeta(
         experiment="A_dla_parity_n4",
         n_qubits=4,
         depth=depth,
@@ -44,16 +44,16 @@ def _make_meta(depth: int = 2, sector: str = "even") -> BenchmarkCircuitMeta:
     )
 
 
-def _make_circuit(depth: int = 2, sector: str = "even") -> BenchmarkCircuit:
-    return BenchmarkCircuit(meta=_make_meta(depth, sector), counts={"1100": 1500})
+def _make_circuit(depth: int = 2, sector: str = "even") -> DlaParityCircuit:
+    return DlaParityCircuit(meta=_make_meta(depth, sector), counts={"1100": 1500})
 
 
 def _make_run(
     experiment: str = "phase1_dla_parity_mini_bench",
     *,
     n_circuits: int = 2,
-) -> BenchmarkRun:
-    return BenchmarkRun(
+) -> DlaParityRun:
+    return DlaParityRun(
         experiment=experiment,
         timestamp_utc="2026-04-10T183728Z",
         backend="ibm_kingston",
@@ -65,7 +65,7 @@ def _make_run(
     )
 
 
-class TestBenchmarkCircuitMeta:
+class TestDlaParityCircuitMeta:
     def test_happy_path(self) -> None:
         meta = _make_meta()
         assert meta.n_qubits == 4
@@ -81,7 +81,7 @@ class TestBenchmarkCircuitMeta:
             meta.depth = 99  # type: ignore[misc]
 
 
-class TestBenchmarkCircuit:
+class TestDlaParityCircuit:
     def test_happy_path(self) -> None:
         c = _make_circuit(depth=6, sector="odd")
         assert c.meta.depth == 6
@@ -94,7 +94,7 @@ class TestBenchmarkCircuit:
             c.counts = {}  # type: ignore[misc]
 
 
-class TestBenchmarkRun:
+class TestDlaParityRun:
     def test_happy_path(self) -> None:
         run = _make_run()
         assert run.backend == "ibm_kingston"
@@ -114,13 +114,13 @@ class TestBenchmarkRun:
 
     def test_name_raises_on_unknown_experiment(self) -> None:
         run = _make_run(experiment="phase3_future_unknown", n_circuits=1)
-        with pytest.raises(ValueError, match="Unknown benchmark-run"):
+        with pytest.raises(ValueError, match="Unknown DLA-parity run"):
             _ = run.name
 
 
-class TestBenchmarkDataset:
+class TestDlaParityDataset:
     def test_empty(self) -> None:
-        ds = BenchmarkDataset(subphases=())
+        ds = DlaParityDataset(runs=())
         assert ds.n_circuits_total == 0
         assert ds.backends == frozenset()
         assert ds.circuits == ()
@@ -128,14 +128,14 @@ class TestBenchmarkDataset:
     def test_aggregates_across_runs(self) -> None:
         run1 = _make_run(experiment="phase1_dla_parity_mini_bench", n_circuits=3)
         run2 = _make_run(experiment="phase1_5_reinforce", n_circuits=4)
-        ds = BenchmarkDataset(subphases=(run1, run2))
+        ds = DlaParityDataset(runs=(run1, run2))
         assert ds.n_circuits_total == 7
         assert ds.backends == frozenset({"ibm_kingston"})
         assert len(ds.circuits) == 7
 
     def test_multi_backend_reported_as_set(self) -> None:
         run1 = _make_run()
-        run2 = BenchmarkRun(
+        run2 = DlaParityRun(
             experiment="phase2_exhaust_cycle",
             timestamp_utc="2026-04-10T185634Z",
             backend="ibm_marrakesh",
@@ -145,7 +145,7 @@ class TestBenchmarkDataset:
             t_step=0.3,
             circuits=(),
         )
-        ds = BenchmarkDataset(subphases=(run1, run2))
+        ds = DlaParityDataset(runs=(run1, run2))
         assert ds.backends == frozenset({"ibm_kingston", "ibm_marrakesh"})
 
 

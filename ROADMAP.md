@@ -2,9 +2,9 @@
 
 ## In progress
 
-- **S5** Open-data + classical validation harness — **active from
-  2026-04-18** (see `docs/strategic_roadmap.md` and the activation
-  audit in `docs/internal/audit_2026-04-18_s5_benchmark_harness.md`).
+- **S5** Open-data + classical validation for the DLA-parity dataset
+  — **active from 2026-04-18**. New code lives under
+  `scpn_quantum_control.dla_parity` (see `docs/strategic_roadmap.md`).
 - **B1** arXiv LaTeX preprint — **closed 2026-04-18** (commit
   `457b734`): `paper/phase1_dla_parity.tex` compiles to a 4-page
   PDF; `paper/README.md` documents the submission packaging.
