@@ -4,15 +4,16 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Benchmark harness — dataset loader
-"""DLA-parity benchmark dataset loader.
+# SCPN Quantum Control — DLA parity — dataset loader
+"""DLA-parity dataset loader.
 
-Loads the four published sub-phase JSON files from
-``data/phase1_dla_parity/`` (directory name kept for published
-URLs) into the strongly-typed
-:class:`~scpn_quantum_control.benchmark_harness.schema.BenchmarkDataset`.
+Loads the four published JSON run files from
+``data/phase1_dla_parity/`` (data-directory name is part of the
+published URLs and preserved for citation stability) into the
+strongly-typed
+:class:`~scpn_quantum_control.dla_parity.schema.DlaParityDataset`.
 
-Single public entry point: :func:`load_benchmark_dataset`. Optional
+Single public entry point: :func:`load_dla_parity_dataset`. Optional
 SHA-256 integrity check gates the loader against
 :data:`PUBLISHED_SHA256`, which lists the digests of the dataset as
 released alongside the short paper. Mismatch raises
@@ -30,10 +31,10 @@ from pathlib import Path
 from typing import Any
 
 from .schema import (
-    BenchmarkCircuit,
-    BenchmarkCircuitMeta,
-    BenchmarkDataset,
-    BenchmarkRun,
+    DlaParityCircuit,
+    DlaParityCircuitMeta,
+    DlaParityDataset,
+    DlaParityRun,
 )
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parents[3] / "data" / "phase1_dla_parity"
@@ -53,9 +54,9 @@ PUBLISHED_SHA256: dict[str, str] = {
     ),
 }
 
-# Canonical load order = publication order. The loader returns sub-phases
+# Canonical load order = publication order. The loader returns runs
 # in this order so the downstream reproducer does not need to sort.
-SUBPHASE_FILES: tuple[str, ...] = (
+RUN_FILES: tuple[str, ...] = (
     "phase1_bench_2026-04-10T183728Z.json",
     "phase1_5_reinforce_2026-04-10T184909Z.json",
     "phase2_exhaust_2026-04-10T185634Z.json",
@@ -109,7 +110,7 @@ def _require_keys(obj: dict[str, Any], required: frozenset[str], where: str) -> 
         )
 
 
-def _parse_circuit(raw: dict[str, Any], idx: int) -> BenchmarkCircuit:
+def _parse_circuit(raw: dict[str, Any], idx: int) -> DlaParityCircuit:
     _require_keys(raw, frozenset({"meta", "counts"}), f"circuits[{idx}]")
     meta_raw = raw["meta"]
     if not isinstance(meta_raw, dict):
@@ -133,7 +134,7 @@ def _parse_circuit(raw: dict[str, Any], idx: int) -> BenchmarkCircuit:
                 f"got {type(k).__name__}→{type(v).__name__}",
             )
         counts[k] = v
-    meta = BenchmarkCircuitMeta(
+    meta = DlaParityCircuitMeta(
         experiment=str(meta_raw["experiment"]),
         n_qubits=int(meta_raw["n_qubits"]),
         depth=int(meta_raw["depth"]),
@@ -143,10 +144,10 @@ def _parse_circuit(raw: dict[str, Any], idx: int) -> BenchmarkCircuit:
         shots=int(meta_raw["shots"]),
         t_step=float(meta_raw["t_step"]),
     )
-    return BenchmarkCircuit(meta=meta, counts=counts)
+    return DlaParityCircuit(meta=meta, counts=counts)
 
 
-def _parse_run(raw: dict[str, Any], filename: str) -> BenchmarkRun:
+def _parse_run(raw: dict[str, Any], filename: str) -> DlaParityRun:
     _require_keys(raw, _REQUIRED_TOP_LEVEL, filename)
     circuits_raw = raw["circuits"]
     if not isinstance(circuits_raw, list):
@@ -163,7 +164,7 @@ def _parse_run(raw: dict[str, Any], filename: str) -> BenchmarkRun:
     job_ids_raw = raw["job_ids"]
     if not isinstance(job_ids_raw, list) or not all(isinstance(j, str) for j in job_ids_raw):
         raise ValueError(f"{filename}.job_ids: expected list[str]")
-    return BenchmarkRun(
+    return DlaParityRun(
         experiment=str(raw["experiment"]),
         timestamp_utc=str(raw["timestamp_utc"]),
         backend=str(raw["backend"]),
@@ -176,19 +177,20 @@ def _parse_run(raw: dict[str, Any], filename: str) -> BenchmarkRun:
     )
 
 
-def load_benchmark_dataset(
+def load_dla_parity_dataset(
     *,
     data_dir: Path | str | None = None,
     verify_integrity: bool = False,
-) -> BenchmarkDataset:
-    """Load the published DLA-parity benchmark dataset.
+) -> DlaParityDataset:
+    """Load the published DLA-parity dataset.
 
     Parameters
     ----------
     data_dir:
-        Directory holding the four sub-phase JSONs. Defaults to
-        ``data/phase1_dla_parity`` at the repository root (directory
-        name preserved for published URLs).
+        Directory holding the four run JSONs. Defaults to
+        ``data/phase1_dla_parity`` at the repository root (data-directory
+        name is part of the published URLs and kept for citation
+        stability).
     verify_integrity:
         When True, compute SHA-256 on each JSON and raise
         :class:`DatasetIntegrityError` on a mismatch against
@@ -198,13 +200,13 @@ def load_benchmark_dataset(
 
     Returns
     -------
-    :class:`~scpn_quantum_control.benchmark_harness.schema.BenchmarkDataset`
+    :class:`~scpn_quantum_control.dla_parity.schema.DlaParityDataset`
         The four runs in canonical publication order.
 
     Raises
     ------
     FileNotFoundError
-        If ``data_dir`` or any expected sub-phase file is missing.
+        If ``data_dir`` or any expected run file is missing.
     DatasetIntegrityError
         If ``verify_integrity`` is True and any digest mismatches.
     ValueError
@@ -212,13 +214,13 @@ def load_benchmark_dataset(
     """
     root = Path(data_dir) if data_dir is not None else DEFAULT_DATA_DIR
     if not root.is_dir():
-        raise FileNotFoundError(f"Benchmark data directory not found: {root}")
+        raise FileNotFoundError(f"DLA-parity data directory not found: {root}")
 
-    runs: list[BenchmarkRun] = []
-    for filename in SUBPHASE_FILES:
+    runs: list[DlaParityRun] = []
+    for filename in RUN_FILES:
         path = root / filename
         if not path.is_file():
-            raise FileNotFoundError(f"Missing benchmark run file: {path}")
+            raise FileNotFoundError(f"Missing DLA-parity run file: {path}")
         if verify_integrity:
             actual = _sha256(path)
             expected = PUBLISHED_SHA256[filename]
@@ -232,4 +234,4 @@ def load_benchmark_dataset(
             raise ValueError(f"{filename}: expected top-level JSON object")
         runs.append(_parse_run(raw, filename))
 
-    return BenchmarkDataset(subphases=tuple(runs))
+    return DlaParityDataset(runs=tuple(runs))
