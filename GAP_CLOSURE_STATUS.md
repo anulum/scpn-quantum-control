@@ -54,7 +54,24 @@ pattern) match measured coupling to within experimental error.
 
 ## Gap 2: Quantum Result Beyond Classical
 
-**Status: OPEN — honest assessment of current limitations.**
+**Status: partially closed (narrow reading — 2026-04-18); broad reading remains OPEN.**
+
+Two separate readings of "beyond classical" are now distinguished
+(see [`docs/classical_irreproducibility.md`](docs/classical_irreproducibility.md)):
+
+* **Narrow — signature irreproducibility:** No classical simulator
+  of the idealised Kuramoto-XY Hamiltonian can reproduce the
+  observed +10.8 % mean / +17.5 % peak asymmetry, because
+  $[H, P] = 0$ (every Hamiltonian term commutes with the
+  total-parity operator) — proved symbolically in
+  `tests/test_classical_irreproducibility.py` (28 tests at
+  n=3, 4, 6). The observed non-zero asymmetry is therefore a
+  hardware-noise signature by construction, not a property of the
+  Hamiltonian we specified.
+* **Broad — quantum computational advantage:** No efficient
+  classical algorithm can simulate the hardware evolution at the
+  deployed system size. **Still open at n=4.** Pathway unchanged
+  from the table below.
 
 | Evidence | Module | Finding |
 |----------|--------|---------|

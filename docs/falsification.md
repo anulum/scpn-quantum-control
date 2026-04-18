@@ -103,11 +103,18 @@ The following items are **not** claims — they are open problems.
 Nothing in `scpn-quantum-control` depends on any of them being
 true. They appear here so a reader knows they are known.
 
-- **Gap 2 — quantum result beyond classical.** There is no formal
-  argument that a classical simulator cannot reproduce the DLA
-  parity asymmetry. The asymmetry is observed on hardware and on a
-  Lindblad noise model; classical simulation cost scales as
-  $O(\mathrm{poly}(N))$ for $N \le 16$ and is not the bottleneck.
+- **Gap 2 — quantum result beyond classical.** Two readings now
+  distinguished (see
+  [classical_irreproducibility.md](classical_irreproducibility.md)):
+  the **narrow** reading (no ideal-Hamiltonian classical simulator
+  can reproduce the observed asymmetry) is **closed** — every
+  Hamiltonian term commutes with the total-parity operator, so
+  classical leakage is identically zero; the observed hardware
+  asymmetry is therefore a hardware-noise signature, not a
+  property of the Hamiltonian. The **broad** reading (no efficient
+  classical algorithm at any $N$) remains open: classical
+  simulation cost still scales as $O(\mathrm{poly}(N))$ at
+  $N \le 16$, so this is not yet a complexity-class claim.
 - **Gap 3 — `p_h1 = 0.72` first principles.** The hypothesis that
   $p_{h1}$ equals $A_{\mathrm{HP}} \sqrt{2 / \pi}$ (Hasenbusch-Pinn
   amplitude times the Nelson-Kosterlitz ratio) is 3 % off the
