@@ -40,8 +40,8 @@ keywords = [
     "qiskit",
 ]
 dependencies = [
-    "qiskit>=1.0.0,<2.0",  # Qiskit >=2.2 has PauliEvolutionGate bug (GH #15476)
-    "qiskit-aer>=0.14.0,<1.0",
+    "qiskit>=2.2,<3.0",
+    "qiskit-aer>=0.15,<1.0",
     "numpy>=1.24,<3.0",
     "scipy>=1.10,<2.0",
     "networkx>=3.0,<4.0",
@@ -54,7 +54,7 @@ jax = ["jax[cuda12]>=0.4.30"]
 rust = ["scpn-quantum-engine>=0.2.0"]
 dev = ["pytest>=7.0,<10.0", "pytest-cov>=4.0,<8.0", "ruff>=0.4,<1.0", "hypothesis>=6.0,<7.0", "pre-commit>=3.0,<5.0", "mypy>=1.0,<2.0", "build>=1.0,<2.0"]
 docs = ["mkdocs>=1.6,<2.0", "mkdocs-material>=9.0,<10.0", "pymdown-extensions>=10.0,<11.0", "mkdocstrings[python]>=0.24,<2.0"]
-ibm = ["qiskit-ibm-runtime>=0.20.0,<1.0"]
+ibm = ["qiskit-ibm-runtime>=0.40,<1.0"]
 tensor = ["quimb>=1.10,<2.0"]
 mitigation = ["mitiq>=0.30,<2.0"]
 topology = ["ripser>=0.6,<1.0"]
