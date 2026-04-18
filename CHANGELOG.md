@@ -2,6 +2,11 @@
 
 Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Changed
+- 2026-04-18 — `qiskit` pin bumped `>=1.0,<2.0` → `>=2.2,<3.0`; `qiskit-aer` pin bumped `>=0.14,<1.0` → `>=0.15,<1.0`; `qiskit-ibm-runtime` pin bumped `>=0.20,<1.0` → `>=0.40,<1.0`. Misleading `PauliEvolutionGate bug (GH #15476)` comment removed — upstream closed that report as not-a-bug (the 2.2 change correctly treats `PauliEvolutionGate` as an abstract exact-evolution object; pre-2.2 was silently injecting Trotter error). Full pytest suite: 5045 passed / 0 failed on qiskit 2.4.0 without code changes.
+
 ## [0.9.6] - 2026-04-17
 
 ### Security
