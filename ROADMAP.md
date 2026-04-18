@@ -125,12 +125,12 @@ Remaining items:
 
 ## Strategic Differentiation (post-v1.0)
 
-Fourteen post-v1.0 differentiation tracks are scoped in
+Thirty-five post-v1.0 differentiation tracks are scoped in
 [`docs/strategic_roadmap.md`](docs/strategic_roadmap.md). All are
 **DEFERRED / CEO-gated**; no execution until individually activated.
 Quarterly review cadence.
 
-Infrastructure + ML:
+Infrastructure + ML (S1–S7):
 
 - **S1** Hybrid classical–quantum feedback loop
 - **S2** Quantum advantage benchmarks at scale (N = 4 → 20+)
@@ -140,7 +140,7 @@ Infrastructure + ML:
 - **S6** Decoupled `quantum-kuramoto` subpackage
 - **S7** Fault-tolerant / logical-level extension roadmap
 
-Scientific / novel directions:
+Scientific directions — batch 1 (S8–S14):
 
 - **S8** Mid-circuit adaptive branching (Dynamic Circuits follow-up to S1)
 - **S9** Quantum thermodynamics of synchronisation transitions
@@ -149,3 +149,33 @@ Scientific / novel directions:
 - **S12** Automated phase-diagram exploration via Bayesian optimisation
 - **S13** Bosonic / continuous-variable quantum Kuramoto
 - **S14** Hybrid quantum-classical forecasting engine
+
+Scientific directions — batch 2 (S15–S21):
+
+- **S15** DLA-protected many-body scars for long-lived synchronisation
+- **S16** Quantum network tomography (reconstruct K_nm from observables)
+- **S17** Higher-order (simplicial / hypergraph) quantum Kuramoto
+- **S18** Synchronisation-protected quantum memories and repeaters
+- **S19** Entanglement phase diagram + magic + Krylov complexity
+- **S20** Quantum Kuramoto universal control-benchmark suite
+- **S21** Multi-scale quantum → classical bridging layer
+
+Scientific directions — batch 3 (S22–S28):
+
+- **S22** Non-Hermitian / PT-symmetric Kuramoto with exceptional points
+- **S23** Quantum reservoir computing on Kuramoto transients
+- **S24** Quantum speed limits for collective synchronisation
+- **S25** Topological defects + vortex dynamics on 2D quantum lattices
+- **S26** Entanglement-mediated long-range synchronisation
+- **S27** Hardware-in-the-loop inverse design of oscillator networks
+- **S28** Synchronisation-enhanced distributed quantum metrology
+
+Scientific directions — batch 4 (S29–S35):
+
+- **S29** Floquet Kuramoto time crystals + subharmonic sync
+- **S30** Quantum Kuramoto for community detection and modularity
+- **S31** DLA-protected many-body localisation / delocalisation
+- **S32** Monitored quantum Kuramoto (measurement-induced transitions)
+- **S33** Quantum-enhanced Lyapunov spectra for chaotic Kuramoto
+- **S34** Self-organising Kuramoto (autonomous drive engineering)
+- **S35** Quantum Kuramoto native simulator for active matter
