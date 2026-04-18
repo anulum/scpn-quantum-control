@@ -11,10 +11,10 @@ Types only; no I/O to test. Cover:
 
 * Happy-path construction of each dataclass.
 * Immutability (frozen=True) — construction is the only mutation.
-* `PhaseOneSubphase.name` — known experiment names map to the
-  canonical sub-phase label; unknown names raise `ValueError`.
-* `PhaseOneDataset.circuits` / `n_circuits_total` / `backends`
-  aggregate correctly across sub-phases.
+* `BenchmarkRun.name` — known experiment names map to the canonical
+  short run label; unknown names raise `ValueError`.
+* `BenchmarkDataset.circuits` / `n_circuits_total` / `backends`
+  aggregate correctly across runs.
 * Dataclass equality (slots=True does not break eq).
 """
 
@@ -23,16 +23,16 @@ from __future__ import annotations
 import pytest
 
 from scpn_quantum_control.benchmark_harness.schema import (
-    PhaseOneCircuit,
-    PhaseOneCircuitMeta,
-    PhaseOneDataset,
-    PhaseOneSubphase,
+    BenchmarkCircuit,
+    BenchmarkCircuitMeta,
+    BenchmarkDataset,
+    BenchmarkRun,
     StatisticalSummary,
 )
 
 
-def _make_meta(depth: int = 2, sector: str = "even") -> PhaseOneCircuitMeta:
-    return PhaseOneCircuitMeta(
+def _make_meta(depth: int = 2, sector: str = "even") -> BenchmarkCircuitMeta:
+    return BenchmarkCircuitMeta(
         experiment="A_dla_parity_n4",
         n_qubits=4,
         depth=depth,
@@ -44,16 +44,16 @@ def _make_meta(depth: int = 2, sector: str = "even") -> PhaseOneCircuitMeta:
     )
 
 
-def _make_circuit(depth: int = 2, sector: str = "even") -> PhaseOneCircuit:
-    return PhaseOneCircuit(meta=_make_meta(depth, sector), counts={"1100": 1500})
+def _make_circuit(depth: int = 2, sector: str = "even") -> BenchmarkCircuit:
+    return BenchmarkCircuit(meta=_make_meta(depth, sector), counts={"1100": 1500})
 
 
-def _make_subphase(
+def _make_run(
     experiment: str = "phase1_dla_parity_mini_bench",
     *,
     n_circuits: int = 2,
-) -> PhaseOneSubphase:
-    return PhaseOneSubphase(
+) -> BenchmarkRun:
+    return BenchmarkRun(
         experiment=experiment,
         timestamp_utc="2026-04-10T183728Z",
         backend="ibm_kingston",
@@ -65,7 +65,7 @@ def _make_subphase(
     )
 
 
-class TestPhaseOneCircuitMeta:
+class TestBenchmarkCircuitMeta:
     def test_happy_path(self) -> None:
         meta = _make_meta()
         assert meta.n_qubits == 4
@@ -81,7 +81,7 @@ class TestPhaseOneCircuitMeta:
             meta.depth = 99  # type: ignore[misc]
 
 
-class TestPhaseOneCircuit:
+class TestBenchmarkCircuit:
     def test_happy_path(self) -> None:
         c = _make_circuit(depth=6, sector="odd")
         assert c.meta.depth == 6
@@ -94,49 +94,49 @@ class TestPhaseOneCircuit:
             c.counts = {}  # type: ignore[misc]
 
 
-class TestPhaseOneSubphase:
+class TestBenchmarkRun:
     def test_happy_path(self) -> None:
-        sp = _make_subphase()
-        assert sp.backend == "ibm_kingston"
-        assert sp.n_circuits == 2
-        assert len(sp.circuits) == 2
+        run = _make_run()
+        assert run.backend == "ibm_kingston"
+        assert run.n_circuits == 2
+        assert len(run.circuits) == 2
 
     def test_name_resolution_each_known_experiment(self) -> None:
         cases = {
-            "phase1_dla_parity_mini_bench": "phase1_bench",
-            "phase1_5_reinforce": "phase1_5_reinforce",
-            "phase2_exhaust": "phase2_exhaust",
-            "phase2_5_final_burn": "phase2_5_final_burn",
+            "phase1_dla_parity_mini_bench": "bench",
+            "phase1_5_reinforce": "reinforce",
+            "phase2_exhaust_cycle": "exhaust",
+            "phase2_5_final_burn": "final_burn",
         }
         for experiment, canonical in cases.items():
-            sp = _make_subphase(experiment=experiment, n_circuits=1)
-            assert sp.name == canonical
+            run = _make_run(experiment=experiment, n_circuits=1)
+            assert run.name == canonical
 
     def test_name_raises_on_unknown_experiment(self) -> None:
-        sp = _make_subphase(experiment="phase3_future_unknown", n_circuits=1)
-        with pytest.raises(ValueError, match="Unknown sub-phase"):
-            _ = sp.name
+        run = _make_run(experiment="phase3_future_unknown", n_circuits=1)
+        with pytest.raises(ValueError, match="Unknown benchmark-run"):
+            _ = run.name
 
 
-class TestPhaseOneDataset:
+class TestBenchmarkDataset:
     def test_empty(self) -> None:
-        ds = PhaseOneDataset(subphases=())
+        ds = BenchmarkDataset(subphases=())
         assert ds.n_circuits_total == 0
         assert ds.backends == frozenset()
         assert ds.circuits == ()
 
-    def test_aggregates_across_subphases(self) -> None:
-        sp1 = _make_subphase(experiment="phase1_dla_parity_mini_bench", n_circuits=3)
-        sp2 = _make_subphase(experiment="phase1_5_reinforce", n_circuits=4)
-        ds = PhaseOneDataset(subphases=(sp1, sp2))
+    def test_aggregates_across_runs(self) -> None:
+        run1 = _make_run(experiment="phase1_dla_parity_mini_bench", n_circuits=3)
+        run2 = _make_run(experiment="phase1_5_reinforce", n_circuits=4)
+        ds = BenchmarkDataset(subphases=(run1, run2))
         assert ds.n_circuits_total == 7
         assert ds.backends == frozenset({"ibm_kingston"})
         assert len(ds.circuits) == 7
 
     def test_multi_backend_reported_as_set(self) -> None:
-        sp1 = _make_subphase()
-        sp2 = PhaseOneSubphase(
-            experiment="phase2_exhaust",
+        run1 = _make_run()
+        run2 = BenchmarkRun(
+            experiment="phase2_exhaust_cycle",
             timestamp_utc="2026-04-10T185634Z",
             backend="ibm_marrakesh",
             job_ids=("x",),
@@ -145,7 +145,7 @@ class TestPhaseOneDataset:
             t_step=0.3,
             circuits=(),
         )
-        ds = PhaseOneDataset(subphases=(sp1, sp2))
+        ds = BenchmarkDataset(subphases=(run1, run2))
         assert ds.backends == frozenset({"ibm_kingston", "ibm_marrakesh"})
 
 
