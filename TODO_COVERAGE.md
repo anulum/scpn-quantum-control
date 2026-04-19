@@ -266,3 +266,11 @@ New modules land with:
 
 Failure to ship all three at module landing is how the 315-line
 gap accumulated. No future commit should reproduce that failure.
+
+Mutation testing — the mechanical verification of rule (1) — is
+documented separately in
+[`docs/mutation_testing.md`](docs/mutation_testing.md). Line
+coverage says "this line ran"; mutation testing says "this
+line's behaviour was actually constrained by an assertion". A
+module with 100 % line coverage and 80 % survived mutants is
+coverage-theatre. Both numbers matter.

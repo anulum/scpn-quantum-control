@@ -20,27 +20,32 @@ module on every release cycle. The long-term aim is to extend the
 target set, not to chase a perfect mutation score on any single
 file.
 
-## Current target
+## Current targets
 
-- **Module:** `src/scpn_quantum_control/analysis/koopman.py` (~250
-  lines, 34 tests in `tests/test_koopman.py`).
-- **Rationale:** small, self-contained, freshly hardened by commit
-  `c7d4ccd` (input validation + 13 new tests). A representative
-  surface for a first baseline.
+| Module | LOC | Test files | Runner |
+| --- | ---: | --- | --- |
+| `analysis/koopman.py` | ~250 | `tests/test_koopman.py` | `tools/mutmut_runner.sh` |
+| `bridge/knm_hamiltonian.py` | 236 | `tests/test_knm_hamiltonian.py` + mutation kills + parity + properties | `tools/mutmut_runner_knm.sh` |
+| `analysis/otoc.py` | 197 | `tests/test_otoc.py` + mutation kills + sync probe | `tools/mutmut_runner_otoc.sh` |
 
-Config in `pyproject.toml [tool.mutmut]`. Invoked via:
+Each target has its own shell-script runner in `tools/` that runs
+only the tests covering that module, keeping per-mutant wall time
+at a few seconds rather than the 25-minute full-suite round.
+
+Config in `pyproject.toml [tool.mutmut]`. Invoked per module via:
 
 ```bash
-mutmut run --paths-to-mutate src/scpn_quantum_control/analysis/koopman.py \
+mutmut run --paths-to-mutate src/scpn_quantum_control/bridge/knm_hamiltonian.py \
            --tests-dir tests/ \
-           --runner=/absolute/path/to/tools/mutmut_runner.sh
+           --runner="$(pwd)/tools/mutmut_runner_knm.sh"
 ```
 
 The runner must be a **shell script with an absolute path**; mutmut
-2.5 splits `--runner` args on whitespace via `subprocess.Popen(args_list)`
-without `shell=True`, so passing `--runner="python -m pytest ..."`
-fails with `FileNotFoundError: [Errno 2] No such file or directory:
-'-m'`. Wrap the command in a script — see `tools/mutmut_runner.sh`.
+2.5 splits `--runner` args on whitespace via
+`subprocess.Popen(args_list)` without `shell=True`, so passing
+`--runner="python -m pytest ..."` fails with `FileNotFoundError:
+[Errno 2] No such file or directory: '-m'`. Wrap the command in a
+script — see the three runners in `tools/`.
 
 ## Baseline (2026-04-17, v0.9.6)
 
@@ -73,26 +78,89 @@ Survived mutants, classified by hand (`mutmut show <id>`):
 **Real miss rate on tested mutants: 0 %.** The 12 "survived"
 results are all either string-content drift or provable equivalents.
 
+## Baseline (2026-04-18) — `bridge/knm_hamiltonian.py`
+
+Full run of the 102 generated mutants via
+`tools/mutmut_runner_knm.sh` (108 knm-focused tests, ~5 s/mutant).
+
+| Stage | Killed | Survived | Timed out | Suspicious |
+| --- | ---: | ---: | ---: | ---: |
+| Before new tests | 21 | 81 | n/a | n/a |
+| After `tests/test_knm_hamiltonian_mutation_kills.py` (16 new tests) | **46 → 67** | **81 → 35** | 3 | 18 |
+
+Kill delta: +46 mutants (~57 % of the first-baseline survivors).
+The 35 still-surviving are dominated by:
+
+* Equivalent mutants at L-dependent thresholds — `if L > 15` vs
+  `if L >= 15` coincide for L ≠ 15; similar pattern at `L > 6`.
+* Paper-27 sub-hierarchy boost paths that are dead code when
+  `max(K[i, j], floor)` is dominated by `floor` at the tested
+  K_base / K_alpha defaults.
+* One real unreachable: `H_op = knm_to_xxz_hamiltonian(...) →
+  H_op = None` inside `knm_to_dense_matrix`, after a
+  `try: import scpn_quantum_engine` that succeeds in the dev
+  environment. The mutated Python-fallback branch is never
+  entered. Would be killed by monkey-patching the Rust engine off
+  — deferred as a follow-up consistent with the `pulse_shaping`
+  Rust-fallback tests.
+
+Semantically meaningful mutants now killed by the new suite:
+
+* Sign flips on XX / YY / ZZ coefficients — the Kuramoto-XY
+  mapping convention is now enforced.
+* Sign flip on Z onsite term — natural-frequency direction is
+  pinned.
+* Off-by-one in the pair loop — every (i, j) with j = i + 1 …
+  n − 1 is asserted present.
+* None propagation on every public return.
+* Default L value, `L > 15` threshold, and cross-hierarchy boost
+  index (K[4, 6] vs K[5, 6]).
+* Each element of the 16-entry Paper 27 Table 1 natural-frequency
+  array and each of the four Table 2 anchor values.
+
+## Baseline (2026-04-18) — `analysis/otoc.py`
+
+Full run of 38 generated mutants via `tools/mutmut_runner_otoc.sh`
+(three otoc-focused test files).
+
+| Stage | Killed | Survived |
+| --- | ---: | ---: |
+| Before new tests | 0 | 38 |
+| After `tests/test_otoc_mutation_kills.py` (9 new tests) | **9** | **29** |
+
+Kill delta: +9 mutants (~24 % of the first baseline). The 29
+still-surviving are dominated by boundary-condition equivalents
+(`len(x) < 3` vs `len(x) <= 3` at exactly-three-point inputs) and
+string-content mutations in docstrings and error messages. Further
+kills require either richer OTOC numerical oracles or accepting
+these as classified equivalents — tracked as follow-up.
+
+Semantically meaningful kills:
+
+* Pauli matrix element perturbations — X/Y/Z matrices now have
+  their diagonals, off-diagonals, and squared-identity relation
+  enforced.
+* First-crossing vs later-crossing in scrambling-time estimator —
+  `below[0]` semantics pinned.
+* `f0 = 0` zero-guard — both estimators return `None` rather
+  than dividing by zero.
+
 ## Policy
 
 - **Release gate (soft):** every release cycle runs the full
-  `mutmut run` on the current target and records the score here.
+  `mutmut run` on each target and records the updated score here.
   A real regression (drop in killed-vs-survived ratio on
   semantically-meaningful mutants) blocks the release; a shift in
   string-content survivors is expected and does not.
 - **Follow-up work (audit item B7):**
-  1. Extend `paths_to_mutate` to include
-     `analysis/otoc.py`, `analysis/krylov_complexity.py`,
-     `bridge/knm_hamiltonian.py`, then the `phase/` core. Each
-     extension lands only after the existing target is
-     consistently green.
-  2. Consider pytest's `pytest-mutagen` or `cosmic-ray` for
-     parallel execution of the test suite — mutmut 2.5 runs serially
-     and a ~100-mutant sweep on the current suite takes ~2 h on a
-     single core.
-  3. Write an `equivalent-mutants` ignore list in
-     `tools/mutmut_equivalents.py` so a scheduled CI run can exit 0
-     on the known-safe set without human classification each time.
+  1. Extend the target list to `analysis/krylov_complexity.py`
+     and the `phase/` core after otoc and knm_hamiltonian stay
+     stable across two CI cycles.
+  2. Write `tools/mutmut_equivalents.py` so the CI run exits 0
+     on the known-safe set without human classification each
+     time.
+  3. Evaluate `pytest-mutagen` / `cosmic-ray` parallel executors
+     for larger sweeps.
 
 ## CI integration
 
@@ -123,7 +191,19 @@ When a new survivor shows up on the weekly run:
 4. If string-content: no action unless the target-message wording
    is itself a public interface.
 
-Audit item **B7** in
-the internal gap audit closes
-when the CI workflow has completed three consecutive green weekly
-runs and the target-module list has expanded beyond `koopman.py`.
+Audit item **B7** in the internal gap audit closes when the CI
+workflow has completed three consecutive green weekly runs and
+the target-module list has expanded beyond `koopman.py`. As of
+2026-04-18, `knm_hamiltonian.py` and `otoc.py` are in the target
+list and the CI workflow remains the three-weeks-green gate.
+
+## Connection to the "new code = new tests" rule
+
+The rule recorded in `TODO_COVERAGE.md` — **new code = new
+tests (multifaceted) = new superior docs** — is what mutation
+testing mechanically verifies. Line coverage proves that a line
+ran; mutation testing proves that a line's *behaviour* was
+constrained by an assertion. A module with 100 % line coverage
+but 80 % survived mutants is a module whose tests are
+coverage-theatre. Both numbers matter; the CI workflow defends
+both.

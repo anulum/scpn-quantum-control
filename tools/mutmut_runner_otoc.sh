@@ -13,4 +13,5 @@ REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 VENV_PY="${VENV_PY:-$(command -v python)}"
 exec "$VENV_PY" -m pytest -x -q \
     "$REPO_ROOT/tests/test_otoc.py" \
+    "$REPO_ROOT/tests/test_otoc_mutation_kills.py" \
     "$REPO_ROOT/tests/test_otoc_sync_probe.py"
