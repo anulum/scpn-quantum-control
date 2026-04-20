@@ -57,7 +57,7 @@ jobs:
           retention-days: 90
       - name: Attach to release
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844  # v2.1.0
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda  # v2.1.0
         with:
           files: sbom-python.cdx.json
 
@@ -87,6 +87,6 @@ jobs:
           retention-days: 90
       - name: Attach to release
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844  # v2.1.0
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda  # v2.1.0
         with:
           files: sbom-rust.cdx.json
