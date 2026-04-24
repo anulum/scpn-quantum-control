@@ -9,8 +9,8 @@
 
 from __future__ import annotations
 
-import contextlib
-from unittest.mock import MagicMock, patch
+import sys
+from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
@@ -45,15 +45,9 @@ def mock_ripser(monkeypatch):
     monkeypatch.setattr(gts_mod, "_RIPSER_AVAILABLE", True)
 
     fake_ripser_mod = MagicMock(ripser=_fake_ripser)
-    with patch.dict("sys.modules", {"ripser": fake_ripser_mod}):
-        # Inject the ripser function into persistent_homology module
-        # (may not exist if ripser import failed at module load time)
-        ph_mod.ripser = _fake_ripser
-        yield
-        # Cleanup: remove injected attr if it wasn't there originally
-        if hasattr(ph_mod, "ripser") and ph_mod.ripser is _fake_ripser:
-            with contextlib.suppress(AttributeError):
-                delattr(ph_mod, "ripser")
+    monkeypatch.setattr(ph_mod, "ripser", _fake_ripser, raising=False)
+    monkeypatch.setitem(sys.modules, "ripser", fake_ripser_mod)
+    yield
 
 
 def test_compute_persistence(mock_ripser):
