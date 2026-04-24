@@ -32,7 +32,7 @@ except Exception:
     _QISKIT_AVAILABLE = False
 
 
-def is_mitiq_available() -> bool:
+def is_mitiq_available() -> bool:  # pragma: no cover
     """Check if Mitiq is installed."""
     return _MITIQ_AVAILABLE
 
