@@ -1,0 +1,14 @@
+===========================================================
+ SCPN Quantum Control — Sophisticated Campaign 2026        
+ Target: IBM Heron r2 (ibm_fez / ibm_kingston)             
+===========================================================
+Sophisticated parameters generated
+-----------------------------------------------------------
+Starting: test_fusion_hybrid_stabilizer.py
+-----------------------------------------------------------
+/home/anulum/.local/lib/python3.12/site-packages/matplotlib/projections/__init__.py:63: UserWarning: Unable to import Axes3D. This may be due to multiple versions of Matplotlib being installed (e.g. as a system package and as a pip package). As a result, the 3D projection is not available.
+  warnings.warn("Unable to import Axes3D. This may be due to multiple versions of "
+Traceback (most recent call last):
+  File "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/scripts/sophisticated_campaign_2026/test_fusion_hybrid_stabilizer.py", line 8, in <module>
+    from scpn_quantum_control.analysis import DLAParityWitness, SyncOrderParameter
+ImportError: cannot import name 'DLAParityWitness' from 'scpn_quantum_control.analysis' (/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/src/scpn_quantum_control/analysis/__init__.py)
