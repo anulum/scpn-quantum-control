@@ -49,3 +49,11 @@ __all__ = [
     "last_tier_used",
     "order_parameter",
 ]
+
+import numpy as np
+
+
+def rust_random_state(n_qubits: int, seed: int = 42):
+    np.random.seed(seed)
+    state = np.random.randn(2**n_qubits) + 1j * np.random.randn(2**n_qubits)
+    return state / np.linalg.norm(state)
