@@ -89,7 +89,7 @@ tags in the `Class` column:
 | File | Missing | Cov | Class | Target action |
 | --- | ---: | ---: | --- | --- |
 | `phase/pulse_shaping.py` | 48 → ~4 | 67 → 97% | Fallback | **CLOSED** in commit `6c3e29e` — 26 new tests; 4 remaining lines are the import-guard at 43-44 (unreachable while the Rust wheel is installed) + one path in hypergeometric that differs from Rust at non-zero (α, β). Annotate remaining as Import-guard. |
-| `mitigation/mitiq_integration.py` | 32 | 30 % | Env-blocked | Either fix the Ubuntu `mpl_toolkits`/`matplotlib` conflict so `mitiq` imports locally, or `pragma: no cover` the whole `_MITIQ_AVAILABLE = True` branch with a cross-reference to `docs/internal/` pointing at this file. |
+| `mitigation/mitiq_integration.py` | 32 → 0 | 30 → 100% | Env-blocked | **CLOSED** via `# pragma: no cover` on the `_MITIQ_AVAILABLE = True` branch per documentation rule. |
 | `psi_field/lattice.py` | 29 | 79 % | Gap + Defensive | Lines 41-42 are an import guard. Lines 134, 151, 155-161, 193-196, 227-250 are lattice-operation branches not exercised by current tests. Add tests for non-trivial lattice sizes and boundary cases. |
 | `bridge/snn_adapter.py` | 21 | 63 % | Gap | sc-neurocore bridge; test coverage skipped because `sc-neurocore` is pinned in CI via `xvalidate` extra but not exercised for every bridge path. Audit the missing lines and add unit tests for each adapter method. |
 | `qec/multiscale_qec.py` | 19 | 83 % | Gap | Lines 61-62, 120-128, 152-158, 234 — rarer QEC schedules (multi-round, non-standard code distance). Add parametric tests. |
