@@ -21,6 +21,7 @@ from .critical_concordance import ConcordanceResult
 from .critical_concordance import critical_concordance as compute_critical_concordance
 from .dla_parity_theorem import DLAParityTheoremResult
 from .dla_parity_theorem import verify_theorem as verify_z2_parity
+from .dla_parity_witness import DLAParityWitness
 from .dynamical_lie_algebra import DLAResult, compute_dla
 from .enaqt import ENAQTResult, enaqt_scan
 from .entanglement_enhanced_sync import entanglement_advantage
@@ -36,9 +37,11 @@ from .finite_size_scaling import finite_size_scaling as compute_finite_size_scal
 from .h1_persistence import H1PersistenceResult, scan_h1_persistence
 from .hamiltonian_learning import HamiltonianLearningResult, learn_hamiltonian
 from .hamiltonian_self_consistency import SelfConsistencyResult, self_consistency_from_exact
+from .integrated_information_phi import IntegratedInformationPhi
 from .koopman import KoopmanResult, koopman_analysis, koopman_to_hamiltonian
 from .krylov_complexity import KrylovResult, krylov_vs_coupling
 from .lindblad_ness import NESSResult, ness_vs_coupling
+from .logical_sync_witness import LogicalSyncWitness
 from .loschmidt_echo import LoschmidtResult, loschmidt_quench
 from .magic_nonstabilizerness import MagicResult, magic_vs_coupling
 from .magnetisation_sectors import basis_by_magnetisation, eigh_by_magnetisation
@@ -60,9 +63,11 @@ from .phase_diagram import (
 from .qfi import QFIResult, compute_qfi, qfi_gap_tradeoff
 from .qfi_criticality import QFICriticalityResult, qfi_vs_coupling
 from .qrc_phase_detector import QRCPhaseResult, qrc_phase_detection
+from .quantum_fisher_information import QuantumFisherInformation
 from .quantum_mpemba import MpembaResult, mpemba_experiment
 from .quantum_persistent_homology import QuantumPHResult, ph_sync_scan
 from .quantum_phi import PhiResult, compute_quantum_phi, phi_vs_coupling_scan, von_neumann_entropy
+from .rl_discovery_agent import RLDiscoveryAgent
 from .shadow_tomography import ShadowResult, classical_shadow_estimation
 from .spectral_form_factor import SFFResult, sff_vs_coupling
 from .sync_entanglement_witness import (
@@ -70,11 +75,20 @@ from .sync_entanglement_witness import (
     R_from_statevector,
     R_separable_bound,
 )
+from .sync_order_parameter import SyncOrderParameter
 from .sync_witness import WitnessResult, evaluate_all_witnesses
+from .thermodynamic_witness import ThermodynamicWitness
 from .vortex_binding import VortexBindingResult, compute_vortex_binding
 from .xxz_phase_diagram import AnisotropyScanResult, anisotropy_phase_diagram
 
 __all__ = [
+    "DLAParityWitness",
+    "SyncOrderParameter",
+    "IntegratedInformationPhi",
+    "QuantumFisherInformation",
+    "ThermodynamicWitness",
+    "LogicalSyncWitness",
+    "RLDiscoveryAgent",
     "BKTResult",
     "bkt_analysis",
     "coupling_laplacian",

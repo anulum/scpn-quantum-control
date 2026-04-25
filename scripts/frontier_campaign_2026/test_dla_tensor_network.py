@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import json
 
-import mock_injector  # noqa: F401
 import numpy as np
 
 

@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 import asyncio
 
-import mock_injector  # noqa: F401
-
 from scpn_quantum_control.analysis import RLDiscoveryAgent
 from scpn_quantum_control.hardware import AsyncHardwareRunner
 
