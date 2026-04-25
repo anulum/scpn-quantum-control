@@ -2,7 +2,6 @@
 import asyncio
 import json
 
-import mock_injector  # noqa: F401
 import numpy as np
 
 from scpn_quantum_control.accel import rust_kuramoto_classical

@@ -1,0 +1,528 @@
+===========================================================
+ SCPN Quantum Control — Frontier Campaign 2026 (Batch 4)   
+ Target: IBM Heron r2 (ibm_fez / ibm_kingston)             
+===========================================================
+Frontier parameters generated
+-----------------------------------------------------------
+Starting: test_quantum_advantage_scaling.py
+-----------------------------------------------------------
+/home/anulum/.local/lib/python3.12/site-packages/matplotlib/projections/__init__.py:63: UserWarning: Unable to import Axes3D. This may be due to multiple versions of Matplotlib being installed (e.g. as a system package and as a pip package). As a result, the 3D projection is not available.
+  warnings.warn("Unable to import Axes3D. This may be due to multiple versions of "
+Scaling test N=20
+Scaling test N=40
+Scaling test N=80
+Scaling test N=160
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:42,687: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:42,688: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:42,688: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:42,688: Loading account with the given token. A saved account will not be used.
+IBM Quantum: Dispatching ['advantage_scaling', 'N_80'] to ibm_fez...
+IBM Quantum: Dispatching ['advantage_scaling', 'N_20'] to ibm_fez...
+IBM Quantum: Dispatching ['advantage_scaling', 'N_40'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m06v3aq2pc73a13g8g
+IBM Quantum: Job successfully submitted -> d7m06v43g2mc7391sov0
+IBM Quantum: Dispatching ['advantage_scaling', 'N_160'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m06vc3g2mc7391sp0g
+IBM Quantum: Job successfully submitted -> d7m06vlqrg3c738klg2g
+[OK] test_quantum_advantage_scaling.py completed.
+-----------------------------------------------------------
+Starting: test_live_scneurocore_loop.py
+-----------------------------------------------------------
+/home/anulum/.local/lib/python3.12/site-packages/matplotlib/projections/__init__.py:63: UserWarning: Unable to import Axes3D. This may be due to multiple versions of Matplotlib being installed (e.g. as a system package and as a pip package). As a result, the 3D projection is not available.
+  warnings.warn("Unable to import Axes3D. This may be due to multiple versions of "
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,251: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,251: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,251: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,251: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,251: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,251: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,254: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,254: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,254: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,254: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,257: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,254: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,254: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,255: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,263: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,255: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,255: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,269: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,255: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,274: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,256: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,279: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,256: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,284: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,256: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,256: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,256: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,257: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,254: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,259: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,259: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,260: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,260: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,260: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,265: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,265: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,265: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,255: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,269: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,269: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,270: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,270: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,271: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,255: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,255: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,256: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,281: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,256: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,285: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:57:54,286: Loading account with the given token. A saved account will not be used.
+IBM Quantum: Dispatching ['live_scneurocore', 'step_36'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_49'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_11'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_23'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_34'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m0733aq2pc73a13geg
+IBM Quantum: Job successfully submitted -> d7m07343g2mc7391sp5g
+IBM Quantum: Dispatching ['live_scneurocore', 'step_19'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_14'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_2'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m073lqrg3c738klg80
+IBM Quantum: Job successfully submitted -> d7m073it99kc73d1uckg
+IBM Quantum: Dispatching ['live_scneurocore', 'step_20'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m073s3g2mc7391sp70
+IBM Quantum: Dispatching ['live_scneurocore', 'step_30'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m0742t99kc73d1uclg
+IBM Quantum: Dispatching ['live_scneurocore', 'step_42'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_6'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_17'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_37'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_25'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_5'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_47'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_33'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_13'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_21'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_46'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_44'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_39'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_7'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_9'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_40'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_32'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_26'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_48'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_12'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_24'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_29'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m074qt99kc73d1ucmg
+IBM Quantum: Dispatching ['live_scneurocore', 'step_1'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_4'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_8'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_31'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_10'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_3'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_18'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_15'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_16'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m07543g2mc7391sp8g
+IBM Quantum: Job successfully submitted -> d7m0753aq2pc73a13gk0
+IBM Quantum: Job successfully submitted -> d7m0755qrg3c738klgag
+IBM Quantum: Job successfully submitted -> d7m0755qrg3c738klgb0
+IBM Quantum: Job successfully submitted -> d7m0753aq2pc73a13gkg
+IBM Quantum: Job successfully submitted -> d7m0755qrg3c738klgbg
+IBM Quantum: Job successfully submitted -> d7m0753aq2pc73a13gl0
+IBM Quantum: Dispatching ['live_scneurocore', 'step_41'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m075baq2pc73a13gm0
+IBM Quantum: Job successfully submitted -> d7m075at99kc73d1uco0
+IBM Quantum: Dispatching ['live_scneurocore', 'step_28'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m075at99kc73d1ucog
+IBM Quantum: Job successfully submitted -> d7m075baq2pc73a13gn0
+IBM Quantum: Job successfully submitted -> d7m075baq2pc73a13go0
+IBM Quantum: Job successfully submitted -> d7m075baq2pc73a13gng
+IBM Quantum: Job successfully submitted -> d7m075dqrg3c738klgcg
+IBM Quantum: Job successfully submitted -> d7m075baq2pc73a13gog
+IBM Quantum: Job successfully submitted -> d7m075k3g2mc7391spbg
+IBM Quantum: Job successfully submitted -> d7m075baq2pc73a13gp0
+IBM Quantum: Job successfully submitted -> d7m075c3g2mc7391spag
+IBM Quantum: Job successfully submitted -> d7m075lqrg3c738klgd0
+IBM Quantum: Job successfully submitted -> d7m075baq2pc73a13gpg
+IBM Quantum: Job successfully submitted -> d7m075c3g2mc7391spa0
+IBM Quantum: Job successfully submitted -> d7m075at99kc73d1ucp0
+IBM Quantum: Dispatching ['live_scneurocore', 'step_43'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_35'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m075k3g2mc7391spc0
+IBM Quantum: Dispatching ['live_scneurocore', 'step_45'] to ibm_fez...
+IBM Quantum: Dispatching ['live_scneurocore', 'step_38'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m075it99kc73d1ucq0
+IBM Quantum: Job successfully submitted -> d7m075jaq2pc73a13gq0
+IBM Quantum: Job successfully submitted -> d7m075lqrg3c738klgdg
+IBM Quantum: Job successfully submitted -> d7m075it99kc73d1ucqg
+IBM Quantum: Dispatching ['live_scneurocore', 'step_27'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m075jaq2pc73a13gqg
+IBM Quantum: Dispatching ['live_scneurocore', 'step_0'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m075jaq2pc73a13gs0
+IBM Quantum: Job successfully submitted -> d7m075jaq2pc73a13grg
+IBM Quantum: Job successfully submitted -> d7m075k3g2mc7391spd0
+IBM Quantum: Job successfully submitted -> d7m075lqrg3c738klge0
+IBM Quantum: Job successfully submitted -> d7m075it99kc73d1ucr0
+IBM Quantum: Job successfully submitted -> d7m075jaq2pc73a13gsg
+IBM Quantum: Dispatching ['live_scneurocore', 'step_22'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m075raq2pc73a13gt0
+IBM Quantum: Job successfully submitted -> d7m075tqrg3c738klgeg
+IBM Quantum: Job successfully submitted -> d7m075s3g2mc7391spfg
+IBM Quantum: Job successfully submitted -> d7m075s3g2mc7391spf0
+IBM Quantum: Job successfully submitted -> d7m075raq2pc73a13gtg
+IBM Quantum: Job successfully submitted -> d7m07643g2mc7391spgg
+IBM Quantum: Job successfully submitted -> d7m0763aq2pc73a13gu0
+IBM Quantum: Job successfully submitted -> d7m0762t99kc73d1uct0
+IBM Quantum: Job successfully submitted -> d7m0762t99kc73d1uctg
+[OK] test_live_scneurocore_loop.py completed.
+-----------------------------------------------------------
+Starting: test_sync_distillation.py
+-----------------------------------------------------------
+/home/anulum/.local/lib/python3.12/site-packages/matplotlib/projections/__init__.py:63: UserWarning: Unable to import Axes3D. This may be due to multiple versions of Matplotlib being installed (e.g. as a system package and as a pip package). As a result, the 3D projection is not available.
+  warnings.warn("Unable to import Axes3D. This may be due to multiple versions of "
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:20,341: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:20,341: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:20,342: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:20,342: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:20,342: Loading account with the given token. A saved account will not be used.
+IBM Quantum: Dispatching ['distillation', 'round_3'] to ibm_fez...
+IBM Quantum: Dispatching ['distillation', 'round_0'] to ibm_fez...
+IBM Quantum: Dispatching ['distillation', 'round_2'] to ibm_fez...
+IBM Quantum: Dispatching ['distillation', 'round_4'] to ibm_fez...
+IBM Quantum: Dispatching ['distillation', 'round_1'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m078at99kc73d1ud3g
+IBM Quantum: Job successfully submitted -> d7m078baq2pc73a13h3g
+IBM Quantum: Job successfully submitted -> d7m078c3g2mc7391spmg
+IBM Quantum: Job successfully submitted -> d7m078baq2pc73a13h4g
+IBM Quantum: Job successfully submitted -> d7m078baq2pc73a13h50
+[OK] test_sync_distillation.py completed.
+-----------------------------------------------------------
+Starting: test_multi_backend_distributed.py
+-----------------------------------------------------------
+/home/anulum/.local/lib/python3.12/site-packages/matplotlib/projections/__init__.py:63: UserWarning: Unable to import Axes3D. This may be due to multiple versions of Matplotlib being installed (e.g. as a system package and as a pip package). As a result, the 3D projection is not available.
+  warnings.warn("Unable to import Axes3D. This may be due to multiple versions of "
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,277: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,278: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,278: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,278: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,278: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,278: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,278: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,278: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,278: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,278: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,279: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,279: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,283: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,279: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,289: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,279: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,292: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,280: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,280: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,280: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,314: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,280: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,281: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,281: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,329: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,334: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,281: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,281: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,281: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,337: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,281: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,341: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,282: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,352: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,282: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,361: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,279: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,284: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,280: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,366: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,312: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,371: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,372: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,313: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,303: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,313: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,311: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,378: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,313: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,397: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,313: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,313: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,313: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,314: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,314: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,415: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,315: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,321: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,281: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,324: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,281: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,282: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,282: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,453: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,282: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,279: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,341: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,312: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,378: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,378: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,313: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,358: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,313: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,379: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,313: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,313: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,314: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,437: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,465: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:58:29,313: Loading account with the given token. A saved account will not be used.
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m07d5qrg3c738klgv0
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m07ddqrg3c738klh00
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m07ds3g2mc7391spug
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m07e3aq2pc73a13he0
+IBM Quantum: Job successfully submitted -> d7m07e3aq2pc73a13heg
+IBM Quantum: Job successfully submitted -> d7m07e5qrg3c738klh1g
+IBM Quantum: Job successfully submitted -> d7m07e5qrg3c738klh10
+IBM Quantum: Job successfully submitted -> d7m07ebaq2pc73a13hf0
+IBM Quantum: Job successfully submitted -> d7m07ebaq2pc73a13hfg
+IBM Quantum: Job successfully submitted -> d7m07edqrg3c738klh20
+IBM Quantum: Job successfully submitted -> d7m07ec3g2mc7391sq0g
+IBM Quantum: Job successfully submitted -> d7m07ec3g2mc7391sq00
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m07eit99kc73d1udgg
+IBM Quantum: Job successfully submitted -> d7m07eqt99kc73d1udhg
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m07fbaq2pc73a13hig
+IBM Quantum: Job successfully submitted -> d7m07fbaq2pc73a13hj0
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m07fdqrg3c738klh5g
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m07fat99kc73d1udig
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m07flqrg3c738klh6g
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m07g5qrg3c738klh80
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m07g3aq2pc73a13hk0
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m07glqrg3c738klhag
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m07h3aq2pc73a13hmg
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m07h2t99kc73d1udm0
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m07hat99kc73d1udmg
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m07hc3g2mc7391sq60
+IBM Quantum: Job successfully submitted -> d7m07hbaq2pc73a13hng
+IBM Quantum: Job successfully submitted -> d7m07hat99kc73d1udn0
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m07hbaq2pc73a13hog
+IBM Quantum: Job successfully submitted -> d7m07hc3g2mc7391sq6g
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m07hbaq2pc73a13ho0
+IBM Quantum: Job successfully submitted -> d7m07hat99kc73d1udng
+IBM Quantum: Job successfully submitted -> d7m07hc3g2mc7391sq70
+IBM Quantum: Job successfully submitted -> d7m07hdqrg3c738klhbg
+IBM Quantum: Job successfully submitted -> d7m07hdqrg3c738klhc0
+IBM Quantum: Job successfully submitted -> d7m07hbaq2pc73a13hp0
+IBM Quantum: Job successfully submitted -> d7m07hat99kc73d1udp0
+IBM Quantum: Job successfully submitted -> d7m07hbaq2pc73a13hpg
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m07hat99kc73d1udog
+IBM Quantum: Job successfully submitted -> d7m07hat99kc73d1udo0
+IBM Quantum: Job successfully submitted -> d7m07hat99kc73d1udpg
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m07hat99kc73d1udqg
+IBM Quantum: Job successfully submitted -> d7m07hat99kc73d1udr0
+IBM Quantum: Job successfully submitted -> d7m07hbaq2pc73a13hr0
+IBM Quantum: Job successfully submitted -> d7m07hdqrg3c738klhd0
+IBM Quantum: Job successfully submitted -> d7m07hat99kc73d1udrg
+IBM Quantum: Job successfully submitted -> d7m07hbaq2pc73a13hqg
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m07hbaq2pc73a13hs0
+IBM Quantum: Job successfully submitted -> d7m07hdqrg3c738klhdg
+IBM Quantum: Job successfully submitted -> d7m07hit99kc73d1uds0
+IBM Quantum: Job successfully submitted -> d7m07hlqrg3c738klhe0
+IBM Quantum: Job successfully submitted -> d7m07hjaq2pc73a13hsg
+IBM Quantum: Job successfully submitted -> d7m07hlqrg3c738klheg
+IBM Quantum: Job successfully submitted -> d7m07hit99kc73d1udug
+IBM Quantum: Job successfully submitted -> d7m07hjaq2pc73a13ht0
+IBM Quantum: Job successfully submitted -> d7m07hlqrg3c738klhf0
+IBM Quantum: Job successfully submitted -> d7m07hit99kc73d1udu0
+IBM Quantum: Job successfully submitted -> d7m07hit99kc73d1udtg
+IBM Quantum: Job successfully submitted -> d7m07hk3g2mc7391sq8g
+IBM Quantum: Job successfully submitted -> d7m07hk3g2mc7391sq80
+IBM Quantum: Job successfully submitted -> d7m07hjaq2pc73a13hug
+IBM Quantum: Job successfully submitted -> d7m07hjaq2pc73a13hu0
+IBM Quantum: Job successfully submitted -> d7m07hjaq2pc73a13htg
+IBM Quantum: Job successfully submitted -> d7m07hit99kc73d1udv0
+IBM Quantum: Job successfully submitted -> d7m07hit99kc73d1udvg
+IBM Quantum: Job successfully submitted -> d7m07hk3g2mc7391sq9g
+IBM Quantum: Job successfully submitted -> d7m07hk3g2mc7391sqa0
+IBM Quantum: Job successfully submitted -> d7m07hit99kc73d1ue00
+IBM Quantum: Job successfully submitted -> d7m07hk3g2mc7391sqag
+IBM Quantum: Job successfully submitted -> d7m07hjaq2pc73a13hv0
+IBM Quantum: Job successfully submitted -> d7m07hjaq2pc73a13hvg
+IBM Quantum: Job successfully submitted -> d7m07hk3g2mc7391sqb0
+IBM Quantum: Job successfully submitted -> d7m07hk3g2mc7391sqbg
+IBM Quantum: Job successfully submitted -> d7m07hjaq2pc73a13i00
+IBM Quantum: Job successfully submitted -> d7m07hk3g2mc7391sqc0
+IBM Quantum: Job successfully submitted -> d7m07hit99kc73d1ue0g
+IBM Quantum: Job successfully submitted -> d7m07hjaq2pc73a13i0g
+IBM Quantum: Job successfully submitted -> d7m07hjaq2pc73a13i10
+IBM Quantum: Job successfully submitted -> d7m07htqrg3c738klhh0
+IBM Quantum: Job successfully submitted -> d7m07hs3g2mc7391sqd0
+[OK] test_multi_backend_distributed.py completed.
+-----------------------------------------------------------
+Starting: test_dla_tensor_network.py
+-----------------------------------------------------------
+/home/anulum/.local/lib/python3.12/site-packages/matplotlib/projections/__init__.py:63: UserWarning: Unable to import Axes3D. This may be due to multiple versions of Matplotlib being installed (e.g. as a system package and as a pip package). As a result, the 3D projection is not available.
+  warnings.warn("Unable to import Axes3D. This may be due to multiple versions of "
+[OK] test_dla_tensor_network.py completed.
+-----------------------------------------------------------
+Starting: test_rl_pulse_optimization.py
+-----------------------------------------------------------
+/home/anulum/.local/lib/python3.12/site-packages/matplotlib/projections/__init__.py:63: UserWarning: Unable to import Axes3D. This may be due to multiple versions of Matplotlib being installed (e.g. as a system package and as a pip package). As a result, the 3D projection is not available.
+  warnings.warn("Unable to import Axes3D. This may be due to multiple versions of "
+[OK] test_rl_pulse_optimization.py completed.
+-----------------------------------------------------------
+Starting: test_pt_symmetric_kuramoto.py
+-----------------------------------------------------------
+/home/anulum/.local/lib/python3.12/site-packages/matplotlib/projections/__init__.py:63: UserWarning: Unable to import Axes3D. This may be due to multiple versions of Matplotlib being installed (e.g. as a system package and as a pip package). As a result, the 3D projection is not available.
+  warnings.warn("Unable to import Axes3D. This may be due to multiple versions of "
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:59:14,940: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:59:14,940: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:59:14,940: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:59:14,940: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:59:14,941: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:59:14,941: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:59:14,941: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:59:14,941: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 01:59:14,942: Loading account with the given token. A saved account will not be used.
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m07m5qrg3c738kli00
+IBM Quantum: Job successfully submitted -> d7m07m3aq2pc73a13if0
+IBM Quantum: Job successfully submitted -> d7m07m43g2mc7391sqo0
+IBM Quantum: Job successfully submitted -> d7m07m43g2mc7391sqp0
+IBM Quantum: Job successfully submitted -> d7m07m3aq2pc73a13ifg
+IBM Quantum: Job successfully submitted -> d7m07m3aq2pc73a13ig0
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m085c3g2mc7391srcg
+IBM Quantum: Job successfully submitted -> d7m085c3g2mc7391srd0
+IBM Quantum: Job successfully submitted -> d7m085dqrg3c738kligg
+[OK] test_pt_symmetric_kuramoto.py completed.
+-----------------------------------------------------------
+Starting: test_logical_sync_protection.py
+-----------------------------------------------------------
+/home/anulum/.local/lib/python3.12/site-packages/matplotlib/projections/__init__.py:63: UserWarning: Unable to import Axes3D. This may be due to multiple versions of Matplotlib being installed (e.g. as a system package and as a pip package). As a result, the 3D projection is not available.
+  warnings.warn("Unable to import Axes3D. This may be due to multiple versions of "
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 02:00:25,494: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 02:00:25,495: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 02:00:25,495: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 02:00:25,495: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 02:00:25,495: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 02:00:25,495: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 02:00:25,495: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service._discover_account:WARNING:2026-04-25 02:00:25,495: Loading account with the given token. A saved account will not be used.
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Dispatching ['test'] to ibm_fez...
+IBM Quantum: Job successfully submitted -> d7m087jaq2pc73a13j70
+IBM Quantum: Job successfully submitted -> d7m087jaq2pc73a13j6g
+IBM Quantum: Job successfully submitted -> d7m087s3g2mc7391srg0
+IBM Quantum: Job successfully submitted -> d7m087qt99kc73d1ueu0
+IBM Quantum: Job successfully submitted -> d7m087s3g2mc7391srgg
+IBM Quantum: Job successfully submitted -> d7m087tqrg3c738klik0
+IBM Quantum: Job successfully submitted -> d7m087tqrg3c738klikg
+IBM Quantum: Job successfully submitted -> d7m087tqrg3c738klil0
+[OK] test_logical_sync_protection.py completed.
+===========================================================
+ Frontier Campaign complete. Results saved in results/
+===========================================================
