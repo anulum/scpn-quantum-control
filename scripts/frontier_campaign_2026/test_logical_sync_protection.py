@@ -1,18 +1,13 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: AGPL-3.0-or-later
 import asyncio
 import json
 
 import numpy as np
 
-from scpn_quantum_control.analysis import SyncOrderParameter
+from scpn_quantum_control.analysis import LogicalSyncWitness, SyncOrderParameter
 from scpn_quantum_control.control import StructuredAnsatz
 from scpn_quantum_control.hardware import AsyncHardwareRunner
-
-
-# Stub logical witness
-class LogicalSyncWitness:
-    def __init__(self, *args, **kwargs):
-        pass
 
 
 async def run_logical_protection():
@@ -35,11 +30,3 @@ async def run_logical_protection():
 
 if __name__ == "__main__":
     asyncio.run(run_logical_protection())
-
-# SPDX-License-Identifier: AGPL-3.0-or-later
-# Commercial license available
-# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
-# © Code 2020–2026 Miroslav Šotek. All rights reserved.
-# ORCID: 0009-0009-3560-0851
-# Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Frontier Campaign Tests (Batch 4)

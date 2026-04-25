@@ -1,17 +1,10 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: AGPL-3.0-or-later
 import json
 
 import numpy as np
 
-
-# Stub dla_truncated_tn module
-class DLA_TN:
-    @staticmethod
-    def run(**kwargs):
-        return {"status": "success", "sync_order": 0.95}
-
-
-dla_truncated_tn = DLA_TN()
+from scpn_quantum_control.analysis.dla_truncated_tn import dla_truncated_tn  # existing module
 
 
 def run_dla_tn_mapping():
@@ -25,11 +18,3 @@ def run_dla_tn_mapping():
 
 if __name__ == "__main__":
     run_dla_tn_mapping()
-
-# SPDX-License-Identifier: AGPL-3.0-or-later
-# Commercial license available
-# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
-# © Code 2020–2026 Miroslav Šotek. All rights reserved.
-# ORCID: 0009-0009-3560-0851
-# Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Frontier Campaign Tests (Batch 4)

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: AGPL-3.0-or-later
 import asyncio
 import json
 
@@ -31,9 +32,13 @@ async def run_advantage_scaling():
         res_q = await job_q.result()
 
         # Classical baseline (large-N)
-        res_c = rust_kuramoto_classical.run_large_n(
-            N=N, K=0.5, lambda_fim=0.0, delta=0.1, steps=50000
-        )
+        # Add fallback for missing args in rust mock
+        try:
+            res_c = rust_kuramoto_classical.run_large_n(
+                N=N, K=0.5, lambda_fim=0.0, delta=0.1, steps=50000
+            )
+        except TypeError:
+            res_c = rust_kuramoto_classical.run_large_n(N=N, K_nm=K_nm, omega=omega, steps=50000)
 
         results[N] = {
             "quantum": res_q,
@@ -48,11 +53,3 @@ async def run_advantage_scaling():
 
 if __name__ == "__main__":
     asyncio.run(run_advantage_scaling())
-
-# SPDX-License-Identifier: AGPL-3.0-or-later
-# Commercial license available
-# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
-# © Code 2020–2026 Miroslav Šotek. All rights reserved.
-# ORCID: 0009-0009-3560-0851
-# Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Frontier Campaign Tests (Batch 4)
