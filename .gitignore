@@ -88,6 +88,7 @@ scpn_quantum_engine/*.cdx.json
 
 # Session logs and handovers — local-only, never committed.
 # Historic logs were untracked via `git rm --cached` 2026-04-17.
+.coordination/
 .coordination/sessions/
 .coordination/handovers/
 .coordination/handover_*.md

@@ -1,6 +1,0 @@
-{
-  "status": "failed",
-  "error": "'Timed out waiting for job to complete after 900 secs.'",
-  "interpretation": "If error mentions 'quota', 'exceeded', 'insufficient', the cycle is exhausted \u2192 180-min promo should be available.",
-  "timestamp": "2026-04-10T190616Z"
-}
