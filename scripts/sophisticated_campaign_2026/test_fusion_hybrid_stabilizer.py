@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# scpn-quantum-control — Sophisticated Campaign Tests (Batch 3)
 import asyncio
 import json
 
@@ -34,9 +41,10 @@ async def run_fusion_hybrid_stabilizer():
         result = await job.result()
         results.append(result)
 
-        # Hybrid classical correction (large-N classical + quantum DLA feedback)
         K_nm = rust_kuramoto_classical.apply_feedback_correction(
-            K_nm, result.get("dla_asymmetry", 0.08), result.get("sync_order", 0.95)
+            K_nm,
+            result.get("dla_asymmetry", 0.0),
+            result.get("sync_order", 0.0),
         )
 
     with open("results/fusion_hybrid_stabilizer.json", "w") as f:
@@ -45,11 +53,3 @@ async def run_fusion_hybrid_stabilizer():
 
 if __name__ == "__main__":
     asyncio.run(run_fusion_hybrid_stabilizer())
-
-# SPDX-License-Identifier: AGPL-3.0-or-later
-# Commercial license available
-# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
-# © Code 2020–2026 Miroslav Šotek. All rights reserved.
-# ORCID: 0009-0009-3560-0851
-# Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Sophisticated Campaign Tests (Batch 3)

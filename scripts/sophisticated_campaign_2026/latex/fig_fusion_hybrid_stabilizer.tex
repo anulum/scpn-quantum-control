@@ -1,0 +1,18 @@
+% SPDX-License-Identifier: AGPL-3.0-or-later
+% Commercial license available
+% © Concepts & Code 2020–2026 Miroslav Šotek. All rights reserved.
+% ORCID: 0009-0009-3560-0851
+% Contact: www.anulum.li | protoscience@anulum.li
+% scpn-quantum-control — Sophisticated Campaign Figure Template
+% Test 1: hybrid classical-quantum feedback figure template
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[xlabel={Cycle}, ylabel={Mode amplitude + DLA asymmetry}]
+\addplot table [x=cycle, y=mode_amplitude] {data/fusion_hybrid.dat};
+\addplot table [x=cycle, y=dla_asymmetry] {data/fusion_hybrid.dat};
+\end{axis}
+\end{tikzpicture}
+\caption{Hybrid classical-quantum feedback trace for tokamak-mode stabilisation experiments.}
+\label{fig:fusion_hybrid}
+\end{figure}
