@@ -244,7 +244,7 @@ the phase-coherent regime (Kuramoto critical point ~K_c ≈ 2σ_ω/π).
 ```bash
 # 1. Set credentials
 export SCPN_IBM_TOKEN="<token>"
-export SCPN_IBM_INSTANCE="<instance>"
+export SCPN_IBM_CRN="<instance-crn>"  # optional when the account has a default instance
 
 # 2. Generate source-backed parameter files
 python3 scripts/frontier_campaign_2026/generate_params.py --output-dir params
@@ -266,11 +266,10 @@ Independent job verification:
 ```python
 import os
 from qiskit_ibm_runtime import QiskitRuntimeService
-service = QiskitRuntimeService(
-    channel="ibm_cloud",
-    token=os.environ["SCPN_IBM_TOKEN"],
-    instance=os.environ["SCPN_IBM_INSTANCE"],
-)
+service_kwargs = {"channel": "ibm_cloud", "token": os.environ["SCPN_IBM_TOKEN"]}
+if os.environ.get("SCPN_IBM_CRN"):
+    service_kwargs["instance"] = os.environ["SCPN_IBM_CRN"]
+service = QiskitRuntimeService(**service_kwargs)
 job = service.job("<job_id_from_result_json>")
 print(job.result())
 ```
@@ -286,3 +285,4 @@ print(job.result())
 5. **ZNE job_id:** When ZNE succeeds, `job_id` is set to `"zne_mitigated"` — individual scale-factor job IDs are managed internally by mitiq and not exposed in result JSON.
 6. **ZNE cost:** Each ZNE run submits 3 circuits (scale=1,2,3) plus 1 final run = 4× IBM job cost vs unmitigated. T4 ZNE = 80 × 4 = 320 IBM jobs.
 7. **Batch 1 baseline:** Run without DD or ZNE; inflated sync_order (0.14) is dominated by noise artefacts, not physical synchronisation.
+8. **Retired injectors:** Legacy local campaign injector modules now fail at import time. Hardware campaigns must use `AsyncHardwareRunner` and source-backed or explicitly labelled smoke-test artifacts.
