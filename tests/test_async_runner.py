@@ -218,7 +218,7 @@ class TestSubmitBatch:
         real_submit = a._submit_blocking  # type: ignore[attr-defined]
 
         def _slow_submit(*args: Any, **kwargs: Any) -> ar.AsyncJobHandle:
-            time.sleep(0.05)
+            time.sleep(0.10)
             return real_submit(*args, **kwargs)
 
         a._submit_blocking = _slow_submit  # type: ignore[method-assign]
@@ -227,8 +227,8 @@ class TestSubmitBatch:
         t0 = time.time()
         asyncio.run(a.submit_batch_async(batches))
         wall = time.time() - t0
-        # Serial would be ~0.15 s; parallel ~0.05–0.08 s.
-        assert wall < 0.12, f"fan-out did not parallelise; wall={wall:.3f}s"
+        # Serial would be ~0.30 s; parallel should stay well below two submissions.
+        assert wall < 0.22, f"fan-out did not parallelise; wall={wall:.3f}s"
 
 
 # ---------------------------------------------------------------------------

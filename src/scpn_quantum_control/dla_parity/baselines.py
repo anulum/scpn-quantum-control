@@ -230,7 +230,7 @@ def _leakage_qutip(
     omega: np.ndarray,
     k_matrix: np.ndarray,
 ) -> dict[int, float]:
-    import qutip as qt  # type: ignore[import-untyped]  # local import — optional dependency, no stubs
+    import qutip as qt  # type: ignore[import-not-found,import-untyped]  # optional dependency
 
     def _qt_kron(ops: list[qt.Qobj]) -> qt.Qobj:
         out = ops[0]

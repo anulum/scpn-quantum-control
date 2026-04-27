@@ -162,8 +162,8 @@ proves we are not yet claiming computational advantage.
 ## Audit closure
 
 This document and `tests/test_classical_irreproducibility.py`
-together close the narrow reading of audit item **D1** from
-[`docs/internal/audit_2026-04-17T0800_claude_gap_audit.md`](internal/audit_2026-04-17T0800_claude_gap_audit.md).
+together close the narrow reading of audit item **D1** from the
+internal audit index.
 The broad reading remains open and is tracked in
 [`GAP_CLOSURE_STATUS.md`](https://github.com/anulum/scpn-quantum-control/blob/main/GAP_CLOSURE_STATUS.md) as Gap 2,
 with the concrete next step being scaling the campaign via
