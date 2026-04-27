@@ -136,6 +136,8 @@ class AsyncHardwareRunner:
             else:
                 runners = [runners] if not isinstance(runners, list) else runners
             self._runners: list[HardwareRunner] = list(runners)
+            if not self._runners:
+                raise ValueError("AsyncHardwareRunner requires at least one runner")
         else:
             self._runners = []
 
@@ -199,7 +201,13 @@ class AsyncHardwareRunner:
     # ------------------------------------------------------------------
 
     def submit_circuit_batch(self, ansatz, observable, **kwargs):
-        """High-level API for submitting structured ansätze and extracting observables."""
+        """Submit ``StructuredAnsatz`` jobs without fabricating unfinished results.
+
+        Real QPU submissions return real job identifiers immediately when
+        queued. Observables are evaluated only when real counts are available.
+        Local simulation and ZNE are opt-in because both change the scientific
+        meaning and resource profile of a campaign.
+        """
 
         class JobWrapper:
             def __init__(self, runner_obj, ansatz, observable, kwargs):
@@ -213,15 +221,39 @@ class AsyncHardwareRunner:
             def _run_blocking(self):
                 import os
 
+                from qiskit.transpiler.passes import ALAPScheduleAnalysis, PadDynamicalDecoupling
+                from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
                 from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2
 
+                zne_sync_order = None  # set on IBM path if explicit ZNE succeeds
+                ibm_job_ids: list[str] = []
+                zne_job_ids: list[str] = []
+                counts = None
+                status = "NOT_SUBMITTED"
                 shots = self.kwargs.get("shots", self.runner_obj.default_shots)
+                allow_local_simulation = bool(
+                    self.kwargs.get(
+                        "allow_local_simulation",
+                        self.runner_obj.runner_kwargs.get("allow_local_simulation", False),
+                    )
+                )
+                enable_zne = bool(
+                    self.kwargs.get(
+                        "enable_zne",
+                        self.runner_obj.runner_kwargs.get("enable_zne", False),
+                    )
+                )
                 qc = self.ansatz.build_circuit()
                 if qc.num_clbits == 0:
                     qc.measure_all()
 
                 token = os.environ.get("SCPN_IBM_TOKEN")
-                crn = "crn:v1:bluemix:public:quantum-computing:us-east:a/78db885720334fd19191b33a839d0c35:841cc36d-0afd-4f96-ada2-8c56e1c443a0::"
+                crn = os.environ.get(
+                    "SCPN_IBM_CRN",
+                    "crn:v1:bluemix:public:quantum-computing:us-east:"
+                    "a/78db885720334fd19191b33a839d0c35:"
+                    "841cc36d-0afd-4f96-ada2-8c56e1c443a0::",
+                )
 
                 try:
                     if token:
@@ -238,57 +270,150 @@ class AsyncHardwareRunner:
                         except Exception:
                             backend = service.least_busy(simulator=False, operational=True)
 
-                        from qiskit.transpiler.preset_passmanagers import (
-                            generate_preset_pass_manager,
+                        # Basic error mitigation: high optimization + dynamical decoupling
+                        pm = generate_preset_pass_manager(
+                            optimization_level=3, backend=backend, seed_transpiler=42
                         )
-
-                        pm = generate_preset_pass_manager(optimization_level=1, backend=backend)
                         isa_qc = pm.run(qc)
+
+                        # Dynamical decoupling — Qiskit 2.4.0 verified pattern:
+                        # ALAPScheduleAnalysis must run first (in PassManager) to
+                        # annotate the DAG with timing before PadDynamicalDecoupling.
+                        try:
+                            from qiskit.circuit.library import XGate
+                            from qiskit.transpiler import PassManager
+
+                            durations = backend.target.durations()
+                            dd_pm = PassManager(
+                                [
+                                    ALAPScheduleAnalysis(
+                                        durations=durations,
+                                        target=backend.target,
+                                    ),
+                                    PadDynamicalDecoupling(
+                                        durations=durations,
+                                        dd_sequence=[XGate(), XGate()],
+                                        target=backend.target,
+                                    ),
+                                ]
+                            )
+                            isa_qc = dd_pm.run(isa_qc)
+                        except Exception as dd_err:
+                            print(f"DD skipped ({dd_err}); submitting without DD.", flush=True)
 
                         sampler = SamplerV2(mode=backend)
                         sampler.options.default_shots = min(shots, 4000)
 
+                        print(
+                            "IBM Runtime: Dispatching circuit with DD + opt_level=3"
+                            f" to {backend.name}...",
+                            flush=True,
+                        )
+
+                        if enable_zne:
+                            # Mitiq ZNE must operate on scalar observables, not
+                            # counts dictionaries. This path blocks until each
+                            # scaled job returns and records every IBM job id.
+                            try:
+                                from mitiq import zne
+                                from mitiq.zne.inference import RichardsonFactory
+                                from mitiq.zne.scaling import fold_global
+
+                                from scpn_quantum_control.analysis import SyncOrderParameter
+
+                                def _zne_executor(circ):
+                                    """Run scaled circuit and return sync_order for extrapolation."""
+                                    _job = sampler.run([circ])
+                                    zne_job_id = str(_job.job_id())
+                                    ibm_job_ids.append(zne_job_id)
+                                    zne_job_ids.append(zne_job_id)
+                                    _res = _job.result()
+                                    _counts = _res[0].data.meas.get_counts()
+                                    return SyncOrderParameter()(counts=_counts)["sync_order"]
+
+                                zne_sync_order = zne.execute_with_zne(
+                                    isa_qc,
+                                    _zne_executor,
+                                    factory=RichardsonFactory([1, 2, 3]),
+                                    scale_noise=fold_global,
+                                )
+                                print(
+                                    f"ZNE complete: extrapolated sync_order={zne_sync_order:.4f}",
+                                    flush=True,
+                                )
+                            except Exception as zne_err:
+                                print(
+                                    f"ZNE skipped ({zne_err}); running unmitigated.",
+                                    flush=True,
+                                )
+
+                        # Scale=1 run — collects full counts for all observables
                         job = sampler.run([isa_qc])
-                        self.job_id = job.job_id()
-                        res = job.result()
-                        qd = res[0].data.meas.get_counts()
-                    else:
+                        self.job_id = str(job.job_id())
+                        ibm_job_ids.append(self.job_id)
+                        print(f"IBM Runtime: Job queued -> {self.job_id}", flush=True)
+                        status = "QUEUED_ON_IBM"
+                        try:
+                            res = job.result(timeout=15)
+                            counts = res[0].data.meas.get_counts()
+                            status = "DONE"
+                        except Exception:
+                            print(f"Job {self.job_id} still queued on IBM.", flush=True)
+                    elif allow_local_simulation:
                         from qiskit.primitives import StatevectorSampler
 
                         sampler = StatevectorSampler()
                         job = sampler.run([qc], shots=shots)
                         self.job_id = "local_simulated"
                         res = job.result()
-                        qd = res[0].data.meas.get_counts()
+                        counts = res[0].data.meas.get_counts()
+                        status = "DONE_LOCAL_SIMULATION"
+                    else:
+                        self.job_id = None
+                        status = "NO_IBM_TOKEN"
 
-                    counts = qd
                 except Exception as e:
-                    print(f"IBM Submission Error: {e}. Falling back to simulation.", flush=True)
-                    from qiskit.primitives import StatevectorSampler
+                    if allow_local_simulation:
+                        print(
+                            f"IBM Submission Error: {e}. Using explicit local simulation.",
+                            flush=True,
+                        )
+                        from qiskit.primitives import StatevectorSampler
 
-                    sampler = StatevectorSampler()
-                    job = sampler.run([qc], shots=shots)
-                    self.job_id = "local_simulated"
-                    res = job.result()
-                    qd = res[0].data.meas.get_counts()
-                    counts = qd
+                        sampler = StatevectorSampler()
+                        job = sampler.run([qc], shots=shots)
+                        self.job_id = "local_simulated"
+                        res = job.result()
+                        counts = res[0].data.meas.get_counts()
+                        status = "DONE_LOCAL_SIMULATION"
+                    else:
+                        print(f"IBM Submission Error: {e}.", flush=True)
+                        self.job_id = None
+                        status = "IBM_SUBMISSION_ERROR"
 
                 final_result = {}
-                observables = (
-                    self.observable if isinstance(self.observable, list) else [self.observable]
-                )
-                for ob in observables:
-                    if callable(ob):
-                        final_result.update(ob(counts=counts, **self.kwargs))
+                if counts is not None:
+                    observables = (
+                        self.observable if isinstance(self.observable, list) else [self.observable]
+                    )
+                    for ob in observables:
+                        if callable(ob):
+                            final_result.update(ob(counts=counts, **self.kwargs))
+
+                # Overwrite sync_order with ZNE-extrapolated value if available
+                if zne_sync_order is not None:
+                    final_result["sync_order"] = zne_sync_order
+                    final_result["zne_applied"] = True
+                    final_result["zne_scale_factors"] = [1, 2, 3]
+                    final_result["zne_factory"] = "RichardsonFactory"
+                    final_result["zne_job_ids"] = zne_job_ids
 
                 final_result["job_id"] = self.job_id
+                final_result["job_ids"] = ibm_job_ids
                 final_result["runtime"] = time.time() - self.submitted_at
-
-                # FIM tests mock reinforcement
-                if "lambda_fim" in self.kwargs and self.kwargs["lambda_fim"] > 0:
-                    final_result["sync_order"] = 0.95
-                if "dla_asymmetry" not in final_result:
-                    final_result["dla_asymmetry"] = 0.08
+                final_result["status"] = status
+                if counts is None:
+                    final_result["counts_available"] = False
 
                 return final_result
 

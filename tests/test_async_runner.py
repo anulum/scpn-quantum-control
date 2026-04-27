@@ -285,3 +285,137 @@ class TestAsyncPipelineSmoke:
         flat = [jr for sub in all_results for jr in sub]
         assert {jr.backend_name for jr in flat} == {"ibm_a", "ibm_b"}
         assert all(jr.counts == {"0000": 1024} for jr in flat)
+
+
+class TestSubmitCircuitBatchProvenance:
+    def test_zne_records_all_ibm_job_ids(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """ZNE scale runs and the final counts run must all keep real IBM job ids."""
+
+        class _FakeCircuit:
+            num_clbits = 4
+
+            def measure_all(self) -> None:
+                return None
+
+        class _FakeAnsatz:
+            def build_circuit(self) -> _FakeCircuit:
+                return _FakeCircuit()
+
+        class _FakeTarget:
+            def durations(self) -> list[Any]:
+                return []
+
+        class _FakeBackend:
+            name = "ibm_fez"
+            target = _FakeTarget()
+
+        class _FakeService:
+            def __init__(self, **kwargs: Any) -> None:
+                self.kwargs = kwargs
+
+            def backend(self, target: str) -> _FakeBackend:
+                assert target == "ibm_fez"
+                return _FakeBackend()
+
+        class _FakePassManager:
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
+                return None
+
+            def run(self, circuit: Any) -> Any:
+                return circuit
+
+        class _FakeJob:
+            def __init__(self, job_id: str) -> None:
+                self._job_id = job_id
+
+            def job_id(self) -> str:
+                return self._job_id
+
+            def result(self, *args: Any, **kwargs: Any) -> list[Any]:
+                pub = MagicMock()
+                pub.data.meas.get_counts.return_value = {"0000": 256}
+                return [pub]
+
+        class _FakeSampler:
+            counter = 0
+
+            def __init__(self, mode: Any) -> None:
+                self.mode = mode
+                self.options = MagicMock()
+
+            def run(self, circuits: list[Any]) -> _FakeJob:
+                type(self).counter += 1
+                return _FakeJob(f"ibm_job_{type(self).counter}")
+
+        class _FakeSyncOrderParameter:
+            def __call__(self, **kwargs: Any) -> dict[str, float]:
+                return {"sync_order": 0.25}
+
+        class _FakeRichardsonFactory:
+            def __init__(self, scale_factors: list[int]) -> None:
+                self.scale_factors = scale_factors
+
+        def _execute_with_zne(circuit: Any, executor: Any, **kwargs: Any) -> float:
+            return sum(executor(circuit) for _ in range(3)) / 3.0
+
+        qiskit_ibm = types.ModuleType("qiskit_ibm_runtime")
+        qiskit_ibm.QiskitRuntimeService = _FakeService  # type: ignore[attr-defined]
+        qiskit_ibm.SamplerV2 = _FakeSampler  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "qiskit_ibm_runtime", qiskit_ibm)
+
+        preset = types.ModuleType("qiskit.transpiler.preset_passmanagers")
+        preset.generate_preset_pass_manager = (  # type: ignore[attr-defined]
+            lambda *args, **kwargs: _FakePassManager()
+        )
+        monkeypatch.setitem(sys.modules, "qiskit.transpiler.preset_passmanagers", preset)
+
+        passes = types.ModuleType("qiskit.transpiler.passes")
+        passes.ALAPScheduleAnalysis = _FakePassManager  # type: ignore[attr-defined]
+        passes.PadDynamicalDecoupling = _FakePassManager  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "qiskit.transpiler.passes", passes)
+
+        transpiler = types.ModuleType("qiskit.transpiler")
+        transpiler.PassManager = _FakePassManager  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "qiskit.transpiler", transpiler)
+
+        circuit_lib = types.ModuleType("qiskit.circuit.library")
+        circuit_lib.XGate = object  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "qiskit.circuit.library", circuit_lib)
+
+        mitiq = types.ModuleType("mitiq")
+        mitiq_zne = types.ModuleType("mitiq.zne")
+        mitiq_zne.execute_with_zne = _execute_with_zne  # type: ignore[attr-defined]
+        mitiq.zne = mitiq_zne  # type: ignore[attr-defined]
+        mitiq_inference = types.ModuleType("mitiq.zne.inference")
+        mitiq_inference.RichardsonFactory = _FakeRichardsonFactory  # type: ignore[attr-defined]
+        mitiq_scaling = types.ModuleType("mitiq.zne.scaling")
+        mitiq_scaling.fold_global = lambda circuit, scale_factor: circuit  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "mitiq", mitiq)
+        monkeypatch.setitem(sys.modules, "mitiq.zne", mitiq_zne)
+        monkeypatch.setitem(sys.modules, "mitiq.zne.inference", mitiq_inference)
+        monkeypatch.setitem(sys.modules, "mitiq.zne.scaling", mitiq_scaling)
+
+        import scpn_quantum_control.analysis as analysis
+
+        monkeypatch.setattr(analysis, "SyncOrderParameter", _FakeSyncOrderParameter)
+        monkeypatch.setenv("SCPN_IBM_TOKEN", "test-token")
+
+        runner = ar.AsyncHardwareRunner(backend="ibm_fez", shots=256)
+        job = runner.submit_circuit_batch(
+            _FakeAnsatz(),
+            lambda **kwargs: {"observable_seen": 1.0},
+            enable_zne=True,
+        )
+
+        result = asyncio.run(job.result())
+
+        assert result["job_id"] == "ibm_job_4"
+        assert result["zne_job_ids"] == ["ibm_job_1", "ibm_job_2", "ibm_job_3"]
+        assert result["job_ids"] == [
+            "ibm_job_1",
+            "ibm_job_2",
+            "ibm_job_3",
+            "ibm_job_4",
+        ]
+        assert result["zne_applied"] is True
+        assert result["status"] == "DONE"
