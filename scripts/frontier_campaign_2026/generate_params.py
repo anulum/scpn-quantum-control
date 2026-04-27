@@ -6,7 +6,6 @@
 from pathlib import Path
 
 import numpy as np
-
 from scpneurocore.bridge import (
     load_connectome,
     load_power_grid,
