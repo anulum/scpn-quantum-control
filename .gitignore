@@ -71,6 +71,7 @@ results/
 params/
 scripts/*/params/*.npy
 scripts/*/params/PARAMETER_PROVENANCE.json
+scripts/*/campaign_run.log
 
 # Working TODO scratch files — superseded by sessions/handovers
 .coordination/TODO_*.md
