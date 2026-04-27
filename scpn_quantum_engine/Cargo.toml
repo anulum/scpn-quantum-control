@@ -39,7 +39,7 @@ ndarray = "0.16"
 numpy = "0.25"
 num-complex = "0.4"
 rand = "0.9"
-rayon = "1.10"
+rayon = "1.12"
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
