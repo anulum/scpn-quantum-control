@@ -48,7 +48,7 @@ paper/*.bib
 paper/*.bbl
 paper/*.blg
 
-# Claude Code local config — never commit
+# Local assistant config — never commit
 CLAUDE.md
 .claude/
 
@@ -80,10 +80,10 @@ scripts/*/campaign_run.log
 # for public distribution from the repository
 .coordination/*.pdf
 
-# Gemini Internal
+# Internal assistant transcripts
 docs/internal/gemini/
 
-# Agent metadata (Gemini audit state, etc.)
+# Agent metadata (audit state, etc.)
 .agent_metadata.json
 
 # Mutation testing artefacts (mutmut 2.5 cache + HTML report + per-file

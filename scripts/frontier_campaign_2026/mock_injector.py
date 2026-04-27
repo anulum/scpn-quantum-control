@@ -91,8 +91,11 @@ def submit_to_ibm_bg(backend_name, shots, tags):
             from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2
 
             token = os.environ.get("SCPN_IBM_TOKEN", "dummy-token-for-tests")
-            crn = "crn:v1:bluemix:public:quantum-computing:us-east:a/78db885720334fd19191b33a839d0c35:841cc36d-0afd-4f96-ada2-8c56e1c443a0::"
-            service = QiskitRuntimeService(channel="ibm_cloud", token=token, instance=crn)
+            crn = os.environ.get("SCPN_IBM_CRN")
+            service_kwargs = {"channel": "ibm_cloud", "token": token}
+            if crn:
+                service_kwargs["instance"] = crn
+            service = QiskitRuntimeService(**service_kwargs)
 
             qc = QuantumCircuit(4)
             qc.h(0)

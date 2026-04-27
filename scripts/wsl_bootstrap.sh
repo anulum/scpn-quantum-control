@@ -64,7 +64,7 @@ import os
 svc = QiskitRuntimeService(
     channel='ibm_cloud',
     token=os.environ['SCPN_IBM_TOKEN'],
-    instance='crn:v1:bluemix:public:quantum-computing:us-east:a/78db885720334fd19191b33a839d0c35:841cc36d-0afd-4f96-ada2-8c56e1c443a0::',
+    instance=os.environ.get('SCPN_IBM_CRN'),
 )
 backends = svc.backends()
 print(f'  Auth OK — {len(backends)} backends: {[b.name for b in backends]}')
