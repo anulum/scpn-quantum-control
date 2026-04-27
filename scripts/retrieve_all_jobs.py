@@ -40,7 +40,7 @@ async def retrieve_all_jobs():
         print("SCPN_IBM_TOKEN environment variable is not set.")
         return
 
-    instance = os.environ.get("SCPN_IBM_INSTANCE")
+    instance = os.environ.get("SCPN_IBM_CRN") or os.environ.get("SCPN_IBM_INSTANCE")
     service_kwargs = {"channel": "ibm_cloud", "token": token}
     if instance:
         service_kwargs["instance"] = instance

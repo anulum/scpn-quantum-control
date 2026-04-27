@@ -109,7 +109,7 @@ def main():
     args = parser.parse_args()
 
     api_key = os.environ.get("SCPN_IBM_TOKEN")
-    instance = os.environ.get("SCPN_IBM_INSTANCE")
+    instance = os.environ.get("SCPN_IBM_CRN") or os.environ.get("SCPN_IBM_INSTANCE")
     if not api_key:
         print("SCPN_IBM_TOKEN is not set.")
         return 2

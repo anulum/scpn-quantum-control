@@ -120,19 +120,20 @@ class HardwareRunner:
 
         Reads via :class:`scpn_quantum_control.config.SCPNConfig` when
         that extra is installed so the rest of the codebase sees a single
-        source of truth; falls back to the raw ``SCPN_IBM_INSTANCE`` env
-        var for minimal installs without the ``[config]`` extra.
+        source of truth; falls back to the raw ``SCPN_IBM_CRN`` env var
+        and then the legacy ``SCPN_IBM_INSTANCE`` env var for minimal
+        installs without the ``[config]`` extra.
         """
         try:
             from ..config import get_config
 
             return get_config().ibm_instance
         except Exception:
-            return os.environ.get("SCPN_IBM_INSTANCE", "")
+            return os.environ.get("SCPN_IBM_CRN") or os.environ.get("SCPN_IBM_INSTANCE", "")
 
     # Backward-compat class attribute — existing callers treat it like a
     # static lookup. The staticmethod above is the authoritative path.
-    DEFAULT_INSTANCE = os.environ.get("SCPN_IBM_INSTANCE", "")
+    DEFAULT_INSTANCE = os.environ.get("SCPN_IBM_CRN") or os.environ.get("SCPN_IBM_INSTANCE", "")
 
     def __init__(
         self,
