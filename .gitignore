@@ -64,6 +64,14 @@ ARCHIVE/
 # directory for older experiments (pre-2026-04) and is not committed.
 results/
 
+# Generated QPU campaign parameter caches. Source-backed publication
+# artifacts belong under `data/<experiment>/`; local `.npy` transport
+# files must be regenerated from the bridge/provenance contract instead
+# of being committed.
+params/
+scripts/*/params/*.npy
+scripts/*/params/PARAMETER_PROVENANCE.json
+
 # Working TODO scratch files — superseded by sessions/handovers
 .coordination/TODO_*.md
 
