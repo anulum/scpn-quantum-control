@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-03-30T15:04:16.030408+00:00",
+  "checked_at": "2026-04-24T21:27:46.841658+00:00",
   "total_jobs": 9,
   "done": 9,
   "queued": 0,
@@ -11,7 +11,8 @@
       "group": "baseline",
       "status": "DONE",
       "retrieved": true,
-      "file": "results/march_2026/job_d6t9asmsh9gc73did75g.json"
+      "file": "results/march_2026/job_d6t9asmsh9gc73did75g.json",
+      "cached": true
     },
     {
       "job_id": "d6t9c8n90okc73et6ho0",
@@ -19,7 +20,8 @@
       "group": "baseline",
       "status": "DONE",
       "retrieved": true,
-      "file": "results/march_2026/job_d6t9c8n90okc73et6ho0.json"
+      "file": "results/march_2026/job_d6t9c8n90okc73et6ho0.json",
+      "cached": true
     },
     {
       "job_id": "d6t9e7f90okc73et6jlg",
@@ -27,7 +29,8 @@
       "group": "campaign",
       "status": "DONE",
       "retrieved": true,
-      "file": "results/march_2026/job_d6t9e7f90okc73et6jlg.json"
+      "file": "results/march_2026/job_d6t9e7f90okc73et6jlg.json",
+      "cached": true
     },
     {
       "job_id": "d6t9eabbjfas73fpbmv0",
@@ -35,7 +38,8 @@
       "group": "campaign",
       "status": "DONE",
       "retrieved": true,
-      "file": "results/march_2026/job_d6t9eabbjfas73fpbmv0.json"
+      "file": "results/march_2026/job_d6t9eabbjfas73fpbmv0.json",
+      "cached": true
     },
     {
       "job_id": "d6t9egbbjfas73fpbn40",
@@ -43,7 +47,8 @@
       "group": "campaign",
       "status": "DONE",
       "retrieved": true,
-      "file": "results/march_2026/job_d6t9egbbjfas73fpbn40.json"
+      "file": "results/march_2026/job_d6t9egbbjfas73fpbn40.json",
+      "cached": true
     },
     {
       "job_id": "d6t9ejfgtkcc73cmemv0",
@@ -51,7 +56,8 @@
       "group": "campaign",
       "status": "DONE",
       "retrieved": true,
-      "file": "results/march_2026/job_d6t9ejfgtkcc73cmemv0.json"
+      "file": "results/march_2026/job_d6t9ejfgtkcc73cmemv0.json",
+      "cached": true
     },
     {
       "job_id": "d6t9emf90okc73et6k50",
@@ -59,7 +65,8 @@
       "group": "campaign",
       "status": "DONE",
       "retrieved": true,
-      "file": "results/march_2026/job_d6t9emf90okc73et6k50.json"
+      "file": "results/march_2026/job_d6t9emf90okc73et6k50.json",
+      "cached": true
     },
     {
       "job_id": "d6t9eqush9gc73didba0",
@@ -67,7 +74,8 @@
       "group": "campaign",
       "status": "DONE",
       "retrieved": true,
-      "file": "results/march_2026/job_d6t9eqush9gc73didba0.json"
+      "file": "results/march_2026/job_d6t9eqush9gc73didba0.json",
+      "cached": true
     },
     {
       "job_id": "d6t9erfgtkcc73cmen70",
@@ -75,7 +83,8 @@
       "group": "campaign",
       "status": "DONE",
       "retrieved": true,
-      "file": "results/march_2026/job_d6t9erfgtkcc73cmen70.json"
+      "file": "results/march_2026/job_d6t9erfgtkcc73cmen70.json",
+      "cached": true
     }
   ]
 }
