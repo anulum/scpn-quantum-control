@@ -1,0 +1,184 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — Tests for QPU data artifact
+"""Tests for the inter-repository QPU data artifact contract."""
+
+from __future__ import annotations
+
+import json
+
+import numpy as np
+import pytest
+
+from scpn_quantum_control.bridge.qpu_data_artifact import (
+    QPUDataArtifact,
+    artifact_from_arrays,
+    read_qpu_data_artifact,
+    validate_qpu_data_artifact,
+    write_qpu_data_artifact,
+)
+
+
+def _valid_knm(n: int = 4) -> np.ndarray:
+    K = np.full((n, n), 0.2, dtype=np.float64)
+    np.fill_diagonal(K, 0.0)
+    return K
+
+
+def test_real_artifact_roundtrip_and_hashes(tmp_path):
+    artifact = artifact_from_arrays(
+        domain="connectome",
+        source_name="c_elegans_sub",
+        source_mode="recorded",
+        K_nm=_valid_knm(4),
+        omega=[0.1, 0.2, 0.3, 0.4],
+        theta0=[0.0, 0.1, 0.2, 0.3],
+        layer_assignments=["n0", "n1", "n2", "n3"],
+        normalization="max coupling to 1",
+        extraction_method="phase-orchestrator fixture",
+        source_timestamp="2026-04-27T21:00:00Z",
+        metadata={"compiler": "phase-orchestrator"},
+    )
+
+    artifact.require_publication_safe()
+    payload = artifact.to_dict()
+    assert payload["schema_version"].endswith(".v1")
+    assert "artifact_sha256" in payload
+    assert set(artifact.hashes) >= {"K_nm_sha256", "omega_sha256", "theta0_sha256"}
+
+    path = tmp_path / "artifact.json"
+    write_qpu_data_artifact(path, artifact)
+    loaded = read_qpu_data_artifact(path)
+    np.testing.assert_allclose(loaded.K_nm, artifact.K_nm)
+    np.testing.assert_allclose(loaded.omega, artifact.omega)
+    assert loaded.metadata["compiler"] == "phase-orchestrator"
+
+
+def test_publication_gate_rejects_synthetic_artifact():
+    artifact = artifact_from_arrays(
+        domain="scpn",
+        source_name="datastream-fixture",
+        source_mode="synthetic",
+        K_nm=_valid_knm(3),
+        omega=[1.0, 2.0, 3.0],
+        normalization="fixture",
+        extraction_method="unit-test",
+        replay_id="seed:1",
+    )
+
+    with pytest.raises(ValueError, match="synthetic"):
+        validate_qpu_data_artifact(artifact)
+
+    assert validate_qpu_data_artifact(artifact, require_publication_safe=False) is artifact
+
+
+def test_publication_gate_requires_timestamp_or_replay_id():
+    artifact = artifact_from_arrays(
+        domain="power-grid",
+        source_name="grid",
+        source_mode="recorded",
+        K_nm=_valid_knm(3),
+        omega=[1.0, 2.0, 3.0],
+        normalization="documented",
+        extraction_method="documented",
+    )
+
+    with pytest.raises(ValueError, match="source_timestamp or replay_id"):
+        artifact.require_publication_safe()
+
+
+def test_rejects_invalid_knm_invariants():
+    with pytest.raises(ValueError, match="diagonal"):
+        artifact_from_arrays(
+            domain="x",
+            source_name="x",
+            source_mode="recorded",
+            K_nm=np.eye(2),
+            omega=[1.0, 2.0],
+            normalization="n",
+            extraction_method="e",
+            replay_id="r",
+        )
+
+    K_negative = _valid_knm(2)
+    K_negative[0, 1] = -0.1
+    K_negative[1, 0] = -0.1
+    with pytest.raises(ValueError, match="non-negative"):
+        artifact_from_arrays(
+            domain="x",
+            source_name="x",
+            source_mode="recorded",
+            K_nm=K_negative,
+            omega=[1.0, 2.0],
+            normalization="n",
+            extraction_method="e",
+            replay_id="r",
+        )
+
+    K_directed = np.array([[0.0, 0.2], [0.5, 0.0]])
+    with pytest.raises(ValueError, match="symmetric"):
+        artifact_from_arrays(
+            domain="x",
+            source_name="x",
+            source_mode="recorded",
+            K_nm=K_directed,
+            omega=[1.0, 2.0],
+            normalization="n",
+            extraction_method="e",
+            replay_id="r",
+        )
+
+
+def test_rejects_shape_mismatch_and_missing_metadata():
+    with pytest.raises(ValueError, match="omega shape"):
+        artifact_from_arrays(
+            domain="x",
+            source_name="x",
+            source_mode="recorded",
+            K_nm=_valid_knm(3),
+            omega=[1.0, 2.0],
+            normalization="n",
+            extraction_method="e",
+            replay_id="r",
+        )
+
+    with pytest.raises(ValueError, match="normalization"):
+        artifact_from_arrays(
+            domain="x",
+            source_name="x",
+            source_mode="recorded",
+            K_nm=_valid_knm(2),
+            omega=[1.0, 2.0],
+            normalization="",
+            extraction_method="e",
+            replay_id="r",
+        )
+
+
+def test_from_scpn_datastream_payload_defaults_to_synthetic():
+    payload = {
+        "schema_version": "sc-neurocore.scpn.datastream.v1",
+        "source_project": "sc-neurocore",
+        "seed": 11,
+        "dt_s": 0.01,
+        "n_steps": 3,
+        "n_layers": 4,
+        "layer_ids": ["l1", "l2", "l3", "l4"],
+        "omega_rad_s": [0.1, 0.2, 0.3, 0.4],
+        "knm": _valid_knm(4).tolist(),
+    }
+
+    artifact = QPUDataArtifact.from_scpn_datastream_payload(payload)
+    assert artifact.is_synthetic
+    assert artifact.replay_id == "seed:11"
+    assert artifact.metadata["payload_sha256"]
+    np.testing.assert_allclose(artifact.K_nm, _valid_knm(4))
+
+
+def test_json_loader_rejects_wrong_schema():
+    with pytest.raises(ValueError, match="schema"):
+        QPUDataArtifact.from_json(json.dumps({"schema_version": "wrong"}))

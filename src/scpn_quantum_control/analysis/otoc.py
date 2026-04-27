@@ -45,6 +45,52 @@ from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 from ..hardware.gpu_accel import expm
 
 
+class OTOC:
+    """Convenience class interface for OTOC computation.
+
+    Campaign scripts import this class by name::
+
+        from scpn_quantum_control.analysis import OTOC
+
+        otoc = OTOC(K, omega)
+        result = otoc.compute(times=[0.0, 0.5, 1.0])
+
+    This wraps :func:`compute_otoc` for compatibility with hardware campaign
+    scripts that expect a class-based interface.
+    """
+
+    def __init__(
+        self,
+        K: np.ndarray | None = None,
+        omega: np.ndarray | None = None,
+        *,
+        w_qubit: int = 0,
+        v_qubit: int | None = None,
+        w_pauli: str = "Z",
+        v_pauli: str = "X",
+    ) -> None:
+        self._K = K
+        self._omega = omega
+        self._w_qubit = w_qubit
+        self._v_qubit = v_qubit
+        self._w_pauli = w_pauli
+        self._v_pauli = v_pauli
+
+    def compute(self, times: np.ndarray | None = None) -> OTOCResult:
+        """Run OTOC computation and return an :class:`OTOCResult`."""
+        if self._K is None or self._omega is None:
+            raise ValueError("OTOC requires K and omega to be set at construction time.")
+        return compute_otoc(
+            self._K,
+            self._omega,
+            times=times,
+            w_qubit=self._w_qubit,
+            v_qubit=self._v_qubit,
+            w_pauli=self._w_pauli,
+            v_pauli=self._v_pauli,
+        )
+
+
 @dataclass
 class OTOCResult:
     """OTOC measurement result."""

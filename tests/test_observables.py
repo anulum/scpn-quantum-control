@@ -37,7 +37,8 @@ def test_all_observables_with_real_counts():
     print("✅ LogicalSyncWitness:", logical_res)
 
     assert 0.0 <= sync_res["sync_order"] <= 1.0
-    assert abs(dla_res["dla_asymmetry"]) <= 100
+    assert abs(dla_res["dla_asymmetry"]) <= 100  # ±100% is the physical maximum
+
     print("\nAll observables passed integration test with real circuit counts.")
 
 

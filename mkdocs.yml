@@ -61,6 +61,11 @@ nav:
       - Identity API: identity_api.md
       - Mitigation API: mitigation_api.md
       - Bridges API: bridges_api.md
+      - QPU Data Artifact: qpu_data_artifact.md
+      - Pipeline Runtime Contract: pipeline_runtime_contract.md
+      - QPU Compute Unit: qpu_compute_unit.md
+      - QPU Provider Readiness: qpu_provider_readiness.md
+      - QPU System Capability Dossier: qpu_system_capability_dossier.md
       - Benchmarks API: benchmarks_api.md
       - Pipeline Performance: pipeline_performance.md
       - "Bench: Dynamic Coupling": bench_dynamic_coupling.md

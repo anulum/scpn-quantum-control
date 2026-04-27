@@ -37,6 +37,31 @@ SSGF W adaptation       ←──  ssgf_w_adapter        ←──  Quantum corr
 
 ## Module Reference
 
+### QPU Data Artifact — Inter-Repository Provenance Contract
+
+`scpn_quantum_control.bridge.qpu_data_artifact` defines the JSON
+artifact consumed by hardware campaign code. The contract sits between
+source-facing repositories and Quantum Control:
+
+- SC-NeuroCore provides source-facing bridge payloads.
+- Phase Orchestrator should compile domain data into validated
+  `K_nm` / `omega` artifacts.
+- Quantum Control validates artifacts and compiles circuits.
+
+The public helpers are:
+
+| Symbol | Purpose |
+|--------|---------|
+| `QPUDataArtifact` | Immutable validated artifact object. |
+| `artifact_from_arrays` | Convenience constructor for loaders/tests. |
+| `validate_qpu_data_artifact` | Enforces schema and optional publication gate. |
+| `read_qpu_data_artifact` | Reads artifact JSON from disk. |
+| `write_qpu_data_artifact` | Writes artifact JSON to disk. |
+
+The schema is documented in `docs/qpu_data_artifact.md`. Synthetic,
+simulation, and fixture sources are allowed for smoke tests but rejected
+by the publication gate.
+
 ### 1. `knm_hamiltonian` — Core Hamiltonian Compiler
 
 The foundational module. Compiles the K_nm coupling matrix and natural
