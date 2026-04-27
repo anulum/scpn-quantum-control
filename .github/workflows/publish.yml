@@ -30,7 +30,7 @@ jobs:
       # next to each artefact in `dist/`. PyPI respects
       # `attestations: true` and attaches the bundle server-side for
       # trusted-publisher flows.
-      - uses: sigstore/gh-action-sigstore-python@f514d46b907ebcd5bedc05145c03b69c1edd8b46  # v3.0.1
+      - uses: sigstore/gh-action-sigstore-python@04cffa1d795717b140764e8b640de88853c92acc  # v3.0.1
         with:
           inputs: >-
             ./dist/*.tar.gz
