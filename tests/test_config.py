@@ -75,13 +75,27 @@ class TestEnvLayering:
             assert cfg.gpu_enable is True, f"'{truthy}' should be truthy"
 
     def test_env_var_ibm_fields(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("SCPN_IBM_INSTANCE", "crn:v1:bluemix:public:quantum:...")
+        monkeypatch.setenv("SCPN_IBM_CRN", "crn:v1:bluemix:public:quantum:...")
         monkeypatch.setenv("SCPN_IBM_BACKEND", "ibm_kingston")
         monkeypatch.setenv("SCPN_IBM_SHOTS", "1024")
         cfg = SCPNConfig(_env_file=None)
         assert cfg.ibm_instance.startswith("crn:v1:")
         assert cfg.ibm_backend == "ibm_kingston"
         assert cfg.ibm_shots == 1024
+
+    def test_legacy_ibm_instance_env_var_still_works(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.delenv("SCPN_IBM_CRN", raising=False)
+        monkeypatch.setenv("SCPN_IBM_INSTANCE", "legacy-instance")
+        cfg = SCPNConfig(_env_file=None)
+        assert cfg.ibm_instance == "legacy-instance"
+
+    def test_ibm_crn_env_var_beats_legacy_instance(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("SCPN_IBM_CRN", "preferred-crn")
+        monkeypatch.setenv("SCPN_IBM_INSTANCE", "legacy-instance")
+        cfg = SCPNConfig(_env_file=None)
+        assert cfg.ibm_instance == "preferred-crn"
 
     def test_explicit_kwarg_beats_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("SCPN_IBM_SHOTS", "100")

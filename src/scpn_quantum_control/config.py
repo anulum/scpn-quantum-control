@@ -51,7 +51,7 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field, field_validator
+from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -89,9 +89,11 @@ class SCPNConfig(BaseSettings):
 
     ibm_instance: str = Field(
         default="",
+        validation_alias=AliasChoices("SCPN_IBM_CRN", "SCPN_IBM_INSTANCE", "ibm_instance"),
         description=(
             "IBM Quantum Cloud CRN of the instance to submit circuits to "
-            "(legacy SCPN_IBM_INSTANCE). Empty string means 'unset'."
+            "(preferred SCPN_IBM_CRN; legacy SCPN_IBM_INSTANCE is still accepted). "
+            "Empty string means 'unset'."
         ),
     )
     ibm_backend: str = Field(
