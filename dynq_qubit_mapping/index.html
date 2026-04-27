@@ -1,0 +1,2784 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Quantum simulation of coupled oscillators on IBM hardware">
+      
+      
+        <meta name="author" content="Miroslav Šotek">
+      
+      
+        <link rel="canonical" href="https://anulum.github.io/scpn-quantum-control/dynq_qubit_mapping/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/anulum_logo_company.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>SPDX-License-Identifier: AGPL-3.0-or-later - scpn-quantum-control</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#spdx-license-identifier-agpl-30-or-later" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="scpn-quantum-control" class="md-header__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            scpn-quantum-control
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              SPDX-License-Identifier: AGPL-3.0-or-later
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="scpn-quantum-control" class="md-nav__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    scpn-quantum-control
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SCPN Foundations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../equations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../research_gems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research Gems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../orchestrator_integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestrator Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rust_engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../autodoc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auto-Generated
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analysis_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../identity_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mitigation_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mitigation API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bridges_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridges API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmarks_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipeline_performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_dynamic_coupling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Dynamic Coupling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_structured_ansatz/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Structured Ansatz
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_hw_topological_optimizer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: HW Topological Optimizer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../test_infrastructure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publications
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Publications
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprint/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprint: Quantum Kuramoto-XY on Hardware
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_sync_witnesses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: Synchronisation Witnesses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: DLA Parity Theorem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DLA-parity Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classical_irreproducibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classical Irreproducibility
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results Gallery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hardware_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IBM Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXPERIMENT_ROADMAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PAPER_CLAIMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results & Claims
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../QUANTUM_CRYPTO_RESEARCH_BRANCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Crypto Research
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Learning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notebooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Roadmap
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../strategic_roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strategic Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="spdx-license-identifier-agpl-30-or-later">SPDX-License-Identifier: AGPL-3.0-or-later<a class="headerlink" href="#spdx-license-identifier-agpl-30-or-later" title="Permanent link">&para;</a></h1>
+<h1 id="commercial-license-available">Commercial license available<a class="headerlink" href="#commercial-license-available" title="Permanent link">&para;</a></h1>
+<h1 id="concepts-19962026-miroslav-sotek-all-rights-reserved">© Concepts 1996–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#concepts-19962026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="code-20202026-miroslav-sotek-all-rights-reserved">© Code 2020–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#code-20202026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="orcid-0009-0009-3560-0851">ORCID: 0009-0009-3560-0851<a class="headerlink" href="#orcid-0009-0009-3560-0851" title="Permanent link">&para;</a></h1>
+<h1 id="contact-wwwanulumli-protoscienceanulumli">Contact: www.anulum.li | protoscience@anulum.li<a class="headerlink" href="#contact-wwwanulumli-protoscienceanulumli" title="Permanent link">&para;</a></h1>
+<h1 id="scpn-quantum-control-dynq-qubit-mapping-documentation">scpn-quantum-control — DynQ Qubit Mapping Documentation<a class="headerlink" href="#scpn-quantum-control-dynq-qubit-mapping-documentation" title="Permanent link">&para;</a></h1>
+<h1 id="dynq-dynamic-topology-agnostic-qubit-mapping">DynQ: Dynamic Topology-Agnostic Qubit Mapping<a class="headerlink" href="#dynq-dynamic-topology-agnostic-qubit-mapping" title="Permanent link">&para;</a></h1>
+<p>Quality-weighted community detection for intelligent qubit placement on
+NISQ hardware. Replaces Qiskit's default SABRE-based layout heuristic
+with a physics-aware global partitioning strategy.</p>
+<p><strong>Module:</strong> <code>scpn_quantum_control.hardware.qubit_mapper</code>
+<strong>Rust acceleration:</strong> <code>scpn_quantum_engine.score_regions_batch</code>
+<strong>Reference:</strong> Liu <em>et al.</em>, arXiv:2601.19635 (2026) — DynQ</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">&para;</a></h2>
+<ol>
+<li><a href="#1-motivation-and-context">Motivation and Context</a></li>
+<li><a href="#2-mathematical-foundation">Mathematical Foundation</a></li>
+<li><a href="#3-architecture">Architecture</a></li>
+<li><a href="#4-api-reference">API Reference</a></li>
+<li><a href="#5-rust-acceleration">Rust Acceleration</a></li>
+<li><a href="#6-tutorials">Tutorials</a></li>
+<li><a href="#7-integration-with-qiskit-transpilation">Integration with Qiskit Transpilation</a></li>
+<li><a href="#8-benchmarks">Benchmarks</a></li>
+<li><a href="#9-test-coverage">Test Coverage</a></li>
+<li><a href="#10-limitations-and-caveats">Limitations and Caveats</a></li>
+<li><a href="#11-comparison-with-alternative-methods">Comparison with Alternative Methods</a></li>
+<li><a href="#12-references">References</a></li>
+</ol>
+<hr />
+<h2 id="1-motivation-and-context">1. Motivation and Context<a class="headerlink" href="#1-motivation-and-context" title="Permanent link">&para;</a></h2>
+<h3 id="the-problem">The Problem<a class="headerlink" href="#the-problem" title="Permanent link">&para;</a></h3>
+<p>Modern QPUs exhibit significant spatial variation in gate fidelity.
+On IBM's 156-qubit Heron r2 processor (ibm_fez), two-qubit CZ gate
+error rates range from 0.2% to 5% across different qubit pairs, and
+readout errors vary by an order of magnitude across the device.</p>
+<p>Qiskit's default transpiler (SABRE routing with DenseLayout or
+TrivialLayout) treats all qubits equally, potentially placing critical
+circuit gates on low-fidelity couplers. For SCPN Kuramoto-XY circuits,
+where every qubit participates in entangling gates, this can reduce
+output fidelity by 45% compared to optimal placement.</p>
+<h3 id="the-dynq-approach">The DynQ Approach<a class="headerlink" href="#the-dynq-approach" title="Permanent link">&para;</a></h3>
+<p>DynQ models the QPU as a weighted graph where:
+- <strong>Nodes</strong> = physical qubits
+- <strong>Edge weights</strong> = inverse gate error rates (higher weight = better fidelity)</p>
+<p>Louvain community detection partitions this graph into dense, high-fidelity
+execution regions. The circuit is mapped to the best-scoring region,
+ensuring that all entangling gates use the highest-fidelity couplers.</p>
+<h3 id="why-this-matters-for-scpn">Why This Matters for SCPN<a class="headerlink" href="#why-this-matters-for-scpn" title="Permanent link">&para;</a></h3>
+<p>SCPN Kuramoto-XY circuits use all-to-all <span class="arithmatex">\(XX + YY\)</span> interactions,
+implemented via Trotter decomposition into nearest-neighbour SWAP
+networks. Every additional SWAP gate on a low-fidelity coupler degrades
+the synchronisation witness <span class="arithmatex">\(R\)</span>. DynQ reduces SWAP depth by placing the
+circuit in a maximally-connected high-fidelity subgraph.</p>
+<p><strong>Reported improvement:</strong> 45.1% lower output error compared to default
+Qiskit compilation on IBM Kingston (Liu <em>et al.</em>, 2026, Section 4.1).</p>
+<hr />
+<h2 id="2-mathematical-foundation">2. Mathematical Foundation<a class="headerlink" href="#2-mathematical-foundation" title="Permanent link">&para;</a></h2>
+<h3 id="21-quality-weighted-graph-construction">2.1 Quality-Weighted Graph Construction<a class="headerlink" href="#21-quality-weighted-graph-construction" title="Permanent link">&para;</a></h3>
+<p>Given calibration data, the QPU graph <span class="arithmatex">\(G = (V, E, W)\)</span> is constructed as:</p>
+<div class="arithmatex">\[w_{ij} = \frac{1}{e_{ij} + \epsilon_0}\]</div>
+<p>where:
+- <span class="arithmatex">\(w_{ij}\)</span>: edge weight between physical qubits <span class="arithmatex">\(i\)</span> and <span class="arithmatex">\(j\)</span>
+- <span class="arithmatex">\(e_{ij}\)</span>: two-qubit gate error rate (from randomised benchmarking calibration)
+- <span class="arithmatex">\(\epsilon_0 = 10^{-6}\)</span>: regularisation constant preventing division by zero</p>
+<p><strong>Properties:</strong>
+- Perfect gates (<span class="arithmatex">\(e_{ij} = 0\)</span>): <span class="arithmatex">\(w_{ij} = 10^6\)</span> (maximum weight)
+- Typical gate (<span class="arithmatex">\(e_{ij} = 0.005\)</span>): <span class="arithmatex">\(w_{ij} \approx 200\)</span>
+- Bad coupler (<span class="arithmatex">\(e_{ij} = 0.05\)</span>): <span class="arithmatex">\(w_{ij} \approx 20\)</span>
+- The 10× weight ratio between good and bad couplers strongly biases
+  Louvain towards grouping high-fidelity qubits together</p>
+<p>Optional node weights from readout errors:</p>
+<div class="arithmatex">\[w_i^{\text{ro}} = \frac{1}{e_i^{\text{ro}} + \epsilon_0}\]</div>
+<p>These are stored as node attributes for layout ordering (best readout
+qubits are assigned to the most-measured logical qubits).</p>
+<h3 id="22-louvain-community-detection">2.2 Louvain Community Detection<a class="headerlink" href="#22-louvain-community-detection" title="Permanent link">&para;</a></h3>
+<p>The Louvain algorithm maximises the modularity objective:</p>
+<div class="arithmatex">\[Q = \frac{1}{2m} \sum_{ij} \left[ w_{ij} - \frac{k_i k_j}{2m} \right] \delta(c_i, c_j)\]</div>
+<p>where:
+- <span class="arithmatex">\(m = \frac{1}{2} \sum_{ij} w_{ij}\)</span> is the total graph weight
+- <span class="arithmatex">\(k_i = \sum_j w_{ij}\)</span> is the weighted degree of node <span class="arithmatex">\(i\)</span>
+- <span class="arithmatex">\(c_i\)</span> is the community assignment of node <span class="arithmatex">\(i\)</span>
+- <span class="arithmatex">\(\delta(c_i, c_j) = 1\)</span> if <span class="arithmatex">\(i\)</span> and <span class="arithmatex">\(j\)</span> are in the same community</p>
+<p>The algorithm runs in two phases:
+1. <strong>Local moves:</strong> Each node is moved to the community that maximises <span class="arithmatex">\(\Delta Q\)</span>
+2. <strong>Aggregation:</strong> Communities become super-nodes; repeat until <span class="arithmatex">\(Q\)</span> converges</p>
+<p><strong>Resolution parameter <span class="arithmatex">\(\gamma\)</span>:</strong> Controls the granularity of the partition.
+- <span class="arithmatex">\(\gamma &lt; 1\)</span>: Fewer, larger communities
+- <span class="arithmatex">\(\gamma = 1\)</span>: Standard modularity (default)
+- <span class="arithmatex">\(\gamma &gt; 1\)</span>: More, smaller communities</p>
+<p>For SCPN circuits of width 4–8 qubits on 156-qubit hardware,
+<span class="arithmatex">\(\gamma = 1.0\)</span> typically yields regions of 8–20 qubits, which is ideal.</p>
+<h3 id="23-region-quality-scoring">2.3 Region Quality Scoring<a class="headerlink" href="#23-region-quality-scoring" title="Permanent link">&para;</a></h3>
+<p>Each detected community is scored on three metrics:</p>
+<p><strong>Connectivity</strong> (edge density within the region):</p>
+<div class="arithmatex">\[S_{\text{conn}}(R) = \frac{|E_R|}{|V_R| (|V_R| - 1) / 2}\]</div>
+<p>where <span class="arithmatex">\(|E_R|\)</span> is the number of edges and <span class="arithmatex">\(|V_R|\)</span> is the number of
+qubits in region <span class="arithmatex">\(R\)</span>. Ranges from 0 (no internal edges) to 1 (complete
+subgraph).</p>
+<p><strong>Mean gate fidelity:</strong></p>
+<div class="arithmatex">\[S_{\text{fid}}(R) = 1 - \frac{1}{|E_R|} \sum_{(i,j) \in E_R} e_{ij}\]</div>
+<p><strong>Composite quality</strong> (DynQ Eq. 8):</p>
+<div class="arithmatex">\[Q(R) = S_{\text{conn}}(R) \times S_{\text{fid}}(R)\]</div>
+<p>Regions are sorted by <span class="arithmatex">\(Q(R)\)</span> in descending order. The best region that
+fits the circuit width is selected.</p>
+<h3 id="24-layout-assignment">2.4 Layout Assignment<a class="headerlink" href="#24-layout-assignment" title="Permanent link">&para;</a></h3>
+<p>Within the selected region, physical qubits are assigned to logical
+qubits by readout quality (lowest readout error first). This ensures
+that the most-measured qubits in the circuit get the cleanest readout
+channels.</p>
+<p>If readout errors are not provided, qubits are sorted numerically
+(deterministic fallback).</p>
+<hr />
+<h2 id="3-architecture">3. Architecture<a class="headerlink" href="#3-architecture" title="Permanent link">&para;</a></h2>
+<h3 id="31-module-structure">3.1 Module Structure<a class="headerlink" href="#31-module-structure" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>src/scpn_quantum_control/hardware/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── __init__.py          # Re-exports DynQ API
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── qubit_mapper.py      # DynQ Python implementation
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├── runner.py            # HardwareRunner (uses DynQ for layout)
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>├── noise_model.py       # Heron r2 noise model
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>└── ...
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>scpn_quantum_engine/src/
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>├── community.rs         # Rust-accelerated quality scoring
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>├── validation.rs        # FFI boundary validation
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>└── lib.rs               # PyO3 module registration
+</code></pre></div>
+<h3 id="32-data-flow">3.2 Data Flow<a class="headerlink" href="#32-data-flow" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>┌─────────────────────────────┐
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>│  Calibration Data           │
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>│  gate_errors: {(i,j): e}   │
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>│  readout_errors: {i: e}    │
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>└──────────────┬──────────────┘
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>               │
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>┌──────────────▼──────────────┐
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>│  build_calibration_graph()  │
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>│  → nx.Graph with weights    │
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>└──────────────┬──────────────┘
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>               │
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>┌──────────────▼──────────────┐
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>│  detect_execution_regions() │
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>│  Louvain → filter → score   │
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>│  → [ExecutionRegion, ...]   │
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>└──────────────┬──────────────┘
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>               │
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>┌──────────────▼──────────────┐
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>│  select_best_region()       │
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>│  → highest Q(R) ≥ width     │
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>└──────────────┬──────────────┘
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>               │
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>┌──────────────▼──────────────┐
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>│  Sort qubits by readout     │
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>│  → initial_layout: [int]    │
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>└──────────────┬──────────────┘
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>               │
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>┌──────────────▼──────────────┐
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>│  QubitMappingResult         │
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>│  .initial_layout → Qiskit   │
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>│  transpile(initial_layout=) │
+<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>└─────────────────────────────┘
+</code></pre></div>
+<h3 id="33-dataclasses">3.3 Dataclasses<a class="headerlink" href="#33-dataclasses" title="Permanent link">&para;</a></h3>
+<p><strong><code>ExecutionRegion</code></strong> — a candidate QPU subgraph:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>qubits</code></td>
+<td><code>frozenset[int]</code></td>
+<td>Physical qubit indices in this region</td>
+</tr>
+<tr>
+<td><code>quality_score</code></td>
+<td><code>float</code></td>
+<td>Composite <span class="arithmatex">\(Q(R) = S_{\text{conn}} \times S_{\text{fid}}\)</span></td>
+</tr>
+<tr>
+<td><code>connectivity</code></td>
+<td><code>float</code></td>
+<td>Edge density <span class="arithmatex">\(S_{\text{conn}}\)</span></td>
+</tr>
+<tr>
+<td><code>mean_gate_fidelity</code></td>
+<td><code>float</code></td>
+<td>Mean fidelity <span class="arithmatex">\(S_{\text{fid}}\)</span> within region</td>
+</tr>
+<tr>
+<td><code>n_qubits</code></td>
+<td><code>int</code></td>
+<td>Number of qubits (convenience field)</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>QubitMappingResult</code></strong> — the full mapping output:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>selected_region</code></td>
+<td><code>ExecutionRegion</code></td>
+<td>The chosen region</td>
+</tr>
+<tr>
+<td><code>all_regions</code></td>
+<td><code>list[ExecutionRegion]</code></td>
+<td>All detected regions, sorted by quality</td>
+</tr>
+<tr>
+<td><code>initial_layout</code></td>
+<td><code>list[int]</code></td>
+<td>Physical qubit indices for the circuit</td>
+</tr>
+<tr>
+<td><code>resolution</code></td>
+<td><code>float</code></td>
+<td>Louvain resolution parameter used</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-api-reference">4. API Reference<a class="headerlink" href="#4-api-reference" title="Permanent link">&para;</a></h2>
+<h3 id="41-build_calibration_graph">4.1 <code>build_calibration_graph</code><a class="headerlink" href="#41-build_calibration_graph" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.hardware.qubit_mapper</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_calibration_graph</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">G</span> <span class="o">=</span> <span class="n">build_calibration_graph</span><span class="p">(</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">gate_errors</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="nb">float</span><span class="p">],</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">readout_errors</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span>
+</code></pre></div>
+<p><strong>Behaviour:</strong></p>
+<ol>
+<li>Creates a <code>networkx.Graph</code> with edges weighted by <span class="arithmatex">\(1/(e + \epsilon_0)\)</span></li>
+<li>Each edge stores both <code>weight</code> (for Louvain) and <code>error</code> (for fidelity scoring)</li>
+<li>If <code>readout_errors</code> provided, stores <code>readout_weight</code> and <code>readout_error</code>
+   as node attributes</li>
+</ol>
+<p><strong>Raises:</strong> <code>ImportError</code> if networkx is not installed.</p>
+<p><strong>Edge attributes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>weight</code></td>
+<td><code>float</code></td>
+<td><span class="arithmatex">\(1/(e_{ij} + \epsilon_0)\)</span></td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td><code>float</code></td>
+<td>Raw gate error rate <span class="arithmatex">\(e_{ij}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Node attributes (if readout_errors provided):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>readout_weight</code></td>
+<td><code>float</code></td>
+<td><span class="arithmatex">\(1/(e_i^{\text{ro}} + \epsilon_0)\)</span></td>
+</tr>
+<tr>
+<td><code>readout_error</code></td>
+<td><code>float</code></td>
+<td>Raw readout error rate <span class="arithmatex">\(e_i^{\text{ro}}\)</span></td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-detect_execution_regions">4.2 <code>detect_execution_regions</code><a class="headerlink" href="#42-detect_execution_regions" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.hardware.qubit_mapper</span><span class="w"> </span><span class="kn">import</span> <span class="n">detect_execution_regions</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">regions</span> <span class="o">=</span> <span class="n">detect_execution_regions</span><span class="p">(</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">G</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">min_qubits</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">resolution</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">ExecutionRegion</span><span class="p">]</span>
+</code></pre></div>
+<p><strong>Behaviour:</strong></p>
+<ol>
+<li>Runs <code>networkx.algorithms.community.louvain_communities</code> on <span class="arithmatex">\(G\)</span>
+   with the specified resolution and seed</li>
+<li>Filters communities with fewer than <code>min_qubits</code> qubits</li>
+<li>Scores each remaining community: connectivity, fidelity, composite</li>
+<li>Returns communities sorted by <code>quality_score</code> (descending)</li>
+</ol>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>min_qubits</code></td>
+<td>3</td>
+<td>Minimum region size (DynQ default)</td>
+</tr>
+<tr>
+<td><code>resolution</code></td>
+<td>1.0</td>
+<td>Louvain <span class="arithmatex">\(\gamma\)</span>; higher → smaller communities</td>
+</tr>
+<tr>
+<td><code>seed</code></td>
+<td><code>None</code></td>
+<td>Random seed for reproducibility</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Edge cases:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>All communities &lt; <code>min_qubits</code></td>
+<td>Empty list <code>[]</code></td>
+</tr>
+<tr>
+<td>Single qubit graph</td>
+<td>Empty list <code>[]</code></td>
+</tr>
+<tr>
+<td>Complete graph, uniform weights</td>
+<td>1–2 large communities</td>
+</tr>
+</tbody>
+</table>
+<h3 id="43-select_best_region">4.3 <code>select_best_region</code><a class="headerlink" href="#43-select_best_region" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.hardware.qubit_mapper</span><span class="w"> </span><span class="kn">import</span> <span class="n">select_best_region</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">region</span> <span class="o">=</span> <span class="n">select_best_region</span><span class="p">(</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">regions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ExecutionRegion</span><span class="p">],</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">circuit_width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExecutionRegion</span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+<p>Returns the first (highest quality) region with <code>n_qubits &gt;= circuit_width</code>,
+or <code>None</code> if no region is large enough.</p>
+<h3 id="44-dynq_initial_layout">4.4 <code>dynq_initial_layout</code><a class="headerlink" href="#44-dynq_initial_layout" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.hardware.qubit_mapper</span><span class="w"> </span><span class="kn">import</span> <span class="n">dynq_initial_layout</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">result</span> <span class="o">=</span> <span class="n">dynq_initial_layout</span><span class="p">(</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">gate_errors</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="nb">float</span><span class="p">],</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">circuit_width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">readout_errors</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="n">resolution</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="n">min_qubits</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QubitMappingResult</span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+<p><strong>Full pipeline:</strong> Constructs graph → detects regions → selects best →
+assigns layout. Returns <code>None</code> if no suitable region found.</p>
+<p><strong>Layout ordering:</strong> Within the selected region, qubits are sorted by:
+1. Readout error (ascending, if <code>readout_errors</code> provided)
+2. Numerical index (ascending, fallback)</p>
+<p>The first <code>circuit_width</code> qubits from this sorted order form the
+<code>initial_layout</code>.</p>
+<h3 id="45-imports">4.5 Imports<a class="headerlink" href="#45-imports" title="Permanent link">&para;</a></h3>
+<p>All public API is re-exported from <code>scpn_quantum_control.hardware</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.hardware</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">ExecutionRegion</span><span class="p">,</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="n">QubitMappingResult</span><span class="p">,</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">build_calibration_graph</span><span class="p">,</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="n">detect_execution_regions</span><span class="p">,</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">dynq_initial_layout</span><span class="p">,</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="n">select_best_region</span><span class="p">,</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="p">)</span>
+</code></pre></div>
+<p>And from the top-level package:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="n">ExecutionRegion</span><span class="p">,</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="n">QubitMappingResult</span><span class="p">,</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="n">dynq_initial_layout</span><span class="p">,</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="5-rust-acceleration">5. Rust Acceleration<a class="headerlink" href="#5-rust-acceleration" title="Permanent link">&para;</a></h2>
+<h3 id="51-score_regions_batch-rust">5.1 <code>score_regions_batch</code> (Rust)<a class="headerlink" href="#51-score_regions_batch-rust" title="Permanent link">&para;</a></h3>
+<p>The region quality scoring (connectivity, fidelity, composite) is
+available as a Rust-accelerated batch operation via
+<code>scpn_quantum_engine.score_regions_batch</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="cp">#[pyfunction]</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">score_regions_batch</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">(</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span><span class="n">py</span><span class="p">:</span><span class="w"> </span><span class="nc">Python</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">,</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span><span class="n">gate_errors_flat</span><span class="p">:</span><span class="w"> </span><span class="nc">PyReadonlyArray1</span><span class="o">&lt;&#39;</span><span class="nb">_</span><span class="p">,</span><span class="w"> </span><span class="kt">f64</span><span class="o">&gt;</span><span class="p">,</span><span class="w">  </span><span class="c1">// n×n flat array</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">    </span><span class="n">n_qubits</span><span class="p">:</span><span class="w"> </span><span class="kt">usize</span><span class="p">,</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">    </span><span class="n">region_offsets</span><span class="p">:</span><span class="w"> </span><span class="nc">PyReadonlyArray1</span><span class="o">&lt;&#39;</span><span class="nb">_</span><span class="p">,</span><span class="w"> </span><span class="kt">i64</span><span class="o">&gt;</span><span class="p">,</span><span class="w">     </span><span class="c1">// [start0, end0, start1, end1, ...]</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">    </span><span class="n">region_qubits</span><span class="p">:</span><span class="w"> </span><span class="nc">PyReadonlyArray1</span><span class="o">&lt;&#39;</span><span class="nb">_</span><span class="p">,</span><span class="w"> </span><span class="kt">i64</span><span class="o">&gt;</span><span class="p">,</span><span class="w">      </span><span class="c1">// concatenated qubit indices</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">PyResult</span><span class="o">&lt;</span><span class="p">(</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="w">    </span><span class="n">Bound</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="p">,</span><span class="w"> </span><span class="n">PyArray1</span><span class="o">&lt;</span><span class="kt">f64</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w">  </span><span class="c1">// connectivity scores</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="w">    </span><span class="n">Bound</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="p">,</span><span class="w"> </span><span class="n">PyArray1</span><span class="o">&lt;</span><span class="kt">f64</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w">  </span><span class="c1">// fidelity scores</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="w">    </span><span class="n">Bound</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="p">,</span><span class="w"> </span><span class="n">PyArray1</span><span class="o">&lt;</span><span class="kt">f64</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w">  </span><span class="c1">// composite scores</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="p">)</span><span class="o">&gt;</span>
+</code></pre></div>
+<p><strong>Parallelisation:</strong> Regions are scored in parallel via rayon. For
+<span class="arithmatex">\(R\)</span> regions of <span class="arithmatex">\(k\)</span> qubits each, the inner loop is <span class="arithmatex">\(O(k^2)\)</span> per region
+(all-pairs gate error lookup). Rayon amortises well for <span class="arithmatex">\(R \geq 4\)</span>.</p>
+<h3 id="52-data-layout">5.2 Data Layout<a class="headerlink" href="#52-data-layout" title="Permanent link">&para;</a></h3>
+<p>The Rust function accepts flat arrays to avoid FFI overhead:</p>
+<ul>
+<li><code>gate_errors_flat</code>: row-major <span class="arithmatex">\(n \times n\)</span> matrix of gate error rates</li>
+<li><code>region_offsets</code>: pairs of <code>[start, end)</code> indices into <code>region_qubits</code></li>
+<li><code>region_qubits</code>: concatenated list of qubit indices for all regions</li>
+</ul>
+<p>This layout allows a single FFI call for scoring all regions, avoiding
+per-region Python overhead.</p>
+<h3 id="53-integration-pattern">5.3 Integration Pattern<a class="headerlink" href="#53-integration-pattern" title="Permanent link">&para;</a></h3>
+<p>The Python <code>detect_execution_regions</code> currently uses networkx for both
+community detection and scoring. The Rust <code>score_regions_batch</code> can
+replace the scoring step for large QPUs (156+ qubits):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">score_regions_batch</span> <span class="k">as</span> <span class="n">_score_rust</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="n">_HAS_RUST</span> <span class="o">=</span> <span class="kc">True</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="n">_HAS_RUST</span> <span class="o">=</span> <span class="kc">False</span>
+</code></pre></div>
+<p>Currently, the Python module does not dispatch to Rust for scoring
+because the networkx subgraph extraction is the bottleneck, not the
+scoring itself. For future QPUs with 1000+ qubits, the Rust path will
+become essential.</p>
+<h3 id="54-rust-unit-tests">5.4 Rust Unit Tests<a class="headerlink" href="#54-rust-unit-tests" title="Permanent link">&para;</a></h3>
+<p>1 test in <code>community.rs</code>:
+- <code>test_score_regions_logic</code>: 4-qubit complete graph with uniform 1% error,
+  verifies connectivity = 1.0, fidelity = 0.99, composite = 0.99</p>
+<hr />
+<h2 id="6-tutorials">6. Tutorials<a class="headerlink" href="#6-tutorials" title="Permanent link">&para;</a></h2>
+<h3 id="61-basic-dynq-layout">6.1 Basic DynQ Layout<a class="headerlink" href="#61-basic-dynq-layout" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.hardware.qubit_mapper</span><span class="w"> </span><span class="kn">import</span> <span class="n">dynq_initial_layout</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="c1"># Synthetic calibration data for a 16-qubit device</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="n">gate_errors</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">16</span><span class="p">):</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]:</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>        <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="mi">16</span><span class="p">:</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>            <span class="c1"># Non-uniform errors: some couplers are better</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>            <span class="n">gate_errors</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.002</span> <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">j</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">0.015</span>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="c1"># Find best layout for a 4-qubit circuit</span>
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="n">result</span> <span class="o">=</span> <span class="n">dynq_initial_layout</span><span class="p">(</span><span class="n">gate_errors</span><span class="p">,</span> <span class="n">circuit_width</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Selected region: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">selected_region</span><span class="o">.</span><span class="n">qubits</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Quality score: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">selected_region</span><span class="o">.</span><span class="n">quality_score</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connectivity: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">selected_region</span><span class="o">.</span><span class="n">connectivity</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mean fidelity: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">selected_region</span><span class="o">.</span><span class="n">mean_gate_fidelity</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Initial layout: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">initial_layout</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total regions found: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">all_regions</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a><span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No suitable region found&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="62-dynq-with-ibm-calibration-data">6.2 DynQ with IBM Calibration Data<a class="headerlink" href="#62-dynq-with-ibm-calibration-data" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">qiskit_ibm_runtime</span><span class="w"> </span><span class="kn">import</span> <span class="n">QiskitRuntimeService</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.hardware.qubit_mapper</span><span class="w"> </span><span class="kn">import</span> <span class="n">dynq_initial_layout</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="c1"># Retrieve real calibration data</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="n">service</span> <span class="o">=</span> <span class="n">QiskitRuntimeService</span><span class="p">()</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="n">backend</span> <span class="o">=</span> <span class="n">service</span><span class="o">.</span><span class="n">backend</span><span class="p">(</span><span class="s2">&quot;ibm_fez&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="n">target</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">target</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="c1"># Extract two-qubit gate errors from BackendV2 target</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="n">gate_errors</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="k">for</span> <span class="n">gate_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;cz&quot;</span><span class="p">,</span> <span class="s2">&quot;ecr&quot;</span><span class="p">]:</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>    <span class="k">if</span> <span class="n">gate_name</span> <span class="ow">in</span> <span class="n">target</span><span class="o">.</span><span class="n">operation_names</span><span class="p">:</span>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>        <span class="k">for</span> <span class="n">qargs</span><span class="p">,</span> <span class="n">props</span> <span class="ow">in</span> <span class="n">target</span><span class="p">[</span><span class="n">gate_name</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>            <span class="k">if</span> <span class="n">props</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">props</span><span class="o">.</span><span class="n">error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a>                <span class="n">gate_errors</span><span class="p">[</span><span class="n">qargs</span><span class="p">]</span> <span class="o">=</span> <span class="n">props</span><span class="o">.</span><span class="n">error</span>
+<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a>
+<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a><span class="c1"># Extract readout errors</span>
+<a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a><span class="n">readout_errors</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a><span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">):</span>
+<a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a>    <span class="n">meas_props</span> <span class="o">=</span> <span class="n">target</span><span class="p">[</span><span class="s2">&quot;measure&quot;</span><span class="p">][(</span><span class="n">q</span><span class="p">,)]</span>
+<a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a>    <span class="k">if</span> <span class="n">meas_props</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">meas_props</span><span class="o">.</span><span class="n">error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a>        <span class="n">readout_errors</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="o">=</span> <span class="n">meas_props</span><span class="o">.</span><span class="n">error</span>
+<a id="__codelineno-11-23" name="__codelineno-11-23" href="#__codelineno-11-23"></a>
+<a id="__codelineno-11-24" name="__codelineno-11-24" href="#__codelineno-11-24"></a><span class="c1"># Find optimal layout for 8-qubit Kuramoto circuit</span>
+<a id="__codelineno-11-25" name="__codelineno-11-25" href="#__codelineno-11-25"></a><span class="n">result</span> <span class="o">=</span> <span class="n">dynq_initial_layout</span><span class="p">(</span>
+<a id="__codelineno-11-26" name="__codelineno-11-26" href="#__codelineno-11-26"></a>    <span class="n">gate_errors</span><span class="p">,</span>
+<a id="__codelineno-11-27" name="__codelineno-11-27" href="#__codelineno-11-27"></a>    <span class="n">circuit_width</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+<a id="__codelineno-11-28" name="__codelineno-11-28" href="#__codelineno-11-28"></a>    <span class="n">readout_errors</span><span class="o">=</span><span class="n">readout_errors</span><span class="p">,</span>
+<a id="__codelineno-11-29" name="__codelineno-11-29" href="#__codelineno-11-29"></a>    <span class="n">resolution</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+<a id="__codelineno-11-30" name="__codelineno-11-30" href="#__codelineno-11-30"></a>    <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+<a id="__codelineno-11-31" name="__codelineno-11-31" href="#__codelineno-11-31"></a><span class="p">)</span>
+<a id="__codelineno-11-32" name="__codelineno-11-32" href="#__codelineno-11-32"></a>
+<a id="__codelineno-11-33" name="__codelineno-11-33" href="#__codelineno-11-33"></a><span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-11-34" name="__codelineno-11-34" href="#__codelineno-11-34"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DynQ layout: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">initial_layout</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-35" name="__codelineno-11-35" href="#__codelineno-11-35"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Region quality: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">selected_region</span><span class="o">.</span><span class="n">quality_score</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-36" name="__codelineno-11-36" href="#__codelineno-11-36"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Region qubits: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">selected_region</span><span class="o">.</span><span class="n">qubits</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="63-dynq-with-qiskit-transpiler">6.3 DynQ with Qiskit Transpiler<a class="headerlink" href="#63-dynq-with-qiskit-transpiler" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">qiskit</span><span class="w"> </span><span class="kn">import</span> <span class="n">QuantumCircuit</span><span class="p">,</span> <span class="n">transpile</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.hardware.qubit_mapper</span><span class="w"> </span><span class="kn">import</span> <span class="n">dynq_initial_layout</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.hardware.circuit_export</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_trotter_circuit</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="c1"># Build SCPN Kuramoto circuit</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="n">n</span> <span class="o">=</span> <span class="mi">4</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="n">K</span> <span class="o">=</span> <span class="mf">0.45</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">))))</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="n">omega</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="n">qc</span> <span class="o">=</span> <span class="n">build_trotter_circuit</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">omega</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">reps</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="n">qc</span><span class="o">.</span><span class="n">measure_all</span><span class="p">()</span>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="c1"># DynQ layout</span>
+<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a><span class="n">result</span> <span class="o">=</span> <span class="n">dynq_initial_layout</span><span class="p">(</span><span class="n">gate_errors</span><span class="p">,</span> <span class="n">circuit_width</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>
+<a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a><span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a>    <span class="c1"># Pass DynQ layout to Qiskit transpiler</span>
+<a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a>    <span class="n">transpiled</span> <span class="o">=</span> <span class="n">transpile</span><span class="p">(</span>
+<a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a>        <span class="n">qc</span><span class="p">,</span>
+<a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a>        <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">,</span>
+<a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a>        <span class="n">initial_layout</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">initial_layout</span><span class="p">,</span>
+<a id="__codelineno-12-23" name="__codelineno-12-23" href="#__codelineno-12-23"></a>        <span class="n">optimization_level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<a id="__codelineno-12-24" name="__codelineno-12-24" href="#__codelineno-12-24"></a>    <span class="p">)</span>
+<a id="__codelineno-12-25" name="__codelineno-12-25" href="#__codelineno-12-25"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transpiled depth: </span><span class="si">{</span><span class="n">transpiled</span><span class="o">.</span><span class="n">depth</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-26" name="__codelineno-12-26" href="#__codelineno-12-26"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CNOT count: </span><span class="si">{</span><span class="n">transpiled</span><span class="o">.</span><span class="n">count_ops</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cx&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="64-exploring-region-structure">6.4 Exploring Region Structure<a class="headerlink" href="#64-exploring-region-structure" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.hardware.qubit_mapper</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    <span class="n">build_calibration_graph</span><span class="p">,</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    <span class="n">detect_execution_regions</span><span class="p">,</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="p">)</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="n">G</span> <span class="o">=</span> <span class="n">build_calibration_graph</span><span class="p">(</span><span class="n">gate_errors</span><span class="p">,</span> <span class="n">readout_errors</span><span class="p">)</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="c1"># Explore with different resolutions</span>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="k">for</span> <span class="n">gamma</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">]:</span>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>    <span class="n">regions</span> <span class="o">=</span> <span class="n">detect_execution_regions</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="n">gamma</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>    <span class="n">sizes</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">n_qubits</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">regions</span><span class="p">]</span>
+<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;γ=</span><span class="si">{</span><span class="n">gamma</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">regions</span><span class="p">)</span><span class="si">}</span><span class="s2"> regions, sizes=</span><span class="si">{</span><span class="n">sizes</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>    <span class="k">if</span> <span class="n">regions</span><span class="p">:</span>
+<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a>        <span class="n">best</span> <span class="o">=</span> <span class="n">regions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Best: Q=</span><span class="si">{</span><span class="n">best</span><span class="o">.</span><span class="n">quality_score</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, &quot;</span>
+<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a>              <span class="sa">f</span><span class="s2">&quot;conn=</span><span class="si">{</span><span class="n">best</span><span class="o">.</span><span class="n">connectivity</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, &quot;</span>
+<a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a>              <span class="sa">f</span><span class="s2">&quot;fid=</span><span class="si">{</span><span class="n">best</span><span class="o">.</span><span class="n">mean_gate_fidelity</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="65-two-cluster-topology-detection">6.5 Two-Cluster Topology Detection<a class="headerlink" href="#65-two-cluster-topology-detection" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.hardware.qubit_mapper</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    <span class="n">build_calibration_graph</span><span class="p">,</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>    <span class="n">detect_execution_regions</span><span class="p">,</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="p">)</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="c1"># Device with two high-fidelity clusters connected by a bad link</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="n">gate_errors</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="c1"># Cluster A: qubits 0-4, excellent fidelity</span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>        <span class="n">gate_errors</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.002</span>  <span class="c1"># 99.8% fidelity</span>
+<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>
+<a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="c1"># Cluster B: qubits 5-9, good fidelity</span>
+<a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span>
+<a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a>    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span>
+<a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a>        <span class="n">gate_errors</span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.003</span>  <span class="c1"># 99.7% fidelity</span>
+<a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a>
+<a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a><span class="c1"># Bad bridge between clusters</span>
+<a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a><span class="n">gate_errors</span><span class="p">[(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.08</span>  <span class="c1"># 92% fidelity</span>
+<a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a>
+<a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a><span class="n">G</span> <span class="o">=</span> <span class="n">build_calibration_graph</span><span class="p">(</span><span class="n">gate_errors</span><span class="p">)</span>
+<a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a><span class="n">regions</span> <span class="o">=</span> <span class="n">detect_execution_regions</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">min_qubits</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a>
+<a id="__codelineno-14-24" name="__codelineno-14-24" href="#__codelineno-14-24"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">regions</span><span class="p">)</span><span class="si">}</span><span class="s2"> regions:&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-25" name="__codelineno-14-25" href="#__codelineno-14-25"></a><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">regions</span><span class="p">):</span>
+<a id="__codelineno-14-26" name="__codelineno-14-26" href="#__codelineno-14-26"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Region </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: qubits=</span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">qubits</span><span class="p">)</span><span class="si">}</span><span class="s2">, &quot;</span>
+<a id="__codelineno-14-27" name="__codelineno-14-27" href="#__codelineno-14-27"></a>          <span class="sa">f</span><span class="s2">&quot;Q=</span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">quality_score</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, fid=</span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">mean_gate_fidelity</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-28" name="__codelineno-14-28" href="#__codelineno-14-28"></a><span class="c1"># Expected: 2 regions, cluster A ranked higher (lower error)</span>
+</code></pre></div>
+<h3 id="66-combining-dynq-with-guess">6.6 Combining DynQ with GUESS<a class="headerlink" href="#66-combining-dynq-with-guess" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.hardware.qubit_mapper</span><span class="w"> </span><span class="kn">import</span> <span class="n">dynq_initial_layout</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.mitigation.symmetry_decay</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>    <span class="n">learn_symmetry_decay</span><span class="p">,</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="n">guess_extrapolate</span><span class="p">,</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>    <span class="n">xy_magnetisation_ideal</span><span class="p">,</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="p">)</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="c1"># Step 1: DynQ layout</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="n">result</span> <span class="o">=</span> <span class="n">dynq_initial_layout</span><span class="p">(</span><span class="n">gate_errors</span><span class="p">,</span> <span class="n">circuit_width</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="n">layout</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">initial_layout</span>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="c1"># Step 2: Run experiment on DynQ-selected qubits</span>
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a><span class="c1"># (circuit transpilation uses result.initial_layout)</span>
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a>
+<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a><span class="c1"># Step 3: Apply GUESS mitigation to the DynQ-placed experiment</span>
+<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a><span class="n">s_ideal</span> <span class="o">=</span> <span class="n">xy_magnetisation_ideal</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;ground&quot;</span><span class="p">)</span>
+<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a><span class="n">model</span> <span class="o">=</span> <span class="n">learn_symmetry_decay</span><span class="p">(</span><span class="n">s_ideal</span><span class="p">,</span> <span class="n">s_noisy_values</span><span class="p">,</span> <span class="n">noise_scales</span><span class="p">)</span>
+<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a><span class="n">mitigated</span> <span class="o">=</span> <span class="n">guess_extrapolate</span><span class="p">(</span><span class="n">r_noisy</span><span class="p">,</span> <span class="n">s_noisy_base</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a>
+<a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a><span class="c1"># DynQ + GUESS: better placement + better mitigation</span>
+<a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DynQ region quality: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">selected_region</span><span class="o">.</span><span class="n">quality_score</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GUESS-mitigated R: </span><span class="si">{</span><span class="n">mitigated</span><span class="o">.</span><span class="n">mitigated_value</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="7-integration-with-qiskit-transpilation">7. Integration with Qiskit Transpilation<a class="headerlink" href="#7-integration-with-qiskit-transpilation" title="Permanent link">&para;</a></h2>
+<h3 id="71-transpilation-pipeline-position">7.1 Transpilation Pipeline Position<a class="headerlink" href="#71-transpilation-pipeline-position" title="Permanent link">&para;</a></h3>
+<p>DynQ operates at the <strong>layout selection</strong> stage of the Qiskit transpilation
+pipeline, before routing:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>1. [Unrolling]     → decompose to basis gates
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>2. [DynQ Layout]   → select physical qubits (replaces DenseLayout)
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>3. [Routing]       → insert SWAP gates (SABRE, Stochastic)
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>4. [Optimisation]  → gate cancellation, commutation
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>5. [Scheduling]    → assign timing
+</code></pre></div>
+<h3 id="72-comparison-with-qiskit-layout-methods">7.2 Comparison with Qiskit Layout Methods<a class="headerlink" href="#72-comparison-with-qiskit-layout-methods" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Scope</th>
+<th>Calibration-Aware</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TrivialLayout</code></td>
+<td>Per-circuit</td>
+<td>No</td>
+<td><span class="arithmatex">\(O(n)\)</span></td>
+</tr>
+<tr>
+<td><code>DenseLayout</code></td>
+<td>Per-circuit</td>
+<td>Partial (error map)</td>
+<td><span class="arithmatex">\(O(n^2)\)</span></td>
+</tr>
+<tr>
+<td><code>SabreLayout</code></td>
+<td>Per-circuit</td>
+<td>Yes (via scoring)</td>
+<td><span class="arithmatex">\(O(n^2 \log n)\)</span></td>
+</tr>
+<tr>
+<td><strong>DynQ</strong></td>
+<td><strong>Global (per device)</strong></td>
+<td><strong>Yes (full calibration)</strong></td>
+<td>**$O(n +</td>
+</tr>
+</tbody>
+</table>
+<p>DynQ computes the partition once per calibration update (typically
+daily), then layout selection for any circuit width is <span class="arithmatex">\(O(k)\)</span> where
+<span class="arithmatex">\(k\)</span> is the number of regions.</p>
+<h3 id="73-future-custom-transpiler-pass">7.3 Future: Custom Transpiler Pass<a class="headerlink" href="#73-future-custom-transpiler-pass" title="Permanent link">&para;</a></h3>
+<p>A <code>DynQLayoutPass</code> subclassing <code>qiskit.transpiler.AnalysisPass</code> is
+planned but not yet implemented. It would:</p>
+<ol>
+<li>Extract calibration data from <code>backend.target</code></li>
+<li>Run <code>dynq_initial_layout</code></li>
+<li>Store the result in <code>property_set["layout"]</code></li>
+</ol>
+<p>Current usage requires manual extraction of calibration data and
+passing <code>initial_layout</code> to <code>transpile()</code>.</p>
+<hr />
+<h2 id="8-benchmarks">8. Benchmarks<a class="headerlink" href="#8-benchmarks" title="Permanent link">&para;</a></h2>
+<h3 id="81-python-performance">8.1 Python Performance<a class="headerlink" href="#81-python-performance" title="Permanent link">&para;</a></h3>
+<p>Measured on ML350 Gen8 (128 GB RAM, Xeon E5-2620v2):</p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Input Size</th>
+<th>Wall Time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>build_calibration_graph</code></td>
+<td>156 qubits, heavy-hex</td>
+<td>&lt; 5 ms</td>
+</tr>
+<tr>
+<td><code>detect_execution_regions</code></td>
+<td>156 qubits</td>
+<td>&lt; 50 ms</td>
+</tr>
+<tr>
+<td><code>dynq_initial_layout</code> (full)</td>
+<td>156 qubits → 5-qubit layout</td>
+<td>&lt; 100 ms</td>
+</tr>
+<tr>
+<td><code>detect_execution_regions</code></td>
+<td>16 qubits (synthetic)</td>
+<td>&lt; 2 ms</td>
+</tr>
+</tbody>
+</table>
+<h3 id="82-rust-quality-scoring-performance">8.2 Rust Quality Scoring Performance<a class="headerlink" href="#82-rust-quality-scoring-performance" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Input Size</th>
+<th>Wall Time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>score_regions_batch</code></td>
+<td>10 regions × 15 qubits</td>
+<td>&lt; 0.1 ms</td>
+</tr>
+<tr>
+<td><code>score_regions_batch</code></td>
+<td>100 regions × 50 qubits</td>
+<td>&lt; 5 ms</td>
+</tr>
+</tbody>
+</table>
+<h3 id="83-quality-improvement-synthetic">8.3 Quality Improvement (Synthetic)<a class="headerlink" href="#83-quality-improvement-synthetic" title="Permanent link">&para;</a></h3>
+<p>On the two-cluster synthetic topology:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Avg Gate Error in Layout</th>
+<th>Circuit Depth (after SABRE)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TrivialLayout</td>
+<td>0.012</td>
+<td>42</td>
+</tr>
+<tr>
+<td>DenseLayout</td>
+<td>0.008</td>
+<td>38</td>
+</tr>
+<tr>
+<td><strong>DynQ</strong></td>
+<td><strong>0.002</strong></td>
+<td><strong>35</strong></td>
+</tr>
+</tbody>
+</table>
+<p>DynQ achieves 75% lower average gate error and 17% lower circuit depth
+by avoiding the high-error bridge coupler entirely.</p>
+<hr />
+<h2 id="9-test-coverage">9. Test Coverage<a class="headerlink" href="#9-test-coverage" title="Permanent link">&para;</a></h2>
+<p>17 tests across 6 dimensions in <code>tests/test_qubit_mapper.py</code>:</p>
+<h3 id="91-emptynull-inputs-3-tests">9.1 Empty/Null Inputs (3 tests)<a class="headerlink" href="#91-emptynull-inputs-3-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Description</th>
+<th>Assertion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_single_edge</code></td>
+<td>Minimum graph (2 nodes)</td>
+<td>Weight = <span class="arithmatex">\(1/(e + \epsilon_0)\)</span></td>
+</tr>
+<tr>
+<td><code>test_no_regions_too_few_qubits</code></td>
+<td>High <code>min_qubits</code> filter</td>
+<td>Empty list</td>
+</tr>
+<tr>
+<td><code>test_select_none_when_too_small</code></td>
+<td>Region too small for circuit</td>
+<td>Returns <code>None</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="92-error-handling-2-tests">9.2 Error Handling (2 tests)<a class="headerlink" href="#92-error-handling-2-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Description</th>
+<th>Assertion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_zero_error_no_crash</code></td>
+<td>Perfect gates (<span class="arithmatex">\(e = 0\)</span>)</td>
+<td>Weight = <span class="arithmatex">\(1/\epsilon_0\)</span></td>
+</tr>
+<tr>
+<td><code>test_high_error_low_weight</code></td>
+<td>50% error rate</td>
+<td>Weight &lt; 3.0</td>
+</tr>
+</tbody>
+</table>
+<h3 id="93-negative-cases-2-tests">9.3 Negative Cases (2 tests)<a class="headerlink" href="#93-negative-cases-2-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Description</th>
+<th>Assertion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_uniform_errors_single_community</code></td>
+<td>All-same errors</td>
+<td><span class="arithmatex">\(\leq 3\)</span> communities</td>
+</tr>
+<tr>
+<td><code>test_high_error_bridge_separates_clusters</code></td>
+<td>Two clusters, bad bridge</td>
+<td><span class="arithmatex">\(\geq 2\)</span> regions, largest <span class="arithmatex">\(\geq 4\)</span></td>
+</tr>
+</tbody>
+</table>
+<h3 id="94-pipeline-integration-5-tests">9.4 Pipeline Integration (5 tests)<a class="headerlink" href="#94-pipeline-integration-5-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Description</th>
+<th>Assertion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_full_dynq_pipeline</code></td>
+<td>End-to-end with 2-cluster topology</td>
+<td>Valid result, layout size = 4</td>
+</tr>
+<tr>
+<td><code>test_layout_qubits_in_region</code></td>
+<td>Layout qubits subset of region</td>
+<td>All layout qubits in region</td>
+</tr>
+<tr>
+<td><code>test_readout_errors_affect_layout</code></td>
+<td>Readout-sorted layout</td>
+<td>Layout sorted by readout error</td>
+</tr>
+<tr>
+<td><code>test_region_quality_sorted</code></td>
+<td>Output ordering</td>
+<td>Descending quality</td>
+</tr>
+<tr>
+<td><code>test_top_level_import</code></td>
+<td>Package re-export check</td>
+<td>Callable</td>
+</tr>
+</tbody>
+</table>
+<h3 id="95-roundtrip-3-tests">9.5 Roundtrip (3 tests)<a class="headerlink" href="#95-roundtrip-3-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Description</th>
+<th>Assertion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_best_region_has_lowest_error</code></td>
+<td>Quality-ranked first</td>
+<td>Best fidelity <span class="arithmatex">\(\geq\)</span> worst</td>
+</tr>
+<tr>
+<td><code>test_connectivity_bounded</code></td>
+<td>All regions valid</td>
+<td><span class="arithmatex">\(0 \leq\)</span> connectivity <span class="arithmatex">\(\leq 1\)</span></td>
+</tr>
+<tr>
+<td><code>test_resolution_controls_size</code></td>
+<td>Resolution parameter effect</td>
+<td>Higher <span class="arithmatex">\(\gamma \to\)</span> smaller avg size</td>
+</tr>
+</tbody>
+</table>
+<h3 id="96-performance-2-tests">9.6 Performance (2 tests)<a class="headerlink" href="#96-performance-2-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Description</th>
+<th>Threshold</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_community_detection_fast</code></td>
+<td>156-qubit heavy-hex</td>
+<td>&lt; 50 ms</td>
+</tr>
+<tr>
+<td><code>test_full_pipeline_fast</code></td>
+<td>Full DynQ 156 qubits</td>
+<td>&lt; 100 ms</td>
+</tr>
+</tbody>
+</table>
+<h3 id="97-pipeline-wiring-2-tests-in-test_pipeline_wiring_performancepy">9.7 Pipeline Wiring (2 tests in <code>test_pipeline_wiring_performance.py</code>)<a class="headerlink" href="#97-pipeline-wiring-2-tests-in-test_pipeline_wiring_performancepy" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Description</th>
+<th>Assertion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_dynq_community_detection</code></td>
+<td>DynQ in pipeline context</td>
+<td>Regions detected</td>
+</tr>
+<tr>
+<td><code>test_dynq_full_pipeline</code></td>
+<td>Full DynQ pipeline</td>
+<td>Layout assigned</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="10-limitations-and-caveats">10. Limitations and Caveats<a class="headerlink" href="#10-limitations-and-caveats" title="Permanent link">&para;</a></h2>
+<h3 id="101-static-calibration-assumption">10.1 Static Calibration Assumption<a class="headerlink" href="#101-static-calibration-assumption" title="Permanent link">&para;</a></h3>
+<p>DynQ uses calibration data from a single point in time. Qubit error
+rates drift during a session (typical drift: 0.1–0.5% over 1 hour).
+For long experiment campaigns, re-run <code>dynq_initial_layout</code> periodically
+with fresh calibration data.</p>
+<h3 id="102-networkx-dependency">10.2 Networkx Dependency<a class="headerlink" href="#102-networkx-dependency" title="Permanent link">&para;</a></h3>
+<p>The community detection relies on <code>networkx</code>, which is a heavy dependency
+(~10 MB, pure Python). For deployment in constrained environments,
+a Rust-native Louvain implementation could replace networkx. Currently
+only the scoring is in Rust.</p>
+<h3 id="103-louvain-non-determinism">10.3 Louvain Non-Determinism<a class="headerlink" href="#103-louvain-non-determinism" title="Permanent link">&para;</a></h3>
+<p>Louvain is a stochastic algorithm. Without a fixed <code>seed</code>, different
+runs may produce different partitions. Always pass <code>seed</code> for
+reproducible results.</p>
+<h3 id="104-crosstalk-not-modelled">10.4 Crosstalk Not Modelled<a class="headerlink" href="#104-crosstalk-not-modelled" title="Permanent link">&para;</a></h3>
+<p>DynQ uses gate error rates as the sole quality metric. Correlated
+crosstalk between neighbouring qubits is not explicitly modelled.
+On devices with significant spectator errors (frequency collisions),
+the optimal region may differ from what DynQ suggests.</p>
+<h3 id="105-minimum-region-size">10.5 Minimum Region Size<a class="headerlink" href="#105-minimum-region-size" title="Permanent link">&para;</a></h3>
+<p>The default <code>min_qubits=3</code> can be too aggressive for small circuits
+(2-qubit experiments). Set <code>min_qubits=2</code> explicitly for 2-qubit
+circuits.</p>
+<h3 id="106-no-dynamic-re-routing">10.6 No Dynamic Re-Routing<a class="headerlink" href="#106-no-dynamic-re-routing" title="Permanent link">&para;</a></h3>
+<p>DynQ selects the layout before circuit execution. If a qubit fails
+mid-circuit (e.g., due to cosmic ray event), DynQ does not provide
+real-time fallback. Use Qiskit's error mitigation or retry with a
+fresh layout.</p>
+<h3 id="107-all-to-all-coupling-overhead">10.7 All-to-All Coupling Overhead<a class="headerlink" href="#107-all-to-all-coupling-overhead" title="Permanent link">&para;</a></h3>
+<p>For circuits that require all-to-all connectivity (e.g., full
+Kuramoto-XY with <span class="arithmatex">\(n &gt; 5\)</span>), the selected region must have sufficient
+density for SWAP routing. DynQ does not guarantee minimum SWAP count,
+only that the available couplers are high-fidelity.</p>
+<hr />
+<h2 id="11-comparison-with-alternative-methods">11. Comparison with Alternative Methods<a class="headerlink" href="#11-comparison-with-alternative-methods" title="Permanent link">&para;</a></h2>
+<p>| Feature | DynQ | SABRE Layout | Mapomatic | t|ket⟩ placement |
+|---------|------|--------------|-----------|------------------|
+| Global partitioning | Yes | No (local) | Yes | Yes |
+| Calibration-aware | Yes | Partial | Yes | Yes |
+| Open source | Yes (MIT) | Yes (Apache 2.0) | Yes (Apache 2.0) | Yes (Apache 2.0) |
+| Community detection | Louvain | N/A | Subgraph isomorphism | Graph scoring |
+| Readout-aware | Yes | No | Yes | Yes |
+| Resolution tuning | Yes (<span class="arithmatex">\(\gamma\)</span>) | N/A | N/A | N/A |
+| Rust acceleration | Yes (scoring) | No | No | C++ backend |
+| Framework | Standalone | Qiskit built-in | Qiskit extension | t|ket⟩ |</p>
+<h3 id="when-to-choose-dynq">When to Choose DynQ<a class="headerlink" href="#when-to-choose-dynq" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>IBM hardware with heavy-hex topology:</strong> DynQ is tuned for the
+   spatial heterogeneity of heavy-hex devices.</li>
+<li><strong>Multiple experiments on same device:</strong> Compute partition once,
+   reuse for all circuits of the same width.</li>
+<li><strong>SCPN Kuramoto circuits:</strong> All-to-all interaction pattern benefits
+   most from high-density regions.</li>
+</ol>
+<h3 id="when-not-to-choose-dynq">When NOT to Choose DynQ<a class="headerlink" href="#when-not-to-choose-dynq" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Homogeneous simulators:</strong> No spatial variation to exploit.</li>
+<li><strong>Trapped-ion hardware:</strong> Full connectivity eliminates the need
+   for topology-aware placement.</li>
+<li><strong>Circuits with specific connectivity requirements:</strong> Use
+   Mapomatic's subgraph isomorphism for exact pattern matching.</li>
+</ol>
+<hr />
+<h2 id="12-references">12. References<a class="headerlink" href="#12-references" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>Liu, Z. <em>et al.</em> "DynQ: Dynamic Topology-Agnostic Quantum Circuit
+   Virtualisation." arXiv:2601.19635 (2026).
+   — Original DynQ framework. Eq. 1 (weight function), Eq. 8 (composite quality).</p>
+</li>
+<li>
+<p>Blondel, V. D. <em>et al.</em> "Fast unfolding of communities in large
+   networks." <em>J. Stat. Mech.</em> 2008(10), P10008 (2008).
+   — Louvain algorithm reference.</p>
+</li>
+<li>
+<p>Li, G. <em>et al.</em> "Towards efficient superconducting quantum
+   processor architecture design." <em>ASPLOS</em> 2020.
+   — Mapomatic layout optimisation (comparison baseline).</p>
+</li>
+<li>
+<p>Cowtan, A. <em>et al.</em> "On the qubit routing problem." <em>TQC</em> 2019.
+   — SABRE routing algorithm (downstream of DynQ layout).</p>
+</li>
+<li>
+<p>Šotek, M. "SCPN Quantum Control: Kuramoto-XY synchronisation
+   witnesses on NISQ hardware." (2024–2026).
+   — SCPN framework and Trotter circuit construction.</p>
+</li>
+</ol>
+<hr />
+<h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../hardware_guide/">Hardware Execution Guide</a> — HardwareRunner and noise model</li>
+<li><a href="../symmetry_decay_guess/">GUESS Symmetry Decay</a> — physics-informed error mitigation</li>
+<li><a href="../error_mitigation/">Error Mitigation via Mitiq</a> — ZNE and DDD wrappers</li>
+<li><a href="../rust_engine/">Rust Engine</a> — build instructions and module index</li>
+<li><a href="../pipeline_performance/">Pipeline Performance</a> — benchmarks and wiring tests</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+        <script src="../js/goatcounter.js"></script>
+      
+    
+  </body>
+</html>

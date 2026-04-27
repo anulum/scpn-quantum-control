@@ -1,0 +1,2529 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Quantum simulation of coupled oscillators on IBM hardware">
+      
+      
+        <meta name="author" content="Miroslav Šotek">
+      
+      
+        <link rel="canonical" href="https://anulum.github.io/scpn-quantum-control/triage/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/anulum_logo_company.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Issue Triage Policy - scpn-quantum-control</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#issue-triage-policy" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="scpn-quantum-control" class="md-header__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            scpn-quantum-control
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Issue Triage Policy
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="scpn-quantum-control" class="md-nav__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    scpn-quantum-control
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SCPN Foundations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../equations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../research_gems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research Gems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../orchestrator_integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestrator Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rust_engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../autodoc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auto-Generated
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analysis_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../identity_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mitigation_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mitigation API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bridges_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridges API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmarks_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipeline_performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_dynamic_coupling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Dynamic Coupling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_structured_ansatz/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Structured Ansatz
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_hw_topological_optimizer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: HW Topological Optimizer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../test_infrastructure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publications
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Publications
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprint/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprint: Quantum Kuramoto-XY on Hardware
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_sync_witnesses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: Synchronisation Witnesses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: DLA Parity Theorem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DLA-parity Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classical_irreproducibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classical Irreproducibility
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results Gallery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hardware_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IBM Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXPERIMENT_ROADMAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PAPER_CLAIMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results & Claims
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../QUANTUM_CRYPTO_RESEARCH_BRANCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Crypto Research
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Learning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notebooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Roadmap
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../strategic_roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strategic Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#cadence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cadence
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#label-taxonomy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Label taxonomy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Label taxonomy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kind-what-it-is" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kind (what it is)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#priority-how-urgent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Priority (how urgent)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#status-where-it-is" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Status (where it is)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Routing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#closure-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Closure criteria
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-disclosures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security disclosures
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pr-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR review
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stale-bot-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stale-bot policy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worked-examples-per-label" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked examples per label
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Worked examples per label">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-bug-p0-critical-in-progress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: bug + P0-critical + in-progress
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-enhancement-p2-medium-accepted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: enhancement + P2-medium + accepted
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-question-p3-low-needs-info" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: question + P3-low + needs-info
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-security-p0-critical-reported-privately" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: security + P0-critical (reported privately)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-docs-p3-low-good-first-issue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: docs + P3-low + good-first-issue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-infrastructure-p1-high-blocked" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: infrastructure + P1-high + blocked
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-science-p1-high-in-progress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: science + P1-high + in-progress
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#label-combinations-and-what-they-mean" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Label combinations and what they mean
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#flow-diagrams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flow diagrams
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#response-time-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Response time tracking
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#collaborators-and-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Collaborators and access
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#escalation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Escalation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relationship-to-other-docs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relationship to other docs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#changing-this-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changing this policy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#intentionally-not-covered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intentionally not covered
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision history
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="issue-triage-policy">Issue Triage Policy<a class="headerlink" href="#issue-triage-policy" title="Permanent link">&para;</a></h1>
+<p>This document describes how issues and pull requests are routed,
+prioritised and closed in <code>scpn-quantum-control</code>. It exists so that a
+first-time contributor knows when to expect a response and what a
+given label means.</p>
+<p>Closes audit item B11.</p>
+<h2 id="cadence">Cadence<a class="headerlink" href="#cadence" title="Permanent link">&para;</a></h2>
+<p>Triage runs <strong>weekly</strong>, on Tuesday 09:00 CET. Off-week issues are still
+read; they just might not get a label or owner until Tuesday.</p>
+<p>Emergencies (hardware campaigns in-flight, a published release
+regressing, a security disclosure) bypass the weekly cadence — ping
+<code>protoscience@anulum.li</code> directly and the owner will reply within
+24 hours.</p>
+<h2 id="label-taxonomy">Label taxonomy<a class="headerlink" href="#label-taxonomy" title="Permanent link">&para;</a></h2>
+<p>Every triaged issue gets one label from each of three axes.</p>
+<h3 id="kind-what-it-is">Kind (what it is)<a class="headerlink" href="#kind-what-it-is" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Label</th>
+<th>Applied when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bug</code></td>
+<td>The code does not match documented or obvious behaviour.</td>
+</tr>
+<tr>
+<td><code>enhancement</code></td>
+<td>New feature, new API surface, new algorithm.</td>
+</tr>
+<tr>
+<td><code>question</code></td>
+<td>User cannot get a thing to work; not clear whether it's a bug.</td>
+</tr>
+<tr>
+<td><code>docs</code></td>
+<td>Docs are wrong, missing, or unclear.</td>
+</tr>
+<tr>
+<td><code>infrastructure</code></td>
+<td>CI, packaging, release process, dependency management.</td>
+</tr>
+<tr>
+<td><code>security</code></td>
+<td>Vulnerability, hardening, supply-chain concern.</td>
+</tr>
+<tr>
+<td><code>science</code></td>
+<td>Claim correctness, reproducibility of a published number, Gap-2 / Gap-3 work.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="priority-how-urgent">Priority (how urgent)<a class="headerlink" href="#priority-how-urgent" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Label</th>
+<th>SLA response</th>
+<th>SLA closure</th>
+<th>Typical examples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>P0-critical</code></td>
+<td>24 h</td>
+<td>7 days</td>
+<td>Data corruption, security leak, release blocker.</td>
+</tr>
+<tr>
+<td><code>P1-high</code></td>
+<td>3 days</td>
+<td>30 days</td>
+<td>Wrong scientific number, hardware campaign regression.</td>
+</tr>
+<tr>
+<td><code>P2-medium</code></td>
+<td>1 week</td>
+<td>90 days</td>
+<td>Usability annoyance, missing feature with a workaround.</td>
+</tr>
+<tr>
+<td><code>P3-low</code></td>
+<td>Triaged weekly</td>
+<td>No SLA</td>
+<td>Nice-to-have, cosmetic, speculative.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="status-where-it-is">Status (where it is)<a class="headerlink" href="#status-where-it-is" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Label</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>triage</code></td>
+<td>Auto-applied to every new issue until triaged.</td>
+</tr>
+<tr>
+<td><code>needs-info</code></td>
+<td>Waiting on reporter for a reproducer, log, or clarification. Stale after 30 days → closed with a polite note.</td>
+</tr>
+<tr>
+<td><code>accepted</code></td>
+<td>Triaged, prioritised, an owner may or may not be assigned yet.</td>
+</tr>
+<tr>
+<td><code>in-progress</code></td>
+<td>Someone is actively working on it. The owner commits to closing it or flipping it back to <code>accepted</code> within 30 days.</td>
+</tr>
+<tr>
+<td><code>blocked</code></td>
+<td>Blocked on external dependency (IBM quota, upstream library bug, CEO decision).</td>
+</tr>
+<tr>
+<td><code>good-first-issue</code></td>
+<td>Safe entry point for a new contributor.</td>
+</tr>
+<tr>
+<td><code>help-wanted</code></td>
+<td>Owner exists but welcomes parallel work.</td>
+</tr>
+<tr>
+<td><code>duplicate</code></td>
+<td>Closed with a link to the original.</td>
+</tr>
+<tr>
+<td><code>wontfix</code></td>
+<td>Closed by maintainer with a reason that goes in the close comment.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="routing">Routing<a class="headerlink" href="#routing" title="Permanent link">&para;</a></h2>
+<p>New issues are routed to an owner by subsystem:</p>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Owner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hardware/</code> (IBM Runtime, Heron, pennylane adapter)</td>
+<td>Miroslav Šotek</td>
+</tr>
+<tr>
+<td><code>analysis/</code> (DLA parity, Koopman, BKT)</td>
+<td>Miroslav Šotek</td>
+</tr>
+<tr>
+<td><code>bridge/</code> (Kuramoto-XY, SSGF)</td>
+<td>Miroslav Šotek</td>
+</tr>
+<tr>
+<td><code>qsnn/</code> (spiking)</td>
+<td>Miroslav Šotek</td>
+</tr>
+<tr>
+<td>CI / packaging</td>
+<td>Any maintainer</td>
+</tr>
+<tr>
+<td>Rust engine (<code>scpn_quantum_engine</code>)</td>
+<td>Any maintainer</td>
+</tr>
+<tr>
+<td>Docs</td>
+<td>Any maintainer</td>
+</tr>
+</tbody>
+</table>
+<p>(As of 2026-04-17 there is a single maintainer. Additional owners will
+be listed here as collaborators join.)</p>
+<h2 id="closure-criteria">Closure criteria<a class="headerlink" href="#closure-criteria" title="Permanent link">&para;</a></h2>
+<p>An issue is closed when one of the following is true:</p>
+<ul>
+<li>The fix lands on <code>main</code> and a test locks in the expected behaviour.</li>
+<li>A follow-up task is queued in the roadmap and linked in the issue.</li>
+<li>The maintainer decides <code>wontfix</code> and explains why in the close comment.</li>
+<li>The reporter has not responded to a <code>needs-info</code> request for 30 days.</li>
+</ul>
+<p>Closed issues remain indexed and searchable. Re-opening is welcome when
+new evidence arrives.</p>
+<h2 id="security-disclosures">Security disclosures<a class="headerlink" href="#security-disclosures" title="Permanent link">&para;</a></h2>
+<p>Security issues use <strong>private vulnerability reporting</strong> in GitHub
+Security Advisories, not the public issue tracker. See
+<code>SECURITY.md</code> and <code>.well-known/security.txt</code> for the disclosure
+process. Response SLA is 24 hours; fix SLA scales with severity per
+<code>docs/THREAT_MODEL.md</code>.</p>
+<h2 id="pr-review">PR review<a class="headerlink" href="#pr-review" title="Permanent link">&para;</a></h2>
+<p>Pull requests get the same triage treatment as issues, plus:</p>
+<ul>
+<li><code>CI green</code> is a pre-condition for merge. A red CI is blocking feedback;
+  comments can still land.</li>
+<li>Maintainer review is typically ≤ 72 hours on P0 / P1, ≤ 1 week on P2,
+  weekly cadence on P3.</li>
+<li><code>co-authored-by</code> trailer is required on every commit (see
+  <code>CONTRIBUTING.md</code>).</li>
+</ul>
+<h2 id="stale-bot-policy">Stale-bot policy<a class="headerlink" href="#stale-bot-policy" title="Permanent link">&para;</a></h2>
+<p>No stale-bot. Issues that rot do so deliberately — we'd rather leave a
+real bug open than auto-close it and lose the signal. The <code>needs-info</code>
+30-day close is the one automated exception.</p>
+<hr />
+<h2 id="worked-examples-per-label">Worked examples per label<a class="headerlink" href="#worked-examples-per-label" title="Permanent link">&para;</a></h2>
+<p>Abstract label definitions are easy to misapply. These examples are
+drawn from issues opened against this repository (or identical
+patterns we expect), with the final labels and closure trajectory.</p>
+<h3 id="example-bug-p0-critical-in-progress">Example: <code>bug</code> + <code>P0-critical</code> + <code>in-progress</code><a class="headerlink" href="#example-bug-p0-critical-in-progress" title="Permanent link">&para;</a></h3>
+<p><em>"Running <code>scripts/phase1/run_dla_parity.py --L 4</code> on a freshly
+cloned repo raises <code>ModuleNotFoundError: scpn_quantum_engine</code> even
+after <code>pip install -e '.[rust]'</code>."</em></p>
+<p>Labelling:</p>
+<ul>
+<li><strong>Kind</strong> — <code>bug</code>: the documented install path is broken.</li>
+<li><strong>Priority</strong> — <code>P0-critical</code>: blocks reproducibility of the
+  published Phase 1 numbers.</li>
+<li><strong>Status</strong> — <code>triage</code> → <code>accepted</code> → <code>in-progress</code>.</li>
+</ul>
+<p>Response SLA: 24 h to acknowledge, 7 days to fix. Typical fix
+trajectory: reproduce on a clean VM, identify whether the <code>[rust]</code>
+extra is actually building the wheel (a <code>maturin develop</code> vs
+<code>pip install -e .[rust]</code> mismatch is the usual culprit), land the
+fix plus a regression test that runs on a fresh venv in CI.</p>
+<h3 id="example-enhancement-p2-medium-accepted">Example: <code>enhancement</code> + <code>P2-medium</code> + <code>accepted</code><a class="headerlink" href="#example-enhancement-p2-medium-accepted" title="Permanent link">&para;</a></h3>
+<p><em>"Please add a <code>--seed</code> flag to <code>scripts/phase1/run_dla_parity.py</code>
+so two independent runs can start from the same classical initial
+state."</em></p>
+<p>Labelling:</p>
+<ul>
+<li><strong>Kind</strong> — <code>enhancement</code>: new CLI surface.</li>
+<li><strong>Priority</strong> — <code>P2-medium</code>: workaround exists (edit the script
+  directly), but the request is reasonable for reproducibility.</li>
+<li><strong>Status</strong> — <code>accepted</code>, <strong>no owner</strong> — up for grabs.</li>
+</ul>
+<p>Closure trajectory: a contributor picks it up, adds the flag plus a
+regression test that the same seed produces the same JSON result,
+merges. The issue closes automatically on the merge commit reference.</p>
+<h3 id="example-question-p3-low-needs-info">Example: <code>question</code> + <code>P3-low</code> + <code>needs-info</code><a class="headerlink" href="#example-question-p3-low-needs-info" title="Permanent link">&para;</a></h3>
+<p><em>"Is the DLA parity asymmetry reproducible on <code>ibm_brisbane</code>?"</em></p>
+<p>Labelling:</p>
+<ul>
+<li><strong>Kind</strong> — <code>question</code>: user is asking, not reporting.</li>
+<li><strong>Priority</strong> — <code>P3-low</code>: the Phase 1 campaign ran on
+  <code>ibm_kingston</code>; extending to a second machine is interesting
+  science but not a release blocker.</li>
+<li><strong>Status</strong> — <code>triage</code> → <code>needs-info</code>: ask whether the user has
+  run the reproducer themselves, what ZNE settings they used, and
+  how many shots.</li>
+</ul>
+<p>If the reporter does not respond in 30 days, the <code>needs-info</code> timer
+auto-closes the issue with a polite pointer to re-open when data
+arrives. If they respond with concrete numbers, the issue flips to
+<code>science</code> + <code>P2</code> for investigation.</p>
+<h3 id="example-security-p0-critical-reported-privately">Example: <code>security</code> + <code>P0-critical</code> (reported privately)<a class="headerlink" href="#example-security-p0-critical-reported-privately" title="Permanent link">&para;</a></h3>
+<p>Never appears in the public tracker. See <code>SECURITY.md</code>. The flow is:</p>
+<ol>
+<li>Private disclosure via GitHub Security Advisory draft.</li>
+<li>Maintainer acknowledges within 24 h.</li>
+<li>CVSS score is computed against <code>docs/THREAT_MODEL.md</code>; <code>High</code>
+   and <code>Critical</code> get a private branch with a tight timeline
+   (fix within 7 days or 30 days depending on CVSS).</li>
+<li>Coordinated disclosure: advisory is published alongside the
+   fix commit; the reporter is credited unless they opt out.</li>
+<li>A public post-mortem lands in
+   <code>.coordination/incidents/INCIDENT_*_post_mortem.md</code>
+   (gitignored while in draft, promoted to the public
+   <code>SECURITY_INCIDENTS.md</code> after 90 days).</li>
+</ol>
+<h3 id="example-docs-p3-low-good-first-issue">Example: <code>docs</code> + <code>P3-low</code> + <code>good-first-issue</code><a class="headerlink" href="#example-docs-p3-low-good-first-issue" title="Permanent link">&para;</a></h3>
+<p><em>"<code>docs/pipeline_performance.md</code> §21 still references the pre-v0.9
+function name <code>build_kuramoto_coupling</code>; it was renamed to
+<code>build_knm_paper27</code> in v0.9.0."</em></p>
+<p>Labelling:</p>
+<ul>
+<li><strong>Kind</strong> — <code>docs</code>.</li>
+<li><strong>Priority</strong> — <code>P3-low</code>: no user harm, just staleness.</li>
+<li><strong>Status</strong> — <code>good-first-issue</code>: a single-line grep-and-replace
+  PR is a classic newcomer entry point.</li>
+</ul>
+<p>Closure: the contributor submits a PR, CI confirms the page builds
+under <code>mkdocs build --strict</code>, maintainer merges within a week.</p>
+<h3 id="example-infrastructure-p1-high-blocked">Example: <code>infrastructure</code> + <code>P1-high</code> + <code>blocked</code><a class="headerlink" href="#example-infrastructure-p1-high-blocked" title="Permanent link">&para;</a></h3>
+<p><em>"Dependabot wants to bump <code>qiskit</code> from 1.4 to 2.3 but our
+<code>qiskit-ibm-runtime</code> pin caps at 1.x."</em></p>
+<p>Labelling:</p>
+<ul>
+<li><strong>Kind</strong> — <code>infrastructure</code>.</li>
+<li><strong>Priority</strong> — <code>P1-high</code>: dep drift is a security surface.</li>
+<li><strong>Status</strong> — <code>blocked</code>: we cannot take the bump until
+  <code>qiskit-ibm-runtime</code> 2.x lands and we migrate. Tagged with a
+  <code>blocked-by:upstream-runtime-2.x</code> sub-label.</li>
+</ul>
+<p>The issue stays open. Triage revisits weekly to check whether the
+upstream blocker has moved.</p>
+<h3 id="example-science-p1-high-in-progress">Example: <code>science</code> + <code>P1-high</code> + <code>in-progress</code><a class="headerlink" href="#example-science-p1-high-in-progress" title="Permanent link">&para;</a></h3>
+<p><em>"<code>docs/pipeline_performance.md</code> reports 95 % coverage for the
+surface-code module but my local run shows 63 %."</em></p>
+<p>Labelling:</p>
+<ul>
+<li><strong>Kind</strong> — <code>science</code> (reproducibility of a claim).</li>
+<li><strong>Priority</strong> — <code>P1-high</code>: wrong scientific number.</li>
+<li><strong>Status</strong> — <code>accepted</code> → <code>in-progress</code>.</li>
+</ul>
+<p>Closure: reproduce locally, identify whether the stale number is
+in the doc (doc fix) or the code regressed (code fix). Either path
+lands a coverage-regression test so the same drift is detected
+earlier next time.</p>
+<h2 id="label-combinations-and-what-they-mean">Label combinations and what they mean<a class="headerlink" href="#label-combinations-and-what-they-mean" title="Permanent link">&para;</a></h2>
+<p>Not every combination is sensible. This matrix documents the
+ones we use and calls out a few that would signal a labelling
+mistake.</p>
+<table>
+<thead>
+<tr>
+<th>Kind × Priority</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bug</code> × <code>P0</code></td>
+<td>Release blocker. Stops everything else.</td>
+</tr>
+<tr>
+<td><code>bug</code> × <code>P1</code></td>
+<td>Confirmed incorrect behaviour, workaround exists.</td>
+</tr>
+<tr>
+<td><code>bug</code> × <code>P2</code></td>
+<td>Edge-case bug a small fraction of users hit.</td>
+</tr>
+<tr>
+<td><code>bug</code> × <code>P3</code></td>
+<td>Curiosity bug — observed, but no user is blocked.</td>
+</tr>
+<tr>
+<td><code>security</code> × <code>P0</code></td>
+<td>Active vulnerability, coordinated disclosure.</td>
+</tr>
+<tr>
+<td><code>security</code> × <code>P1</code></td>
+<td>Hardening gap, no active exploit.</td>
+</tr>
+<tr>
+<td><code>enhancement</code> × <code>P0</code></td>
+<td><strong>Invalid combination.</strong> If an enhancement is P0, it is actually a bug. Re-label.</td>
+</tr>
+<tr>
+<td><code>enhancement</code> × <code>P1</code></td>
+<td>Strategic feature with a committed timeline.</td>
+</tr>
+<tr>
+<td><code>question</code> × <code>P0</code></td>
+<td><strong>Invalid combination.</strong> Either the user is blocked (bug) or they are asking about something low-priority. Re-label.</td>
+</tr>
+<tr>
+<td><code>science</code> × <code>P0</code></td>
+<td>Published number is wrong. Retract + fix.</td>
+</tr>
+<tr>
+<td><code>docs</code> × <code>P0</code></td>
+<td><strong>Rare but valid.</strong> Used when a security procedure doc is wrong in a way that could lead users to leak credentials.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="flow-diagrams">Flow diagrams<a class="headerlink" href="#flow-diagrams" title="Permanent link">&para;</a></h2>
+<p>Textual flow for the modal path of an issue:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>new issue
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  ↓
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>triage label auto-applied
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  ↓
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>Tuesday 09:00 CET (or emergency escalation)
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  ↓
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>+---------------------+
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>| Kind decided        |
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>| Priority assigned   |
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>| Owner assigned      |
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>+---------------------+
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>  ↓
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>status: accepted
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>  ↓            (reporter clarification needed?)
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>  ├── yes → needs-info → (30 days) → auto-close
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>  ├── no
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>  ↓
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>status: in-progress
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>  ↓            (blocked externally?)
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>  ├── yes → blocked (weekly re-check)
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>  ├── no
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>  ↓
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>fix lands on main + test
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>  ↓
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>issue closes (auto-referenced by commit)
+</code></pre></div>
+<p>For pull requests, the flow is identical except the "fix lands" step
+becomes "CI green + maintainer review + merge".</p>
+<h2 id="response-time-tracking">Response time tracking<a class="headerlink" href="#response-time-tracking" title="Permanent link">&para;</a></h2>
+<p>We do <strong>not</strong> run a response-time bot. The SLA table above is a
+policy commitment, not a bot-enforced deadline. The expectation is
+that a maintainer glances at the triage queue once a day. The
+GitHub notifications inbox counts as the queue.</p>
+<p>If the response SLA slips, the maintainer's next action is to
+acknowledge late and offer a concrete next step — never silently
+keep the timer running.</p>
+<h2 id="collaborators-and-access">Collaborators and access<a class="headerlink" href="#collaborators-and-access" title="Permanent link">&para;</a></h2>
+<p>As of 2026-04-17 the repository has one maintainer (Miroslav
+Šotek) with write access, plus Dependabot and the Arcane Sapience
+agent identity as GitHub Actions–scoped collaborators.</p>
+<p>Paths toward further collaborator access:</p>
+<ol>
+<li>Contribute three merged PRs that each add a test.</li>
+<li>Request maintainer access in an issue; the CEO decides on a
+   case-by-case basis.</li>
+<li>Collaborators are listed publicly in <code>.github/CODEOWNERS</code>.</li>
+</ol>
+<h2 id="escalation">Escalation<a class="headerlink" href="#escalation" title="Permanent link">&para;</a></h2>
+<p>If the weekly-triage cadence is missed for more than two weeks in
+a row, or if an open <code>P0-critical</code> has not been responded to in
+72 hours, escalate in this order:</p>
+<ol>
+<li>Second maintainer (when one exists).</li>
+<li>CEO email: <code>protoscience@anulum.li</code>.</li>
+<li>Public tweet tagging the maintainers (last-resort path, only
+   after the first two have had 24 hours to respond).</li>
+</ol>
+<h2 id="relationship-to-other-docs">Relationship to other docs<a class="headerlink" href="#relationship-to-other-docs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>CONTRIBUTING.md</code> — what a contributor does <strong>before</strong> opening an
+  issue or PR (linting, coverage, Co-Authored-By trailer).</li>
+<li><code>SECURITY.md</code> — private disclosure flow; triage entry point for
+  any security label.</li>
+<li><code>docs/THREAT_MODEL.md</code> — severity calibration for security
+  issues.</li>
+<li><code>docs/falsification.md</code> — where a <code>science</code> label is tested
+  against a documented falsification criterion.</li>
+<li><code>docs/language_policy.md</code> — which compiled-language tier a new
+  compute function should use.</li>
+<li><code>ROADMAP.md</code> — where <code>P2</code> / <code>P3</code> enhancements are staged when
+  they are accepted but not yet scheduled.</li>
+</ul>
+<h2 id="changing-this-policy">Changing this policy<a class="headerlink" href="#changing-this-policy" title="Permanent link">&para;</a></h2>
+<p>Update this file in the same commit that changes the triage
+behaviour (label rename, SLA change, routing update). A
+documentation-only PR that does not change policy is not needed —
+edit this file directly and land on <code>main</code>.</p>
+<h2 id="intentionally-not-covered">Intentionally not covered<a class="headerlink" href="#intentionally-not-covered" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Code of Conduct</strong> — the project Code of Conduct lives in
+  <code>CODE_OF_CONDUCT.md</code>; triage does not enforce it, the
+  maintainer does.</li>
+<li><strong>Commercial licensing questions</strong> — those go to
+  <code>protoscience@anulum.li</code> directly, not the issue tracker.</li>
+<li><strong>Research collaboration inquiries</strong> — same as above.</li>
+<li><strong>Job applications</strong> — we are not hiring; please do not open an
+  issue asking.</li>
+</ul>
+<h2 id="revision-history">Revision history<a class="headerlink" href="#revision-history" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2026-04-17</td>
+<td>Initial policy (closes audit item B11).</td>
+</tr>
+<tr>
+<td>2026-04-17</td>
+<td>Worked examples + label combination matrix + flow diagrams added under SUPERIOR-doc-standard remediation.</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+        <script src="../js/goatcounter.js"></script>
+      
+    
+  </body>
+</html>

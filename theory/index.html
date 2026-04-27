@@ -1,0 +1,2042 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Quantum simulation of coupled oscillators on IBM hardware">
+      
+      
+        <meta name="author" content="Miroslav Šotek">
+      
+      
+        <link rel="canonical" href="https://anulum.github.io/scpn-quantum-control/theory/">
+      
+      
+        <link rel="prev" href="../quickstart/">
+      
+      
+        <link rel="next" href="../equations/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/anulum_logo_company.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>SCPN Foundations - scpn-quantum-control</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#spdx-license-identifier-agpl-30-or-later" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="scpn-quantum-control" class="md-header__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            scpn-quantum-control
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              SCPN Foundations
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="scpn-quantum-control" class="md-nav__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    scpn-quantum-control
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SCPN Foundations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../equations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../research_gems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research Gems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../orchestrator_integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestrator Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rust_engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../autodoc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auto-Generated
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analysis_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../identity_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mitigation_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mitigation API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bridges_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridges API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmarks_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipeline_performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_dynamic_coupling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Dynamic Coupling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_structured_ansatz/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Structured Ansatz
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_hw_topological_optimizer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: HW Topological Optimizer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../test_infrastructure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publications
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Publications
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprint/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprint: Quantum Kuramoto-XY on Hardware
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_sync_witnesses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: Synchronisation Witnesses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: DLA Parity Theorem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DLA-parity Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classical_irreproducibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classical Irreproducibility
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results Gallery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hardware_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IBM Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXPERIMENT_ROADMAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PAPER_CLAIMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results & Claims
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../QUANTUM_CRYPTO_RESEARCH_BRANCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Crypto Research
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Learning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notebooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Roadmap
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../strategic_roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strategic Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="spdx-license-identifier-agpl-30-or-later">SPDX-License-Identifier: AGPL-3.0-or-later<a class="headerlink" href="#spdx-license-identifier-agpl-30-or-later" title="Permanent link">&para;</a></h1>
+<h1 id="commercial-license-available">Commercial license available<a class="headerlink" href="#commercial-license-available" title="Permanent link">&para;</a></h1>
+<h1 id="concepts-19962026-miroslav-sotek-all-rights-reserved">© Concepts 1996–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#concepts-19962026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="code-20202026-miroslav-sotek-all-rights-reserved">© Code 2020–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#code-20202026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="orcid-0009-0009-3560-0851">ORCID: 0009-0009-3560-0851<a class="headerlink" href="#orcid-0009-0009-3560-0851" title="Permanent link">&para;</a></h1>
+<h1 id="contact-wwwanulumli-protoscienceanulumli">Contact: www.anulum.li | protoscience@anulum.li<a class="headerlink" href="#contact-wwwanulumli-protoscienceanulumli" title="Permanent link">&para;</a></h1>
+<h1 id="scpn-quantum-control-theoretical-foundations">scpn-quantum-control — Theoretical Foundations<a class="headerlink" href="#scpn-quantum-control-theoretical-foundations" title="Permanent link">&para;</a></h1>
+<h1 id="theoretical-foundations">Theoretical Foundations<a class="headerlink" href="#theoretical-foundations" title="Permanent link">&para;</a></h1>
+<p><em>The Self-Consistent Phase Network (SCPN) and its quantum simulation.</em></p>
+<hr />
+<h2 id="the-scpn-framework">The SCPN Framework<a class="headerlink" href="#the-scpn-framework" title="Permanent link">&para;</a></h2>
+<p>The Sentient-Consciousness Projection Network (Šotek, 2025) is a 15+1 layer
+architecture modelling coupled oscillatory dynamics across physical scales. Each
+layer represents a distinct ontological domain — from quantum biology (L1) through
+neural synchronisation (L4) to collective dynamics (L12) and meta-universal
+closure (L16). The mathematical backbone is the <strong>Unified Phase Dynamics Equation</strong>
+(UPDE), a generalised Kuramoto model with layer-specific couplings.</p>
+<p><strong>Source:</strong> "God of the Math — The SCPN Master Publications" (Šotek, 2025),
+DOI: <a href="https://doi.org/10.5281/zenodo.17419678">10.5281/zenodo.17419678</a></p>
+<h3 id="the-151-layers">The 15+1 Layers<a class="headerlink" href="#the-151-layers" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Layers</th>
+<th>Physical Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>I: Biological Substrate</td>
+<td>L1–L4</td>
+<td>Quantum bio → neurochemical → genomic → cellular sync</td>
+</tr>
+<tr>
+<td>II: Organismal &amp; Planetary</td>
+<td>L5–L8</td>
+<td>Self → biosphere → symbolic → cosmic phase-locking</td>
+</tr>
+<tr>
+<td>III–IV: Memory &amp; Control</td>
+<td>L9–L12</td>
+<td>Memory → boundary control → noosphere → Gaian sync</td>
+</tr>
+<tr>
+<td>V: Meta-Universal</td>
+<td>L13–L15</td>
+<td>Source-field → transdimensional → Consilium</td>
+</tr>
+<tr>
+<td>VI: Cybernetic Closure</td>
+<td>L16</td>
+<td>The Anulum — recursive self-observation loop</td>
+</tr>
+</tbody>
+</table>
+<h3 id="three-axioms">Three Axioms<a class="headerlink" href="#three-axioms" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Primacy of Consciousness (Ψ):</strong> Consciousness is the primary, irreducible
+   ground of being — not emergent from matter.</li>
+<li><strong>Language of Information Geometry:</strong> The native language is geometric. Meaning
+   is encoded in the geometry of informational spaces (Fisher Information Metric).</li>
+<li><strong>Teleological Optimisation:</strong> The universe is guided by an inherent drive to
+   maximise future possibilities (Causal Entropic Forces).</li>
+</ol>
+<hr />
+<h2 id="the-coupling-matrix-k_nm">The Coupling Matrix <span class="arithmatex">\(K_{nm}\)</span><a class="headerlink" href="#the-coupling-matrix-k_nm" title="Permanent link">&para;</a></h2>
+<p><span class="arithmatex">\(K_{nm}\)</span> is the physical coupling strength between Layer <span class="arithmatex">\(n\)</span> and Layer <span class="arithmatex">\(m\)</span>.
+Not arbitrary oscillators — each coupling has specific physical content:</p>
+<div class="arithmatex">\[K_{nm} = K_{\text{base}} \cdot \exp(-\alpha |n - m|)\]</div>
+<p>with calibration anchors from Paper 27 Table 2:</p>
+<table>
+<thead>
+<tr>
+<th>Pair</th>
+<th><span class="arithmatex">\(K_{nm}\)</span></th>
+<th>Physical Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1–L2</td>
+<td>0.302</td>
+<td>Ion channel → neurochemical modulation</td>
+</tr>
+<tr>
+<td>L2–L3</td>
+<td>0.201</td>
+<td>Neurochemical → genomic gating</td>
+</tr>
+<tr>
+<td>L3–L4</td>
+<td>0.252</td>
+<td>Genomic → cellular synchronisation</td>
+</tr>
+<tr>
+<td>L4–L5</td>
+<td>0.154</td>
+<td>Cellular → organismal boundary</td>
+</tr>
+</tbody>
+</table>
+<p>Parameters: <span class="arithmatex">\(K_{\text{base}} = 0.45\)</span>, <span class="arithmatex">\(\alpha = 0.3\)</span> (Paper 27, Eq. 3).</p>
+<p>The 16 natural frequencies <span class="arithmatex">\(\omega_i\)</span> encode the characteristic timescales of each
+ontological layer:</p>
+<div class="arithmatex">\[\omega = [1.329, 2.610, 0.844, 1.520, 0.710, 3.780, 1.055, 0.625, \\
+2.210, 1.740, 0.480, 3.210, 0.915, 1.410, 2.830, 0.991] \text{ rad/s}\]</div>
+<hr />
+<h2 id="classical-quantum-mapping">Classical → Quantum Mapping<a class="headerlink" href="#classical-quantum-mapping" title="Permanent link">&para;</a></h2>
+<h3 id="the-upde-classical">The UPDE (Classical)<a class="headerlink" href="#the-upde-classical" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[\frac{d\theta_i}{dt} = \omega_i + \sum_j K_{ij} \sin(\theta_j - \theta_i)\]</div>
+<p>The Kuramoto order parameter measures synchronisation:</p>
+<div class="arithmatex">\[R = \frac{1}{N}\left|\sum_k e^{i\theta_k}\right|\]</div>
+<p><span class="arithmatex">\(R = 0\)</span>: desynchronised. <span class="arithmatex">\(R = 1\)</span>: fully phase-locked.</p>
+<h3 id="the-xy-hamiltonian-quantum">The XY Hamiltonian (Quantum)<a class="headerlink" href="#the-xy-hamiltonian-quantum" title="Permanent link">&para;</a></h3>
+<p>The quantum analog replaces classical phases with qubit operators:</p>
+<div class="arithmatex">\[H = -\sum_{i&lt;j} K_{ij}(X_i X_j + Y_i Y_j) - \sum_i \omega_i Z_i\]</div>
+<p>This is the XY model with heterogeneous fields. The mapping preserves
+the in-plane (<span class="arithmatex">\(S^1\)</span>) dynamics of each oscillator while introducing
+quantum effects: entanglement, superposition, and tunnelling between
+phase configurations.</p>
+<p><strong>Flip-flop interaction:</strong> The <span class="arithmatex">\(XX + YY\)</span> term acts as a spin flip-flop —
+it flips one spin up and another down simultaneously:</p>
+<div class="arithmatex">\[(XX + YY)|{\uparrow\downarrow}\rangle = 2|\downarrow\uparrow\rangle, \quad
+(XX + YY)|{\uparrow\uparrow}\rangle = 0\]</div>
+<p>This is why the Hamiltonian is real in the computational basis: only
+spin-exchange, no complex phases.</p>
+<h3 id="quantum-order-parameter">Quantum Order Parameter<a class="headerlink" href="#quantum-order-parameter" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[R_Q = \frac{1}{N}\left|\sum_k (\langle X_k \rangle + i\langle Y_k \rangle)\right|\]</div>
+<p>Reduces to <span class="arithmatex">\(R\)</span> in the classical limit (large <span class="arithmatex">\(N\)</span>, coherent states).</p>
+<hr />
+<h2 id="the-synchronisation-transition">The Synchronisation Transition<a class="headerlink" href="#the-synchronisation-transition" title="Permanent link">&para;</a></h2>
+<p>At critical coupling <span class="arithmatex">\(K_c\)</span>, the system undergoes a quantum phase transition
+from desynchronised to synchronised. For homogeneous frequencies, this is a
+<strong>Berezinskii–Kosterlitz–Thouless (BKT)</strong> transition — infinite order, with
+an essential singularity in the correlation length:</p>
+<div class="arithmatex">\[\xi \sim \exp\left(\frac{b}{\sqrt{K - K_c}}\right)\]</div>
+<h3 id="whats-new-heterogeneous-frequencies">What's New: Heterogeneous Frequencies<a class="headerlink" href="#whats-new-heterogeneous-frequencies" title="Permanent link">&para;</a></h3>
+<p>All prior work studies homogeneous frequencies (<span class="arithmatex">\(\omega_i = \omega\)</span> for all <span class="arithmatex">\(i\)</span>).
+The SCPN has <strong>heterogeneous</strong> frequencies — each layer oscillates at its own
+natural rate. This breaks translational invariance and potentially modifies
+the universality class of the transition.</p>
+<p>Our measurements (v0.9.5):</p>
+<ul>
+<li><strong>Schmidt gap minimum at <span class="arithmatex">\(K = 3.44\)</span> (n=8)</strong> — cleanest transition signature</li>
+<li><strong><span class="arithmatex">\(K_c(\infty)\)</span> extrapolation:</strong> BKT ansatz gives <span class="arithmatex">\(K_c \approx 2.20\)</span>,
+  power-law gives <span class="arithmatex">\(K_c \approx 2.94\)</span></li>
+<li><strong>Krylov complexity</strong> peaks near the transition</li>
+<li><strong>OTOC scrambling</strong> is 4× faster at strong coupling</li>
+</ul>
+<hr />
+<h2 id="dynamical-lie-algebra-and-z_2-parity">Dynamical Lie Algebra and <span class="arithmatex">\(Z_2\)</span> Parity<a class="headerlink" href="#dynamical-lie-algebra-and-z_2-parity" title="Permanent link">&para;</a></h2>
+<p>The Dynamical Lie Algebra (DLA) of the XY Hamiltonian decomposes as:</p>
+<div class="arithmatex">\[\mathfrak{g} = \mathfrak{su}(\text{even}) \oplus \mathfrak{su}(\text{odd})\]</div>
+<p>where "even" and "odd" refer to the <span class="arithmatex">\(Z_2\)</span> parity sectors under the global
+operator <span class="arithmatex">\(P = Z^{\otimes N}\)</span>. This parity structure maps onto the SCPN's
+bidirectional causation: upward (prediction errors) and downward (predictions)
+information flow are dynamically decoupled at the Lie algebra level.</p>
+<p>DLA dimension (Rust-accelerated measurement):</p>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\(N\)</span></th>
+<th>DLA dim</th>
+<th><span class="arithmatex">\(\text{su}(\text{even}) + \text{su}(\text{odd})\)</span></th>
+<th><span class="arithmatex">\(2^{2N-1} - 2\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2</td>
+<td>6</td>
+<td>3 + 3</td>
+<td>6</td>
+</tr>
+<tr>
+<td>3</td>
+<td>30</td>
+<td>15 + 15</td>
+<td>30</td>
+</tr>
+<tr>
+<td>4</td>
+<td>126</td>
+<td>63 + 63</td>
+<td>126</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="topological-invariant-p_h_1">Topological Invariant <span class="arithmatex">\(p_{h_1}\)</span><a class="headerlink" href="#topological-invariant-p_h_1" title="Permanent link">&para;</a></h2>
+<p>The persistent homology <span class="arithmatex">\(p_{h_1} = 0.72\)</span> (measured on the TCBO's coupling-weighted
+simplicial complex) quantifies how much of the SCPN's layer-coupling topology
+creates persistent 1-cycles — information loops that sustain coherent circuits
+through the hierarchical structure.</p>
+<p>This is computed on the coupling-weighted filtration (not Vietoris–Rips on phase
+configurations), where the SCPN's specific sparse hierarchical structure creates
+topological features that dense random graphs cannot.</p>
+<hr />
+<h2 id="discrete-time-crystal-dtc">Discrete Time Crystal (DTC)<a class="headerlink" href="#discrete-time-crystal-dtc" title="Permanent link">&para;</a></h2>
+<p>Under periodic drive <span class="arithmatex">\(K(t) = K_0(1 + \delta\cos\Omega t)\)</span>, the system can
+spontaneously break discrete time-translation symmetry by responding at
+<span class="arithmatex">\(\Omega/2\)</span> instead of <span class="arithmatex">\(\Omega\)</span>. Our measurement: <strong>15/15 drive amplitudes
+show subharmonic response</strong> with heterogeneous frequencies — the first
+demonstration that frequency disorder does not kill the DTC phase.</p>
+<hr />
+<h2 id="biochemical-foundations-of-k_nm">Biochemical Foundations of <span class="arithmatex">\(K_{nm}\)</span><a class="headerlink" href="#biochemical-foundations-of-k_nm" title="Permanent link">&para;</a></h2>
+<p>The SCPN coupling matrix <span class="arithmatex">\(K_{nm}\)</span> is not an abstract mathematical construct. Each
+coupling maps to a measurable biochemical process. The quantum simulation on
+ibm_fez characterises these couplings at a level inaccessible to classical methods.</p>
+<h3 id="l1-quantum-biology-radical-pair-mechanism">L1: Quantum Biology — Radical Pair Mechanism<a class="headerlink" href="#l1-quantum-biology-radical-pair-mechanism" title="Permanent link">&para;</a></h3>
+<p>The radical pair mechanism in cryptochrome proteins (avian magnetoreception)
+is a spin-correlated chemical reaction:</p>
+<div class="arithmatex">\[[\text{FAD}^{\bullet-} \cdots \text{Trp}^{\bullet+}] \xrightarrow{B_{\text{Earth}}} \text{singlet/triplet interconversion}\]</div>
+<p>The singlet-triplet interconversion rate depends on the external magnetic field
+and hyperfine couplings. The SCPN models this as an XY-coupled oscillator pair
+where <span class="arithmatex">\(K_{12}\)</span> encodes the exchange coupling <span class="arithmatex">\(J\)</span> between radical electrons.</p>
+<p><strong>Experimentally validated:</strong> Radical pair magnetoreception confirmed in European
+robins (Ritz et al., 2004; Xu et al., 2021). The <span class="arithmatex">\(K_{nm}\)</span> framework unifies
+this with the broader oscillator network.</p>
+<h3 id="l2-neurochemical-oscillations">L2: Neurochemical Oscillations<a class="headerlink" href="#l2-neurochemical-oscillations" title="Permanent link">&para;</a></h3>
+<p>Neurotransmitter synthesis follows enzymatic cascades where each step is a
+coupled oscillator with its own characteristic frequency:</p>
+<div class="arithmatex">\[\text{Tyrosine} \xrightarrow{\text{TH}} \text{L-DOPA} \xrightarrow{\text{AADC}} \text{Dopamine} \xrightarrow{\text{DBH}} \text{Norepinephrine}\]</div>
+<p>Each enzymatic step has a turnover rate (<span class="arithmatex">\(k_{\text{cat}}\)</span>) that maps to
+a natural frequency <span class="arithmatex">\(\omega_i\)</span> in the SCPN. The coupling <span class="arithmatex">\(K_{23}\)</span> between
+L2 (neurochemical) and L3 (genomic) reflects how neurotransmitter levels
+regulate gene expression via second-messenger cascades:</p>
+<div class="arithmatex">\[\text{DA} + \text{D1R} \rightarrow \text{G}_s \rightarrow \text{cAMP} \uparrow \rightarrow \text{PKA} \rightarrow \text{CREB phosphorylation}\]</div>
+<h3 id="l3-genomic-epigenetic-gating">L3: Genomic — Epigenetic Gating<a class="headerlink" href="#l3-genomic-epigenetic-gating" title="Permanent link">&para;</a></h3>
+<p>DNA methylation acts as a low-pass filter on gene expression oscillations:</p>
+<div class="arithmatex">\[\text{SAM} + \text{Cytosine} \xrightarrow{\text{DNMT}} \text{SAH} + \text{5-methylcytosine}\]</div>
+<p>The methylation state modulates the coupling between genomic and cellular
+layers (<span class="arithmatex">\(K_{34}\)</span>). Demethylation by TET enzymes:</p>
+<div class="arithmatex">\[\text{5mC} \xrightarrow{\text{TET}} \text{5hmC} \xrightarrow{} \text{5fC} \xrightarrow{} \text{5caC} \xrightarrow{\text{BER}} \text{C}\]</div>
+<p>This is a bistable switch — the SCPN models it as a phase-locked oscillator
+with hysteresis, where the coupling <span class="arithmatex">\(K_{34} = 0.252\)</span> (Paper 27) reflects
+the timescale separation between fast gene expression and slow epigenetic
+modification.</p>
+<h3 id="l4-cellular-synchronisation-gap-junctions">L4: Cellular Synchronisation — Gap Junctions<a class="headerlink" href="#l4-cellular-synchronisation-gap-junctions" title="Permanent link">&para;</a></h3>
+<p>Gap junction coupling between cells is the direct biological implementation
+of <span class="arithmatex">\(K_{nm}\)</span>:</p>
+<div class="arithmatex">\[\frac{dV_i}{dt} = \frac{1}{C_i}\left(I_{\text{ion},i} + \sum_j G_{ij}(V_j - V_i)\right)\]</div>
+<p>where <span class="arithmatex">\(G_{ij}\)</span> is the gap junction conductance — <strong>structurally identical</strong>
+to <span class="arithmatex">\(K_{ij}\sin(\theta_j - \theta_i)\)</span> for small phase differences.</p>
+<p><strong>Levin's bioelectric morphogenesis</strong> (Tufts University) demonstrates that
+gap junction networks in non-neural tissue compute body plans using voltage
+oscillator coupling. Planarian body plan memory is stored in voltage gradients,
+not DNA. 48-hour gap junction disruption permanently rewrites regeneration
+patterns.</p>
+<p>The ion species involved:</p>
+<div class="arithmatex">\[\text{Na}^+ / \text{K}^+ \text{-ATPase:} \quad 3\text{Na}^+_{\text{in}} + 2\text{K}^+_{\text{out}} + \text{ATP} \rightarrow 3\text{Na}^+_{\text{out}} + 2\text{K}^+_{\text{in}} + \text{ADP} + \text{P}_i\]</div>
+<div class="arithmatex">\[\text{Ca}^{2+} \text{ waves:} \quad \text{IP}_3 + \text{IP}_3\text{R} \rightarrow \text{Ca}^{2+}_{\text{ER} \to \text{cytosol}} \rightarrow \text{gap junction propagation}\]</div>
+<h3 id="quantum-classical-bridge">Quantum-Classical Bridge<a class="headerlink" href="#quantum-classical-bridge" title="Permanent link">&para;</a></h3>
+<p>The quantum simulation on ibm_fez measures the <strong>quantum correlations</strong> that
+underlie these classical biochemical couplings. When we measure <span class="arithmatex">\(\langle Z_iZ_j \rangle\)</span>
+on hardware, we are probing the quantum coherence that the Levin-type gap junction
+coupling preserves or destroys. The CHSH violation (<span class="arithmatex">\(S = 2.165\)</span>) demonstrates that
+the quantum correlations survive Heron r2 noise — the same noise budget that
+biological systems operate under at room temperature.</p>
+<p>The NAQT (noise-assisted quantum transport) mechanism, validated in photosynthetic
+complexes (Plenio &amp; Huelga, 2008; Mohseni et al., 2008), shows that biology
+<strong>tunes noise to maximise quantum transport</strong> — from <span class="arithmatex">\(\sim 70\%\)</span> to <span class="arithmatex">\(\sim 99\%\)</span>
+efficiency. The SCPN's stochastic computing architecture (sc-neurocore) is the
+computational implementation of this biological principle.</p>
+<hr />
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Šotek, M. (2025). "God of the Math — The SCPN Master Publications."
+   DOI: 10.5281/zenodo.17419678</li>
+<li>Kuramoto, Y. (1984). Chemical Oscillations, Waves, and Turbulence.</li>
+<li>Calabrese, P. &amp; Cardy, J. (2004). Entanglement entropy and quantum field theory.
+   J. Stat. Mech. P06002.</li>
+<li>Maldacena, J., Shenker, S. &amp; Stanford, D. (2016). A bound on chaos.
+   JHEP 08, 106.</li>
+<li>del Campo, A. et al. (2025). Krylov complexity and quantum phase transitions.
+   arXiv:2510.13947.</li>
+<li>Ritz, T. et al. (2004). A model for photoreceptor-based magnetoreception in birds.
+   Biophysical J. 78, 707.</li>
+<li>Levin, M. (2014). Molecular bioelectricity: what voltage-gated channels teach us.
+   Phys. Biol. 11, 056004.</li>
+<li>Plenio, M. &amp; Huelga, S. (2008). Dephasing-assisted transport: quantum and classical.
+   New J. Phys. 10, 113019.</li>
+<li>Mohseni, M. et al. (2008). Environment-assisted quantum walks in photosynthetic
+   energy transfer. J. Chem. Phys. 129, 174106.</li>
+</ol>
+<hr />
+<p><p align="center">
+  <a href="https://www.anulum.li">
+    <img src="assets/anulum_logo_company.jpg" width="180" alt="ANULUM">
+  </a>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="https://www.anulum.li">
+    <img src="assets/fortis_studio_logo.jpg" width="180" alt="Fortis Studio">
+  </a>
+  <br>
+  <em>Developed by <a href="https://www.anulum.li">ANULUM</a> / Fortis Studio</em>
+</p></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+        <script src="../js/goatcounter.js"></script>
+      
+    
+  </body>
+</html>

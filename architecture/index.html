@@ -1,0 +1,2225 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Quantum simulation of coupled oscillators on IBM hardware">
+      
+      
+        <meta name="author" content="Miroslav Šotek">
+      
+      
+        <link rel="canonical" href="https://anulum.github.io/scpn-quantum-control/architecture/">
+      
+      
+        <link rel="prev" href="../equations/">
+      
+      
+        <link rel="next" href="../research_gems/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/anulum_logo_company.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Architecture - scpn-quantum-control</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#spdx-license-identifier-agpl-30-or-later" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="scpn-quantum-control" class="md-header__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            scpn-quantum-control
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Architecture
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="scpn-quantum-control" class="md-nav__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    scpn-quantum-control
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SCPN Foundations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../equations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../research_gems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research Gems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../orchestrator_integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestrator Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rust_engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../autodoc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auto-Generated
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analysis_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../identity_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mitigation_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mitigation API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bridges_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridges API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmarks_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipeline_performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_dynamic_coupling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Dynamic Coupling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_structured_ansatz/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Structured Ansatz
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_hw_topological_optimizer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: HW Topological Optimizer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../test_infrastructure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publications
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Publications
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprint/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprint: Quantum Kuramoto-XY on Hardware
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_sync_witnesses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: Synchronisation Witnesses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: DLA Parity Theorem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DLA-parity Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classical_irreproducibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classical Irreproducibility
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results Gallery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hardware_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IBM Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXPERIMENT_ROADMAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PAPER_CLAIMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results & Claims
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../QUANTUM_CRYPTO_RESEARCH_BRANCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Crypto Research
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Learning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notebooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Roadmap
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../strategic_roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strategic Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="spdx-license-identifier-agpl-30-or-later">SPDX-License-Identifier: AGPL-3.0-or-later<a class="headerlink" href="#spdx-license-identifier-agpl-30-or-later" title="Permanent link">&para;</a></h1>
+<h1 id="commercial-license-available">Commercial license available<a class="headerlink" href="#commercial-license-available" title="Permanent link">&para;</a></h1>
+<h1 id="concepts-19962026-miroslav-sotek-all-rights-reserved">© Concepts 1996–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#concepts-19962026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="code-20202026-miroslav-sotek-all-rights-reserved">© Code 2020–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#code-20202026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="orcid-0009-0009-3560-0851">ORCID: 0009-0009-3560-0851<a class="headerlink" href="#orcid-0009-0009-3560-0851" title="Permanent link">&para;</a></h1>
+<h1 id="contact-wwwanulumli-protoscienceanulumli">Contact: www.anulum.li | protoscience@anulum.li<a class="headerlink" href="#contact-wwwanulumli-protoscienceanulumli" title="Permanent link">&para;</a></h1>
+<h1 id="scpn-quantum-control-architecture">scpn-quantum-control — Architecture<a class="headerlink" href="#scpn-quantum-control-architecture" title="Permanent link">&para;</a></h1>
+<h1 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h1>
+<h2 id="package-statistics-v096">Package Statistics (v0.9.6)<a class="headerlink" href="#package-statistics-v096" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Python modules</td>
+<td>209</td>
+</tr>
+<tr>
+<td>Rust crate</td>
+<td>1 (PyO3 0.25, <strong>37 functions</strong>, 21 source files including <code>validation.rs</code>, <code>symmetry_decay.rs</code>, <code>community.rs</code>, <code>pulse_shaping.rs</code>)</td>
+</tr>
+<tr>
+<td>Julia tier</td>
+<td>1 (<code>accel/julia/order_parameter.jl</code>; juliacall-bridged, opt-in via <code>[julia]</code> extra)</td>
+</tr>
+<tr>
+<td>Tests</td>
+<td>4,841+ (97%+ coverage)</td>
+</tr>
+<tr>
+<td>Lines of code</td>
+<td>~30,000</td>
+</tr>
+<tr>
+<td>Subpackages</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Research gems</td>
+<td>35 (≈ 5 novel, ≈ 10 first-application, including GUESS symmetry-decay ZNE and DynQ topology-agnostic placement)</td>
+</tr>
+<tr>
+<td>Examples</td>
+<td>21</td>
+</tr>
+<tr>
+<td>Notebooks</td>
+<td>47 (<code>notebooks/</code>) + 51 (<code>notebooks/colab/</code>)</td>
+</tr>
+<tr>
+<td>Doc pages</td>
+<td>50+</td>
+</tr>
+</tbody>
+</table>
+<h2 id="subpackage-dependency-graph">Subpackage Dependency Graph<a class="headerlink" href="#subpackage-dependency-graph" title="Permanent link">&para;</a></h2>
+<p>The 20 subpackages form a directed acyclic graph. <code>bridge/</code> is the foundation —
+every other subpackage depends on it for Hamiltonian construction and data
+conversion. <code>analysis/</code> is the largest consumer, using <code>phase/</code> for state
+preparation and <code>bridge/</code> for Hamiltonian access.</p>
+<pre class="mermaid"><code>graph TD
+    bridge["bridge/ (13)\nK_nm → quantum objects"]
+    phase["phase/ (28)\nTime evolution"]
+    analysis["analysis/ (45)\nSync probes"]
+    control["control/ (8)\nQuantum control"]
+    qsnn["qsnn/ (7)\nQuantum SNN"]
+    identity["identity/ (7)\nIdentity analysis"]
+    hardware["hardware/ (27)\nBackends + registry + async + provenance"]
+    mitigation["mitigation/ (9)\nError mitigation"]
+    qec["qec/ (8)\nError correction"]
+    gauge["gauge/ (6)\nGauge theory"]
+    apps["applications/ (12)\nBenchmarks"]
+    crypto["crypto/ (7)\nQKD"]
+    benchmarks["benchmarks/ (5)\nPerformance"]
+    ssgf["ssgf/ (5)\nGeometry"]
+    psi_field["psi_field/ (5)\nU(1) lattice gauge"]
+    accel["accel/ (3)\nRust → Julia → Python dispatcher"]
+    fep["fep/ (3)\nFree Energy Principle"]
+    tcbo["tcbo/ (2)\nTCBO observer"]
+    pgbo["pgbo/ (2)\nPGBO bridge"]
+    l16["l16/ (2)\nLayer 16 director"]
+
+    bridge --&gt; phase
+    bridge --&gt; analysis
+    bridge --&gt; control
+    bridge --&gt; qsnn
+    bridge --&gt; identity
+    bridge --&gt; apps
+    bridge --&gt; crypto
+    bridge --&gt; ssgf
+    phase --&gt; analysis
+    phase --&gt; identity
+    phase --&gt; apps
+    phase --&gt; gauge
+    analysis --&gt; gauge
+    hardware --&gt; phase
+    hardware --&gt; apps
+    accel --&gt; hardware
+    mitigation --&gt; hardware
+    qec --&gt; hardware
+    benchmarks --&gt; phase
+    benchmarks --&gt; hardware
+    bridge --&gt; tcbo
+    bridge --&gt; pgbo
+    bridge --&gt; l16
+    phase --&gt; tcbo
+    analysis --&gt; pgbo
+
+    style bridge fill:#6929C4,color:#fff
+    style analysis fill:#d4a017,color:#000
+    style phase fill:#6929C4,color:#fff
+    style hardware fill:#2ecc71,color:#000
+    style accel fill:#e67e22,color:#000</code></pre>
+<h2 id="hardware-execution-pipeline">Hardware Execution Pipeline<a class="headerlink" href="#hardware-execution-pipeline" title="Permanent link">&para;</a></h2>
+<p>Circuit depth after transpilation determines which decoherence regime applies.
+The pipeline is the same for all experiments — only the circuit construction
+step differs.</p>
+<pre class="mermaid"><code>graph LR
+    subgraph "Classical Side"
+        A["K_nm matrix"] --&gt; B["knm_to_hamiltonian()"]
+        B --&gt; C["Build QuantumCircuit\n(Trotter / VQE / QAOA)"]
+        C --&gt; D["Transpile to\nnative gates"]
+    end
+
+    subgraph "Quantum Side"
+        D --&gt; E["Submit via\nSamplerV2"]
+        E --&gt; F["Parse bit-string\ncounts"]
+    end
+
+    subgraph "Analysis"
+        F --&gt; G["⟨X⟩, ⟨Y⟩, ⟨Z⟩"]
+        G --&gt; H["Order parameter\nR(t)"]
+        G --&gt; I["Witnesses,\nQFI, PH, ..."]
+    end
+
+    style A fill:#6929C4,color:#fff
+    style H fill:#2ecc71,color:#000
+    style I fill:#d4a017,color:#000</code></pre>
+<p><strong>Decoherence regimes on Heron r2:</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Transpiled depth</th>
+<th>Regime</th>
+<th>Accuracy</th>
+<th>Strategy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">&lt; 150</td>
+<td>Near-ideal</td>
+<td>&lt; 10% error</td>
+<td>Publish directly</td>
+</tr>
+<tr>
+<td style="text-align: center;">150–400</td>
+<td>Mitigable</td>
+<td>10–30% error</td>
+<td>ZNE + Z₂ post-selection</td>
+</tr>
+<tr>
+<td style="text-align: center;">&gt; 400</td>
+<td>Noise-dominated</td>
+<td>&gt; 30% error</td>
+<td>Qualitative only</td>
+</tr>
+</tbody>
+</table>
+<h2 id="module-dependency-graph-full-detail">Module Dependency Graph (Full Detail)<a class="headerlink" href="#module-dependency-graph-full-detail" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>bridge/                                    ← Foundation: K_nm → quantum objects
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── knm_hamiltonian.py                       Canonical K_nm data, XY + XXZ Hamiltonians, ansatz
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── snn_adapter.py                           sc-neurocore ArcaneNeuron bridge (optional)
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├── snn_backward.py                          Parameter-shift gradient through quantum layer
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>├── ssgf_adapter.py                          SSGF geometry engine bridge (optional)
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>├── ssgf_w_adapter.py                        Correlator-weighted geometry W update
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>├── control_plasma_knm.py                    scpn-control plasma K_nm bridge (optional)
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>├── phase_artifact.py                        Shared UPDE phase artifact schema
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>├── orchestrator_adapter.py                  Phase-orchestrator payload adapter
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>├── orchestrator_feedback.py                 Advance/hold/rollback from quantum state
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>├── sc_to_quantum.py                         Angle/probability conversion
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>└── spn_to_qcircuit.py                       SPN token → circuit amplitude
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>analysis/                                  ← 41 modules: probes of the sync transition
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>├── sync_witness.py                          ★ Synchronization witnesses (Gem 1)
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>├── sync_entanglement_witness.py             ★ R as entanglement witness (Gem 12)
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>├── quantum_persistent_homology.py           ★ Full PH pipeline from counts (Gem 5)
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>├── persistent_homology.py                     Classical PH utilities
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>├── h1_persistence.py                          Vortex density at BKT
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>├── entanglement_enhanced_sync.py            ★ Entanglement lowers K_c (Gem 7)
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>├── hamiltonian_self_consistency.py           ★ K_nm round-trip verification (Gem 10)
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>├── hamiltonian_learning.py                    Recover K_nm from measurements
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>├── dynamical_lie_algebra.py                 ★ DLA dimension = 2^(2N-1)-2 (Gem 11)
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>├── dla_parity_theorem.py                    ★ Z₂ parity proof (Gem 14)
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>├── qfi_criticality.py                       ★ QFI metrological sweet spot (Gem 15)
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>├── qfi.py                                     Full QFI matrix computation
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>├── entanglement_percolation.py              ★ Percolation = sync threshold (Gem 16)
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>├── qrc_phase_detector.py                    ★ Self-probing reservoir (Gem 17)
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>├── critical_concordance.py                  ★ Multi-probe K_c agreement (Gem 19)
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>├── berry_fidelity.py                        ★ Berry phase / χ_F at BKT (Gem 20)
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>├── quantum_mpemba.py                        ★ Quantum Mpemba effect (Gem 21)
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>├── lindblad_ness.py                         ★ Lindblad NESS (Gem 22)
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>├── adiabatic_gap.py                         ★ Adiabatic preparation hardness (Gem 23)
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>├── pairing_correlator.py                    ★ Richardson pairing (Gem 25)
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>├── xxz_phase_diagram.py                     ★ K_c vs Δ crossover (Gem 26)
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>├── spectral_form_factor.py                  ★ SFF + level statistics (Gem 27)
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>├── loschmidt_echo.py                        ★ Loschmidt echo / DQPT (Gem 28)
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>├── entanglement_entropy.py                  ★ Half-chain entropy + Schmidt gap (Gem 29-30)
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>├── entanglement_spectrum.py                   Full entanglement spectrum + CFT c
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>├── krylov_complexity.py                     ★ Krylov complexity (Gem 31, highest novelty)
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>├── magic_nonstabilizerness.py               ★ Stabilizer Rényi entropy (Gem 32)
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>├── finite_size_scaling.py                   ★ BKT logarithmic corrections (Gem 33)
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>├── otoc.py                                    Core OTOC computation
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>├── otoc_sync_probe.py                       ★ OTOC as sync probe (Gem 9)
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>├── quantum_speed_limit.py                   ★ QSL for BKT sync (Gem 13)
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>├── quantum_phi.py                             IIT Φ from density matrix
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>├── shadow_tomography.py                       Classical shadow estimation
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>├── bkt_analysis.py                            Core BKT diagnostics
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>├── bkt_universals.py                          10 candidate expressions for p_H1
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>├── p_h1_derivation.py                         A_HP × √(2/π) = 0.717
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>├── phase_diagram.py                           K_c vs T_eff boundary
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>├── graph_topology_scan.py                     Coupling graph metrics
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>├── koopman.py                                 Koopman linearisation (BQP argument)
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>├── monte_carlo_xy.py                          Classical XY MC (Rust-accelerated)
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>├── vortex_binding.py                          Kosterlitz RG flow
+<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>└── enaqt.py                                   Environment-assisted quantum transport
+<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>
+<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>phase/                                     ← 14 modules: time evolution + variational
+<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a>├── xy_kuramoto.py                             Trotterised XY solver
+<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>├── trotter_upde.py                            Full 16-layer UPDE solver
+<a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a>├── trotter_error.py                           Trotter error analysis
+<a id="__codelineno-0-62" name="__codelineno-0-62" href="#__codelineno-0-62"></a>├── phase_vqe.py                               Variational eigensolver
+<a id="__codelineno-0-63" name="__codelineno-0-63" href="#__codelineno-0-63"></a>├── adapt_vqe.py                             ★ Gradient-driven operator selection
+<a id="__codelineno-0-64" name="__codelineno-0-64" href="#__codelineno-0-64"></a>├── varqite.py                                 Imaginary time evolution
+<a id="__codelineno-0-65" name="__codelineno-0-65" href="#__codelineno-0-65"></a>├── avqds.py                                   Adaptive variational dynamics
+<a id="__codelineno-0-66" name="__codelineno-0-66" href="#__codelineno-0-66"></a>├── qsvt_evolution.py                          QSVT resource estimation (260× speedup)
+<a id="__codelineno-0-67" name="__codelineno-0-67" href="#__codelineno-0-67"></a>├── adiabatic_preparation.py                   Adiabatic ground state prep
+<a id="__codelineno-0-68" name="__codelineno-0-68" href="#__codelineno-0-68"></a>├── cross_domain_transfer.py                 ★ VQE parameter warm-starting (Gem 8)
+<a id="__codelineno-0-69" name="__codelineno-0-69" href="#__codelineno-0-69"></a>├── floquet_kuramoto.py                      ★ Discrete time crystal (Gem 18)
+<a id="__codelineno-0-70" name="__codelineno-0-70" href="#__codelineno-0-70"></a>├── coupling_topology_ansatz.py              ★ K_nm-informed ansatz (Gem 4)
+<a id="__codelineno-0-71" name="__codelineno-0-71" href="#__codelineno-0-71"></a>├── ansatz_methodology.py                      Ansatz strategy analysis
+<a id="__codelineno-0-72" name="__codelineno-0-72" href="#__codelineno-0-72"></a>└── ansatz_bench.py                            Ansatz benchmarking
+<a id="__codelineno-0-73" name="__codelineno-0-73" href="#__codelineno-0-73"></a>
+<a id="__codelineno-0-74" name="__codelineno-0-74" href="#__codelineno-0-74"></a>control/                                   ← Quantum control + classification
+<a id="__codelineno-0-75" name="__codelineno-0-75" href="#__codelineno-0-75"></a>├── qaoa_mpc.py                                QAOA model-predictive control
+<a id="__codelineno-0-76" name="__codelineno-0-76" href="#__codelineno-0-76"></a>├── vqls_gs.py                                 VQLS Grad-Shafranov solver
+<a id="__codelineno-0-77" name="__codelineno-0-77" href="#__codelineno-0-77"></a>├── qpetri.py                                  Quantum Petri nets
+<a id="__codelineno-0-78" name="__codelineno-0-78" href="#__codelineno-0-78"></a>├── q_disruption.py                            Disruption classifier
+<a id="__codelineno-0-79" name="__codelineno-0-79" href="#__codelineno-0-79"></a>└── q_disruption_iter.py                       ITER 11-feature + fusion-core adapter
+<a id="__codelineno-0-80" name="__codelineno-0-80" href="#__codelineno-0-80"></a>
+<a id="__codelineno-0-81" name="__codelineno-0-81" href="#__codelineno-0-81"></a>qsnn/                                      ← Quantum spiking neural networks
+<a id="__codelineno-0-82" name="__codelineno-0-82" href="#__codelineno-0-82"></a>├── qlif.py                                    Quantum LIF neuron
+<a id="__codelineno-0-83" name="__codelineno-0-83" href="#__codelineno-0-83"></a>├── qsynapse.py                                Quantum synapse (CRy)
+<a id="__codelineno-0-84" name="__codelineno-0-84" href="#__codelineno-0-84"></a>├── qstdp.py                                   Quantum STDP learning
+<a id="__codelineno-0-85" name="__codelineno-0-85" href="#__codelineno-0-85"></a>├── qlayer.py                                  Dense quantum layer
+<a id="__codelineno-0-86" name="__codelineno-0-86" href="#__codelineno-0-86"></a>└── training.py                                Parameter-shift trainer
+<a id="__codelineno-0-87" name="__codelineno-0-87" href="#__codelineno-0-87"></a>
+<a id="__codelineno-0-88" name="__codelineno-0-88" href="#__codelineno-0-88"></a>identity/                                  ← Identity continuity analysis
+<a id="__codelineno-0-89" name="__codelineno-0-89" href="#__codelineno-0-89"></a>├── ground_state.py                            VQE attractor basin
+<a id="__codelineno-0-90" name="__codelineno-0-90" href="#__codelineno-0-90"></a>├── coherence_budget.py                        Heron r2 decoherence budget
+<a id="__codelineno-0-91" name="__codelineno-0-91" href="#__codelineno-0-91"></a>├── entanglement_witness.py                    CHSH S-parameter
+<a id="__codelineno-0-92" name="__codelineno-0-92" href="#__codelineno-0-92"></a>├── identity_key.py                            Spectral fingerprint + HMAC
+<a id="__codelineno-0-93" name="__codelineno-0-93" href="#__codelineno-0-93"></a>├── robustness.py                              Adiabatic robustness certificate
+<a id="__codelineno-0-94" name="__codelineno-0-94" href="#__codelineno-0-94"></a>└── binding_spec.py                            6-layer topology + orchestrator mapping
+<a id="__codelineno-0-95" name="__codelineno-0-95" href="#__codelineno-0-95"></a>
+<a id="__codelineno-0-96" name="__codelineno-0-96" href="#__codelineno-0-96"></a>mitigation/                                ← Error mitigation
+<a id="__codelineno-0-97" name="__codelineno-0-97" href="#__codelineno-0-97"></a>├── zne.py                                     Zero-noise extrapolation
+<a id="__codelineno-0-98" name="__codelineno-0-98" href="#__codelineno-0-98"></a>├── pec.py                                     Probabilistic error cancellation
+<a id="__codelineno-0-99" name="__codelineno-0-99" href="#__codelineno-0-99"></a>├── dd.py                                      Dynamical decoupling
+<a id="__codelineno-0-100" name="__codelineno-0-100" href="#__codelineno-0-100"></a>└── symmetry_verification.py                 ★ Z₂ parity post-selection (Gem 2)
+<a id="__codelineno-0-101" name="__codelineno-0-101" href="#__codelineno-0-101"></a>
+<a id="__codelineno-0-102" name="__codelineno-0-102" href="#__codelineno-0-102"></a>gauge/                                     ← U(1) gauge theory probes
+<a id="__codelineno-0-103" name="__codelineno-0-103" href="#__codelineno-0-103"></a>├── wilson_loop.py                             Wilson loop measurement
+<a id="__codelineno-0-104" name="__codelineno-0-104" href="#__codelineno-0-104"></a>├── vortex_detector.py                         BKT vortex density
+<a id="__codelineno-0-105" name="__codelineno-0-105" href="#__codelineno-0-105"></a>├── cft_analysis.py                            CFT central charge extraction
+<a id="__codelineno-0-106" name="__codelineno-0-106" href="#__codelineno-0-106"></a>├── universality.py                            BKT universality class check
+<a id="__codelineno-0-107" name="__codelineno-0-107" href="#__codelineno-0-107"></a>└── confinement.py                             String tension + confinement
+<a id="__codelineno-0-108" name="__codelineno-0-108" href="#__codelineno-0-108"></a>
+<a id="__codelineno-0-109" name="__codelineno-0-109" href="#__codelineno-0-109"></a>ssgf/                                      ← SSGF quantum integration
+<a id="__codelineno-0-110" name="__codelineno-0-110" href="#__codelineno-0-110"></a>├── quantum_gradient.py                        dC_quantum/dz via finite differences
+<a id="__codelineno-0-111" name="__codelineno-0-111" href="#__codelineno-0-111"></a>├── quantum_costs.py                           C_micro, C4_tcbo, C_pgbo
+<a id="__codelineno-0-112" name="__codelineno-0-112" href="#__codelineno-0-112"></a>├── quantum_outer_cycle.py                     Variational z descent
+<a id="__codelineno-0-113" name="__codelineno-0-113" href="#__codelineno-0-113"></a>└── quantum_spectral.py                        Fiedler via QPE resource estimation
+<a id="__codelineno-0-114" name="__codelineno-0-114" href="#__codelineno-0-114"></a>
+<a id="__codelineno-0-115" name="__codelineno-0-115" href="#__codelineno-0-115"></a>applications/                              ← Physical system benchmarks
+<a id="__codelineno-0-116" name="__codelineno-0-116" href="#__codelineno-0-116"></a>├── fmo_benchmark.py                           FMO photosynthetic complex (7 chromophores)
+<a id="__codelineno-0-117" name="__codelineno-0-117" href="#__codelineno-0-117"></a>├── power_grid.py                              IEEE 5-bus power grid
+<a id="__codelineno-0-118" name="__codelineno-0-118" href="#__codelineno-0-118"></a>├── josephson_array.py                         JJA/transmon self-simulation
+<a id="__codelineno-0-119" name="__codelineno-0-119" href="#__codelineno-0-119"></a>├── eeg_benchmark.py                           8-channel alpha-band PLV
+<a id="__codelineno-0-120" name="__codelineno-0-120" href="#__codelineno-0-120"></a>├── iter_benchmark.py                          8 MHD mode coupling
+<a id="__codelineno-0-121" name="__codelineno-0-121" href="#__codelineno-0-121"></a>├── cross_domain.py                            5-system benchmark summary
+<a id="__codelineno-0-122" name="__codelineno-0-122" href="#__codelineno-0-122"></a>├── quantum_kernel.py                          K_nm-informed classification
+<a id="__codelineno-0-123" name="__codelineno-0-123" href="#__codelineno-0-123"></a>├── quantum_reservoir.py                       Pauli feature extraction
+<a id="__codelineno-0-124" name="__codelineno-0-124" href="#__codelineno-0-124"></a>├── disruption_classifier.py                   Plasma stability classification
+<a id="__codelineno-0-125" name="__codelineno-0-125" href="#__codelineno-0-125"></a>└── quantum_evs.py                             Quantum-enhanced EVS for CCW
+<a id="__codelineno-0-126" name="__codelineno-0-126" href="#__codelineno-0-126"></a>
+<a id="__codelineno-0-127" name="__codelineno-0-127" href="#__codelineno-0-127"></a>benchmarks/                                ← Performance baselines
+<a id="__codelineno-0-128" name="__codelineno-0-128" href="#__codelineno-0-128"></a>├── quantum_advantage.py                       Classical vs quantum scaling
+<a id="__codelineno-0-129" name="__codelineno-0-129" href="#__codelineno-0-129"></a>├── mps_baseline.py                            MPS bond dimension + advantage threshold
+<a id="__codelineno-0-130" name="__codelineno-0-130" href="#__codelineno-0-130"></a>├── gpu_baseline.py                            A100 FLOPS + GPU vs QPU crossover
+<a id="__codelineno-0-131" name="__codelineno-0-131" href="#__codelineno-0-131"></a>└── appqsim_protocol.py                        Application-oriented fidelity metrics
+<a id="__codelineno-0-132" name="__codelineno-0-132" href="#__codelineno-0-132"></a>
+<a id="__codelineno-0-133" name="__codelineno-0-133" href="#__codelineno-0-133"></a>qec/                                       ← Quantum error correction
+<a id="__codelineno-0-134" name="__codelineno-0-134" href="#__codelineno-0-134"></a>├── control_qec.py                             Toric code + MWPM decoder
+<a id="__codelineno-0-135" name="__codelineno-0-135" href="#__codelineno-0-135"></a>├── fault_tolerant.py                          RepetitionCodeUPDE
+<a id="__codelineno-0-136" name="__codelineno-0-136" href="#__codelineno-0-136"></a>├── surface_code_upde.py                       Surface code resource estimation
+<a id="__codelineno-0-137" name="__codelineno-0-137" href="#__codelineno-0-137"></a>└── error_budget.py                            3-channel Trotter+gate+logical allocation
+<a id="__codelineno-0-138" name="__codelineno-0-138" href="#__codelineno-0-138"></a>
+<a id="__codelineno-0-139" name="__codelineno-0-139" href="#__codelineno-0-139"></a>hardware/                                  ← Backend + experiments
+<a id="__codelineno-0-140" name="__codelineno-0-140" href="#__codelineno-0-140"></a>├── runner.py                                  IBM Quantum job submission
+<a id="__codelineno-0-141" name="__codelineno-0-141" href="#__codelineno-0-141"></a>├── experiments.py                             20 pre-built experiments
+<a id="__codelineno-0-142" name="__codelineno-0-142" href="#__codelineno-0-142"></a>├── trapped_ion.py                             Trapped-ion noise model
+<a id="__codelineno-0-143" name="__codelineno-0-143" href="#__codelineno-0-143"></a>├── classical.py                               Rust-accelerated Kuramoto reference
+<a id="__codelineno-0-144" name="__codelineno-0-144" href="#__codelineno-0-144"></a>├── gpu_accel.py                               CuPy GPU offload (opt-in)
+<a id="__codelineno-0-145" name="__codelineno-0-145" href="#__codelineno-0-145"></a>├── circuit_cutting.py                         Partition optimiser for 32-64 oscillators
+<a id="__codelineno-0-146" name="__codelineno-0-146" href="#__codelineno-0-146"></a>├── qasm_export.py                             OpenQASM 3.0 export
+<a id="__codelineno-0-147" name="__codelineno-0-147" href="#__codelineno-0-147"></a>├── qcvv.py                                    State fidelity + mirror circuits + XEB
+<a id="__codelineno-0-148" name="__codelineno-0-148" href="#__codelineno-0-148"></a>└── cirq_adapter.py                            Cirq backend adapter (optional)
+<a id="__codelineno-0-149" name="__codelineno-0-149" href="#__codelineno-0-149"></a>
+<a id="__codelineno-0-150" name="__codelineno-0-150" href="#__codelineno-0-150"></a>crypto/                                    ← Quantum key distribution
+<a id="__codelineno-0-151" name="__codelineno-0-151" href="#__codelineno-0-151"></a>├── qkd_bb84.py                                BB84 protocol
+<a id="__codelineno-0-152" name="__codelineno-0-152" href="#__codelineno-0-152"></a>├── bell_test.py                               CHSH test
+<a id="__codelineno-0-153" name="__codelineno-0-153" href="#__codelineno-0-153"></a>├── topology_auth.py                           Topology-authenticated QKD
+<a id="__codelineno-0-154" name="__codelineno-0-154" href="#__codelineno-0-154"></a>└── percolation.py                             Key rate percolation
+<a id="__codelineno-0-155" name="__codelineno-0-155" href="#__codelineno-0-155"></a>
+<a id="__codelineno-0-156" name="__codelineno-0-156" href="#__codelineno-0-156"></a>tcbo/                                      ← TCBO quantum observer
+<a id="__codelineno-0-157" name="__codelineno-0-157" href="#__codelineno-0-157"></a>└── quantum_observer.py                        p_h1, TEE, string order, Betti proxies
+<a id="__codelineno-0-158" name="__codelineno-0-158" href="#__codelineno-0-158"></a>
+<a id="__codelineno-0-159" name="__codelineno-0-159" href="#__codelineno-0-159"></a>pgbo/                                      ← PGBO quantum bridge
+<a id="__codelineno-0-160" name="__codelineno-0-160" href="#__codelineno-0-160"></a>└── quantum_bridge.py                          Quantum geometric tensor, Berry curvature
+<a id="__codelineno-0-161" name="__codelineno-0-161" href="#__codelineno-0-161"></a>
+<a id="__codelineno-0-162" name="__codelineno-0-162" href="#__codelineno-0-162"></a>l16/                                       ← Layer 16 quantum director
+<a id="__codelineno-0-163" name="__codelineno-0-163" href="#__codelineno-0-163"></a>└── quantum_director.py                        Loschmidt echo, stability score
+<a id="__codelineno-0-164" name="__codelineno-0-164" href="#__codelineno-0-164"></a>
+<a id="__codelineno-0-165" name="__codelineno-0-165" href="#__codelineno-0-165"></a>scpn_quantum_engine/                       ← Rust crate (PyO3 0.25, rayon parallel)
+<a id="__codelineno-0-166" name="__codelineno-0-166" href="#__codelineno-0-166"></a>└── src/lib.rs                                 15 functions: kuramoto_euler, kuramoto_trajectory,
+<a id="__codelineno-0-167" name="__codelineno-0-167" href="#__codelineno-0-167"></a>                                               order_parameter, build_knm, pec_coefficients,
+<a id="__codelineno-0-168" name="__codelineno-0-168" href="#__codelineno-0-168"></a>                                               pec_sample_parallel, dla_dimension, mc_xy_simulate,
+<a id="__codelineno-0-169" name="__codelineno-0-169" href="#__codelineno-0-169"></a>                                               state_order_param_sparse, expectation_pauli_fast,
+<a id="__codelineno-0-170" name="__codelineno-0-170" href="#__codelineno-0-170"></a>                                               brute_mpc, lanczos_b_coefficients,
+<a id="__codelineno-0-171" name="__codelineno-0-171" href="#__codelineno-0-171"></a>                                               otoc_from_eigendecomp,
+<a id="__codelineno-0-172" name="__codelineno-0-172" href="#__codelineno-0-172"></a>                                               build_xy_hamiltonian_dense,
+<a id="__codelineno-0-173" name="__codelineno-0-173" href="#__codelineno-0-173"></a>                                               all_xy_expectations
+</code></pre></div>
+<p>★ marks modules from the 33 Research Gems (Rounds 1-8, March 2026).</p>
+<h2 id="classical-to-quantum-mapping">Classical-to-Quantum Mapping<a class="headerlink" href="#classical-to-quantum-mapping" title="Permanent link">&para;</a></h2>
+<p>Each module maps a classical SCPN computation to its quantum analog:</p>
+<table>
+<thead>
+<tr>
+<th>Classical (SCPN)</th>
+<th>Quantum (this repo)</th>
+<th>Mapping</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stochastic LIF membrane potential</td>
+<td>Ry(theta) rotation angle</td>
+<td>theta = pi * (v - v_rest) / (v_threshold - v_rest)</td>
+</tr>
+<tr>
+<td>Bitstream AND-gate synapse</td>
+<td>CRy(theta_w) controlled rotation</td>
+<td>P(out) = P(pre) * sin^2(theta_w/2)</td>
+</tr>
+<tr>
+<td>STDP correlation learning</td>
+<td>Parameter-shift gradient rule</td>
+<td>dw = lr * pre * d<Z>/d(theta)</td>
+</tr>
+<tr>
+<td>Kuramoto ODE (dtheta/dt)</td>
+<td>XY Hamiltonian Trotter evolution</td>
+<td>H = -K_ij(XX + YY) - omega_i Z_i</td>
+</tr>
+<tr>
+<td>16-layer UPDE coupling</td>
+<td>16-qubit spin chain</td>
+<td>Knm -&gt; J_ij entangling gates</td>
+</tr>
+<tr>
+<td>MPC quadratic cost</td>
+<td>QAOA Ising Hamiltonian</td>
+<td></td>
+</tr>
+<tr>
+<td>Grad-Shafranov PDE</td>
+<td>VQLS linear system</td>
+<td>Laplacian A, source b -&gt; A</td>
+</tr>
+<tr>
+<td>SPN token probability</td>
+<td>Qubit amplitude</td>
+<td>p -&gt; amplitude encoding</td>
+</tr>
+<tr>
+<td>Disruption feature vector</td>
+<td>Amplitude-encoded state</td>
+<td>11-D -&gt; 16-D zero-padded</td>
+</tr>
+</tbody>
+</table>
+<h2 id="cross-repository-integration">Cross-Repository Integration<a class="headerlink" href="#cross-repository-integration" title="Permanent link">&para;</a></h2>
+<p>This package is one node in a five-repository ecosystem. Each bridge adapter
+converts between the data representations of the two repositories it connects.</p>
+<pre class="mermaid"><code>graph LR
+    SC["sc-neurocore\n(SNN engine)"] --&gt;|"snn_adapter\nmembrane → Ry angle"| QC["scpn-quantum-\ncontrol"]
+    SSGF["SSGF geometry\nengine"] --&gt;|"ssgf_adapter\nW → H_XY"| QC
+    PO["scpn-phase-\norchestrator"] &lt;--&gt;|"orchestrator_adapter\npayload ↔ artifact"| QC
+    FC["scpn-fusion-core\n+ scpn-control"] --&gt;|"control_plasma_knm\nplasma K_nm"| QC
+    QC --&gt;|"phase_artifact\nUPDE state"| PO
+
+    style QC fill:#6929C4,color:#fff
+    style SC fill:#2ecc71,color:#000
+    style PO fill:#d4a017,color:#000
+    style FC fill:#e67e22,color:#000</code></pre>
+<table>
+<thead>
+<tr>
+<th>Bridge</th>
+<th>Source repo</th>
+<th>Data in</th>
+<th>Data out</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>snn_adapter</code></td>
+<td>sc-neurocore</td>
+<td>ArcaneNeuron membrane <span class="arithmatex">\(v\)</span></td>
+<td><span class="arithmatex">\(R_y(\theta)\)</span> angle</td>
+</tr>
+<tr>
+<td><code>ssgf_adapter</code></td>
+<td>SSGF engine</td>
+<td>Geometry matrix <span class="arithmatex">\(W\)</span></td>
+<td>XY Hamiltonian</td>
+</tr>
+<tr>
+<td><code>orchestrator_adapter</code></td>
+<td>scpn-phase-orchestrator</td>
+<td>State payload (regime, phases)</td>
+<td>UPDEPhaseArtifact</td>
+</tr>
+<tr>
+<td><code>orchestrator_feedback</code></td>
+<td>scpn-phase-orchestrator</td>
+<td>Quantum <span class="arithmatex">\(R\)</span>, fidelity</td>
+<td>Advance/hold/rollback</td>
+</tr>
+<tr>
+<td><code>control_plasma_knm</code></td>
+<td>scpn-control</td>
+<td>Plasma-native <span class="arithmatex">\(K_{nm}\)</span></td>
+<td>Standard <span class="arithmatex">\(K_{nm}\)</span> array</td>
+</tr>
+<tr>
+<td><code>snn_backward</code></td>
+<td>sc-neurocore</td>
+<td>Loss gradient</td>
+<td>Parameter-shift <span class="arithmatex">\(\nabla\theta\)</span></td>
+</tr>
+</tbody>
+</table>
+<h2 id="data-flow-knm-hamiltonian-circuit-measurement-r">Data Flow: Knm → Hamiltonian → Circuit → Measurement → R<a class="headerlink" href="#data-flow-knm-hamiltonian-circuit-measurement-r" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.bridge.knm_hamiltonian</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">OMEGA_N_16</span><span class="p">,</span> <span class="n">build_knm_paper27</span><span class="p">,</span> <span class="n">knm_to_hamiltonian</span><span class="p">,</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="p">)</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.phase.xy_kuramoto</span><span class="w"> </span><span class="kn">import</span> <span class="n">QuantumKuramotoSolver</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">K</span> <span class="o">=</span> <span class="n">build_knm_paper27</span><span class="p">()</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">omega</span> <span class="o">=</span> <span class="n">OMEGA_N_16</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">solver</span> <span class="o">=</span> <span class="n">QuantumKuramotoSolver</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">K</span><span class="p">[:</span><span class="mi">4</span><span class="p">,</span> <span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">omega</span><span class="p">)</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">result</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">t_max</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c1"># result[&quot;R_trajectory&quot;] -&gt; [0.80, 0.78, 0.76, 0.73]</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+        <script src="../js/goatcounter.js"></script>
+      
+    
+  </body>
+</html>

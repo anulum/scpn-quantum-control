@@ -1,0 +1,2587 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Quantum simulation of coupled oscillators on IBM hardware">
+      
+      
+        <meta name="author" content="Miroslav Šotek">
+      
+      
+        <link rel="canonical" href="https://anulum.github.io/scpn-quantum-control/equations/">
+      
+      
+        <link rel="prev" href="../theory/">
+      
+      
+        <link rel="next" href="../architecture/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/anulum_logo_company.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Equations - scpn-quantum-control</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#spdx-license-identifier-agpl-30-or-later" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="scpn-quantum-control" class="md-header__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            scpn-quantum-control
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Equations
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="scpn-quantum-control" class="md-nav__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    scpn-quantum-control
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SCPN Foundations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../research_gems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research Gems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../orchestrator_integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestrator Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rust_engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../autodoc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auto-Generated
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analysis_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../identity_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mitigation_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mitigation API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bridges_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridges API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmarks_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipeline_performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_dynamic_coupling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Dynamic Coupling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_structured_ansatz/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Structured Ansatz
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_hw_topological_optimizer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: HW Topological Optimizer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../test_infrastructure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publications
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Publications
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprint/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprint: Quantum Kuramoto-XY on Hardware
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_sync_witnesses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: Synchronisation Witnesses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: DLA Parity Theorem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DLA-parity Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classical_irreproducibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classical Irreproducibility
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results Gallery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hardware_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IBM Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXPERIMENT_ROADMAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PAPER_CLAIMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results & Claims
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../QUANTUM_CRYPTO_RESEARCH_BRANCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Crypto Research
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Learning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notebooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Roadmap
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../strategic_roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strategic Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="spdx-license-identifier-agpl-30-or-later">SPDX-License-Identifier: AGPL-3.0-or-later<a class="headerlink" href="#spdx-license-identifier-agpl-30-or-later" title="Permanent link">&para;</a></h1>
+<h1 id="commercial-license-available">Commercial license available<a class="headerlink" href="#commercial-license-available" title="Permanent link">&para;</a></h1>
+<h1 id="concepts-19962026-miroslav-sotek-all-rights-reserved">© Concepts 1996–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#concepts-19962026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="code-20202026-miroslav-sotek-all-rights-reserved">© Code 2020–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#code-20202026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="orcid-0009-0009-3560-0851">ORCID: 0009-0009-3560-0851<a class="headerlink" href="#orcid-0009-0009-3560-0851" title="Permanent link">&para;</a></h1>
+<h1 id="contact-wwwanulumli-protoscienceanulumli">Contact: www.anulum.li | protoscience@anulum.li<a class="headerlink" href="#contact-wwwanulumli-protoscienceanulumli" title="Permanent link">&para;</a></h1>
+<h1 id="scpn-quantum-control-key-equations">scpn-quantum-control — Key Equations<a class="headerlink" href="#scpn-quantum-control-key-equations" title="Permanent link">&para;</a></h1>
+<h1 id="key-equations">Key Equations<a class="headerlink" href="#key-equations" title="Permanent link">&para;</a></h1>
+<p>This page collects every equation implemented in <code>scpn-quantum-control</code>, from the
+foundational Kuramoto-to-qubit mapping through the 33 research gems that probe the
+synchronization transition. Each equation is accompanied by the module that implements
+it and the physical intuition behind it.</p>
+<hr />
+<h2 id="equation-dependency-tree">Equation Dependency Tree<a class="headerlink" href="#equation-dependency-tree" title="Permanent link">&para;</a></h2>
+<p>Every equation in the codebase descends from the foundational Kuramoto → XY
+mapping. The tree below shows which equations feed into which — follow any path
+from root to leaf to trace a complete physical argument.</p>
+<pre class="mermaid"><code>graph TD
+    KODE["Kuramoto ODE\nd θ/dt = ω + ΣK sin(Δθ)"] --&gt; HXY["XY Hamiltonian\nH = -ΣK(XX+YY) - Σω Z"]
+    HXY --&gt; TROTTER["Trotter evolution\nU(t) ≈ [e^{-iH_XY Δt} e^{-iH_Z Δt}]^n"]
+    HXY --&gt; VQE["VQE ground state\nmin ⟨ψ(θ)|H|ψ(θ)⟩"]
+    HXY --&gt; ORDER["Order parameter\nR = |Σ(⟨X⟩+i⟨Y⟩)|/N"]
+    HXY --&gt; XXZ["XXZ extension\nH + Δ·ΣK·ZZ"]
+
+    TROTTER --&gt; UPDE["16-qubit UPDE\nspin chain"]
+    TROTTER --&gt; FLOQUET["Floquet DTC\nK(t) = K₀(1+δ cos Ωt)"]
+    VQE --&gt; QFI["QFI\nF_Q ∝ 1/Δ²"]
+    VQE --&gt; ENTROPY["Entanglement entropy\nS ~ (c/3) ln L"]
+    VQE --&gt; MAGIC["Magic\nM₂ = -log₂(ΣP⟨P⟩⁴/2^N)"]
+    VQE --&gt; KRYLOV["Krylov complexity\nC_K = Σ n|φ_n|²"]
+    VQE --&gt; PERCOLATION["Entanglement percolation\nλ₂(L_C) &gt; 0"]
+    VQE --&gt; PAIRING["Richardson pairing\n⟨S⁺S⁻⟩"]
+
+    ORDER --&gt; WITNESS["Sync witnesses\nW = R_c I - C̄"]
+    ORDER --&gt; SFF["Spectral form factor\nr̄: Poisson → GOE"]
+    ORDER --&gt; LOSCHMIDT["Loschmidt echo\nDQPT zeros"]
+    ORDER --&gt; LINDBLAD["Lindblad NESS\nL[ρ_ss] = 0"]
+    ORDER --&gt; MPEMBA["Quantum Mpemba\nF_far &gt; F_near"]
+
+    HXY --&gt; DLA["DLA dimension\n2^(2N-1) - 2"]
+    DLA --&gt; PARITY["Z₂ parity\nP = Z⊗N"]
+
+    style HXY fill:#6929C4,color:#fff
+    style VQE fill:#6929C4,color:#fff
+    style DLA fill:#d4a017,color:#000
+    style KRYLOV fill:#d4a017,color:#000
+    style MAGIC fill:#d4a017,color:#000</code></pre>
+<hr />
+<h2 id="1-foundational-kuramoto-xy-hamiltonian">1. Foundational: Kuramoto → XY Hamiltonian<a class="headerlink" href="#1-foundational-kuramoto-xy-hamiltonian" title="Permanent link">&para;</a></h2>
+<h3 id="classical-kuramoto-the-upde-core">Classical Kuramoto (the UPDE core)<a class="headerlink" href="#classical-kuramoto-the-upde-core" title="Permanent link">&para;</a></h3>
+<p>The Unified Phase Dynamics Equation describes <span class="arithmatex">\(N\)</span> coupled oscillators with natural
+frequencies <span class="arithmatex">\(\omega_i\)</span> and coupling matrix <span class="arithmatex">\(K_{ij}\)</span>:</p>
+<div class="arithmatex">\[\frac{d\theta_i}{dt} = \omega_i + \sum_j K_{ij} \sin(\theta_j - \theta_i)\]</div>
+<p>Each oscillator has a phase <span class="arithmatex">\(\theta_i\)</span> on the circle <span class="arithmatex">\(S^1\)</span>. When the coupling <span class="arithmatex">\(K_{ij}\)</span>
+is strong enough, the oscillators lock into a common rhythm — they synchronise.</p>
+<p>Think of <span class="arithmatex">\(N\)</span> metronomes on a shared table. Each ticks at its own natural rate <span class="arithmatex">\(\omega_i\)</span>,
+but the table transmits vibrations between them (coupling <span class="arithmatex">\(K_{ij}\)</span>). If the table is
+rigid enough, the metronomes gradually align. The UPDE is the equation that governs
+this alignment.</p>
+<h3 id="quantum-xy-hamiltonian">Quantum XY Hamiltonian<a class="headerlink" href="#quantum-xy-hamiltonian" title="Permanent link">&para;</a></h3>
+<p>The quantum analogue maps each oscillator to a qubit on the Bloch sphere. The
+<span class="arithmatex">\(\sin(\theta_j - \theta_i)\)</span> coupling becomes a pairwise XY interaction, and the
+natural frequencies become longitudinal fields:</p>
+<div class="arithmatex">\[H = -\sum_{i&lt;j} K_{ij} (X_i X_j + Y_i Y_j) - \sum_i \omega_i Z_i\]</div>
+<p>This is the central equation of the entire codebase. Every analysis module, every
+variational algorithm, every hardware experiment starts from this Hamiltonian.</p>
+<p><strong>Module:</strong> <code>bridge/knm_hamiltonian.py</code> → <code>knm_to_hamiltonian(K, omega)</code></p>
+<h3 id="time-evolution-lie-trotter">Time Evolution (Lie-Trotter)<a class="headerlink" href="#time-evolution-lie-trotter" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[U(t) = e^{-iHt} \approx \left[e^{-iH_{XY}\Delta t}\, e^{-iH_Z\Delta t}\right]^{t/\Delta t}\]</div>
+<p>The Trotter decomposition splits the Hamiltonian into commuting XX+YY terms (implemented
+as entangling gates) and single-qubit Z rotations. Error scales as <span class="arithmatex">\(O(\Delta t^2)\)</span> per
+step.</p>
+<p><strong>Module:</strong> <code>phase/xy_kuramoto.py</code> → <code>QuantumKuramotoSolver.evolve()</code></p>
+<h3 id="order-parameter">Order Parameter<a class="headerlink" href="#order-parameter" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[R = \frac{1}{N} \left|\sum_i \left(\langle X_i \rangle + i\langle Y_i \rangle\right)\right|\]</div>
+<p><span class="arithmatex">\(R = 0\)</span>: completely incoherent (random phases). <span class="arithmatex">\(R = 1\)</span>: perfect synchronization
+(all phases equal). The transition from <span class="arithmatex">\(R \approx 0\)</span> to <span class="arithmatex">\(R \approx 1\)</span> as coupling
+strength increases is the synchronization phase transition — the quantum analogue of
+the classical Kuramoto transition, and in the SCPN framework, the mechanism by which
+consciousness emerges.</p>
+<h3 id="xxz-generalization-kouchekian-teodorescu-s2-embedding">XXZ Generalization (Kouchekian-Teodorescu S² Embedding)<a class="headerlink" href="#xxz-generalization-kouchekian-teodorescu-s2-embedding" title="Permanent link">&para;</a></h3>
+<p>arXiv:2601.00113 proves that the classical Kuramoto model on <span class="arithmatex">\(S^1\)</span> has no Lagrangian
+structure. Embedding oscillators on <span class="arithmatex">\(S^2\)</span> (the Bloch sphere) resolves this. The full
+S² model adds a ZZ interaction controlled by the anisotropy parameter <span class="arithmatex">\(\Delta\)</span>:</p>
+<div class="arithmatex">\[H_{XXZ} = -\sum_{i&lt;j} K_{ij}(X_iX_j + Y_iY_j + \Delta \cdot Z_iZ_j) - \sum_i \omega_i Z_i\]</div>
+<p>At <span class="arithmatex">\(\Delta = 0\)</span>: recovers the XY model (our standard Hamiltonian). At <span class="arithmatex">\(\Delta = 1\)</span>:
+full isotropic Heisenberg model with SU(2) symmetry. The XY model is the in-plane
+restriction of the Kouchekian-Teodorescu framework.</p>
+<p><strong>Module:</strong> <code>bridge/knm_hamiltonian.py</code> → <code>knm_to_xxz_hamiltonian(K, omega, delta)</code></p>
+<hr />
+<h2 id="2-k_nm-canonical-parameters">2. K_nm Canonical Parameters<a class="headerlink" href="#2-k_nm-canonical-parameters" title="Permanent link">&para;</a></h2>
+<p>Natural frequencies (16 layers, Paper 27 Table 1):</p>
+<div class="arithmatex">\[\boldsymbol{\omega} = [1.329,\; 2.610,\; 0.844,\; 1.520,\; 0.710,\; 3.780,\; 1.055,\; 0.625,\; 2.210,\; 1.740,\; 0.480,\; 3.210,\; 0.915,\; 1.410,\; 2.830,\; 0.991]\]</div>
+<p>Coupling matrix (Paper 27, Eq. 3):</p>
+<div class="arithmatex">\[K_{nm} = K_{\text{base}} \cdot e^{-\alpha|n-m|}, \quad K_{\text{base}}=0.45,\; \alpha=0.3\]</div>
+<p>Calibration anchors: <span class="arithmatex">\(K_{1,2}=0.302\)</span>, <span class="arithmatex">\(K_{2,3}=0.201\)</span>, <span class="arithmatex">\(K_{3,4}=0.252\)</span>, <span class="arithmatex">\(K_{4,5}=0.154\)</span>.</p>
+<h2 id="upde-unified-phase-dynamics-equation">UPDE (Unified Phase Dynamics Equation)<a class="headerlink" href="#upde-unified-phase-dynamics-equation" title="Permanent link">&para;</a></h2>
+<div class="arithmatex">\[\frac{d\theta_n}{dt} = \omega_n + \sum_m K_{nm} \sin(\theta_m - \theta_n) + F_n(\boldsymbol{\theta}, t)\]</div>
+<p><span class="arithmatex">\(F_n\)</span> captures layer-specific forcing. In the quantum mapping, <span class="arithmatex">\(F_n\)</span> corresponds
+to single-qubit Z rotations beyond the natural frequency term.</p>
+<h2 id="quantum-lif-neuron">Quantum LIF Neuron<a class="headerlink" href="#quantum-lif-neuron" title="Permanent link">&para;</a></h2>
+<p>Membrane dynamics:</p>
+<div class="arithmatex">\[v(t+1) = v(t) - \frac{\Delta t}{\tau}\bigl(v(t) - v_{\text{rest}}\bigr) + R \cdot I \cdot \Delta t\]</div>
+<p>Rotation angle encoding:</p>
+<div class="arithmatex">\[\theta = \pi \cdot \text{clip}\!\left(\frac{v - v_{\text{rest}}}{v_{\text{thresh}} - v_{\text{rest}}},\; 0,\; 1\right)\]</div>
+<p>Spike probability:</p>
+<div class="arithmatex">\[P(\text{spike}) = \sin^2\!\left(\frac{\theta}{2}\right)\]</div>
+<h2 id="quantum-synapse-cry">Quantum Synapse (CRy)<a class="headerlink" href="#quantum-synapse-cry" title="Permanent link">&para;</a></h2>
+<p>Weight-to-angle:</p>
+<div class="arithmatex">\[\theta_w = \pi \cdot \frac{w - w_{\min}}{w_{\max} - w_{\min}}\]</div>
+<p>Effective transmission probability:</p>
+<div class="arithmatex">\[P(\text{post}\mid\text{pre}=1) = \sin^2\!\left(\frac{\theta_w}{2}\right)\]</div>
+<h2 id="parameter-shift-rule">Parameter-Shift Rule<a class="headerlink" href="#parameter-shift-rule" title="Permanent link">&para;</a></h2>
+<p>Gradient of expectation w.r.t. rotation angle:</p>
+<div class="arithmatex">\[\frac{\partial\langle Z \rangle}{\partial\theta} = \frac{\langle Z \rangle\!\left(\theta + \frac{\pi}{2}\right) - \langle Z \rangle\!\left(\theta - \frac{\pi}{2}\right)}{2}\]</div>
+<p>STDP weight update:</p>
+<div class="arithmatex">\[\Delta w = \eta \cdot s_{\text{pre}} \cdot \frac{\partial\langle Z_{\text{post}}\rangle}{\partial\theta_w}\]</div>
+<p>QSNN training uses the same rule for MSE loss gradient:</p>
+<div class="arithmatex">\[\nabla_{\theta_{ni}} \mathcal{L} = \frac{\mathcal{L}(\theta_{ni} + \pi/2) - \mathcal{L}(\theta_{ni} - \pi/2)}{2}\]</div>
+<h2 id="qaoa-cost-hamiltonian">QAOA Cost Hamiltonian<a class="headerlink" href="#qaoa-cost-hamiltonian" title="Permanent link">&para;</a></h2>
+<p>MPC quadratic cost → Ising:</p>
+<div class="arithmatex">\[C = \sum_t \|Bu(t) - x_{\text{target}}\|^2 = \sum_{ij} J_{ij} Z_i Z_j + \sum_i h_i Z_i + \text{const}\]</div>
+<p>QAOA circuit:</p>
+<div class="arithmatex">\[|\gamma, \beta\rangle = \prod_{p=1}^{P} \left[e^{-i\beta_p H_{\text{mixer}}}\, e^{-i\gamma_p H_{\text{cost}}}\right] |+\rangle^{\otimes n}\]</div>
+<h2 id="vqls-cost-function">VQLS Cost Function<a class="headerlink" href="#vqls-cost-function" title="Permanent link">&para;</a></h2>
+<p>For linear system <span class="arithmatex">\(Ax = b\)</span>:</p>
+<div class="arithmatex">\[C_{\text{VQLS}} = 1 - \frac{|\langle b|A|x\rangle|^2}{\langle x|A^\dagger A|x\rangle}\]</div>
+<p>where <span class="arithmatex">\(|x\rangle = U(\theta)|0\rangle\)</span> is a variational ansatz.</p>
+<h2 id="probabilistic-error-cancellation-pec">Probabilistic Error Cancellation (PEC)<a class="headerlink" href="#probabilistic-error-cancellation-pec" title="Permanent link">&para;</a></h2>
+<p>Temme et al., PRL 119, 180509 (2017).</p>
+<p>Quasi-probability decomposition of the inverse depolarizing channel <span class="arithmatex">\(\mathcal{E}^{-1}\)</span>
+into Pauli operations <span class="arithmatex">\(\{I, X, Y, Z\}\)</span>:</p>
+<div class="arithmatex">\[q_I = 1 + \frac{3p}{4-4p}, \quad q_{X,Y,Z} = -\frac{p}{4-4p}\]</div>
+<p>Sampling overhead (cost multiplier):</p>
+<div class="arithmatex">\[\gamma = \left(\sum_k |q_k|\right)^{n_{\text{gates}}}\]</div>
+<p>Monte Carlo estimator:</p>
+<div class="arithmatex">\[\langle O \rangle_{\text{mitigated}} = \frac{1}{N} \sum_{s=1}^{N} \gamma \cdot \text{sgn}(s) \cdot \langle O \rangle_s\]</div>
+<h2 id="trapped-ion-noise-model">Trapped-Ion Noise Model<a class="headerlink" href="#trapped-ion-noise-model" title="Permanent link">&para;</a></h2>
+<p>Mølmer-Sørensen gate error model (QCCD architecture):</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Value</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MS 2-qubit error</td>
+<td>0.5%</td>
+<td>QCCD benchmarks</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(T_1\)</span></td>
+<td>100 ms</td>
+<td>Ion trap coherence</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(T_2\)</span></td>
+<td>1 ms</td>
+<td>Dephasing time</td>
+</tr>
+<tr>
+<td>SQ gate time</td>
+<td>10 μs</td>
+<td>Single-qubit</td>
+</tr>
+<tr>
+<td>MS gate time</td>
+<td>200 μs</td>
+<td>Two-qubit</td>
+</tr>
+</tbody>
+</table>
+<p>Noise composition per MS gate:</p>
+<div class="arithmatex">\[\mathcal{E}_{\text{MS}} = \mathcal{E}_{\text{depol}}(p=0.005) \circ \bigl(\mathcal{E}_{\text{relax}}(T_1, T_2, t_{\text{MS}}) \otimes \mathcal{E}_{\text{relax}}\bigr)\]</div>
+<p>All-to-all connectivity (no SWAP overhead).</p>
+<h2 id="iter-disruption-feature-space">ITER Disruption Feature Space<a class="headerlink" href="#iter-disruption-feature-space" title="Permanent link">&para;</a></h2>
+<p>11 physics-based features (ITER Physics Basis, Nuclear Fusion 39, 1999):</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Symbol</th>
+<th>Range</th>
+<th>Units</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Plasma current</td>
+<td><span class="arithmatex">\(I_p\)</span></td>
+<td>0.5–17</td>
+<td>MA</td>
+</tr>
+<tr>
+<td>Safety factor</td>
+<td><span class="arithmatex">\(q_{95}\)</span></td>
+<td>1.5–8</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Internal inductance</td>
+<td><span class="arithmatex">\(l_i\)</span></td>
+<td>0.5–2</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Greenwald fraction</td>
+<td><span class="arithmatex">\(n_{\text{GW}}\)</span></td>
+<td>0–1.5</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Normalized beta</td>
+<td><span class="arithmatex">\(\beta_N\)</span></td>
+<td>0–4</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Radiated power</td>
+<td><span class="arithmatex">\(P_{\text{rad}}\)</span></td>
+<td>0–100</td>
+<td>MW</td>
+</tr>
+<tr>
+<td>Locked mode</td>
+<td>LM</td>
+<td>0–0.01</td>
+<td>T</td>
+</tr>
+<tr>
+<td>Loop voltage</td>
+<td><span class="arithmatex">\(V_{\text{loop}}\)</span></td>
+<td>−2–5</td>
+<td>V</td>
+</tr>
+<tr>
+<td>Stored energy</td>
+<td><span class="arithmatex">\(W\)</span></td>
+<td>0–400</td>
+<td>MJ</td>
+</tr>
+<tr>
+<td>Elongation</td>
+<td><span class="arithmatex">\(\kappa\)</span></td>
+<td>1–2.2</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Current ramp</td>
+<td><span class="arithmatex">\(dI_p/dt\)</span></td>
+<td>−5–5</td>
+<td>MA/s</td>
+</tr>
+</tbody>
+</table>
+<p>Min-max normalization to <span class="arithmatex">\([0, 1]\)</span>:</p>
+<div class="arithmatex">\[\hat{x}_i = \text{clip}\!\left(\frac{x_i - x_{\min,i}}{x_{\max,i} - x_{\min,i}},\; 0,\; 1\right)\]</div>
+<h2 id="fault-tolerant-upde-repetition-code">Fault-Tolerant UPDE (Repetition Code)<a class="headerlink" href="#fault-tolerant-upde-repetition-code" title="Permanent link">&para;</a></h2>
+<p>Each oscillator encoded in <span class="arithmatex">\(d\)</span> physical data qubits + <span class="arithmatex">\((d-1)\)</span> ancilla qubits.</p>
+<p>Total physical qubits: <span class="arithmatex">\(N_{\text{phys}} = n_{\text{osc}} \cdot (2d - 1)\)</span></p>
+<p>Encoding (repetition code, bit-flip protection):</p>
+<div class="arithmatex">\[|\psi_L\rangle = R_y(\theta)|0\rangle^{\otimes d} \xrightarrow{\text{CNOT fan-out}} \cos(\theta/2)|0\rangle^{\otimes d} + \sin(\theta/2)|1\rangle^{\otimes d}\]</div>
+<p>Transversal coupling between logical qubits <span class="arithmatex">\(i\)</span> and <span class="arithmatex">\(j\)</span>:</p>
+<div class="arithmatex">\[U_{\text{ZZ}}^{(L)} = \prod_{k=1}^{d} R_{ZZ}\!\left(\frac{K_{ij}\Delta t}{d},\; q_k^{(i)},\; q_k^{(j)}\right)\]</div>
+<p>Syndrome extraction via adjacent parity checks on ancillae.</p>
+<h2 id="quantum-advantage-scaling">Quantum Advantage Scaling<a class="headerlink" href="#quantum-advantage-scaling" title="Permanent link">&para;</a></h2>
+<p>Classical cost (matrix exponential): <span class="arithmatex">\(O(2^{2n})\)</span> for <span class="arithmatex">\(n\)</span> qubits.</p>
+<p>Quantum cost (Trotter): <span class="arithmatex">\(O(n^2 \cdot r)\)</span> gates per step, where <span class="arithmatex">\(r\)</span> = Trotter repetitions.</p>
+<p>Crossover estimate via exponential fit:</p>
+<div class="arithmatex">\[t_c(n) = a_c \cdot e^{b_c n}, \quad t_q(n) = a_q \cdot e^{b_q n}\]</div>
+<div class="arithmatex">\[n_{\text{cross}} = \frac{\ln(a_q/a_c)}{b_c - b_q} \quad (b_c &gt; b_q)\]</div>
+<h2 id="ssgf-quantum-loop">SSGF Quantum Loop<a class="headerlink" href="#ssgf-quantum-loop" title="Permanent link">&para;</a></h2>
+<p>SSGF geometry matrix <span class="arithmatex">\(W\)</span> (symmetric, non-negative, zero diagonal) maps
+directly to the XY Hamiltonian via the same <span class="arithmatex">\(K_{nm} \to H\)</span> compiler.</p>
+<p>Phase encoding into qubit XY-plane:</p>
+<div class="arithmatex">\[|q_i\rangle = R_y(\pi/2)\, R_z(\theta_i)\, |0\rangle = \frac{|0\rangle + e^{i\theta_i}|1\rangle}{\sqrt{2}}\]</div>
+<p>Phase recovery: <span class="arithmatex">\(\theta_i = \text{atan2}(\langle Y_i\rangle, \langle X_i\rangle)\)</span></p>
+<h2 id="identity-binding-topology">Identity Binding Topology<a class="headerlink" href="#identity-binding-topology" title="Permanent link">&para;</a></h2>
+<p>6-layer, 18-oscillator Arcane Sapience identity spec:</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th><span class="arithmatex">\(\omega\)</span> (rad/s)</th>
+<th>Oscillators</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>working_style</td>
+<td>1.2</td>
+<td>3</td>
+</tr>
+<tr>
+<td>reasoning</td>
+<td>2.1</td>
+<td>3</td>
+</tr>
+<tr>
+<td>relationship</td>
+<td>0.8</td>
+<td>3</td>
+</tr>
+<tr>
+<td>aesthetics</td>
+<td>1.5</td>
+<td>3</td>
+</tr>
+<tr>
+<td>domain_knowledge</td>
+<td>3.0</td>
+<td>3</td>
+</tr>
+<tr>
+<td>cross_project</td>
+<td>0.9</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<p>Coupling: <span class="arithmatex">\(K_{\text{intra}} = 0.6\)</span>, <span class="arithmatex">\(K_{\text{inter}} = 0.4 \cdot e^{-0.25|l_i - l_j|}\)</span></p>
+<p>Maps to 35 oscillators in scpn-phase-orchestrator's identity_coherence domainpack
+via centroid projection (circular mean for phase roundtrip).</p>
+<hr />
+<h2 id="research-gems-phase-transition-equations">Research Gems: Phase Transition Equations<a class="headerlink" href="#research-gems-phase-transition-equations" title="Permanent link">&para;</a></h2>
+<p>The equations below were derived during Rounds 1–8 (March 2026) and implement
+novel probes of the quantum synchronization transition. Each equation has no or
+minimal prior art in the context of the Kuramoto-XY model.</p>
+<h3 id="synchronization-witnesses-gem-1">Synchronization Witnesses (Gem 1)<a class="headerlink" href="#synchronization-witnesses-gem-1" title="Permanent link">&para;</a></h3>
+<p>Three Hermitian observables whose expectation value certifies synchronization:</p>
+<table>
+<thead>
+<tr>
+<th>Witness</th>
+<th>Equation</th>
+<th>Observable</th>
+<th>Fires when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Correlation</td>
+<td><span class="arithmatex">\(W_{\mathrm{corr}} = R_c \cdot I - \frac{1}{M}\sum_{i&lt;j}(\langle X_iX_j\rangle + \langle Y_iY_j\rangle)\)</span></td>
+<td>Mean pairwise XY correlator</td>
+<td>Correlator <span class="arithmatex">\(&gt; R_c\)</span></td>
+</tr>
+<tr>
+<td>Fiedler</td>
+<td><span class="arithmatex">\(W_F = \lambda_{2,c} \cdot I - \lambda_2(L)\)</span></td>
+<td>Algebraic connectivity of correlation Laplacian</td>
+<td><span class="arithmatex">\(\lambda_2 &gt; \lambda_{2,c}\)</span></td>
+</tr>
+<tr>
+<td>Topological</td>
+<td><span class="arithmatex">\(W_{\mathrm{top}} = p_{H_1} - p_c\)</span></td>
+<td>Persistent H₁ fraction</td>
+<td><span class="arithmatex">\(p_{H_1} &lt; p_c\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The correlation Laplacian is <span class="arithmatex">\(L = D - C\)</span> where <span class="arithmatex">\(C_{ij} = \langle X_iX_j\rangle +
+\langle Y_iY_j\rangle\)</span> and <span class="arithmatex">\(D_{ii} = \sum_j C_{ij}\)</span>. The Fiedler eigenvalue
+<span class="arithmatex">\(\lambda_2\)</span> is the second-smallest eigenvalue of <span class="arithmatex">\(L\)</span>.</p>
+<p><strong>Module:</strong> <code>analysis/sync_witness.py</code></p>
+<h3 id="dynamical-lie-algebra-dimension-gem-11">Dynamical Lie Algebra Dimension (Gem 11)<a class="headerlink" href="#dynamical-lie-algebra-dimension-gem-11" title="Permanent link">&para;</a></h3>
+<p>For the heterogeneous XY Hamiltonian with all <span class="arithmatex">\(\omega_i\)</span> distinct:</p>
+<div class="arithmatex">\[\dim\bigl(\mathrm{DLA}(H_{XY})\bigr) = 2^{2N-1} - 2\]</div>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;"><span class="arithmatex">\(N\)</span> (qubits)</th>
+<th style="text-align: center;"><span class="arithmatex">\(\dim(\mathrm{DLA})\)</span></th>
+<th style="text-align: center;"><span class="arithmatex">\(\dim(\mathfrak{su}(2^N))\)</span></th>
+<th style="text-align: center;">Fraction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">6</td>
+<td style="text-align: center;">15</td>
+<td style="text-align: center;">40%</td>
+</tr>
+<tr>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">30</td>
+<td style="text-align: center;">63</td>
+<td style="text-align: center;">48%</td>
+</tr>
+<tr>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">126</td>
+<td style="text-align: center;">255</td>
+<td style="text-align: center;">49%</td>
+</tr>
+<tr>
+<td style="text-align: center;">5</td>
+<td style="text-align: center;">510</td>
+<td style="text-align: center;">1023</td>
+<td style="text-align: center;">50%</td>
+</tr>
+<tr>
+<td style="text-align: center;">6</td>
+<td style="text-align: center;">2046</td>
+<td style="text-align: center;">4095</td>
+<td style="text-align: center;">50%</td>
+</tr>
+</tbody>
+</table>
+<p>The DLA dimension approaches half the full <span class="arithmatex">\(\mathfrak{su}(2^N)\)</span> as <span class="arithmatex">\(N\)</span> grows. The
+missing half is blocked by the Z₂ parity symmetry <span class="arithmatex">\(P = Z^{\otimes N}\)</span>. This is the
+<em>only</em> symmetry of the heterogeneous XY Hamiltonian — a theorem, not an assumption.</p>
+<p><strong>Module:</strong> <code>analysis/dynamical_lie_algebra.py</code></p>
+<h3 id="quantum-fisher-information-gem-15">Quantum Fisher Information (Gem 15)<a class="headerlink" href="#quantum-fisher-information-gem-15" title="Permanent link">&para;</a></h3>
+<p>The QFI quantifies the maximum precision for estimating the coupling parameter:</p>
+<div class="arithmatex">\[F_Q(K) = 4\left(\langle\partial_K\psi|\partial_K\psi\rangle - |\langle\psi|\partial_K\psi\rangle|^2\right)\]</div>
+<p>Equivalently, in terms of the spectral decomposition <span class="arithmatex">\(H(K)|\psi_n\rangle = E_n|\psi_n\rangle\)</span>:</p>
+<div class="arithmatex">\[F_Q = 4\sum_{n \neq 0} \frac{|\langle\psi_n|\partial_K H|\psi_0\rangle|^2}{(E_n - E_0)^2}\]</div>
+<p>The QFI diverges as the spectral gap <span class="arithmatex">\(E_1 - E_0 \to 0\)</span> at <span class="arithmatex">\(K_c\)</span> — the synchronization
+transition is a metrological sweet spot. The Cramér-Rao bound gives
+<span class="arithmatex">\(\delta K \geq 1/\sqrt{F_Q}\)</span>, so the critical ground state achieves Heisenberg-limited
+precision for measuring coupling strength.</p>
+<p><strong>Module:</strong> <code>analysis/qfi_criticality.py</code></p>
+<h3 id="entanglement-percolation-gem-16">Entanglement Percolation (Gem 16)<a class="headerlink" href="#entanglement-percolation-gem-16" title="Permanent link">&para;</a></h3>
+<p>Pairwise concurrence from the ground state density matrix:</p>
+<div class="arithmatex">\[\mathcal{C}_{ij} = \max(0, \lambda_1 - \lambda_2 - \lambda_3 - \lambda_4)\]</div>
+<p>where <span class="arithmatex">\(\lambda_k\)</span> are the square roots of the eigenvalues of <span class="arithmatex">\(\rho_{ij}(\sigma_y
+\otimes \sigma_y)\rho_{ij}^*(\sigma_y \otimes \sigma_y)\)</span> in decreasing order.</p>
+<p>The concurrence matrix is interpreted as a weighted graph. The entanglement percolation
+threshold <span class="arithmatex">\(K_p\)</span> is the coupling at which <span class="arithmatex">\(\lambda_2(L_{\mathcal{C}}) &gt; 0\)</span> (the
+concurrence graph becomes connected). Empirical finding: <span class="arithmatex">\(K_p \approx K_c\)</span>.</p>
+<p><strong>Module:</strong> <code>analysis/entanglement_percolation.py</code></p>
+<h3 id="fidelity-susceptibility-gem-20">Fidelity Susceptibility (Gem 20)<a class="headerlink" href="#fidelity-susceptibility-gem-20" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[\chi_F(K) = -\frac{\partial^2}{\partial(\delta K)^2}\bigg|_{\delta K=0} |\langle\psi(K)|\psi(K + \delta K)\rangle|\]</div>
+<p><span class="arithmatex">\(\chi_F\)</span> is the gauge-invariant diagnostic: the Berry connection on a 1D open path is
+pure gauge, but <span class="arithmatex">\(\chi_F\)</span> peaks at the phase transition regardless of the gauge choice.</p>
+<p><strong>Module:</strong> <code>analysis/berry_fidelity.py</code></p>
+<h3 id="quantum-mpemba-effect-gem-21">Quantum Mpemba Effect (Gem 21)<a class="headerlink" href="#quantum-mpemba-effect-gem-21" title="Permanent link">&para;</a></h3>
+<p>Under amplitude damping (Lindblad with <span class="arithmatex">\(L_i = \sqrt{\gamma}\,\sigma_i^-\)</span>), define
+the fidelity to the thermal state <span class="arithmatex">\(\rho_\infty\)</span>:</p>
+<div class="arithmatex">\[\mathcal{F}(t) = \mathrm{Tr}\!\left(\sqrt{\sqrt{\rho_\infty}\,\rho(t)\,\sqrt{\rho_\infty}}\right)^2\]</div>
+<p>Mpemba effect detected when <span class="arithmatex">\(\mathcal{F}_{\mathrm{far}}(t) &gt; \mathcal{F}_{\mathrm{near}}(t)\)</span>
+at intermediate times — the far-from-equilibrium state thermalizes faster.</p>
+<p>Finding: <span class="arithmatex">\(|+\rangle^{\otimes N}\)</span> (maximum <span class="arithmatex">\(R\)</span>, ordered) thermalizes faster than the
+ground state (near equilibrium) under amplitude damping. Synchronized states are
+"stickier" — they resist thermalization, which in the SCPN framework implies dynamical
+protection of conscious states.</p>
+<p><strong>Module:</strong> <code>analysis/quantum_mpemba.py</code></p>
+<h3 id="lindblad-ness-gem-22">Lindblad NESS (Gem 22)<a class="headerlink" href="#lindblad-ness-gem-22" title="Permanent link">&para;</a></h3>
+<p>The non-equilibrium steady state under amplitude damping:</p>
+<div class="arithmatex">\[\frac{d\rho}{dt} = -i[H, \rho] + \gamma\sum_i\left(\sigma_i^-\rho\,\sigma_i^+ - \frac{1}{2}\{\sigma_i^+\sigma_i^-, \rho\}\right) = 0\]</div>
+<p>The NESS <span class="arithmatex">\(\rho_{\mathrm{ss}}\)</span> satisfies <span class="arithmatex">\(\mathcal{L}[\rho_{\mathrm{ss}}] = 0\)</span> and retains
+synchronization signatures (<span class="arithmatex">\(R_{\mathrm{NESS}} &gt; 0\)</span>) for sufficiently strong coupling.</p>
+<p><strong>Module:</strong> <code>analysis/lindblad_ness.py</code></p>
+<h3 id="spectral-form-factor-gem-27">Spectral Form Factor (Gem 27)<a class="headerlink" href="#spectral-form-factor-gem-27" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[g(t) = \frac{|\mathrm{Tr}(e^{-iHt})|^2}{d^2} = \frac{1}{d^2}\left|\sum_n e^{-iE_n t}\right|^2\]</div>
+<p>Level spacing ratio (chaos diagnostic):</p>
+<div class="arithmatex">\[\bar{r} = \left\langle\frac{\min(\delta_n, \delta_{n+1})}{\max(\delta_n, \delta_{n+1})}\right\rangle, \quad \delta_n = E_{n+1} - E_n\]</div>
+<table>
+<thead>
+<tr>
+<th>Regime</th>
+<th style="text-align: center;"><span class="arithmatex">\(\bar{r}\)</span></th>
+<th>Level statistics</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Integrable</td>
+<td style="text-align: center;">0.386</td>
+<td>Poisson (uncorrelated levels)</td>
+</tr>
+<tr>
+<td>Chaotic (GOE)</td>
+<td style="text-align: center;">0.536</td>
+<td>Wigner-Dyson (level repulsion)</td>
+</tr>
+</tbody>
+</table>
+<p>The transition from Poisson to GOE as <span class="arithmatex">\(K\)</span> increases through <span class="arithmatex">\(K_c\)</span> confirms that the
+synchronization transition coincides with the onset of quantum chaos.</p>
+<p><strong>Module:</strong> <code>analysis/spectral_form_factor.py</code></p>
+<h3 id="krylov-complexity-gem-31">Krylov Complexity (Gem 31)<a class="headerlink" href="#krylov-complexity-gem-31" title="Permanent link">&para;</a></h3>
+<p>Given an operator <span class="arithmatex">\(O\)</span> and Hamiltonian <span class="arithmatex">\(H\)</span>, the Lanczos algorithm generates the Krylov
+basis <span class="arithmatex">\(\{|O_n)\}\)</span> with recursion coefficients <span class="arithmatex">\(b_n\)</span>:</p>
+<div class="arithmatex">\[H|O_n) = b_n|O_{n-1}) + a_n|O_n) + b_{n+1}|O_{n+1})\]</div>
+<p>The Krylov complexity:</p>
+<div class="arithmatex">\[C_K(t) = \sum_n n\,|\phi_n(t)|^2\]</div>
+<p>measures how far into the Krylov chain the operator has spread at time <span class="arithmatex">\(t\)</span>.
+Growth rate: <span class="arithmatex">\(b_n \sim n\)</span> (chaotic), <span class="arithmatex">\(b_n \sim \text{const}\)</span> (integrable).</p>
+<p>At <span class="arithmatex">\(K_c\)</span>, Krylov complexity reaches its maximum — the synchronization transition is the
+point of maximum operator spreading. This is the highest-novelty result (4.5/5): Krylov
+complexity has never been computed for the Kuramoto-XY system.</p>
+<p><strong>Module:</strong> <code>analysis/krylov_complexity.py</code></p>
+<h3 id="stabilizer-renyi-entropy-magic-gem-32">Stabilizer Rényi Entropy / Magic (Gem 32)<a class="headerlink" href="#stabilizer-renyi-entropy-magic-gem-32" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[M_2 = -\log_2\!\left(\frac{\sum_P \langle P\rangle^4}{2^N}\right)\]</div>
+<p>where the sum runs over all <span class="arithmatex">\(4^N\)</span> Pauli operators <span class="arithmatex">\(P \in \{I, X, Y, Z\}^{\otimes N}\)</span>.
+<span class="arithmatex">\(M_2 = 0\)</span> for stabilizer states (classically simulable); <span class="arithmatex">\(M_2\)</span> is maximal for states
+that are hardest to simulate classically.</p>
+<p>At <span class="arithmatex">\(K_c\)</span>, magic peaks — the critical ground state is maximally non-classical. This
+connects synchronization to computational complexity: the point where consciousness
+emerges (in the SCPN model) is precisely where classical simulation fails.</p>
+<p><strong>Module:</strong> <code>analysis/magic_nonstabilizerness.py</code></p>
+<h3 id="finite-size-scaling-gem-33">Finite-Size Scaling (Gem 33)<a class="headerlink" href="#finite-size-scaling-gem-33" title="Permanent link">&para;</a></h3>
+<p>The BKT transition has logarithmic finite-size corrections:</p>
+<div class="arithmatex">\[K_c(N) = K_c(\infty) + \frac{a}{(\ln N)^2}\]</div>
+<p>This ansatz, fitted to small-system data (<span class="arithmatex">\(N = 2, 3, 4, 5\)</span>), extracts the
+thermodynamic-limit critical coupling <span class="arithmatex">\(K_c(\infty)\)</span>.</p>
+<p><strong>Module:</strong> <code>analysis/finite_size_scaling.py</code></p>
+<h3 id="richardson-pairing-correlator-gem-25">Richardson Pairing Correlator (Gem 25)<a class="headerlink" href="#richardson-pairing-correlator-gem-25" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[\langle S_i^+ S_j^-\rangle = \langle\psi| \sigma_i^+ \sigma_j^- |\psi\rangle\]</div>
+<p>where <span class="arithmatex">\(\sigma_i^+ = (X_i + iY_i)/2\)</span>. Strong pairing (<span class="arithmatex">\(|\langle S^+S^-\rangle| &gt; 0\)</span>)
+signals the Richardson pairing mechanism — synchronization as quantum superconductivity.
+The Kouchekian-Teodorescu paper (arXiv:2601.00113) proves that this connection is
+exact for perturbations around the synchronised fixed point.</p>
+<p><strong>Module:</strong> <code>analysis/pairing_correlator.py</code></p>
+<hr />
+<h2 id="equation-map-module-physics">Equation Map: Module → Physics<a class="headerlink" href="#equation-map-module-physics" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Key Equation</th>
+<th>Physical Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>knm_hamiltonian</code></td>
+<td><span class="arithmatex">\(H = -\sum K_{ij}(XX+YY) - \sum\omega_i Z_i\)</span></td>
+<td>Coupling → quantum spin chain</td>
+</tr>
+<tr>
+<td><code>sync_witness</code></td>
+<td><span class="arithmatex">\(W = R_c I - \bar{C}_{XY}\)</span></td>
+<td>Certification of synchronization</td>
+</tr>
+<tr>
+<td><code>dynamical_lie_algebra</code></td>
+<td><span class="arithmatex">\(\dim = 2^{2N-1} - 2\)</span></td>
+<td>Reachable unitaries, only Z₂ conserved</td>
+</tr>
+<tr>
+<td><code>qfi_criticality</code></td>
+<td><span class="arithmatex">\(F_Q \propto 1/\Delta^2\)</span></td>
+<td>Metrological precision at <span class="arithmatex">\(K_c\)</span></td>
+</tr>
+<tr>
+<td><code>entanglement_percolation</code></td>
+<td><span class="arithmatex">\(\lambda_2(L_\mathcal{C}) &gt; 0\)</span></td>
+<td>Entanglement spans the network</td>
+</tr>
+<tr>
+<td><code>berry_fidelity</code></td>
+<td><span class="arithmatex">\(\chi_F\)</span> peaks at <span class="arithmatex">\(K_c\)</span></td>
+<td>Gauge-invariant transition detector</td>
+</tr>
+<tr>
+<td><code>quantum_mpemba</code></td>
+<td><span class="arithmatex">\(\mathcal{F}_{\mathrm{far}} &gt; \mathcal{F}_{\mathrm{near}}\)</span></td>
+<td>Ordered states resist thermalization</td>
+</tr>
+<tr>
+<td><code>spectral_form_factor</code></td>
+<td><span class="arithmatex">\(\bar{r}\)</span>: 0.386 → 0.536</td>
+<td>Integrable → chaotic at <span class="arithmatex">\(K_c\)</span></td>
+</tr>
+<tr>
+<td><code>krylov_complexity</code></td>
+<td><span class="arithmatex">\(C_K\)</span> peaks at <span class="arithmatex">\(K_c\)</span></td>
+<td>Maximum operator spreading</td>
+</tr>
+<tr>
+<td><code>magic_nonstabilizerness</code></td>
+<td><span class="arithmatex">\(M_2\)</span> peaks at <span class="arithmatex">\(K_c\)</span></td>
+<td>Maximum non-classicality</td>
+</tr>
+<tr>
+<td><code>finite_size_scaling</code></td>
+<td><span class="arithmatex">\(K_c(N) = K_c(\infty) + a/(\ln N)^2\)</span></td>
+<td>Thermodynamic limit extraction</td>
+</tr>
+<tr>
+<td><code>pairing_correlator</code></td>
+<td><span class="arithmatex">\(\langle S^+S^-\rangle\)</span></td>
+<td>Superconducting-like pairing</td>
+</tr>
+<tr>
+<td><code>entanglement_entropy</code></td>
+<td><span class="arithmatex">\(S \sim (c/3)\ln L,\; c=1\)</span></td>
+<td>CFT at BKT criticality</td>
+</tr>
+<tr>
+<td><code>floquet_kuramoto</code></td>
+<td><span class="arithmatex">\(K(t) = K_0(1+\delta\cos\Omega t)\)</span></td>
+<td>Discrete time crystal</td>
+</tr>
+<tr>
+<td><code>lindblad_ness</code></td>
+<td><span class="arithmatex">\(\mathcal{L}[\rho_{\mathrm{ss}}] = 0\)</span></td>
+<td>Open-system steady state</td>
+</tr>
+<tr>
+<td><code>loschmidt_echo</code></td>
+<td>$\lambda(t) = -\ln</td>
+<td>\langle\psi_0</td>
+</tr>
+<tr>
+<td><code>xxz_phase_diagram</code></td>
+<td><span class="arithmatex">\(H_{XXZ}(\Delta)\)</span></td>
+<td>XY → Heisenberg crossover</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="convergence-of-all-probes-at-k_c">Convergence of All Probes at <span class="arithmatex">\(K_c\)</span><a class="headerlink" href="#convergence-of-all-probes-at-k_c" title="Permanent link">&para;</a></h2>
+<p>The critical point concordance (Gem 19) demonstrates that all independent diagnostics
+agree on the same <span class="arithmatex">\(K_c\)</span>. This is the central empirical result of the package: eight
+independent observables, computed from different mathematical frameworks, all point to
+the same coupling strength.</p>
+<pre class="mermaid"><code>graph LR
+    subgraph "Monotonic probes"
+        R["R (order parameter)\n0 → 1"]
+        L2["λ₂ (Fiedler)\n0 → connected"]
+        GAP["Δ (spectral gap)\nclose → open"]
+    end
+
+    subgraph "Peak probes"
+        QFI["F_Q (QFI)\npeak at K_c"]
+        M2["M₂ (magic)\npeak at K_c"]
+        CK["C_K (Krylov)\npeak at K_c"]
+        CHI["χ_F (fidelity susc.)\npeak at K_c"]
+    end
+
+    subgraph "Decay probes"
+        PH1["p_H1 (topology)\nhigh → 0"]
+        RBAR["r̄ (chaos)\n0.386 → 0.536"]
+    end
+
+    R --&gt; KC["K_c\ncritical coupling"]
+    L2 --&gt; KC
+    GAP --&gt; KC
+    QFI --&gt; KC
+    M2 --&gt; KC
+    CK --&gt; KC
+    CHI --&gt; KC
+    PH1 --&gt; KC
+    RBAR --&gt; KC
+
+    style KC fill:#6929C4,color:#fff</code></pre>
+<p><strong>Behaviour of each probe across the transition:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Probe</th>
+<th>Below <span class="arithmatex">\(K_c\)</span></th>
+<th>At <span class="arithmatex">\(K_c\)</span></th>
+<th>Above <span class="arithmatex">\(K_c\)</span></th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(R\)</span> (order parameter)</td>
+<td><span class="arithmatex">\(\approx 0\)</span></td>
+<td><span class="arithmatex">\(\sim 0.5\)</span></td>
+<td><span class="arithmatex">\(\to 1\)</span></td>
+<td>Monotonic rise</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(F_Q\)</span> (QFI)</td>
+<td>Small</td>
+<td><strong>Peak</strong> (diverges as <span class="arithmatex">\(1/\Delta^2\)</span>)</td>
+<td>Decreases</td>
+<td>Peak</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\Delta\)</span> (spectral gap)</td>
+<td>Open</td>
+<td><strong>Minimum</strong> (near-degeneracy)</td>
+<td>Re-opens</td>
+<td>Valley</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\lambda_2\)</span> (Fiedler)</td>
+<td><span class="arithmatex">\(= 0\)</span></td>
+<td>Crosses zero</td>
+<td><span class="arithmatex">\(&gt; 0\)</span></td>
+<td>Step-like</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(M_2\)</span> (magic)</td>
+<td>Low</td>
+<td><strong>Peak</strong> (maximally non-classical)</td>
+<td>Decreases</td>
+<td>Peak</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(C_K\)</span> (Krylov)</td>
+<td>Low</td>
+<td><strong>Peak</strong> (maximum operator spreading)</td>
+<td>Decreases</td>
+<td>Peak</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\chi_F\)</span> (fidelity susc.)</td>
+<td>Low</td>
+<td><strong>Peak</strong> (gauge-invariant)</td>
+<td>Decreases</td>
+<td>Peak</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(p_{H_1}\)</span> (persistent homology)</td>
+<td>High (many holes)</td>
+<td><span class="arithmatex">\(\approx 0.72\)</span></td>
+<td><span class="arithmatex">\(\to 0\)</span> (no holes)</td>
+<td>Monotonic decay</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\bar{r}\)</span> (level spacing)</td>
+<td><span class="arithmatex">\(0.386\)</span> (Poisson)</td>
+<td>Crossover</td>
+<td><span class="arithmatex">\(0.536\)</span> (GOE)</td>
+<td>Step-like</td>
+</tr>
+</tbody>
+</table>
+<p>Every probe — order parameter, Fisher information, spectral gap, Fiedler connectivity,
+magic, Krylov complexity, fidelity susceptibility, persistent homology — independently
+identifies the same critical coupling <span class="arithmatex">\(K_c\)</span>. This convergence is strong evidence that
+the synchronization transition is a genuine quantum phase transition of the BKT type,
+not an artifact of any single observable.</p>
+<p><strong>Module:</strong> <code>analysis/critical_concordance.py</code></p>
+<h2 id="guess-symmetry-decay-zne-april-2026">GUESS Symmetry-Decay ZNE (April 2026)<a class="headerlink" href="#guess-symmetry-decay-zne-april-2026" title="Permanent link">&para;</a></h2>
+<p>Reference: Oliva del Moral <em>et al.</em>, arXiv:2603.13060 (2026), Eq. 5.
+For a Hamiltonian symmetry observable <span class="arithmatex">\(S\)</span> with <span class="arithmatex">\([H, S] = 0\)</span> and known
+ideal value <span class="arithmatex">\(\langle S\rangle_{\text{ideal}}\)</span>, the noise-induced decay
+under noise scale <span class="arithmatex">\(g\)</span> obeys</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>\langle S \rangle_g \;=\; \langle S \rangle_{\text{ideal}} \,
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>                          e^{-\alpha (g - 1)}.
+</code></pre></div>
+<p>The exponent <span class="arithmatex">\(\alpha\)</span> is fitted by log-linear regression on
+<span class="arithmatex">\((g - 1, \ln \lvert\langle S\rangle_g/\langle S\rangle_{\text{ideal}}\rvert)\)</span>
+pairs. The mitigated target observable is</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>\langle O \rangle_{\text{mitigated}} \;\approx\;
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  \langle O \rangle_{\text{noisy}} \,
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  \left( \frac{\lvert\langle S\rangle_{\text{ideal}}\rvert}
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>              {\lvert\langle S\rangle_{\text{noisy}}\rvert} \right)^{\alpha}.
+</code></pre></div>
+<p>For SCPN Kuramoto-XY, the natural symmetry is the conserved total
+magnetisation <span class="arithmatex">\(S = \sum_i Z_i\)</span> (since <span class="arithmatex">\([H_{XY}, \sum Z_i] = 0\)</span>), so
+<span class="arithmatex">\(\langle S\rangle_{\text{ideal}} = +n\)</span> for the ground state.</p>
+<p><strong>Module:</strong> <code>mitigation/symmetry_decay.py</code> (Rust path:
+<code>scpn_quantum_engine.fit_symmetry_decay</code>,
+<code>scpn_quantum_engine.guess_extrapolate_batch</code>).</p>
+<h2 id="dynq-quality-score-april-2026">DynQ Quality Score (April 2026)<a class="headerlink" href="#dynq-quality-score-april-2026" title="Permanent link">&para;</a></h2>
+<p>Reference: Liu <em>et al.</em>, arXiv:2601.19635 (2026), Eqs. 1 and 8.
+The QPU is modelled as a graph <span class="arithmatex">\(G = (V, E, W)\)</span> with edge weights
+inversely proportional to the two-qubit gate error rates:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>w_{ij} \;=\; \frac{1}{e_{ij} + \epsilon_0}, \quad \epsilon_0 = 10^{-6}.
+</code></pre></div>
+<p>Louvain community detection partitions <span class="arithmatex">\(G\)</span> into sub-regions, and each
+sub-region <span class="arithmatex">\(R\)</span> is scored by</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>S_{\text{conn}}(R) = \frac{|E_R|}{|V_R|(|V_R|-1)/2}, \qquad
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>S_{\text{fid}}(R)  = 1 - \frac{1}{|E_R|}\sum_{(i,j)\in E_R} e_{ij},
+</code></pre></div>
+<p>with the composite quality</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Q(R) \;=\; S_{\text{conn}}(R) \cdot S_{\text{fid}}(R).
+</code></pre></div>
+<p>The chosen execution region maximises <span class="arithmatex">\(Q(R)\)</span> subject to $|V_R| \ge $
+the circuit width.</p>
+<p><strong>Module:</strong> <code>hardware/qubit_mapper.py</code> (Rust path:
+<code>scpn_quantum_engine.score_regions_batch</code>).</p>
+<h2 id="ici-mixing-angle-april-2026">ICI Mixing Angle (April 2026)<a class="headerlink" href="#ici-mixing-angle-april-2026" title="Permanent link">&para;</a></h2>
+<p>Reference: Liu <em>et al.</em> (2023), STIREP optimal control.
+The Pontryagin Maximum Principle solution for stimulated Raman exact
+passage with Lindblad decay from the excited state is a three-segment
+trajectory in the mixing angle <span class="arithmatex">\(\theta(t)\)</span> between pump and Stokes:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>\theta(t) =
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>  \begin{cases}
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    \theta_J\, t / t_1 &amp; 0 \le t &lt; t_1 \quad (\text{intuitive}) \\
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    \theta_J + (\tfrac{\pi}{2} - 2\theta_J)\dfrac{t - t_1}{t_2 - t_1} &amp; t_1 \le t &lt; t_2 \quad (\text{counter-intuitive}) \\
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    \tfrac{\pi}{2} - \theta_J + \theta_J\dfrac{t - t_2}{T - t_2} &amp; t_2 \le t \le T \quad (\text{intuitive})
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>  \end{cases}
+</code></pre></div>
+<p>with <span class="arithmatex">\(t_1 = 0.05\,T\)</span>, <span class="arithmatex">\(t_2 = 0.95\,T\)</span>, and the boundary jump angle
+<span class="arithmatex">\(\theta_J = \theta_{\text{jump}}\)</span>. The Rabi frequencies satisfy the
+total power constraint <span class="arithmatex">\(\Omega_P^2 + \Omega_S^2 = \Omega_0^2\)</span> with</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>\Omega_P(t) = \Omega_0 \sin\theta(t), \qquad
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>\Omega_S(t) = \Omega_0 \cos\theta(t).
+</code></pre></div>
+<p><strong>Module:</strong> <code>phase/pulse_shaping.py</code> (Rust path:
+<code>scpn_quantum_engine.ici_mixing_angle_batch</code>).</p>
+<h2 id="-hypergeometric-pulse-envelope-april-2026">(α,β)-Hypergeometric Pulse Envelope (April 2026)<a class="headerlink" href="#-hypergeometric-pulse-envelope-april-2026" title="Permanent link">&para;</a></h2>
+<p>Reference: Ventura Meinersen <em>et al.</em>, arXiv:2504.08031 (2025), Eq. 14.
+The unified adiabatic pulse family parameterised by the Gauss
+hypergeometric function <span class="arithmatex">\({}_2F_1\)</span>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>\frac{\Omega(t)}{\Omega_0}
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>  = \mathrm{sech}(\gamma t)
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    \cdot {}_2F_1\!\left(
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>      \alpha,\, \beta;\,
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>      \tfrac{\alpha + \beta + 1}{2};\,
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>      \tfrac{1 + \tanh(\gamma t)}{2}
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    \right).
+</code></pre></div>
+<p>Special cases:</p>
+<table>
+<thead>
+<tr>
+<th>Protocol</th>
+<th style="text-align: right;"><span class="arithmatex">\(\alpha\)</span></th>
+<th style="text-align: right;"><span class="arithmatex">\(\beta\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Allen-Eberly (pure <span class="arithmatex">\(\mathrm{sech}\)</span>)</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>STIRAP-optimal</td>
+<td style="text-align: right;">0.5</td>
+<td style="text-align: right;">0.5</td>
+</tr>
+<tr>
+<td>Demkov-Kunike</td>
+<td style="text-align: right;">1.0</td>
+<td style="text-align: right;">0.5</td>
+</tr>
+</tbody>
+</table>
+<p>The analytical infidelity bound in the adiabatic limit is</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>1 - F \;\lesssim\; \left(\frac{\gamma}{\Omega_0}\right)^2 \,
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>                   \frac{\Gamma(\alpha+1)\,\Gamma(\beta+1)}
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>                        {\Gamma\!\left(\tfrac{\alpha+\beta}{2}+1\right)^2}.
+</code></pre></div>
+<p><strong>Module:</strong> <code>phase/pulse_shaping.py</code> (Rust path:
+<code>scpn_quantum_engine.hypergeometric_envelope_batch</code>, custom <span class="arithmatex">\({}_2F_1\)</span>
+series expansion + rayon, <strong>44× faster</strong> than scipy element-wise).</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+        <script src="../js/goatcounter.js"></script>
+      
+    
+  </body>
+</html>

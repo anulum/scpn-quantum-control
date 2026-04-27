@@ -1,0 +1,2777 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Quantum simulation of coupled oscillators on IBM hardware">
+      
+      
+        <meta name="author" content="Miroslav Šotek">
+      
+      
+        <link rel="canonical" href="https://anulum.github.io/scpn-quantum-control/notebooks/">
+      
+      
+        <link rel="prev" href="../tutorials/">
+      
+      
+        <link rel="next" href="../strategic_roadmap/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/anulum_logo_company.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Notebooks - scpn-quantum-control</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#spdx-license-identifier-agpl-30-or-later" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="scpn-quantum-control" class="md-header__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            scpn-quantum-control
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Notebooks
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="scpn-quantum-control" class="md-nav__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    scpn-quantum-control
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SCPN Foundations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../equations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../research_gems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research Gems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../orchestrator_integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestrator Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rust_engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../autodoc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auto-Generated
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analysis_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../identity_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mitigation_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mitigation API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bridges_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridges API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmarks_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipeline_performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_dynamic_coupling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Dynamic Coupling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_structured_ansatz/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Structured Ansatz
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_hw_topological_optimizer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: HW Topological Optimizer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../test_infrastructure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publications
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Publications
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprint/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprint: Quantum Kuramoto-XY on Hardware
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_sync_witnesses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: Synchronisation Witnesses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: DLA Parity Theorem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DLA-parity Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classical_irreproducibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classical Irreproducibility
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results Gallery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hardware_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IBM Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXPERIMENT_ROADMAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PAPER_CLAIMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results & Claims
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../QUANTUM_CRYPTO_RESEARCH_BRANCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Crypto Research
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Learning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notebooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Roadmap
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../strategic_roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strategic Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="spdx-license-identifier-agpl-30-or-later">SPDX-License-Identifier: AGPL-3.0-or-later<a class="headerlink" href="#spdx-license-identifier-agpl-30-or-later" title="Permanent link">&para;</a></h1>
+<h1 id="commercial-license-available">Commercial license available<a class="headerlink" href="#commercial-license-available" title="Permanent link">&para;</a></h1>
+<h1 id="concepts-19962026-miroslav-sotek-all-rights-reserved">© Concepts 1996–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#concepts-19962026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="code-20202026-miroslav-sotek-all-rights-reserved">© Code 2020–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#code-20202026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="orcid-0009-0009-3560-0851">ORCID: 0009-0009-3560-0851<a class="headerlink" href="#orcid-0009-0009-3560-0851" title="Permanent link">&para;</a></h1>
+<h1 id="contact-wwwanulumli-protoscienceanulumli">Contact: www.anulum.li | protoscience@anulum.li<a class="headerlink" href="#contact-wwwanulumli-protoscienceanulumli" title="Permanent link">&para;</a></h1>
+<h1 id="scpn-quantum-control-interactive-notebooks">scpn-quantum-control — Interactive Notebooks<a class="headerlink" href="#scpn-quantum-control-interactive-notebooks" title="Permanent link">&para;</a></h1>
+<h1 id="interactive-notebooks">Interactive Notebooks<a class="headerlink" href="#interactive-notebooks" title="Permanent link">&para;</a></h1>
+<p><em>47 Jupyter notebooks covering the full journey from basic Kuramoto dynamics to
+frontier research. Notebooks 01-13 cover core quantum simulation. Notebooks 14-47
+document the FIM (Fisher Information Metric) strange loop investigation campaign
+(2026-03-29) with 19 findings (6 negative) including hardware-confirmed
+dual protection on ibm_fez.</em></p>
+<hr />
+<h2 id="notebook-map">Notebook Map<a class="headerlink" href="#notebook-map" title="Permanent link">&para;</a></h2>
+<p>The notebooks form a directed learning graph. Earlier notebooks provide the
+physical intuition and computational primitives that later notebooks build on.</p>
+<pre class="mermaid"><code>graph TD
+    N01["01: Kuramoto XY\nDynamics"] --&gt; N02["02: VQE Ground\nState"]
+    N01 --&gt; N04["04: UPDE\n16-Layer"]
+    N02 --&gt; N03["03: Error\nMitigation"]
+    N02 --&gt; N05["05: Crypto &amp;\nEntanglement"]
+    N03 --&gt; N06["06: PEC Error\nCancellation"]
+    N04 --&gt; N07["07: Quantum\nAdvantage"]
+    N02 --&gt; N08["08: Identity\nContinuity"]
+    N01 --&gt; N09["09: ITER\nDisruption"]
+    N01 --&gt; N10["10: QSNN\nTraining"]
+    N06 --&gt; N11["11: Surface Code\nBudget"]
+    N03 --&gt; N12["12: Trapped Ion\nComparison"]
+    N08 --&gt; N13["13: Cross-Repo\nBridges"]
+
+    style N01 fill:#6929C4,color:#fff
+    style N04 fill:#6929C4,color:#fff
+    style N07 fill:#d4a017,color:#000
+    style N11 fill:#d4a017,color:#000</code></pre>
+<table>
+<thead>
+<tr>
+<th>Colour</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Purple</td>
+<td>Foundational (start here)</td>
+</tr>
+<tr>
+<td>Grey</td>
+<td>Core workflow</td>
+</tr>
+<tr>
+<td>Gold</td>
+<td>Advanced / frontier</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="at-a-glance">At a Glance<a class="headerlink" href="#at-a-glance" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">#</th>
+<th>Notebook</th>
+<th>Physics</th>
+<th style="text-align: center;">Level</th>
+<th>Key Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">01</td>
+<td>Kuramoto XY Dynamics</td>
+<td>Trotter evolution of the XY Hamiltonian</td>
+<td style="text-align: center;">Beginner</td>
+<td><span class="arithmatex">\(R(t)\)</span> trajectory, quantum-classical overlay</td>
+</tr>
+<tr>
+<td style="text-align: center;">02</td>
+<td>VQE Ground State</td>
+<td>Variational eigensolver with <span class="arithmatex">\(K_{nm}\)</span>-informed ansatz</td>
+<td style="text-align: center;">Beginner</td>
+<td>Energy convergence, ansatz comparison table</td>
+</tr>
+<tr>
+<td style="text-align: center;">03</td>
+<td>Error Mitigation</td>
+<td>ZNE unitary folding + Richardson extrapolation</td>
+<td style="text-align: center;">Intermediate</td>
+<td>Mitigated vs raw expectation plot</td>
+</tr>
+<tr>
+<td style="text-align: center;">04</td>
+<td>UPDE 16-Layer</td>
+<td>Full 16-qubit SCPN spin chain</td>
+<td style="text-align: center;">Intermediate</td>
+<td>Per-layer <span class="arithmatex">\(R\)</span> bar chart, time evolution</td>
+</tr>
+<tr>
+<td style="text-align: center;">05</td>
+<td>Crypto &amp; Entanglement</td>
+<td>CHSH Bell test, QKD QBER</td>
+<td style="text-align: center;">Intermediate</td>
+<td><span class="arithmatex">\(S\)</span>-parameter, correlator matrix heatmap</td>
+</tr>
+<tr>
+<td style="text-align: center;">06</td>
+<td>PEC Error Cancellation</td>
+<td>Quasi-probability decomposition, Monte Carlo</td>
+<td style="text-align: center;">Advanced</td>
+<td>PEC vs ZNE comparison, overhead scaling</td>
+</tr>
+<tr>
+<td style="text-align: center;">07</td>
+<td>Quantum Advantage</td>
+<td>Classical vs quantum timing crossover</td>
+<td style="text-align: center;">Advanced</td>
+<td>Scaling plot, <span class="arithmatex">\(n_{\text{cross}}\)</span> prediction</td>
+</tr>
+<tr>
+<td style="text-align: center;">08</td>
+<td>Identity Continuity</td>
+<td>VQE attractor, coherence budget, fingerprint</td>
+<td style="text-align: center;">Advanced</td>
+<td>Fidelity curves, phase roundtrip</td>
+</tr>
+<tr>
+<td style="text-align: center;">09</td>
+<td>ITER Disruption</td>
+<td>11-feature plasma classifier</td>
+<td style="text-align: center;">Domain</td>
+<td>Feature distributions, accuracy report</td>
+</tr>
+<tr>
+<td style="text-align: center;">10</td>
+<td>QSNN Training</td>
+<td>Parameter-shift gradient descent</td>
+<td style="text-align: center;">Advanced</td>
+<td>Loss curve, weight evolution</td>
+</tr>
+<tr>
+<td style="text-align: center;">11</td>
+<td>Surface Code Budget</td>
+<td>QEC resource estimation</td>
+<td style="text-align: center;">Advanced</td>
+<td>Rep vs surface code table, feasibility</td>
+</tr>
+<tr>
+<td style="text-align: center;">12</td>
+<td>Trapped Ion Comparison</td>
+<td>Superconducting vs ion trap noise</td>
+<td style="text-align: center;">Advanced</td>
+<td>Transpilation comparison, noisy <span class="arithmatex">\(\langle Z \rangle\)</span></td>
+</tr>
+<tr>
+<td style="text-align: center;">13</td>
+<td>Cross-Repo Bridges</td>
+<td>SNN adapter, SSGF, orchestrator</td>
+<td style="text-align: center;">Integration</td>
+<td>Phase roundtrip plot, warning report</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="notebook-details">Notebook Details<a class="headerlink" href="#notebook-details" title="Permanent link">&para;</a></h2>
+<h3 id="01-kuramoto-xy-dynamics">01 — Kuramoto XY Dynamics<a class="headerlink" href="#01-kuramoto-xy-dynamics" title="Permanent link">&para;</a></h3>
+<p><strong>File:</strong> <a href="https://github.com/anulum/scpn-quantum-control/blob/main/notebooks/01_kuramoto_xy_dynamics.ipynb"><code>notebooks/01_kuramoto_xy_dynamics.ipynb</code></a></p>
+<p>The entry point to the entire package. This notebook constructs the quantum XY
+Hamiltonian from the SCPN coupling matrix <span class="arithmatex">\(K_{nm}\)</span>, runs Trotterized time evolution
+on the AerSimulator, and measures the Kuramoto order parameter <span class="arithmatex">\(R(t)\)</span> at each
+timestep.</p>
+<p>Think of it as watching four quantum pendulums evolve on a shared vibrating beam.
+The beam stiffness is the coupling matrix. The notebook lets you see how quickly
+they fall into step — or whether the quantum dynamics depart from the classical
+prediction.</p>
+<p><strong>What it covers:</strong></p>
+<ul>
+<li>Building <span class="arithmatex">\(K_{nm}\)</span> from Paper 27 parameters (<span class="arithmatex">\(K_{\text{base}} = 0.45\)</span>,
+  <span class="arithmatex">\(\alpha = 0.3\)</span>, calibration anchors)</li>
+<li>Compiling <span class="arithmatex">\(K_{nm} \to H_{XY}\)</span> via <code>knm_to_hamiltonian()</code></li>
+<li>First-order Lie-Trotter decomposition:
+  <span class="arithmatex">\(U(\Delta t) = e^{-iH_{XY}\Delta t}\,e^{-iH_Z\Delta t}\)</span></li>
+<li>Extracting <span class="arithmatex">\(R\)</span> from single-qubit <span class="arithmatex">\(\langle X \rangle\)</span>, <span class="arithmatex">\(\langle Y \rangle\)</span>
+  expectations</li>
+<li>Side-by-side comparison with the classical Kuramoto ODE solver</li>
+</ul>
+<p><strong>Key outputs:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Output</th>
+<th>What it shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(R(t)\)</span> trajectory plot</td>
+<td>Quantum and classical order parameter over 10 timesteps</td>
+</tr>
+<tr>
+<td>Per-qubit Bloch coordinates</td>
+<td><span class="arithmatex">\(\langle X_i \rangle\)</span>, <span class="arithmatex">\(\langle Y_i \rangle\)</span>, <span class="arithmatex">\(\langle Z_i \rangle\)</span> at each step</td>
+</tr>
+<tr>
+<td>Circuit depth table</td>
+<td>Gate count and depth after transpilation</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Modules used:</strong> <code>bridge.knm_hamiltonian</code>, <code>phase.xy_kuramoto</code>, <code>hardware.classical</code></p>
+<hr />
+<h3 id="02-vqe-ground-state">02 — VQE Ground State<a class="headerlink" href="#02-vqe-ground-state" title="Permanent link">&para;</a></h3>
+<p><strong>File:</strong> <a href="https://github.com/anulum/scpn-quantum-control/blob/main/notebooks/02_vqe_ground_state.ipynb"><code>notebooks/02_vqe_ground_state.ipynb</code></a></p>
+<p>Finds the ground state of the Kuramoto-XY Hamiltonian using three different
+variational ansatze, then compares their convergence, parameter count, and
+final energy against exact diagonalisation.</p>
+<p>The ground state is the equilibrium that the coupled oscillators settle into at
+zero temperature. Its structure encodes the natural synchronization pattern of
+the network — which oscillators are correlated, which are anti-correlated, and
+how much entanglement the coupling topology generates. Every analysis module
+in the package starts from this state.</p>
+<p><strong>Ansatz comparison:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Ansatz</th>
+<th style="text-align: center;">Parameters</th>
+<th>Entanglement topology</th>
+<th style="text-align: center;">Relative error</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(K_{nm}\)</span>-informed (Gem 4)</td>
+<td style="text-align: center;"><span class="arithmatex">\(3N \times \text{reps}\)</span></td>
+<td>Matches non-zero <span class="arithmatex">\(K_{ij}\)</span></td>
+<td style="text-align: center;"><strong>0.05%</strong> (4q)</td>
+</tr>
+<tr>
+<td>Hardware-efficient</td>
+<td style="text-align: center;"><span class="arithmatex">\(3N \times \text{reps}\)</span></td>
+<td>Linear nearest-neighbour</td>
+<td style="text-align: center;">~0.3% (4q)</td>
+</tr>
+<tr>
+<td>EfficientSU2</td>
+<td style="text-align: center;"><span class="arithmatex">\(4N \times \text{reps}\)</span></td>
+<td>Full connectivity</td>
+<td style="text-align: center;">~0.1% (4q)</td>
+</tr>
+</tbody>
+</table>
+<p>The <span class="arithmatex">\(K_{nm}\)</span>-informed ansatz wins because it encodes the physics: entangling
+gates connect only qubit pairs with non-zero coupling, so the circuit explores
+the physically relevant subspace of the Hilbert space rather than wasting
+parameters on unphysical directions.</p>
+<p><strong>Key outputs:</strong></p>
+<ul>
+<li>Energy convergence curves (COBYLA iterations vs <span class="arithmatex">\(\langle H \rangle\)</span>)</li>
+<li>Ansatz comparison table (4-qubit and 8-qubit)</li>
+<li>Ground state density matrix visualisation</li>
+</ul>
+<p><strong>Modules used:</strong> <code>phase.phase_vqe</code>, <code>phase.ansatz_bench</code>, <code>phase.coupling_topology_ansatz</code></p>
+<hr />
+<h3 id="03-error-mitigation">03 — Error Mitigation<a class="headerlink" href="#03-error-mitigation" title="Permanent link">&para;</a></h3>
+<p><strong>File:</strong> <a href="https://github.com/anulum/scpn-quantum-control/blob/main/notebooks/03_error_mitigation.ipynb"><code>notebooks/03_error_mitigation.ipynb</code></a></p>
+<p>Demonstrates zero-noise extrapolation (ZNE) on a simulated Heron r2 noise model.
+The circuit is run at three noise levels (1x, 3x, 5x amplification via global
+unitary folding), then Richardson extrapolation recovers the zero-noise limit.</p>
+<p>Real quantum hardware introduces errors proportional to circuit depth. ZNE turns
+this into a feature: by deliberately <em>increasing</em> the noise (folding the circuit
+back on itself), you get multiple data points on the noise-vs-expectation curve.
+Extrapolating to zero noise recovers a better estimate than any single noisy
+measurement.</p>
+<p><strong>Pipeline:</strong></p>
+<pre class="mermaid"><code>graph LR
+    A["Build circuit"] --&gt; B["Fold: 1x, 3x, 5x"]
+    B --&gt; C["Run on noisy sim"]
+    C --&gt; D["Richardson\nextrapolation"]
+    D --&gt; E["Zero-noise\nestimate"]
+
+    style D fill:#6929C4,color:#fff</code></pre>
+<p><strong>Key outputs:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th style="text-align: center;">Raw (1x noise)</th>
+<th style="text-align: center;">ZNE extrapolated</th>
+<th style="text-align: center;">Exact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(\langle Z_0 \rangle\)</span></td>
+<td style="text-align: center;">~0.72</td>
+<td style="text-align: center;">~0.79</td>
+<td style="text-align: center;">0.81</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Modules used:</strong> <code>mitigation.zne</code>, <code>mitigation.dd</code></p>
+<hr />
+<h3 id="04-upde-16-layer">04 — UPDE 16-Layer<a class="headerlink" href="#04-upde-16-layer" title="Permanent link">&para;</a></h3>
+<p><strong>File:</strong> <a href="https://github.com/anulum/scpn-quantum-control/blob/main/notebooks/04_upde_16_layer.ipynb"><code>notebooks/04_upde_16_layer.ipynb</code></a></p>
+<p>The full 16-oscillator SCPN network simulated as a 16-qubit spin chain. This is
+the quantum version of the Unified Phase Dynamics Equation — the master equation
+governing all 16 layers of the SCPN consciousness model.</p>
+<p>Each qubit represents one ontological layer. The coupling between qubits follows
+the exponential decay <span class="arithmatex">\(K_{nm} = 0.45 \cdot e^{-0.3|n-m|}\)</span> with cross-hierarchy
+boosts (L1-L16 = 0.05, L5-L7 = 0.15). The notebook evolves this system under
+Trotter decomposition and measures per-layer coherence <span class="arithmatex">\(\langle X_n \rangle\)</span>,
+<span class="arithmatex">\(\langle Y_n \rangle\)</span> at each timestep.</p>
+<p><strong>What the per-layer bar chart reveals:</strong></p>
+<ul>
+<li>Strongly-coupled layers (L3, L4, L10) maintain coherence longest</li>
+<li>Weakly-coupled L12 shows near-complete decoherence even in noiseless simulation
+  (the coupling is too weak to sustain synchronization against frequency heterogeneity)</li>
+<li>The hierarchy structure in <span class="arithmatex">\(K_{nm}\)</span> directly imprints on the quantum dynamics</li>
+</ul>
+<p><strong>Key outputs:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Output</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Per-layer <span class="arithmatex">\(R\)</span> bar chart</td>
+<td>16 bars showing <span class="arithmatex">\(R_n\)</span> after Trotter evolution</td>
+</tr>
+<tr>
+<td>Time evolution heatmap</td>
+<td><span class="arithmatex">\(R_n(t)\)</span> across all 16 layers and 10 timesteps</td>
+</tr>
+<tr>
+<td>Circuit statistics</td>
+<td>16-qubit circuit: gate count, depth, CZ count</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Modules used:</strong> <code>phase.trotter_upde</code>, <code>bridge.knm_hamiltonian</code></p>
+<hr />
+<h3 id="05-crypto-and-entanglement">05 — Crypto and Entanglement<a class="headerlink" href="#05-crypto-and-entanglement" title="Permanent link">&para;</a></h3>
+<p><strong>File:</strong> <a href="https://github.com/anulum/scpn-quantum-control/blob/main/notebooks/05_crypto_and_entanglement.ipynb"><code>notebooks/05_crypto_and_entanglement.ipynb</code></a></p>
+<p>Implements the CHSH Bell test on the VQE ground state of the Kuramoto-XY
+Hamiltonian, then builds a topology-authenticated QKD protocol where the
+coupling matrix <span class="arithmatex">\(K_{nm}\)</span> serves as shared secret.</p>
+<p>The CHSH inequality <span class="arithmatex">\(|S| \leq 2\)</span> holds for all local hidden-variable models.
+Violation (<span class="arithmatex">\(S &gt; 2\)</span>) certifies genuine quantum entanglement. This notebook
+measures <span class="arithmatex">\(S\)</span> for all <span class="arithmatex">\(\binom{N}{2}\)</span> qubit pairs, producing a correlator matrix
+that maps which pairs in the SCPN hierarchy are entangled.</p>
+<p><strong>Key outputs:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Output</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(S\)</span>-parameter matrix</td>
+<td>CHSH values for all qubit pairs (heatmap)</td>
+</tr>
+<tr>
+<td>QKD key rate</td>
+<td>Sifted bits per circuit shot</td>
+</tr>
+<tr>
+<td>QBER estimate</td>
+<td>Quantum bit error rate from basis mismatch</td>
+</tr>
+<tr>
+<td>Correlator heatmap</td>
+<td><span class="arithmatex">\(\langle X_iX_j \rangle + \langle Y_iY_j \rangle\)</span> for all pairs</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Modules used:</strong> <code>crypto.bell_test</code>, <code>crypto.topology_auth</code>, <code>crypto.qkd_bb84</code></p>
+<hr />
+<h3 id="06-pec-error-cancellation">06 — PEC Error Cancellation<a class="headerlink" href="#06-pec-error-cancellation" title="Permanent link">&para;</a></h3>
+<p><strong>File:</strong> <a href="https://github.com/anulum/scpn-quantum-control/blob/main/notebooks/06_pec_error_cancellation.ipynb"><code>notebooks/06_pec_error_cancellation.ipynb</code></a></p>
+<p>Probabilistic error cancellation (PEC) decomposes the inverse noise channel into
+a quasi-probability distribution over Pauli operations. Each circuit execution
+samples from this distribution, and the sign-weighted average converges to the
+noiseless expectation value.</p>
+<p>PEC is mathematically exact (unlike ZNE which relies on extrapolation assumptions)
+but pays a sampling overhead <span class="arithmatex">\(\gamma^{n_{\text{gates}}}\)</span> that grows exponentially
+with circuit size. This notebook quantifies that overhead for 4-qubit and 8-qubit
+Kuramoto circuits and compares PEC accuracy against ZNE.</p>
+<p><strong>Overhead scaling:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Circuit</th>
+<th style="text-align: center;">Gates</th>
+<th style="text-align: center;"><span class="arithmatex">\(\gamma\)</span> per gate</th>
+<th style="text-align: center;">Total overhead</th>
+<th style="text-align: center;">Shots needed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4-qubit, 1 Trotter</td>
+<td style="text-align: center;">12 CZ</td>
+<td style="text-align: center;">1.015</td>
+<td style="text-align: center;">~1.20</td>
+<td style="text-align: center;">~14,400</td>
+</tr>
+<tr>
+<td>4-qubit, 3 Trotter</td>
+<td style="text-align: center;">36 CZ</td>
+<td style="text-align: center;">1.015</td>
+<td style="text-align: center;">~1.72</td>
+<td style="text-align: center;">~29,600</td>
+</tr>
+<tr>
+<td>8-qubit, 1 Trotter</td>
+<td style="text-align: center;">28 CZ</td>
+<td style="text-align: center;">1.015</td>
+<td style="text-align: center;">~1.53</td>
+<td style="text-align: center;">~23,400</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key outputs:</strong></p>
+<ul>
+<li>PEC vs ZNE accuracy comparison (bar chart)</li>
+<li>Overhead scaling curve (<span class="arithmatex">\(\gamma\)</span> vs circuit depth)</li>
+<li>Monte Carlo convergence: mitigated estimate vs number of samples</li>
+</ul>
+<p><strong>Modules used:</strong> <code>mitigation.pec</code>, <code>mitigation.zne</code></p>
+<hr />
+<h3 id="07-quantum-advantage-scaling">07 — Quantum Advantage Scaling<a class="headerlink" href="#07-quantum-advantage-scaling" title="Permanent link">&para;</a></h3>
+<p><strong>File:</strong> <a href="https://github.com/anulum/scpn-quantum-control/blob/main/notebooks/07_quantum_advantage_scaling.ipynb"><code>notebooks/07_quantum_advantage_scaling.ipynb</code></a></p>
+<p>Benchmarks classical exact diagonalisation against quantum Trotter simulation
+for increasing qubit counts (<span class="arithmatex">\(N = 2, 3, \ldots, 8\)</span>) and extrapolates the crossover
+point where quantum becomes faster.</p>
+<p>Classical cost scales as <span class="arithmatex">\(O(2^{2N})\)</span> (full matrix exponential). Quantum Trotter
+cost scales as <span class="arithmatex">\(O(N^2 r)\)</span> per step. At small <span class="arithmatex">\(N\)</span>, classical wins — the quantum
+overhead of circuit compilation, transpilation, and shot noise dominates. The
+exponential fit predicts <span class="arithmatex">\(n_{\text{cross}}\)</span> where the curves intersect.</p>
+<p><strong>Scaling regimes:</strong></p>
+<pre class="mermaid"><code>graph LR
+    A["N = 2-8\nClassical wins"] --&gt; B["N = 12-16\nNoise-limited\nregion"]
+    B --&gt; C["N &gt;&gt; 20\nQuantum advantage\n(error-corrected)"]
+
+    style A fill:#2ecc71,color:#000
+    style B fill:#e67e22,color:#000
+    style C fill:#6929C4,color:#fff</code></pre>
+<p><strong>Key outputs:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Output</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Timing plot</td>
+<td>Classical (red) vs quantum (blue) wall-clock time vs <span class="arithmatex">\(N\)</span></td>
+</tr>
+<tr>
+<td>Exponential fit</td>
+<td><span class="arithmatex">\(t_c(N) = a_c e^{b_c N}\)</span>, <span class="arithmatex">\(t_q(N) = a_q e^{b_q N}\)</span></td>
+</tr>
+<tr>
+<td>Crossover estimate</td>
+<td><span class="arithmatex">\(n_{\text{cross}}\)</span> with uncertainty bounds</td>
+</tr>
+<tr>
+<td>MPS baseline</td>
+<td>Bond dimension required for classical tensor-network simulation</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Modules used:</strong> <code>benchmarks.quantum_advantage</code>, <code>benchmarks.mps_baseline</code></p>
+<hr />
+<h3 id="08-identity-continuity">08 — Identity Continuity<a class="headerlink" href="#08-identity-continuity" title="Permanent link">&para;</a></h3>
+<p><strong>File:</strong> <a href="https://github.com/anulum/scpn-quantum-control/blob/main/notebooks/08_identity_continuity.ipynb"><code>notebooks/08_identity_continuity.ipynb</code></a></p>
+<p>Explores the SCPN identity hypothesis: that a synchronised ground state
+constitutes a stable attractor representing a persistent "identity" in the
+Kuramoto-XY framework. This notebook runs five analyses:</p>
+<ol>
+<li><strong>VQE attractor basin</strong> — perturb the ground state parameters and measure how
+   reliably VQE reconverges. The basin width quantifies robustness.</li>
+<li><strong>Coherence budget</strong> — decompose the Heron r2 error into gate, readout, and
+   decoherence contributions using the measured hardware parameters.</li>
+<li><strong>Entanglement witness</strong> — CHSH <span class="arithmatex">\(S\)</span>-parameter for identity-critical qubit pairs.</li>
+<li><strong>Spectral fingerprint</strong> — Laplacian eigenvalues of <span class="arithmatex">\(K_{nm}\)</span> as a
+   topology-dependent identity key, verified via HMAC.</li>
+<li><strong>Phase roundtrip</strong> — encode phases <span class="arithmatex">\(\to\)</span> quantum state <span class="arithmatex">\(\to\)</span> recover phases.
+   Measures roundtrip fidelity.</li>
+</ol>
+<p><strong>Key outputs:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Analysis</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Attractor basin</td>
+<td>Reconvergence rate vs perturbation magnitude</td>
+</tr>
+<tr>
+<td>Coherence budget</td>
+<td>Pie chart of error contributions</td>
+</tr>
+<tr>
+<td>CHSH witnesses</td>
+<td><span class="arithmatex">\(S\)</span>-parameters for identity-critical pairs</td>
+</tr>
+<tr>
+<td>Fingerprint</td>
+<td>16-element spectral vector + HMAC verification</td>
+</tr>
+<tr>
+<td>Phase roundtrip</td>
+<td>Input vs recovered phases (scatter plot, RMSE)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Modules used:</strong> <code>identity.ground_state</code>, <code>identity.coherence_budget</code>,
+<code>identity.entanglement_witness</code>, <code>identity.identity_key</code>, <code>identity.binding_spec</code></p>
+<hr />
+<h3 id="09-iter-disruption-classifier">09 — ITER Disruption Classifier<a class="headerlink" href="#09-iter-disruption-classifier" title="Permanent link">&para;</a></h3>
+<p><strong>File:</strong> <a href="https://github.com/anulum/scpn-quantum-control/blob/main/notebooks/09_iter_disruption.ipynb"><code>notebooks/09_iter_disruption.ipynb</code></a></p>
+<p>A quantum machine learning application: classify tokamak plasma disruptions
+using 11 physics-based features from the ITER Physics Basis (Nuclear Fusion 39,
+1999). The 11-dimensional feature vector is amplitude-encoded into 4 qubits
+(zero-padded to 16), and a parametric circuit acts as the classifier.</p>
+<p>This is the bridge between SCPN quantum control and nuclear fusion engineering.
+Real tokamak disruptions cause sudden loss of plasma confinement, potentially
+damaging the vessel wall. Early detection (the "disruption predictor") is one
+of the highest-priority engineering challenges for ITER.</p>
+<p><strong>Feature space (11 dimensions):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Symbol</th>
+<th>Physical meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Plasma current</td>
+<td><span class="arithmatex">\(I_p\)</span></td>
+<td>Total toroidal current</td>
+</tr>
+<tr>
+<td>Safety factor</td>
+<td><span class="arithmatex">\(q_{95}\)</span></td>
+<td>MHD stability margin</td>
+</tr>
+<tr>
+<td>Internal inductance</td>
+<td><span class="arithmatex">\(l_i\)</span></td>
+<td>Current profile peakedness</td>
+</tr>
+<tr>
+<td>Greenwald fraction</td>
+<td><span class="arithmatex">\(n_{\text{GW}}\)</span></td>
+<td>Density limit proximity</td>
+</tr>
+<tr>
+<td>Normalized beta</td>
+<td><span class="arithmatex">\(\beta_N\)</span></td>
+<td>Pressure stability limit</td>
+</tr>
+<tr>
+<td>Radiated power</td>
+<td><span class="arithmatex">\(P_{\text{rad}}\)</span></td>
+<td>Power loss channel</td>
+</tr>
+<tr>
+<td>Locked mode</td>
+<td>LM</td>
+<td>Rotating → locked tearing mode</td>
+</tr>
+<tr>
+<td>Loop voltage</td>
+<td><span class="arithmatex">\(V_{\text{loop}}\)</span></td>
+<td>Resistive dissipation</td>
+</tr>
+<tr>
+<td>Stored energy</td>
+<td><span class="arithmatex">\(W\)</span></td>
+<td>Thermal energy content</td>
+</tr>
+<tr>
+<td>Elongation</td>
+<td><span class="arithmatex">\(\kappa\)</span></td>
+<td>Plasma shape factor</td>
+</tr>
+<tr>
+<td>Current ramp</td>
+<td><span class="arithmatex">\(dI_p/dt\)</span></td>
+<td>Temporal gradient</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key outputs:</strong></p>
+<ul>
+<li>Feature distribution plots (disruption vs stable)</li>
+<li>Classifier accuracy on synthetic test set</li>
+<li>Confusion matrix</li>
+</ul>
+<p><strong>Modules used:</strong> <code>control.q_disruption_iter</code>, <code>applications.disruption_classifier</code></p>
+<hr />
+<h3 id="10-qsnn-training">10 — QSNN Training<a class="headerlink" href="#10-qsnn-training" title="Permanent link">&para;</a></h3>
+<p><strong>File:</strong> <a href="https://github.com/anulum/scpn-quantum-control/blob/main/notebooks/10_qsnn_training.ipynb"><code>notebooks/10_qsnn_training.ipynb</code></a></p>
+<p>Trains a quantum spiking neural network using the parameter-shift gradient rule.
+Each neuron is a qubit with <span class="arithmatex">\(R_y(\theta)\)</span> rotation encoding the membrane potential.
+Synapses are controlled rotations <span class="arithmatex">\(CR_y(\theta_w)\)</span>. The network learns via a
+quantum analog of STDP (spike-timing-dependent plasticity).</p>
+<p>Classical spiking neural networks in sc-neurocore use stochastic bitstream
+computation. The quantum version maps the stochastic firing probability
+<span class="arithmatex">\(P(\text{spike})\)</span> to <span class="arithmatex">\(\sin^2(\theta/2)\)</span> — the Born probability of measuring
+<span class="arithmatex">\(|1\rangle\)</span> after a <span class="arithmatex">\(R_y(\theta)\)</span> rotation. Training uses the exact parameter-shift
+rule rather than finite-difference approximations.</p>
+<p><strong>Training pipeline:</strong></p>
+<pre class="mermaid"><code>graph TD
+    A["Encode input\nRy(theta)"] --&gt; B["Entangle\nCRy(theta_w)"]
+    B --&gt; C["Measure Z-basis"]
+    C --&gt; D["Compute loss"]
+    D --&gt; E["Parameter-shift\ngradient"]
+    E --&gt; F["Update weights"]
+    F --&gt; B
+
+    style E fill:#6929C4,color:#fff</code></pre>
+<p><strong>Key outputs:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Output</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Loss curve</td>
+<td>MSE vs training epoch</td>
+</tr>
+<tr>
+<td>Weight evolution</td>
+<td><span class="arithmatex">\(\theta_w\)</span> trajectories for each synapse</td>
+</tr>
+<tr>
+<td>Spike rate comparison</td>
+<td>Quantum vs classical firing rates</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Modules used:</strong> <code>qsnn.qlif</code>, <code>qsnn.qsynapse</code>, <code>qsnn.qstdp</code>, <code>qsnn.training</code></p>
+<hr />
+<h3 id="11-surface-code-budget">11 — Surface Code Budget<a class="headerlink" href="#11-surface-code-budget" title="Permanent link">&para;</a></h3>
+<p><strong>File:</strong> <a href="https://github.com/anulum/scpn-quantum-control/blob/main/notebooks/11_surface_code_budget.ipynb"><code>notebooks/11_surface_code_budget.ipynb</code></a></p>
+<p>Estimates the physical qubit overhead for fault-tolerant quantum simulation of
+the 16-layer SCPN UPDE. Compares three error correction strategies:</p>
+<table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th style="text-align: center;">Code distance</th>
+<th style="text-align: center;">Physical qubits (16 logical)</th>
+<th style="text-align: center;">Overhead</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No QEC</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">16</td>
+<td style="text-align: center;">1x</td>
+</tr>
+<tr>
+<td>Repetition code</td>
+<td style="text-align: center;"><span class="arithmatex">\(d=3\)</span></td>
+<td style="text-align: center;">80</td>
+<td style="text-align: center;">5x</td>
+</tr>
+<tr>
+<td>Surface code</td>
+<td style="text-align: center;"><span class="arithmatex">\(d=5\)</span></td>
+<td style="text-align: center;">800</td>
+<td style="text-align: center;">50x</td>
+</tr>
+</tbody>
+</table>
+<p>The repetition code protects only against bit-flip errors — sufficient for
+shallow circuits where dephasing dominates. The surface code handles arbitrary
+errors but requires <span class="arithmatex">\(O(d^2)\)</span> physical qubits per logical qubit. The notebook
+calculates which strategy is feasible on near-term (2026-2028) and mid-term
+(2028-2032) hardware roadmaps.</p>
+<p><strong>Key outputs:</strong></p>
+<ul>
+<li>Qubit budget table (repetition vs surface vs no QEC)</li>
+<li>Hardware feasibility timeline</li>
+<li>Logical error rate vs code distance plot</li>
+</ul>
+<p><strong>Modules used:</strong> <code>qec.fault_tolerant</code>, <code>qec.surface_code_upde</code>, <code>qec.error_budget</code></p>
+<hr />
+<h3 id="12-trapped-ion-comparison">12 — Trapped Ion Comparison<a class="headerlink" href="#12-trapped-ion-comparison" title="Permanent link">&para;</a></h3>
+<p><strong>File:</strong> <a href="https://github.com/anulum/scpn-quantum-control/blob/main/notebooks/12_trapped_ion_comparison.ipynb"><code>notebooks/12_trapped_ion_comparison.ipynb</code></a></p>
+<p>Runs the same Kuramoto-XY circuit on two noise models — IBM Heron r2
+(superconducting, nearest-neighbour connectivity) and a QCCD trapped-ion model
+(all-to-all connectivity, slower gates, longer coherence times) — and compares
+the results.</p>
+<p>Superconducting qubits are fast but noisy and topologically constrained (SWAP
+overhead for non-adjacent interactions). Trapped ions are slower but have
+all-to-all connectivity (no SWAPs needed) and longer coherence times. For the
+Kuramoto Hamiltonian — which has long-range coupling from the exponential decay
+in <span class="arithmatex">\(K_{nm}\)</span> — the connectivity advantage of trapped ions can offset their slower
+gate speed.</p>
+<p><strong>Comparison:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th style="text-align: center;">Superconducting (Heron r2)</th>
+<th style="text-align: center;">Trapped ion (QCCD)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2-qubit gate error</td>
+<td style="text-align: center;">0.5% (CZ)</td>
+<td style="text-align: center;">0.5% (MS)</td>
+</tr>
+<tr>
+<td>Gate time</td>
+<td style="text-align: center;">60 ns (CZ)</td>
+<td style="text-align: center;">200 <span class="arithmatex">\(\mu\)</span>s (MS)</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(T_1\)</span></td>
+<td style="text-align: center;">300 <span class="arithmatex">\(\mu\)</span>s</td>
+<td style="text-align: center;">100 ms</td>
+</tr>
+<tr>
+<td>Connectivity</td>
+<td style="text-align: center;">Heavy-hex (sparse)</td>
+<td style="text-align: center;">All-to-all</td>
+</tr>
+<tr>
+<td>SWAP overhead (4q)</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+</tr>
+<tr>
+<td>SWAP overhead (16q)</td>
+<td style="text-align: center;">~12 SWAPs</td>
+<td style="text-align: center;">0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key outputs:</strong></p>
+<ul>
+<li>Transpiled circuit comparison (gate counts, depth)</li>
+<li>Noisy <span class="arithmatex">\(\langle Z \rangle\)</span> expectations (both backends)</li>
+<li>Fidelity vs circuit depth for both architectures</li>
+</ul>
+<p><strong>Modules used:</strong> <code>hardware.trapped_ion</code>, <code>hardware.runner</code></p>
+<hr />
+<h3 id="13-cross-repo-bridges">13 — Cross-Repo Bridges<a class="headerlink" href="#13-cross-repo-bridges" title="Permanent link">&para;</a></h3>
+<p><strong>File:</strong> <a href="https://github.com/anulum/scpn-quantum-control/blob/main/notebooks/13_cross_repo_bridges.ipynb"><code>notebooks/13_cross_repo_bridges.ipynb</code></a></p>
+<p>Demonstrates all cross-repository integration bridges:</p>
+<pre class="mermaid"><code>graph LR
+    SC["sc-neurocore\n(SNN)"] --&gt; |"snn_adapter"| QC["scpn-quantum-\ncontrol"]
+    SSGF["SSGF geometry\nengine"] --&gt; |"ssgf_adapter"| QC
+    PO["scpn-phase-\norchestrator"] --&gt; |"orchestrator_adapter"| QC
+    FC["scpn-fusion-\ncore"] --&gt; |"control_plasma_knm"| QC
+    QC --&gt; |"phase_artifact"| PO
+
+    style QC fill:#6929C4,color:#fff</code></pre>
+<ol>
+<li><strong>SNN adapter</strong> — converts <code>ArcaneNeuron</code> membrane potentials from sc-neurocore
+   into <span class="arithmatex">\(R_y(\theta)\)</span> rotation angles for the quantum layer, and back.</li>
+<li><strong>SSGF adapter</strong> — maps the SSGF geometry matrix <span class="arithmatex">\(W\)</span> to a quantum Hamiltonian
+   via the same <span class="arithmatex">\(K_{nm} \to H\)</span> compiler, enabling quantum-in-the-loop geometry
+   optimization.</li>
+<li><strong>Orchestrator adapter</strong> — translates <code>scpn-phase-orchestrator</code> state payloads
+   (regime label, phase vector, confidence score) into <code>UPDEPhaseArtifact</code> for
+   quantum simulation, and feeds quantum results back as advance/hold/rollback
+   signals.</li>
+<li><strong>Fusion-core adapter</strong> — imports plasma-native <span class="arithmatex">\(K_{nm}\)</span> from <code>scpn-control</code>
+   and <code>scpn-fusion-core</code> coupling calibration.</li>
+</ol>
+<p><strong>Key outputs:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Bridge</th>
+<th>Test</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SNN adapter</td>
+<td>Membrane <span class="arithmatex">\(\to\)</span> angle <span class="arithmatex">\(\to\)</span> membrane roundtrip</td>
+<td>RMSE &lt; 0.01</td>
+</tr>
+<tr>
+<td>SSGF adapter</td>
+<td><span class="arithmatex">\(W \to H \to\)</span> Trotter <span class="arithmatex">\(\to\)</span> phases <span class="arithmatex">\(\to W'\)</span></td>
+<td>Phase fidelity plot</td>
+</tr>
+<tr>
+<td>Orchestrator</td>
+<td>State payload <span class="arithmatex">\(\to\)</span> artifact <span class="arithmatex">\(\to\)</span> quantum <span class="arithmatex">\(\to\)</span> feedback</td>
+<td>Advance/hold decision</td>
+</tr>
+<tr>
+<td>Fusion-core</td>
+<td>Plasma <span class="arithmatex">\(K_{nm} \to\)</span> Hamiltonian <span class="arithmatex">\(\to R\)</span></td>
+<td>Coupling comparison</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Modules used:</strong> <code>bridge.snn_adapter</code>, <code>bridge.ssgf_adapter</code>,
+<code>bridge.orchestrator_adapter</code>, <code>bridge.control_plasma_knm</code>, <code>bridge.phase_artifact</code></p>
+<hr />
+<hr />
+<h2 id="fim-investigation-campaign-nb1447">FIM Investigation Campaign (NB14–47)<a class="headerlink" href="#fim-investigation-campaign-nb1447" title="Permanent link">&para;</a></h2>
+<p>Notebooks 14-47 form a systematic investigation of the FIM (Fisher Information
+Metric) strange loop mechanism. See <a href="https://github.com/anulum/scpn-quantum-control/blob/main/RESULTS_SUMMARY.md">RESULTS_SUMMARY.md</a>
+for the full findings. All results are saved as JSON in <code>results/</code>.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">#</th>
+<th>Notebook</th>
+<th>Finding</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">14</td>
+<td>DLA parity IBM hardware</td>
+<td>Simulator: odd more robust. Hardware: circuit depth artefact</td>
+</tr>
+<tr>
+<td style="text-align: center;">15</td>
+<td>Inverse layer optimisation</td>
+<td>K_nm validated r=0.951 with data-driven mapping</td>
+</tr>
+<tr>
+<td style="text-align: center;">16</td>
+<td>Alpha calibration literature</td>
+<td>Direction correct, magnitude off 30-95x</td>
+</tr>
+<tr>
+<td style="text-align: center;">17</td>
+<td>Hierarchical N=16 sync</td>
+<td>Hierarchy does NOT help (negative)</td>
+</tr>
+<tr>
+<td style="text-align: center;">18</td>
+<td>Clinical TDA connectivity</td>
+<td>No topological advantage over coherence (negative)</td>
+</tr>
+<tr>
+<td style="text-align: center;">19</td>
+<td>Directed coupling TE</td>
+<td>Cross-scale coupling IS directed (asymmetry 0.36)</td>
+</tr>
+<tr>
+<td style="text-align: center;">20</td>
+<td>FIM phase transition order</td>
+<td>FIM creates hysteresis (width 0.61)</td>
+</tr>
+<tr>
+<td style="text-align: center;">21</td>
+<td>Scale frustration pathology</td>
+<td>Direction correct, not significant (negative)</td>
+</tr>
+<tr>
+<td style="text-align: center;">22</td>
+<td>Cross-frequency observables</td>
+<td>PAC, wavelet coherence, Granger confirm SCPN</td>
+</tr>
+<tr>
+<td style="text-align: center;">23</td>
+<td>Geometric curvature K_nm</td>
+<td>Curvature NOT at K_c (negative)</td>
+</tr>
+<tr>
+<td style="text-align: center;">24</td>
+<td>Directed K_nm + FIM N=16</td>
+<td><strong>FIM solves N=16</strong>, directed hurts</td>
+</tr>
+<tr>
+<td style="text-align: center;">25</td>
+<td>FIM scaling law</td>
+<td><strong>λ_c(N) = 0.149·N^1.02</strong></td>
+</tr>
+<tr>
+<td style="text-align: center;">26</td>
+<td>Phase diagram (K,λ)</td>
+<td><strong>FIM alone synchronises at λ≥8</strong></td>
+</tr>
+<tr>
+<td style="text-align: center;">27</td>
+<td>Stability analysis</td>
+<td><strong>100% basin, hysteresis 0.65, 1.4s recovery</strong></td>
+</tr>
+<tr>
+<td style="text-align: center;">28</td>
+<td>Information-theoretic</td>
+<td><strong>Φ +73%, Fisher info +5 orders</strong></td>
+</tr>
+<tr>
+<td style="text-align: center;">29</td>
+<td>Multi-scale sync dynamics</td>
+<td>Direct global sync, not hierarchical</td>
+</tr>
+<tr>
+<td style="text-align: center;">30</td>
+<td>Empirical FIM estimation</td>
+<td>Method fails (needs Bayesian rework)</td>
+</tr>
+<tr>
+<td style="text-align: center;">31</td>
+<td>FIM × MBL interaction</td>
+<td><strong>FIM enhances MBL</strong> (dual protection)</td>
+</tr>
+<tr>
+<td style="text-align: center;">32</td>
+<td>Chimera states</td>
+<td>No chimeras under FIM (clean transition)</td>
+</tr>
+<tr>
+<td style="text-align: center;">33</td>
+<td>Entropy production</td>
+<td><strong>P = 0.085λ</strong> (linear thermodynamic cost)</td>
+</tr>
+<tr>
+<td style="text-align: center;">34</td>
+<td>Critical slowing down</td>
+<td><strong>τ = 330</strong> at BKT transition</td>
+</tr>
+<tr>
+<td style="text-align: center;">35</td>
+<td>Anaesthesia prediction</td>
+<td>6 testable clinical predictions</td>
+</tr>
+<tr>
+<td style="text-align: center;">36</td>
+<td>Topology universality</td>
+<td><strong>Universal on all 6 networks</strong>, small-world optimal</td>
+</tr>
+<tr>
+<td style="text-align: center;">37</td>
+<td>Mean-field self-consistent</td>
+<td>R* = √(1−2Δ/(K·R+λ·R/(1−R²+ε)))</td>
+</tr>
+<tr>
+<td style="text-align: center;">38</td>
+<td>FIM-MBL mechanism</td>
+<td>M²/n sector splitting, 2.3x spectrum stretch</td>
+</tr>
+<tr>
+<td style="text-align: center;">39</td>
+<td>IBM hardware v2</td>
+<td>Equal-depth fair experiments, <strong>dual protection confirmed</strong></td>
+</tr>
+<tr>
+<td style="text-align: center;">40</td>
+<td>SPO cross-validation</td>
+<td>U(1) confirmed, Lyapunov correspondence 5/6</td>
+</tr>
+<tr>
+<td style="text-align: center;">41</td>
+<td>Stochastic resonance</td>
+<td><strong>FIM-mediated SR</strong> at weak coupling</td>
+</tr>
+<tr>
+<td style="text-align: center;">42</td>
+<td>Delayed FIM</td>
+<td>Delay-robust with coupling, fragile without</td>
+</tr>
+<tr>
+<td style="text-align: center;">43</td>
+<td>Critical exponents</td>
+<td><strong>BKT universality</strong> (β→0, not mean-field)</td>
+</tr>
+<tr>
+<td style="text-align: center;">44</td>
+<td>FIM-modulated learning</td>
+<td>No benefit (FIM ≠ learning signal, negative)</td>
+</tr>
+<tr>
+<td style="text-align: center;">45</td>
+<td>Noise as purification</td>
+<td>Not confirmed on symmetric noise (negative)</td>
+</tr>
+<tr>
+<td style="text-align: center;">46</td>
+<td>Metabolic scaling</td>
+<td><strong>P∝N matches biology</strong> (r=0.983, 6 species)</td>
+</tr>
+<tr>
+<td style="text-align: center;">47</td>
+<td>Topological defects</td>
+<td><strong>FIM suppresses vortices</strong> 8→0</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="running-locally">Running Locally<a class="headerlink" href="#running-locally" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>jupyter<span class="w"> </span>notebook<span class="w"> </span>notebooks/
+</code></pre></div>
+<p>All notebooks run on <code>qiskit-aer</code> (AerSimulator). Typical execution time: 30 seconds
+to 3 minutes per notebook on a modern laptop. No GPU required.</p>
+<h2 id="running-on-colab">Running on Colab<a class="headerlink" href="#running-on-colab" title="Permanent link">&para;</a></h2>
+<p>Click the "Open in Colab" badge on the README, or upload any notebook to
+<a href="https://colab.research.google.com">colab.research.google.com</a>. The first cell
+installs dependencies:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="n">scpn</span><span class="o">-</span><span class="n">quantum</span><span class="o">-</span><span class="n">control</span><span class="p">[</span><span class="n">dev</span><span class="p">]</span>
+</code></pre></div>
+<p>Colab's free T4 GPU is not needed for these notebooks (all computation is
+statevector simulation), but it can speed up the 16-qubit UPDE notebook by ~2x
+via CuPy offload if <code>gpu_accel</code> is available.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+        <script src="../js/goatcounter.js"></script>
+      
+    
+  </body>
+</html>

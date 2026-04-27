@@ -1,0 +1,2486 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Quantum simulation of coupled oscillators on IBM hardware">
+      
+      
+        <meta name="author" content="Miroslav Šotek">
+      
+      
+        <link rel="canonical" href="https://anulum.github.io/scpn-quantum-control/psi_field_lattice/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/anulum_logo_company.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>SPDX-License-Identifier: AGPL-3.0-or-later - scpn-quantum-control</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#spdx-license-identifier-agpl-30-or-later" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="scpn-quantum-control" class="md-header__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            scpn-quantum-control
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              SPDX-License-Identifier: AGPL-3.0-or-later
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="scpn-quantum-control" class="md-nav__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    scpn-quantum-control
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SCPN Foundations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../equations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../research_gems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research Gems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../orchestrator_integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestrator Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rust_engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../autodoc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auto-Generated
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analysis_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../identity_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mitigation_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mitigation API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bridges_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridges API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmarks_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipeline_performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_dynamic_coupling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Dynamic Coupling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_structured_ansatz/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Structured Ansatz
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_hw_topological_optimizer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: HW Topological Optimizer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../test_infrastructure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publications
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Publications
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprint/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprint: Quantum Kuramoto-XY on Hardware
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_sync_witnesses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: Synchronisation Witnesses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: DLA Parity Theorem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DLA-parity Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classical_irreproducibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classical Irreproducibility
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results Gallery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hardware_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IBM Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXPERIMENT_ROADMAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PAPER_CLAIMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results & Claims
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../QUANTUM_CRYPTO_RESEARCH_BRANCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Crypto Research
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Learning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notebooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Roadmap
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../strategic_roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strategic Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="spdx-license-identifier-agpl-30-or-later">SPDX-License-Identifier: AGPL-3.0-or-later<a class="headerlink" href="#spdx-license-identifier-agpl-30-or-later" title="Permanent link">&para;</a></h1>
+<h1 id="commercial-license-available">Commercial license available<a class="headerlink" href="#commercial-license-available" title="Permanent link">&para;</a></h1>
+<h1 id="concepts-19962026-miroslav-sotek-all-rights-reserved">© Concepts 1996–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#concepts-19962026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="code-20202026-miroslav-sotek-all-rights-reserved">© Code 2020–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#code-20202026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="orcid-0009-0009-3560-0851">ORCID: 0009-0009-3560-0851<a class="headerlink" href="#orcid-0009-0009-3560-0851" title="Permanent link">&para;</a></h1>
+<h1 id="contact-wwwanulumli-protoscienceanulumli">Contact: www.anulum.li | protoscience@anulum.li<a class="headerlink" href="#contact-wwwanulumli-protoscienceanulumli" title="Permanent link">&para;</a></h1>
+<h1 id="scpn-quantum-control-field-lattice-gauge-theory">scpn-quantum-control — Ψ-field Lattice Gauge Theory<a class="headerlink" href="#scpn-quantum-control-field-lattice-gauge-theory" title="Permanent link">&para;</a></h1>
+<h1 id="-field-lattice-gauge-simulator">Ψ-field Lattice Gauge Simulator<a class="headerlink" href="#-field-lattice-gauge-simulator" title="Permanent link">&para;</a></h1>
+<h2 id="1-mathematical-formalism">1. Mathematical Formalism<a class="headerlink" href="#1-mathematical-formalism" title="Permanent link">&para;</a></h2>
+<h3 id="u1-compact-lattice-gauge-theory">U(1) Compact Lattice Gauge Theory<a class="headerlink" href="#u1-compact-lattice-gauge-theory" title="Permanent link">&para;</a></h3>
+<p>The Ψ-field is modelled as a compact U(1) gauge theory on the SCPN graph.
+Link variables <span class="arithmatex">\(U_{ij} = e^{iA_{ij}}\)</span> live on edges, where <span class="arithmatex">\(A_{ij} \in [-\pi, \pi)\)</span>
+is the gauge potential.</p>
+<h4 id="wilson-plaquette-action">Wilson Plaquette Action<a class="headerlink" href="#wilson-plaquette-action" title="Permanent link">&para;</a></h4>
+<p>On general graphs, plaquettes are minimal cycles. For the SCPN complete graph
+(<span class="arithmatex">\(K_{nm} &gt; 0\)</span> for all pairs), the minimal cycles are triangles <span class="arithmatex">\((i,j,k)\)</span>:</p>
+<div class="arithmatex">\[S = -\beta \sum_{\triangle(i,j,k)} \text{Re}(U_{ij} U_{jk} U_{ki}^\dagger) = -\beta \sum_\triangle \cos(A_{ij} + A_{jk} - A_{ik})\]</div>
+<p>where <span class="arithmatex">\(\beta = 1/g^2\)</span> is the inverse gauge coupling. The 16-node SCPN
+graph has <span class="arithmatex">\(\binom{16}{3} = 560\)</span> triangle plaquettes.</p>
+<h4 id="hybrid-monte-carlo-hmc">Hybrid Monte Carlo (HMC)<a class="headerlink" href="#hybrid-monte-carlo-hmc" title="Permanent link">&para;</a></h4>
+<p>The gauge field is sampled via HMC with the following steps:</p>
+<ol>
+<li><strong>Momentum refresh:</strong> <span class="arithmatex">\(\pi_e \sim \mathcal{N}(0, 1)\)</span> for each edge <span class="arithmatex">\(e\)</span></li>
+<li><strong>Leapfrog integration</strong> of <span class="arithmatex">\((A, \pi)\)</span> along <span class="arithmatex">\(H = \frac{1}{2}\sum_e \pi_e^2 + S(A)\)</span>:</li>
+<li>Half-step: <span class="arithmatex">\(\pi \leftarrow \pi - \frac{\epsilon}{2}\frac{\partial S}{\partial A}\)</span></li>
+<li>Full-step: <span class="arithmatex">\(A \leftarrow A + \epsilon\pi\)</span>, wrap to <span class="arithmatex">\([-\pi, \pi)\)</span></li>
+<li>Full-step: <span class="arithmatex">\(\pi \leftarrow \pi - \epsilon\frac{\partial S}{\partial A}\)</span></li>
+<li>... repeat <span class="arithmatex">\(N_\text{LF}\)</span> times</li>
+<li>Half-step: <span class="arithmatex">\(\pi \leftarrow \pi - \frac{\epsilon}{2}\frac{\partial S}{\partial A}\)</span></li>
+<li><strong>Metropolis accept/reject:</strong> accept with probability <span class="arithmatex">\(\min(1, e^{-\Delta H})\)</span></li>
+</ol>
+<p>The force is:</p>
+<div class="arithmatex">\[\frac{\partial S}{\partial A_e} = \beta \sum_{\triangle \ni e} s_e \sin(\text{phase}_\triangle)\]</div>
+<p>where <span class="arithmatex">\(s_e = \pm 1\)</span> is the orientation of edge <span class="arithmatex">\(e\)</span> in the plaquette.</p>
+<h4 id="hmc-algorithm-detail">HMC Algorithm Detail<a class="headerlink" href="#hmc-algorithm-detail" title="Permanent link">&para;</a></h4>
+<p>The full HMC algorithm with momentum refresh, leapfrog, and Metropolis:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Algorithm: HMC for U(1) Lattice Gauge
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>Input: gauge field A, coupling β, step_size ε, n_leapfrog N_LF
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>Output: updated gauge field A&#39; (accepted or rejected)
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>1. Store A_old ← A
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>2. Sample momenta: π_e ~ N(0, 1) for each edge e
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>3. Compute H_old = ½Σπ² + S(A)
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>4. Leapfrog integration:
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>   a. π ← π − (ε/2) × ∂S/∂A              [half-step momentum]
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>   b. For step = 1 to N_LF − 1:
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>      i.   A ← A + ε × π                  [full-step position]
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>      ii.  A ← wrap(A, [−π, π))            [compact U(1)]
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>      iii. π ← π − ε × ∂S/∂A              [full-step momentum]
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>   c. A ← A + ε × π                        [final position step]
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>   d. A ← wrap(A, [−π, π))
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>   e. π ← π − (ε/2) × ∂S/∂A              [final half-step momentum]
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>5. Compute H_new = ½Σπ² + S(A)
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>6. ΔH ← H_new − H_old
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>7. Accept with probability min(1, exp(−ΔH)):
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>   - If accepted: A&#39; ← A
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>   - If rejected: A&#39; ← A_old
+</code></pre></div>
+<p>The key property: HMC is <strong>exact</strong> — the Metropolis step corrects any
+discretisation error from the leapfrog integrator. In the limit <span class="arithmatex">\(\epsilon \to 0\)</span>,
+<span class="arithmatex">\(\Delta H \to 0\)</span> and acceptance rate → 100%. For finite <span class="arithmatex">\(\epsilon\)</span>, the
+acceptance rate depends on the number of plaquettes (more plaquettes =
+larger force = more sensitivity to step size).</p>
+<p>For the 16-layer SCPN (560 plaquettes), step sizes of 0.01–0.05 are
+needed for reasonable acceptance. For 4-layer (4 plaquettes), 0.1–0.5
+works well.</p>
+<h4 id="force-computation">Force Computation<a class="headerlink" href="#force-computation" title="Permanent link">&para;</a></h4>
+<p>The force <span class="arithmatex">\(\partial S / \partial A_e\)</span> for edge <span class="arithmatex">\(e\)</span> sums contributions from
+all plaquettes containing <span class="arithmatex">\(e\)</span>:</p>
+<div class="arithmatex">\[\frac{\partial S}{\partial A_e} = \beta \sum_{\triangle \ni e} s_e^\triangle \sin(\phi_\triangle)\]</div>
+<p>where <span class="arithmatex">\(s_e^\triangle = \pm 1\)</span> is the orientation of edge <span class="arithmatex">\(e\)</span> in plaquette
+<span class="arithmatex">\(\triangle\)</span>, and <span class="arithmatex">\(\phi_\triangle\)</span> is the plaquette phase. Each edge in
+the complete 16-node graph appears in <span class="arithmatex">\((16 - 2) = 14\)</span> triangles (one
+for each third vertex), so the force computation is <span class="arithmatex">\(O(n_\text{edges} \times n_\text{triangles per edge})\)</span>.</p>
+<p>The Rust implementation (<code>gauge_force_batch</code>) iterates over triangles
+and accumulates force contributions — same asymptotic complexity but
+without Python loop overhead.</p>
+<h4 id="infoton-scalar-qed">Infoton Scalar QED<a class="headerlink" href="#infoton-scalar-qed" title="Permanent link">&para;</a></h4>
+<p>The SCPN infoton is a complex scalar field <span class="arithmatex">\(\phi_i\)</span> at lattice sites,
+coupled to the gauge via the covariant derivative:</p>
+<div class="arithmatex">\[S_\text{matter} = \sum_{\langle ij \rangle} \left(|\phi_i|^2 + |\phi_j|^2 - 2\text{Re}(\phi_i^* U_{ij} \phi_j)\right) + \sum_i \left(m^2|\phi_i|^2 + \lambda|\phi_i|^4\right)\]</div>
+<p>This is gauge-invariant under:
+$<span class="arithmatex">\(\phi_i \to e^{i\alpha_i}\phi_i, \quad A_{ij} \to A_{ij} + (\alpha_i - \alpha_j)/g\)</span>$</p>
+<p><strong>Proof of gauge invariance</strong> (verified in tests):
+$<span class="arithmatex">\(\phi_i'^* U_{ij}' \phi_j' = \phi_i^* e^{-i\alpha_i} \cdot e^{i\alpha_i} U_{ij} e^{-i\alpha_j} \cdot e^{i\alpha_j} \phi_j = \phi_i^* U_{ij} \phi_j \quad \checkmark\)</span>$</p>
+<h3 id="observables">Observables<a class="headerlink" href="#observables" title="Permanent link">&para;</a></h3>
+<h4 id="polyakov-loop">Polyakov Loop<a class="headerlink" href="#polyakov-loop" title="Permanent link">&para;</a></h4>
+<div class="arithmatex">\[P(\mathcal{C}) = \prod_{(i,j) \in \mathcal{C}} U_{ij} = e^{i\sum_\mathcal{C} A_{ij}}\]</div>
+<p>Along a path through SCPN layers, this measures the total phase accumulated
+across the hierarchy. <span class="arithmatex">\(|P| = 1\)</span> for any path (compact U(1)).</p>
+<h4 id="topological-charge">Topological Charge<a class="headerlink" href="#topological-charge" title="Permanent link">&para;</a></h4>
+<div class="arithmatex">\[Q = \frac{1}{2\pi} \sum_\triangle \text{wrap}(\text{phase}_\triangle)\]</div>
+<p>where <span class="arithmatex">\(\text{wrap}(\theta) = ((\theta + \pi) \mod 2\pi) - \pi\)</span> maps to <span class="arithmatex">\([-\pi, \pi)\)</span>.
+For smooth configurations, <span class="arithmatex">\(Q \approx 0\)</span>. Non-zero <span class="arithmatex">\(Q\)</span> indicates vortex
+defects in the Ψ-field.</p>
+<h4 id="string-tension">String Tension<a class="headerlink" href="#string-tension" title="Permanent link">&para;</a></h4>
+<div class="arithmatex">\[\sigma = -\ln\langle\text{Re}(U_\triangle)\rangle\]</div>
+<p>Lowest-order estimate from plaquette expectation. Positive <span class="arithmatex">\(\sigma\)</span>
+indicates confinement; <span class="arithmatex">\(\sigma \leq 0\)</span> indicates the deconfined/ordered phase.</p>
+<h2 id="2-theoretical-context">2. Theoretical Context<a class="headerlink" href="#2-theoretical-context" title="Permanent link">&para;</a></h2>
+<h3 id="why-a-lattice-gauge-simulator">Why a Lattice Gauge Simulator?<a class="headerlink" href="#why-a-lattice-gauge-simulator" title="Permanent link">&para;</a></h3>
+<p>The SCPN defines the Ψ-field as a U(1) gauge field with the infoton as
+its boson. The existing <code>gauge/</code> package computes Wilson loops and
+confinement observables from quantum statevectors (exact diagonalisation).
+The <code>psi_field/</code> package complements this with classical Monte Carlo
+simulation — enabling large-scale thermodynamic studies that are
+impractical with exact diagonalisation.</p>
+<p>Key difference:
+- <code>gauge/</code> — quantum observables on small systems (<span class="arithmatex">\(n \leq 16\)</span> qubits)
+- <code>psi_field/</code> — classical lattice gauge on arbitrary-size graphs</p>
+<h3 id="phase-structure-on-the-scpn-graph">Phase Structure on the SCPN Graph<a class="headerlink" href="#phase-structure-on-the-scpn-graph" title="Permanent link">&para;</a></h3>
+<p>The U(1) lattice gauge theory has two phases:</p>
+<ul>
+<li><strong>Ordered (large <span class="arithmatex">\(\beta\)</span>):</strong> <span class="arithmatex">\(\langle\text{Re}(U_\triangle)\rangle \to 1\)</span>,
+  links are nearly aligned, vortex density is low. This corresponds to
+  the synchronised phase of the Kuramoto model.</li>
+<li><strong>Disordered (small <span class="arithmatex">\(\beta\)</span>):</strong> <span class="arithmatex">\(\langle\text{Re}(U_\triangle)\rangle \to 0\)</span>,
+  links are random, vortex density is high. This corresponds to the
+  desynchronised phase.</li>
+</ul>
+<p>The transition between phases is the lattice analogue of the BKT
+transition. On the SCPN complete graph (unlike the square lattice),
+the transition temperature depends on the graph connectivity and the
+K_nm coupling weights. This has not been mapped — it is an open question
+whether the SCPN graph produces a sharp transition or a crossover.</p>
+<h3 id="vortex-excitations">Vortex Excitations<a class="headerlink" href="#vortex-excitations" title="Permanent link">&para;</a></h3>
+<p>In compact U(1), the gauge field admits vortex excitations — plaquettes
+where the phase winds by <span class="arithmatex">\(\pm 2\pi\)</span>. The topological charge <span class="arithmatex">\(Q\)</span> counts
+the net number of vortices. In 2D U(1) pure gauge theory, vortices are
+always present (the theory is confining). On the SCPN graph (which is
+not 2D), the vortex dynamics are more complex.</p>
+<p>The <code>topological_charge()</code> function measures <span class="arithmatex">\(Q\)</span> by summing wrapped
+plaquette phases. For smooth configurations (all links near zero),
+<span class="arithmatex">\(Q \approx 0\)</span>. For random configurations, <span class="arithmatex">\(Q\)</span> fluctuates with standard
+deviation <span class="arithmatex">\(\sim \sqrt{N_\triangle} / (2\pi)\)</span>.</p>
+<h3 id="non-hypercubic-lattice">Non-Hypercubic Lattice<a class="headerlink" href="#non-hypercubic-lattice" title="Permanent link">&para;</a></h3>
+<p>Standard lattice gauge theory operates on hypercubic lattices (<span class="arithmatex">\(\mathbb{Z}^d\)</span>).
+The SCPN, however, is a complete graph with exponential-decay coupling.
+This module supports arbitrary graph topologies by precomputing triangle
+plaquettes from the adjacency structure.</p>
+<p>For the 16-layer SCPN: 120 edges, 560 triangles. This is qualitatively
+different from a <span class="arithmatex">\(4 \times 4\)</span> square lattice (32 edges, 16 plaquettes).</p>
+<h3 id="what-this-module-does-not-claim">What This Module Does NOT Claim<a class="headerlink" href="#what-this-module-does-not-claim" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The classical lattice simulation is NOT quantum — it samples the
+  Boltzmann distribution <span class="arithmatex">\(e^{-\beta S}\)</span>, not the quantum partition function</li>
+<li>The infoton field is treated classically (no path integral over <span class="arithmatex">\(\phi\)</span>)</li>
+<li>HMC acceptance rates depend strongly on step size and lattice size —
+  the module provides tools, not guaranteed convergence</li>
+<li>The mapping SCPN → lattice gauge is a model, not a derivation</li>
+</ul>
+<h2 id="3-pipeline-position">3. Pipeline Position<a class="headerlink" href="#3-pipeline-position" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>bridge/knm_hamiltonian.py → K_nm (adjacency matrix)
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>        ↓
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>psi_field/scpn_mapping.py → scpn_to_lattice() → SCPNLattice
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>  ├─ psi_field/lattice.py → U1LatticGauge (gauge dynamics, HMC)
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  ├─ psi_field/infoton.py → InfitonField (scalar QED)
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>  └─ psi_field/observables.py → Polyakov, Q, σ
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>        ↓
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>gauge/ (Wilson loops, confinement — complementary quantum observables)
+</code></pre></div>
+<p><strong>Inputs:</strong> K_nm coupling matrix (graph adjacency), <span class="arithmatex">\(\beta\)</span>, mass, couplings.</p>
+<p><strong>Outputs:</strong> <code>SCPNLattice</code> with gauge field, infoton, and observable
+measurement functions.</p>
+<h2 id="4-features">4. Features<a class="headerlink" href="#4-features" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Arbitrary graph topology:</strong> not restricted to hypercubic lattices</li>
+<li><strong>Compact U(1) gauge:</strong> link variables in <span class="arithmatex">\([-\pi, \pi)\)</span>, vortex excitations</li>
+<li><strong>HMC dynamics:</strong> exact sampling with leapfrog integrator and Metropolis step</li>
+<li><strong>Triangle plaquettes:</strong> auto-detected from adjacency matrix</li>
+<li><strong>Infoton scalar QED:</strong> complex scalar field with gauge-covariant kinetic energy</li>
+<li><strong>Gauge invariance:</strong> verified in test suite under local U(1) transformation</li>
+<li><strong>Observables:</strong> Polyakov loop, topological charge, string tension, average link</li>
+<li><strong>SCPN mapping:</strong> direct construction from <code>build_knm_paper27()</code></li>
+<li><strong>Rust acceleration:</strong> plaquette action, force, kinetic energy, topological charge</li>
+<li><strong>Deterministic seeding:</strong> reproducible simulations via <code>numpy.random.default_rng</code></li>
+</ul>
+<h3 id="comparison-with-gauge-package">Comparison with gauge/ Package<a class="headerlink" href="#comparison-with-gauge-package" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th><code>gauge/</code></th>
+<th><code>psi_field/</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Regime</td>
+<td>Quantum (statevector)</td>
+<td>Classical (Boltzmann)</td>
+</tr>
+<tr>
+<td>System size</td>
+<td><span class="arithmatex">\(\leq 16\)</span> qubits (exact diag)</td>
+<td>Arbitrary graph size</td>
+</tr>
+<tr>
+<td>Wilson loops</td>
+<td>Operator expectation <span class="arithmatex">\(\langle W \rangle\)</span></td>
+<td>Classical phase circulation</td>
+</tr>
+<tr>
+<td>Confinement</td>
+<td>From <span class="arithmatex">\(\langle W \rangle\)</span> area/perimeter law</td>
+<td>From plaquette mean</td>
+</tr>
+<tr>
+<td>Dynamics</td>
+<td>Hamiltonian evolution</td>
+<td>HMC Monte Carlo</td>
+</tr>
+<tr>
+<td>Matter field</td>
+<td>No</td>
+<td>Infoton scalar QED</td>
+</tr>
+<tr>
+<td>Hardware</td>
+<td>IBM Quantum (optional)</td>
+<td>CPU (Rust-accelerated)</td>
+</tr>
+</tbody>
+</table>
+<p>The two packages are complementary: <code>gauge/</code> provides exact quantum
+answers for small systems, while <code>psi_field/</code> provides statistical
+mechanics answers for arbitrary-size systems.</p>
+<h2 id="5-usage-examples">5. Usage Examples<a class="headerlink" href="#5-usage-examples" title="Permanent link">&para;</a></h2>
+<h3 id="build-scpn-lattice">Build SCPN Lattice<a class="headerlink" href="#build-scpn-lattice" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.psi_field.scpn_mapping</span><span class="w"> </span><span class="kn">import</span> <span class="n">scpn_to_lattice</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">lattice</span> <span class="o">=</span> <span class="n">scpn_to_lattice</span><span class="p">(</span><span class="n">beta</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Layers: </span><span class="si">{</span><span class="n">lattice</span><span class="o">.</span><span class="n">n_layers</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Edges: </span><span class="si">{</span><span class="n">lattice</span><span class="o">.</span><span class="n">gauge</span><span class="o">.</span><span class="n">n_edges</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Plaquettes: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">lattice</span><span class="o">.</span><span class="n">gauge</span><span class="o">.</span><span class="n">plaquettes</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="hmc-thermalisation">HMC Thermalisation<a class="headerlink" href="#hmc-thermalisation" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.psi_field.lattice</span><span class="w"> </span><span class="kn">import</span> <span class="n">hmc_update</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">n_accepted</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">accepted</span><span class="p">,</span> <span class="n">dH</span> <span class="o">=</span> <span class="n">hmc_update</span><span class="p">(</span><span class="n">lattice</span><span class="o">.</span><span class="n">gauge</span><span class="p">,</span> <span class="n">n_leapfrog</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">step_size</span><span class="o">=</span><span class="mf">0.02</span><span class="p">)</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="k">if</span> <span class="n">accepted</span><span class="p">:</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>        <span class="n">n_accepted</span> <span class="o">+=</span> <span class="mi">1</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Acceptance rate: </span><span class="si">{</span><span class="n">n_accepted</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="n">plaq</span> <span class="o">=</span> <span class="n">lattice</span><span class="o">.</span><span class="n">gauge</span><span class="o">.</span><span class="n">measure_plaquettes</span><span class="p">()</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mean plaquette: </span><span class="si">{</span><span class="n">plaq</span><span class="o">.</span><span class="n">mean_plaquette</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="thermalisation-and-measurement">Thermalisation and Measurement<a class="headerlink" href="#thermalisation-and-measurement" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Full thermalisation + measurement cycle</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.psi_field.scpn_mapping</span><span class="w"> </span><span class="kn">import</span> <span class="n">scpn_to_lattice</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.psi_field.lattice</span><span class="w"> </span><span class="kn">import</span> <span class="n">hmc_update</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.psi_field.observables</span><span class="w"> </span><span class="kn">import</span> <span class="n">topological_charge</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="n">lattice</span> <span class="o">=</span> <span class="n">scpn_to_lattice</span><span class="p">(</span><span class="n">beta</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="c1"># Thermalise</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">200</span><span class="p">):</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>    <span class="n">hmc_update</span><span class="p">(</span><span class="n">lattice</span><span class="o">.</span><span class="n">gauge</span><span class="p">,</span> <span class="n">n_leapfrog</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">step_size</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="c1"># Measure plaquette and Q over 100 configurations</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="n">plaq_values</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="n">q_values</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>    <span class="n">hmc_update</span><span class="p">(</span><span class="n">lattice</span><span class="o">.</span><span class="n">gauge</span><span class="p">,</span> <span class="n">n_leapfrog</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">step_size</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>    <span class="n">plaq</span> <span class="o">=</span> <span class="n">lattice</span><span class="o">.</span><span class="n">gauge</span><span class="o">.</span><span class="n">measure_plaquettes</span><span class="p">()</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>    <span class="n">plaq_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">plaq</span><span class="o">.</span><span class="n">mean_plaquette</span><span class="p">)</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>    <span class="n">q_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">topological_charge</span><span class="p">(</span><span class="n">lattice</span><span class="o">.</span><span class="n">gauge</span><span class="p">))</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&lt;plaquette&gt; = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">plaq_values</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> ± </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">plaq_values</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&lt;Q&gt; = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">q_values</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> ± </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">q_values</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="custom-graph-topology">Custom Graph Topology<a class="headerlink" href="#custom-graph-topology" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Use a ring graph instead of SCPN complete graph</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">n</span> <span class="o">=</span> <span class="mi">8</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">adj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">adj</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">adj</span><span class="p">[(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">n</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.psi_field.lattice</span><span class="w"> </span><span class="kn">import</span> <span class="n">U1LatticGauge</span><span class="p">,</span> <span class="n">hmc_update</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="n">g</span> <span class="o">=</span> <span class="n">U1LatticGauge</span><span class="p">(</span><span class="n">adj</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ring graph: </span><span class="si">{</span><span class="n">g</span><span class="o">.</span><span class="n">n_edges</span><span class="si">}</span><span class="s2"> edges, </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">plaquettes</span><span class="p">)</span><span class="si">}</span><span class="s2"> plaquettes&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="c1"># Ring has 0 triangles → no plaquettes → free field</span>
+</code></pre></div>
+<h3 id="measure-observables">Measure Observables<a class="headerlink" href="#measure-observables" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.psi_field.observables</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">polyakov_loop</span><span class="p">,</span> <span class="n">topological_charge</span><span class="p">,</span> <span class="n">string_tension_from_wilson</span><span class="p">,</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="p">)</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="c1"># Polyakov loop through first 4 layers</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="n">p</span> <span class="o">=</span> <span class="n">polyakov_loop</span><span class="p">(</span><span class="n">lattice</span><span class="o">.</span><span class="n">gauge</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;|P| = </span><span class="si">{</span><span class="nb">abs</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, arg(P) = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="c1"># Topological charge</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="n">Q</span> <span class="o">=</span> <span class="n">topological_charge</span><span class="p">(</span><span class="n">lattice</span><span class="o">.</span><span class="n">gauge</span><span class="p">)</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Q = </span><span class="si">{</span><span class="n">Q</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="c1"># String tension</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="n">sigma</span> <span class="o">=</span> <span class="n">string_tension_from_wilson</span><span class="p">(</span><span class="n">lattice</span><span class="o">.</span><span class="n">gauge</span><span class="p">)</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;σ = </span><span class="si">{</span><span class="n">sigma</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">sigma</span> <span class="k">else</span> <span class="s2">&quot;σ: disordered phase&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="infoton-matter-action">Infoton Matter Action<a class="headerlink" href="#infoton-matter-action" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.psi_field.infoton</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="n">gauge_covariant_kinetic</span><span class="p">,</span> <span class="n">matter_action</span><span class="p">,</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="p">)</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">T</span> <span class="o">=</span> <span class="n">gauge_covariant_kinetic</span><span class="p">(</span><span class="n">lattice</span><span class="o">.</span><span class="n">infoton</span><span class="p">,</span> <span class="n">lattice</span><span class="o">.</span><span class="n">gauge</span><span class="p">)</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="n">V</span> <span class="o">=</span> <span class="n">lattice</span><span class="o">.</span><span class="n">infoton</span><span class="o">.</span><span class="n">potential_energy</span><span class="p">()</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="n">S</span> <span class="o">=</span> <span class="n">matter_action</span><span class="p">(</span><span class="n">lattice</span><span class="o">.</span><span class="n">infoton</span><span class="p">,</span> <span class="n">lattice</span><span class="o">.</span><span class="n">gauge</span><span class="p">)</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;T = </span><span class="si">{</span><span class="n">T</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, V = </span><span class="si">{</span><span class="n">V</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, S_matter = </span><span class="si">{</span><span class="n">S</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="6-technical-reference">6. Technical Reference<a class="headerlink" href="#6-technical-reference" title="Permanent link">&para;</a></h2>
+<h3 id="classes">Classes<a class="headerlink" href="#classes" title="Permanent link">&para;</a></h3>
+<h4 id="u1latticgauge"><code>U1LatticGauge</code><a class="headerlink" href="#u1latticgauge" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>n</code></td>
+<td><code>int</code></td>
+<td>Number of lattice sites</td>
+</tr>
+<tr>
+<td><code>beta</code></td>
+<td><code>float</code></td>
+<td>Inverse coupling <span class="arithmatex">\(1/g^2\)</span></td>
+</tr>
+<tr>
+<td><code>edges</code></td>
+<td><code>list[tuple[int, int]]</code></td>
+<td>Edge list (<span class="arithmatex">\(i &lt; j\)</span>)</td>
+</tr>
+<tr>
+<td><code>links</code></td>
+<td><code>ndarray</code></td>
+<td>Gauge potentials <span class="arithmatex">\(A_e \in [-\pi, \pi)\)</span></td>
+</tr>
+<tr>
+<td><code>plaquettes</code></td>
+<td><code>list[list[tuple]]</code></td>
+<td>Triangle plaquettes</td>
+</tr>
+<tr>
+<td><code>n_edges</code></td>
+<td><code>int</code></td>
+<td>Number of edges</td>
+</tr>
+</tbody>
+</table>
+<p>Key methods: <code>total_action()</code>, <code>measure_plaquettes()</code>, <code>force()</code>.</p>
+<p>Constructor parameters:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>adjacency</code></td>
+<td><code>ndarray</code></td>
+<td>required</td>
+<td><span class="arithmatex">\(n \times n\)</span> coupling matrix</td>
+</tr>
+<tr>
+<td><code>beta</code></td>
+<td><code>float</code></td>
+<td><code>1.0</code></td>
+<td>Inverse gauge coupling <span class="arithmatex">\(1/g^2\)</span></td>
+</tr>
+<tr>
+<td><code>seed</code></td>
+<td><code>int \| None</code></td>
+<td><code>None</code></td>
+<td>RNG seed</td>
+</tr>
+</tbody>
+</table>
+<h4 id="infitonfield"><code>InfitonField</code><a class="headerlink" href="#infitonfield" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>values</code></td>
+<td><code>ndarray</code> (complex)</td>
+<td><span class="arithmatex">\(\phi_i\)</span> at each site</td>
+</tr>
+<tr>
+<td><code>mass_sq</code></td>
+<td><code>float</code></td>
+<td><span class="arithmatex">\(m^2\)</span></td>
+</tr>
+<tr>
+<td><code>coupling</code></td>
+<td><code>float</code></td>
+<td><span class="arithmatex">\(\lambda\)</span> (quartic)</td>
+</tr>
+<tr>
+<td><code>gauge_coupling</code></td>
+<td><code>float</code></td>
+<td><span class="arithmatex">\(g\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Key methods: <code>density()</code>, <code>total_charge()</code>, <code>potential_energy()</code>.</p>
+<p>Constructor via <code>create_infoton()</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>n_sites</code></td>
+<td><code>int</code></td>
+<td>required</td>
+<td>Number of lattice sites</td>
+</tr>
+<tr>
+<td><code>mass_sq</code></td>
+<td><code>float</code></td>
+<td><code>1.0</code></td>
+<td>Scalar mass² (<span class="arithmatex">\(m^2 &gt; 0\)</span>: symmetric phase)</td>
+</tr>
+<tr>
+<td><code>coupling</code></td>
+<td><code>float</code></td>
+<td><code>0.1</code></td>
+<td>Quartic self-coupling <span class="arithmatex">\(\lambda\)</span></td>
+</tr>
+<tr>
+<td><code>gauge_coupling</code></td>
+<td><code>float</code></td>
+<td><code>1.0</code></td>
+<td>Gauge-matter coupling <span class="arithmatex">\(g\)</span></td>
+</tr>
+<tr>
+<td><code>amplitude</code></td>
+<td><code>float</code></td>
+<td><code>0.1</code></td>
+<td>Initial random amplitude</td>
+</tr>
+<tr>
+<td><code>seed</code></td>
+<td><code>int \| None</code></td>
+<td><code>None</code></td>
+<td>RNG seed</td>
+</tr>
+</tbody>
+</table>
+<h4 id="scpnlattice"><code>SCPNLattice</code><a class="headerlink" href="#scpnlattice" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>gauge</code></td>
+<td><code>U1LatticGauge</code></td>
+<td>Gauge field</td>
+</tr>
+<tr>
+<td><code>infoton</code></td>
+<td><code>InfitonField</code></td>
+<td>Scalar field</td>
+</tr>
+<tr>
+<td><code>K</code></td>
+<td><code>ndarray</code></td>
+<td>K_nm coupling</td>
+</tr>
+<tr>
+<td><code>omega</code></td>
+<td><code>ndarray</code></td>
+<td>Natural frequencies</td>
+</tr>
+<tr>
+<td><code>n_layers</code></td>
+<td><code>int</code></td>
+<td>Number of SCPN layers</td>
+</tr>
+</tbody>
+</table>
+<h3 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h3>
+<h4 id="hmc_updategauge-n_leapfrog-step_size"><code>hmc_update(gauge, n_leapfrog, step_size)</code><a class="headerlink" href="#hmc_updategauge-n_leapfrog-step_size" title="Permanent link">&para;</a></h4>
+<p>Single HMC step. Returns <code>(accepted: bool, delta_H: float)</code>.</p>
+<h4 id="scpn_to_latticek-omega-beta-mass_sq-quartic_coupling-gauge_coupling-seed"><code>scpn_to_lattice(K, omega, beta, mass_sq, quartic_coupling, gauge_coupling, seed)</code><a class="headerlink" href="#scpn_to_latticek-omega-beta-mass_sq-quartic_coupling-gauge_coupling-seed" title="Permanent link">&para;</a></h4>
+<p>Build <code>SCPNLattice</code> from K_nm coupling. Default: Paper 27 16-layer.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>K</code></td>
+<td><code>ndarray \| None</code></td>
+<td>Paper 27</td>
+<td>Coupling matrix</td>
+</tr>
+<tr>
+<td><code>omega</code></td>
+<td><code>ndarray \| None</code></td>
+<td><code>OMEGA_N_16</code></td>
+<td>Natural frequencies</td>
+</tr>
+<tr>
+<td><code>beta</code></td>
+<td><code>float</code></td>
+<td><code>1.0</code></td>
+<td>Inverse gauge coupling</td>
+</tr>
+<tr>
+<td><code>mass_sq</code></td>
+<td><code>float</code></td>
+<td><code>1.0</code></td>
+<td>Infoton mass²</td>
+</tr>
+<tr>
+<td><code>quartic_coupling</code></td>
+<td><code>float</code></td>
+<td><code>0.1</code></td>
+<td>Infoton <span class="arithmatex">\(\lambda\)</span></td>
+</tr>
+<tr>
+<td><code>gauge_coupling</code></td>
+<td><code>float</code></td>
+<td><code>1.0</code></td>
+<td>Gauge-matter <span class="arithmatex">\(g\)</span></td>
+</tr>
+<tr>
+<td><code>seed</code></td>
+<td><code>int \| None</code></td>
+<td><code>None</code></td>
+<td>RNG seed</td>
+</tr>
+</tbody>
+</table>
+<h4 id="polyakov_loopgauge-path"><code>polyakov_loop(gauge, path)</code><a class="headerlink" href="#polyakov_loopgauge-path" title="Permanent link">&para;</a></h4>
+<p>Polyakov loop along ordered path. Returns <code>complex</code>.</p>
+<h4 id="topological_chargegauge"><code>topological_charge(gauge)</code><a class="headerlink" href="#topological_chargegauge" title="Permanent link">&para;</a></h4>
+<p>Topological charge <span class="arithmatex">\(Q\)</span>. Rust-accelerated.</p>
+<h4 id="gauge_covariant_kineticfield-gauge"><code>gauge_covariant_kinetic(field, gauge)</code><a class="headerlink" href="#gauge_covariant_kineticfield-gauge" title="Permanent link">&para;</a></h4>
+<p>Gauge-covariant kinetic energy. Rust-accelerated.</p>
+<h2 id="7-performance-benchmarks">7. Performance Benchmarks<a class="headerlink" href="#7-performance-benchmarks" title="Permanent link">&para;</a></h2>
+<p>Measured on Intel i5-11600K, Python 3.12, 16-layer SCPN (120 edges,
+560 plaquettes).</p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Time</th>
+<th>Engine</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>total_action</code></td>
+<td>62 μs</td>
+<td>Rust</td>
+</tr>
+<tr>
+<td><code>force</code></td>
+<td>91 μs</td>
+<td>Rust</td>
+</tr>
+<tr>
+<td><code>topological_charge</code></td>
+<td>53 μs</td>
+<td>Rust</td>
+</tr>
+<tr>
+<td><code>hmc_update</code> (10 leapfrog)</td>
+<td>1.24 ms</td>
+<td>Rust (inner)</td>
+</tr>
+<tr>
+<td><code>gauge_covariant_kinetic</code></td>
+<td>753 μs</td>
+<td>Rust</td>
+</tr>
+<tr>
+<td><code>measure_plaquettes</code></td>
+<td>~100 μs</td>
+<td>Python</td>
+</tr>
+<tr>
+<td><code>scpn_to_lattice</code></td>
+<td>&lt; 50 ms</td>
+<td>Python</td>
+</tr>
+</tbody>
+</table>
+<h3 id="hmc-acceptance">HMC Acceptance<a class="headerlink" href="#hmc-acceptance" title="Permanent link">&para;</a></h3>
+<p>For 4-layer graph (<span class="arithmatex">\(\beta = 5\)</span>, step size 0.02, 10 leapfrog steps):
+acceptance rate &gt; 10% (verified in test). For 16-layer graph, acceptance
+is lower due to 560 plaquettes — smaller step size needed.</p>
+<p>Acceptance rate guidelines:</p>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\(n\)</span></th>
+<th>Edges</th>
+<th>Plaquettes</th>
+<th>Recommended <span class="arithmatex">\(\epsilon\)</span></th>
+<th>Expected acceptance</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4</td>
+<td>6</td>
+<td>4</td>
+<td>0.05–0.10</td>
+<td>50–80%</td>
+</tr>
+<tr>
+<td>8</td>
+<td>28</td>
+<td>56</td>
+<td>0.02–0.05</td>
+<td>30–60%</td>
+</tr>
+<tr>
+<td>16</td>
+<td>120</td>
+<td>560</td>
+<td>0.01–0.02</td>
+<td>10–30%</td>
+</tr>
+</tbody>
+</table>
+<p>The optimal step size scales as <span class="arithmatex">\(\epsilon \sim n_\text{plaq}^{-1/4}\)</span>
+(Duane et al. 1987). With more plaquettes, the force grows and the
+leapfrog integrator requires smaller steps to maintain reversibility.</p>
+<h3 id="reversibility">Reversibility<a class="headerlink" href="#reversibility" title="Permanent link">&para;</a></h3>
+<p>HMC with step size <span class="arithmatex">\(\to 0\)</span> produces <span class="arithmatex">\(\Delta H \to 0\)</span> (verified: step = 0.001,
+<span class="arithmatex">\(|\Delta H| &lt; 0.1\)</span>). This confirms correct leapfrog implementation.</p>
+<h3 id="rust-engine-api">Rust Engine API<a class="headerlink" href="#rust-engine-api" title="Permanent link">&para;</a></h3>
+<p>Available via <code>import scpn_quantum_engine</code>:</p>
+<h4 id="plaquette_action_batchlinks-triangles-signs-n_triangles-beta"><code>plaquette_action_batch(links, triangles, signs, n_triangles, beta)</code><a class="headerlink" href="#plaquette_action_batchlinks-triangles-signs-n_triangles-beta" title="Permanent link">&para;</a></h4>
+<p>Compute mean plaquette and total action from flat triangle arrays.
+Returns <code>(mean_plaquette: float, action: float)</code>.</p>
+<h4 id="gauge_force_batchlinks-triangles-signs-n_triangles-n_edges-beta"><code>gauge_force_batch(links, triangles, signs, n_triangles, n_edges, beta)</code><a class="headerlink" href="#gauge_force_batchlinks-triangles-signs-n_triangles-n_edges-beta" title="Permanent link">&para;</a></h4>
+<p>Compute force <span class="arithmatex">\(\partial S / \partial A\)</span> for all edges.
+Returns <code>ndarray[f64]</code> of length <code>n_edges</code>.</p>
+<h4 id="gauge_covariant_kinetic_rustphi_re-phi_im-links-edges-g_coupling"><code>gauge_covariant_kinetic_rust(phi_re, phi_im, links, edges, g_coupling)</code><a class="headerlink" href="#gauge_covariant_kinetic_rustphi_re-phi_im-links-edges-g_coupling" title="Permanent link">&para;</a></h4>
+<p>Gauge-covariant kinetic energy from real/imag parts of <span class="arithmatex">\(\phi\)</span>.
+Returns <code>float</code>.</p>
+<h4 id="topological_charge_rustlinks-triangles-signs-n_triangles"><code>topological_charge_rust(links, triangles, signs, n_triangles)</code><a class="headerlink" href="#topological_charge_rustlinks-triangles-signs-n_triangles" title="Permanent link">&para;</a></h4>
+<p>Topological charge <span class="arithmatex">\(Q\)</span>. Returns <code>float</code>.</p>
+<h3 id="flat-triangle-arrays">Flat Triangle Arrays<a class="headerlink" href="#flat-triangle-arrays" title="Permanent link">&para;</a></h3>
+<p>For Rust acceleration, the plaquette data is stored as flat arrays:
+- <code>_tri_flat</code>: <code>ndarray[int64]</code> — edge indices, 3 per triangle
+- <code>_tri_signs</code>: <code>ndarray[float64]</code> — orientation signs (<span class="arithmatex">\(\pm 1\)</span>), 3 per triangle</p>
+<p>These are precomputed in <code>_build_flat_triangles()</code> during <code>U1LatticGauge</code>
+construction. The overhead is negligible (<span class="arithmatex">\(&lt; 1\)</span> ms for 560 triangles).</p>
+<h3 id="test-coverage">Test Coverage<a class="headerlink" href="#test-coverage" title="Permanent link">&para;</a></h3>
+<p>22 tests across 6 dimensions:
+- Empty/null: 4 tests (single edge, disconnected graph, zero infoton, shape)
+- Error handling: 3 tests (single-site Polyakov, huge HMC step, disordered string tension)
+- Negative cases: 3 tests (gauge invariance, smooth Q, plaquette bounds)
+- Pipeline integration: 5 tests (SCPN creation, topology match, HMC thermalisation, imports, bridge)
+- Roundtrip: 4 tests (HMC reversibility, closed Polyakov, T+V=S, determinism)
+- Performance: 3 tests (plaquette, HMC step, topological charge budgets)</p>
+<h2 id="8-citations">8. Citations<a class="headerlink" href="#8-citations" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>Wilson, K. G. "Confinement of quarks."
+   <em>Phys. Rev. D</em> <strong>10</strong>, 2445 (1974).
+   DOI: 10.1103/PhysRevD.10.2445</p>
+</li>
+<li>
+<p>Creutz, M. "Quarks, Gluons and Lattices."
+   Cambridge University Press (1983). ISBN: 0-521-31535-2</p>
+</li>
+<li>
+<p>Rothe, H. J. "Lattice Gauge Theories: An Introduction."
+   World Scientific, 4th ed. (2012). ISBN: 978-981-4365-87-1</p>
+</li>
+<li>
+<p>Smit, J. "Introduction to Quantum Fields on a Lattice."
+   Cambridge University Press (2002). ISBN: 0-521-89051-9</p>
+</li>
+<li>
+<p>Duane, S. et al. "Hybrid Monte Carlo."
+   <em>Phys. Lett. B</em> <strong>195</strong>, 216–222 (1987).
+   DOI: 10.1016/0370-2693(87)91197-X</p>
+</li>
+<li>
+<p>Kogut, J. B. "An introduction to lattice gauge theory and spin systems."
+   <em>Rev. Mod. Phys.</em> <strong>51</strong>, 659 (1979).
+   DOI: 10.1103/RevModPhys.51.659</p>
+</li>
+<li>
+<p>Montvay, I. &amp; Münster, G. "Quantum Fields on a Lattice."
+   Cambridge University Press (1994). ISBN: 0-521-40432-0</p>
+</li>
+<li>
+<p>Šotek, M. "God of the Math — The SCPN Master Publications."
+   Zenodo (2025). DOI: 10.5281/zenodo.17419678</p>
+</li>
+</ol>
+<h3 id="open-questions">Open Questions<a class="headerlink" href="#open-questions" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>Phase transition on SCPN graph:</strong> where is the critical <span class="arithmatex">\(\beta_c\)</span>
+   for the deconfinement transition on the K_nm complete graph?
+   Standard 2D U(1) results do not apply directly.</p>
+</li>
+<li>
+<p><strong>Infoton condensation:</strong> for <span class="arithmatex">\(m^2 &lt; 0\)</span> (negative mass²), the scalar
+   field undergoes spontaneous symmetry breaking. What does this mean
+   for the SCPN Ψ-field? The Higgs mechanism would give the gauge field
+   a mass — screening the Ψ-field at long range.</p>
+</li>
+<li>
+<p><strong>Quantum-classical correspondence:</strong> how do the classical lattice MC
+   observables compare with the quantum gauge/ observables for the same
+   SCPN topology? This comparison has not been done.</p>
+</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+        <script src="../js/goatcounter.js"></script>
+      
+    
+  </body>
+</html>

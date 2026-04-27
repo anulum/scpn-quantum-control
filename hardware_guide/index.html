@@ -1,0 +1,2521 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Quantum simulation of coupled oscillators on IBM hardware">
+      
+      
+        <meta name="author" content="Miroslav Šotek">
+      
+      
+        <link rel="canonical" href="https://anulum.github.io/scpn-quantum-control/hardware_guide/">
+      
+      
+        <link rel="prev" href="../results/">
+      
+      
+        <link rel="next" href="../EXPERIMENT_ROADMAP/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/anulum_logo_company.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>IBM Guide - scpn-quantum-control</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#spdx-license-identifier-agpl-30-or-later" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="scpn-quantum-control" class="md-header__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            scpn-quantum-control
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              IBM Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="scpn-quantum-control" class="md-nav__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    scpn-quantum-control
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SCPN Foundations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../equations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../research_gems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research Gems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../orchestrator_integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestrator Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rust_engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../autodoc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auto-Generated
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analysis_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../identity_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mitigation_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mitigation API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bridges_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridges API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmarks_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipeline_performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_dynamic_coupling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Dynamic Coupling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_structured_ansatz/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Structured Ansatz
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_hw_topological_optimizer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: HW Topological Optimizer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../test_infrastructure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publications
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Publications
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprint/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprint: Quantum Kuramoto-XY on Hardware
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_sync_witnesses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: Synchronisation Witnesses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: DLA Parity Theorem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DLA-parity Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classical_irreproducibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classical Irreproducibility
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results Gallery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IBM Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXPERIMENT_ROADMAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PAPER_CLAIMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results & Claims
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../QUANTUM_CRYPTO_RESEARCH_BRANCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Crypto Research
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Learning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notebooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Roadmap
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../strategic_roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strategic Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="spdx-license-identifier-agpl-30-or-later">SPDX-License-Identifier: AGPL-3.0-or-later<a class="headerlink" href="#spdx-license-identifier-agpl-30-or-later" title="Permanent link">&para;</a></h1>
+<h1 id="commercial-license-available">Commercial license available<a class="headerlink" href="#commercial-license-available" title="Permanent link">&para;</a></h1>
+<h1 id="concepts-19962026-miroslav-sotek-all-rights-reserved">© Concepts 1996–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#concepts-19962026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="code-20202026-miroslav-sotek-all-rights-reserved">© Code 2020–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#code-20202026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="orcid-0009-0009-3560-0851">ORCID: 0009-0009-3560-0851<a class="headerlink" href="#orcid-0009-0009-3560-0851" title="Permanent link">&para;</a></h1>
+<h1 id="contact-wwwanulumli-protoscienceanulumli">Contact: www.anulum.li | protoscience@anulum.li<a class="headerlink" href="#contact-wwwanulumli-protoscienceanulumli" title="Permanent link">&para;</a></h1>
+<h1 id="scpn-quantum-control-hardware-execution-guide">scpn-quantum-control — Hardware Execution Guide<a class="headerlink" href="#scpn-quantum-control-hardware-execution-guide" title="Permanent link">&para;</a></h1>
+<h1 id="hardware-execution-guide">Hardware Execution Guide<a class="headerlink" href="#hardware-execution-guide" title="Permanent link">&para;</a></h1>
+<p>The <code>hardware</code> package provides the full stack from circuit compilation
+to QPU execution, noise modelling, classical reference computation, and
+multi-backend support. 17 modules (April 2026: added <code>qubit_mapper.py</code>
+for DynQ topology-agnostic placement) covering IBM superconducting,
+trapped ion, PennyLane, Cirq, GPU acceleration, and circuit cutting.</p>
+<p><strong>Validated devices:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Device</th>
+<th>Family</th>
+<th>Campaign</th>
+<th>Highlight</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ibm_fez</code></td>
+<td>Heron r2, 156 q</td>
+<td>February 2026, 33 jobs, 176K+ shots</td>
+<td>VQE 0.05% error, Bell S = 2.165, BB84 QBER 5.5%</td>
+</tr>
+<tr>
+<td><code>ibm_kingston</code></td>
+<td>Heron r2, 156 q</td>
+<td>April 2026 Phase 1, 348 circuits, ~700K shots</td>
+<td>First hardware confirmation of the DLA parity asymmetry: <span class="arithmatex">\(+10.8\,\%\)</span> mean for depths <span class="arithmatex">\(\ge 4\)</span>, peak <span class="arithmatex">\(+17.48\,\%\)</span> at depth 6, Welch combined <span class="arithmatex">\(p \ll 10^{-16}\)</span></td>
+</tr>
+</tbody>
+</table>
+<h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Experiment Definition (experiments.py)
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    │
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    ├── HardwareRunner (runner.py)
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    │   ├── connect() → IBM Runtime / AerSimulator
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    │   ├── transpile() → native gate set
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    │   ├── run_circuit() → JobResult
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    │   └── run_with_zne() → ZNE-mitigated result
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    │
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    ├── Noise Model (noise_model.py)
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    │   └── heron_r2_noise_model() → NoiseModel (thermal + depolarizing)
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    │
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    ├── Classical Reference (classical.py)
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    │   ├── classical_kuramoto_reference() → Euler integration
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    │   ├── classical_exact_diag() → full eigendecomposition
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    │   ├── classical_exact_evolution() → matrix expm
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    │   └── classical_brute_mpc() → brute-force MPC
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    │
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    ├── Multi-Backend
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    │   ├── PennyLane (pennylane_adapter.py)
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    │   ├── Cirq (cirq_adapter.py)
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    │   ├── Trapped Ion (trapped_ion.py)
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    │   ├── GPU (gpu_accel.py, jax_accel.py)
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    │   └── Plugin Registry (plugin_registry.py)
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>    │
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>    └── Circuit Tools
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>        ├── Circuit Cutting (circuit_cutting.py, cutting_runner.py)
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>        ├── QASM Export (qasm_export.py)
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>        ├── Circuit Export (circuit_export.py)
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>        └── QCVV (qcvv.py)
+</code></pre></div>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<h3 id="ibm-quantum">IBM Quantum<a class="headerlink" href="#ibm-quantum" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Account: https://quantum.cloud.ibm.com</li>
+<li>Credentials (use <code>ibm_cloud</code> channel, NOT deprecated <code>ibm_quantum</code>):
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">IBM_QUANTUM_TOKEN</span><span class="o">=</span><span class="s2">&quot;your-token-here&quot;</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">IBM_QUANTUM_CRN</span><span class="o">=</span><span class="s2">&quot;your-crn-instance-id&quot;</span>
+</code></pre></div></li>
+<li>Install IBM runtime:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[ibm]&quot;</span>
+</code></pre></div></li>
+</ol>
+<h2 id="hardwarerunner-runnerpy">HardwareRunner (<code>runner.py</code>)<a class="headerlink" href="#hardwarerunner-runnerpy" title="Permanent link">&para;</a></h2>
+<p>The primary execution interface. Handles authentication, backend selection,
+transpilation, job submission, and result collection.</p>
+<h3 id="connection">Connection<a class="headerlink" href="#connection" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.hardware</span><span class="w"> </span><span class="kn">import</span> <span class="n">HardwareRunner</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1"># Real hardware</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">runner</span> <span class="o">=</span> <span class="n">HardwareRunner</span><span class="p">(</span><span class="n">use_simulator</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">runner</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>  <span class="c1"># Authenticates with IBM_QUANTUM_TOKEN env var</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># Local simulator (default)</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">runner</span> <span class="o">=</span> <span class="n">HardwareRunner</span><span class="p">(</span><span class="n">use_simulator</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">results_dir</span><span class="o">=</span><span class="s2">&quot;results/&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="n">runner</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+</code></pre></div>
+<p>When <code>use_simulator=True</code>, uses <code>AerSimulator</code> with the Heron r2 noise
+model for realistic local testing without QPU budget consumption.</p>
+<h3 id="transpilation">Transpilation<a class="headerlink" href="#transpilation" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">transpiled</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">transpile</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">optimization_level</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</code></pre></div>
+<p>Uses Qiskit's preset pass manager with Heron r2 target. Optimization
+level 3 performs heavy gate cancellation and routing.</p>
+<h3 id="execution">Execution<a class="headerlink" href="#execution" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">run_circuit</span><span class="p">(</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">circuit</span><span class="p">,</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">experiment_name</span><span class="o">=</span><span class="s2">&quot;kuramoto_4osc&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">shots</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="p">)</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="c1"># result: JobResult with counts, wall_time_s, metadata</span>
+</code></pre></div>
+<h3 id="zne-execution">ZNE Execution<a class="headerlink" href="#zne-execution" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">run_with_zne</span><span class="p">(</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">circuit</span><span class="p">,</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="n">experiment_name</span><span class="o">=</span><span class="s2">&quot;kuramoto_zne&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">noise_scales</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="n">shots</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="p">)</span>
+</code></pre></div>
+<p>Internally calls <code>gate_fold_circuit</code> from the mitigation package.</p>
+<h3 id="jobresult"><code>JobResult</code><a class="headerlink" href="#jobresult" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>job_id</code></td>
+<td>str</td>
+<td>IBM job ID or "simulator"</td>
+</tr>
+<tr>
+<td><code>backend_name</code></td>
+<td>str</td>
+<td>Backend identifier</td>
+</tr>
+<tr>
+<td><code>experiment_name</code></td>
+<td>str</td>
+<td>User-specified experiment name</td>
+</tr>
+<tr>
+<td><code>counts</code></td>
+<td>dict or None</td>
+<td>Measurement counts</td>
+</tr>
+<tr>
+<td><code>expectation_values</code></td>
+<td>ndarray or None</td>
+<td>Computed expectations</td>
+</tr>
+<tr>
+<td><code>metadata</code></td>
+<td>dict</td>
+<td>Arbitrary metadata</td>
+</tr>
+<tr>
+<td><code>wall_time_s</code></td>
+<td>float</td>
+<td>Total execution time</td>
+</tr>
+<tr>
+<td><code>timestamp</code></td>
+<td>str</td>
+<td>ISO timestamp</td>
+</tr>
+</tbody>
+</table>
+<p>Results are serialised to JSON via <code>to_dict()</code> and saved to <code>results_dir</code>.</p>
+<hr />
+<h2 id="noise-model-noise_modelpy">Noise Model (<code>noise_model.py</code>)<a class="headerlink" href="#noise-model-noise_modelpy" title="Permanent link">&para;</a></h2>
+<p>IBM Heron r2 calibration (ibm_fez, February 2026 median):</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T1</td>
+<td>300 us</td>
+<td>Longitudinal relaxation</td>
+</tr>
+<tr>
+<td>T2</td>
+<td>200 us</td>
+<td>Transverse relaxation</td>
+</tr>
+<tr>
+<td>CZ error</td>
+<td>0.5%</td>
+<td>Two-qubit gate error rate</td>
+</tr>
+<tr>
+<td>Readout error</td>
+<td>0.2%</td>
+<td>Measurement error rate</td>
+</tr>
+<tr>
+<td>Single-gate time</td>
+<td>0.06 us</td>
+<td>SX/X/RZ duration</td>
+</tr>
+<tr>
+<td>Two-gate time</td>
+<td>0.66 us</td>
+<td>CZ/ECR duration</td>
+</tr>
+</tbody>
+</table>
+<h3 id="heron_r2_noise_modelt1_us-t2_us-cz_error-readout_error"><code>heron_r2_noise_model(t1_us, t2_us, cz_error, readout_error)</code><a class="headerlink" href="#heron_r2_noise_modelt1_us-t2_us-cz_error-readout_error" title="Permanent link">&para;</a></h3>
+<p>Constructs a Qiskit-Aer <code>NoiseModel</code>:
+- Single-qubit gates: thermal relaxation only
+- Two-qubit gates (ECR/CZ): thermal relaxation + depolarizing
+- Readout: symmetric bit-flip error</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.hardware</span><span class="w"> </span><span class="kn">import</span> <span class="n">heron_r2_noise_model</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">model</span> <span class="o">=</span> <span class="n">heron_r2_noise_model</span><span class="p">()</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Use with AerSimulator:</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">qiskit_aer</span><span class="w"> </span><span class="kn">import</span> <span class="n">AerSimulator</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="n">backend</span> <span class="o">=</span> <span class="n">AerSimulator</span><span class="p">(</span><span class="n">noise_model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="classical-reference-classicalpy">Classical Reference (<code>classical.py</code>)<a class="headerlink" href="#classical-reference-classicalpy" title="Permanent link">&para;</a></h2>
+<p>Exact classical computations for hardware experiment comparison. Every
+quantum result should be compared against these references.</p>
+<h3 id="classical_kuramoto_referencen_osc-t_max-dt-knone-omeganone"><code>classical_kuramoto_reference(n_osc, t_max, dt, K=None, omega=None)</code><a class="headerlink" href="#classical_kuramoto_referencen_osc-t_max-dt-knone-omeganone" title="Permanent link">&para;</a></h3>
+<p>Euler integration of the classical Kuramoto model:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>d(theta_i)/dt = omega_i + sum_j K[i,j] * sin(theta_j - theta_i)
+</code></pre></div>
+<p>Returns <code>{times, theta, R}</code> — phase trajectories and order parameter.</p>
+<p><strong>Rust acceleration</strong>: <code>scpn_quantum_engine.kuramoto_euler()</code> at 33x
+speedup for n &gt;= 8.</p>
+<h3 id="classical_exact_diagn-knone-omeganone"><code>classical_exact_diag(n, K=None, omega=None)</code><a class="headerlink" href="#classical_exact_diagn-knone-omeganone" title="Permanent link">&para;</a></h3>
+<p>Full eigendecomposition of the XY Hamiltonian. Returns eigenvalues,
+eigenvectors, ground state, and ground energy.</p>
+<p>For n &lt;= 14: direct dense diagonalisation via <code>numpy.linalg.eigh</code>.
+For n &gt; 14: sparse ARPACK via <code>scipy.sparse.linalg.eigsh</code>.</p>
+<h3 id="classical_exact_evolutionn-t_max-dt-knone-omeganone"><code>classical_exact_evolution(n, t_max, dt, K=None, omega=None)</code><a class="headerlink" href="#classical_exact_evolutionn-t_max-dt-knone-omeganone" title="Permanent link">&para;</a></h3>
+<p>Matrix exponential evolution: psi(t+dt) = exp(-iHdt) psi(t).</p>
+<p>Returns time series of R(t) and energy E(t) for direct comparison
+with Trotter evolution on quantum hardware.</p>
+<h3 id="classical_brute_mpck-omega-horizon-theta_init"><code>classical_brute_mpc(K, omega, horizon, theta_init)</code><a class="headerlink" href="#classical_brute_mpck-omega-horizon-theta_init" title="Permanent link">&para;</a></h3>
+<p>Brute-force model predictive control: enumerate all 2^horizon action
+sequences and select the one maximising R(t_final).</p>
+<p><strong>Rust acceleration</strong>: <code>scpn_quantum_engine.brute_mpc()</code> with rayon
+parallel enumeration at 5-50x speedup.</p>
+<hr />
+<h2 id="experiments-experimentspy">Experiments (<code>experiments.py</code>)<a class="headerlink" href="#experiments-experimentspy" title="Permanent link">&para;</a></h2>
+<p>Pre-defined experiment configurations for systematic QPU characterisation.</p>
+<h3 id="all_experiments"><code>ALL_EXPERIMENTS</code><a class="headerlink" href="#all_experiments" title="Permanent link">&para;</a></h3>
+<p>Registry of all 19 experiment functions:</p>
+<table>
+<thead>
+<tr>
+<th>Experiment</th>
+<th>Qubits</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kuramoto_4osc</code></td>
+<td>4</td>
+<td>Basic Trotter evolution, R(t)</td>
+</tr>
+<tr>
+<td><code>kuramoto_4osc_trotter2</code></td>
+<td>4</td>
+<td>Suzuki-Trotter 2nd order</td>
+</tr>
+<tr>
+<td><code>kuramoto_4osc_zne</code></td>
+<td>4</td>
+<td>ZNE-mitigated Kuramoto</td>
+</tr>
+<tr>
+<td><code>kuramoto_8osc</code></td>
+<td>8</td>
+<td>8-qubit Kuramoto dynamics</td>
+</tr>
+<tr>
+<td><code>kuramoto_8osc_zne</code></td>
+<td>8</td>
+<td>ZNE-mitigated 8-qubit</td>
+</tr>
+<tr>
+<td><code>vqe_4q</code></td>
+<td>4</td>
+<td>VQE ground state search</td>
+</tr>
+<tr>
+<td><code>vqe_8q</code></td>
+<td>8</td>
+<td>VQE with physics-informed ansatz</td>
+</tr>
+<tr>
+<td><code>vqe_8q_hardware</code></td>
+<td>8</td>
+<td>VQE targeting real QPU</td>
+</tr>
+<tr>
+<td><code>vqe_landscape</code></td>
+<td>4</td>
+<td>Energy landscape scan</td>
+</tr>
+<tr>
+<td><code>qaoa_mpc_4</code></td>
+<td>4</td>
+<td>QAOA-based MPC</td>
+</tr>
+<tr>
+<td><code>upde_16_snapshot</code></td>
+<td>16</td>
+<td>Full 16-qubit UPDE state snapshot</td>
+</tr>
+<tr>
+<td><code>upde_16_dd</code></td>
+<td>16</td>
+<td>UPDE with dynamical decoupling</td>
+</tr>
+<tr>
+<td><code>noise_baseline</code></td>
+<td>4</td>
+<td>Noise characterisation baseline</td>
+</tr>
+<tr>
+<td><code>ansatz_comparison_hw</code></td>
+<td>4</td>
+<td>Compare ansatz architectures</td>
+</tr>
+<tr>
+<td><code>sync_threshold</code></td>
+<td>4</td>
+<td>Synchronisation threshold detection</td>
+</tr>
+<tr>
+<td><code>decoherence_scaling</code></td>
+<td>4</td>
+<td>Depth vs fidelity scaling</td>
+</tr>
+<tr>
+<td><code>zne_higher_order</code></td>
+<td>4</td>
+<td>Higher-order ZNE extrapolation</td>
+</tr>
+<tr>
+<td><code>bell_test_4q</code></td>
+<td>4</td>
+<td>CHSH Bell test on hardware</td>
+</tr>
+<tr>
+<td><code>correlator_4q</code></td>
+<td>4</td>
+<td>XY correlator measurement</td>
+</tr>
+</tbody>
+</table>
+<p>Each experiment function returns a dict with <code>circuit</code>, <code>shots</code>,
+<code>n_qubits</code>, and experiment-specific metadata.</p>
+<h3 id="qpu-budget">QPU Budget<a class="headerlink" href="#qpu-budget" title="Permanent link">&para;</a></h3>
+<p>Free tier: 10 minutes/month on ibm_fez (Heron r2, 156 qubits).</p>
+<table>
+<thead>
+<tr>
+<th>Experiment</th>
+<th>Circuits</th>
+<th>Shots</th>
+<th>QPU Seconds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>kuramoto_4osc (1 step)</td>
+<td>3</td>
+<td>10k</td>
+<td>~15</td>
+</tr>
+<tr>
+<td>vqe_4q (100 COBYLA iter)</td>
+<td>~100</td>
+<td>10k</td>
+<td>~15</td>
+</tr>
+<tr>
+<td>qaoa_mpc_4 (p=1)</td>
+<td>~30</td>
+<td>10k</td>
+<td>~100</td>
+</tr>
+<tr>
+<td>upde_16 snapshot</td>
+<td>3</td>
+<td>20k</td>
+<td>~60</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="multi-backend-support">Multi-Backend Support<a class="headerlink" href="#multi-backend-support" title="Permanent link">&para;</a></h2>
+<h3 id="pennylane-adapter-pennylane_adapterpy">PennyLane Adapter (<code>pennylane_adapter.py</code>)<a class="headerlink" href="#pennylane-adapter-pennylane_adapterpy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.hardware.pennylane_adapter</span><span class="w"> </span><span class="kn">import</span> <span class="n">PennyLaneRunner</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="n">runner</span> <span class="o">=</span> <span class="n">PennyLaneRunner</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">omega</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;default.qubit&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="n">result</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">run_trotter</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">reps</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="c1"># result: PennyLaneResult(energy, order_parameter, n_qubits, device_name, statevector)</span>
+</code></pre></div>
+<p>VQE via PennyLane optimisers:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">run_vqe</span><span class="p">(</span><span class="n">ansatz_depth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</code></pre></div></p>
+<p>Requires: <code>pip install pennylane</code></p>
+<h3 id="cirq-adapter-cirq_adapterpy">Cirq Adapter (<code>cirq_adapter.py</code>)<a class="headerlink" href="#cirq-adapter-cirq_adapterpy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.hardware.cirq_adapter</span><span class="w"> </span><span class="kn">import</span> <span class="n">CirqRunner</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">runner</span> <span class="o">=</span> <span class="n">CirqRunner</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">omega</span><span class="p">)</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="n">result</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">run_trotter</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">reps</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</code></pre></div>
+<p>Enables targeting Google Sycamore/Weber QPUs via Cirq.</p>
+<p>Requires: <code>pip install cirq-core</code></p>
+<h3 id="trapped-ion-trapped_ionpy">Trapped Ion (<code>trapped_ion.py</code>)<a class="headerlink" href="#trapped-ion-trapped_ionpy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.hardware</span><span class="w"> </span><span class="kn">import</span> <span class="n">transpile_for_trapped_ion</span><span class="p">,</span> <span class="n">trapped_ion_noise_model</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">ion_circuit</span> <span class="o">=</span> <span class="n">transpile_for_trapped_ion</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">n_qubits</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="n">model</span> <span class="o">=</span> <span class="n">trapped_ion_noise_model</span><span class="p">()</span>
+</code></pre></div>
+<p>Target: IonQ Forte / Quantinuum H-series. Native gate set: MS (Molmer-Sorensen),
+Rz, Ry.</p>
+<h3 id="gpu-acceleration-gpu_accelpy">GPU Acceleration (<code>gpu_accel.py</code>)<a class="headerlink" href="#gpu-acceleration-gpu_accelpy" title="Permanent link">&para;</a></h3>
+<p>cuQuantum integration for large-scale statevector simulation. Falls back
+to CPU when CUDA is not available.</p>
+<h3 id="jax-acceleration-jax_accelpy">JAX Acceleration (<code>jax_accel.py</code>)<a class="headerlink" href="#jax-acceleration-jax_accelpy" title="Permanent link">&para;</a></h3>
+<p>JAX-based compilation for VQE parameter optimisation. Enables automatic
+differentiation of quantum circuits.</p>
+<h3 id="plugin-registry-plugin_registrypy">Plugin Registry (<code>plugin_registry.py</code>)<a class="headerlink" href="#plugin-registry-plugin_registrypy" title="Permanent link">&para;</a></h3>
+<p>Dynamic backend registration. Third-party backends register via:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.hardware.plugin_registry</span><span class="w"> </span><span class="kn">import</span> <span class="n">register_backend</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="n">register_backend</span><span class="p">(</span><span class="s2">&quot;my_backend&quot;</span><span class="p">,</span> <span class="n">MyBackendClass</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="circuit-tools">Circuit Tools<a class="headerlink" href="#circuit-tools" title="Permanent link">&para;</a></h2>
+<h3 id="circuit-cutting-circuit_cuttingpy-cutting_runnerpy">Circuit Cutting (<code>circuit_cutting.py</code>, <code>cutting_runner.py</code>)<a class="headerlink" href="#circuit-cutting-circuit_cuttingpy-cutting_runnerpy" title="Permanent link">&para;</a></h3>
+<p>Decomposes large circuits (&gt; available qubits) into subcircuits connected
+by classical communication. Enables running n-qubit circuits on n/2-qubit
+hardware with polynomial overhead.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.hardware.circuit_cutting</span><span class="w"> </span><span class="kn">import</span> <span class="n">partition_circuit</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.hardware.cutting_runner</span><span class="w"> </span><span class="kn">import</span> <span class="n">CuttingRunner</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="n">subcircuits</span> <span class="o">=</span> <span class="n">partition_circuit</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">max_partition_size</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="n">runner</span> <span class="o">=</span> <span class="n">CuttingRunner</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="n">result</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">run_partitioned</span><span class="p">(</span><span class="n">subcircuits</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="qasm-export-qasm_exportpy">QASM Export (<code>qasm_export.py</code>)<a class="headerlink" href="#qasm-export-qasm_exportpy" title="Permanent link">&para;</a></h3>
+<p>Export circuits to OpenQASM 2.0/3.0 for platform-independent storage
+and submission to third-party systems.</p>
+<h3 id="circuit-export-circuit_exportpy">Circuit Export (<code>circuit_export.py</code>)<a class="headerlink" href="#circuit-export-circuit_exportpy" title="Permanent link">&para;</a></h3>
+<p>Export circuits to JSON, LaTeX (Qiskit drawer), and SVG formats for
+documentation and publication.</p>
+<h3 id="qcvv-qcvvpy">QCVV (<code>qcvv.py</code>)<a class="headerlink" href="#qcvv-qcvvpy" title="Permanent link">&para;</a></h3>
+<p>Quantum Characterisation, Verification, and Validation protocols.
+Randomised benchmarking and gate set tomography for hardware qualification.</p>
+<hr />
+<h2 id="decoherence-reference">Decoherence Reference<a class="headerlink" href="#decoherence-reference" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Depth Range</th>
+<th>Expected Error</th>
+<th>Recommendation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>&lt; 50</td>
+<td>&lt; 5%</td>
+<td>Publishable as-is</td>
+</tr>
+<tr>
+<td>50-150</td>
+<td>5-15%</td>
+<td>Publishable with error bars</td>
+</tr>
+<tr>
+<td>150-250</td>
+<td>15-25%</td>
+<td>Apply ZNE mitigation</td>
+</tr>
+<tr>
+<td>250-400</td>
+<td>25-40%</td>
+<td>Qualitative trends only</td>
+</tr>
+<tr>
+<td>&gt; 400</td>
+<td>&gt; 40%</td>
+<td>Do not trust individual values</td>
+</tr>
+</tbody>
+</table>
+<h2 id="native-gate-set-heron-r2">Native Gate Set (Heron r2)<a class="headerlink" href="#native-gate-set-heron-r2" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Gate</th>
+<th>Description</th>
+<th>Duration</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CZ</td>
+<td>Two-qubit entangling (native)</td>
+<td>0.66 us</td>
+</tr>
+<tr>
+<td>RZ(theta)</td>
+<td>Z rotation (virtual)</td>
+<td>0 us</td>
+</tr>
+<tr>
+<td>SX</td>
+<td>sqrt(X)</td>
+<td>0.06 us</td>
+</tr>
+<tr>
+<td>X</td>
+<td>Pauli-X</td>
+<td>0.06 us</td>
+</tr>
+<tr>
+<td>ID</td>
+<td>Identity (delay)</td>
+<td>0.06 us</td>
+</tr>
+</tbody>
+</table>
+<p>Transpilation from Qiskit standard gates increases depth. Typical
+expansion: 1 CNOT → 2 SX + 1 CZ + RZ gates.</p>
+<h2 id="rust-acceleration">Rust Acceleration<a class="headerlink" href="#rust-acceleration" title="Permanent link">&para;</a></h2>
+<p>The <code>classical.py</code> module transparently uses Rust via <code>scpn_quantum_engine</code>
+when available:</p>
+<table>
+<thead>
+<tr>
+<th>Python Function</th>
+<th>Rust Function</th>
+<th>Speedup</th>
+<th>Method</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classical_kuramoto_reference</code></td>
+<td><code>kuramoto_euler</code>, <code>kuramoto_trajectory</code></td>
+<td>33x</td>
+<td>rayon parallel Euler steps</td>
+</tr>
+<tr>
+<td><code>_expectation_pauli</code></td>
+<td><code>expectation_pauli_fast</code></td>
+<td>3-10x</td>
+<td>Bitwise Pauli ops</td>
+</tr>
+<tr>
+<td><code>classical_brute_mpc</code></td>
+<td><code>brute_mpc</code></td>
+<td>5-50x</td>
+<td>rayon parallel 2^horizon enumeration</td>
+</tr>
+<tr>
+<td><code>_state_order_param</code></td>
+<td><code>state_order_param_sparse</code></td>
+<td>2-5x</td>
+<td>SIMD-friendly inner loop</td>
+</tr>
+<tr>
+<td><code>_order_parameter</code> (Floquet)</td>
+<td><code>all_xy_expectations</code></td>
+<td>5-20x</td>
+<td>Batch bitwise, single FFI call</td>
+</tr>
+</tbody>
+</table>
+<p>All Rust functions accept split real/imaginary arrays (no complex64 across FFI).
+Python fallback always available when the Rust crate is not installed.</p>
+<h2 id="interpreting-results">Interpreting Results<a class="headerlink" href="#interpreting-results" title="Permanent link">&para;</a></h2>
+<p>Order parameter R from qubit expectation values:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>R = (1/N) × |sum_i (&lt;X_i&gt; + i×&lt;Y_i&gt;)|
+</code></pre></div>
+<p>where <code>&lt;X_i&gt; = 2×P(|0&gt;)_x - 1</code> from X-basis measurement. Requires 3
+measurement bases (X, Y, Z) for full reconstruction.</p>
+<p>Compare <code>hw_R</code> against <code>exact_R</code> (from <code>classical_kuramoto_reference</code> or
+<code>classical_exact_evolution</code>) to quantify hardware error.</p>
+<h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
+<p>72 tests across 8 test files:</p>
+<ul>
+<li><code>test_runner.py</code> — HardwareRunner lifecycle, simulator mode, job serialisation</li>
+<li><code>test_noise_model.py</code> — NoiseModel construction, error rates, parameter overrides</li>
+<li><code>test_classical.py</code> — Kuramoto reference, exact diag, evolution parity</li>
+<li><code>test_experiments.py</code> — All 19 experiment definitions, circuit validity</li>
+<li><code>test_pennylane_adapter.py</code> — PennyLane Trotter, VQE, device selection</li>
+<li><code>test_cirq_adapter.py</code> — Cirq Trotter, simulator parity</li>
+<li><code>test_circuit_cutting.py</code> — Partitioning, recombination, overhead bounds</li>
+<li><code>test_qcvv.py</code> — RB, gate set tomography, fidelity extraction</li>
+</ul>
+<h2 id="dynq-topology-agnostic-qubit-placement">DynQ Topology-Agnostic Qubit Placement<a class="headerlink" href="#dynq-topology-agnostic-qubit-placement" title="Permanent link">&para;</a></h2>
+<p><code>scpn_quantum_control.hardware.qubit_mapper</code> (added April 2026) implements
+the DynQ method (Liu <em>et al.</em>, arXiv:2601.19635) for selecting an
+execution region on a heavy-hex device based on the live calibration
+data. The QPU is modelled as a graph weighted by inverse two-qubit gate
+errors, and Louvain community detection partitions it into high-fidelity
+sub-regions; the sub-region with the best composite quality score is
+chosen for the circuit. Quality scoring is Rust-accelerated.</p>
+<p>See <a href="../dynq_qubit_mapping/"><code>dynq_qubit_mapping.md</code></a> for the full
+theory, the <code>dynq_initial_layout()</code> API, and a Qiskit transpiler
+integration recipe.</p>
+<h2 id="guess-symmetry-decay-error-mitigation">GUESS Symmetry-Decay Error Mitigation<a class="headerlink" href="#guess-symmetry-decay-error-mitigation" title="Permanent link">&para;</a></h2>
+<p><code>scpn_quantum_control.mitigation.symmetry_decay</code> (added April 2026)
+provides physics-informed zero-noise extrapolation specifically for the
+XY Hamiltonian, using its conserved <span class="arithmatex">\(\sum Z_i\)</span> as the guide observable.
+GUESS is the recommended default for any SCPN Kuramoto-XY hardware run
+because the symmetry observable is measured for free in the standard
+Z-basis read-out, so the mitigation adds zero shot overhead.</p>
+<p>See <a href="../symmetry_decay_guess/"><code>symmetry_decay_guess.md</code></a> for the full
+theory, API, and a worked example calibrating <span class="arithmatex">\(\alpha\)</span> from the Phase 1
+ibm_kingston dataset.</p>
+<h2 id="phase-1-campaign-protocol-april-2026">Phase 1 Campaign Protocol (April 2026)<a class="headerlink" href="#phase-1-campaign-protocol-april-2026" title="Permanent link">&para;</a></h2>
+<p>The Phase 1 campaign is recorded in
+<code>.coordination/IBM_CAMPAIGN_STATE.md</code> and <code>IBM_EXECUTION_LOG.md</code>, and
+the analysis is reproduced by <code>scripts/analyse_phase1_dla_parity.py</code>.
+The four sub-phases progressively increased the per-point repetition
+count from 2 to 21 to drive the per-depth uncertainty below the 5 %
+asymmetry signal:</p>
+<table>
+<thead>
+<tr>
+<th>Sub-phase</th>
+<th style="text-align: right;">Circuits</th>
+<th style="text-align: right;">Wall time</th>
+<th style="text-align: right;">Reps per (depth, sector) point</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pipe cleaner</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">~0.1 s</td>
+<td style="text-align: right;">sanity check</td>
+</tr>
+<tr>
+<td>Phase 1 (A/B/C)</td>
+<td style="text-align: right;">42</td>
+<td style="text-align: right;">44.1 s</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr>
+<td>Phase 1.5 (D/E)</td>
+<td style="text-align: right;">72</td>
+<td style="text-align: right;">56.7 s</td>
+<td style="text-align: right;">+4 → 6</td>
+</tr>
+<tr>
+<td>Phase 2 exhaust (F/G/H/I)</td>
+<td style="text-align: right;">138</td>
+<td style="text-align: right;">97.5 s</td>
+<td style="text-align: right;">+6 → 12</td>
+</tr>
+<tr>
+<td>Phase 2.5 final burn (J)</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">65.1 s</td>
+<td style="text-align: right;">+9 → 21 (at the 5 strongest depths)</td>
+</tr>
+<tr>
+<td><strong>Total <span class="arithmatex">\(n=4\)</span></strong></td>
+<td style="text-align: right;"><strong>342</strong></td>
+<td style="text-align: right;"><strong>~264 s wall</strong></td>
+<td style="text-align: right;">up to <strong>21</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Headline result: <span class="arithmatex">\(+10.8\,\%\)</span> mean asymmetry for depths <span class="arithmatex">\(\ge 4\)</span>, peak
+<span class="arithmatex">\(+17.48\,\%\)</span> at depth 6, Welch combined <span class="arithmatex">\(p \ll 10^{-16}\)</span>.</p>
+<h2 id="pipeline-performance">Pipeline Performance<a class="headerlink" href="#pipeline-performance" title="Permanent link">&para;</a></h2>
+<p>Measured on ML350 Gen8 (128 GB RAM, Xeon E5-2620v2):</p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Wall Time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>HardwareRunner.connect</code> (simulator)</td>
+<td>—</td>
+<td>50 ms</td>
+</tr>
+<tr>
+<td><code>runner.transpile</code> (opt level 3)</td>
+<td>4 qubits</td>
+<td>120 ms</td>
+</tr>
+<tr>
+<td><code>runner.run_circuit</code> (simulator)</td>
+<td>4 qubits, 10k shots</td>
+<td>800 ms</td>
+</tr>
+<tr>
+<td><code>classical_kuramoto_reference</code> (Rust)</td>
+<td>8 oscillators</td>
+<td>0.3 ms</td>
+</tr>
+<tr>
+<td><code>classical_kuramoto_reference</code> (Python)</td>
+<td>8 oscillators</td>
+<td>12 ms</td>
+</tr>
+<tr>
+<td><code>classical_exact_diag</code></td>
+<td>8 qubits</td>
+<td>15 ms</td>
+</tr>
+<tr>
+<td><code>classical_exact_evolution</code></td>
+<td>8 qubits</td>
+<td>120 ms</td>
+</tr>
+<tr>
+<td><code>heron_r2_noise_model</code></td>
+<td>—</td>
+<td>5 ms</td>
+</tr>
+<tr>
+<td><code>PennyLaneRunner.run_trotter</code></td>
+<td>3 qubits</td>
+<td>50 ms</td>
+</tr>
+<tr>
+<td><code>partition_circuit</code></td>
+<td>16 → 2×8 qubits</td>
+<td>25 ms</td>
+</tr>
+<tr>
+<td><code>dynq_initial_layout</code> (156-qubit graph, 5-qubit circuit)</td>
+<td>—</td>
+<td>&lt; 100 ms</td>
+</tr>
+<tr>
+<td><code>learn_symmetry_decay</code> (5 noise scales, Rust)</td>
+<td>—</td>
+<td>&lt; 1 µs</td>
+</tr>
+<tr>
+<td><code>guess_extrapolate_batch</code> (1,000 observables, Rust)</td>
+<td>—</td>
+<td>&lt; 50 µs</td>
+</tr>
+<tr>
+<td><code>hypergeometric_envelope</code> (10,000 points, Rust)</td>
+<td>—</td>
+<td>2.6 ms</td>
+</tr>
+<tr>
+<td><code>ici_three_level_evolution</code> (2,000 points, Rust)</td>
+<td>—</td>
+<td>0.04 ms</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+        <script src="../js/goatcounter.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,2363 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Quantum simulation of coupled oscillators on IBM hardware">
+      
+      
+        <meta name="author" content="Miroslav Šotek">
+      
+      
+        <link rel="canonical" href="https://anulum.github.io/scpn-quantum-control/bridges_api/">
+      
+      
+        <link rel="prev" href="../mitigation_api/">
+      
+      
+        <link rel="next" href="../benchmarks_api/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/anulum_logo_company.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Bridges API - scpn-quantum-control</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#spdx-license-identifier-agpl-30-or-later" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="scpn-quantum-control" class="md-header__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            scpn-quantum-control
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Bridges API
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="scpn-quantum-control" class="md-nav__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    scpn-quantum-control
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SCPN Foundations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../equations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../research_gems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research Gems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../orchestrator_integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestrator Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rust_engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../autodoc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auto-Generated
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analysis_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../identity_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mitigation_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mitigation API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridges API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmarks_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipeline_performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_dynamic_coupling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Dynamic Coupling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_structured_ansatz/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Structured Ansatz
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_hw_topological_optimizer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: HW Topological Optimizer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../test_infrastructure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publications
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Publications
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprint/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprint: Quantum Kuramoto-XY on Hardware
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_sync_witnesses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: Synchronisation Witnesses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: DLA Parity Theorem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DLA-parity Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classical_irreproducibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classical Irreproducibility
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results Gallery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hardware_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IBM Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXPERIMENT_ROADMAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PAPER_CLAIMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results & Claims
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../QUANTUM_CRYPTO_RESEARCH_BRANCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Crypto Research
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Learning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notebooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Roadmap
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../strategic_roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strategic Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="spdx-license-identifier-agpl-30-or-later">SPDX-License-Identifier: AGPL-3.0-or-later<a class="headerlink" href="#spdx-license-identifier-agpl-30-or-later" title="Permanent link">&para;</a></h1>
+<h1 id="commercial-license-available">Commercial license available<a class="headerlink" href="#commercial-license-available" title="Permanent link">&para;</a></h1>
+<h1 id="concepts-19962026-miroslav-sotek-all-rights-reserved">© Concepts 1996–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#concepts-19962026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="code-20202026-miroslav-sotek-all-rights-reserved">© Code 2020–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#code-20202026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="orcid-0009-0009-3560-0851">ORCID: 0009-0009-3560-0851<a class="headerlink" href="#orcid-0009-0009-3560-0851" title="Permanent link">&para;</a></h1>
+<h1 id="contact-wwwanulumli-protoscienceanulumli">Contact: www.anulum.li | protoscience@anulum.li<a class="headerlink" href="#contact-wwwanulumli-protoscienceanulumli" title="Permanent link">&para;</a></h1>
+<h1 id="scpn-quantum-control-bridges-api-reference">scpn-quantum-control — Bridges API Reference<a class="headerlink" href="#scpn-quantum-control-bridges-api-reference" title="Permanent link">&para;</a></h1>
+<h1 id="bridges-api-reference">Bridges API Reference<a class="headerlink" href="#bridges-api-reference" title="Permanent link">&para;</a></h1>
+<p>The <code>bridge</code> package is the central nervous system of scpn-quantum-control.
+Every module in this package translates between classical SCPN state
+representations and quantum operator formats. Without the bridge layer,
+coupling matrices are numbers on paper; with it, they become executable
+Hamiltonians, circuits, and feedback signals.</p>
+<p>12 modules, 24 public symbols, 5 cross-repo integration points.</p>
+<h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Classical World                    Bridge                     Quantum World
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>─────────────────                 ─────────                  ──────────────
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>K_nm (Paper 27)         ──→  knm_hamiltonian      ──→  SparsePauliOp (XY/XXZ)
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>K_nm (Paper 27)         ──→  sparse_hamiltonian    ──→  scipy.sparse.csc_matrix
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>K_nm (Paper 27)         ──→  knm_hamiltonian       ──→  QuantumCircuit (ansatz)
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>Plasma config           ──→  control_plasma_knm    ──→  K_nm → SparsePauliOp
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>Orchestrator state      ──→  orchestrator_adapter  ──→  UPDEPhaseArtifact
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>Quantum observables     ──→  orchestrator_feedback ──→  advance/hold/rollback
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>SC bitstreams           ←→   sc_to_quantum         ←→   Ry angles / statevectors
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>SNN spike trains        ──→  snn_adapter           ──→  QuantumDenseLayer output
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>Loss gradient           ←──  snn_backward          ←──  Parameter-shift rule
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>SPN weight matrices     ──→  spn_to_qcircuit       ──→  QuantumCircuit (CRy/anti-CRy)
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>SSGF W + theta          ←→   ssgf_adapter          ←→   Trotter evolution
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>SSGF W adaptation       ←──  ssgf_w_adapter        ←──  Quantum correlators
+</code></pre></div>
+<h2 id="module-reference">Module Reference<a class="headerlink" href="#module-reference" title="Permanent link">&para;</a></h2>
+<h3 id="1-knm_hamiltonian-core-hamiltonian-compiler">1. <code>knm_hamiltonian</code> — Core Hamiltonian Compiler<a class="headerlink" href="#1-knm_hamiltonian-core-hamiltonian-compiler" title="Permanent link">&para;</a></h3>
+<p>The foundational module. Compiles the K_nm coupling matrix and natural
+frequencies omega into Qiskit <code>SparsePauliOp</code> for quantum simulation.</p>
+<p><strong>Kuramoto-XY mapping</strong> (Paper 27, Section 3):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>K[i,j] * sin(theta_j - theta_i)  ↔  -K[i,j] * (X_i X_j + Y_i Y_j)
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>omega_i                           ↔  -omega_i * Z_i
+</code></pre></div>
+<h4 id="omega_n_16"><code>OMEGA_N_16</code><a class="headerlink" href="#omega_n_16" title="Permanent link">&para;</a></h4>
+<p>Canonical natural frequencies from Paper 27, Table 1. 16 values in rad/s,
+experimentally calibrated. Used as the default frequency vector throughout
+the entire package.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">OMEGA_N_16</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.329</span><span class="p">,</span> <span class="mf">2.610</span><span class="p">,</span> <span class="mf">0.844</span><span class="p">,</span> <span class="mf">1.520</span><span class="p">,</span> <span class="mf">0.710</span><span class="p">,</span> <span class="mf">3.780</span><span class="p">,</span> <span class="mf">1.055</span><span class="p">,</span> <span class="mf">0.625</span><span class="p">,</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>                        <span class="mf">2.210</span><span class="p">,</span> <span class="mf">1.740</span><span class="p">,</span> <span class="mf">0.480</span><span class="p">,</span> <span class="mf">3.210</span><span class="p">,</span> <span class="mf">0.915</span><span class="p">,</span> <span class="mf">1.410</span><span class="p">,</span> <span class="mf">2.830</span><span class="p">,</span> <span class="mf">0.991</span><span class="p">])</span>
+</code></pre></div>
+<h4 id="build_knm_paper27l16-k_base045-k_alpha03"><code>build_knm_paper27(L=16, K_base=0.45, K_alpha=0.3)</code><a class="headerlink" href="#build_knm_paper27l16-k_base045-k_alpha03" title="Permanent link">&para;</a></h4>
+<p>Builds the canonical K_nm matrix. Three-layer construction:</p>
+<ol>
+<li><strong>Base kernel</strong>: <code>K[i,j] = K_base * exp(-K_alpha * |i-j|)</code> (Eq. 3)</li>
+<li><strong>Calibration anchors</strong>: Table 2 overrides for (0,1), (1,2), (2,3), (3,4)</li>
+<li><strong>Cross-hierarchy boosts</strong>: S4.3 long-range couplings L1-L16, L5-L7</li>
+</ol>
+<p>Returns symmetric (L, L) float64 array. Always positive, zero diagonal implicit
+from the exponential decay (K[i,i] = K_base, but never used as self-coupling
+in the Hamiltonian — the Z_i term handles on-site energy).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">K</span> <span class="o">=</span> <span class="n">build_knm_paper27</span><span class="p">(</span><span class="n">L</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>        <span class="c1"># 4x4 submatrix</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">K_full</span> <span class="o">=</span> <span class="n">build_knm_paper27</span><span class="p">()</span>       <span class="c1"># 16x16 canonical</span>
+</code></pre></div>
+<p><strong>Rust acceleration</strong>: <code>scpn_quantum_engine.build_knm(L, K_base, K_alpha)</code> produces
+identical output at 4.7x speedup. Parity verified to 1e-12 atol in
+<code>test_rust_path_benchmarks.py</code>.</p>
+<h4 id="build_kuramoto_ringn-coupling10-omeganone-rng_seednone"><code>build_kuramoto_ring(n, coupling=1.0, omega=None, rng_seed=None)</code><a class="headerlink" href="#build_kuramoto_ringn-coupling10-omeganone-rng_seednone" title="Permanent link">&para;</a></h4>
+<p>Nearest-neighbour ring topology. Useful for BKT transition studies
+and finite-size scaling where Paper 27's specific topology is not needed.</p>
+<p>Returns <code>(K, omega)</code> tuple. If omega is None, draws from N(0,1).</p>
+<h4 id="knm_to_hamiltoniank-omega"><code>knm_to_hamiltonian(K, omega)</code><a class="headerlink" href="#knm_to_hamiltoniank-omega" title="Permanent link">&para;</a></h4>
+<p>The primary compiler. Converts K_nm + omega to <code>SparsePauliOp</code> using
+Qiskit's little-endian qubit ordering.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>H = -sum_{i&lt;j} K[i,j] * (X_i X_j + Y_i Y_j) - sum_i omega_i * Z_i
+</code></pre></div>
+<p>Sparsity filtering: terms with |K[i,j]| &lt; <code>COUPLING_SPARSITY_EPS</code> (1e-15)
+are dropped. This keeps the Pauli list compact for large sparse K matrices
+(Paper 27's K_nm has ~60% of off-diagonal entries below 0.01).</p>
+<p>Equivalent to <code>knm_to_xxz_hamiltonian(K, omega, delta=0.0)</code>.</p>
+<h4 id="knm_to_xxz_hamiltoniank-omega-delta00"><code>knm_to_xxz_hamiltonian(K, omega, delta=0.0)</code><a class="headerlink" href="#knm_to_xxz_hamiltoniank-omega-delta00" title="Permanent link">&para;</a></h4>
+<p>Extended compiler with ZZ anisotropy parameter delta:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>H = -sum_{i&lt;j} K[i,j] * (X_iX_j + Y_iY_j + delta * Z_iZ_j) - sum_i omega_i * Z_i
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>delta</th>
+<th>Model</th>
+<th>Physics</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.0</td>
+<td>XY</td>
+<td>Standard Kuramoto mapping, in-plane S^2 dynamics</td>
+</tr>
+<tr>
+<td>1.0</td>
+<td>Heisenberg</td>
+<td>Full S^2 dynamics (Kouchekian-Teodorescu 2025, arXiv:2601.00113)</td>
+</tr>
+<tr>
+<td>-1.0..1.0</td>
+<td>XXZ</td>
+<td>Interpolation, BKT/Ising transitions</td>
+</tr>
+</tbody>
+</table>
+<p>At delta=1, perturbations around equilibria connect to the semiclassical
+Gaudin model and Richardson pairing mechanism.</p>
+<h4 id="knm_to_dense_matrixk-omega"><code>knm_to_dense_matrix(K, omega)</code><a class="headerlink" href="#knm_to_dense_matrixk-omega" title="Permanent link">&para;</a></h4>
+<p>Returns the full complex (2^n, 2^n) dense matrix. Two-path implementation:</p>
+<ol>
+<li><strong>Rust fast path</strong>: <code>scpn_quantum_engine.build_xy_hamiltonian_dense()</code> — exact
+   parity with Qiskit verified to 1e-10 atol</li>
+<li><strong>Qiskit fallback</strong>: <code>knm_to_hamiltonian(K, omega).to_matrix()</code></li>
+</ol>
+<p>Used primarily for exact diagonalisation of small systems (n &lt;= 14) and
+as the ground truth reference for sparse eigensolvers.</p>
+<h4 id="knm_to_ansatzk-reps2-threshold001"><code>knm_to_ansatz(K, reps=2, threshold=0.01)</code><a class="headerlink" href="#knm_to_ansatzk-reps2-threshold001" title="Permanent link">&para;</a></h4>
+<p>Physics-informed variational ansatz. CZ entanglement gates placed only
+between K_nm-connected pairs (|K[i,j]| &gt;= threshold). Structure:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>for each repetition:
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    Ry(p[2k])   on each qubit k
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    Rz(p[2k+1]) on each qubit k
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    CZ(i, j)    for each connected pair
+</code></pre></div>
+<p>Returns parameterised <code>QuantumCircuit</code> with <code>n * 2 * reps</code> parameters.
+The CZ topology mirrors the K_nm graph, encoding the coupling structure
+into the ansatz architecture.</p>
+<hr />
+<h3 id="2-sparse_hamiltonian-large-n-sparse-construction">2. <code>sparse_hamiltonian</code> — Large-N Sparse Construction<a class="headerlink" href="#2-sparse_hamiltonian-large-n-sparse-construction" title="Permanent link">&para;</a></h3>
+<p>For n &gt;= 12, dense matrix construction is impractical (n=16: 32 GB).
+This module builds the XY Hamiltonian directly as <code>scipy.sparse.csc_matrix</code>.</p>
+<p><strong>Memory comparison:</strong></p>
+<table>
+<thead>
+<tr>
+<th>n</th>
+<th>Dense</th>
+<th>Sparse</th>
+<th>Reduction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>8</td>
+<td>0.5 MB</td>
+<td>0.06 MB</td>
+<td>8x</td>
+</tr>
+<tr>
+<td>12</td>
+<td>512 MB</td>
+<td>6 MB</td>
+<td>85x</td>
+</tr>
+<tr>
+<td>16</td>
+<td>32 GB</td>
+<td>200 MB</td>
+<td>160x</td>
+</tr>
+<tr>
+<td>18</td>
+<td>512 GB</td>
+<td>800 MB</td>
+<td>640x</td>
+</tr>
+<tr>
+<td>20</td>
+<td>8 TB</td>
+<td>3 GB</td>
+<td>2700x</td>
+</tr>
+</tbody>
+</table>
+<h4 id="build_sparse_hamiltoniank-omega"><code>build_sparse_hamiltonian(K, omega)</code><a class="headerlink" href="#build_sparse_hamiltoniank-omega" title="Permanent link">&para;</a></h4>
+<p>Constructs the full-space sparse Hamiltonian. Matrix elements:</p>
+<ul>
+<li><strong>Diagonal</strong>: <code>H[k,k] = -sum_i omega_i * (1 - 2*b_i(k))</code> where b_i(k) is bit i of basis state k</li>
+<li><strong>Off-diagonal</strong>: <code>H[k, k XOR mask_ij] = -2*K[i,j]</code> when bits i and j differ in state k</li>
+</ul>
+<p>Rust fast path via <code>scpn_quantum_engine.build_sparse_xy_hamiltonian()</code> at 80x speedup.</p>
+<h4 id="build_sparse_sector_hamiltoniank-omega-m"><code>build_sparse_sector_hamiltonian(K, omega, M)</code><a class="headerlink" href="#build_sparse_sector_hamiltoniank-omega-m" title="Permanent link">&para;</a></h4>
+<p>Combines sparse construction with U(1) magnetisation symmetry. The XY model
+conserves total magnetisation M = sum_i Z_i. Working within a single sector
+reduces the Hilbert space dimension from 2^n to C(n, (n+M)/2).</p>
+<p>For n=16, M=0 sector: dim = C(16,8) = 12,870 vs full 65,536 (5x reduction).
+Combined with sparse storage: ~40 MB vs 32 GB dense full-space.</p>
+<p>Returns <code>(H_sparse, sector_indices)</code>.</p>
+<h4 id="sparse_eigshk-omega-k10-whichsa-mnone"><code>sparse_eigsh(K, omega, k=10, which="SA", M=None)</code><a class="headerlink" href="#sparse_eigshk-omega-k10-whichsa-mnone" title="Permanent link">&para;</a></h4>
+<p>ARPACK eigensolver wrapper. Computes k smallest (or largest) eigenvalues.
+Automatic fallback to dense <code>numpy.linalg.eigh</code> when the matrix is too small
+for iterative methods (dim &lt; k+2).</p>
+<p>Returns dict: <code>{eigvals, eigvecs, nnz, dim, method, M, sector_dim}</code>.</p>
+<h4 id="sparsity_statsn-k"><code>sparsity_stats(n, K)</code><a class="headerlink" href="#sparsity_statsn-k" title="Permanent link">&para;</a></h4>
+<p>Estimates memory usage without constructing the matrix. Useful for
+pre-flight checks before committing to large computations.</p>
+<hr />
+<h3 id="3-control_plasma_knm-tokamak-plasma-bridge">3. <code>control_plasma_knm</code> — Tokamak Plasma Bridge<a class="headerlink" href="#3-control_plasma_knm-tokamak-plasma-bridge" title="Permanent link">&para;</a></h3>
+<p>Compatibility bridge to <code>scpn_control.phase.plasma_knm</code> for plasma-native
+K_nm construction from tokamak parameters.</p>
+<h4 id="build_knm_plasmamode-l-k_base-zeta_uniform"><code>build_knm_plasma(mode, L, K_base, zeta_uniform, ...)</code><a class="headerlink" href="#build_knm_plasmamode-l-k_base-zeta_uniform" title="Permanent link">&para;</a></h4>
+<p>Delegates to <code>scpn-control</code> for plasma-specific coupling matrices. Returns
+(L, L) float64 array.</p>
+<h4 id="build_knm_plasma_from_configr0-a-b0-ip-n_e"><code>build_knm_plasma_from_config(R0, a, B0, Ip, n_e, ...)</code><a class="headerlink" href="#build_knm_plasma_from_configr0-a-b0-ip-n_e" title="Permanent link">&para;</a></h4>
+<p>Constructs K_nm directly from tokamak machine parameters:
+- <code>R0</code>: major radius (m)
+- <code>a</code>: minor radius (m)
+- <code>B0</code>: toroidal field (T)
+- <code>Ip</code>: plasma current (MA)
+- <code>n_e</code>: electron density (1e19/m^3)</p>
+<h4 id="plasma_omegal8"><code>plasma_omega(L=8)</code><a class="headerlink" href="#plasma_omegal8" title="Permanent link">&para;</a></h4>
+<p>Returns plasma natural frequencies from scpn-control.</p>
+<p>All functions require <code>scpn-control</code> on sys.path. The bridge handles
+<code>sys.path</code> insertion/cleanup for local development with <code>repo_src=</code> parameter.</p>
+<hr />
+<h3 id="4-orchestrator_adapter-phase-orchestrator-integration">4. <code>orchestrator_adapter</code> — Phase Orchestrator Integration<a class="headerlink" href="#4-orchestrator_adapter-phase-orchestrator-integration" title="Permanent link">&para;</a></h3>
+<p>Bidirectional translation between scpn-phase-orchestrator state payloads
+and the quantum bridge's <code>UPDEPhaseArtifact</code> schema.</p>
+<h4 id="phaseorchestratoradapter"><code>PhaseOrchestratorAdapter</code><a class="headerlink" href="#phaseorchestratoradapter" title="Permanent link">&para;</a></h4>
+<p>Static methods — no state, no side effects:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Direction</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>from_orchestrator_state(state)</code></td>
+<td>Orch → Quantum</td>
+<td>Parse orchestrator payload into <code>UPDEPhaseArtifact</code></td>
+</tr>
+<tr>
+<td><code>to_orchestrator_payload(artifact)</code></td>
+<td>Quantum → Orch</td>
+<td>Emit canonical orchestrator field names</td>
+</tr>
+<tr>
+<td><code>to_scpn_control_telemetry(artifact)</code></td>
+<td>Quantum → Control</td>
+<td>Emit scpn-control compatible telemetry</td>
+</tr>
+<tr>
+<td><code>build_knm_from_binding_spec(spec)</code></td>
+<td>Orch → K_nm</td>
+<td>Extract coupling matrix from BindingSpec</td>
+</tr>
+<tr>
+<td><code>build_omega_from_binding_spec(spec)</code></td>
+<td>Orch → omega</td>
+<td>Extract per-oscillator frequencies</td>
+</tr>
+</tbody>
+</table>
+<p>The adapter uses duck-typed field resolution (<code>_read_field</code>) that accepts
+both dict and object attributes, making it compatible with Pydantic models,
+dataclasses, and plain dicts.</p>
+<p><strong>Roundtrip guarantee</strong>: <code>to_orchestrator_payload(from_orchestrator_state(x))</code>
+produces a dict structurally equivalent to the input. Verified in
+<code>test_pipeline_wiring_performance.py</code>.</p>
+<hr />
+<h3 id="5-orchestrator_feedback-quantum-decision-loop">5. <code>orchestrator_feedback</code> — Quantum Decision Loop<a class="headerlink" href="#5-orchestrator_feedback-quantum-decision-loop" title="Permanent link">&para;</a></h3>
+<p>Closes the cybernetic feedback loop: quantum observables drive orchestrator
+phase lifecycle decisions.</p>
+<h4 id="orchestratorfeedback"><code>OrchestratorFeedback</code><a class="headerlink" href="#orchestratorfeedback" title="Permanent link">&para;</a></h4>
+<p>Dataclass with fields: <code>action</code>, <code>r_global</code>, <code>stability_score</code>, <code>l16_action</code>,
+<code>confidence</code>, <code>reason</code>.</p>
+<h4 id="compute_orchestrator_feedbackk-omega-r_advance08-r_hold05"><code>compute_orchestrator_feedback(K, omega, r_advance=0.8, r_hold=0.5)</code><a class="headerlink" href="#compute_orchestrator_feedbackk-omega-r_advance08-r_hold05" title="Permanent link">&para;</a></h4>
+<p>Computes quantum-informed feedback using <code>compute_l16_lyapunov</code> from the
+L16 quantum director module.</p>
+<p>Decision logic:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>R &gt;= 0.8 AND stable  →  &quot;advance&quot;   (proceed to next phase)
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>R &gt;= 0.5             →  &quot;hold&quot;      (continue monitoring)
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>R &lt;  0.5             →  &quot;rollback&quot;  (return to previous phase)
+</code></pre></div>
+<p>Confidence is computed as a normalised score within the active regime:
+- advance: <code>min(R, stability)</code>
+- hold: <code>(R - r_hold) / (r_advance - r_hold)</code>
+- rollback: <code>1.0 - R / r_hold</code></p>
+<hr />
+<h3 id="6-phase_artifact-interoperability-schema">6. <code>phase_artifact</code> — Interoperability Schema<a class="headerlink" href="#6-phase_artifact-interoperability-schema" title="Permanent link">&para;</a></h3>
+<p>Three frozen dataclasses defining the canonical state exchange format
+between classical and quantum subsystems.</p>
+<h4 id="locksignatureartifact"><code>LockSignatureArtifact</code><a class="headerlink" href="#locksignatureartifact" title="Permanent link">&para;</a></h4>
+<p>Pairwise phase-locking metrics (Lachaux et al., HBM 1999):
+- <code>source_layer</code>, <code>target_layer</code>: int indices
+- <code>plv</code>: Phase Locking Value in [0, 1]
+- <code>mean_lag</code>: mean phase difference at PLV maximum (radians)</p>
+<p>Validation: finite floats, non-negative layer indices.</p>
+<h4 id="layerstateartifact"><code>LayerStateArtifact</code><a class="headerlink" href="#layerstateartifact" title="Permanent link">&para;</a></h4>
+<p>Per-layer coherence:
+- <code>R</code>: Kuramoto order parameter |z| in [0, 1]
+- <code>psi</code>: mean phase angle arg(z) in radians
+- <code>lock_signatures</code>: dict of <code>LockSignatureArtifact</code></p>
+<p>Validation: R in [0, 1], finite floats, string keys.</p>
+<h4 id="updephaseartifact"><code>UPDEPhaseArtifact</code><a class="headerlink" href="#updephaseartifact" title="Permanent link">&para;</a></h4>
+<p>Top-level artifact containing:
+- <code>layers</code>: list of <code>LayerStateArtifact</code>
+- <code>cross_layer_alignment</code>: (n_layers, n_layers) float64 matrix
+- <code>stability_proxy</code>: scalar stability measure
+- <code>regime_id</code>: non-empty string identifier
+- <code>metadata</code>: arbitrary dict</p>
+<p>Full serialisation support: <code>to_dict()</code>, <code>to_json()</code>, <code>from_dict()</code>, <code>from_json()</code>.
+Validation ensures alignment matrix shape matches layer count and all
+values are finite.</p>
+<hr />
+<h3 id="7-sc_to_quantum-stochastic-computing-bridge">7. <code>sc_to_quantum</code> — Stochastic Computing Bridge<a class="headerlink" href="#7-sc_to_quantum-stochastic-computing-bridge" title="Permanent link">&para;</a></h3>
+<p>Maps between stochastic computing probabilities and qubit rotation angles.</p>
+<p><strong>Core identity</strong>: For <code>Ry(theta)|0&gt;</code>, the probability of measuring |1&gt; is
+<code>P(|1&gt;) = sin^2(theta/2)</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Direction</th>
+<th>Formula</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>probability_to_angle(p)</code></td>
+<td>SC → Quantum</td>
+<td><code>theta = 2 * arcsin(sqrt(p))</code></td>
+</tr>
+<tr>
+<td><code>angle_to_probability(theta)</code></td>
+<td>Quantum → SC</td>
+<td><code>P = sin^2(theta/2)</code></td>
+</tr>
+<tr>
+<td><code>bitstream_to_statevector(bits)</code></td>
+<td>SC → Quantum</td>
+<td>Mean probability → single-qubit <code>[alpha, beta]</code></td>
+</tr>
+<tr>
+<td><code>measurement_to_bitstream(counts, length)</code></td>
+<td>Quantum → SC</td>
+<td>Shot counts → Bernoulli bitstream</td>
+</tr>
+</tbody>
+</table>
+<p>These functions enable the SPN/SNN layers of SCPN to exchange state
+with quantum circuits through the bitstream probability interface.</p>
+<hr />
+<h3 id="8-snn_adapter-spiking-neural-network-bridge">8. <code>snn_adapter</code> — Spiking Neural Network Bridge<a class="headerlink" href="#8-snn_adapter-spiking-neural-network-bridge" title="Permanent link">&para;</a></h3>
+<p>Bidirectional bridge between spike trains and quantum circuits.</p>
+<h4 id="standalone-functions">Standalone Functions<a class="headerlink" href="#standalone-functions" title="Permanent link">&para;</a></h4>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">spike_train_to_rotations</span><span class="p">(</span><span class="n">spikes</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+</code></pre></div>
+Converts (timesteps, n_neurons) binary spike array to Ry rotation angles.
+Uses firing rate within the last <code>window</code> timesteps: <code>angle = rate * pi</code>.
+Output in [0, pi].</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">quantum_measurement_to_current</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+</code></pre></div>
+Converts quantum P(|1&gt;) probabilities to SNN input currents. Linear scaling.</p>
+<h4 id="snnquantumbridge"><code>SNNQuantumBridge</code><a class="headerlink" href="#snnquantumbridge" title="Permanent link">&para;</a></h4>
+<p>Pure-numpy bridge (no sc-neurocore dependency):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">bridge</span> <span class="o">=</span> <span class="n">SNNQuantumBridge</span><span class="p">(</span><span class="n">n_neurons</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_inputs</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">output</span> <span class="o">=</span> <span class="n">bridge</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">spike_history</span><span class="p">)</span>  <span class="c1"># (T, n_inputs) → (n_neurons,)</span>
+</code></pre></div>
+<p>Internal pipeline: spike rates → Ry angles → <code>QuantumDenseLayer</code> → P(|1&gt;) → currents.</p>
+<h4 id="arcaneneuronbridge"><code>ArcaneNeuronBridge</code><a class="headerlink" href="#arcaneneuronbridge" title="Permanent link">&para;</a></h4>
+<p>Full sc-neurocore integration with <code>ArcaneNeuron</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">bridge</span> <span class="o">=</span> <span class="n">ArcaneNeuronBridge</span><span class="p">(</span><span class="n">n_neurons</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_inputs</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">bridge</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]))</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="c1"># result[&quot;spikes&quot;]: binary spike vector</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="c1"># result[&quot;output_currents&quot;]: quantum layer output</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="c1"># result[&quot;v_deep&quot;]: identity state (persists across reset)</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="c1"># result[&quot;confidence&quot;]: neuron confidence</span>
+</code></pre></div>
+<p>Key property: <code>v_deep</code> persists through <code>reset()</code>, implementing the identity
+binding mechanism from the Arcane Sapience specification.</p>
+<hr />
+<h3 id="9-snn_backward-parameter-shift-gradient">9. <code>snn_backward</code> — Parameter-Shift Gradient<a class="headerlink" href="#9-snn_backward-parameter-shift-gradient" title="Permanent link">&para;</a></h3>
+<p>Enables end-to-end training of the SNN-quantum hybrid via the parameter-shift
+rule.</p>
+<h4 id="gradient-chain">Gradient Chain<a class="headerlink" href="#gradient-chain" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>SNN forward → spike rates → theta (Ry angles) → quantum evolution → y
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>                                                                    ↓
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>Loss L(y, target) ← dL/dy ← dy/dtheta (param-shift) ← dtheta/d(rates) = pi
+</code></pre></div>
+<h4 id="parameter_shift_gradientlayer-input_values-target-shift025"><code>parameter_shift_gradient(layer, input_values, target, shift=0.25)</code><a class="headerlink" href="#parameter_shift_gradientlayer-input_values-target-shift025" title="Permanent link">&para;</a></h4>
+<p>Computes <code>dL/d(input)</code> for MSE loss:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>dL/dtheta_k = [L(theta_k + pi/4) - L(theta_k - pi/4)] / (actual_shift)
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>dL/d(spike_rate) = dL/dtheta * pi
+</code></pre></div>
+<p>Cost: 2 quantum forward passes per parameter (2n total for n inputs).</p>
+<p>Returns <code>BackwardResult</code>: <code>grad_params</code>, <code>grad_spikes</code>, <code>loss</code>, <code>n_evaluations</code>.</p>
+<p>Boundary handling: shift is clamped to [0, 1] value range to prevent
+invalid rotation angles. If both bounds are hit, gradient is zero.</p>
+<hr />
+<h3 id="10-spn_to_qcircuit-petri-net-circuit-compiler">10. <code>spn_to_qcircuit</code> — Petri Net Circuit Compiler<a class="headerlink" href="#10-spn_to_qcircuit-petri-net-circuit-compiler" title="Permanent link">&para;</a></h3>
+<p>Compiles Stochastic Petri Net (SPN) topology into quantum circuits.</p>
+<p><strong>Mapping</strong>:
+- Places → qubits (amplitude encodes token density)
+- Transitions → controlled-Ry gates (arc weights → rotation angles)
+- Inhibitor arcs → anti-control pattern: X-CRy-X</p>
+<h4 id="spn_to_circuitw_in-w_out-thresholds"><code>spn_to_circuit(W_in, W_out, thresholds)</code><a class="headerlink" href="#spn_to_circuitw_in-w_out-thresholds" title="Permanent link">&para;</a></h4>
+<p>Args:
+- <code>W_in</code>: (n_transitions, n_places) — input arc weights. Negative = inhibitor.
+- <code>W_out</code>: (n_places, n_transitions) — output arc weights.
+- <code>thresholds</code>: (n_transitions,) — firing thresholds.</p>
+<p>For each transition t:
+1. Normal input arcs: <code>Ry(-theta * threshold[t])</code> on input places
+2. Output arcs: <code>Ry(theta)</code> or anti-controlled <code>Ry(theta)</code> if inhibitors present</p>
+<h4 id="inhibitor_anti_controlcircuit-inhibitor_qubits-target-theta"><code>inhibitor_anti_control(circuit, inhibitor_qubits, target, theta)</code><a class="headerlink" href="#inhibitor_anti_controlcircuit-inhibitor_qubits-target-theta" title="Permanent link">&para;</a></h4>
+<p>Anti-control pattern for inhibitor arcs. An inhibitor arc requires the
+source place to be empty (|0&gt;) for the transition to fire. Implementation:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>X on each inhibitor qubit  (flip control sense)
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>CRy(theta) controlled by inhibitor qubits, target on output qubit
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>X on each inhibitor qubit  (restore)
+</code></pre></div>
+<p>For multi-qubit inhibition: uses <code>RYGate.control(n)</code> for n &gt; 1 controls.</p>
+<hr />
+<h3 id="11-ssgf_adapter-ssgf-quantum-loop">11. <code>ssgf_adapter</code> — SSGF Quantum Loop<a class="headerlink" href="#11-ssgf_adapter-ssgf-quantum-loop" title="Permanent link">&para;</a></h3>
+<p>Bidirectional bridge between the Self-Sustaining Geometry Field (SSGF)
+engine and quantum evolution.</p>
+<h4 id="standalone-functions_1">Standalone Functions<a class="headerlink" href="#standalone-functions_1" title="Permanent link">&para;</a></h4>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">ssgf_w_to_hamiltonian</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">omega</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SparsePauliOp</span>
+</code></pre></div>
+W has the same structure as K_nm (symmetric, non-negative). Delegates
+directly to <code>knm_to_hamiltonian</code>.</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">ssgf_state_to_quantum</span><span class="p">({</span><span class="s2">&quot;theta&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]})</span> <span class="o">-&gt;</span> <span class="n">QuantumCircuit</span>
+</code></pre></div>
+Encodes oscillator phases as <code>Ry(pi/2) Rz(theta_i)</code> per qubit,
+producing <code>(|0&gt; + e^{i*theta}|1&gt;) / sqrt(2)</code>. This preserves phase
+information in <code>&lt;X&gt; = cos(theta)</code>, <code>&lt;Y&gt; = sin(theta)</code>.</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">quantum_to_ssgf_state</span><span class="p">(</span><span class="n">statevector</span><span class="p">,</span> <span class="n">n_osc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="s2">&quot;theta&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span> <span class="s2">&quot;R_global&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">}</span>
+</code></pre></div>
+Extracts phases via <code>theta_i = atan2(&lt;Y_i&gt;, &lt;X_i&gt;)</code> and computes
+<code>R_global = |mean(exp(i*theta))|</code>.</p>
+<h4 id="ssgfquantumloop"><code>SSGFQuantumLoop</code><a class="headerlink" href="#ssgfquantumloop" title="Permanent link">&para;</a></h4>
+<p>Quantum-in-the-loop wrapper for SSGFEngine:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">loop</span> <span class="o">=</span> <span class="n">SSGFQuantumLoop</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">trotter_reps</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="n">result</span> <span class="o">=</span> <span class="n">loop</span><span class="o">.</span><span class="n">quantum_step</span><span class="p">()</span>
+</code></pre></div>
+<p>Each step:
+1. Read W matrix and theta phases from SSGFEngine
+2. Compile W → SparsePauliOp via <code>knm_to_hamiltonian</code>
+3. Encode theta → quantum circuit (<code>Ry(pi/2) Rz(theta)</code>)
+4. Trotter evolve via <code>PauliEvolutionGate(LieTrotter)</code>
+5. Extract updated theta and R_global from evolved statevector
+6. Write theta back to SSGFEngine (in-place mutation)</p>
+<p>Omega is set to zeros because SSGF handles natural frequencies internally;
+only the coupling structure W enters the quantum Hamiltonian.</p>
+<hr />
+<h3 id="12-ssgf_w_adapter-geometry-adaptation">12. <code>ssgf_w_adapter</code> — Geometry Adaptation<a class="headerlink" href="#12-ssgf_w_adapter-geometry-adaptation" title="Permanent link">&para;</a></h3>
+<p>Closes the SSGF feedback loop: quantum correlators modify the geometry
+matrix W, not just the phases theta.</p>
+<h4 id="update-rule">Update Rule<a class="headerlink" href="#update-rule" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>W_new[i,j] = W_old[i,j] + eta * (-delta_R) * C[i,j]
+</code></pre></div>
+<p>Where:
+- <code>eta</code>: learning rate
+- <code>delta_R = R_quantum - R_target</code>: synchronisation error
+- <code>C[i,j] = &lt;X_i X_j + Y_i Y_j&gt;</code>: quantum XY correlator</p>
+<p>Positive correlator with R below target → strengthen coupling.
+Negative correlator → weaken coupling (anti-correlated oscillators).</p>
+<h4 id="adapt_w_from_quantumw-theta-r_target09-learning_rate001"><code>adapt_w_from_quantum(W, theta, r_target=0.9, learning_rate=0.01, ...)</code><a class="headerlink" href="#adapt_w_from_quantumw-theta-r_target09-learning_rate001" title="Permanent link">&para;</a></h4>
+<p>One adaptation step. Returns <code>WAdaptResult</code>:
+- <code>W_updated</code>: new geometry matrix (non-negative, zero diagonal enforced)
+- <code>r_global</code>: measured quantum synchronisation
+- <code>delta_r</code>: gap to target
+- <code>correlators</code>: (n, n) XY correlator matrix
+- <code>max_update</code>: largest absolute element change</p>
+<p>The correlator measurement requires <code>O(n^2)</code> Pauli expectation values,
+each computed from the full statevector. For n=8 this is 28 pairs.</p>
+<hr />
+<h2 id="cross-repository-dependencies">Cross-Repository Dependencies<a class="headerlink" href="#cross-repository-dependencies" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>External Package</th>
+<th>Required?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>control_plasma_knm</code></td>
+<td>scpn-control</td>
+<td>Optional (ImportError with instructions)</td>
+</tr>
+<tr>
+<td><code>snn_adapter.ArcaneNeuronBridge</code></td>
+<td>sc-neurocore &gt;= 3.14</td>
+<td>Optional (ImportError with instructions)</td>
+</tr>
+<tr>
+<td><code>ssgf_adapter.SSGFQuantumLoop</code></td>
+<td>SCPN-CODEBASE (SSGFEngine)</td>
+<td>Optional (runtime only)</td>
+</tr>
+<tr>
+<td><code>orchestrator_adapter</code></td>
+<td>scpn-phase-orchestrator</td>
+<td>No (works with any dict/object)</td>
+</tr>
+<tr>
+<td><code>orchestrator_feedback</code></td>
+<td>l16.quantum_director</td>
+<td>Internal dependency</td>
+</tr>
+</tbody>
+</table>
+<p>All optional dependencies fail gracefully with <code>ImportError</code> and clear
+installation instructions. The core modules (<code>knm_hamiltonian</code>, <code>sparse_hamiltonian</code>,
+<code>sc_to_quantum</code>, <code>spn_to_qcircuit</code>) have zero optional dependencies beyond
+Qiskit, NumPy, and SciPy.</p>
+<h2 id="pipeline-performance">Pipeline Performance<a class="headerlink" href="#pipeline-performance" title="Permanent link">&para;</a></h2>
+<p>Measured on ML350 Gen8 (128 GB RAM, Xeon E5-2620v2):</p>
+<table>
+<thead>
+<tr>
+<th>Pipeline</th>
+<th>System Size</th>
+<th>Wall Time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>build_knm_paper27</code> → <code>knm_to_hamiltonian</code></td>
+<td>4 qubits</td>
+<td>0.3 ms</td>
+</tr>
+<tr>
+<td><code>build_knm_paper27</code> → <code>knm_to_dense_matrix</code> (Rust)</td>
+<td>4 qubits</td>
+<td>0.1 ms</td>
+</tr>
+<tr>
+<td><code>build_knm_paper27</code> → <code>knm_to_ansatz</code></td>
+<td>4 qubits, 2 reps</td>
+<td>0.5 ms</td>
+</tr>
+<tr>
+<td><code>build_sparse_hamiltonian</code> → <code>sparse_eigsh</code></td>
+<td>8 qubits</td>
+<td>12 ms</td>
+</tr>
+<tr>
+<td><code>build_sparse_hamiltonian</code> → <code>sparse_eigsh</code></td>
+<td>12 qubits</td>
+<td>340 ms</td>
+</tr>
+<tr>
+<td><code>SNNQuantumBridge.forward</code></td>
+<td>3 inputs, 2 neurons</td>
+<td>4 ms</td>
+</tr>
+<tr>
+<td><code>spn_to_circuit</code></td>
+<td>3 places, 2 transitions</td>
+<td>0.4 ms</td>
+</tr>
+<tr>
+<td><code>ssgf_w_to_hamiltonian</code> → Trotter evolve</td>
+<td>4 oscillators</td>
+<td>8 ms</td>
+</tr>
+<tr>
+<td><code>PhaseOrchestratorAdapter</code> roundtrip</td>
+<td>3 layers</td>
+<td>0.2 ms</td>
+</tr>
+<tr>
+<td><code>compute_orchestrator_feedback</code></td>
+<td>4 qubits</td>
+<td>15 ms</td>
+</tr>
+</tbody>
+</table>
+<h2 id="rust-acceleration-summary">Rust Acceleration Summary<a class="headerlink" href="#rust-acceleration-summary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Bridge Module</th>
+<th>Speedup</th>
+<th>Parity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>build_knm</code></td>
+<td><code>knm_hamiltonian</code></td>
+<td>4.7x</td>
+<td>1e-12 atol</td>
+</tr>
+<tr>
+<td><code>build_xy_hamiltonian_dense</code></td>
+<td><code>knm_hamiltonian</code></td>
+<td>exact</td>
+<td>1e-10 atol</td>
+</tr>
+<tr>
+<td><code>build_sparse_xy_hamiltonian</code></td>
+<td><code>sparse_hamiltonian</code></td>
+<td>80x</td>
+<td>exact index match</td>
+</tr>
+</tbody>
+</table>
+<p>All Rust paths are optional. Python fallbacks produce identical results.
+Rust availability is detected at call time via <code>try/except ImportError</code>.</p>
+<h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
+<p>59 tests across 6 test files covering the bridge package:</p>
+<ul>
+<li><code>test_knm_hamiltonian.py</code> — Hermiticity, eigenvalues, sparsity, XXZ, ansatz</li>
+<li><code>test_sparse_hamiltonian.py</code> — Sparse vs dense parity, sector Hamiltonian, eigsh</li>
+<li><code>test_orchestrator_adapter.py</code> — Roundtrip, field resolution, telemetry format</li>
+<li><code>test_snn_adapter.py</code> — Spike rotations, bridge forward, ArcaneNeuron integration</li>
+<li><code>test_spn_to_qcircuit.py</code> — Circuit depth, inhibitor pattern, weight encoding</li>
+<li><code>test_ssgf_adapter.py</code> — W→H compilation, phase encoding/extraction, quantum loop</li>
+</ul>
+<p>Every test file includes physical invariant checks, pipeline wiring verification,
+and performance benchmarks. The bridge package has zero skipped tests when all
+optional dependencies are installed.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+        <script src="../js/goatcounter.js"></script>
+      
+    
+  </body>
+</html>

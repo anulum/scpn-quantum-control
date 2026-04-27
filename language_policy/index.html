@@ -1,0 +1,2993 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Quantum simulation of coupled oscillators on IBM hardware">
+      
+      
+        <meta name="author" content="Miroslav Šotek">
+      
+      
+        <link rel="canonical" href="https://anulum.github.io/scpn-quantum-control/language_policy/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/anulum_logo_company.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Language Policy - scpn-quantum-control</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#language-policy" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="scpn-quantum-control" class="md-header__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            scpn-quantum-control
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Language Policy
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="scpn-quantum-control" class="md-nav__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    scpn-quantum-control
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SCPN Foundations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../equations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../research_gems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research Gems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../orchestrator_integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestrator Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rust_engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../autodoc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auto-Generated
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analysis_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../identity_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mitigation_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mitigation API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bridges_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridges API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmarks_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipeline_performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_dynamic_coupling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Dynamic Coupling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_structured_ansatz/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Structured Ansatz
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_hw_topological_optimizer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: HW Topological Optimizer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../test_infrastructure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publications
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Publications
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprint/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprint: Quantum Kuramoto-XY on Hardware
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_sync_witnesses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: Synchronisation Witnesses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: DLA Parity Theorem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DLA-parity Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classical_irreproducibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classical Irreproducibility
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results Gallery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hardware_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IBM Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXPERIMENT_ROADMAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PAPER_CLAIMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results & Claims
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../QUANTUM_CRYPTO_RESEARCH_BRANCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Crypto Research
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Learning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notebooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Roadmap
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../strategic_roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strategic Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#multi-language-acceleration-chain-critical" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-language acceleration chain (CRITICAL)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#language-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Language matrix
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#criteria-for-picking-a-compiled-language-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Criteria for picking a compiled-language path
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#current-state-audit-2026-04-17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current-state audit (2026-04-17)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cross-validation-addenda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-validation addenda
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-tree-how-to-pick-a-language-for-a-new-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision tree: how to pick a language for a new module
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decision tree: how to pick a language for a new module">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#worked-examples-from-this-repo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked examples from this repo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tier-specific-guidance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tier-specific guidance
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tier-specific guidance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rust" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rust
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#julia-juliacall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Julia (juliacall)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#go" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Go
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mojo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mojo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#python-floor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python floor
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exempt-declaration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exempt declaration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Exempt declaration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-exemption-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common exemption categories
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-cases-that-look-exempt-but-are-not" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common cases that look exempt but are not
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dispatcher-design-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dispatcher design rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#version-policy-per-tier" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version policy per tier
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-requirements-per-tier" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing requirements per tier
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cross-platform-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-platform notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security considerations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-this-document-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When this document changes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#registering-a-new-compute-function-with-the-dispatcher" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Registering a new compute function with the dispatcher
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migration-pattern-python-compiled-tier" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migration pattern: Python → compiled tier
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Migration pattern: Python → compiled tier">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stage-1-benchmark-the-existing-python" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stage 1 — benchmark the existing Python
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stage-2-port-the-function-to-the-chosen-tier" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stage 2 — port the function to the chosen tier
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stage-3-add-a-dispatcher" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stage 3 — add a dispatcher
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stage-4-wire-the-dispatcher-into-the-original-call-site" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stage 4 — wire the dispatcher into the original call site
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stage-5-re-benchmark-the-wired-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stage 5 — re-benchmark the wired path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stage-6-keep-the-python-floor-indefinitely" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stage 6 — keep the Python floor indefinitely
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debugging-multi-tier-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debugging multi-tier code
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Debugging multi-tier code">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#symptom-the-fast-path-disagrees-with-the-python-floor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Symptom — "the fast path disagrees with the Python floor"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#symptom-rust-tier-raises-typeerror-expected-ndarray" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Symptom — "Rust tier raises TypeError: expected ndarray"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#symptom-julia-tier-times-out-in-ci" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Symptom — "Julia tier times out in CI"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#symptom-dispatcher-never-picks-julia-even-though-juliacall-is-installed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Symptom — "dispatcher never picks Julia even though juliacall is installed"
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deprecating-a-tier" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deprecating a tier
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interop-contracts-across-tiers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interop contracts across tiers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-reference-do-dont" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick reference: Do / Don't
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-glossary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Appendix: glossary
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="language-policy">Language Policy<a class="headerlink" href="#language-policy" title="Permanent link">&para;</a></h1>
+<p>This document codifies which programming language this repository uses
+for which part of the stack, and under what criteria a module picks a
+particular language. It exists so that every new module has a
+defensible, written rationale for its language choice instead of
+defaulting to "whatever the author reaches for first".</p>
+<p>The repository-wide rule from <code>SHARED_CONTEXT.md</code> is stricter than the
+three-line summary:</p>
+<blockquote>
+<p>A module is NOT done until (1) wired into pipeline, (2) multi-angle
+tests, (3) <strong>Rust path</strong>, (4) benchmarks measured, (5) performance
+documented, (6) elite docs, (7) all rules followed.</p>
+</blockquote>
+<p>The word "Rust" in rule 3 is shorthand for "the appropriate
+non-Python compiled language". An orchestration module with no compute
+surface has no meaningful compiled-language path; forcing one is an
+anti-pattern. This policy document is the explicit carve-out that rule
+3 anticipates.</p>
+<h2 id="multi-language-acceleration-chain-critical">Multi-language acceleration chain (CRITICAL)<a class="headerlink" href="#multi-language-acceleration-chain-critical" title="Permanent link">&para;</a></h2>
+<p>Per the ecosystem-wide rule codified in
+<code>feedback_multi_language_accel.md</code> (2026-04-17), every compute function
+in every ANULUM project may have <strong>one or more</strong> acceleration backends
+drawn from this palette:</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Language</th>
+<th>Niche</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>Rust</strong></td>
+<td>Systems-tier, predictable performance, zero-cost abstractions, graph traversal, tight integer loops</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Julia</strong></td>
+<td>Numerics-tier, BLAS/LAPACK, autodiff, dense matrix ops at scale, scientific computing</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Go</strong></td>
+<td>Concurrency-tier, goroutines + channels for massively-concurrent I/O glue</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Mojo</strong></td>
+<td>AI-tier, MLIR + Python compat, GPU/AI hot-paths, ML inference paths with autodiff</td>
+</tr>
+<tr>
+<td>∞</td>
+<td><strong>Python</strong></td>
+<td>Correctness floor, reproducibility ground truth — ALWAYS the last fallback</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Fallback chain ordering rule:</strong> the <em>measured fastest</em> path runs
+first; next-fastest runs on fallback; Python is last. The dispatcher
+must measure (or know from prior measurement) which language wins on
+a given module's hot loop and put that one at the top.</p>
+<p><strong>Target directory layout</strong> for future compute modules:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>src/scpn_quantum_control/accel/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  rust/              # Rust extensions (exists via scpn_quantum_engine)
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  julia/             # Julia bindings (PyJulia / JuliaCall)
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  go/                # Go cgo or shared-lib FFI
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  mojo/              # Mojo callable bindings
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  dispatch.py        # central dispatcher, fastest-at-top
+</code></pre></div>
+<p>This repository currently ships only the Rust tier
+(<code>scpn_quantum_engine</code>, 37 PyO3 functions). Julia / Go / Mojo tiers
+are tracked as future work — see the per-module audit table below
+for which compute functions are candidates.</p>
+<h2 id="language-matrix">Language matrix<a class="headerlink" href="#language-matrix" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Language</th>
+<th>When</th>
+<th>Examples in this repo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Rust</strong></td>
+<td>Compute hot paths invoked from Python via PyO3. Default for every new compute function.</td>
+<td><code>scpn_quantum_engine</code> — 37 PyO3 functions covering build_knm, order_parameter, commutator_dense, kuramoto_trajectory, Pauli expansion. Measured 4.7× – 69× over NumPy on benchmarked hot paths.</td>
+</tr>
+<tr>
+<td><strong>C / C++</strong></td>
+<td>Hardware-SDK interop below the Python wrapper, kernel-level SIMD, or when a vendor only ships a C / C++ client.</td>
+<td>Not currently used; IBM Runtime exposes a Python client so C interop is not needed at this layer. Candidate for future pulse-level control latency budget.</td>
+</tr>
+<tr>
+<td><strong>Go</strong></td>
+<td>Standalone network services with heavy concurrent I/O, where a sidecar process is a cleaner boundary than in-process asyncio.</td>
+<td>Not currently used. Candidate for a future IBM-job-pool daemon that multiplexes across accounts; in-process asyncio (see <code>hardware/async_runner.py</code>) covers the single-account case.</td>
+</tr>
+<tr>
+<td><strong>Julia</strong></td>
+<td>Scientific cross-validation as a third independent solver, especially when Yao.jl / QuantumOptics.jl have a published reference for the same problem class.</td>
+<td>Not yet wired. Planned as a supplement to the QuTiP + Dynamiqs branches in <code>tests/test_cross_validation_qutip_dynamiqs.py</code> — tracked as a follow-up under audit item C7.</td>
+</tr>
+<tr>
+<td><strong>CUDA / HIP / Metal</strong></td>
+<td>GPU quantum simulators or dense-matrix kernels above 2^14 Hilbert dimension.</td>
+<td><code>hardware/gpu_accel.py</code> dispatches to CuPy; <code>scpn_quantum_engine</code> exposes Rust-side GPU kernels.</td>
+</tr>
+<tr>
+<td><strong>JAX</strong></td>
+<td>Auto-differentiable physics, XLA JIT compilation, batched parameter sweeps.</td>
+<td><code>hardware/jax_accel.py</code>.</td>
+</tr>
+<tr>
+<td><strong>OpenQASM 3</strong></td>
+<td>Portable circuit serialisation across vendor backends.</td>
+<td>Qiskit export pipeline in <code>hardware/circuit_export.py</code>.</td>
+</tr>
+<tr>
+<td><strong>TypeScript + WebGPU</strong></td>
+<td>Browser-side visualisation and interactive demos.</td>
+<td>Lives in a separate repo (<code>SCPN-CONTROL-infinity</code>); not present here.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="criteria-for-picking-a-compiled-language-path">Criteria for picking a compiled-language path<a class="headerlink" href="#criteria-for-picking-a-compiled-language-path" title="Permanent link">&para;</a></h2>
+<p>A module qualifies for a Rust path (or the appropriate compiled
+alternative) if and only if <strong>any</strong> of these is true:</p>
+<ol>
+<li>It performs numerical computation that dominates wall-clock on a
+   realistic input size.</li>
+<li>It parses structured input at a rate where the Python interpreter
+   cost shows up in benchmarks.</li>
+<li>It drops below a microbenchmark floor defined in
+   <code>docs/pipeline_performance.md</code> in its Python implementation.</li>
+</ol>
+<p>A module is <strong>exempt</strong> from the compiled-language rule when <strong>all</strong>
+of these are true:</p>
+<ol>
+<li>It performs no computation — dict lookups, attribute access,
+   callable dispatch, subprocess spawning, asyncio orchestration,
+   structured-log assembly, config parsing, docstring strings.</li>
+<li>The best Python library for the domain is itself already compiled
+   (pydantic-core is Rust, orjson is Rust, asyncio / dict / list are
+   C-level) — reimplementing a wrapper around those in Rust would add
+   PyO3 boundary cost without changing the effective compute path.</li>
+<li>A compiled rewrite would worsen ergonomics without moving any
+   measurable metric.</li>
+</ol>
+<p>Each exempt module must state its exemption explicitly in its module
+docstring, citing this policy.</p>
+<h2 id="current-state-audit-2026-04-17">Current-state audit (2026-04-17)<a class="headerlink" href="#current-state-audit-2026-04-17" title="Permanent link">&para;</a></h2>
+<p>Columns: <code>Rust</code> / <code>Julia</code> / <code>Go</code> / <code>Mojo</code> show which accel tier is
+currently wired (✓) or tracked as a future tier (TBD); <code>—</code> means not
+applicable for this module.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Compute?</th>
+<th>Rust</th>
+<th>Julia</th>
+<th>Go</th>
+<th>Mojo</th>
+<th>Rationale / niche</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bridge/knm_hamiltonian.py</code></td>
+<td>Yes</td>
+<td>✓</td>
+<td>TBD</td>
+<td>—</td>
+<td>TBD</td>
+<td>Dense matrix build; Julia LAPACK is a strong candidate for the Julia tier.</td>
+</tr>
+<tr>
+<td><code>hardware/classical.py</code></td>
+<td>Yes</td>
+<td>✓ (<code>kuramoto_trajectory</code>, <code>kuramoto_euler</code>)</td>
+<td>TBD</td>
+<td>—</td>
+<td>TBD</td>
+<td>Tight integer-scale integrator; Rust wins on small N, Mojo on GPU for large N.</td>
+</tr>
+<tr>
+<td><code>analysis/dynamical_lie_algebra.py</code></td>
+<td>Yes</td>
+<td>✓ (commutator + DLA closure)</td>
+<td>TBD</td>
+<td>—</td>
+<td>—</td>
+<td>Graph / symbolic loop; Rust is the natural primary, Julia secondary for spectral checks.</td>
+</tr>
+<tr>
+<td><code>hardware/backends.py</code></td>
+<td><strong>No</strong></td>
+<td><strong>Exempt</strong></td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>Plugin registry is a <code>dict[str, Callable]</code>. No compute surface.</td>
+</tr>
+<tr>
+<td><code>config.py</code></td>
+<td><strong>No</strong></td>
+<td><strong>Exempt</strong></td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>pydantic-settings → pydantic-core is already Rust; re-wrapping adds PyO3 cost.</td>
+</tr>
+<tr>
+<td><code>logging_setup.py</code></td>
+<td><strong>No</strong></td>
+<td><strong>Exempt</strong></td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>structlog composes records from Python primitives. No compute.</td>
+</tr>
+<tr>
+<td><code>hardware/async_runner.py</code></td>
+<td><strong>No</strong></td>
+<td><strong>Exempt</strong></td>
+<td>—</td>
+<td>—</td>
+<td>Go (future)</td>
+<td>asyncio orchestration over IBM Python client. If a fan-out daemon pattern emerges, Go is the candidate tier.</td>
+</tr>
+</tbody>
+</table>
+<p>Every new module added to this repository must appear in this audit
+table as either a compiled-path row or an explicit exempt row.</p>
+<p><strong>Follow-up — when a <code>TBD</code> cell gets wired</strong>, the commit must attach
+a microbenchmark that compares wall-time against the incumbent tier,
+and the dispatcher's fallback order must be updated accordingly.</p>
+<h2 id="cross-validation-addenda">Cross-validation addenda<a class="headerlink" href="#cross-validation-addenda" title="Permanent link">&para;</a></h2>
+<p>Beyond the compiled-path rule, scientific claims benefit from being
+reproduced in an independently implemented framework:</p>
+<ul>
+<li><strong>QuTiP (Python + C)</strong> — condensed-matter canonical reference.
+  Already wired in <code>tests/test_cross_validation_qutip_dynamiqs.py</code>.</li>
+<li><strong>Dynamiqs (Python + JAX)</strong> — JAX backend, auto-diff. Already wired.</li>
+<li><strong>Yao.jl / QuantumOptics.jl (Julia)</strong> — third-party Julia stack,
+  different numerics, different compiler. Will additionally double
+  as the Julia-tier accel path per the multi-language rule. Tracked
+  as a follow-up.</li>
+<li><strong>QSharp (.NET)</strong> — Microsoft's stack, different LLVM toolchain.
+  Low-priority follow-up.</li>
+</ul>
+<p>Cross-validation does not replace the Python / Rust pair of this
+repo; it triangulates scientific claims so that a bug in any single
+stack cannot silently falsify a published number. With the
+multi-language rule landed, an in-tree Julia implementation closes
+both gaps at once (accel path + cross-validation) for the modules
+that get a Julia tier wired in.</p>
+<hr />
+<h2 id="decision-tree-how-to-pick-a-language-for-a-new-module">Decision tree: how to pick a language for a new module<a class="headerlink" href="#decision-tree-how-to-pick-a-language-for-a-new-module" title="Permanent link">&para;</a></h2>
+<p>Use this tree every time a new module lands. The goal is to make the
+language decision defensible in the audit table above, not to pick
+the shiniest option.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Is the module performing numerical compute or structured parsing?
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>├── No → Python stays. Skip the rest of this tree and go to the
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>│        &quot;Exempt declaration&quot; section below.
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>└── Yes
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    ├── Does it run inside a single Python process?
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    │   ├── Yes
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    │   │   ├── Is the hot loop iterator-bound (tight Python for-loop)?
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    │   │   │   └── Rust via PyO3. Default choice.
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    │   │   ├── Is the hot loop BLAS/LAPACK heavy and would benefit
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    │   │   │   from auto-diff or symbolic manipulation?
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    │   │   │   └── Julia via juliacall. Cross-validation bonus.
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    │   │   ├── Is it an ML inference or GPU kernel?
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    │   │   │   └── Mojo via its Python compat layer. Tracked.
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    │   │   └── Is it CPU-bound NumPy code with no per-element work?
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    │   │       └── Usually NumPy already dispatches to BLAS; no
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    │   │           new tier needed. Revisit if a benchmark shows
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    │   │           otherwise.
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    │   └── No — it is a cross-process service
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>    │       ├── Fan-out over many concurrent I/O streams?
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    │       │   └── Go with a CGo shim, or a sidecar Go binary
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>    │       │       that the Python main talks to over HTTP/gRPC.
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>    │       └── Single-request latency-sensitive?
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>    │           └── Rust again; Tokio plus a PyO3 handle into the
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>    │               in-process variant.
+</code></pre></div>
+<h3 id="worked-examples-from-this-repo">Worked examples from this repo<a class="headerlink" href="#worked-examples-from-this-repo" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Hot-loop shape</th>
+<th>Chosen tier</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>build_knm_paper27</code></td>
+<td>N² nested loop over integer indices</td>
+<td>Rust</td>
+<td>tight integer-loop archetype; no BLAS escape</td>
+</tr>
+<tr>
+<td><code>kuramoto_trajectory</code></td>
+<td>Euler-step loop, ~10 k steps × N oscillators</td>
+<td>Rust</td>
+<td>same — PyO3 beats numpy for N ≤ 32</td>
+</tr>
+<tr>
+<td><code>order_parameter</code></td>
+<td>sum of cis(θ_k) over N values</td>
+<td>Rust (measured), Julia provisional</td>
+<td>see §"Multi-language accel chain" in <code>docs/pipeline_performance.md</code></td>
+</tr>
+<tr>
+<td><code>_xy_hamiltonian_pl</code> (PennyLane)</td>
+<td>Pauli string assembly + coefficient lookup</td>
+<td>Python only</td>
+<td>Pennylane's own kernel is already compiled; re-wrapping is pure overhead</td>
+</tr>
+<tr>
+<td>DLA commutator closure</td>
+<td>dense matrix product over 2^(2N-1) basis</td>
+<td>Rust today; Julia + GPU candidates for large N</td>
+<td><code>feedback_rust_everything.md</code> covers exactly this</td>
+</tr>
+<tr>
+<td><code>capture_provenance</code></td>
+<td>dict assembly + git subprocess</td>
+<td>Python only</td>
+<td>I/O adapter; no compute</td>
+</tr>
+</tbody>
+</table>
+<h2 id="tier-specific-guidance">Tier-specific guidance<a class="headerlink" href="#tier-specific-guidance" title="Permanent link">&para;</a></h2>
+<h3 id="rust">Rust<a class="headerlink" href="#rust" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use <code>maturin</code> for building. Pin it with a <code>[build-system]</code>
+  <code>requires</code> entry in <code>pyproject.toml</code>; otherwise contributors get
+  silent version drift that breaks wheel reproducibility.</li>
+<li>PyO3 calls across a Python ↔ Rust boundary cost ~200–500 ns each.
+  For loops below that granularity, prefer a single Rust call that
+  <em>contains</em> the loop over N Python → Rust calls each doing tiny
+  work. The benchmark in <code>scripts/bench_order_parameter_tiers.py</code>
+  makes this visible.</li>
+<li>Feature-gate every optional dependency with a Cargo feature so
+  the wheel stays minimal. Example from <code>scpn_quantum_engine</code>:
+  <code>parallel</code> feature gates <code>rayon</code>; disabling it produces a
+  single-threaded wheel half the size.</li>
+<li>Every public Rust function must have both a Python-side unit test
+  and a Rust-side <code>#[test]</code> so regressions are caught regardless of
+  which side breaks first.</li>
+</ul>
+<h3 id="julia-juliacall">Julia (juliacall)<a class="headerlink" href="#julia-juliacall" title="Permanent link">&para;</a></h3>
+<ul>
+<li>First call incurs a ~20 s JIT cost. Production scripts that call
+  a Julia-tier function exactly once pay the tax without amortising
+  it; they should either warm Julia explicitly at startup or fall
+  through to another tier. The dispatcher's <code>last_tier_used</code>
+  surfaces this decision to observability.</li>
+<li><code>juliacall</code> re-exports the running Julia session; <strong>never</strong>
+  import <code>juliacall.Main</code> inside a library module at import time,
+  because it boots Julia at library-import time. Use the lazy-load
+  pattern from <code>src/scpn_quantum_control/accel/julia/__init__.py</code>:
+  <code>_load()</code> is called at first use only.</li>
+<li>NumPy arrays crossing into Julia are zero-copy when they are
+  <code>float64</code>, <code>complex128</code> and C-contiguous. Always call
+  <code>np.ascontiguousarray(arr, dtype=np.float64)</code> before the crossing
+  to avoid accidental copies that wipe the Julia-tier win.</li>
+<li>Julia is the right home for scientific cross-validation (Yao.jl,
+  QuantumOptics.jl, DifferentialEquations.jl). When you add a Julia
+  tier, consider whether the corresponding scientific package
+  reference (for example Yao's <code>order_parameter</code> equivalent) can
+  double as a cross-validation oracle. If yes, add that test under
+  <code>tests/test_cross_validation_*</code> the same day.</li>
+</ul>
+<h3 id="go">Go<a class="headerlink" href="#go" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Integration pattern is a sidecar process plus gRPC or HTTP, not
+  cgo. cgo closes the door on goroutines from the Python side and
+  defeats most of the reason to pick Go.</li>
+<li>Target modules: the Phase-2 multi-account IBM submission path, a
+  webhook receiver for Zenodo notifications, and the commercial
+  Polar.sh webhook router. None are yet wired.</li>
+<li>A Go tier implicitly adds a second deployment surface (the
+  binary). Every Go module MUST ship with a Dockerfile and a
+  <code>docker-compose</code> entry for reproducibility.</li>
+<li>Per <code>feedback_multi_language_accel.md</code> §"Fallback chain ordering",
+  a Go tier is only at the top of the chain for a workload class it
+  actually wins; for in-process compute, Rust always wins, so Go
+  lives in a different pool (distinct from the <code>order_parameter</code>
+  dispatcher).</li>
+</ul>
+<h3 id="mojo">Mojo<a class="headerlink" href="#mojo" title="Permanent link">&para;</a></h3>
+<ul>
+<li>As of 2026-04-17, Mojo's Python-compat layer is maturing but not
+  yet wheel-deployable from PyPI. A Mojo tier that ships in this
+  repo requires a Modular SDK install on the reader's side; until
+  that changes, Mojo code stays under <code>accel/mojo/</code> as opt-in.</li>
+<li>Mojo is particularly strong at MLIR-compiled AI inference and GPU
+  kernels. The candidate compute surfaces are the DLA-closure dense
+  product at N ≥ 16 and any dense-matrix exponential used in
+  <code>classical_exact_evolution</code>.</li>
+<li>Benchmark gating is the same as every other tier: a Mojo path
+  lands only with a measured wall-time comparison in
+  <code>docs/pipeline_performance.md</code>.</li>
+</ul>
+<h3 id="python-floor">Python floor<a class="headerlink" href="#python-floor" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>numpy</code> + <code>scipy</code> + plain loops. Never the fastest, always
+  available, always correct.</li>
+<li>Used for:</li>
+<li>Correctness oracles in tests (the <code>_python_order_parameter</code>
+    implementation is the ground truth all other tiers match
+    within <code>1e-10</code>).</li>
+<li>The final fallback in every dispatcher chain.</li>
+<li>Prototypes that haven't yet earned a compiled-tier port.</li>
+<li>Never use a Python floor as the only path for a module that the
+  rule marks as compute. Prototype in Python, then port.</li>
+</ul>
+<h2 id="exempt-declaration">Exempt declaration<a class="headerlink" href="#exempt-declaration" title="Permanent link">&para;</a></h2>
+<p>A module without numeric compute — orchestration, config, logging,
+registry, I/O adapter — is <strong>exempt</strong> from the compiled-path rule.
+The exemption is not automatic; it must be declared in the module
+header immediately after the SPDX block:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Language policy: EXEMPT from the Rust-path rule. &lt;one-sentence reason&gt;</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="c1"># See docs/language_policy.md §&quot;Current-state audit&quot;.</span>
+</code></pre></div>
+<p>Auditors grep for <code>Language policy:</code> to reach every exempt module
+at once. If that grep turns up a module that has numeric compute,
+the exemption is wrong and must be revoked by adding a compiled
+tier.</p>
+<h3 id="common-exemption-categories">Common exemption categories<a class="headerlink" href="#common-exemption-categories" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Pure dict / list / callable registry</strong> — <code>hardware/backends.py</code>.
+  Python's dict is already C-level; a PyO3 <code>HashMap&lt;String, fn&gt;</code>
+  wrapper would be slower because of the per-lookup boundary cost.</li>
+<li><strong>pydantic-settings config</strong> — <code>config.py</code>. pydantic-core is
+  already Rust. Wrapping it again adds FFI cost with zero new
+  compute.</li>
+<li><strong>structlog bootstrap</strong> — <code>logging_setup.py</code>. structlog composes
+  strings and tuples from Python primitives; no numeric surface.</li>
+<li><strong>asyncio orchestration</strong> — <code>hardware/async_runner.py</code>. The
+  compute is inside the IBM Runtime client and IBM's cloud; the
+  module is a thin fan-out.</li>
+<li><strong>I/O adapters</strong> — files under <code>hardware/</code> that wrap a vendor
+  Python client (Qiskit, PennyLane, Braket). These are bridges, not
+  computers.</li>
+</ul>
+<h3 id="common-cases-that-look-exempt-but-are-not">Common cases that look exempt but are not<a class="headerlink" href="#common-cases-that-look-exempt-but-are-not" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Regex parsers over gigabytes of log</strong> — feels like I/O, actually
+  compute. Needs a Rust tier (<code>regex</code> crate).</li>
+<li><strong>String-mangling</strong> inside a benchmark inner loop — Python's
+  string ops are C-level but the interpreter overhead per call
+  isn't. If it's on a hot path, Rust wins.</li>
+<li><strong>dataclass validators</strong> — <code>bridge/phase_artifact.py</code>'s
+  <code>__post_init__</code> checks are called per-record on a hot ingestion
+  path. Today they are Python-only because the per-record cost is
+  tolerable, but they are on the watchlist for future Rust
+  migration if a downstream ingestion workflow saturates on them.</li>
+</ul>
+<h2 id="dispatcher-design-rules">Dispatcher design rules<a class="headerlink" href="#dispatcher-design-rules" title="Permanent link">&para;</a></h2>
+<p>Every multi-tier compute function must expose a single dispatcher
+that follows these invariants. Failure to satisfy any of them is a
+review block.</p>
+<ol>
+<li><strong>The chain terminates in a Python floor.</strong> The Python path must
+   be the last entry of the ordered list. <code>MultiLangDispatcher</code>
+   enforces this in its constructor.</li>
+<li><strong>Fallthrough only on structural errors.</strong> The tier is allowed to
+   raise <code>ImportError</code>, <code>ModuleNotFoundError</code> or <code>RuntimeError</code>;
+   every other exception bubbles up. A <code>ValueError</code> is a bug in the
+   tier, not a reason to silently move to the next one.</li>
+<li><strong>No hidden global state between tiers.</strong> A dispatcher call must
+   not mutate a module-global that a later call depends on. The
+   <code>last_tier</code> observation is the explicit exception — it is
+   read-only to callers.</li>
+<li><strong>Benchmarks measured on the runner class used in production.</strong>
+   Not a developer laptop. Not the SSH server. The GitHub Actions
+   <code>ubuntu-latest</code> runner (or the mining rig when that becomes the
+   production target) is the only valid measurement host.</li>
+<li><strong>Measurement JSON is committed.</strong> Every reorder of the chain
+   requires updating <code>docs/benchmarks/&lt;fn&gt;.json</code> so the decision can
+   be audited months later.</li>
+</ol>
+<h2 id="version-policy-per-tier">Version policy per tier<a class="headerlink" href="#version-policy-per-tier" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Pinning rule</th>
+<th>Update cadence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rust</td>
+<td><code>Cargo.lock</code> committed; <code>maturin</code> pinned via <code>[build-system]</code>; MSRV documented</td>
+<td>Monthly, alongside Dependabot PRs</td>
+</tr>
+<tr>
+<td>Julia</td>
+<td><code>juliacall&gt;=0.9,&lt;2</code> in <code>pyproject.toml [julia]</code>; Julia itself on <code>julialang-jll</code> auto-install</td>
+<td>Quarterly — juliacall breaks less often than Julia itself</td>
+</tr>
+<tr>
+<td>Go</td>
+<td>Sidecar <code>go.mod</code> pinned to minor; go toolchain via <code>go.mod</code>'s <code>go 1.XX</code> directive</td>
+<td>When a Go tier ships</td>
+</tr>
+<tr>
+<td>Mojo</td>
+<td>SDK version pinned once it stabilises</td>
+<td>When a Mojo tier ships</td>
+</tr>
+<tr>
+<td>Python</td>
+<td><code>pyproject.toml</code> <code>dependencies</code> SemVer-pinned</td>
+<td>Monthly, Dependabot</td>
+</tr>
+</tbody>
+</table>
+<h2 id="testing-requirements-per-tier">Testing requirements per tier<a class="headerlink" href="#testing-requirements-per-tier" title="Permanent link">&para;</a></h2>
+<p>Every compute function with a compiled-tier path must ship three
+classes of test:</p>
+<ol>
+<li><strong>Floor correctness.</strong> The Python implementation passes a
+   Hypothesis-generated grid of inputs within the physical-
+   invariant bounds of the function (e.g. <code>R ∈ [0, 1]</code> for
+   <code>order_parameter</code>).</li>
+<li><strong>Cross-tier agreement.</strong> Every tier produces the same output as
+   the Python floor to within <code>1e-10</code> on the same inputs.
+   <code>tests/test_accel_dispatch.py::TestCrossTierAgreement</code> is the
+   template.</li>
+<li><strong>Dispatcher mechanics.</strong> The registered chain falls through
+   correctly on <code>ImportError</code>, preserves <code>last_tier</code>, doesn't
+   swallow unrelated exceptions. Same test file.</li>
+</ol>
+<p>Every <strong>fuzz</strong> test must use <code>hypothesis</code> with <code>max_examples &gt;= 30</code>
+and <code>deadline=None</code> (some tiers boot slowly on cold imports);
+<code>HealthCheck.too_slow</code> is acceptable to suppress with a documented
+reason.</p>
+<h2 id="cross-platform-notes">Cross-platform notes<a class="headerlink" href="#cross-platform-notes" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>macOS arm64</strong> — juliacall ships for arm64; maturin wheels
+  need an explicit <code>[tool.maturin] target = ...</code> for
+  cross-compilation. Rust tier MUST build; Julia tier MAY build.
+  The test matrix in <code>ci.yml</code> probes both.</li>
+<li><strong>Windows</strong> — juliacall has known path-separator issues in CI;
+  use <code>Path(...).as_posix()</code> when passing paths into Julia. Rust
+  tier via <code>maturin</code> works out of the box.</li>
+<li><strong>Linux x86_64</strong> — the primary target; every tier must build.</li>
+<li><strong>Linux aarch64</strong> — Rust builds via cross-compilation; Julia
+  builds via juliacall's bundled Julia binary; Go builds natively.</li>
+</ul>
+<h2 id="security-considerations">Security considerations<a class="headerlink" href="#security-considerations" title="Permanent link">&para;</a></h2>
+<p>Adding a new compiled tier is adding a new attack surface:</p>
+<ul>
+<li>Every Rust crate passes through <code>cargo audit</code> in the CI
+  <code>security</code> job. A high/critical advisory on a transitive dep
+  blocks the release.</li>
+<li>Julia's <code>JuliaPkg.toml</code> (generated by juliacall) must be
+  committed. It is the Julia equivalent of a lock file; without it
+  two machines could silently install different Julia packages.</li>
+<li>Go binaries must be built reproducibly from a pinned toolchain;
+  <code>go.mod</code> + <code>go.sum</code> both committed.</li>
+<li>Mojo SDK downloads are not yet reproducible — defer a Mojo tier
+  until Modular publishes a SemVer-compatible toolchain.</li>
+</ul>
+<h2 id="when-this-document-changes">When this document changes<a class="headerlink" href="#when-this-document-changes" title="Permanent link">&para;</a></h2>
+<p>Update this document (and re-run the audit table) in the same
+commit that adds, removes, or re-orders a tier. A language-policy
+PR that changes the wording without the accompanying code change is
+a documentation-only PR; a code PR that changes a tier without
+updating this document is a review block.</p>
+<hr />
+<h2 id="registering-a-new-compute-function-with-the-dispatcher">Registering a new compute function with the dispatcher<a class="headerlink" href="#registering-a-new-compute-function-with-the-dispatcher" title="Permanent link">&para;</a></h2>
+<p>The pattern is specific — follow it exactly. A registration that
+deviates breaks the invariants that the tests in
+<code>tests/test_accel_dispatch.py</code> enforce.</p>
+<ol>
+<li><strong>Implement the Python floor first.</strong> The function lives under
+   <code>src/scpn_quantum_control/accel/dispatcher.py</code> as a module-level
+   helper prefixed <code>_python_&lt;name&gt;</code>. It must accept the same
+   signature every other tier will accept and return a
+   reproducibility-checkable scalar or array.</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">_python_</span><span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span><span class="p">(</span><span class="n">theta</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="o">...</span>
+</code></pre></div>
+<ol>
+<li>
+<p><strong>Add a tier probe if the tier is conditional.</strong> The existing
+   probes for Rust and Julia return <code>True</code> if the underlying
+   library imports cleanly <em>without</em> booting a runtime. Expensive
+   probes (Julia runtime boot, GPU context creation) go behind
+   <code>is_available()</code> inside the tier module, not in the probe.</p>
+</li>
+<li>
+<p><strong>Implement the compiled tier(s).</strong> Each tier gets a helper
+   <code>_&lt;tier&gt;_&lt;name&gt;(theta)</code> that calls into the compiled
+   implementation. Keep these helpers thin — unwrap arguments,
+   call the underlying function, re-wrap return. Any business
+   logic belongs inside the compiled code.</p>
+</li>
+<li>
+<p><strong>Measure all tiers on representative N.</strong> Run
+   <code>scripts/bench_&lt;name&gt;_tiers.py</code> (pattern after
+   <code>bench_order_parameter_tiers.py</code>) across the production input
+   sizes. Commit the JSON artefact to <code>docs/benchmarks/</code>.</p>
+</li>
+<li>
+<p><strong>Assemble the chain in measured order.</strong> Python floor MUST be
+   last. Unmeasured tiers go below measured ones.</p>
+</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">_</span><span class="o">&lt;</span><span class="n">NAME</span><span class="o">&gt;</span><span class="n">_CHAIN</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="p">(</span><span class="s2">&quot;rust&quot;</span><span class="p">,</span> <span class="n">_rust_</span><span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span><span class="p">),</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="p">(</span><span class="s2">&quot;julia&quot;</span><span class="p">,</span> <span class="n">_julia_</span><span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span><span class="p">),</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">,</span> <span class="n">_python_</span><span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span><span class="p">),</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="p">]</span>
+</code></pre></div>
+<ol>
+<li><strong>Register the dispatcher.</strong> Add to <code>_REGISTRY</code>:</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">_</span><span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span><span class="n">_dispatcher</span> <span class="o">=</span> <span class="n">MultiLangDispatcher</span><span class="p">(</span><span class="n">_</span><span class="o">&lt;</span><span class="n">NAME</span><span class="o">&gt;</span><span class="n">_CHAIN</span><span class="p">)</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">_REGISTRY</span><span class="p">[</span><span class="s2">&quot;&lt;name&gt;&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_</span><span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span><span class="n">_dispatcher</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="k">def</span><span class="w"> </span><span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="k">return</span> <span class="n">_</span><span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span><span class="n">_dispatcher</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+</code></pre></div>
+<p>and add to <code>__all__</code> in <code>accel/__init__.py</code>.</p>
+<ol>
+<li>
+<p><strong>Test.</strong> <code>tests/test_accel_&lt;name&gt;.py</code> copies the three
+   test-class pattern from the template:
+   <code>TestDispatcherMechanics</code>, <code>TestCrossTierAgreement</code>,
+   <code>TestPipelineAccel</code>. A Hypothesis grid of at least 30 examples
+   exercises tier agreement to <code>1e-10</code>.</p>
+</li>
+<li>
+<p><strong>Document.</strong> Add the row to this file's "Current-state audit"
+   table and to <code>docs/pipeline_performance.md §"Multi-language
+   accel chain"</code>. The benchmark JSON is the authoritative source
+   for both.</p>
+</li>
+<li>
+<p><strong>Wire.</strong> Replace every call to the legacy Python-only helper
+   with a call to the new dispatcher. <code>_order_param</code> in
+   <code>hardware/classical.py</code> is the template for a minimally
+   invasive wiring with a bare-import fallback.</p>
+</li>
+</ol>
+<h2 id="migration-pattern-python-compiled-tier">Migration pattern: Python → compiled tier<a class="headerlink" href="#migration-pattern-python-compiled-tier" title="Permanent link">&para;</a></h2>
+<p>When a Python function crosses into "hot enough to need a compiled
+tier" territory, follow this migration pattern rather than a
+one-shot rewrite.</p>
+<h3 id="stage-1-benchmark-the-existing-python">Stage 1 — benchmark the existing Python<a class="headerlink" href="#stage-1-benchmark-the-existing-python" title="Permanent link">&para;</a></h3>
+<p>Write the micro-benchmark <em>before</em> the port, save the numbers.
+This gives you the "before" column for the speed-up claim. Without
+this baseline, a future reader cannot verify the port actually
+moved a metric.</p>
+<h3 id="stage-2-port-the-function-to-the-chosen-tier">Stage 2 — port the function to the chosen tier<a class="headerlink" href="#stage-2-port-the-function-to-the-chosen-tier" title="Permanent link">&para;</a></h3>
+<p>Keep the Python version intact. The compiled port lives in the
+appropriate <code>accel/&lt;tier&gt;/</code> subdirectory or, for Rust, inside
+<code>scpn_quantum_engine</code>.</p>
+<h3 id="stage-3-add-a-dispatcher">Stage 3 — add a dispatcher<a class="headerlink" href="#stage-3-add-a-dispatcher" title="Permanent link">&para;</a></h3>
+<p>Per the registration pattern above. The dispatcher dispatches
+between the Python floor (existing) and the new compiled tier.</p>
+<h3 id="stage-4-wire-the-dispatcher-into-the-original-call-site">Stage 4 — wire the dispatcher into the original call site<a class="headerlink" href="#stage-4-wire-the-dispatcher-into-the-original-call-site" title="Permanent link">&para;</a></h3>
+<p>Replace the direct Python call with the dispatcher call. Keep the
+Python implementation in the dispatcher chain as the floor; do not
+delete it.</p>
+<h3 id="stage-5-re-benchmark-the-wired-path">Stage 5 — re-benchmark the wired path<a class="headerlink" href="#stage-5-re-benchmark-the-wired-path" title="Permanent link">&para;</a></h3>
+<p>End-to-end run against the "before" number from stage 1. Only now
+may the commit message claim a speed-up.</p>
+<h3 id="stage-6-keep-the-python-floor-indefinitely">Stage 6 — keep the Python floor indefinitely<a class="headerlink" href="#stage-6-keep-the-python-floor-indefinitely" title="Permanent link">&para;</a></h3>
+<p>The Python floor is the correctness oracle. Deleting it removes the
+tier-agreement test. Even if the Python implementation is 100×
+slower, it stays — the 100× is the price of correctness triangulation.</p>
+<h2 id="debugging-multi-tier-code">Debugging multi-tier code<a class="headerlink" href="#debugging-multi-tier-code" title="Permanent link">&para;</a></h2>
+<h3 id="symptom-the-fast-path-disagrees-with-the-python-floor">Symptom — "the fast path disagrees with the Python floor"<a class="headerlink" href="#symptom-the-fast-path-disagrees-with-the-python-floor" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Is it a dtype issue? Julia sees <code>float32</code> when you meant
+   <code>float64</code>? Check the first line of the tier wrapper.</li>
+<li>Is it a qubit-ordering issue? Qiskit is big-endian, QuTiP is
+   little-endian — the <code>_H_qutip</code> helper reverses before
+   <code>tensor()</code>. Any new tier must pick one convention and stick.</li>
+<li>Is it a JIT corruption? Restart the Python process; if the
+   disagreement goes away, Julia's JIT cached a stale compilation
+   — commonly a sign that <code>juliacall.Main.include</code> was called twice
+   with two versions of the same file.</li>
+</ol>
+<h3 id="symptom-rust-tier-raises-typeerror-expected-ndarray">Symptom — "Rust tier raises <code>TypeError: expected ndarray</code>"<a class="headerlink" href="#symptom-rust-tier-raises-typeerror-expected-ndarray" title="Permanent link">&para;</a></h3>
+<p>PyO3 enforces exact dtype; <code>np.ascontiguousarray(arr, dtype=...)</code>
+is cheap and should be called in the <code>_rust_&lt;name&gt;</code> wrapper
+unconditionally.</p>
+<h3 id="symptom-julia-tier-times-out-in-ci">Symptom — "Julia tier times out in CI"<a class="headerlink" href="#symptom-julia-tier-times-out-in-ci" title="Permanent link">&para;</a></h3>
+<p>Julia's JIT cold start is ~20 s. CI caches should include the
+Julia package cache under <code>~/.julia/</code> (or the <code>juliapkg</code> path on
+macOS); without it, every CI run re-installs JIT dependencies and
+the timeout fires.</p>
+<h3 id="symptom-dispatcher-never-picks-julia-even-though-juliacall-is-installed">Symptom — "dispatcher never picks Julia even though juliacall is installed"<a class="headerlink" href="#symptom-dispatcher-never-picks-julia-even-though-juliacall-is-installed" title="Permanent link">&para;</a></h3>
+<p>Check the chain order. Julia is second in the <code>order_parameter</code>
+chain, so it serves requests only when Rust is unavailable. Force
+Rust unavailable for a test by replacing its entry with an
+ImportError-raising stub — see
+<code>test_julia_full_dispatch_reaches_julia_when_rust_disabled</code> in
+<code>tests/test_accel_dispatch.py</code> for the exact pattern.</p>
+<h2 id="deprecating-a-tier">Deprecating a tier<a class="headerlink" href="#deprecating-a-tier" title="Permanent link">&para;</a></h2>
+<p>When a tier stops being useful — Julia 2.x breaks juliacall, Mojo
+is replaced by a native PyTorch 3.x accelerator, Go sidecar
+rewritten as Rust — follow this deprecation flow:</p>
+<ol>
+<li>Mark the tier's chain entry with a comment
+   <code># DEPRECATED &lt;date&gt;: &lt;reason&gt;</code> and leave it in place.</li>
+<li>Announce in <code>DEPRECATIONS.md</code> with a target removal minor
+   version (SemVer: deprecations remove on the next major bump,
+   never within a minor).</li>
+<li>After the grace window (two minor releases), remove the tier's
+   implementation + probe + chain entry + its <code>[&lt;tier&gt;]</code>
+   pyproject extra. Update the audit table.</li>
+<li>Keep the benchmark JSON artefact under
+   <code>docs/benchmarks/archived/</code> for historical comparison.</li>
+</ol>
+<h2 id="interop-contracts-across-tiers">Interop contracts across tiers<a class="headerlink" href="#interop-contracts-across-tiers" title="Permanent link">&para;</a></h2>
+<p>Every tier must honour these promises. Failure is a bug in the
+tier, not a dispatcher problem.</p>
+<ol>
+<li><strong>Input invariance.</strong> A tier does not mutate input arrays.
+   Rust's <code>ndarray</code> views are borrowed; Julia's <code>@view</code> is
+   read-only. If a future tier needs a copy for correctness, it
+   copies internally.</li>
+<li><strong>Output shape.</strong> Every tier returns the same dtype, same
+   shape, same numeric type as the Python floor. A Julia
+   <code>Complex{Float64}</code> return must be unboxed to Python <code>complex</code>
+   before crossing the FFI.</li>
+<li><strong>Exception surface.</strong> Tiers raise <code>RuntimeError</code> for runtime
+   failures (IBM job pool empty, GPU OOM, JIT compilation error)
+   and <code>ValueError</code> for argument-shape mismatches. These are the
+   only two exception classes the dispatcher interprets.</li>
+<li><strong>Determinism.</strong> Tiers that use randomness must accept an
+   explicit seed argument. The dispatcher does not thread seeds;
+   each tier implementation handles its own seeding.</li>
+<li><strong>Reentrancy.</strong> Tiers must be safe to call concurrently from
+   multiple Python threads if their underlying runtime allows it
+   (Julia's GIL-analog, Rust's <code>Sync</code> trait). Otherwise they must
+   document the restriction in the tier module docstring.</li>
+</ol>
+<h2 id="quick-reference-do-dont">Quick reference: Do / Don't<a class="headerlink" href="#quick-reference-do-dont" title="Permanent link">&para;</a></h2>
+<p><strong>Do.</strong></p>
+<ul>
+<li>Benchmark every tier before committing the chain order.</li>
+<li>Keep the Python floor forever.</li>
+<li>Use <code>np.ascontiguousarray(arr, dtype=np.float64)</code> at FFI
+  boundaries.</li>
+<li>Document exempt modules with the <code># Language policy:</code> header
+  line.</li>
+<li>Run <code>pytest --cov</code> on every new module; 95 % minimum, 100 %
+  target.</li>
+</ul>
+<p><strong>Don't.</strong></p>
+<ul>
+<li>Fabricate "measured fastest" claims. Measure or say "unmeasured".</li>
+<li>Delete the Python floor when a tier is fast enough.</li>
+<li>Chain a tier above Python without measuring it.</li>
+<li>Boot Julia / Mojo / GPU context at library import time.</li>
+<li>Accept a <code>ValueError</code> as a reason to fall through to the next
+  tier; that is a tier bug.</li>
+</ul>
+<h2 id="appendix-glossary">Appendix: glossary<a class="headerlink" href="#appendix-glossary" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Tier.</strong> A language-specific implementation of a compute
+  function (Rust, Julia, Go, Mojo, Python).</li>
+<li><strong>Chain.</strong> An ordered list of tier implementations for a single
+  compute function, with the Python floor last.</li>
+<li><strong>Dispatcher.</strong> The runtime object that walks a chain until one
+  tier succeeds; records <code>last_tier</code> on success.</li>
+<li><strong>Probe.</strong> A cheap <code>bool</code>-returning callable that says whether
+  a tier is usable in this process <em>without</em> booting its runtime.</li>
+<li><strong>Floor.</strong> The Python implementation at the bottom of every
+  chain; the correctness oracle.</li>
+<li><strong>Warm-up.</strong> A one-off cost paid the first time a tier's runtime
+  initialises (Julia JIT, GPU context, Mojo MLIR compile). Should
+  be amortised over the process lifetime or explicitly warmed at
+  startup.</li>
+<li><strong>FFI.</strong> Foreign Function Interface — the crossing between
+  Python and a compiled runtime (PyO3 for Rust, juliacall for
+  Julia, ctypes/cgo for Go).</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+        <script src="../js/goatcounter.js"></script>
+      
+    
+  </body>
+</html>

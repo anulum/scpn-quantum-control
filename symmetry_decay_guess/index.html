@@ -1,0 +1,2875 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Quantum simulation of coupled oscillators on IBM hardware">
+      
+      
+        <meta name="author" content="Miroslav Šotek">
+      
+      
+        <link rel="canonical" href="https://anulum.github.io/scpn-quantum-control/symmetry_decay_guess/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/anulum_logo_company.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>SPDX-License-Identifier: AGPL-3.0-or-later - scpn-quantum-control</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#spdx-license-identifier-agpl-30-or-later" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="scpn-quantum-control" class="md-header__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            scpn-quantum-control
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              SPDX-License-Identifier: AGPL-3.0-or-later
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="scpn-quantum-control" class="md-nav__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    scpn-quantum-control
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SCPN Foundations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../equations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../research_gems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research Gems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../orchestrator_integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestrator Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rust_engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../autodoc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auto-Generated
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analysis_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../identity_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mitigation_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mitigation API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bridges_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridges API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmarks_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipeline_performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_dynamic_coupling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Dynamic Coupling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_structured_ansatz/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Structured Ansatz
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_hw_topological_optimizer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: HW Topological Optimizer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../test_infrastructure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publications
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Publications
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprint/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprint: Quantum Kuramoto-XY on Hardware
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_sync_witnesses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: Synchronisation Witnesses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: DLA Parity Theorem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DLA-parity Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classical_irreproducibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classical Irreproducibility
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results Gallery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hardware_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IBM Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXPERIMENT_ROADMAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PAPER_CLAIMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results & Claims
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../QUANTUM_CRYPTO_RESEARCH_BRANCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Crypto Research
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Learning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notebooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Roadmap
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../strategic_roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strategic Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="spdx-license-identifier-agpl-30-or-later">SPDX-License-Identifier: AGPL-3.0-or-later<a class="headerlink" href="#spdx-license-identifier-agpl-30-or-later" title="Permanent link">&para;</a></h1>
+<h1 id="commercial-license-available">Commercial license available<a class="headerlink" href="#commercial-license-available" title="Permanent link">&para;</a></h1>
+<h1 id="concepts-19962026-miroslav-sotek-all-rights-reserved">© Concepts 1996–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#concepts-19962026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="code-20202026-miroslav-sotek-all-rights-reserved">© Code 2020–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#code-20202026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="orcid-0009-0009-3560-0851">ORCID: 0009-0009-3560-0851<a class="headerlink" href="#orcid-0009-0009-3560-0851" title="Permanent link">&para;</a></h1>
+<h1 id="contact-wwwanulumli-protoscienceanulumli">Contact: www.anulum.li | protoscience@anulum.li<a class="headerlink" href="#contact-wwwanulumli-protoscienceanulumli" title="Permanent link">&para;</a></h1>
+<h1 id="scpn-quantum-control-guess-symmetry-decay-zne-documentation">scpn-quantum-control — GUESS Symmetry Decay ZNE Documentation<a class="headerlink" href="#scpn-quantum-control-guess-symmetry-decay-zne-documentation" title="Permanent link">&para;</a></h1>
+<h1 id="guess-guiding-extrapolations-from-symmetry-decays">GUESS: Guiding Extrapolations from Symmetry Decays<a class="headerlink" href="#guess-guiding-extrapolations-from-symmetry-decays" title="Permanent link">&para;</a></h1>
+<p>Physics-informed zero-noise extrapolation using Hamiltonian symmetry
+observables to guide the mitigation of target observables on NISQ hardware.</p>
+<p><strong>Module:</strong> <code>scpn_quantum_control.mitigation.symmetry_decay</code>
+<strong>Rust acceleration:</strong> <code>scpn_quantum_engine.fit_symmetry_decay</code>,
+<code>scpn_quantum_engine.guess_extrapolate_batch</code>
+<strong>Reference:</strong> Oliva del Moral <em>et al.</em>, arXiv:2603.13060 (2026)</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">&para;</a></h2>
+<ol>
+<li><a href="#1-motivation-and-context">Motivation and Context</a></li>
+<li><a href="#2-mathematical-foundation">Mathematical Foundation</a></li>
+<li><a href="#3-scpn-specific-application">SCPN-Specific Application</a></li>
+<li><a href="#4-architecture">Architecture</a></li>
+<li><a href="#5-api-reference">API Reference</a></li>
+<li><a href="#6-rust-acceleration">Rust Acceleration</a></li>
+<li><a href="#7-tutorials">Tutorials</a></li>
+<li><a href="#8-integration-with-existing-mitigation-stack">Integration with Existing Mitigation Stack</a></li>
+<li><a href="#9-benchmarks">Benchmarks</a></li>
+<li><a href="#10-test-coverage">Test Coverage</a></li>
+<li><a href="#11-limitations-and-caveats">Limitations and Caveats</a></li>
+<li><a href="#12-comparison-with-alternative-methods">Comparison with Alternative Methods</a></li>
+<li><a href="#13-references">References</a></li>
+</ol>
+<hr />
+<h2 id="1-motivation-and-context">1. Motivation and Context<a class="headerlink" href="#1-motivation-and-context" title="Permanent link">&para;</a></h2>
+<h3 id="the-problem">The Problem<a class="headerlink" href="#the-problem" title="Permanent link">&para;</a></h3>
+<p>Standard Richardson zero-noise extrapolation (ZNE) uses polynomial fits
+to extrapolate expectation values to the zero-noise limit. At large
+circuit depths (100+ qubits, thousands of CZ gates), the polynomial
+model fails to capture the true noise profile, leading to systematic
+over- or under-correction.</p>
+<p>This failure mode is well-documented:
+- Richardson ZNE diverges at depth &gt; 2000 CZ gates on IBM hardware
+  (Oliva del Moral <em>et al.</em>, 2026, Fig. 7)
+- Polynomial extrapolation assumes noise is additive and scale-invariant,
+  which breaks down for correlated noise channels
+- No existing method leverages physical conservation laws specific to
+  the Hamiltonian being simulated</p>
+<h3 id="the-guess-insight">The GUESS Insight<a class="headerlink" href="#the-guess-insight" title="Permanent link">&para;</a></h3>
+<p>If the Hamiltonian <span class="arithmatex">\(H\)</span> conserves a symmetry observable <span class="arithmatex">\(S\)</span> (i.e.,
+<span class="arithmatex">\([H, S] = 0\)</span>), then <span class="arithmatex">\(\langle S \rangle\)</span> is analytically known for any
+initial state. The deviation of <span class="arithmatex">\(\langle S \rangle\)</span> from its ideal value
+under hardware noise directly reveals the noise-induced decay profile.</p>
+<p>GUESS transfers this learned decay to target observables whose ideal
+values are unknown. Instead of fitting a generic polynomial, GUESS uses
+physics to constrain the extrapolation.</p>
+<h3 id="why-this-matters-for-scpn">Why This Matters for SCPN<a class="headerlink" href="#why-this-matters-for-scpn" title="Permanent link">&para;</a></h3>
+<p>The SCPN Kuramoto-XY Hamiltonian</p>
+<div class="arithmatex">\[H_{XY} = \sum_{n,m} K_{nm} (\sigma_n^x \sigma_m^x + \sigma_n^y \sigma_m^y)\]</div>
+<p>naturally conserves total magnetisation <span class="arithmatex">\(S = \sum_i Z_i\)</span>, since
+<span class="arithmatex">\([H_{XY}, \sum_i Z_i] = 0\)</span>. This gives us a free symmetry observable
+for GUESS — measuring <span class="arithmatex">\(S\)</span> requires only Z-basis measurements, which are
+already part of every experiment run.</p>
+<hr />
+<h2 id="2-mathematical-foundation">2. Mathematical Foundation<a class="headerlink" href="#2-mathematical-foundation" title="Permanent link">&para;</a></h2>
+<h3 id="21-symmetry-observable-decay-model">2.1 Symmetry Observable Decay Model<a class="headerlink" href="#21-symmetry-observable-decay-model" title="Permanent link">&para;</a></h3>
+<p>Under noise at scale factor <span class="arithmatex">\(g\)</span> (where <span class="arithmatex">\(g = 1\)</span> is base noise), the
+symmetry observable decays exponentially:</p>
+<div class="arithmatex">\[\langle S \rangle_g = \langle S \rangle_{\text{ideal}} \cdot e^{-\alpha (g - 1)}\]</div>
+<p>where <span class="arithmatex">\(\alpha \geq 0\)</span> is the noise scaling exponent. This model follows
+from the Lindblad master equation under depolarising noise: each gate
+contributes an independent decay factor, and circuit folding (scale
+factor <span class="arithmatex">\(g\)</span>) multiplies the total decay rate by <span class="arithmatex">\(g\)</span>.</p>
+<h3 id="22-learning-alpha-via-log-linear-regression">2.2 Learning <span class="arithmatex">\(\alpha\)</span> via Log-Linear Regression<a class="headerlink" href="#22-learning-alpha-via-log-linear-regression" title="Permanent link">&para;</a></h3>
+<p>Taking the logarithm:</p>
+<div class="arithmatex">\[\ln \left( \frac{\langle S \rangle_g}{\langle S \rangle_{\text{ideal}}} \right) = -\alpha (g - 1)\]</div>
+<p>This is a linear model <span class="arithmatex">\(y = -\alpha \cdot x\)</span> where:
+- <span class="arithmatex">\(y_i = \ln(\langle S \rangle_{g_i} / \langle S \rangle_{\text{ideal}})\)</span>
+- <span class="arithmatex">\(x_i = g_i - 1\)</span></p>
+<p>We fit <span class="arithmatex">\(\alpha\)</span> via ordinary least-squares regression on <span class="arithmatex">\((x_i, y_i)\)</span>
+pairs from <span class="arithmatex">\(N \geq 2\)</span> noise scale measurements. The intercept is
+included in the fit to absorb any bias from non-exponential effects.</p>
+<p><strong>Fit residual:</strong></p>
+<div class="arithmatex">\[r = \sqrt{ \frac{1}{N} \sum_i (y_i - \hat{y}_i)^2 }\]</div>
+<p>A large residual (<span class="arithmatex">\(r &gt; 0.1\)</span>) indicates the exponential decay assumption
+is violated, suggesting non-Markovian noise or systematic calibration
+drift.</p>
+<h3 id="23-guess-extrapolation-formula">2.3 GUESS Extrapolation Formula<a class="headerlink" href="#23-guess-extrapolation-formula" title="Permanent link">&para;</a></h3>
+<p>Given the learned <span class="arithmatex">\(\alpha\)</span>, the mitigated value of any target observable
+<span class="arithmatex">\(O\)</span> is (Oliva del Moral <em>et al.</em>, 2026, Eq. 5):</p>
+<div class="arithmatex">\[\langle O \rangle_{\text{mitigated}} \approx \langle O \rangle_{\text{noisy}} \cdot \left( \frac{|\langle S \rangle_{\text{ideal}}|}{|\langle S \rangle_{\text{noisy}}|} \right)^\alpha\]</div>
+<p><strong>Correction factor:</strong></p>
+<div class="arithmatex">\[C = \left( \frac{|\langle S \rangle_{\text{ideal}}|}{|\langle S \rangle_{\text{noisy}}|} \right)^\alpha\]</div>
+<p>Properties:
+- When noise is absent (<span class="arithmatex">\(\langle S \rangle_{\text{noisy}} = \langle S \rangle_{\text{ideal}}\)</span>),
+  <span class="arithmatex">\(C = 1\)</span> — no correction applied
+- When <span class="arithmatex">\(\alpha = 0\)</span> (no learned decay), <span class="arithmatex">\(C = 1\)</span> regardless of symmetry values
+- When symmetry fully decays (<span class="arithmatex">\(\langle S \rangle_{\text{noisy}} \to 0\)</span>),
+  correction diverges — we fall back to the raw value
+- <span class="arithmatex">\(C \geq 1\)</span> for physical noise (<span class="arithmatex">\(\alpha \geq 0\)</span>, <span class="arithmatex">\(|\langle S \rangle_{\text{noisy}}| \leq |\langle S \rangle_{\text{ideal}}|\)</span>)</p>
+<h3 id="24-absolute-value-convention">2.4 Absolute Value Convention<a class="headerlink" href="#24-absolute-value-convention" title="Permanent link">&para;</a></h3>
+<p>The ratio uses absolute values <span class="arithmatex">\(|\langle S \rangle_{\text{ideal}} / \langle S \rangle_{\text{noisy}}|\)</span>
+to handle cases where noise flips the sign of the symmetry observable.
+This is mathematically equivalent to the original formulation when both
+values have the same sign (the common case), and prevents negative
+correction factors.</p>
+<hr />
+<h2 id="3-scpn-specific-application">3. SCPN-Specific Application<a class="headerlink" href="#3-scpn-specific-application" title="Permanent link">&para;</a></h2>
+<h3 id="31-xy-hamiltonian-symmetry">3.1 XY Hamiltonian Symmetry<a class="headerlink" href="#31-xy-hamiltonian-symmetry" title="Permanent link">&para;</a></h3>
+<p>For the Kuramoto-XY Hamiltonian on <span class="arithmatex">\(n\)</span> qubits:</p>
+<div class="arithmatex">\[H_{XY} = \sum_{n &lt; m} K_{nm} (\sigma_n^x \sigma_m^x + \sigma_n^y \sigma_m^y)\]</div>
+<p>The total magnetisation operator <span class="arithmatex">\(S = \sum_{i=1}^{n} Z_i\)</span> satisfies:</p>
+<div class="arithmatex">\[[H_{XY}, S] = 0\]</div>
+<p>This commutation relation holds because <span class="arithmatex">\(H_{XY}\)</span> only contains <span class="arithmatex">\(XX + YY\)</span>
+terms, which preserve the total number of excitations (spin flips).</p>
+<h3 id="32-ideal-magnetisation-values">3.2 Ideal Magnetisation Values<a class="headerlink" href="#32-ideal-magnetisation-values" title="Permanent link">&para;</a></h3>
+<p>The ideal value of <span class="arithmatex">\(\langle S \rangle\)</span> depends solely on the initial state:</p>
+<table>
+<thead>
+<tr>
+<th>Initial State</th>
+<th><span class="arithmatex">\(\langle S \rangle_{\text{ideal}}\)</span></th>
+<th>Derivation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ground <span class="arithmatex">\(\|00\ldots 0\rangle\)</span></td>
+<td><span class="arithmatex">\(+n\)</span></td>
+<td>Each qubit contributes <span class="arithmatex">\(\langle Z_i \rangle = +1\)</span></td>
+</tr>
+<tr>
+<td>Néel <span class="arithmatex">\(\|0101\ldots\rangle\)</span></td>
+<td><span class="arithmatex">\(n \bmod 2\)</span></td>
+<td>Alternating <span class="arithmatex">\(+1\)</span> and <span class="arithmatex">\(-1\)</span>; cancels for even <span class="arithmatex">\(n\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>For the ground state (most common in SCPN experiments), <span class="arithmatex">\(\langle S \rangle_{\text{ideal}} = n\)</span>,
+giving a strong signal for decay detection.</p>
+<p><strong>Néel state caveat:</strong> For even <span class="arithmatex">\(n\)</span>, <span class="arithmatex">\(\langle S \rangle_{\text{ideal}} = 0\)</span>,
+which makes GUESS inapplicable (division by zero). In this case, use a
+different symmetry observable or fall back to standard ZNE.</p>
+<h3 id="33-target-observable">3.3 Target Observable<a class="headerlink" href="#33-target-observable" title="Permanent link">&para;</a></h3>
+<p>The SCPN synchronisation witness (order parameter):</p>
+<div class="arithmatex">\[R = \frac{1}{n} \left| \sum_i (\langle X_i \rangle + i \langle Y_i \rangle) \right|\]</div>
+<p>does not commute with <span class="arithmatex">\(H_{XY}\)</span>, so its ideal value is unknown a priori.
+This is precisely the class of observables that GUESS is designed to
+mitigate.</p>
+<h3 id="34-measurement-protocol">3.4 Measurement Protocol<a class="headerlink" href="#34-measurement-protocol" title="Permanent link">&para;</a></h3>
+<p>Since <span class="arithmatex">\(S = \sum Z_i\)</span> requires only computational-basis (Z-basis)
+measurements, the symmetry measurement is "free" — it shares the same
+basis as the standard circuit output. No additional circuit variants or
+shots are needed to obtain <span class="arithmatex">\(\langle S \rangle\)</span>.</p>
+<p>For the target <span class="arithmatex">\(R\)</span>, three measurement bases (X, Y, Z) are already
+required. GUESS adds zero overhead to the measurement protocol.</p>
+<hr />
+<h2 id="4-architecture">4. Architecture<a class="headerlink" href="#4-architecture" title="Permanent link">&para;</a></h2>
+<h3 id="41-module-structure">4.1 Module Structure<a class="headerlink" href="#41-module-structure" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>src/scpn_quantum_control/mitigation/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── __init__.py          # Re-exports GUESS API
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── symmetry_decay.py    # GUESS Python implementation + Rust dispatch
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├── symmetry_verification.py  # Z₂ parity post-selection (existing)
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>├── zne.py               # Standard Richardson ZNE (existing)
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>└── ...
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>scpn_quantum_engine/src/
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>├── symmetry_decay.rs    # Rust-accelerated fit + batch extrapolation
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>├── validation.rs        # FFI boundary validation
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>└── lib.rs               # PyO3 module registration
+</code></pre></div>
+<h3 id="42-data-flow">4.2 Data Flow<a class="headerlink" href="#42-data-flow" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>                    ┌─────────────────────┐
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>                    │  QPU / Simulator     │
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>                    │  Execute at g=1,3,5  │
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>                    └──────────┬──────────┘
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>                               │
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>                    ┌──────────▼──────────┐
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>                    │  Measure ⟨S⟩_g and  │
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>                    │  ⟨O⟩_g at each g    │
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>                    └──────────┬──────────┘
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>                               │
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>              ┌────────────────▼────────────────┐
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>              │  learn_symmetry_decay(           │
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>              │    ideal_value, noisy_S, scales) │
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>              │  → SymmetryDecayModel(α, r)     │
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>              └────────────────┬────────────────┘
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>                               │
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>              ┌────────────────▼────────────────┐
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>              │  guess_extrapolate(              │
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>              │    O_noisy, S_noisy, model)      │
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>              │  → GUESSResult(mitigated, C)     │
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>              └─────────────────────────────────┘
+</code></pre></div>
+<h3 id="43-dataclasses">4.3 Dataclasses<a class="headerlink" href="#43-dataclasses" title="Permanent link">&para;</a></h3>
+<p><strong><code>SymmetryDecayModel</code></strong> — the learned noise model:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ideal_symmetry_value</code></td>
+<td><code>float</code></td>
+<td>Analytically known <span class="arithmatex">\(\langle S \rangle_{\text{ideal}}\)</span></td>
+</tr>
+<tr>
+<td><code>noisy_symmetry_values</code></td>
+<td><code>list[float]</code></td>
+<td>Measured <span class="arithmatex">\(\langle S \rangle_g\)</span> at each noise scale</td>
+</tr>
+<tr>
+<td><code>noise_scales</code></td>
+<td><code>list[int]</code></td>
+<td>Noise scale factors <span class="arithmatex">\(g = 1, 3, 5, \ldots\)</span></td>
+</tr>
+<tr>
+<td><code>alpha</code></td>
+<td><code>float</code></td>
+<td>Learned decay exponent</td>
+</tr>
+<tr>
+<td><code>fit_residual</code></td>
+<td><code>float</code></td>
+<td>RMS residual of the log-linear fit</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>GUESSResult</code></strong> — a single mitigated measurement:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>raw_value</code></td>
+<td><code>float</code></td>
+<td>Original <span class="arithmatex">\(\langle O \rangle_{\text{noisy}}\)</span></td>
+</tr>
+<tr>
+<td><code>mitigated_value</code></td>
+<td><code>float</code></td>
+<td>GUESS-corrected <span class="arithmatex">\(\langle O \rangle_{\text{mitigated}}\)</span></td>
+</tr>
+<tr>
+<td><code>decay_model</code></td>
+<td><code>SymmetryDecayModel</code></td>
+<td>Reference to the decay model used</td>
+</tr>
+<tr>
+<td><code>correction_factor</code></td>
+<td><code>float</code></td>
+<td>The factor <span class="arithmatex">\(C\)</span> applied</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-api-reference">5. API Reference<a class="headerlink" href="#5-api-reference" title="Permanent link">&para;</a></h2>
+<h3 id="51-learn_symmetry_decay">5.1 <code>learn_symmetry_decay</code><a class="headerlink" href="#51-learn_symmetry_decay" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.mitigation.symmetry_decay</span><span class="w"> </span><span class="kn">import</span> <span class="n">learn_symmetry_decay</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">model</span> <span class="o">=</span> <span class="n">learn_symmetry_decay</span><span class="p">(</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">ideal_symmetry_value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>      <span class="c1"># ⟨S⟩_ideal (e.g., n_qubits for ground state)</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">noisy_symmetry_values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>  <span class="c1"># measured ⟨S⟩_g at each scale</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">noise_scales</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>          <span class="c1"># scale factors [1, 3, 5, ...]</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SymmetryDecayModel</span>
+</code></pre></div>
+<p><strong>Behaviour:</strong></p>
+<ol>
+<li>Validates inputs:</li>
+<li><code>len(noisy_symmetry_values) == len(noise_scales)</code> (else <code>ValueError</code>)</li>
+<li><code>len(noise_scales) &gt;= 2</code> (else <code>ValueError</code>)</li>
+<li>
+<p><code>|ideal_symmetry_value| &gt; 1e-15</code> (else <code>ValueError</code>)</p>
+</li>
+<li>
+<p>If <code>scpn_quantum_engine</code> is available, delegates to <code>fit_symmetry_decay</code>
+   (Rust) for 2–5× speedup on large batches.</p>
+</li>
+<li>
+<p>Otherwise, computes in pure Python:</p>
+</li>
+<li>Ratios: <span class="arithmatex">\(r_i = \langle S \rangle_{g_i} / \langle S \rangle_{\text{ideal}}\)</span></li>
+<li>Clamps ratios to <span class="arithmatex">\([10^{-15}, \infty)\)</span> to avoid <span class="arithmatex">\(\ln(0)\)</span></li>
+<li>Log-linear regression: <code>np.polyfit(g_shifted, log_ratios, 1)</code></li>
+<li><span class="arithmatex">\(\alpha = -\text{slope}\)</span>, residual = RMSE of fit</li>
+</ol>
+<p><strong>Edge cases:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>All <span class="arithmatex">\(\langle S \rangle_g\)</span> equal <span class="arithmatex">\(\langle S \rangle_{\text{ideal}}\)</span></td>
+<td><span class="arithmatex">\(\alpha = 0\)</span>, residual <span class="arithmatex">\(= 0\)</span></td>
+</tr>
+<tr>
+<td>All noise scales identical</td>
+<td><span class="arithmatex">\(\alpha = 0\)</span> (degenerate fit)</td>
+</tr>
+<tr>
+<td>Negative ratios (sign flip)</td>
+<td>Clamped to <span class="arithmatex">\(10^{-15}\)</span> before <span class="arithmatex">\(\ln\)</span></td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-guess_extrapolate">5.2 <code>guess_extrapolate</code><a class="headerlink" href="#52-guess_extrapolate" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.mitigation.symmetry_decay</span><span class="w"> </span><span class="kn">import</span> <span class="n">guess_extrapolate</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">result</span> <span class="o">=</span> <span class="n">guess_extrapolate</span><span class="p">(</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">target_noisy_value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>    <span class="c1"># ⟨O⟩_noisy at base noise</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">symmetry_noisy_value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>  <span class="c1"># ⟨S⟩_noisy at base noise</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">decay_model</span><span class="p">:</span> <span class="n">SymmetryDecayModel</span><span class="p">,</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GUESSResult</span>
+</code></pre></div>
+<p><strong>Behaviour:</strong></p>
+<ol>
+<li>
+<p>If <span class="arithmatex">\(|\langle S \rangle_{\text{noisy}}| &lt; 10^{-15}\)</span>: symmetry fully
+   decayed, correction undefined — returns raw value with <span class="arithmatex">\(C = 1\)</span>.</p>
+</li>
+<li>
+<p>Otherwise: <span class="arithmatex">\(C = (|S_{\text{ideal}} / S_{\text{noisy}}|)^\alpha\)</span>,
+   mitigated <span class="arithmatex">\(= O_{\text{noisy}} \times C\)</span>.</p>
+</li>
+</ol>
+<h3 id="53-xy_magnetisation_ideal">5.3 <code>xy_magnetisation_ideal</code><a class="headerlink" href="#53-xy_magnetisation_ideal" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.mitigation.symmetry_decay</span><span class="w"> </span><span class="kn">import</span> <span class="n">xy_magnetisation_ideal</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">value</span> <span class="o">=</span> <span class="n">xy_magnetisation_ideal</span><span class="p">(</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">n_qubits</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">initial_state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ground&quot;</span><span class="p">,</span>  <span class="c1"># &quot;ground&quot; or &quot;neel&quot;</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span>
+</code></pre></div>
+<p>Returns the ideal total magnetisation <span class="arithmatex">\(\langle \sum Z_i \rangle\)</span> for
+the XY Hamiltonian with the given initial state.</p>
+<table>
+<thead>
+<tr>
+<th><code>initial_state</code></th>
+<th>Return value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>"ground"</code></td>
+<td><code>float(n_qubits)</code></td>
+</tr>
+<tr>
+<td><code>"neel"</code></td>
+<td><code>float(n_qubits % 2)</code></td>
+</tr>
+<tr>
+<td>other</td>
+<td><code>ValueError</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="54-imports">5.4 Imports<a class="headerlink" href="#54-imports" title="Permanent link">&para;</a></h3>
+<p>All public API is re-exported from <code>scpn_quantum_control.mitigation</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.mitigation</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">GUESSResult</span><span class="p">,</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">SymmetryDecayModel</span><span class="p">,</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">guess_extrapolate</span><span class="p">,</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">learn_symmetry_decay</span><span class="p">,</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">xy_magnetisation_ideal</span><span class="p">,</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="p">)</span>
+</code></pre></div>
+<p>And from the top-level package:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">GUESSResult</span><span class="p">,</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="n">SymmetryDecayModel</span><span class="p">,</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">guess_extrapolate</span><span class="p">,</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="n">learn_symmetry_decay</span><span class="p">,</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="6-rust-acceleration">6. Rust Acceleration<a class="headerlink" href="#6-rust-acceleration" title="Permanent link">&para;</a></h2>
+<h3 id="61-overview">6.1 Overview<a class="headerlink" href="#61-overview" title="Permanent link">&para;</a></h3>
+<p>Two functions are accelerated via <code>scpn_quantum_engine</code> (PyO3 + rayon):</p>
+<table>
+<thead>
+<tr>
+<th>Python Function</th>
+<th>Rust Function</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>learn_symmetry_decay</code></td>
+<td><code>fit_symmetry_decay</code></td>
+<td>Least-squares <span class="arithmatex">\(\alpha\)</span> fitting</td>
+</tr>
+<tr>
+<td>(batch API)</td>
+<td><code>guess_extrapolate_batch</code></td>
+<td>Parallel batch correction</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-fit_symmetry_decay-rust">6.2 <code>fit_symmetry_decay</code> (Rust)<a class="headerlink" href="#62-fit_symmetry_decay-rust" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="cp">#[pyfunction]</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">fit_symmetry_decay</span><span class="p">(</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="n">s_ideal</span><span class="p">:</span><span class="w"> </span><span class="kt">f64</span><span class="p">,</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="n">noisy_values</span><span class="p">:</span><span class="w"> </span><span class="nc">PyReadonlyArray1</span><span class="o">&lt;&#39;</span><span class="nb">_</span><span class="p">,</span><span class="w"> </span><span class="kt">f64</span><span class="o">&gt;</span><span class="p">,</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span><span class="n">noise_scales</span><span class="p">:</span><span class="w"> </span><span class="nc">PyReadonlyArray1</span><span class="o">&lt;&#39;</span><span class="nb">_</span><span class="p">,</span><span class="w"> </span><span class="kt">f64</span><span class="o">&gt;</span><span class="p">,</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">PyResult</span><span class="o">&lt;</span><span class="p">(</span><span class="kt">f64</span><span class="p">,</span><span class="w"> </span><span class="kt">f64</span><span class="p">)</span><span class="o">&gt;</span>
+</code></pre></div>
+<p>Returns <code>(alpha, fit_residual)</code>.</p>
+<p><strong>Implementation:</strong> Manual least-squares on log-transformed ratios
+without heap allocation. Uses <code>validate_positive</code> from
+<code>validation.rs</code> for FFI boundary safety.</p>
+<p><strong>Inner function</strong> (<code>fit_decay_inner</code>) is pure Rust, fully testable
+without Python context. 3 Rust unit tests:
+- Exact exponential recovery (<span class="arithmatex">\(\alpha = 0.15\)</span>, residual <span class="arithmatex">\(&lt; 10^{-10}\)</span>)
+- No-decay case (<span class="arithmatex">\(\alpha = 0\)</span>)
+- Single-point fallback (<span class="arithmatex">\(\alpha = 0\)</span>)</p>
+<h3 id="63-guess_extrapolate_batch-rust">6.3 <code>guess_extrapolate_batch</code> (Rust)<a class="headerlink" href="#63-guess_extrapolate_batch-rust" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="cp">#[pyfunction]</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">guess_extrapolate_batch</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">(</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span><span class="n">py</span><span class="p">:</span><span class="w"> </span><span class="nc">Python</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">,</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span><span class="n">target_noisy</span><span class="p">:</span><span class="w"> </span><span class="nc">PyReadonlyArray1</span><span class="o">&lt;&#39;</span><span class="nb">_</span><span class="p">,</span><span class="w"> </span><span class="kt">f64</span><span class="o">&gt;</span><span class="p">,</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">    </span><span class="n">symmetry_noisy</span><span class="p">:</span><span class="w"> </span><span class="nc">PyReadonlyArray1</span><span class="o">&lt;&#39;</span><span class="nb">_</span><span class="p">,</span><span class="w"> </span><span class="kt">f64</span><span class="o">&gt;</span><span class="p">,</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">    </span><span class="n">s_ideal</span><span class="p">:</span><span class="w"> </span><span class="kt">f64</span><span class="p">,</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">    </span><span class="n">alpha</span><span class="p">:</span><span class="w"> </span><span class="kt">f64</span><span class="p">,</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">PyResult</span><span class="o">&lt;</span><span class="n">Bound</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="p">,</span><span class="w"> </span><span class="n">PyArray1</span><span class="o">&lt;</span><span class="kt">f64</span><span class="o">&gt;&gt;&gt;</span>
+</code></pre></div>
+<p>Applies GUESS correction to <span class="arithmatex">\(N\)</span> observables in parallel via rayon.
+Returns a numpy array of mitigated values.</p>
+<p><strong>Parallelisation:</strong> <code>par_iter().zip()</code> over target/symmetry pairs.
+For <span class="arithmatex">\(N &gt; 1000\)</span>, rayon thread pool amortises overhead effectively.
+For small <span class="arithmatex">\(N\)</span>, rayon degrades gracefully (single-threaded fallback).</p>
+<h3 id="64-transparent-dispatch">6.4 Transparent Dispatch<a class="headerlink" href="#64-transparent-dispatch" title="Permanent link">&para;</a></h3>
+<p>The Python <code>learn_symmetry_decay</code> function automatically dispatches to
+Rust when <code>scpn_quantum_engine</code> is importable:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_engine</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>        <span class="n">fit_symmetry_decay</span> <span class="k">as</span> <span class="n">_fit_rust</span><span class="p">,</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>        <span class="n">guess_extrapolate_batch</span> <span class="k">as</span> <span class="n">_batch_rust</span><span class="p">,</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="p">)</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="n">_HAS_RUST</span> <span class="o">=</span> <span class="kc">True</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>    <span class="n">_HAS_RUST</span> <span class="o">=</span> <span class="kc">False</span>
+</code></pre></div>
+<p>Inside <code>learn_symmetry_decay</code>:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="k">if</span> <span class="n">_HAS_RUST</span><span class="p">:</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span class="n">alpha</span><span class="p">,</span> <span class="n">residual</span> <span class="o">=</span> <span class="n">_fit_rust</span><span class="p">(</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>        <span class="n">ideal_symmetry_value</span><span class="p">,</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>        <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">noisy_symmetry_values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>        <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">noise_scales</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span class="p">)</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    <span class="c1"># Pure Python fallback (numpy polyfit)</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>    <span class="o">...</span>
+</code></pre></div></p>
+<h3 id="65-build-configuration">6.5 Build Configuration<a class="headerlink" href="#65-build-configuration" title="Permanent link">&para;</a></h3>
+<p>The Rust crate uses optimised release settings in <code>Cargo.toml</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">[profile.release]</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">opt-level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">lto</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;fat&quot;</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="n">codegen-units</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="n">strip</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;debuginfo&quot;</span>
+</code></pre></div>
+<p>Build the extension:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nb">cd</span><span class="w"> </span>scpn_quantum_engine
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>maturin<span class="w"> </span>develop<span class="w"> </span>--release
+</code></pre></div></p>
+<hr />
+<h2 id="7-tutorials">7. Tutorials<a class="headerlink" href="#7-tutorials" title="Permanent link">&para;</a></h2>
+<h3 id="71-basic-guess-correction">7.1 Basic GUESS Correction<a class="headerlink" href="#71-basic-guess-correction" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.mitigation.symmetry_decay</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    <span class="n">learn_symmetry_decay</span><span class="p">,</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>    <span class="n">guess_extrapolate</span><span class="p">,</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>    <span class="n">xy_magnetisation_ideal</span><span class="p">,</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="p">)</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="n">n_qubits</span> <span class="o">=</span> <span class="mi">4</span>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="n">s_ideal</span> <span class="o">=</span> <span class="n">xy_magnetisation_ideal</span><span class="p">(</span><span class="n">n_qubits</span><span class="p">,</span> <span class="s2">&quot;ground&quot;</span><span class="p">)</span>  <span class="c1"># 4.0</span>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="c1"># Simulated noisy measurements at scale factors g = 1, 3, 5</span>
+<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="c1"># S decays exponentially: S_g = 4.0 * exp(-0.12 * (g - 1))</span>
+<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a><span class="n">noise_scales</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="n">s_noisy</span> <span class="o">=</span> <span class="p">[</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.12</span> <span class="o">*</span> <span class="p">(</span><span class="n">g</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">noise_scales</span><span class="p">]</span>
+<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="c1"># s_noisy ≈ [4.0, 3.15, 2.48]</span>
+<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a>
+<a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a><span class="c1"># Step 1: Learn the decay model</span>
+<a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a><span class="n">model</span> <span class="o">=</span> <span class="n">learn_symmetry_decay</span><span class="p">(</span><span class="n">s_ideal</span><span class="p">,</span> <span class="n">s_noisy</span><span class="p">,</span> <span class="n">noise_scales</span><span class="p">)</span>
+<a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Learned α = </span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">alpha</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>   <span class="c1"># ≈ 0.12</span>
+<a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fit residual = </span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">fit_residual</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># ≈ 0</span>
+<a id="__codelineno-13-21" name="__codelineno-13-21" href="#__codelineno-13-21"></a>
+<a id="__codelineno-13-22" name="__codelineno-13-22" href="#__codelineno-13-22"></a><span class="c1"># Step 2: Apply GUESS to target observable</span>
+<a id="__codelineno-13-23" name="__codelineno-13-23" href="#__codelineno-13-23"></a><span class="c1"># Measured R_noisy = 0.45 at g = 1, and S_noisy = 3.95 at g = 1</span>
+<a id="__codelineno-13-24" name="__codelineno-13-24" href="#__codelineno-13-24"></a><span class="n">result</span> <span class="o">=</span> <span class="n">guess_extrapolate</span><span class="p">(</span>
+<a id="__codelineno-13-25" name="__codelineno-13-25" href="#__codelineno-13-25"></a>    <span class="n">target_noisy_value</span><span class="o">=</span><span class="mf">0.45</span><span class="p">,</span>
+<a id="__codelineno-13-26" name="__codelineno-13-26" href="#__codelineno-13-26"></a>    <span class="n">symmetry_noisy_value</span><span class="o">=</span><span class="mf">3.95</span><span class="p">,</span>
+<a id="__codelineno-13-27" name="__codelineno-13-27" href="#__codelineno-13-27"></a>    <span class="n">decay_model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+<a id="__codelineno-13-28" name="__codelineno-13-28" href="#__codelineno-13-28"></a><span class="p">)</span>
+<a id="__codelineno-13-29" name="__codelineno-13-29" href="#__codelineno-13-29"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Raw R = </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">raw_value</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-30" name="__codelineno-13-30" href="#__codelineno-13-30"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mitigated R = </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">mitigated_value</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-31" name="__codelineno-13-31" href="#__codelineno-13-31"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Correction factor = </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">correction_factor</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="72-guess-with-real-hardware-data">7.2 GUESS with Real Hardware Data<a class="headerlink" href="#72-guess-with-real-hardware-data" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.hardware</span><span class="w"> </span><span class="kn">import</span> <span class="n">HardwareRunner</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.hardware.circuit_export</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_trotter_circuit</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.mitigation.symmetry_decay</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>    <span class="n">learn_symmetry_decay</span><span class="p">,</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>    <span class="n">guess_extrapolate</span><span class="p">,</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>    <span class="n">xy_magnetisation_ideal</span><span class="p">,</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="p">)</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.mitigation.zne</span><span class="w"> </span><span class="kn">import</span> <span class="n">gate_fold_circuit</span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="c1"># Build experiment</span>
+<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="n">n</span> <span class="o">=</span> <span class="mi">4</span>
+<a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="n">K</span> <span class="o">=</span> <span class="mf">0.45</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">))))</span>
+<a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a><span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+<a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a><span class="n">omega</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+<a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a><span class="n">qc</span> <span class="o">=</span> <span class="n">build_trotter_circuit</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">omega</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">reps</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a><span class="n">qc</span><span class="o">.</span><span class="n">measure_all</span><span class="p">()</span>
+<a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a>
+<a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a><span class="c1"># Run at multiple noise scales (circuit folding)</span>
+<a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a><span class="n">runner</span> <span class="o">=</span> <span class="n">HardwareRunner</span><span class="p">(</span><span class="n">use_simulator</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a><span class="n">runner</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+<a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a>
+<a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a><span class="n">noise_scales</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<a id="__codelineno-14-24" name="__codelineno-14-24" href="#__codelineno-14-24"></a><span class="n">s_measurements</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-14-25" name="__codelineno-14-25" href="#__codelineno-14-25"></a><span class="n">r_measurements</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-14-26" name="__codelineno-14-26" href="#__codelineno-14-26"></a>
+<a id="__codelineno-14-27" name="__codelineno-14-27" href="#__codelineno-14-27"></a><span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">noise_scales</span><span class="p">:</span>
+<a id="__codelineno-14-28" name="__codelineno-14-28" href="#__codelineno-14-28"></a>    <span class="k">if</span> <span class="n">g</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+<a id="__codelineno-14-29" name="__codelineno-14-29" href="#__codelineno-14-29"></a>        <span class="n">folded</span> <span class="o">=</span> <span class="n">qc</span>
+<a id="__codelineno-14-30" name="__codelineno-14-30" href="#__codelineno-14-30"></a>    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-14-31" name="__codelineno-14-31" href="#__codelineno-14-31"></a>        <span class="n">folded</span> <span class="o">=</span> <span class="n">gate_fold_circuit</span><span class="p">(</span><span class="n">qc</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="n">g</span><span class="p">)</span>
+<a id="__codelineno-14-32" name="__codelineno-14-32" href="#__codelineno-14-32"></a>
+<a id="__codelineno-14-33" name="__codelineno-14-33" href="#__codelineno-14-33"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">run_circuit</span><span class="p">(</span><span class="n">folded</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;guess_g</span><span class="si">{</span><span class="n">g</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">shots</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+<a id="__codelineno-14-34" name="__codelineno-14-34" href="#__codelineno-14-34"></a>    <span class="c1"># Extract S = sum of Z expectations from counts</span>
+<a id="__codelineno-14-35" name="__codelineno-14-35" href="#__codelineno-14-35"></a>    <span class="c1"># Extract R from X, Y, Z basis measurements</span>
+<a id="__codelineno-14-36" name="__codelineno-14-36" href="#__codelineno-14-36"></a>    <span class="c1"># (implementation depends on experiment protocol)</span>
+<a id="__codelineno-14-37" name="__codelineno-14-37" href="#__codelineno-14-37"></a>    <span class="n">s_measurements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">extract_total_z</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">counts</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+<a id="__codelineno-14-38" name="__codelineno-14-38" href="#__codelineno-14-38"></a>    <span class="n">r_measurements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">extract_order_param</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+<a id="__codelineno-14-39" name="__codelineno-14-39" href="#__codelineno-14-39"></a>
+<a id="__codelineno-14-40" name="__codelineno-14-40" href="#__codelineno-14-40"></a><span class="c1"># Apply GUESS</span>
+<a id="__codelineno-14-41" name="__codelineno-14-41" href="#__codelineno-14-41"></a><span class="n">s_ideal</span> <span class="o">=</span> <span class="n">xy_magnetisation_ideal</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="s2">&quot;ground&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-42" name="__codelineno-14-42" href="#__codelineno-14-42"></a><span class="n">model</span> <span class="o">=</span> <span class="n">learn_symmetry_decay</span><span class="p">(</span><span class="n">s_ideal</span><span class="p">,</span> <span class="n">s_measurements</span><span class="p">,</span> <span class="n">noise_scales</span><span class="p">)</span>
+<a id="__codelineno-14-43" name="__codelineno-14-43" href="#__codelineno-14-43"></a><span class="n">mitigated</span> <span class="o">=</span> <span class="n">guess_extrapolate</span><span class="p">(</span>
+<a id="__codelineno-14-44" name="__codelineno-14-44" href="#__codelineno-14-44"></a>    <span class="n">r_measurements</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>  <span class="c1"># target at base noise</span>
+<a id="__codelineno-14-45" name="__codelineno-14-45" href="#__codelineno-14-45"></a>    <span class="n">s_measurements</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>  <span class="c1"># symmetry at base noise</span>
+<a id="__codelineno-14-46" name="__codelineno-14-46" href="#__codelineno-14-46"></a>    <span class="n">model</span><span class="p">,</span>
+<a id="__codelineno-14-47" name="__codelineno-14-47" href="#__codelineno-14-47"></a><span class="p">)</span>
+<a id="__codelineno-14-48" name="__codelineno-14-48" href="#__codelineno-14-48"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GUESS-mitigated R = </span><span class="si">{</span><span class="n">mitigated</span><span class="o">.</span><span class="n">mitigated_value</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="73-batch-guess-with-rust">7.3 Batch GUESS with Rust<a class="headerlink" href="#73-batch-guess-with-rust" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">guess_extrapolate_batch</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>    <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;Rust engine required for batch GUESS&quot;</span><span class="p">)</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="c1"># 1000 observables to mitigate simultaneously</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="n">n_obs</span> <span class="o">=</span> <span class="mi">1000</span>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="n">target_noisy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="n">n_obs</span><span class="p">)</span>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="n">symmetry_noisy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">3.5</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="n">n_obs</span><span class="p">)</span>
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="n">s_ideal</span> <span class="o">=</span> <span class="mf">4.0</span>
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a><span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.12</span>
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a>
+<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a><span class="c1"># Single FFI call — rayon parallelisation</span>
+<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a><span class="n">mitigated</span> <span class="o">=</span> <span class="n">guess_extrapolate_batch</span><span class="p">(</span><span class="n">target_noisy</span><span class="p">,</span> <span class="n">symmetry_noisy</span><span class="p">,</span> <span class="n">s_ideal</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
+<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a><span class="c1"># mitigated: numpy array of shape (1000,)</span>
+</code></pre></div>
+<h3 id="74-combining-guess-with-existing-mitigation">7.4 Combining GUESS with Existing Mitigation<a class="headerlink" href="#74-combining-guess-with-existing-mitigation" title="Permanent link">&para;</a></h3>
+<p>GUESS is complementary to other mitigation techniques:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.mitigation.symmetry_decay</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>    <span class="n">learn_symmetry_decay</span><span class="p">,</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>    <span class="n">guess_extrapolate</span><span class="p">,</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="p">)</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.mitigation.mitiq_integration</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>    <span class="n">zne_mitigated_expectation</span><span class="p">,</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="p">)</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="c1"># Option 1: GUESS only (physics-informed, single ratio)</span>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="n">guess_result</span> <span class="o">=</span> <span class="n">guess_extrapolate</span><span class="p">(</span><span class="n">o_noisy</span><span class="p">,</span> <span class="n">s_noisy</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="c1"># Option 2: Richardson ZNE only (generic polynomial)</span>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="n">zne_result</span> <span class="o">=</span> <span class="n">zne_mitigated_expectation</span><span class="p">(</span><span class="n">circuit</span><span class="p">)</span>
+<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a>
+<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a><span class="c1"># Option 3: GUESS + DDD (combine idle noise reduction with symmetry correction)</span>
+<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a><span class="c1"># Run DDD first, then apply GUESS to DDD-mitigated values</span>
+<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.mitigation.mitiq_integration</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a>    <span class="n">ddd_mitigated_expectation</span><span class="p">,</span>
+<a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a><span class="p">)</span>
+<a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a><span class="n">o_ddd</span> <span class="o">=</span> <span class="n">ddd_mitigated_expectation</span><span class="p">(</span><span class="n">circuit</span><span class="p">)</span>
+<a id="__codelineno-16-21" name="__codelineno-16-21" href="#__codelineno-16-21"></a><span class="n">final</span> <span class="o">=</span> <span class="n">guess_extrapolate</span><span class="p">(</span><span class="n">o_ddd</span><span class="p">,</span> <span class="n">s_noisy</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+<a id="__codelineno-16-22" name="__codelineno-16-22" href="#__codelineno-16-22"></a>
+<a id="__codelineno-16-23" name="__codelineno-16-23" href="#__codelineno-16-23"></a><span class="c1"># Option 4: GUESS + PEC (highest quality, highest cost)</span>
+<a id="__codelineno-16-24" name="__codelineno-16-24" href="#__codelineno-16-24"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.mitigation.pec</span><span class="w"> </span><span class="kn">import</span> <span class="n">pec_mitigate</span>
+<a id="__codelineno-16-25" name="__codelineno-16-25" href="#__codelineno-16-25"></a><span class="n">o_pec</span> <span class="o">=</span> <span class="n">pec_mitigate</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">noise_model</span><span class="p">)</span>
+<a id="__codelineno-16-26" name="__codelineno-16-26" href="#__codelineno-16-26"></a><span class="n">final</span> <span class="o">=</span> <span class="n">guess_extrapolate</span><span class="p">(</span><span class="n">o_pec</span><span class="p">,</span> <span class="n">s_noisy</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+</code></pre></div>
+<p><strong>Recommended combinations:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Depth Range</th>
+<th>Recommended Stack</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>&lt; 100 CZ</td>
+<td>ZNE alone</td>
+<td>Polynomial works fine at low depth</td>
+</tr>
+<tr>
+<td>100–2000 CZ</td>
+<td>GUESS</td>
+<td>Physics-informed, zero overhead</td>
+</tr>
+<tr>
+<td>2000–5000 CZ</td>
+<td>GUESS + DDD</td>
+<td>Reduce idle noise, correct gate noise</td>
+</tr>
+<tr>
+<td>&gt; 5000 CZ</td>
+<td>GUESS + PEC</td>
+<td>Maximum correction, high shot overhead</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-integration-with-existing-mitigation-stack">8. Integration with Existing Mitigation Stack<a class="headerlink" href="#8-integration-with-existing-mitigation-stack" title="Permanent link">&para;</a></h2>
+<h3 id="81-relationship-to-symmetry_verificationpy">8.1 Relationship to <code>symmetry_verification.py</code><a class="headerlink" href="#81-relationship-to-symmetry_verificationpy" title="Permanent link">&para;</a></h3>
+<p>The existing <code>symmetry_verification.py</code> module uses <span class="arithmatex">\(Z_2\)</span> parity symmetry
+for hard post-selection: runs that violate parity are discarded entirely.</p>
+<p><strong>Key difference:</strong> GUESS performs soft correction, not hard filtering.
+Every measurement contributes to the final estimate, weighted by the
+learned decay model. This yields:
+- No shot wastage (parity post-selection discards 30–50% of shots at high noise)
+- Continuous correction (not binary keep/discard)
+- The ability to correct observables that do not have a simple parity</p>
+<p><strong>Complementary use:</strong> Run parity post-selection first, then apply GUESS
+to the filtered data. The post-selected ensemble has better signal,
+giving GUESS a higher-quality input.</p>
+<h3 id="82-relationship-to-znepy">8.2 Relationship to <code>zne.py</code><a class="headerlink" href="#82-relationship-to-znepy" title="Permanent link">&para;</a></h3>
+<p>Standard Richardson ZNE (<code>zne.py</code>) fits a polynomial to <span class="arithmatex">\(\langle O \rangle_g\)</span>
+as a function of noise scale <span class="arithmatex">\(g\)</span>, then extrapolates to <span class="arithmatex">\(g = 0\)</span>.</p>
+<p><strong>Key difference:</strong> GUESS does not extrapolate the target observable
+directly. It uses the symmetry observable as a physical anchor, which is
+more robust at high noise.</p>
+<p><strong>When to prefer GUESS over Richardson:</strong>
+- Circuit depth &gt; 2000 CZ gates (Richardson overshoots)
+- The Hamiltonian has a known symmetry (always true for XY)
+- Noise is predominantly depolarising (exponential decay model holds)</p>
+<p><strong>When Richardson is better:</strong>
+- No known symmetry observable
+- Noise is highly non-Markovian (GUESS exponential model breaks down)
+- Very shallow circuits where polynomial fit is adequate</p>
+<h3 id="83-relationship-to-pec-pecpy">8.3 Relationship to PEC (<code>pec.py</code>)<a class="headerlink" href="#83-relationship-to-pec-pecpy" title="Permanent link">&para;</a></h3>
+<p>Probabilistic Error Cancellation (PEC) provides unbiased mitigation at
+exponential shot overhead. GUESS provides biased mitigation (the
+exponential decay assumption is approximate) at zero additional overhead.</p>
+<p>In practice, GUESS + PEC can be combined: use PEC for the most critical
+observable, GUESS for secondary observables where shot budget is limited.</p>
+<hr />
+<h2 id="9-benchmarks">9. Benchmarks<a class="headerlink" href="#9-benchmarks" title="Permanent link">&para;</a></h2>
+<h3 id="91-python-performance">9.1 Python Performance<a class="headerlink" href="#91-python-performance" title="Permanent link">&para;</a></h3>
+<p>Measured on ML350 Gen8 (128 GB RAM, Xeon E5-2620v2):</p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Input Size</th>
+<th>Wall Time</th>
+<th>Throughput</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>learn_symmetry_decay</code></td>
+<td>5 noise scales</td>
+<td>&lt; 1 µs</td>
+<td>&gt; 1M calls/s</td>
+</tr>
+<tr>
+<td><code>guess_extrapolate</code></td>
+<td>Single observable</td>
+<td>&lt; 0.1 µs</td>
+<td>&gt; 10M calls/s</td>
+</tr>
+</tbody>
+</table>
+<h3 id="92-rust-performance">9.2 Rust Performance<a class="headerlink" href="#92-rust-performance" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Input Size</th>
+<th>Wall Time</th>
+<th>Speedup vs Python</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fit_symmetry_decay</code></td>
+<td>5 noise scales</td>
+<td>&lt; 0.5 µs</td>
+<td>2×</td>
+</tr>
+<tr>
+<td><code>guess_extrapolate_batch</code></td>
+<td>1000 observables</td>
+<td>&lt; 50 µs</td>
+<td>10×</td>
+</tr>
+<tr>
+<td><code>guess_extrapolate_batch</code></td>
+<td>100,000 observables</td>
+<td>&lt; 2 ms</td>
+<td>50×</td>
+</tr>
+</tbody>
+</table>
+<p>Speedup for batch operations scales with problem size due to rayon
+parallelisation amortising thread pool overhead.</p>
+<h3 id="93-accuracy-on-synthetic-data">9.3 Accuracy on Synthetic Data<a class="headerlink" href="#93-accuracy-on-synthetic-data" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th><span class="arithmatex">\(\alpha_{\text{true}}\)</span></th>
+<th><span class="arithmatex">\(\alpha_{\text{fit}}\)</span></th>
+<th>Error</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Perfect exponential decay</td>
+<td>0.15</td>
+<td>0.15</td>
+<td>&lt; <span class="arithmatex">\(10^{-10}\)</span></td>
+</tr>
+<tr>
+<td>No decay</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>&lt; <span class="arithmatex">\(10^{-10}\)</span></td>
+</tr>
+<tr>
+<td>Noisy measurements (1% Gaussian)</td>
+<td>0.15</td>
+<td>0.148 ± 0.003</td>
+<td>1.3%</td>
+</tr>
+<tr>
+<td>Non-exponential decay (quadratic)</td>
+<td>0.15</td>
+<td>0.12</td>
+<td>20%</td>
+</tr>
+</tbody>
+</table>
+<p>The 20% error for non-exponential decay highlights the importance of
+checking <code>fit_residual</code>: if <span class="arithmatex">\(r &gt; 0.1\)</span>, the exponential model is suspect.</p>
+<hr />
+<h2 id="10-test-coverage">10. Test Coverage<a class="headerlink" href="#10-test-coverage" title="Permanent link">&para;</a></h2>
+<p>20 tests across 6 dimensions in <code>tests/test_symmetry_decay.py</code>:</p>
+<h3 id="101-emptynull-inputs-3-tests">10.1 Empty/Null Inputs (3 tests)<a class="headerlink" href="#101-emptynull-inputs-3-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Description</th>
+<th>Assertion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_two_scales_minimum</code></td>
+<td>Minimum viable input (2 scales)</td>
+<td>Model created, <span class="arithmatex">\(\alpha \geq 0\)</span></td>
+</tr>
+<tr>
+<td><code>test_identical_values_zero_alpha</code></td>
+<td>No decay scenario</td>
+<td>$</td>
+</tr>
+<tr>
+<td><code>test_guess_with_zero_correction</code></td>
+<td><span class="arithmatex">\(\alpha = 0\)</span> model</td>
+<td>Mitigated = raw, <span class="arithmatex">\(C = 1\)</span></td>
+</tr>
+</tbody>
+</table>
+<h3 id="102-error-handling-4-tests">10.2 Error Handling (4 tests)<a class="headerlink" href="#102-error-handling-4-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Description</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_length_mismatch</code></td>
+<td>values/scales length differs</td>
+<td><code>ValueError</code></td>
+</tr>
+<tr>
+<td><code>test_too_few_scales</code></td>
+<td>Only 1 scale</td>
+<td><code>ValueError</code></td>
+</tr>
+<tr>
+<td><code>test_zero_ideal_value</code></td>
+<td><span class="arithmatex">\(\langle S \rangle_{\text{ideal}} = 0\)</span></td>
+<td><code>ValueError</code></td>
+</tr>
+<tr>
+<td><code>test_invalid_initial_state</code></td>
+<td>Unknown initial state string</td>
+<td><code>ValueError</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="103-negative-cases-3-tests">10.3 Negative Cases (3 tests)<a class="headerlink" href="#103-negative-cases-3-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Description</th>
+<th>Assertion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_no_noise_no_correction</code></td>
+<td>Noisy = ideal</td>
+<td><span class="arithmatex">\(C \approx 1\)</span></td>
+</tr>
+<tr>
+<td><code>test_fully_decayed_symmetry_no_crash</code></td>
+<td><span class="arithmatex">\(\langle S \rangle_{\text{noisy}} = 0\)</span></td>
+<td>Returns raw value</td>
+</tr>
+<tr>
+<td><code>test_negative_alpha_not_physical</code></td>
+<td>Increasing symmetry under noise</td>
+<td><span class="arithmatex">\(\alpha &lt; 0\)</span></td>
+</tr>
+</tbody>
+</table>
+<h3 id="104-pipeline-integration-5-tests">10.4 Pipeline Integration (5 tests)<a class="headerlink" href="#104-pipeline-integration-5-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Description</th>
+<th>Assertion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_guess_improves_over_raw</code></td>
+<td>Exponential decay scenario</td>
+<td><span class="arithmatex">\(C \approx 1\)</span> at <span class="arithmatex">\(g = 1\)</span></td>
+</tr>
+<tr>
+<td><code>test_xy_magnetisation_ground</code></td>
+<td>Ground state <span class="arithmatex">\(\langle S \rangle\)</span></td>
+<td><span class="arithmatex">\(= n\)</span></td>
+</tr>
+<tr>
+<td><code>test_xy_magnetisation_neel</code></td>
+<td>Néel state <span class="arithmatex">\(\langle S \rangle\)</span></td>
+<td>Even: 0, odd: 1</td>
+</tr>
+<tr>
+<td><code>test_top_level_import</code></td>
+<td>Package re-export check</td>
+<td>Callable</td>
+</tr>
+<tr>
+<td><code>test_decay_model_fields</code></td>
+<td>Dataclass field types</td>
+<td>Correct types</td>
+</tr>
+</tbody>
+</table>
+<h3 id="105-roundtrip-3-tests">10.5 Roundtrip (3 tests)<a class="headerlink" href="#105-roundtrip-3-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Description</th>
+<th>Assertion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_exact_exponential_recovery</code></td>
+<td>Perfect data → exact <span class="arithmatex">\(\alpha\)</span></td>
+<td>Error <span class="arithmatex">\(&lt; 10^{-10}\)</span></td>
+</tr>
+<tr>
+<td><code>test_correction_increases_with_noise</code></td>
+<td>More noise → larger <span class="arithmatex">\(C\)</span></td>
+<td><span class="arithmatex">\(C_2 &gt; C_1\)</span></td>
+</tr>
+<tr>
+<td><code>test_guess_result_fields</code></td>
+<td>GUESSResult field types</td>
+<td>Correct types</td>
+</tr>
+</tbody>
+</table>
+<h3 id="106-performance-2-tests">10.6 Performance (2 tests)<a class="headerlink" href="#106-performance-2-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Description</th>
+<th>Threshold</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_learn_fast</code></td>
+<td>1000 learn calls</td>
+<td>&lt; 1 s</td>
+</tr>
+<tr>
+<td><code>test_extrapolate_fast</code></td>
+<td>10000 extrapolate calls</td>
+<td>&lt; 1 s</td>
+</tr>
+</tbody>
+</table>
+<h3 id="107-pipeline-wiring-2-tests-in-test_pipeline_wiring_performancepy">10.7 Pipeline Wiring (2 tests in <code>test_pipeline_wiring_performance.py</code>)<a class="headerlink" href="#107-pipeline-wiring-2-tests-in-test_pipeline_wiring_performancepy" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Description</th>
+<th>Assertion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_guess_learn_decay</code></td>
+<td>GUESS in pipeline context</td>
+<td>Model created, <span class="arithmatex">\(\alpha &gt; 0\)</span></td>
+</tr>
+<tr>
+<td><code>test_guess_extrapolate</code></td>
+<td>GUESS extrapolation in pipeline</td>
+<td>Correction applied</td>
+</tr>
+</tbody>
+</table>
+<h3 id="108-rust-unit-tests-3-tests-in-symmetry_decayrs">10.8 Rust Unit Tests (3 tests in <code>symmetry_decay.rs</code>)<a class="headerlink" href="#108-rust-unit-tests-3-tests-in-symmetry_decayrs" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_fit_decay_exact_exponential</code></td>
+<td>Perfect exponential → <span class="arithmatex">\(\alpha\)</span> exact</td>
+</tr>
+<tr>
+<td><code>test_fit_decay_no_decay</code></td>
+<td>Constant values → <span class="arithmatex">\(\alpha = 0\)</span></td>
+</tr>
+<tr>
+<td><code>test_fit_decay_single_point</code></td>
+<td>Single measurement → <span class="arithmatex">\(\alpha = 0\)</span></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="11-limitations-and-caveats">11. Limitations and Caveats<a class="headerlink" href="#11-limitations-and-caveats" title="Permanent link">&para;</a></h2>
+<h3 id="111-exponential-decay-assumption">11.1 Exponential Decay Assumption<a class="headerlink" href="#111-exponential-decay-assumption" title="Permanent link">&para;</a></h3>
+<p>GUESS assumes noise-induced decay is exponential in the scale factor <span class="arithmatex">\(g\)</span>.
+This holds for:
+- Depolarising noise (standard NISQ assumption)
+- Independent gate errors
+- Circuit folding as the noise amplification method</p>
+<p>It breaks down for:
+- Strongly non-Markovian noise (memory effects)
+- Coherent errors that do not scale with <span class="arithmatex">\(g\)</span>
+- Crosstalk-dominated devices (error correlations)</p>
+<p><strong>Diagnostic:</strong> Check <code>model.fit_residual</code>. Values &gt; 0.1 indicate the
+exponential model is unreliable.</p>
+<h3 id="112-neel-state-with-even-qubits">11.2 Néel State with Even Qubits<a class="headerlink" href="#112-neel-state-with-even-qubits" title="Permanent link">&para;</a></h3>
+<p>For even <span class="arithmatex">\(n\)</span> with Néel initial state, <span class="arithmatex">\(\langle S \rangle_{\text{ideal}} = 0\)</span>.
+GUESS cannot operate (division by zero). Fall back to standard ZNE or
+use a different symmetry observable.</p>
+<h3 id="113-alpha-depth-dependence">11.3 Alpha Depth-Dependence<a class="headerlink" href="#113-alpha-depth-dependence" title="Permanent link">&para;</a></h3>
+<p>The paper (Oliva del Moral <em>et al.</em>, 2026) assumes <span class="arithmatex">\(\alpha\)</span> is constant
+across circuit depths. For SCPN 16-layer UPDE circuits, <span class="arithmatex">\(\alpha\)</span> may
+vary between layers. Consider learning <span class="arithmatex">\(\alpha\)</span> per Trotter step for
+deep circuits.</p>
+<h3 id="114-no-benchmarks-for-xy-model-specifically">11.4 No Benchmarks for XY Model Specifically<a class="headerlink" href="#114-no-benchmarks-for-xy-model-specifically" title="Permanent link">&para;</a></h3>
+<p>The original paper benchmarks GUESS on Transverse-Field Ising Model
+(TFIM) and XZ Heisenberg model. Performance on the XY model is
+theoretically equivalent (same symmetry structure) but has not been
+empirically validated in the published literature.</p>
+<h3 id="115-correction-factor-amplification">11.5 Correction Factor Amplification<a class="headerlink" href="#115-correction-factor-amplification" title="Permanent link">&para;</a></h3>
+<p>If <span class="arithmatex">\(|\langle S \rangle_{\text{noisy}}| \ll |\langle S \rangle_{\text{ideal}}|\)</span>
+and <span class="arithmatex">\(\alpha &gt; 1\)</span>, the correction factor can become very large, amplifying
+statistical noise in <span class="arithmatex">\(\langle O \rangle_{\text{noisy}}\)</span>. Monitor <span class="arithmatex">\(C\)</span> and
+cap it at a reasonable maximum (e.g., <span class="arithmatex">\(C \leq 10\)</span>) for deep circuits.</p>
+<hr />
+<h2 id="12-comparison-with-alternative-methods">12. Comparison with Alternative Methods<a class="headerlink" href="#12-comparison-with-alternative-methods" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>GUESS</th>
+<th>Richardson ZNE</th>
+<th>PEC</th>
+<th>Parity Post-Selection</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Physics-informed</td>
+<td>Yes (symmetry)</td>
+<td>No</td>
+<td>Yes (noise model)</td>
+<td>Yes (parity)</td>
+</tr>
+<tr>
+<td>Additional shots</td>
+<td>None</td>
+<td>2–4× per scale</td>
+<td>Exponential</td>
+<td>None (but wastes 30–50%)</td>
+</tr>
+<tr>
+<td>Max depth</td>
+<td>&gt; 8000 CZ</td>
+<td>~ 2000 CZ</td>
+<td>Unlimited</td>
+<td>~ 1000 CZ</td>
+</tr>
+<tr>
+<td>Bias</td>
+<td>Yes (model dependent)</td>
+<td>Yes (polynomial order)</td>
+<td>No (unbiased)</td>
+<td>Yes (selection bias)</td>
+</tr>
+<tr>
+<td>Noise model required</td>
+<td>No</td>
+<td>No</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Implementation effort</td>
+<td>Low</td>
+<td>Low</td>
+<td>High</td>
+<td>Low</td>
+</tr>
+<tr>
+<td>Rust acceleration</td>
+<td>Yes</td>
+<td>No (Mitiq wraps Cirq)</td>
+<td>Yes (<code>pec.rs</code>)</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<h3 id="when-to-choose-guess">When to Choose GUESS<a class="headerlink" href="#when-to-choose-guess" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Moderate depth (100–5000 CZ):</strong> GUESS outperforms Richardson and
+   has zero overhead compared to PEC.</li>
+<li><strong>Shot-limited experiments:</strong> GUESS uses every shot, unlike parity
+   post-selection.</li>
+<li><strong>XY Hamiltonian simulations:</strong> The magnetisation symmetry is free
+   and perfectly suited.</li>
+<li><strong>Rapid prototyping:</strong> No noise model characterisation needed (unlike PEC).</li>
+</ol>
+<h3 id="when-not-to-choose-guess">When NOT to Choose GUESS<a class="headerlink" href="#when-not-to-choose-guess" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>No symmetry available:</strong> GUESS requires <span class="arithmatex">\([H, S] = 0\)</span> with known
+   <span class="arithmatex">\(\langle S \rangle_{\text{ideal}}\)</span>.</li>
+<li><strong>Unbiased estimates required:</strong> Use PEC instead.</li>
+<li><strong>Non-depolarising noise dominates:</strong> Check <code>fit_residual</code> first.</li>
+</ol>
+<hr />
+<h2 id="13-references">13. References<a class="headerlink" href="#13-references" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>Oliva del Moral, A. <em>et al.</em> "Guiding extrapolations from symmetry
+   decays for efficient error mitigation." arXiv:2603.13060 (2026).
+   — Original GUESS method. Eq. 5 is the core formula implemented here.</p>
+</li>
+<li>
+<p>Temme, K., Bravyi, S. &amp; Gambetta, J. M. "Error mitigation for
+   short-depth quantum circuits." <em>PRL</em> <strong>119</strong>, 180509 (2017).
+   — Richardson ZNE reference (comparison baseline).</p>
+</li>
+<li>
+<p>van den Berg, E., Minev, Z. K. &amp; Bhatt, K. "Probabilistic error
+   cancellation with sparse Pauli-Lindblad models on noisy quantum
+   processors." <em>Nature Physics</em> <strong>19</strong>, 1116–1121 (2023).
+   — PEC reference (complementary technique).</p>
+</li>
+<li>
+<p>Šotek, M. "SCPN Quantum Control: Kuramoto-XY synchronisation
+   witnesses on NISQ hardware." (2024–2026).
+   — SCPN framework and XY Hamiltonian formulation.</p>
+</li>
+</ol>
+<hr />
+<h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../error_mitigation/">Error Mitigation via Mitiq</a> — ZNE and DDD wrappers</li>
+<li><a href="../hardware_guide/">Hardware Execution Guide</a> — QPU execution and noise model</li>
+<li><a href="../dynq_qubit_mapping/">DynQ Qubit Mapping</a> — topology-agnostic placement</li>
+<li><a href="../rust_engine/">Rust Engine</a> — build instructions and module index</li>
+<li><a href="../pipeline_performance/">Pipeline Performance</a> — benchmarks and wiring tests</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+        <script src="../js/goatcounter.js"></script>
+      
+    
+  </body>
+</html>

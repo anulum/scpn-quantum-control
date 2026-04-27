@@ -1,0 +1,2430 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Quantum simulation of coupled oscillators on IBM hardware">
+      
+      
+        <meta name="author" content="Miroslav Šotek">
+      
+      
+        <link rel="canonical" href="https://anulum.github.io/scpn-quantum-control/mitigation_api/">
+      
+      
+        <link rel="prev" href="../identity_api/">
+      
+      
+        <link rel="next" href="../bridges_api/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/anulum_logo_company.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Mitigation API - scpn-quantum-control</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#spdx-license-identifier-agpl-30-or-later" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="scpn-quantum-control" class="md-header__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            scpn-quantum-control
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Mitigation API
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="scpn-quantum-control" class="md-nav__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    scpn-quantum-control
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SCPN Foundations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../equations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../research_gems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research Gems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../orchestrator_integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestrator Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rust_engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../autodoc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auto-Generated
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analysis_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../identity_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mitigation API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bridges_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridges API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmarks_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipeline_performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_dynamic_coupling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Dynamic Coupling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_structured_ansatz/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Structured Ansatz
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_hw_topological_optimizer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: HW Topological Optimizer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../test_infrastructure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publications
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Publications
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprint/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprint: Quantum Kuramoto-XY on Hardware
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_sync_witnesses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: Synchronisation Witnesses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: DLA Parity Theorem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DLA-parity Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classical_irreproducibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classical Irreproducibility
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results Gallery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hardware_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IBM Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXPERIMENT_ROADMAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PAPER_CLAIMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results & Claims
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../QUANTUM_CRYPTO_RESEARCH_BRANCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Crypto Research
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Learning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notebooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Roadmap
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../strategic_roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strategic Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="spdx-license-identifier-agpl-30-or-later">SPDX-License-Identifier: AGPL-3.0-or-later<a class="headerlink" href="#spdx-license-identifier-agpl-30-or-later" title="Permanent link">&para;</a></h1>
+<h1 id="commercial-license-available">Commercial license available<a class="headerlink" href="#commercial-license-available" title="Permanent link">&para;</a></h1>
+<h1 id="concepts-19962026-miroslav-sotek-all-rights-reserved">© Concepts 1996–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#concepts-19962026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="code-20202026-miroslav-sotek-all-rights-reserved">© Code 2020–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#code-20202026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="orcid-0009-0009-3560-0851">ORCID: 0009-0009-3560-0851<a class="headerlink" href="#orcid-0009-0009-3560-0851" title="Permanent link">&para;</a></h1>
+<h1 id="contact-wwwanulumli-protoscienceanulumli">Contact: www.anulum.li | protoscience@anulum.li<a class="headerlink" href="#contact-wwwanulumli-protoscienceanulumli" title="Permanent link">&para;</a></h1>
+<h1 id="scpn-quantum-control-mitigation-api-reference">scpn-quantum-control — Mitigation API Reference<a class="headerlink" href="#scpn-quantum-control-mitigation-api-reference" title="Permanent link">&para;</a></h1>
+<h1 id="mitigation-api-reference">Mitigation API Reference<a class="headerlink" href="#mitigation-api-reference" title="Permanent link">&para;</a></h1>
+<p>The <code>mitigation</code> package provides six error mitigation techniques for
+noise reduction on NISQ hardware. Each technique exploits a different
+aspect of the noise: ZNE extrapolates through noise amplification,
+PEC cancels errors via quasi-probability sampling, CPDR trains a
+regression model on near-Clifford circuits, DD suppresses decoherence
+on idle qubits, symmetry verification exploits the XY Hamiltonian's
+Z2 parity conservation, and Mitiq integration provides production-grade
+implementations.</p>
+<p>6 modules, 17 public symbols.</p>
+<h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Raw Noisy Circuit
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    │
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    ├── ZNE: gate_fold_circuit() → zne_extrapolate()
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    │         Amplify noise → Richardson extrapolation → zero-noise estimate
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    │
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    ├── PEC: pauli_twirl_decompose() → pec_sample()
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    │         Quasi-probability decomposition → Monte Carlo sampling
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    │
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    ├── CPDR: generate_training_circuits() → cpdr_mitigate()
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    │          Near-Clifford training → linear regression → corrected value
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    │
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    ├── DD: insert_dd_sequence()
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    │        XY4/X2/CPMG pulses on idle qubits → decoherence suppression
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    │
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    ├── Symmetry: parity_postselect() / symmetry_expand()
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    │              Z₂ conservation → discard/redistribute wrong-parity shots
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    │
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    └── Mitiq: zne_mitigated_expectation() / ddd_mitigated_expectation()
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>               Production Mitiq wrappers → battle-tested implementations
+</code></pre></div>
+<h2 id="compound-mitigation-strategy">Compound Mitigation Strategy<a class="headerlink" href="#compound-mitigation-strategy" title="Permanent link">&para;</a></h2>
+<p>The modules are designed to be composed. The recommended compound
+mitigation pipeline for Kuramoto-XY circuits:</p>
+<ol>
+<li><strong>DD</strong> at transpiler level (idle qubit protection)</li>
+<li><strong>Symmetry verification</strong> at measurement level (free error detection)</li>
+<li><strong>CPDR</strong> or <strong>ZNE</strong> at estimation level (value correction)</li>
+</ol>
+<p>CPDR is preferred over ZNE for deep circuits (&gt; 50 layers) because it
+does not require depth amplification. ZNE is simpler and better for
+shallow circuits (&lt; 30 layers).</p>
+<hr />
+<h2 id="module-reference">Module Reference<a class="headerlink" href="#module-reference" title="Permanent link">&para;</a></h2>
+<h3 id="1-zne-zero-noise-extrapolation">1. <code>zne</code> — Zero-Noise Extrapolation<a class="headerlink" href="#1-zne-zero-noise-extrapolation" title="Permanent link">&para;</a></h3>
+<p>Reference: Giurgica-Tiron et al., "Digital zero noise extrapolation
+for quantum error mitigation", IEEE QCE 2020.</p>
+<h4 id="principle">Principle<a class="headerlink" href="#principle" title="Permanent link">&para;</a></h4>
+<p>Amplify the circuit's effective noise by folding the unitary:
+<code>G → G (G†G)^k</code>, then measure expectation at multiple noise levels
+and extrapolate to zero noise via polynomial fit.</p>
+<h4 id="gate_fold_circuitcircuit-scale"><code>gate_fold_circuit(circuit, scale)</code><a class="headerlink" href="#gate_fold_circuitcircuit-scale" title="Permanent link">&para;</a></h4>
+<p>Global unitary folding. <code>scale</code> must be an odd positive integer:
+- scale=1: original circuit (no folding)
+- scale=3: <code>G G† G</code> (one fold, 3x noise)
+- scale=5: <code>G G† G G† G</code> (two folds, 5x noise)</p>
+<p>Measurements are stripped before folding and re-appended. The inverse
+<code>G†</code> is computed via <code>circuit.inverse()</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.mitigation</span><span class="w"> </span><span class="kn">import</span> <span class="n">gate_fold_circuit</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">folded_3</span> <span class="o">=</span> <span class="n">gate_fold_circuit</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">folded_5</span> <span class="o">=</span> <span class="n">gate_fold_circuit</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</code></pre></div>
+<p>Raises <code>ValueError</code> if scale is not a positive odd integer.</p>
+<h4 id="zne_extrapolatenoise_scales-expectation_values-order1"><code>zne_extrapolate(noise_scales, expectation_values, order=1)</code><a class="headerlink" href="#zne_extrapolatenoise_scales-expectation_values-order1" title="Permanent link">&para;</a></h4>
+<p>Richardson extrapolation to zero noise. Fits polynomial of degree <code>order</code>
+through (scale, expectation) data points and evaluates at scale=0.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.mitigation</span><span class="w"> </span><span class="kn">import</span> <span class="n">zne_extrapolate</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">result</span> <span class="o">=</span> <span class="n">zne_extrapolate</span><span class="p">(</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">noise_scales</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">expectation_values</span><span class="o">=</span><span class="p">[</span><span class="mf">0.85</span><span class="p">,</span> <span class="mf">0.72</span><span class="p">,</span> <span class="mf">0.61</span><span class="p">],</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="p">)</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">zero_noise_estimate</span><span class="p">)</span>  <span class="c1"># ≈ 0.91</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">fit_residual</span><span class="p">)</span>         <span class="c1"># L2 residual</span>
+</code></pre></div>
+<h4 id="zneresult"><code>ZNEResult</code><a class="headerlink" href="#zneresult" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>noise_scales</code></td>
+<td>list[int]</td>
+<td>Folding factors used</td>
+</tr>
+<tr>
+<td><code>expectation_values</code></td>
+<td>list[float]</td>
+<td>Measured values at each scale</td>
+</tr>
+<tr>
+<td><code>zero_noise_estimate</code></td>
+<td>float</td>
+<td>Extrapolated zero-noise value</td>
+</tr>
+<tr>
+<td><code>fit_residual</code></td>
+<td>float</td>
+<td>RMS of polynomial fit residual</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="2-pec-probabilistic-error-cancellation">2. <code>pec</code> — Probabilistic Error Cancellation<a class="headerlink" href="#2-pec-probabilistic-error-cancellation" title="Permanent link">&para;</a></h3>
+<p>Reference: Temme et al., "Error Mitigation for Short-Depth Quantum
+Circuits", PRL 119, 180509 (2017).</p>
+<h4 id="principle_1">Principle<a class="headerlink" href="#principle_1" title="Permanent link">&para;</a></h4>
+<p>Decompose the ideal (noiseless) operation as a quasi-probability
+distribution over noisy implementable operations. Sample from this
+distribution with signed weights to cancel the error on average.</p>
+<p>For a single-qubit depolarizing channel with error rate p:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>I_ideal = q_I · I + q_X · X + q_Y · Y + q_Z · Z
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>where:
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>  q_I   = 1 + 3p/(4-4p)
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>  q_XYZ = -p/(4-4p)
+</code></pre></div></p>
+<p>The negative coefficients mean some samples are subtracted. The
+sampling overhead (variance increase) is gamma = sum(|q_i|) per gate,
+and gamma^n_gates total.</p>
+<h4 id="pauli_twirl_decomposegate_error_rate-n_qubits1"><code>pauli_twirl_decompose(gate_error_rate, n_qubits=1)</code><a class="headerlink" href="#pauli_twirl_decomposegate_error_rate-n_qubits1" title="Permanent link">&para;</a></h4>
+<p>Returns [q_I, q_X, q_Y, q_Z] quasi-probability coefficients.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.mitigation</span><span class="w"> </span><span class="kn">import</span> <span class="n">pauli_twirl_decompose</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">coeffs</span> <span class="o">=</span> <span class="n">pauli_twirl_decompose</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># array([ 1.00757576, -0.00252525, -0.00252525, -0.00252525])</span>
+</code></pre></div>
+<p>Currently single-qubit only. Raises <code>NotImplementedError</code> for n_qubits &gt; 1.</p>
+<p><strong>Rust acceleration</strong>: <code>scpn_quantum_engine.pec_coefficients()</code> produces
+identical coefficients. Parity verified in <code>test_rust_path_benchmarks.py</code>.</p>
+<h4 id="pec_samplecircuit-gate_error_rate-n_samples-observable_qubit0-rngnone"><code>pec_sample(circuit, gate_error_rate, n_samples, observable_qubit=0, rng=None)</code><a class="headerlink" href="#pec_samplecircuit-gate_error_rate-n_samples-observable_qubit0-rngnone" title="Permanent link">&para;</a></h4>
+<p>Monte Carlo PEC estimation of <code>&lt;Z&gt;</code> on observable_qubit:</p>
+<ol>
+<li>For each sample: insert random Pauli corrections after each gate,
+   sampled from the quasi-probability distribution</li>
+<li>Simulate the corrected circuit</li>
+<li>Accumulate <code>gamma_total * sign * &lt;Z&gt;</code> over all samples</li>
+<li>Average = mitigated expectation</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.mitigation</span><span class="w"> </span><span class="kn">import</span> <span class="n">pec_sample</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">result</span> <span class="o">=</span> <span class="n">pec_sample</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">gate_error_rate</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">mitigated_value</span><span class="p">)</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">overhead</span><span class="p">)</span>  <span class="c1"># gamma^n_gates</span>
+</code></pre></div>
+<h4 id="pecresult"><code>PECResult</code><a class="headerlink" href="#pecresult" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mitigated_value</code></td>
+<td>float</td>
+<td>PEC-corrected expectation</td>
+</tr>
+<tr>
+<td><code>overhead</code></td>
+<td>float</td>
+<td>Total sampling overhead gamma^n_gates</td>
+</tr>
+<tr>
+<td><code>n_samples</code></td>
+<td>int</td>
+<td>Number of Monte Carlo samples</td>
+</tr>
+<tr>
+<td><code>sign_distribution</code></td>
+<td>list[float]</td>
+<td>Per-sample signs (for diagnostics)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="3-cpdr-clifford-perturbation-data-regression">3. <code>cpdr</code> — Clifford Perturbation Data Regression<a class="headerlink" href="#3-cpdr-clifford-perturbation-data-regression" title="Permanent link">&para;</a></h3>
+<p>Reference: Zhang et al., "Clifford Perturbation Data Regression for
+Quantum Error Mitigation", arXiv:2412.09518 (Dec 2024).</p>
+<h4 id="principle_2">Principle<a class="headerlink" href="#principle_2" title="Permanent link">&para;</a></h4>
+<p>Generate near-Clifford training circuits by snapping non-Clifford
+rotation gates to their nearest Clifford angle (multiples of pi/2)
+and adding small perturbations. Since near-Clifford circuits can be
+simulated efficiently, compute their ideal expectation values. Run the
+same circuits on the noisy backend. Fit a linear regression
+<code>noisy = slope * ideal + intercept</code>. Invert the regression to correct
+the target circuit's noisy output.</p>
+<p>CPDR outperforms ZNE on IBM Eagle/Heron for deep circuits because it
+does not require circuit depth amplification. The training circuits
+have the same depth as the target — they just have different angles.</p>
+<h4 id="generate_training_circuitstarget_circuit-n_training20-perturbation_scale01-seed42"><code>generate_training_circuits(target_circuit, n_training=20, perturbation_scale=0.1, seed=42)</code><a class="headerlink" href="#generate_training_circuitstarget_circuit-n_training20-perturbation_scale01-seed42" title="Permanent link">&para;</a></h4>
+<p>Creates n_training near-Clifford variants:
+1. Find all rotation gates (RZ, RY, RX, P, U1, RXX, RYY, RZZ)
+2. For each rotation: snap to nearest Clifford angle, add N(0, sigma) perturbation
+3. Re-append measurements</p>
+<p>Clifford angles: {0, pi/2, pi, 3<em>pi/2, 2</em>pi}.</p>
+<h4 id="compute_ideal_valuescircuits-observable_qubitsnone"><code>compute_ideal_values(circuits, observable_qubits=None)</code><a class="headerlink" href="#compute_ideal_valuescircuits-observable_qubitsnone" title="Permanent link">&para;</a></h4>
+<p>Compute ideal <code>&lt;Z&gt;</code> via statevector simulation. For near-Clifford circuits
+this is exact (though the implementation uses full statevector, not
+Clifford-specific simulation).</p>
+<h4 id="compute_noisy_values_from_countscounts_list-n_qubits-observable_qubitsnone"><code>compute_noisy_values_from_counts(counts_list, n_qubits, observable_qubits=None)</code><a class="headerlink" href="#compute_noisy_values_from_countscounts_list-n_qubits-observable_qubitsnone" title="Permanent link">&para;</a></h4>
+<p>Extract <code>&lt;Z&gt;</code> from hardware measurement counts. Handles arbitrary
+bitstring formats.</p>
+<h4 id="fit_regressionideal_values-noisy_values"><code>fit_regression(ideal_values, noisy_values)</code><a class="headerlink" href="#fit_regressionideal_values-noisy_values" title="Permanent link">&para;</a></h4>
+<p>Linear regression: <code>noisy = slope * ideal + intercept</code>.
+Returns (slope, intercept, R^2).</p>
+<h4 id="cpdr_mitigateraw_noisy_value-ideal_training-noisy_training"><code>cpdr_mitigate(raw_noisy_value, ideal_training, noisy_training)</code><a class="headerlink" href="#cpdr_mitigateraw_noisy_value-ideal_training-noisy_training" title="Permanent link">&para;</a></h4>
+<p>Apply CPDR correction: <code>corrected = (raw - intercept) / slope</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.mitigation</span><span class="w"> </span><span class="kn">import</span> <span class="n">cpdr_mitigate</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">result</span> <span class="o">=</span> <span class="n">cpdr_mitigate</span><span class="p">(</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">raw_noisy_value</span><span class="o">=</span><span class="mf">0.72</span><span class="p">,</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="n">ideal_training</span><span class="o">=</span><span class="p">[</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.85</span><span class="p">,</span> <span class="mf">0.88</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">noisy_training</span><span class="o">=</span><span class="p">[</span><span class="mf">0.73</span><span class="p">,</span> <span class="mf">0.70</span><span class="p">,</span> <span class="mf">0.71</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="p">)</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">mitigated_value</span><span class="p">)</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">regression_r_squared</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="cpdr_full_pipelinetarget_circuit-target_counts-run_on_backend"><code>cpdr_full_pipeline(target_circuit, target_counts, run_on_backend, ...)</code><a class="headerlink" href="#cpdr_full_pipelinetarget_circuit-target_counts-run_on_backend" title="Permanent link">&para;</a></h4>
+<p>End-to-end: generate training → simulate ideal → run noisy → regress → correct.
+The <code>run_on_backend</code> callable takes a list of circuits and returns counts.</p>
+<h4 id="cpdrresult"><code>CPDRResult</code><a class="headerlink" href="#cpdrresult" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>raw_value</code></td>
+<td>float</td>
+<td>Uncorrected noisy measurement</td>
+</tr>
+<tr>
+<td><code>mitigated_value</code></td>
+<td>float</td>
+<td>CPDR-corrected value</td>
+</tr>
+<tr>
+<td><code>n_training_circuits</code></td>
+<td>int</td>
+<td>Number of training circuits used</td>
+</tr>
+<tr>
+<td><code>regression_r_squared</code></td>
+<td>float</td>
+<td>R^2 of the regression fit</td>
+</tr>
+<tr>
+<td><code>regression_slope</code></td>
+<td>float</td>
+<td>Slope of noisy vs ideal</td>
+</tr>
+<tr>
+<td><code>regression_intercept</code></td>
+<td>float</td>
+<td>Intercept</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="4-dd-dynamical-decoupling">4. <code>dd</code> — Dynamical Decoupling<a class="headerlink" href="#4-dd-dynamical-decoupling" title="Permanent link">&para;</a></h3>
+<p>Reference: Viola et al., PRL 82, 2417 (1999).</p>
+<h4 id="principle_3">Principle<a class="headerlink" href="#principle_3" title="Permanent link">&para;</a></h4>
+<p>Insert pi-pulse sequences on idle qubits to refocus low-frequency noise.
+The pulse sequence averages out the qubit-environment coupling to first
+order, extending the effective T2.</p>
+<h4 id="ddsequence"><code>DDSequence</code><a class="headerlink" href="#ddsequence" title="Permanent link">&para;</a></h4>
+<p>Enum with three supported sequences:</p>
+<table>
+<thead>
+<tr>
+<th>Sequence</th>
+<th>Gates</th>
+<th>Reference</th>
+<th>Best For</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>XY4</code></td>
+<td>X-Y-X-Y</td>
+<td>Viola et al. 1999</td>
+<td>General dephasing + amplitude noise</td>
+</tr>
+<tr>
+<td><code>X2</code></td>
+<td>X-X</td>
+<td>Spin echo</td>
+<td>Pure dephasing</td>
+</tr>
+<tr>
+<td><code>CPMG</code></td>
+<td>Y-X-Y-X</td>
+<td>Meiboom &amp; Gill 1958</td>
+<td>Correlated noise</td>
+</tr>
+</tbody>
+</table>
+<h4 id="insert_dd_sequencecircuit-idle_qubits-sequenceddsequencexy4"><code>insert_dd_sequence(circuit, idle_qubits, sequence=DDSequence.XY4)</code><a class="headerlink" href="#insert_dd_sequencecircuit-idle_qubits-sequenceddsequencexy4" title="Permanent link">&para;</a></h4>
+<p>Appends DD pulses to the specified idle qubits after existing gates.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.mitigation</span><span class="w"> </span><span class="kn">import</span> <span class="n">DDSequence</span><span class="p">,</span> <span class="n">insert_dd_sequence</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">protected</span> <span class="o">=</span> <span class="n">insert_dd_sequence</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">idle_qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">sequence</span><span class="o">=</span><span class="n">DDSequence</span><span class="o">.</span><span class="n">XY4</span><span class="p">)</span>
+</code></pre></div>
+<p>For transpiler-level insertion (respecting circuit timing), use
+<code>HardwareRunner.transpile_with_dd()</code> which integrates with Qiskit's
+<code>PadDynamicalDecoupling</code> pass.</p>
+<hr />
+<h3 id="5-symmetry_verification-z2-parity-conservation">5. <code>symmetry_verification</code> — Z2 Parity Conservation<a class="headerlink" href="#5-symmetry_verification-z2-parity-conservation" title="Permanent link">&para;</a></h3>
+<p>Reference: Bonet-Monroig et al., "Low-cost error mitigation by symmetry
+verification", Phys. Rev. A 98, 062339 (2018).</p>
+<h4 id="principle_4">Principle<a class="headerlink" href="#principle_4" title="Permanent link">&para;</a></h4>
+<p>The XY Hamiltonian conserves total Z2 parity: [H_XY, P] = 0 where
+P = tensor(Z_i). This is proven by the DLA decomposition:
+DLA(N) = su(2^(N-1)) + su(2^(N-1)), where the two sectors are the
+even- and odd-parity subspaces.</p>
+<p>Consequence: any measurement outcome whose parity differs from the
+initial state's parity is guaranteed to be a hardware error. This
+provides error detection at zero circuit overhead.</p>
+<p>Two strategies:
+1. <strong>Post-selection</strong>: discard wrong-parity outcomes (cleaner, loses shots)
+2. <strong>Symmetry expansion</strong>: flip LSB to correct parity (preserves shot count, small bias)</p>
+<h4 id="bitstring_paritybitstring"><code>bitstring_parity(bitstring)</code><a class="headerlink" href="#bitstring_paritybitstring" title="Permanent link">&para;</a></h4>
+<p>Returns 0 (even) or 1 (odd) = count of '1' bits mod 2.</p>
+<h4 id="initial_state_parityomega"><code>initial_state_parity(omega)</code><a class="headerlink" href="#initial_state_parityomega" title="Permanent link">&para;</a></h4>
+<p>Computes the dominant parity sector of |psi_0&gt; = tensor(Ry(omega_i)|0&gt;).
+For small angles (omega_i &lt;&lt; pi), state is near |00...0&gt; → even parity.</p>
+<h4 id="parity_postselectcounts-expected_parity"><code>parity_postselect(counts, expected_parity)</code><a class="headerlink" href="#parity_postselectcounts-expected_parity" title="Permanent link">&para;</a></h4>
+<p>Filters measurement counts by parity. Returns <code>SymmetryVerificationResult</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>raw_counts</code></td>
+<td>dict</td>
+<td>Original counts</td>
+</tr>
+<tr>
+<td><code>verified_counts</code></td>
+<td>dict</td>
+<td>Parity-correct counts</td>
+</tr>
+<tr>
+<td><code>rejected_counts</code></td>
+<td>dict</td>
+<td>Parity-violating counts</td>
+</tr>
+<tr>
+<td><code>raw_shots</code></td>
+<td>int</td>
+<td>Total shots</td>
+</tr>
+<tr>
+<td><code>verified_shots</code></td>
+<td>int</td>
+<td>Accepted shots</td>
+</tr>
+<tr>
+<td><code>rejected_shots</code></td>
+<td>int</td>
+<td>Rejected shots</td>
+</tr>
+<tr>
+<td><code>rejection_rate</code></td>
+<td>float</td>
+<td>Fraction rejected</td>
+</tr>
+<tr>
+<td><code>expected_parity</code></td>
+<td>int</td>
+<td>0 or 1</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.mitigation</span><span class="w"> </span><span class="kn">import</span> <span class="n">parity_postselect</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="n">result</span> <span class="o">=</span> <span class="n">parity_postselect</span><span class="p">(</span><span class="n">counts</span><span class="p">,</span> <span class="n">expected_parity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rejection rate: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">rejection_rate</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="c1"># On noiseless simulator: 0%. On hardware: typically 5-30%.</span>
+</code></pre></div>
+<h4 id="symmetry_expandcounts-expected_parity"><code>symmetry_expand(counts, expected_parity)</code><a class="headerlink" href="#symmetry_expandcounts-expected_parity" title="Permanent link">&para;</a></h4>
+<p>Redistributes wrong-parity outcomes by flipping the least-significant
+bit. Preserves total shot count at the cost of small bias.</p>
+<h4 id="parity_verified_expectationcounts-n_qubits-expected_parity"><code>parity_verified_expectation(counts, n_qubits, expected_parity)</code><a class="headerlink" href="#parity_verified_expectationcounts-n_qubits-expected_parity" title="Permanent link">&para;</a></h4>
+<p>Computes per-qubit <code>&lt;Z&gt;</code> from parity-verified counts only.
+Returns <code>(exp_vals, std_vals, rejection_rate)</code>.</p>
+<h4 id="parity_verified_rz_counts-x_counts-y_counts-n_qubits-expected_parity"><code>parity_verified_R(z_counts, x_counts, y_counts, n_qubits, expected_parity)</code><a class="headerlink" href="#parity_verified_rz_counts-x_counts-y_counts-n_qubits-expected_parity" title="Permanent link">&para;</a></h4>
+<p>Computes order parameter R with compound symmetry mitigation:
+- Z-basis: parity post-selection (strict)
+- X-basis: symmetry expansion (relaxed, basis rotation breaks direct parity)
+- Y-basis: symmetry expansion</p>
+<p>Returns dict with <code>R_raw</code>, <code>R_verified</code>, <code>improvement</code>, <code>improvement_pct</code>.</p>
+<hr />
+<h3 id="6-mitiq_integration-production-wrappers">6. <code>mitiq_integration</code> — Production Wrappers<a class="headerlink" href="#6-mitiq_integration-production-wrappers" title="Permanent link">&para;</a></h3>
+<p>Reference: LaRose et al., Quantum 6, 774 (2022).</p>
+<p>Wraps Mitiq's battle-tested ZNE and DDD implementations. Mitiq handles
+circuit folding, noise scaling, and extrapolation internally.</p>
+<p>Requires: <code>pip install mitiq</code></p>
+<h4 id="is_mitiq_available"><code>is_mitiq_available()</code><a class="headerlink" href="#is_mitiq_available" title="Permanent link">&para;</a></h4>
+<p>Returns True if Mitiq is installed. All other functions raise <code>ImportError</code>
+if Mitiq is missing.</p>
+<h4 id="zne_mitigated_expectationcircuit-executornone-scale_factorsnone-shots8192"><code>zne_mitigated_expectation(circuit, executor=None, scale_factors=None, shots=8192)</code><a class="headerlink" href="#zne_mitigated_expectationcircuit-executornone-scale_factorsnone-shots8192" title="Permanent link">&para;</a></h4>
+<p>Run Mitiq ZNE with Richardson extrapolation:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.mitigation.mitiq_integration</span><span class="w"> </span><span class="kn">import</span> <span class="n">zne_mitigated_expectation</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="n">value</span> <span class="o">=</span> <span class="n">zne_mitigated_expectation</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">scale_factors</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+</code></pre></div>
+<p>Default executor: AerSimulator with parity expectation.</p>
+<h4 id="ddd_mitigated_expectationcircuit-executornone-shots8192"><code>ddd_mitigated_expectation(circuit, executor=None, shots=8192)</code><a class="headerlink" href="#ddd_mitigated_expectationcircuit-executornone-shots8192" title="Permanent link">&para;</a></h4>
+<p>Run Mitiq DDD (Digital Dynamical Decoupling) with XX rule:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.mitigation.mitiq_integration</span><span class="w"> </span><span class="kn">import</span> <span class="n">ddd_mitigated_expectation</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">value</span> <span class="o">=</span> <span class="n">ddd_mitigated_expectation</span><span class="p">(</span><span class="n">circuit</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h3 id="7-symmetry_decay-guess-symmetry-decay-zne">7. <code>symmetry_decay</code> — GUESS (symmetry-decay ZNE)<a class="headerlink" href="#7-symmetry_decay-guess-symmetry-decay-zne" title="Permanent link">&para;</a></h3>
+<p>Reference: Oliva del Moral <em>et al.</em>, arXiv:2603.13060 (2026). See
+<a href="../symmetry_decay_guess/"><code>symmetry_decay_guess.md</code></a> for the full theory
+and tutorial.</p>
+<p>Physics-informed zero-noise extrapolation that uses a Hamiltonian
+symmetry observable with a known ideal value as the noise guide.
+For the SCPN Kuramoto-XY framework, the conserved total magnetisation
+<span class="arithmatex">\(\sum Z_i\)</span> is the natural choice — it commutes with <span class="arithmatex">\(H_{XY}\)</span> and is
+measured for free in any Z-basis run.</p>
+<p>Rust-accelerated via <code>scpn_quantum_engine.fit_symmetry_decay</code> and
+<code>scpn_quantum_engine.guess_extrapolate_batch</code> (rayon-parallel batch
+correction).</p>
+<h4 id="learn_symmetry_decayideal_symmetry_value-noisy_symmetry_values-noise_scales"><code>learn_symmetry_decay(ideal_symmetry_value, noisy_symmetry_values, noise_scales)</code><a class="headerlink" href="#learn_symmetry_decayideal_symmetry_value-noisy_symmetry_values-noise_scales" title="Permanent link">&para;</a></h4>
+<p>Fit the noise-decay exponent <span class="arithmatex">\(\alpha\)</span> from log-linear regression on
+the symmetry observable measurements at multiple noise scale factors:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>\langle S \rangle_g \;=\; \langle S \rangle_{\text{ideal}} \,
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>                          e^{-\alpha (g-1)}
+</code></pre></div>
+<p>Returns a <code>SymmetryDecayModel</code> with the learned <code>alpha</code> and
+<code>fit_residual</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.mitigation.symmetry_decay</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    <span class="n">learn_symmetry_decay</span><span class="p">,</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span class="n">xy_magnetisation_ideal</span><span class="p">,</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="p">)</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="n">n</span> <span class="o">=</span> <span class="mi">4</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="n">s_ideal</span> <span class="o">=</span> <span class="n">xy_magnetisation_ideal</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="s2">&quot;ground&quot;</span><span class="p">)</span>  <span class="c1"># = +n</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="n">model</span> <span class="o">=</span> <span class="n">learn_symmetry_decay</span><span class="p">(</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>    <span class="n">ideal_symmetry_value</span><span class="o">=</span><span class="n">s_ideal</span><span class="p">,</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>    <span class="n">noisy_symmetry_values</span><span class="o">=</span><span class="p">[</span><span class="mf">3.92</span><span class="p">,</span> <span class="mf">3.65</span><span class="p">,</span> <span class="mf">3.10</span><span class="p">],</span>   <span class="c1"># measured ⟨ΣZ⟩ at g=1,3,5</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>    <span class="n">noise_scales</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="p">)</span>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a><span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">fit_residual</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="guess_extrapolatetarget_noisy_value-symmetry_noisy_value-decay_model"><code>guess_extrapolate(target_noisy_value, symmetry_noisy_value, decay_model)</code><a class="headerlink" href="#guess_extrapolatetarget_noisy_value-symmetry_noisy_value-decay_model" title="Permanent link">&para;</a></h4>
+<p>Apply the GUESS correction (Eq. 5 of Oliva del Moral <em>et al.</em>) to a
+single target observable:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>\langle O \rangle_{\text{mitigated}} \;\approx\;
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>  \langle O \rangle_{\text{noisy}} \,
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>  \left( \frac{|\langle S \rangle_{\text{ideal}}|}
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>              {|\langle S \rangle_{\text{noisy}}|} \right)^{\alpha}
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.mitigation.symmetry_decay</span><span class="w"> </span><span class="kn">import</span> <span class="n">guess_extrapolate</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="n">result</span> <span class="o">=</span> <span class="n">guess_extrapolate</span><span class="p">(</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>    <span class="n">target_noisy_value</span><span class="o">=</span><span class="mf">0.45</span><span class="p">,</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>    <span class="n">symmetry_noisy_value</span><span class="o">=</span><span class="mf">3.92</span><span class="p">,</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>    <span class="n">decay_model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="p">)</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">mitigated_value</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">correction_factor</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="xy_magnetisation_idealn_qubits-initial_stateground"><code>xy_magnetisation_ideal(n_qubits, initial_state="ground")</code><a class="headerlink" href="#xy_magnetisation_idealn_qubits-initial_stateground" title="Permanent link">&para;</a></h4>
+<p>Helper that returns the ideal <span class="arithmatex">\(\langle \sum Z_i \rangle\)</span> for the
+standard initial states used in the SCPN framework: <code>"ground"</code>
+(returns <span class="arithmatex">\(+n\)</span>) or <code>"neel"</code> (returns <span class="arithmatex">\(n \bmod 2\)</span>).</p>
+<h4 id="phase-1-hardware-result-april-2026">Phase 1 hardware result (April 2026)<a class="headerlink" href="#phase-1-hardware-result-april-2026" title="Permanent link">&para;</a></h4>
+<p>GUESS was used in the Phase 1 ibm_kingston campaign as both the noise
+calibration and the headline scientific result. With <span class="arithmatex">\(\alpha\)</span> learned
+from the parity-leakage decay across depths 2–30, the corrected
+sector-resolved leakage rates produced the first hardware confirmation
+of the DLA parity asymmetry: 7 of 8 depths individually significant
+at Welch <span class="arithmatex">\(p &lt; 0.05\)</span>, Fisher's combined <span class="arithmatex">\(p \ll 10^{-16}\)</span>, mean
+asymmetry <span class="arithmatex">\(+10.8\,\%\)</span> for depths <span class="arithmatex">\(\ge 4\)</span>.</p>
+<hr />
+<h2 id="comparison-of-techniques">Comparison of Techniques<a class="headerlink" href="#comparison-of-techniques" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Technique</th>
+<th>Circuit Overhead</th>
+<th>Shot Overhead</th>
+<th>Best For</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ZNE</td>
+<td>3-5x depth amplification</td>
+<td>None</td>
+<td>Shallow circuits, simple noise</td>
+</tr>
+<tr>
+<td>PEC</td>
+<td>None</td>
+<td>gamma^n_gates (exponential)</td>
+<td>Short circuits, high precision</td>
+</tr>
+<tr>
+<td>CPDR</td>
+<td>None</td>
+<td>n_training runs</td>
+<td>Deep circuits, coherent errors</td>
+</tr>
+<tr>
+<td>DD</td>
+<td>Extra gates on idle qubits</td>
+<td>None</td>
+<td>Idle-time decoherence</td>
+</tr>
+<tr>
+<td>Symmetry</td>
+<td>None</td>
+<td>Shot loss from rejection</td>
+<td>XY Hamiltonian circuits</td>
+</tr>
+<tr>
+<td>Mitiq ZNE</td>
+<td>Same as ZNE</td>
+<td>None</td>
+<td>Production systems</td>
+</tr>
+</tbody>
+</table>
+<h2 id="rust-acceleration">Rust Acceleration<a class="headerlink" href="#rust-acceleration" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Module</th>
+<th>Speedup</th>
+<th>Parity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pec_coefficients</code></td>
+<td><code>pec</code></td>
+<td>exact</td>
+<td>verified to machine precision</td>
+</tr>
+</tbody>
+</table>
+<p>The PEC quasi-probability decomposition has a Rust path in
+<code>scpn_quantum_engine.pec_coefficients()</code>. Other mitigation modules
+operate on circuits and counts, where Rust acceleration is not applicable.</p>
+<h2 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>External</th>
+<th>Required?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>zne</code></td>
+<td>qiskit</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>pec</code></td>
+<td>qiskit</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>cpdr</code></td>
+<td>qiskit</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>dd</code></td>
+<td>qiskit</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>symmetry_verification</code></td>
+<td>numpy</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>mitiq_integration</code></td>
+<td>mitiq, qiskit-aer</td>
+<td>Optional</td>
+</tr>
+</tbody>
+</table>
+<h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
+<p>42 tests across 7 test files:</p>
+<ul>
+<li><code>test_zne.py</code> — Folding correctness, extrapolation accuracy, edge cases</li>
+<li><code>test_pec.py</code> — Coefficient validation, sampling convergence, overhead scaling</li>
+<li><code>test_cpdr.py</code> — Training generation, regression fit, pipeline roundtrip</li>
+<li><code>test_dd.py</code> — Sequence insertion, qubit validation, gate counts</li>
+<li><code>test_symmetry_verification.py</code> — Parity detection, post-selection, expansion</li>
+<li><code>test_mitiq_integration.py</code> — Mitiq wrapper correctness (skipif not installed)</li>
+<li><code>test_pipeline_wiring_performance.py</code> — End-to-end mitigation pipeline benchmarks</li>
+</ul>
+<h2 id="pipeline-performance">Pipeline Performance<a class="headerlink" href="#pipeline-performance" title="Permanent link">&para;</a></h2>
+<p>Measured on ML350 Gen8 (128 GB RAM, Xeon E5-2620v2):</p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Wall Time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>gate_fold_circuit</code> (scale=5)</td>
+<td>4 qubits, depth 20</td>
+<td>0.2 ms</td>
+</tr>
+<tr>
+<td><code>zne_extrapolate</code> (3 points, linear)</td>
+<td>—</td>
+<td>0.01 ms</td>
+</tr>
+<tr>
+<td><code>pauli_twirl_decompose</code> (p=0.01)</td>
+<td>1 qubit</td>
+<td>0.01 ms</td>
+</tr>
+<tr>
+<td><code>pec_sample</code> (1000 samples)</td>
+<td>2 qubits</td>
+<td>450 ms</td>
+</tr>
+<tr>
+<td><code>generate_training_circuits</code> (20)</td>
+<td>4 qubits</td>
+<td>3 ms</td>
+</tr>
+<tr>
+<td><code>cpdr_mitigate</code></td>
+<td>—</td>
+<td>0.05 ms</td>
+</tr>
+<tr>
+<td><code>insert_dd_sequence</code> (XY4)</td>
+<td>4 idle qubits</td>
+<td>0.1 ms</td>
+</tr>
+<tr>
+<td><code>parity_postselect</code> (10k shots)</td>
+<td>4 qubits</td>
+<td>0.5 ms</td>
+</tr>
+<tr>
+<td><code>symmetry_expand</code> (10k shots)</td>
+<td>4 qubits</td>
+<td>0.6 ms</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+        <script src="../js/goatcounter.js"></script>
+      
+    
+  </body>
+</html>

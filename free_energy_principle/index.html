@@ -1,0 +1,2504 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Quantum simulation of coupled oscillators on IBM hardware">
+      
+      
+        <meta name="author" content="Miroslav Šotek">
+      
+      
+        <link rel="canonical" href="https://anulum.github.io/scpn-quantum-control/free_energy_principle/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/anulum_logo_company.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>SPDX-License-Identifier: AGPL-3.0-or-later - scpn-quantum-control</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#spdx-license-identifier-agpl-30-or-later" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="scpn-quantum-control" class="md-header__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            scpn-quantum-control
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              SPDX-License-Identifier: AGPL-3.0-or-later
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="scpn-quantum-control" class="md-nav__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    scpn-quantum-control
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SCPN Foundations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../equations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../research_gems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research Gems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../orchestrator_integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestrator Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rust_engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../autodoc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auto-Generated
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analysis_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../identity_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mitigation_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mitigation API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bridges_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridges API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmarks_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipeline_performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_dynamic_coupling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Dynamic Coupling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_structured_ansatz/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Structured Ansatz
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_hw_topological_optimizer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: HW Topological Optimizer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../test_infrastructure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publications
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Publications
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprint/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprint: Quantum Kuramoto-XY on Hardware
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_sync_witnesses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: Synchronisation Witnesses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: DLA Parity Theorem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DLA-parity Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classical_irreproducibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classical Irreproducibility
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results Gallery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hardware_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IBM Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXPERIMENT_ROADMAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PAPER_CLAIMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results & Claims
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../QUANTUM_CRYPTO_RESEARCH_BRANCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Crypto Research
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Learning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notebooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Roadmap
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../strategic_roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strategic Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="spdx-license-identifier-agpl-30-or-later">SPDX-License-Identifier: AGPL-3.0-or-later<a class="headerlink" href="#spdx-license-identifier-agpl-30-or-later" title="Permanent link">&para;</a></h1>
+<h1 id="commercial-license-available">Commercial license available<a class="headerlink" href="#commercial-license-available" title="Permanent link">&para;</a></h1>
+<h1 id="concepts-19962026-miroslav-sotek-all-rights-reserved">© Concepts 1996–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#concepts-19962026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="code-20202026-miroslav-sotek-all-rights-reserved">© Code 2020–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#code-20202026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="orcid-0009-0009-3560-0851">ORCID: 0009-0009-3560-0851<a class="headerlink" href="#orcid-0009-0009-3560-0851" title="Permanent link">&para;</a></h1>
+<h1 id="contact-wwwanulumli-protoscienceanulumli">Contact: www.anulum.li | protoscience@anulum.li<a class="headerlink" href="#contact-wwwanulumli-protoscienceanulumli" title="Permanent link">&para;</a></h1>
+<h1 id="scpn-quantum-control-free-energy-principle">scpn-quantum-control — Free Energy Principle<a class="headerlink" href="#scpn-quantum-control-free-energy-principle" title="Permanent link">&para;</a></h1>
+<h1 id="free-energy-principle-fep-on-quantum-substrate">Free Energy Principle (FEP) on Quantum Substrate<a class="headerlink" href="#free-energy-principle-fep-on-quantum-substrate" title="Permanent link">&para;</a></h1>
+<h2 id="1-mathematical-formalism">1. Mathematical Formalism<a class="headerlink" href="#1-mathematical-formalism" title="Permanent link">&para;</a></h2>
+<h3 id="variational-free-energy">Variational Free Energy<a class="headerlink" href="#variational-free-energy" title="Permanent link">&para;</a></h3>
+<p>The Free Energy Principle (Friston 2010) defines variational free energy as:</p>
+<div class="arithmatex">\[F = \mathbb{E}_q[\log q(z) - \log p(z, x)] = D_\text{KL}[q(z) \| p(z|x)] - \log p(x)\]</div>
+<p>Since <span class="arithmatex">\(D_\text{KL} \geq 0\)</span>, free energy upper-bounds surprise: <span class="arithmatex">\(F \geq -\log p(x)\)</span>.
+Minimising <span class="arithmatex">\(F\)</span> thus minimises surprise (self-information of observations).</p>
+<p>For Gaussian distributions:</p>
+<div class="arithmatex">\[q(z) = \mathcal{N}(\mu, \Sigma), \quad p(z) = \mathcal{N}(0, \Pi^{-1})\]</div>
+<p>the free energy decomposes as:</p>
+<div class="arithmatex">\[F = \underbrace{\frac{1}{2}\left(\mu^\top \Pi \mu + \text{tr}(\Pi\Sigma) - \log|\Sigma| - \log|\Pi| - n\right)}_\text{complexity (KL to prior)} + \underbrace{\frac{1}{2}(x - g(\mu))^\top \Gamma (x - g(\mu))}_\text{accuracy (prediction error)}\]</div>
+<p>where <span class="arithmatex">\(\Pi\)</span> is prior precision, <span class="arithmatex">\(\Gamma\)</span> is sensory precision, and <span class="arithmatex">\(g(\mu)\)</span>
+is the generative model.</p>
+<h3 id="kl-divergence-between-gaussians">KL Divergence Between Gaussians<a class="headerlink" href="#kl-divergence-between-gaussians" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[D_\text{KL}[\mathcal{N}(\mu_q, \Sigma_q) \| \mathcal{N}(\mu_p, \Sigma_p)] = \frac{1}{2}\left(\text{tr}(\Sigma_p^{-1}\Sigma_q) + (\mu_p - \mu_q)^\top \Sigma_p^{-1}(\mu_p - \mu_q) - n + \log\frac{|\Sigma_p|}{|\Sigma_q|}\right)\]</div>
+<p>This is exact (not an approximation) for multivariate Gaussians. The
+implementation uses <code>numpy.linalg.inv</code> and <code>numpy.linalg.slogdet</code> for
+numerical stability.</p>
+<h3 id="free-energy-gradient-belief-dynamics">Free Energy Gradient (Belief Dynamics)<a class="headerlink" href="#free-energy-gradient-belief-dynamics" title="Permanent link">&para;</a></h3>
+<p>The gradient drives belief updates via gradient descent:</p>
+<div class="arithmatex">\[\frac{d\mu}{dt} = -\frac{\partial F}{\partial \mu} = -\Pi\mu + J^\top \Gamma(x - g(\mu))\]</div>
+<p>where <span class="arithmatex">\(J = \partial g / \partial \mu\)</span> is the Jacobian of the generative model.
+With the identity generative model (<span class="arithmatex">\(g(\mu) = \mu\)</span>, <span class="arithmatex">\(J = I\)</span>):</p>
+<div class="arithmatex">\[\frac{\partial F}{\partial \mu} = \Pi\mu - \Gamma(x - \mu)\]</div>
+<p>At the MAP point: <span class="arithmatex">\(\mu_\text{MAP} = (\Pi + \Gamma)^{-1}\Gamma x\)</span>. For
+<span class="arithmatex">\(\Pi = \Gamma = I\)</span>: <span class="arithmatex">\(\mu_\text{MAP} = x/2\)</span>.</p>
+<h3 id="scpn-mapping">SCPN Mapping<a class="headerlink" href="#scpn-mapping" title="Permanent link">&para;</a></h3>
+<p>The FEP maps onto the SCPN hierarchy as follows:</p>
+<table>
+<thead>
+<tr>
+<th>FEP Concept</th>
+<th>SCPN Entity</th>
+<th>Module</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Belief mean <span class="arithmatex">\(\mu\)</span></td>
+<td>Oscillator phases <span class="arithmatex">\(\theta_i\)</span></td>
+<td><code>phase/phase_vqe.py</code></td>
+</tr>
+<tr>
+<td>Prior precision <span class="arithmatex">\(\Pi\)</span></td>
+<td>K_nm coupling matrix</td>
+<td><code>bridge/knm_hamiltonian.py</code></td>
+</tr>
+<tr>
+<td>Sensory precision <span class="arithmatex">\(\Gamma\)</span></td>
+<td>Measurement confidence</td>
+<td>Identity (simulation)</td>
+</tr>
+<tr>
+<td>Generative model <span class="arithmatex">\(g\)</span></td>
+<td>Forward prediction</td>
+<td>Coupling-weighted mean</td>
+</tr>
+<tr>
+<td>Prediction error <span class="arithmatex">\(\varepsilon\)</span></td>
+<td>Phase mismatch</td>
+<td>Hierarchical PC</td>
+</tr>
+<tr>
+<td>Free energy <span class="arithmatex">\(F\)</span></td>
+<td>Total prediction cost</td>
+<td><code>variational_free_energy()</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="elbo-interpretation">ELBO Interpretation<a class="headerlink" href="#elbo-interpretation" title="Permanent link">&para;</a></h3>
+<p>The Evidence Lower BOund (ELBO) is <span class="arithmatex">\(-F\)</span>:</p>
+<div class="arithmatex">\[\text{ELBO} = -F = \log p(x) - D_\text{KL}[q(z) \| p(z|x)]\]</div>
+<p>Maximising ELBO is equivalent to:
+1. Maximising the model evidence <span class="arithmatex">\(p(x)\)</span> — the model explains the data well
+2. Minimising the posterior gap <span class="arithmatex">\(D_\text{KL}[q \| p(z|x)]\)</span> — the approximate
+   posterior <span class="arithmatex">\(q\)</span> is close to the true posterior</p>
+<p>In the SCPN context: high ELBO means the oscillator phases (beliefs)
+are well-matched to the observed phases, and the K_nm prior is consistent
+with the data.</p>
+<h3 id="map-point-derivation">MAP Point Derivation<a class="headerlink" href="#map-point-derivation" title="Permanent link">&para;</a></h3>
+<p>Setting <span class="arithmatex">\(\partial F / \partial \mu = 0\)</span> with identity generative model:</p>
+<div class="arithmatex">\[\Pi\mu - \Gamma(x - \mu) = 0$$
+$$(\Pi + \Gamma)\mu = \Gamma x$$
+$$\mu_\text{MAP} = (\Pi + \Gamma)^{-1}\Gamma x\]</div>
+<p>For <span class="arithmatex">\(\Pi = K_\text{nm}\)</span> and <span class="arithmatex">\(\Gamma = I\)</span>:</p>
+<div class="arithmatex">\[\mu_\text{MAP} = (K_\text{nm} + I)^{-1} x\]</div>
+<p>This is a regularised least-squares solution: the K_nm prior pulls the
+beliefs toward zero (prior mean), while observations pull toward <span class="arithmatex">\(x\)</span>.
+Stronger coupling (larger K_nm eigenvalues) means stronger regularisation
+— beliefs deviate less from the prior.</p>
+<h3 id="predictive-coding-algorithm">Predictive Coding Algorithm<a class="headerlink" href="#predictive-coding-algorithm" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Algorithm: Hierarchical Predictive Coding on SCPN
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>Input: observations x, initial beliefs μ, coupling K, learning_rate lr, n_steps
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>Output: converged beliefs μ*, free energy trajectory F[t]
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>1. For t = 1 to n_steps:
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>   a. For each layer i:
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>      Π_i ← Σ_j K[i,j]                    (local precision)
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>      x̂_i ← Σ_j K[i,j] μ_j / Π_i         (coupling-weighted prediction)
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>      ε_i ← Π_i (x_i − x̂_i)              (precision-weighted error)
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>   b. Compute gradient:
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>      ∂F/∂μ = K_reg μ − Γ(x − μ)          (Rust-accelerated)
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>   c. Update beliefs:
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>      μ ← μ − lr × ∂F/∂μ
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>   d. Record F[t] = complexity(μ) + accuracy(μ, x)
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>2. Return μ, F
+</code></pre></div>
+<p>The algorithm is equivalent to gradient descent on the variational
+free energy surface. Convergence is guaranteed for convex F (which
+holds when K_nm is positive semi-definite and the generative model
+is the identity).</p>
+<h3 id="hierarchical-predictive-coding">Hierarchical Predictive Coding<a class="headerlink" href="#hierarchical-predictive-coding" title="Permanent link">&para;</a></h3>
+<p>For each SCPN layer <span class="arithmatex">\(i\)</span>, the prediction from connected layers is:</p>
+<div class="arithmatex">\[\hat{x}_i = \frac{\sum_j K_{ij} \mu_j}{\sum_j K_{ij}}\]</div>
+<p>The precision-weighted prediction error is:</p>
+<div class="arithmatex">\[\varepsilon_i = \Pi_i (x_i - \hat{x}_i), \quad \Pi_i = \sum_j K_{ij}\]</div>
+<p>Layers with stronger K_nm coupling (higher precision) produce larger
+prediction errors — they are more "surprised" by mismatches. This maps
+to the predictive coding hierarchy (Friston 2005, Bastos et al. 2012)
+where higher layers predict lower layers' activity.</p>
+<h2 id="2-theoretical-context">2. Theoretical Context<a class="headerlink" href="#2-theoretical-context" title="Permanent link">&para;</a></h2>
+<h3 id="why-fep-in-the-scpn">Why FEP in the SCPN?<a class="headerlink" href="#why-fep-in-the-scpn" title="Permanent link">&para;</a></h3>
+<p>The SCPN's third axiom (Teleological Optimisation) posits that
+consciousness optimises a quantity across the hierarchy. The FEP provides
+the mathematical framework: the UPDE dynamics (Kuramoto coupling) can be
+reinterpreted as belief updating under the FEP — oscillator phases are
+sufficient statistics, and synchronisation is free energy minimisation.</p>
+<p>This is not a metaphor. The Kuramoto model with heterogeneous frequencies
+and distance-dependent coupling IS a predictive coding scheme where:
+- Coupling K_nm = precision (how much to trust the neighbour)
+- Phase difference = prediction error
+- Synchronisation = free energy minimum</p>
+<h3 id="kuramoto-fep-equivalence">Kuramoto-FEP Equivalence<a class="headerlink" href="#kuramoto-fep-equivalence" title="Permanent link">&para;</a></h3>
+<p>The Kuramoto model with coupling <span class="arithmatex">\(K_{ij}\)</span> and natural frequencies <span class="arithmatex">\(\omega_i\)</span>:</p>
+<div class="arithmatex">\[\frac{d\theta_i}{dt} = \omega_i + \sum_j K_{ij} \sin(\theta_j - \theta_i)\]</div>
+<p>can be rewritten as gradient descent on an energy function:</p>
+<div class="arithmatex">\[E = -\sum_{i&lt;j} K_{ij} \cos(\theta_i - \theta_j) - \sum_i \omega_i \theta_i\]</div>
+<p>This is equivalent to the FEP gradient descent <span class="arithmatex">\(d\mu/dt = -\partial F / \partial \mu\)</span>
+where:</p>
+<ul>
+<li><span class="arithmatex">\(\mu = \theta\)</span> (phases are beliefs)</li>
+<li>The prior energy is <span class="arithmatex">\(\frac{1}{2}\mu^\top K \mu\)</span> (quadratic approximation
+  of the cosine coupling near synchronisation)</li>
+<li>The accuracy term encodes the observation that each oscillator's phase
+  should match its natural frequency: <span class="arithmatex">\(\frac{1}{2}(\omega - \dot{\theta})^\top \Gamma (\omega - \dot{\theta})\)</span></li>
+</ul>
+<p>The linearised Kuramoto around the synchronised state IS the FEP gradient
+with K_nm as prior precision. The nonlinear <span class="arithmatex">\(\sin\)</span> terms provide additional
+structure not captured by the Gaussian FEP, but near synchronisation (small
+phase differences), the equivalence is exact.</p>
+<h3 id="precision-weighted-message-passing">Precision-Weighted Message Passing<a class="headerlink" href="#precision-weighted-message-passing" title="Permanent link">&para;</a></h3>
+<p>In biological predictive coding (Bastos et al. 2012), cortical layers
+communicate via two message types:</p>
+<table>
+<thead>
+<tr>
+<th>Message</th>
+<th>Direction</th>
+<th>Content</th>
+<th>SCPN Equivalent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Top-down prediction</td>
+<td>Higher → Lower</td>
+<td><span class="arithmatex">\(\hat{x}_i = g(\mu_{i+1})\)</span></td>
+<td>K_nm-weighted mean</td>
+</tr>
+<tr>
+<td>Bottom-up error</td>
+<td>Lower → Higher</td>
+<td><span class="arithmatex">\(\varepsilon_i = \Pi_i(x_i - \hat{x}_i)\)</span></td>
+<td>Precision-weighted mismatch</td>
+</tr>
+</tbody>
+</table>
+<p>The precision <span class="arithmatex">\(\Pi_i = \sum_j K_{ij}\)</span> determines how much weight each
+layer's error signal carries. Layers with strong coupling (high precision)
+dominate the belief update — their errors are treated as more informative.</p>
+<p>This maps to cortical anatomy where layer-specific precision corresponds
+to neuromodulatory gain (dopamine, acetylcholine). In the SCPN, the
+analogous modulator is the K_nm coupling strength.</p>
+<h3 id="connection-to-active-inference">Connection to Active Inference<a class="headerlink" href="#connection-to-active-inference" title="Permanent link">&para;</a></h3>
+<p>Active inference extends the FEP to include action: the system not only
+updates beliefs but also acts on the world to reduce prediction errors.
+In the SCPN context, this maps to:
+- <strong>Perception:</strong> updating phase beliefs from quantum measurements
+- <strong>Action:</strong> modulating coupling strengths (DynamicCouplingEngine)</p>
+<p>This module implements the perception side. The action side is handled
+by <code>qsnn/dynamic_coupling.py</code> (Hebbian learning from XY correlations).</p>
+<h3 id="what-this-module-does-not-claim">What This Module Does NOT Claim<a class="headerlink" href="#what-this-module-does-not-claim" title="Permanent link">&para;</a></h3>
+<ul>
+<li>It does NOT claim that the brain literally performs quantum FEP</li>
+<li>It does NOT derive the FEP from quantum mechanics</li>
+<li>The mapping SCPN → FEP is a formal analogy, not a proof of identity</li>
+<li>The identity generative model (<span class="arithmatex">\(g(\mu) = \mu\)</span>) is a simplification —
+  the real SCPN generative model would be the full UPDE</li>
+</ul>
+<h3 id="relationship-to-other-scpn-modules">Relationship to Other SCPN Modules<a class="headerlink" href="#relationship-to-other-scpn-modules" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>FEP Role</th>
+<th>Connection</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>phase/phase_vqe.py</code></td>
+<td>Provides oscillator phases (beliefs)</td>
+<td>VQE output → FEP input</td>
+</tr>
+<tr>
+<td><code>bridge/knm_hamiltonian.py</code></td>
+<td>Provides prior precision</td>
+<td>K_nm → Π matrix</td>
+</tr>
+<tr>
+<td><code>qsnn/dynamic_coupling.py</code></td>
+<td>Active inference (action)</td>
+<td>Hebbian update ← XY correlations</td>
+</tr>
+<tr>
+<td><code>analysis/sync_witness.py</code></td>
+<td>Measures synchronisation</td>
+<td>Sync order ↔ low free energy</td>
+</tr>
+<tr>
+<td><code>qec/multiscale_qec.py</code></td>
+<td>Error correction</td>
+<td>QEC protects belief states</td>
+</tr>
+</tbody>
+</table>
+<p>The FEP provides the theoretical glue: synchronisation (low F) is the
+system's way of minimising surprise about its environment.</p>
+<h2 id="3-pipeline-position">3. Pipeline Position<a class="headerlink" href="#3-pipeline-position" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>bridge/knm_hamiltonian.py → K_nm (prior precision Π)
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>        ↓
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>fep/variational_free_energy.py
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>  ├─ _complexity_term() → KL[q || prior]
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  ├─ _accuracy_term() → prediction error energy
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>  ├─ variational_free_energy() → FreeEnergyResult
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>  ├─ free_energy_gradient() → ∂F/∂μ (Rust-accelerated)
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>  └─ evidence_lower_bound() → ELBO = −F
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>        ↓
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>fep/predictive_coding.py
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>  ├─ hierarchical_prediction_error() → ε_i (Rust-accelerated)
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>  └─ predictive_coding_step() → PredictiveCodingResult
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>        ↓
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>phase/phase_vqe.py → updated beliefs → circuit parameters
+</code></pre></div>
+<p><strong>Inputs:</strong> oscillator phases (beliefs), observed phases, K_nm coupling.</p>
+<p><strong>Outputs:</strong> free energy decomposition, gradient, updated beliefs.</p>
+<h2 id="4-features">4. Features<a class="headerlink" href="#4-features" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Variational free energy:</strong> exact Gaussian computation with complexity/accuracy decomposition</li>
+<li><strong>KL divergence:</strong> exact multivariate Gaussian KL via matrix inversion and log-determinant</li>
+<li><strong>Evidence lower bound (ELBO):</strong> <span class="arithmatex">\(-F\)</span> for variational inference optimisation</li>
+<li><strong>Free energy gradient:</strong> analytical <span class="arithmatex">\(\partial F / \partial \mu\)</span> for gradient descent belief update</li>
+<li><strong>Hierarchical predictive coding:</strong> coupling-weighted predictions across SCPN layers</li>
+<li><strong>Predictive coding step:</strong> single gradient descent update with error tracking</li>
+<li><strong>Rust acceleration:</strong> gradient and prediction error use Rust engine (110 μs and 40 μs per call)</li>
+<li><strong>Custom generative models:</strong> supports arbitrary <span class="arithmatex">\(g(\mu)\)</span> and Jacobian <span class="arithmatex">\(J(\mu)\)</span> with Python fallback</li>
+<li><strong>Convergence tracking:</strong> prediction error norm monitored across PC iterations</li>
+</ul>
+<h2 id="5-usage-examples">5. Usage Examples<a class="headerlink" href="#5-usage-examples" title="Permanent link">&para;</a></h2>
+<h3 id="compute-free-energy">Compute Free Energy<a class="headerlink" href="#compute-free-energy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.bridge.knm_hamiltonian</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_knm_paper27</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.fep.variational_free_energy</span><span class="w"> </span><span class="kn">import</span> <span class="n">variational_free_energy</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">K</span> <span class="o">=</span> <span class="n">build_knm_paper27</span><span class="p">()</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">n</span> <span class="o">=</span> <span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># 16</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>  <span class="c1"># initial belief: all phases zero</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>  <span class="c1"># belief covariance</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.1</span>  <span class="c1"># observations</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="n">result</span> <span class="o">=</span> <span class="n">variational_free_energy</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">K</span><span class="p">)</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;F = </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">free_energy</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  complexity = </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">complexity</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  accuracy = </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">accuracy</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  ELBO = </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">elbo</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="predictive-coding-convergence">Predictive Coding Convergence<a class="headerlink" href="#predictive-coding-convergence" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.fep.predictive_coding</span><span class="w"> </span><span class="kn">import</span> <span class="n">predictive_coding_step</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">K</span> <span class="o">=</span> <span class="n">build_knm_paper27</span><span class="p">(</span><span class="n">L</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">])</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">beliefs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">predictive_coding_step</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">beliefs</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="n">beliefs</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">beliefs</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="k">if</span> <span class="n">step</span> <span class="o">%</span> <span class="mi">20</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Step </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">: F=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">free_energy</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, &quot;</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>              <span class="sa">f</span><span class="s2">&quot;||ε||=</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">total_error_norm</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="custom-generative-model">Custom Generative Model<a class="headerlink" href="#custom-generative-model" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.fep.variational_free_energy</span><span class="w"> </span><span class="kn">import</span> <span class="n">free_energy_gradient</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1"># Nonlinear generative model: g(μ) = sin(μ)</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">g</span><span class="p">(</span><span class="n">mu</span><span class="p">):</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">mu</span><span class="p">)</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="k">def</span><span class="w"> </span><span class="nf">J</span><span class="p">(</span><span class="n">mu</span><span class="p">):</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">mu</span><span class="p">))</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="n">grad</span> <span class="o">=</span> <span class="n">free_energy_gradient</span><span class="p">(</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>    <span class="n">mu</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="n">sigma</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>    <span class="n">x_observed</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">K_precision</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>    <span class="n">generative_fn</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">generative_jac</span><span class="o">=</span><span class="n">J</span><span class="p">,</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="p">)</span>
+</code></pre></div>
+<h3 id="gradient-descent-on-free-energy">Gradient Descent on Free Energy<a class="headerlink" href="#gradient-descent-on-free-energy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.fep.variational_free_energy</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">variational_free_energy</span><span class="p">,</span> <span class="n">free_energy_gradient</span><span class="p">,</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="p">)</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">K</span> <span class="o">=</span> <span class="n">build_knm_paper27</span><span class="p">()</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="n">n</span> <span class="o">=</span> <span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.1</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="c1"># Manual gradient descent (equivalent to predictive_coding_step)</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="n">lr</span> <span class="o">=</span> <span class="mf">0.001</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">200</span><span class="p">):</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>    <span class="n">grad</span> <span class="o">=</span> <span class="n">free_energy_gradient</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">K</span><span class="p">)</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>    <span class="n">mu</span> <span class="o">=</span> <span class="n">mu</span> <span class="o">-</span> <span class="n">lr</span> <span class="o">*</span> <span class="n">grad</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="n">result</span> <span class="o">=</span> <span class="n">variational_free_energy</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">K</span><span class="p">)</span>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final F = </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">free_energy</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final ||grad|| = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="kl-divergence-verification">KL Divergence Verification<a class="headerlink" href="#kl-divergence-verification" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scpn_quantum_control.fep.variational_free_energy</span><span class="w"> </span><span class="kn">import</span> <span class="n">kl_divergence_gaussian</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="c1"># KL[q || p] = 0 when q = p</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">])</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="n">kl</span> <span class="o">=</span> <span class="n">kl_divergence_gaussian</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">kl</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">,</span> <span class="s2">&quot;KL[q||q] must be 0&quot;</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="c1"># KL is always non-negative (Gibbs&#39; inequality)</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>    <span class="n">mu_q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>    <span class="n">mu_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>    <span class="n">sigma_q</span> <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>    <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>    <span class="n">sigma_p</span> <span class="o">=</span> <span class="n">B</span> <span class="o">@</span> <span class="n">B</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>    <span class="k">assert</span> <span class="n">kl_divergence_gaussian</span><span class="p">(</span><span class="n">mu_q</span><span class="p">,</span> <span class="n">sigma_q</span><span class="p">,</span> <span class="n">mu_p</span><span class="p">,</span> <span class="n">sigma_p</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="mf">1e-10</span>
+</code></pre></div>
+<h2 id="6-technical-reference">6. Technical Reference<a class="headerlink" href="#6-technical-reference" title="Permanent link">&para;</a></h2>
+<h3 id="classes">Classes<a class="headerlink" href="#classes" title="Permanent link">&para;</a></h3>
+<h4 id="freeenergyresult"><code>FreeEnergyResult</code><a class="headerlink" href="#freeenergyresult" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>free_energy</code></td>
+<td><code>float</code></td>
+<td><span class="arithmatex">\(F = \text{complexity} + \text{accuracy}\)</span></td>
+</tr>
+<tr>
+<td><code>complexity</code></td>
+<td><code>float</code></td>
+<td><span class="arithmatex">\(D_\text{KL}[q \| \text{prior}]\)</span></td>
+</tr>
+<tr>
+<td><code>accuracy</code></td>
+<td><code>float</code></td>
+<td><span class="arithmatex">\(\frac{1}{2}(x - g(\mu))^\top \Gamma (x - g(\mu))\)</span></td>
+</tr>
+<tr>
+<td><code>elbo</code></td>
+<td><code>float</code></td>
+<td><span class="arithmatex">\(-F\)</span></td>
+</tr>
+<tr>
+<td><code>surprise_bound</code></td>
+<td><code>float</code></td>
+<td><span class="arithmatex">\(F\)</span> (upper bound on <span class="arithmatex">\(-\log p(x)\)</span>)</td>
+</tr>
+</tbody>
+</table>
+<h4 id="predictivecodingresult"><code>PredictiveCodingResult</code><a class="headerlink" href="#predictivecodingresult" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>prediction_errors</code></td>
+<td><code>ndarray</code></td>
+<td><span class="arithmatex">\(\varepsilon_i\)</span> per layer</td>
+</tr>
+<tr>
+<td><code>beliefs</code></td>
+<td><code>ndarray</code></td>
+<td>Updated <span class="arithmatex">\(\mu_i\)</span></td>
+</tr>
+<tr>
+<td><code>free_energy</code></td>
+<td><code>float</code></td>
+<td><span class="arithmatex">\(F\)</span> after update</td>
+</tr>
+<tr>
+<td><code>total_error_norm</code></td>
+<td><code>float</code></td>
+<td><span class="arithmatex">\(\|\varepsilon\|\)</span></td>
+</tr>
+</tbody>
+</table>
+<h3 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h3>
+<h4 id="variational_free_energymu-sigma-x_observed-k_precision-sensory_precision-generative_fn"><code>variational_free_energy(mu, sigma, x_observed, K_precision, sensory_precision, generative_fn)</code><a class="headerlink" href="#variational_free_energymu-sigma-x_observed-k_precision-sensory_precision-generative_fn" title="Permanent link">&para;</a></h4>
+<p>Compute <span class="arithmatex">\(F\)</span> with full decomposition. Returns <code>FreeEnergyResult</code>.</p>
+<h4 id="kl_divergence_gaussianmu_q-sigma_q-mu_p-sigma_p"><code>kl_divergence_gaussian(mu_q, sigma_q, mu_p, sigma_p)</code><a class="headerlink" href="#kl_divergence_gaussianmu_q-sigma_q-mu_p-sigma_p" title="Permanent link">&para;</a></h4>
+<p>Exact KL divergence between multivariate Gaussians.</p>
+<h4 id="free_energy_gradientmu-sigma-x_observed-k_precision-sensory_precision-generative_fn-generative_jac"><code>free_energy_gradient(mu, sigma, x_observed, K_precision, sensory_precision, generative_fn, generative_jac)</code><a class="headerlink" href="#free_energy_gradientmu-sigma-x_observed-k_precision-sensory_precision-generative_fn-generative_jac" title="Permanent link">&para;</a></h4>
+<p>Analytical gradient <span class="arithmatex">\(\partial F / \partial \mu\)</span>. Rust-accelerated for identity
+generative model.</p>
+<h4 id="hierarchical_prediction_errorobservations-beliefs-k"><code>hierarchical_prediction_error(observations, beliefs, K)</code><a class="headerlink" href="#hierarchical_prediction_errorobservations-beliefs-k" title="Permanent link">&para;</a></h4>
+<p>Precision-weighted prediction errors across SCPN layers.
+Rust-accelerated.</p>
+<h4 id="predictive_coding_stepobservations-beliefs-k-learning_rate-sigma"><code>predictive_coding_step(observations, beliefs, K, learning_rate, sigma)</code><a class="headerlink" href="#predictive_coding_stepobservations-beliefs-k-learning_rate-sigma" title="Permanent link">&para;</a></h4>
+<p>Single gradient descent step. Returns <code>PredictiveCodingResult</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>observations</code></td>
+<td><code>ndarray</code></td>
+<td>required</td>
+<td>Measured phases <span class="arithmatex">\(x_i\)</span></td>
+</tr>
+<tr>
+<td><code>beliefs</code></td>
+<td><code>ndarray</code></td>
+<td>required</td>
+<td>Current beliefs <span class="arithmatex">\(\mu_i\)</span></td>
+</tr>
+<tr>
+<td><code>K</code></td>
+<td><code>ndarray</code></td>
+<td>required</td>
+<td>K_nm coupling (prior precision)</td>
+</tr>
+<tr>
+<td><code>learning_rate</code></td>
+<td><code>float</code></td>
+<td><code>0.01</code></td>
+<td>Gradient step size</td>
+</tr>
+<tr>
+<td><code>sigma</code></td>
+<td><code>ndarray \| None</code></td>
+<td><code>0.1 × I</code></td>
+<td>Belief covariance</td>
+</tr>
+</tbody>
+</table>
+<h4 id="variational_free_energy-full-signature"><code>variational_free_energy</code> — Full Signature<a class="headerlink" href="#variational_free_energy-full-signature" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mu</code></td>
+<td><code>ndarray</code></td>
+<td>required</td>
+<td>Belief mean</td>
+</tr>
+<tr>
+<td><code>sigma</code></td>
+<td><code>ndarray</code></td>
+<td>required</td>
+<td>Belief covariance (<span class="arithmatex">\(n × n\)</span>)</td>
+</tr>
+<tr>
+<td><code>x_observed</code></td>
+<td><code>ndarray</code></td>
+<td>required</td>
+<td>Observed data</td>
+</tr>
+<tr>
+<td><code>K_precision</code></td>
+<td><code>ndarray</code></td>
+<td>required</td>
+<td>Prior precision (K_nm)</td>
+</tr>
+<tr>
+<td><code>sensory_precision</code></td>
+<td><code>ndarray \| None</code></td>
+<td><code>I</code></td>
+<td>Likelihood precision <span class="arithmatex">\(\Gamma\)</span></td>
+</tr>
+<tr>
+<td><code>generative_fn</code></td>
+<td><code>Callable \| None</code></td>
+<td>identity</td>
+<td>Forward model <span class="arithmatex">\(g(\mu)\)</span></td>
+</tr>
+</tbody>
+</table>
+<h4 id="free_energy_gradient-full-signature"><code>free_energy_gradient</code> — Full Signature<a class="headerlink" href="#free_energy_gradient-full-signature" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mu</code></td>
+<td><code>ndarray</code></td>
+<td>required</td>
+<td>Belief mean</td>
+</tr>
+<tr>
+<td><code>sigma</code></td>
+<td><code>ndarray</code></td>
+<td>required</td>
+<td>Belief covariance</td>
+</tr>
+<tr>
+<td><code>x_observed</code></td>
+<td><code>ndarray</code></td>
+<td>required</td>
+<td>Observed data</td>
+</tr>
+<tr>
+<td><code>K_precision</code></td>
+<td><code>ndarray</code></td>
+<td>required</td>
+<td>Prior precision</td>
+</tr>
+<tr>
+<td><code>sensory_precision</code></td>
+<td><code>ndarray \| None</code></td>
+<td><code>I</code></td>
+<td>Likelihood precision</td>
+</tr>
+<tr>
+<td><code>generative_fn</code></td>
+<td><code>Callable \| None</code></td>
+<td>identity</td>
+<td>Forward model</td>
+</tr>
+<tr>
+<td><code>generative_jac</code></td>
+<td><code>Callable \| None</code></td>
+<td><code>I</code></td>
+<td>Jacobian <span class="arithmatex">\(\partial g / \partial \mu\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>When <code>generative_fn</code> and <code>generative_jac</code> are both <code>None</code>, uses Rust engine.</p>
+<h3 id="rust-engine-api">Rust Engine API<a class="headerlink" href="#rust-engine-api" title="Permanent link">&para;</a></h3>
+<p>Available via <code>import scpn_quantum_engine</code>:</p>
+<h4 id="free_energy_gradient_rustmu-x_observed-k_precision-sensory_precision-ridge"><code>free_energy_gradient_rust(mu, x_observed, k_precision, sensory_precision, ridge)</code><a class="headerlink" href="#free_energy_gradient_rustmu-x_observed-k_precision-sensory_precision-ridge" title="Permanent link">&para;</a></h4>
+<p>Computes <span class="arithmatex">\(\partial F / \partial \mu\)</span> for identity generative model.
+All parameters are numpy arrays. Returns <code>ndarray[f64]</code>.</p>
+<h4 id="hierarchical_prediction_error_rustobservations-beliefs-k"><code>hierarchical_prediction_error_rust(observations, beliefs, k)</code><a class="headerlink" href="#hierarchical_prediction_error_rustobservations-beliefs-k" title="Permanent link">&para;</a></h4>
+<p>Computes precision-weighted prediction errors. Returns <code>ndarray[f64]</code>.</p>
+<h4 id="variational_free_energy_rustmu-x_observed-k_precision-sensory_precision-sigma_diag-ridge"><code>variational_free_energy_rust(mu, x_observed, k_precision, sensory_precision, sigma_diag, ridge)</code><a class="headerlink" href="#variational_free_energy_rustmu-x_observed-k_precision-sensory_precision-sigma_diag-ridge" title="Permanent link">&para;</a></h4>
+<p>Computes <span class="arithmatex">\((F, \text{complexity}, \text{accuracy})\)</span> tuple for diagonal <span class="arithmatex">\(\Sigma\)</span>.</p>
+<h3 id="internal-functions">Internal Functions<a class="headerlink" href="#internal-functions" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Module</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>_complexity_term(mu, sigma, K)</code></td>
+<td><code>variational_free_energy.py</code></td>
+<td>KL divergence to prior</td>
+</tr>
+<tr>
+<td><code>_accuracy_term(mu, x, Γ, g)</code></td>
+<td><code>variational_free_energy.py</code></td>
+<td>Prediction error energy</td>
+</tr>
+</tbody>
+</table>
+<h3 id="numerical-considerations">Numerical Considerations<a class="headerlink" href="#numerical-considerations" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Ridge regularisation:</strong> K_nm + <span class="arithmatex">\(10^{-10} I\)</span> ensures invertibility.
+  Without this, zero eigenvalues in K_nm cause singular matrix errors.</li>
+<li><strong>Log-determinant:</strong> uses <code>numpy.linalg.slogdet</code> for numerical stability
+  (avoids overflow from large determinants).</li>
+<li><strong>Gradient at MAP:</strong> residual <span class="arithmatex">\(\|\nabla F\| \sim 10^{-10}\)</span> due to ridge
+  regularisation. This is not a bug — it is the price of numerical stability.</li>
+<li><strong>Convergence criterion:</strong> PC step uses fixed learning rate. Adaptive
+  step sizes (e.g., line search) would improve convergence but add
+  complexity. The current implementation prioritises simplicity.</li>
+<li><strong>Custom generative models:</strong> when <code>generative_fn</code> is not None, Rust
+  engine is bypassed. The Python path supports arbitrary callables but
+  is ~10× slower for the gradient computation.</li>
+</ul>
+<h2 id="7-performance-benchmarks">7. Performance Benchmarks<a class="headerlink" href="#7-performance-benchmarks" title="Permanent link">&para;</a></h2>
+<p>Measured on Intel i5-11600K, Python 3.12, <span class="arithmatex">\(n = 16\)</span> oscillators.</p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Time</th>
+<th>Engine</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>variational_free_energy</code></td>
+<td>88 μs</td>
+<td>Python (numpy linalg)</td>
+</tr>
+<tr>
+<td><code>free_energy_gradient</code></td>
+<td>110 μs</td>
+<td>Rust</td>
+</tr>
+<tr>
+<td><code>hierarchical_prediction_error</code></td>
+<td>40 μs</td>
+<td>Rust</td>
+</tr>
+<tr>
+<td><code>predictive_coding_step</code></td>
+<td>260 μs</td>
+<td>Rust (inner)</td>
+</tr>
+<tr>
+<td><code>kl_divergence_gaussian</code></td>
+<td>~50 μs</td>
+<td>Python (numpy linalg)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="convergence-rate">Convergence Rate<a class="headerlink" href="#convergence-rate" title="Permanent link">&para;</a></h3>
+<p>For <span class="arithmatex">\(n = 4\)</span>, <span class="arithmatex">\(\text{lr} = 0.001\)</span>, K = <code>build_knm_paper27(L=4)</code>, starting from <span class="arithmatex">\(\mu = 0\)</span>:
+- 50 steps: error norm decreases (verified in test)
+- 200 steps: belief change <span class="arithmatex">\(&lt; 0.01\)</span> per step (convergence verified)</p>
+<h3 id="scaling-with-system-size">Scaling with System Size<a class="headerlink" href="#scaling-with-system-size" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\(n\)</span></th>
+<th><code>variational_free_energy</code></th>
+<th><code>free_energy_gradient</code></th>
+<th><code>predictive_coding_step</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4</td>
+<td>~20 μs</td>
+<td>~30 μs</td>
+<td>~60 μs</td>
+</tr>
+<tr>
+<td>8</td>
+<td>~40 μs</td>
+<td>~50 μs</td>
+<td>~110 μs</td>
+</tr>
+<tr>
+<td>16</td>
+<td>~88 μs</td>
+<td>~110 μs</td>
+<td>~260 μs</td>
+</tr>
+</tbody>
+</table>
+<p>Scaling is <span class="arithmatex">\(O(n^2)\)</span> for gradient (matrix-vector) and <span class="arithmatex">\(O(n^3)\)</span> for
+<code>variational_free_energy</code> (matrix inversion in KL computation).</p>
+<h3 id="test-coverage">Test Coverage<a class="headerlink" href="#test-coverage" title="Permanent link">&para;</a></h3>
+<p>16 tests across 6 dimensions:
+- Empty/null: 3 tests (identical distributions, zero observation, perfect prediction)
+- Error handling: 2 tests (singular covariance, zero precision)
+- Negative cases: 2 tests (KL ≥ 0 property, gradient direction)
+- Pipeline integration: 4 tests (SCPN K_nm, PC convergence, ELBO consistency, imports)
+- Roundtrip: 3 tests (F decomposition, MAP gradient, PC equilibrium)
+- Performance: 2 tests (F computation, PC step budgets)</p>
+<h2 id="8-citations">8. Citations<a class="headerlink" href="#8-citations" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>Friston, K. "The free-energy principle: a unified brain theory?"
+   <em>Nature Reviews Neuroscience</em> <strong>11</strong>, 127–138 (2010).
+   DOI: 10.1038/nrn2787</p>
+</li>
+<li>
+<p>Friston, K. "Life as we know it."
+   <em>J. R. Soc. Interface</em> <strong>10</strong>, 20130475 (2013).
+   DOI: 10.1098/rsif.2013.0475</p>
+</li>
+<li>
+<p>Friston, K. "A theory of cortical responses."
+   <em>Phil. Trans. R. Soc. B</em> <strong>360</strong>, 1249–1266 (2005).
+   DOI: 10.1098/rstb.2005.1622</p>
+</li>
+<li>
+<p>Bastos, A. M. et al. "Canonical microcircuits for predictive coding."
+   <em>Neuron</em> <strong>76</strong>, 695–711 (2012).
+   DOI: 10.1016/j.neuron.2012.10.038</p>
+</li>
+<li>
+<p>Bogacz, R. "A tutorial on the free-energy framework for modelling
+   perception and learning."
+   <em>J. Math. Psych.</em> <strong>76</strong>, 198–211 (2017).
+   DOI: 10.1016/j.jmp.2015.11.003</p>
+</li>
+<li>
+<p>Buckley, C. L. et al. "The free energy principle for action and
+   perception: a mathematical review."
+   <em>Entropy</em> <strong>19</strong>, 318 (2017).
+   DOI: 10.3390/e19070318</p>
+</li>
+<li>
+<p>Fields, C. &amp; Glazebrook, J. F. "A mosaic of Chu spaces and Channel
+   Theory I: Category-theoretic concepts and tools."
+   <em>J. Exp. Theor. Artif. Intell.</em> <strong>34</strong>, 1–38 (2022).
+   DOI: 10.1080/0952813X.2019.1689909</p>
+</li>
+<li>
+<p>Šotek, M. "God of the Math — The SCPN Master Publications."
+   Zenodo (2025). DOI: 10.5281/zenodo.17419678</p>
+</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+        <script src="../js/goatcounter.js"></script>
+      
+    
+  </body>
+</html>
