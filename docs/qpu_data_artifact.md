@@ -30,6 +30,15 @@ scpn-quantum-control.qpu-data-artifact.v1
 Quantum Control consumes artifacts. It must not generate unnamed
 campaign matrices as a fallback path.
 
+Legacy frontier campaign scripts still accept `.npy` parameter files for
+operator convenience, but those files are only a transport cache. The
+generator in `scripts/frontier_campaign_2026/generate_params.py` fails
+closed by default when a source bridge is missing or when a bridge does
+not provide `omega`. Deterministic synthetic arrays require the explicit
+`--allow-synthetic` flag and write `PARAMETER_PROVENANCE.json` with
+`source_mode="synthetic"` entries. Such arrays are smoke-test inputs
+only; they are not publication-safe QPU source material.
+
 ## SC-NeuroCore compatibility bridge
 
 Campaign code may depend on the compatibility import surface:
