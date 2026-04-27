@@ -24,4 +24,4 @@ mkdocstrings[python]==1.0.4
 # IBM hardware
 qiskit-ibm-runtime==0.46.1
 # Visualization
-matplotlib==3.10.8
+matplotlib==3.10.9
