@@ -248,18 +248,14 @@ class AsyncHardwareRunner:
                     qc.measure_all()
 
                 token = os.environ.get("SCPN_IBM_TOKEN")
-                crn = os.environ.get(
-                    "SCPN_IBM_CRN",
-                    "crn:v1:bluemix:public:quantum-computing:us-east:"
-                    "a/78db885720334fd19191b33a839d0c35:"
-                    "841cc36d-0afd-4f96-ada2-8c56e1c443a0::",
-                )
+                crn = os.environ.get("SCPN_IBM_CRN")
 
                 try:
                     if token:
-                        service = QiskitRuntimeService(
-                            channel="ibm_cloud", token=token, instance=crn
-                        )
+                        service_kwargs = {"channel": "ibm_cloud", "token": token}
+                        if crn:
+                            service_kwargs["instance"] = crn
+                        service = QiskitRuntimeService(**service_kwargs)
                         target = (
                             "ibm_fez"
                             if self.runner_obj.backend == "ibm_heron_r2"

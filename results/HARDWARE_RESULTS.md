@@ -219,7 +219,7 @@ All error in the scaling curve comes from gate decoherence during evolution.
 - **Median CZ error**: ~0.5% (typical Heron r2)
 - **T1/T2**: ~300/200 us (typical Heron r2)
 - **Channel**: ibm_quantum_platform
-- **Instance**: crn:v1:bluemix:public:quantum-computing:us-east:a/78db885720334fd19191b33a839d0c35:eb82d44a-2e21-44bd-9855-f72768138a57::
+- **Instance**: configured out-of-band through `SCPN_IBM_CRN`
 
 
 ## Result Files
