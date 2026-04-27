@@ -35,7 +35,7 @@ extension-module = ["pyo3/extension-module"]
 
 [dependencies]
 pyo3 = { version = "0.25", default-features = false, features = ["macros"] }
-ndarray = "0.16"
+ndarray = "0.17"
 numpy = "0.25"
 num-complex = "0.4"
 rand = "0.9"
