@@ -8,14 +8,10 @@ from typing import Any
 
 import numpy as np
 from qiskit import QuantumCircuit
-from qiskit.circuit import Parameter
 
 
 class StructuredAnsatz:
-    """
-    Physically-informed ansatz for heterogeneous Kuramoto-XY model.
-    Builds Trotterized circuits from coupling matrix K_nm and frequencies omega.
-    """
+    """Physically-informed ansatz for heterogeneous Kuramoto-XY model."""
 
     def __init__(self):
         self.circuit: QuantumCircuit | None = None
@@ -27,25 +23,37 @@ class StructuredAnsatz:
         omega: np.ndarray | None = None,
         trotter_depth: int = 6,
         time_step: float = 0.1,
-        informed_topology: bool = True,
-        non_hermitian_gain: float = 0.0,
-        mediated_couplings: bool = False,
         lambda_fim: float = 0.0,
+        coupling_scale: float = 2.0,
         **kwargs: Any,
     ) -> StructuredAnsatz:
         """
-        Creates a StructuredAnsatz from Kuramoto coupling matrix and frequencies.
+        Builds a Trotterised Kuramoto-XY circuit from coupling matrix K_nm and
+        natural frequencies omega.
 
         Args:
-            K_nm: (N x N) symmetric coupling matrix
-            omega: (N,) natural frequencies (optional)
-            trotter_depth: Number of Trotter steps
-            time_step: dt per Trotter step
-            informed_topology: Use K_nm topology for entangling gates
-            non_hermitian_gain: For PT-symmetric extensions
-            mediated_couplings: For distributed/multi-node experiments
-            lambda_fim: FIM feedback strength (strange loop)
+            K_nm:           N×N symmetric coupling matrix (diagonal ignored).
+            omega:          Length-N natural frequencies. None → all zero.
+            trotter_depth:  Number of Trotter steps.
+            time_step:      dt per Trotter step.
+            lambda_fim:     FIM feedback angle per step (float, not a Parameter).
+            coupling_scale: Multiplicative scaling applied to K_nm before circuit
+                            construction. Default 2.0 doubles coupling strength
+                            relative to the raw matrix, pushing the system toward
+                            the Kuramoto synchronisation transition.
         """
+        K_nm = np.asarray(K_nm, dtype=np.float64)
+        if K_nm.ndim != 2 or K_nm.shape[0] != K_nm.shape[1]:
+            raise ValueError(f"K_nm must be a square matrix, got shape {K_nm.shape}")
+        if not np.all(np.isfinite(K_nm)):
+            raise ValueError("K_nm must contain only finite values")
+        if omega is not None:
+            omega = np.asarray(omega, dtype=np.float64)
+            if omega.shape != (K_nm.shape[0],):
+                raise ValueError(f"omega shape must be ({K_nm.shape[0]},), got {omega.shape}")
+            if not np.all(np.isfinite(omega)):
+                raise ValueError("omega must contain only finite values")
+
         N = K_nm.shape[0]
         ansatz = StructuredAnsatz()
         ansatz.params = {
@@ -53,43 +61,48 @@ class StructuredAnsatz:
             "trotter_depth": trotter_depth,
             "time_step": time_step,
             "lambda_fim": lambda_fim,
+            "coupling_scale": coupling_scale,
         }
 
-        qc = QuantumCircuit(N)
+        # Scale coupling strength before circuit construction
+        K_scaled = K_nm * coupling_scale
 
-        # Initial state: all qubits in |+> (uniform phase)
-        qc.h(range(N))
+        qc = QuantumCircuit(N)
+        qc.h(range(N))  # initial uniform phase superposition
 
         dt = time_step
         for _ in range(trotter_depth):
-            # Single-qubit Z rotations from natural frequencies
+            # 1. Frequency term (single-qubit Z rotations)
             if omega is not None:
                 for i in range(N):
                     qc.rz(2 * omega[i] * dt, i)
 
-            # Two-qubit XY interactions from K_nm
+            # 2. XY interactions from scaled K_nm
             for i in range(N):
                 for j in range(i + 1, N):
-                    if abs(K_nm[i, j]) > 1e-8:
-                        # XY interaction via RZZ + single-qubit rotations (standard decomposition)
-                        theta = 2 * K_nm[i, j] * dt
+                    if abs(K_scaled[i, j]) > 1e-8:
+                        theta = 2 * K_scaled[i, j] * dt
                         qc.rzz(theta, i, j)
 
-            # Optional FIM feedback term (strange loop)
+            # 3. FIM feedback — lambda_fim is a concrete float (no Parameter),
+            #    avoiding Qiskit ≥2.x parameter name-collision errors.
             if lambda_fim > 0:
-                # Global phase feedback approximation
-                global_phase = Parameter("lambda_fim")
+                fim_angle = lambda_fim * dt
                 for i in range(N):
-                    qc.rz(global_phase * dt, i)
+                    qc.rz(fim_angle, i)
 
         ansatz.circuit = qc
         return ansatz
 
     def build_circuit(self) -> QuantumCircuit:
-        """Returns the built Qiskit circuit for submission."""
+        """Returns a copy of the built Qiskit circuit for submission."""
         if self.circuit is None:
-            raise ValueError("Ansatz not initialized. Call from_kuramoto first.")
+            raise ValueError("Call from_kuramoto() first.")
         return self.circuit.copy()
 
     def __repr__(self) -> str:
-        return f"StructuredAnsatz(N={self.params.get('N')}, trotter_depth={self.params.get('trotter_depth')})"
+        return (
+            f"StructuredAnsatz(N={self.params.get('N')}, "
+            f"trotter_depth={self.params.get('trotter_depth')}, "
+            f"coupling_scale={self.params.get('coupling_scale')})"
+        )

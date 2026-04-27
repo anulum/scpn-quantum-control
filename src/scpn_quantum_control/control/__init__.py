@@ -18,9 +18,11 @@ from .q_disruption_iter import (
 )
 from .qaoa_mpc import QAOA_MPC
 from .qpetri import QuantumPetriNet
+from .structured_ansatz import StructuredAnsatz
 from .vqls_gs import VQLS_GradShafranov
 
 __all__ = [
+    "StructuredAnsatz",
     "QAOA_MPC",
     "VQLS_GradShafranov",
     "QuantumPetriNet",

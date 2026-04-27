@@ -22,6 +22,7 @@ from .critical_concordance import critical_concordance as compute_critical_conco
 from .dla_parity_theorem import DLAParityTheoremResult
 from .dla_parity_theorem import verify_theorem as verify_z2_parity
 from .dla_parity_witness import DLAParityWitness
+from .dla_truncated_tn import dla_truncated_tn
 from .dynamical_lie_algebra import DLAResult, compute_dla
 from .enaqt import ENAQTResult, enaqt_scan
 from .entanglement_enhanced_sync import entanglement_advantage
@@ -46,7 +47,7 @@ from .loschmidt_echo import LoschmidtResult, loschmidt_quench
 from .magic_nonstabilizerness import MagicResult, magic_vs_coupling
 from .magnetisation_sectors import basis_by_magnetisation, eigh_by_magnetisation
 from .monte_carlo_xy import MCResult, mc_simulate
-from .otoc import OTOCResult, compute_otoc
+from .otoc import OTOC, OTOCResult, compute_otoc
 from .otoc_sync_probe import OTOCSyncScanResult, otoc_sync_scan
 from .p_h1_derivation import P_H1_Derivation, derive_p_h1
 from .pairing_correlator import PairingResult, pairing_vs_anisotropy
@@ -68,6 +69,7 @@ from .quantum_mpemba import MpembaResult, mpemba_experiment
 from .quantum_persistent_homology import QuantumPHResult, ph_sync_scan
 from .quantum_phi import PhiResult, compute_quantum_phi, phi_vs_coupling_scan, von_neumann_entropy
 from .rl_discovery_agent import RLDiscoveryAgent
+from .rl_pulse_optimizer import RLPulseOptimizer
 from .shadow_tomography import ShadowResult, classical_shadow_estimation
 from .spectral_form_factor import SFFResult, sff_vs_coupling
 from .sync_entanglement_witness import (
@@ -111,7 +113,10 @@ __all__ = [
     "KoopmanResult",
     "koopman_analysis",
     "koopman_to_hamiltonian",
+    "dla_truncated_tn",
+    "RLPulseOptimizer",
     "OTOCResult",
+    "OTOC",
     "compute_otoc",
     "P_H1_Derivation",
     "derive_p_h1",
