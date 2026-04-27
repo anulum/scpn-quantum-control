@@ -38,7 +38,7 @@ pyo3 = { version = "0.25", default-features = false, features = ["macros"] }
 ndarray = "0.16"
 numpy = "0.25"
 num-complex = "0.4"
-rand = "0.9"
+rand = "0.10"
 rayon = "1.10"
 
 [dev-dependencies]
