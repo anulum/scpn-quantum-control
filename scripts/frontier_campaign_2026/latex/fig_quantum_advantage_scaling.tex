@@ -1,0 +1,19 @@
+% SPDX-License-Identifier: AGPL-3.0-or-later
+% Commercial license available
+% © Concepts & Code 2020–2026 Miroslav Šotek. All rights reserved.
+% ORCID: 0009-0009-3560-0851
+% Contact: www.anulum.li | protoscience@anulum.li
+% scpn-quantum-control — Frontier Campaign Figure Template
+% Test 1: scaling benchmark figure template
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[xlabel={System size $N$}, ylabel={Wall-clock time (s) / Forecast error}]
+\addplot table [x=N, y=time_quantum] {data/advantage.dat};
+\addplot table [x=N, y=time_classical] {data/advantage.dat};
+\legend{Quantum pipeline, Classical baseline}
+\end{axis}
+\end{tikzpicture}
+\caption{Scaling comparison between the QPU execution pipeline and classical baseline solver.}
+\label{fig:advantage_scaling}
+\end{figure}

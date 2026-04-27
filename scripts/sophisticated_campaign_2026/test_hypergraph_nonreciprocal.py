@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# scpn-quantum-control — Sophisticated Campaign Tests (Batch 3)
 import asyncio
 import json
 
@@ -25,11 +32,15 @@ async def run_hyper_nonreciprocal():
             directed_terms=K_directed if cfg in ["directed", "full"] else None,
             trotter_depth=6,
         )
-        job = runner.submit_circuit_batch(
-            ansatz=ansatz, observable=SyncOrderParameter(), job_tags=["hypergraph", f"cfg_{cfg}"]
-        )
-        result = await job.result()
-        results[cfg] = result
+        if cfg == "pairwise":
+            job = runner.submit_circuit_batch(ansatz=ansatz, observable=SyncOrderParameter())
+            result = await job.result()
+            results[cfg] = result
+        else:
+            results[cfg] = {
+                "status": "SKIPPED_UNIMPLEMENTED",
+                "reason": "StructuredAnsatz accepts hypergraph/directed kwargs but does not compile them yet.",
+            }
 
     with open("results/hyper_nonreciprocal.json", "w") as f:
         json.dump(results, f, indent=2)
@@ -37,11 +48,3 @@ async def run_hyper_nonreciprocal():
 
 if __name__ == "__main__":
     asyncio.run(run_hyper_nonreciprocal())
-
-# SPDX-License-Identifier: AGPL-3.0-or-later
-# Commercial license available
-# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
-# © Code 2020–2026 Miroslav Šotek. All rights reserved.
-# ORCID: 0009-0009-3560-0851
-# Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Sophisticated Campaign Tests (Batch 3)
