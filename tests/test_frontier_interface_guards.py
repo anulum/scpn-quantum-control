@@ -10,6 +10,8 @@
 from __future__ import annotations
 
 import asyncio
+import runpy
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -32,3 +34,19 @@ def test_rl_pulse_optimizer_fails_until_implemented():
 
     with pytest.raises(NotImplementedError, match="No RL pulse"):
         optimiser.save_results("unused.json")
+
+
+@pytest.mark.parametrize(
+    "relative_path",
+    [
+        "scripts/frontier_campaign_2026/mock_injector.py",
+        "scripts/hardware_campaign_2026/mock_injector.py",
+        "scripts/primary_campaign_2026/mock_injector.py",
+        "scripts/sophisticated_campaign_2026/mock_injector.py",
+    ],
+)
+def test_retired_campaign_injectors_fail_fast(relative_path: str):
+    repo_root = Path(__file__).resolve().parents[1]
+
+    with pytest.raises(RuntimeError, match="Local campaign injectors are retired"):
+        runpy.run_path(str(repo_root / relative_path))
