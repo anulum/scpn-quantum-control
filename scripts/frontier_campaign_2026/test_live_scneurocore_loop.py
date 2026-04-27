@@ -3,10 +3,11 @@
 import asyncio
 import json
 
+from scpneurocore.bridge import load_live_stream
+
 from scpn_quantum_control.analysis import DLAParityWitness, SyncOrderParameter
 from scpn_quantum_control.control import StructuredAnsatz
 from scpn_quantum_control.hardware import AsyncHardwareRunner
-from scpneurocore.bridge import load_live_stream
 
 
 async def run_live_scneurocore():
