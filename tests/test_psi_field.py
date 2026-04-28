@@ -23,6 +23,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+import scpn_quantum_control.psi_field.infoton as infoton_module
 import scpn_quantum_control.psi_field.lattice as lattice_module
 import scpn_quantum_control.psi_field.observables as observables_module
 from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
@@ -153,6 +154,30 @@ class TestErrorHandling:
 
         assert module._HAS_RUST_GAUGE is False
 
+    def test_infoton_import_guard_without_rust(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Infoton import guard records absent Rust acceleration."""
+        source = (
+            Path(__file__).parents[1] / "src" / "scpn_quantum_control" / "psi_field" / "infoton.py"
+        )
+        module_name = "scpn_quantum_control.psi_field._test_infoton_no_rust"
+        spec = importlib.util.spec_from_file_location(module_name, source)
+        assert spec is not None
+        assert spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+
+        original_import = builtins.__import__
+
+        def blocked_import(name, *args, **kwargs):
+            if name == "scpn_quantum_engine":
+                raise ImportError("blocked in test")
+            return original_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", blocked_import)
+        monkeypatch.setitem(sys.modules, module_name, module)
+        spec.loader.exec_module(module)
+
+        assert module._HAS_RUST_GAUGE is False
+
 
 # ===== 3. Negative Cases =====
 
@@ -185,6 +210,30 @@ class TestNegativeCases:
         assert abs(T_before - T_after) < 1e-10, (
             f"gauge invariance violated: {T_before:.6f} != {T_after:.6f}"
         )
+
+    def test_gauge_covariant_kinetic_python_fallback(
+        self, triangle_adj: np.ndarray, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Python kinetic fallback matches the scalar-QED hopping formula."""
+        monkeypatch.setattr(infoton_module, "_HAS_RUST_GAUGE", False)
+        g = U1LatticGauge(triangle_adj, beta=1.0, seed=42)
+        g.links[:] = np.array([0.1, -0.2, 0.3])
+        field = InfitonField(
+            values=np.array([1.0 + 0.0j, 0.5 + 0.25j, -0.2 + 0.75j]),
+            mass_sq=1.0,
+            coupling=0.1,
+            gauge_coupling=0.7,
+        )
+
+        expected = 0.0
+        for idx, (i, j) in enumerate(g.edges):
+            u_ij = np.exp(1j * field.gauge_coupling * g.links[idx])
+            hopping = field.values[i].conjugate() * u_ij * field.values[j]
+            expected += float(
+                np.abs(field.values[i]) ** 2 + np.abs(field.values[j]) ** 2 - 2.0 * hopping.real
+            )
+
+        assert infoton_module.gauge_covariant_kinetic(field, g) == pytest.approx(expected)
 
     def test_topological_charge_integer_for_smooth(self) -> None:
         """For a smooth gauge field (all links near 0), Q ≈ 0."""
