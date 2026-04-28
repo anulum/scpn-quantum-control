@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import builtins
 import importlib.metadata
 from unittest.mock import patch
 
@@ -227,6 +228,20 @@ class TestDiscovery:
         assert "good" in loaded
         assert "nocall" not in loaded
 
+    def test_module_discover_wrapper_uses_process_registry(self) -> None:
+        """Module wrapper discovers plugins through the singleton registry."""
+        name = "xwrapper_plugin"
+        eps = [_make_ep(name, _fake_factory)]
+        reg = be.get_registry()
+        reg.unregister(name)
+        with patch.object(importlib.metadata, "entry_points", return_value=eps):
+            loaded = be.discover_backends(force=True)
+        try:
+            assert loaded == [name]
+            assert be.get_backend(name).is_available() is True
+        finally:
+            reg.unregister(name)
+
 
 # ---------------------------------------------------------------------------
 # Module-level convenience wrappers + built-ins
@@ -253,6 +268,18 @@ class TestModuleSingleton:
         names = be.list_backends(auto_discover=False)
         assert "qiskit_ibm" in names
 
+    def test_list_backends_auto_discovers_by_default(self, monkeypatch) -> None:
+        calls: list[bool] = []
+
+        def mark_discovered(*, force: bool = False) -> list[str]:
+            calls.append(force)
+            return []
+
+        monkeypatch.setattr(be, "discover_backends", mark_discovered)
+        names = be.list_backends()
+        assert calls == [False]
+        assert "qiskit_ibm" in names
+
     def test_register_backend_wrapper(self) -> None:
         unique = "xvendor_backend_for_test"
         be.register_backend(unique, _fake_factory)
@@ -260,6 +287,17 @@ class TestModuleSingleton:
             assert be.get_backend(unique).name == "fake"
         finally:
             be.unregister_backend(unique)
+
+    def test_qiskit_ibm_backend_unavailable_when_sdk_missing(self, monkeypatch) -> None:
+        original_import = builtins.__import__
+
+        def blocked_import(name, globals=None, locals=None, fromlist=(), level=0):
+            if name == "qiskit_ibm_runtime":
+                raise ImportError("runtime SDK absent")
+            return original_import(name, globals, locals, fromlist, level)
+
+        monkeypatch.setattr(builtins, "__import__", blocked_import)
+        assert be.qiskit_ibm_factory().is_available() is False
 
 
 # ---------------------------------------------------------------------------
