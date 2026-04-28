@@ -19,6 +19,7 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Callable
 
 # Resolve imports when run from this directory
 sys.path.insert(0, str(Path(__file__).parent))
@@ -28,8 +29,27 @@ from test_multi_backend_distributed import run_multi_backend
 from test_pt_symmetric_kuramoto import run_pt_symmetric
 from test_quantum_advantage_scaling import run_advantage_scaling
 
+CredibleTest = tuple[str, Callable[[], Any]]
 
-async def run_credible_tests():
+
+def _default_tests() -> list[CredibleTest]:
+    return [
+        ("T1_quantum_advantage_scaling", run_advantage_scaling),
+        ("T4_multi_backend_distributed", run_multi_backend),
+        ("T7_pt_symmetric_kuramoto", run_pt_symmetric),
+    ]
+
+
+def _summary_status(summary: dict[str, Any]) -> str:
+    if summary["counts"]["failed"] > 0:
+        return "completed_with_failures"
+    return "completed"
+
+
+async def run_credible_tests(
+    tests: list[CredibleTest] | None = None,
+    results_dir: str | Path = "results",
+) -> dict[str, Any]:
     token = os.environ.get("SCPN_IBM_TOKEN")
     if not token:
         print(
@@ -38,21 +58,17 @@ async def run_credible_tests():
         sys.exit(1)
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    results_dir = Path("results")
+    results_dir = Path(results_dir)
     results_dir.mkdir(exist_ok=True)
 
     summary = {
         "runner": "credible_observables_only (DLAParityWitness, SyncOrderParameter)",
         "start_time": timestamp,
         "tests": {},
-        "status": "completed",
+        "counts": {"success": 0, "failed": 0},
     }
 
-    tests = [
-        ("T1_quantum_advantage_scaling", run_advantage_scaling),
-        ("T4_multi_backend_distributed", run_multi_backend),
-        ("T7_pt_symmetric_kuramoto", run_pt_symmetric),
-    ]
+    tests = _default_tests() if tests is None else tests
 
     print("Running 3 scientifically credible frontier tests")
     print("   Observables: DLAParityWitness + SyncOrderParameter (computed from real QPU counts)")
@@ -62,20 +78,28 @@ async def run_credible_tests():
         t0 = time.time()
         print(f"{name} ...")
         try:
-            await fn()
+            if asyncio.iscoroutinefunction(fn):
+                await fn()
+            else:
+                fn()
             runtime = round(time.time() - t0, 2)
             summary["tests"][name] = {"status": "success", "runtime_s": runtime}
+            summary["counts"]["success"] += 1
             print(f"{name} completed in {runtime}s\n")
         except Exception as e:
             runtime = round(time.time() - t0, 2)
             summary["tests"][name] = {"status": "failed", "runtime_s": runtime, "error": str(e)}
+            summary["counts"]["failed"] += 1
             print(f"{name} failed after {runtime}s - {e}\n")
 
     summary["total_runtime_s"] = round(sum(v["runtime_s"] for v in summary["tests"].values()), 2)
+    summary["status"] = _summary_status(summary)
 
     out = results_dir / f"credible_run_summary_{timestamp}.json"
     out.write_text(json.dumps(summary, indent=2))
+    summary["summary_path"] = str(out)
     print(f"Summary -> {out}")
+    return summary
 
 
 if __name__ == "__main__":
