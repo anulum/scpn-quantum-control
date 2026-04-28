@@ -143,6 +143,12 @@ def tebd_evolution(
     cutoff : SVD truncation
     order : Trotter order (2 or 4)
 
+    Notes
+    -----
+    Disconnected nearest-neighbour edges are represented as explicit
+    zero local terms because quimb's TEBD sweeps request a local
+    Hamiltonian for every adjacent bond.
+
     Returns
     -------
     dict with keys: times, R, bond_dims_final, mps_final
@@ -159,6 +165,9 @@ def tebd_evolution(
             builder[i] += -omega[i], "Z"
     for i in range(n - 1):
         if abs(K[i, i + 1]) < 1e-15:
+            # TEBD sweeps ask LocalHam1D for every nearest-neighbour bond.
+            # Register an explicit zero term so disconnected chains evolve.
+            builder[i, i + 1] += 0.0, "I", "I"
             continue
         builder[i, i + 1] += -K[i, i + 1], "X", "X"
         builder[i, i + 1] += -K[i, i + 1], "Y", "Y"

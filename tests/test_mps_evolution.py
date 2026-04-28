@@ -9,6 +9,9 @@
 
 from __future__ import annotations
 
+import importlib
+import sys
+
 import numpy as np
 import pytest
 
@@ -113,6 +116,35 @@ class TestMPSPhysics:
 class TestMPSImportErrors:
     """Cover ImportError paths when quimb unavailable (lines 45, 97, 151)."""
 
+    def test_import_guard_without_quimb(self):
+        """A host without quimb gets explicit unavailable status/errors."""
+        import scpn_quantum_control.phase.mps_evolution as mps_mod
+
+        class BlockQuimbImport:
+            def find_spec(self, fullname, path=None, target=None):
+                if fullname == "quimb" or fullname.startswith("quimb."):
+                    raise ImportError("blocked quimb")
+                return None
+
+        blocker = BlockQuimbImport()
+        saved_modules = {
+            name: module
+            for name, module in sys.modules.items()
+            if name == "quimb" or name.startswith("quimb.")
+        }
+        for name in saved_modules:
+            sys.modules.pop(name, None)
+        sys.meta_path.insert(0, blocker)
+        try:
+            reloaded = importlib.reload(mps_mod)
+            assert reloaded.is_quimb_available() is False
+            with pytest.raises(ImportError, match="quimb not installed"):
+                reloaded.dmrg_ground_state(np.eye(2), np.ones(2))
+        finally:
+            sys.meta_path.remove(blocker)
+            sys.modules.update(saved_modules)
+            importlib.reload(mps_mod)
+
     def test_build_mpo_raises_without_quimb(self):
         import scpn_quantum_control.phase.mps_evolution as mps_mod
 
@@ -169,6 +201,17 @@ class TestMPSZeroCoupling:
         result = tebd_evolution(K, omega, t_max=0.1, dt=0.05, bond_dim=8)
         assert "R" in result
         assert len(result["R"]) > 0
+
+    def test_tebd_skips_zero_nearest_neighbour_coupling(self):
+        """A missing NN edge is allowed and still yields bounded dynamics."""
+        n = 4
+        K = np.zeros((n, n))
+        K[0, 1] = K[1, 0] = 0.4
+        K[2, 3] = K[3, 2] = 0.2
+        omega = np.linspace(0.8, 1.2, n)
+        result = tebd_evolution(K, omega, t_max=0.1, dt=0.05, bond_dim=8)
+        assert len(result["R"]) == 3
+        assert np.all((result["R"] >= 0.0) & (result["R"] <= 1.01))
 
 
 class TestMPSPipeline:
