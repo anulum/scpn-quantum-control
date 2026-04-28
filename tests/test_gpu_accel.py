@@ -9,6 +9,10 @@
 
 from __future__ import annotations
 
+import importlib
+import sys
+from types import SimpleNamespace
+
 import numpy as np
 
 from scpn_quantum_control.hardware.gpu_accel import (
@@ -25,6 +29,39 @@ from scpn_quantum_control.hardware.gpu_accel import (
 class TestGPUAvailability:
     def test_is_gpu_returns_bool(self):
         assert isinstance(is_gpu_available(), bool)
+
+    def test_import_guard_accepts_mocked_cupy_device(self, monkeypatch):
+        import scpn_quantum_control.hardware.gpu_accel as gpu_mod
+
+        fake_cupy = SimpleNamespace(
+            cuda=SimpleNamespace(runtime=SimpleNamespace(getDeviceCount=lambda: 1)),
+        )
+
+        monkeypatch.setenv("SCPN_GPU_ENABLE", "1")
+        monkeypatch.setitem(sys.modules, "cupy", fake_cupy)
+        reloaded = importlib.reload(gpu_mod)
+        assert reloaded.is_gpu_available() is True
+
+        monkeypatch.setenv("SCPN_GPU_ENABLE", "0")
+        importlib.reload(gpu_mod)
+
+    def test_import_guard_handles_cupy_runtime_failure(self, monkeypatch):
+        import scpn_quantum_control.hardware.gpu_accel as gpu_mod
+
+        def fail_device_count():
+            raise RuntimeError("cuda unavailable")
+
+        fake_cupy = SimpleNamespace(
+            cuda=SimpleNamespace(runtime=SimpleNamespace(getDeviceCount=fail_device_count)),
+        )
+
+        monkeypatch.setenv("SCPN_GPU_ENABLE", "1")
+        monkeypatch.setitem(sys.modules, "cupy", fake_cupy)
+        reloaded = importlib.reload(gpu_mod)
+        assert reloaded.is_gpu_available() is False
+
+        monkeypatch.setenv("SCPN_GPU_ENABLE", "0")
+        importlib.reload(gpu_mod)
 
     def test_device_name_string(self):
         name = gpu_device_name()
