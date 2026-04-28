@@ -170,27 +170,64 @@ class TestQuantumAdvantageMoreEdges:
             AdvantageResult(6, 5.0, 3.0),
             AdvantageResult(8, 20.0, 4.0),
         ]
-        # Mock curve_fit to return negative a coefficient
         with patch(
             "scpn_quantum_control.benchmarks.quantum_advantage.curve_fit",
-            return_value=(np.array([-1.0, 0.5]), None),
+            side_effect=[
+                (np.array([1.0, 0.5]), None),
+                (np.array([-1.0, 0.1]), None),
+            ],
         ):
             assert estimate_crossover(results) is None
 
-    def test_run_scaling_with_warning(self):
+    def test_run_scaling_uses_default_sizes(self, monkeypatch):
+        from scpn_quantum_control.benchmarks import quantum_advantage as qa
+
+        observed: list[int] = []
+
+        def fake_classical(n, t_max=1.0, dt=0.1):
+            observed.append(n)
+            return {"t_total_ms": float(n), "ground_energy": 0.0, "R_final": 0.0}
+
+        def fake_quantum(n, t_max=1.0, dt=0.1, trotter_reps=5):
+            return {"t_total_ms": float(n) / 2.0, "n_trotter_steps": trotter_reps}
+
+        monkeypatch.setattr(qa, "classical_benchmark", fake_classical)
+        monkeypatch.setattr(qa, "quantum_benchmark", fake_quantum)
+
+        results = qa.run_scaling_benchmark(sizes=None, t_max=0.05, dt=0.05)
+
+        assert observed == [4, 8, 12, 16, 20]
+        assert [r.n_qubits for r in results] == observed
+
+    def test_run_scaling_with_warning(self, monkeypatch):
         import warnings
 
-        from scpn_quantum_control.benchmarks.quantum_advantage import run_scaling_benchmark
+        from scpn_quantum_control.benchmarks import quantum_advantage as qa
+
+        monkeypatch.setattr(
+            qa,
+            "classical_benchmark",
+            lambda n, t_max=1.0, dt=0.1: {
+                "t_total_ms": float("inf"),
+                "ground_energy": None,
+                "R_final": None,
+            },
+        )
+        monkeypatch.setattr(
+            qa,
+            "quantum_benchmark",
+            lambda n, t_max=1.0, dt=0.1: {
+                "t_total_ms": 1.0,
+                "n_trotter_steps": 1,
+            },
+        )
 
         with warnings.catch_warnings(record=True):
             warnings.simplefilter("always")
-            results = run_scaling_benchmark(sizes=[4, 6, 8], t_max=0.05, dt=0.05)
-            assert len(results) == 3
-            # crossover_predicted should be set (3 results)
-            assert (
-                results[0].crossover_predicted is not None
-                or results[0].crossover_predicted is None
-            )
+            results = qa.run_scaling_benchmark(sizes=[24], t_max=0.05, dt=0.05)
+
+        assert len(results) == 1
+        assert results[0].n_qubits == 24
 
 
 class TestPECPauliBranches:
