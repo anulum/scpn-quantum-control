@@ -13,7 +13,12 @@ integration, roundtrip, performance.
 
 from __future__ import annotations
 
+import builtins
+import importlib
+import importlib.util
+import sys
 import time
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -86,6 +91,34 @@ class TestErrorHandling:
         result = variational_free_energy(mu, sigma, x, K)
         assert result.free_energy > 0  # accuracy > 0
 
+    def test_variational_free_energy_import_guard_without_rust(self, monkeypatch) -> None:
+        """Import guard marks Rust acceleration unavailable when the engine is absent."""
+        source = (
+            Path(__file__).parents[1]
+            / "src"
+            / "scpn_quantum_control"
+            / "fep"
+            / "variational_free_energy.py"
+        )
+        module_name = "_test_variational_free_energy_no_rust"
+        spec = importlib.util.spec_from_file_location(module_name, source)
+        assert spec is not None
+        assert spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+
+        original_import = builtins.__import__
+
+        def blocked_import(name, *args, **kwargs):
+            if name == "scpn_quantum_engine":
+                raise ImportError("blocked in test")
+            return original_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", blocked_import)
+        monkeypatch.setitem(sys.modules, module_name, module)
+        spec.loader.exec_module(module)
+
+        assert module._HAS_RUST is False
+
 
 # ===== 3. Negative Cases =====
 
@@ -118,6 +151,75 @@ class TestNegativeCases:
         f_old = variational_free_energy(mu, sigma, x, K).free_energy
         f_new = variational_free_energy(mu_new, sigma, x, K).free_energy
         assert f_new < f_old, "gradient step must reduce F"
+
+    def test_gradient_python_identity_path(self, monkeypatch) -> None:
+        """Python identity gradient remains available when Rust is disabled."""
+        module = importlib.import_module("scpn_quantum_control.fep.variational_free_energy")
+
+        monkeypatch.setattr(module, "_HAS_RUST", False)
+
+        mu = np.array([0.2, -0.1])
+        sigma = np.eye(2)
+        x = np.array([0.5, 0.25])
+        K = np.array([[2.0, 0.1], [0.1, 1.5]])
+        sensory = np.diag([3.0, 4.0])
+
+        grad = module.free_energy_gradient(mu, sigma, x, K, sensory_precision=sensory)
+
+        K_reg = K + 1e-10 * np.eye(2)
+        expected = K_reg @ mu - sensory @ (x - mu)
+        assert np.allclose(grad, expected)
+
+    def test_gradient_python_generative_fn_without_jacobian(self) -> None:
+        """Python gradient defaults to identity Jacobian for custom generators."""
+        mu = np.array([0.2, -0.1])
+        sigma = np.eye(2)
+        x = np.array([0.5, 0.25])
+        K = np.eye(2)
+        sensory = np.diag([2.0, 3.0])
+
+        def generative(values: np.ndarray) -> np.ndarray:
+            return values**2
+
+        grad = free_energy_gradient(
+            mu,
+            sigma,
+            x,
+            K,
+            sensory_precision=sensory,
+            generative_fn=generative,
+        )
+
+        expected = (K + 1e-10 * np.eye(2)) @ mu - sensory @ (x - generative(mu))
+        assert np.allclose(grad, expected)
+
+    def test_gradient_python_generative_jacobian(self) -> None:
+        """Python gradient uses the supplied generator Jacobian."""
+        mu = np.array([0.2, -0.1])
+        sigma = np.eye(2)
+        x = np.array([0.5, 0.25])
+        K = np.eye(2)
+        sensory = np.diag([2.0, 3.0])
+
+        def generative(values: np.ndarray) -> np.ndarray:
+            return values**2
+
+        def jacobian(values: np.ndarray) -> np.ndarray:
+            return np.diag(2.0 * values)
+
+        grad = free_energy_gradient(
+            mu,
+            sigma,
+            x,
+            K,
+            sensory_precision=sensory,
+            generative_fn=generative,
+            generative_jac=jacobian,
+        )
+
+        error = x - generative(mu)
+        expected = (K + 1e-10 * np.eye(2)) @ mu - jacobian(mu).T @ sensory @ error
+        assert np.allclose(grad, expected)
 
 
 # ===== 4. Pipeline Integration =====
