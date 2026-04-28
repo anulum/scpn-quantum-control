@@ -155,7 +155,7 @@ print(f"Backend: {result_open['backend_used']}")
 | Auto-selection | Yes | Yes | No |
 | Backends | ED, sparse, MPS, Lindblad, MCWF | Various | numpy/JAX/torch |
 | Hamiltonian | Kuramoto-XY | Generic | Generic |
-| Cloud dispatch | `hardware` (placeholder) | Full cloud API | No |
+| Cloud dispatch | Recommendation only; use `AsyncHardwareRunner` for QPU execution | Full cloud API | No |
 
 ---
 

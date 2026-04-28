@@ -433,7 +433,7 @@ from scpn_quantum_control.hardware.fast_classical import fast_sparse_evolution
 
 psi = fast_sparse_evolution(K, omega, dt=0.1, n_steps=10)
 result = quantum_persistent_homology(
-    x_counts={"0000": 500, "0001": 500},  # placeholder counts
+    x_counts={"0000": 500, "0001": 500},  # illustrative counts; replace with real run data
     y_counts={"0000": 500, "0001": 500},
     n_qubits=4,
 )
