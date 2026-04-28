@@ -14,9 +14,9 @@ and update all result JSON files with actual measurement counts.
 import asyncio
 import json
 import os
+from collections.abc import Callable
 from pathlib import Path
-
-from qiskit_ibm_runtime import QiskitRuntimeService
+from typing import Any, cast
 
 from scpn_quantum_control.analysis import (
     DLAParityWitness,
@@ -24,13 +24,16 @@ from scpn_quantum_control.analysis import (
     SyncOrderParameter,
 )
 
+Counts = dict[str, int]
+Observable = Callable[..., dict[str, Any]]
 
-def _extract_counts(pub_result) -> dict[str, int]:
+
+def _extract_counts(pub_result: Any) -> Counts:
     data = pub_result.data
     for register_name in ("meas", "c", "cr", "c0", "c1"):
         register = getattr(data, register_name, None)
         if register is not None and hasattr(register, "get_counts"):
-            return register.get_counts()
+            return cast(Counts, register.get_counts())
     return {}
 
 
@@ -68,6 +71,14 @@ async def retrieve_all_jobs():
     if not token:
         print("SCPN_IBM_TOKEN environment variable is not set.")
         return
+
+    try:
+        from qiskit_ibm_runtime import QiskitRuntimeService
+    except ModuleNotFoundError as exc:
+        raise RuntimeError(
+            "qiskit-ibm-runtime is required to retrieve IBM job results. "
+            "Install the IBM hardware dependencies before running this script."
+        ) from exc
 
     instance = os.environ.get("SCPN_IBM_CRN") or os.environ.get("SCPN_IBM_INSTANCE")
     service_kwargs = {"channel": "ibm_cloud", "token": token}
@@ -109,10 +120,10 @@ async def retrieve_all_jobs():
                     counts = _extract_counts(result[0])
 
                     real_results = {}
-                    observables = [
-                        DLAParityWitness(),
-                        SyncOrderParameter(),
-                        IntegratedInformationPhi(),
+                    observables: list[Observable] = [
+                        cast(Observable, DLAParityWitness()),
+                        cast(Observable, SyncOrderParameter()),
+                        cast(Observable, IntegratedInformationPhi()),
                     ]
                     for obs in observables:
                         real_results.update(obs(counts=counts))
