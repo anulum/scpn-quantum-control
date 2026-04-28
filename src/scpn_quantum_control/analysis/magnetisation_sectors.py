@@ -163,7 +163,8 @@ def eigh_by_magnetisation(
         results: dict[M] → {eigvals, eigvecs, indices, dim}
         eigvals_all: sorted eigenvalues across all computed sectors
         ground_energy: float
-        ground_sector: int (M value of ground state)
+        ground_sector: int (M value of ground state), or None if no
+            requested sector is valid
     """
     n = K.shape[0]
     all_sectors = basis_by_magnetisation(n)
@@ -188,6 +189,15 @@ def eigh_by_magnetisation(
             "dim": len(indices),
         }
         all_eigvals.extend(vals.tolist())
+
+    if not all_eigvals:
+        return {
+            "results": results,
+            "eigvals_all": np.array([], dtype=float),
+            "ground_energy": float("nan"),
+            "ground_sector": None,
+            "n_sectors_computed": 0,
+        }
 
     all_eigvals_sorted = np.sort(all_eigvals)
 

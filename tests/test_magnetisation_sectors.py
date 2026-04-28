@@ -114,6 +114,16 @@ class TestEighByMagnetisation:
         assert set(result["results"].keys()) == {0, 2}
         assert result["n_sectors_computed"] == 2
 
+    def test_invalid_requested_sector_returns_empty_result(self):
+        K, omega = _system(4)
+        result = eigh_by_magnetisation(K, omega, sectors=[3])
+
+        assert result["results"] == {}
+        assert result["eigvals_all"].size == 0
+        assert np.isnan(result["ground_energy"])
+        assert result["ground_sector"] is None
+        assert result["n_sectors_computed"] == 0
+
     def test_ground_sector_identified(self):
         K, omega = _system(4)
         result = eigh_by_magnetisation(K, omega)
@@ -284,20 +294,24 @@ class TestOddN:
 class TestLevelSpacingEdgeCases:
     def test_invalid_sector_nan(self):
         K, omega = _system(4)
+        result = level_spacing_by_magnetisation(K, omega, M=3)
+
+        assert np.isnan(result["r_bar"])
+        assert result["M"] == 3
+        assert result["dim"] == 0
+
+    def test_one_state_sector_has_nan_spacing(self):
+        K, omega = _system(4)
         result = level_spacing_by_magnetisation(K, omega, M=4)
-        # M=4 sector has only 1 state → not enough gaps → r_bar = nan
-        assert np.isnan(result["r_bar"]) or result["dim"] == 1
+
+        assert np.isnan(result["r_bar"])
+        assert result["dim"] == 1
 
     def test_n_gaps_present(self):
         K, omega = _system(6)
         result = level_spacing_by_magnetisation(K, omega, M=0)
         assert "n_gaps" in result
         assert result["n_gaps"] > 0
-
-    # NOTE: line 231 (M not in result["results"]) is dead code — when
-    # level_spacing_by_magnetisation passes sectors=[invalid_M] to
-    # eigh_by_magnetisation, the latter crashes with IndexError on
-    # empty all_eigvals_sorted before control returns to line 230.
 
 
 class TestPythonFallback:
