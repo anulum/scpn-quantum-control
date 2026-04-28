@@ -7,9 +7,15 @@
 # SCPN Quantum Control — Tests for Snn Adapter
 """Tests for bridge/snn_adapter.py."""
 
+from __future__ import annotations
+
+import sys
+import types
+
 import numpy as np
 
 from scpn_quantum_control.bridge.snn_adapter import (
+    ArcaneNeuronBridge,
     SNNQuantumBridge,
     quantum_measurement_to_current,
     spike_train_to_rotations,
@@ -123,3 +129,51 @@ def test_pipeline_spikes_to_currents():
 
     print(f"\n  PIPELINE SNN→Quantum→Currents (4→3, 20 steps): {dt:.1f} ms")
     print(f"  Output currents: {currents}")
+
+
+def test_arcane_neuron_bridge_with_fake_neurocore(monkeypatch):
+    """ArcaneNeuronBridge drives the documented optional dependency surface."""
+
+    class FakeArcaneNeuron:
+        def __init__(self):
+            self.v_deep = 0.0
+            self.confidence = 0.25
+            self.reset_count = 0
+
+        def step(self, current: float) -> float:
+            self.v_deep += current
+            self.confidence = min(1.0, self.confidence + 0.1)
+            return float(current >= 0.5)
+
+        def get_state(self) -> dict[str, float]:
+            return {"v_deep": self.v_deep, "confidence": self.confidence}
+
+        def reset(self) -> None:
+            self.reset_count += 1
+
+    package = types.ModuleType("sc_neurocore")
+    neurons = types.ModuleType("sc_neurocore.neurons")
+    models = types.ModuleType("sc_neurocore.neurons.models")
+    models.ArcaneNeuron = FakeArcaneNeuron
+
+    monkeypatch.setitem(sys.modules, "sc_neurocore", package)
+    monkeypatch.setitem(sys.modules, "sc_neurocore.neurons", neurons)
+    monkeypatch.setitem(sys.modules, "sc_neurocore.neurons.models", models)
+
+    bridge = ArcaneNeuronBridge(n_neurons=2, n_inputs=3, scale=0.5, seed=42)
+
+    np.testing.assert_allclose(bridge.quantum_forward(), np.zeros(2))
+
+    spikes = bridge.step_neurons(np.array([0.1, 0.7, 1.2]))
+    np.testing.assert_allclose(spikes, [0.0, 1.0, 1.0])
+    assert len(bridge._spike_history) == 1
+
+    result = bridge.step(np.array([0.6, 0.0, 0.8]))
+    assert result["spikes"].shape == (3,)
+    assert result["output_currents"].shape == (2,)
+    assert result["v_deep"].shape == (3,)
+    assert result["confidence"].shape == (3,)
+
+    bridge.reset()
+    assert bridge._spike_history == []
+    assert all(neuron.reset_count == 1 for neuron in bridge.neurons)
