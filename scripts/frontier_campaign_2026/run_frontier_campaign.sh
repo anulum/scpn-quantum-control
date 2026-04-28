@@ -20,30 +20,7 @@ export PYTHONPATH="${SCRIPT_DIR}/../../src:${SCRIPT_DIR}/../sophisticated_campai
 cd "${SCRIPT_DIR}"
 mkdir -p results
 python3 generate_params.py
-
-TESTS=(
-    "test_quantum_advantage_scaling.py"
-    "test_live_scneurocore_loop.py"
-    "test_sync_distillation.py"
-    "test_multi_backend_distributed.py"
-    "test_dla_tensor_network.py"
-    "test_rl_pulse_optimization.py"
-    "test_pt_symmetric_kuramoto.py"
-    "test_logical_sync_protection.py"
-)
-
-for test_script in "${TESTS[@]}"; do
-    echo "-----------------------------------------------------------"
-    echo "Starting: ${test_script}"
-    echo "-----------------------------------------------------------"
-    if [ -f "${test_script}" ]; then
-        python3 "${test_script}"
-        echo "[OK] ${test_script} completed."
-    else
-        echo "[ERROR] ${test_script} not found in ${SCRIPT_DIR}"
-        exit 1
-    fi
-done
+python3 run_frontier_campaign.py
 
 echo "==========================================================="
 echo " Frontier Campaign complete. Results saved in results/"

@@ -109,3 +109,13 @@ def test_frontier_orchestrator_classifies_implementation_gates(
     }
     assert summary["tests"]["gated_case"]["status"] == "implementation_gated"
     assert Path(summary["summary_path"]).exists()
+
+
+def test_frontier_shell_launcher_delegates_to_python_orchestrator():
+    repo_root = Path(__file__).resolve().parents[1]
+    launcher = repo_root / "scripts/frontier_campaign_2026/run_frontier_campaign.sh"
+    text = launcher.read_text(encoding="utf-8")
+
+    assert "python3 run_frontier_campaign.py" in text
+    assert "test_dla_tensor_network.py" not in text
+    assert "test_rl_pulse_optimization.py" not in text
