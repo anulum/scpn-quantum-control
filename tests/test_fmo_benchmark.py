@@ -66,6 +66,15 @@ class TestFMOBenchmark:
         result = fmo_benchmark(K, omega)
         assert result.n_oscillators == 4
 
+    def test_low_topology_match_reports_no_correlation(self):
+        rng = np.random.default_rng(1)
+        K = rng.random((7, 7))
+        K = (K + K.T) / 2.0
+        np.fill_diagonal(K, 0.0)
+        result = fmo_benchmark(K, OMEGA_N_16[:7])
+        assert abs(result.topology_correlation) <= 0.3
+        assert "no correlation" in result.summary
+
     def test_scpn_vs_fmo_topology(self):
         """Record SCPN vs FMO topology correlation — this is Gap 1 data."""
         K = build_knm_paper27(L=7)
