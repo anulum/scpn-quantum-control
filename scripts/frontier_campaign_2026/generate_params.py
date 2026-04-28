@@ -101,7 +101,7 @@ def generate_all_params(
     arrays: dict[str, np.ndarray] = {}
     provenance: list[dict[str, Any]] = []
 
-    sizes = [12, 14, 16, 20]
+    sizes = [12, 14, 16, 20, 40, 80, 160]
 
     for N in sizes:
         source_name = "c_elegans_sub" if N == 14 else f"power_grid_{N}"
@@ -194,11 +194,6 @@ def generate_all_params(
                     "shape": list(payload.shape),
                 }
             )
-    else:
-        raise RuntimeError(
-            "hyper_3body.npy and hyper_directed.npy require explicit source artifacts; "
-            "pass --allow-synthetic for smoke-test parameters only."
-        )
 
     for filename, payload in arrays.items():
         np.save(f"{output_dir}/{filename}", payload)

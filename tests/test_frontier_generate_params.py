@@ -53,6 +53,17 @@ def _install_bridge(monkeypatch: pytest.MonkeyPatch, *, mode: str) -> None:
         def load_tokamak_data() -> np.ndarray:
             return _matrix(16)
 
+    elif mode == "with-omega":
+
+        def load_connectome(name: str, n: int) -> tuple[np.ndarray, np.ndarray]:
+            return _matrix(n), np.linspace(-0.1, 0.1, n)
+
+        def load_power_grid(n: int) -> tuple[np.ndarray, np.ndarray]:
+            return _matrix(n), np.linspace(-0.2, 0.2, n)
+
+        def load_tokamak_data() -> tuple[np.ndarray, np.ndarray]:
+            return _matrix(16), np.linspace(-0.3, 0.3, 16)
+
     else:
         raise AssertionError(f"unsupported bridge mode: {mode}")
 
@@ -113,4 +124,24 @@ def test_generator_can_emit_labelled_synthetic_smoke_parameters(
     assert {entry["source_mode"] for entry in provenance["files"]} == {"synthetic"}
     assert (tmp_path / "scale_Knm_12x12.npy").exists()
     assert (tmp_path / "scale_omega_12.npy").exists()
+    assert (tmp_path / "scale_Knm_160x160.npy").exists()
+    assert (tmp_path / "scale_omega_160.npy").exists()
     assert (tmp_path / "hyper_3body.npy").exists()
+
+
+def test_source_backed_generation_emits_full_t1_scale_manifest(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = _load_generate_params_module(monkeypatch, mode="with-omega")
+
+    module.generate_all_params(str(tmp_path))
+
+    provenance = json.loads((tmp_path / "PARAMETER_PROVENANCE.json").read_text())
+    assert provenance["allow_synthetic"] is False
+    assert {entry["source_mode"] for entry in provenance["files"]} == {"bridge"}
+    for n in (20, 40, 80, 160):
+        assert (tmp_path / f"scale_Knm_{n}x{n}.npy").exists()
+        assert (tmp_path / f"scale_omega_{n}.npy").exists()
+    assert not (tmp_path / "hyper_3body.npy").exists()
+    assert not (tmp_path / "hyper_directed.npy").exists()
