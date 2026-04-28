@@ -220,9 +220,6 @@ def _estimate_lyapunov(times: np.ndarray, otoc: np.ndarray) -> float | None:
     log_decay = np.log(decay[positive])
     t_pos = times[positive]
 
-    if len(t_pos) < 3:
-        return None
-
     # Linear fit: log(1 - F/F0) ≈ log(ε) + λ_Q × t
     A = np.vstack([t_pos, np.ones_like(t_pos)]).T
     result = np.linalg.lstsq(A, log_decay, rcond=None)

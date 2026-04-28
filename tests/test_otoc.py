@@ -9,11 +9,15 @@
 
 from __future__ import annotations
 
+import builtins
+
 import numpy as np
 import pytest
 
 from scpn_quantum_control.analysis.otoc import (
+    OTOC,
     OTOCResult,
+    _estimate_scrambling_time,
     _pauli_matrix,
     compute_otoc,
 )
@@ -107,6 +111,25 @@ class TestComputeOTOC:
         assert isinstance(result.otoc_values[0], float)
 
 
+class TestOTOCClassInterface:
+    def test_compute_delegates_to_function(self):
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        times = np.array([0.0, 0.2])
+
+        otoc = OTOC(K, omega, w_qubit=0, v_qubit=1, w_pauli="X", v_pauli="Z")
+        result = otoc.compute(times=times)
+
+        assert isinstance(result, OTOCResult)
+        np.testing.assert_allclose(result.times, times)
+        assert result.operator_w == "X_0"
+        assert result.operator_v == "Z_1"
+
+    def test_compute_requires_k_and_omega(self):
+        with pytest.raises(ValueError, match="requires K and omega"):
+            OTOC().compute(times=np.array([0.0]))
+
+
 # ---------------------------------------------------------------------------
 # Coverage: Python fallback, edge cases
 # ---------------------------------------------------------------------------
@@ -124,13 +147,23 @@ class TestOTOCCoverage:
 
     def test_python_fallback(self):
         """Cover lines 133-143: Python OTOC when Rust unavailable."""
-        from unittest.mock import patch
-
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         times = np.linspace(0, 0.5, 5)
-        with patch.dict("sys.modules", {"scpn_quantum_engine": None}):
+
+        real_import = builtins.__import__
+
+        def import_without_engine(name, *args, **kwargs):
+            if name == "scpn_quantum_engine":
+                raise ImportError("forced Python OTOC path")
+            return real_import(name, *args, **kwargs)
+
+        try:
+            builtins.__import__ = import_without_engine
             result = compute_otoc(K, omega, times=times)
+        finally:
+            builtins.__import__ = real_import
+
         assert len(result.otoc_values) == 5
         assert np.isfinite(result.otoc_values).all()
 
@@ -169,3 +202,9 @@ class TestOTOCCoverage:
         otoc = np.ones(10)
         result = _estimate_scrambling_time(times, otoc)
         assert result is None
+
+    def test_scrambling_time_first_threshold_crossing(self):
+        times = np.array([0.0, 0.25, 0.5, 0.75])
+        otoc = np.array([1.0, 0.8, 0.2, 0.1])
+
+        assert _estimate_scrambling_time(times, otoc) == 0.5
