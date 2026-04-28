@@ -9,8 +9,12 @@
 
 from __future__ import annotations
 
+import builtins
+import importlib
+
 import numpy as np
 
+import scpn_quantum_control.hardware.fast_classical as fast_classical
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.hardware.classical import (
     _build_initial_state,
@@ -21,6 +25,28 @@ from scpn_quantum_control.hardware.fast_classical import fast_sparse_evolution
 
 
 class TestFastSparseEvolution:
+    def test_missing_rust_engine_uses_python_path(self, monkeypatch):
+        real_import = builtins.__import__
+
+        def guarded_import(name, *args, **kwargs):
+            if name == "scpn_quantum_engine":
+                raise ImportError("blocked engine")
+            return real_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", guarded_import)
+        try:
+            reloaded = importlib.reload(fast_classical)
+            assert reloaded._HAS_RUST is False
+            K = build_knm_paper27(L=2)
+            omega = OMEGA_N_16[:2]
+            result = reloaded.fast_sparse_evolution(K, omega, t_total=0.1, n_steps=1)
+            assert result["n_qubits"] == 2
+            assert result["final_state"].shape == (4,)
+        finally:
+            monkeypatch.setattr(builtins, "__import__", real_import)
+            importlib.reload(fast_classical)
+            globals()["fast_sparse_evolution"] = fast_classical.fast_sparse_evolution
+
     def test_fast_sparse_matches_exact_evolution(self):
         """Verify that the high-performance sparse engine matches Exact Diagonalization."""
         n = 3
