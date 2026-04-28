@@ -505,3 +505,84 @@ class TestSubmitCircuitBatchProvenance:
 
         assert result["status"] == "DONE"
         assert service_kwargs_seen["instance"] == "preferred-crn"
+
+    def test_submit_circuit_batch_without_token_returns_no_counts(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """No IBM token must not trigger implicit local simulation or observables."""
+
+        class _FakeCircuit:
+            num_clbits = 1
+
+            def measure_all(self) -> None:
+                return None
+
+        class _FakeAnsatz:
+            def build_circuit(self) -> _FakeCircuit:
+                return _FakeCircuit()
+
+        qiskit_ibm = types.ModuleType("qiskit_ibm_runtime")
+        qiskit_ibm.QiskitRuntimeService = object  # type: ignore[attr-defined]
+        qiskit_ibm.SamplerV2 = object  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "qiskit_ibm_runtime", qiskit_ibm)
+        monkeypatch.delenv("SCPN_IBM_TOKEN", raising=False)
+
+        observable = MagicMock(return_value={"observable_seen": 1.0})
+        runner = ar.AsyncHardwareRunner(backend="ibm_fez", shots=1)
+        job = runner.submit_circuit_batch(_FakeAnsatz(), observable)
+
+        result = asyncio.run(job.result())
+
+        assert result["status"] == "NO_IBM_TOKEN"
+        assert result["counts_available"] is False
+        assert result["job_id"] is None
+        observable.assert_not_called()
+
+    def test_submit_circuit_batch_local_simulation_requires_explicit_opt_in(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Explicit local simulation is labelled and still evaluates observables."""
+
+        class _FakeCircuit:
+            num_clbits = 1
+
+            def measure_all(self) -> None:
+                return None
+
+        class _FakeAnsatz:
+            def build_circuit(self) -> _FakeCircuit:
+                return _FakeCircuit()
+
+        class _FakeLocalJob:
+            def result(self) -> list[Any]:
+                pub = MagicMock()
+                pub.data.meas.get_counts.return_value = {"0": 3, "1": 1}
+                return [pub]
+
+        class _FakeStatevectorSampler:
+            def run(self, circuits: list[Any], shots: int) -> _FakeLocalJob:
+                assert shots == 4
+                return _FakeLocalJob()
+
+        qiskit_ibm = types.ModuleType("qiskit_ibm_runtime")
+        qiskit_ibm.QiskitRuntimeService = object  # type: ignore[attr-defined]
+        qiskit_ibm.SamplerV2 = object  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "qiskit_ibm_runtime", qiskit_ibm)
+
+        primitives = types.ModuleType("qiskit.primitives")
+        primitives.StatevectorSampler = _FakeStatevectorSampler  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "qiskit.primitives", primitives)
+        monkeypatch.delenv("SCPN_IBM_TOKEN", raising=False)
+
+        runner = ar.AsyncHardwareRunner(backend="ibm_fez", shots=4)
+        job = runner.submit_circuit_batch(
+            _FakeAnsatz(),
+            lambda **kwargs: {"observable_seen": float(sum(kwargs["counts"].values()))},
+            allow_local_simulation=True,
+        )
+
+        result = asyncio.run(job.result())
+
+        assert result["status"] == "DONE_LOCAL_SIMULATION"
+        assert result["job_id"] == "local_simulated"
+        assert result["observable_seen"] == 4.0
