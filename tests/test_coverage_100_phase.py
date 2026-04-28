@@ -29,16 +29,82 @@ def test_ansatz_convergence_99pct():
     idx2 = _convergence_99pct(history2)
     assert 0 <= idx2 < len(history2)
 
+    assert _convergence_99pct([1.2, 1.1, 1.0]) == 0
+
 
 # --- ansatz_methodology.py line 205: system_sizes default ---
 
 
-def test_ansatz_benchmark_default_sizes():
-    """Cover line 205: system_sizes defaults to [2,3,4,5,6]."""
-    from scpn_quantum_control.phase.ansatz_methodology import run_full_benchmark
+def test_ansatz_benchmark_default_sizes(monkeypatch):
+    """Default benchmark sweep uses five sizes and three ansatz families."""
+    from scpn_quantum_control.phase import ansatz_methodology as module
 
-    results = run_full_benchmark(system_sizes=[2])
-    assert len(results) == 3  # 3 ansatze for 1 size
+    calls = []
+
+    def fake_benchmark(K, omega, ansatz_name, maxiter, reps, gradient_samples, seed):
+        calls.append((K.shape, len(omega), ansatz_name, maxiter, reps, gradient_samples, seed))
+        return module.AnsatzBenchmarkResult(
+            ansatz_name=ansatz_name,
+            n_qubits=len(omega),
+            n_params=1,
+            n_entangling_gates=1,
+            reps=reps,
+            final_energy=-1.0,
+            exact_energy=-1.0,
+            relative_error=0.0,
+            n_evals=1,
+            convergence_iter_99pct=0,
+            energy_history=[-1.0],
+            gradient_variance=0.0,
+        )
+
+    monkeypatch.setattr(module, "benchmark_single_ansatz", fake_benchmark)
+
+    results = module.run_full_benchmark(maxiter=7, reps=1, gradient_samples=2, seed=11)
+
+    assert len(results) == 15
+    assert {n_qubits for _, n_qubits, *_ in calls} == {2, 3, 4, 5, 6}
+    assert [name for *_, name, _, _, _, _ in calls[:3]] == [
+        "knm_informed",
+        "two_local",
+        "efficient_su2",
+    ]
+    assert all(call[3:] == (7, 1, 2, 11) for call in calls)
+
+
+def test_ansatz_efficient_su2_branch_metadata(monkeypatch):
+    """EfficientSU2 benchmark branch assembles result metadata."""
+    from scpn_quantum_control.phase import ansatz_methodology as module
+
+    monkeypatch.setattr(
+        module, "_vqe_run", lambda ansatz, hamiltonian, maxiter, seed: (-1.25, 4, [-2.0, -1.25])
+    )
+    monkeypatch.setattr(
+        module, "_gradient_variance", lambda ansatz, hamiltonian, n_samples, seed: 0.125
+    )
+    monkeypatch.setattr(
+        module, "classical_exact_diag", lambda n, K, omega: {"ground_energy": -1.0}
+    )
+
+    K = build_knm_paper27(L=2)
+    omega = OMEGA_N_16[:2]
+    result = module.benchmark_single_ansatz(
+        K,
+        omega,
+        "efficient_su2",
+        maxiter=5,
+        reps=1,
+        gradient_samples=3,
+        seed=17,
+    )
+
+    assert result.ansatz_name == "efficient_su2"
+    assert result.n_qubits == 2
+    assert result.n_params > 0
+    assert result.n_evals == 4
+    assert result.energy_history == [-2.0, -1.25]
+    assert result.gradient_variance == pytest.approx(0.125)
+    assert result.relative_error == pytest.approx(0.25)
 
 
 # --- avqds.py line 90: sparse H_mat.toarray() ---
