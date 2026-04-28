@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 
 from scpn_quantum_control.applications.eeg_benchmark import (
@@ -66,6 +68,16 @@ class TestEEGBenchmark:
         omega = OMEGA_N_16[:4]
         result = eeg_benchmark(K, omega)
         assert result.n_channels == 4
+
+    def test_constant_frequency_vector_returns_zero_correlation(self):
+        K = build_knm_paper27(L=4)
+        omega = np.ones(4)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)
+            result = eeg_benchmark(K, omega)
+        assert result.frequency_correlation == 0.0
+        assert result.n_channels == 4
+        assert "freq r=0.000" in result.summary
 
     def test_summary_string(self):
         K = build_knm_paper27(L=8)
