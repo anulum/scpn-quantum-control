@@ -17,6 +17,7 @@ from __future__ import annotations
 import hashlib
 import json
 import socket
+from types import SimpleNamespace
 
 import pytest
 
@@ -137,3 +138,41 @@ class TestGracefulFailure:
             "not installed",
             "unknown",
         )
+
+    def test_missing_package_metadata_is_recorded(self, monkeypatch):
+        import scpn_quantum_control.hardware.provenance as prov_mod
+
+        original_version = prov_mod.importlib.metadata.version
+
+        def version_or_missing(name: str) -> str:
+            if name == "numpy":
+                raise prov_mod.importlib.metadata.PackageNotFoundError(name)
+            return original_version(name)
+
+        monkeypatch.setattr(prov_mod.importlib.metadata, "version", version_or_missing)
+        prov = capture_provenance()
+        assert prov["versions"]["numpy"] == "not installed"
+
+    def test_optional_engine_module_version_is_recorded(self, monkeypatch):
+        import scpn_quantum_control.hardware.provenance as prov_mod
+
+        original_import_module = prov_mod.importlib.import_module
+
+        def import_engine(name: str):
+            if name == "scpn_quantum_engine":
+                return SimpleNamespace(__version__="9.8.7")
+            return original_import_module(name)
+
+        monkeypatch.setattr(prov_mod.importlib, "import_module", import_engine)
+        prov = capture_provenance()
+        assert prov["versions"]["scpn_quantum_engine"] == "9.8.7"
+
+    def test_hostname_lookup_failure_is_recorded(self, monkeypatch):
+        import scpn_quantum_control.hardware.provenance as prov_mod
+
+        def fail_hostname() -> str:
+            raise OSError("hostname unavailable")
+
+        monkeypatch.setattr(prov_mod.socket, "gethostname", fail_hostname)
+        prov = capture_provenance()
+        assert prov["runtime"]["hostname"] == "unknown"
