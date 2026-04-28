@@ -199,8 +199,8 @@ list and the CI workflow remains the three-weeks-green gate.
 
 ## Connection to the "new code = new tests" rule
 
-The rule recorded in `TODO_COVERAGE.md` — **new code = new
-tests (multifaceted) = new superior docs** — is what mutation
+The internal coverage queue records the rule — **new code = new
+tests (multifaceted) = new user-facing docs** — which mutation
 testing mechanically verifies. Line coverage proves that a line
 ran; mutation testing proves that a line's *behaviour* was
 constrained by an assertion. A module with 100 % line coverage
