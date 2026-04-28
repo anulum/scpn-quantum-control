@@ -134,7 +134,8 @@ async def run_frontier_campaign(
     print(f"Frontier Campaign finished in {total_runtime:.2f} seconds.")
     print(f"Summary saved to {summary_path}")
     print(
-        "\nYou can now inspect the individual JSON results in results/ and results/frontier_campaign/"
+        "\nInspect individual JSON results in this campaign's results/ directory; "
+        "orchestrator summaries are under results/frontier_campaign/."
     )
     return summary
 
