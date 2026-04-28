@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 
 from scpn_quantum_control.applications.iter_benchmark import (
@@ -65,6 +67,16 @@ class TestITERBenchmark:
         omega = OMEGA_N_16[:5]
         result = iter_benchmark(K, omega)
         assert result.n_modes == 5
+
+    def test_constant_frequency_vector_returns_zero_correlation(self):
+        K = build_knm_paper27(L=5)
+        omega = np.ones(5)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)
+            result = iter_benchmark(K, omega)
+        assert result.frequency_correlation == 0.0
+        assert result.n_modes == 5
+        assert "freq r=0.000" in result.summary
 
     def test_locking_risk_bounded(self):
         K = build_knm_paper27(L=8)
