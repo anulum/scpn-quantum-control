@@ -10,6 +10,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.analysis import LogicalSyncWitness, SyncOrderParameter
 from scpn_quantum_control.control import StructuredAnsatz
@@ -18,7 +19,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 async def run_logical_protection():
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=12000, mitigation="GUESS")
-    K_nm = np.load("params/logical_Knm_12x12.npy")
+    K_nm = np.load(parameter_path("logical_Knm_12x12.npy"))
     results = []
     for err in np.linspace(0.01, 0.15, 8):
         ansatz = StructuredAnsatz.from_kuramoto(K_nm, trotter_depth=8)
@@ -30,7 +31,7 @@ async def run_logical_protection():
         result = await job.result()
         results.append(result)
 
-    with open("results/logical_sync_protection.json", "w") as f:
+    with open(result_path("logical_sync_protection.json"), "w") as f:
         json.dump(results, f, indent=2)
 
 

@@ -76,6 +76,7 @@ def _install_bridge(monkeypatch: pytest.MonkeyPatch, *, mode: str) -> None:
 
 def _load_generate_params_module(monkeypatch: pytest.MonkeyPatch, *, mode: str):
     _install_bridge(monkeypatch, mode=mode)
+    monkeypatch.syspath_prepend(str(SCRIPT_PATH.parent))
     spec = importlib.util.spec_from_file_location(
         "frontier_generate_params_under_test", SCRIPT_PATH
     )

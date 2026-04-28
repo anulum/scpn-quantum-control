@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+from campaign_io import campaign_path
 from scpneurocore.bridge import (
     load_connectome,
     load_power_grid,
@@ -91,12 +92,13 @@ def _load_or_fail(
 
 
 def generate_all_params(
-    output_dir: str = "params",
+    output_dir: str | Path | None = None,
     *,
     allow_synthetic: bool = False,
     seed: int = 42,
 ) -> None:
-    Path(output_dir).mkdir(exist_ok=True)
+    output_path = Path(output_dir) if output_dir is not None else campaign_path("params")
+    output_path.mkdir(parents=True, exist_ok=True)
     rng = np.random.default_rng(seed)
     arrays: dict[str, np.ndarray] = {}
     provenance: list[dict[str, Any]] = []
@@ -196,9 +198,9 @@ def generate_all_params(
             )
 
     for filename, payload in arrays.items():
-        np.save(f"{output_dir}/{filename}", payload)
+        np.save(output_path / filename, payload)
 
-    provenance_path = Path(output_dir) / "PARAMETER_PROVENANCE.json"
+    provenance_path = output_path / "PARAMETER_PROVENANCE.json"
     provenance_path.write_text(
         json.dumps(
             {
@@ -215,12 +217,12 @@ def generate_all_params(
     )
 
     mode = "synthetic smoke-test" if allow_synthetic else "source-backed"
-    print(f"Generated {mode} .npy files in ./{output_dir}/ with provenance")
+    print(f"Generated {mode} .npy files in {output_path} with provenance")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate frontier campaign parameter files.")
-    parser.add_argument("--output-dir", default="params")
+    parser.add_argument("--output-dir", default=None)
     parser.add_argument(
         "--allow-synthetic",
         action="store_true",

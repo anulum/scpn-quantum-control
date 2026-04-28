@@ -10,6 +10,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.analysis import DLAParityWitness, SyncOrderParameter
 from scpn_quantum_control.control import StructuredAnsatz
@@ -20,7 +21,7 @@ async def run_multi_backend():
     runner1 = AsyncHardwareRunner(backend="ibm_heron_r2", shots=10000, mitigation="GUESS")
     runner2 = AsyncHardwareRunner(backend="ibm_heron_r2", shots=10000, mitigation="GUESS")
 
-    K_nm = np.load("params/distributed_Knm_20x20.npy")
+    K_nm = np.load(parameter_path("distributed_Knm_20x20.npy"))
     results = []
     for cycle in range(40):
         ansatz = StructuredAnsatz.from_kuramoto(K_nm, mediated_couplings=True, trotter_depth=6)
@@ -33,7 +34,7 @@ async def run_multi_backend():
         res1, res2 = await asyncio.gather(job1.result(), job2.result())
         results.append({"cycle": cycle, "node1": res1, "node2": res2})
 
-    with open("results/multi_backend_distributed.json", "w") as f:
+    with open(result_path("multi_backend_distributed.json"), "w") as f:
         json.dump(results, f, indent=2)
 
 

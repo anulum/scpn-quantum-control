@@ -25,6 +25,7 @@ from scpn_quantum_control.analysis import RLPulseOptimizer, dla_truncated_tn
 def _load_frontier_orchestrator(monkeypatch: pytest.MonkeyPatch):
     repo_root = Path(__file__).resolve().parents[1]
     script_dir = repo_root / "scripts/frontier_campaign_2026"
+    monkeypatch.syspath_prepend(str(script_dir))
     for module_name, function_name in {
         "test_quantum_advantage_scaling": "run_advantage_scaling",
         "test_live_scneurocore_loop": "run_live_scneurocore",
@@ -53,6 +54,7 @@ def _load_frontier_orchestrator(monkeypatch: pytest.MonkeyPatch):
 def _load_credible_runner(monkeypatch: pytest.MonkeyPatch):
     repo_root = Path(__file__).resolve().parents[1]
     script_dir = repo_root / "scripts/frontier_campaign_2026"
+    monkeypatch.syspath_prepend(str(script_dir))
     for module_name, function_name in {
         "test_quantum_advantage_scaling": "run_advantage_scaling",
         "test_multi_backend_distributed": "run_multi_backend",

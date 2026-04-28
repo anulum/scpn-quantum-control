@@ -21,6 +21,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable
 
+from campaign_io import campaign_path
 from test_dla_tensor_network import run_dla_tn_mapping
 from test_live_scneurocore_loop import run_live_scneurocore
 from test_logical_sync_protection import run_logical_protection
@@ -59,12 +60,16 @@ def _campaign_status(summary: dict[str, Any]) -> str:
 
 async def run_frontier_campaign(
     tests: list[FrontierTest] | None = None,
-    campaign_dir: str | Path = "results/frontier_campaign",
+    campaign_dir: str | Path | None = None,
 ) -> dict[str, Any]:
     start_time = time.time()
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-    campaign_dir = Path(campaign_dir)
+    campaign_dir = (
+        Path(campaign_dir)
+        if campaign_dir is not None
+        else campaign_path("results", "frontier_campaign")
+    )
     campaign_dir.mkdir(parents=True, exist_ok=True)
 
     summary = {

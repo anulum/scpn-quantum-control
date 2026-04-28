@@ -9,6 +9,7 @@
 import asyncio
 import json
 
+from campaign_io import result_path
 from scpneurocore.bridge import load_live_stream
 
 from scpn_quantum_control.analysis import DLAParityWitness, SyncOrderParameter
@@ -35,7 +36,7 @@ async def run_live_scneurocore():
         result = await job.result()
         results.append(result)
 
-    with open("results/live_scneurocore_loop.json", "w") as f:
+    with open(result_path("live_scneurocore_loop.json"), "w") as f:
         json.dump(results, f, indent=2)
 
 
