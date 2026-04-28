@@ -12,6 +12,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+import scpn_quantum_control.analysis.quantum_persistent_homology as qph_mod
+
 try:
     from ripser import ripser  # noqa: F401
 
@@ -106,6 +108,12 @@ class TestCorrelationToDistance:
 
 
 class TestQuantumPH:
+    def test_missing_ripser_raises_actionable_error(self, monkeypatch):
+        monkeypatch.setattr(qph_mod, "_RIPSER_AVAILABLE", False)
+
+        with pytest.raises(ImportError, match="pip install ripser"):
+            quantum_persistent_homology({"00": 1}, {"00": 1}, 2)
+
     def test_synchronized_low_p_h1(self):
         # All qubits aligned → low p_h1
         x_counts = {"0000": 1000}
