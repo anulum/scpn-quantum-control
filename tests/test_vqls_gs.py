@@ -7,9 +7,12 @@
 # SCPN Quantum Control — Tests for Vqls Gs
 """Tests for control/vqls_gs.py."""
 
+from types import SimpleNamespace
+
 import numpy as np
 import pytest
 
+import scpn_quantum_control.control.vqls_gs as vqls_gs
 from scpn_quantum_control.control.vqls_gs import VQLS_GradShafranov
 
 
@@ -100,3 +103,40 @@ def test_pipeline_solve_to_residual():
     psi = solver.solve(reps=1, maxiter=30, seed=42)
     residual = A @ psi - b * np.dot(b, A @ psi) / np.dot(b, b)
     assert np.all(np.isfinite(residual))
+
+
+def test_zero_operator_uses_unit_cost_guard(monkeypatch):
+    solver = VQLS_GradShafranov(n_qubits=2)
+    solver._A = np.zeros((4, 4))
+    solver._b = np.array([1.0, 0.0, 0.0, 0.0])
+    observed_costs = []
+
+    def fake_minimise(fun, x0, method, options):
+        observed_costs.append(fun(x0))
+        return SimpleNamespace(x=x0)
+
+    monkeypatch.setattr(vqls_gs, "minimize", fake_minimise)
+    psi = solver.solve(reps=1, maxiter=1, seed=0)
+    assert observed_costs == [1.0]
+    assert psi.shape == (4,)
+    assert np.all(np.isfinite(psi))
+
+
+def test_imaginary_state_raises_clear_error(monkeypatch):
+    solver = VQLS_GradShafranov(n_qubits=2, imag_tol=0.01)
+    solver.discretize()
+
+    def fake_minimise(fun, x0, method, options):
+        return SimpleNamespace(x=x0)
+
+    class ComplexState:
+        def __array__(self, dtype=None, copy=None):
+            arr = np.array([1.0j, 0.0, 0.0, 0.0])
+            if dtype is not None:
+                return arr.astype(dtype)
+            return arr
+
+    monkeypatch.setattr(vqls_gs, "minimize", fake_minimise)
+    monkeypatch.setattr(vqls_gs.Statevector, "from_instruction", lambda _circuit: ComplexState())
+    with pytest.raises(ValueError, match="imaginary norm"):
+        solver.solve(reps=1, maxiter=1, seed=0)
