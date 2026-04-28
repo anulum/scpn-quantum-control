@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import numpy as np
 
+import scpn_quantum_control.analysis.qfi_criticality as qfi_crit_mod
 from scpn_quantum_control.analysis.qfi_criticality import (
     QFICriticalityResult,
     qfi_single_coupling,
@@ -76,6 +77,24 @@ class TestQFISingleCoupling:
         assert mq > 0
         assert gap > 0
 
+    def test_degenerate_excited_level_is_skipped(self, monkeypatch):
+        def fake_hamiltonian(K, omega):
+            del K, omega
+            return None
+
+        def fake_dense_matrix(K, omega):
+            del K, omega
+            return np.diag([0.0, 0.0, 2.0, 3.0])
+
+        monkeypatch.setattr(qfi_crit_mod, "knm_to_hamiltonian", fake_hamiltonian)
+        monkeypatch.setattr(qfi_crit_mod, "knm_to_dense_matrix", fake_dense_matrix)
+
+        mq, gap, tq = qfi_single_coupling(np.ones((2, 2)), np.zeros(2))
+
+        assert gap == 0.0
+        assert np.isfinite(mq)
+        assert np.isfinite(tq)
+
 
 class TestQFIVsCoupling:
     def test_returns_result(self):
@@ -119,6 +138,22 @@ class TestQFIVsCoupling:
         result = qfi_vs_coupling(omega, T, k_range=np.array([1.0, 3.0]))
         assert result.peak_qfi > 0
         assert len(result.total_qfi) == 2
+
+    def test_default_k_range_has_documented_size(self, monkeypatch):
+        calls: list[float] = []
+
+        def fake_single_coupling(K, omega):
+            del omega
+            calls.append(float(np.max(K)))
+            return calls[-1], 1.0, calls[-1]
+
+        monkeypatch.setattr(qfi_crit_mod, "qfi_single_coupling", fake_single_coupling)
+
+        result = qfi_vs_coupling(np.zeros(2), np.ones((2, 2)), k_range=None)
+
+        assert len(result.k_values) == 20
+        np.testing.assert_allclose(result.k_values[[0, -1]], [0.1, 3.0])
+        assert calls == result.k_values.tolist()
 
 
 # ---------------------------------------------------------------------------
