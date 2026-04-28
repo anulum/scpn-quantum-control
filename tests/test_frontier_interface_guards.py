@@ -50,6 +50,29 @@ def _load_frontier_orchestrator(monkeypatch: pytest.MonkeyPatch):
     return module
 
 
+def _load_credible_runner(monkeypatch: pytest.MonkeyPatch):
+    repo_root = Path(__file__).resolve().parents[1]
+    script_dir = repo_root / "scripts/frontier_campaign_2026"
+    for module_name, function_name in {
+        "test_quantum_advantage_scaling": "run_advantage_scaling",
+        "test_multi_backend_distributed": "run_multi_backend",
+        "test_pt_symmetric_kuramoto": "run_pt_symmetric",
+    }.items():
+        module = types.ModuleType(module_name)
+        setattr(module, function_name, lambda: None)
+        monkeypatch.setitem(sys.modules, module_name, module)
+
+    spec = importlib.util.spec_from_file_location(
+        "frontier_credible_runner_for_test",
+        script_dir / "run_credible_tests.py",
+    )
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def test_dla_truncated_tensor_network_fails_until_implemented():
     K_nm = np.zeros((4, 4), dtype=np.float64)
 
@@ -119,3 +142,28 @@ def test_frontier_shell_launcher_delegates_to_python_orchestrator():
     assert "python3 run_frontier_campaign.py" in text
     assert "test_dla_tensor_network.py" not in text
     assert "test_rl_pulse_optimization.py" not in text
+
+
+def test_credible_runner_summary_reflects_failed_tests(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    monkeypatch.setenv("SCPN_IBM_TOKEN", "test-token")
+    runner = _load_credible_runner(monkeypatch)
+
+    def success():
+        return None
+
+    def failure():
+        raise RuntimeError("hardware unavailable")
+
+    summary = asyncio.run(
+        runner.run_credible_tests(
+            tests=[("success_case", success), ("failure_case", failure)],
+            results_dir=tmp_path,
+        )
+    )
+
+    assert summary["status"] == "completed_with_failures"
+    assert summary["counts"] == {"success": 1, "failed": 1}
+    assert summary["tests"]["failure_case"]["status"] == "failed"
+    assert Path(summary["summary_path"]).exists()
