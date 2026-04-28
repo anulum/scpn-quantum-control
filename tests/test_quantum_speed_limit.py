@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import numpy as np
 
+import scpn_quantum_control.analysis.quantum_speed_limit as qsl_mod
 from scpn_quantum_control.analysis.quantum_speed_limit import (
     QSLResult,
     compute_qsl,
@@ -66,6 +67,35 @@ class TestComputeQSL:
         omega = OMEGA_N_16[:2]
         result = compute_qsl(K, omega, t_target=1.0)
         assert result.n_qubits == 2
+
+    def test_mt_arccos_branch_for_nonstationary_initial_state(self, monkeypatch):
+        def fake_hamiltonian(K, omega):
+            del K, omega
+            return None
+
+        def fake_dense_matrix(K, omega):
+            del K, omega
+            return np.array([[0.0, 1.0], [1.0, 0.0]])
+
+        def fake_exact_diag(n, *, K, omega):
+            del n, K, omega
+            return {"ground_energy": -1.0}
+
+        monkeypatch.setattr(qsl_mod, "knm_to_hamiltonian", fake_hamiltonian)
+        monkeypatch.setattr(qsl_mod, "knm_to_dense_matrix", fake_dense_matrix)
+        monkeypatch.setattr(qsl_mod, "classical_exact_diag", fake_exact_diag)
+
+        result = compute_qsl(
+            np.zeros((1, 1)),
+            np.zeros(1),
+            t_target=0.2,
+            dt=0.1,
+            R_threshold=2.0,
+        )
+
+        assert result.overlap < 1.0
+        assert result.delta_E == 1.0
+        np.testing.assert_allclose(result.tau_MT, 0.2, atol=1e-12)
 
 
 class TestQSLvsCoupling:
