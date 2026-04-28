@@ -300,9 +300,8 @@ class TestFloquetCoverage:
         assert 0 <= R <= 1.0
 
     def test_subharmonic_ratio_short_signal(self):
-        """Cover line 167: len(freqs) < 2 → return 0.0."""
+        """Short signals return zero before FFT bin selection."""
         from scpn_quantum_control.phase.floquet_kuramoto import _subharmonic_ratio
 
-        # Single-point signal
         result = _subharmonic_ratio(np.array([1.0]), dt=0.1, drive_freq=1.0)
         assert result == 0.0
