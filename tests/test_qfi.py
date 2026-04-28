@@ -12,6 +12,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+import scpn_quantum_control.analysis.qfi as qfi_mod
 from scpn_quantum_control.analysis.qfi import QFIResult, compute_qfi, qfi_gap_tradeoff
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 
@@ -111,9 +112,38 @@ class TestQFI:
         prec = result.precision_for(0, 1, n_measurements=100)
         assert prec == pytest.approx(1.0 / 400, rel=1e-10)
 
+    def test_precision_method_zero_qfi_is_infinite(self):
+        result = QFIResult(
+            qfi_matrix=np.array([[0.0]]),
+            coupling_pairs=[(0, 1)],
+            precision_bounds=np.array([np.inf]),
+            spectral_gap=0.0,
+            n_qubits=2,
+        )
+
+        assert result.precision_for(1, 0, n_measurements=100) == float("inf")
+
     def test_custom_pairs(self):
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = compute_qfi(K, omega, pairs=[(0, 1), (2, 3)])
         assert len(result.coupling_pairs) == 2
         assert result.qfi_matrix.shape == (2, 2)
+
+    def test_degenerate_excited_level_is_skipped(self, monkeypatch):
+        def fake_hamiltonian(K, omega):
+            del K, omega
+            return None
+
+        def fake_dense_matrix(K, omega):
+            del K, omega
+            return np.diag([0.0, 0.0, 2.0, 3.0])
+
+        monkeypatch.setattr(qfi_mod, "knm_to_hamiltonian", fake_hamiltonian)
+        monkeypatch.setattr(qfi_mod, "knm_to_dense_matrix", fake_dense_matrix)
+
+        result = compute_qfi(np.zeros((2, 2)), np.zeros(2), pairs=[(0, 1)])
+
+        assert result.spectral_gap == 0.0
+        assert np.isfinite(result.qfi_matrix).all()
+        assert result.precision_bounds.shape == (1,)

@@ -117,7 +117,8 @@ def compute_qfi(
 
     # Precision bounds: diagonal elements give per-parameter bounds
     diag = np.diag(qfi)
-    precision = np.where(diag > 1e-15, 1.0 / diag, np.inf)
+    precision = np.full_like(diag, np.inf, dtype=float)
+    np.divide(1.0, diag, out=precision, where=diag > 1e-15)
 
     return QFIResult(
         qfi_matrix=qfi,
