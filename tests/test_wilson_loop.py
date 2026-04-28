@@ -12,6 +12,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+import scpn_quantum_control.gauge.wilson_loop as wilson_loop
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.gauge.wilson_loop import (
     WilsonLoopResult,
@@ -56,6 +57,21 @@ class TestWilsonLoopExpectation:
         psi = exact["ground_state"]
         w = wilson_loop_expectation(psi, [0, 1], 4)
         assert abs(w) <= 1.0 + 1e-10
+
+    def test_sparse_matrix_path(self, monkeypatch):
+        class SparseMatrix:
+            def toarray(self):
+                return np.diag([1.0, -1.0])
+
+        class FakeOperator:
+            def to_matrix(self):
+                return SparseMatrix()
+
+        psi = np.array([1.0, 0.0], dtype=complex)
+        monkeypatch.setattr(
+            wilson_loop, "_build_wilson_operator", lambda _loop, _n: FakeOperator()
+        )
+        assert wilson_loop_expectation(psi, [0, 1], 1) == 1.0 + 0.0j
 
 
 class TestFindLoops:
