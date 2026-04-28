@@ -163,9 +163,6 @@ def _subharmonic_ratio(signal: np.ndarray, drive_freq: float, dt: float) -> floa
     freqs = np.fft.rfftfreq(n, d=dt)
     power = np.abs(fft) ** 2
 
-    if len(freqs) < 2:
-        return 0.0
-
     # Find bins closest to Omega and Omega/2
     omega_target = drive_freq / (2 * np.pi)
     omega_half = omega_target / 2
