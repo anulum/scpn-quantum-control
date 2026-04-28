@@ -230,3 +230,61 @@ class TestSparseKrylovEvolution:
         assert len(result["R"]) == 2
         assert np.isfinite(result["R"][0])
         assert np.isfinite(result["R"][1])
+
+
+class TestClassicalAccelerationContracts:
+    """Behavioural contracts for optional acceleration paths."""
+
+    def test_order_param_numpy_fallback_when_accel_import_fails(self, monkeypatch):
+        """Minimal installs still compute the Kuramoto order parameter."""
+        import builtins
+
+        from scpn_quantum_control.hardware.classical import _order_param
+
+        real_import = builtins.__import__
+
+        def guarded_import(name, *args, **kwargs):
+            if name in {"accel", "scpn_quantum_control.accel"}:
+                raise ImportError("accel unavailable")
+            return real_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", guarded_import)
+
+        result = _order_param(np.array([0.0, np.pi]))
+
+        assert result == pytest.approx(0.0, abs=1e-12)
+
+    def test_expectation_pauli_delegates_to_engine_fast_path(self, monkeypatch):
+        """The engine path receives contiguous real/imag arrays and Pauli index."""
+        import sys
+        from types import SimpleNamespace
+
+        from scpn_quantum_control.hardware.classical import _expectation_pauli
+
+        seen: dict[str, object] = {}
+
+        def expectation_pauli_fast(psi_real, psi_imag, n, qubit, pauli_idx):
+            seen["real_contiguous"] = psi_real.flags["C_CONTIGUOUS"]
+            seen["imag_contiguous"] = psi_imag.flags["C_CONTIGUOUS"]
+            seen["n"] = n
+            seen["qubit"] = qubit
+            seen["pauli_idx"] = pauli_idx
+            return 0.25
+
+        monkeypatch.setitem(
+            sys.modules,
+            "scpn_quantum_engine",
+            SimpleNamespace(expectation_pauli_fast=expectation_pauli_fast),
+        )
+
+        psi = np.array([1.0 + 0.0j, 0.0 + 1.0j])
+        result = _expectation_pauli(psi, n=1, qubit=0, pauli="Y")
+
+        assert result == pytest.approx(0.25)
+        assert seen == {
+            "real_contiguous": True,
+            "imag_contiguous": True,
+            "n": 1,
+            "qubit": 0,
+            "pauli_idx": 1,
+        }
