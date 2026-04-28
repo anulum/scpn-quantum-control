@@ -18,6 +18,7 @@ import time
 import numpy as np
 import pytest
 
+import scpn_quantum_control.qec.multiscale_qec as multiscale_module
 from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 from scpn_quantum_control.qec.error_budget import logical_error_rate
 from scpn_quantum_control.qec.multiscale_qec import (
@@ -131,6 +132,37 @@ class TestNegativeCases:
         # d=1: (d+1)/2 = 1, so p_L = A × (p/p_th)^1 = 0.1 × 0.3 = 0.03
         expected = 0.1 * (0.003 / 0.01)
         assert abs(rates[0] - expected) < 1e-10
+
+    def test_python_fallback_domain_coupling(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Python K_nm fallback averages bounded inter-domain entries."""
+        monkeypatch.setattr(multiscale_module, "_HAS_RUST", False)
+        K = np.arange(25, dtype=float).reshape(5, 5)
+
+        coupling = knm_between_domains(K, (0, 2), (3, 9))
+        expected = np.mean(K[0:3, 3:5])
+
+        assert coupling == pytest.approx(expected)
+
+    def test_python_fallback_empty_domain_coupling(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Out-of-range fallback domains return zero instead of dividing by zero."""
+        monkeypatch.setattr(multiscale_module, "_HAS_RUST", False)
+        K = np.zeros((2, 2))
+
+        assert knm_between_domains(K, (3, 5), (6, 8)) == 0.0
+
+    def test_python_fallback_concatenated_rates(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Python concatenation fallback chains each logical rate into the next level."""
+        monkeypatch.setattr(multiscale_module, "_HAS_RUST", False)
+
+        rates = concatenated_logical_rate(0.003, [3, 5])
+
+        first = logical_error_rate(3, 0.003)
+        second = logical_error_rate(5, first)
+        np.testing.assert_allclose(rates, [first, second])
+
+    def test_double_exponential_zero_rates_defensive_branch(self) -> None:
+        """Zero logical rates do not masquerade as double-exponential suppression."""
+        assert not multiscale_module._check_double_exponential([0.0, 0.0], below_threshold=True)
 
 
 # ===== 4. Pipeline Integration =====
