@@ -6,7 +6,8 @@
 <!-- scpn-quantum-control — Frontier Campaign Manifest -->
 
 # Frontier Campaign 2026 - 8 Tests (Batch 4)
-# Pre-flight checklist and parameter file manifest
+
+Pre-flight checklist and parameter file manifest.
 
 ## Required parameter files (`params/` directory)
 
@@ -58,12 +59,25 @@ publication-safe QPU inputs.
 | T5   | `scpn_quantum_control.analysis.dla_truncated_tn` |
 | T6   | `scpn_quantum_control.analysis.RLPulseOptimizer` |
 
-## Known ready-to-run status
+## Launch status
 
-The following library fixes are required before QPU launch:
+Resolved prerequisites:
 
-- `OTOC` class exported from `scpn_quantum_control.analysis`
-- `StructuredAnsatz.from_kuramoto` lambda_fim Qiskit parameter name conflict fixed
+- `OTOC` is exported from `scpn_quantum_control.analysis`.
+- `StructuredAnsatz.from_kuramoto` treats `lambda_fim` as a concrete
+  float, not a repeated Qiskit `Parameter`, so multi-step Trotter runs
+  do not hit parameter-name collisions.
+
+Implementation-gated tests:
+
+- T5 (`dla_truncated_tn`) is a fail-fast interface until a real
+  DLA-truncated tensor-network implementation and validation suite
+  exist.
+- T6 (`RLPulseOptimizer`) is a fail-fast interface until a real
+  optimiser, objective, and replayable training trace exist.
+
+The orchestrator records those implementation gates as failures rather
+than substituting synthetic scientific outputs.
 
 ## Run order
 
