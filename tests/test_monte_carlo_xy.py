@@ -9,6 +9,10 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
+import numpy as np
+
 from scpn_quantum_control.analysis.monte_carlo_xy import (
     AHPResult,
     FiniteSizeResult,
@@ -149,3 +153,29 @@ class TestFiniteSizeScaling:
             n_values=[4], n_seeds=2, n_thermalize=300, n_measure=300, n_temps=6
         )
         assert result.a_hp_means[0] > 0
+
+    def test_default_n_values_are_used(self, monkeypatch):
+        from scpn_quantum_control.analysis import monte_carlo_xy as mc_mod
+        from scpn_quantum_control.bridge import knm_hamiltonian as knm_mod
+
+        built_sizes: list[int] = []
+        extracted_sizes: list[int] = []
+
+        def fake_build_knm_paper27(L):
+            built_sizes.append(L)
+            return np.eye(L)
+
+        def fake_extract_a_hp(K, **kwargs):
+            del kwargs
+            extracted_sizes.append(K.shape[0])
+            return SimpleNamespace(a_hp_graph=1.0 + K.shape[0] / 100.0)
+
+        monkeypatch.setattr(knm_mod, "build_knm_paper27", fake_build_knm_paper27)
+        monkeypatch.setattr(mc_mod, "extract_a_hp", fake_extract_a_hp)
+
+        result = finite_size_scaling(n_values=None, n_seeds=1)
+
+        assert result.n_values == [4, 8, 16, 32]
+        assert built_sizes == [4, 8, 16, 32]
+        assert extracted_sizes == [4, 8, 16, 32]
+        assert len(result.a_hp_means) == 4
