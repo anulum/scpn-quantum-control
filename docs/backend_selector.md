@@ -22,8 +22,9 @@ Two modes: recommendation-only (`recommend_backend`) and auto-execute
 | System size | Open system? | quimb? | Backend selected |
 |:-----------:|:------------:|:------:|-----------------|
 | $n \leq 14$ | No | — | `exact_diag` (numpy `eigh`) |
-| $n = 15$–$16$ | No | — | `sector_ed` (Z₂ parity sectors) |
-| $n = 17$–$64$ | No | Yes | `mps_dmrg` (quimb DMRG) |
+| $n = 15$–$20$ | No | — | `u1_sector_ed` (default magnetisation sectors) |
+| $n = 15$–$16$ | No | — | `sector_ed` when `allow_u1_sector=False` |
+| $n = 21$–$64$ | No | Yes | `mps_dmrg` (quimb DMRG) |
 | $n = 17$–$64$ | No | No | `sparse_eigsh` (ARPACK) |
 | $n > 64$ | No | — | `hardware` (IBM/cloud) |
 | $n \leq 12$ | Yes | — | `lindblad_scipy` |
@@ -52,6 +53,7 @@ rec = recommend_backend(
     has_quimb: bool = False,      # quimb installed?
     has_gpu: bool = False,        # GPU available?
     want_open_system: bool = False,  # Lindblad dynamics?
+    allow_u1_sector: bool = True,    # prefer U(1) sectors?
 ) -> dict
 ```
 
@@ -74,6 +76,7 @@ result = auto_solve(
     omega: np.ndarray,
     ram_gb: float = 32.0,
     want_open_system: bool = False,
+    allow_u1_sector: bool = True,
     gamma_amp: float = 0.0,
     gamma_deph: float = 0.0,
     t_max: float = 1.0,
@@ -111,7 +114,12 @@ print(f"{rec['backend']}: {rec['reason']}")
 # Medium system
 rec = recommend_backend(n=16, ram_gb=32.0)
 print(f"{rec['backend']}: {rec['reason']}")
-# → sector_ed: Z₂ parity reduces memory from 32 GB to 8 GB
+# → u1_sector_ed: U(1) magnetisation sector is the smallest exact solver
+
+# Force a Z₂ parity-sector recommendation
+rec = recommend_backend(n=15, ram_gb=32.0, allow_u1_sector=False)
+print(f"{rec['backend']}: {rec['reason']}")
+# → sector_ed: Z₂ parity ED when that sector is the required calculation
 
 # Large system with quimb
 rec = recommend_backend(n=32, has_quimb=True)

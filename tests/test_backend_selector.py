@@ -44,11 +44,10 @@ class TestRecommendBackend:
         rec = recommend_backend(16)
         assert rec["backend"] == "u1_sector_ed"
 
-    def test_n16_z2_sector_when_u1_too_big(self):
-        """With tiny RAM, u1 won't fit, fall to z2."""
-        rec = recommend_backend(16, ram_gb=0.001)
-        # With 1 MB RAM, sector_ed won't fit either
-        assert rec["backend"] in ("sector_ed", "statevector", "hardware")
+    def test_n15_z2_sector_when_u1_disabled(self):
+        rec = recommend_backend(15, ram_gb=32, allow_u1_sector=False)
+        assert rec["backend"] == "sector_ed"
+        assert rec["feasible"] is True
 
     def test_n18_u1_sector(self):
         """n=18 u1 largest sector C(18,9)=48620 → ~37 GB → fits in 128 GB."""
@@ -156,6 +155,30 @@ class TestAutoSolve:
         result = auto_solve(K, omega)
         assert "recommendation" in result
         assert "backend" in result["recommendation"]
+
+    def test_auto_solve_forwards_u1_policy(self):
+        from unittest.mock import patch
+
+        K, omega = _system(4)
+        captured = {}
+
+        def fake_recommend(n, **kwargs):
+            captured.update(kwargs)
+            return {
+                "backend": "exact_diag",
+                "reason": "test",
+                "memory_mb": 1,
+                "feasible": True,
+            }
+
+        with patch(
+            "scpn_quantum_control.phase.backend_selector.recommend_backend",
+            fake_recommend,
+        ):
+            result = auto_solve(K, omega, allow_u1_sector=False)
+
+        assert result["backend_used"] == "exact_diag"
+        assert captured["allow_u1_sector"] is False
 
     def test_mps_dmrg_path(self):
         """n=20 with quimb → DMRG path."""
