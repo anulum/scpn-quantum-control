@@ -10,13 +10,44 @@
 from __future__ import annotations
 
 import asyncio
+import importlib.util
 import runpy
+import sys
+import types
 from pathlib import Path
 
 import numpy as np
 import pytest
 
 from scpn_quantum_control.analysis import RLPulseOptimizer, dla_truncated_tn
+
+
+def _load_frontier_orchestrator(monkeypatch: pytest.MonkeyPatch):
+    repo_root = Path(__file__).resolve().parents[1]
+    script_dir = repo_root / "scripts/frontier_campaign_2026"
+    for module_name, function_name in {
+        "test_quantum_advantage_scaling": "run_advantage_scaling",
+        "test_live_scneurocore_loop": "run_live_scneurocore",
+        "test_sync_distillation": "run_distillation",
+        "test_multi_backend_distributed": "run_multi_backend",
+        "test_dla_tensor_network": "run_dla_tn_mapping",
+        "test_rl_pulse_optimization": "run_rl_pulse_opt",
+        "test_pt_symmetric_kuramoto": "run_pt_symmetric",
+        "test_logical_sync_protection": "run_logical_protection",
+    }.items():
+        module = types.ModuleType(module_name)
+        setattr(module, function_name, lambda: None)
+        monkeypatch.setitem(sys.modules, module_name, module)
+
+    spec = importlib.util.spec_from_file_location(
+        "frontier_campaign_orchestrator_for_test",
+        script_dir / "run_frontier_campaign.py",
+    )
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def test_dla_truncated_tensor_network_fails_until_implemented():
@@ -50,3 +81,31 @@ def test_retired_campaign_injectors_fail_fast(relative_path: str):
 
     with pytest.raises(RuntimeError, match="Local campaign injectors are retired"):
         runpy.run_path(str(repo_root / relative_path))
+
+
+def test_frontier_orchestrator_classifies_implementation_gates(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    orchestrator = _load_frontier_orchestrator(monkeypatch)
+
+    def success():
+        return None
+
+    def gated():
+        raise NotImplementedError("future implementation")
+
+    summary = asyncio.run(
+        orchestrator.run_frontier_campaign(
+            tests=[("success_case", success), ("gated_case", gated)],
+            campaign_dir=tmp_path,
+        )
+    )
+
+    assert summary["status"] == "completed_with_gates"
+    assert summary["counts"] == {
+        "success": 1,
+        "implementation_gated": 1,
+        "failed": 0,
+    }
+    assert summary["tests"]["gated_case"]["status"] == "implementation_gated"
+    assert Path(summary["summary_path"]).exists()
