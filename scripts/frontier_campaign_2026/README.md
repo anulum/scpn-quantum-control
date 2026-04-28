@@ -15,12 +15,14 @@ Parameter files are local transport caches. Generate them from the
 bridge/provenance contract with:
 
 ```bash
-python scripts/frontier_campaign_2026/generate_params.py --output-dir params
+python scripts/frontier_campaign_2026/generate_params.py
 ```
 
 Use `--allow-synthetic --seed <n>` only for interface smoke tests. Those
 outputs are labelled in `PARAMETER_PROVENANCE.json` and are not
-publication-safe QPU inputs.
+publication-safe QPU inputs. The default cache is
+`scripts/frontier_campaign_2026/params/`; pass `--output-dir <path>`
+only when intentionally writing a separate cache.
 
 | Test | Script | Required `.npy` files |
 |------|--------|-----------------------|
@@ -84,6 +86,9 @@ than substituting synthetic scientific outputs.
 Run individually or via the orchestrator `run_frontier_campaign.sh`.
 Ensure `SCPN_IBM_TOKEN` env var is set before launching.
 Do not import local mock injectors during hardware runs.
+Individual result JSON files are written under
+`scripts/frontier_campaign_2026/results/`; orchestrator summaries are
+written under `scripts/frontier_campaign_2026/results/frontier_campaign/`.
 The orchestrator writes `counts.success`, `counts.implementation_gated`,
 and `counts.failed` in its summary JSON. Overall status is:
 
