@@ -12,7 +12,10 @@ Median calibration values from IBM ibm_fez (February 2026).
 
 from __future__ import annotations
 
-from qiskit_aer.noise import NoiseModel, depolarizing_error, thermal_relaxation_error
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from qiskit_aer.noise import NoiseModel
 
 # ibm_fez Heron r2 median calibration (Feb 2026)
 T1_US = 300.0
@@ -34,6 +37,8 @@ def heron_r2_noise_model(
     Single-qubit gates get thermal relaxation only. Two-qubit gates (ecr/cz)
     get thermal relaxation + depolarizing noise at the given error rate.
     """
+    from qiskit_aer.noise import NoiseModel, depolarizing_error, thermal_relaxation_error
+
     model = NoiseModel()
 
     sq_relax = thermal_relaxation_error(t1_us, t2_us, SINGLE_GATE_TIME_US)
