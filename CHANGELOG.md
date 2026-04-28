@@ -541,7 +541,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - `_run_sampler_simulator` uses `self._backend` (respects noise model).
 - Duplicate `AerSimulator` import removed.
 - Dead `2**n_osc` in `classical.py` (lines 117, 147).
-- `DEFAULT_INSTANCE` reads `SCPN_IBM_INSTANCE` with fallback.
+- `DEFAULT_INSTANCE` reads IBM instance configuration from the environment.
 
 ### Changed
 - mypy scope: `bridge/` → `bridge/`, `phase/`, `mitigation/`, `hardware/classical.py`, `hardware/runner.py`.

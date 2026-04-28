@@ -403,7 +403,8 @@ HardwareRunner(...)
 
 The default IBM instance CRN is read via `SCPNConfig.ibm_instance`
 (see `config` below) when the `[config]` extra is installed, falling
-back to the raw `SCPN_IBM_INSTANCE` environment variable otherwise.
+back to `SCPN_IBM_CRN` and then the legacy `SCPN_IBM_INSTANCE`
+environment variable otherwise.
 
 ### `backends` — plugin registry
 
@@ -498,7 +499,7 @@ from scpn_quantum_control.config import SCPNConfig, get_config, reload_config
 
 cfg = get_config()                  # process-wide singleton
 cfg.anonymous_hostname              # bool — SCPN_ANONYMOUS_HOSTNAME
-cfg.ibm_instance                    # str  — SCPN_IBM_INSTANCE
+cfg.ibm_instance                    # str  — SCPN_IBM_CRN, fallback SCPN_IBM_INSTANCE
 cfg.ibm_backend                     # str  — SCPN_IBM_BACKEND
 cfg.ibm_channel                     # str  — "ibm_cloud" | "ibm_quantum"
 cfg.ibm_shots                       # int  — default shot count
