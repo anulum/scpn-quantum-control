@@ -108,6 +108,7 @@ def test_legacy_campaign_generators_emit_labelled_synthetic_smoke_cache(
     "relative_path",
     [
         "scripts/primary_campaign_2026/run_primary_campaign.sh",
+        "scripts/hardware_campaign_2026/run_campaign.sh",
         "scripts/sophisticated_campaign_2026/run_sophisticated_campaign.sh",
     ],
 )
