@@ -8,8 +8,10 @@
 
 """
 Master Orchestrator — Frontier Advanced Tests (Batch 4)
-Runs all 8 frontier tests cleanly in sequence.
+Attempts all 8 frontier tests cleanly in sequence.
 Uses only real analysis classes and StructuredAnsatz (no mocks).
+Implementation-gated paths are recorded as failures rather than
+substituting synthetic scientific outputs.
 """
 
 import asyncio
