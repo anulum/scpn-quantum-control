@@ -107,6 +107,38 @@ def test_compute_dla_polynomial_degree_estimation():
     assert result.polynomial_degree > 0
 
 
+def test_compute_dla_cap_classification_branch():
+    """Dimension cap branch classifies a saturated one-qubit algebra."""
+    from scpn_quantum_control.analysis.dynamical_lie_algebra import compute_dla
+
+    gens = [SparsePauliOp("X"), SparsePauliOp("Y"), SparsePauliOp("Z")]
+
+    result = compute_dla(gens, max_iterations=0, max_dimension=3)
+
+    assert result.dimension == 3
+    assert not result.is_polynomial
+    assert result.polynomial_degree == float("inf")
+
+
+def test_compute_dla_intermediate_degree_branch():
+    """Intermediate DLA dimensions estimate degree from log scaling."""
+    from itertools import product
+
+    from scpn_quantum_control.analysis.dynamical_lie_algebra import compute_dla
+
+    gens = [
+        SparsePauliOp("".join(pauli))
+        for pauli in product("IXYZ", repeat=3)
+        if pauli != ("I", "I", "I")
+    ]
+
+    result = compute_dla(gens, max_iterations=0, max_dimension=100)
+
+    assert result.dimension == 63
+    assert result.polynomial_degree == np.log(63) / np.log(3)
+    assert not result.is_polynomial
+
+
 def test_compute_dla_rust_fallback():
     """Test compute_dla_rust falls back to Python when Rust unavailable."""
     from scpn_quantum_control.analysis.dynamical_lie_algebra import (
@@ -138,6 +170,47 @@ def test_compute_dla_rust_with_mock():
         result = compute_dla_rust(gens, max_iterations=10)
         assert result.dimension == 7
         assert result.n_qubits == 2
+
+
+def test_compute_dla_rust_toarray_and_cubic_branch():
+    """Rust path accepts sparse-like matrices and classifies cubic scaling."""
+    from scipy.sparse import csr_matrix
+
+    from scpn_quantum_control.analysis.dynamical_lie_algebra import compute_dla_rust
+
+    class FakeGenerator:
+        num_qubits = 2
+
+        def to_matrix(self):
+            return csr_matrix([[1.0, 0.0], [0.0, -1.0]])
+
+    mock_engine = MagicMock()
+    mock_engine.dla_dimension.return_value = 9
+    with patch.dict("sys.modules", {"scpn_quantum_engine": mock_engine}):
+        result = compute_dla_rust([FakeGenerator()], max_dimension=50)
+
+    assert result.dimension == 9
+    assert result.polynomial_degree == 3.0
+    assert result.is_polynomial
+
+
+def test_compute_dla_rust_cap_and_intermediate_branches():
+    """Rust path reports cap and intermediate-degree classifications."""
+    from scpn_quantum_control.analysis.dynamical_lie_algebra import compute_dla_rust
+
+    cap_gens = [SparsePauliOp("XX")]
+    intermediate_gens = [SparsePauliOp("XXI")]
+
+    mock_engine = MagicMock()
+    mock_engine.dla_dimension.side_effect = [50, 60]
+    with patch.dict("sys.modules", {"scpn_quantum_engine": mock_engine}):
+        capped = compute_dla_rust(cap_gens, max_dimension=50)
+        intermediate = compute_dla_rust(intermediate_gens, max_dimension=100)
+
+    assert capped.polynomial_degree == float("inf")
+    assert not capped.is_polynomial
+    assert intermediate.polynomial_degree == np.log(60) / np.log(3)
+    assert not intermediate.is_polynomial
 
 
 def test_build_xy_generators():
