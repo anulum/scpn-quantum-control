@@ -15,8 +15,12 @@ order-of-magnitude QCCD benchmarks, not a specific device calibration.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from qiskit import QuantumCircuit, transpile
-from qiskit_aer.noise import NoiseModel, depolarizing_error, thermal_relaxation_error
+
+if TYPE_CHECKING:
+    from qiskit_aer.noise import NoiseModel
 
 # QCCD trapped-ion calibration benchmarks
 MS_ERROR = 0.005  # Molmer-Sorensen 2-qubit gate error
@@ -36,6 +40,8 @@ def trapped_ion_noise_model(
     Single-qubit gates: thermal relaxation.
     MS gates: depolarizing + thermal relaxation (same pattern as heron_r2).
     """
+    from qiskit_aer.noise import NoiseModel, depolarizing_error, thermal_relaxation_error
+
     model = NoiseModel()
 
     sq_relax = thermal_relaxation_error(t1_us, t2_us, SQ_GATE_TIME_US)

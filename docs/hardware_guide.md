@@ -162,6 +162,10 @@ Constructs a Qiskit-Aer `NoiseModel`:
 - Two-qubit gates (ECR/CZ): thermal relaxation + depolarizing
 - Readout: symmetric bit-flip error
 
+Qiskit-Aer is imported lazily when the noise-model function is called.
+Importing `scpn_quantum_control.hardware` does not require a working
+local Aer installation unless a simulator noise model is actually built.
+
 ```python
 from scpn_quantum_control.hardware import heron_r2_noise_model
 
