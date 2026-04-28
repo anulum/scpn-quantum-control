@@ -16,6 +16,7 @@ from scpn_quantum_control.analysis.koopman import (
     MAX_OSCILLATORS_DEFAULT,
     KoopmanResult,
     build_koopman_generator,
+    build_koopman_generator_rust,
     koopman_analysis,
     koopman_dimension,
     koopman_to_hamiltonian,
@@ -72,6 +73,21 @@ class TestBuildKoopmanGenerator:
         theta_ref = np.array([0.1, 0.2, 0.3])
         L, _labels = build_koopman_generator(K, omega, theta_ref=theta_ref)
         assert L.shape[0] == 9
+
+    def test_rust_wrapper_matches_python_generator_with_reference(self):
+        K = np.array([[0.0, 0.5], [0.5, 0.0]])
+        omega = np.array([1.0, 1.5])
+        theta_ref = np.array([0.1, -0.2])
+        python_L, python_labels = build_koopman_generator(
+            K, omega, theta_ref=theta_ref, max_oscillators=2
+        )
+
+        rust_L, rust_labels = build_koopman_generator_rust(
+            K, omega, theta_ref=theta_ref, max_oscillators=2
+        )
+
+        np.testing.assert_allclose(rust_L, python_L)
+        assert rust_labels == python_labels
 
 
 class TestKoopmanAnalysis:
