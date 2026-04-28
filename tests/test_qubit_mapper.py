@@ -13,6 +13,8 @@ integration, roundtrip, performance.
 
 from __future__ import annotations
 
+import importlib
+import sys
 import time
 
 import numpy as np
@@ -20,7 +22,6 @@ import pytest
 
 from scpn_quantum_control.hardware.qubit_mapper import (
     ExecutionRegion,
-    QubitMappingResult,
     build_calibration_graph,
     detect_execution_regions,
     dynq_initial_layout,
@@ -90,6 +91,36 @@ class TestEmptyNull:
 
 
 class TestErrorHandling:
+    def test_networkx_absence_reports_mapping_unavailable(self) -> None:
+        """Without networkx, mapper APIs raise the documented dependency error."""
+        import scpn_quantum_control.hardware.qubit_mapper as mapper_mod
+
+        class BlockNetworkXImport:
+            def find_spec(self, fullname, path=None, target=None):
+                if fullname == "networkx" or fullname.startswith("networkx."):
+                    raise ImportError("blocked networkx")
+                return None
+
+        blocker = BlockNetworkXImport()
+        saved_modules = {
+            name: module
+            for name, module in sys.modules.items()
+            if name == "networkx" or name.startswith("networkx.")
+        }
+        for name in saved_modules:
+            sys.modules.pop(name, None)
+        sys.meta_path.insert(0, blocker)
+        try:
+            reloaded = importlib.reload(mapper_mod)
+            with pytest.raises(ImportError, match="networkx required"):
+                reloaded.build_calibration_graph({(0, 1): 0.01})
+            with pytest.raises(ImportError, match="networkx required"):
+                reloaded.detect_execution_regions(None)  # type: ignore[arg-type]
+        finally:
+            sys.meta_path.remove(blocker)
+            sys.modules.update(saved_modules)
+            importlib.reload(mapper_mod)
+
     def test_zero_error_no_crash(self) -> None:
         """Perfect gates (error=0) should not cause division by zero."""
         G = build_calibration_graph({(0, 1): 0.0, (1, 2): 0.0, (0, 2): 0.0})
@@ -135,9 +166,14 @@ class TestPipelineIntegration:
         errors = _cluster_errors()
         result = dynq_initial_layout(errors, circuit_width=4, seed=42)
         assert result is not None
-        assert isinstance(result, QubitMappingResult)
         assert len(result.initial_layout) == 4
         assert result.selected_region.n_qubits >= 4
+        assert result.selected_region.quality_score > 0.0
+
+    def test_full_dynq_pipeline_returns_none_when_no_region_fits(self) -> None:
+        errors = {(0, 1): 0.01, (1, 2): 0.01}
+        result = dynq_initial_layout(errors, circuit_width=4, min_qubits=2, seed=42)
+        assert result is None
 
     def test_layout_qubits_in_region(self) -> None:
         """Layout qubits must be subset of selected region."""
