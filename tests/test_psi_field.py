@@ -18,6 +18,7 @@ import time
 import numpy as np
 import pytest
 
+import scpn_quantum_control.psi_field.lattice as lattice_module
 from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 from scpn_quantum_control.psi_field.infoton import (
     InfitonField,
@@ -165,6 +166,52 @@ class TestNegativeCases:
         for plaq in g.plaquettes:
             val = g.plaquette_action_value(plaq)
             assert -1.0 - 1e-10 <= val <= 1.0 + 1e-10
+
+    def test_python_fallback_action_and_force(
+        self, triangle_adj: np.ndarray, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Python fallback matches the oriented triangle equations."""
+        monkeypatch.setattr(lattice_module, "_HAS_RUST_GAUGE", False)
+        g = U1LatticGauge(triangle_adj, beta=2.0, seed=42)
+        g.links[:] = np.array([0.2, -0.4, 0.7])
+
+        phase = g._edge_link(0, 1) + g._edge_link(1, 2) - g._edge_link(0, 2)
+        expected_action = -g.beta * np.cos(phase)
+        expected_force = g.beta * np.sin(phase) * np.array([1.0, -1.0, 1.0])
+
+        assert g.total_action() == pytest.approx(expected_action)
+        assert np.allclose(g.force(), expected_force)
+
+    def test_reversed_oriented_force_branch(
+        self, triangle_adj: np.ndarray, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Fallback force honours reversed stored-edge orientation."""
+        monkeypatch.setattr(lattice_module, "_HAS_RUST_GAUGE", False)
+        g = U1LatticGauge(triangle_adj, beta=1.5, seed=42)
+        g.links[:] = np.array([0.2, -0.4, 0.7])
+        g.plaquettes = [[(2, 1), (1, 0), (2, 0)]]
+
+        phase = g._edge_link(2, 1) + g._edge_link(1, 0) - g._edge_link(2, 0)
+        expected = np.zeros(g.n_edges)
+        expected[g.edge_index[(0, 1)]] -= g.beta * np.sin(phase)
+        expected[g.edge_index[(0, 2)]] += g.beta * np.sin(phase)
+
+        assert np.allclose(g.force(), expected)
+
+    def test_plaquette_phase_and_self_link(self, triangle_adj: np.ndarray) -> None:
+        """Plaquette phase follows signed links and self-links vanish."""
+        g = U1LatticGauge(triangle_adj, beta=1.0, seed=42)
+        g.links[:] = np.array([0.3, 0.5, -0.2])
+        assert g._edge_link(1, 1) == 0.0
+        assert g.plaquette_phase([(0, 1), (1, 2), (2, 0)]) == pytest.approx(0.3 - 0.2 - 0.5)
+
+    def test_flat_triangle_builder_skips_missing_edges(self, triangle_adj: np.ndarray) -> None:
+        """Malformed cached plaquettes are ignored by the Rust flat view."""
+        g = U1LatticGauge(triangle_adj, beta=1.0, seed=42)
+        g.plaquettes = [[(0, 1), (1, 3), (0, 3)]]
+        tri_flat, tri_signs = g._build_flat_triangles()
+        assert tri_flat.size == 0
+        assert tri_signs.size == 0
 
 
 # ===== 4. Pipeline Integration =====
