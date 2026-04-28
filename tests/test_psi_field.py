@@ -13,12 +13,18 @@ integration, roundtrip, performance.
 
 from __future__ import annotations
 
+import builtins
+import importlib
+import importlib.util
+import sys
 import time
+from pathlib import Path
 
 import numpy as np
 import pytest
 
 import scpn_quantum_control.psi_field.lattice as lattice_module
+import scpn_quantum_control.psi_field.observables as observables_module
 from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 from scpn_quantum_control.psi_field.infoton import (
     InfitonField,
@@ -119,6 +125,34 @@ class TestErrorHandling:
         # Either None or positive
         assert sigma is None or sigma > 0
 
+    def test_observables_import_guard_without_rust(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Observable import guard records absent Rust acceleration."""
+        source = (
+            Path(__file__).parents[1]
+            / "src"
+            / "scpn_quantum_control"
+            / "psi_field"
+            / "observables.py"
+        )
+        module_name = "scpn_quantum_control.psi_field._test_observables_no_rust"
+        spec = importlib.util.spec_from_file_location(module_name, source)
+        assert spec is not None
+        assert spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+
+        original_import = builtins.__import__
+
+        def blocked_import(name, *args, **kwargs):
+            if name == "scpn_quantum_engine":
+                raise ImportError("blocked in test")
+            return original_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", blocked_import)
+        monkeypatch.setitem(sys.modules, module_name, module)
+        spec.loader.exec_module(module)
+
+        assert module._HAS_RUST_GAUGE is False
+
 
 # ===== 3. Negative Cases =====
 
@@ -159,6 +193,19 @@ class TestNegativeCases:
         g.links[:] = 0.01 * np.random.default_rng(42).standard_normal(g.n_edges)
         q = topological_charge(g)
         assert abs(q) < 0.1, f"smooth field should have Q ≈ 0, got {q:.4f}"
+
+    def test_topological_charge_python_fallback(
+        self, triangle_adj: np.ndarray, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Python topological-charge loop wraps plaquette phase."""
+        monkeypatch.setattr(observables_module, "_HAS_RUST_GAUGE", False)
+        g = U1LatticGauge(triangle_adj, beta=1.0, seed=42)
+        g.links[:] = np.array([0.2, 0.5, -0.1])
+
+        phase = g._edge_link(0, 1) + g._edge_link(1, 2) - g._edge_link(0, 2)
+        wrapped = (phase + np.pi) % (2 * np.pi) - np.pi
+
+        assert observables_module.topological_charge(g) == pytest.approx(wrapped / (2 * np.pi))
 
     def test_plaquette_bounded(self, triangle_adj: np.ndarray) -> None:
         """Re(U_plaq) must be in [−1, 1]."""
@@ -268,6 +315,23 @@ class TestPipelineIntegration:
         # Plaquette and average link are both gauge-field diagnostics
         assert isinstance(plaq.mean_plaquette, float)
         assert isinstance(avg_u, complex)
+
+    def test_string_tension_positive_branch(self, triangle_adj: np.ndarray) -> None:
+        """Positive plaquette expectation returns finite string tension."""
+        g = U1LatticGauge(triangle_adj, beta=1.0, seed=42)
+        g.links[:] = np.array([0.1, 0.2, -0.1])
+
+        result = g.measure_plaquettes()
+        sigma = string_tension_from_wilson(g)
+
+        assert result.mean_plaquette > 0
+        assert sigma == pytest.approx(-np.log(result.mean_plaquette))
+
+    def test_average_link_empty_graph(self) -> None:
+        """Average link is zero for a graph with no edges."""
+        g = U1LatticGauge(np.zeros((3, 3)), seed=0)
+
+        assert average_link(g) == 0j
 
 
 # ===== 5. Roundtrip =====
