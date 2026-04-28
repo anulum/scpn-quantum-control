@@ -45,7 +45,7 @@ try:
     from ripser import ripser  # type: ignore[import-untyped]
 
     _RIPSER_AVAILABLE = True
-except ImportError:
+except ImportError:  # pragma: no cover - exercised only without the optional ripser extra.
     _RIPSER_AVAILABLE = False
 
 
