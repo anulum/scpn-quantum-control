@@ -14,6 +14,7 @@ import numpy as np
 from scpn_quantum_control.analysis.magic_nonstabilizerness import (
     MagicResult,
     MagicScanResult,
+    _compute_sre_m2,
     magic_at_coupling,
     magic_vs_coupling,
 )
@@ -63,6 +64,12 @@ class TestMagicAtCoupling:
         result = magic_at_coupling(omega, T, K_base=1.0)
         assert result.xi_sum > 0
 
+    def test_zero_fourth_moment_returns_maximum_magic(self):
+        sre_m2, xi_sum = _compute_sre_m2(np.zeros(2), n=1)
+
+        assert xi_sum == 0.0
+        assert sre_m2 == 1.0
+
 
 class TestMagicVsCoupling:
     def test_returns_scan(self):
@@ -83,6 +90,14 @@ class TestMagicVsCoupling:
         omega = OMEGA_N_16[:3]
         result = magic_vs_coupling(omega, T, k_range=np.linspace(0.1, 5.0, 8))
         assert result.peak_magic > 0
+
+    def test_default_k_range_has_documented_size(self):
+        T = _ring(2)
+        omega = OMEGA_N_16[:2]
+        result = magic_vs_coupling(omega, T)
+
+        assert len(result.k_values) == 15
+        np.testing.assert_allclose(result.k_values[[0, -1]], [0.5, 5.0])
 
 
 # ---------------------------------------------------------------------------
