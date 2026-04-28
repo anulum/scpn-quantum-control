@@ -9,12 +9,17 @@
 
 from __future__ import annotations
 
+import importlib
+from types import SimpleNamespace
+
 import numpy as np
+from qiskit import QuantumCircuit
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.hardware.classical import classical_exact_diag
 from scpn_quantum_control.phase.adapt_vqe import (
     ADAPTResult,
+    _build_ansatz,
     _build_operator_pool,
     adapt_vqe,
 )
@@ -39,6 +44,15 @@ class TestOperatorPool:
 
         for op in pool:
             assert isinstance(op, SparsePauliOp)
+
+    def test_build_ansatz_with_selected_operator(self):
+        K = build_knm_paper27(L=2)
+        pool = _build_operator_pool(K, 2)
+
+        qc = _build_ansatz(2, pool, [0], [0.125])
+
+        assert qc.num_qubits == 2
+        assert qc.size() == 1
 
 
 class TestAdaptVQE:
@@ -113,3 +127,43 @@ class TestAdaptVQECoverage:
         assert result.converged
         assert len(result.selected_operators) == 0
         assert result.gradient_norms[0] == 0.0
+
+    def test_adapt_selection_and_optimisation_loop(self, monkeypatch):
+        """Forced gradient exercises operator selection and optimiser callback."""
+        adapt_module = importlib.import_module("scpn_quantum_control.phase.adapt_vqe")
+        calls = {"cost": 0}
+
+        def fake_gradient(_sv, _hamiltonian, pool):
+            gradients = np.zeros(len(pool))
+            gradients[1] = 2.0
+            return gradients
+
+        def simple_ansatz(n, _pool, _selected, _params):
+            return QuantumCircuit(n)
+
+        def fake_minimise(cost_fn, x0, method, options):
+            assert method == "COBYLA"
+            assert options["maxiter"] == 3
+            calls["cost"] += 1
+            cost_fn(np.asarray(x0))
+            return SimpleNamespace(x=np.asarray(x0) + 0.25)
+
+        monkeypatch.setattr(adapt_module, "_compute_gradient", fake_gradient)
+        monkeypatch.setattr(adapt_module, "_build_ansatz", simple_ansatz)
+        monkeypatch.setattr(adapt_module, "minimize", fake_minimise)
+
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        result = adapt_vqe(
+            K,
+            omega,
+            max_iterations=1,
+            gradient_threshold=0.5,
+            maxiter_opt=3,
+            seed=42,
+        )
+
+        assert result.selected_operators == [1]
+        assert result.n_parameters == 1
+        assert result.gradient_norms == [2.0]
+        assert calls["cost"] == 1
