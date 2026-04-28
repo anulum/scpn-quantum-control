@@ -8,13 +8,13 @@
 
 # Strategic Roadmap — Post-v1.0 Differentiation
 
-Seven differentiation items scoped beyond the feature list in
+Fifty-three differentiation items scoped beyond the feature list in
 `ROADMAP.md`. Each item is a multi-week-to-multi-month track with
 explicit prerequisites, deliverables, and risks. None is scheduled
 yet; this document is the bill of work so future sessions can
 prioritise, scope, and sequence without re-deriving the case.
 
-**Status:** all seven are **DEFERRED / CEO-gated**. No execution
+**Status:** all fifty-three are **DEFERRED / CEO-gated**. No execution
 until each item is individually activated.
 
 **Relationship to `ROADMAP.md`:** that file tracks release-scoped

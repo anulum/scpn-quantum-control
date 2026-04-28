@@ -128,7 +128,7 @@ Cross-repo integrations wired:
 Remaining items:
 
 - [x] IBM Heron r2 hardware campaign (20/20 experiments complete)
-- [ ] Coverage push to 100% (currently 95%, 572 uncovered lines)
+- [ ] Coverage push to 100% (tracked in the internal coverage queue; latest documented baseline is ~97.6%, 315 uncovered lines)
 - [ ] arXiv preprint: "Quantum simulation of coupled-oscillator synchronization on a 156-qubit superconducting processor"
 - [ ] Quantum advantage figure: exponential crossover curve (hardware data)
 - [ ] IBM Quantum Credits campaign (applied 2026-03-29, pending review)
@@ -144,7 +144,7 @@ Remaining items:
 
 ## Strategic Differentiation (post-v1.0)
 
-Thirty-five post-v1.0 differentiation tracks are scoped in
+Fifty-three post-v1.0 differentiation tracks are scoped in
 [`docs/strategic_roadmap.md`](docs/strategic_roadmap.md). All are
 **DEFERRED / CEO-gated**; no execution until individually activated.
 Quarterly review cadence.
