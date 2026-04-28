@@ -134,6 +134,61 @@ def test_avqds_evolution_toarray():
     assert len(result.parameters_history) > 0
 
 
+def test_avqds_sparse_matrix_conversion_contract(monkeypatch):
+    """Sparse-like Hamiltonian matrices are densified before dynamics."""
+    from scpn_quantum_control.phase import avqds as module
+
+    toarray_calls = []
+
+    class SparseLike:
+        def __init__(self, matrix):
+            self.matrix = matrix
+
+        def toarray(self):
+            toarray_calls.append(self.matrix.shape)
+            return self.matrix
+
+    class Hamiltonian:
+        def to_matrix(self):
+            return SparseLike(np.eye(2, dtype=complex))
+
+    class Ansatz:
+        num_parameters = 1
+
+        def assign_parameters(self, params):
+            return params
+
+    class FakeStatevector:
+        def __init__(self, data):
+            self.data = data
+
+        @classmethod
+        def from_instruction(cls, assigned):
+            theta = float(np.asarray(assigned)[0])
+            return cls(np.array([np.cos(theta), np.sin(theta)], dtype=complex))
+
+        def expectation_value(self, hamiltonian):
+            matrix = hamiltonian.to_matrix().toarray()
+            return complex(np.vdot(self.data, matrix @ self.data))
+
+    monkeypatch.setattr(module, "knm_to_hamiltonian", lambda K, omega: Hamiltonian())
+    monkeypatch.setattr(module, "knm_to_ansatz", lambda K, reps: Ansatz())
+    monkeypatch.setattr(module, "Statevector", FakeStatevector)
+
+    result = module.avqds_simulate(
+        np.zeros((1, 1)),
+        np.zeros(1),
+        t_total=0.1,
+        n_steps=1,
+        seed=0,
+    )
+
+    assert toarray_calls[:2] == [(2, 2), (2, 2)]
+    assert result.n_params == 1
+    assert len(result.parameters_history) == 2
+    assert np.isfinite(result.final_energy)
+
+
 # --- floquet_kuramoto.py line 152-153: len(freqs) < 2 → returns 0.0 ---
 
 
