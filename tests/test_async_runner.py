@@ -309,9 +309,12 @@ class TestSubmitCircuitBatchProvenance:
             name = "ibm_fez"
             target = _FakeTarget()
 
+        service_kwargs_seen: dict[str, Any] = {}
+
         class _FakeService:
             def __init__(self, **kwargs: Any) -> None:
                 self.kwargs = kwargs
+                service_kwargs_seen.update(kwargs)
 
             def backend(self, target: str) -> _FakeBackend:
                 assert target == "ibm_fez"
@@ -399,6 +402,7 @@ class TestSubmitCircuitBatchProvenance:
 
         monkeypatch.setattr(analysis, "SyncOrderParameter", _FakeSyncOrderParameter)
         monkeypatch.setenv("SCPN_IBM_TOKEN", "test-token")
+        monkeypatch.setenv("SCPN_IBM_INSTANCE", "legacy-instance")
 
         runner = ar.AsyncHardwareRunner(backend="ibm_fez", shots=256)
         job = runner.submit_circuit_batch(
@@ -419,3 +423,85 @@ class TestSubmitCircuitBatchProvenance:
         ]
         assert result["zne_applied"] is True
         assert result["status"] == "DONE"
+        assert service_kwargs_seen["instance"] == "legacy-instance"
+
+    def test_submit_circuit_batch_prefers_crn_over_legacy_instance(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """CRN env var is preferred; legacy instance remains fallback-only."""
+        import sys
+        import types
+
+        from scpn_quantum_control.hardware import async_runner as ar
+
+        class _FakeCircuit:
+            num_clbits = 1
+
+            def measure_all(self) -> None:
+                return None
+
+        class _FakeAnsatz:
+            def build_circuit(self) -> _FakeCircuit:
+                return _FakeCircuit()
+
+        class _FakeBackend:
+            name = "ibm_fez"
+
+        service_kwargs_seen: dict[str, Any] = {}
+
+        class _FakeService:
+            def __init__(self, **kwargs: Any) -> None:
+                service_kwargs_seen.update(kwargs)
+
+            def backend(self, target: str) -> _FakeBackend:
+                return _FakeBackend()
+
+        class _FakePassManager:
+            def run(self, circuit: Any) -> Any:
+                return circuit
+
+        class _FakeJob:
+            def job_id(self) -> str:
+                return "job_1"
+
+            def result(self, *args: Any, **kwargs: Any) -> list[Any]:
+                pub = MagicMock()
+                pub.data.meas.get_counts.return_value = {"0": 1}
+                return [pub]
+
+        class _FakeSampler:
+            def __init__(self, mode: Any) -> None:
+                self.options = MagicMock()
+
+            def run(self, circuits: list[Any]) -> _FakeJob:
+                return _FakeJob()
+
+        qiskit_ibm = types.ModuleType("qiskit_ibm_runtime")
+        qiskit_ibm.QiskitRuntimeService = _FakeService  # type: ignore[attr-defined]
+        qiskit_ibm.SamplerV2 = _FakeSampler  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "qiskit_ibm_runtime", qiskit_ibm)
+
+        preset = types.ModuleType("qiskit.transpiler.preset_passmanagers")
+        preset.generate_preset_pass_manager = (  # type: ignore[attr-defined]
+            lambda *args, **kwargs: _FakePassManager()
+        )
+        monkeypatch.setitem(sys.modules, "qiskit.transpiler.preset_passmanagers", preset)
+
+        passes = types.ModuleType("qiskit.transpiler.passes")
+        passes.ALAPScheduleAnalysis = object  # type: ignore[attr-defined]
+        passes.PadDynamicalDecoupling = object  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "qiskit.transpiler.passes", passes)
+
+        monkeypatch.setenv("SCPN_IBM_TOKEN", "test-token")
+        monkeypatch.setenv("SCPN_IBM_CRN", "preferred-crn")
+        monkeypatch.setenv("SCPN_IBM_INSTANCE", "legacy-instance")
+
+        runner = ar.AsyncHardwareRunner(backend="ibm_fez", shots=1)
+        job = runner.submit_circuit_batch(
+            _FakeAnsatz(),
+            lambda **kwargs: {"observable_seen": 1.0},
+        )
+        result = asyncio.run(job.result())
+
+        assert result["status"] == "DONE"
+        assert service_kwargs_seen["instance"] == "preferred-crn"

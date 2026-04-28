@@ -248,7 +248,7 @@ class AsyncHardwareRunner:
                     qc.measure_all()
 
                 token = os.environ.get("SCPN_IBM_TOKEN")
-                crn = os.environ.get("SCPN_IBM_CRN")
+                crn = os.environ.get("SCPN_IBM_CRN") or os.environ.get("SCPN_IBM_INSTANCE")
 
                 try:
                     if token:
