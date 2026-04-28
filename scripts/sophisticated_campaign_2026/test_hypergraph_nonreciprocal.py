@@ -10,6 +10,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.analysis import SyncOrderParameter
 from scpn_quantum_control.control import StructuredAnsatz
@@ -19,9 +20,9 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 async def run_hyper_nonreciprocal():
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=10000, mitigation="GUESS")
 
-    K_pair = np.load("params/hyper_pairwise.npy")
-    K_hyper = np.load("params/hyper_3body.npy")
-    K_directed = np.load("params/hyper_directed.npy")
+    K_pair = np.load(parameter_path("hyper_pairwise.npy"))
+    K_hyper = np.load(parameter_path("hyper_3body.npy"))
+    K_directed = np.load(parameter_path("hyper_directed.npy"))
 
     configs = ["pairwise", "hypergraph", "directed", "full"]
     results = {}
@@ -42,7 +43,7 @@ async def run_hyper_nonreciprocal():
                 "reason": "StructuredAnsatz accepts hypergraph/directed kwargs but does not compile them yet.",
             }
 
-    with open("results/hyper_nonreciprocal.json", "w") as f:
+    with open(result_path("hyper_nonreciprocal.json"), "w") as f:
         json.dump(results, f, indent=2)
 
 

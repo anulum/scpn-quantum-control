@@ -3,6 +3,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.analysis import OTOC
 from scpn_quantum_control.control import StructuredAnsatz
@@ -12,8 +13,8 @@ from scpn_quantum_control.phase import lindblad_engine
 
 async def run_test():
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=10000, mitigation="GUESS")
-    K_nm = np.load("params/primary_Knm_12x12.npy")
-    omega = np.load("params/primary_omega.npy")
+    K_nm = np.load(parameter_path("primary_Knm_12x12.npy"))
+    omega = np.load(parameter_path("primary_omega.npy"))
 
     ansatz = StructuredAnsatz.from_kuramoto(K_nm=K_nm, omega=omega, trotter_depth=6)
 
@@ -27,7 +28,7 @@ async def run_test():
     )
 
     results = {"hardware": result_hw, "classical": result_classical}
-    with open("results/classical_quantum_otoc.json", "w") as f:
+    with open(result_path("classical_quantum_otoc.json"), "w") as f:
         json.dump(results, f, indent=2)
     print("Classical-quantum OTOC benchmark test completed.")
 

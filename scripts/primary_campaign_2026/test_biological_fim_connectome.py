@@ -3,6 +3,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.analysis import SyncOrderParameter
 from scpn_quantum_control.control import StructuredAnsatz
@@ -11,13 +12,13 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 async def run_test():
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=10000, mitigation="GUESS")
-    K_nm_bio = np.load("params/c_elegans_connectome_14x14.npy")
+    K_nm_bio = np.load(parameter_path("c_elegans_connectome_14x14.npy"))
 
     ansatz = StructuredAnsatz.from_kuramoto(K_nm=K_nm_bio, lambda_fim=2.75, trotter_depth=6)
     job = runner.submit_circuit_batch(ansatz=ansatz, observable=SyncOrderParameter())
     result = await job.result()
 
-    with open("results/biological_fim_connectome.json", "w") as f:
+    with open(result_path("biological_fim_connectome.json"), "w") as f:
         json.dump(result, f, indent=2)
     print("Biological connectome test of FIM completed.")
 

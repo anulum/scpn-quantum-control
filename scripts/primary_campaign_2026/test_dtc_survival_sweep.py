@@ -3,6 +3,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.analysis import OTOC, SyncOrderParameter
 from scpn_quantum_control.control import StructuredAnsatz
@@ -11,7 +12,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 async def run_test():
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=12000, mitigation="GUESS")
-    K_nm = np.load("params/primary_Knm_12x12.npy")
+    K_nm = np.load(parameter_path("primary_Knm_12x12.npy"))
     n_qubits = 12
     deltas = np.linspace(0.0, 1.0, 10)
     results = {}
@@ -24,7 +25,7 @@ async def run_test():
         )
         results[delta] = await job.result()
 
-    with open("results/dtc_survival_sweep.json", "w") as f:
+    with open(result_path("dtc_survival_sweep.json"), "w") as f:
         json.dump(results, f, indent=2)
     print("Heterogeneity vs. DTC survival sweep test completed.")
 

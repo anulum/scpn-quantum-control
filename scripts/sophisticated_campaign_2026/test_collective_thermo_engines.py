@@ -10,6 +10,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.analysis import SyncOrderParameter, ThermodynamicWitness
 from scpn_quantum_control.control import StructuredAnsatz
@@ -19,7 +20,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 async def run_collective_thermo():
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=14000, mitigation="GUESS")
 
-    K_nm = np.load("params/thermo_Knm_16x16.npy")
+    K_nm = np.load(parameter_path("thermo_Knm_16x16.npy"))
     results = {}
     for lam in [0.0, 4.0, 8.0, 12.0]:
         ansatz = StructuredAnsatz.from_kuramoto(K_nm, lambda_fim=lam, trotter_depth=8)
@@ -31,7 +32,7 @@ async def run_collective_thermo():
         result = await job.result()
         results[lam] = result
 
-    with open("results/collective_thermo_engines.json", "w") as f:
+    with open(result_path("collective_thermo_engines.json"), "w") as f:
         json.dump(results, f, indent=2)
 
 

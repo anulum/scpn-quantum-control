@@ -3,6 +3,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.analysis import SyncOrderParameter
 from scpn_quantum_control.control import StructuredAnsatz
@@ -15,8 +16,8 @@ async def run_test():
     results = {}
     for N in Ns:
         print(f"Running BKT scaling for N={N}")
-        K_nm = np.load(f"params/primary_Knm_{N}x{N}.npy")
-        omega_vector = np.load(f"params/primary_omega_{N}.npy")
+        K_nm = np.load(parameter_path(f"primary_Knm_{N}x{N}.npy"))
+        omega_vector = np.load(parameter_path(f"primary_omega_{N}.npy"))
         job = runner.submit_circuit_batch(
             ansatz=StructuredAnsatz.from_kuramoto(K_nm=K_nm, omega=omega_vector, trotter_depth=8),
             observable=SyncOrderParameter(),
@@ -24,7 +25,7 @@ async def run_test():
         )
         results[N] = await job.result()
 
-    with open("results/bkt_scaling.json", "w") as f:
+    with open(result_path("bkt_scaling.json"), "w") as f:
         json.dump(results, f, indent=2)
     print("Finer finite-size scaling BKT transition test completed.")
 

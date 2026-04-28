@@ -2,6 +2,8 @@
 import asyncio
 import json
 
+from campaign_io import result_path
+
 from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
@@ -15,7 +17,7 @@ async def run_test():
         )
         results[topo] = await job.result()
 
-    with open("results/coherence_wall_scaling.json", "w") as f:
+    with open(result_path("coherence_wall_scaling.json"), "w") as f:
         json.dump(results, f, indent=2)
     print("Coherence wall scaling law test completed.")
 

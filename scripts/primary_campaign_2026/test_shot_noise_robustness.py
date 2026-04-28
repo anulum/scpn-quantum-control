@@ -3,6 +3,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.analysis import DLAParityWitness
 from scpn_quantum_control.control import StructuredAnsatz
@@ -11,8 +12,8 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 async def run_test():
     base_shots = 5000
-    K_nm = np.load("params/primary_Knm_12x12.npy")
-    omega = np.load("params/primary_omega.npy")
+    K_nm = np.load(parameter_path("primary_Knm_12x12.npy"))
+    omega = np.load(parameter_path("primary_omega.npy"))
     params = {"n_qubits": 12, "trotter_depth": 6, "K_nm": K_nm, "omega": omega}
 
     results = {}
@@ -27,7 +28,7 @@ async def run_test():
         )
         results[multiplier] = await job.result()
 
-    with open("results/shot_noise_robustness.json", "w") as f:
+    with open(result_path("shot_noise_robustness.json"), "w") as f:
         json.dump(results, f, indent=2)
     print("Shot-noise + sampling robustness test completed.")
 

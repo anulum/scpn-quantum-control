@@ -11,6 +11,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.analysis import DLAParityWitness, SyncOrderParameter
 from scpn_quantum_control.control import StructuredAnsatz
@@ -20,8 +21,8 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 async def run_distributed_clock_test():
     runner_node1 = AsyncHardwareRunner(backend="ibm_heron_r2", shots=10000, mitigation="GUESS")
     runner_node2 = AsyncHardwareRunner(backend="ibm_heron_r2", shots=10000, mitigation="GUESS")
-    K_nm = np.load("params/clock_network_16x16.npy")
-    omega = np.load("params/clock_omega.npy")
+    K_nm = np.load(parameter_path("clock_network_16x16.npy"))
+    omega = np.load(parameter_path("clock_omega.npy"))
     results = []
     for cycle in range(30):
         print(f"Clock sync cycle {cycle + 1}/30")
@@ -41,7 +42,7 @@ async def run_distributed_clock_test():
         res1, res2 = await asyncio.gather(job1.result(), job2.result())
         combined = {"cycle": cycle, "node1": res1, "node2": res2}
         results.append(combined)
-    with open("results/distributed_clock_full.json", "w") as f:
+    with open(result_path("distributed_clock_full.json"), "w") as f:
         json.dump(results, f, indent=2)
     print("Distributed clock synchronization test completed.")
 

@@ -117,3 +117,22 @@ def test_legacy_launchers_do_not_generate_parameters_blindly(relative_path: str)
 
     assert "params/PARAMETER_PROVENANCE.json" in text
     assert "python3 generate_params.py\n" not in text
+
+
+def test_legacy_campaign_scripts_use_campaign_local_paths() -> None:
+    campaign_dirs = [
+        REPO_ROOT / "scripts" / "primary_campaign_2026",
+        REPO_ROOT / "scripts" / "hardware_campaign_2026",
+        REPO_ROOT / "scripts" / "sophisticated_campaign_2026",
+    ]
+
+    offenders: list[str] = []
+    for campaign_dir in campaign_dirs:
+        for script_path in sorted(campaign_dir.glob("test_*.py")):
+            text = script_path.read_text(encoding="utf-8")
+            if 'np.load("params/' in text or 'np.load(f"params/' in text:
+                offenders.append(str(script_path.relative_to(REPO_ROOT)))
+            if 'open("results/' in text:
+                offenders.append(str(script_path.relative_to(REPO_ROOT)))
+
+    assert offenders == []

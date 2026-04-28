@@ -10,6 +10,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.analysis import DLAParityWitness, IntegratedInformationPhi
 from scpn_quantum_control.control import StructuredAnsatz
@@ -19,7 +20,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 async def run_brain_scale_bridging():
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=10000, mitigation="GUESS")
 
-    K_nm_small = np.load("params/c_elegans_subnetwork_14x14.npy")
+    K_nm_small = np.load(parameter_path("c_elegans_subnetwork_14x14.npy"))
     lambda_fim = 2.75
 
     results = []
@@ -33,7 +34,7 @@ async def run_brain_scale_bridging():
         result = await job.result()
         results.append(result)
 
-    with open("results/brain_scale_bridging.json", "w") as f:
+    with open(result_path("brain_scale_bridging.json"), "w") as f:
         json.dump(results, f, indent=2)
 
 

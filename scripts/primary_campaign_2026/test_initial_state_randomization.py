@@ -3,6 +3,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.accel import rust_random_state
 from scpn_quantum_control.analysis import DLAParityWitness
@@ -13,8 +14,8 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 async def run_test():
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=10000, mitigation="GUESS")
     results = []
-    K_nm = np.load("params/primary_Knm_12x12.npy")
-    omega_vector = np.load("params/primary_omega.npy")
+    K_nm = np.load(parameter_path("primary_Knm_12x12.npy"))
+    omega_vector = np.load(parameter_path("primary_omega.npy"))
     params = {"n_qubits": 12, "trotter_depth": 6, "K_nm": K_nm, "omega": omega_vector}
 
     for i in range(50):
@@ -28,7 +29,7 @@ async def run_test():
         res = await job.result()
         results.append({"seed": i, "result": res})
 
-    with open("results/initial_state_randomization.json", "w") as f:
+    with open(result_path("initial_state_randomization.json"), "w") as f:
         json.dump(results, f, indent=2)
     print("Initial state randomization test completed.")
 

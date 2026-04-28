@@ -11,6 +11,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.analysis import QuantumFisherInformation, SyncOrderParameter
 from scpn_quantum_control.control import StructuredAnsatz
@@ -19,7 +20,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 async def run_metrology_test():
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=15000, mitigation="GUESS")
-    K_nm = np.load("params/metrology_Knm_12x12.npy")
+    K_nm = np.load(parameter_path("metrology_Knm_12x12.npy"))
     coupling_strengths = np.linspace(0.5, 4.0, 8)
     results = {}
     for K in coupling_strengths:
@@ -31,7 +32,7 @@ async def run_metrology_test():
         )
         result = await job.result()
         results[float(K)] = result
-    with open("results/metrology_results.json", "w") as f:
+    with open(result_path("metrology_results.json"), "w") as f:
         json.dump(results, f, indent=2)
 
 
