@@ -191,6 +191,12 @@ def test_credible_runner_default_results_are_campaign_local(
 def test_retrieve_all_jobs_discovers_campaign_local_results(tmp_path: Path):
     repo_root = tmp_path
     root_result = repo_root / "results" / "root.json"
+    hardware_result = (
+        repo_root / "scripts" / "hardware_campaign_2026" / "results" / "hardware.json"
+    )
+    sophisticated_result = (
+        repo_root / "scripts" / "sophisticated_campaign_2026" / "results" / "sophisticated.json"
+    )
     campaign_result = (
         repo_root / "scripts" / "frontier_campaign_2026" / "results" / "frontier.json"
     )
@@ -202,7 +208,13 @@ def test_retrieve_all_jobs_discovers_campaign_local_results(tmp_path: Path):
         / "frontier_campaign"
         / "summary.json"
     )
-    for path in (root_result, campaign_result, campaign_summary):
+    for path in (
+        root_result,
+        hardware_result,
+        sophisticated_result,
+        campaign_result,
+        campaign_summary,
+    ):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("{}", encoding="utf-8")
 
@@ -219,6 +231,8 @@ def test_retrieve_all_jobs_discovers_campaign_local_results(tmp_path: Path):
 
     assert discovered == {
         Path("results/root.json"),
+        Path("scripts/hardware_campaign_2026/results/hardware.json"),
+        Path("scripts/sophisticated_campaign_2026/results/sophisticated.json"),
         Path("scripts/frontier_campaign_2026/results/frontier.json"),
         Path("scripts/frontier_campaign_2026/results/frontier_campaign/summary.json"),
     }

@@ -42,6 +42,9 @@ def _discover_result_json_files(root: Path | None = None) -> list[Path]:
         repo_root / "results" / "frontier_campaign",
         repo_root / "results" / "sophisticated_campaign",
         repo_root / "results" / "primary_campaign",
+        repo_root / "scripts" / "primary_campaign_2026" / "results",
+        repo_root / "scripts" / "hardware_campaign_2026" / "results",
+        repo_root / "scripts" / "sophisticated_campaign_2026" / "results",
         repo_root / "scripts" / "frontier_campaign_2026" / "results",
         repo_root / "scripts" / "frontier_campaign_2026" / "results" / "frontier_campaign",
     ]
