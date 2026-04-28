@@ -9,6 +9,9 @@
 
 from __future__ import annotations
 
+import importlib
+import sys
+
 import numpy as np
 
 from scpn_quantum_control.phase.lindblad_engine import LindbladSyncEngine
@@ -174,6 +177,29 @@ class TestLindbladSyncEngine:
 class TestLindbladPythonFallback:
     """Cover Python fallback paths when Rust unavailable."""
 
+    def test_import_guard_without_rust_engine(self):
+        """Reloading with the compiled engine blocked selects Python fallback."""
+        import scpn_quantum_control.phase.lindblad_engine as le_mod
+
+        class BlockEngineImport:
+            def find_spec(self, fullname, path=None, target=None):
+                if fullname == "scpn_quantum_engine":
+                    raise ImportError("blocked compiled engine")
+                return None
+
+        blocker = BlockEngineImport()
+        original_engine = sys.modules.get("scpn_quantum_engine")
+        sys.modules.pop("scpn_quantum_engine", None)
+        sys.meta_path.insert(0, blocker)
+        try:
+            reloaded = importlib.reload(le_mod)
+            assert reloaded._HAS_RUST is False
+        finally:
+            sys.meta_path.remove(blocker)
+            if original_engine is not None:
+                sys.modules["scpn_quantum_engine"] = original_engine
+            importlib.reload(le_mod)
+
     def test_build_jump_operators_no_rust(self):
         """Cover lines 95-112: Python jump operator construction."""
         import scpn_quantum_control.phase.lindblad_engine as le_mod
@@ -278,3 +304,32 @@ class TestLindbladPythonFallback:
 
         assert "times" in result
         assert len(result["times"]) == 21
+
+    def test_trajectory_quantum_jump_branch_deterministic(self, monkeypatch):
+        """Force the MCWF jump branch without relying on random sampling."""
+        import scpn_quantum_control.phase.lindblad_engine as le_mod
+
+        class JumpRng:
+            def random(self):
+                return 1.0
+
+            def choice(self, n_items, p):
+                assert n_items == 2
+                assert p[0] > 0
+                return 0
+
+        K = np.array([[0.0, 2.0], [2.0, 0.0]])
+        omega = np.array([1.0, 1.5])
+        engine = LindbladSyncEngine(K, omega, gamma=1.0)
+
+        monkeypatch.setattr(le_mod.np.random, "default_rng", lambda seed: JumpRng())
+        monkeypatch.setattr(
+            le_mod,
+            "expm_multiply",
+            lambda _a, _psi: np.array([0.0, 0.1, 0.0, 0.0], dtype=complex),
+        )
+
+        result = engine.evolve(t_max=0.1, n_steps=1, method="trajectory", n_traj=1, seed=7)
+        final_state = result["final_state"]
+        np.testing.assert_allclose(np.trace(final_state), 1.0, atol=1e-12)
+        assert final_state[0b10, 0b10].real == 1.0
