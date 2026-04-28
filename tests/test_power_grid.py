@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 
 from scpn_quantum_control.applications.power_grid import (
@@ -91,6 +93,16 @@ class TestPowerGridBenchmark:
         omega = OMEGA_N_16[:3]
         result = power_grid_benchmark(K, omega)
         assert result.n_generators == 3
+
+    def test_constant_frequency_vector_returns_zero_correlation(self):
+        K = build_knm_paper27(L=5)
+        omega = np.ones(5)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)
+            result = power_grid_benchmark(K, omega)
+        assert result.frequency_correlation == 0.0
+        assert result.n_generators == 5
+        assert "freq r=0.000" in result.summary
 
     def test_scpn_vs_grid(self):
         """Record SCPN vs IEEE-5bus comparison — Gap 1 data."""
