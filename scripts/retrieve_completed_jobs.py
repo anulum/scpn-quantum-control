@@ -14,6 +14,7 @@ Saves per-job JSON to results/march_2026/ and a combined summary.
 
 Usage:
   export SCPN_IBM_TOKEN="your_token"
+  export SCPN_IBM_CRN="<optional_ibm_cloud_instance_crn>"
   python scripts/retrieve_completed_jobs.py [--status-only]
 """
 
@@ -25,7 +26,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-RESULTS_DIR = Path("results/march_2026")
+REPO_ROOT = Path(__file__).resolve().parents[1]
+RESULTS_DIR = REPO_ROOT / "results" / "march_2026"
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
 # All 9 jobs submitted to ibm_fez (Heron r2) in March 2026
@@ -42,12 +44,6 @@ JOBS = {
     "d6t9eqush9gc73didba0": {"name": "bell_test_4q", "group": "campaign"},
     "d6t9erfgtkcc73cmen70": {"name": "correlator_4q", "group": "campaign"},
 }
-
-IBM_CRN = (
-    "crn:v1:bluemix:public:quantum-computing:us-east:"
-    "a/78db885720334fd19191b33a839d0c35:"
-    "841cc36d-0afd-4f96-ada2-8c56e1c443a0::"
-)
 
 
 def extract_counts(pub):
@@ -79,11 +75,11 @@ def run(status_only: bool = False):
     from qiskit_ibm_runtime import QiskitRuntimeService
 
     print("Connecting to IBM Quantum (ibm_cloud)...")
-    service = QiskitRuntimeService(
-        channel="ibm_cloud",
-        token=token,
-        instance=IBM_CRN,
-    )
+    service_kwargs = {"channel": "ibm_cloud", "token": token}
+    instance = os.environ.get("SCPN_IBM_CRN") or os.environ.get("SCPN_IBM_INSTANCE")
+    if instance:
+        service_kwargs["instance"] = instance
+    service = QiskitRuntimeService(**service_kwargs)
     print("Connected.\n")
 
     results_log = []
