@@ -28,21 +28,78 @@ def test_entanglement_advantage_steps_fallback():
     product = SyncTrajectory(
         initial_state="product",
         times=[0.0, 1.0, 2.0],
-        R_values=[0.9, 0.5, 0.01],
-        final_R=0.01,
+        R_values=[0.0, 0.02, 0.05],
+        final_R=0.05,
         n_qubits=2,
     )
     bell = SyncTrajectory(
         initial_state="bell_pairs",
         times=[0.0, 1.0, 2.0],
-        R_values=[0.8, 0.4, 0.01],
-        final_R=0.01,
+        R_values=[0.01, 0.03, 0.05],
+        final_R=0.05,
         n_qubits=2,
     )
     results = {"product": product, "bell_pairs": bell}
     adv = entanglement_advantage(results)
     assert "bell_pairs" in adv
-    assert adv["bell_pairs"]["product_steps_90pct"] >= 0
+    assert adv["bell_pairs"]["product_steps_90pct"] == 2
+    assert adv["bell_pairs"]["entangled_steps_90pct"] == 2
+
+
+def test_entanglement_advantage_steps_threshold_hit():
+    """Convergence counter returns the first step meeting the threshold."""
+    from scpn_quantum_control.analysis.entanglement_enhanced_sync import (
+        SyncTrajectory,
+        entanglement_advantage,
+    )
+
+    product = SyncTrajectory(
+        initial_state="product",
+        times=[0.0, 1.0, 2.0],
+        R_values=[0.0, 0.45, 0.5],
+        final_R=0.5,
+        n_qubits=2,
+    )
+    bell = SyncTrajectory(
+        initial_state="bell_pairs",
+        times=[0.0, 1.0, 2.0],
+        R_values=[0.0, 0.2, 0.6],
+        final_R=0.6,
+        n_qubits=2,
+    )
+
+    adv = entanglement_advantage({"product": product, "bell_pairs": bell})
+
+    assert adv["bell_pairs"]["product_steps_90pct"] == 1
+    assert adv["bell_pairs"]["entangled_steps_90pct"] == 2
+    assert adv["bell_pairs"]["convergence_speedup"] == 0.5
+
+
+def test_compare_all_initial_states_uses_each_state(monkeypatch):
+    """Comparison orchestrates one trajectory for every declared initial state."""
+    from scpn_quantum_control.analysis import entanglement_enhanced_sync as sync
+
+    calls: list[str] = []
+
+    def fake_simulate(K, omega, state_type, t_max=2.0, n_steps=20):
+        calls.append(state_type.value)
+        return sync.SyncTrajectory(
+            initial_state=state_type.value,
+            times=[0.0, t_max],
+            R_values=[0.0, 1.0],
+            final_R=1.0,
+            n_qubits=K.shape[0],
+        )
+
+    monkeypatch.setattr(sync, "simulate_sync_trajectory", fake_simulate)
+
+    K = np.zeros((2, 2))
+    omega = np.zeros(2)
+    results = sync.compare_all_initial_states(K, omega, t_max=0.25, n_steps=1)
+
+    assert calls == [state.value for state in sync.InitialState]
+    assert set(results) == set(calls)
+    assert all(traj.times == [0.0, 0.25] for traj in results.values())
 
 
 # --- entanglement_entropy.py line 105: n_A adjusted for single-qubit system ---
