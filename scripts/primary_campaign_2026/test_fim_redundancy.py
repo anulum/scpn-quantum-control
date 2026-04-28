@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import json
 
+from campaign_io import result_path
+
 from scpn_quantum_control.accel import rust_kuramoto_classical
 
 
@@ -11,7 +13,7 @@ def run_test():
             N=10000, K=0.0, lambda_fim=lam, delta=0.1, steps=5000
         )
         results[lam] = res
-    with open("results/fim_redundancy.json", "w") as f:
+    with open(result_path("fim_redundancy.json"), "w") as f:
         json.dump(results, f, indent=2)
     print("Falsification test 'Is FIM redundant?' completed.")
 

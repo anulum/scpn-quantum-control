@@ -11,6 +11,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.analysis import SyncOrderParameter
 from scpn_quantum_control.control import StructuredAnsatz
@@ -19,8 +20,8 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 async def run_hypergraph_test():
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=10000, mitigation="GUESS")
-    K_nm_pairwise = np.load("params/hyper_Knm_pairwise_12x12.npy")
-    K_nm_hyper = np.load("params/hyper_Knm_3body.npy")
+    K_nm_pairwise = np.load(parameter_path("hyper_Knm_pairwise_12x12.npy"))
+    K_nm_hyper = np.load(parameter_path("hyper_Knm_3body.npy"))
     results = {}
     for use_hyper in [False, True]:
         ansatz = StructuredAnsatz.from_kuramoto(
@@ -35,7 +36,7 @@ async def run_hypergraph_test():
         )
         result = await job.result()
         results["with_hyper" if use_hyper else "pairwise"] = result
-    with open("results/hypergraph_results.json", "w") as f:
+    with open(result_path("hypergraph_results.json"), "w") as f:
         json.dump(results, f, indent=2)
 
 

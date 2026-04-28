@@ -11,6 +11,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.analysis import IntegratedInformationPhi, SyncOrderParameter
 from scpn_quantum_control.control import StructuredAnsatz
@@ -19,7 +20,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 async def run_biological_fim_test():
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=10000, mitigation="GUESS")
-    K_nm_bio = np.load("params/c_elegans_connectome_14x14.npy")
+    K_nm_bio = np.load(parameter_path("c_elegans_connectome_14x14.npy"))
     lambda_values = [0.0, 1.0, 2.0, 2.75, 4.0, 8.0]
     results = {}
     for lam in lambda_values:
@@ -32,7 +33,7 @@ async def run_biological_fim_test():
         )
         result = await job.result()
         results[lam] = result
-    with open("results/bio_fim_results.json", "w") as f:
+    with open(result_path("bio_fim_results.json"), "w") as f:
         json.dump(results, f, indent=2)
 
 

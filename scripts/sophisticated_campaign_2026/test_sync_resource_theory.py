@@ -10,6 +10,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.analysis import (
     QuantumFisherInformation,
@@ -23,7 +24,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 async def run_resource_distillation():
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=15000, mitigation="GUESS")
 
-    K_nm = np.load("params/resource_Knm_12x12.npy")
+    K_nm = np.load(parameter_path("resource_Knm_12x12.npy"))
     results = {}
     for lam in [0.0, 4.0, 8.0, 12.0]:
         ansatz = StructuredAnsatz.from_kuramoto(K_nm, lambda_fim=lam, trotter_depth=8)
@@ -35,7 +36,7 @@ async def run_resource_distillation():
         result = await job.result()
         results[lam] = result
 
-    with open("results/sync_resource_theory.json", "w") as f:
+    with open(result_path("sync_resource_theory.json"), "w") as f:
         json.dump(results, f, indent=2)
 
 

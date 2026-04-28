@@ -11,6 +11,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.analysis import OTOC, DLAParityWitness
 from scpn_quantum_control.control import StructuredAnsatz
@@ -19,8 +20,8 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 async def run_tipping_point_test():
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=12000, mitigation="GUESS")
-    K_nm = np.load("params/power_grid_europe_16x16.npy")
-    omega = np.load("params/power_grid_omega.npy")
+    K_nm = np.load(parameter_path("power_grid_europe_16x16.npy"))
+    omega = np.load(parameter_path("power_grid_omega.npy"))
     results = []
     for step in range(25):
         ansatz = StructuredAnsatz.from_kuramoto(K_nm, omega, trotter_depth=8)
@@ -33,7 +34,7 @@ async def run_tipping_point_test():
         results.append(result)
         if result["otoc_tstar"] < 0.35 and result["dla_asymmetry"] > 0.09:
             print(f"!!! TIPPING POINT PRECURSOR DETECTED at step {step} !!!")
-    with open("results/tipping_point_results.json", "w") as f:
+    with open(result_path("tipping_point_results.json"), "w") as f:
         json.dump(results, f, indent=2)
 
 

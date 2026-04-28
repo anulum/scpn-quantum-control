@@ -10,6 +10,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.accel import rust_kuramoto_classical
 from scpn_quantum_control.analysis import DLAParityWitness, SyncOrderParameter
@@ -22,8 +23,8 @@ async def run_fusion_hybrid_stabilizer():
         backend="ibm_heron_r2", shots=8000, mitigation="GUESS", real_time_feedback=True
     )
 
-    K_nm = np.load("params/tokamak_Knm_16x16.npy")
-    omega = np.load("params/tokamak_omega.npy")
+    K_nm = np.load(parameter_path("tokamak_Knm_16x16.npy"))
+    omega = np.load(parameter_path("tokamak_omega.npy"))
 
     results = []
     for cycle in range(60):
@@ -47,7 +48,7 @@ async def run_fusion_hybrid_stabilizer():
             result.get("sync_order", 0.0),
         )
 
-    with open("results/fusion_hybrid_stabilizer.json", "w") as f:
+    with open(result_path("fusion_hybrid_stabilizer.json"), "w") as f:
         json.dump(results, f, indent=2)
 
 

@@ -3,6 +3,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.control import StructuredAnsatz
 from scpn_quantum_control.hardware import AsyncHardwareRunner
@@ -13,12 +14,12 @@ async def run_test():
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=10000, mitigation="GUESS")
     results = {}
     for N in [8, 12, 16, 20]:
-        K_nm = np.load(f"params/primary_Knm_{N}x{N}.npy")
+        K_nm = np.load(parameter_path(f"primary_Knm_{N}x{N}.npy"))
         ansatz_informed = StructuredAnsatz.from_kuramoto(K_nm=K_nm)
         res = await vqe_runner.run_vqe(runner=runner, ansatz=ansatz_informed, n_qubits=N)
         results[N] = res
 
-    with open("results/vqe_informed_scaling.json", "w") as f:
+    with open(result_path("vqe_informed_scaling.json"), "w") as f:
         json.dump(results, f, indent=2)
     print("VQE informed ansatz scaling to 20+ qubits test completed.")
 

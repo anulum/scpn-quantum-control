@@ -3,6 +3,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.analysis import DLAParityWitness
 from scpn_quantum_control.control import StructuredAnsatz
@@ -12,8 +13,8 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 async def run_test():
     backends = ["ibm_fez", "ibm_kingston"]
     results = {}
-    K_nm = np.load("params/primary_Knm_12x12.npy")
-    omega_vector = np.load("params/primary_omega.npy")
+    K_nm = np.load(parameter_path("primary_Knm_12x12.npy"))
+    omega_vector = np.load(parameter_path("primary_omega.npy"))
     params = {"n_qubits": 12, "trotter_depth": 6, "K_nm": K_nm, "omega": omega_vector}
 
     jobs = []
@@ -32,7 +33,7 @@ async def run_test():
     for b, r in zip(backends, res):
         results[b] = r
 
-    with open("results/cross_device_asymmetry.json", "w") as f:
+    with open(result_path("cross_device_asymmetry.json"), "w") as f:
         json.dump(results, f, indent=2)
     print("Cross-device verification test completed.")
 

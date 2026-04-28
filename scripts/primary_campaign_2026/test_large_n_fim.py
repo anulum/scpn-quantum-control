@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import json
 
+from campaign_io import result_path
+
 from scpn_quantum_control.accel import rust_kuramoto_classical
 
 
@@ -8,7 +10,7 @@ def run_test():
     result = rust_kuramoto_classical.run_large_n(
         N=50000, K=0.0, lambda_fim=8.0, delta=0.1, steps=10000
     )
-    with open("results/large_n_fim.json", "w") as f:
+    with open(result_path("large_n_fim.json"), "w") as f:
         json.dump(result, f, indent=2)
     print("Large-N classical FIM validation test completed.")
 

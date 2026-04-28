@@ -10,6 +10,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.analysis import DLAParityWitness, SyncOrderParameter
 from scpn_quantum_control.control import StructuredAnsatz
@@ -19,7 +20,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 async def run_quantum_internet_timing():
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=12000, mitigation="GUESS")
 
-    K_nm = np.load("params/internet_timing_20x20.npy")
+    K_nm = np.load(parameter_path("internet_timing_20x20.npy"))
     results = []
     for cycle in range(40):
         ansatz = StructuredAnsatz.from_kuramoto(K_nm, mediated_couplings=True, trotter_depth=6)
@@ -31,7 +32,7 @@ async def run_quantum_internet_timing():
         result = await job.result()
         results.append(result)
 
-    with open("results/quantum_internet_timing.json", "w") as f:
+    with open(result_path("quantum_internet_timing.json"), "w") as f:
         json.dump(results, f, indent=2)
 
 

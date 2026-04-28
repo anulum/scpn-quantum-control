@@ -11,6 +11,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.accel import rust_kuramoto_classical
 from scpn_quantum_control.analysis import DLAParityWitness, SyncOrderParameter
@@ -26,8 +27,8 @@ async def run_fusion_feedback_test():
         real_time_feedback=True,
         max_circuit_depth=120,
     )
-    K_nm = np.load("params/tokamak_Knm_12x12.npy")
-    omega = np.load("params/tokamak_omega.npy")
+    K_nm = np.load(parameter_path("tokamak_Knm_12x12.npy"))
+    omega = np.load(parameter_path("tokamak_omega.npy"))
     results = []
     for cycle in range(40):
         print(f"Feedback cycle {cycle + 1}/40")
@@ -45,7 +46,7 @@ async def run_fusion_feedback_test():
         K_nm = rust_kuramoto_classical.apply_feedback_correction(
             K_nm, result["dla_asymmetry"], result["sync_order"]
         )
-    with open("results/fusion_feedback_full.json", "w") as f:
+    with open(result_path("fusion_feedback_full.json"), "w") as f:
         json.dump(results, f, indent=2)
     print("Fusion feedback test completed. Results saved.")
 

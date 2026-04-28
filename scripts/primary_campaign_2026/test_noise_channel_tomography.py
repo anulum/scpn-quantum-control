@@ -3,6 +3,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.analysis import DLAParityWitness
 from scpn_quantum_control.control import StructuredAnsatz
@@ -13,8 +14,8 @@ async def run_test():
     runner = AsyncHardwareRunner(
         backend="ibm_heron_r2", shots=15000, mitigation="GUESS", error_mitigation_level=2
     )
-    K_nm = np.load("params/primary_Knm_12x12.npy")
-    omega_vector = np.load("params/primary_omega.npy")
+    K_nm = np.load(parameter_path("primary_Knm_12x12.npy"))
+    omega_vector = np.load(parameter_path("primary_omega.npy"))
     params = {"n_qubits": 12, "trotter_depth": 6, "K_nm": K_nm, "omega": omega_vector}
     job = runner.submit_circuit_batch(
         ansatz=StructuredAnsatz.from_kuramoto(**params),
@@ -25,7 +26,7 @@ async def run_test():
         **params,
     )
     results = await job.result()
-    with open("results/noise_tomography.json", "w") as f:
+    with open(result_path("noise_tomography.json"), "w") as f:
         json.dump(results, f, indent=2)
     print("Noise channel tomography test completed.")
 
