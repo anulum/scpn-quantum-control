@@ -30,6 +30,7 @@ def recommend_backend(
     has_quimb: bool = False,
     has_gpu: bool = False,
     want_open_system: bool = False,
+    allow_u1_sector: bool = True,
 ) -> dict:
     """Recommend the best simulation backend for given system size.
 
@@ -45,6 +46,9 @@ def recommend_backend(
         Whether GPU (JAX/CuPy) is available.
     want_open_system : bool
         Whether Lindblad dynamics are needed.
+    allow_u1_sector : bool
+        Whether to prefer U(1) magnetisation-sector ED when it fits.
+        Disable this when a Z2 parity-sector calculation is required.
 
     Returns
     -------
@@ -98,7 +102,7 @@ def recommend_backend(
 
     u1_largest_dim = comb(n, n // 2)
     u1_mb = u1_largest_dim * u1_largest_dim * 16 / 1e6
-    if u1_mb < ram_mb * 0.3 and n <= 20:
+    if allow_u1_sector and u1_mb < ram_mb * 0.3 and n <= 20:
         return {
             "backend": "u1_sector_ed",
             "reason": f"U(1) magnetisation ED: largest sector {u1_largest_dim} states, {u1_mb:.0f} MB",
@@ -153,6 +157,7 @@ def auto_solve(
     omega: np.ndarray,
     ram_gb: float = 32.0,
     want_open_system: bool = False,
+    allow_u1_sector: bool = True,
     gamma_amp: float = 0.0,
     gamma_deph: float = 0.0,
     t_max: float = 1.0,
@@ -176,6 +181,7 @@ def auto_solve(
         ram_gb=ram_gb,
         has_quimb=has_quimb,
         want_open_system=want_open_system,
+        allow_u1_sector=allow_u1_sector,
     )
 
     backend = rec["backend"]
