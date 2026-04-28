@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+import importlib
+import sys
 from unittest.mock import MagicMock
 
 import numpy as np
@@ -22,6 +24,7 @@ class _MockQml:
 
     def __init__(self):
         self._call_count = 0
+        self.operations: list[tuple[str, object]] = []
 
     def PauliX(self, wire):
         m = MagicMock(name=f"PauliX({wire})")
@@ -46,6 +49,7 @@ class _MockQml:
         def decorator(fn):
             def wrapper(*args, **kwargs):
                 self._call_count += 1
+                fn(*args, **kwargs)
                 return 0.5 + 0.01 * self._call_count
 
             wrapper.__name__ = fn.__name__
@@ -54,16 +58,17 @@ class _MockQml:
         return decorator
 
     def ApproxTimeEvolution(self, H, dt, n):
-        pass
+        self.operations.append(("evolution", (dt, n)))
 
     def expval(self, op):
+        self.operations.append(("expval", op))
         return MagicMock(name="expval")
 
     def Rot(self, a, b, c, wires=None):
-        pass
+        self.operations.append(("rot", wires))
 
     def CNOT(self, wires=None):
-        pass
+        self.operations.append(("cnot", tuple(wires or ())))
 
     def GradientDescentOptimizer(self, stepsize=0.1):
         opt = MagicMock()
@@ -94,6 +99,45 @@ def test_xy_hamiltonian_pl_raises_without_pl(monkeypatch):
     monkeypatch.setattr(pl_mod, "_PL_AVAILABLE", False)
     with pytest.raises(ImportError, match="PennyLane"):
         pl_mod._xy_hamiltonian_pl(np.eye(2), np.ones(2))
+
+
+def test_module_import_guard_sets_qml_none(monkeypatch):
+    """Import guard preserves a usable module when PennyLane import fails."""
+    import builtins
+
+    module_name = "scpn_quantum_control.hardware.pennylane_adapter"
+    original_module = sys.modules[module_name]
+    real_import = builtins.__import__
+
+    def guarded_import(name, *args, **kwargs):
+        if name == "pennylane":
+            raise RuntimeError("blocked PennyLane import")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", guarded_import)
+    sys.modules.pop(module_name, None)
+    try:
+        reloaded = importlib.import_module(module_name)
+        assert reloaded.is_pennylane_available() is False
+        assert reloaded.qml is None
+    finally:
+        sys.modules[module_name] = original_module
+
+
+def test_module_import_guard_sets_pl_available_when_import_succeeds(monkeypatch):
+    """Import guard records PennyLane availability during module load."""
+    module_name = "scpn_quantum_control.hardware.pennylane_adapter"
+    original_module = sys.modules[module_name]
+    fake_qml = MagicMock(name="pennylane")
+
+    monkeypatch.setitem(sys.modules, "pennylane", fake_qml)
+    sys.modules.pop(module_name, None)
+    try:
+        reloaded = importlib.import_module(module_name)
+        assert reloaded.is_pennylane_available() is True
+        assert reloaded.qml is fake_qml
+    finally:
+        sys.modules[module_name] = original_module
 
 
 def test_xy_hamiltonian_pl(mock_pl):
@@ -128,6 +172,7 @@ def test_runner_run_trotter(mock_pl):
     assert result.statevector is None
     assert isinstance(result.energy, float)
     assert isinstance(result.order_parameter, float)
+    assert [op for op, _payload in mock_pl.operations].count("evolution") == 10
 
 
 def test_runner_run_vqe(mock_pl):
@@ -138,6 +183,8 @@ def test_runner_run_vqe(mock_pl):
     assert isinstance(result, pl_mod.PennyLaneResult)
     assert result.n_qubits == 2
     assert result.order_parameter == 0.0
+    assert any(op == "rot" for op, _payload in mock_pl.operations)
+    assert any(op == "cnot" for op, _payload in mock_pl.operations)
 
 
 def test_runner_shots_param(mock_pl):
