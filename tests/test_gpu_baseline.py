@@ -59,6 +59,17 @@ class TestGPUBaselineComparison:
         result = gpu_baseline_comparison(16)
         assert result.crossover_n > 16
 
+    def test_crossover_can_be_memory_limited(self, monkeypatch):
+        from scpn_quantum_control.benchmarks import gpu_baseline as gb
+
+        monkeypatch.setattr(gb, "estimate_gpu_time", lambda n, n_gates: 0.0)
+        monkeypatch.setattr(gb, "estimate_qpu_time", lambda n, n_gates: 1.0)
+        monkeypatch.setattr(gb, "statevector_memory_gb", lambda n: 81.0 if n == 18 else 1.0)
+
+        result = gb.gpu_baseline_comparison(16)
+
+        assert result.crossover_n == 18
+
     def test_scpn_gpu_comparison(self):
         """Record GPU vs QPU for SCPN sizes."""
         for n in [16, 24, 32]:
@@ -73,6 +84,10 @@ class TestGPUBaselineComparison:
 
 
 class TestScalingComparison:
+    def test_default_values(self):
+        results = scaling_comparison()
+        assert results["n"] == [4, 8, 16, 24, 32, 40]
+
     def test_returns_keys(self):
         results = scaling_comparison(n_values=[4, 8, 16])
         assert "gpu_time_s" in results
