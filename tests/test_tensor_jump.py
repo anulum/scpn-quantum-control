@@ -106,6 +106,31 @@ class TestMCWFTrajectory:
         result = mcwf_trajectory(K, omega, gamma_amp=0.05, t_max=0.05, dt=0.05, seed=42)
         assert len(result["times"]) == 2
 
+    def test_zero_weight_selected_jump_falls_back_to_no_jump(self, monkeypatch):
+        from scpn_quantum_control.phase import tensor_jump as module
+
+        class FixedRng:
+            def uniform(self):
+                return 0.0
+
+        monkeypatch.setattr(module.np.random, "default_rng", lambda seed=None: FixedRng())
+        monkeypatch.setattr(module, "knm_to_dense_matrix", lambda K, omega: np.zeros((2, 2)))
+        monkeypatch.setattr(module, "_sigma", lambda op, i, n: np.zeros((2, 2)))
+        monkeypatch.setattr(module, "expm", lambda matrix: 0.5 * np.eye(2, dtype=np.complex128))
+
+        result = module.mcwf_trajectory(
+            np.zeros((1, 1)),
+            np.zeros(1),
+            gamma_amp=0.1,
+            gamma_deph=0.0,
+            t_max=0.1,
+            dt=0.1,
+            seed=7,
+        )
+
+        assert result["n_jumps"] == 0
+        np.testing.assert_allclose(np.linalg.norm(result["psi_final"]), 1.0)
+
 
 class TestMCWFEnsemble:
     def test_output_keys(self):
