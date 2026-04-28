@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import numpy as np
 
+import scpn_quantum_control.analysis.loschmidt_echo as le
 from scpn_quantum_control.analysis.loschmidt_echo import (
     LoschmidtResult,
     loschmidt_quench,
@@ -218,3 +219,26 @@ class TestRateFunctionCap:
         result = loschmidt_quench(omega, T, K_initial=0.1, K_final=10.0, t_max=20.0, n_times=500)
         # Rate should never exceed cap
         assert np.all(result.rate_function <= 30.0 / 4 + 1e-6)
+
+    def test_rate_cap_for_exact_destructive_interference(self, monkeypatch):
+        initial_hamiltonian = np.array([[0.0, -1.0], [-1.0, 0.0]])
+        final_hamiltonian = np.diag([0.0, np.pi])
+        calls = iter([initial_hamiltonian, final_hamiltonian])
+
+        def fake_dense_matrix(K, omega):
+            del K, omega
+            return next(calls)
+
+        monkeypatch.setattr(le, "knm_to_dense_matrix", fake_dense_matrix)
+
+        result = loschmidt_quench(
+            omega=np.array([0.0]),
+            K_topology=np.zeros((1, 1)),
+            K_initial=0.0,
+            K_final=1.0,
+            t_max=1.0,
+            n_times=2,
+        )
+
+        assert result.loschmidt_amplitude[1] < 1e-15
+        assert result.rate_function[1] == 30.0
