@@ -108,3 +108,45 @@ class TestComputeL16Lyapunov:
         print(f"  R_global: {result.order_parameter:.4f}")
         print(f"  Stability: {result.stability_score:.4f} → {result.action}")
         assert isinstance(result.action, str)
+
+    def test_adjust_action_threshold(self, monkeypatch):
+        """Moderate composite score selects an adjustment action."""
+        from scpn_quantum_control.l16 import quantum_director as qd
+
+        monkeypatch.setattr(qd, "loschmidt_echo", lambda K, omega, t=0.5: 0.5)
+        monkeypatch.setattr(qd, "energy_variance", lambda K, omega: 0.4)
+        monkeypatch.setattr(qd, "fidelity_susceptibility", lambda K, omega: 1.0)
+        monkeypatch.setattr(
+            qd,
+            "classical_exact_diag",
+            lambda n, K, omega: {"ground_state": [1.0, 0.0]},
+        )
+        monkeypatch.setattr(qd, "quantum_to_ssgf_state", lambda sv, n: {"R_global": 0.5})
+
+        K = build_knm_paper27(L=1)
+        omega = OMEGA_N_16[:1]
+        result = compute_l16_lyapunov(K, omega)
+
+        assert result.action == "adjust"
+        assert 0.4 < result.stability_score <= 0.7
+
+    def test_halt_action_threshold(self, monkeypatch):
+        """Low composite score selects a halt action."""
+        from scpn_quantum_control.l16 import quantum_director as qd
+
+        monkeypatch.setattr(qd, "loschmidt_echo", lambda K, omega, t=0.5: 0.1)
+        monkeypatch.setattr(qd, "energy_variance", lambda K, omega: 2.0)
+        monkeypatch.setattr(qd, "fidelity_susceptibility", lambda K, omega: 9.0)
+        monkeypatch.setattr(
+            qd,
+            "classical_exact_diag",
+            lambda n, K, omega: {"ground_state": [1.0, 0.0]},
+        )
+        monkeypatch.setattr(qd, "quantum_to_ssgf_state", lambda sv, n: {"R_global": 0.0})
+
+        K = build_knm_paper27(L=1)
+        omega = OMEGA_N_16[:1]
+        result = compute_l16_lyapunov(K, omega)
+
+        assert result.action == "halt"
+        assert result.stability_score <= 0.4
