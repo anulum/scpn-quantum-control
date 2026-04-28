@@ -261,6 +261,35 @@ class TestIntegrationWithExperiments:
 class TestSymmetryVerificationPythonFallback:
     """Cover lines 110-114: Python parity verification when Rust unavailable."""
 
+    def test_import_guard_uses_python_path(self, monkeypatch):
+        import builtins
+        import importlib
+
+        import scpn_quantum_control.mitigation.symmetry_verification as sv_mod
+
+        original_import = builtins.__import__
+
+        def guarded_import(name, globals=None, locals=None, fromlist=(), level=0):
+            if name == "scpn_quantum_engine":
+                raise ImportError("optional engine hidden")
+            return original_import(name, globals, locals, fromlist, level)
+
+        counts = {"00": 8, "01": 3, "10": 1, "11": 4}
+
+        try:
+            monkeypatch.setattr(builtins, "__import__", guarded_import)
+            reloaded = importlib.reload(sv_mod)
+
+            assert reloaded._HAS_RUST is False
+            result = reloaded.parity_postselect(counts, expected_parity=0)
+        finally:
+            monkeypatch.setattr(builtins, "__import__", original_import)
+            importlib.reload(sv_mod)
+
+        assert result.verified_counts == {"00": 8, "11": 4}
+        assert result.rejected_counts == {"01": 3, "10": 1}
+        assert result.rejection_rate == pytest.approx(0.25)
+
     def test_parity_postselect_no_rust(self):
         """Mock _HAS_RUST=False → Python bitstring parity path."""
         import scpn_quantum_control.mitigation.symmetry_verification as sv_mod
