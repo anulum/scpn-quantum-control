@@ -17,10 +17,58 @@ Maps sc-neurocore SCDenseLayer to a parameterized circuit:
 from __future__ import annotations
 
 import numpy as np
-from qiskit import QuantumCircuit
-from qiskit.quantum_info import Statevector
 
 from .qsynapse import QuantumSynapse
+
+
+def _apply_ry(state: np.ndarray, qubit: int, theta: float) -> None:
+    """Apply an exact Ry rotation to ``qubit`` in-place."""
+    cos = np.cos(theta / 2.0)
+    sin = np.sin(theta / 2.0)
+    stride = 1 << qubit
+    step = stride << 1
+    for block_start in range(0, state.size, step):
+        for offset in range(stride):
+            idx0 = block_start + offset
+            idx1 = idx0 + stride
+            amp0 = state[idx0]
+            amp1 = state[idx1]
+            state[idx0] = cos * amp0 - sin * amp1
+            state[idx1] = sin * amp0 + cos * amp1
+
+
+def _apply_controlled_ry(state: np.ndarray, control: int, target: int, theta: float) -> None:
+    """Apply controlled Ry exactly using little-endian qubit indexing."""
+    cos = np.cos(theta / 2.0)
+    sin = np.sin(theta / 2.0)
+    control_mask = 1 << control
+    target_mask = 1 << target
+    for idx0 in range(state.size):
+        if (idx0 & control_mask) == 0 or (idx0 & target_mask) != 0:
+            continue
+        idx1 = idx0 | target_mask
+        amp0 = state[idx0]
+        amp1 = state[idx1]
+        state[idx0] = cos * amp0 - sin * amp1
+        state[idx1] = sin * amp0 + cos * amp1
+
+
+def _apply_cx(state: np.ndarray, control: int, target: int) -> None:
+    """Apply CX exactly using little-endian qubit indexing."""
+    control_mask = 1 << control
+    target_mask = 1 << target
+    for idx0 in range(state.size):
+        if (idx0 & control_mask) == 0 or (idx0 & target_mask) != 0:
+            continue
+        idx1 = idx0 | target_mask
+        state[idx0], state[idx1] = state[idx1], state[idx0]
+
+
+def _probability_one(state: np.ndarray, qubit: int) -> float:
+    """Return marginal P(qubit = 1)."""
+    mask = 1 << qubit
+    prob = sum(abs(amp) ** 2 for idx, amp in enumerate(state) if idx & mask)
+    return float(prob)
 
 
 class QuantumDenseLayer:
@@ -61,25 +109,24 @@ class QuantumDenseLayer:
         Returns:
             shape (n_neurons,) int array of 0/1 spikes
         """
-        qc = QuantumCircuit(self.n_qubits)
+        state = np.zeros(1 << self.n_qubits, dtype=np.complex128)
+        state[0] = 1.0
 
         for i, val in enumerate(input_values):
             theta = np.pi * float(np.clip(val, 0.0, 1.0))
-            qc.ry(theta, i)
+            _apply_ry(state, i, theta)
 
         for n in range(self.n_neurons):
             neuron_qubit = self.n_inputs + n
             for i in range(self.n_inputs):
-                self.synapses[n][i].apply(qc, i, neuron_qubit)
+                _apply_controlled_ry(state, i, neuron_qubit, self.synapses[n][i].theta)
 
         for n in range(self.n_neurons - 1):
-            qc.cx(self.n_inputs + n, self.n_inputs + n + 1)
+            _apply_cx(state, self.n_inputs + n, self.n_inputs + n + 1)
 
-        sv = Statevector.from_instruction(qc)
         neuron_probs = np.zeros(self.n_neurons)
         for n in range(self.n_neurons):
-            marginal = sv.probabilities([self.n_inputs + n])
-            neuron_probs[n] = marginal[1]  # P(|1>)
+            neuron_probs[n] = _probability_one(state, self.n_inputs + n)
 
         result: np.ndarray = (neuron_probs > self.spike_threshold).astype(int)
         return result

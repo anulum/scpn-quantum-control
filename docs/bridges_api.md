@@ -394,6 +394,11 @@ output = bridge.forward(spike_history)  # (T, n_inputs) → (n_neurons,)
 ```
 
 Internal pipeline: spike rates → Ry angles → `QuantumDenseLayer` → P(|1>) → currents.
+`QuantumDenseLayer.forward()` evaluates the small QSNN circuit with an exact
+local statevector for the gates used by the layer (`Ry`, controlled-`Ry`, and
+`CX`). Hardware submission paths still build Qiskit circuits elsewhere; this
+bridge path is the deterministic CPU execution path for SNN feedback loops and
+coverage-instrumented tests.
 
 #### `ArcaneNeuronBridge`
 
