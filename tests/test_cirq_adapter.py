@@ -9,11 +9,14 @@
 
 from __future__ import annotations
 
+import builtins
+import importlib
 from unittest.mock import patch
 
 import numpy as np
 import pytest
 
+import scpn_quantum_control.hardware.cirq_adapter as cirq_adapter
 from scpn_quantum_control.hardware.cirq_adapter import (
     CirqResult,
     CirqRunner,
@@ -51,6 +54,26 @@ class TestCirqAvailability:
         r1 = CirqResult(energy=0.0, n_qubits=2, device_name="sim")
         r2 = CirqResult(energy=1.0, n_qubits=2, device_name="sim")
         assert r1 != r2
+
+    def test_import_guard_when_cirq_missing(self, monkeypatch):
+        real_import = builtins.__import__
+
+        def guarded_import(name, *args, **kwargs):
+            if name == "cirq":
+                raise ImportError("blocked cirq")
+            return real_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", guarded_import)
+        try:
+            reloaded = importlib.reload(cirq_adapter)
+            assert reloaded.is_cirq_available() is False
+            with pytest.raises(ImportError, match="Cirq not installed"):
+                reloaded.CirqRunner(np.eye(2), np.ones(2))
+        finally:
+            monkeypatch.setattr(builtins, "__import__", real_import)
+            importlib.reload(cirq_adapter)
+            globals()["CirqResult"] = cirq_adapter.CirqResult
+            globals()["CirqRunner"] = cirq_adapter.CirqRunner
 
 
 # ---------------------------------------------------------------------------
