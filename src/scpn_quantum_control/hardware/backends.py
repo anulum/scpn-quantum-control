@@ -60,7 +60,7 @@ class BackendProtocol(Protocol):
 
     def is_available(self) -> bool:
         """True iff the backend can run in the current environment."""
-        ...
+        ...  # pragma: no cover - Protocol declaration only.
 
 
 BackendFactory = Callable[[], BackendProtocol]
