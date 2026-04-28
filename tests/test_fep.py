@@ -119,6 +119,34 @@ class TestErrorHandling:
 
         assert module._HAS_RUST is False
 
+    def test_predictive_coding_import_guard_without_rust(self, monkeypatch) -> None:
+        """Predictive-coding import guard records absent Rust acceleration."""
+        source = (
+            Path(__file__).parents[1]
+            / "src"
+            / "scpn_quantum_control"
+            / "fep"
+            / "predictive_coding.py"
+        )
+        module_name = "scpn_quantum_control.fep._test_predictive_coding_no_rust"
+        spec = importlib.util.spec_from_file_location(module_name, source)
+        assert spec is not None
+        assert spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+
+        original_import = builtins.__import__
+
+        def blocked_import(name, *args, **kwargs):
+            if name == "scpn_quantum_engine":
+                raise ImportError("blocked in test")
+            return original_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", blocked_import)
+        monkeypatch.setitem(sys.modules, module_name, module)
+        spec.loader.exec_module(module)
+
+        assert module._HAS_RUST is False
+
 
 # ===== 3. Negative Cases =====
 
@@ -220,6 +248,24 @@ class TestNegativeCases:
         error = x - generative(mu)
         expected = (K + 1e-10 * np.eye(2)) @ mu - jacobian(mu).T @ sensory @ error
         assert np.allclose(grad, expected)
+
+    def test_prediction_error_python_fallback_rows(self, monkeypatch) -> None:
+        """Python prediction-error path handles isolated and coupled rows."""
+        module = importlib.import_module("scpn_quantum_control.fep.predictive_coding")
+        monkeypatch.setattr(module, "_HAS_RUST", False)
+
+        observations = np.array([1.0, 2.0])
+        beliefs = np.array([0.5, 1.0])
+        K = np.array(
+            [
+                [0.0, 0.0],
+                [2.0, 0.0],
+            ]
+        )
+
+        errors = module.hierarchical_prediction_error(observations, beliefs, K)
+
+        assert np.allclose(errors, np.array([0.5, 3.0]))
 
 
 # ===== 4. Pipeline Integration =====
