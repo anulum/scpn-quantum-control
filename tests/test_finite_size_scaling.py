@@ -102,6 +102,36 @@ class TestFSSPipeline:
         print(f"  K_c = {result.k_c_values}")
 
 
+class TestFSSFitFallbacks:
+    """Solver-failure contracts for finite-size extrapolation fits."""
+
+    def test_fit_bkt_ansatz_handles_linear_solver_failure(self, monkeypatch):
+        """BKT extrapolation returns None when the linear solve fails."""
+        import scpn_quantum_control.analysis.finite_size_scaling as fss
+
+        def fail_lstsq(*_args, **_kwargs):
+            raise np.linalg.LinAlgError("singular fit")
+
+        monkeypatch.setattr(fss.np.linalg, "lstsq", fail_lstsq)
+
+        result = fss._fit_bkt_ansatz([2, 3], [1.2, 1.4])
+
+        assert result is None
+
+    def test_fit_power_ansatz_handles_linear_solver_failure(self, monkeypatch):
+        """Power-law extrapolation returns None when the linear solve fails."""
+        import scpn_quantum_control.analysis.finite_size_scaling as fss
+
+        def fail_lstsq(*_args, **_kwargs):
+            raise np.linalg.LinAlgError("singular fit")
+
+        monkeypatch.setattr(fss.np.linalg, "lstsq", fail_lstsq)
+
+        result = fss._fit_power_ansatz([2, 3], [1.2, 1.4])
+
+        assert result is None
+
+
 class TestFSSCoverage:
     """Cover default parameter branches and fit error paths."""
 
