@@ -12,9 +12,11 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+import scpn_quantum_control.gauge.confinement as confinement
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.gauge.confinement import (
     ConfinementResult,
+    _average_wilson_by_length,
     confinement_analysis,
     confinement_vs_coupling,
     extract_string_tension,
@@ -39,6 +41,24 @@ class TestExtractStringTension:
     def test_none_for_equal_areas(self):
         sigma = extract_string_tension(0.5, 0.3, area_small=1.0, area_large=1.0)
         assert sigma is None
+
+    def test_none_for_zero_ratio(self):
+        sigma = extract_string_tension(np.inf, 0.5)
+        assert sigma is None
+
+
+class TestAverageWilsonByLength:
+    def test_zero_when_requested_length_missing(self, monkeypatch):
+        class Loop:
+            loop_length = 2
+            magnitude = 0.75
+
+        monkeypatch.setattr(
+            confinement, "compute_wilson_loops", lambda *_args, **_kwargs: [Loop()]
+        )
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        assert _average_wilson_by_length(K, omega, 4) == 0.0
 
 
 class TestConfinementAnalysis:
@@ -101,3 +121,10 @@ class TestConfinementVsCoupling:
         results = confinement_vs_coupling(omega, k_vals)
         for st in results["string_tension"]:
             assert st >= 0
+
+    def test_default_scan_uses_fifteen_points(self):
+        omega = OMEGA_N_16[:4]
+        results = confinement_vs_coupling(omega)
+        assert len(results["k_base"]) == 15
+        assert results["k_base"][0] == pytest.approx(0.1)
+        assert results["k_base"][-1] == pytest.approx(3.0)
