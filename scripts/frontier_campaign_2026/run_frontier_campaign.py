@@ -19,6 +19,7 @@ import json
 import time
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Callable
 
 from test_dla_tensor_network import run_dla_tn_mapping
 from test_live_scneurocore_loop import run_live_scneurocore
@@ -31,23 +32,11 @@ from test_quantum_advantage_scaling import run_advantage_scaling
 from test_rl_pulse_optimization import run_rl_pulse_opt
 from test_sync_distillation import run_distillation
 
+FrontierTest = tuple[str, Callable[[], Any]]
 
-async def run_frontier_campaign():
-    start_time = time.time()
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-    campaign_dir = Path("results/frontier_campaign")
-    campaign_dir.mkdir(parents=True, exist_ok=True)
-
-    summary = {
-        "campaign": "Frontier Advanced Tests (Batch 4)",
-        "start_time": timestamp,
-        "tests": {},
-        "total_runtime_seconds": 0.0,
-        "status": "completed",
-    }
-
-    tests = [
+def _default_tests() -> list[FrontierTest]:
+    return [
         ("1_quantum_advantage_scaling", run_advantage_scaling),
         ("2_live_scneurocore_loop", run_live_scneurocore),
         ("3_sync_distillation", run_distillation),
@@ -57,6 +46,36 @@ async def run_frontier_campaign():
         ("7_pt_symmetric_kuramoto", run_pt_symmetric),
         ("8_logical_sync_protection", run_logical_protection),
     ]
+
+
+def _campaign_status(summary: dict[str, Any]) -> str:
+    statuses = [entry["status"] for entry in summary["tests"].values()]
+    if any(status == "failed" for status in statuses):
+        return "completed_with_failures"
+    if any(status == "implementation_gated" for status in statuses):
+        return "completed_with_gates"
+    return "completed"
+
+
+async def run_frontier_campaign(
+    tests: list[FrontierTest] | None = None,
+    campaign_dir: str | Path = "results/frontier_campaign",
+) -> dict[str, Any]:
+    start_time = time.time()
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+    campaign_dir = Path(campaign_dir)
+    campaign_dir.mkdir(parents=True, exist_ok=True)
+
+    summary = {
+        "campaign": "Frontier Advanced Tests (Batch 4)",
+        "start_time": timestamp,
+        "tests": {},
+        "counts": {"success": 0, "implementation_gated": 0, "failed": 0},
+        "total_runtime_seconds": 0.0,
+    }
+
+    tests = _default_tests() if tests is None else tests
 
     print("Starting Frontier Campaign (Batch 4) - 8 advanced tests\n")
 
@@ -75,7 +94,18 @@ async def run_frontier_campaign():
                 "status": "success",
                 "runtime_seconds": round(runtime, 3),
             }
+            summary["counts"]["success"] += 1
             print(f"{name} completed in {runtime:.2f}s\n")
+
+        except NotImplementedError as e:
+            runtime = time.time() - test_start
+            summary["tests"][name] = {
+                "status": "implementation_gated",
+                "runtime_seconds": round(runtime, 3),
+                "error": str(e),
+            }
+            summary["counts"]["implementation_gated"] += 1
+            print(f"{name} implementation-gated after {runtime:.2f}s - {e}\n")
 
         except Exception as e:
             runtime = time.time() - test_start
@@ -84,20 +114,24 @@ async def run_frontier_campaign():
                 "runtime_seconds": round(runtime, 3),
                 "error": str(e),
             }
+            summary["counts"]["failed"] += 1
             print(f"{name} failed after {runtime:.2f}s - {e}\n")
 
     total_runtime = time.time() - start_time
     summary["total_runtime_seconds"] = round(total_runtime, 3)
+    summary["status"] = _campaign_status(summary)
 
     summary_path = campaign_dir / f"campaign_summary_{timestamp}.json"
     with open(summary_path, "w") as f:
         json.dump(summary, f, indent=2)
+    summary["summary_path"] = str(summary_path)
 
     print(f"Frontier Campaign finished in {total_runtime:.2f} seconds.")
     print(f"Summary saved to {summary_path}")
     print(
         "\nYou can now inspect the individual JSON results in results/ and results/frontier_campaign/"
     )
+    return summary
 
 
 if __name__ == "__main__":

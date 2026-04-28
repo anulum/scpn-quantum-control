@@ -84,6 +84,13 @@ than substituting synthetic scientific outputs.
 Run individually or via the orchestrator `run_frontier_campaign.sh`.
 Ensure `SCPN_IBM_TOKEN` env var is set before launching.
 Do not import local mock injectors during hardware runs.
+The orchestrator writes `counts.success`, `counts.implementation_gated`,
+and `counts.failed` in its summary JSON. Overall status is:
+
+- `completed` when every attempted test succeeds.
+- `completed_with_gates` when one or more tests reached an explicit
+  implementation gate and no test failed unexpectedly.
+- `completed_with_failures` when at least one test fails unexpectedly.
 
 ## IBM backend note
 
