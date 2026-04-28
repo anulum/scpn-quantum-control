@@ -136,3 +136,32 @@ def test_legacy_campaign_scripts_use_campaign_local_paths() -> None:
                 offenders.append(str(script_path.relative_to(REPO_ROOT)))
 
     assert offenders == []
+
+
+def test_legacy_campaign_scripts_keep_license_headers_near_top() -> None:
+    campaign_dirs = [
+        REPO_ROOT / "scripts" / "primary_campaign_2026",
+        REPO_ROOT / "scripts" / "hardware_campaign_2026",
+        REPO_ROOT / "scripts" / "sophisticated_campaign_2026",
+    ]
+
+    missing_top_headers: list[str] = []
+    trailing_headers: list[str] = []
+    for campaign_dir in campaign_dirs:
+        for script_path in sorted(
+            list(campaign_dir.glob("*.py")) + list(campaign_dir.glob("*.sh"))
+        ):
+            text = script_path.read_text(encoding="utf-8")
+            first_lines = "\n".join(text.splitlines()[:12])
+            last_lines = "\n".join(text.splitlines()[-12:])
+
+            if "SPDX-License-Identifier" not in first_lines:
+                missing_top_headers.append(str(script_path.relative_to(REPO_ROOT)))
+            if (
+                "SPDX-License-Identifier" in last_lines
+                and "SPDX-License-Identifier" not in first_lines
+            ):
+                trailing_headers.append(str(script_path.relative_to(REPO_ROOT)))
+
+    assert missing_top_headers == []
+    assert trailing_headers == []
