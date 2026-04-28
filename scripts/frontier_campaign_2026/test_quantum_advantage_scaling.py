@@ -10,6 +10,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.accel import rust_kuramoto_classical  # classical baseline
 from scpn_quantum_control.analysis import DLAParityWitness, SyncOrderParameter
@@ -26,8 +27,8 @@ async def run_advantage_scaling():
 
     for N in Ns:
         print(f"Scaling test N={N}")
-        K_nm = np.load(f"params/scale_Knm_{N}x{N}.npy")
-        omega = np.load(f"params/scale_omega_{N}.npy")
+        K_nm = np.load(parameter_path(f"scale_Knm_{N}x{N}.npy"))
+        omega = np.load(parameter_path(f"scale_omega_{N}.npy"))
 
         delta = float(np.std(omega)) if omega is not None else 0.0
         nonzero_couplings = K_nm[np.abs(K_nm) > 1e-12]
@@ -60,7 +61,7 @@ async def run_advantage_scaling():
             "time_classical": res_c.get("runtime", 0.0),
         }
 
-    with open("results/quantum_advantage_scaling.json", "w") as f:
+    with open(result_path("quantum_advantage_scaling.json"), "w") as f:
         json.dump(results, f, indent=2)
 
 

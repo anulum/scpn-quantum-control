@@ -9,14 +9,15 @@
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.analysis import dla_truncated_tn
 
 
 def run_dla_tn_mapping():
-    K_nm = np.load("params/tn_Knm_64x64.npy")
+    K_nm = np.load(parameter_path("tn_Knm_64x64.npy"))
     result = dla_truncated_tn(K_nm, max_bond_dim=32, dla_cutoff=1e-6)
-    with open("results/dla_tensor_network.json", "w") as f:
+    with open(result_path("dla_tensor_network.json"), "w") as f:
         json.dump(result, f, indent=2)
 
 

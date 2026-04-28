@@ -8,6 +8,8 @@
 # scpn-quantum-control — Frontier RL pulse optimisation campaign
 import asyncio
 
+from campaign_io import result_path
+
 from scpn_quantum_control.analysis.rl_pulse_optimizer import RLPulseOptimizer
 from scpn_quantum_control.hardware import AsyncHardwareRunner
 
@@ -16,7 +18,7 @@ async def run_rl_pulse_opt():
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=6000, mitigation="GUESS")
     optimizer = RLPulseOptimizer(runner=runner, target_sync_order=0.95, episodes=250)
     await optimizer.optimize_pulses()
-    optimizer.save_results("results/rl_pulse_optimization.json")
+    optimizer.save_results(str(result_path("rl_pulse_optimization.json")))
 
 
 if __name__ == "__main__":

@@ -10,6 +10,7 @@ import asyncio
 import json
 
 import numpy as np
+from campaign_io import parameter_path, result_path
 
 from scpn_quantum_control.analysis import DLAParityWitness, SyncOrderParameter
 from scpn_quantum_control.control import StructuredAnsatz
@@ -18,7 +19,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 async def run_pt_symmetric():
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=12000, mitigation="GUESS")
-    K_nm = np.load("params/pt_Knm_12x12.npy")
+    K_nm = np.load(parameter_path("pt_Knm_12x12.npy"))
     results = {}
     for gain_loss in np.linspace(-0.5, 0.5, 9):
         ansatz = StructuredAnsatz.from_kuramoto(
@@ -30,7 +31,7 @@ async def run_pt_symmetric():
         result = await job.result()
         results[float(gain_loss)] = result
 
-    with open("results/pt_symmetric_kuramoto.json", "w") as f:
+    with open(result_path("pt_symmetric_kuramoto.json"), "w") as f:
         json.dump(results, f, indent=2)
 
 
