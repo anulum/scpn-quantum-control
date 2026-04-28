@@ -144,7 +144,7 @@ def recommend_backend(
         "reason": f"n={n} too large for classical sim ({full_ed_mb:.0f} MB needed)",
         "memory_mb": 0,
         "feasible": True,
-        "note": "Submit to IBM hardware",
+        "note": "Recommendation only; submit with AsyncHardwareRunner for QPU execution.",
     }
 
 

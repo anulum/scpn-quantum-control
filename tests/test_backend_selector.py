@@ -71,6 +71,7 @@ class TestRecommendBackend:
     def test_hardware_fallback(self):
         rec = recommend_backend(40, ram_gb=0.001)
         assert rec["backend"] == "hardware"
+        assert "AsyncHardwareRunner" in rec["note"]
 
     def test_open_system_lindblad(self):
         rec = recommend_backend(4, want_open_system=True)
@@ -196,6 +197,25 @@ class TestAutoSolve:
         ):
             result = auto_solve(K, omega, t_max=0.1, dt=0.1)
             assert result["backend_used"] == "statevector"
+
+    def test_hardware_recommendation_does_not_submit_qpu_job(self):
+        """The selector recommends hardware; auto_solve remains a local helper."""
+        from unittest.mock import patch
+
+        K, omega = _system(4)
+        with patch(
+            "scpn_quantum_control.phase.backend_selector.recommend_backend",
+            return_value={
+                "backend": "hardware",
+                "reason": "test",
+                "memory_mb": 0,
+                "feasible": True,
+                "note": "Recommendation only; submit with AsyncHardwareRunner.",
+            },
+        ):
+            result = auto_solve(K, omega, t_max=0.1, dt=0.1)
+            assert result["backend_used"] == "statevector"
+            assert result["recommendation"]["backend"] == "hardware"
 
     def test_quimb_import_exception(self):
         """Cover except branch when mps_evolution import fails."""
