@@ -111,7 +111,7 @@ contract in `scripts/frontier_campaign_2026/generate_params.py`.
 Default behaviour is fail-closed:
 
 ```bash
-python scripts/frontier_campaign_2026/generate_params.py --output-dir params
+python scripts/frontier_campaign_2026/generate_params.py
 ```
 
 The command raises if a bridge is unavailable or does not provide
@@ -121,14 +121,15 @@ Deterministic smoke-test arrays require explicit opt-in:
 
 ```bash
 python scripts/frontier_campaign_2026/generate_params.py \
-  --output-dir params \
   --allow-synthetic \
   --seed 42
 ```
 
 Synthetic runs write `PARAMETER_PROVENANCE.json` with
-`source_mode="synthetic"` entries. These files are suitable for interface
-tests only and are not publication-safe QPU inputs.
+`source_mode="synthetic"` entries under
+`scripts/frontier_campaign_2026/params/`. These files are suitable for
+interface tests only and are not publication-safe QPU inputs. Use
+`--output-dir <path>` only when intentionally writing a separate cache.
 
 ---
 
@@ -247,11 +248,10 @@ export SCPN_IBM_TOKEN="<token>"
 export SCPN_IBM_CRN="<instance-crn>"  # optional when the account has a default instance
 
 # 2. Generate source-backed parameter files
-python3 scripts/frontier_campaign_2026/generate_params.py --output-dir params
+python3 scripts/frontier_campaign_2026/generate_params.py
 
 # Optional smoke-test cache only; not publication-safe
 python3 scripts/frontier_campaign_2026/generate_params.py \
-  --output-dir params \
   --allow-synthetic \
   --seed 42
 

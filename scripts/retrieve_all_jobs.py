@@ -34,6 +34,32 @@ def _extract_counts(pub_result) -> dict[str, int]:
     return {}
 
 
+def _discover_result_json_files(root: Path | None = None) -> list[Path]:
+    """Return known result JSON files, including campaign-local outputs."""
+    repo_root = Path.cwd() if root is None else Path(root)
+    results_dirs = [
+        repo_root / "results",
+        repo_root / "results" / "frontier_campaign",
+        repo_root / "results" / "sophisticated_campaign",
+        repo_root / "results" / "primary_campaign",
+        repo_root / "scripts" / "frontier_campaign_2026" / "results",
+        repo_root / "scripts" / "frontier_campaign_2026" / "results" / "frontier_campaign",
+    ]
+
+    json_files: list[Path] = []
+    seen: set[Path] = set()
+    for directory in results_dirs:
+        if not directory.exists():
+            continue
+        for path in sorted(directory.glob("*.json")):
+            resolved = path.resolve()
+            if resolved in seen:
+                continue
+            seen.add(resolved)
+            json_files.append(path)
+    return json_files
+
+
 async def retrieve_all_jobs():
     token = os.environ.get("SCPN_IBM_TOKEN")
     if not token:
@@ -46,17 +72,7 @@ async def retrieve_all_jobs():
         service_kwargs["instance"] = instance
     service = QiskitRuntimeService(**service_kwargs)
 
-    results_dirs = [
-        Path("results"),
-        Path("results/frontier_campaign"),
-        Path("results/sophisticated_campaign"),
-        Path("results/primary_campaign"),
-    ]
-
-    json_files = []
-    for d in results_dirs:
-        if d.exists():
-            json_files.extend(list(d.glob("*.json")))
+    json_files = _discover_result_json_files()
 
     print(f"Found {len(json_files)} result JSON files. Starting retrieval.\n")
 
