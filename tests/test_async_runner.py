@@ -91,6 +91,26 @@ def _fake_circuits(n: int = 2) -> list[Any]:
 
 
 class TestConstruction:
+    def test_logger_falls_back_when_structured_logger_unavailable(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        import builtins
+        import logging
+
+        real_import = builtins.__import__
+
+        def guarded_import(name: str, *args: Any, **kwargs: Any) -> Any:
+            if name.endswith("logging_setup"):
+                raise RuntimeError("structured logger unavailable")
+            return real_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", guarded_import)
+
+        logger = ar._get_logger("fallback_logger")
+
+        assert isinstance(logger, logging.Logger)
+        assert logger.name == "fallback_logger"
+
     def test_accepts_single_runner(self) -> None:
         r = _StubRunner()
         a = ar.AsyncHardwareRunner(r)  # type: ignore[arg-type]
@@ -116,6 +136,14 @@ class TestConstruction:
     def test_rejects_zero_concurrent(self) -> None:
         with pytest.raises(ValueError, match="max_concurrent"):
             ar.AsyncHardwareRunner(_StubRunner(), max_concurrent=0)  # type: ignore[arg-type]
+
+    def test_wraps_non_list_iterable_as_single_runner(self) -> None:
+        runner_set = {_StubRunner("set_runner")}
+
+        a = ar.AsyncHardwareRunner(runner_set)  # type: ignore[arg-type]
+
+        assert a.n_runners == 1
+        assert a._runners[0] is runner_set  # type: ignore[attr-defined]
 
 
 # ---------------------------------------------------------------------------
@@ -586,3 +614,196 @@ class TestSubmitCircuitBatchProvenance:
         assert result["status"] == "DONE_LOCAL_SIMULATION"
         assert result["job_id"] == "local_simulated"
         assert result["observable_seen"] == 4.0
+
+    def test_submit_circuit_batch_backend_fallback_zne_skip_and_timeout(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Backend fallback, ZNE skip, measurement insertion, and queue timeout stay auditable."""
+
+        class _FakeCircuit:
+            num_clbits = 0
+
+            def __init__(self) -> None:
+                self.measured = False
+
+            def measure_all(self) -> None:
+                self.measured = True
+
+        class _FakeAnsatz:
+            def __init__(self) -> None:
+                self.circuit = _FakeCircuit()
+
+            def build_circuit(self) -> _FakeCircuit:
+                return self.circuit
+
+        class _FakeBackend:
+            name = "least_busy_backend"
+
+        class _FakeService:
+            def __init__(self, **kwargs: Any) -> None:
+                return None
+
+            def backend(self, target: str) -> _FakeBackend:
+                raise RuntimeError("backend unavailable")
+
+            def least_busy(self, **kwargs: Any) -> _FakeBackend:
+                return _FakeBackend()
+
+        class _FakePassManager:
+            def run(self, circuit: Any) -> Any:
+                return circuit
+
+        class _FakeJob:
+            def job_id(self) -> str:
+                return "queued_job"
+
+            def result(self, *args: Any, **kwargs: Any) -> list[Any]:
+                raise TimeoutError("still queued")
+
+        class _FakeSampler:
+            def __init__(self, mode: Any) -> None:
+                self.options = MagicMock()
+
+            def run(self, circuits: list[Any]) -> _FakeJob:
+                return _FakeJob()
+
+        class _FakeFactory:
+            def __init__(self, scale_factors: list[int]) -> None:
+                self.scale_factors = scale_factors
+
+        qiskit_ibm = types.ModuleType("qiskit_ibm_runtime")
+        qiskit_ibm.QiskitRuntimeService = _FakeService  # type: ignore[attr-defined]
+        qiskit_ibm.SamplerV2 = _FakeSampler  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "qiskit_ibm_runtime", qiskit_ibm)
+
+        preset = types.ModuleType("qiskit.transpiler.preset_passmanagers")
+        preset.generate_preset_pass_manager = (  # type: ignore[attr-defined]
+            lambda *args, **kwargs: _FakePassManager()
+        )
+        monkeypatch.setitem(sys.modules, "qiskit.transpiler.preset_passmanagers", preset)
+
+        passes = types.ModuleType("qiskit.transpiler.passes")
+        passes.ALAPScheduleAnalysis = object  # type: ignore[attr-defined]
+        passes.PadDynamicalDecoupling = object  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "qiskit.transpiler.passes", passes)
+
+        mitiq = types.ModuleType("mitiq")
+        mitiq_zne = types.ModuleType("mitiq.zne")
+
+        def _raise_zne(*args: Any, **kwargs: Any) -> float:
+            raise RuntimeError("zne unavailable")
+
+        mitiq_zne.execute_with_zne = _raise_zne  # type: ignore[attr-defined]
+        mitiq.zne = mitiq_zne  # type: ignore[attr-defined]
+        mitiq_inference = types.ModuleType("mitiq.zne.inference")
+        mitiq_inference.RichardsonFactory = _FakeFactory  # type: ignore[attr-defined]
+        mitiq_scaling = types.ModuleType("mitiq.zne.scaling")
+        mitiq_scaling.fold_global = lambda circuit, scale_factor: circuit  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "mitiq", mitiq)
+        monkeypatch.setitem(sys.modules, "mitiq.zne", mitiq_zne)
+        monkeypatch.setitem(sys.modules, "mitiq.zne.inference", mitiq_inference)
+        monkeypatch.setitem(sys.modules, "mitiq.zne.scaling", mitiq_scaling)
+        monkeypatch.setenv("SCPN_IBM_TOKEN", "test-token")
+
+        ansatz = _FakeAnsatz()
+        runner = ar.AsyncHardwareRunner(backend="missing_backend", shots=8)
+        job = runner.submit_circuit_batch(
+            ansatz,
+            lambda **kwargs: {"should_not_run": 1.0},
+            enable_zne=True,
+        )
+
+        result = asyncio.run(job.result())
+
+        assert ansatz.circuit.measured is True
+        assert result["job_id"] == "queued_job"
+        assert result["job_ids"] == ["queued_job"]
+        assert result["status"] == "QUEUED_ON_IBM"
+        assert result["counts_available"] is False
+        assert "should_not_run" not in result
+
+    def test_submit_circuit_batch_submission_error_without_local_fallback(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        class _FakeCircuit:
+            num_clbits = 1
+
+            def measure_all(self) -> None:
+                return None
+
+        class _FakeAnsatz:
+            def build_circuit(self) -> _FakeCircuit:
+                return _FakeCircuit()
+
+        class _FailingService:
+            def __init__(self, **kwargs: Any) -> None:
+                raise RuntimeError("service unavailable")
+
+        qiskit_ibm = types.ModuleType("qiskit_ibm_runtime")
+        qiskit_ibm.QiskitRuntimeService = _FailingService  # type: ignore[attr-defined]
+        qiskit_ibm.SamplerV2 = object  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "qiskit_ibm_runtime", qiskit_ibm)
+        monkeypatch.setenv("SCPN_IBM_TOKEN", "test-token")
+
+        runner = ar.AsyncHardwareRunner(backend="ibm_fez", shots=1)
+        job = runner.submit_circuit_batch(
+            _FakeAnsatz(),
+            lambda **kwargs: {"should_not_run": 1.0},
+        )
+
+        result = asyncio.run(job.result())
+
+        assert result["status"] == "IBM_SUBMISSION_ERROR"
+        assert result["counts_available"] is False
+        assert result["job_id"] is None
+
+    def test_submit_circuit_batch_submission_error_can_use_labelled_local_fallback(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        class _FakeCircuit:
+            num_clbits = 1
+
+            def measure_all(self) -> None:
+                return None
+
+        class _FakeAnsatz:
+            def build_circuit(self) -> _FakeCircuit:
+                return _FakeCircuit()
+
+        class _FailingService:
+            def __init__(self, **kwargs: Any) -> None:
+                raise RuntimeError("service unavailable")
+
+        class _FakeLocalJob:
+            def result(self) -> list[Any]:
+                pub = MagicMock()
+                pub.data.meas.get_counts.return_value = {"0": 2}
+                return [pub]
+
+        class _FakeStatevectorSampler:
+            def run(self, circuits: list[Any], shots: int) -> _FakeLocalJob:
+                assert shots == 2
+                return _FakeLocalJob()
+
+        qiskit_ibm = types.ModuleType("qiskit_ibm_runtime")
+        qiskit_ibm.QiskitRuntimeService = _FailingService  # type: ignore[attr-defined]
+        qiskit_ibm.SamplerV2 = object  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "qiskit_ibm_runtime", qiskit_ibm)
+
+        primitives = types.ModuleType("qiskit.primitives")
+        primitives.StatevectorSampler = _FakeStatevectorSampler  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "qiskit.primitives", primitives)
+        monkeypatch.setenv("SCPN_IBM_TOKEN", "test-token")
+
+        runner = ar.AsyncHardwareRunner(backend="ibm_fez", shots=2)
+        job = runner.submit_circuit_batch(
+            _FakeAnsatz(),
+            lambda **kwargs: {"observable_seen": float(sum(kwargs["counts"].values()))},
+            allow_local_simulation=True,
+        )
+
+        result = asyncio.run(job.result())
+
+        assert result["status"] == "DONE_LOCAL_SIMULATION"
+        assert result["job_id"] == "local_simulated"
+        assert result["observable_seen"] == 2.0
