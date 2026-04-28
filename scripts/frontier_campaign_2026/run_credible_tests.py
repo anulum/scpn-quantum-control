@@ -25,6 +25,7 @@ from typing import Any, Callable
 sys.path.insert(0, str(Path(__file__).parent))
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
+from campaign_io import campaign_path
 from test_multi_backend_distributed import run_multi_backend
 from test_pt_symmetric_kuramoto import run_pt_symmetric
 from test_quantum_advantage_scaling import run_advantage_scaling
@@ -48,7 +49,7 @@ def _summary_status(summary: dict[str, Any]) -> str:
 
 async def run_credible_tests(
     tests: list[CredibleTest] | None = None,
-    results_dir: str | Path = "results",
+    results_dir: str | Path | None = None,
 ) -> dict[str, Any]:
     token = os.environ.get("SCPN_IBM_TOKEN")
     if not token:
@@ -58,8 +59,8 @@ async def run_credible_tests(
         sys.exit(1)
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    results_dir = Path(results_dir)
-    results_dir.mkdir(exist_ok=True)
+    results_dir = Path(results_dir) if results_dir is not None else campaign_path("results")
+    results_dir.mkdir(parents=True, exist_ok=True)
 
     summary = {
         "runner": "credible_observables_only (DLAParityWitness, SyncOrderParameter)",

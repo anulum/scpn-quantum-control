@@ -169,3 +169,56 @@ def test_credible_runner_summary_reflects_failed_tests(
     assert summary["counts"] == {"success": 1, "failed": 1}
     assert summary["tests"]["failure_case"]["status"] == "failed"
     assert Path(summary["summary_path"]).exists()
+
+
+def test_credible_runner_default_results_are_campaign_local(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    monkeypatch.setenv("SCPN_IBM_TOKEN", "test-token")
+    runner = _load_credible_runner(monkeypatch)
+    monkeypatch.setattr(runner, "campaign_path", lambda *parts: tmp_path.joinpath(*parts))
+
+    def success():
+        return None
+
+    summary = asyncio.run(runner.run_credible_tests(tests=[("success_case", success)]))
+
+    summary_path = Path(summary["summary_path"])
+    assert summary_path.exists()
+    assert summary_path.parent == tmp_path / "results"
+
+
+def test_retrieve_all_jobs_discovers_campaign_local_results(tmp_path: Path):
+    repo_root = tmp_path
+    root_result = repo_root / "results" / "root.json"
+    campaign_result = (
+        repo_root / "scripts" / "frontier_campaign_2026" / "results" / "frontier.json"
+    )
+    campaign_summary = (
+        repo_root
+        / "scripts"
+        / "frontier_campaign_2026"
+        / "results"
+        / "frontier_campaign"
+        / "summary.json"
+    )
+    for path in (root_result, campaign_result, campaign_summary):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("{}", encoding="utf-8")
+
+    repo_script = Path(__file__).resolve().parents[1] / "scripts" / "retrieve_all_jobs.py"
+    spec = importlib.util.spec_from_file_location("retrieve_all_jobs_for_test", repo_script)
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    discovered = {
+        path.relative_to(repo_root) for path in module._discover_result_json_files(repo_root)
+    }
+
+    assert discovered == {
+        Path("results/root.json"),
+        Path("scripts/frontier_campaign_2026/results/frontier.json"),
+        Path("scripts/frontier_campaign_2026/results/frontier_campaign/summary.json"),
+    }
