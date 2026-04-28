@@ -19,6 +19,8 @@ Covers:
 
 from __future__ import annotations
 
+import importlib
+import sys
 from unittest.mock import patch
 
 import numpy as np
@@ -38,6 +40,30 @@ class TestCotengraAvailability:
     def test_returns_bool(self):
         result = is_cotengra_available()
         assert isinstance(result, bool)
+
+    def test_import_guard_reports_unavailable_when_cotengra_import_fails(self, monkeypatch):
+        import builtins
+
+        module_name = "scpn_quantum_control.phase.contraction_optimiser"
+        original_module = sys.modules[module_name]
+        real_import = builtins.__import__
+
+        def guarded_import(name, *args, **kwargs):
+            if name == "cotengra":
+                raise ImportError("blocked cotengra import")
+            return real_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", guarded_import)
+        sys.modules.pop(module_name, None)
+        try:
+            reloaded = importlib.import_module(module_name)
+            assert reloaded.is_cotengra_available() is False
+            assert reloaded.cotengra is None
+        finally:
+            import scpn_quantum_control.phase as phase_pkg
+
+            sys.modules[module_name] = original_module
+            phase_pkg.contraction_optimiser = original_module
 
 
 # ── optimal_contraction_path ──────────────────────────────────────────
