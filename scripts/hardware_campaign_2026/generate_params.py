@@ -1,47 +1,99 @@
+#!/usr/bin/env python3
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Commercial license available
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Hardware Campaign Tests
+# scpn-quantum-control — Hardware campaign parameter generator
+"""Fail-closed parameter cache generator for the hardware campaign."""
 
-import os
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
 
 import numpy as np
 
-out_dir = "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/scripts/hardware_campaign_2026/params"
-os.makedirs(out_dir, exist_ok=True)
+CAMPAIGN_DIR = Path(__file__).resolve().parent
 
 
-def random_symmetric(n):
-    A = np.random.rand(n, n)
-    return (A + A.T) / 2
+def _random_symmetric(rng: np.random.Generator, n: int) -> np.ndarray:
+    matrix = rng.random((n, n))
+    return (matrix + matrix.T) / 2.0
 
 
-# Test 1
-np.save(os.path.join(out_dir, "tokamak_Knm_12x12.npy"), random_symmetric(12))
-np.save(os.path.join(out_dir, "tokamak_omega.npy"), np.random.rand(12))
+def _write_arrays(output_path: Path, arrays: dict[str, np.ndarray], seed: int) -> None:
+    provenance = {
+        "schema": "campaign.synthetic_parameters.v1",
+        "campaign": "hardware_campaign_2026",
+        "allow_synthetic": True,
+        "seed": seed,
+        "files": [],
+    }
+    for filename, payload in arrays.items():
+        np.save(output_path / filename, payload)
+        provenance["files"].append(
+            {
+                "filename": filename,
+                "shape": list(payload.shape),
+                "source_mode": "synthetic",
+            }
+        )
+    (output_path / "PARAMETER_PROVENANCE.json").write_text(
+        json.dumps(provenance, indent=2), encoding="utf-8"
+    )
 
-# Test 2
-np.save(os.path.join(out_dir, "power_grid_europe_16x16.npy"), random_symmetric(16))
-np.save(os.path.join(out_dir, "power_grid_omega.npy"), np.random.rand(16))
 
-# Test 3
-np.save(os.path.join(out_dir, "c_elegans_connectome_14x14.npy"), random_symmetric(14))
+def generate_all_params(
+    output_dir: str | Path | None = None,
+    *,
+    allow_synthetic: bool = False,
+    seed: int = 42,
+) -> Path:
+    """Generate labelled smoke parameters only when explicitly requested."""
+    if not allow_synthetic:
+        raise RuntimeError(
+            "Refusing silent synthetic fallback. Pass --allow-synthetic only for "
+            "labelled smoke-test parameters, not publication QPU inputs."
+        )
 
-# Test 4
-np.save(os.path.join(out_dir, "clock_network_16x16.npy"), random_symmetric(16))
-np.save(os.path.join(out_dir, "clock_omega.npy"), np.random.rand(16))
+    rng = np.random.default_rng(seed)
+    output_path = Path(output_dir) if output_dir is not None else CAMPAIGN_DIR / "params"
+    output_path.mkdir(parents=True, exist_ok=True)
 
-# Test 6
-np.save(os.path.join(out_dir, "thermo_Knm_12x12.npy"), random_symmetric(12))
+    arrays: dict[str, np.ndarray] = {
+        "tokamak_Knm_12x12.npy": _random_symmetric(rng, 12),
+        "tokamak_omega.npy": rng.random(12),
+        "power_grid_europe_16x16.npy": _random_symmetric(rng, 16),
+        "power_grid_omega.npy": rng.random(16),
+        "c_elegans_connectome_14x14.npy": _random_symmetric(rng, 14),
+        "clock_network_16x16.npy": _random_symmetric(rng, 16),
+        "clock_omega.npy": rng.random(16),
+        "thermo_Knm_12x12.npy": _random_symmetric(rng, 12),
+        "hyper_Knm_pairwise_12x12.npy": _random_symmetric(rng, 12),
+        "hyper_Knm_3body.npy": rng.random((12, 12, 12)),
+        "metrology_Knm_12x12.npy": _random_symmetric(rng, 12),
+    }
 
-# Test 7
-np.save(os.path.join(out_dir, "hyper_Knm_pairwise_12x12.npy"), random_symmetric(12))
-np.save(os.path.join(out_dir, "hyper_Knm_3body.npy"), np.random.rand(12, 12, 12))
+    _write_arrays(output_path, arrays, seed)
+    print(f"Hardware synthetic smoke parameters generated in {output_path}")
+    return output_path
 
-# Test 8
-np.save(os.path.join(out_dir, "metrology_Knm_12x12.npy"), random_symmetric(12))
 
-print("Parameters generated")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Generate hardware campaign parameters.")
+    parser.add_argument("--output-dir", default=None)
+    parser.add_argument(
+        "--allow-synthetic",
+        action="store_true",
+        help="Generate labelled synthetic smoke-test parameters.",
+    )
+    parser.add_argument("--seed", type=int, default=42)
+    args = parser.parse_args()
+    generate_all_params(
+        output_dir=args.output_dir,
+        allow_synthetic=args.allow_synthetic,
+        seed=args.seed,
+    )

@@ -131,6 +131,14 @@ Synthetic runs write `PARAMETER_PROVENANCE.json` with
 interface tests only and are not publication-safe QPU inputs. Use
 `--output-dir <path>` only when intentionally writing a separate cache.
 
+Legacy primary, hardware, and sophisticated campaign generators are
+also fail-closed. They do not create random matrices unless
+`--allow-synthetic` is passed, and the resulting
+`PARAMETER_PROVENANCE.json` marks every file as `source_mode="synthetic"`.
+Their shell launchers require an existing provenance file before any
+hardware script runs; source-backed parameter caches should be produced
+by the bridge/orchestration layer, not invented by Quantum Control.
+
 ---
 
 ## 5. Error Mitigation — All Batches

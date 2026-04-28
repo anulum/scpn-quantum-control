@@ -20,7 +20,12 @@ export PYTHONPATH="${SCRIPT_DIR}/../../src:${PYTHONPATH}"
 
 cd "${SCRIPT_DIR}"
 mkdir -p results
-python3 generate_params.py
+if [ ! -f "params/PARAMETER_PROVENANCE.json" ]; then
+    echo "[ERROR] Missing params/PARAMETER_PROVENANCE.json."
+    echo "Generate a validated parameter cache before launching hardware jobs."
+    echo "For interface smoke tests only: python3 generate_params.py --allow-synthetic --seed 42"
+    exit 1
+fi
 
 TESTS=(
     "test_noise_channel_tomography.py"
