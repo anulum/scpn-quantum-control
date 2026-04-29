@@ -583,19 +583,34 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 
 [AGPL-3.0-or-later](LICENSE) — commercial license available.
 
-Dual licensing is explicit: the public repository is AGPL-3.0-or-later,
-and proprietary integration requires the commercial licence route below.
-The generic Kuramoto-XY facade is documented as a possible future
-core-package boundary, but it is not a separate permissive package
-today. Until an explicit release changes SPDX headers and package
-metadata, all in-repository code remains under the AGPL/commercial
-terms above.
+Dual licensing is explicit: the public repository is
+`AGPL-3.0-or-later`, and proprietary integration requires a separate
+commercial licence grant. The generic Kuramoto-XY facade is documented
+as a possible future core-package boundary, but it is not a separate
+permissive package today. Until an explicit release changes SPDX
+headers and package metadata, all in-repository code remains under the
+AGPL/commercial terms above.
+
+| Use case | Route |
+|----------|-------|
+| Academic research, teaching, private experiments | Use the AGPL terms in `LICENSE`. |
+| AGPL-compatible open-source redistribution | Use the AGPL terms and preserve notices/source obligations. |
+| Closed-source product, internal proprietary tool, SaaS, consulting deliverable, or embedded deployment | Obtain a commercial licence before distribution or network service use. |
+| Future lightweight core package | Not available yet; no permissive relicensing is implied by the facade docs. |
 
 ### Commercial Licensing
 
-AGPL-3.0 requires derivative works to be open-sourced. If you need to
-integrate scpn-quantum-control into proprietary software without
-publishing your source code, a commercial license is available:
+AGPL-3.0 requires derivative works and network-service modifications to
+provide corresponding source under the AGPL. If you need to integrate
+scpn-quantum-control into proprietary software without publishing your
+source code, use the commercial route:
+
+1. Email **protoscience@anulum.li** with organisation name, product or
+   service description, deployment model, expected users, and whether
+   source redistribution is required.
+2. Select the licence tier below or request an enterprise quote.
+3. Execute the commercial licence grant before shipping the proprietary
+   integration or offering it as a network service.
 
 | Tier | Price | Includes |
 |------|-------|----------|
@@ -603,6 +618,9 @@ publishing your source code, a commercial license is available:
 | **Pro** | CHF 199/month | Team up to 10, unlimited products |
 | **Perpetual** | CHF 999 one-time | Permanent license, one major version |
 | **Enterprise** | Custom | SLA, priority support, custom modules |
+
+Reference files: [`LICENSE`](LICENSE), [`NOTICE.md`](NOTICE.md), and
+[`docs/core_package_boundary.md`](docs/core_package_boundary.md).
 
 Contact: **protoscience@anulum.li** | [anulum.li](https://www.anulum.li)
 
