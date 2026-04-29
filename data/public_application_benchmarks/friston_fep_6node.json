@@ -1,0 +1,118 @@
+{
+  "K_nm": [
+    [
+      0.0,
+      0.42,
+      0.18,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.42,
+      0.0,
+      0.24,
+      0.16,
+      0.0,
+      0.0
+    ],
+    [
+      0.18,
+      0.24,
+      0.0,
+      0.38,
+      0.21,
+      0.0
+    ],
+    [
+      0.0,
+      0.16,
+      0.38,
+      0.0,
+      0.27,
+      0.14
+    ],
+    [
+      0.0,
+      0.0,
+      0.21,
+      0.27,
+      0.0,
+      0.35
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.14,
+      0.35,
+      0.0
+    ]
+  ],
+  "artifact_sha256": "97d53aed4d8a4b5274982a54c6e49484c5f49c25381f8be65053440cca8bf9f2",
+  "domain": "fep",
+  "extraction_method": "Friston-style predictive-coding workflow benchmark graph",
+  "hashes": {
+    "K_nm_sha256": "021269bc8fc1745e0d9ae868f44ea1e2dc01d94b0d5190f07e8c13ee63eb40d7",
+    "omega_sha256": "538f5453470496cb6c57a0252c46091cb4cc0b15fdb53350c374235fa9139bd7",
+    "theta0_sha256": "404529de258aed5a839e2c7903c8ce018c89e32ff92b79bb6aa6193cbc7c0abe"
+  },
+  "layer_assignments": [
+    "sensory_error",
+    "sensory_state",
+    "hidden_state",
+    "policy_state",
+    "precision_state",
+    "action_state"
+  ],
+  "metadata": {
+    "beliefs": [
+      0.05,
+      0.01,
+      -0.02,
+      0.08,
+      -0.01,
+      0.03
+    ],
+    "licence_note": "small curated workflow benchmark; not human-subject data",
+    "observations": [
+      0.08,
+      0.0,
+      -0.04,
+      0.12,
+      -0.03,
+      0.04
+    ],
+    "public_reference": "Friston, Nature Reviews Neuroscience 11, 127 (2010); Buckley et al., Entropy 19, 318 (2017)",
+    "sensory_precision_diag": [
+      1.0,
+      1.2,
+      1.1,
+      0.9,
+      1.3,
+      1.0
+    ]
+  },
+  "normalization": "precision graph weights scaled to unitless positive Kuramoto couplings",
+  "omega": [
+    0.0,
+    0.12,
+    -0.08,
+    0.18,
+    -0.05,
+    0.09
+  ],
+  "replay_id": null,
+  "schema_version": "scpn-quantum-control.qpu-data-artifact.v1",
+  "source_mode": "curated",
+  "source_name": "friston_fep_6node",
+  "source_timestamp": "2026-04-29T00:00:00Z",
+  "theta0": [
+    0.08,
+    0.02,
+    -0.04,
+    0.11,
+    -0.02,
+    0.05
+  ]
+}

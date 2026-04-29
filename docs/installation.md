@@ -62,6 +62,12 @@ pip install -e ".[julia]"
 # Cross-validation (QuTiP + Dynamiqs-JAX for XY Hamiltonian diff checks)
 pip install -e ".[xvalidate]"
 
+# Application plugin extras for raw-domain adapters
+pip install -e ".[app-eeg]"         # EEG/MEG readers and MNE pipelines
+pip install -e ".[app-plasma]"      # HDF5/tabular tokamak diagnostics
+pip install -e ".[app-power-grid]"  # power-system case readers
+pip install -e ".[app-fep]"         # predictive-coding workflow config
+
 # Portable optional surface — excludes CUDA/JAX wheels that need a matching accelerator stack
 pip install -e ".[all]"
 

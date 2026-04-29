@@ -41,6 +41,14 @@ Example that already conforms: `data/phase1_dla_parity/` +
 `tests/test_phase1_dla_parity_reproduces.py` + `docs/results.md`
 §Phase 1 DLA parity + `docs/falsification.md` §C2.
 
+Application benchmark datasets also conform to this contract at
+`data/public_application_benchmarks/`. They are small curated public
+benchmarks for EEG, ITER-style MHD mode locking, IEEE 5-bus power-grid
+synchronisation, and FEP predictive-coding workflows. The loader path is
+`scpn_quantum_control.applications.load_application_benchmark_artifact`,
+and the plugin suite is documented in
+[`docs/application_benchmarks.md`](application_benchmarks.md).
+
 Soft size cap: **20 MB per campaign**. Above that, move to Zenodo
 per the next section and leave a DOI pointer in the repo.
 

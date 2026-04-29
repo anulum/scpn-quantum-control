@@ -68,7 +68,7 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | IBM hardware jobs | 33 on ibm_fez (Feb 2026) + 348 on ibm_kingston (Apr 2026, Phase 1 DLA-parity campaign) |
 | DLA parity asymmetry (hardware) | $+10.8\,\%$ mean for depths $\ge 4$, peak $+17.5\,\%$ at depth 6 (Welch combined $p \ll 10^{-16}$) |
 | Test suite | **4,841 passing**, 97%+ coverage |
-| Python modules | 213 + 1 Rust crate (47 functions) + Julia tier (`accel/julia/*.jl`) |
+| Python modules | 215 + 1 Rust crate (47 functions) + Julia tier (`accel/julia/*.jl`) |
 
 ## Package map
 
@@ -78,7 +78,7 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | `phase` | 29 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad, Kuramoto variants |
 | `hardware` | 27 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
 | `bridge` | 13 | $K_{nm}$ → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
-| `applications` | 12 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS |
+| `applications` | 14 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS, application benchmark plugins |
 | `mitigation` | 9 | ZNE, PEC, dynamical decoupling, Z₂ parity, CPDR, symmetry verification, GUESS, compound |
 | `qec` | 9 | Toric code, repetition code UPDE, surface code, biological surface code, DLA-protected memory/scar prototypes, error budget, multi-scale, syndrome flow |
 | `control` | 8 | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, ITER disruption, topological optimiser |
@@ -145,6 +145,7 @@ for name, w in results.items():
 - [Hardware Status Ledger](hardware_status_ledger.md) — claim classes and campaign evidence paths
 - [Analysis API](analysis_api.md) — advanced reference for 46 analysis modules
 - [Witness Discovery](witness_discovery.md) — Bayesian/bandit search over synchronisation witness candidates
+- [Application Benchmark Plugins](application_benchmarks.md) — EEG, plasma, power-grid, and FEP datasets through the QPU artifact contract
 - [Phase API](phase_api.md) — advanced reference for 29 evolution algorithms
 - [Kuramoto Variants](kuramoto_variants.md) — higher-order, monitored, and PT-symmetric trajectory APIs
 - [Classical Baselines](classical_baselines.md) — SciPy ODE, QuTiP Lindblad, and MPS TEBD provenance surfaces

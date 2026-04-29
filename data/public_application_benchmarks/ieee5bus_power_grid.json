@@ -1,0 +1,79 @@
+{
+  "K_nm": [
+    [
+      0.0,
+      0.0012533881486833107,
+      0.0018004718973514806,
+      0.0,
+      0.0
+    ],
+    [
+      0.0012533881486833107,
+      0.0,
+      0.0,
+      0.001026472458053564,
+      0.0
+    ],
+    [
+      0.0018004718973514806,
+      0.0,
+      0.0,
+      0.0,
+      0.0018100820517557097
+    ],
+    [
+      0.0,
+      0.001026472458053564,
+      0.0,
+      0.0,
+      0.0025218594407965785
+    ],
+    [
+      0.0,
+      0.0,
+      0.0018100820517557097,
+      0.0025218594407965785,
+      0.0
+    ]
+  ],
+  "artifact_sha256": "44600f6590d74691dc5efbb64f5abb86397182747e78d4e9c67649fbd5e16459",
+  "domain": "power-grid",
+  "extraction_method": "IEEE 5-bus public benchmark topology conversion",
+  "hashes": {
+    "K_nm_sha256": "f2dfc5c4aaf83e0b3de401d5b8b8edb6ceb63285803316da709b6158a568bee2",
+    "omega_sha256": "a3ac7185e3efb358778cdb9ebcf77455ca3b4a0c88bd0c11f157dd79a09c9a65",
+    "theta0_sha256": "4159ca27786ea0cfc72088b015d4c936c64e46fba192f502f2d4a998c8844f04"
+  },
+  "layer_assignments": [
+    "bus_1",
+    "bus_2",
+    "bus_3",
+    "bus_4",
+    "bus_5"
+  ],
+  "metadata": {
+    "frequency_unit": "Hz deviation from nominal",
+    "licence_note": "small public benchmark constants",
+    "public_reference": "IEEE PES public test feeder / Stagg-El-Abiad 5-bus benchmark constants"
+  },
+  "normalization": "per-unit susceptance converted to Kuramoto coupling by V_i V_j B_ij / (2 H_i omega_0)",
+  "omega": [
+    0.0,
+    0.02,
+    -0.01,
+    0.015,
+    -0.005
+  ],
+  "replay_id": null,
+  "schema_version": "scpn-quantum-control.qpu-data-artifact.v1",
+  "source_mode": "curated",
+  "source_name": "ieee5bus_power_grid",
+  "source_timestamp": "2026-04-29T00:00:00Z",
+  "theta0": [
+    0.0,
+    0.03,
+    -0.025,
+    0.04,
+    -0.015
+  ]
+}

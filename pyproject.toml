@@ -65,6 +65,11 @@ config = ["pydantic-settings>=2.0,<3"]
 logging = ["structlog>=24.0,<26"]
 julia = ["juliacall>=0.9,<2"]
 dla-parity = ["qutip>=5.0,<6.0"]
+app-eeg = ["mne>=1.6,<2.0", "edfio>=0.4,<1.0"]
+app-plasma = ["h5py>=3.10,<4.0", "pandas>=2.0,<3.0"]
+app-power-grid = ["pandapower>=2.14,<4.0"]
+app-fep = ["pydantic>=2.0,<3.0"]
+app-benchmarks = ["scpn-quantum-control[app-eeg,app-plasma,app-power-grid,app-fep]"]
 all = ["scpn-quantum-control[viz,ibm,rust,tensor,mitigation,topology,opensys,pennylane,xvalidate,config,logging,julia,dla-parity]"]
 accelerated = ["scpn-quantum-control[gpu,jax]"]
 
@@ -73,6 +78,12 @@ analog_kuramoto = "scpn_quantum_control.hardware.backends:analog_kuramoto_factor
 hybrid_digital_analog = "scpn_quantum_control.hardware.backends:hybrid_digital_analog_factory"
 qiskit_ibm = "scpn_quantum_control.hardware.backends:qiskit_ibm_factory"
 pennylane = "scpn_quantum_control.hardware.backends:pennylane_factory"
+
+[project.entry-points."scpn_quantum_control.application_plugins"]
+eeg_alpha = "scpn_quantum_control.applications.app_plugins:eeg_application_plugin_factory"
+friston_fep = "scpn_quantum_control.applications.app_plugins:fep_application_plugin_factory"
+plasma_iter_mhd = "scpn_quantum_control.applications.app_plugins:plasma_application_plugin_factory"
+power_grid_ieee5 = "scpn_quantum_control.applications.app_plugins:power_grid_application_plugin_factory"
 
 [project.urls]
 Homepage = "https://github.com/anulum/scpn-quantum-control"

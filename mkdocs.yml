@@ -79,6 +79,7 @@ nav:
           - DLA-Protected Scar Memory: dla_protected_scar_memory.md
           - Kuramoto Variants: kuramoto_variants.md
           - Witness Discovery: witness_discovery.md
+          - Application Benchmark Plugins: application_benchmarks.md
           - Real-Data Synchronisation Forecasting: real_data_sync_forecasting.md
           - Classical Baselines: classical_baselines.md
           - Benchmarks API: benchmarks_api.md

@@ -153,6 +153,18 @@ Command provenance:
 .venv-linux/bin/python -c "import time, numpy as np; from scpn_quantum_control.analysis import WitnessDiscoverySpec, discover_kuramoto_witnesses; K=np.array([[0.0,0.5,0.2,0.0],[0.5,0.0,0.4,0.1],[0.2,0.4,0.0,0.3],[0.0,0.1,0.3,0.0]], dtype=np.float64); omega=np.array([0.0,0.35,0.7,1.05], dtype=np.float64); theta0=np.array([0.0,0.7,1.4,2.8], dtype=np.float64); spec=WitnessDiscoverySpec(dt=0.025,n_steps=48,n_initial=8,n_iterations=4,batch_size=3,pool_size=32,seed=20260429,correlation_threshold=0.25,fiedler_threshold=0.2); start=time.perf_counter(); result=discover_kuramoto_witnesses(K, omega, theta0=theta0, spec=spec); elapsed=(time.perf_counter()-start)*1000; print(f'elapsed_ms={elapsed:.3f}'); print('backend=' + result.backend); print('evaluations=' + str(len(result.evaluations))); print('best_score=' + f'{result.best.score:.6f}'); print('best_final_r=' + f'{result.best.final_r:.6f}'); print('best_corr=' + f'{result.best.mean_correlation:.6f}'); print('best_fiedler=' + f'{result.best.fiedler_value:.6f}'); print('best_source=' + result.best.source.value); print('candidate=' + ','.join(f'{v:.6f}' for v in result.best.candidate.as_array()))"
 ```
 
+### Application Benchmark Plugins
+
+| Operation | System | Backend | Machine | Time | Output |
+|-----------|--------|---------|---------|------|--------|
+| Run application plugin benchmark suite | EEG alpha PLV 8-channel, FEP 6-node workflow, ITER MHD 8-mode, IEEE 5-bus grid | `scipy.stats.spearmanr` + NumPy domain scorers; FEP path through `scpn_quantum_control.fep` | ASRock H510 Pro BTC+, i5-11600K, Ubuntu 24.04.4 | 117.635 ms | plugins=`eeg_alpha,friston_fep,plasma_iter_mhd,power_grid_ieee5`; datasets=`eeg_alpha_plv_8ch,friston_fep_6node,iter_mhd_8mode,ieee5bus_power_grid`; n=`8,6,8,5` |
+
+Command provenance:
+
+```bash
+.venv-linux/bin/python -c "import time; from scpn_quantum_control.applications import run_application_benchmark_suite; start=time.perf_counter(); results=run_application_benchmark_suite(); elapsed=(time.perf_counter()-start)*1000; print(f'elapsed_ms={elapsed:.3f}'); print('plugins=' + ','.join(r.plugin_name for r in results)); print('datasets=' + ','.join(r.dataset_id for r in results)); print('domains=' + ','.join(r.domain for r in results)); print('backends=' + '|'.join(r.backend for r in results)); print('n_oscillators=' + ','.join(str(r.n_oscillators) for r in results)); print('key_metrics=' + '|'.join(','.join(f'{k}={v:.6f}' for k, v in sorted(r.metrics.items())[:3]) for r in results))"
+```
+
 ### Analog Kuramoto Backend Compiler
 
 | Operation | System | Backend | Machine | Time | Output |
