@@ -10,7 +10,7 @@
 
 ## Abstract (150 words)
 
-We present a quantum simulation framework for the Kuramoto model of coupled oscillators, mapped to the XY Hamiltonian on IBM Heron r2 superconducting hardware. Using a coupling-topology-informed variational ansatz, we demonstrate 6× faster convergence to the ground state compared to hardware-efficient alternatives. We characterize the decoherence budget at 16 qubits, showing that the XY Hamiltonian's spectral structure amplifies T2-limited fidelity loss at specific Trotter depths. We connect the synchronization transition to the Berezinskii-Kosterlitz-Thouless (BKT) universality class and show that the persistent homology threshold p_h1 = 0.72, previously empirical, is within 0.5% of the product of BKT universal constants A_HP × sqrt(2/π). We provide an open-source package (1300+ tests) with ADAPT-VQE, VarQITE, QSVT resource estimation, and benchmarks against five physical coupled-oscillator systems.
+We present a quantum simulation framework for the Kuramoto model of coupled oscillators, mapped to the XY Hamiltonian on IBM Heron r2 superconducting hardware. Using a coupling-topology-informed variational ansatz, we demonstrate 6× faster convergence to the ground state compared to hardware-efficient alternatives. We characterize the decoherence budget at 16 qubits, showing that the XY Hamiltonian's spectral structure amplifies T2-limited fidelity loss at specific Trotter depths. We connect the synchronization transition to the Berezinskii-Kosterlitz-Thouless (BKT) universality class and report a negative result for the persistent homology threshold p_h1 = 0.72: the square-lattice expression A_HP × sqrt(2/π) is numerically close, but the K_nm graph Monte Carlo gives p_h1 ≈ 0.97, so 0.72 remains an open empirical/theoretical parameter. We provide an open-source package (1300+ tests) with ADAPT-VQE, VarQITE, QSVT resource estimation, and benchmarks against five physical coupled-oscillator systems.
 
 ---
 
@@ -59,9 +59,9 @@ We present a quantum simulation framework for the Kuramoto model of coupled osci
 - Figure 3: Phase diagram K_c vs T_eff
 - Figure 4: Entanglement entropy S(n/2) vs coupling K
 - Figure 5: Vortex density across synchronization transition
-- Finding: p_h1 = A_HP × sqrt(2/π) = 0.717 (0.5% from 0.72)
-  - Caveat: A_HP measured on square lattice, not K_nm graph
-  - Significance: if confirmed, consciousness gate threshold = BKT universal
+- Negative result: p_h1 = A_HP(square lattice) × sqrt(2/π) = 0.717 is a numerical coincidence, not a K_nm derivation
+  - K_nm graph Monte Carlo gives A_HP ≈ 1.214 and p_h1 ≈ 0.97
+  - Significance: p_h1 = 0.72 must remain an explicit open parameter until another derivation or measurement closes it
 
 ### D. Algorithm comparison
 - Table 1: QSVT (O(αt)) vs Trotter-1 (O((αt)²/ε)) vs Trotter-2
@@ -84,13 +84,13 @@ We present a quantum simulation framework for the Kuramoto model of coupled osci
 ### What we claim:
 - K_nm-informed ansatz provides measurable improvement (hardware-verified)
 - BKT framework correctly describes the XY model synchronization transition
-- p_h1 ≈ A_HP × sqrt(2/π) connects empirical threshold to BKT universals
+- p_h1 = 0.72 remains open; the square-lattice BKT coincidence is falsified on the K_nm graph
 
 ### What we do NOT claim:
 - Quantum advantage at 16 qubits (classical is faster)
 - The K_nm values model any specific physical system
 - "Consciousness" — we measure physical observables, not philosophical concepts
-- p_h1 derivation is exact (square lattice A_HP, not graph A_HP)
+- p_h1 = 0.72 is derived from first principles
 
 ### Reframe for reviewers:
 - This is a NISQ benchmarking study, not a quantum advantage claim

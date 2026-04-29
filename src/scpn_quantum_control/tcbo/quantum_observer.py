@@ -13,7 +13,7 @@ topological content directly from the quantum state.
 
 Quantum topological observables:
     1. p_h1: fraction of H1 cycles detected (vortex count / plaquettes)
-       — The consciousness gate threshold at p_h1 = 0.72
+       — Empirical/open threshold target p_h1 = 0.72
 
     2. Topological entanglement entropy (TEE):
        S_topo = S_A + S_B + S_C - S_AB - S_BC - S_AC + S_ABC

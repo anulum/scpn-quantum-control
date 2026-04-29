@@ -24,9 +24,10 @@ Candidate expressions:
     6. exp(-η) ≈ 0.779 (8% off)
     7. Hasenbusch-Pinn: A × (2/π)^{1/2} = 0.8983 × 0.798 = 0.717 (**3% off**)
 
-Expression #7 is the most promising: 0.717 ≈ 0.72 (within 0.4%).
-This suggests p_h1 = A_HP × sqrt(2/π) where A_HP is the Hasenbusch-Pinn
-universal amplitude for the 2D XY model.
+Expression #7 is the closest square-lattice candidate:
+0.717 ≈ 0.72 (within 0.4%). The committed K_nm graph Monte Carlo audit
+falsifies this as a first-principles derivation because the extracted
+graph amplitude is about 1.214, giving p_h1 ≈ 0.969 rather than 0.72.
 """
 
 from __future__ import annotations

@@ -14,8 +14,8 @@ Five physical systems compared with SCPN K_nm (exponential-decay, all-to-all):
 |--------|---------|-----------|---------|
 | FMO photosynthesis (7 chromophores) | `applications/fmo_benchmark.py` | 0.304 | MODERATE |
 | IEEE 5-bus power grid | `applications/power_grid.py` | 0.190 | WEAK |
-| Josephson junction array (transmon) | `applications/josephson_array.py` | **0.990** | **STRONG** |
-| EEG alpha-band (8 channels) | `applications/eeg_benchmark.py` | **0.916** | **STRONG** |
+| Josephson junction array (transmon) | `applications/josephson_array.py` | **0.990** | **HIGH** |
+| EEG alpha-band (8 channels) | `applications/eeg_benchmark.py` | **0.916** | **HIGH** |
 | ITER MHD modes (8 modes) | `applications/iter_benchmark.py` | −0.022 | WEAK |
 
 Cross-domain summary: `applications/cross_domain.py`
@@ -90,7 +90,9 @@ Two separate readings of "beyond classical" are now distinguished
 
 ## Gap 3: Derive p_h1 = 0.72 from First Principles
 
-**Status: OPEN — Monte Carlo falsified the square-lattice coincidence.**
+**Status: OPEN QUESTION — Monte Carlo falsified the square-lattice coincidence;
+public code and preprint framing now label it as an empirical/theoretical
+parameter rather than a derivation.**
 
 The initial finding A_HP(square) × sqrt(2/π) = 0.717 ≈ 0.72 was a coincidence.
 
