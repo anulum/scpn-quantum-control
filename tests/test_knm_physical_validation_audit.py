@@ -33,7 +33,9 @@ def _load_script_module():
 
 
 audit_module = _load_script_module()
+build_audit_payload = audit_module.build_audit_payload
 compare_measured_couplings = audit_module.compare_measured_couplings
+evaluate_candidate_systems = audit_module.evaluate_candidate_systems
 load_measured_couplings = audit_module.load_measured_couplings
 
 
@@ -70,3 +72,53 @@ def test_load_measured_couplings_requires_couplings_list(tmp_path):
         assert "couplings list" in str(exc)
     else:
         raise AssertionError("Expected invalid measured coupling schema to fail")
+
+
+def test_evaluate_candidate_systems_marks_curated_topology_as_non_closing(tmp_path):
+    candidate_dir = tmp_path / "candidates"
+    candidate_dir.mkdir()
+    canonical = np.asarray(audit_module.build_knm_paper27(L=4, K_base=0.45, K_alpha=0.3))
+    measured = canonical * 2.0
+    np.fill_diagonal(measured, 0.0)
+    artifact = {
+        "K_nm": measured.tolist(),
+        "domain": "unit",
+        "metadata": {
+            "public_reference": "unit-test reference",
+            "normalisation_locked": False,
+        },
+        "normalisation": "curated topology matrix scaled to [0, 1]",
+        "source_mode": "curated",
+        "source_name": "unit_candidate",
+    }
+    (candidate_dir / "unit_candidate.json").write_text(json.dumps(artifact), encoding="utf-8")
+
+    scan = evaluate_candidate_systems(candidate_dir, k_base=0.45, alpha=0.3)
+
+    assert scan["available"] is True
+    assert scan["status"] == "topology_candidates_scanned"
+    assert scan["best_topology_candidate"]["source_name"] == "unit_candidate"
+    assert scan["systems"][0]["topology"]["spearman_offdiag"] == 1.0
+    assert scan["systems"][0]["decision"]["closes_physical_magnitude_gap"] is False
+    assert scan["systems"][0]["decision"]["status"] == "does_not_close_exact_magnitude_gap"
+
+
+def test_build_audit_payload_records_candidate_scan_without_closing_gap(tmp_path):
+    candidate_dir = tmp_path / "empty-candidates"
+    candidate_dir.mkdir()
+    payload = build_audit_payload(
+        codebase_path=tmp_path / "missing-codebase",
+        measured_path=None,
+        candidate_dir=candidate_dir,
+        n_layers=4,
+        k_base=0.45,
+        alpha=0.3,
+        command=["python", "scripts/run_knm_physical_validation_audit.py"],
+    )
+
+    assert payload["schema_version"] == 2
+    assert payload["candidate_system_scan"]["status"] == "missing_candidate_artifacts"
+    assert payload["decision"]["physical_validation_closed"] is False
+    assert (
+        payload["decision"]["current_label"] == "open_requires_measured_system_coupling_magnitudes"
+    )
