@@ -134,11 +134,13 @@ python -c "import time, numpy as np; from scpn_quantum_control.control import Re
 | Operation | System | Backend | Machine | Time | Output |
 |-----------|--------|---------|---------|------|--------|
 | Compile one problem for `neutral_atoms`, `circuit_qed`, and `continuous_variable` | 4 oscillators, 5 non-zero couplers | NumPy/PyO3 analog term kernel + serialisable native schemas | ASRock H510 Pro BTC+, i5-11600K, Ubuntu 24.04.4 | 0.610 ms | schemas=`native_ahs_v1`, `exchange_resonator_v1`, `cv_gaussian_schedule_v1` |
+| Compile one hybrid digital-analog execution plan | 4 oscillators, 5 non-zero couplers split into 2 analog + 3 digital residual couplers | Rust PyO3 partition kernel + Qiskit Trotter residual compiler | ASRock H510 Pro BTC+, i5-11600K, Ubuntu 24.04.4 | 6.275 ms | schema=`hybrid_digital_analog_v1`, Rust partition=True, digital depth=1 |
 
 Command provenance:
 
 ```bash
 python -c "import time, numpy as np; from scpn_quantum_control.hardware.analog_kuramoto import compile_analog_kuramoto; K=np.array([[0.0,0.5,-0.25,0.125],[0.5,0.0,0.2,0.0],[-0.25,0.2,0.0,0.3],[0.125,0.0,0.3,0.0]], dtype=np.float64); omega=np.array([0.1,-0.2,0.3,0.0], dtype=np.float64); start=time.perf_counter(); programs=[compile_analog_kuramoto(K, omega, platform=p, duration=1.25) for p in ('neutral_atoms','circuit_qed','continuous_variable')]; elapsed=(time.perf_counter()-start)*1000; print(f'elapsed_ms={elapsed:.3f}'); print('platforms=' + ','.join(p.platform.value for p in programs)); print('couplers=' + ','.join(str(p.n_couplers) for p in programs)); print('schemas=' + ','.join(p.payload['schema'] for p in programs))"
+.venv-linux/bin/python -c "import time, numpy as np; import scpn_quantum_engine as e; from scpn_quantum_control.hardware.hybrid_digital_analog import compile_hybrid_digital_analog; K=np.array([[0.0,0.8,-0.4,0.1],[0.8,0.0,0.3,0.0],[-0.4,0.3,0.0,-0.2],[0.1,0.0,-0.2,0.0]], dtype=np.float64); omega=np.array([0.1,-0.2,0.05,0.3], dtype=np.float64); start=time.perf_counter(); program=compile_hybrid_digital_analog(K, omega, platform='circuit_qed', duration=1.25, max_analog_couplers=2, trotter_steps=3); elapsed=(time.perf_counter()-start)*1000; print(f'elapsed_ms={elapsed:.3f}'); print('rust_partition=' + str(hasattr(e, 'hybrid_coupling_partition'))); print('analog=' + str(program.n_analog_couplers)); print('digital=' + str(program.n_digital_couplers)); print('schema=' + program.payload['schema']); print('digital_depth=' + str(program.digital_circuit.depth()))"
 ```
 
 ### Adiabatic State Preparation

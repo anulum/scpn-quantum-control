@@ -25,6 +25,13 @@ def analog_coupling_terms(
     c6_coefficient: float,
     zero_threshold: float,
 ) -> tuple[_I64Array, _I64Array, _F64Array, _F64Array, _F64Array]: ...
+def hybrid_coupling_partition(
+    k_flat: _F64Array,
+    n: int,
+    analog_budget: int,
+    analog_threshold: float,
+    zero_threshold: float,
+) -> tuple[_F64Array, _F64Array, _I64Array, _I64Array, _I64Array]: ...
 def all_xy_expectations(
     psi_re: _F64Array,
     psi_im: _F64Array,

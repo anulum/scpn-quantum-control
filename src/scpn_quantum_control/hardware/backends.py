@@ -19,6 +19,7 @@ the ``scpn_quantum_control.backends`` group:
     [project.entry-points."scpn_quantum_control.backends"]
     acme_trapped_ion = "acme_plugin:AcmeBackend"
     analog_kuramoto = "scpn_quantum_control.hardware.analog_kuramoto:analog_kuramoto_factory"
+    hybrid_digital_analog = "scpn_quantum_control.hardware.hybrid_digital_analog:hybrid_digital_analog_factory"
 
 The entry-point target must be a zero-argument callable or a class that
 returns an object satisfying the :class:`BackendProtocol` interface when
@@ -265,11 +266,19 @@ def analog_kuramoto_factory() -> BackendProtocol:
     return _factory()
 
 
+def hybrid_digital_analog_factory() -> BackendProtocol:
+    """Entry-point target for the hybrid digital-analog compiler backend."""
+    from .hybrid_digital_analog import hybrid_digital_analog_factory as _factory
+
+    return _factory()
+
+
 # Pre-register the built-ins so the registry is useful even on a source
 # checkout where the entry points haven't been installed.
 _registry.register("qiskit_ibm", qiskit_ibm_factory)
 _registry.register("pennylane", pennylane_factory)
 _registry.register("analog_kuramoto", analog_kuramoto_factory)
+_registry.register("hybrid_digital_analog", hybrid_digital_analog_factory)
 
 
 __all__ = [
@@ -282,6 +291,7 @@ __all__ = [
     "discover_backends",
     "get_backend",
     "get_registry",
+    "hybrid_digital_analog_factory",
     "list_backends",
     "pennylane_factory",
     "qiskit_ibm_factory",

@@ -62,6 +62,17 @@ from .experiments import (
     vqe_landscape_experiment,
     zne_higher_order_experiment,
 )
+from .hybrid_digital_analog import (
+    HybridCouplingAssignment,
+    HybridCouplingPartition,
+    HybridDigitalAnalogBackend,
+    HybridDigitalAnalogBackendProtocol,
+    HybridDigitalAnalogProgram,
+    HybridRoute,
+    compile_hybrid_digital_analog,
+    hybrid_digital_analog_factory,
+    partition_kuramoto_couplings,
+)
 from .noise_model import heron_r2_noise_model
 from .qubit_mapper import (
     ExecutionRegion,
@@ -86,6 +97,15 @@ __all__ = [
     "AnalogKuramotoProgram",
     "analog_kuramoto_factory",
     "compile_analog_kuramoto",
+    "HybridCouplingAssignment",
+    "HybridCouplingPartition",
+    "HybridDigitalAnalogBackend",
+    "HybridDigitalAnalogBackendProtocol",
+    "HybridDigitalAnalogProgram",
+    "HybridRoute",
+    "compile_hybrid_digital_analog",
+    "hybrid_digital_analog_factory",
+    "partition_kuramoto_couplings",
     "BackendProtocol",
     "BackendRegistrationError",
     "BackendRegistry",

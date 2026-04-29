@@ -97,6 +97,7 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // Analog backend compilation
     m.add_function(wrap_pyfunction!(analog::analog_coupling_terms, m)?)?;
+    m.add_function(wrap_pyfunction!(analog::hybrid_coupling_partition, m)?)?;
 
     // Krylov
     m.add_function(wrap_pyfunction!(krylov::lanczos_b_coefficients, m)?)?;
