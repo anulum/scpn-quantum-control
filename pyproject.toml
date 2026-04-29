@@ -69,6 +69,7 @@ all = ["scpn-quantum-control[viz,ibm,rust,tensor,mitigation,topology,opensys,pen
 accelerated = ["scpn-quantum-control[gpu,jax]"]
 
 [project.entry-points."scpn_quantum_control.backends"]
+analog_kuramoto = "scpn_quantum_control.hardware.backends:analog_kuramoto_factory"
 qiskit_ibm = "scpn_quantum_control.hardware.backends:qiskit_ibm_factory"
 pennylane = "scpn_quantum_control.hardware.backends:pennylane_factory"
 

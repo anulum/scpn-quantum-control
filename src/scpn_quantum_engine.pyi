@@ -17,6 +17,14 @@ _I32Array = NDArray[np.int32]
 _I64Array = NDArray[np.int64]
 _U64Array = NDArray[np.uint64]
 
+def analog_coupling_terms(
+    k_flat: _F64Array,
+    n: int,
+    platform_code: int,
+    coupling_scale: float,
+    c6_coefficient: float,
+    zero_threshold: float,
+) -> tuple[_I64Array, _I64Array, _F64Array, _F64Array, _F64Array]: ...
 def all_xy_expectations(
     psi_re: _F64Array,
     psi_im: _F64Array,

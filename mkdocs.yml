@@ -73,6 +73,7 @@ nav:
           - Mitigation API: mitigation_api.md
           - Bridges API: bridges_api.md
           - Real-Time Feedback: realtime_feedback.md
+          - Analog Kuramoto Backends: analog_backends.md
           - Classical Baselines: classical_baselines.md
           - Benchmarks API: benchmarks_api.md
           - Rust Engine: rust_engine.md

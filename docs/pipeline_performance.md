@@ -129,6 +129,18 @@ Command provenance:
 python -c "import time, numpy as np; from scpn_quantum_control.control import RealtimeFeedbackConfig, RealtimeSyncFeedbackController; K=np.array([[0.0,0.35,0.2],[0.35,0.0,0.25],[0.2,0.25,0.0]], dtype=np.float64); omega=np.array([0.1,0.4,0.7], dtype=np.float64); cfg=RealtimeFeedbackConfig(measurement_shots=128, target_r=0.7); start=time.perf_counter(); controller=RealtimeSyncFeedbackController(K, omega, config=cfg); steps=controller.run(5, seed=20260429); elapsed=(time.perf_counter()-start)*1000; print(f'elapsed_ms={elapsed:.3f}'); print('actions=' + ','.join(step.action for step in steps)); print('r_live=' + ','.join(f'{step.r_live:.3f}' for step in steps)); print('next_scale=' + ','.join(f'{step.next_coupling_scale:.3f}' for step in steps))"
 ```
 
+### Analog Kuramoto Backend Compiler
+
+| Operation | System | Backend | Machine | Time | Output |
+|-----------|--------|---------|---------|------|--------|
+| Compile one problem for `neutral_atoms`, `circuit_qed`, and `continuous_variable` | 4 oscillators, 5 non-zero couplers | NumPy/PyO3 analog term kernel + serialisable native schemas | ASRock H510 Pro BTC+, i5-11600K, Ubuntu 24.04.4 | 0.610 ms | schemas=`native_ahs_v1`, `exchange_resonator_v1`, `cv_gaussian_schedule_v1` |
+
+Command provenance:
+
+```bash
+python -c "import time, numpy as np; from scpn_quantum_control.hardware.analog_kuramoto import compile_analog_kuramoto; K=np.array([[0.0,0.5,-0.25,0.125],[0.5,0.0,0.2,0.0],[-0.25,0.2,0.0,0.3],[0.125,0.0,0.3,0.0]], dtype=np.float64); omega=np.array([0.1,-0.2,0.3,0.0], dtype=np.float64); start=time.perf_counter(); programs=[compile_analog_kuramoto(K, omega, platform=p, duration=1.25) for p in ('neutral_atoms','circuit_qed','continuous_variable')]; elapsed=(time.perf_counter()-start)*1000; print(f'elapsed_ms={elapsed:.3f}'); print('platforms=' + ','.join(p.platform.value for p in programs)); print('couplers=' + ','.join(str(p.n_couplers) for p in programs)); print('schemas=' + ','.join(p.payload['schema'] for p in programs))"
+```
+
 ### Adiabatic State Preparation
 
 | Operation | System | Time | Output |
