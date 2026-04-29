@@ -10,6 +10,13 @@
 
 Generated from source docstrings via mkdocstrings.
 
+## Stable Facades
+
+::: scpn_quantum_control.kuramoto_core
+    options:
+      members: [KuramotoProblem, build_kuramoto_problem, validate_kuramoto_inputs, compile_hamiltonian, compile_dense_hamiltonian, compile_trotter_circuit, measure_order_parameter]
+      show_root_heading: true
+
 ## Bridge
 
 ::: scpn_quantum_control.bridge.knm_hamiltonian
