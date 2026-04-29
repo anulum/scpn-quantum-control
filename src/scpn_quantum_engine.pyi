@@ -1,0 +1,207 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996-2026 Miroslav Sotek. All rights reserved.
+# © Code 2020-2026 Miroslav Sotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# scpn-quantum-engine - PyO3 extension typing contract
+
+"""Typing contract for the optional Rust acceleration extension."""
+
+import numpy as np
+from numpy.typing import NDArray
+
+_BoolArray = NDArray[np.bool_]
+_F64Array = NDArray[np.float64]
+_I32Array = NDArray[np.int32]
+_I64Array = NDArray[np.int64]
+_U64Array = NDArray[np.uint64]
+
+def all_xy_expectations(
+    psi_re: _F64Array,
+    psi_im: _F64Array,
+    n_osc: int,
+) -> tuple[_F64Array, _F64Array]: ...
+def brute_mpc(
+    b_flat: _F64Array,
+    target: _F64Array,
+    dim: int,
+    horizon: int,
+) -> tuple[_I64Array, float, _F64Array, int]: ...
+def build_knm(n: int, k_base: float, alpha: float) -> _F64Array: ...
+def build_sparse_xy_hamiltonian(
+    k_flat: _F64Array,
+    omega: _F64Array,
+    n: int,
+) -> tuple[_I64Array, _I64Array, _F64Array]: ...
+def build_xy_hamiltonian_dense(k_flat: _F64Array, omega: _F64Array, n: int) -> _F64Array: ...
+def concatenated_logical_rate_rust(
+    p_physical: float,
+    distances: _I64Array,
+    p_threshold: float,
+    prefactor: float,
+) -> _F64Array: ...
+def correlation_matrix_xy(psi_re: _F64Array, psi_im: _F64Array, n_osc: int) -> _F64Array: ...
+def dla_dimension(
+    generators_flat: _F64Array,
+    dim: int,
+    n_generators: int,
+    max_iterations: int,
+    max_dimension: int,
+    tol: float,
+) -> int: ...
+def expectation_pauli_fast(
+    psi_re: _F64Array,
+    psi_im: _F64Array,
+    n: int,
+    qubit: int,
+    pauli: int,
+) -> float: ...
+def fit_symmetry_decay(
+    s_ideal: float,
+    noisy_values: _F64Array,
+    noise_scales: _F64Array,
+) -> tuple[float, float]: ...
+def free_energy_gradient_rust(
+    mu: _F64Array,
+    x_observed: _F64Array,
+    k_precision: _F64Array,
+    sensory_precision: _F64Array,
+    ridge: float,
+) -> _F64Array: ...
+def gauge_covariant_kinetic_rust(
+    phi_re: _F64Array,
+    phi_im: _F64Array,
+    links: _F64Array,
+    edges: _I64Array,
+    g_coupling: float,
+) -> float: ...
+def gauge_force_batch(
+    links: _F64Array,
+    triangles: _I64Array,
+    triangle_signs: _F64Array,
+    n_triangles: int,
+    n_edges: int,
+    beta: float,
+) -> _F64Array: ...
+def guess_extrapolate_batch(
+    target_noisy: _F64Array,
+    symmetry_noisy: _F64Array,
+    s_ideal: float,
+    alpha: float,
+) -> _F64Array: ...
+def hierarchical_prediction_error_rust(
+    observations: _F64Array,
+    beliefs: _F64Array,
+    k: _F64Array,
+) -> _F64Array: ...
+def hypergeometric_envelope_batch(
+    times: _F64Array,
+    alpha: float,
+    beta: float,
+    gamma_width: float,
+) -> _F64Array: ...
+def ici_mixing_angle_batch(times: _F64Array, t_total: float, theta_jump: float) -> _F64Array: ...
+def ici_three_level_evolution_batch(
+    times: _F64Array,
+    omega_p: _F64Array,
+    omega_s: _F64Array,
+    gamma: float,
+) -> _F64Array: ...
+def knm_domain_coupling(
+    k: _F64Array,
+    a_start: int,
+    a_end: int,
+    b_start: int,
+    b_end: int,
+) -> float: ...
+def kuramoto_euler(
+    theta0: _F64Array,
+    omega: _F64Array,
+    k: _F64Array,
+    dt: float,
+    n_steps: int,
+) -> _F64Array: ...
+def kuramoto_trajectory(
+    theta0: _F64Array,
+    omega: _F64Array,
+    k: _F64Array,
+    dt: float,
+    n_steps: int,
+) -> tuple[_F64Array, _F64Array]: ...
+def lanczos_b_coefficients(
+    h_re: _F64Array,
+    h_im: _F64Array,
+    o_re: _F64Array,
+    o_im: _F64Array,
+    dim: int,
+    max_steps: int,
+    tol: float,
+) -> list[float]: ...
+def lindblad_anti_hermitian_diag(k_flat: _F64Array, n: int, threshold: float) -> _F64Array: ...
+def lindblad_jump_ops_coo(
+    k_flat: _F64Array,
+    n: int,
+    threshold: float,
+) -> tuple[_I64Array, _I64Array, _I64Array, int]: ...
+def magnetisation_labels(n: int) -> _I32Array: ...
+def mc_xy_simulate(
+    k_flat: _F64Array,
+    n: int,
+    temperature: float,
+    n_thermalize: int,
+    n_measure: int,
+    seed: int,
+) -> tuple[float, float, float]: ...
+def order_param_from_statevector(psi_re: _F64Array, psi_im: _F64Array, n: int) -> float: ...
+def order_parameter(theta: _F64Array) -> float: ...
+def otoc_from_eigendecomp(
+    eigenvalues: _F64Array,
+    eigvecs_re: _F64Array,
+    eigvecs_im: _F64Array,
+    w_re: _F64Array,
+    w_im: _F64Array,
+    v_re: _F64Array,
+    v_im: _F64Array,
+    psi_re: _F64Array,
+    psi_im: _F64Array,
+    times: _F64Array,
+    dim: int,
+) -> _F64Array: ...
+def parity_filter_mask(bitstrings: _U64Array, expected_parity: int) -> _BoolArray: ...
+def pec_coefficients(gate_error_rate: float) -> list[float]: ...
+def pec_sample_parallel(
+    gate_error_rate: float,
+    n_gates: int,
+    n_samples: int,
+    base_exp_z: float,
+    seed: int,
+) -> tuple[float, float, list[float]]: ...
+def plaquette_action_batch(
+    links: _F64Array,
+    triangles: _I64Array,
+    triangle_signs: _F64Array,
+    n_triangles: int,
+    beta: float,
+) -> tuple[float, float]: ...
+def score_regions_batch(
+    gate_errors_flat: _F64Array,
+    n_qubits: int,
+    region_offsets: _I64Array,
+    region_qubits: _I64Array,
+) -> tuple[_F64Array, _F64Array, _F64Array]: ...
+def state_order_param_sparse(psi_re: _F64Array, psi_im: _F64Array, n_osc: int) -> float: ...
+def topological_charge_rust(
+    links: _F64Array,
+    triangles: _I64Array,
+    triangle_signs: _F64Array,
+    n_triangles: int,
+) -> float: ...
+def variational_free_energy_rust(
+    mu: _F64Array,
+    x_observed: _F64Array,
+    k_precision: _F64Array,
+    sensory_precision: _F64Array,
+    sigma_diag: float,
+    ridge: float,
+) -> tuple[float, float, float]: ...

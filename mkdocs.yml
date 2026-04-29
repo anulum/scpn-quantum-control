@@ -64,6 +64,7 @@ nav:
           - QPU Provider Readiness: qpu_provider_readiness.md
           - QPU System Capability Dossier: qpu_system_capability_dossier.md
           - Pipeline Performance: pipeline_performance.md
+          - Artifact Storage Audit: artifact_storage.md
       - Advanced Module Reference:
           - Auto-Generated Module Index: autodoc.md
           - Analysis API: analysis_api.md

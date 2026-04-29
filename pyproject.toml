@@ -162,7 +162,6 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "scpn_quantum_engine"
-ignore_missing_imports = true
 follow_imports = "skip"
 
 [[tool.mypy.overrides]]
@@ -171,11 +170,6 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "jax.*"
-ignore_missing_imports = true
-follow_imports = "skip"
-
-[[tool.mypy.overrides]]
-module = "jaxlib.*"
 ignore_missing_imports = true
 follow_imports = "skip"
 

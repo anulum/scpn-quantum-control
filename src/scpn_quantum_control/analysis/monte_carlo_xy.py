@@ -93,7 +93,7 @@ def mc_simulate(
     Uses Rust engine when available (100x speedup).
     """
     try:
-        from scpn_quantum_engine import mc_xy_simulate  # type: ignore[import-not-found]
+        from scpn_quantum_engine import mc_xy_simulate
 
         n = K.shape[0]
         k_flat: np.ndarray = K.ravel().astype(np.float64)

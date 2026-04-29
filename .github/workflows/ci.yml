@@ -98,6 +98,7 @@ jobs:
           python-version: "3.12"
           cache: 'pip'
       - run: pip install -e ".[dev,config,logging]" mypy==1.20.1
+      - run: python tools/check_rust_pyi_exports.py
       - run: mypy
 
   wheel-check:
@@ -151,6 +152,29 @@ jobs:
       # CVE-2026-4539: pygments ≤2.19.2 ReDoS in AdlLexer (local-only, no fix available)
       - run: pip install -e ".[dev]" && pip-audit --desc on --ignore-vuln CVE-2026-4539
 
+  rust-audit:
+    needs: lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: scpn_quantum_engine
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - name: Cache cargo registry + advisory database
+        uses: actions/cache@2f8e54208210a422b2efd51efaa6bd6d7ca8920f  # v3.4.3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.cargo/advisory-db
+          key: ${{ runner.os }}-cargo-audit-${{ hashFiles('scpn_quantum_engine/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-audit-
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked --version 0.22.1
+      - name: Audit Rust dependency advisories
+        run: cargo audit --deny warnings
+
   hardware-smoke:
     needs: test
     runs-on: ubuntu-latest
@@ -183,7 +207,7 @@ jobs:
         run: pytest tests/test_arcane_neuron_e2e.py tests/test_cross_repo_wiring.py -v --tb=short
 
   ci-gate:
-    needs: [lint, test, type-check, wheel-check, install-smoke, security]
+    needs: [lint, test, type-check, wheel-check, install-smoke, security, rust-audit]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -194,7 +218,8 @@ jobs:
              [[ "${{ needs.type-check.result }}" != "success" ]] || \
              [[ "${{ needs.wheel-check.result }}" != "success" ]] || \
              [[ "${{ needs.install-smoke.result }}" != "success" ]] || \
-             [[ "${{ needs.security.result }}" != "success" ]]; then
+             [[ "${{ needs.security.result }}" != "success" ]] || \
+             [[ "${{ needs.rust-audit.result }}" != "success" ]]; then
             echo "CI gate failed"
             exit 1
           fi
