@@ -59,6 +59,8 @@ Direct entry points:
   — claim classes, campaign evidence paths, and publication hygiene rules
 - [Physics-First Kuramoto-XY](https://anulum.github.io/scpn-quantum-control/physics_first_kuramoto_xy/)
   — start from arbitrary oscillator networks before SCPN-specific layers
+- [Stable Facades API](https://anulum.github.io/scpn-quantum-control/stable_facades_api/)
+  — mkdocstrings reference for first-path public facades
 - [Phase 1 Results](https://anulum.li/scpn-quantum-control/phase1-results.html)
   — first hardware observation of the DLA parity asymmetry on
   ibm_kingston, April 2026, with full Welch table and interactive

@@ -8,6 +8,28 @@
 
 # API Reference
 
+For first-path user workflows, start with the
+[Stable Facades API](stable_facades_api.md). It is the mkdocstrings reference
+for public facades such as `scpn_quantum_control.kuramoto_core`. The lower-level
+sections below remain useful when you need direct module access.
+
+## stable facades
+
+### `kuramoto_core`
+
+```python
+build_kuramoto_problem(K_nm, omega, metadata=None) -> KuramotoProblem
+compile_hamiltonian(problem) -> SparsePauliOp
+compile_dense_hamiltonian(problem) -> np.ndarray
+compile_trotter_circuit(problem, time, trotter_steps=10, trotter_order=1) -> QuantumCircuit
+measure_order_parameter(problem, statevector) -> tuple[float, float]
+```
+
+Validate an arbitrary symmetric Kuramoto coupling problem, attach serialisable
+metadata, and compile the common Hamiltonian/circuit objects used by simulator,
+witness, and hardware workflows. See [Kuramoto Core Facade](kuramoto_core_facade.md)
+for the workflow page.
+
 ## bridge
 
 ### `knm_hamiltonian`

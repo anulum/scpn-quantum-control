@@ -15,6 +15,8 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
 ## [0.9.6] - 2026-04-17
 
 ### Changed (2026-04-29)
+- Added a mkdocstrings stable facades API page for first-path public
+  facades.
 - Added a physics-first Kuramoto-XY tutorial with a tested arbitrary
   `K_nm`/`omega` workflow.
 - Refreshed README, docs index, and results gallery from the dated

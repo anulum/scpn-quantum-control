@@ -54,6 +54,7 @@ nav:
       - Orchestrator Integration: orchestrator_integration.md
   - API Reference:
       - Full Reference: api.md
+      - Stable Facades API: stable_facades_api.md
       - Kuramoto Core Facade: kuramoto_core_facade.md
       - Core Package Boundary: core_package_boundary.md
       - Rust Engine: rust_engine.md
