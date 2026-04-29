@@ -23,6 +23,7 @@
 //! - Brute-force MPC
 //! - Real-time feedback policy updates
 //! - Analog Kuramoto coupling compilation
+//! - DLA-protected logical memory diagnostics
 
 use pyo3::prelude::*;
 
@@ -80,6 +81,8 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // DLA
     m.add_function(wrap_pyfunction!(dla::dla_dimension, m)?)?;
+    m.add_function(wrap_pyfunction!(dla::dla_protected_memory_mask, m)?)?;
+    m.add_function(wrap_pyfunction!(dla::dla_protected_memory_metrics, m)?)?;
 
     // Monte Carlo XY
     m.add_function(wrap_pyfunction!(monte_carlo::mc_xy_simulate, m)?)?;

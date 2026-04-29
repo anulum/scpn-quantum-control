@@ -16,6 +16,8 @@
 //! The commutator computation is parallelised via rayon; independence filtering
 //! remains serial for correctness (order-dependent projection).
 
+use numpy::{PyArray1, PyReadonlyArray1};
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use rayon::prelude::*;
 
@@ -30,7 +32,7 @@ use crate::validation::{validate_n, validate_positive};
 /// with vectorised matrix ops, target is <30s.
 #[pyfunction]
 pub fn dla_dimension(
-    generators_flat: numpy::PyReadonlyArray1<'_, f64>,
+    generators_flat: PyReadonlyArray1<'_, f64>,
     dim: usize,
     n_generators: usize,
     max_iterations: usize,
@@ -56,7 +58,95 @@ pub fn dla_dimension(
         )));
     }
 
-    Ok(dla_dimension_inner(data, dim, n_generators, max_iterations, max_dimension, tol))
+    Ok(dla_dimension_inner(
+        data,
+        dim,
+        n_generators,
+        max_iterations,
+        max_dimension,
+        tol,
+    ))
+}
+
+/// Build the fixed-parity repetition-code memory mask.
+///
+/// The physical layout is contiguous blocks of `code_distance` qubits per
+/// logical oscillator. A basis state is inside the memory manifold when every
+/// block is either all-zero or all-one. For odd `code_distance`, the block
+/// parity equals the logical bit, so the target global parity selects a
+/// DLA-invariant logical sector.
+#[pyfunction]
+pub fn dla_protected_memory_mask<'py>(
+    py: Python<'py>,
+    n_logical: usize,
+    code_distance: usize,
+    target_parity: usize,
+) -> PyResult<Bound<'py, PyArray1<bool>>> {
+    let total_qubits = validate_memory_shape(n_logical, code_distance, target_parity)?;
+    let dim = 1usize << total_qubits;
+    let mut mask = Vec::with_capacity(dim);
+    for state in 0..dim {
+        let (in_code, logical_parity) =
+            memory_code_and_logical_parity(state, n_logical, code_distance);
+        mask.push(in_code && logical_parity == target_parity);
+    }
+    Ok(PyArray1::from_vec(py, mask))
+}
+
+/// Score probability weight in the protected memory, code, and parity sectors.
+#[pyfunction]
+pub fn dla_protected_memory_metrics(
+    probabilities: PyReadonlyArray1<'_, f64>,
+    n_logical: usize,
+    code_distance: usize,
+    target_parity: usize,
+) -> PyResult<(f64, f64, f64, f64, f64)> {
+    let total_qubits = validate_memory_shape(n_logical, code_distance, target_parity)?;
+    let dim = 1usize << total_qubits;
+    let probs = probabilities.as_slice().unwrap();
+    if probs.len() != dim {
+        return Err(PyValueError::new_err(format!(
+            "probabilities length must be 2^(n_logical*code_distance) = {dim}, got {}",
+            probs.len()
+        )));
+    }
+
+    let mut protected_weight = 0.0;
+    let mut code_weight = 0.0;
+    let mut target_parity_weight = 0.0;
+    let mut opposite_parity_weight = 0.0;
+    let mut total_weight = 0.0;
+
+    for (state, &probability) in probs.iter().enumerate() {
+        if !probability.is_finite() || probability < 0.0 {
+            return Err(PyValueError::new_err(
+                "probabilities must contain finite non-negative values",
+            ));
+        }
+        total_weight += probability;
+        let physical_parity = state.count_ones() as usize % 2;
+        if physical_parity == target_parity {
+            target_parity_weight += probability;
+        } else {
+            opposite_parity_weight += probability;
+        }
+        let (in_code, logical_parity) =
+            memory_code_and_logical_parity(state, n_logical, code_distance);
+        if in_code {
+            code_weight += probability;
+            if logical_parity == target_parity {
+                protected_weight += probability;
+            }
+        }
+    }
+
+    Ok((
+        protected_weight,
+        code_weight,
+        target_parity_weight,
+        opposite_parity_weight,
+        total_weight,
+    ))
 }
 
 /// Pure Rust DLA dimension computation (testable without Python).
@@ -167,6 +257,56 @@ pub fn is_independent_fast(new_op: &[f64], basis: &[Vec<f64>], tol: f64) -> bool
     res_norm > tol
 }
 
+fn validate_memory_shape(
+    n_logical: usize,
+    code_distance: usize,
+    target_parity: usize,
+) -> PyResult<usize> {
+    validate_n(n_logical, "n_logical")?;
+    validate_n(code_distance, "code_distance")?;
+    if code_distance % 2 == 0 {
+        return Err(PyValueError::new_err(format!(
+            "code_distance must be odd, got {code_distance}"
+        )));
+    }
+    if target_parity > 1 {
+        return Err(PyValueError::new_err(format!(
+            "target_parity must be 0 or 1, got {target_parity}"
+        )));
+    }
+    let total_qubits = n_logical
+        .checked_mul(code_distance)
+        .ok_or_else(|| PyValueError::new_err("n_logical*code_distance overflows usize"))?;
+    if total_qubits > 24 {
+        return Err(PyValueError::new_err(format!(
+            "n_logical*code_distance must be <= 24 for dense masks, got {total_qubits}"
+        )));
+    }
+    Ok(total_qubits)
+}
+
+fn memory_code_and_logical_parity(
+    state: usize,
+    n_logical: usize,
+    code_distance: usize,
+) -> (bool, usize) {
+    let block_mask = (1usize << code_distance) - 1;
+    let mut logical_parity = 0usize;
+    for logical in 0..n_logical {
+        let shift = logical * code_distance;
+        let block = (state >> shift) & block_mask;
+        if block == 0 {
+            continue;
+        }
+        if block == block_mask {
+            logical_parity ^= 1;
+        } else {
+            return (false, logical_parity);
+        }
+    }
+    (true, logical_parity)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -244,5 +384,12 @@ mod tests {
         data.extend_from_slice(&z);
         let dim = dla_dimension_inner(&data, 2, 2, 100, 100, 1e-10);
         assert_eq!(dim, 3, "Pauli X,Z should generate su(2) with dim=3");
+    }
+
+    #[test]
+    fn test_memory_code_logical_parity_for_odd_repetition_blocks() {
+        assert_eq!(memory_code_and_logical_parity(0b000_111, 2, 3), (true, 1));
+        assert_eq!(memory_code_and_logical_parity(0b111_111, 2, 3), (true, 0));
+        assert_eq!(memory_code_and_logical_parity(0b010_111, 2, 3), (false, 1));
     }
 }

@@ -75,6 +75,7 @@ nav:
           - Real-Time Feedback: realtime_feedback.md
           - Analog Kuramoto Backends: analog_backends.md
           - Hybrid Digital-Analog Execution: hybrid_digital_analog.md
+          - DLA-Protected Logical Synchronisation: dla_protected_subspace.md
           - Classical Baselines: classical_baselines.md
           - Benchmarks API: benchmarks_api.md
           - Rust Engine: rust_engine.md
