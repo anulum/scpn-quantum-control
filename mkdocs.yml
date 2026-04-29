@@ -72,6 +72,7 @@ nav:
           - Identity API: identity_api.md
           - Mitigation API: mitigation_api.md
           - Bridges API: bridges_api.md
+          - Real-Time Feedback: realtime_feedback.md
           - Classical Baselines: classical_baselines.md
           - Benchmarks API: benchmarks_api.md
           - Rust Engine: rust_engine.md

@@ -21,6 +21,7 @@
 //! - Lindblad jump operators (COO sparse)
 //! - Symmetry sectors, correlation, parity filtering
 //! - Brute-force MPC
+//! - Real-time feedback policy updates
 
 use pyo3::prelude::*;
 
@@ -30,6 +31,7 @@ pub mod validation;
 pub mod concat_qec;
 pub mod symmetry_decay;
 pub mod dla;
+pub mod feedback;
 pub mod fep;
 pub mod gauge_lattice;
 pub mod hamiltonian;
@@ -87,6 +89,9 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // MPC
     m.add_function(wrap_pyfunction!(mpc::brute_mpc, m)?)?;
+
+    // Feedback control
+    m.add_function(wrap_pyfunction!(feedback::feedback_policy_batch, m)?)?;
 
     // Krylov
     m.add_function(wrap_pyfunction!(krylov::lanczos_b_coefficients, m)?)?;
