@@ -15,6 +15,9 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
 ## [0.9.6] - 2026-04-17
 
 ### Changed (2026-04-29)
+- Added a public hardware status ledger that classifies theory,
+  simulator, hardware, mitigated, and noise-limited claims and links
+  visible docs to that evidence index.
 - `requirements.txt` mirrors the canonical runtime bounds from
   `pyproject.toml`; `[all]` is portable; CUDA/JAX packages live behind
   `[accelerated]`; CI includes a fresh editable `[all]` install smoke

@@ -11,6 +11,11 @@
 *First quantum simulation of heterogeneous-frequency Kuramoto-XY synchronisation
 on a 156-qubit superconducting processor (IBM ibm_fez, Heron r2).*
 
+For source classification and campaign provenance, see the
+[Hardware Status Ledger](hardware_status_ledger.md). This page is a gallery and
+technical summary; the ledger is the canonical index for whether a result is
+theoretical, simulated, hardware-measured, mitigated, or noise-limited.
+
 ---
 
 ## Key Findings

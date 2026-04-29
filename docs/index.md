@@ -128,6 +128,7 @@ for name, w in results.items():
 - [Research Gems](research_gems.md) — **33 analysis modules with theory and API**
 - [Equations](equations.md) — every equation in the codebase
 - [Architecture](architecture.md) — dependency graph + 20 subpackages
+- [Hardware Status Ledger](hardware_status_ledger.md) — claim classes and campaign evidence paths
 - [Analysis API](analysis_api.md) — 45 analysis modules
 - [Phase API](phase_api.md) — 28 evolution algorithms
 - [Hardware Guide](hardware_guide.md) — IBM Quantum setup
