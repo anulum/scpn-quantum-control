@@ -37,6 +37,8 @@ project website:
 
 Direct entry points:
 
+- [Hardware Status Ledger](https://anulum.github.io/scpn-quantum-control/hardware_status_ledger/)
+  — claim classes, campaign evidence paths, and publication hygiene rules
 - [Phase 1 Results](https://anulum.li/scpn-quantum-control/phase1-results.html)
   — first hardware observation of the DLA parity asymmetry on
   ibm_kingston, April 2026, with full Welch table and interactive

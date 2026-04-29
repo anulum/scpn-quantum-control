@@ -78,6 +78,7 @@ nav:
       - "Paper: DLA Parity Theorem": paper_dla_parity.md
       - "DLA-parity Validation": dla_parity.md
       - "Classical Irreproducibility": classical_irreproducibility.md
+      - Hardware Status Ledger: hardware_status_ledger.md
       - Results Gallery: results.md
   - Hardware:
       - IBM Guide: hardware_guide.md
