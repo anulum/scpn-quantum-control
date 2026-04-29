@@ -15,7 +15,8 @@ users who only need the Kuramoto-XY compiler layer:
 2. provide heterogeneous natural frequencies `omega`;
 3. compile a Hamiltonian or Trotter circuit;
 4. evaluate the Kuramoto order parameter from a statevector;
-5. attach serialisable provenance metadata to downstream result artifacts.
+5. run higher-order, monitored, or PT-symmetric trajectory variants;
+6. attach serialisable provenance metadata to downstream result artifacts.
 
 The facade deliberately avoids SCPN-specific constants. Domain pipelines such as
 power-grid, EEG, plasma, or connectome workflows should compile their source data
@@ -82,6 +83,7 @@ later caller-side mutation cannot alter the compiled problem.
 | `compile_dense_hamiltonian` | Build the dense Hamiltonian, using the Rust engine when installed. |
 | `compile_trotter_circuit` | Build a gate-model Trotter evolution circuit. |
 | `measure_order_parameter` | Return `(R, psi)` from a statevector. |
+| `simulate_variant_trajectory` | Dispatch higher-order, monitored, and PT-symmetric Kuramoto variant trajectories. |
 
 ## Boundary
 

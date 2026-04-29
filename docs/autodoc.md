@@ -19,7 +19,7 @@ and [Kuramoto Core Facade](kuramoto_core_facade.md).
 
 ::: scpn_quantum_control.kuramoto_core
     options:
-      members: [KuramotoProblem, build_kuramoto_problem, validate_kuramoto_inputs, compile_hamiltonian, compile_dense_hamiltonian, compile_trotter_circuit, measure_order_parameter]
+      members: [KuramotoProblem, build_kuramoto_problem, validate_kuramoto_inputs, compile_hamiltonian, compile_dense_hamiltonian, compile_trotter_circuit, measure_order_parameter, simulate_variant_trajectory]
       show_root_heading: true
 
 ## Advanced Module Reference
@@ -46,6 +46,10 @@ or debugging a subsystem, not as the default path for tutorial code.
 ::: scpn_quantum_control.phase.xy_kuramoto
     options:
       members: [QuantumKuramotoSolver]
+
+::: scpn_quantum_control.phase.kuramoto_variants
+    options:
+      members: [KuramotoVariant, KuramotoVariantResult, HigherOrderKuramotoSpec, MonitoredKuramotoSpec, PTSymmetricKuramotoSpec, build_triadic_ring_terms, simulate_higher_order_kuramoto, simulate_monitored_kuramoto, simulate_pt_symmetric_kuramoto]
 
 ::: scpn_quantum_control.phase.phase_vqe
     options:

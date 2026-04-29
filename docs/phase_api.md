@@ -60,6 +60,35 @@ right now? The Trotter decomposition is the mechanism by which we "advance the c
 on the quantum computer — we approximate continuous time evolution by a sequence of
 discrete, implementable quantum gates.
 
+### `kuramoto_variants` — Higher-Order, Monitored, and PT-Symmetric Trajectories
+
+Reusable trajectory surfaces for Kuramoto extensions beyond the symmetric
+gate-model XY Hamiltonian.
+
+```python
+from scpn_quantum_control.phase.kuramoto_variants import (
+    HigherOrderKuramotoSpec,
+    MonitoredKuramotoSpec,
+    PTSymmetricKuramotoSpec,
+    build_triadic_ring_terms,
+    simulate_higher_order_kuramoto,
+    simulate_monitored_kuramoto,
+    simulate_pt_symmetric_kuramoto,
+)
+```
+
+| Surface | Description |
+|---------|-------------|
+| `HigherOrderKuramotoSpec` | Pairwise \(K_{ij}\) plus anchored triadic terms \(B_{ijk}\sin(\theta_j+\theta_k-2\theta_i)\). |
+| `MonitoredKuramotoSpec` | Deterministic order-parameter readout and feedback closure around a target \(R_\star\). |
+| `PTSymmetricKuramotoSpec` | Balanced gain/loss complex oscillator evolution with \(\sum_i\gamma_i=0\). |
+| `simulate_*` | Return `KuramotoVariantResult` with `times`, `r_values`, `backend`, and diagnostics. |
+
+The preferred backend is Rust PyO3 (`higher_order_kuramoto_trajectory`,
+`monitored_kuramoto_trajectory`, `pt_symmetric_kuramoto_trajectory`) with NumPy
+fallbacks using the same equations. Stable-facade users can call
+`simulate_variant_trajectory(problem, variant, ...)`.
+
 ### `trotter_upde` — Full 16-Layer UPDE Solver
 
 Extends the Kuramoto solver to the full SCPN 16-layer hierarchy using the canonical

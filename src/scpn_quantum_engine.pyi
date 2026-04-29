@@ -168,6 +168,33 @@ def kuramoto_trajectory(
     dt: float,
     n_steps: int,
 ) -> tuple[_F64Array, _F64Array]: ...
+def higher_order_kuramoto_trajectory(
+    theta0: _F64Array,
+    omega: _F64Array,
+    k: _F64Array,
+    hyperedges: _I64Array,
+    hyper_weights: _F64Array,
+    dt: float,
+    n_steps: int,
+) -> tuple[_F64Array, _F64Array]: ...
+def monitored_kuramoto_trajectory(
+    theta0: _F64Array,
+    omega: _F64Array,
+    k: _F64Array,
+    target_r: float,
+    monitor_gain: float,
+    measurement_strength: float,
+    dt: float,
+    n_steps: int,
+) -> tuple[_F64Array, _F64Array, _F64Array, _F64Array]: ...
+def pt_symmetric_kuramoto_trajectory(
+    theta0: _F64Array,
+    omega: _F64Array,
+    k: _F64Array,
+    gain_loss: _F64Array,
+    dt: float,
+    n_steps: int,
+) -> tuple[_F64Array, _F64Array, _F64Array, _F64Array]: ...
 def lanczos_b_coefficients(
     h_re: _F64Array,
     h_im: _F64Array,

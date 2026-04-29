@@ -25,6 +25,7 @@ from .phase.xy_kuramoto import QuantumKuramotoSolver
 if TYPE_CHECKING:
     from .hardware.analog_kuramoto import AnalogKuramotoPlatform, AnalogKuramotoProgram
     from .hardware.hybrid_digital_analog import HybridDigitalAnalogProgram
+    from .phase.kuramoto_variants import KuramotoVariantResult
 
 JsonScalar = str | int | float | bool | None
 
@@ -168,3 +169,77 @@ def measure_order_parameter(
     """Measure the Kuramoto order parameter from a statevector."""
     solver = QuantumKuramotoSolver(problem.n_oscillators, problem.K_nm, problem.omega)
     return solver.measure_order_parameter(statevector)
+
+
+def simulate_variant_trajectory(
+    problem: KuramotoProblem,
+    variant: str,
+    *,
+    dt: float,
+    n_steps: int,
+    theta0: np.ndarray | None = None,
+    hyperedges: np.ndarray | None = None,
+    hyper_weights: np.ndarray | None = None,
+    target_r: float = 0.75,
+    monitor_gain: float = 0.8,
+    measurement_strength: float = 0.2,
+    gain_loss: np.ndarray | None = None,
+    prefer_rust: bool = True,
+) -> KuramotoVariantResult:
+    """Run a higher-order, monitored, or PT-symmetric Kuramoto variant."""
+    from .phase.kuramoto_variants import (
+        HigherOrderKuramotoSpec,
+        MonitoredKuramotoSpec,
+        PTSymmetricKuramotoSpec,
+        simulate_higher_order_kuramoto,
+        simulate_monitored_kuramoto,
+        simulate_pt_symmetric_kuramoto,
+    )
+
+    if variant == "higher_order":
+        if hyperedges is None or hyper_weights is None:
+            raise ValueError("higher_order variant requires hyperedges and hyper_weights")
+        return simulate_higher_order_kuramoto(
+            HigherOrderKuramotoSpec(
+                problem.K_nm,
+                problem.omega,
+                hyperedges,
+                hyper_weights,
+                theta0=theta0,
+                metadata=problem.metadata,
+            ),
+            dt=dt,
+            n_steps=n_steps,
+            prefer_rust=prefer_rust,
+        )
+    if variant == "monitored":
+        return simulate_monitored_kuramoto(
+            MonitoredKuramotoSpec(
+                problem.K_nm,
+                problem.omega,
+                target_r=target_r,
+                monitor_gain=monitor_gain,
+                measurement_strength=measurement_strength,
+                theta0=theta0,
+                metadata=problem.metadata,
+            ),
+            dt=dt,
+            n_steps=n_steps,
+            prefer_rust=prefer_rust,
+        )
+    if variant == "pt_symmetric":
+        if gain_loss is None:
+            raise ValueError("pt_symmetric variant requires gain_loss")
+        return simulate_pt_symmetric_kuramoto(
+            PTSymmetricKuramotoSpec(
+                problem.K_nm,
+                problem.omega,
+                gain_loss,
+                theta0=theta0,
+                metadata=problem.metadata,
+            ),
+            dt=dt,
+            n_steps=n_steps,
+            prefer_rust=prefer_rust,
+        )
+    raise ValueError("variant must be one of 'higher_order', 'monitored', or 'pt_symmetric'")

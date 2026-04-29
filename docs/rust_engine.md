@@ -39,9 +39,9 @@ across the FFI boundary). Python wrappers handle the conversion transparently.
 Pure Rust inner functions are kept separate so the algorithms can be
 unit-tested without a Python interpreter.
 
-## Functions (36)
+## Functions (46)
 
-The Rust crate exports 37 functions across 21 source files. They are organised
+The Rust crate exports 46 functions across 21 source files. They are organised
 below by topic.
 
 ### Classical Kuramoto
@@ -50,6 +50,9 @@ below by topic.
 |----------|-------------|------------|
 | `kuramoto_euler(theta0, omega, K, dt, n_steps)` | Single Euler integration run | O(n_steps × n²) |
 | `kuramoto_trajectory(theta0, omega, K, dt, n_steps)` | Trajectory with R(t) at each step | O(n_steps × n²) |
+| `higher_order_kuramoto_trajectory(theta0, omega, K, hyperedges, hyper_weights, dt, n_steps)` | Pairwise plus anchored triadic Kuramoto trajectory | O(n_steps × (n² + n_edges)) |
+| `monitored_kuramoto_trajectory(theta0, omega, K, target_r, monitor_gain, measurement_strength, dt, n_steps)` | Monitored order-parameter feedback trajectory | O(n_steps × n²) |
+| `pt_symmetric_kuramoto_trajectory(theta0, omega, K, gain_loss, dt, n_steps)` | Balanced gain/loss complex Kuramoto trajectory | O(n_steps × n²) |
 | `order_parameter(theta)` | Classical Kuramoto R from phase array | O(n) |
 | `build_knm(n, k_base, alpha)` | Paper 27 coupling matrix with anchors | O(n²) |
 

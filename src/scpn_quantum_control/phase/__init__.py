@@ -16,6 +16,17 @@ from .ansatz_methodology import AnsatzBenchmarkResult
 from .avqds import AVQDSResult, avqds_simulate
 from .cross_domain_transfer import TransferResult, build_systems, transfer_experiment
 from .floquet_kuramoto import FloquetResult, floquet_evolve, scan_drive_amplitude
+from .kuramoto_variants import (
+    HigherOrderKuramotoSpec,
+    KuramotoVariant,
+    KuramotoVariantResult,
+    MonitoredKuramotoSpec,
+    PTSymmetricKuramotoSpec,
+    build_triadic_ring_terms,
+    simulate_higher_order_kuramoto,
+    simulate_monitored_kuramoto,
+    simulate_pt_symmetric_kuramoto,
+)
 from .lindblad_engine import LindbladSyncEngine
 from .phase_vqe import PhaseVQE
 from .pulse_shaping import (
@@ -57,6 +68,15 @@ __all__ = [
     "FloquetResult",
     "build_structured_ansatz",
     "LindbladSyncEngine",
+    "KuramotoVariant",
+    "KuramotoVariantResult",
+    "HigherOrderKuramotoSpec",
+    "MonitoredKuramotoSpec",
+    "PTSymmetricKuramotoSpec",
+    "build_triadic_ring_terms",
+    "simulate_higher_order_kuramoto",
+    "simulate_monitored_kuramoto",
+    "simulate_pt_symmetric_kuramoto",
     "transfer_experiment",
     "build_systems",
     "TransferResult",
