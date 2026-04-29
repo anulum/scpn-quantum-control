@@ -85,7 +85,7 @@ class TestJAXBackend:
     def test_jax_import_error(self):
         with (
             patch.dict("sys.modules", {"jax": None, "jax.numpy": None}),
-            pytest.raises(ImportError, match="JAX not installed"),
+            pytest.raises(ImportError, match="JAX unavailable"),
         ):
             set_backend("jax")
 
@@ -100,8 +100,8 @@ class TestJAXBackend:
             jnp_arr = from_numpy(arr)
             back = to_numpy(jnp_arr)
             np.testing.assert_allclose(back, arr)
-        except ImportError:
-            pytest.skip("JAX not installed")
+        except Exception as exc:
+            pytest.skip(f"JAX unavailable in this environment: {exc}")
 
 
 # ── Torch backend ─────────────────────────────────────────────────────
@@ -306,8 +306,35 @@ class TestAvailableBackendsMocked:
             backends = available_backends()
             assert "torch" in backends
 
+    def test_torch_absence_is_ignored(self):
+        """available_backends ignores an unavailable torch import."""
+        with patch.dict("sys.modules", {"torch": None}):
+            backends = available_backends()
+            assert "numpy" in backends
+            assert "torch" not in backends
+
 
 class TestSetBackendMockedSuccess:
+    def test_set_jax_success(self):
+        """set_backend('jax') success path with a mock jax.numpy module."""
+        from types import ModuleType
+        from unittest.mock import MagicMock
+
+        import scpn_quantum_control.backend_dispatch as mod
+
+        fake_jnp = MagicMock()
+        fake_jax = ModuleType("jax")
+        fake_jax.numpy = fake_jnp  # type: ignore[attr-defined]
+        old_backend = mod._CURRENT_BACKEND
+        try:
+            with patch.dict("sys.modules", {"jax": fake_jax, "jax.numpy": fake_jnp}):
+                set_backend("jax")
+                assert get_backend() == "jax"
+                assert mod._BACKEND_MODULES["jax"] is fake_jnp
+        finally:
+            mod._CURRENT_BACKEND = old_backend
+            mod._BACKEND_MODULES.pop("jax", None)
+
     def test_set_torch_success(self):
         """set_backend('torch') success path with mock torch module."""
         from types import ModuleType

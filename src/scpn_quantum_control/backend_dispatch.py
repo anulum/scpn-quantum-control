@@ -44,8 +44,8 @@ def set_backend(name: str) -> None:
 
             _BACKEND_MODULES["jax"] = jnp
             _CURRENT_BACKEND = "jax"
-        except ImportError as e:
-            raise ImportError("JAX not installed: pip install jax jaxlib") from e
+        except Exception as e:
+            raise ImportError("JAX unavailable: install compatible jax and jaxlib") from e
     elif name in ("torch", "pytorch"):
         try:
             import torch
@@ -103,13 +103,13 @@ def available_backends() -> list[str]:
 
         del _jnp
         backends.append("jax")
-    except ImportError:
+    except Exception:
         pass
     try:
         import torch
 
         del torch  # used only for availability check
         backends.append("torch")
-    except ImportError:
+    except Exception:
         pass
     return backends
