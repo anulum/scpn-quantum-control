@@ -7,6 +7,14 @@
 # SCPN Quantum Control — Quantum Advantage Benchmarks
 """Quantum advantage and scaling benchmarks."""
 
+from .classical_baselines import (
+    ClassicalBaselineRun,
+    available_baselines,
+    mps_tebd_baseline,
+    qutip_lindblad_baseline,
+    run_documented_classical_baselines,
+    scipy_ode_baseline,
+)
 from .gpu_baseline import GPUBaselineResult, gpu_baseline_comparison
 from .mps_baseline import MPSBaselineResult, mps_baseline_comparison
 from .quantum_advantage import (
@@ -18,6 +26,12 @@ from .quantum_advantage import (
 )
 
 __all__ = [
+    "ClassicalBaselineRun",
+    "available_baselines",
+    "mps_tebd_baseline",
+    "qutip_lindblad_baseline",
+    "run_documented_classical_baselines",
+    "scipy_ode_baseline",
     "GPUBaselineResult",
     "gpu_baseline_comparison",
     "MPSBaselineResult",

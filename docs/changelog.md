@@ -15,6 +15,8 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
 ## [0.9.6] - 2026-04-17
 
 ### Changed (2026-04-29)
+- Added documented classical baseline surfaces for SciPy ODE, optional
+  QuTiP Lindblad, and optional MPS TEBD runs.
 - Re-routed API documentation so stable facades are the first-path
   entry point and low-level module references sit under advanced
   navigation.

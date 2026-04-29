@@ -10,17 +10,20 @@
 
 The `benchmarks` package measures the computational frontier: at what
 system size does quantum hardware outperform the best classical methods
-for simulating Kuramoto-XY dynamics? Four modules answer this from
-different angles — exact diagonalisation, GPU statevector, MPS tensor
-networks, and application-oriented metrics.
+for simulating Kuramoto-XY dynamics? Five modules answer this from
+different angles — documented classical baselines, exact diagonalisation,
+GPU statevector, MPS tensor networks, and application-oriented metrics.
 
-4 modules, 10 public symbols, 3 crossover estimates.
+5 modules, 16 public symbols, 3 crossover estimates.
 
 ## Architecture
 
 ```
 Classical Methods                    Comparison                     Quantum Methods
 ──────────────────                  ──────────                      ───────────────
+SciPy ODE / QuTiP / MPS ← classical_baselines → provenance envelope
+  Phase ODE, Lindblad, TEBD                           honest optional status
+
 Exact diag + expm       ← quantum_advantage →  Trotter on statevector
   O(2^n × 2^n × 2^n)                              O(n^2 × reps × 2^n)
   Limit: n ≈ 14                                    Limit: n ≈ 23 (RAM)
@@ -41,7 +44,21 @@ AppQSim protocol        ← appqsim_benchmark →   Application fidelity
 
 ## Module Reference
 
-### 1. `quantum_advantage` — Classical vs Quantum Scaling
+### 1. `classical_baselines` — Documented Reference Backends
+
+Provides explicit baseline runs and availability reporting:
+
+- `scipy_ode_baseline` — classical Kuramoto ODE via SciPy `solve_ivp`.
+- `qutip_lindblad_baseline` — optional density-matrix open-system baseline
+  via QuTiP `mesolve`.
+- `mps_tebd_baseline` — optional tensor-network baseline via quimb TEBD.
+- `run_documented_classical_baselines` — runs the baseline suite for one
+  `K_nm`/`omega` problem.
+
+See [Classical Baselines](classical_baselines.md) for the provenance contract
+and examples.
+
+### 2. `quantum_advantage` — Classical vs Quantum Scaling
 
 Measures wall-clock time for exact classical simulation (exact
 diagonalisation + matrix exponential) against Trotter evolution on
@@ -115,7 +132,7 @@ Warns if n > 23 (statevector memory > 128 MB).
 
 ---
 
-### 2. `gpu_baseline` — GPU vs QPU Comparison
+### 3. `gpu_baseline` — GPU vs QPU Comparison
 
 Estimates GPU resources needed for statevector simulation and compares
 with QPU execution time.
@@ -191,7 +208,7 @@ Returns dict with columns: n, gpu_time_s, qpu_time_s, memory_gb, gpu_faster.
 
 ---
 
-### 3. `mps_baseline` — Tensor Network Comparison
+### 4. `mps_baseline` — Tensor Network Comparison
 
 Matrix Product State (MPS) resource estimation for the Kuramoto-XY
 system. MPS provides the classical baseline: if MPS at affordable bond
@@ -273,7 +290,7 @@ print(f"MPS tractable: {result.mps_tractable}")
 
 ---
 
-### 4. `appqsim_protocol` — Application-Oriented Metrics
+### 5. `appqsim_protocol` — Application-Oriented Metrics
 
 Reference: Lubinski et al., QST 8, 024003 (2023).
 

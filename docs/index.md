@@ -144,6 +144,7 @@ for name, w in results.items():
 - [Hardware Status Ledger](hardware_status_ledger.md) — claim classes and campaign evidence paths
 - [Analysis API](analysis_api.md) — advanced reference for 45 analysis modules
 - [Phase API](phase_api.md) — advanced reference for 28 evolution algorithms
+- [Classical Baselines](classical_baselines.md) — SciPy ODE, QuTiP Lindblad, and MPS TEBD provenance surfaces
 - [Hardware Guide](hardware_guide.md) — IBM Quantum setup
 - [Bridges](bridges_api.md) — cross-repo integrations
 - [Tutorials](tutorials.md) — 4-level learning path, 14 tutorials
