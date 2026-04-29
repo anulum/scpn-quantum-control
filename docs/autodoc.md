@@ -191,6 +191,14 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       show_root_heading: true
 
+::: scpn_quantum_control.applications.dataset_catalog
+    options:
+      members: [ApplicationBenchmarkDescriptor, list_application_benchmark_descriptors, get_application_benchmark_descriptor, load_application_benchmark_artifact, artifact_to_kuramoto_problem]
+
+::: scpn_quantum_control.applications.app_plugins
+    options:
+      members: [ApplicationPluginBenchmark, ApplicationPluginRegistry, get_application_plugin, load_application_dataset, compile_application_problem, run_application_benchmark_suite]
+
 ## Gauge
 
 ::: scpn_quantum_control.gauge

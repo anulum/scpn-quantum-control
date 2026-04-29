@@ -1,0 +1,134 @@
+{
+  "K_nm": [
+    [
+      0.0,
+      0.65,
+      0.4,
+      0.35,
+      0.2,
+      0.15,
+      0.1,
+      0.08
+    ],
+    [
+      0.65,
+      0.0,
+      0.35,
+      0.4,
+      0.15,
+      0.2,
+      0.08,
+      0.1
+    ],
+    [
+      0.4,
+      0.35,
+      0.0,
+      0.5,
+      0.45,
+      0.3,
+      0.2,
+      0.15
+    ],
+    [
+      0.35,
+      0.4,
+      0.5,
+      0.0,
+      0.3,
+      0.45,
+      0.15,
+      0.2
+    ],
+    [
+      0.2,
+      0.15,
+      0.45,
+      0.3,
+      0.0,
+      0.55,
+      0.4,
+      0.35
+    ],
+    [
+      0.15,
+      0.2,
+      0.3,
+      0.45,
+      0.55,
+      0.0,
+      0.35,
+      0.4
+    ],
+    [
+      0.1,
+      0.08,
+      0.2,
+      0.15,
+      0.4,
+      0.35,
+      0.0,
+      0.7
+    ],
+    [
+      0.08,
+      0.1,
+      0.15,
+      0.2,
+      0.35,
+      0.4,
+      0.7,
+      0.0
+    ]
+  ],
+  "artifact_sha256": "fde5e68ba4b20fd5ebeb2e06fe909d15aae64e4a17e828927a4ab9c0ec311c57",
+  "domain": "eeg",
+  "extraction_method": "curated 10-20 alpha-band PLV benchmark matrix",
+  "hashes": {
+    "K_nm_sha256": "15fb121a65500c7be85d65e2319ab5023bb0851b0e18ac9683345c5d9604d662",
+    "omega_sha256": "58d04184e7a4e169925495491d9886130479d9d5c34f8b51dce4fba601fbeb38",
+    "theta0_sha256": "239e09dbfd4a0cd22502e384fb0ff5fe28a624bebef48eeed6b57e0198ad65be"
+  },
+  "layer_assignments": [
+    "Fp1",
+    "Fp2",
+    "F3",
+    "F4",
+    "C3",
+    "C4",
+    "O1",
+    "O2"
+  ],
+  "metadata": {
+    "band": "alpha",
+    "frequency_unit": "Hz",
+    "licence_note": "small curated benchmark matrix for software validation; not a raw participant recording",
+    "public_reference": "Stam et al., Clinical Neurophysiology 118, 2317 (2007); Breakspear, Nature Neuroscience 20, 340 (2017)"
+  },
+  "normalization": "phase-locking values already scaled to [0, 1]",
+  "omega": [
+    9.5,
+    9.5,
+    10.0,
+    10.0,
+    10.5,
+    10.5,
+    11.0,
+    11.0
+  ],
+  "replay_id": null,
+  "schema_version": "scpn-quantum-control.qpu-data-artifact.v1",
+  "source_mode": "curated",
+  "source_name": "eeg_alpha_plv_8ch",
+  "source_timestamp": "2026-04-29T00:00:00Z",
+  "theta0": [
+    0.0,
+    0.4487989505128276,
+    0.8975979010256552,
+    1.3463968515384828,
+    1.7951958020513104,
+    2.243994752564138,
+    2.6927937030769655,
+    3.141592653589793
+  ]
+}

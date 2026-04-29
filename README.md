@@ -546,8 +546,9 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Research Gems](docs/research_gems.md) — **33 analysis modules with theory and API**
 - [Equations](docs/equations.md) — every equation in the codebase
 - [Architecture](docs/architecture.md) — dependency graph + 20 subpackages
-- [Analysis API](docs/analysis_api.md) — advanced reference for 45 analysis modules
-- [Phase API](docs/phase_api.md) — advanced reference for 28 evolution algorithms
+- [Analysis API](docs/analysis_api.md) — advanced reference for 46 analysis modules
+- [Phase API](docs/phase_api.md) — advanced reference for 29 evolution algorithms
+- [Application Benchmark Plugins](docs/application_benchmarks.md) — EEG, plasma, power-grid, and FEP datasets through QPU artifacts
 - [Classical Baselines](docs/classical_baselines.md) — SciPy ODE, QuTiP Lindblad, and MPS TEBD provenance surfaces
 - [Hardware Guide](docs/hardware_guide.md) — IBM Quantum setup
 - [Notebooks](docs/notebooks.md) — 13 interactive notebooks

@@ -7,7 +7,24 @@
 # SCPN Quantum Control — Physical Applications
 """Physical system benchmarks and application modules."""
 
+from .app_plugins import (
+    ApplicationPluginBenchmark,
+    ApplicationPluginRegistry,
+    compile_application_problem,
+    discover_application_plugins,
+    get_application_plugin,
+    get_application_plugin_registry,
+    load_application_dataset,
+    run_application_benchmark_suite,
+)
 from .cross_domain import CrossDomainResult, run_cross_domain_validation
+from .dataset_catalog import (
+    ApplicationBenchmarkDescriptor,
+    artifact_to_kuramoto_problem,
+    get_application_benchmark_descriptor,
+    list_application_benchmark_descriptors,
+    load_application_benchmark_artifact,
+)
 from .eeg_benchmark import EEGBenchmarkResult, eeg_benchmark
 from .fmo_benchmark import FMOBenchmarkResult, fmo_benchmark, fmo_coupling_matrix
 from .iter_benchmark import ITERBenchmarkResult, iter_benchmark
@@ -18,8 +35,13 @@ from .quantum_kernel import QuantumKernelResult, compute_kernel_matrix
 from .quantum_reservoir import ReservoirResult, reservoir_features
 
 __all__ = [
+    "ApplicationBenchmarkDescriptor",
+    "ApplicationPluginBenchmark",
+    "ApplicationPluginRegistry",
+    "artifact_to_kuramoto_problem",
+    "compile_application_problem",
     "CrossDomainResult",
-    "run_cross_domain_validation",
+    "discover_application_plugins",
     "EEGBenchmarkResult",
     "eeg_benchmark",
     "FMOBenchmarkResult",
@@ -31,10 +53,18 @@ __all__ = [
     "josephson_benchmark",
     "PowerGridBenchmarkResult",
     "power_grid_benchmark",
+    "get_application_benchmark_descriptor",
+    "get_application_plugin",
+    "get_application_plugin_registry",
+    "list_application_benchmark_descriptors",
+    "load_application_benchmark_artifact",
+    "load_application_dataset",
     "QuantumEVSResult",
     "quantum_evs_enhance",
     "QuantumKernelResult",
     "compute_kernel_matrix",
     "ReservoirResult",
     "reservoir_features",
+    "run_application_benchmark_suite",
+    "run_cross_domain_validation",
 ]
