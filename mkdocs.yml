@@ -89,6 +89,7 @@ nav:
       - Crypto Research: QUANTUM_CRYPTO_RESEARCH_BRANCH.md
   - Learning:
       - Tutorials: tutorials.md
+      - Physics-First Kuramoto-XY: physics_first_kuramoto_xy.md
       - Notebooks: notebooks.md
   - Roadmap:
       - Strategic Roadmap: strategic_roadmap.md

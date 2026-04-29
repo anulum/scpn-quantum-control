@@ -16,6 +16,10 @@ understanding through hands-on computation to original research.
 
 ## Learning Path Overview
 
+New users who do not need SCPN-specific layers should start with
+[Physics-First Kuramoto-XY](physics_first_kuramoto_xy.md). It introduces the
+generic `K_nm`/`omega` compiler path before any domain-specific benchmark.
+
 ```mermaid
 graph TD
     subgraph "Level 1: Foundations — What is this package doing?"

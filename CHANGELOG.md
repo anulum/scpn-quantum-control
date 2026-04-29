@@ -5,6 +5,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Changed
+- 2026-04-29 — Added a physics-first Kuramoto-XY tutorial with a tested arbitrary `K_nm`/`omega` workflow.
 - 2026-04-29 — Refreshed README, docs index, and results gallery from the dated hardware status ledger.
 - 2026-04-29 — Documented the licence boundary for a possible future lightweight Kuramoto-XY core package; no relicensing is implied.
 - 2026-04-29 — Added a `kuramoto_core` facade for validated `K_nm`/`omega` problems, Hamiltonian/circuit compilation, dense Rust-backed Hamiltonians, and order-parameter measurement.
