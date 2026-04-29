@@ -33,6 +33,7 @@ def test_hardware_trace_loader_preserves_committed_measurements():
     assert dataset.name == "ibm_heron_r2_kuramoto_4osc"
     assert dataset.source_kind == "qpu_hardware_measurement"
     assert dataset.source_path == "results/hw_kuramoto_4osc.json"
+    assert "\\" not in dataset.source_path
     np.testing.assert_allclose(dataset.times, [0.1, 0.2, 0.3, 0.4])
     np.testing.assert_allclose(dataset.observed_order_parameter[-1], 0.3757)
     assert dataset.holdout_size == 2
