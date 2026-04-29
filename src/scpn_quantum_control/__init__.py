@@ -8,7 +8,7 @@
 """NISQ quantum simulation of coupled Kuramoto oscillator networks via XY Hamiltonian mapping."""
 
 # Subpackage-level access for new modules
-from . import analysis, applications, fep, gauge, l16, pgbo, psi_field, ssgf, tcbo
+from . import analysis, applications, fep, forecasting, gauge, l16, pgbo, psi_field, ssgf, tcbo
 from .applications.eeg_classification import eeg_plv_to_vqe, eeg_quantum_kernel
 from .benchmarks.classical_baselines import (
     ClassicalBaselineRun,
@@ -65,6 +65,15 @@ from .control.qaoa_mpc import QAOA_MPC
 from .control.qpetri import QuantumPetriNet
 from .control.topological_optimizer import TopologicalCouplingOptimizer
 from .control.vqls_gs import VQLS_GradShafranov
+from .forecasting import (
+    ForecastModelRun,
+    SynchronisationForecastBenchmarkResult,
+    SynchronisationForecastDataset,
+    load_hardware_kuramoto_4osc_trace,
+    load_ieee5bus_sync_forecast_case,
+    run_real_data_sync_forecast_benchmark,
+    run_real_data_sync_forecast_suite,
+)
 from .hardware.fast_classical import fast_sparse_evolution
 from .hardware.qubit_mapper import (
     ExecutionRegion,
@@ -173,6 +182,13 @@ __all__ = [
     "PhaseVQE",
     "HardwareRunner",
     "JobResult",
+    "ForecastModelRun",
+    "SynchronisationForecastBenchmarkResult",
+    "SynchronisationForecastDataset",
+    "load_hardware_kuramoto_4osc_trace",
+    "load_ieee5bus_sync_forecast_case",
+    "run_real_data_sync_forecast_benchmark",
+    "run_real_data_sync_forecast_suite",
     "trapped_ion_noise_model",
     "transpile_for_trapped_ion",
     "QuantumDisruptionClassifier",
@@ -239,6 +255,7 @@ __all__ = [
     "run_scaling_benchmark",
     "analysis",
     "applications",
+    "forecasting",
     "gauge",
     "ssgf",
     "tcbo",

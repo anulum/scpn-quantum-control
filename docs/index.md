@@ -68,7 +68,7 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | IBM hardware jobs | 33 on ibm_fez (Feb 2026) + 348 on ibm_kingston (Apr 2026, Phase 1 DLA-parity campaign) |
 | DLA parity asymmetry (hardware) | $+10.8\,\%$ mean for depths $\ge 4$, peak $+17.5\,\%$ at depth 6 (Welch combined $p \ll 10^{-16}$) |
 | Test suite | **4,841 passing**, 97%+ coverage |
-| Python modules | 209 + 1 Rust crate (37 functions) + Julia tier (`accel/julia/*.jl`) |
+| Python modules | 210 + 1 Rust crate (37 functions) + Julia tier (`accel/julia/*.jl`) |
 
 ## Package map
 
@@ -89,6 +89,7 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | `ssgf` | 5 | SSGF quantum integration |
 | `benchmarks` | 5 | Classical vs quantum scaling, MPS baseline, GPU baseline, AppQSim |
 | `psi_field` | 5 | U(1) compact lattice gauge: lattice, infoton, observables, SCPN mapping |
+| `forecasting` | 2 | Held-out synchronisation forecasting over hardware traces and source-backed topology replays |
 | `accel` | 3 | Multi-language dispatcher + Julia tier (Rust → Julia → Python fallback chain) |
 | `fep` | 3 | Friston Free Energy Principle: variational free energy, predictive coding |
 | `tcbo` | 2 | TCBO quantum observer |
