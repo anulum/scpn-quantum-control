@@ -65,7 +65,8 @@ config = ["pydantic-settings>=2.0,<3"]
 logging = ["structlog>=24.0,<26"]
 julia = ["juliacall>=0.9,<2"]
 dla-parity = ["qutip>=5.0,<6.0"]
-all = ["scpn-quantum-control[viz,gpu,ibm,rust,tensor,mitigation,opensys,pennylane,xvalidate,config,logging,julia,dla-parity]"]
+all = ["scpn-quantum-control[viz,ibm,rust,tensor,mitigation,topology,opensys,pennylane,xvalidate,config,logging,julia,dla-parity]"]
+accelerated = ["scpn-quantum-control[gpu,jax]"]
 
 [project.entry-points."scpn_quantum_control.backends"]
 qiskit_ibm = "scpn_quantum_control.hardware.backends:qiskit_ibm_factory"

@@ -62,8 +62,11 @@ pip install -e ".[julia]"
 # Cross-validation (QuTiP + Dynamiqs-JAX for XY Hamiltonian diff checks)
 pip install -e ".[xvalidate]"
 
-# Everything — all extras including config, logging, julia, xvalidate
+# Portable optional surface — excludes CUDA/JAX wheels that need a matching accelerator stack
 pip install -e ".[all]"
+
+# Accelerator extras — install only on machines with the matching CUDA stack
+pip install -e ".[accelerated]"
 ```
 
 ## Rust Acceleration
@@ -79,11 +82,15 @@ benchmark results.
 ## Requirements
 
 - Python 3.10+
-- Qiskit 1.0+
-- qiskit-aer 0.14+
+- Qiskit 2.2+
+- qiskit-aer 0.15+
 - NumPy 1.24+
 - SciPy 1.10+
 - NetworkX 3.0+
+
+`pyproject.toml` is the canonical dependency source. `requirements.txt`
+is kept only as a pip-compatible mirror for users who cannot consume
+project metadata directly.
 
 ## Verify installation
 

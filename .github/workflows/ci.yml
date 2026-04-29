@@ -119,6 +119,23 @@ jobs:
           python -c "from scpn_quantum_control.crypto import spectral_fingerprint; print('OK')"
           python -c "from scpn_quantum_control import knm_to_ansatz; print('OK')"
 
+  install-smoke:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install portable all-extra surface
+        run: pip install -e ".[all]"
+      - name: Import installed package and optional bridges
+        run: |
+          python -c "import scpn_quantum_control; print(scpn_quantum_control.__version__)"
+          python -c "from scpn_quantum_control.hardware.backends import discover_backend_plugins; print(discover_backend_plugins())"
+          python -c "from scpn_quantum_control.analysis import DLAParityWitness; print(DLAParityWitness.__name__)"
+
   security:
     needs: lint
     runs-on: ubuntu-latest
@@ -166,7 +183,7 @@ jobs:
         run: pytest tests/test_arcane_neuron_e2e.py tests/test_cross_repo_wiring.py -v --tb=short
 
   ci-gate:
-    needs: [lint, test, type-check, wheel-check, security]
+    needs: [lint, test, type-check, wheel-check, install-smoke, security]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -176,6 +193,7 @@ jobs:
              [[ "${{ needs.test.result }}" != "success" ]] || \
              [[ "${{ needs.type-check.result }}" != "success" ]] || \
              [[ "${{ needs.wheel-check.result }}" != "success" ]] || \
+             [[ "${{ needs.install-smoke.result }}" != "success" ]] || \
              [[ "${{ needs.security.result }}" != "success" ]]; then
             echo "CI gate failed"
             exit 1
