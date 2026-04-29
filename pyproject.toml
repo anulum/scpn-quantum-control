@@ -70,7 +70,7 @@ app-plasma = ["h5py>=3.10,<4.0", "pandas>=2.0,<3.0"]
 app-power-grid = ["pandapower>=2.14,<4.0"]
 app-fep = ["pydantic>=2.0,<3.0"]
 app-benchmarks = ["scpn-quantum-control[app-eeg,app-plasma,app-power-grid,app-fep]"]
-all = ["scpn-quantum-control[viz,ibm,rust,tensor,mitigation,topology,opensys,pennylane,xvalidate,config,logging,julia,dla-parity]"]
+all = ["scpn-quantum-control[viz,ibm,tensor,mitigation,topology,opensys,pennylane,xvalidate,config,logging,julia,dla-parity]"]
 accelerated = ["scpn-quantum-control[gpu,jax]"]
 
 [project.entry-points."scpn_quantum_control.backends"]

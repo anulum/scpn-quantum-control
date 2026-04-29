@@ -14,12 +14,13 @@ LABEL org.opencontainers.image.licenses="AGPL-3.0-or-later"
 RUN useradd --create-home sqc
 WORKDIR /app
 
-COPY pyproject.toml README.md LICENSE ./
+COPY pyproject.toml requirements.txt README.md LICENSE ./
 COPY src/ src/
 
 RUN pip install --no-cache-dir ".[dev,config,logging]"
 
 COPY tests/ tests/
+COPY tools/ tools/
 COPY examples/ examples/
 COPY results/ results/
 # `data/` holds curated hardware-result JSONs that
