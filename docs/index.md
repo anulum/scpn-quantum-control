@@ -135,6 +135,7 @@ for name, w in results.items():
 - [Installation](installation.md) — pip install + all optional extras
 - [Quickstart](quickstart.md) — first experiment in 5 minutes
 - [Kuramoto Core Facade](kuramoto_core_facade.md) — stable `K_nm`/`omega` compiler entry point
+- [Physics-First Kuramoto-XY](physics_first_kuramoto_xy.md) — start from arbitrary oscillator networks before SCPN-specific layers
 - [API Reference](api.md) — every public symbol, including `config`, `logging_setup`, `accel`, `hardware.backends`, `hardware.async_runner`
 - [Research Gems](research_gems.md) — **33 analysis modules with theory and API**
 - [Equations](equations.md) — every equation in the codebase
