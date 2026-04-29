@@ -16,7 +16,8 @@
 //! The commutator computation is parallelised via rayon; independence filtering
 //! remains serial for correctness (order-dependent projection).
 
-use numpy::{PyArray1, PyReadonlyArray1};
+use ndarray::Axis;
+use numpy::{PyArray1, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use rayon::prelude::*;
@@ -111,41 +112,62 @@ pub fn dla_protected_memory_metrics(
         )));
     }
 
-    let mut protected_weight = 0.0;
-    let mut code_weight = 0.0;
-    let mut target_parity_weight = 0.0;
-    let mut opposite_parity_weight = 0.0;
-    let mut total_weight = 0.0;
+    memory_metrics_inner(probs, n_logical, code_distance, target_parity)
+        .map_err(PyValueError::new_err)
+}
 
-    for (state, &probability) in probs.iter().enumerate() {
-        if !probability.is_finite() || probability < 0.0 {
-            return Err(PyValueError::new_err(
-                "probabilities must contain finite non-negative values",
-            ));
-        }
-        total_weight += probability;
-        let physical_parity = state.count_ones() as usize % 2;
-        if physical_parity == target_parity {
-            target_parity_weight += probability;
-        } else {
-            opposite_parity_weight += probability;
-        }
-        let (in_code, logical_parity) =
-            memory_code_and_logical_parity(state, n_logical, code_distance);
-        if in_code {
-            code_weight += probability;
-            if logical_parity == target_parity {
-                protected_weight += probability;
-            }
-        }
+/// Score a time series of probability vectors in the protected DLA sectors.
+#[pyfunction]
+pub fn dla_protected_trajectory_metrics<'py>(
+    py: Python<'py>,
+    probabilities: PyReadonlyArray2<'_, f64>,
+    n_logical: usize,
+    code_distance: usize,
+    target_parity: usize,
+) -> PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+)> {
+    let total_qubits = validate_memory_shape(n_logical, code_distance, target_parity)?;
+    let dim = 1usize << total_qubits;
+    let probs = probabilities.as_array();
+    if probs.shape()[1] != dim {
+        return Err(PyValueError::new_err(format!(
+            "probabilities second dimension must be 2^(n_logical*code_distance) = {dim}, got {}",
+            probs.shape()[1]
+        )));
+    }
+
+    let n_times = probs.shape()[0];
+    let mut protected = Vec::with_capacity(n_times);
+    let mut code = Vec::with_capacity(n_times);
+    let mut target = Vec::with_capacity(n_times);
+    let mut opposite = Vec::with_capacity(n_times);
+    let mut total = Vec::with_capacity(n_times);
+
+    for row in probs.axis_iter(Axis(0)) {
+        let row_slice = row.as_slice().ok_or_else(|| {
+            PyValueError::new_err("probability trajectory rows must be contiguous")
+        })?;
+        let (p, c, t, o, sum) =
+            memory_metrics_inner(row_slice, n_logical, code_distance, target_parity)
+                .map_err(PyValueError::new_err)?;
+        protected.push(p);
+        code.push(c);
+        target.push(t);
+        opposite.push(o);
+        total.push(sum);
     }
 
     Ok((
-        protected_weight,
-        code_weight,
-        target_parity_weight,
-        opposite_parity_weight,
-        total_weight,
+        PyArray1::from_vec(py, protected),
+        PyArray1::from_vec(py, code),
+        PyArray1::from_vec(py, target),
+        PyArray1::from_vec(py, opposite),
+        PyArray1::from_vec(py, total),
     ))
 }
 
@@ -255,6 +277,48 @@ pub fn is_independent_fast(new_op: &[f64], basis: &[Vec<f64>], tol: f64) -> bool
 
     let res_norm: f64 = residual.iter().map(|x| x * x).sum::<f64>().sqrt();
     res_norm > tol
+}
+
+fn memory_metrics_inner(
+    probs: &[f64],
+    n_logical: usize,
+    code_distance: usize,
+    target_parity: usize,
+) -> Result<(f64, f64, f64, f64, f64), String> {
+    let mut protected_weight = 0.0;
+    let mut code_weight = 0.0;
+    let mut target_parity_weight = 0.0;
+    let mut opposite_parity_weight = 0.0;
+    let mut total_weight = 0.0;
+
+    for (state, &probability) in probs.iter().enumerate() {
+        if !probability.is_finite() || probability < 0.0 {
+            return Err("probabilities must contain finite non-negative values".to_string());
+        }
+        total_weight += probability;
+        let physical_parity = state.count_ones() as usize % 2;
+        if physical_parity == target_parity {
+            target_parity_weight += probability;
+        } else {
+            opposite_parity_weight += probability;
+        }
+        let (in_code, logical_parity) =
+            memory_code_and_logical_parity(state, n_logical, code_distance);
+        if in_code {
+            code_weight += probability;
+            if logical_parity == target_parity {
+                protected_weight += probability;
+            }
+        }
+    }
+
+    Ok((
+        protected_weight,
+        code_weight,
+        target_parity_weight,
+        opposite_parity_weight,
+        total_weight,
+    ))
 }
 
 fn validate_memory_shape(
@@ -391,5 +455,23 @@ mod tests {
         assert_eq!(memory_code_and_logical_parity(0b000_111, 2, 3), (true, 1));
         assert_eq!(memory_code_and_logical_parity(0b111_111, 2, 3), (true, 0));
         assert_eq!(memory_code_and_logical_parity(0b010_111, 2, 3), (false, 1));
+    }
+
+    #[test]
+    fn test_memory_metrics_inner_tracks_code_and_parity_weights() {
+        let mut probs = vec![0.0; 64];
+        probs[0b000_000] = 0.45;
+        probs[0b111_111] = 0.40;
+        probs[0b000_111] = 0.10;
+        probs[0b010_111] = 0.05;
+
+        let (protected, code, target, opposite, total) =
+            memory_metrics_inner(&probs, 2, 3, 0).unwrap();
+
+        assert!((protected - 0.85).abs() < 1e-12);
+        assert!((code - 0.95).abs() < 1e-12);
+        assert!((target - 0.90).abs() < 1e-12);
+        assert!((opposite - 0.10).abs() < 1e-12);
+        assert!((total - 1.0).abs() < 1e-12);
     }
 }

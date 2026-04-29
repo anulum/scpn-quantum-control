@@ -10,6 +10,14 @@ fault-tolerant UPDE, and repetition code logical qubits.
 """
 
 from .control_qec import ControlQEC, MWPMDecoder, SurfaceCode
+from .dla_protected_scar import (
+    DLAProtectedScarPrototype,
+    DLAProtectedScarSimulationResult,
+    DLAProtectedScarSpec,
+    build_dla_protected_scar_prototype,
+    evaluate_dla_protected_scar_counts,
+    simulate_dla_protected_scar_memory,
+)
 from .dla_protected_subspace import (
     DLAProtectedLogicalSyncWitness,
     DLAProtectedMemoryPrototype,
@@ -56,6 +64,12 @@ __all__ = [
     "evaluate_dla_protected_memory",
     "protected_memory_mask",
     "sync_memory_mask",
+    "DLAProtectedScarPrototype",
+    "DLAProtectedScarSimulationResult",
+    "DLAProtectedScarSpec",
+    "build_dla_protected_scar_prototype",
+    "evaluate_dla_protected_scar_counts",
+    "simulate_dla_protected_scar_memory",
     "ErrorBudget",
     "compute_error_budget",
     "compare_error_budgets",

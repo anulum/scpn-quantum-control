@@ -83,6 +83,7 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(dla::dla_dimension, m)?)?;
     m.add_function(wrap_pyfunction!(dla::dla_protected_memory_mask, m)?)?;
     m.add_function(wrap_pyfunction!(dla::dla_protected_memory_metrics, m)?)?;
+    m.add_function(wrap_pyfunction!(dla::dla_protected_trajectory_metrics, m)?)?;
 
     // Monte Carlo XY
     m.add_function(wrap_pyfunction!(monte_carlo::mc_xy_simulate, m)?)?;
