@@ -134,7 +134,7 @@ jobs:
       - name: Import installed package and optional bridges
         run: |
           python -c "import scpn_quantum_control; print(scpn_quantum_control.__version__)"
-          python -c "from scpn_quantum_control.hardware.backends import discover_backend_plugins; print(discover_backend_plugins())"
+          python -c "from scpn_quantum_control.hardware.backends import discover_backends; print(discover_backends())"
           python -c "from scpn_quantum_control.analysis import DLAParityWitness; print(DLAParityWitness.__name__)"
 
   security:
