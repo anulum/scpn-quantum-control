@@ -65,6 +65,17 @@ def dla_dimension(
     max_dimension: int,
     tol: float,
 ) -> int: ...
+def dla_protected_memory_mask(
+    n_logical: int,
+    code_distance: int,
+    target_parity: int,
+) -> _BoolArray: ...
+def dla_protected_memory_metrics(
+    probabilities: _F64Array,
+    n_logical: int,
+    code_distance: int,
+    target_parity: int,
+) -> tuple[float, float, float, float, float]: ...
 def expectation_pauli_fast(
     psi_re: _F64Array,
     psi_im: _F64Array,
