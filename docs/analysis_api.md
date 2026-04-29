@@ -8,7 +8,7 @@
 
 # Analysis API Reference
 
-*41 modules for probing quantum synchronization transitions, entanglement structure,
+*42 modules for probing quantum synchronization transitions, entanglement structure,
 topological invariants, and computational complexity of the Kuramoto-XY Hamiltonian.*
 
 This is an advanced module reference. Use
@@ -51,6 +51,31 @@ from scpn_quantum_control.analysis.sync_witness import (
 `threshold`, `is_synchronized`, `raw_observable`, `n_qubits`.
 
 Full theory and examples: [Research Gems — Gem 1](research_gems.md#gem-1-synchronization-witness-operators).
+
+### `witness_discovery` — Automated Witness Search
+
+Bayesian plus bandit search over Kuramoto control candidates, scored by the existing
+correlation and Fiedler synchronisation witnesses.
+
+```python
+from scpn_quantum_control.analysis.witness_discovery import (
+    WitnessCandidate,
+    WitnessDiscoverySpec,
+    discover_kuramoto_witnesses,
+    score_witness_candidates,
+)
+```
+
+| Function | Description |
+|----------|-------------|
+| `discover_kuramoto_witnesses(K_nm, omega, theta0, spec)` | Run deterministic initial design, RBF Bayesian UCB, and bandit local exploration. |
+| `score_witness_candidates(K_nm, omega, candidates)` | Score fixed candidates through the same witness objective. |
+| `WitnessDiscoveryResult.ranked(limit)` | Return candidates sorted by descending witness score. |
+
+The Rust path `kuramoto_witness_candidate_features` evaluates final order
+parameter, mean pairwise correlation, and final phases for candidate batches.
+The Python scorer then evaluates the existing witness objects, so the discovery
+loop stays connected to the hardware-measurable witness definitions.
 
 ### `sync_entanglement_witness` — R as Entanglement Witness
 

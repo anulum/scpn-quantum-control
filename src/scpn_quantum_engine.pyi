@@ -195,6 +195,14 @@ def pt_symmetric_kuramoto_trajectory(
     dt: float,
     n_steps: int,
 ) -> tuple[_F64Array, _F64Array, _F64Array, _F64Array]: ...
+def kuramoto_witness_candidate_features(
+    theta0: _F64Array,
+    omega: _F64Array,
+    k: _F64Array,
+    candidates: _F64Array,
+    dt: float,
+    n_steps: int,
+) -> tuple[_F64Array, _F64Array, _F64Array]: ...
 def lanczos_b_coefficients(
     h_re: _F64Array,
     h_im: _F64Array,

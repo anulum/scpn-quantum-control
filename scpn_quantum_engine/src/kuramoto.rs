@@ -14,8 +14,8 @@
 //! Includes order parameter R = (1/N)|��_i exp(iθ_i)| computation
 //! and full trajectory recording.
 
-use ndarray::Array1;
-use numpy::{PyArray1, PyReadonlyArray1, PyReadonlyArray2};
+use ndarray::{Array1, Array2};
+use numpy::{PyArray1, PyArray2, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::prelude::*;
 
 use crate::validation::validate_positive;
@@ -407,6 +407,97 @@ pub fn pt_symmetric_kuramoto_trajectory<'py>(
     ))
 }
 
+/// Batch candidate features for automated Kuramoto witness discovery.
+///
+/// Candidate columns are `(coupling_scale, omega_scale, phase_bias)`.  The
+/// kernel integrates the classical Kuramoto dynamics and returns final R,
+/// mean pairwise cos(theta_i-theta_j), and final phases for downstream witness
+/// scoring in Python.
+#[pyfunction]
+pub fn kuramoto_witness_candidate_features<'py>(
+    py: Python<'py>,
+    theta0: PyReadonlyArray1<'_, f64>,
+    omega: PyReadonlyArray1<'_, f64>,
+    k: PyReadonlyArray2<'_, f64>,
+    candidates: PyReadonlyArray2<'_, f64>,
+    dt: f64,
+    n_steps: usize,
+) -> PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray2<f64>>,
+)> {
+    validate_positive(dt, "dt")?;
+    let theta0_arr = theta0.as_array();
+    let omega_arr = omega.as_array();
+    let k_arr = k.as_array();
+    let cand_arr = candidates.as_array();
+    let n = theta0_arr.len();
+    validate_kuramoto_shapes(n, omega_arr.len(), k_arr.shape())?;
+    if cand_arr.ndim() != 2 || cand_arr.shape()[1] != 3 {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "candidates must have shape (n_candidates, 3)",
+        ));
+    }
+    validate_finite_slice(theta0_arr.as_slice().unwrap(), "theta0")?;
+    validate_finite_slice(omega_arr.as_slice().unwrap(), "omega")?;
+    validate_finite_slice(k_arr.as_slice().unwrap(), "k")?;
+    validate_finite_slice(cand_arr.as_slice().unwrap(), "candidates")?;
+
+    let n_candidates = cand_arr.shape()[0];
+    let mut final_r = Array1::<f64>::zeros(n_candidates);
+    let mut mean_corr = Array1::<f64>::zeros(n_candidates);
+    let mut final_theta = Array2::<f64>::zeros((n_candidates, n));
+    let omega_slice = omega_arr.as_slice().unwrap();
+    let k_flat = k_arr.as_slice().unwrap();
+
+    for (candidate_index, candidate) in cand_arr.rows().into_iter().enumerate() {
+        let coupling_scale = candidate[0];
+        let omega_scale = candidate[1];
+        let phase_bias = candidate[2];
+        if coupling_scale < 0.0 || omega_scale < 0.0 {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "candidate coupling_scale and omega_scale must be non-negative",
+            ));
+        }
+        let mut theta: Vec<f64> = theta0_arr.iter().map(|value| value + phase_bias).collect();
+        let omega_scaled: Vec<f64> = omega_slice
+            .iter()
+            .map(|value| value * omega_scale)
+            .collect();
+        let k_scaled: Vec<f64> = k_flat.iter().map(|value| value * coupling_scale).collect();
+
+        for _ in 0..n_steps {
+            let dtheta = phase_step_pairwise(&theta, &omega_scaled, &k_scaled, n);
+            for i in 0..n {
+                theta[i] += dt * dtheta[i];
+            }
+        }
+
+        final_r[candidate_index] = order_parameter_inner(&theta);
+        let mut corr_sum = 0.0;
+        let mut n_pairs = 0usize;
+        for i in 0..n {
+            final_theta[[candidate_index, i]] = theta[i];
+            for j in (i + 1)..n {
+                corr_sum += (theta[i] - theta[j]).cos();
+                n_pairs += 1;
+            }
+        }
+        mean_corr[candidate_index] = if n_pairs > 0 {
+            corr_sum / n_pairs as f64
+        } else {
+            1.0
+        };
+    }
+
+    Ok((
+        PyArray1::from_owned_array(py, final_r),
+        PyArray1::from_owned_array(py, mean_corr),
+        PyArray2::from_owned_array(py, final_theta),
+    ))
+}
+
 /// Parallel classical Kuramoto trajectory.
 /// Returns (times, R_values) for each timestep.
 #[pyfunction]
@@ -518,5 +609,21 @@ mod tests {
 
         assert!((times[1] - 0.125).abs() < 1e-12);
         assert!((r_values[1] - (1.0 / 3.0)).abs() < 1e-12);
+    }
+
+    #[test]
+    fn test_candidate_feature_mean_corr_bounds() {
+        let theta: Vec<f64> = vec![0.0, 0.1, 0.2, 0.3];
+        let mut corr_sum = 0.0_f64;
+        let mut n_pairs = 0usize;
+        for i in 0..theta.len() {
+            for j in (i + 1)..theta.len() {
+                corr_sum += (theta[i] - theta[j]).cos();
+                n_pairs += 1;
+            }
+        }
+        let mean_corr = corr_sum / n_pairs as f64;
+        assert!((-1.0..=1.0).contains(&mean_corr));
+        assert!(mean_corr > 0.95);
     }
 }

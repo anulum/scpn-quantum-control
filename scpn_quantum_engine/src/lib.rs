@@ -24,6 +24,7 @@
 //! - Real-time feedback policy updates
 //! - Analog Kuramoto coupling compilation
 //! - DLA-protected logical memory diagnostics
+//! - Kuramoto witness-discovery candidate features
 
 use pyo3::prelude::*;
 
@@ -66,6 +67,7 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(kuramoto::higher_order_kuramoto_trajectory, m)?)?;
     m.add_function(wrap_pyfunction!(kuramoto::monitored_kuramoto_trajectory, m)?)?;
     m.add_function(wrap_pyfunction!(kuramoto::pt_symmetric_kuramoto_trajectory, m)?)?;
+    m.add_function(wrap_pyfunction!(kuramoto::kuramoto_witness_candidate_features, m)?)?;
 
     // Concatenated QEC
     m.add_function(wrap_pyfunction!(concat_qec::concatenated_logical_rate_rust, m)?)?;

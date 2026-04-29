@@ -141,6 +141,18 @@ Command provenance:
 .venv-linux/bin/python -c "import time, numpy as np; from scpn_quantum_control.phase import HigherOrderKuramotoSpec, MonitoredKuramotoSpec, PTSymmetricKuramotoSpec, build_triadic_ring_terms, simulate_higher_order_kuramoto, simulate_monitored_kuramoto, simulate_pt_symmetric_kuramoto; K=np.array([[0.0,0.45,0.0,0.45],[0.45,0.0,0.45,0.0],[0.0,0.45,0.0,0.45],[0.45,0.0,0.45,0.0]], dtype=np.float64); omega=np.array([0.0,0.6,1.2,2.4], dtype=np.float64); theta0=np.array([0.0,0.8,2.0,4.2], dtype=np.float64); edges, weights=build_triadic_ring_terms(4, 0.25); start=time.perf_counter(); higher=simulate_higher_order_kuramoto(HigherOrderKuramotoSpec(K, omega, edges, weights, theta0=theta0), dt=0.02, n_steps=64); monitored=simulate_monitored_kuramoto(MonitoredKuramotoSpec(K, omega, target_r=0.85, monitor_gain=1.1, measurement_strength=0.25, theta0=theta0), dt=0.02, n_steps=64); pt=simulate_pt_symmetric_kuramoto(PTSymmetricKuramotoSpec(K, omega, np.array([0.08,-0.08,0.04,-0.04], dtype=np.float64), theta0=theta0), dt=0.02, n_steps=64); elapsed=(time.perf_counter()-start)*1000; print(f'elapsed_ms={elapsed:.3f}'); print('backends=' + ','.join([higher.backend, monitored.backend, pt.backend])); print('final_r=' + ','.join(f'{x.final_r:.6f}' for x in [higher, monitored, pt])); print('peak_r=' + ','.join(f'{x.peak_r:.6f}' for x in [higher, monitored, pt])); print('hyperedges=' + str(higher.diagnostics['n_hyperedges'])); print('pt_norm_final=' + f\"{pt.diagnostics['pt_norm'][-1]:.6f}\")"
 ```
 
+### Automated Witness Discovery
+
+| Operation | System | Backend | Machine | Time | Output |
+|-----------|--------|---------|---------|------|--------|
+| Run Bayesian/bandit Kuramoto witness discovery | 4 oscillators, 20 evaluated candidates, 48 Euler steps/candidate | Rust PyO3 `kuramoto_witness_candidate_features` + NumPy RBF UCB/scoring | ASRock H510 Pro BTC+, i5-11600K, Ubuntu 24.04.4 | 10.145 ms | best score=1.399925; R=0.816060; corr=0.554605; Fiedler=0.909005; source=`bayesian_ucb` |
+
+Command provenance:
+
+```bash
+.venv-linux/bin/python -c "import time, numpy as np; from scpn_quantum_control.analysis import WitnessDiscoverySpec, discover_kuramoto_witnesses; K=np.array([[0.0,0.5,0.2,0.0],[0.5,0.0,0.4,0.1],[0.2,0.4,0.0,0.3],[0.0,0.1,0.3,0.0]], dtype=np.float64); omega=np.array([0.0,0.35,0.7,1.05], dtype=np.float64); theta0=np.array([0.0,0.7,1.4,2.8], dtype=np.float64); spec=WitnessDiscoverySpec(dt=0.025,n_steps=48,n_initial=8,n_iterations=4,batch_size=3,pool_size=32,seed=20260429,correlation_threshold=0.25,fiedler_threshold=0.2); start=time.perf_counter(); result=discover_kuramoto_witnesses(K, omega, theta0=theta0, spec=spec); elapsed=(time.perf_counter()-start)*1000; print(f'elapsed_ms={elapsed:.3f}'); print('backend=' + result.backend); print('evaluations=' + str(len(result.evaluations))); print('best_score=' + f'{result.best.score:.6f}'); print('best_final_r=' + f'{result.best.final_r:.6f}'); print('best_corr=' + f'{result.best.mean_correlation:.6f}'); print('best_fiedler=' + f'{result.best.fiedler_value:.6f}'); print('best_source=' + result.best.source.value); print('candidate=' + ','.join(f'{v:.6f}' for v in result.best.candidate.as_array()))"
+```
+
 ### Analog Kuramoto Backend Compiler
 
 | Operation | System | Backend | Machine | Time | Output |
