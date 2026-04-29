@@ -15,6 +15,8 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
 ## [0.9.6] - 2026-04-17
 
 ### Changed (2026-04-29)
+- Added `tools/check_dependency_drift.py` so release checks can verify
+  that `requirements.txt` still mirrors `pyproject.toml`.
 - `QuantumKuramotoSolver` validates coupling shape, finite values,
   symmetry, Trotter settings, and run-grid parameters before building
   circuits.

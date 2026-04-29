@@ -92,6 +92,12 @@ benchmark results.
 is kept only as a pip-compatible mirror for users who cannot consume
 project metadata directly.
 
+Before release, verify that mirror with:
+
+```bash
+python tools/check_dependency_drift.py
+```
+
 ## Verify installation
 
 ```bash
