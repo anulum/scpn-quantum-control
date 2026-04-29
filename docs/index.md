@@ -24,7 +24,7 @@ unmitigated hardware, mitigated hardware, and noise-limited claims.
 | Area | Public status |
 |---|---|
 | Package line | Version `0.9.6`, Python `>=3.10`, Qiskit `>=2.2,<3.0`. |
-| Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, and order-parameter measurements. |
+| Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, order-parameter measurements, and Kuramoto variant trajectories. |
 | Hardware evidence | Promoted campaigns: `ibm_fez` baseline and April 2026 `ibm_kingston` Phase 1 DLA parity. |
 | Claim source | [Hardware Status Ledger](hardware_status_ledger.md). |
 
@@ -68,14 +68,14 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | IBM hardware jobs | 33 on ibm_fez (Feb 2026) + 348 on ibm_kingston (Apr 2026, Phase 1 DLA-parity campaign) |
 | DLA parity asymmetry (hardware) | $+10.8\,\%$ mean for depths $\ge 4$, peak $+17.5\,\%$ at depth 6 (Welch combined $p \ll 10^{-16}$) |
 | Test suite | **4,841 passing**, 97%+ coverage |
-| Python modules | 211 + 1 Rust crate (38 functions) + Julia tier (`accel/julia/*.jl`) |
+| Python modules | 212 + 1 Rust crate (46 functions) + Julia tier (`accel/julia/*.jl`) |
 
 ## Package map
 
 | Subpackage | Modules | Purpose |
 |------------|:-------:|---------|
 | `analysis` | 45 | Synchronisation probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
-| `phase` | 28 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
+| `phase` | 29 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad, Kuramoto variants |
 | `hardware` | 27 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
 | `bridge` | 13 | $K_{nm}$ → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
 | `applications` | 12 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS |
@@ -144,7 +144,8 @@ for name, w in results.items():
 - [Architecture](architecture.md) — dependency graph + 20 subpackages
 - [Hardware Status Ledger](hardware_status_ledger.md) — claim classes and campaign evidence paths
 - [Analysis API](analysis_api.md) — advanced reference for 45 analysis modules
-- [Phase API](phase_api.md) — advanced reference for 28 evolution algorithms
+- [Phase API](phase_api.md) — advanced reference for 29 evolution algorithms
+- [Kuramoto Variants](kuramoto_variants.md) — higher-order, monitored, and PT-symmetric trajectory APIs
 - [Classical Baselines](classical_baselines.md) — SciPy ODE, QuTiP Lindblad, and MPS TEBD provenance surfaces
 - [Hardware Guide](hardware_guide.md) — IBM Quantum setup
 - [Bridges](bridges_api.md) — cross-repo integrations

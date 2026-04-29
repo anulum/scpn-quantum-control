@@ -129,6 +129,18 @@ Command provenance:
 python -c "import time, numpy as np; from scpn_quantum_control.control import RealtimeFeedbackConfig, RealtimeSyncFeedbackController; K=np.array([[0.0,0.35,0.2],[0.35,0.0,0.25],[0.2,0.25,0.0]], dtype=np.float64); omega=np.array([0.1,0.4,0.7], dtype=np.float64); cfg=RealtimeFeedbackConfig(measurement_shots=128, target_r=0.7); start=time.perf_counter(); controller=RealtimeSyncFeedbackController(K, omega, config=cfg); steps=controller.run(5, seed=20260429); elapsed=(time.perf_counter()-start)*1000; print(f'elapsed_ms={elapsed:.3f}'); print('actions=' + ','.join(step.action for step in steps)); print('r_live=' + ','.join(f'{step.r_live:.3f}' for step in steps)); print('next_scale=' + ','.join(f'{step.next_coupling_scale:.3f}' for step in steps))"
 ```
 
+### Kuramoto Variant Trajectories
+
+| Operation | System | Backend | Machine | Time | Output |
+|-----------|--------|---------|---------|------|--------|
+| Run higher-order, monitored, and PT-symmetric variants | 4 oscillators, 64 Euler steps per variant, 4 anchored triadic terms | Rust PyO3 `higher_order_kuramoto_trajectory`, `monitored_kuramoto_trajectory`, `pt_symmetric_kuramoto_trajectory` | ASRock H510 Pro BTC+, i5-11600K, Ubuntu 24.04.4 | 2.205 ms | final R=`0.514092,0.775172,0.606729`; PT norm final=1.000000 |
+
+Command provenance:
+
+```bash
+.venv-linux/bin/python -c "import time, numpy as np; from scpn_quantum_control.phase import HigherOrderKuramotoSpec, MonitoredKuramotoSpec, PTSymmetricKuramotoSpec, build_triadic_ring_terms, simulate_higher_order_kuramoto, simulate_monitored_kuramoto, simulate_pt_symmetric_kuramoto; K=np.array([[0.0,0.45,0.0,0.45],[0.45,0.0,0.45,0.0],[0.0,0.45,0.0,0.45],[0.45,0.0,0.45,0.0]], dtype=np.float64); omega=np.array([0.0,0.6,1.2,2.4], dtype=np.float64); theta0=np.array([0.0,0.8,2.0,4.2], dtype=np.float64); edges, weights=build_triadic_ring_terms(4, 0.25); start=time.perf_counter(); higher=simulate_higher_order_kuramoto(HigherOrderKuramotoSpec(K, omega, edges, weights, theta0=theta0), dt=0.02, n_steps=64); monitored=simulate_monitored_kuramoto(MonitoredKuramotoSpec(K, omega, target_r=0.85, monitor_gain=1.1, measurement_strength=0.25, theta0=theta0), dt=0.02, n_steps=64); pt=simulate_pt_symmetric_kuramoto(PTSymmetricKuramotoSpec(K, omega, np.array([0.08,-0.08,0.04,-0.04], dtype=np.float64), theta0=theta0), dt=0.02, n_steps=64); elapsed=(time.perf_counter()-start)*1000; print(f'elapsed_ms={elapsed:.3f}'); print('backends=' + ','.join([higher.backend, monitored.backend, pt.backend])); print('final_r=' + ','.join(f'{x.final_r:.6f}' for x in [higher, monitored, pt])); print('peak_r=' + ','.join(f'{x.peak_r:.6f}' for x in [higher, monitored, pt])); print('hyperedges=' + str(higher.diagnostics['n_hyperedges'])); print('pt_norm_final=' + f\"{pt.diagnostics['pt_norm'][-1]:.6f}\")"
+```
+
 ### Analog Kuramoto Backend Compiler
 
 | Operation | System | Backend | Machine | Time | Output |

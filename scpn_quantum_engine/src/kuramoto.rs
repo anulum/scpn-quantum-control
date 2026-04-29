@@ -73,6 +73,340 @@ pub fn order_parameter_inner(theta: &[f64]) -> f64 {
     (re * re + im * im).sqrt() / n
 }
 
+fn validate_kuramoto_shapes(n: usize, omega_len: usize, k_shape: &[usize]) -> PyResult<()> {
+    if omega_len != n {
+        return Err(pyo3::exceptions::PyValueError::new_err(format!(
+            "omega must have length {n}, got {omega_len}"
+        )));
+    }
+    if k_shape != [n, n] {
+        return Err(pyo3::exceptions::PyValueError::new_err(format!(
+            "k must have shape ({n}, {n}), got {k_shape:?}"
+        )));
+    }
+    Ok(())
+}
+
+fn validate_finite_slice(values: &[f64], name: &str) -> PyResult<()> {
+    if values.iter().any(|value| !value.is_finite()) {
+        return Err(pyo3::exceptions::PyValueError::new_err(format!(
+            "{name} must contain only finite values"
+        )));
+    }
+    Ok(())
+}
+
+fn phase_step_pairwise(theta: &[f64], omega: &[f64], k_flat: &[f64], n: usize) -> Vec<f64> {
+    let mut dtheta = vec![0.0; n];
+    for i in 0..n {
+        dtheta[i] = omega[i];
+        for j in 0..n {
+            dtheta[i] += k_flat[i * n + j] * (theta[j] - theta[i]).sin();
+        }
+    }
+    dtheta
+}
+
+fn fill_time_and_r(
+    times: &mut Array1<f64>,
+    r_values: &mut Array1<f64>,
+    step: usize,
+    dt: f64,
+    theta: &[f64],
+) {
+    times[step] = step as f64 * dt;
+    r_values[step] = order_parameter_inner(theta);
+}
+
+/// Higher-order simplicial Kuramoto trajectory.
+///
+/// Pairwise term: K_ij sin(theta_j - theta_i).
+/// Anchored triadic term: B_a sin(theta_j + theta_k - 2 theta_i) for each
+/// hyperedge row (i, j, k).
+#[pyfunction]
+pub fn higher_order_kuramoto_trajectory<'py>(
+    py: Python<'py>,
+    theta0: PyReadonlyArray1<'_, f64>,
+    omega: PyReadonlyArray1<'_, f64>,
+    k: PyReadonlyArray2<'_, f64>,
+    hyperedges: PyReadonlyArray2<'_, i64>,
+    hyper_weights: PyReadonlyArray1<'_, f64>,
+    dt: f64,
+    n_steps: usize,
+) -> PyResult<(Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>)> {
+    validate_positive(dt, "dt")?;
+    let mut theta = theta0.as_array().to_owned();
+    let n = theta.len();
+    let omega_arr = omega.as_array();
+    let k_arr = k.as_array();
+    validate_kuramoto_shapes(n, omega_arr.len(), k_arr.shape())?;
+    validate_finite_slice(theta.as_slice().unwrap(), "theta0")?;
+    validate_finite_slice(omega_arr.as_slice().unwrap(), "omega")?;
+    validate_finite_slice(k_arr.as_slice().unwrap(), "k")?;
+
+    let edge_arr = hyperedges.as_array();
+    let weights = hyper_weights.as_array();
+    if edge_arr.ndim() != 2 || edge_arr.shape()[1] != 3 {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "hyperedges must have shape (n_edges, 3)",
+        ));
+    }
+    if weights.len() != edge_arr.shape()[0] {
+        return Err(pyo3::exceptions::PyValueError::new_err(format!(
+            "hyper_weights must have length {}, got {}",
+            edge_arr.shape()[0],
+            weights.len()
+        )));
+    }
+    validate_finite_slice(weights.as_slice().unwrap(), "hyper_weights")?;
+    for edge in edge_arr.rows() {
+        for &index in edge.iter() {
+            if index < 0 || index as usize >= n {
+                return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                    "hyperedge index {index} is outside [0, {n})"
+                )));
+            }
+        }
+    }
+
+    let k_flat = k_arr.as_slice().unwrap();
+    let omega_slice = omega_arr.as_slice().unwrap();
+    let edge_slice = edge_arr.as_slice().unwrap();
+    let weight_slice = weights.as_slice().unwrap();
+    let mut times = Array1::<f64>::zeros(n_steps + 1);
+    let mut r_values = Array1::<f64>::zeros(n_steps + 1);
+    fill_time_and_r(&mut times, &mut r_values, 0, dt, theta.as_slice().unwrap());
+
+    for step in 0..n_steps {
+        let theta_slice = theta.as_slice().unwrap();
+        let mut dtheta = phase_step_pairwise(theta_slice, omega_slice, k_flat, n);
+        for edge_index in 0..weight_slice.len() {
+            let base = 3 * edge_index;
+            let i = edge_slice[base] as usize;
+            let j = edge_slice[base + 1] as usize;
+            let l = edge_slice[base + 2] as usize;
+            dtheta[i] += weight_slice[edge_index]
+                * (theta_slice[j] + theta_slice[l] - 2.0 * theta_slice[i]).sin();
+        }
+        for i in 0..n {
+            theta[i] += dt * dtheta[i];
+        }
+        fill_time_and_r(
+            &mut times,
+            &mut r_values,
+            step + 1,
+            dt,
+            theta.as_slice().unwrap(),
+        );
+    }
+
+    Ok((
+        PyArray1::from_owned_array(py, times),
+        PyArray1::from_owned_array(py, r_values),
+    ))
+}
+
+/// Monitored Kuramoto trajectory with deterministic measurement-feedback closure.
+///
+/// The instantaneous readout is R_m = (1-strength)R + strength*target_R.  The
+/// feedback term g(target_R - R_m) sin(psi - theta_i) pulls phases toward the
+/// measured mean phase without changing the pairwise Kuramoto law.
+#[pyfunction]
+pub fn monitored_kuramoto_trajectory<'py>(
+    py: Python<'py>,
+    theta0: PyReadonlyArray1<'_, f64>,
+    omega: PyReadonlyArray1<'_, f64>,
+    k: PyReadonlyArray2<'_, f64>,
+    target_r: f64,
+    monitor_gain: f64,
+    measurement_strength: f64,
+    dt: f64,
+    n_steps: usize,
+) -> PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+)> {
+    validate_positive(dt, "dt")?;
+    if !target_r.is_finite() || !(0.0..=1.0).contains(&target_r) {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "target_r must be finite and in [0, 1]",
+        ));
+    }
+    if !monitor_gain.is_finite() || monitor_gain < 0.0 {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "monitor_gain must be finite and non-negative",
+        ));
+    }
+    if !measurement_strength.is_finite() || !(0.0..=1.0).contains(&measurement_strength) {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "measurement_strength must be finite and in [0, 1]",
+        ));
+    }
+
+    let mut theta = theta0.as_array().to_owned();
+    let n = theta.len();
+    let omega_arr = omega.as_array();
+    let k_arr = k.as_array();
+    validate_kuramoto_shapes(n, omega_arr.len(), k_arr.shape())?;
+    validate_finite_slice(theta.as_slice().unwrap(), "theta0")?;
+    validate_finite_slice(omega_arr.as_slice().unwrap(), "omega")?;
+    validate_finite_slice(k_arr.as_slice().unwrap(), "k")?;
+
+    let k_flat = k_arr.as_slice().unwrap();
+    let omega_slice = omega_arr.as_slice().unwrap();
+    let mut times = Array1::<f64>::zeros(n_steps + 1);
+    let mut r_values = Array1::<f64>::zeros(n_steps + 1);
+    let mut readouts = Array1::<f64>::zeros(n_steps + 1);
+    let mut feedback = Array1::<f64>::zeros(n_steps + 1);
+
+    for step in 0..=n_steps {
+        let theta_slice = theta.as_slice().unwrap();
+        let r = order_parameter_inner(theta_slice);
+        let readout = (1.0 - measurement_strength) * r + measurement_strength * target_r;
+        times[step] = step as f64 * dt;
+        r_values[step] = r;
+        readouts[step] = readout;
+        feedback[step] = monitor_gain * (target_r - readout);
+        if step == n_steps {
+            break;
+        }
+        let (mut re, mut im) = (0.0, 0.0);
+        for &phase in theta_slice {
+            re += phase.cos();
+            im += phase.sin();
+        }
+        let mean_phase = im.atan2(re);
+        let mut dtheta = phase_step_pairwise(theta_slice, omega_slice, k_flat, n);
+        for i in 0..n {
+            dtheta[i] += feedback[step] * (mean_phase - theta_slice[i]).sin();
+        }
+        for i in 0..n {
+            theta[i] += dt * dtheta[i];
+        }
+    }
+
+    Ok((
+        PyArray1::from_owned_array(py, times),
+        PyArray1::from_owned_array(py, r_values),
+        PyArray1::from_owned_array(py, readouts),
+        PyArray1::from_owned_array(py, feedback),
+    ))
+}
+
+/// PT-symmetric complex Kuramoto trajectory with balanced gain/loss.
+///
+/// The complex oscillator evolves as z_i' = (gain_i + i dtheta_i) z_i and is
+/// renormalised after each Euler step so the returned R isolates phase locking
+/// while pt_norm and imbalance expose the non-Hermitian gain/loss channel.
+#[pyfunction]
+pub fn pt_symmetric_kuramoto_trajectory<'py>(
+    py: Python<'py>,
+    theta0: PyReadonlyArray1<'_, f64>,
+    omega: PyReadonlyArray1<'_, f64>,
+    k: PyReadonlyArray2<'_, f64>,
+    gain_loss: PyReadonlyArray1<'_, f64>,
+    dt: f64,
+    n_steps: usize,
+) -> PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+)> {
+    validate_positive(dt, "dt")?;
+    let theta_arr = theta0.as_array();
+    let n = theta_arr.len();
+    let omega_arr = omega.as_array();
+    let k_arr = k.as_array();
+    let gain_arr = gain_loss.as_array();
+    validate_kuramoto_shapes(n, omega_arr.len(), k_arr.shape())?;
+    if gain_arr.len() != n {
+        return Err(pyo3::exceptions::PyValueError::new_err(format!(
+            "gain_loss must have length {n}, got {}",
+            gain_arr.len()
+        )));
+    }
+    validate_finite_slice(theta_arr.as_slice().unwrap(), "theta0")?;
+    validate_finite_slice(omega_arr.as_slice().unwrap(), "omega")?;
+    validate_finite_slice(k_arr.as_slice().unwrap(), "k")?;
+    validate_finite_slice(gain_arr.as_slice().unwrap(), "gain_loss")?;
+    let gain_sum: f64 = gain_arr.iter().sum();
+    if gain_sum.abs() > 1e-10 {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "gain_loss must sum to zero for balanced PT symmetry",
+        ));
+    }
+
+    let mut re = Vec::with_capacity(n);
+    let mut im = Vec::with_capacity(n);
+    for &phase in theta_arr.iter() {
+        re.push(phase.cos());
+        im.push(phase.sin());
+    }
+    let k_flat = k_arr.as_slice().unwrap();
+    let omega_slice = omega_arr.as_slice().unwrap();
+    let gain_slice = gain_arr.as_slice().unwrap();
+    let mut theta = theta_arr.to_owned();
+    let mut times = Array1::<f64>::zeros(n_steps + 1);
+    let mut r_values = Array1::<f64>::zeros(n_steps + 1);
+    let mut pt_norm = Array1::<f64>::zeros(n_steps + 1);
+    let mut imbalance = Array1::<f64>::zeros(n_steps + 1);
+
+    for step in 0..=n_steps {
+        let mut total_re = 0.0;
+        let mut total_im = 0.0;
+        let mut norm = 0.0;
+        let mut signed_power = 0.0;
+        for i in 0..n {
+            total_re += re[i];
+            total_im += im[i];
+            let power = re[i] * re[i] + im[i] * im[i];
+            norm += power;
+            signed_power += gain_slice[i] * power;
+            theta[i] = im[i].atan2(re[i]);
+        }
+        times[step] = step as f64 * dt;
+        r_values[step] =
+            (total_re * total_re + total_im * total_im).sqrt() / norm.sqrt() / (n as f64).sqrt();
+        pt_norm[step] = norm / n as f64;
+        imbalance[step] = signed_power;
+        if step == n_steps {
+            break;
+        }
+        let dtheta = phase_step_pairwise(theta.as_slice().unwrap(), omega_slice, k_flat, n);
+        for i in 0..n {
+            let z_re = re[i];
+            let z_im = im[i];
+            let gain = gain_slice[i];
+            let freq = dtheta[i];
+            re[i] += dt * (gain * z_re - freq * z_im);
+            im[i] += dt * (freq * z_re + gain * z_im);
+        }
+        let norm_after = re
+            .iter()
+            .zip(im.iter())
+            .map(|(x, y)| x * x + y * y)
+            .sum::<f64>()
+            .sqrt();
+        if norm_after > 0.0 {
+            let scale = (n as f64).sqrt() / norm_after;
+            for i in 0..n {
+                re[i] *= scale;
+                im[i] *= scale;
+            }
+        }
+    }
+
+    Ok((
+        PyArray1::from_owned_array(py, times),
+        PyArray1::from_owned_array(py, r_values),
+        PyArray1::from_owned_array(py, pt_norm),
+        PyArray1::from_owned_array(py, imbalance),
+    ))
+}
+
 /// Parallel classical Kuramoto trajectory.
 /// Returns (times, R_values) for each timestep.
 #[pyfunction]
@@ -159,5 +493,30 @@ mod tests {
             .collect();
         let r = order_parameter_inner(&theta);
         assert!(r < 0.05, "uniform circle → R ≈ 0, got {r}");
+    }
+
+    #[test]
+    fn test_phase_step_pairwise_uses_all_couplings() {
+        let theta = vec![0.0, std::f64::consts::FRAC_PI_2, std::f64::consts::PI];
+        let omega = vec![0.1, -0.2, 0.3];
+        let k = vec![0.0, 0.5, 0.25, 0.5, 0.0, 0.75, 0.25, 0.75, 0.0];
+
+        let dtheta = phase_step_pairwise(&theta, &omega, &k, 3);
+
+        assert!((dtheta[0] - 0.6).abs() < 1e-12);
+        assert!((dtheta[1] - 0.05).abs() < 1e-12);
+        assert!((dtheta[2] - (-0.45)).abs() < 1e-12);
+    }
+
+    #[test]
+    fn test_fill_time_and_r_records_grid_point() {
+        let mut times = Array1::<f64>::zeros(2);
+        let mut r_values = Array1::<f64>::zeros(2);
+        let theta = vec![0.0, 0.0, std::f64::consts::PI];
+
+        fill_time_and_r(&mut times, &mut r_values, 1, 0.125, &theta);
+
+        assert!((times[1] - 0.125).abs() < 1e-12);
+        assert!((r_values[1] - (1.0 / 3.0)).abs() < 1e-12);
     }
 }

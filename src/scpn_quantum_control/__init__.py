@@ -101,6 +101,7 @@ from .kuramoto_core import (
     compile_hamiltonian,
     compile_trotter_circuit,
     measure_order_parameter,
+    simulate_variant_trajectory,
     validate_kuramoto_inputs,
 )
 from .mitigation.compound_mitigation import compound_mitigate_pipeline
@@ -112,6 +113,17 @@ from .mitigation.symmetry_decay import (
     learn_symmetry_decay,
 )
 from .mitigation.zne import ZNEResult, gate_fold_circuit, zne_extrapolate
+from .phase.kuramoto_variants import (
+    HigherOrderKuramotoSpec,
+    KuramotoVariant,
+    KuramotoVariantResult,
+    MonitoredKuramotoSpec,
+    PTSymmetricKuramotoSpec,
+    build_triadic_ring_terms,
+    simulate_higher_order_kuramoto,
+    simulate_monitored_kuramoto,
+    simulate_pt_symmetric_kuramoto,
+)
 from .phase.lindblad_engine import LindbladSyncEngine
 from .phase.phase_vqe import PhaseVQE
 from .phase.structured_ansatz import build_structured_ansatz
@@ -147,6 +159,16 @@ __all__ = [
     "compile_dense_hamiltonian",
     "compile_trotter_circuit",
     "measure_order_parameter",
+    "simulate_variant_trajectory",
+    "KuramotoVariant",
+    "KuramotoVariantResult",
+    "HigherOrderKuramotoSpec",
+    "MonitoredKuramotoSpec",
+    "PTSymmetricKuramotoSpec",
+    "build_triadic_ring_terms",
+    "simulate_higher_order_kuramoto",
+    "simulate_monitored_kuramoto",
+    "simulate_pt_symmetric_kuramoto",
     "TopologicalCouplingOptimizer",
     "HardwareTopologicalOptimizer",
     "fast_sparse_evolution",
