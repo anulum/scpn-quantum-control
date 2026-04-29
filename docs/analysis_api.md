@@ -11,6 +11,12 @@
 *41 modules for probing quantum synchronization transitions, entanglement structure,
 topological invariants, and computational complexity of the Kuramoto-XY Hamiltonian.*
 
+This is an advanced module reference. Use
+[Stable Facades API](stable_facades_api.md) and
+[Kuramoto Core Facade](kuramoto_core_facade.md) for first-path workflows, then
+drop into this page when a specific analysis probe or low-level diagnostic is
+needed.
+
 ---
 
 ## Synchronization Detection

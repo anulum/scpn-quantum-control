@@ -53,28 +53,30 @@ nav:
       - Research Gems: research_gems.md
       - Orchestrator Integration: orchestrator_integration.md
   - API Reference:
-      - Full Reference: api.md
       - Stable Facades API: stable_facades_api.md
       - Kuramoto Core Facade: kuramoto_core_facade.md
       - Core Package Boundary: core_package_boundary.md
-      - Rust Engine: rust_engine.md
-      - Auto-Generated: autodoc.md
-      - Analysis API: analysis_api.md
-      - Phase API: phase_api.md
-      - Identity API: identity_api.md
-      - Mitigation API: mitigation_api.md
-      - Bridges API: bridges_api.md
-      - QPU Data Artifact: qpu_data_artifact.md
-      - Pipeline Runtime Contract: pipeline_runtime_contract.md
-      - QPU Compute Unit: qpu_compute_unit.md
-      - QPU Provider Readiness: qpu_provider_readiness.md
-      - QPU System Capability Dossier: qpu_system_capability_dossier.md
-      - Benchmarks API: benchmarks_api.md
-      - Pipeline Performance: pipeline_performance.md
-      - "Bench: Dynamic Coupling": bench_dynamic_coupling.md
-      - "Bench: Structured Ansatz": bench_structured_ansatz.md
-      - "Bench: HW Topological Optimizer": bench_hw_topological_optimizer.md
-      - Test Infrastructure: test_infrastructure.md
+      - API Overview: api.md
+      - Runtime Contracts:
+          - QPU Data Artifact: qpu_data_artifact.md
+          - Pipeline Runtime Contract: pipeline_runtime_contract.md
+          - QPU Compute Unit: qpu_compute_unit.md
+          - QPU Provider Readiness: qpu_provider_readiness.md
+          - QPU System Capability Dossier: qpu_system_capability_dossier.md
+          - Pipeline Performance: pipeline_performance.md
+      - Advanced Module Reference:
+          - Auto-Generated Module Index: autodoc.md
+          - Analysis API: analysis_api.md
+          - Phase API: phase_api.md
+          - Identity API: identity_api.md
+          - Mitigation API: mitigation_api.md
+          - Bridges API: bridges_api.md
+          - Benchmarks API: benchmarks_api.md
+          - Rust Engine: rust_engine.md
+          - "Bench: Dynamic Coupling": bench_dynamic_coupling.md
+          - "Bench: Structured Ansatz": bench_structured_ansatz.md
+          - "Bench: HW Topological Optimizer": bench_hw_topological_optimizer.md
+          - Test Infrastructure: test_infrastructure.md
   - Publications:
       - "Preprint: Quantum Kuramoto-XY on Hardware": preprint.md
       - "Paper: Synchronisation Witnesses": paper_sync_witnesses.md

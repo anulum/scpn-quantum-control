@@ -10,12 +10,22 @@
 
 Generated from source docstrings via mkdocstrings.
 
+This page is an advanced module index. It is useful for maintainers and
+subsystem authors who need direct access to implementation modules. First-path
+user workflows should start with [Stable Facades API](stable_facades_api.md)
+and [Kuramoto Core Facade](kuramoto_core_facade.md).
+
 ## Stable Facades
 
 ::: scpn_quantum_control.kuramoto_core
     options:
       members: [KuramotoProblem, build_kuramoto_problem, validate_kuramoto_inputs, compile_hamiltonian, compile_dense_hamiltonian, compile_trotter_circuit, measure_order_parameter]
       show_root_heading: true
+
+## Advanced Module Reference
+
+The sections below expose lower-level packages directly. Use them when extending
+or debugging a subsystem, not as the default path for tutorial code.
 
 ## Bridge
 

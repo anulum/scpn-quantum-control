@@ -137,13 +137,13 @@ for name, w in results.items():
 - [Kuramoto Core Facade](kuramoto_core_facade.md) — stable `K_nm`/`omega` compiler entry point
 - [Stable Facades API](stable_facades_api.md) — mkdocstrings reference for first-path public facades
 - [Physics-First Kuramoto-XY](physics_first_kuramoto_xy.md) — start from arbitrary oscillator networks before SCPN-specific layers
-- [API Reference](api.md) — every public symbol, including `config`, `logging_setup`, `accel`, `hardware.backends`, `hardware.async_runner`
+- [API Overview](api.md) — stable facade route first, advanced module references second
 - [Research Gems](research_gems.md) — **33 analysis modules with theory and API**
 - [Equations](equations.md) — every equation in the codebase
 - [Architecture](architecture.md) — dependency graph + 20 subpackages
 - [Hardware Status Ledger](hardware_status_ledger.md) — claim classes and campaign evidence paths
-- [Analysis API](analysis_api.md) — 45 analysis modules
-- [Phase API](phase_api.md) — 28 evolution algorithms
+- [Analysis API](analysis_api.md) — advanced reference for 45 analysis modules
+- [Phase API](phase_api.md) — advanced reference for 28 evolution algorithms
 - [Hardware Guide](hardware_guide.md) — IBM Quantum setup
 - [Bridges](bridges_api.md) — cross-repo integrations
 - [Tutorials](tutorials.md) — 4-level learning path, 14 tutorials

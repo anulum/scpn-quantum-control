@@ -541,12 +541,13 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Installation](docs/installation.md) — pip install + all optional extras
 - [Quickstart](docs/quickstart.md) — first experiment in 5 minutes
 - [Tutorials](docs/tutorials.md) — 4-level learning path, 14 tutorials
-- [API Reference](docs/api.md) — every public symbol, including `config`, `logging_setup`, `accel`, `hardware.backends`, `hardware.async_runner`
+- [Stable Facades API](docs/stable_facades_api.md) — first-path public API for notebooks, tutorials, and integrations
+- [API Overview](docs/api.md) — stable facade route first, advanced module references second
 - [Research Gems](docs/research_gems.md) — **33 analysis modules with theory and API**
 - [Equations](docs/equations.md) — every equation in the codebase
 - [Architecture](docs/architecture.md) — dependency graph + 20 subpackages
-- [Analysis API](docs/analysis_api.md) — 45 analysis modules
-- [Phase API](docs/phase_api.md) — 28 evolution algorithms
+- [Analysis API](docs/analysis_api.md) — advanced reference for 45 analysis modules
+- [Phase API](docs/phase_api.md) — advanced reference for 28 evolution algorithms
 - [Hardware Guide](docs/hardware_guide.md) — IBM Quantum setup
 - [Notebooks](docs/notebooks.md) — 13 interactive notebooks
 - [Bridges](docs/bridges_api.md) — cross-repo integrations

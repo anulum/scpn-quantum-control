@@ -5,6 +5,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Changed
+- 2026-04-29 — Re-routed API documentation so stable facades are the first-path entry point and low-level module references sit under advanced navigation.
 - 2026-04-29 — Added a mkdocstrings stable facades API page for first-path public facades.
 - 2026-04-29 — Added a physics-first Kuramoto-XY tutorial with a tested arbitrary `K_nm`/`omega` workflow.
 - 2026-04-29 — Refreshed README, docs index, and results gallery from the dated hardware status ledger.
