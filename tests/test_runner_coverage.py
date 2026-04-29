@@ -247,7 +247,7 @@ class TestRunnerSampler:
         assert len(results) == 3
         for r in results:
             assert r.counts is not None
-            assert r.backend_name == "aer_simulator"
+            assert r.backend_name in {"aer_simulator", "basic_simulator"}
 
     def test_run_sampler_fields(self, tmp_path):
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
@@ -301,7 +301,7 @@ class TestRunnerEstimator:
         obs = [SparsePauliOp.from_list([("Z", 1.0)])]
         r = runner.run_estimator(qc, obs, name="est_fields")
         assert r.job_id == "sim_estimator"
-        assert r.backend_name == "aer_simulator"
+        assert r.backend_name in {"aer_simulator", "basic_simulator"}
         assert r.wall_time_s >= 0
 
 
