@@ -13,6 +13,8 @@ integration, roundtrip, performance.
 
 from __future__ import annotations
 
+import builtins
+import importlib
 import time
 
 import numpy as np
@@ -163,6 +165,24 @@ class TestNegativeCases:
     def test_double_exponential_zero_rates_defensive_branch(self) -> None:
         """Zero logical rates do not masquerade as double-exponential suppression."""
         assert not multiscale_module._check_double_exponential([0.0, 0.0], below_threshold=True)
+
+    def test_import_error_initialises_python_fallback(self) -> None:
+        """Reloading without the Rust extension selects the Python fallback path."""
+        real_import = builtins.__import__
+
+        def blocked_import(name, *args, **kwargs):
+            if name == "scpn_quantum_engine":
+                raise ImportError("forced Rust import failure")
+            return real_import(name, *args, **kwargs)
+
+        try:
+            builtins.__import__ = blocked_import
+            reloaded = importlib.reload(multiscale_module)
+            assert not reloaded._HAS_RUST
+            assert reloaded.concatenated_logical_rate(0.003, [3])[0] > 0.0
+        finally:
+            builtins.__import__ = real_import
+            importlib.reload(multiscale_module)
 
 
 # ===== 4. Pipeline Integration =====
