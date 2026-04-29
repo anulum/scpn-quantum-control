@@ -20,12 +20,30 @@
 [![Hardware: ibm_kingston](https://img.shields.io/badge/hardware-ibm__kingston%20Heron%20r2-blueviolet.svg)]()
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/anulum/scpn-quantum-control/blob/main/notebooks/01_kuramoto_xy_dynamics.ipynb)
 
-> **Active Development** — scpn-quantum-control is under intensive development. The quantum simulation engine, all 20 subpackages (209 modules), and the full pipeline (K_nm coupling → Hamiltonian → Trotter/VQE → IBM hardware → GUESS error mitigation → DLA-parity analysis) are fully functional, tested (4,841 passing tests, 97%+ coverage), and validated on IBM Heron r2 hardware (ibm_fez Feb 2026 + ibm_kingston Apr 2026). The April 2026 ibm_kingston campaign provided the first hardware confirmation of the DLA parity asymmetry predicted by the SCPN framework (Welch combined p ≪ 10⁻¹⁶ across 8 depth points). APIs may evolve as this work progresses.
+> **Active Development** — scpn-quantum-control is under intensive development.
+> The public status wording is anchored to the
+> [Hardware Status Ledger](https://anulum.github.io/scpn-quantum-control/hardware_status_ledger/),
+> which separates theory, simulator, unmitigated hardware, mitigated hardware,
+> and noise-limited claims. Current promoted hardware campaigns are the
+> `ibm_fez` baseline campaign and the April 2026 `ibm_kingston` DLA parity
+> campaign. APIs may evolve as this work progresses.
 
 **Version:** 0.9.6
-**Status:** 201 Python Modules + 36 Rust Functions | 47 Notebooks | 21 Examples | 97%+ Coverage | IBM Hardware Validated (DLA parity confirmed)
+**Status:** Kuramoto-XY compiler + hardware runners + analysis stack | 37 Rust functions | 47 notebooks | 21 examples | 97%+ coverage | IBM Heron r2 evidence ledgered
 
 ---
+
+## Status Snapshot — 2026-04-29
+
+| Area | Public status |
+|---|---|
+| Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, and order-parameter measurements. |
+| Hardware evidence | `ibm_fez` baseline campaign and `ibm_kingston` Phase 1 DLA parity campaign are the promoted hardware datasets. |
+| Simulator evidence | BKT, OTOC, Floquet, MBL, FIM, and classical comparison claims stay marked as simulator/classical unless a hardware artifact is named. |
+| Licence boundary | The possible lightweight core split is documented, but all in-repository code remains AGPL/commercial unless a future release changes metadata and SPDX headers. |
+
+For claim classes, raw-artifact pointers, and promotion rules, see the
+[Hardware Status Ledger](https://anulum.github.io/scpn-quantum-control/hardware_status_ledger/).
 
 ## Richer Presentation
 
@@ -102,7 +120,7 @@ The package provides:
    frequencies omega compile directly into executable Qiskit circuits for IBM
    hardware. Rust-accelerated Hamiltonian construction (5,401× faster than Qiskit).
 
-2. **33 research modules** ("gems") probing the synchronisation phase
+2. **35 research modules** probing the synchronisation phase
    transition — synchronisation witnesses, OTOC scrambling, Krylov complexity,
    persistent homology, DLA parity theorem, and more. ~4 are novel constructions
    (witness formalism, Knm ansatz, FIM sector protection); ~8 are first

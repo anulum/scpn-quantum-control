@@ -16,7 +16,17 @@
 [![mypy](https://img.shields.io/badge/type--checked-mypy-blue.svg)](https://mypy-lang.org/)
 
 Quantum simulation of coupled Kuramoto oscillator networks on IBM superconducting
-hardware, with 33 research modules probing the synchronization phase transition.
+hardware, with a hardware evidence ledger separating theory, simulator,
+unmitigated hardware, mitigated hardware, and noise-limited claims.
+
+## Status Snapshot — 2026-04-29
+
+| Area | Public status |
+|---|---|
+| Package line | Version `0.9.6`, Python `>=3.10`, Qiskit `>=2.2,<3.0`. |
+| Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, and order-parameter measurements. |
+| Hardware evidence | Promoted campaigns: `ibm_fez` baseline and April 2026 `ibm_kingston` Phase 1 DLA parity. |
+| Claim source | [Hardware Status Ledger](hardware_status_ledger.md). |
 
 ## What this package does
 
@@ -30,7 +40,7 @@ This package provides three things:
 1. **A compiler** that takes any coupling matrix $K_{nm}$ and natural frequencies
    $\omega_i$ and produces executable Qiskit circuits for IBM hardware.
 
-2. **33 research modules** (the "gems") probing the synchronization phase
+2. **35 research modules** probing the synchronization phase
    transition — synchronization witnesses, topological diagnostics, chaos
    measures, computational complexity bounds, and open-system dynamics. ~4 are
    novel constructions; ~8 are first applications of existing tools to
