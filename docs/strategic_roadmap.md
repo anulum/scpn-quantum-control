@@ -17,6 +17,11 @@ prioritise, scope, and sequence without re-deriving the case.
 **Status:** all fifty-three are **DEFERRED / CEO-gated**. No execution
 until each item is individually activated.
 
+**Execution note (2026-04-29):** the preprint Figure 17 exact-simulation
+crossover closes a manuscript resource-boundary figure only. It does not
+activate S2 or claim broad quantum advantage; S2 still requires the full
+N=4--20 exact/MPS/GPU/noisy-hardware benchmark matrix and CEO approval.
+
 **Relationship to `ROADMAP.md`:** that file tracks release-scoped
 work (v0.9.x → v1.0). This file tracks post-v1.0 differentiation
 work that pushes the project into novel territory rather than

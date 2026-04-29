@@ -14,6 +14,13 @@ repo_url: https://github.com/anulum/scpn-quantum-control
 repo_name: anulum/scpn-quantum-control
 edit_uri: edit/main/docs/
 
+# Raw OCR/PDF extracts are retained for internal auditability, but they
+# are not curated site pages. Their equation fragments and bracketed
+# scientific tokens look like Markdown links/autorefs, which breaks
+# `mkdocs build --strict` even though the public docs are clean.
+exclude_docs: |
+  internal/paper_extracts/**
+
 theme:
   name: material
   palette:

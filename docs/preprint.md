@@ -43,7 +43,11 @@ rate of 5.5% (below the BB84 threshold of 11%), and 16-qubit Kuramoto dynamics
 with visible coupling structure at 94% state preparation fidelity. We extract
 the critical coupling $K_c(\infty) \approx 2.2$ via BKT finite-size scaling
 and demonstrate that heterogeneous frequencies preserve discrete time crystal
-order — to our knowledge the first such measurement on hardware. All code, data, and 14 figures are
+order — to our knowledge the first such measurement on hardware. A
+hardware-anchored scaling analysis places the exact Hilbert-space simulation
+crossover at n≈11.6, while broad quantum advantage remains open because the
+Rust Kuramoto ODE baseline stays faster through the measured n≤16 range.
+All code, data, and 17 figures are
 open-source (AGPL-3.0) at
 [github.com/anulum/scpn-quantum-control](https://github.com/anulum/scpn-quantum-control).
 
@@ -60,7 +64,7 @@ At critical coupling $K_c$, the system undergoes a synchronisation phase
 transition characterised by the order parameter $R = \frac{1}{N}|\sum_k e^{i\theta_k}|$
 jumping from zero to a finite value.
 
-The quantum analog maps this to the XY spin Hamiltonian:
+The quantum analogue maps this to the XY spin Hamiltonian:
 
 $$H = -\sum_{i<j} K_{ij}(X_i X_j + Y_i Y_j) - \sum_i \omega_i Z_i$$
 
@@ -242,9 +246,24 @@ top bitstring vs 20% for generic alternatives — confirming that
 physics-informed circuit design outperforms generic variational ansatze
 on hardware.
 
+### 4.7 Exact-Simulation Crossover Boundary
+
+![Quantum advantage crossover](figures/publication/fig17_quantum_advantage_crossover.png)
+
+*Figure 17. Exact-simulation crossover anchored by completed ibm_fez
+hardware runs. Red points and fit show exact diagonalisation wall time;
+blue squares and dashed curve show hardware QPU budget estimates for
+completed runs; green triangles show the Rust Kuramoto ODE baseline.*
+
+The crossover at n≈11.6 applies only to exact Hilbert-space simulation of
+the Kuramoto-XY Hamiltonian. It is not a broad computational-advantage
+claim: observable-level Rust Kuramoto ODE baselines remain in the
+millisecond regime through n=16, and the largest hardware circuits are
+noise-limited.
+
 ---
 
-### 4.7 Many-Body Localisation Diagnostic
+### 4.8 Many-Body Localisation Diagnostic
 
 ![MBL](figures/publication/fig15_mbl_level_spacing.png)
 
@@ -333,7 +352,9 @@ noise source is coherent (gate errors) rather than incoherent (T1/T2 decay).
 
 ### Limitations
 
-- No quantum advantage demonstrated. Classical solvers outperform at $n \leq 16$.
+- No broad quantum advantage demonstrated. Classical observable-level ODE
+  solvers outperform at $n \leq 16$; Figure 17 is an exact Hilbert-space
+  simulation boundary only.
 - Trotter error at $dt = 0.1$ is significant (Q1 sign flip at finer $dt$).
 - DD (X-X echo) is marginally counterproductive for this Hamiltonian — the
   pulse sequence may not commute favourably with the XY interaction.

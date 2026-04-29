@@ -60,10 +60,20 @@ update this table first, then refresh the summary pages.
 
 ## Current Gaps
 
-- `docs/results.md` still mixes long-form narrative, simulator figures, and
-  hardware campaign summaries. It should remain a gallery, while this page is
-  the status index.
-- Later frontier batches should be added only after their raw artifacts and
-  retrieval manifests are reviewed and committed.
-- Exact test counts should move to release notes or CI summaries unless they are
-  generated during documentation build.
+- `docs/results.md` remains a public gallery and technical summary. This ledger
+  is the canonical status index; further result-page edits should keep detailed
+  provenance here rather than duplicating claim-state decisions.
+- Later frontier batches must be added only after their raw artifacts,
+  retrieval manifests, and analysis scripts are reviewed and committed.
+- Exact repository-wide test counts belong in CI summaries or release notes.
+  Public overview pages should describe the CI-gated suite and coverage target
+  rather than carrying static counts that drift between commits.
+
+## Roadmap State — 2026-04-29
+
+| Queue | State | Next gate |
+|---|---|---|
+| High-impact execution TODO | Complete locally. Dependency hygiene, core facade, documentation ergonomics, baselines, maintenance, and frontier-track scaffolding are checked off. | Commit/push current Figure 17 and documentation batch, then let CI verify. |
+| Scientific gaps | Partially closed. K_nm physical validation still needs measured-system coupling magnitudes; broad quantum advantage remains open; `p_h1 = 0.72` is an explicit open empirical/theoretical parameter. | New measured-system data or a separate derivation/measurement campaign. |
+| Hardware experiments | March/April promoted campaigns complete. Phase 2 DLA parity expansion is ready but blocked on promo/credits. | IBM credit/promo availability plus preregistered run manifest. |
+| Strategic roadmap | All 53 post-v1.0 differentiation tracks remain deferred / CEO-gated. | Activate one track explicitly before implementation. |

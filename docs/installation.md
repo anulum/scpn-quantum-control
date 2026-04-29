@@ -108,7 +108,7 @@ python tools/check_dependency_drift.py
 
 ```bash
 python -c "import scpn_quantum_control; print('OK')"
-pytest tests/ -x -q  # 4,841+ tests should pass (9 deselected)
+pytest tests/ -x -q  # full suite should pass
 ```
 
 ## IBM Quantum setup (optional)
