@@ -77,6 +77,15 @@ from .identity.coherence_budget import coherence_budget, fidelity_at_depth
 from .identity.entanglement_witness import chsh_from_statevector, disposition_entanglement_map
 from .identity.ground_state import IdentityAttractor
 from .identity.identity_key import identity_fingerprint, prove_identity, verify_identity
+from .kuramoto_core import (
+    KuramotoProblem,
+    build_kuramoto_problem,
+    compile_dense_hamiltonian,
+    compile_hamiltonian,
+    compile_trotter_circuit,
+    measure_order_parameter,
+    validate_kuramoto_inputs,
+)
 from .mitigation.compound_mitigation import compound_mitigate_pipeline
 from .mitigation.pec import PECResult, pauli_twirl_decompose, pec_sample
 from .mitigation.symmetry_decay import (
@@ -114,6 +123,13 @@ __version__ = "0.9.6"
 __all__ = [
     "eeg_plv_to_vqe",
     "eeg_quantum_kernel",
+    "KuramotoProblem",
+    "build_kuramoto_problem",
+    "validate_kuramoto_inputs",
+    "compile_hamiltonian",
+    "compile_dense_hamiltonian",
+    "compile_trotter_circuit",
+    "measure_order_parameter",
     "TopologicalCouplingOptimizer",
     "HardwareTopologicalOptimizer",
     "fast_sparse_evolution",
