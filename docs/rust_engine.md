@@ -97,6 +97,9 @@ avoiding 2n individual calls to `expectation_pauli_fast`.
 | Function | Description | Complexity |
 |----------|-------------|------------|
 | `dla_dimension(generators_flat, dim, n_generators, max_iter, max_dim, tol)` | DLA dimension via commutator closure (rayon) | O(dim³ × basis²) |
+| `dla_protected_memory_mask(n_logical, code_distance, target_parity)` | Dense fixed-parity repetition-code memory mask | O(2^(n_logical·code_distance)) |
+| `dla_protected_memory_metrics(probabilities, n_logical, code_distance, target_parity)` | Protected, code, target-parity, opposite-parity, and total probability weights | O(2^(n_logical·code_distance)) |
+| `dla_protected_trajectory_metrics(probabilities, n_logical, code_distance, target_parity)` | Batch protected-memory metrics for scar and memory trajectories | O(T·2^(n_logical·code_distance)) |
 
 ### Monte Carlo
 

@@ -68,7 +68,7 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | IBM hardware jobs | 33 on ibm_fez (Feb 2026) + 348 on ibm_kingston (Apr 2026, Phase 1 DLA-parity campaign) |
 | DLA parity asymmetry (hardware) | $+10.8\,\%$ mean for depths $\ge 4$, peak $+17.5\,\%$ at depth 6 (Welch combined $p \ll 10^{-16}$) |
 | Test suite | **4,841 passing**, 97%+ coverage |
-| Python modules | 210 + 1 Rust crate (37 functions) + Julia tier (`accel/julia/*.jl`) |
+| Python modules | 211 + 1 Rust crate (38 functions) + Julia tier (`accel/julia/*.jl`) |
 
 ## Package map
 
@@ -80,7 +80,7 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | `bridge` | 13 | $K_{nm}$ → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
 | `applications` | 12 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS |
 | `mitigation` | 9 | ZNE, PEC, dynamical decoupling, Z₂ parity, CPDR, symmetry verification, GUESS, compound |
-| `qec` | 8 | Toric code, repetition code UPDE, surface code, biological surface code, error budget, multi-scale, syndrome flow |
+| `qec` | 9 | Toric code, repetition code UPDE, surface code, biological surface code, DLA-protected memory/scar prototypes, error budget, multi-scale, syndrome flow |
 | `control` | 8 | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, ITER disruption, topological optimiser |
 | `identity` | 7 | VQE attractor, coherence budget, entanglement witness, fingerprint |
 | `qsnn` | 7 | Quantum spiking neural networks (LIF, STDP, synapses, dynamic coupling, training) |

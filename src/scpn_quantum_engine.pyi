@@ -76,6 +76,12 @@ def dla_protected_memory_metrics(
     code_distance: int,
     target_parity: int,
 ) -> tuple[float, float, float, float, float]: ...
+def dla_protected_trajectory_metrics(
+    probabilities: _F64Array,
+    n_logical: int,
+    code_distance: int,
+    target_parity: int,
+) -> tuple[_F64Array, _F64Array, _F64Array, _F64Array, _F64Array]: ...
 def expectation_pauli_fast(
     psi_re: _F64Array,
     psi_im: _F64Array,
