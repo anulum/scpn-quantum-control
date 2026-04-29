@@ -218,12 +218,31 @@ class HardwareRunner:
         )
 
     def _connect_simulator(self) -> None:
-        from qiskit_aer import AerSimulator
+        simulator_kind = "aer"
+        try:
+            from qiskit_aer import AerSimulator
 
-        if self._noise_model is not None:
-            self._backend = AerSimulator(noise_model=self._noise_model)
-        else:
-            self._backend = AerSimulator()
+            if self._noise_model is not None:
+                self._backend = AerSimulator(noise_model=self._noise_model)
+            else:
+                self._backend = AerSimulator()
+        except Exception as exc:
+            from qiskit.providers.basic_provider import BasicSimulator
+
+            simulator_kind = "basic"
+            self._backend = BasicSimulator()
+            if self._noise_model is not None:
+                _slog.warning(
+                    "aer_unavailable_noise_model_ignored",
+                    reason=str(exc),
+                    fallback=self._backend.name,
+                )
+            else:
+                _slog.warning(
+                    "aer_unavailable_using_basic_simulator",
+                    reason=str(exc),
+                    fallback=self._backend.name,
+                )
         basis = ["ecr", "id", "rz", "sx", "x"]
         if self.use_fractional_gates:
             basis.extend(["rx", "rzz"])
@@ -233,8 +252,9 @@ class HardwareRunner:
         )
         _slog.info(
             "backend_connected",
-            backend="AerSimulator",
+            backend=self.backend_name,
             mode="simulator",
+            simulator_kind=simulator_kind,
             noisy=self._noise_model is not None,
         )
 
@@ -433,7 +453,7 @@ class HardwareRunner:
             wall = time.time() - t0
             jr = JobResult(
                 job_id=f"sim_{i}",
-                backend_name="aer_simulator",
+                backend_name=self.backend_name,
                 experiment_name=f"{name}_{i}",
                 counts=counts,
                 wall_time_s=wall,
@@ -463,7 +483,7 @@ class HardwareRunner:
         wall = time.time() - t0
         return JobResult(
             job_id="sim_estimator",
-            backend_name="aer_simulator",
+            backend_name=self.backend_name,
             experiment_name=name,
             expectation_values=evs_arr,
             wall_time_s=wall,

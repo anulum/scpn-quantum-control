@@ -40,7 +40,18 @@ def gate_fold_circuit(circuit: QuantumCircuit, scale: int) -> QuantumCircuit:
     if scale == 1:
         return circuit.copy()
 
-    base = circuit.remove_final_measurements(inplace=False)
+    data = list(circuit.data)
+    measurement_removed = False
+    while data and data[-1].operation.name in {"barrier", "measure"}:
+        measurement_removed = measurement_removed or data[-1].operation.name == "measure"
+        data.pop()
+
+    base = QuantumCircuit(circuit.num_qubits)
+    for instruction in data:
+        if instruction.clbits:
+            raise ValueError("cannot fold circuits with mid-circuit classical operations")
+        qubits = [base.qubits[circuit.find_bit(qubit).index] for qubit in instruction.qubits]
+        base._append(instruction.operation.copy(), qubits)
 
     folded = base.copy()
     n_folds = (scale - 1) // 2
@@ -49,7 +60,7 @@ def gate_fold_circuit(circuit: QuantumCircuit, scale: int) -> QuantumCircuit:
         folded.compose(base_inv, inplace=True)
         folded.compose(base, inplace=True)
 
-    if circuit.num_clbits > 0:
+    if measurement_removed:
         folded.measure_all()
 
     return folded

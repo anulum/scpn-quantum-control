@@ -10,14 +10,25 @@
 from __future__ import annotations
 
 import json
+import logging
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
 from qiskit import QuantumCircuit
 
+from scpn_quantum_control.hardware import runner as runner_mod
 from scpn_quantum_control.hardware.runner import HardwareRunner, JobResult
+
+
+class _CountsRegister:
+    def __init__(self, counts):
+        self._counts = counts
+
+    def get_counts(self):
+        return self._counts
 
 
 @pytest.fixture()
@@ -54,6 +65,25 @@ class TestJobResult:
 
 
 class TestHardwareRunnerInit:
+    def test_structured_logger_falls_back_to_stdlib(self):
+        with patch(
+            "scpn_quantum_control.logging_setup.get_logger",
+            side_effect=RuntimeError("logger unavailable"),
+        ):
+            logger = runner_mod._get_structured_logger("scpn.test")
+
+        assert isinstance(logger, logging.Logger)
+
+    def test_default_instance_env_fallback(self, monkeypatch):
+        monkeypatch.setenv("SCPN_IBM_CRN", "crn:v1:test")
+        monkeypatch.delenv("SCPN_IBM_INSTANCE", raising=False)
+
+        with patch(
+            "scpn_quantum_control.config.get_config",
+            side_effect=RuntimeError("config unavailable"),
+        ):
+            assert HardwareRunner._default_instance() == "crn:v1:test"
+
     def test_results_dir_fallback(self, monkeypatch):
         """If results_dir creation fails, falls back to tempdir."""
         bad_path = "/nonexistent_root_1234567890/results"
@@ -66,6 +96,82 @@ class TestHardwareRunnerInit:
 
 
 class TestHardwareConnect:
+    def test_connect_ibm_service_none_raises(self, tmp_results):
+        runner = HardwareRunner(results_dir=tmp_results)
+        with (
+            patch.dict(
+                "sys.modules",
+                {
+                    "qiskit_ibm_runtime": MagicMock(
+                        QiskitRuntimeService=MagicMock(return_value=None)
+                    ),
+                },
+            ),
+            pytest.raises(RuntimeError, match="connect"),
+        ):
+            runner.connect()
+
+    def test_connect_ibm_backend_none_raises(self, tmp_results):
+        mock_service = MagicMock()
+        mock_service.least_busy.return_value = None
+        runner = HardwareRunner(results_dir=tmp_results)
+        with (
+            patch.dict(
+                "sys.modules",
+                {
+                    "qiskit_ibm_runtime": MagicMock(
+                        QiskitRuntimeService=MagicMock(return_value=mock_service)
+                    ),
+                },
+            ),
+            pytest.raises(RuntimeError, match="connect"),
+        ):
+            runner.connect()
+
+    def test_connect_simulator_uses_aer_when_available(self, tmp_results):
+        mock_backend = MagicMock()
+        mock_backend.name = "aer_simulator"
+        mock_backend.num_qubits = 32
+        mock_aer = MagicMock(return_value=mock_backend)
+        mock_pm = MagicMock()
+
+        runner = HardwareRunner(use_simulator=True, results_dir=tmp_results)
+        with (
+            patch.dict("sys.modules", {"qiskit_aer": MagicMock(AerSimulator=mock_aer)}),
+            patch(
+                "scpn_quantum_control.hardware.runner.generate_preset_pass_manager",
+                return_value=mock_pm,
+            ) as mock_generate,
+        ):
+            runner.connect()
+
+        mock_aer.assert_called_once_with()
+        mock_generate.assert_called_once()
+        assert runner.backend is mock_backend
+        assert runner.backend_name == "aer_simulator"
+
+    def test_connect_simulator_passes_noise_model_to_aer(self, tmp_results):
+        mock_backend = MagicMock()
+        mock_backend.name = "aer_simulator"
+        noise_model = object()
+        mock_aer = MagicMock(return_value=mock_backend)
+
+        runner = HardwareRunner(
+            use_simulator=True,
+            noise_model=noise_model,
+            results_dir=tmp_results,
+        )
+        with (
+            patch.dict("sys.modules", {"qiskit_aer": MagicMock(AerSimulator=mock_aer)}),
+            patch(
+                "scpn_quantum_control.hardware.runner.generate_preset_pass_manager",
+                return_value=MagicMock(),
+            ),
+        ):
+            runner.connect()
+
+        mock_aer.assert_called_once_with(noise_model=noise_model)
+
     def test_connect_ibm_with_token(self, tmp_results):
         mock_service = MagicMock()
         mock_backend = MagicMock()
@@ -135,6 +241,17 @@ class TestHardwareConnect:
 
 
 class TestHardwareRunSampler:
+    def test_extract_counts_custom_register_fallback(self):
+        pub_result = SimpleNamespace(data=SimpleNamespace(custom_reg=_CountsRegister({"01": 7})))
+
+        assert runner_mod._extract_counts(pub_result) == {"01": 7}
+
+    def test_extract_counts_missing_register_raises(self):
+        pub_result = SimpleNamespace(data=SimpleNamespace(alpha=object()))
+
+        with pytest.raises(RuntimeError, match="Could not find classical register"):
+            runner_mod._extract_counts(pub_result)
+
     def test_run_sampler_hardware(self, tmp_results):
         runner = HardwareRunner(results_dir=tmp_results)
         runner.use_simulator = False
@@ -249,6 +366,47 @@ class TestHardwareRunEstimator:
             )
 
         assert result.job_id == "hw_est_002"
+
+    def test_run_estimator_zne_uses_default_scales(self, tmp_results):
+        from qiskit.quantum_info import SparsePauliOp
+
+        runner = HardwareRunner(results_dir=tmp_results)
+        runner.run_estimator = MagicMock(
+            return_value=JobResult(
+                job_id="zne",
+                backend_name="sim",
+                experiment_name="zne",
+                expectation_values=np.array([0.25]),
+            )
+        )
+
+        qc = QuantumCircuit(1)
+        qc.h(0)
+        obs = [SparsePauliOp.from_list([("Z", 1.0)])]
+        result = runner.run_estimator_zne(qc, obs)
+
+        assert result.noise_scales == [1, 3, 5]
+        assert runner.run_estimator.call_count == 3
+
+    def test_run_estimator_zne_requires_expectation_values(self, tmp_results):
+        from qiskit.quantum_info import SparsePauliOp
+
+        runner = HardwareRunner(results_dir=tmp_results)
+        runner.run_estimator = MagicMock(
+            return_value=JobResult(
+                job_id="zne",
+                backend_name="sim",
+                experiment_name="zne",
+                expectation_values=None,
+            )
+        )
+
+        qc = QuantumCircuit(1)
+        qc.h(0)
+        obs = [SparsePauliOp.from_list([("Z", 1.0)])]
+
+        with pytest.raises(ValueError, match="no expectation values"):
+            runner.run_estimator_zne(qc, obs, scales=[1])
 
 
 class TestSaveResult:
