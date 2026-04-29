@@ -145,6 +145,7 @@ def compute_otoc(
     n = K.shape[0]
     if times is None:
         times = np.linspace(0, 2.0, 30)
+    times = np.ascontiguousarray(times, dtype=np.float64)
     if v_qubit is None:
         v_qubit = min(w_qubit + 1, n - 1)
 
