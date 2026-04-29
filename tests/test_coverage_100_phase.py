@@ -266,6 +266,53 @@ def test_varqite_ground_state():
     assert hasattr(result, "energy_history")
 
 
+def test_varqite_matrices_densify_sparse_hamiltonian(monkeypatch):
+    """Sparse-like Hamiltonian matrices are densified before McLachlan solves."""
+    from scpn_quantum_control.phase import varqite as module
+
+    toarray_calls = []
+
+    class SparseLike:
+        def __init__(self, matrix):
+            self.matrix = matrix
+
+        def toarray(self):
+            toarray_calls.append(self.matrix.shape)
+            return self.matrix
+
+    class Hamiltonian:
+        def to_matrix(self):
+            return SparseLike(np.diag([0.0, 1.0]))
+
+    class Ansatz:
+        def assign_parameters(self, params):
+            return np.asarray(params, dtype=float)
+
+    class FakeStatevector:
+        def __init__(self, data):
+            self.data = data
+
+        @classmethod
+        def from_instruction(cls, assigned):
+            theta = float(np.asarray(assigned)[0])
+            return cls(np.array([np.cos(theta), np.sin(theta)], dtype=complex))
+
+    monkeypatch.setattr(module, "Statevector", FakeStatevector)
+
+    A, C = module._varqite_matrices(
+        Ansatz(),
+        np.array([0.2]),
+        Hamiltonian(),
+        epsilon=1e-5,
+    )
+
+    assert toarray_calls == [(2, 2)]
+    assert A.shape == (1, 1)
+    assert C.shape == (1,)
+    assert A[0, 0] == pytest.approx(1.0, rel=1e-8)
+    assert np.all(np.isfinite(C))
+
+
 # --- adapt_vqe.py lines 154-170: ADAPT-VQE full optimization loop ---
 
 
