@@ -103,6 +103,10 @@ or debugging a subsystem, not as the default path for tutorial code.
 
 ## Benchmarks
 
+::: scpn_quantum_control.benchmarks.classical_baselines
+    options:
+      members: [ClassicalBaselineRun, available_baselines, scipy_ode_baseline, qutip_lindblad_baseline, mps_tebd_baseline, run_documented_classical_baselines]
+
 ::: scpn_quantum_control.benchmarks.quantum_advantage
     options:
       members: [AdvantageResult, classical_benchmark, quantum_benchmark, estimate_crossover, run_scaling_benchmark]

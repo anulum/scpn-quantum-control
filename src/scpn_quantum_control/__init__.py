@@ -10,6 +10,14 @@
 # Subpackage-level access for new modules
 from . import analysis, applications, fep, gauge, l16, pgbo, psi_field, ssgf, tcbo
 from .applications.eeg_classification import eeg_plv_to_vqe, eeg_quantum_kernel
+from .benchmarks.classical_baselines import (
+    ClassicalBaselineRun,
+    available_baselines,
+    mps_tebd_baseline,
+    qutip_lindblad_baseline,
+    run_documented_classical_baselines,
+    scipy_ode_baseline,
+)
 from .benchmarks.quantum_advantage import (
     AdvantageResult,
     classical_benchmark,
@@ -218,6 +226,12 @@ __all__ = [
     "identity_fingerprint",
     "prove_identity",
     "verify_identity",
+    "ClassicalBaselineRun",
+    "available_baselines",
+    "scipy_ode_baseline",
+    "qutip_lindblad_baseline",
+    "mps_tebd_baseline",
+    "run_documented_classical_baselines",
     "AdvantageResult",
     "classical_benchmark",
     "quantum_benchmark",

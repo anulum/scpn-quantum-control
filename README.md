@@ -548,6 +548,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Architecture](docs/architecture.md) — dependency graph + 20 subpackages
 - [Analysis API](docs/analysis_api.md) — advanced reference for 45 analysis modules
 - [Phase API](docs/phase_api.md) — advanced reference for 28 evolution algorithms
+- [Classical Baselines](docs/classical_baselines.md) — SciPy ODE, QuTiP Lindblad, and MPS TEBD provenance surfaces
 - [Hardware Guide](docs/hardware_guide.md) — IBM Quantum setup
 - [Notebooks](docs/notebooks.md) — 13 interactive notebooks
 - [Bridges](docs/bridges_api.md) — cross-repo integrations
