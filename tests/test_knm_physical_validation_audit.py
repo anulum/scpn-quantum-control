@@ -52,6 +52,7 @@ def test_compare_measured_couplings_validates_with_uncertainty():
         "system": "unit-test",
         "unit": "dimensionless",
         "normalisation": "already normalised",
+        "normalisation_locked": True,
         "couplings": [{"i": 1, "j": 2, "value": 0.301, "uncertainty": 0.002}],
     }
 
@@ -62,9 +63,28 @@ def test_compare_measured_couplings_validates_with_uncertainty():
     assert result["matched_edges"] == 1
 
 
+def test_compare_measured_couplings_requires_locked_normalisation():
+    K = np.array([[0.0, 0.302], [0.302, 0.0]])
+    measured = {
+        "system": "unit-test",
+        "unit": "dimensionless",
+        "normalisation": "same numeric scale but not locked",
+        "normalisation_locked": False,
+        "couplings": [{"i": 1, "j": 2, "value": 0.302, "uncertainty": 0.002}],
+    }
+
+    result = compare_measured_couplings(K, measured)
+
+    assert result["status"] == "open"
+    assert result["normalisation_locked"] is False
+
+
 def test_load_measured_couplings_requires_couplings_list(tmp_path):
     path = tmp_path / "bad.json"
-    path.write_text(json.dumps({"system": "bad"}), encoding="utf-8")
+    path.write_text(
+        json.dumps({"system": "bad", "unit": "dimensionless", "normalisation": "bad"}),
+        encoding="utf-8",
+    )
 
     try:
         load_measured_couplings(path)
