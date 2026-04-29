@@ -9,14 +9,32 @@
 
 from __future__ import annotations
 
+import importlib.util
 import json
+import sys
+from pathlib import Path
 
 import numpy as np
 
-from scripts.run_knm_physical_validation_audit import (
-    compare_measured_couplings,
-    load_measured_couplings,
-)
+REPO_ROOT = Path(__file__).resolve().parents[1]
+SCRIPT_PATH = REPO_ROOT / "scripts" / "run_knm_physical_validation_audit.py"
+
+
+def _load_script_module():
+    spec = importlib.util.spec_from_file_location(
+        "_run_knm_physical_validation_audit",
+        SCRIPT_PATH,
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+audit_module = _load_script_module()
+compare_measured_couplings = audit_module.compare_measured_couplings
+load_measured_couplings = audit_module.load_measured_couplings
 
 
 def test_compare_measured_couplings_marks_missing_dataset_open():

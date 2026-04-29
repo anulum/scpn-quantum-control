@@ -9,10 +9,29 @@
 
 from __future__ import annotations
 
-from scripts.run_quantum_advantage_gap_audit import (
-    build_audit_payload,
-    classify_advantage_status,
-)
+import importlib.util
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+SCRIPT_PATH = REPO_ROOT / "scripts" / "run_quantum_advantage_gap_audit.py"
+
+
+def _load_script_module():
+    spec = importlib.util.spec_from_file_location(
+        "_run_quantum_advantage_gap_audit",
+        SCRIPT_PATH,
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+audit_module = _load_script_module()
+build_audit_payload = audit_module.build_audit_payload
+classify_advantage_status = audit_module.classify_advantage_status
 
 
 def test_classify_advantage_status_keeps_broad_advantage_open():
