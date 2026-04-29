@@ -1,0 +1,311 @@
+{
+  "couplings": [
+    {
+      "i": 1,
+      "j": 2,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.009686012622701193,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.8778223294795855
+    },
+    {
+      "i": 1,
+      "j": 3,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.011348530801888555,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.7831931226824658
+    },
+    {
+      "i": 1,
+      "j": 4,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.011704453041326963,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.7720238258718639
+    },
+    {
+      "i": 1,
+      "j": 5,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.01998379803334233,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.5908200943598962
+    },
+    {
+      "i": 1,
+      "j": 6,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.01808446881863222,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.49292260340193733
+    },
+    {
+      "i": 1,
+      "j": 7,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.019358289183000792,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.3322610495403264
+    },
+    {
+      "i": 1,
+      "j": 8,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.01804305142976142,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.27762283595630743
+    },
+    {
+      "i": 2,
+      "j": 3,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.011781814763072423,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.7996321371974683
+    },
+    {
+      "i": 2,
+      "j": 4,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.011424006661324874,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.805884793135239
+    },
+    {
+      "i": 2,
+      "j": 5,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.020633135140975662,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.5421460538989676
+    },
+    {
+      "i": 2,
+      "j": 6,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.017394410315354093,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.5299671120112
+    },
+    {
+      "i": 2,
+      "j": 7,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.01849806288162002,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.31300715843924737
+    },
+    {
+      "i": 2,
+      "j": 8,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.0170039957981236,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.2843044970505378
+    },
+    {
+      "i": 3,
+      "j": 4,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.0015235624866532691,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.9847910645309322
+    },
+    {
+      "i": 3,
+      "j": 5,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.018026066015648084,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.6831171239381888
+    },
+    {
+      "i": 3,
+      "j": 6,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.012758244164815294,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.7137834519183833
+    },
+    {
+      "i": 3,
+      "j": 7,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.02190364610582299,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.40223146434530405
+    },
+    {
+      "i": 3,
+      "j": 8,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.01994517199826648,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.365787171348571
+    },
+    {
+      "i": 4,
+      "j": 5,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.018065413256278747,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.6648554940418976
+    },
+    {
+      "i": 4,
+      "j": 6,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.012154284485977553,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.7282059629144134
+    },
+    {
+      "i": 4,
+      "j": 7,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.021645309699984638,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.39117305962054394
+    },
+    {
+      "i": 4,
+      "j": 8,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.01978978187084363,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.369491117027143
+    },
+    {
+      "i": 5,
+      "j": 6,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.020118603703675672,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.5893234095838037
+    },
+    {
+      "i": 5,
+      "j": 7,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.0217517216200766,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.5476336106293723
+    },
+    {
+      "i": 5,
+      "j": 8,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.021100030217980542,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.45903400432484376
+    },
+    {
+      "i": 6,
+      "j": 7,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.02155276214749587,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.48455834278715404
+    },
+    {
+      "i": 6,
+      "j": 8,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.020093178403855643,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.5167658386433298
+    },
+    {
+      "i": 7,
+      "j": 8,
+      "n_segments": 60,
+      "source": "PhysioNet EEGMMIDB S001R01 alpha-band PLV",
+      "uncertainty": 0.016543329037407194,
+      "uncertainty_type": "standard_error_across_overlapping_plv_windows",
+      "value": 0.7130245930781735
+    }
+  ],
+  "normalisation": "PLV = |mean(exp(1j * phase_difference))| after 8-13 Hz Butterworth bandpass; dimensionless and locked to [0, 1].",
+  "normalisation_locked": true,
+  "provenance": {
+    "command": [
+      "python",
+      "scripts/build_real_eeg_plv_validation_dataset.py",
+      "--edf",
+      ".coordination/datasets/eegmmidb/S001/S001R01.edf"
+    ],
+    "git_commit": "9fea5ee7a57eccfe72b2d1b1c30dcd3099a4ee6f",
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39",
+    "python": "3.12.3 (main, Mar  3 2026, 12:15:18) [GCC 13.3.0]",
+    "repo_root": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL"
+  },
+  "schema_version": "scpn-quantum-control.measured-couplings.v1",
+  "signal_processing": {
+    "bandpass_hz": [
+      8.0,
+      13.0
+    ],
+    "channels_canonical": [
+      "Fp1",
+      "Fp2",
+      "F3",
+      "F4",
+      "C3",
+      "C4",
+      "O1",
+      "O2"
+    ],
+    "channels_edf": [
+      "Fp1.",
+      "Fp2.",
+      "F3..",
+      "F4..",
+      "C3..",
+      "C4..",
+      "O1..",
+      "O2.."
+    ],
+    "estimator": "segment mean PLV with standard error across windows",
+    "sampling_hz": 160.0,
+    "step_s": 1.0,
+    "window_s": 2.0
+  },
+  "source_dataset": {
+    "citation": "Schalk et al., IEEE Transactions on Biomedical Engineering 51(6):1034-1043, 2004; Goldberger et al., Circulation 101(23):e215-e220, 2000.",
+    "licence": "PhysioNet open-access credentialed-use terms",
+    "name": "EEG Motor Movement/Imagery Dataset v1.0.0",
+    "raw_sha256": "4743b736131a7e147c150e8b37711029b6cda5e356c4b3e8261a03cdcaaf8b0c",
+    "record": "S001R01.edf",
+    "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S001/S001R01.edf"
+  },
+  "system": "PhysioNet EEGMMIDB subject 1 run 1 baseline eyes open",
+  "unit": "phase_locking_value"
+}

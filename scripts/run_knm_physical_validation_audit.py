@@ -199,6 +199,9 @@ def load_measured_couplings(path: Path | None) -> dict[str, Any] | None:
     if path is None or not path.exists():
         return None
     payload = json.loads(path.read_text(encoding="utf-8"))
+    for key in ("system", "unit", "normalisation"):
+        if key not in payload:
+            raise ValueError(f"Measured coupling file lacks required key {key!r}: {path}")
     if not isinstance(payload.get("couplings"), list):
         raise ValueError(f"Measured coupling file lacks a couplings list: {path}")
     return payload
@@ -362,14 +365,22 @@ def compare_measured_couplings(K: np.ndarray, measured: dict[str, Any] | None) -
         )
 
     has_uncertainties = all(row["uncertainty"] is not None for row in rows)
+    normalisation_locked = bool(measured.get("normalisation_locked", False))
     all_within = bool(rows) and all(row["within_uncertainty"] is True for row in rows)
-    status = "validated_with_measured_dataset" if has_uncertainties and all_within else "open"
+    status = (
+        "validated_with_measured_dataset"
+        if normalisation_locked and has_uncertainties and all_within
+        else "open"
+    )
     return {
         "available": True,
         "status": status,
         "system": measured.get("system"),
         "unit": measured.get("unit"),
         "normalisation": measured.get("normalisation"),
+        "normalisation_locked": normalisation_locked,
+        "source_dataset": measured.get("source_dataset"),
+        "signal_processing": measured.get("signal_processing"),
         "matched_edges": len(rows),
         "max_absolute_error": max((row["absolute_error"] for row in rows), default=0.0),
         "rows": rows,
