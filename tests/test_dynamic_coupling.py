@@ -9,6 +9,9 @@
 
 from __future__ import annotations
 
+import builtins
+import importlib
+
 import numpy as np
 
 from scpn_quantum_control.qsnn.dynamic_coupling import DynamicCouplingEngine
@@ -151,6 +154,25 @@ class TestDynamicCoupling:
 
 class TestDynamicCouplingPythonFallback:
     """Cover lines 76-95: Qiskit fallback when Rust unavailable."""
+
+    def test_module_import_without_rust_engine(self, monkeypatch):
+        """Missing Rust extension selects the documented Python fallback."""
+        import scpn_quantum_control.qsnn.dynamic_coupling as dc_mod
+
+        real_import = builtins.__import__
+
+        def blocked_import(name, globals=None, locals=None, fromlist=(), level=0):
+            if name == "scpn_quantum_engine":
+                raise ImportError("blocked optional engine")
+            return real_import(name, globals, locals, fromlist, level)
+
+        monkeypatch.setattr(builtins, "__import__", blocked_import)
+        reloaded = importlib.reload(dc_mod)
+        assert reloaded._HAS_RUST is False
+
+        monkeypatch.setattr(builtins, "__import__", real_import)
+        restored = importlib.reload(dc_mod)
+        assert hasattr(restored, "_HAS_RUST")
 
     def test_measure_correlation_no_rust(self):
         """Mock _HAS_RUST=False → Qiskit SparsePauliOp path executes."""
