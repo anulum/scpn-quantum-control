@@ -15,6 +15,8 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
 ## [0.9.6] - 2026-04-17
 
 ### Changed (2026-04-29)
+- Documented the licence boundary for a possible future lightweight
+  Kuramoto-XY core package; no relicensing is implied.
 - Added a `kuramoto_core` facade for validated `K_nm`/`omega`
   problems, Hamiltonian/circuit compilation, dense Rust-backed
   Hamiltonians, and order-parameter measurement.

@@ -55,6 +55,7 @@ nav:
   - API Reference:
       - Full Reference: api.md
       - Kuramoto Core Facade: kuramoto_core_facade.md
+      - Core Package Boundary: core_package_boundary.md
       - Rust Engine: rust_engine.md
       - Auto-Generated: autodoc.md
       - Analysis API: analysis_api.md
