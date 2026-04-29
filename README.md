@@ -22,7 +22,7 @@
 
 > **Active Development** — scpn-quantum-control is under intensive development.
 > The public status wording is anchored to the
-> [Hardware Status Ledger](https://anulum.github.io/scpn-quantum-control/hardware_status_ledger/),
+> [Hardware Status Ledger](docs/hardware_status_ledger.md),
 > which separates theory, simulator, unmitigated hardware, mitigated hardware,
 > and noise-limited claims. Current promoted hardware campaigns are the
 > `ibm_fez` baseline campaign and the April 2026 `ibm_kingston` DLA parity
@@ -43,7 +43,7 @@
 | Licence boundary | The possible lightweight core split is documented, but all in-repository code remains AGPL/commercial unless a future release changes metadata and SPDX headers. |
 
 For claim classes, raw-artifact pointers, and promotion rules, see the
-[Hardware Status Ledger](https://anulum.github.io/scpn-quantum-control/hardware_status_ledger/).
+[Hardware Status Ledger](docs/hardware_status_ledger.md).
 
 ## Richer Presentation
 
@@ -55,11 +55,11 @@ project website:
 
 Direct entry points:
 
-- [Hardware Status Ledger](https://anulum.github.io/scpn-quantum-control/hardware_status_ledger/)
+- [Hardware Status Ledger](docs/hardware_status_ledger.md)
   — claim classes, campaign evidence paths, and publication hygiene rules
-- [Physics-First Kuramoto-XY](https://anulum.github.io/scpn-quantum-control/physics_first_kuramoto_xy/)
+- [Physics-First Kuramoto-XY](docs/physics_first_kuramoto_xy.md)
   — start from arbitrary oscillator networks before SCPN-specific layers
-- [Stable Facades API](https://anulum.github.io/scpn-quantum-control/stable_facades_api/)
+- [Stable Facades API](docs/stable_facades_api.md)
   — mkdocstrings reference for first-path public facades
 - [Phase 1 Results](https://anulum.li/scpn-quantum-control/phase1-results.html)
   — first hardware observation of the DLA parity asymmetry on

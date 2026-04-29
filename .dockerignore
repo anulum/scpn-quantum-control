@@ -4,6 +4,8 @@
 .mypy_cache
 .pytest_cache
 .ruff_cache
+.venv
+.venv-linux
 __pycache__
 *.egg-info
 dist/
@@ -11,6 +13,9 @@ build/
 docs/
 docs-site/
 notebooks/
+paper/
+site/
 .coordination/
+scpn_quantum_engine/target/
 *.bundle
 *.whl

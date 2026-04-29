@@ -9,11 +9,21 @@
 
 from __future__ import annotations
 
+import importlib.util
+import sys
 from pathlib import Path
 
-from tools.check_dependency_drift import dependency_drift_report, main
-
 ROOT = Path(__file__).resolve().parents[1]
+_DRIFT_TOOL = ROOT / "tools" / "check_dependency_drift.py"
+_SPEC = importlib.util.spec_from_file_location("check_dependency_drift", _DRIFT_TOOL)
+assert _SPEC is not None
+assert _SPEC.loader is not None
+_MODULE = importlib.util.module_from_spec(_SPEC)
+sys.modules[_SPEC.name] = _MODULE
+_SPEC.loader.exec_module(_MODULE)
+
+dependency_drift_report = _MODULE.dependency_drift_report
+main = _MODULE.main
 
 
 def test_requirements_txt_mirrors_project_runtime_dependencies() -> None:
@@ -76,11 +86,13 @@ def test_all_extra_is_portable_and_accelerators_are_explicit() -> None:
     text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
     assert "all = [" in text
     assert "accelerated = [" in text
+    assert "rust = [" in text
     all_line = next(line.strip() for line in text.splitlines() if line.startswith("all = "))
     accelerated_line = next(
         line.strip() for line in text.splitlines() if line.startswith("accelerated = ")
     )
     assert "gpu" not in all_line
     assert "jax" not in all_line
+    assert "rust" not in all_line
     assert "gpu" in accelerated_line
     assert "jax" in accelerated_line
