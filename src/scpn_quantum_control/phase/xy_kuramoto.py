@@ -40,11 +40,33 @@ class QuantumKuramotoSolver:
         trotter_order: int = 1,
     ):
         """K_coupling: (n,n) coupling matrix, omega_natural: (n,) frequencies."""
-        self.n = n_oscillators
+        self.n = self._validate_n_oscillators(n_oscillators)
         self.K = np.asarray(K_coupling, dtype=np.float64)
         self.omega = np.asarray(omega_natural, dtype=np.float64)
+        self._validate_coupling_inputs(self.n, self.K, self.omega)
+        if trotter_order not in (1, 2):
+            raise ValueError(f"trotter_order must be 1 or 2, got {trotter_order}")
         self.trotter_order = trotter_order
         self._hamiltonian: SparsePauliOp | None = None
+
+    @staticmethod
+    def _validate_n_oscillators(n_oscillators: int) -> int:
+        if not isinstance(n_oscillators, int) or n_oscillators < 1:
+            raise ValueError(f"n_oscillators must be a positive integer, got {n_oscillators}")
+        return n_oscillators
+
+    @staticmethod
+    def _validate_coupling_inputs(n: int, K: np.ndarray, omega: np.ndarray) -> None:
+        if K.shape != (n, n):
+            raise ValueError(f"K_coupling shape must be ({n}, {n}), got {K.shape}")
+        if omega.shape != (n,):
+            raise ValueError(f"omega_natural shape must be ({n},), got {omega.shape}")
+        if not np.all(np.isfinite(K)):
+            raise ValueError("K_coupling must contain only finite values")
+        if not np.all(np.isfinite(omega)):
+            raise ValueError("omega_natural must contain only finite values")
+        if not np.allclose(K, K.T, atol=1e-12, rtol=1e-12):
+            raise ValueError("K_coupling must be symmetric for the XY Kuramoto solver")
 
     def build_hamiltonian(self) -> SparsePauliOp:
         """Compile K + omega into SparsePauliOp. Called automatically by evolve()."""
@@ -57,6 +79,10 @@ class QuantumKuramotoSolver:
         Uses LieTrotter (order=1, O(t²/reps)) or SuzukiTrotter (order=2,
         O(t³/reps²)) depending on self.trotter_order.
         """
+        if not np.isfinite(time) or time < 0.0:
+            raise ValueError(f"time must be finite and non-negative, got {time}")
+        if not isinstance(trotter_steps, int) or trotter_steps < 1:
+            raise ValueError(f"trotter_steps must be a positive integer, got {trotter_steps}")
         if self._hamiltonian is None:
             self.build_hamiltonian()
         if self.trotter_order == 2:
@@ -99,6 +125,14 @@ class QuantumKuramotoSolver:
 
     def run(self, t_max: float, dt: float, trotter_per_step: int = 5) -> dict:
         """Time-stepped evolution returning R(t) and per-qubit expectations."""
+        if not np.isfinite(t_max) or t_max < 0.0:
+            raise ValueError(f"t_max must be finite and non-negative, got {t_max}")
+        if not np.isfinite(dt) or dt <= 0.0:
+            raise ValueError(f"dt must be finite and positive, got {dt}")
+        if not isinstance(trotter_per_step, int) or trotter_per_step < 1:
+            raise ValueError(
+                f"trotter_per_step must be a positive integer, got {trotter_per_step}"
+            )
         if self._hamiltonian is None:
             self.build_hamiltonian()
 
