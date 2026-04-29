@@ -479,15 +479,15 @@ scpn_quantum_control/
 
 | Package | Version | Purpose |
 |---------|---------|---------|
-| qiskit | >= 1.0.0 | Circuit construction, transpilation |
-| qiskit-aer | >= 0.14.0 | Statevector + noise simulation |
+| qiskit | >= 2.2,<3.0 | Circuit construction, transpilation |
+| qiskit-aer | >= 0.15,<1.0 | Statevector + noise simulation |
 | numpy | >= 1.24 | Array operations |
 | scipy | >= 1.10 | Sparse linear algebra, optimisation |
 | networkx | >= 3.0 | Graph algorithms (QEC decoder) |
 
 Optional:
 - `matplotlib >= 3.5` for visualisation
-- `qiskit-ibm-runtime >= 0.20.0` for hardware execution
+- `qiskit-ibm-runtime >= 0.40,<1.0` for hardware execution
 - `cupy >= 12.0` for GPU-accelerated simulation
 
 ## Limitations
