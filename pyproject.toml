@@ -174,10 +174,6 @@ module = "matplotlib.*"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = "scpn_quantum_engine"
-follow_imports = "skip"
-
-[[tool.mypy.overrides]]
 module = "sc_neurocore.*"
 ignore_missing_imports = true
 

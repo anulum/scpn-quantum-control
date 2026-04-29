@@ -176,7 +176,7 @@ analysis/                                  ← 41 modules: probes of the sync tr
 ├── shadow_tomography.py                       Classical shadow estimation
 ├── bkt_analysis.py                            Core BKT diagnostics
 ├── bkt_universals.py                          10 candidate expressions for p_H1
-├── p_h1_derivation.py                         A_HP × √(2/π) = 0.717
+├── p_h1_derivation.py                         p_H1 derivation audit / open question
 ├── phase_diagram.py                           K_c vs T_eff boundary
 ├── graph_topology_scan.py                     Coupling graph metrics
 ├── koopman.py                                 Koopman linearisation (BQP argument)

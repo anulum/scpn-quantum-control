@@ -7,9 +7,11 @@
 # SCPN Quantum Control — Monte Carlo Xy
 """Monte Carlo simulation of the XY model on the K_nm graph.
 
-Computes the Hasenbusch-Pinn universal amplitude A_HP on the actual
-K_nm coupling topology (complete graph with exponential decay), not
-the square lattice. This makes the p_h1 derivation airtight.
+Computes the Hasenbusch-Pinn amplitude proxy on the actual K_nm
+coupling topology (complete graph with exponential decay), not the
+square lattice. The graph-specific value is a negative result for the
+old p_h1 = A_HP(square) * sqrt(2/pi) coincidence, not a derivation of
+p_h1 = 0.72.
 
 Method: Metropolis-Hastings sampling of the classical XY model:
     H = -Σ_{ij} K_ij cos(θ_j - θ_i)
