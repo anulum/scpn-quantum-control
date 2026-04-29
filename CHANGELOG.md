@@ -5,6 +5,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Changed
+- 2026-04-29 — Added `tools/check_dependency_drift.py` so release checks can verify that `requirements.txt` still mirrors `pyproject.toml`.
 - 2026-04-29 — `QuantumKuramotoSolver` now validates coupling shape, finite values, symmetry, Trotter settings, and run-grid parameters before building circuits.
 - 2026-04-29 — Added a public hardware status ledger that classifies theory, simulator, hardware, mitigated, and noise-limited claims and links visible docs to that evidence index.
 - 2026-04-29 — Dependency source hygiene: `requirements.txt` now mirrors the canonical runtime bounds from `pyproject.toml`; `[all]` is a portable optional surface; CUDA/JAX packages moved behind `[accelerated]`; CI adds a fresh editable `[all]` install smoke job.
