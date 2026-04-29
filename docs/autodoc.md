@@ -155,6 +155,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [WitnessResult, evaluate_all_witnesses]
 
+::: scpn_quantum_control.analysis.witness_discovery
+    options:
+      members: [WitnessCandidate, WitnessDiscoverySpec, WitnessDiscoveryEvaluation, WitnessDiscoveryResult, WitnessSearchMode, discover_kuramoto_witnesses, score_witness_candidates]
+
 ::: scpn_quantum_control.analysis.quantum_persistent_homology
     options:
       members: [QuantumPHResult, quantum_persistent_homology, ph_sync_scan]

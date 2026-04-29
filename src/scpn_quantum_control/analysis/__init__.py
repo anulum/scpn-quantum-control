@@ -81,6 +81,15 @@ from .sync_order_parameter import SyncOrderParameter
 from .sync_witness import WitnessResult, evaluate_all_witnesses
 from .thermodynamic_witness import ThermodynamicWitness
 from .vortex_binding import VortexBindingResult, compute_vortex_binding
+from .witness_discovery import (
+    WitnessCandidate,
+    WitnessDiscoveryEvaluation,
+    WitnessDiscoveryResult,
+    WitnessDiscoverySpec,
+    WitnessSearchMode,
+    discover_kuramoto_witnesses,
+    score_witness_candidates,
+)
 from .xxz_phase_diagram import AnisotropyScanResult, anisotropy_phase_diagram
 
 __all__ = [
@@ -184,6 +193,13 @@ __all__ = [
     "R_separable_bound",
     "WitnessResult",
     "evaluate_all_witnesses",
+    "WitnessCandidate",
+    "WitnessDiscoveryEvaluation",
+    "WitnessDiscoveryResult",
+    "WitnessDiscoverySpec",
+    "WitnessSearchMode",
+    "discover_kuramoto_witnesses",
+    "score_witness_candidates",
     "AnisotropyScanResult",
     "anisotropy_phase_diagram",
 ]
