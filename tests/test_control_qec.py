@@ -54,6 +54,29 @@ def test_simulate_errors_shape():
     assert err_z.shape == (18,)
 
 
+def test_simulate_errors_uses_default_rng(monkeypatch):
+    """Omitted RNG uses NumPy default_rng and preserves binary int8 output."""
+    from scpn_quantum_control.qec import control_qec as module
+
+    calls = []
+
+    class FakeRng:
+        def binomial(self, n, p, size):
+            calls.append((n, p, size))
+            return np.arange(size) % 2
+
+    monkeypatch.setattr(module.np.random, "default_rng", lambda: FakeRng())
+
+    qec = ControlQEC(distance=3)
+    err_x, err_z = qec.simulate_errors(0.125)
+
+    assert calls == [(1, 0.125, 18), (1, 0.125, 18)]
+    assert err_x.dtype == np.int8
+    assert err_z.dtype == np.int8
+    assert np.array_equal(err_x, np.arange(18, dtype=np.int8) % 2)
+    assert np.array_equal(err_z, np.arange(18, dtype=np.int8) % 2)
+
+
 def test_decode_returns_correction():
     """Decoder should return a correction vector of correct length."""
     decoder = MWPMDecoder(distance=3)
@@ -203,6 +226,27 @@ def test_correction_residual_syndrome():
     err_z = np.zeros(N, dtype=np.int8)
     result = qec.decode_and_correct(err_x, err_z)
     assert isinstance(result, bool)
+
+
+def test_uncleared_syndrome_rejects_failed_decoder(monkeypatch):
+    """A decoder correction that leaves syndrome defects is rejected."""
+    qec = ControlQEC(distance=3)
+    n_data = qec.code.num_data
+    err_x = np.zeros(n_data, dtype=np.int8)
+    err_x[0] = 1
+    err_z = np.zeros(n_data, dtype=np.int8)
+    syn_z, syn_x = qec.get_syndrome(err_x, err_z)
+
+    def no_correction(syndrome, dual=False):
+        assert syndrome.shape == syn_z.shape
+        assert isinstance(dual, bool)
+        return np.zeros(n_data, dtype=np.int8)
+
+    monkeypatch.setattr(qec.decoder, "decode", no_correction)
+
+    assert np.sum(syn_z) == 2
+    assert np.sum(syn_x) == 0
+    assert not qec.decode_and_correct(err_x, err_z)
 
 
 def test_single_z_error_corrected():
