@@ -21,9 +21,10 @@ For our finite graph with coupling matrix K:
 
 where λ_2 is the Fiedler eigenvalue of the coupling-weighted Laplacian.
 
-The consciousness gate threshold p_h1 = 0.72 corresponds to a specific
+The empirical/open p_h1 = 0.72 threshold corresponds to a specific
 point on the BKT phase diagram. This module tests whether 0.72 can be
-derived from the BKT universal numbers.
+derived from the BKT universal numbers; the K_nm graph Monte Carlo
+audit keeps that derivation open rather than closed.
 
 BKT universals:
     η(T_BKT) = 1/4  (critical exponent)

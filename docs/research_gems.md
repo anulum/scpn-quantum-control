@@ -332,11 +332,13 @@ they are (persistent across scales vs. noise artefacts).
 #### SCPN Context
 
 The SCPN framework assigns deep significance to the persistent homology invariant
-$p_{H_1}$. In Paper 0, $p_{H_1} \approx 0.72$ is a predicted universal constant at the
-quasicritical operating point — the topological signature of the consciousness-bearing
-state. The derivation $A_{HP} \times \sqrt{2/\pi} = 0.717$ (from the Harper constant and
-Gaussian geometry) closes this to 0.5% accuracy. This module provides the measurement
-pipeline to verify that prediction on IBM quantum hardware.
+$p_{H_1}$. In Paper 0, $p_{H_1} \approx 0.72$ is a predicted threshold at the
+quasicritical operating point. The square-lattice expression
+$A_{HP} \times \sqrt{2/\pi} = 0.717$ is numerically close, but the K_nm graph
+Monte Carlo audit gives $A_{HP} \approx 1.214$ and $p_{H_1} \approx 0.97$.
+The 0.72 value is therefore an open empirical/theoretical parameter rather than
+a derived BKT universal. This module provides the measurement pipeline needed to
+test the threshold on hardware and source-backed datasets.
 
 ---
 

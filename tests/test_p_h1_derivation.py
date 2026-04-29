@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for P H1 Derivation
-"""Tests for p_h1 derivation from BKT universals."""
+"""Tests for the p_h1 BKT-universal candidate audit."""
 
 from __future__ import annotations
 
@@ -26,13 +26,16 @@ class TestDeriveP_H1:
         result = derive_p_h1()
         assert abs(result.p_h1_predicted - 0.72) < 0.01
 
-    def test_relative_deviation_under_1_pct(self):
+    def test_square_lattice_relative_deviation_under_1_pct(self):
         result = derive_p_h1()
         assert result.relative_deviation_pct < 1.0
 
-    def test_is_derivable(self):
+    def test_is_not_derivable_on_knm_graph(self):
         result = derive_p_h1()
-        assert result.is_derivable
+        assert not result.is_derivable
+        assert result.status == "OPEN_QUESTION"
+        assert result.graph_p_h1_predicted == pytest.approx(0.9689, abs=5e-4)
+        assert result.graph_relative_deviation_pct > 30.0
 
     def test_derivation_chain_length(self):
         result = derive_p_h1()
@@ -49,18 +52,19 @@ class TestDeriveP_H1:
         assert result.nk_sqrt == pytest.approx(np.sqrt(2 / np.pi), abs=1e-6)
 
     def test_gap3_final(self):
-        """The definitive Gap 3 result."""
+        """The definitive Gap 3 result is an open question, not a derivation."""
         result = derive_p_h1()
-        print("\n  === GAP 3 DERIVATION ===")
+        print("\n  === GAP 3 DERIVATION AUDIT ===")
         for step in result.derivation_chain:
             print(f"  {step}")
         print(f"\n  p_h1 predicted: {result.p_h1_predicted:.6f}")
+        print(f"  p_h1 K_nm graph: {result.graph_p_h1_predicted:.6f}")
         print(f"  p_h1 target:    {result.p_h1_target}")
         print(
             f"  Deviation:      {result.absolute_deviation:.4f} ({result.relative_deviation_pct:.1f}%)"
         )
         print(f"  Derivable:      {result.is_derivable}")
-        assert result.is_derivable
+        assert not result.is_derivable
 
 
 # ---------------------------------------------------------------------------
