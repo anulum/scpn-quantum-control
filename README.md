@@ -558,6 +558,11 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 
 [AGPL-3.0-or-later](LICENSE) — commercial license available.
 
+The generic Kuramoto-XY facade is documented as a possible future core-package
+boundary, but it is not a separate permissive package today. Until an explicit
+release changes SPDX headers and package metadata, all in-repository code remains
+under the AGPL/commercial terms above.
+
 ### Commercial Licensing
 
 AGPL-3.0 requires derivative works to be open-sourced. If you need to

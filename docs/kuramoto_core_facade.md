@@ -88,3 +88,8 @@ later caller-side mutation cannot alter the compiled problem.
 This facade is not a separate package yet. It is the in-repository boundary that
 a future lightweight `quantum-kuramoto-core` package can use if the licensing and
 release split are approved.
+
+The current licence boundary is documented in
+[Core Package Boundary](core_package_boundary.md). Until an explicit release
+decision changes the package metadata and SPDX headers, this facade remains part
+of the AGPL/commercial `scpn-quantum-control` distribution.
