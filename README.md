@@ -6,7 +6,7 @@
 [![codecov](https://codecov.io/gh/anulum/scpn-quantum-control/branch/main/graph/badge.svg)](https://codecov.io/gh/anulum/scpn-quantum-control)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://python.org)
-[![Qiskit 1.0+](https://img.shields.io/badge/qiskit-1.0%2B-6929C4.svg)](https://qiskit.org)
+[![Qiskit 2.2+](https://img.shields.io/badge/qiskit-2.2%2B-6929C4.svg)](https://qiskit.org)
 [![Website](https://img.shields.io/badge/website-anulum.li%2Fscpn--quantum--control-38bdf8.svg)](https://anulum.li/scpn-quantum-control/)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue.svg)](https://anulum.github.io/scpn-quantum-control)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12290/badge)](https://www.bestpractices.dev/projects/12290)
@@ -22,7 +22,7 @@
 
 > **Active Development** — scpn-quantum-control is under intensive development. The quantum simulation engine, all 20 subpackages (209 modules), and the full pipeline (K_nm coupling → Hamiltonian → Trotter/VQE → IBM hardware → GUESS error mitigation → DLA-parity analysis) are fully functional, tested (4,841 passing tests, 97%+ coverage), and validated on IBM Heron r2 hardware (ibm_fez Feb 2026 + ibm_kingston Apr 2026). The April 2026 ibm_kingston campaign provided the first hardware confirmation of the DLA parity asymmetry predicted by the SCPN framework (Welch combined p ≪ 10⁻¹⁶ across 8 depth points). APIs may evolve as this work progresses.
 
-**Version:** 0.9.5
+**Version:** 0.9.6
 **Status:** 201 Python Modules + 36 Rust Functions | 47 Notebooks | 21 Examples | 97%+ Coverage | IBM Hardware Validated (DLA parity confirmed)
 
 ---

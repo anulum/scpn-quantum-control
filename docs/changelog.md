@@ -14,6 +14,12 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
 
 ## [0.9.6] - 2026-04-17
 
+### Changed (2026-04-29)
+- `requirements.txt` mirrors the canonical runtime bounds from
+  `pyproject.toml`; `[all]` is portable; CUDA/JAX packages live behind
+  `[accelerated]`; CI includes a fresh editable `[all]` install smoke
+  job.
+
 ### Security
 - Bumped `rand` 0.9.2 → 0.9.4 (RUSTSEC-2026-0097).
 - Removed IBM Cloud CRN prefix log in `scripts/retrieve_ibm_job.py`.
