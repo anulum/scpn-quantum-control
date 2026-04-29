@@ -9,6 +9,17 @@
 noise models, trapped-ion transpilation, and experiment definitions.
 """
 
+from .analog_kuramoto import (
+    AnalogBackendCapabilities,
+    AnalogCouplingTerm,
+    AnalogDriveTerm,
+    AnalogKuramotoBackend,
+    AnalogKuramotoBackendProtocol,
+    AnalogKuramotoPlatform,
+    AnalogKuramotoProgram,
+    analog_kuramoto_factory,
+    compile_analog_kuramoto,
+)
 from .async_runner import AsyncHardwareRunner, AsyncJobHandle
 from .backends import (
     BackendProtocol,
@@ -66,6 +77,15 @@ from .trapped_ion import transpile_for_trapped_ion, trapped_ion_noise_model
 __all__ = [
     "AsyncHardwareRunner",
     "AsyncJobHandle",
+    "AnalogBackendCapabilities",
+    "AnalogCouplingTerm",
+    "AnalogDriveTerm",
+    "AnalogKuramotoBackend",
+    "AnalogKuramotoBackendProtocol",
+    "AnalogKuramotoPlatform",
+    "AnalogKuramotoProgram",
+    "analog_kuramoto_factory",
+    "compile_analog_kuramoto",
     "BackendProtocol",
     "BackendRegistrationError",
     "BackendRegistry",

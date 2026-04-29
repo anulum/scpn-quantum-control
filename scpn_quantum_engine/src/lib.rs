@@ -22,9 +22,11 @@
 //! - Symmetry sectors, correlation, parity filtering
 //! - Brute-force MPC
 //! - Real-time feedback policy updates
+//! - Analog Kuramoto coupling compilation
 
 use pyo3::prelude::*;
 
+pub mod analog;
 pub mod community;
 pub mod complex_utils;
 pub mod validation;
@@ -92,6 +94,9 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // Feedback control
     m.add_function(wrap_pyfunction!(feedback::feedback_policy_batch, m)?)?;
+
+    // Analog backend compilation
+    m.add_function(wrap_pyfunction!(analog::analog_coupling_terms, m)?)?;
 
     // Krylov
     m.add_function(wrap_pyfunction!(krylov::lanczos_b_coefficients, m)?)?;

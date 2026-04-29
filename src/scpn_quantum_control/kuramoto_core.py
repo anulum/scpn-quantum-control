@@ -13,7 +13,7 @@ import json
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from qiskit import QuantumCircuit
@@ -21,6 +21,9 @@ from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from .bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 from .phase.xy_kuramoto import QuantumKuramotoSolver
+
+if TYPE_CHECKING:
+    from .hardware.analog_kuramoto import AnalogKuramotoPlatform, AnalogKuramotoProgram
 
 JsonScalar = str | int | float | bool | None
 
@@ -116,6 +119,20 @@ def compile_trotter_circuit(
         trotter_order=trotter_order,
     )
     return solver.evolve(time=time, trotter_steps=trotter_steps)
+
+
+def compile_analog_program(
+    problem: KuramotoProblem,
+    *,
+    platform: AnalogKuramotoPlatform | str,
+    duration: float,
+    coupling_scale: float = 1.0,
+) -> AnalogKuramotoProgram:
+    """Compile a Kuramoto problem into a native analog hardware programme."""
+    from .hardware.analog_kuramoto import AnalogKuramotoBackend
+
+    backend = AnalogKuramotoBackend(platform)
+    return backend.compile(problem, duration=duration, coupling_scale=coupling_scale)
 
 
 def measure_order_parameter(
