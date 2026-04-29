@@ -32,9 +32,20 @@ def _load_script_module():
 
 
 eeg_module = _load_script_module()
+aggregate_record_edges = eeg_module.aggregate_record_edges
 bandpass_phase = eeg_module.bandpass_phase
 plv_edges = eeg_module.plv_edges
+record_to_path = eeg_module.record_to_path
+record_to_url = eeg_module.record_to_url
 segment_starts = eeg_module.segment_starts
+
+
+def test_record_to_path_and_url_follow_physionet_layout(tmp_path):
+    assert record_to_path("S012R01", raw_root=tmp_path) == tmp_path / "S012" / "S012R01.edf"
+    assert (
+        record_to_url("S012R01", dataset_base_url="https://physionet.org/files/eegmmidb/1.0.0/")
+        == "https://physionet.org/files/eegmmidb/1.0.0/S012/S012R01.edf"
+    )
 
 
 def test_segment_starts_uses_full_overlapping_window_grid():
@@ -67,3 +78,23 @@ def test_bandpass_phase_preserves_channel_and_sample_shape():
 
     assert phase.shape == data.shape
     assert np.isfinite(phase).all()
+
+
+def test_aggregate_record_edges_uses_median_and_mad_uncertainty():
+    rows = [
+        {"i": 1, "j": 2, "value": 0.2, "uncertainty": 0.01, "n_segments": 10},
+        {"i": 1, "j": 2, "value": 0.4, "uncertainty": 0.01, "n_segments": 10},
+        {"i": 1, "j": 2, "value": 0.9, "uncertainty": 0.01, "n_segments": 10},
+        {"i": 1, "j": 3, "value": 0.7, "uncertainty": 0.02, "n_segments": 8},
+    ]
+
+    aggregated = aggregate_record_edges(rows)
+
+    by_edge = {(item["i"], item["j"]): item for item in aggregated}
+    assert by_edge[(1, 2)]["value"] == 0.4
+    assert by_edge[(1, 2)]["q25"] == 0.30000000000000004
+    assert by_edge[(1, 2)]["q75"] == 0.65
+    assert by_edge[(1, 2)]["n_records"] == 3
+    assert by_edge[(1, 2)]["n_segments_total"] == 30
+    assert by_edge[(1, 3)]["value"] == 0.7
+    assert by_edge[(1, 3)]["uncertainty"] == 0.02

@@ -27,6 +27,8 @@ DEFAULT_RAW_DIR = REPO_ROOT / ".coordination" / "datasets" / "eegmmidb" / "S001"
 DEFAULT_EDF = DEFAULT_RAW_DIR / "S001R01.edf"
 DEFAULT_OUTPUT = REPO_ROOT / "data" / "knm_physical_validation" / "measured_couplings.json"
 DEFAULT_SOURCE_URL = "https://physionet.org/files/eegmmidb/1.0.0/S001/S001R01.edf"
+DEFAULT_RECORDS = ["S001R01"]
+DEFAULT_DATASET_BASE_URL = "https://physionet.org/files/eegmmidb/1.0.0"
 DEFAULT_CHANNELS = ["Fp1.", "Fp2.", "F3..", "F4..", "C3..", "C4..", "O1..", "O2.."]
 CANONICAL_LABELS = ["Fp1", "Fp2", "F3", "F4", "C3", "C4", "O1", "O2"]
 
@@ -60,6 +62,16 @@ def ensure_edf(path: Path, *, source_url: str, download: bool) -> None:
         )
     path.parent.mkdir(parents=True, exist_ok=True)
     urlretrieve(source_url, path)
+
+
+def record_to_path(record: str, *, raw_root: Path) -> Path:
+    subject = record[:4]
+    return raw_root / subject / f"{record}.edf"
+
+
+def record_to_url(record: str, *, dataset_base_url: str) -> str:
+    subject = record[:4]
+    return f"{dataset_base_url.rstrip('/')}/{subject}/{record}.edf"
 
 
 def load_edf_channels(path: Path, channels: list[str]) -> tuple[np.ndarray, float]:
@@ -121,6 +133,54 @@ def plv_edges(
     return edges
 
 
+def build_record_edges(
+    *,
+    edf_path: Path,
+    channels: list[str],
+    low_hz: float,
+    high_hz: float,
+    window_s: float,
+    step_s: float,
+) -> tuple[list[dict[str, Any]], float]:
+    data, sfreq = load_edf_channels(edf_path, channels)
+    phase = bandpass_phase(data, sfreq=sfreq, low_hz=low_hz, high_hz=high_hz)
+    return plv_edges(phase, sfreq=sfreq, window_s=window_s, step_s=step_s), sfreq
+
+
+def aggregate_record_edges(record_edges: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    grouped: dict[tuple[int, int], list[dict[str, Any]]] = {}
+    for item in record_edges:
+        grouped.setdefault((int(item["i"]), int(item["j"])), []).append(item)
+
+    aggregated = []
+    for (i_1, j_1), rows in sorted(grouped.items()):
+        values = np.asarray([float(row["value"]) for row in rows], dtype=np.float64)
+        segment_counts = np.asarray([int(row["n_segments"]) for row in rows], dtype=np.int64)
+        record_count = int(values.size)
+        median = float(np.median(values))
+        q25, q75 = np.quantile(values, [0.25, 0.75])
+        uncertainty = (
+            float(1.4826 * np.median(np.abs(values - median)) / np.sqrt(record_count))
+            if record_count > 1
+            else float(rows[0]["uncertainty"])
+        )
+        aggregated.append(
+            {
+                "i": i_1,
+                "j": j_1,
+                "value": median,
+                "uncertainty": uncertainty,
+                "uncertainty_type": "median_absolute_deviation_standard_error_across_records",
+                "n_records": record_count,
+                "n_segments_total": int(np.sum(segment_counts)),
+                "q25": float(q25),
+                "q75": float(q75),
+                "source": "PhysioNet EEGMMIDB baseline eyes-open alpha-band PLV cohort median",
+            }
+        )
+    return aggregated
+
+
 def build_payload(
     *,
     edf_path: Path,
@@ -148,7 +208,7 @@ def build_payload(
             "name": "EEG Motor Movement/Imagery Dataset v1.0.0",
             "record": "S001R01.edf",
             "source_url": source_url,
-            "licence": "PhysioNet open-access credentialed-use terms",
+            "licence": "Open Data Commons Attribution License v1.0",
             "citation": (
                 "Schalk et al., IEEE Transactions on Biomedical Engineering 51(6):1034-1043, "
                 "2004; Goldberger et al., Circulation 101(23):e215-e220, 2000."
@@ -175,12 +235,106 @@ def build_payload(
     }
 
 
+def build_cohort_payload(
+    *,
+    records: list[str],
+    raw_root: Path,
+    dataset_base_url: str,
+    channels: list[str],
+    low_hz: float,
+    high_hz: float,
+    window_s: float,
+    step_s: float,
+    download: bool,
+    command: list[str],
+) -> dict[str, Any]:
+    all_edges = []
+    record_metadata = []
+    sampling_rates = set()
+    for record in records:
+        edf_path = record_to_path(record, raw_root=raw_root)
+        source_url = record_to_url(record, dataset_base_url=dataset_base_url)
+        ensure_edf(edf_path, source_url=source_url, download=download)
+        edges, sfreq = build_record_edges(
+            edf_path=edf_path,
+            channels=channels,
+            low_hz=low_hz,
+            high_hz=high_hz,
+            window_s=window_s,
+            step_s=step_s,
+        )
+        sampling_rates.add(float(sfreq))
+        raw_hash = sha256_file(edf_path)
+        for edge in edges:
+            edge["record"] = record
+            edge["source"] = f"PhysioNet EEGMMIDB {record} alpha-band PLV"
+        all_edges.extend(edges)
+        record_metadata.append(
+            {
+                "record": record,
+                "source_url": source_url,
+                "raw_sha256": raw_hash,
+            }
+        )
+
+    if len(sampling_rates) != 1:
+        raise ValueError(
+            f"Expected one sampling rate across records, got {sorted(sampling_rates)}"
+        )
+    return {
+        "schema_version": "scpn-quantum-control.measured-couplings.v1",
+        "system": "PhysioNet EEGMMIDB baseline eyes-open cohort median",
+        "unit": "phase_locking_value",
+        "normalisation": (
+            "Per-record PLV = |mean(exp(1j * phase_difference))| after 8-13 Hz "
+            "Butterworth bandpass; cohort value is the per-edge median across records."
+        ),
+        "normalisation_locked": True,
+        "source_dataset": {
+            "name": "EEG Motor Movement/Imagery Dataset v1.0.0",
+            "records": records,
+            "dataset_base_url": dataset_base_url,
+            "licence": "Open Data Commons Attribution License v1.0",
+            "citation": (
+                "Schalk et al., IEEE Transactions on Biomedical Engineering 51(6):1034-1043, "
+                "2004; Goldberger et al., Circulation 101(23):e215-e220, 2000."
+            ),
+            "raw_records": record_metadata,
+        },
+        "signal_processing": {
+            "channels_edf": channels,
+            "channels_canonical": CANONICAL_LABELS[: len(channels)],
+            "sampling_hz": sorted(sampling_rates)[0],
+            "bandpass_hz": [low_hz, high_hz],
+            "window_s": window_s,
+            "step_s": step_s,
+            "per_record_estimator": "segment mean PLV with standard error across windows",
+            "cohort_estimator": "per-edge median with MAD standard error across records",
+        },
+        "couplings": aggregate_record_edges(all_edges),
+        "per_record_edges": all_edges,
+        "provenance": {
+            "repo_root": str(REPO_ROOT),
+            "git_commit": _git_commit(),
+            "python": sys.version,
+            "platform": platform.platform(),
+            "command": command,
+        },
+    }
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--edf", type=Path, default=DEFAULT_EDF)
     parser.add_argument("--source-url", default=DEFAULT_SOURCE_URL)
+    parser.add_argument("--dataset-base-url", default=DEFAULT_DATASET_BASE_URL)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--download", action="store_true")
+    parser.add_argument("--record", action="append", dest="records")
+    parser.add_argument(
+        "--raw-root", type=Path, default=REPO_ROOT / ".coordination" / "datasets" / "eegmmidb"
+    )
+    parser.add_argument("--single-record", action="store_true")
     parser.add_argument("--low-hz", type=float, default=8.0)
     parser.add_argument("--high-hz", type=float, default=13.0)
     parser.add_argument("--window-s", type=float, default=2.0)
@@ -190,22 +344,41 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
-    ensure_edf(args.edf, source_url=args.source_url, download=bool(args.download))
-    payload = build_payload(
-        edf_path=args.edf,
-        source_url=str(args.source_url),
-        channels=DEFAULT_CHANNELS,
-        low_hz=float(args.low_hz),
-        high_hz=float(args.high_hz),
-        window_s=float(args.window_s),
-        step_s=float(args.step_s),
-        command=[Path(sys.executable).name, *sys.argv],
-    )
+    command = [Path(sys.executable).name, *sys.argv]
+    if args.single_record:
+        ensure_edf(args.edf, source_url=args.source_url, download=bool(args.download))
+        payload = build_payload(
+            edf_path=args.edf,
+            source_url=str(args.source_url),
+            channels=DEFAULT_CHANNELS,
+            low_hz=float(args.low_hz),
+            high_hz=float(args.high_hz),
+            window_s=float(args.window_s),
+            step_s=float(args.step_s),
+            command=command,
+        )
+    else:
+        records = args.records or DEFAULT_RECORDS
+        payload = build_cohort_payload(
+            records=records,
+            raw_root=args.raw_root,
+            dataset_base_url=str(args.dataset_base_url),
+            channels=DEFAULT_CHANNELS,
+            low_hz=float(args.low_hz),
+            high_hz=float(args.high_hz),
+            window_s=float(args.window_s),
+            step_s=float(args.step_s),
+            download=bool(args.download),
+            command=command,
+        )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(f"Wrote measured EEG PLV couplings: {args.output}")
     print(f"Edges: {len(payload['couplings'])}")
-    print(f"Raw SHA-256: {payload['source_dataset']['raw_sha256']}")
+    if "raw_sha256" in payload["source_dataset"]:
+        print(f"Raw SHA-256: {payload['source_dataset']['raw_sha256']}")
+    else:
+        print(f"Records: {len(payload['source_dataset']['records'])}")
     return 0
 
 
