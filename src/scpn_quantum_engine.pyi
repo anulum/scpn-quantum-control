@@ -57,6 +57,13 @@ def expectation_pauli_fast(
     qubit: int,
     pauli: int,
 ) -> float: ...
+def feedback_policy_batch(
+    r_values: _F64Array,
+    target_r: float,
+    deadband: float,
+    base_gain: float,
+    max_gain: float,
+) -> tuple[_I32Array, _F64Array, _F64Array]: ...
 def fit_symmetry_decay(
     s_ideal: float,
     noisy_values: _F64Array,

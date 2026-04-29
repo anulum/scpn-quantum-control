@@ -18,6 +18,13 @@ from .q_disruption_iter import (
 )
 from .qaoa_mpc import QAOA_MPC
 from .qpetri import QuantumPetriNet
+from .realtime_feedback import (
+    FeedbackStep,
+    RealtimeFeedbackConfig,
+    RealtimeSyncFeedbackController,
+    build_monitored_feedback_circuit,
+    feedback_policy_numpy,
+)
 from .structured_ansatz import StructuredAnsatz
 from .vqls_gs import VQLS_GradShafranov
 
@@ -31,4 +38,9 @@ __all__ = [
     "ITERFeatureSpec",
     "generate_synthetic_iter_data",
     "normalize_iter_features",
+    "FeedbackStep",
+    "RealtimeFeedbackConfig",
+    "RealtimeSyncFeedbackController",
+    "build_monitored_feedback_circuit",
+    "feedback_policy_numpy",
 ]

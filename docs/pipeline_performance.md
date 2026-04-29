@@ -116,6 +116,19 @@ Second-order Trotter (`trotter_order=2`) passes through correctly to underlying
 solver. Reset reinitialises state exactly (first step after reset matches first
 step from fresh solver).
 
+### Real-Time Feedback Controller
+
+| Operation | System | Backend | Machine | Time | Output |
+|-----------|--------|---------|---------|------|--------|
+| `RealtimeSyncFeedbackController.run(5, seed=20260429)` | 3 qubits, 128 shots/update | Qiskit statevector + NumPy/PyO3 policy fallback | ASRock H510 Pro BTC+, i5-11600K, Ubuntu 24.04.4 | 68.147 ms | actions=`synchronise`×5, R_live=0.446→0.372 |
+| `build_monitored_feedback_circuit(n_rounds=2)` | 3 system qubits + 1 monitor | Qiskit dynamic circuit | same as above | tested in `tests/test_realtime_feedback.py` | mid-circuit monitor measurement, conditional reset, conditional correction |
+
+Command provenance:
+
+```bash
+python -c "import time, numpy as np; from scpn_quantum_control.control import RealtimeFeedbackConfig, RealtimeSyncFeedbackController; K=np.array([[0.0,0.35,0.2],[0.35,0.0,0.25],[0.2,0.25,0.0]], dtype=np.float64); omega=np.array([0.1,0.4,0.7], dtype=np.float64); cfg=RealtimeFeedbackConfig(measurement_shots=128, target_r=0.7); start=time.perf_counter(); controller=RealtimeSyncFeedbackController(K, omega, config=cfg); steps=controller.run(5, seed=20260429); elapsed=(time.perf_counter()-start)*1000; print(f'elapsed_ms={elapsed:.3f}'); print('actions=' + ','.join(step.action for step in steps)); print('r_live=' + ','.join(f'{step.r_live:.3f}' for step in steps)); print('next_scale=' + ','.join(f'{step.next_coupling_scale:.3f}' for step in steps))"
+```
+
 ### Adiabatic State Preparation
 
 | Operation | System | Time | Output |
