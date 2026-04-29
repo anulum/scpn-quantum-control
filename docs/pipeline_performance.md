@@ -592,6 +592,29 @@ SCPN vs FMO topology correlation ρ=0.304 (weak positive). FMO self-comparison:
 n=3: classical=23 ms, quantum=11 ms (quantum wins). n=4: classical=26 ms,
 quantum=34 ms (classical wins). Crossover near n=4.
 
+### Quantum Advantage Scaling — Provenance Run
+
+Measured on 2026-04-29 on local host `aaarthuus`
+(Intel i5-11600K, 6 cores / 12 threads, Linux
+6.17.0-22-generic). Backend versions: Python 3.12.3, NumPy 2.4.4,
+SciPy 1.17.1, Qiskit 2.4.0.
+
+Command:
+
+```bash
+python -c "from scpn_quantum_control.benchmarks.quantum_advantage import run_scaling_benchmark; results = run_scaling_benchmark(sizes=[3,4,5], t_max=0.2, dt=0.1); print('n,t_classical_ms,t_quantum_ms,crossover'); [print(f'{r.n_qubits},{r.t_classical_ms:.3f},{r.t_quantum_ms:.3f},{r.crossover_predicted}') for r in results]"
+```
+
+| Backend pair | Machine | n | Classical exact evolution + diagonalisation | Qiskit statevector Trotter | Predicted crossover |
+|--------------|---------|--:|--------------------------------------------:|---------------------------:|--------------------:|
+| SciPy sparse/dense classical vs Qiskit statevector | Intel i5-11600K / local Linux | 3 | 53.197 ms | 68.128 ms | 6 |
+| SciPy sparse/dense classical vs Qiskit statevector | Intel i5-11600K / local Linux | 4 | 23.316 ms | 53.197 ms | 6 |
+| SciPy sparse/dense classical vs Qiskit statevector | Intel i5-11600K / local Linux | 5 | 65.367 ms | 66.430 ms | 6 |
+
+These rows are a smoke-scale provenance table, not the publication
+scaling claim. Sparse SciPy emitted conversion warnings during the
+run, which is useful context for interpreting the small-n noise.
+
 ---
 
 ## 11. Bridge Adapters
@@ -818,6 +841,19 @@ Decision criteria for adopting a new acceleration backend:
    `tests/test_rust_path_benchmarks.py` shape.
 3. Publish the measured number in this table. Vague "X–Y faster"
    ranges are explicitly out of scope.
+
+### Python Orchestration Hot Paths
+
+The table below is from code inspection plus the measured benchmark
+surfaces in this document. It identifies work that should move out of
+Python loops only after a parity test and benchmark row are added.
+
+| Current Python surface | Evidence | Target backend | Acceptance gate |
+|------------------------|----------|----------------|-----------------|
+| `analysis/koopman.py::build_koopman_generator` | Existing `TODO(rust)` notes the O(n^3) coupling-correction loop for n > 16. | Rust kernel returning the dense generator plus labels, with NumPy fallback retained. | Parity on n=4/8/16 and a new Rust-vs-Python timing row. |
+| `benchmarks/quantum_advantage.py::quantum_benchmark` | The benchmark constructs Qiskit circuits once, then repeatedly calls `Statevector.evolve` in a Python loop. | Vectorised simulator batch or Rust sparse statevector stepper once Qiskit semantics are matched. | Same final state/order-parameter tolerance for fixed K, omega, t_max, dt, and a provenance table row. |
+| `phase/mps_evolution.py::{dmrg_ground_state,tebd_evolution}` | Python drives per-sweep and per-step tensor operations around quimb. | Prefer quimb-native vectorised calls first; only move glue to Rust if profiling shows Python overhead after tensor contraction cost is removed. | Quimb parity test with long-range-coupling caveat preserved and a TEBD timing table. |
+| `hardware/async_runner.py::_submit_blocking` | The module is an I/O bridge and is explicitly exempt from the Rust-path rule; its hot path is repeated transpilation/submission orchestration, not numeric compute. | Keep in Python; batch or cache transpilation inputs before considering native code. | Hardware mock tests plus real-job provenance showing lower submission overhead without changing counts. |
 
 ---
 

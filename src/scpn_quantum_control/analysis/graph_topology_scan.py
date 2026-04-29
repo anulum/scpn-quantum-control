@@ -116,7 +116,7 @@ def _measure_p_h1_at_transition(
     # for p_h1 to find best temperature, then measure p_h1 at that T
     _use_rust = False
     try:
-        from scpn_quantum_engine import mc_xy_simulate  # type: ignore[import-not-found]
+        from scpn_quantum_engine import mc_xy_simulate
 
         _use_rust = True
     except ImportError:

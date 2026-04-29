@@ -99,6 +99,7 @@ class QuantumKuramotoSolver:
 
         R*exp(i*psi) = (1/N) sum_j (<X_j> + i<Y_j>)
         """
+        z_complex: complex
         try:
             import scpn_quantum_engine as _engine
 
@@ -114,9 +115,9 @@ class QuantumKuramotoSolver:
             # Fallback to slow Qiskit path
             z_complex = 0.0 + 0.0j
             for j in range(self.n):
-                exp_x = float(sv.expectation_value(self._pauli_op("X", j)).real)
-                exp_y = float(sv.expectation_value(self._pauli_op("Y", j)).real)
-                z_complex += exp_x + 1j * exp_y
+                exp_x_j = float(sv.expectation_value(self._pauli_op("X", j)).real)
+                exp_y_j = float(sv.expectation_value(self._pauli_op("Y", j)).real)
+                z_complex += exp_x_j + 1j * exp_y_j
             z_complex /= self.n
 
         R = float(abs(z_complex))

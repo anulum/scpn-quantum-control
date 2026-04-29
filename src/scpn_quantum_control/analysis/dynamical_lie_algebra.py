@@ -161,7 +161,7 @@ def compute_dla_rust(
     Falls back to Python compute_dla if Rust engine unavailable.
     """
     try:
-        from scpn_quantum_engine import dla_dimension  # type: ignore[import-not-found]
+        from scpn_quantum_engine import dla_dimension
     except ImportError:
         return compute_dla(generators, max_iterations, max_dimension, tol)
 
