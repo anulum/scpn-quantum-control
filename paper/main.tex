@@ -9,7 +9,7 @@
 \begin{document}
 
 \title{Quantum simulation of coupled-oscillator synchronisation\\
-with heterogeneous frequencies on a 156-qubit superconducting processor}
+on a 156-qubit superconducting processor}
 
 \author{Miroslav \v{S}otek}
 \affiliation{ANULUM, Marbach SG, Switzerland}
@@ -31,7 +31,11 @@ at 94\% state preparation fidelity. Finite-size scaling yields
 $K_c(\infty) \approx 2.2$ consistent with Berezinskii--Kosterlitz--Thouless
 universality ($c = 1.04$). Heterogeneous frequencies preserve discrete
 time crystal order and induce a non-ergodic spectral regime (Poisson
-level statistics at $n = 8$) without deep many-body localisation.
+level statistics at $n = 8$) without deep many-body localisation. A
+hardware-anchored scaling analysis places the exact Hilbert-space
+simulation crossover at $n \approx 11.6$, while leaving broad quantum
+advantage open because Rust Kuramoto ODE baselines remain faster for the
+measured $n \leq 16$ regime.
 All code, data, and figures are open-source at
 \url{https://github.com/anulum/scpn-quantum-control}.
 \end{abstract}
@@ -261,6 +265,33 @@ per-qubit $\langle Z \rangle$: alternating pattern visible.
 (d)~VQE 8-qubit energy landscape.}
 \end{figure}
 
+\subsection{Exact-simulation crossover boundary}
+
+The completed qubit-scaling series provides a direct resource boundary
+for exact Hilbert-space simulation. Figure~\ref{fig:advantage} combines
+the ibm\_fez hardware jobs at $n=4,6,8,10,12,14$ and the 16-qubit UPDE
+snapshot with the committed classical baselines. Exact diagonalisation
+grows from 0.1~ms at $n=4$ to 26.8~s at $n=12$ and reaches the memory
+wall at $n=14$--16 on the 32~GB workstation used for the baseline. A
+log-linear fit to the finite exact timings crosses the QPU budget
+envelope at $n \approx 11.6$.
+
+This crossing is not a broad computational-advantage claim. It is a
+boundary for exact state-vector/Hilbert-space simulation of the
+Kuramoto--XY Hamiltonian. The Rust Kuramoto ODE baseline remains in the
+millisecond regime through $n=16$, and the hardware data are
+noise-limited beyond the shallowest circuits.
+
+\begin{figure}[t]
+\includegraphics[width=\columnwidth]{../figures/publication/fig17_quantum_advantage_crossover.pdf}
+\caption{\label{fig:advantage}%
+Exact-simulation crossover anchored by completed ibm\_fez hardware runs.
+Red points and fit show exact diagonalisation wall time; blue squares and
+dashed curve show hardware QPU budget estimates for completed runs; green
+triangles show the Rust Kuramoto ODE baseline. The crossover at
+$n \approx 11.6$ applies only to exact Hilbert-space simulation.}
+\end{figure}
+
 \subsection{Ansatz comparison}
 
 The physics-informed Knm ansatz (CZ gates between coupled pairs)
@@ -318,8 +349,11 @@ $n \leq 8$. The 16-qubit experiment is viable but noise-limited
 
 \textbf{Limitations.}
 No quantum advantage is demonstrated; classical solvers outperform at
-$n \leq 16$. Trotter error at $dt = 0.1$ is significant (sign flip
-at finer resolution). The coupling matrix used here originates from a
+$n \leq 16$ for observable-level ODE baselines. The scaling crossover in
+Fig.~\ref{fig:advantage} is limited to exact Hilbert-space simulation and
+should be read as a resource boundary, not as demonstrated broad
+advantage. Trotter error at $dt = 0.1$ is significant (sign flip at finer
+resolution). The coupling matrix used here originates from a
 hierarchical oscillator model~\cite{Sotek2025}; the Kuramoto-to-XY
 mapping itself is standard physics and the analysis applies to any
 coupling matrix.
@@ -335,7 +369,7 @@ sub-threshold QKD error rate (5.5\%), BKT critical coupling
 $K_c \approx 2.2$, DTC order surviving frequency disorder, and a
 non-ergodic spectral regime at $n = 8$. A Rust-accelerated pipeline
 enables $5{,}401\times$ faster Hamiltonian construction vs.\ Qiskit.
-All code, data, and 16~figures are open-source (AGPL-3.0) at
+All code, data, and 17~figures are open-source (AGPL-3.0) at
 \url{https://github.com/anulum/scpn-quantum-control}.
 
 %% ====================================================================

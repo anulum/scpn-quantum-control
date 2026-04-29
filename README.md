@@ -13,7 +13,7 @@
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/anulum/scpn-quantum-control/badge)](https://securityscorecards.dev/viewer/?uri=github.com/anulum/scpn-quantum-control)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![mypy](https://img.shields.io/badge/type--checked-mypy-blue.svg)](https://mypy-lang.org/)
-[![Tests: 4841](https://img.shields.io/badge/tests-4841%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-CI%20gated-brightgreen.svg)](https://github.com/anulum/scpn-quantum-control/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/scpn-quantum-control)](https://pypi.org/project/scpn-quantum-control/)
 [![PyPI Downloads](https://img.shields.io/pypi/dm/scpn-quantum-control)](https://pypi.org/project/scpn-quantum-control/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18821929.svg)](https://doi.org/10.5281/zenodo.18821929)
@@ -174,8 +174,8 @@ information scrambles*, and *whether the system thermalises*.
 | Rust engine functions | **37** (5,401× faster Hamiltonian construction; 1,665× faster ICI three-level evolution; 44× faster (α,β)-hypergeometric envelope) |
 | Research modules | **35** (≈ 5 novel constructions, ≈ 10 first-application, including GUESS symmetry-decay ZNE and DynQ topology-agnostic placement) |
 | Python modules | **201** + Rust crate (3,983 lines, 21 source files) |
-| Publication figures | **16** (simulation + hardware, including the Phase 1 DLA parity panels) |
-| Test suite | **4,841** passing (97%+ coverage) |
+| Publication figures | **17** (simulation + hardware, including the Phase 1 DLA parity panels and exact-simulation crossover) |
+| Test suite | CI-gated suite with 97%+ coverage |
 
 ### Classical vs Quantum Wall-Time
 
@@ -525,10 +525,10 @@ Optional:
   from a 2025 working paper (Sotek, Paper 27) with no external citations
   yet. The Kuramoto→XY mapping is standard physics; the specific K_nm
   parameterisation is not independently validated.
-- **Small-scale advantage not demonstrated.** At N=4-16 qubits, classical
-  ODE solvers outperform quantum simulation in both speed and accuracy.
-  Potential quantum advantage requires N>>20 with error-corrected qubits
-  (post-2030 hardware).
+- **Small-scale broad advantage not demonstrated.** At N=4-16 qubits,
+  classical ODE solvers outperform quantum simulation in both speed and
+  accuracy. The exact Hilbert-space crossover is a resource boundary, not
+  a demonstrated general advantage.
 - **IBM hardware campaign complete.** 20/20 experiments executed on real QPU
   (ibm_fez, Heron r2). 22 jobs, 176K+ shots. Job IDs and raw measurement
   counts in `results/ibm_hardware_2026-03-{18,28}/`. All results are from

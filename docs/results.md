@@ -45,6 +45,7 @@ theoretical, simulated, hardware-measured, mitigated, or noise-limited.
 | 12 | Trotter error quantified | dt=0.1 vs dt=0.05 flips Q1 sign | ibm_fez hardware |
 | 13 | Non-ergodic regime (not deep MBL) | Poisson level spacing + 25-33% sub-thermal eigenstate S | Level spacing + eigenstate scan |
 | 14 | **BKT universality preserved** | CFT c=1.04 (n=8), gap R²>0.96 | Kaggle computation (n=4-12) |
+| 15 | Exact-simulation crossover | n≈11.6, exact Hilbert-space only | ibm_fez hardware + classical baselines |
 
 ---
 
@@ -210,6 +211,16 @@ All experiments run on **ibm_fez** (Heron r2, 156 qubits), March 2026.
 - **(b)** Trotter order comparison: dt=0.05 vs dt=0.1 quantifies Trotter error
 - **(c)** 16-qubit per-qubit ⟨Z⟩: alternating pattern across all 16 qubits
 - **(d)** VQE 8-qubit: energy–entropy tradeoff landscape
+
+### Exact-Simulation Crossover Boundary
+
+![Quantum advantage crossover](figures/publication/fig17_quantum_advantage_crossover.png)
+
+The n≈11.6 crossover is a resource boundary for exact Hilbert-space
+simulation, anchored by completed ibm_fez scaling runs and committed
+classical baseline timings. It is not a broad quantum-advantage claim:
+Rust Kuramoto ODE baselines remain faster through n≤16, and the largest
+hardware runs are noise-limited.
 
 ---
 

@@ -15,7 +15,7 @@
 | Python modules | 209 |
 | Rust crate | 1 (PyO3 0.25, **37 functions**, 21 source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (`accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `[julia]` extra) |
-| Tests | 4,841+ (97%+ coverage) |
+| Tests | CI-gated suite (97%+ coverage) |
 | Lines of code | ~30,000 |
 | Subpackages | 20 |
 | Research gems | 35 (≈ 5 novel, ≈ 10 first-application, including GUESS symmetry-decay ZNE and DynQ topology-agnostic placement) |

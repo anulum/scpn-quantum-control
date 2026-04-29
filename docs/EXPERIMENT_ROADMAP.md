@@ -21,6 +21,12 @@ AerSimulator. Hardware runs pending IBM Quantum API token.
 22 jobs, 176,000+ shots. Results in `results/ibm_hardware_2026-03-28/`.
 March and April roadmap experiments are now COMPLETED, not planned.
 
+**Current gate (April 29, 2026):** promoted March/April campaigns are complete.
+The next hardware action is Phase 2 DLA parity expansion, which is ready in
+script form but remains blocked on an IBM promo/credit window and a fresh
+preregistered run manifest. May/June items below are candidate experiments,
+not active commitments.
+
 ## Experiment Inventory (20 total)
 
 | # | Experiment | Qubits | Est. QPU | Month | Science Question |

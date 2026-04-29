@@ -67,7 +67,7 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | Research modules | 35 (≈ 5 novel, ≈ 10 first-application) |
 | IBM hardware jobs | 33 on ibm_fez (Feb 2026) + 348 on ibm_kingston (Apr 2026, Phase 1 DLA-parity campaign) |
 | DLA parity asymmetry (hardware) | $+10.8\,\%$ mean for depths $\ge 4$, peak $+17.5\,\%$ at depth 6 (Welch combined $p \ll 10^{-16}$) |
-| Test suite | **4,841 passing**, 97%+ coverage |
+| Test suite | CI-gated suite, 97%+ coverage |
 | Python modules | 215 + 1 Rust crate (47 functions) + Julia tier (`accel/julia/*.jl`) |
 
 ## Package map

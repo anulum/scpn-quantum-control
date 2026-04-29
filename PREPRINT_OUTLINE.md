@@ -1,6 +1,6 @@
 # Preprint Outline
 
-**Title:** Quantum simulation of coupled Kuramoto oscillators on IBM Heron r2: BKT transition, decoherence budget, and K_nm-informed ansatz advantage
+**Title:** Quantum simulation of coupled-oscillator synchronisation on a 156-qubit superconducting processor
 
 **Target venue:** Physical Review Research (or Quantum Science and Technology)
 
@@ -10,13 +10,13 @@
 
 ## Abstract (150 words)
 
-We present a quantum simulation framework for the Kuramoto model of coupled oscillators, mapped to the XY Hamiltonian on IBM Heron r2 superconducting hardware. Using a coupling-topology-informed variational ansatz, we demonstrate 6× faster convergence to the ground state compared to hardware-efficient alternatives. We characterize the decoherence budget at 16 qubits, showing that the XY Hamiltonian's spectral structure amplifies T2-limited fidelity loss at specific Trotter depths. We connect the synchronization transition to the Berezinskii-Kosterlitz-Thouless (BKT) universality class and report a negative result for the persistent homology threshold p_h1 = 0.72: the square-lattice expression A_HP × sqrt(2/π) is numerically close, but the K_nm graph Monte Carlo gives p_h1 ≈ 0.97, so 0.72 remains an open empirical/theoretical parameter. We provide an open-source package (1300+ tests) with ADAPT-VQE, VarQITE, QSVT resource estimation, and benchmarks against five physical coupled-oscillator systems.
+We present a quantum simulation framework for the Kuramoto model of coupled oscillators, mapped to the XY Hamiltonian on IBM Heron r2 superconducting hardware. Using a coupling-topology-informed variational ansatz, we demonstrate 6× faster convergence to the ground state compared to hardware-efficient alternatives. We characterise the decoherence budget at 16 qubits, showing that the XY Hamiltonian's spectral structure amplifies T2-limited fidelity loss at specific Trotter depths. We connect the synchronisation transition to the Berezinskii-Kosterlitz-Thouless (BKT) universality class and report a negative result for the persistent homology threshold p_h1 = 0.72: the square-lattice expression A_HP × sqrt(2/π) is numerically close, but the K_nm graph Monte Carlo gives p_h1 ≈ 0.97, so 0.72 remains an open empirical/theoretical parameter. We provide an open-source package with ADAPT-VQE, VarQITE, QSVT resource estimation, and benchmarks against five physical coupled-oscillator systems.
 
 ---
 
 ## I. Introduction
 
-- Coupled oscillators: Kuramoto model, synchronization, applications (power grids, neural networks, photosynthesis, plasma)
+- Coupled oscillators: Kuramoto model, synchronisation, applications (power grids, neural networks, photosynthesis, plasma)
 - Quantum simulation on NISQ hardware: state of the art, IBM utility experiments (Nature 2023)
 - The Kuramoto-XY mapping: dθ/dt = ω + KΣsin(Δθ) → H = -Σ K(XX+YY) - Σ ωZ
 - Our contribution: physics-informed ansatz, BKT analysis, open-source framework
@@ -58,7 +58,7 @@ We present a quantum simulation framework for the Kuramoto model of coupled osci
 ### C. BKT analysis
 - Figure 3: Phase diagram K_c vs T_eff
 - Figure 4: Entanglement entropy S(n/2) vs coupling K
-- Figure 5: Vortex density across synchronization transition
+- Figure 5: Vortex density across synchronisation transition
 - Negative result: p_h1 = A_HP(square lattice) × sqrt(2/π) = 0.717 is a numerical coincidence, not a K_nm derivation
   - K_nm graph Monte Carlo gives A_HP ≈ 1.214 and p_h1 ≈ 0.97
   - Significance: p_h1 = 0.72 must remain an explicit open parameter until another derivation or measurement closes it
@@ -77,17 +77,20 @@ We present a quantum simulation framework for the Kuramoto model of coupled osci
 - Surface code: d=7 at p=0.3% → 1552 physical qubits for 16 oscillators
 - Circuit cutting: 32 oscillators via 2×16 partitions on Heron
 - GPU baseline: A100 beats QPU until N~33 (statevector) or N~25 (MPS at criticality)
-- Honest quantum advantage boundary: N > 40 for generic dynamics
+- Exact Hilbert-space simulation crossover: n≈11.6 from committed classical baselines plus completed ibm_fez scaling jobs
+- Honest broad quantum advantage boundary remains open; Rust Kuramoto ODE baselines remain faster through n≤16
 
 ## V. Discussion
 
 ### What we claim:
 - K_nm-informed ansatz provides measurable improvement (hardware-verified)
-- BKT framework correctly describes the XY model synchronization transition
+- BKT framework correctly describes the XY model synchronisation transition
 - p_h1 = 0.72 remains open; the square-lattice BKT coincidence is falsified on the K_nm graph
+- Exact state-vector simulation hits a measured resource boundary near n≈11.6
 
 ### What we do NOT claim:
 - Quantum advantage at 16 qubits (classical is faster)
+- Broad quantum advantage from the exact-simulation crossover figure
 - The K_nm values model any specific physical system
 - "Consciousness" — we measure physical observables, not philosophical concepts
 - p_h1 = 0.72 is derived from first principles
@@ -101,7 +104,7 @@ We present a quantum simulation framework for the Kuramoto model of coupled osci
 ## VI. Conclusion
 
 Open-source package: github.com/anulum/scpn-quantum-control (AGPL-3.0)
-1300+ tests, Rust acceleration, 5 physical system benchmarks, 4 simulation algorithms.
+Rust acceleration, 5 physical system benchmarks, 4 simulation algorithms, and CI-gated tests.
 
 ## Data availability
 
