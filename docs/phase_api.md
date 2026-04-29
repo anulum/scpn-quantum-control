@@ -15,6 +15,11 @@ These modules answer the question: given a coupling matrix $K_{nm}$ and natural
 frequencies $\omega_i$, how do we prepare, evolve, and optimise quantum states that
 encode the synchronization dynamics?
 
+This is an advanced module reference. Start with
+[Stable Facades API](stable_facades_api.md) and
+[Kuramoto Core Facade](kuramoto_core_facade.md) for stable user workflows, then
+use this page when direct solver classes or evolution algorithms are required.
+
 ---
 
 ## Core Solvers

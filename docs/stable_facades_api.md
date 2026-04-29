@@ -40,3 +40,5 @@ measurements.
   tutorial before SCPN-specific layers.
 - [Core Package Boundary](core_package_boundary.md) records the current licence
   and possible future package split boundary.
+- [API Overview](api.md) routes advanced users to lower-level module references
+  after the stable facade path is clear.

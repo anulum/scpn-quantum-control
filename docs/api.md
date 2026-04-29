@@ -11,7 +11,17 @@
 For first-path user workflows, start with the
 [Stable Facades API](stable_facades_api.md). It is the mkdocstrings reference
 for public facades such as `scpn_quantum_control.kuramoto_core`. The lower-level
-sections below remain useful when you need direct module access.
+sections below are advanced module references for maintainers, extension authors,
+and researchers who need direct subsystem access.
+
+## Reference Levels
+
+| Level | Start here | Use when |
+| --- | --- | --- |
+| Stable facade | [Stable Facades API](stable_facades_api.md) | Building notebooks, tutorials, cross-repository integrations, or user-facing workflows. |
+| Workflow guide | [Kuramoto Core Facade](kuramoto_core_facade.md) | Compiling arbitrary `K_nm`/`omega` problems without depending on low-level module layout. |
+| Runtime contract | [QPU Data Artifact](qpu_data_artifact.md), [Pipeline Runtime Contract](pipeline_runtime_contract.md) | Exchanging persisted QPU results or compute-unit metadata. |
+| Advanced module reference | This page and [Auto-Generated Module Index](autodoc.md) | Auditing, extending, or debugging subsystem internals. |
 
 ## stable facades
 
@@ -29,6 +39,12 @@ Validate an arbitrary symmetric Kuramoto coupling problem, attach serialisable
 metadata, and compile the common Hamiltonian/circuit objects used by simulator,
 witness, and hardware workflows. See [Kuramoto Core Facade](kuramoto_core_facade.md)
 for the workflow page.
+
+## Advanced Module Reference
+
+The following sections expose lower-level modules directly. Prefer the stable
+facades above unless you specifically need a bridge adapter, solver class, or
+subsystem implementation detail.
 
 ## bridge
 
