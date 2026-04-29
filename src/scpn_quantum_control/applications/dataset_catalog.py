@@ -12,13 +12,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from scpn_quantum_control._paths import project_data_root
 from scpn_quantum_control.bridge.qpu_data_artifact import (
     QPUDataArtifact,
     read_qpu_data_artifact,
 )
 from scpn_quantum_control.kuramoto_core import KuramotoProblem, build_kuramoto_problem
 
-_REPO_ROOT = Path(__file__).resolve().parents[3]
+_REPO_ROOT = project_data_root("data/public_application_benchmarks")
 APPLICATION_BENCHMARK_DIR = _REPO_ROOT / "data" / "public_application_benchmarks"
 
 
