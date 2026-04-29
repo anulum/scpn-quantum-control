@@ -24,6 +24,7 @@ from .phase.xy_kuramoto import QuantumKuramotoSolver
 
 if TYPE_CHECKING:
     from .hardware.analog_kuramoto import AnalogKuramotoPlatform, AnalogKuramotoProgram
+    from .hardware.hybrid_digital_analog import HybridDigitalAnalogProgram
 
 JsonScalar = str | int | float | bool | None
 
@@ -133,6 +134,32 @@ def compile_analog_program(
 
     backend = AnalogKuramotoBackend(platform)
     return backend.compile(problem, duration=duration, coupling_scale=coupling_scale)
+
+
+def compile_hybrid_program(
+    problem: KuramotoProblem,
+    *,
+    platform: AnalogKuramotoPlatform | str,
+    duration: float,
+    digital_time: float | None = None,
+    max_analog_couplers: int | None = None,
+    analog_threshold: float = 0.0,
+    trotter_steps: int = 8,
+    trotter_order: int = 1,
+) -> HybridDigitalAnalogProgram:
+    """Compile a split analog-native plus digital-residual programme."""
+    from .hardware.hybrid_digital_analog import HybridDigitalAnalogBackend
+
+    backend = HybridDigitalAnalogBackend(platform)
+    return backend.compile(
+        problem,
+        duration=duration,
+        digital_time=digital_time,
+        max_analog_couplers=max_analog_couplers,
+        analog_threshold=analog_threshold,
+        trotter_steps=trotter_steps,
+        trotter_order=trotter_order,
+    )
 
 
 def measure_order_parameter(
