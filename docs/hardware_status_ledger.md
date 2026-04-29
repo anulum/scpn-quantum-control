@@ -13,6 +13,22 @@ may quote selected results, but every quoted campaign should point back here or
 to a campaign-specific artifact with backend, date, mitigation state, job count,
 and raw-data path.
 
+## Status Snapshot — 2026-04-29
+
+| Area | Current public status | Canonical source |
+|---|---|---|
+| Package line | Version `0.9.6`, Python `>=3.10`, Qiskit `>=2.2,<3.0`. | `pyproject.toml`, `CHANGELOG.md` |
+| Generic compiler entry point | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` problems and compiles Hamiltonians, dense matrices, Trotter circuits, and order-parameter measurements. | `docs/kuramoto_core_facade.md` |
+| Core-package licence boundary | Possible future lightweight core split is documented, but no permissive relicensing has occurred. | `docs/core_package_boundary.md` |
+| Baseline hardware campaign | `ibm_fez` Heron r2 baseline campaign supports Bell, QKD, ZNE, VQE, Trotter, and 16-qubit UPDE result figures. | `results/ibm_hardware_2026-03-28/`, `results/HARDWARE_RESULTS.md` |
+| DLA parity campaign | `ibm_kingston` Heron r2 Phase 1 campaign supports the DLA parity asymmetry result. | `data/phase1_dla_parity/`, `docs/dla_parity.md` |
+| Simulator claims | BKT, OTOC, Floquet, MBL, FIM, and classical comparison material remain simulator or classical-baseline claims unless a hardware artifact is named. | `results/SIMULATOR_RESULTS.md`, `results/classical_baselines_2026-03-30.json` |
+| Pending frontier output | Later frontier and multi-QPU batches are not promoted to public claims until raw artifacts, retrieval manifests, and analysis scripts are reviewed and committed. | This ledger |
+
+README, `docs/index.md`, and `docs/results.md` should treat this dated snapshot
+as the source of truth for public status wording. If a campaign value changes,
+update this table first, then refresh the summary pages.
+
 ## Claim Classes
 
 | Class | Meaning | Required evidence |
