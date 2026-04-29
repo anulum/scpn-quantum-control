@@ -1,0 +1,126 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# scpn-quantum-control — Kuramoto core facade
+"""Small public facade for Kuramoto-XY problems."""
+
+from __future__ import annotations
+
+import json
+from collections.abc import Mapping
+from dataclasses import dataclass, field
+from types import MappingProxyType
+from typing import Any
+
+import numpy as np
+from qiskit import QuantumCircuit
+from qiskit.quantum_info import SparsePauliOp, Statevector
+
+from .bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
+from .phase.xy_kuramoto import QuantumKuramotoSolver
+
+JsonScalar = str | int | float | bool | None
+
+
+@dataclass(frozen=True)
+class KuramotoProblem:
+    """Validated coupling matrix, frequencies, and serialisable metadata."""
+
+    K_nm: np.ndarray
+    omega: np.ndarray
+    metadata: Mapping[str, JsonScalar] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        K_nm, omega = validate_kuramoto_inputs(self.K_nm, self.omega)
+        metadata = dict(self.metadata)
+        try:
+            json.dumps(metadata, sort_keys=True)
+        except TypeError as exc:
+            raise TypeError("metadata must be JSON-serialisable") from exc
+
+        K_nm.setflags(write=False)
+        omega.setflags(write=False)
+        object.__setattr__(self, "K_nm", K_nm)
+        object.__setattr__(self, "omega", omega)
+        object.__setattr__(self, "metadata", MappingProxyType(metadata))
+
+    @property
+    def n_oscillators(self) -> int:
+        """Number of oscillators/qubits represented by the problem."""
+        return int(self.omega.shape[0])
+
+    def to_metadata(self) -> dict[str, Any]:
+        """Return serialisable metadata for result artifacts."""
+        return {
+            "n_oscillators": self.n_oscillators,
+            "metadata": dict(self.metadata),
+            "K_nm_shape": list(self.K_nm.shape),
+            "omega_shape": list(self.omega.shape),
+        }
+
+
+def validate_kuramoto_inputs(K_nm: np.ndarray, omega: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Validate and copy a symmetric Kuramoto coupling problem."""
+    K_arr = np.array(K_nm, dtype=np.float64, copy=True)
+    omega_arr = np.array(omega, dtype=np.float64, copy=True)
+
+    if K_arr.ndim != 2 or K_arr.shape[0] != K_arr.shape[1]:
+        raise ValueError(f"K_nm must be a square matrix, got shape {K_arr.shape}")
+    n_oscillators = K_arr.shape[0]
+    if omega_arr.shape != (n_oscillators,):
+        raise ValueError(f"omega must have shape ({n_oscillators},), got {omega_arr.shape}")
+    if not np.all(np.isfinite(K_arr)):
+        raise ValueError("K_nm must contain only finite values")
+    if not np.all(np.isfinite(omega_arr)):
+        raise ValueError("omega must contain only finite values")
+    if not np.allclose(K_arr, K_arr.T, atol=1e-12, rtol=1e-12):
+        raise ValueError("K_nm must be symmetric for the gate-model XY mapping")
+
+    np.fill_diagonal(K_arr, 0.0)
+    return K_arr, omega_arr
+
+
+def build_kuramoto_problem(
+    K_nm: np.ndarray,
+    omega: np.ndarray,
+    metadata: Mapping[str, JsonScalar] | None = None,
+) -> KuramotoProblem:
+    """Create a validated Kuramoto-XY problem from arbitrary arrays."""
+    return KuramotoProblem(K_nm=K_nm, omega=omega, metadata=metadata or {})
+
+
+def compile_hamiltonian(problem: KuramotoProblem) -> SparsePauliOp:
+    """Compile a Kuramoto problem into the XY SparsePauliOp Hamiltonian."""
+    return knm_to_hamiltonian(problem.K_nm, problem.omega)
+
+
+def compile_dense_hamiltonian(problem: KuramotoProblem) -> np.ndarray:
+    """Compile a dense Hamiltonian, using the Rust engine when installed."""
+    return knm_to_dense_matrix(problem.K_nm, problem.omega)
+
+
+def compile_trotter_circuit(
+    problem: KuramotoProblem,
+    time: float,
+    trotter_steps: int = 10,
+    trotter_order: int = 1,
+) -> QuantumCircuit:
+    """Compile a Trotterised gate-model evolution circuit."""
+    solver = QuantumKuramotoSolver(
+        problem.n_oscillators,
+        problem.K_nm,
+        problem.omega,
+        trotter_order=trotter_order,
+    )
+    return solver.evolve(time=time, trotter_steps=trotter_steps)
+
+
+def measure_order_parameter(
+    problem: KuramotoProblem, statevector: Statevector
+) -> tuple[float, float]:
+    """Measure the Kuramoto order parameter from a statevector."""
+    solver = QuantumKuramotoSolver(problem.n_oscillators, problem.K_nm, problem.omega)
+    return solver.measure_order_parameter(statevector)

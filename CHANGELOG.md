@@ -5,6 +5,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Changed
+- 2026-04-29 — Added a `kuramoto_core` facade for validated `K_nm`/`omega` problems, Hamiltonian/circuit compilation, dense Rust-backed Hamiltonians, and order-parameter measurement.
 - 2026-04-29 — Added `tools/check_dependency_drift.py` so release checks can verify that `requirements.txt` still mirrors `pyproject.toml`.
 - 2026-04-29 — `QuantumKuramotoSolver` now validates coupling shape, finite values, symmetry, Trotter settings, and run-grid parameters before building circuits.
 - 2026-04-29 — Added a public hardware status ledger that classifies theory, simulator, hardware, mitigated, and noise-limited claims and links visible docs to that evidence index.
