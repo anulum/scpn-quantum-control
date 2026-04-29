@@ -28,7 +28,7 @@ simulation of Kuramoto dynamics on a gate-based quantum computer.
 from scpn_quantum_control.phase.xy_kuramoto import QuantumKuramotoSolver
 ```
 
-**`QuantumKuramotoSolver(n_oscillators, K_coupling, omega_natural, backend=None)`**
+**`QuantumKuramotoSolver(n_oscillators, K_coupling, omega_natural, trotter_order=1)`**
 
 | Method | Description |
 |--------|-------------|
@@ -41,6 +41,13 @@ The Trotter decomposition splits the Hamiltonian into mutually commuting XX+YY c
 terms and single-qubit Z rotations. The Trotter error scales as $O(\Delta t^2)$ per step
 for this particular decomposition. For better accuracy at longer times, use the
 second-order Suzuki-Trotter variant or the QSVT-based evolution (see below).
+
+Input validation is intentionally strict for this gate-model XY solver:
+`K_coupling` must be finite, square, symmetric, and shaped
+`(n_oscillators, n_oscillators)`; `omega_natural` must be finite and shaped
+`(n_oscillators,)`; `trotter_order` is limited to 1 or 2. Directed or
+non-reciprocal Kuramoto variants should use a dedicated model rather than being
+silently coerced into this symmetric XY mapping.
 
 Think of this solver as a stroboscopic camera pointed at the quantum oscillators. At
 each time step, the camera captures a snapshot: how synchronised are the oscillators

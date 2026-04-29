@@ -31,6 +31,60 @@ def test_build_hamiltonian(solver):
     assert H.num_qubits == solver.n
 
 
+def test_rejects_invalid_coupling_shape():
+    K = np.zeros((2, 3))
+    omega = np.zeros(2)
+    with pytest.raises(ValueError, match=r"K_coupling shape must be \(2, 2\)"):
+        QuantumKuramotoSolver(2, K, omega)
+
+
+def test_rejects_invalid_omega_shape():
+    K = np.zeros((3, 3))
+    omega = np.zeros(2)
+    with pytest.raises(ValueError, match=r"omega_natural shape must be \(3,\)"):
+        QuantumKuramotoSolver(3, K, omega)
+
+
+def test_rejects_non_finite_inputs():
+    K = np.array([[0.0, np.inf], [np.inf, 0.0]])
+    omega = np.zeros(2)
+    with pytest.raises(ValueError, match="K_coupling must contain only finite values"):
+        QuantumKuramotoSolver(2, K, omega)
+
+    with pytest.raises(ValueError, match="omega_natural must contain only finite values"):
+        QuantumKuramotoSolver(2, np.zeros((2, 2)), np.array([0.0, np.nan]))
+
+
+def test_rejects_asymmetric_coupling_matrix():
+    K = np.array([[0.0, 1.0], [0.5, 0.0]])
+    omega = np.zeros(2)
+    with pytest.raises(ValueError, match="K_coupling must be symmetric"):
+        QuantumKuramotoSolver(2, K, omega)
+
+
+def test_rejects_invalid_trotter_settings():
+    K = np.zeros((2, 2))
+    omega = np.zeros(2)
+    with pytest.raises(ValueError, match="trotter_order must be 1 or 2"):
+        QuantumKuramotoSolver(2, K, omega, trotter_order=3)
+
+    solver = QuantumKuramotoSolver(2, K, omega)
+    with pytest.raises(ValueError, match="trotter_steps must be a positive integer"):
+        solver.evolve(1.0, trotter_steps=0)
+    with pytest.raises(ValueError, match="time must be finite and non-negative"):
+        solver.evolve(-1.0)
+
+
+def test_rejects_invalid_run_grid():
+    solver = QuantumKuramotoSolver(2, np.zeros((2, 2)), np.zeros(2))
+    with pytest.raises(ValueError, match="t_max must be finite and non-negative"):
+        solver.run(t_max=-0.1, dt=0.1)
+    with pytest.raises(ValueError, match="dt must be finite and positive"):
+        solver.run(t_max=0.1, dt=0.0)
+    with pytest.raises(ValueError, match="trotter_per_step must be a positive integer"):
+        solver.run(t_max=0.1, dt=0.1, trotter_per_step=0)
+
+
 def test_evolve_circuit(solver):
     solver.build_hamiltonian()
     qc = solver.evolve(1.0, trotter_steps=5)

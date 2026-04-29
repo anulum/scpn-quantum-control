@@ -15,6 +15,9 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
 ## [0.9.6] - 2026-04-17
 
 ### Changed (2026-04-29)
+- `QuantumKuramotoSolver` validates coupling shape, finite values,
+  symmetry, Trotter settings, and run-grid parameters before building
+  circuits.
 - Added a public hardware status ledger that classifies theory,
   simulator, hardware, mitigated, and noise-limited claims and links
   visible docs to that evidence index.
