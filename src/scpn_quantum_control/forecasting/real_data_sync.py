@@ -464,9 +464,9 @@ def _order_parameter(theta: FloatArray) -> float:
 
 def _relative_source_path(path: Path) -> str:
     try:
-        return str(path.resolve().relative_to(_REPO_ROOT))
+        return path.resolve().relative_to(_REPO_ROOT).as_posix()
     except ValueError:
-        return str(path)
+        return path.as_posix()
 
 
 def _model_to_dict(model: ForecastModelRun) -> dict[str, Any]:
