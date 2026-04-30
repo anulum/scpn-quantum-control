@@ -11,13 +11,14 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import http.client
 import json
 import platform
 import subprocess
 import sys
 from pathlib import Path
 from typing import Any
-from urllib.request import urlretrieve
+from urllib.parse import urlsplit
 
 import numpy as np
 from scipy.signal import butter, hilbert, sosfiltfilt
@@ -31,6 +32,7 @@ DEFAULT_RECORDS = ["S001R01"]
 DEFAULT_DATASET_BASE_URL = "https://physionet.org/files/eegmmidb/1.0.0"
 DEFAULT_CHANNELS = ["Fp1.", "Fp2.", "F3..", "F4..", "C3..", "C4..", "O1..", "O2.."]
 CANONICAL_LABELS = ["Fp1", "Fp2", "F3", "F4", "C3", "C4", "O1", "O2"]
+MAX_DOWNLOAD_REDIRECTS = 3
 
 
 def _git_commit() -> str:
@@ -53,6 +55,43 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _validated_https_url(url: str) -> tuple[str, str]:
+    parsed = urlsplit(url)
+    if parsed.scheme != "https" or not parsed.netloc or not parsed.path:
+        raise ValueError(f"Only absolute HTTPS EDF URLs are allowed: {url!r}")
+    target = parsed.path
+    if parsed.query:
+        target = f"{target}?{parsed.query}"
+    return parsed.netloc, target
+
+
+def download_https_file(source_url: str, path: Path, *, redirects_remaining: int) -> None:
+    host, target = _validated_https_url(source_url)
+    connection = http.client.HTTPSConnection(host, timeout=60)
+    try:
+        connection.request(
+            "GET",
+            target,
+            headers={"User-Agent": "scpn-quantum-control-eeg-validation/1.0"},
+        )
+        response = connection.getresponse()
+        if response.status in {301, 302, 303, 307, 308}:
+            location = response.getheader("Location")
+            if not location or redirects_remaining <= 0:
+                raise RuntimeError(f"Could not download EDF from {source_url}: redirect failed")
+            download_https_file(location, path, redirects_remaining=redirects_remaining - 1)
+            return
+        if response.status != 200:
+            raise RuntimeError(f"Could not download EDF from {source_url}: HTTP {response.status}")
+        partial_path = path.with_suffix(f"{path.suffix}.part")
+        with partial_path.open("wb") as handle:
+            while chunk := response.read(1024 * 1024):
+                handle.write(chunk)
+        partial_path.replace(path)
+    finally:
+        connection.close()
+
+
 def ensure_edf(path: Path, *, source_url: str, download: bool) -> None:
     if path.exists():
         return
@@ -61,7 +100,7 @@ def ensure_edf(path: Path, *, source_url: str, download: bool) -> None:
             f"Missing EDF file: {path}. Re-run with --download or provide --edf."
         )
     path.parent.mkdir(parents=True, exist_ok=True)
-    urlretrieve(source_url, path)
+    download_https_file(source_url, path, redirects_remaining=MAX_DOWNLOAD_REDIRECTS)
 
 
 def record_to_path(record: str, *, raw_root: Path) -> Path:
