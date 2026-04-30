@@ -36,8 +36,10 @@ eeg_module = _load_script_module()
 aggregate_record_edges = eeg_module.aggregate_record_edges
 bandpass_phase = eeg_module.bandpass_phase
 plv_edges = eeg_module.plv_edges
+record_condition = eeg_module.record_condition
 record_to_path = eeg_module.record_to_path
 record_to_url = eeg_module.record_to_url
+records_for_subject_run = eeg_module.records_for_subject_run
 segment_starts = eeg_module.segment_starts
 validated_https_url = eeg_module._validated_https_url
 
@@ -56,6 +58,26 @@ def test_validated_https_url_rejects_non_https_sources():
 
     with pytest.raises(ValueError, match="Only absolute HTTPS"):
         validated_https_url("http://physionet.org/files/eegmmidb/1.0.0/S001/S001R01.edf")
+
+
+def test_records_for_subject_run_builds_full_eegmmidb_identifiers():
+    assert records_for_subject_run([1, 9, 109], run=2) == [
+        "S001R02",
+        "S009R02",
+        "S109R02",
+    ]
+
+    with pytest.raises(ValueError, match="subjects must be in"):
+        records_for_subject_run([0], run=1)
+
+    with pytest.raises(ValueError, match="run must be in"):
+        records_for_subject_run([1], run=15)
+
+
+def test_record_condition_tracks_baseline_and_mixed_runs():
+    assert record_condition(["S001R01", "S002R01"]) == "baseline eyes open"
+    assert record_condition(["S001R02", "S002R02"]) == "baseline eyes closed"
+    assert record_condition(["S001R01", "S001R02"]) == "mixed EEGMMIDB runs"
 
 
 def test_segment_starts_uses_full_overlapping_window_grid():
