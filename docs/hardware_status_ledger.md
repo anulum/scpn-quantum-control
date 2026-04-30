@@ -69,11 +69,11 @@ update this table first, then refresh the summary pages.
   Public overview pages should describe the CI-gated suite and coverage target
   rather than carrying static counts that drift between commits.
 
-## Roadmap State — 2026-04-29
+## Roadmap State — 2026-04-30
 
 | Queue | State | Next gate |
 |---|---|---|
-| High-impact execution TODO | Complete locally. Dependency hygiene, core facade, documentation ergonomics, baselines, maintenance, and frontier-track scaffolding are checked off. | Commit/push current Figure 17 and documentation batch, then let CI verify. |
-| Scientific gaps | Partially closed. K_nm physical validation still needs measured-system coupling magnitudes; broad quantum advantage remains open; `p_h1 = 0.72` is an explicit open empirical/theoretical parameter. | New measured-system data or a separate derivation/measurement campaign. |
+| High-impact execution TODO | Complete locally. Dependency hygiene, core facade, documentation ergonomics, baselines, maintenance, frontier-track scaffolding, and CI timing-gate stabilization are checked off. | Keep CI green on `main`; add only scoped follow-up work. |
+| Scientific gaps | Partially closed. The EEG PLV K_nm validation artifact now uses the full 109-subject PhysioNet EEGMMIDB baseline eyes-open cohort, but K_nm physical validation still needs measured-system coupling magnitudes; broad quantum advantage remains open; `p_h1 = 0.72` is an explicit open empirical/theoretical parameter. | Baseline eyes-closed EEG comparison, then a physical-unit measured coupling matrix with null models; provenance-rich advantage benchmark tables; TCBO or first-principles p_h1 reproduction. |
 | Hardware experiments | March/April promoted campaigns complete. Phase 2 DLA parity expansion is ready but blocked on promo/credits. | IBM credit/promo availability plus preregistered run manifest. |
 | Strategic roadmap | All 53 post-v1.0 differentiation tracks remain deferred / CEO-gated. | Activate one track explicitly before implementation. |
