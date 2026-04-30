@@ -16,6 +16,7 @@ import json
 import platform
 import subprocess
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
@@ -33,6 +34,15 @@ DEFAULT_DATASET_BASE_URL = "https://physionet.org/files/eegmmidb/1.0.0"
 DEFAULT_CHANNELS = ["Fp1.", "Fp2.", "F3..", "F4..", "C3..", "C4..", "O1..", "O2.."]
 CANONICAL_LABELS = ["Fp1", "Fp2", "F3", "F4", "C3", "C4", "O1", "O2"]
 MAX_DOWNLOAD_REDIRECTS = 3
+EEGMMIDB_SUBJECTS = tuple(range(1, 110))
+EEGMMIDB_RUN_CONDITIONS = {
+    "01": "baseline eyes open",
+    "02": "baseline eyes closed",
+}
+RECORD_PRESETS = {
+    "baseline-open-109": tuple(f"S{subject:03d}R01" for subject in EEGMMIDB_SUBJECTS),
+    "baseline-closed-109": tuple(f"S{subject:03d}R02" for subject in EEGMMIDB_SUBJECTS),
+}
 
 
 def _git_commit() -> str:
@@ -113,6 +123,22 @@ def record_to_url(record: str, *, dataset_base_url: str) -> str:
     return f"{dataset_base_url.rstrip('/')}/{subject}/{record}.edf"
 
 
+def records_for_subject_run(subjects: Sequence[int], *, run: int) -> list[str]:
+    if run < 1 or run > 14:
+        raise ValueError(f"EEGMMIDB run must be in [1, 14], got {run}")
+    invalid_subjects = [subject for subject in subjects if subject not in EEGMMIDB_SUBJECTS]
+    if invalid_subjects:
+        raise ValueError(f"EEGMMIDB subjects must be in [1, 109], got {invalid_subjects}")
+    return [f"S{subject:03d}R{run:02d}" for subject in subjects]
+
+
+def record_condition(records: Sequence[str]) -> str:
+    run_codes = {record[-2:] for record in records}
+    if len(run_codes) != 1:
+        return "mixed EEGMMIDB runs"
+    return EEGMMIDB_RUN_CONDITIONS.get(next(iter(run_codes)), f"run {next(iter(run_codes))}")
+
+
 def load_edf_channels(path: Path, channels: list[str]) -> tuple[np.ndarray, float]:
     import mne
 
@@ -186,7 +212,9 @@ def build_record_edges(
     return plv_edges(phase, sfreq=sfreq, window_s=window_s, step_s=step_s), sfreq
 
 
-def aggregate_record_edges(record_edges: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def aggregate_record_edges(
+    record_edges: list[dict[str, Any]], *, source_label: str | None = None
+) -> list[dict[str, Any]]:
     grouped: dict[tuple[int, int], list[dict[str, Any]]] = {}
     for item in record_edges:
         grouped.setdefault((int(item["i"]), int(item["j"])), []).append(item)
@@ -214,7 +242,7 @@ def aggregate_record_edges(record_edges: list[dict[str, Any]]) -> list[dict[str,
                 "n_segments_total": int(np.sum(segment_counts)),
                 "q25": float(q25),
                 "q75": float(q75),
-                "source": "PhysioNet EEGMMIDB baseline eyes-open alpha-band PLV cohort median",
+                "source": source_label or "PhysioNet EEGMMIDB alpha-band PLV cohort median",
             }
         )
     return aggregated
@@ -290,6 +318,8 @@ def build_cohort_payload(
     all_edges = []
     record_metadata = []
     sampling_rates = set()
+    condition = record_condition(records)
+    cohort_source = f"PhysioNet EEGMMIDB {condition} alpha-band PLV cohort median"
     for record in records:
         edf_path = record_to_path(record, raw_root=raw_root)
         source_url = record_to_url(record, dataset_base_url=dataset_base_url)
@@ -322,7 +352,7 @@ def build_cohort_payload(
         )
     return {
         "schema_version": "scpn-quantum-control.measured-couplings.v1",
-        "system": "PhysioNet EEGMMIDB baseline eyes-open cohort median",
+        "system": f"PhysioNet EEGMMIDB {condition} cohort median",
         "unit": "phase_locking_value",
         "normalisation": (
             "Per-record PLV = |mean(exp(1j * phase_difference))| after 8-13 Hz "
@@ -332,6 +362,8 @@ def build_cohort_payload(
         "source_dataset": {
             "name": "EEG Motor Movement/Imagery Dataset v1.0.0",
             "records": records,
+            "condition": condition,
+            "n_records": len(records),
             "dataset_base_url": dataset_base_url,
             "licence": "Open Data Commons Attribution License v1.0",
             "citation": (
@@ -350,7 +382,7 @@ def build_cohort_payload(
             "per_record_estimator": "segment mean PLV with standard error across windows",
             "cohort_estimator": "per-edge median with MAD standard error across records",
         },
-        "couplings": aggregate_record_edges(all_edges),
+        "couplings": aggregate_record_edges(all_edges, source_label=cohort_source),
         "per_record_edges": all_edges,
         "provenance": {
             "repo_root": str(REPO_ROOT),
@@ -370,6 +402,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--download", action="store_true")
     parser.add_argument("--record", action="append", dest="records")
+    parser.add_argument("--record-preset", choices=sorted(RECORD_PRESETS))
+    parser.add_argument("--subject-start", type=int, default=1)
+    parser.add_argument("--subject-stop", type=int, default=109)
+    parser.add_argument("--run", type=int, default=1)
     parser.add_argument(
         "--raw-root", type=Path, default=REPO_ROOT / ".coordination" / "datasets" / "eegmmidb"
     )
@@ -397,7 +433,17 @@ def main(argv: list[str] | None = None) -> int:
             command=command,
         )
     else:
-        records = args.records or DEFAULT_RECORDS
+        if args.records:
+            records = args.records
+        elif args.record_preset:
+            records = list(RECORD_PRESETS[args.record_preset])
+        elif args.subject_start != 1 or args.subject_stop != 109 or args.run != 1:
+            records = records_for_subject_run(
+                range(args.subject_start, args.subject_stop + 1),
+                run=int(args.run),
+            )
+        else:
+            records = DEFAULT_RECORDS
         payload = build_cohort_payload(
             records=records,
             raw_root=args.raw_root,
