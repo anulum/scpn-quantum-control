@@ -115,6 +115,11 @@ conversion units, and propagated input-rounding uncertainty.
 | Best scale through origin | `0.003925` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
 | Scaled RMSE | `0.000894` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
 | Maximum direct absolute error | `0.300747` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
+| Weighted adjacency spectrum Pearson | `0.826329` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
+| Weighted adjacency spectrum RMSE | `0.439359` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
+| Weighted Laplacian spectrum Pearson | `0.829195` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
+| Weighted Laplacian spectrum RMSE | `0.966608` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
+| Kuramoto threshold-proxy ratio measured/canonical | `244.239277` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
 | Node-label null Spearman empirical p | `0.363636` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
 | Node-label null Pearson empirical p | `0.264463` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
 | Node-label null RMSE empirical p | `0.264463` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
@@ -124,6 +129,7 @@ conversion units, and propagated input-rounding uncertainty.
 
 Decision: this is a useful measured-system control and a negative result for
 the exact-magnitude K_nm promotion gate. It also does not beat the node-label
-or edge-value permutation null gates. Physical validation remains open until a
+or edge-value permutation null gates, and the spectral/critical-response
+diagnostics do not rescue the match. Physical validation remains open until a
 measured-system candidate with units, uncertainty, and preregistered null models
 passes the promotion criteria.

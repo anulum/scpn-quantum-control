@@ -38,6 +38,7 @@ compare_measured_couplings = audit_module.compare_measured_couplings
 evaluate_candidate_systems = audit_module.evaluate_candidate_systems
 load_measured_couplings = audit_module.load_measured_couplings
 null_model_diagnostics = audit_module._null_model_diagnostics
+spectral_diagnostics = audit_module._spectral_diagnostics
 
 
 def test_compare_measured_couplings_marks_missing_dataset_open():
@@ -109,8 +110,48 @@ def test_compare_measured_couplings_reports_null_model_diagnostics():
     assert result["null_models"]["gate_rule"]
 
 
+def test_compare_measured_couplings_reports_spectral_diagnostics():
+    K = np.array(
+        [
+            [0.0, 0.3, 0.2],
+            [0.3, 0.0, 0.1],
+            [0.2, 0.1, 0.0],
+        ]
+    )
+    measured = {
+        "system": "unit-test",
+        "unit": "dimensionless",
+        "normalisation": "locked unit conversion",
+        "normalisation_locked": True,
+        "couplings": [
+            {"i": 1, "j": 2, "value": 0.3, "uncertainty": 0.0},
+            {"i": 1, "j": 3, "value": 0.2, "uncertainty": 0.0},
+            {"i": 2, "j": 3, "value": 0.1, "uncertainty": 0.0},
+        ],
+    }
+
+    result = compare_measured_couplings(K, measured)
+
+    assert result["spectral"]["available"] is True
+    assert result["spectral"]["graph_spectrum"]["rmse"] == 0.0
+    assert result["spectral"]["laplacian_spectrum"]["rmse"] == 0.0
+    assert (
+        result["spectral"]["critical_coupling_response"][
+            "threshold_proxy_ratio_measured_over_canonical"
+        ]
+        == 1.0
+    )
+
+
 def test_null_model_diagnostics_marks_empty_rows_unavailable():
     result = null_model_diagnostics([])
+
+    assert result["available"] is False
+    assert result["reason"] == "no matched measured-system edges"
+
+
+def test_spectral_diagnostics_marks_empty_rows_unavailable():
+    result = spectral_diagnostics([])
 
     assert result["available"] is False
     assert result["reason"] == "no matched measured-system edges"

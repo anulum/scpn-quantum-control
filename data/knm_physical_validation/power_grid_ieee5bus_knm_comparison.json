@@ -590,6 +590,56 @@
       "source_mode": "curated_public_benchmark_constants",
       "source_reference": "IEEE PES public test feeder / Stagg-El-Abiad 5-bus constants"
     },
+    "spectral": {
+      "available": true,
+      "critical_coupling_response": {
+        "canonical_adjacency_spectral_radius": 0.86664012980328,
+        "canonical_threshold_proxy": 1.1538814850715389,
+        "measured_adjacency_spectral_radius": 0.003548324176966053,
+        "measured_threshold_proxy": 281.8231790915554,
+        "model": "dimensionless Kuramoto threshold proxy; for fixed oscillator distribution, critical coupling is proportional to 1 / adjacency spectral radius",
+        "relative_difference": 243.2392765094786,
+        "threshold_proxy_ratio_measured_over_canonical": 244.23927650947863
+      },
+      "graph_spectrum": {
+        "canonical": [
+          -0.3547674381721499,
+          -0.2359396779853916,
+          -0.180226077245949,
+          -0.09570693639978949,
+          0.86664012980328
+        ],
+        "max_abs_error": 0.8630918056263139,
+        "measured": [
+          -0.003329264338602158,
+          -0.002221200112926895,
+          0.000558137248885568,
+          0.001444003025677433,
+          0.003548324176966053
+        ],
+        "pearson": 0.8263290239688112,
+        "rmse": 0.43935903748700483
+      },
+      "laplacian_spectrum": {
+        "canonical": [
+          -2.034456076704541e-16,
+          0.8703087072282655,
+          1.0252037611339826,
+          1.1567421575170238,
+          1.2504369698286597
+        ],
+        "max_abs_error": 1.243200547420989,
+        "measured": [
+          6.500373252847523e-19,
+          0.0019229638431327348,
+          0.002335859848173251,
+          0.005329301894304641,
+          0.007236422407670659
+        ],
+        "pearson": 0.8291951489040342,
+        "rmse": 0.9666076461518911
+      }
+    },
     "status": "open",
     "system": "IEEE 5-bus power-grid swing-equation coupling matrix",
     "topology": {
@@ -607,7 +657,7 @@
   },
   "provenance": {
     "candidate_dir": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/public_application_benchmarks",
-    "git_commit": "942ddcd9d4b7560fd5b78049f0e3d258266cdb5e",
+    "git_commit": "fe17250c9e1568a5bd95f5f06c88045155192df5",
     "machine": "x86_64",
     "measured_path": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/knm_physical_validation/measured_couplings_power_grid_ieee5bus.json",
     "numpy": "2.2.6",

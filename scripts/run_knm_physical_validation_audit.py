@@ -178,6 +178,71 @@ def _finite_metric(value: float | None) -> float:
     return float(value) if value is not None and np.isfinite(value) else 0.0
 
 
+def _weighted_laplacian(matrix: np.ndarray) -> np.ndarray:
+    return np.diag(np.sum(matrix, axis=1)) - matrix
+
+
+def _spectrum_summary(left: np.ndarray, right: np.ndarray) -> dict[str, Any]:
+    left_eigs = np.linalg.eigvalsh(left)
+    right_eigs = np.linalg.eigvalsh(right)
+    diff = right_eigs - left_eigs
+    return {
+        "canonical": left_eigs.tolist(),
+        "measured": right_eigs.tolist(),
+        "rmse": _rmse(left_eigs, right_eigs),
+        "max_abs_error": float(np.max(np.abs(diff))) if diff.size else 0.0,
+        "pearson": _pearson_corr(left_eigs, right_eigs),
+    }
+
+
+def _critical_coupling_response_summary(
+    canonical_matrix: np.ndarray,
+    measured_matrix: np.ndarray,
+) -> dict[str, Any]:
+    canonical_radius = float(np.max(np.abs(np.linalg.eigvalsh(canonical_matrix))))
+    measured_radius = float(np.max(np.abs(np.linalg.eigvalsh(measured_matrix))))
+    canonical_proxy = 1.0 / canonical_radius if canonical_radius > 0.0 else None
+    measured_proxy = 1.0 / measured_radius if measured_radius > 0.0 else None
+    if canonical_proxy is not None and measured_proxy is not None:
+        ratio = measured_proxy / canonical_proxy
+        relative_difference = abs(measured_proxy - canonical_proxy) / canonical_proxy
+    else:
+        ratio = None
+        relative_difference = None
+    return {
+        "model": (
+            "dimensionless Kuramoto threshold proxy; for fixed oscillator distribution, "
+            "critical coupling is proportional to 1 / adjacency spectral radius"
+        ),
+        "canonical_adjacency_spectral_radius": canonical_radius,
+        "measured_adjacency_spectral_radius": measured_radius,
+        "canonical_threshold_proxy": canonical_proxy,
+        "measured_threshold_proxy": measured_proxy,
+        "threshold_proxy_ratio_measured_over_canonical": ratio,
+        "relative_difference": relative_difference,
+    }
+
+
+def _spectral_diagnostics(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    if not rows:
+        return {"available": False, "reason": "no matched measured-system edges"}
+
+    canonical_matrix = _matrix_from_comparison_rows(rows, key="canonical")
+    measured_matrix = _matrix_from_comparison_rows(rows, key="measured")
+    return {
+        "available": True,
+        "graph_spectrum": _spectrum_summary(canonical_matrix, measured_matrix),
+        "laplacian_spectrum": _spectrum_summary(
+            _weighted_laplacian(canonical_matrix),
+            _weighted_laplacian(measured_matrix),
+        ),
+        "critical_coupling_response": _critical_coupling_response_summary(
+            canonical_matrix,
+            measured_matrix,
+        ),
+    }
+
+
 def _null_summary(
     values: np.ndarray,
     *,
@@ -542,6 +607,7 @@ def compare_measured_couplings(K: np.ndarray, measured: dict[str, Any] | None) -
             ),
             "best_scale_through_origin": _fit_through_origin(canonical_values, measured_values),
         },
+        "spectral": _jsonable(_spectral_diagnostics(rows)),
         "null_models": _jsonable(_null_model_diagnostics(rows)),
         "rows": rows,
     }

@@ -84,6 +84,15 @@ audit reports:
 - scaled relative RMSE versus mean absolute measured coupling: `1.063045`;
 - maximum direct absolute error: `0.300747`.
 
+Spectral diagnostics compare the measured five-bus subgraph to the canonical
+five-layer K_nm subgraph:
+
+- weighted adjacency spectrum Pearson: `0.826329`;
+- weighted adjacency spectrum RMSE: `0.439359`;
+- weighted Laplacian spectrum Pearson: `0.829195`;
+- weighted Laplacian spectrum RMSE: `0.966608`;
+- dimensionless Kuramoto threshold-proxy ratio measured/canonical: `244.239277`.
+
 Null-model diagnostics now test two preregistered controls:
 
 - all `120` node-label permutations, preserving measured graph weights and
@@ -98,5 +107,6 @@ p-values are `0.291189` for Spearman, `0.254577` for Pearson, and `0.254577`
 for RMSE.
 
 This is a measured-system negative/control result. It keeps K_nm physical
-validation open because the power-grid magnitudes do not match canonical K_nm
-within the propagated uncertainty and topology correlation is weak.
+validation open because the power-grid magnitudes, spectra, and threshold proxy
+do not match canonical K_nm within the propagated uncertainty and topology
+correlation is weak.
