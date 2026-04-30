@@ -74,6 +74,27 @@ update this table first, then refresh the summary pages.
 | Queue | State | Next gate |
 |---|---|---|
 | High-impact execution TODO | Complete locally. Dependency hygiene, core facade, documentation ergonomics, baselines, maintenance, frontier-track scaffolding, and CI timing-gate stabilization are checked off. | Keep CI green on `main`; add only scoped follow-up work. |
-| Scientific gaps | Partially closed. The EEG PLV K_nm validation artifact now uses the full 109-subject PhysioNet EEGMMIDB baseline eyes-open cohort, but K_nm physical validation still needs measured-system coupling magnitudes; broad quantum advantage remains open; `p_h1 = 0.72` is an explicit open empirical/theoretical parameter. | Baseline eyes-closed EEG comparison, then a physical-unit measured coupling matrix with null models; provenance-rich advantage benchmark tables; TCBO or first-principles p_h1 reproduction. |
+| Scientific gaps | Partially closed. The EEG PLV K_nm validation artifacts now cover the full 109-subject PhysioNet EEGMMIDB baseline eyes-open and eyes-closed cohorts, with a derived condition comparison. K_nm physical validation still needs measured-system coupling magnitudes; broad quantum advantage remains open; `p_h1 = 0.72` is an explicit open empirical/theoretical parameter. | Physical-unit measured coupling matrix with null models; provenance-rich advantage benchmark tables; TCBO or first-principles p_h1 reproduction. |
 | Hardware experiments | March/April promoted campaigns complete. Phase 2 DLA parity expansion is ready but blocked on promo/credits. | IBM credit/promo availability plus preregistered run manifest. |
 | Strategic roadmap | All 53 post-v1.0 differentiation tracks remain deferred / CEO-gated. | Activate one track explicitly before implementation. |
+
+## EEG Condition Comparison — 2026-04-30
+
+The K_nm physical-validation data now includes a matched 109-subject PhysioNet
+EEGMMIDB baseline eyes-closed cohort (`S001R02` through `S109R02`) and a derived
+eyes-closed-minus-eyes-open comparison artifact.
+
+| Metric | Value | Source |
+|---|---:|---|
+| Eyes-open mean edge PLV | `0.545586` | `data/knm_physical_validation/baseline_open_closed_comparison.json` |
+| Eyes-closed mean edge PLV | `0.600050` | `data/knm_physical_validation/baseline_open_closed_comparison.json` |
+| Mean closed-minus-open delta | `0.054463` | `data/knm_physical_validation/baseline_open_closed_comparison.json` |
+| Median closed-minus-open delta | `0.061094` | `data/knm_physical_validation/baseline_open_closed_comparison.json` |
+| Mean absolute edge delta | `0.066249` | `data/knm_physical_validation/baseline_open_closed_comparison.json` |
+| Largest absolute edge delta | `0.135901` on edge `(2, 3)` | `data/knm_physical_validation/baseline_open_closed_comparison.json` |
+| Pearson r across edge medians | `0.963961` | `data/knm_physical_validation/baseline_open_closed_comparison.json` |
+
+This closes the condition-control EEG PLV comparison gate. It does not close
+the physical-unit measured-coupling gate: PLV remains dimensionless, and public
+claims must continue to describe this as condition-specific alpha-band EEG
+coupling evidence rather than measured physical K_nm magnitudes.
