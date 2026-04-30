@@ -21,6 +21,7 @@ import json
 import platform
 import subprocess
 import sys
+from itertools import permutations
 from pathlib import Path
 from typing import Any
 
@@ -33,6 +34,8 @@ DEFAULT_CODEBASE: Path | None = None
 DEFAULT_OUTPUT = REPO_ROOT / "docs" / "internal" / "knm_physical_validation_audit_2026-04-30.json"
 DEFAULT_MEASURED = REPO_ROOT / "data" / "knm_physical_validation" / "measured_couplings.json"
 DEFAULT_CANDIDATE_DIR = REPO_ROOT / "data" / "public_application_benchmarks"
+NULL_MODEL_SEED = 20260430
+EDGE_VALUE_NULL_SAMPLES = 4096
 
 ANCHORS_1_INDEXED = {
     (1, 2): 0.302,
@@ -108,6 +111,10 @@ def _offdiag_values(matrix: np.ndarray) -> np.ndarray:
     return matrix[~np.eye(matrix.shape[0], dtype=bool)]
 
 
+def _upper_triangle_values(matrix: np.ndarray) -> np.ndarray:
+    return matrix[np.triu_indices(matrix.shape[0], k=1)]
+
+
 def _pearson_corr(left: np.ndarray, right: np.ndarray) -> float | None:
     if left.size == 0 or right.size == 0:
         return None
@@ -149,6 +156,142 @@ def _fit_through_origin(canonical: np.ndarray, observed: np.ndarray) -> dict[str
             rmse / mean_abs_observed if mean_abs_observed > 0.0 else 0.0
         ),
         "max_abs_error": float(np.max(np.abs(scaled - observed))) if observed.size else 0.0,
+    }
+
+
+def _matrix_from_comparison_rows(rows: list[dict[str, Any]], *, key: str) -> np.ndarray:
+    n = max(max(row["edge_1_indexed"]) for row in rows) if rows else 0
+    matrix = np.zeros((n, n), dtype=np.float64)
+    for row in rows:
+        i_1, j_1 = row["edge_1_indexed"]
+        value = float(row[key])
+        matrix[i_1 - 1, j_1 - 1] = value
+        matrix[j_1 - 1, i_1 - 1] = value
+    return matrix
+
+
+def _rmse(left: np.ndarray, right: np.ndarray) -> float:
+    return float(np.sqrt(np.mean((left - right) ** 2))) if left.size else 0.0
+
+
+def _finite_metric(value: float | None) -> float:
+    return float(value) if value is not None and np.isfinite(value) else 0.0
+
+
+def _null_summary(
+    values: np.ndarray,
+    *,
+    observed: float,
+    alternative: str,
+) -> dict[str, Any]:
+    if values.size == 0:
+        return {
+            "observed": observed,
+            "n_null": 0,
+            "empirical_p": None,
+            "beats_95pct_null": False,
+        }
+
+    if alternative == "greater_equal":
+        empirical_p = float((np.count_nonzero(values >= observed) + 1) / (values.size + 1))
+        beats_95 = bool(observed > np.quantile(values, 0.95))
+    elif alternative == "less_equal":
+        empirical_p = float((np.count_nonzero(values <= observed) + 1) / (values.size + 1))
+        beats_95 = bool(observed < np.quantile(values, 0.05))
+    else:
+        raise ValueError(f"Unknown null alternative: {alternative}")
+
+    return {
+        "observed": observed,
+        "n_null": int(values.size),
+        "null_mean": float(np.mean(values)),
+        "null_std": float(np.std(values)),
+        "null_min": float(np.min(values)),
+        "null_median": float(np.median(values)),
+        "null_max": float(np.max(values)),
+        "empirical_p": empirical_p,
+        "beats_95pct_null": beats_95,
+    }
+
+
+def _null_model_diagnostics(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Compare measured-system diagnostics to deterministic null models."""
+    if not rows:
+        return {"available": False, "reason": "no matched measured-system edges"}
+
+    canonical_matrix = _matrix_from_comparison_rows(rows, key="canonical")
+    measured_matrix = _matrix_from_comparison_rows(rows, key="measured")
+    canonical = _upper_triangle_values(canonical_matrix)
+    measured = _upper_triangle_values(measured_matrix)
+    observed_pearson = _finite_metric(_pearson_corr(canonical, measured))
+    observed_spearman = _finite_metric(_spearman_corr(canonical, measured))
+    observed_rmse = _rmse(canonical, measured)
+
+    node_pearson = []
+    node_spearman = []
+    node_rmse = []
+    for order in permutations(range(measured_matrix.shape[0])):
+        permuted = measured_matrix[np.ix_(order, order)]
+        permuted_values = _upper_triangle_values(permuted)
+        node_pearson.append(_finite_metric(_pearson_corr(canonical, permuted_values)))
+        node_spearman.append(_finite_metric(_spearman_corr(canonical, permuted_values)))
+        node_rmse.append(_rmse(canonical, permuted_values))
+
+    rng = np.random.default_rng(NULL_MODEL_SEED)
+    value_pearson = []
+    value_spearman = []
+    value_rmse = []
+    for _ in range(EDGE_VALUE_NULL_SAMPLES):
+        permuted_values = rng.permutation(measured)
+        value_pearson.append(_finite_metric(_pearson_corr(canonical, permuted_values)))
+        value_spearman.append(_finite_metric(_spearman_corr(canonical, permuted_values)))
+        value_rmse.append(_rmse(canonical, permuted_values))
+
+    return {
+        "available": True,
+        "seed": NULL_MODEL_SEED,
+        "edge_value_samples": EDGE_VALUE_NULL_SAMPLES,
+        "node_label_permutation": {
+            "description": "All measured-system node relabellings; preserves measured graph weights and degree sequence.",
+            "pearson": _null_summary(
+                np.asarray(node_pearson, dtype=np.float64),
+                observed=observed_pearson,
+                alternative="greater_equal",
+            ),
+            "spearman": _null_summary(
+                np.asarray(node_spearman, dtype=np.float64),
+                observed=observed_spearman,
+                alternative="greater_equal",
+            ),
+            "rmse": _null_summary(
+                np.asarray(node_rmse, dtype=np.float64),
+                observed=observed_rmse,
+                alternative="less_equal",
+            ),
+        },
+        "edge_value_permutation": {
+            "description": "Seeded permutations of measured upper-triangle edge values; preserves measured value distribution.",
+            "pearson": _null_summary(
+                np.asarray(value_pearson, dtype=np.float64),
+                observed=observed_pearson,
+                alternative="greater_equal",
+            ),
+            "spearman": _null_summary(
+                np.asarray(value_spearman, dtype=np.float64),
+                observed=observed_spearman,
+                alternative="greater_equal",
+            ),
+            "rmse": _null_summary(
+                np.asarray(value_rmse, dtype=np.float64),
+                observed=observed_rmse,
+                alternative="less_equal",
+            ),
+        },
+        "beats_null_gate": False,
+        "gate_rule": (
+            "Promotion requires topology and magnitude diagnostics to beat preregistered "
+            "nulls and still pass per-edge uncertainty checks."
+        ),
     }
 
 
@@ -399,6 +542,7 @@ def compare_measured_couplings(K: np.ndarray, measured: dict[str, Any] | None) -
             ),
             "best_scale_through_origin": _fit_through_origin(canonical_values, measured_values),
         },
+        "null_models": _jsonable(_null_model_diagnostics(rows)),
         "rows": rows,
     }
 

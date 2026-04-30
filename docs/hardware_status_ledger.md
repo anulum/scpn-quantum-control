@@ -115,8 +115,15 @@ conversion units, and propagated input-rounding uncertainty.
 | Best scale through origin | `0.003925` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
 | Scaled RMSE | `0.000894` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
 | Maximum direct absolute error | `0.300747` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
+| Node-label null Spearman empirical p | `0.363636` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
+| Node-label null Pearson empirical p | `0.264463` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
+| Node-label null RMSE empirical p | `0.264463` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
+| Edge-value null Spearman empirical p | `0.291189` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
+| Edge-value null Pearson empirical p | `0.254577` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
+| Edge-value null RMSE empirical p | `0.254577` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
 
 Decision: this is a useful measured-system control and a negative result for
-the exact-magnitude K_nm promotion gate. Physical validation remains open until
-a measured-system candidate with units, uncertainty, and preregistered null
-models passes the promotion criteria.
+the exact-magnitude K_nm promotion gate. It also does not beat the node-label
+or edge-value permutation null gates. Physical validation remains open until a
+measured-system candidate with units, uncertainty, and preregistered null models
+passes the promotion criteria.

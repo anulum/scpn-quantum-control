@@ -267,6 +267,85 @@
     "max_absolute_error": 0.3007466118513167,
     "normalisation": "K_ij = V_i V_j B_ij / (2 H_i omega_0), omega_0 = 2*pi*60 rad/s, then arithmetic symmetrisation of the two directed inertia terms.",
     "normalisation_locked": true,
+    "null_models": {
+      "available": true,
+      "beats_null_gate": false,
+      "edge_value_permutation": {
+        "description": "Seeded permutations of measured upper-triangle edge values; preserves measured value distribution.",
+        "pearson": {
+          "beats_95pct_null": false,
+          "empirical_p": 0.25457651940444226,
+          "n_null": 4096,
+          "null_max": 0.9187475361751933,
+          "null_mean": -0.005913245804088042,
+          "null_median": -0.0130690793431757,
+          "null_min": -0.9370213852837492,
+          "null_std": 0.32952381559752153,
+          "observed": 0.22614360781061452
+        },
+        "rmse": {
+          "beats_95pct_null": false,
+          "empirical_p": 0.25457651940444226,
+          "n_null": 4096,
+          "null_max": 0.22008195270858003,
+          "null_mean": 0.21989046899631554,
+          "null_median": 0.21989195160945596,
+          "null_min": 0.2197001668770294,
+          "null_std": 6.779286149898755e-05,
+          "observed": 0.2198427332691289
+        },
+        "spearman": {
+          "beats_95pct_null": false,
+          "empirical_p": 0.2911886746399805,
+          "n_null": 4096,
+          "null_max": 0.8994490650890995,
+          "null_mean": -0.006481972833065406,
+          "null_median": -0.013130643285972257,
+          "null_min": -0.925710351661044,
+          "null_std": 0.32863945424177793,
+          "observed": 0.1903943276465977
+        }
+      },
+      "edge_value_samples": 4096,
+      "gate_rule": "Promotion requires topology and magnitude diagnostics to beat preregistered nulls and still pass per-edge uncertainty checks.",
+      "node_label_permutation": {
+        "description": "All measured-system node relabellings; preserves measured graph weights and degree sequence.",
+        "pearson": {
+          "beats_95pct_null": false,
+          "empirical_p": 0.2644628099173554,
+          "n_null": 120,
+          "null_max": 0.6659123377833338,
+          "null_mean": -7.401486830834377e-18,
+          "null_median": 0.0007168897659115835,
+          "null_min": -0.5996074136143099,
+          "null_std": 0.33045314026478384,
+          "observed": 0.22614360781061452
+        },
+        "rmse": {
+          "beats_95pct_null": false,
+          "empirical_p": 0.2644628099173554,
+          "n_null": 120,
+          "null_max": 0.22001258608422447,
+          "null_mean": 0.2198892524030657,
+          "null_median": 0.21988911542621364,
+          "null_min": 0.21975222148533488,
+          "null_std": 6.79851388462962e-05,
+          "observed": 0.2198427332691289
+        },
+        "spearman": {
+          "beats_95pct_null": false,
+          "empirical_p": 0.36363636363636365,
+          "n_null": 120,
+          "null_max": 0.6630974859415989,
+          "null_mean": 0.0,
+          "null_median": -0.013130643285972257,
+          "null_min": -0.5580523396538208,
+          "null_std": 0.31880704357727535,
+          "observed": 0.1903943276465977
+        }
+      },
+      "seed": 20260430
+    },
     "rows": [
       {
         "absolute_error": 0.3007466118513167,
@@ -528,7 +607,7 @@
   },
   "provenance": {
     "candidate_dir": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/public_application_benchmarks",
-    "git_commit": "f4f796c5641d5b84683e7a27f54186ec592ca75d",
+    "git_commit": "942ddcd9d4b7560fd5b78049f0e3d258266cdb5e",
     "machine": "x86_64",
     "measured_path": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/knm_physical_validation/measured_couplings_power_grid_ieee5bus.json",
     "numpy": "2.2.6",

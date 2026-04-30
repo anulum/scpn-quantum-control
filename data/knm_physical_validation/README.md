@@ -84,6 +84,19 @@ audit reports:
 - scaled relative RMSE versus mean absolute measured coupling: `1.063045`;
 - maximum direct absolute error: `0.300747`.
 
+Null-model diagnostics now test two preregistered controls:
+
+- all `120` node-label permutations, preserving measured graph weights and
+  degree sequence;
+- `4,096` seeded edge-value permutations, preserving the measured value
+  distribution.
+
+The observed IEEE 5-bus comparison does not beat either null family at the
+95 % gate. Node-label null empirical p-values are `0.363636` for Spearman,
+`0.264463` for Pearson, and `0.264463` for RMSE. Edge-value null empirical
+p-values are `0.291189` for Spearman, `0.254577` for Pearson, and `0.254577`
+for RMSE.
+
 This is a measured-system negative/control result. It keeps K_nm physical
 validation open because the power-grid magnitudes do not match canonical K_nm
 within the propagated uncertainty and topology correlation is weak.

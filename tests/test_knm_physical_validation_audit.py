@@ -37,6 +37,7 @@ build_audit_payload = audit_module.build_audit_payload
 compare_measured_couplings = audit_module.compare_measured_couplings
 evaluate_candidate_systems = audit_module.evaluate_candidate_systems
 load_measured_couplings = audit_module.load_measured_couplings
+null_model_diagnostics = audit_module._null_model_diagnostics
 
 
 def test_compare_measured_couplings_marks_missing_dataset_open():
@@ -77,6 +78,42 @@ def test_compare_measured_couplings_requires_locked_normalisation():
 
     assert result["status"] == "open"
     assert result["normalisation_locked"] is False
+
+
+def test_compare_measured_couplings_reports_null_model_diagnostics():
+    K = np.array(
+        [
+            [0.0, 0.3, 0.2],
+            [0.3, 0.0, 0.1],
+            [0.2, 0.1, 0.0],
+        ]
+    )
+    measured = {
+        "system": "unit-test",
+        "unit": "dimensionless",
+        "normalisation": "locked unit conversion",
+        "normalisation_locked": True,
+        "couplings": [
+            {"i": 1, "j": 2, "value": 0.29, "uncertainty": 0.02},
+            {"i": 1, "j": 3, "value": 0.21, "uncertainty": 0.02},
+            {"i": 2, "j": 3, "value": 0.11, "uncertainty": 0.02},
+        ],
+    }
+
+    result = compare_measured_couplings(K, measured)
+
+    assert result["status"] == "validated_with_measured_dataset"
+    assert result["null_models"]["available"] is True
+    assert result["null_models"]["node_label_permutation"]["spearman"]["n_null"] == 6
+    assert result["null_models"]["edge_value_permutation"]["spearman"]["n_null"] == 4096
+    assert result["null_models"]["gate_rule"]
+
+
+def test_null_model_diagnostics_marks_empty_rows_unavailable():
+    result = null_model_diagnostics([])
+
+    assert result["available"] is False
+    assert result["reason"] == "no matched measured-system edges"
 
 
 def test_load_measured_couplings_requires_couplings_list(tmp_path):
