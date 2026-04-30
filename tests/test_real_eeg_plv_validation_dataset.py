@@ -14,6 +14,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_PATH = REPO_ROOT / "scripts" / "build_real_eeg_plv_validation_dataset.py"
@@ -38,6 +39,7 @@ plv_edges = eeg_module.plv_edges
 record_to_path = eeg_module.record_to_path
 record_to_url = eeg_module.record_to_url
 segment_starts = eeg_module.segment_starts
+validated_https_url = eeg_module._validated_https_url
 
 
 def test_record_to_path_and_url_follow_physionet_layout(tmp_path):
@@ -46,6 +48,14 @@ def test_record_to_path_and_url_follow_physionet_layout(tmp_path):
         record_to_url("S012R01", dataset_base_url="https://physionet.org/files/eegmmidb/1.0.0/")
         == "https://physionet.org/files/eegmmidb/1.0.0/S012/S012R01.edf"
     )
+
+
+def test_validated_https_url_rejects_non_https_sources():
+    with pytest.raises(ValueError, match="Only absolute HTTPS"):
+        validated_https_url("file:///tmp/S001R01.edf")
+
+    with pytest.raises(ValueError, match="Only absolute HTTPS"):
+        validated_https_url("http://physionet.org/files/eegmmidb/1.0.0/S001/S001R01.edf")
 
 
 def test_segment_starts_uses_full_overlapping_window_grid():
