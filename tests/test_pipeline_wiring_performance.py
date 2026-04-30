@@ -39,6 +39,17 @@ def _timed(fn, *args, **kwargs):
     return result, dt
 
 
+def _timed_median(fn, *args, repeats=5, **kwargs):
+    """Run a tiny benchmark more than once so CI scheduler stalls do not dominate."""
+    result = None
+    samples = []
+    for _ in range(repeats):
+        result, dt = _timed(fn, *args, **kwargs)
+        samples.append(dt)
+    samples.sort()
+    return result, samples[len(samples) // 2]
+
+
 def _report(name, dt_ms, extra=""):
     """Print pipeline performance line."""
     tag = f"  [{dt_ms:7.1f} ms]"
@@ -655,7 +666,7 @@ class TestDynQPipeline:
             for j in [i + 1, i + 2]:
                 if j < 20:
                     errors[(i, j)] = rng.uniform(0.001, 0.02)
-        result, dt = _timed(dynq_initial_layout, errors, 5, None, 1.0, 3, 42)
+        result, dt = _timed_median(dynq_initial_layout, errors, 5, None, 1.0, 3, 42)
         assert result is not None
         assert len(result.initial_layout) == 5
         assert dt < 20, f"DynQ pipeline must complete in <20ms, took {dt:.1f}ms"
