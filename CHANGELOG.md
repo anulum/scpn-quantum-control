@@ -5,6 +5,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-04-30 — Added an IEEE 5-bus measured power-grid coupling artifact and audit support for measured-system topology/magnitude diagnostics.
 - 2026-04-30 — Added the 109-subject EEGMMIDB baseline eyes-closed PLV artifact and an eyes-closed-minus-eyes-open comparison artifact.
 
 ### Changed

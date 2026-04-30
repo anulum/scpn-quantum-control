@@ -1,0 +1,271 @@
+{
+  "couplings": [
+    {
+      "i": 1,
+      "inertia_i_seconds": 5.0,
+      "inertia_j_seconds": 4.0,
+      "j": 2,
+      "raw_susceptance_per_unit": 3.81,
+      "source": "IEEE 5-bus public benchmark constants",
+      "uncertainty": 1.2009791700905502e-05,
+      "uncertainty_type": "rounded_input_half_width_first_order_propagation",
+      "value": 0.0012533881486833107,
+      "voltage_i_per_unit": 1.06,
+      "voltage_j_per_unit": 1.04
+    },
+    {
+      "i": 1,
+      "inertia_i_seconds": 5.0,
+      "inertia_j_seconds": 3.5,
+      "j": 3,
+      "raw_susceptance_per_unit": 5.17,
+      "source": "IEEE 5-bus public benchmark constants",
+      "uncertainty": 1.9047077756884552e-05,
+      "uncertainty_type": "rounded_input_half_width_first_order_propagation",
+      "value": 0.0018004718973514806,
+      "voltage_i_per_unit": 1.06,
+      "voltage_j_per_unit": 1.02
+    },
+    {
+      "i": 1,
+      "inertia_i_seconds": 5.0,
+      "inertia_j_seconds": 4.5,
+      "j": 4,
+      "raw_susceptance_per_unit": 0.0,
+      "source": "IEEE 5-bus public benchmark constants",
+      "uncertainty": 0.0,
+      "uncertainty_type": "topological_absence_in_public_benchmark",
+      "value": 0.0,
+      "voltage_i_per_unit": 1.06,
+      "voltage_j_per_unit": 1.03
+    },
+    {
+      "i": 1,
+      "inertia_i_seconds": 5.0,
+      "inertia_j_seconds": 3.0,
+      "j": 5,
+      "raw_susceptance_per_unit": 0.0,
+      "source": "IEEE 5-bus public benchmark constants",
+      "uncertainty": 0.0,
+      "uncertainty_type": "topological_absence_in_public_benchmark",
+      "value": 0.0,
+      "voltage_i_per_unit": 1.06,
+      "voltage_j_per_unit": 1.01
+    },
+    {
+      "i": 2,
+      "inertia_i_seconds": 4.0,
+      "inertia_j_seconds": 3.5,
+      "j": 3,
+      "raw_susceptance_per_unit": 0.0,
+      "source": "IEEE 5-bus public benchmark constants",
+      "uncertainty": 0.0,
+      "uncertainty_type": "topological_absence_in_public_benchmark",
+      "value": 0.0,
+      "voltage_i_per_unit": 1.04,
+      "voltage_j_per_unit": 1.02
+    },
+    {
+      "i": 2,
+      "inertia_i_seconds": 4.0,
+      "inertia_j_seconds": 4.5,
+      "j": 4,
+      "raw_susceptance_per_unit": 3.06,
+      "source": "IEEE 5-bus public benchmark constants",
+      "uncertainty": 1.0051723417264619e-05,
+      "uncertainty_type": "rounded_input_half_width_first_order_propagation",
+      "value": 0.001026472458053564,
+      "voltage_i_per_unit": 1.04,
+      "voltage_j_per_unit": 1.03
+    },
+    {
+      "i": 2,
+      "inertia_i_seconds": 4.0,
+      "inertia_j_seconds": 3.0,
+      "j": 5,
+      "raw_susceptance_per_unit": 0.0,
+      "source": "IEEE 5-bus public benchmark constants",
+      "uncertainty": 0.0,
+      "uncertainty_type": "topological_absence_in_public_benchmark",
+      "value": 0.0,
+      "voltage_i_per_unit": 1.04,
+      "voltage_j_per_unit": 1.01
+    },
+    {
+      "i": 3,
+      "inertia_i_seconds": 3.5,
+      "inertia_j_seconds": 4.5,
+      "j": 4,
+      "raw_susceptance_per_unit": 0.0,
+      "source": "IEEE 5-bus public benchmark constants",
+      "uncertainty": 0.0,
+      "uncertainty_type": "topological_absence_in_public_benchmark",
+      "value": 0.0,
+      "voltage_i_per_unit": 1.02,
+      "voltage_j_per_unit": 1.03
+    },
+    {
+      "i": 3,
+      "inertia_i_seconds": 3.5,
+      "inertia_j_seconds": 3.0,
+      "j": 5,
+      "raw_susceptance_per_unit": 4.28,
+      "source": "IEEE 5-bus public benchmark constants",
+      "uncertainty": 2.2103054985143427e-05,
+      "uncertainty_type": "rounded_input_half_width_first_order_propagation",
+      "value": 0.0018100820517557097,
+      "voltage_i_per_unit": 1.02,
+      "voltage_j_per_unit": 1.01
+    },
+    {
+      "i": 4,
+      "inertia_i_seconds": 4.5,
+      "inertia_j_seconds": 3.0,
+      "j": 5,
+      "raw_susceptance_per_unit": 6.58,
+      "source": "IEEE 5-bus public benchmark constants",
+      "uncertainty": 3.037254242844346e-05,
+      "uncertainty_type": "rounded_input_half_width_first_order_propagation",
+      "value": 0.0025218594407965785,
+      "voltage_i_per_unit": 1.03,
+      "voltage_j_per_unit": 1.01
+    }
+  ],
+  "normalisation": "K_ij = V_i V_j B_ij / (2 H_i omega_0), omega_0 = 2*pi*60 rad/s, then arithmetic symmetrisation of the two directed inertia terms.",
+  "normalisation_locked": true,
+  "provenance": {
+    "command": [
+      "python",
+      "scripts/build_power_grid_measured_couplings.py"
+    ],
+    "git_commit": "f4f796c5641d5b84683e7a27f54186ec592ca75d",
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39",
+    "python": "3.12.3 (main, Mar  3 2026, 12:15:18) [GCC 13.3.0]",
+    "repo_root": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL"
+  },
+  "schema_version": "scpn-quantum-control.measured-couplings.v1",
+  "signal_processing": {
+    "conversion": "public swing-equation constants to symmetric Kuramoto coupling",
+    "converted_coupling_matrix": [
+      [
+        0.0,
+        0.0012533881486833107,
+        0.0018004718973514806,
+        0.0,
+        0.0
+      ],
+      [
+        0.0012533881486833107,
+        0.0,
+        0.0,
+        0.001026472458053564,
+        0.0
+      ],
+      [
+        0.0018004718973514806,
+        0.0,
+        0.0,
+        0.0,
+        0.0018100820517557097
+      ],
+      [
+        0.0,
+        0.001026472458053564,
+        0.0,
+        0.0,
+        0.0025218594407965785
+      ],
+      [
+        0.0,
+        0.0,
+        0.0018100820517557097,
+        0.0025218594407965785,
+        0.0
+      ]
+    ],
+    "inertia_seconds": [
+      5.0,
+      4.0,
+      3.5,
+      4.5,
+      3.0
+    ],
+    "nodes": [
+      "bus_1",
+      "bus_2",
+      "bus_3",
+      "bus_4",
+      "bus_5"
+    ],
+    "omega_hz_deviation": [
+      0.0,
+      0.02,
+      -0.01,
+      0.015,
+      -0.005
+    ],
+    "susceptance_matrix_per_unit": [
+      [
+        0.0,
+        3.81,
+        5.17,
+        0.0,
+        0.0
+      ],
+      [
+        3.81,
+        0.0,
+        0.0,
+        3.06,
+        0.0
+      ],
+      [
+        5.17,
+        0.0,
+        0.0,
+        0.0,
+        4.28
+      ],
+      [
+        0.0,
+        3.06,
+        0.0,
+        0.0,
+        6.58
+      ],
+      [
+        0.0,
+        0.0,
+        4.28,
+        6.58,
+        0.0
+      ]
+    ],
+    "voltage_per_unit": [
+      1.06,
+      1.04,
+      1.02,
+      1.03,
+      1.01
+    ]
+  },
+  "source_dataset": {
+    "name": "IEEE 5-bus public benchmark constants",
+    "raw_units": {
+      "frequency_deviation": "hertz_from_60_Hz_nominal",
+      "inertia": "seconds",
+      "omega_0": "radian_per_second",
+      "susceptance": "per_unit_on_100_MVA_base",
+      "voltage": "per_unit"
+    },
+    "rounding_half_widths": {
+      "inertia_seconds": 0.05,
+      "susceptance_per_unit": 0.005,
+      "voltage_per_unit": 0.005
+    },
+    "source_mode": "curated_public_benchmark_constants",
+    "source_reference": "IEEE PES public test feeder / Stagg-El-Abiad 5-bus constants"
+  },
+  "system": "IEEE 5-bus power-grid swing-equation coupling matrix",
+  "unit": "dimensionless_swing_equation_coupling"
+}

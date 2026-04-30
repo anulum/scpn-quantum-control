@@ -127,7 +127,7 @@ def test_build_audit_payload_records_candidate_scan_without_closing_gap(tmp_path
     candidate_dir = tmp_path / "empty-candidates"
     candidate_dir.mkdir()
     payload = build_audit_payload(
-        codebase_path=tmp_path / "missing-codebase",
+        codebase_path=None,
         measured_path=None,
         candidate_dir=candidate_dir,
         n_layers=4,
@@ -138,6 +138,9 @@ def test_build_audit_payload_records_candidate_scan_without_closing_gap(tmp_path
 
     assert payload["schema_version"] == 2
     assert payload["candidate_system_scan"]["status"] == "missing_candidate_artifacts"
+    assert payload["implementation_parity"]["sibling_scpn_codebase"]["authority"] == (
+        "disabled_outdated_context"
+    )
     assert payload["decision"]["physical_validation_closed"] is False
     assert (
         payload["decision"]["current_label"] == "open_requires_measured_system_coupling_magnitudes"

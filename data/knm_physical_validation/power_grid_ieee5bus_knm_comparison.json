@@ -1,0 +1,542 @@
+{
+  "audit": "knm_physical_validation",
+  "candidate_system_scan": {
+    "available": true,
+    "best_topology_candidate": {
+      "domain": "eeg",
+      "magnitude_status": "does_not_close_exact_magnitude_gap",
+      "pearson_offdiag": 0.8988924843789916,
+      "source_name": "eeg_alpha_plv_8ch",
+      "spearman_offdiag": 0.9160024102955289
+    },
+    "candidate_dir": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/public_application_benchmarks",
+    "status": "topology_candidates_scanned",
+    "systems": [
+      {
+        "artifact_path": "data/public_application_benchmarks/eeg_alpha_plv_8ch.json",
+        "decision": {
+          "claim_scope": "topology_candidate_not_magnitude_validation",
+          "closes_physical_magnitude_gap": false,
+          "has_uncertainty_model": false,
+          "normalisation_locked": false,
+          "status": "does_not_close_exact_magnitude_gap"
+        },
+        "domain": "eeg",
+        "magnitude": {
+          "best_scale_through_origin": {
+            "max_abs_error": 0.20221800536539147,
+            "relative_rmse_vs_mean_abs_observed": 0.24504253570708834,
+            "rmse": 0.07578815568654947,
+            "scale": 1.6564807516545028
+          },
+          "direct_max_abs_error": 0.36663180069322693,
+          "direct_relative_rmse_vs_mean_abs_observed": 0.5036598818347996,
+          "direct_rmse": 0.15577480631033444
+        },
+        "n_layers": 8,
+        "normalisation": "phase-locking values already scaled to [0, 1]",
+        "public_reference": "Stam et al., Clinical Neurophysiology 118, 2317 (2007); Breakspear, Nature Neuroscience 20, 340 (2017)",
+        "source_mode": "curated",
+        "source_name": "eeg_alpha_plv_8ch",
+        "topology": {
+          "pearson_offdiag": 0.8988924843789916,
+          "spearman_offdiag": 0.9160024102955289
+        }
+      },
+      {
+        "artifact_path": "data/public_application_benchmarks/friston_fep_6node.json",
+        "decision": {
+          "claim_scope": "topology_candidate_not_magnitude_validation",
+          "closes_physical_magnitude_gap": false,
+          "has_uncertainty_model": false,
+          "normalisation_locked": false,
+          "status": "does_not_close_exact_magnitude_gap"
+        },
+        "domain": "fep",
+        "magnitude": {
+          "best_scale_through_origin": {
+            "max_abs_error": 0.17051324003041068,
+            "relative_rmse_vs_mean_abs_observed": 0.7317421667411121,
+            "rmse": 0.11463960612277423,
+            "scale": 0.8312966665459893
+          },
+          "direct_max_abs_error": 0.18295634688326962,
+          "direct_relative_rmse_vs_mean_abs_observed": 0.7688926551936908,
+          "direct_rmse": 0.1204598493136782
+        },
+        "n_layers": 6,
+        "normalisation": "precision graph weights scaled to unitless positive Kuramoto couplings",
+        "public_reference": "Friston, Nature Reviews Neuroscience 11, 127 (2010); Buckley et al., Entropy 19, 318 (2017)",
+        "source_mode": "curated",
+        "source_name": "friston_fep_6node",
+        "topology": {
+          "pearson_offdiag": 0.7594093449430114,
+          "spearman_offdiag": 0.7627500771613848
+        }
+      },
+      {
+        "artifact_path": "data/public_application_benchmarks/ieee5bus_power_grid.json",
+        "decision": {
+          "claim_scope": "topology_candidate_not_magnitude_validation",
+          "closes_physical_magnitude_gap": false,
+          "has_uncertainty_model": false,
+          "normalisation_locked": false,
+          "status": "does_not_close_exact_magnitude_gap"
+        },
+        "domain": "power-grid",
+        "magnitude": {
+          "best_scale_through_origin": {
+            "max_abs_error": 0.0019173651836042434,
+            "relative_rmse_vs_mean_abs_observed": 1.063045232640642,
+            "rmse": 0.0008942627767795679,
+            "scale": 0.003925287384365812
+          },
+          "direct_max_abs_error": 0.3007466118513167,
+          "direct_relative_rmse_vs_mean_abs_observed": 261.33567850609813,
+          "direct_rmse": 0.21984273326912887
+        },
+        "n_layers": 5,
+        "normalisation": "per-unit susceptance converted to Kuramoto coupling by V_i V_j B_ij / (2 H_i omega_0)",
+        "public_reference": "IEEE PES public test feeder / Stagg-El-Abiad 5-bus benchmark constants",
+        "source_mode": "curated",
+        "source_name": "ieee5bus_power_grid",
+        "topology": {
+          "pearson_offdiag": 0.2261436078106145,
+          "spearman_offdiag": 0.1903943276465977
+        }
+      },
+      {
+        "artifact_path": "data/public_application_benchmarks/iter_mhd_8mode.json",
+        "decision": {
+          "claim_scope": "topology_candidate_not_magnitude_validation",
+          "closes_physical_magnitude_gap": false,
+          "has_uncertainty_model": false,
+          "normalisation_locked": false,
+          "status": "does_not_close_exact_magnitude_gap"
+        },
+        "domain": "plasma",
+        "magnitude": {
+          "best_scale_through_origin": {
+            "max_abs_error": 0.6757406145836871,
+            "relative_rmse_vs_mean_abs_observed": 1.2975134235619956,
+            "rmse": 0.2057485571648307,
+            "scale": 0.6791750465786973
+          },
+          "direct_max_abs_error": 0.6170436531167305,
+          "direct_relative_rmse_vs_mean_abs_observed": 1.3636226289782483,
+          "direct_rmse": 0.21623158830940792
+        },
+        "n_layers": 8,
+        "normalisation": "magnetic mode-coupling weights scaled to [0, 1]",
+        "public_reference": "La Haye, Physics of Plasmas 13, 055501 (2006)",
+        "source_mode": "curated",
+        "source_name": "iter_mhd_8mode",
+        "topology": {
+          "pearson_offdiag": -0.07297375846291161,
+          "spearman_offdiag": -0.021908500712398457
+        }
+      }
+    ]
+  },
+  "command": [
+    "python",
+    "scripts/run_knm_physical_validation_audit.py",
+    "--measured",
+    "data/knm_physical_validation/measured_couplings_power_grid_ieee5bus.json",
+    "--n-layers",
+    "5",
+    "--output",
+    "data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json"
+  ],
+  "created_date": "2026-04-30",
+  "decision": {
+    "current_label": "open_requires_measured_system_coupling_magnitudes",
+    "ibm_rationale": "No IBM job is required for this gate unless K_nm is redefined as a QPU-device coupling-map claim. The current gap asks for measured system coupling magnitudes, not additional shot data.",
+    "next_gate": "Promote one candidate only after a locked measured-system normalisation and per-edge uncertainty model are committed, or provide data/knm_physical_validation/measured_couplings.json with system name, units, normalisation, uncertainty, and source per edge.",
+    "physical_validation_closed": false,
+    "requires_ibm_hardware": false
+  },
+  "implementation_parity": {
+    "anchors": [
+      {
+        "absolute_error": 0.0,
+        "actual": 0.302,
+        "edge_1_indexed": [
+          1,
+          2
+        ],
+        "expected": 0.302
+      },
+      {
+        "absolute_error": 0.0,
+        "actual": 0.201,
+        "edge_1_indexed": [
+          2,
+          3
+        ],
+        "expected": 0.201
+      },
+      {
+        "absolute_error": 0.0,
+        "actual": 0.252,
+        "edge_1_indexed": [
+          3,
+          4
+        ],
+        "expected": 0.252
+      },
+      {
+        "absolute_error": 0.0,
+        "actual": 0.154,
+        "edge_1_indexed": [
+          4,
+          5
+        ],
+        "expected": 0.154
+      }
+    ],
+    "cross_boosts": [],
+    "python_stats": {
+      "diagonal_max": 0.45,
+      "diagonal_min": 0.45,
+      "offdiag_max": 0.302,
+      "offdiag_mean": 0.21513457978539657,
+      "offdiag_min": 0.13553739536049095,
+      "offdiag_nonzero": 20,
+      "shape": [
+        5,
+        5
+      ],
+      "symmetric": true
+    },
+    "rust": {
+      "available": true,
+      "max_abs_diff_edge_vs_python": {
+        "absolute_diff": 2.7755575615628914e-17,
+        "edge_1_indexed": [
+          1,
+          5
+        ],
+        "left": 0.13553739536049098,
+        "right": 0.13553739536049095
+      },
+      "max_abs_diff_vs_python": 2.7755575615628914e-17,
+      "offdiag_max_abs_diff_edge_vs_python": {
+        "absolute_diff": 2.7755575615628914e-17,
+        "edge_1_indexed": [
+          1,
+          5
+        ],
+        "left": 0.13553739536049098,
+        "right": 0.13553739536049095
+      },
+      "offdiag_max_abs_diff_vs_python": 2.7755575615628914e-17,
+      "stats": {
+        "diagonal_max": 0.45,
+        "diagonal_min": 0.45,
+        "offdiag_max": 0.302,
+        "offdiag_mean": 0.21513457978539657,
+        "offdiag_min": 0.13553739536049098,
+        "offdiag_nonzero": 20,
+        "shape": [
+          5,
+          5
+        ],
+        "symmetric": true
+      }
+    },
+    "sibling_scpn_codebase": {
+      "authority": "disabled_outdated_context",
+      "available": false,
+      "error": "disabled: SCPN-CODEBASE is archived/outdated and not an audit authority"
+    }
+  },
+  "measured_system_comparison": {
+    "available": true,
+    "magnitude": {
+      "best_scale_through_origin": {
+        "max_abs_error": 0.0019173651836042434,
+        "relative_rmse_vs_mean_abs_observed": 1.0630452326406423,
+        "rmse": 0.0008942627767795678,
+        "scale": 0.003925287384365812
+      },
+      "direct_relative_rmse_vs_mean_abs_measured": 261.33567850609825,
+      "direct_rmse": 0.2198427332691289
+    },
+    "matched_edges": 10,
+    "max_absolute_error": 0.3007466118513167,
+    "normalisation": "K_ij = V_i V_j B_ij / (2 H_i omega_0), omega_0 = 2*pi*60 rad/s, then arithmetic symmetrisation of the two directed inertia terms.",
+    "normalisation_locked": true,
+    "rows": [
+      {
+        "absolute_error": 0.3007466118513167,
+        "canonical": 0.302,
+        "edge_1_indexed": [
+          1,
+          2
+        ],
+        "measured": 0.0012533881486833107,
+        "source": "IEEE 5-bus public benchmark constants",
+        "uncertainty": 1.2009791700905502e-05,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.2451647643449604,
+        "canonical": 0.24696523624231187,
+        "edge_1_indexed": [
+          1,
+          3
+        ],
+        "measured": 0.0018004718973514806,
+        "source": "IEEE 5-bus public benchmark constants",
+        "uncertainty": 1.9047077756884552e-05,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.18295634688326962,
+        "canonical": 0.18295634688326962,
+        "edge_1_indexed": [
+          1,
+          4
+        ],
+        "measured": 0.0,
+        "source": "IEEE 5-bus public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.13553739536049095,
+        "canonical": 0.13553739536049095,
+        "edge_1_indexed": [
+          1,
+          5
+        ],
+        "measured": 0.0,
+        "source": "IEEE 5-bus public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.201,
+        "canonical": 0.201,
+        "edge_1_indexed": [
+          2,
+          3
+        ],
+        "measured": 0.0,
+        "source": "IEEE 5-bus public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.2459387637842583,
+        "canonical": 0.24696523624231187,
+        "edge_1_indexed": [
+          2,
+          4
+        ],
+        "measured": 0.001026472458053564,
+        "source": "IEEE 5-bus public benchmark constants",
+        "uncertainty": 1.0051723417264619e-05,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.18295634688326962,
+        "canonical": 0.18295634688326962,
+        "edge_1_indexed": [
+          2,
+          5
+        ],
+        "measured": 0.0,
+        "source": "IEEE 5-bus public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.252,
+        "canonical": 0.252,
+        "edge_1_indexed": [
+          3,
+          4
+        ],
+        "measured": 0.0,
+        "source": "IEEE 5-bus public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.24515515419055617,
+        "canonical": 0.24696523624231187,
+        "edge_1_indexed": [
+          3,
+          5
+        ],
+        "measured": 0.0018100820517557097,
+        "source": "IEEE 5-bus public benchmark constants",
+        "uncertainty": 2.2103054985143427e-05,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.15147814055920342,
+        "canonical": 0.154,
+        "edge_1_indexed": [
+          4,
+          5
+        ],
+        "measured": 0.0025218594407965785,
+        "source": "IEEE 5-bus public benchmark constants",
+        "uncertainty": 3.037254242844346e-05,
+        "within_uncertainty": false
+      }
+    ],
+    "signal_processing": {
+      "conversion": "public swing-equation constants to symmetric Kuramoto coupling",
+      "converted_coupling_matrix": [
+        [
+          0.0,
+          0.0012533881486833107,
+          0.0018004718973514806,
+          0.0,
+          0.0
+        ],
+        [
+          0.0012533881486833107,
+          0.0,
+          0.0,
+          0.001026472458053564,
+          0.0
+        ],
+        [
+          0.0018004718973514806,
+          0.0,
+          0.0,
+          0.0,
+          0.0018100820517557097
+        ],
+        [
+          0.0,
+          0.001026472458053564,
+          0.0,
+          0.0,
+          0.0025218594407965785
+        ],
+        [
+          0.0,
+          0.0,
+          0.0018100820517557097,
+          0.0025218594407965785,
+          0.0
+        ]
+      ],
+      "inertia_seconds": [
+        5.0,
+        4.0,
+        3.5,
+        4.5,
+        3.0
+      ],
+      "nodes": [
+        "bus_1",
+        "bus_2",
+        "bus_3",
+        "bus_4",
+        "bus_5"
+      ],
+      "omega_hz_deviation": [
+        0.0,
+        0.02,
+        -0.01,
+        0.015,
+        -0.005
+      ],
+      "susceptance_matrix_per_unit": [
+        [
+          0.0,
+          3.81,
+          5.17,
+          0.0,
+          0.0
+        ],
+        [
+          3.81,
+          0.0,
+          0.0,
+          3.06,
+          0.0
+        ],
+        [
+          5.17,
+          0.0,
+          0.0,
+          0.0,
+          4.28
+        ],
+        [
+          0.0,
+          3.06,
+          0.0,
+          0.0,
+          6.58
+        ],
+        [
+          0.0,
+          0.0,
+          4.28,
+          6.58,
+          0.0
+        ]
+      ],
+      "voltage_per_unit": [
+        1.06,
+        1.04,
+        1.02,
+        1.03,
+        1.01
+      ]
+    },
+    "source_dataset": {
+      "name": "IEEE 5-bus public benchmark constants",
+      "raw_units": {
+        "frequency_deviation": "hertz_from_60_Hz_nominal",
+        "inertia": "seconds",
+        "omega_0": "radian_per_second",
+        "susceptance": "per_unit_on_100_MVA_base",
+        "voltage": "per_unit"
+      },
+      "rounding_half_widths": {
+        "inertia_seconds": 0.05,
+        "susceptance_per_unit": 0.005,
+        "voltage_per_unit": 0.005
+      },
+      "source_mode": "curated_public_benchmark_constants",
+      "source_reference": "IEEE PES public test feeder / Stagg-El-Abiad 5-bus constants"
+    },
+    "status": "open",
+    "system": "IEEE 5-bus power-grid swing-equation coupling matrix",
+    "topology": {
+      "pearson": 0.22614360781061452,
+      "spearman": 0.1903943276465977
+    },
+    "unit": "dimensionless_swing_equation_coupling"
+  },
+  "parameters": {
+    "alpha": 0.3,
+    "anchor_source_label": "Paper 27 Table 2 constants in code",
+    "cross_boost_source_label": "Paper 27 S4.3 constants in code",
+    "k_base": 0.45,
+    "n_layers": 5
+  },
+  "provenance": {
+    "candidate_dir": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/public_application_benchmarks",
+    "git_commit": "f4f796c5641d5b84683e7a27f54186ec592ca75d",
+    "machine": "x86_64",
+    "measured_path": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/knm_physical_validation/measured_couplings_power_grid_ieee5bus.json",
+    "numpy": "2.2.6",
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39",
+    "processor": "x86_64",
+    "python": "3.12.3 (main, Mar  3 2026, 12:15:18) [GCC 13.3.0]",
+    "repo_root": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL",
+    "scpn_codebase": null
+  },
+  "schema_version": 2
+}

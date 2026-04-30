@@ -74,7 +74,7 @@ update this table first, then refresh the summary pages.
 | Queue | State | Next gate |
 |---|---|---|
 | High-impact execution TODO | Complete locally. Dependency hygiene, core facade, documentation ergonomics, baselines, maintenance, frontier-track scaffolding, and CI timing-gate stabilization are checked off. | Keep CI green on `main`; add only scoped follow-up work. |
-| Scientific gaps | Partially closed. The EEG PLV K_nm validation artifacts now cover the full 109-subject PhysioNet EEGMMIDB baseline eyes-open and eyes-closed cohorts, with a derived condition comparison. K_nm physical validation still needs measured-system coupling magnitudes; broad quantum advantage remains open; `p_h1 = 0.72` is an explicit open empirical/theoretical parameter. | Physical-unit measured coupling matrix with null models; provenance-rich advantage benchmark tables; TCBO or first-principles p_h1 reproduction. |
+| Scientific gaps | Partially closed. The EEG PLV K_nm validation artifacts now cover the full 109-subject PhysioNet EEGMMIDB baseline eyes-open and eyes-closed cohorts, with a derived condition comparison. The first physical-unit measured-system control, IEEE 5-bus, is committed and does not close K_nm physical validation; broad quantum advantage remains open; `p_h1 = 0.72` is an explicit open empirical/theoretical parameter. | Additional physical-unit measured coupling candidates with null models; provenance-rich advantage benchmark tables; TCBO or first-principles p_h1 reproduction. |
 | Hardware experiments | March/April promoted campaigns complete. Phase 2 DLA parity expansion is ready but blocked on promo/credits. | IBM credit/promo availability plus preregistered run manifest. |
 | Strategic roadmap | All 53 post-v1.0 differentiation tracks remain deferred / CEO-gated. | Activate one track explicitly before implementation. |
 
@@ -98,3 +98,25 @@ This closes the condition-control EEG PLV comparison gate. It does not close
 the physical-unit measured-coupling gate: PLV remains dimensionless, and public
 claims must continue to describe this as condition-specific alpha-band EEG
 coupling evidence rather than measured physical K_nm magnitudes.
+
+## Measured-System Control — 2026-04-30
+
+The first physical-unit measured-system artifact is the IEEE 5-bus power-grid
+swing-equation coupling matrix. It records raw public benchmark constants,
+conversion units, and propagated input-rounding uncertainty.
+
+| Metric | Value | Source |
+|---|---:|---|
+| Matched edges | `10` | `data/knm_physical_validation/measured_couplings_power_grid_ieee5bus.json` |
+| Spearman topology correlation vs five-layer K_nm | `0.190394` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
+| Pearson topology correlation vs five-layer K_nm | `0.226144` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
+| Direct RMSE | `0.219843` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
+| Direct relative RMSE versus mean absolute measured coupling | `261.335679` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
+| Best scale through origin | `0.003925` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
+| Scaled RMSE | `0.000894` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
+| Maximum direct absolute error | `0.300747` | `data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json` |
+
+Decision: this is a useful measured-system control and a negative result for
+the exact-magnitude K_nm promotion gate. Physical validation remains open until
+a measured-system candidate with units, uncertainty, and preregistered null
+models passes the promotion criteria.

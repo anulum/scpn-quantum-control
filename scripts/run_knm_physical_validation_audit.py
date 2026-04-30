@@ -29,7 +29,7 @@ import numpy as np
 from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_CODEBASE = REPO_ROOT.parent / "SCPN-CODEBASE"
+DEFAULT_CODEBASE: Path | None = None
 DEFAULT_OUTPUT = REPO_ROOT / "docs" / "internal" / "knm_physical_validation_audit_2026-04-30.json"
 DEFAULT_MEASURED = REPO_ROOT / "data" / "knm_physical_validation" / "measured_couplings.json"
 DEFAULT_CANDIDATE_DIR = REPO_ROOT / "data" / "public_application_benchmarks"
@@ -367,6 +367,9 @@ def compare_measured_couplings(K: np.ndarray, measured: dict[str, Any] | None) -
     has_uncertainties = all(row["uncertainty"] is not None for row in rows)
     normalisation_locked = bool(measured.get("normalisation_locked", False))
     all_within = bool(rows) and all(row["within_uncertainty"] is True for row in rows)
+    canonical_values = np.asarray([row["canonical"] for row in rows], dtype=np.float64)
+    measured_values = np.asarray([row["measured"] for row in rows], dtype=np.float64)
+    direct_error = measured_values - canonical_values
     status = (
         "validated_with_measured_dataset"
         if normalisation_locked and has_uncertainties and all_within
@@ -383,6 +386,19 @@ def compare_measured_couplings(K: np.ndarray, measured: dict[str, Any] | None) -
         "signal_processing": measured.get("signal_processing"),
         "matched_edges": len(rows),
         "max_absolute_error": max((row["absolute_error"] for row in rows), default=0.0),
+        "topology": {
+            "pearson": _pearson_corr(canonical_values, measured_values),
+            "spearman": _spearman_corr(canonical_values, measured_values),
+        },
+        "magnitude": {
+            "direct_rmse": float(np.sqrt(np.mean(direct_error**2))) if rows else 0.0,
+            "direct_relative_rmse_vs_mean_abs_measured": (
+                float(np.sqrt(np.mean(direct_error**2)) / np.mean(np.abs(measured_values)))
+                if rows and float(np.mean(np.abs(measured_values))) > 0.0
+                else 0.0
+            ),
+            "best_scale_through_origin": _fit_through_origin(canonical_values, measured_values),
+        },
         "rows": rows,
     }
 
@@ -392,11 +408,18 @@ def _load_rust_knm(n_layers: int, k_base: float, alpha: float) -> dict[str, Any]
         engine = importlib.import_module("scpn_quantum_engine")
         matrix = np.asarray(engine.build_knm(n_layers, k_base, alpha), dtype=np.float64)
         return {"available": True, "matrix": matrix, "module": "scpn_quantum_engine"}
-    except (ImportError, AttributeError) as exc:
+    except (ImportError, AttributeError, IndexError, ValueError) as exc:
         return {"available": False, "matrix": None, "error": str(exc)}
 
 
-def _load_codebase_knm(codebase_path: Path, n_layers: int) -> dict[str, Any]:
+def _load_codebase_knm(codebase_path: Path | None, n_layers: int) -> dict[str, Any]:
+    if codebase_path is None:
+        return {
+            "available": False,
+            "matrix": None,
+            "error": "disabled: SCPN-CODEBASE is archived/outdated and not an audit authority",
+            "authority": "disabled_outdated_context",
+        }
     if not codebase_path.exists():
         return {"available": False, "matrix": None, "error": f"missing path: {codebase_path}"}
 
@@ -413,13 +436,13 @@ def _load_codebase_knm(codebase_path: Path, n_layers: int) -> dict[str, Any]:
             "module": "optimizations.scpn_params",
             "file": str(Path(params.__file__).resolve()),
         }
-    except (ImportError, AttributeError) as exc:
+    except (ImportError, AttributeError, IndexError, ValueError) as exc:
         return {"available": False, "matrix": None, "error": str(exc)}
 
 
 def build_audit_payload(
     *,
-    codebase_path: Path,
+    codebase_path: Path | None,
     measured_path: Path | None,
     candidate_dir: Path | None,
     n_layers: int,
@@ -487,7 +510,11 @@ def build_audit_payload(
             ),
         }
     else:
-        parity["sibling_scpn_codebase"] = {"available": False, "error": codebase.get("error")}
+        parity["sibling_scpn_codebase"] = {
+            "available": False,
+            "authority": codebase.get("authority", "unavailable"),
+            "error": codebase.get("error"),
+        }
 
     measured_comparison = compare_measured_couplings(python_k, measured)
     candidate_scan = evaluate_candidate_systems(candidate_dir, k_base=k_base, alpha=alpha)
@@ -506,7 +533,7 @@ def build_audit_payload(
             "machine": platform.machine(),
             "processor": platform.processor(),
             "numpy": np.__version__,
-            "scpn_codebase": str(codebase_path),
+            "scpn_codebase": str(codebase_path) if codebase_path is not None else None,
             "measured_path": str(measured_path) if measured_path is not None else None,
             "candidate_dir": str(candidate_dir) if candidate_dir is not None else None,
         },
@@ -558,7 +585,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     payload = build_audit_payload(
-        codebase_path=args.codebase.resolve(),
+        codebase_path=args.codebase.resolve() if args.codebase else None,
         measured_path=args.measured.resolve() if args.measured else None,
         candidate_dir=args.candidate_dir.resolve() if args.candidate_dir else None,
         n_layers=int(args.n_layers),
