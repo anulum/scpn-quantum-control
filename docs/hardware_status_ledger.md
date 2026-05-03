@@ -78,6 +78,16 @@ update this table first, then refresh the summary pages.
 | Hardware experiments | March/April promoted campaigns complete. Phase 2 DLA parity expansion is ready but blocked on promo/credits. | IBM credit/promo availability plus preregistered run manifest. |
 | Strategic roadmap | All 53 post-v1.0 differentiation tracks remain deferred / CEO-gated. | Activate one track explicitly before implementation. |
 
+### 2026-05-03 Scientific-Gap Roadmap Progress
+
+- Gap A next TODO status: **DONE** — added a measured non-EEG physical-unit
+  coupling candidate (IEEE 5-bus power grid) with uncertainty propagation and
+  null-model comparison in the existing candidate control pipeline.
+- Next pending Gap A item: apply the measured-system comparison framework to
+  additional physical candidates as they arrive, while keeping claims scoped to
+  condition-specific EEG PLV evidence plus explicit falsification when matched
+  systems remain non-closing.
+
 ## EEG Condition Comparison — 2026-04-30
 
 The K_nm physical-validation data now includes a matched 109-subject PhysioNet
