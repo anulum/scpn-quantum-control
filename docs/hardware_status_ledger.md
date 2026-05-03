@@ -80,13 +80,16 @@ update this table first, then refresh the summary pages.
 
 ### 2026-05-03 Scientific-Gap Roadmap Progress
 
-- Gap A next TODO status: **DONE** — added a measured non-EEG physical-unit
+- Gap A item 1 status: **DONE** — added a measured non-EEG physical-unit
   coupling candidate (IEEE 5-bus power grid) with uncertainty propagation and
   null-model comparison in the existing candidate control pipeline.
-- Next pending Gap A item: apply the measured-system comparison framework to
-  additional physical candidates as they arrive, while keeping claims scoped to
-  condition-specific EEG PLV evidence plus explicit falsification when matched
-  systems remain non-closing.
+- Gap A item 2 status: **DONE** — applied the measured-system comparison scan to
+  all current candidate systems in
+  `data/public_application_benchmarks/{eeg_alpha_plv_8ch,friston_fep_6node,ieee5bus_power_grid,iter_mhd_8mode}.json`
+  with topology/magnitude/decision outputs and no closed candidate.
+- Next pending Gap A item: keep public scope to condition-specific EEG PLV evidence
+  until a measured candidate with locked physical units, uncertainty, and null-model
+  pass closes the physical-magnitude gate.
 
 ## EEG Condition Comparison — 2026-04-30
 
