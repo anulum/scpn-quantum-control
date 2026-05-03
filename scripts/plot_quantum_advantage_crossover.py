@@ -16,7 +16,11 @@ It does not claim broad quantum advantage in the measured n <= 16 window.
 from __future__ import annotations
 
 import json
+import platform
+import subprocess
+import sys
 from dataclasses import dataclass
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 import numpy as np
@@ -27,12 +31,52 @@ PUBLICATION_DIR = REPO_ROOT / "figures" / "publication"
 DOCS_PUBLICATION_DIR = REPO_ROOT / "docs" / "figures" / "publication"
 
 
+def _git_commit() -> str:
+    try:
+        return subprocess.check_output(
+            ["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except (OSError, subprocess.CalledProcessError):
+        return "unknown"
+
+
+def _dependency_versions() -> dict[str, str]:
+    dependency_versions: dict[str, str] = {
+        "python": sys.version.split()[0],
+        "numpy": version("numpy"),
+        "scipy": version("scipy"),
+        "qiskit": "not installed",
+    }
+    try:
+        dependency_versions["qiskit"] = version("qiskit")
+    except PackageNotFoundError:
+        dependency_versions["qiskit"] = "not installed"
+
+    return dependency_versions
+
+
+def _table_row_provenance() -> dict[str, object]:
+    return {
+        "backend": "python-scipy-qiskit-local",
+        "machine": platform.platform(),
+        "command": "python scripts/plot_quantum_advantage_crossover.py",
+        "dependency": _dependency_versions(),
+        "git_commit": _git_commit(),
+    }
+
+
 @dataclass(frozen=True)
 class HardwarePoint:
     """One completed IBM hardware scaling point used by the crossover figure."""
 
     n_qubits: int
     backend: str
+    machine: str
+    command: str
+    dependency: dict[str, str]
+    git_commit: str
     job_id: str
     shots: int
     depth: int
@@ -47,6 +91,11 @@ class ClassicalPoint:
 
     n_qubits: int
     hilbert_dim: int
+    backend: str
+    machine: str
+    command: str
+    dependency: dict[str, str]
+    git_commit: str
     ode_ms: float
     exact_diag_ms: float | None
     exact_mem_mb: float
@@ -106,6 +155,7 @@ def load_hardware_points(results_dir: Path = RESULTS_DIR) -> list[HardwarePoint]
     """Load and validate the committed IBM hardware scaling series."""
 
     points: list[HardwarePoint] = []
+    row_provenance = _table_row_provenance()
     for filename, expected_n, fallback_depth, qpu_budget_ms in HARDWARE_SPECS:
         payload = _read_json(results_dir / filename)
         n_qubits = int(payload["n_qubits"])
@@ -124,6 +174,10 @@ def load_hardware_points(results_dir: Path = RESULTS_DIR) -> list[HardwarePoint]
             HardwarePoint(
                 n_qubits=n_qubits,
                 backend=backend,
+                machine=str(row_provenance["machine"]),
+                command=str(row_provenance["command"]),
+                dependency=dict(row_provenance["dependency"]),
+                git_commit=str(row_provenance["git_commit"]),
                 job_id=job_id,
                 shots=int(payload["shots"]),
                 depth=_metadata_depth(payload, fallback_depth),
@@ -143,12 +197,18 @@ def load_classical_points(
 
     payload = _read_json(path)
     points = []
+    row_provenance = _table_row_provenance()
     for n_key, entry in payload.items():
         exact_diag = entry.get("exact_diag_ms")
         points.append(
             ClassicalPoint(
                 n_qubits=int(n_key),
                 hilbert_dim=int(entry["dim"]),
+                backend=str(row_provenance["backend"]),
+                machine=str(row_provenance["machine"]),
+                command=str(row_provenance["command"]),
+                dependency=dict(row_provenance["dependency"]),
+                git_commit=str(row_provenance["git_commit"]),
                 ode_ms=float(entry["classical_ode_ms"]),
                 exact_diag_ms=None if exact_diag is None else float(exact_diag),
                 exact_mem_mb=float(entry["exact_diag_mem_mb"]),

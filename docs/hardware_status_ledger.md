@@ -90,8 +90,11 @@ update this table first, then refresh the summary pages.
 - Gap A item 3 status: **DONE** — claim scope is constrained to condition-specific
   EEG PLV evidence for any closure that is not backed by a locked physical-unit
   magnitude match plus null-model pass.
-- Next pending item: **Gap B item 1** — build scaling benchmark tables with
-  backend/machine/command/dependency/commit provenance for every row.
+- Gap B item 1 status: **DONE** — scaling benchmark rows now carry backend,
+  machine, command, dependency, and commit provenance in the committed
+  `run_scaling_benchmark` and crossover-point loaders.
+- Next pending item: **Gap B item 2** — separate exact-simulation crossover from
+  observable-level broad-advantage comparisons in figures, captions, and claims.
 
 ## EEG Condition Comparison — 2026-04-30
 

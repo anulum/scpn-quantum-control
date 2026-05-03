@@ -674,11 +674,11 @@ Command:
 python -c "from scpn_quantum_control.benchmarks.quantum_advantage import run_scaling_benchmark; results = run_scaling_benchmark(sizes=[3,4,5], t_max=0.2, dt=0.1); print('n,t_classical_ms,t_quantum_ms,crossover'); [print(f'{r.n_qubits},{r.t_classical_ms:.3f},{r.t_quantum_ms:.3f},{r.crossover_predicted}') for r in results]"
 ```
 
-| Backend pair | Machine | n | Classical exact evolution + diagonalisation | Qiskit statevector Trotter | Predicted crossover |
-|--------------|---------|--:|--------------------------------------------:|---------------------------:|--------------------:|
-| SciPy sparse/dense classical vs Qiskit statevector | Intel i5-11600K / local Linux | 3 | 53.197 ms | 68.128 ms | 6 |
-| SciPy sparse/dense classical vs Qiskit statevector | Intel i5-11600K / local Linux | 4 | 23.316 ms | 53.197 ms | 6 |
-| SciPy sparse/dense classical vs Qiskit statevector | Intel i5-11600K / local Linux | 5 | 65.367 ms | 66.430 ms | 6 |
+| Backend | Machine | Command | Dependency | Commit | n | Classical exact evolution + diagonalisation | Qiskit statevector Trotter | Predicted crossover |
+|---------|---------|---------|------------|--------|--:|--------------------------------------------:|---------------------------:|--------------------:|
+| python-scipy-qiskit-local | Intel i5-11600K / Linux 6.17.0-22-generic | `python -c "from scpn_quantum_control.benchmarks.quantum_advantage import run_scaling_benchmark; results = run_scaling_benchmark(sizes=[3,4,5], t_max=0.2, dt=0.1); print('n,t_classical_ms,t_quantum_ms,crossover'); [print(f'{r.n_qubits},{r.t_classical_ms:.3f},{r.t_quantum_ms:.3f},{r.crossover_predicted}') for r in results]"` | Python 3.12.3; NumPy 2.4.4; SciPy 1.17.1; Qiskit 2.4.0 | 638bba955e84044f887b537bc0dce46234cb80fc | 3 | 53.197 ms | 68.128 ms | 6 |
+| python-scipy-qiskit-local | Intel i5-11600K / Linux 6.17.0-22-generic | `python -c "from scpn_quantum_control.benchmarks.quantum_advantage import run_scaling_benchmark; results = run_scaling_benchmark(sizes=[3,4,5], t_max=0.2, dt=0.1); print('n,t_classical_ms,t_quantum_ms,crossover'); [print(f'{r.n_qubits},{r.t_classical_ms:.3f},{r.t_quantum_ms:.3f},{r.crossover_predicted}') for r in results]"` | Python 3.12.3; NumPy 2.4.4; SciPy 1.17.1; Qiskit 2.4.0 | 638bba955e84044f887b537bc0dce46234cb80fc | 4 | 23.316 ms | 53.197 ms | 6 |
+| python-scipy-qiskit-local | Intel i5-11600K / Linux 6.17.0-22-generic | `python -c "from scpn_quantum_control.benchmarks.quantum_advantage import run_scaling_benchmark; results = run_scaling_benchmark(sizes=[3,4,5], t_max=0.2, dt=0.1); print('n,t_classical_ms,t_quantum_ms,crossover'); [print(f'{r.n_qubits},{r.t_classical_ms:.3f},{r.t_quantum_ms:.3f},{r.crossover_predicted}') for r in results]"` | Python 3.12.3; NumPy 2.4.4; SciPy 1.17.1; Qiskit 2.4.0 | 638bba955e84044f887b537bc0dce46234cb80fc | 5 | 65.367 ms | 66.430 ms | 6 |
 
 These rows are a smoke-scale provenance table, not the publication
 scaling claim. Sparse SciPy emitted conversion warnings during the

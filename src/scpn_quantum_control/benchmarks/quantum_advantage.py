@@ -14,17 +14,58 @@ Measures wall-clock time for classical (exact diag + matrix exp) vs quantum
 from __future__ import annotations
 
 import logging
+import platform
+import subprocess
+import sys
 import time
 import warnings
 from dataclasses import dataclass, field
+from pathlib import Path
 
 import numpy as np
+from scipy import __version__ as scipy_version
 from scipy.optimize import curve_fit
 
 from ..bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27, knm_to_hamiltonian
 from ..hardware.classical import classical_exact_diag, classical_exact_evolution
 
 log = logging.getLogger(__name__)
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+def _git_commit() -> str:
+    try:
+        return subprocess.check_output(
+            ["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except (OSError, subprocess.CalledProcessError):
+        return "unknown"
+
+
+def _default_command() -> str:
+    if not sys.argv:
+        return "python"
+    return " ".join(sys.argv)
+
+
+def _default_dependency_versions() -> dict[str, str]:
+    deps = {
+        "python": sys.version.split()[0],
+        "numpy": np.__version__,
+        "scipy": scipy_version,
+    }
+
+    try:
+        import qiskit
+
+        deps["qiskit"] = str(qiskit.__version__)
+    except Exception:
+        deps["qiskit"] = "not installed"
+
+    return deps
+
 
 MAX_CLASSICAL_QUBITS = 14  # 2^14 = 16384 state dim; beyond this expm is infeasible
 
@@ -38,6 +79,11 @@ class AdvantageResult:
     t_quantum_ms: float
     errors: dict = field(default_factory=dict)
     crossover_predicted: int | None = None
+    backend: str = "python-scipy-qiskit-local"
+    machine: str = field(default_factory=platform.platform)
+    command: str = field(default_factory=_default_command)
+    dependency: dict = field(default_factory=_default_dependency_versions)
+    git_commit: str = field(default_factory=_git_commit)
 
 
 def classical_benchmark(n: int, t_max: float = 1.0, dt: float = 0.1) -> dict:
@@ -153,6 +199,11 @@ def run_scaling_benchmark(
         sizes = [4, 8, 12, 16, 20]
 
     results: list[AdvantageResult] = []
+    backend = "python-scipy-qiskit-local"
+    machine = platform.platform()
+    command = _default_command()
+    dependency = _default_dependency_versions()
+    git_commit = _git_commit()
     for n in sizes:
         if n > 23:
             warnings.warn(
@@ -169,6 +220,11 @@ def run_scaling_benchmark(
                 n_qubits=n,
                 t_classical_ms=c["t_total_ms"],
                 t_quantum_ms=q["t_total_ms"],
+                backend=backend,
+                machine=machine,
+                command=command,
+                dependency=dependency,
+                git_commit=git_commit,
             )
         )
 
