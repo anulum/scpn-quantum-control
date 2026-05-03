@@ -87,9 +87,11 @@ update this table first, then refresh the summary pages.
   all current candidate systems in
   `data/public_application_benchmarks/{eeg_alpha_plv_8ch,friston_fep_6node,ieee5bus_power_grid,iter_mhd_8mode}.json`
   with topology/magnitude/decision outputs and no closed candidate.
-- Next pending Gap A item: keep public scope to condition-specific EEG PLV evidence
-  until a measured candidate with locked physical units, uncertainty, and null-model
-  pass closes the physical-magnitude gate.
+- Gap A item 3 status: **DONE** — claim scope is constrained to condition-specific
+  EEG PLV evidence for any closure that is not backed by a locked physical-unit
+  magnitude match plus null-model pass.
+- Next pending item: **Gap B item 1** — build scaling benchmark tables with
+  backend/machine/command/dependency/commit provenance for every row.
 
 ## EEG Condition Comparison — 2026-04-30
 
