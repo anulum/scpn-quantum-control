@@ -177,11 +177,14 @@ information scrambles*, and *whether the system thermalises*.
 | Publication figures | **17** (simulation + hardware, including the Phase 1 DLA parity panels and exact-simulation crossover) |
 | Test suite | CI-gated suite with 97%+ coverage |
 
-### Classical vs Quantum Wall-Time
+### Exact-Simulation Wall-Time (Not broad quantum-advantage claim)
 
-No quantum advantage at n ≤ 16. Classical ODE is faster for all accessible sizes.
-The value of the quantum approach is characterisation (entanglement, MBL, witnesses),
-not speed.
+This section covers exact Hilbert-space simulation crossover only.
+No broad observable-level quantum-advantage claim is closed yet.
+
+No quantum advantage at n ≤ 16 in this exact-simulation path. Classical ODE is
+faster for all accessible sizes. The value of the quantum approach is
+characterisation (entanglement, MBL, witnesses), not speed.
 
 | Method | n=4 | n=8 | n=12 | n=16 |
 |--------|----:|----:|-----:|-----:|

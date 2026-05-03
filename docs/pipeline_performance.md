@@ -652,7 +652,12 @@ Circuit depth > 0. Training updates parameters.
 SCPN vs FMO topology correlation ρ=0.304 (weak positive). FMO self-comparison:
 ρ=1.0. FMO coupling: symmetric, non-negative, zero diagonal, 7×7.
 
-### Quantum Advantage Scaling
+### Quantum Advantage Scaling — Exact-Simulation Crossover Scope
+
+These rows describe only the exact Hilbert-space crossover benchmark: classical exact
+diagonalisation and Python/SciPy ODE vs statevector Qiskit wall time for
+the same order-parameter trajectory observable. They are not evidence for
+broad observable-level quantum advantage.
 
 | Operation | System | Time | Output |
 |-----------|--------|------|--------|
@@ -683,6 +688,18 @@ python -c "from scpn_quantum_control.benchmarks.quantum_advantage import run_sca
 These rows are a smoke-scale provenance table, not the publication
 scaling claim. Sparse SciPy emitted conversion warnings during the
 run, which is useful context for interpreting the small-n noise.
+
+### Broad Quantum Advantage (Observable-Level) — Not yet claimed
+
+No broad observable-level advantage claim is documented yet. The committed evidence
+must distinguish:
+
+- exact-simulation crossover (this section),
+- observable-level hardware-native/algorithm-native comparisons,
+- matched-accuracy and matched-budget classical alternatives (including sparse
+  and tensor-network paths), and
+- gating path that justifies any future broad-advantage wording in captions,
+  README content, or preprint claims.
 
 ---
 

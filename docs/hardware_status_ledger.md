@@ -93,8 +93,10 @@ update this table first, then refresh the summary pages.
 - Gap B item 1 status: **DONE** — scaling benchmark rows now carry backend,
   machine, command, dependency, and commit provenance in the committed
   `run_scaling_benchmark` and crossover-point loaders.
-- Next pending item: **Gap B item 2** — separate exact-simulation crossover from
-  observable-level broad-advantage comparisons in figures, captions, and claims.
+- Gap B item 2 status: **DONE** — separate exact-simulation crossover from
+  observable-level broad-advantage claims in the public benchmark wording.
+- Next pending item: **Gap B item 3** — run the classical/Rust/GPU matrix before
+  spending additional QPU budget.
 
 ## EEG Condition Comparison — 2026-04-30
 
