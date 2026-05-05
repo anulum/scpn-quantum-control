@@ -115,7 +115,8 @@ raw IBM counts and promoted here.
   for the quantum-advantage comparison and saved it as
   `results/classical_rust_gpu_matrix_2026-05-03.json`.
 - Gap B close-out review status: **DONE 2026-05-05** — the validation readiness gate records the Phase 1 raw-count reproducer pass, a current-commit classical/Rust matrix smoke check, and the promotion rules for future broad-advantage or hardware claims.
-- Next pending item: **Phase 2 preregistered IBM manifest** — no new hardware submission or promotion until observable, backend, circuits, shots, abort criteria, retrieval manifest, analysis script, and ledger row are committed before the run.
+- Phase 2 preregistration status: **DONE 2026-05-05** — `docs/ibm_phase2_preregistered_manifest_2026-05-05.md` and `results/ibm_phase2_preregistration_2026-05-05.json` record the QPU-minimised A+G first live command, dry-run circuit inventory, abort criteria, evidence path, and promotion gates.
+- Next pending item: **IBM credit-window submission approval** — no hardware submission until the promotional or credit window is live and the exact `--confirm-promo-active` command is approved in the current turn.
 
 ## EEG Condition Comparison — 2026-04-30
 

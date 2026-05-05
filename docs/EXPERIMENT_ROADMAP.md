@@ -28,7 +28,9 @@ parity dataset. The next hardware action is Phase 2 DLA parity expansion,
 which is ready in script form but remains blocked on an IBM promo/credit window
 and a fresh preregistered run manifest. The 2026-05-05 validation readiness
 gate passed the Phase 1 raw-count reproducer and a current-commit broad-advantage
-guardrail smoke check; it does not authorise IBM submission. May/June items below are candidate
+guardrail smoke check; the Phase 2 preregistered manifest now records the
+dry-run circuit inventory and abort criteria. It does not authorise IBM
+submission. May/June items below are candidate
 experiments, not active commitments.
 
 ## Experiment Inventory (20 total)

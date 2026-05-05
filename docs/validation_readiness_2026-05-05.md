@@ -89,3 +89,19 @@ A new IBM result is not promotable unless all items below are satisfied:
 The project is prepared for local validation and preregistration work. It is not
 prepared to submit or promote a new IBM hardware validation run until the Phase
 2 manifest is committed and the IBM credit or promo window is live.
+
+## Phase 2 preregistration update
+
+The Phase 2 preregistered manifest is now recorded in
+`docs/ibm_phase2_preregistered_manifest_2026-05-05.md`, with the machine-readable
+inventory in `results/ibm_phase2_preregistration_2026-05-05.json`.
+
+The first live command is narrowed to blocks A+G only so the run spends the
+minimum QPU time needed for high-statistics `n=4` replication plus readout
+baseline. Blocks B-F are deferred until the primary raw counts are retrieved
+and reviewed.
+
+This closes the preregistration document gate only. IBM submission remains
+blocked until the credit window is live and the exact reduced
+`--confirm-promo-active --skip B C D E F` command is approved immediately
+before execution.

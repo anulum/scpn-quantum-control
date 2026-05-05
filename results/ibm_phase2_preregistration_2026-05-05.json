@@ -1,0 +1,157 @@
+{
+  "spdx_license": "AGPL-3.0-or-later",
+  "commercial_license": "available",
+  "concepts_copyright": "1996-2026 Miroslav Sotek",
+  "code_copyright": "2020-2026 Miroslav Sotek",
+  "orcid": "0009-0009-3560-0851",
+  "contact": "www.anulum.li | protoscience@anulum.li",
+  "schema_version": 2,
+  "manifest": {
+    "prepared_date": "2026-05-05",
+    "status": "preregistered_not_submitted",
+    "budget_assumption_remaining_qpu_minutes": 120,
+    "target_script": "scripts/phase2_full_campaign_ibm.py",
+    "primary_backend": "ibm_kingston",
+    "replication_backend": "ibm_marrakesh",
+    "approved_first_live_blocks": ["A", "G"],
+    "deferred_blocks": ["B", "C", "D", "E", "F"],
+    "submission_requires": [
+      "active IBM promotional or credit window",
+      "successful reduced dry-run on the committed script",
+      "current-turn human approval",
+      "--confirm-promo-active flag",
+      "--skip B C D E F for the first live command"
+    ],
+    "forbidden_promotions": [
+      "broad quantum advantage",
+      "frontier scaling",
+      "multi-QPU validation without independent review",
+      "live-loop IBM execution"
+    ]
+  },
+  "reduced_dry_run": {
+    "timestamp_utc": "2026-05-05T12:02:31Z",
+    "command": [
+      "scripts/phase2_full_campaign_ibm.py",
+      "--dry-run",
+      "--backend",
+      "ibm_kingston",
+      "--skip",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F"
+    ],
+    "result": "passed",
+    "n_circuits": 612,
+    "estimated_qpu_minutes_at_0_55_s_per_circuit": 5.6,
+    "isa_depth": {
+      "min": 1,
+      "max": 605,
+      "mean": 221.4
+    },
+    "gate_count": {
+      "min": 4,
+      "max": 1503,
+      "mean": 544.3
+    }
+  },
+  "full_campaign_dry_run_reference": {
+    "timestamp_utc": "2026-05-05T11:59:50Z",
+    "result": "passed",
+    "n_circuits": 1192,
+    "estimated_qpu_minutes_at_0_55_s_per_circuit": 10.9,
+    "first_live_submission_approved": false,
+    "reason": "The first live run must minimise QPU use under the approximately 120-minute remaining-budget constraint."
+  },
+  "blocks": [
+    {
+      "label": "A",
+      "experiment": "A_dla_parity_n4_phase2",
+      "live_status": "approved_first_live_command",
+      "n_qubits": 4,
+      "depths": [2, 4, 6, 8, 10, 14, 20, 30, 40, 50],
+      "sectors": ["even", "odd"],
+      "reps": 30,
+      "shots": 4096,
+      "circuits": 600
+    },
+    {
+      "label": "G",
+      "experiment": "G_readout_baseline",
+      "live_status": "approved_first_live_command",
+      "n_qubits": [4, 6, 8],
+      "preps": {
+        "4": ["0000", "1111", "0101", "1010"],
+        "6": ["000000", "111111", "010101", "101010"],
+        "8": ["00000000", "11111111", "01010101", "10101010"]
+      },
+      "shots": 8192,
+      "circuits": 12
+    },
+    {
+      "label": "B",
+      "experiment": "B_scaling_n6_phase2",
+      "live_status": "deferred_until_primary_review",
+      "n_qubits": 6,
+      "depths": [4, 8, 14, 20],
+      "sectors": ["even", "odd"],
+      "reps": 20,
+      "shots": 4096,
+      "circuits": 160
+    },
+    {
+      "label": "C",
+      "experiment": "C_scaling_n8_phase2",
+      "live_status": "deferred_until_primary_review",
+      "n_qubits": 8,
+      "depths": [4, 8, 14, 20],
+      "sectors": ["even", "odd"],
+      "reps": 15,
+      "shots": 4096,
+      "circuits": 120
+    },
+    {
+      "label": "D",
+      "experiment": "D_scaling_n10_phase2",
+      "live_status": "deferred_until_primary_review",
+      "n_qubits": 10,
+      "depths": [4, 8, 14],
+      "sectors": ["even", "odd"],
+      "reps": 12,
+      "shots": 4096,
+      "circuits": 72
+    },
+    {
+      "label": "E",
+      "experiment": "E_scaling_n12_phase2",
+      "live_status": "deferred_until_primary_review",
+      "n_qubits": 12,
+      "depths": [4, 8, 14],
+      "sectors": ["even", "odd"],
+      "reps": 8,
+      "shots": 4096,
+      "circuits": 48
+    },
+    {
+      "label": "F",
+      "experiment": "F_guess_calibration_n4",
+      "live_status": "deferred_until_primary_review",
+      "n_qubits": 4,
+      "depths": [4, 8, 14],
+      "noise_scales": [1, 3, 5],
+      "sectors": ["even", "odd"],
+      "reps": 10,
+      "shots": 4096,
+      "circuits": 180
+    }
+  ],
+  "promotion_gates": [
+    "raw counts retrieved and bound to job identifiers",
+    "SHA-256 integrity table created",
+    "count-to-statistic reproducer committed",
+    "hardware ledger row updated before public summary citation",
+    "aggregate-only or placeholder outputs quarantined"
+  ]
+}
