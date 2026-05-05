@@ -26,7 +26,9 @@ frontier claims from this campaign.
 artifact-backed ibm_fez baseline rows and the April raw-count ibm_kingston DLA
 parity dataset. The next hardware action is Phase 2 DLA parity expansion,
 which is ready in script form but remains blocked on an IBM promo/credit window
-and a fresh preregistered run manifest. May/June items below are candidate
+and a fresh preregistered run manifest. The 2026-05-05 validation readiness
+gate passed the Phase 1 raw-count reproducer and a current-commit broad-advantage
+guardrail smoke check; it does not authorise IBM submission. May/June items below are candidate
 experiments, not active commitments.
 
 ## Experiment Inventory (20 total)

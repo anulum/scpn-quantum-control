@@ -129,7 +129,7 @@ Remaining items:
   raw-count-backed or artifact-named rows
 - [ ] Coverage push to 100% (tracked in the internal coverage queue; latest documented baseline is ~97.6%, 315 uncovered lines)
 - [ ] arXiv preprint: "Quantum simulation of coupled-oscillator synchronization on a 156-qubit superconducting processor"
-- [ ] Quantum advantage figure: exponential crossover curve (hardware data)
+- [ ] Quantum advantage figure: exact-simulation crossover and hardware-budget boundary; no broad hardware-advantage claim until a preregistered raw-count campaign passes the validation gate
 - [ ] IBM Quantum Credits campaign (applied 2026-03-29, pending review)
 - [ ] Version bump to 1.0.0
 

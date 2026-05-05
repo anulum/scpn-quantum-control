@@ -114,9 +114,8 @@ raw IBM counts and promoted here.
 - Gap B item 3 status: **DONE** — ran the classical/Rust/GPU benchmark matrix
   for the quantum-advantage comparison and saved it as
   `results/classical_rust_gpu_matrix_2026-05-03.json`.
-- Next pending item: **Gap B close-out review** — apply the matrix evidence to
-  the next broad-advantage evidence gate and any remaining observable-level
-  claim wording.
+- Gap B close-out review status: **DONE 2026-05-05** — the validation readiness gate records the Phase 1 raw-count reproducer pass, a current-commit classical/Rust matrix smoke check, and the promotion rules for future broad-advantage or hardware claims.
+- Next pending item: **Phase 2 preregistered IBM manifest** — no new hardware submission or promotion until observable, backend, circuits, shots, abort criteria, retrieval manifest, analysis script, and ledger row are committed before the run.
 
 ## EEG Condition Comparison — 2026-04-30
 
