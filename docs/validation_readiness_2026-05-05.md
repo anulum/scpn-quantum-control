@@ -105,3 +105,15 @@ This closes the preregistration document gate only. IBM submission remains
 blocked until the credit window is live and the exact reduced
 `--confirm-promo-active --skip B C D E F` command is approved immediately
 before execution.
+
+## 2026-05-05 live-attempt update
+
+The first reduced A+G live attempt was cancelled after the hardware
+transpilation path produced deeper circuits than the reduced dry-run manifest.
+IBM job `d7stqj7ljm6s73bbu080` is recorded as `CANCELLED`, with IBM metadata
+reporting `0` quantum seconds and `0` usage seconds.
+
+This cancelled job is quarantined execution evidence only. It supplies no raw
+counts and closes no validation claim. The next required step is a
+hardware-backend transpilation precheck or an updated manifest budget before any
+new IBM submission.

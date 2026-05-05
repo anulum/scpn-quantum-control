@@ -27,6 +27,8 @@ not a broad quantum-advantage claim and not any frontier or live-loop claim.
 | Live-ready reduced command | `PYTHONDONTWRITEBYTECODE=1 /home/anulum/.local/bin/python scripts/phase2_full_campaign_ibm.py --confirm-promo-active --backend ibm_kingston --skip B C D E F` |
 | Dry-run command | `PYTHONDONTWRITEBYTECODE=1 /home/anulum/.local/bin/python scripts/phase2_full_campaign_ibm.py --dry-run --backend ibm_kingston --skip B C D E F` |
 | Dry-run result | Passed on 2026-05-05 |
+| 2026-05-05 live attempt | Aborted and cancelled after hardware transpilation drift |
+| Cancelled job | `d7stqj7ljm6s73bbu080`, IBM status `CANCELLED`, reported usage `0` quantum seconds |
 
 No IBM job may be submitted from this manifest until the promotional or credit
 window is live and the exact command is approved immediately before execution.
@@ -100,6 +102,34 @@ Reduced dry-run timestamp: `2026-05-05T120231Z`.
 Decision: the dry-run transpilation budget gate passed. It authorises
 readiness only; it does not authorise QPU submission.
 
+## Aborted live attempt — 2026-05-05
+
+A first live reduced A+G attempt was started on 2026-05-05 after IBM readiness
+approval. The live hardware transpilation path produced deeper circuits than
+the reduced simulator dry-run manifest:
+
+| Source | Max depth |
+|---|---:|
+| Reduced dry-run manifest | `605` |
+| Live hardware transpilation log | `1014` |
+
+This triggered the manifest drift abort rule. The submitted main-batch job
+`d7stqj7ljm6s73bbu080` was immediately cancelled.
+
+IBM job metadata after cancellation:
+
+| Field | Value |
+|---|---:|
+| Status | `CANCELLED` |
+| Created UTC | `2026-05-05T12:06:37.041668Z` |
+| Running UTC | `2026-05-05T12:06:38.800236Z` |
+| Finished UTC | `2026-05-05T12:07:19.703948Z` |
+| Reported quantum seconds | `0` |
+| Reported usage seconds | `0` |
+
+Decision: the cancelled job is quarantined execution evidence only. It is not
+raw-count evidence, not validation, and not promotable.
+
 ## Abort criteria
 
 Abort before submission if any condition below holds:
@@ -122,6 +152,7 @@ Abort after submission if any condition below holds:
 | Partial run | A batch fails and the partial output cannot be isolated from promoted evidence. |
 | Backend mismatch | Result metadata names a backend other than the approved backend. |
 | Readout baseline | Readout baseline is missing or cannot be matched to the run. |
+| Hardware transpilation drift | Live hardware transpilation exceeds the manifest budget before usable counts are retrieved. |
 
 ## Evidence capture path
 
@@ -174,7 +205,9 @@ Reduced dry-run, already passed:
 PYTHONDONTWRITEBYTECODE=1 /home/anulum/.local/bin/python scripts/phase2_full_campaign_ibm.py --dry-run --backend ibm_kingston --skip B C D E F
 ```
 
-Reduced live submission, blocked until credit window and explicit approval:
+Reduced live submission is blocked until a hardware-backend transpilation
+precheck is added or the manifest budget is updated. Do not rerun the live
+command below until that correction is committed:
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 /home/anulum/.local/bin/python scripts/phase2_full_campaign_ibm.py --confirm-promo-active --backend ibm_kingston --skip B C D E F
