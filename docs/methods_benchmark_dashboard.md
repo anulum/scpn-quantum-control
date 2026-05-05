@@ -9,8 +9,33 @@
 # Methods Benchmark Dashboard
 
 This page tracks the benchmark artefacts supporting the Rust/VQE methods
-papers. The rule is artefact-first: tables and manuscript claims should be
-regenerated from committed scripts, JSON summaries, and CSV summaries.
+papers and the SCPN/FIM Hamiltonian paper. The rule is artefact-first:
+tables and manuscript claims should be regenerated from committed scripts,
+JSON summaries, and CSV summaries.
+
+## Reproducibility commands
+
+The `scpn-bench` entry point is the public one-command interface for local
+artefact regeneration:
+
+```bash
+scpn-bench reproduce-methods
+scpn-bench fim-all
+scpn-bench all
+```
+
+Useful options:
+
+| Option | Purpose |
+| --- | --- |
+| `--dry-run` | Print selected harnesses without executing them. |
+| `--include-gpu` | Include optional GPU harnesses. |
+| `--keep-going` | Continue after a failed harness and report all failures. |
+| `--no-diff` | Skip the post-run committed-artefact diff summary. |
+
+By default the CLI runs offline harnesses only. IBM preparation and submission
+scripts are deliberately excluded from `scpn-bench`; IBM raw-count analyses are
+included only where they consume already committed JSON data.
 
 ## Current artefact groups
 
@@ -23,6 +48,13 @@ regenerated from committed scripts, JSON summaries, and CSV summaries.
 | Cross-machine CPU | `data/rust_vqe_methods/remote_knm_benchmark_*_2026-05-05.json` | `scripts/benchmark_remote_knm_machine.py` |
 | Vertex T4 GPU | `data/rust_vqe_methods/gpu_benchmark_summary_vertex_t4_2026-05-05.json` | `scripts/benchmark_gpu_methods.py` |
 | Combined methods summary | `data/rust_vqe_methods/combined_methods_benchmark_summary_2026-05-05.json` | `scripts/summarise_rust_vqe_method_artifacts.py` |
+| FIM spectra | `data/scpn_fim_hamiltonian/fim_spectrum_summary_2026-05-05.json` | `scripts/analyse_fim_spectrum.py` |
+| FIM level spacing | `data/scpn_fim_hamiltonian/fim_level_spacing_summary_2026-05-05.json` | `scripts/analyse_fim_level_spacing.py` |
+| FIM entanglement | `data/scpn_fim_hamiltonian/fim_entanglement_summary_2026-05-05.json` | `scripts/analyse_fim_entanglement.py` |
+| FIM sector survival | `data/scpn_fim_hamiltonian/fim_sector_survival_summary_2026-05-05.json` | `scripts/analyse_fim_sector_survival.py` |
+| FIM VQE | `data/scpn_fim_hamiltonian/fim_vqe_ground_state_summary_2026-05-05.json` | `scripts/benchmark_fim_vqe_ground_state.py` |
+| FIM IBM pilot analysis | `data/scpn_fim_hamiltonian/fim_ibm_pilot_analysis_2026-05-05.json` | `scripts/analyse_fim_ibm_pilot.py` |
+| FIM IBM repeated analysis | `data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_analysis_2026-05-05.json` | `scripts/analyse_fim_ibm_repeated_followup.py` |
 
 ## Current combined artefact hashes
 
@@ -31,10 +63,11 @@ regenerated from committed scripts, JSON summaries, and CSV summaries.
 | `combined_methods_benchmark_summary_2026-05-05.json` | `593330a1dd19f495b899be1031ebe3dd4caa07171053aa376c2f761e557c1428` |
 | `combined_methods_benchmark_summary_2026-05-05.csv` | `e69b94df590ff06708b3b21245864f74c3df630b514254526dc6c4af3fe24c2f` |
 
-## Existing regeneration commands
+## Individual harness commands
 
-Until the one-command CLI is implemented, regenerate artefacts through the
-individual harnesses:
+The one-command CLI is preferred for reproducibility checks. Individual
+harnesses remain useful when a single table needs to be regenerated during
+development:
 
 ```bash
 python scripts/benchmark_rust_core_methods.py
@@ -43,29 +76,27 @@ python scripts/benchmark_vqe_methods.py
 python scripts/benchmark_multilang_knm_methods.py
 python scripts/benchmark_gpu_methods.py
 python scripts/summarise_rust_vqe_method_artifacts.py
+python scripts/analyse_fim_spectrum.py
+python scripts/analyse_fim_level_spacing.py
+python scripts/analyse_fim_entanglement.py
+python scripts/analyse_fim_sector_survival.py
+python scripts/benchmark_fim_vqe_ground_state.py
+python scripts/analyse_fim_ibm_pilot.py
+python scripts/analyse_fim_ibm_repeated_followup.py
 ```
 
 Remote or non-local machine artefacts should record the machine identity,
 hardware context, command, timestamp, and checksum before being promoted into
 `data/rust_vqe_methods/`.
 
-## Planned one-command interface
-
-The planned CLI should provide:
-
-```bash
-scpn-bench reproduce-methods
-scpn-bench diff-artifacts
-scpn-bench all
-```
-
-Expected behaviour:
+## Implemented CLI behaviour
 
 - Regenerate local deterministic artefacts from committed scripts.
-- Detect unavailable optional backends and record structured skip reasons.
-- Rebuild combined JSON and CSV summaries.
+- Keep optional GPU harnesses behind `--include-gpu`.
+- Rebuild combined JSON and CSV summaries where a summariser exists.
 - Compare regenerated artefacts with committed files.
 - Report changed artefacts explicitly instead of silently accepting drift.
+- Avoid spending QPU time or submitting hardware jobs.
 
 ## Machine provenance
 

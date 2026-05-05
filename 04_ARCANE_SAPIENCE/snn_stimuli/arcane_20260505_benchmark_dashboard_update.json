@@ -1,0 +1,10 @@
+{
+  "schema": "arcane_sapience_stimulus_v1",
+  "timestamp_utc": "2026-05-05T220953Z",
+  "project": "SCPN-QUANTUM-CONTROL",
+  "source": "local_research_agent",
+  "event": "benchmark_dashboard_update",
+  "workspace": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL",
+  "dashboard": "docs/methods_benchmark_dashboard.md",
+  "change": "Updated the public benchmark dashboard to document scpn-bench commands, FIM artefact groups, and offline-only reproducibility behaviour."
+}
