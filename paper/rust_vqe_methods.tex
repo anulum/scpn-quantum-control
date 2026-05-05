@@ -262,10 +262,9 @@ acceleration rather than a universal speedup.
 
 To make the comparison extensible, we added a multi-language
 coupling-matrix harness. It currently reports Python/NumPy, direct
-Rust/PyO3, Julia, and Go timings where local runtimes are available. The
-Mojo runtime was detected, but no stable Mojo $K_{ij}$ kernel is included
-yet, so Mojo is recorded as detected-not-benchmarked rather than reported
-as a result.
+Rust/PyO3, Julia, and Go timings where local runtimes are available.
+Runtimes without a stable matched $K_{ij}$ kernel are intentionally omitted
+from the result table rather than listed as failed benchmarks.
 
 \begin{table*}[tb]
 \centering
@@ -303,7 +302,6 @@ Python/NumPy & $0.01339\,\mathrm{ms}$ & ok \\
 Rust/PyO3 & $0.00330\,\mathrm{ms}$ & ok \\
 Julia & $0.00509\,\mathrm{ms}$ & ok \\
 Go & $0.00402\,\mathrm{ms}$ & ok \\
-Mojo & -- & detected, no kernel \\
 \bottomrule
 \end{tabular}
 \caption{Generated multi-language $K_{ij}$ construction comparison at
