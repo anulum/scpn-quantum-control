@@ -7,6 +7,13 @@
 # SCPN Quantum Control — Quantum Analysis Toolkit
 """Quantum analysis toolkit for the Kuramoto-XY system."""
 
+from .adaptive_fim_feedback import (
+    AdaptiveFIMConfig,
+    AdaptiveFIMStep,
+    FIMWitness,
+    adaptive_lambda_schedule,
+    propose_next_lambda,
+)
 from .berry_phase import BerryPhaseResult, berry_phase_scan
 from .bkt_analysis import (
     BKTResult,
@@ -186,6 +193,11 @@ __all__ = [
     "sector_coupling_rows",
     "sector_spectrum_rows",
     "summarise_spectrum",
+    "AdaptiveFIMConfig",
+    "AdaptiveFIMStep",
+    "FIMWitness",
+    "adaptive_lambda_schedule",
+    "propose_next_lambda",
     "SelfConsistencyResult",
     "self_consistency_from_exact",
     "KrylovResult",

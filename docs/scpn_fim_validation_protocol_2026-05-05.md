@@ -188,6 +188,38 @@ Required claim table:
 The current claim table is maintained in
 `docs/scpn_fim_claim_boundary_2026-05-05.md`.
 
+## Phase 5 — Adaptive lambda feedback loop
+
+Goal: turn the fixed `H_FIM(lambda)` study into a falsifiable closed-loop
+protocol without claiming hardware validation before a new run exists.
+
+Implemented scaffold:
+
+- Module: `src/scpn_quantum_control/analysis/adaptive_fim_feedback.py`.
+- Public API: `AdaptiveFIMConfig`, `FIMWitness`,
+  `propose_next_lambda`, and `adaptive_lambda_schedule`.
+- Tests: `tests/test_adaptive_fim_feedback.py`.
+
+Initial control rule:
+
+- `leakage_suppression`: reduce `lambda` when measured leakage exceeds the
+  target witness.
+- `retention_recovery`: reduce `lambda` when exact-state retention falls below
+  the target witness.
+- Updates are clipped to a configured `[lambda_min, lambda_max]` interval and
+  support a deadband so small shot-noise fluctuations do not change the next
+  batch.
+
+Scientific boundary:
+
+- This is a deterministic classical controller over simulator or already
+  measured witness values.
+- It does not submit QPU jobs.
+- It does not reverse the negative fixed-`lambda` IBM result.
+- A hardware claim would require a separately approved adaptive or batched
+  follow-up experiment with fresh raw counts, live transpilation metadata, and
+  readout controls.
+
 ## QPU budget guard
 
 No IBM job should be submitted until:
