@@ -6,7 +6,7 @@
 % Contact: www.anulum.li | protoscience@anulum.li
 % scpn-quantum-control --- Phase 1 DLA parity short paper (arXiv-ready)
 
-\documentclass[twocolumn,aps,prresearch,superscriptaddress,floatfix,notitlepage,longbibliography]{revtex4-2}
+\documentclass[reprint,aps,physrev,superscriptaddress,floatfix,longbibliography]{revtex4-2}
 
 \usepackage{graphicx}
 \usepackage{amsmath,amssymb}
@@ -26,8 +26,8 @@
 
 \begin{document}
 
-\title{Hardware observation of dynamical Lie-algebra parity asymmetry\\
-in the XY Hamiltonian on IBM Heron~r2}
+\title{Replicated hardware observation of dynamical Lie-algebra parity asymmetry\\
+in the XY Hamiltonian}
 
 \author{Miroslav \v{S}otek}
 \email{protoscience@anulum.li}
@@ -39,10 +39,11 @@ in the XY Hamiltonian on IBM Heron~r2}
 \begin{abstract}
 The dynamical Lie algebra (DLA) of the XY Hamiltonian on $n$ qubits
 decomposes as $\mathfrak{su}(2^{n-1}) \oplus \mathfrak{su}(2^{n-1})$
-under the parity operator $P = \prod_i Z_i$. We report the first
-direct hardware observation that the two symmetry sectors respond
-measurably differently to decoherence on a superconducting quantum
-processor. In a 342-circuit campaign on IBM \texttt{ibm\_kingston}
+under the parity operator $P = \prod_i Z_i$. We report direct
+hardware evidence that the parity-labelled sectors exhibit a
+measurable leakage asymmetry under decoherence on a superconducting
+quantum processor. In a 342-circuit campaign on IBM
+\texttt{ibm\_kingston}
 (Heron~r2, 156 qubits) we measure the parity leakage rate in each
 sector at $n = 4$ across eight Trotter depths, and find that the odd
 sector is on average $(10.8 \pm 1.1)\,\%$ more robust than the even
@@ -102,11 +103,13 @@ the reference --- retains coherence noticeably better than the
 even-parity block at moderate circuit depths, with the predicted
 asymmetry in the range $4.5$--$9.6\,\%$.
 
-The present short paper reports a direct raw-count hardware observation of
-this prediction on \texttt{ibm\_kingston}, a 156-qubit Heron~r2
-processor. To our knowledge no prior hardware study has isolated the
+The present short paper reports a direct raw-count hardware
+observation of this parity-sector and excitation-number correlated
+leakage asymmetry on \texttt{ibm\_kingston}, a 156-qubit Heron~r2
+processor. To our knowledge no prior hardware study has isolated this
 DLA parity structure of the heterogeneous XY Hamiltonian as a
-decoherence observable.
+decoherence observable with committed raw counts and reproducible
+analysis.
 
 %% ====================================================================
 \section{Experimental protocol}
@@ -252,14 +255,15 @@ begins to wash out but remains visible above the noise floor.
 %% ====================================================================
 
 The observation is consistent with the theoretical picture that the
-even-parity block --- which contains the reference product state
-$|0\cdots 0\rangle$ and couples most strongly to the dominant $T_1$
-relaxation channel --- decoheres faster than the odd-parity block,
-whose states are protected by at least one excitation from direct
-decay to the ground manifold. The magnitude of the effect at large
-depths agrees with the apriori classical simulator prediction, giving
-confidence that the observed asymmetry is not a calibration artefact
-specific to \texttt{ibm\_kingston}.
+two parity-labelled DLA blocks can have different effective leakage
+responses under realistic noise. However, the specific computational
+basis states used here also differ in excitation number. The result
+should therefore be read conservatively as a parity-sector and
+excitation-number correlated leakage asymmetry until the dedicated
+popcount-control run described below is completed. The magnitude of
+the effect at large depths agrees with the apriori classical
+simulator prediction, giving confidence that the observed asymmetry
+is not only a readout artefact specific to \texttt{ibm\_kingston}.
 
 A ruled-out alternative explanation is readout-basis asymmetry:
 Experiment~C readout calibration shows a mean retention of
@@ -269,12 +273,11 @@ $\pm 0.014$ readout inhomogeneity is an order of magnitude too small
 to account for the $10$--$17\,\%$ peak asymmetry observed in the
 middle depths.
 
-Two scaling probes at $n = 8$ (depth 4 and 8, four repetitions each)
-both reproduce the direction of the asymmetry with magnitudes of
-$+3.0\,\%$ and $+1.7\,\%$ respectively. The weaker $n = 8$ signal is
-expected given the smaller rep count and the larger intrinsic
-decoherence at 8 qubits; a more statistically powerful follow-up is
-outlined in Section~\ref{sec:phase2}.
+Two low-statistics scaling probes at $n = 8$ in the Phase~1 archive
+(depth 4 and 8, four repetitions each) both reproduced the direction
+of the asymmetry with magnitudes of $+3.0\,\%$ and $+1.7\,\%$
+respectively. The completed Phase~2 continuation below replaces those
+probes as the promoted scaling evidence.
 
 \subsection{Statistical caveats}
 
@@ -287,10 +290,10 @@ session, which introduces a small but non-zero correlation through
 shared calibration drift and shared thermal context. The combined
 $p \ll 10^{-16}$ should therefore be read as an upper bound on
 significance under the strongest possible independence assumption.
-A correlation-aware combination (Simes test, block bootstrap) is
-deferred to the Phase~2 follow-up; the per-depth Welch
-significances are unaffected by the independence question and seven
-of eight are already individually below $p = 0.01$.
+A correlation-aware combination (Simes test, block bootstrap) remains
+a useful follow-up; the per-depth Welch significances are unaffected
+by the independence question and seven of eight are already
+individually below $p = 0.01$.
 
 Second, \textbf{Welch's $t$-test is parametric and assumes
 approximately normally distributed sector means}. As an internal
@@ -306,27 +309,28 @@ mean retention rather than the full confusion-matrix inversion that
 is standard practice for production readout mitigation. Confusion-
 matrix inversion was not applied to the counts in this paper because
 the calibration spread ($0.014$) is already an order of magnitude
-smaller than the observed asymmetry. A full inversion is a planned
-cross-check for the Phase~2 dataset; any sign or magnitude change
-will be noted in the follow-up paper.
+smaller than the observed asymmetry. The Phase~2 A+G run added a
+same-day readout baseline for $n=4,6,8$ computational basis states,
+but the promoted analyses still report unmitigated raw-count leakage
+statistics rather than confusion-matrix-inverted estimates.
 
 \subsection{Possible confounds the protocol does not yet rule out}
 
-Two confounds remain open and are deferred to Phase~2.
+Two confounds remain open after the reduced Phase~2 continuation.
 
-\textbf{Excitation-count confound.} The two initial states differ by
-one excitation: $|\psi_e\rangle = |0011\rangle$ has popcount 2 while
-$|\psi_o\rangle = |0001\rangle$ has popcount 1. Under a pure
-amplitude-damping ($T_1$) channel, the higher-excitation state decays
-into the lower-excitation manifold roughly twice as fast, which on
-its own would predict an asymmetry of order
-$\Delta n / \langle n \rangle$ in the leakage rate. To rule out the
-trivial popcount explanation, Phase~2 will repeat the protocol with
-two popcount-matched initial states drawn from the same sector (e.g.\
-$|0011\rangle$ vs $|0101\rangle$ in the even sector at popcount 2,
-and $|0001\rangle$ vs $|0010\rangle$ in the odd sector at popcount 1)
-and verify that the within-sector spread is much smaller than the
-between-sector difference.
+\textbf{Excitation-count confound.} The two primary initial states
+differ by one excitation: $|\psi_e\rangle = |0011\rangle$ has
+popcount 2 while $|\psi_o\rangle = |0001\rangle$ has popcount 1.
+Under a pure amplitude-damping ($T_1$) channel, the higher-excitation
+state can decay into lower-excitation manifolds faster, which may
+explain part of the observed asymmetry without invoking only the DLA
+block structure. A dedicated control is therefore required before the
+causal wording can be strengthened. The preregistered control should
+include within-sector state swaps
+($|0011\rangle$ vs $|0101\rangle$ and
+$|0001\rangle$ vs $|0010\rangle$) and an excitation-inversion arm
+($|0011\rangle$ vs $|0111\rangle$), where a pure $T_1$ explanation
+predicts the higher-excitation odd state to leak more strongly.
 
 \textbf{Temporal drift between sub-phases.} The 342 circuits were
 submitted across four sub-phases between 2026-04-10 18:37~UTC and
@@ -339,56 +343,106 @@ respectively. The first sub-phase has only two repetitions per
 (depth, sector) point and is dominated by single-shot count noise,
 including a $-12\,\%$ outlier at the near-identity depth $d = 2$.
 The three sub-phases with $\ge 4$ repetitions per point give
-consistent aggregates in the $+9$--$+15\,\%$ range. A fully
-randomised Phase~2 schedule (depths and sectors fully shuffled, not
-interleaved within sub-phases) is part of the proposed protocol
-below.
+consistent aggregates in the $+9$--$+15\,\%$ range. The Phase~2
+reduced A+G run used a larger single-day raw-count campaign and
+therefore partially reduces this concern, but a multi-device
+replication remains the cleaner drift control.
 
 %% ====================================================================
-\section{Phase 2 campaign}
+\section{Phase 2 continuation}
 \label{sec:phase2}
 %% ====================================================================
 
-A follow-up campaign has been prepared and is ready to run once a
-promotional 180-minute allocation opens on the account. The Phase~2
-protocol extends the present study in three directions:
+A preregistered May 2026 continuation was executed on
+\texttt{ibm\_kingston}. The submitted scope was deliberately reduced:
+the A+G block repeated the $n=4$ parity-leakage protocol and measured
+a same-day readout baseline, while the B-C block tested only
+$n=6$ and $n=8$ early scaling. Larger D-E scaling, F/GUESS mitigation,
+and multi-device replication were not submitted. Before submission to
+hardware, the Phase~2 driver performed live transpilation against the
+selected backend and aborted if the measured live circuit depth
+exceeded the preregistered depth budget. The promoted datasets are
+therefore restricted to submitted circuits whose live-transpiled
+depths passed that gate and whose raw count dictionaries were
+retrieved, hashed, and reproduced by committed analysis scripts.
 
-\begin{enumerate}
-  \item Higher statistics at $n = 4$: 30 reps per point at each of
-        ten depths
-        $d \in \{2, 4, 6, 8, 10, 14, 20, 30, 40, 50\}$ to drive the
-        individual per-depth uncertainty below $0.5\,\%$.
-  \item Scaling law: dedicated sweeps at $n = 6, 8, 10, 12$ with
-        20, 15, 12, and 8 reps per point respectively, targeting the
-        first systematic measurement of the asymmetry as a function
-        of system size.
-  \item GUESS mitigation: a noise-scaled sub-sweep at $n = 4$ with
-        circuit folding factors $g \in \{1, 3, 5\}$ to calibrate the
-        symmetry-guided zero-noise extrapolation scheme of
-        Oliva~del~Moral \emph{et al.}~\cite{OlivaDelMoral2026} using
-        the measured parity leakage itself as the symmetry
-        observable.
-\end{enumerate}
+\begin{figure}[tb]
+\centering
+\includegraphics[width=0.82\columnwidth]{../figures/phase2/phase2_n4_replication_asymmetry.png}
+\caption{Phase~2 $n=4$ replication asymmetry on
+\texttt{ibm\_kingston}. The reduced A+G block used 600 parity
+circuits, 30 repetitions per depth/sector, and 4096 shots per circuit.
+Six of ten depths are individually significant at Welch $p<0.05$;
+the deepest three tested depths saturate near zero asymmetry.}
+\label{fig:phase2n4}
+\end{figure}
 
-Total budget is approximately $1\,200$ circuits, estimated 11~minutes
-of QPU runtime at the observed $0.55\,$s per circuit rate, with
-ample margin left in the 180-minute allocation for independent
-replication on a second Heron~r2 device (e.g.\
-\texttt{ibm\_marrakesh}).
+\begin{figure}[tb]
+\centering
+\includegraphics[width=0.82\columnwidth]{../figures/phase2/phase2_bc_scaling_mixed_asymmetry.png}
+\caption{Phase~2 B-C scaling continuation. The $n=8$ middle depths
+preserve a positive sign, while $n=6$ has negative significant depths.
+This is mixed scaling evidence, not monotone scaling validation.}
+\label{fig:phase2bc}
+\end{figure}
+
+\begin{table*}[tb]
+\centering
+\small
+\begin{tabular}{llccl}
+\toprule
+Block & Scope & Circuits & QPU s & Fisher result \\
+\midrule
+A+G & $n=4$ replication plus readout & 612 & 687 &
+$\chi^2=140.671952$, $p=3.77\times10^{-20}$ \\
+B-C $n=6$ & Early scaling, depths 4, 8, 14, 20 & 280 & 305 &
+$\chi^2=46.531552$, $p=1.88\times10^{-7}$ \\
+B-C $n=8$ & Early scaling, depths 4, 8, 14, 20 & 280 & 305 &
+$\chi^2=29.420107$, $p=2.68\times10^{-4}$ \\
+\bottomrule
+\end{tabular}
+\caption{Compact Phase~2 hardware result table. A+G used jobs
+\texttt{d7stu94t738s73ch5keg} and \texttt{d7su3tkt738s73ch5ql0};
+B-C used job \texttt{d7sudr2udops7397ae30}. Raw-count SHA256 hashes
+are indexed in the publication package manifest.}
+\label{tab:phase2}
+\end{table*}
+
+The A+G block strengthens the original $n=4$ observation. It gives a
+combined Fisher statistic of $\chi^2=140.671952$ with
+$p=3.773718\times10^{-20}$, and six of ten depths are individually
+significant. The replicated effect is concentrated at depths
+$d=4$--20; by $d=30,40,50$ the asymmetry is statistically consistent
+with zero, consistent with a saturation regime in which both sectors
+approach comparable leakage.
+
+The B-C block constrains the scaling claim. At $n=8$, depths
+$4,8,14$ preserve the positive sign, with relative asymmetries
+$+3.33\,\%$, $+1.58\,\%$, and $+1.33\,\%$. At $n=6$, two significant
+depths have the opposite sign, $-3.74\,\%$ at $d=8$ and $-1.94\,\%$
+at $d=20$. The correct promoted conclusion is therefore narrow:
+strong $n=4$ replication, same-day readout control, and mixed
+$n=6,8$ early scaling. Phase~2 falsifies a simple monotone scaling
+story and does not constitute broad quantum advantage, GUESS
+mitigation validation, or $n=10,12$ hardware validation.
 
 %% ====================================================================
 \section{Conclusion}
 %% ====================================================================
 
-We have measured the parity-sector decoherence asymmetry of the XY
-Hamiltonian's dynamical Lie algebra on real superconducting hardware
-for the first time. The observed $(10.8 \pm 1.1)\,\%$ mean asymmetry
-across depths $d \ge 4$ agrees quantitatively with an independent
-classical simulator prediction, and is statistically significant at
-$p \ll 10^{-16}$ combined across eight depth points. The result
-opens a concrete experimental handle on the DLA structure of the
-Kuramoto--XY Hamiltonian and provides the noise profile needed to
-calibrate physics-informed error mitigation for deeper runs.
+We have measured a parity-sector and excitation-number correlated
+decoherence asymmetry of the XY Hamiltonian's dynamical Lie algebra
+on real superconducting hardware and reproduced the $n=4$ signal in
+an independent same-device raw-count continuation. The Phase~1
+observation gives a
+$(10.8 \pm 1.1)\,\%$ mean asymmetry across depths $d \ge 4$ and agrees
+quantitatively with an independent classical simulator prediction.
+The Phase~2 A+G block independently strengthens the $n=4$ claim with
+Fisher $p=3.77\times10^{-20}$, while the B-C block shows that scaling
+is mixed rather than monotone. The validated claim is therefore an
+$n=4$ raw-count hardware replication with constrained early scaling
+evidence and an explicitly open excitation-count confound, not a
+broad quantum-advantage result.
 
 %% ====================================================================
 \section*{Data and code availability}
@@ -405,6 +459,12 @@ $n = 4$), and the full analysis can be reproduced with
 python scripts/analyse_phase1_dla_parity.py
 \end{verbatim}
 %
+The Phase~2 A+G raw-count dataset lives in
+\texttt{data/phase2\_dla\_parity/}. The Phase~2 B-C raw-count dataset
+lives in \texttt{data/phase2\_scaling\_bc/}. The exact Phase~2
+reproduction commands, job identifiers, figure artefacts, and SHA256
+hashes are indexed in
+\texttt{docs/publication\_phase2\_package\_2026-05-05.md}.
 The campaign archive carries Zenodo
 DOI~\href{https://doi.org/10.5281/zenodo.18821929}{10.5281/zenodo.18821929}.
 

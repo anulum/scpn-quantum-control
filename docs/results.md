@@ -16,13 +16,13 @@ For source classification and campaign provenance, see the dated
 technical summary; the ledger is the canonical index for whether a result is
 theoretical, simulated, hardware-measured, mitigated, or noise-limited.
 
-## Status Snapshot — 2026-04-29
+## Status Snapshot — 2026-05-05
 
 | Area | Public status |
 |---|---|
-| Promoted hardware campaigns | April 2026 `ibm_kingston` Phase 1 DLA parity raw-count dataset; legacy artefact-backed `ibm_fez` baseline rows. |
+| Promoted hardware campaigns | April 2026 `ibm_kingston` Phase 1 DLA parity raw-count dataset; May 2026 `ibm_kingston` Phase 2 A+G `n=4` replication and B-C `n=6,8` mixed scaling raw-count datasets; legacy artefact-backed `ibm_fez` baseline rows. |
 | Simulator-only families | BKT scaling, OTOC, Floquet DTC, MBL/eigenstate scans, FIM, and classical wall-time baselines unless a hardware artefact is named. |
-| Pending / quarantined IBM batches | V2, frontier, queued-job, placeholder, and aggregate-only IBM outputs are not promoted here until raw counts, retrieval manifests, and analysis scripts are reviewed and committed. |
+| Pending / quarantined IBM batches | V2, frontier, queued-job, placeholder, aggregate-only IBM outputs, Phase 2 D-E larger scaling, Phase 2 F/GUESS mitigation, and multi-device replication are not promoted here until raw counts, retrieval manifests, and analysis scripts are reviewed and committed. |
 | Canonical status source | [Hardware Status Ledger](hardware_status_ledger.md). |
 
 ---
@@ -228,6 +228,18 @@ monotone scaling story and must not be cited as broad scaling validation.
 
 Reproduce from raw counts via
 `PYTHONDONTWRITEBYTECODE=1 /home/anulum/.local/bin/python scripts/analyse_phase2_scaling_bc.py data/phase2_scaling_bc/phase2_scaling_bc_2026-05-05T124722Z.json --sha256 f9718c3789329dbaa96a1667f8a581e3d1774632b961a1760c044138ccab6550`.
+
+### Phase 2 Publication Package
+
+The release-ready Phase 2 manifest is
+[`docs/publication_phase2_package_2026-05-05.md`](publication_phase2_package_2026-05-05.md).
+It indexes the promoted raw-count files, integrity hashes, job IDs, figure
+artefacts, reproduction commands, and claim boundaries.
+
+The excitation-count confound control is preregistered in
+[`docs/ibm_popcount_control_manifest_2026-05-05.md`](ibm_popcount_control_manifest_2026-05-05.md).
+Until that control is complete, the paper should use the conservative wording
+`parity-sector and excitation-number correlated leakage asymmetry`.
 
 ### Legacy ibm_fez Results (March 2026)
 
