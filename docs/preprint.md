@@ -115,10 +115,12 @@ Windows 11, Python 3.12, Rust release build.
 
 ### 2.3 Hardware
 
-All experiments run on **ibm_fez** (IBM Heron r2, 156 qubits), March 2026.
-22 jobs, 176,000+ shots. Error mitigation via zero-noise extrapolation (ZNE)
-with fold levels [1, 3, 5, 7, 9]. Dynamical decoupling (X-X echo) tested
-on the 16-qubit system.
+The March 2026 `ibm_fez` material is retained as legacy artifact-backed
+hardware evidence. Quote individual values only with their committed result
+artifact or ledger row. Error mitigation via zero-noise extrapolation (ZNE)
+with fold levels [1, 3, 5, 7, 9] and dynamical decoupling (X-X echo) were
+tested on baseline circuits, but these rows do not establish broad advantage
+or frontier validation.
 
 ---
 

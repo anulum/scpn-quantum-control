@@ -17,15 +17,17 @@ ITER disruption, quantum advantage, SNN/SSGF adapters, identity binding,
 QSNN training, fault-tolerant UPDE). All 20 experiments validated on
 AerSimulator. Hardware runs pending IBM Quantum API token.
 
-**Update (March 28, 2026):** All 20 experiments completed on ibm_fez hardware.
-22 jobs, 176,000+ shots. Results in `results/ibm_hardware_2026-03-28/`.
-March and April roadmap experiments are now COMPLETED, not planned.
+**Update (March 28, 2026):** ibm_fez baseline artifacts were produced and are
+retained as legacy hardware evidence. Quote only rows named in the hardware
+ledger and committed result artifacts; do not promote broad-advantage or
+frontier claims from this campaign.
 
-**Current gate (April 29, 2026):** promoted March/April campaigns are complete.
-The next hardware action is Phase 2 DLA parity expansion, which is ready in
-script form but remains blocked on an IBM promo/credit window and a fresh
-preregistered run manifest. May/June items below are candidate experiments,
-not active commitments.
+**Current gate (May 5, 2026):** promoted IBM evidence is narrowed to
+artifact-backed ibm_fez baseline rows and the April raw-count ibm_kingston DLA
+parity dataset. The next hardware action is Phase 2 DLA parity expansion,
+which is ready in script form but remains blocked on an IBM promo/credit window
+and a fresh preregistered run manifest. May/June items below are candidate
+experiments, not active commitments.
 
 ## Experiment Inventory (20 total)
 
@@ -91,16 +93,15 @@ accuracy faster than decoherence penalty from deeper circuits?
 The April 2026 plan was executed on the Open Plan free-tier on
 **ibm_kingston** (Heron r2, 156 qubits) on 2026-04-10 instead of
 ibm_fez. The campaign focused on the **DLA parity asymmetry** as the
-single highest-priority hardware claim. **First publishable hardware
-confirmation achieved** — see
+single highest-priority hardware claim. The raw-count reproduction path is
+committed — see
 [`docs/results.md`](results.md#phase-1-dla-parity-asymmetry-april-2026-ibm_kingston)
 and the short-paper draft at
 [`paper/phase1_dla_parity_short_paper.md`](https://github.com/anulum/scpn-quantum-control/blob/main/paper/phase1_dla_parity_short_paper.md).
 
 **Phase 1 deliverables (DONE):**
 
-- 348 circuits across 4 sub-phases on $n = 4$, plus $n = 6$ and $n = 8$
-  scaling probes
+- 342 circuits across 4 sub-phases on $n = 4$
 - Up to 21 reps per (depth, sector) point at the 5 strongest depths
   ($d \in \{4, 6, 8, 10, 14\}$)
 - Welch's t-test 7/8 depths individually significant at $p < 0.05$

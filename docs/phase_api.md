@@ -108,7 +108,8 @@ from scpn_quantum_control.phase.trotter_upde import QuantumUPDESolver
 
 Returns `per_layer_R` (order parameter per SCPN layer) and `global_R` (system-wide
 synchronization). This is the quantum digital twin of the UPDE — the master equation
-of the SCPN framework running on real quantum hardware.
+of the SCPN framework running on quantum circuits. Hardware claims must be
+cited through the hardware ledger and committed raw artifacts.
 
 ### `trotter_error` — Error Analysis
 

@@ -18,16 +18,14 @@ on a 156-qubit superconducting processor}
 \date{\today}
 
 \begin{abstract}
-We present a quantum hardware study of the Kuramoto--XY synchronisation
-transition with heterogeneous natural frequencies on IBM's ibm\_fez
-(Heron~r2, 156~qubits). A Rust-accelerated pipeline ($5{,}401\times$
+We present a Kuramoto--XY synchronisation study with heterogeneous natural
+frequencies, simulator baselines, and ledgered IBM Heron~r2 evidence. A
+Rust-accelerated pipeline ($5{,}401\times$
 faster Hamiltonian construction than Qiskit) enables entanglement entropy,
 Krylov complexity, OTOC scrambling, and Floquet discrete time crystal
-diagnostics for systems of 2--16~qubits. Hardware results from 33~jobs
-($176{,}000+$~shots) include CHSH Bell inequality violation
-($S = 2.165$, ${>}8\sigma$), QKD bit error rate of 5.5\% (below the
-BB84 threshold), and 16-qubit dynamics with visible coupling structure
-at 94\% state preparation fidelity. Finite-size scaling yields
+diagnostics for systems of 2--16~qubits. Legacy ibm\_fez artifacts include
+Bell, QKD, VQE, ZNE, Trotter, and UPDE rows that must be cited by committed
+artifact path rather than as broad validation. Finite-size scaling yields
 $K_c(\infty) \approx 2.2$ consistent with Berezinskii--Kosterlitz--Thouless
 universality ($c = 1.04$). Heterogeneous frequencies preserve discrete
 time crystal order and induce a non-ergodic spectral regime (Poisson
@@ -140,13 +138,14 @@ frequency)~\cite{Else2016}. Level-spacing statistics use the ratio
 $\bar{r} = \langle\min(\delta_n, \delta_{n+1}) /
 \max(\delta_n, \delta_{n+1})\rangle$~\cite{Oganesyan2007}.
 
-\subsection{Hardware}
+\subsection{Hardware evidence}
 
-All experiments run on \textbf{ibm\_fez} (IBM Heron~r2, 156~qubits),
-March~2026. 33~jobs, $176{,}000+$~shots across four campaigns.
-Error mitigation: zero-noise extrapolation (ZNE) with fold levels
-$[1, 3, 5, 7, 9]$ and dynamical decoupling (X-X echo) on the 16-qubit
-system. Circuits transpiled with optimisation level~2.
+The March~2026 \textbf{ibm\_fez} material is retained as legacy
+artifact-backed evidence. Individual Bell, QKD, VQE, ZNE, Trotter, and UPDE
+values must cite their committed result artifact or the hardware ledger. The
+promoted raw-count IBM dataset is the April~2026 \textbf{ibm\_kingston}
+Phase~1 DLA parity campaign, which includes job IDs, counts, integrity checks,
+and a count-to-statistic reproduction harness.
 
 %% ====================================================================
 \section{Simulation results}
@@ -376,9 +375,9 @@ All code, data, and 17~figures are open-source (AGPL-3.0) at
 \section*{Data availability}
 %% ====================================================================
 
-All simulation data, hardware results (33 IBM Quantum jobs),
-155~Python modules, Rust engine source, and publication figures are
-available at the GitHub repository under AGPL-3.0. Zenodo archive:
+Simulation data, ledgered hardware artifacts, Python modules, Rust engine
+source, and publication figures are available at the GitHub repository under
+AGPL-3.0. Zenodo archive:
 DOI~\href{https://doi.org/10.5281/zenodo.18821929}{10.5281/zenodo.18821929}.
 
 \begin{thebibliography}{20}

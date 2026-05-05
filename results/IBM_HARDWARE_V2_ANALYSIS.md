@@ -2,12 +2,18 @@
 <!-- © Concepts 1996–2026 Miroslav Šotek. All rights reserved. -->
 <!-- © Code 2020–2026 Miroslav Šotek. All rights reserved. -->
 
-# IBM Hardware v2 — Deep Analysis of 9 Experiments on ibm_fez
+# IBM Hardware v2 — Unpromoted Aggregate Analysis of 9 Experiments on ibm_fez
 
 **Date:** 2026-03-29
 **Backend:** ibm_fez (Heron r2, 156 qubits)
 **Jobs:** 9, all DONE
-**Total shots:** 9 × 10 reps × 8,192 = 737,280
+**Aggregate reported shots:** 9 × 10 reps × 8,192 = 737,280
+
+> **Promotion status:** unpromoted / aggregate-only. This document is retained
+> as an internal historical analysis, not as public hardware validation. The
+> corresponding JSON has job IDs and aggregate metrics, but it does not carry
+> the raw-count retrieval trail and reproduction harness now required by
+> `docs/hardware_status_ledger.md`.
 
 ---
 
@@ -98,7 +104,8 @@ doesn't relax. |1111⟩ has all qubits excited — each has a small
 probability of T1 decay per noise layer.
 
 This T1 asymmetry is well-known but provides an independent
-confirmation that our experiment is measuring real hardware physics.
+evidence that this aggregate analysis may reflect real hardware physics, but
+not enough for public promotion without raw-count review.
 
 ### Random baseline
 
@@ -207,7 +214,7 @@ error rates per sector.
 
 | Metric | Value |
 |--------|:-----:|
-| Total shots | 737,280 |
+| Aggregate reported shots | 737,280 |
 | Aligned survival | 99.4% (M=+4), 95.9% (M=−4) |
 | Mixed survival | 0.0% (M=+2, 0, −2) |
 | FIM fidelity advantage | +6.7% (0.916 vs 0.849) |

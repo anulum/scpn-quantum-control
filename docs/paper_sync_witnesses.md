@@ -120,7 +120,9 @@ for name, w in results.items():
           f"synchronized = {w.is_synchronized}")
 ```
 
-All three witnesses are tested (1,932 test suite) and validated on IBM ibm_fez.
+All three witnesses are tested in the local suite. IBM ibm_fez usage should be
+treated as legacy artifact-backed evidence and cited through the hardware
+ledger rather than as blanket validation.
 
 ---
 

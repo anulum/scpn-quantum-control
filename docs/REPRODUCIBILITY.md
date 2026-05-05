@@ -171,7 +171,7 @@ by the bridge/orchestration layer, not invented by Quantum Control.
 | Setting | Value |
 |---------|-------|
 | `optimization_level` | **3**, `seed_transpiler=42` |
-| Dynamical decoupling | ✅ **X–X sequence, verified** — `PassManager([ALAPScheduleAnalysis(durations, target), PadDynamicalDecoupling(durations, [XGate(),XGate()], target)]).run(isa_qc)` — circuit depth 1922 → 1988 confirmed on ibm_fez |
+| Dynamical decoupling | **X–X sequence API verified locally** — `PassManager([ALAPScheduleAnalysis(durations, target), PadDynamicalDecoupling(durations, [XGate(),XGate()], target)]).run(isa_qc)` — circuit depth 1922 → 1988 in the retained ibm_fez baseline artifact row |
 | ZNE | **None** (mitiq broken at time of run) |
 | `coupling_scale` | 1.0 (not yet added) |
 

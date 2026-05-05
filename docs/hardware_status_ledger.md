@@ -13,17 +13,17 @@ may quote selected results, but every quoted campaign should point back here or
 to a campaign-specific artifact with backend, date, mitigation state, job count,
 and raw-data path.
 
-## Status Snapshot — 2026-04-29
+## Status Snapshot — 2026-05-05
 
 | Area | Current public status | Canonical source |
 |---|---|---|
 | Package line | Version `0.9.6`, Python `>=3.10`, Qiskit `>=2.2,<3.0`. | `pyproject.toml`, `CHANGELOG.md` |
 | Generic compiler entry point | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` problems and compiles Hamiltonians, dense matrices, Trotter circuits, and order-parameter measurements. | `docs/kuramoto_core_facade.md` |
 | Core-package licence boundary | Possible future lightweight core split is documented, but no permissive relicensing has occurred. | `docs/core_package_boundary.md` |
-| Baseline hardware campaign | `ibm_fez` Heron r2 baseline campaign supports Bell, QKD, ZNE, VQE, Trotter, and 16-qubit UPDE result figures. | `results/ibm_hardware_2026-03-28/`, `results/HARDWARE_RESULTS.md` |
-| DLA parity campaign | `ibm_kingston` Heron r2 Phase 1 campaign supports the DLA parity asymmetry result. | `data/phase1_dla_parity/`, `docs/dla_parity.md` |
+| Baseline hardware campaign | `ibm_fez` Heron r2 baseline artifacts are retained as legacy QPU evidence. Quote only values that name a committed raw artifact or retrieval file; do not use this campaign as proof of broad advantage. | `results/ibm_hardware_2026-03-28/`, `results/march_2026/`, `results/IBM_HARDWARE_COMPLETE_AUDIT_2026-03-30.md` |
+| DLA parity campaign | `ibm_kingston` Heron r2 Phase 1 campaign is the strongest promoted hardware dataset: raw counts, job IDs, integrity checks, and a reproduction harness are committed. | `data/phase1_dla_parity/`, `docs/dla_parity.md`, `scripts/run_dla_parity_suite.py` |
 | Simulator claims | BKT, OTOC, Floquet, MBL, FIM, and classical comparison material remain simulator or classical-baseline claims unless a hardware artifact is named. | `results/SIMULATOR_RESULTS.md`, `results/classical_baselines_2026-03-30.json` |
-| Pending frontier output | Later frontier and multi-QPU batches are not promoted to public claims until raw artifacts, retrieval manifests, and analysis scripts are reviewed and committed. | This ledger |
+| Quarantined / unpromoted IBM output | Any frontier, V2, queued-job, placeholder, or aggregate-only IBM output is not promoted until it has raw counts, retrieval manifest, analysis code, and an explicit ledger row. | `results/ibm_hardware_v2_2026-03-29/`, `results/ibm_runs/jobs.json`, `docs/internal/gemini_chat_export_full_2026-04-25.md` |
 
 README, `docs/index.md`, and `docs/results.md` should treat this dated snapshot
 as the source of truth for public status wording. If a campaign value changes,
@@ -43,9 +43,23 @@ update this table first, then refresh the summary pages.
 
 | Campaign | Backend | Date | Evidence class | Public artifacts | Current use |
 |---|---|---:|---|---|---|
-| Baseline IBM roadmap experiments | `ibm_fez` Heron r2 | 2026-03 | Hardware, unmitigated and mitigated sub-runs | `results/ibm_hardware_2026-03-28/`, `results/march_2026/`, `results/HARDWARE_RESULTS.md` | Bell, QKD, VQE, ZNE, Trotter, and UPDE baseline figures. |
-| DLA parity Phase 1 | `ibm_kingston` Heron r2 | 2026-04 | Hardware, unmitigated campaign with simulator comparator | `data/phase1_dla_parity/`, `paper/phase1_dla_parity_short_paper.md`, `docs/dla_parity.md` | DLA parity asymmetry paper and result figures. |
+| Baseline IBM roadmap experiments | `ibm_fez` Heron r2 | 2026-03 | Legacy hardware artifacts; quote artifact-backed rows only | `results/ibm_hardware_2026-03-28/`, `results/march_2026/`, `results/IBM_HARDWARE_COMPLETE_AUDIT_2026-03-30.md` | Baseline Bell, QKD, VQE, ZNE, Trotter, and UPDE observations, with no broad-advantage promotion. |
+| DLA parity Phase 1 | `ibm_kingston` Heron r2 | 2026-04 | Promoted hardware dataset with raw-count reproducer | `data/phase1_dla_parity/`, `paper/phase1_dla_parity_short_paper.md`, `docs/dla_parity.md`, `scripts/run_dla_parity_suite.py` | DLA parity asymmetry paper and result figures. |
 | Simulator and classical baselines | local CPU/GPU where noted | 2026-03 onward | Simulator | `results/*_2026-03-*.json`, `results/SIMULATOR_RESULTS.md`, `results/classical_baselines_2026-03-30.json` | BKT, OTOC, Floquet, MBL, FIM, and classical comparison material. |
+
+## Quarantined / Unpromoted IBM Artifacts
+
+The April 2026 internal incident trail records placeholder and fake-count
+handling in frontier IBM workflows. Therefore the files below must not be used
+as public proof until they are independently re-retrieved or reproduced from
+raw IBM counts and promoted here.
+
+| Artifact family | Current status | Reason |
+|---|---|---|
+| `results/ibm_hardware_v2_2026-03-29/` | Unpromoted aggregate-only evidence. | Contains job IDs and aggregate metrics, but lacks the raw-count retrieval trail and reproduction harness required for a promoted claim. |
+| `results/ibm_hardware_2026-03-29/dla_parity_*.json` | Superseded / unpromoted. | The audit identifies a circuit-depth artifact in this March DLA parity attempt; use the April `data/phase1_dla_parity/` dataset instead. |
+| `results/ibm_runs/jobs.json` and frontier queue outputs | Quarantined. | Internal logs document queued-job placeholders and fake all-zero fallback counts in related workflows. |
+| Any "400 jobs", large-N frontier, multi-QPU, or live-loop claim | Not promoted. | Requires raw counts, retrieval manifest, analysis script, and a new ledger row before citation. |
 
 ## Evidence Rules
 
@@ -65,6 +79,8 @@ update this table first, then refresh the summary pages.
   provenance here rather than duplicating claim-state decisions.
 - Later frontier batches must be added only after their raw artifacts,
   retrieval manifests, and analysis scripts are reviewed and committed.
+- Do not cite aggregate-only IBM JSON, queued-job JSON, or placeholder-derived
+  results as hardware validation.
 - Exact repository-wide test counts belong in CI summaries or release notes.
   Public overview pages should describe the CI-gated suite and coverage target
   rather than carrying static counts that drift between commits.
@@ -75,7 +91,7 @@ update this table first, then refresh the summary pages.
 |---|---|---|
 | High-impact execution TODO | Complete locally. Dependency hygiene, core facade, documentation ergonomics, baselines, maintenance, frontier-track scaffolding, and CI timing-gate stabilization are checked off. | Keep CI green on `main`; add only scoped follow-up work. |
 | Scientific gaps | Partially closed. The EEG PLV K_nm validation artifacts now cover the full 109-subject PhysioNet EEGMMIDB baseline eyes-open and eyes-closed cohorts, with a derived condition comparison. The first physical-unit measured-system control, IEEE 5-bus, is committed and does not close K_nm physical validation; broad quantum advantage remains open; `p_h1 = 0.72` is an explicit open empirical/theoretical parameter. | Additional physical-unit measured coupling candidates with null models; provenance-rich advantage benchmark tables; TCBO or first-principles p_h1 reproduction. |
-| Hardware experiments | March/April promoted campaigns complete. Phase 2 DLA parity expansion is ready but blocked on promo/credits. | IBM credit/promo availability plus preregistered run manifest. |
+| Hardware experiments | March/April evidence is narrowed to the legacy `ibm_fez` baseline artifacts and the promoted raw-count `ibm_kingston` Phase 1 DLA parity dataset. Phase 2 DLA parity expansion is ready but blocked on promo/credits. | IBM credit/promo availability plus preregistered run manifest; no frontier promotion without raw-count review. |
 | Strategic roadmap | All 53 post-v1.0 differentiation tracks remain deferred / CEO-gated. | Activate one track explicitly before implementation. |
 
 ### 2026-05-03 Scientific-Gap Roadmap Progress

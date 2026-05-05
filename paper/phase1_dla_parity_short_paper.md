@@ -70,7 +70,7 @@ reference — retains coherence noticeably better than the
 even-parity block at moderate circuit depths, with the predicted
 asymmetry in the range 4.5–9.6 %.
 
-The present short paper reports a direct empirical confirmation of
+The present short paper reports a direct raw-count hardware observation of
 this prediction on IBM ibm\_kingston, a 156-qubit Heron r2 processor.
 
 ## 2. Experimental protocol

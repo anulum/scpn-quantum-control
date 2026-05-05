@@ -8,11 +8,18 @@
 
 # IBM Quantum Hardware — Complete Audit
 
+> **2026-05-05 claim-hygiene note:** this audit is retained as historical
+> evidence, but `docs/hardware_status_ledger.md` is now the canonical source
+> for public promotion status. Campaign 4 / V2 aggregate outputs are not
+> promoted until raw counts, retrieval manifest, and reproduction analysis are
+> reviewed. The March 29 DLA parity attempt is superseded by the April
+> `data/phase1_dla_parity/` raw-count dataset.
+
 **Date:** 2026-03-30
 **Backend:** ibm_fez (Heron r2, 156 qubits)
 **Plan:** Open (10 min / 28-day cycle)
-**Total completed jobs:** 33
-**Total shots:** ~176,000+
+**Historical reported jobs:** 33
+**Historical reported shots:** ~176,000+
 
 ---
 
@@ -50,7 +57,8 @@ All 7 queued jobs completed between submission and 2026-03-28.
 
 ## Campaign 2 — Full Hardware Campaign (2026-03-28)
 
-20 experiments completed on ibm_fez. 22 jobs total, 176K+ shots.
+Historical audit row for 20 baseline experiments on ibm_fez. The ledger now
+requires artifact-level citation for any public value derived from this set.
 Submitted and retrieved during the March 28 session.
 
 | Experiment | File | Key Result |
@@ -115,7 +123,7 @@ Submitted and retrieved during the March 28 session.
 **Results:** `results/ibm_hardware_v2_2026-03-29/full_results.json`
 
 ### Key findings
-- **Exp A (DLA parity):** Even F=0.919 > Odd F=0.853 — parity difference confirmed at equal depth
+- **Exp A (DLA parity):** Even F=0.919 > Odd F=0.853 — aggregate-only parity difference observed at equal depth; unpromoted pending raw-count review
 - **Exp B (Sector decoherence):** Aligned sectors (M=±4) survive 96-99%, mixed sectors (M=0,±2) collapse to 0% — **ABSOLUTE separation**
 - **Exp C (FIM protection):** F_FIM=0.916 > F_XY=0.849 — **DUAL PROTECTION CONFIRMED ON HARDWARE**
 
@@ -126,7 +134,7 @@ Submitted and retrieved during the March 28 session.
 | Cycle | Used | Remaining | Notes |
 |-------|------|-----------|-------|
 | Feb 2026 | 10 min | 0 | Fully exhausted |
-| Mar 2026 (cycle 1) | ~8 min | ~2 min | 33 jobs completed |
+| Mar 2026 (cycle 1) | ~8 min | ~2 min | 33 historical job records |
 | Apr 2026+ | 0 | 10 min | Pending IBM Credits (5h applied 29.3.) |
 
 ---

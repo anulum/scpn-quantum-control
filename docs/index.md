@@ -25,7 +25,7 @@ unmitigated hardware, mitigated hardware, and noise-limited claims.
 |---|---|
 | Package line | Version `0.9.6`, Python `>=3.10`, Qiskit `>=2.2,<3.0`. |
 | Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, order-parameter measurements, and Kuramoto variant trajectories. |
-| Hardware evidence | Promoted campaigns: `ibm_fez` baseline and April 2026 `ibm_kingston` Phase 1 DLA parity. |
+| Hardware evidence | Promoted raw-count campaign: April 2026 `ibm_kingston` Phase 1 DLA parity. Legacy `ibm_fez` rows require artifact-level citation. |
 | Claim source | [Hardware Status Ledger](hardware_status_ledger.md). |
 
 ## What this package does
@@ -60,13 +60,13 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 
 | Result | Value |
 |--------|-------|
-| VQE ground-state error | **0.05%** (4-qubit, ibm_fez) |
+| VQE ground-state row | **0.05%** (4-qubit, legacy ibm_fez artifact) |
 | 16-layer UPDE snapshot | 46% error at depth 770 (NISQ-consistent) |
 | Coherence wall | depth 250–400 (Heron r2) |
 | DLA dimension formula | $2^{2N-1} - 2$ (exact, all $N$) |
 | Research modules | 35 (≈ 5 novel, ≈ 10 first-application) |
-| IBM hardware jobs | 33 on ibm_fez (Feb 2026) + 348 on ibm_kingston (Apr 2026, Phase 1 DLA-parity campaign) |
-| DLA parity asymmetry (hardware) | $+10.8\,\%$ mean for depths $\ge 4$, peak $+17.5\,\%$ at depth 6 (Welch combined $p \ll 10^{-16}$) |
+| IBM hardware evidence | Legacy ibm_fez artifact rows + 342-circuit ibm_kingston Phase 1 DLA-parity raw-count dataset |
+| DLA parity asymmetry (hardware) | $+10.8\,\%$ mean for depths $\ge 4$, peak $+17.5\,\%$ at depth 6, reproduced from `data/phase1_dla_parity/` |
 | Test suite | CI-gated suite, 97%+ coverage |
 | Python modules | 215 + 1 Rust crate (47 functions) + Julia tier (`accel/julia/*.jl`) |
 
@@ -128,8 +128,9 @@ for name, w in results.items():
   mapping is standard; the specific coupling structure is not independently validated.
 - **No quantum advantage at this scale.** At $N=4$–16, classical exact diagonalisation
   is faster. Advantage requires $N \gg 20$ with error-corrected qubits.
-- **IBM hardware campaign complete.** 33 jobs on ibm_fez (Heron r2), 176K+ shots.
-  CHSH S=2.165, QBER 5.5%, 16q UPDE, dual protection confirmed.
+- **IBM hardware claim hygiene.** The promoted raw-count dataset is Phase 1
+  DLA parity on `ibm_kingston`; legacy `ibm_fez` rows must cite their
+  committed artifact path. V2/frontier/queued-job outputs are unpromoted.
 
 ## Documentation
 

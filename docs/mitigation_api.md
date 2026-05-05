@@ -490,8 +490,8 @@ standard initial states used in the SCPN framework: `"ground"`
 GUESS was used in the Phase 1 ibm_kingston campaign as both the noise
 calibration and the headline scientific result. With $\alpha$ learned
 from the parity-leakage decay across depths 2–30, the corrected
-sector-resolved leakage rates produced the first hardware confirmation
-of the DLA parity asymmetry: 7 of 8 depths individually significant
+sector-resolved leakage rates produced the promoted raw-count hardware
+observation of the DLA parity asymmetry: 7 of 8 depths individually significant
 at Welch $p < 0.05$, Fisher's combined $p \ll 10^{-16}$, mean
 asymmetry $+10.8\,\%$ for depths $\ge 4$.
 

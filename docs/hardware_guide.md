@@ -14,12 +14,16 @@ multi-backend support. 17 modules (April 2026: added `qubit_mapper.py`
 for DynQ topology-agnostic placement) covering IBM superconducting,
 trapped ion, PennyLane, Cirq, GPU acceleration, and circuit cutting.
 
-**Validated devices:**
+**Hardware evidence status:**
 
 | Device | Family | Campaign | Highlight |
 |--------|--------|----------|-----------|
-| `ibm_fez` | Heron r2, 156 q | February 2026, 33 jobs, 176K+ shots | VQE 0.05% error, Bell S = 2.165, BB84 QBER 5.5% |
-| `ibm_kingston` | Heron r2, 156 q | April 2026 Phase 1, 348 circuits, ~700K shots | First hardware confirmation of the DLA parity asymmetry: $+10.8\,\%$ mean for depths $\ge 4$, peak $+17.48\,\%$ at depth 6, Welch combined $p \ll 10^{-16}$ |
+| `ibm_fez` | Heron r2, 156 q | Legacy March 2026 baseline artifacts | Artifact-backed Bell/QKD/VQE/ZNE/UPDE observations; quote only rows named in the hardware ledger. |
+| `ibm_kingston` | Heron r2, 156 q | April 2026 Phase 1, 342 circuits | Promoted raw-count DLA parity dataset: peak $+17.48\,\%$ at depth 6, reproduced by `scripts/run_dla_parity_suite.py`. |
+
+V2, frontier, queued-job, placeholder, and aggregate-only IBM outputs are
+not promoted unless the hardware ledger names raw counts, retrieval manifest,
+analysis code, and review status.
 
 ## Architecture
 

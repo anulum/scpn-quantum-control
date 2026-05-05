@@ -15,8 +15,8 @@ Physical Review Research, Quantum Science and Technology, or npj Quantum Informa
 ## Proposed Title
 
 "Quantum simulation of coupled-oscillator synchronization on a 156-qubit
-superconducting processor: VQE accuracy, decoherence scaling, and the
-first hardware confirmation of the DLA parity asymmetry"
+superconducting processor: VQE accuracy, decoherence scaling, and a
+raw-count observation of the DLA parity asymmetry"
 
 ## Abstract Draft
 
@@ -35,7 +35,7 @@ $|\langle X\rangle|=0.55$, though global Spearman $\rho = -0.13$ (p=0.62)
 confirms hardware noise dominates mid-range layers; (4) a Trotter-depth
 tradeoff shows single-step evolution outperforms multi-step on current
 hardware; (5) QAOA-based model predictive control explores the
-Ising-encoded action space; **(6) the first hardware confirmation of the
+Ising-encoded action space; **(6) a raw-count hardware observation of the
 dynamical Lie algebra parity asymmetry of $H_{XY}$**: across 342 circuits
 on ibm_kingston (April 2026 Phase 1) at $n = 4$ with up to 21 reps per
 point and Welch's two-sample t-test, the odd ("feedback") $\mathfrak{su}$

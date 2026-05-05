@@ -24,9 +24,9 @@
 > The public status wording is anchored to the
 > [Hardware Status Ledger](docs/hardware_status_ledger.md),
 > which separates theory, simulator, unmitigated hardware, mitigated hardware,
-> and noise-limited claims. Current promoted hardware campaigns are the
-> `ibm_fez` baseline campaign and the April 2026 `ibm_kingston` DLA parity
-> campaign. APIs may evolve as this work progresses.
+> and noise-limited claims. Current promoted hardware evidence is narrowed to
+> artifact-backed `ibm_fez` baseline rows and the April 2026 `ibm_kingston`
+> DLA parity raw-count dataset. APIs may evolve as this work progresses.
 
 **Version:** 0.9.6
 **Status:** Kuramoto-XY compiler + hardware runners + analysis stack | 37 Rust functions | 47 notebooks | 21 examples | 97%+ coverage | IBM Heron r2 evidence ledgered
@@ -38,7 +38,7 @@
 | Area | Public status |
 |---|---|
 | Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, and order-parameter measurements. |
-| Hardware evidence | `ibm_fez` baseline campaign and `ibm_kingston` Phase 1 DLA parity campaign are the promoted hardware datasets. |
+| Hardware evidence | `ibm_fez` baseline rows are legacy artifact-backed observations; `ibm_kingston` Phase 1 DLA parity is the promoted raw-count dataset. |
 | Simulator evidence | BKT, OTOC, Floquet, MBL, FIM, and classical comparison claims stay marked as simulator/classical unless a hardware artifact is named. |
 | Licence boundary | The possible lightweight core split is documented, but all in-repository code remains AGPL/commercial unless a future release changes metadata and SPDX headers. |
 
@@ -62,7 +62,7 @@ Direct entry points:
 - [Stable Facades API](docs/stable_facades_api.md)
   — mkdocstrings reference for first-path public facades
 - [Phase 1 Results](https://anulum.li/scpn-quantum-control/phase1-results.html)
-  — first hardware observation of the DLA parity asymmetry on
+  — raw-count reproduction of the DLA parity asymmetry on
   ibm_kingston, April 2026, with full Welch table and interactive
   Plotly plot
 - [Reproducibility Manifest](https://anulum.li/scpn-quantum-control/reproducibility.html)
@@ -72,7 +72,7 @@ Direct entry points:
   — symmetry-guided ZNE, shot-budget-free for the XY Hamiltonian
 - [Method: DLA Parity Theorem](https://anulum.li/scpn-quantum-control/method-dla-parity.html)
   — $\mathfrak{su}(2^{n-1}) \oplus \mathfrak{su}(2^{n-1})$
-  decomposition and hardware confirmation
+  decomposition and hardware reproduction path
 - [Method: Pulse Shaping](https://anulum.li/scpn-quantum-control/method-pulse-shaping.html)
   — ICI three-level (1,665× Rust) and (α, β)-hypergeometric
   (44× Rust)
@@ -113,10 +113,10 @@ Pass any coupling matrix; the built-in SCPN benchmark is just one example.
 
 ## What This Package Does
 
-**To our knowledge, the first quantum hardware demonstration of
-coupled-oscillator synchronisation with heterogeneous natural frequencies** — validated on IBM's ibm_fez (Heron r2,
-156 qubits) with Bell inequality violation (S=2.165), sub-threshold QKD error
-rates (5.5%), and 16-qubit Kuramoto dynamics.
+**A Kuramoto-XY compiler and hardware-evidence workbench for heterogeneous
+coupled oscillators.** The repository contains legacy `ibm_fez` baseline
+artifacts and a promoted `ibm_kingston` DLA parity dataset with raw counts,
+job IDs, integrity checks, and a count-to-statistic reproduction harness.
 
 The package provides:
 
@@ -131,8 +131,9 @@ The package provides:
    applications of existing tools to Kuramoto-XY; the rest are standard
    many-body diagnostics applied to this system.
 
-3. **Hardware-validated results** — 20/20 experiments completed on ibm_fez,
-   176,000+ shots, 16 publication figures, 3 papers on GitHub Pages.
+3. **Hardware evidence with claim classes** — legacy `ibm_fez` baseline rows
+   and the promoted `ibm_kingston` DLA parity dataset are separated from
+   simulator-only, frontier, queued-job, and aggregate-only outputs.
 
 Think of it as a **quantum microscope for synchronisation**: classical Kuramoto
 tells you *when* oscillators lock in step; this package tells you *what the
@@ -146,16 +147,13 @@ information scrambles*, and *whether the system thermalises*.
 
 ## Key Results
 
-### Hardware (IBM ibm_fez, Heron r2, 156 qubits)
+### Hardware Evidence
 
 | Result | Value |
 |--------|-------|
-| Bell inequality (CHSH) | **S = 2.165** (>8σ above classical limit) |
-| QKD bit error rate | **5.5%** (below BB84 threshold of 11%) |
-| State preparation fidelity | **94.6%** |
-| 16-qubit UPDE | 13/16 qubits with \|⟨Z⟩\| > 0.3 |
-| ZNE stability | <2% variation across fold levels 1–9 |
-| Experiments completed | **20/20** (22 jobs, 176K+ shots) |
+| `ibm_kingston` DLA parity Phase 1 | 342 circuits, raw counts, job IDs, integrity checks, and reproduction harness in `data/phase1_dla_parity/` |
+| `ibm_fez` baseline rows | Legacy QPU observations retained in `results/ibm_hardware_2026-03-28/` and `results/march_2026/`; quote only artifact-backed values through the ledger |
+| Quarantined IBM outputs | V2/frontier/queued-job/aggregate-only artifacts are not promoted until raw counts, retrieval manifests, and analysis code are reviewed |
 
 ### Simulation
 
@@ -532,10 +530,10 @@ Optional:
   classical ODE solvers outperform quantum simulation in both speed and
   accuracy. The exact Hilbert-space crossover is a resource boundary, not
   a demonstrated general advantage.
-- **IBM hardware campaign complete.** 20/20 experiments executed on real QPU
-  (ibm_fez, Heron r2). 22 jobs, 176K+ shots. Job IDs and raw measurement
-  counts in `results/ibm_hardware_2026-03-{18,28}/`. All results are from
-  real quantum hardware, not simulator.
+- **IBM hardware claim hygiene.** Do not cite queued-job, placeholder,
+  aggregate-only, or frontier JSON as hardware validation. The promoted
+  raw-count campaign is `data/phase1_dla_parity/`; legacy `ibm_fez`
+  observations must name their committed artifact row.
 
 ## Documentation
 

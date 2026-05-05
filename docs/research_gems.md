@@ -212,7 +212,8 @@ gives the answer.
 The connection to the Ψ-field is through the coupling matrix $K_{nm}$. In Paper 0,
 $K_{nm}$ encodes the inter-layer interaction strengths derived from the informational
 force mediated by the infoton gauge boson. The witnesses test whether these couplings
-produce the predicted synchronization phenomenology on real quantum hardware.
+produce the predicted synchronization phenomenology on quantum circuits; any
+hardware statement must cite the hardware ledger and committed raw artifacts.
 
 ---
 

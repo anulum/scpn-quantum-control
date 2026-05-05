@@ -1552,7 +1552,7 @@ states, OTOC scrambling) are natively high-dimensional and
 nonlinear — the criteria for a useful reservoir. Reading out DLA
 parity + sync witnesses on hardware and training a classical
 linear layer on top is a minimal-engineering addition that
-positions the project as a hardware-validated quantum reservoir
+positions the project as a hardware-evidence-gated quantum reservoir
 for oscillator-based forecasting.
 
 ### Deliverables
@@ -2550,7 +2550,7 @@ meaningful bounds may require hardware access far beyond Phase 2
 budget.
 
 **Prerequisites.** Large-N hardware time, DLA parity asymmetry
-(hardware-validated — done).
+(hardware-evidence gate — done only when the hardware ledger promotes it).
 
 **Acceptance.** Published paper with a documented bound on CSL rate
 (or GRW parameters) from mesoscopic-scale sync stability on
@@ -2581,7 +2581,7 @@ dataset.
 **Risks.** "Quantum biology" is a contentious field. Over-claims
 ("quantum consciousness", "quantum coherence in protein folding")
 must not appear in the commit messages, paper, or documentation.
-The clean deliverable is a hardware-validated quantum-simulator
+The clean deliverable is a hardware-evidence-gated quantum-simulator
 readout of a bio-sourced coupling matrix — no metaphysical claims
 beyond that.
 

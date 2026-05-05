@@ -11,7 +11,7 @@
 *47 Jupyter notebooks covering the full journey from basic Kuramoto dynamics to
 frontier research. Notebooks 01-13 cover core quantum simulation. Notebooks 14-47
 document the FIM (Fisher Information Metric) strange loop investigation campaign
-(2026-03-29) with 19 findings (6 negative) including hardware-confirmed
+(2026-03-29) with 19 findings (6 negative) including hardware-artifact
 dual protection on ibm_fez.*
 
 ---
@@ -569,7 +569,7 @@ for the full findings. All results are saved as JSON in `results/`.
 | 36 | Topology universality | **Universal on all 6 networks**, small-world optimal |
 | 37 | Mean-field self-consistent | R* = √(1−2Δ/(K·R+λ·R/(1−R²+ε))) |
 | 38 | FIM-MBL mechanism | M²/n sector splitting, 2.3x spectrum stretch |
-| 39 | IBM hardware v2 | Equal-depth fair experiments, **dual protection confirmed** |
+| 39 | IBM hardware v2 | Equal-depth aggregate artifacts, unpromoted pending raw-count review |
 | 40 | SPO cross-validation | U(1) confirmed, Lyapunov correspondence 5/6 |
 | 41 | Stochastic resonance | **FIM-mediated SR** at weak coupling |
 | 42 | Delayed FIM | Delay-robust with coupling, fragile without |

@@ -8,8 +8,8 @@
 
 # Results
 
-*First quantum simulation of heterogeneous-frequency Kuramoto-XY synchronisation
-on a 156-qubit superconducting processor (IBM ibm_fez, Heron r2).*
+*Kuramoto-XY simulator, compiler, and hardware-evidence ledger for
+heterogeneous-frequency coupled oscillators.*
 
 For source classification and campaign provenance, see the dated
 [Hardware Status Ledger](hardware_status_ledger.md). This page is a gallery and
@@ -20,9 +20,9 @@ theoretical, simulated, hardware-measured, mitigated, or noise-limited.
 
 | Area | Public status |
 |---|---|
-| Promoted hardware campaigns | `ibm_fez` baseline campaign; April 2026 `ibm_kingston` Phase 1 DLA parity campaign. |
+| Promoted hardware campaigns | April 2026 `ibm_kingston` Phase 1 DLA parity raw-count dataset; legacy artifact-backed `ibm_fez` baseline rows. |
 | Simulator-only families | BKT scaling, OTOC, Floquet DTC, MBL/eigenstate scans, FIM, and classical wall-time baselines unless a hardware artifact is named. |
-| Pending frontier batches | Not promoted here until raw counts, retrieval manifests, and analysis scripts are reviewed and committed. |
+| Pending / quarantined IBM batches | V2, frontier, queued-job, placeholder, and aggregate-only IBM outputs are not promoted here until raw counts, retrieval manifests, and analysis scripts are reviewed and committed. |
 | Canonical status source | [Hardware Status Ledger](hardware_status_ledger.md). |
 
 ---
@@ -31,21 +31,21 @@ theoretical, simulated, hardware-measured, mitigated, or noise-limited.
 
 | # | Finding | Measured Value | Source |
 |---|---------|---------------|--------|
-| 1 | Bell inequality violated | CHSH S=2.165, S=2.188 (>8σ) | ibm_fez hardware |
-| 2 | QKD viable on hardware | QBER 5.5% < BB84 threshold (11%) | ibm_fez hardware |
-| 3 | State preparation fidelity | 94.6% (∣0⟩), 89.8% (∣1⟩) | ibm_fez hardware |
-| 4 | Per-qubit error characterised | Q2: 0.65%, Q3: 3.55% | ibm_fez hardware |
-| 5 | ZNE stable | Range 0.259–0.272 across folds 1–9 | ibm_fez hardware |
-| 6 | Knm ansatz wins | 2.36 bits vs TwoLocal 3.46 | ibm_fez hardware |
-| 7 | 16-qubit UPDE on hardware | 13/16 qubits ∣⟨Z⟩∣>0.3 | ibm_fez hardware |
+| 1 | DLA parity raw-count reproduction | 342 circuits; peak asymmetry +17.48% at depth 6 | `data/phase1_dla_parity/` + `scripts/run_dla_parity_suite.py` |
+| 2 | Bell inequality row | CHSH S=2.165, S=2.188 (>8σ) | Legacy `ibm_fez` artifact row |
+| 3 | QKD row | QBER 5.5% < BB84 threshold (11%) | Legacy `ibm_fez` artifact row |
+| 4 | State preparation row | 94.6% (∣0⟩), 89.8% (∣1⟩) | Legacy `ibm_fez` artifact row |
+| 5 | ZNE row | Range 0.259–0.272 across folds 1–9 | Legacy `ibm_fez` artifact row |
+| 6 | Knm ansatz row | 2.36 bits vs TwoLocal 3.46 | Legacy `ibm_fez` artifact row |
+| 7 | 16-qubit UPDE row | 13/16 qubits ∣⟨Z⟩∣>0.3 | Legacy `ibm_fez` artifact row |
 | 8 | Schmidt gap transition | K=3.44 (n=8) | Exact simulation |
 | 9 | Critical coupling extrapolation | K_c(∞): BKT≈2.20, power≈2.94 | Finite-size scaling |
 | 10 | DTC survives disorder | 15/15 drive amplitudes | Floquet simulation |
 | 11 | Scrambling peak | 4× faster at K=4 vs K=1 | OTOC simulation |
-| 12 | Trotter error quantified | dt=0.1 vs dt=0.05 flips Q1 sign | ibm_fez hardware |
+| 12 | Trotter error row | dt=0.1 vs dt=0.05 flips Q1 sign | Legacy `ibm_fez` artifact row |
 | 13 | Non-ergodic regime (not deep MBL) | Poisson level spacing + 25-33% sub-thermal eigenstate S | Level spacing + eigenstate scan |
 | 14 | **BKT universality preserved** | CFT c=1.04 (n=8), gap R²>0.96 | Kaggle computation (n=4-12) |
-| 15 | Exact-simulation crossover | n≈11.6, exact Hilbert-space only | ibm_fez hardware + classical baselines |
+| 15 | Exact-simulation crossover | n≈11.6, exact Hilbert-space only | Classical baselines plus hardware-budget estimates; not broad advantage |
 
 ---
 
@@ -123,13 +123,13 @@ Paper 27 heterogeneous frequencies.
 
 Two campaigns on Heron r2 (156-qubit) processors:
 
-- **`ibm_fez`** — February 2026 baseline, 33 jobs, 176K+ shots,
-  20/20 roadmap experiments complete (Bell, QKD, VQE, decoherence
-  scaling, UPDE-16 snapshot).
+- **`ibm_fez`** — legacy March 2026 baseline artifacts. Values may be quoted
+  only with their committed artifact path and should not be used as broad
+  advantage or frontier validation.
 - **`ibm_kingston`** — April 2026 Phase 1 DLA-parity campaign,
-  348 circuits across 4 sub-phases, ~700K shots. **First publishable
-  hardware confirmation of the dynamical Lie algebra parity asymmetry
-  predicted by the SCPN framework**.
+  342 circuits across 4 sub-phases. This is the promoted raw-count hardware
+  dataset because the counts, job IDs, integrity checks, and reproduction
+  harness are committed.
 
 ### Phase 1 — DLA Parity Asymmetry (April 2026, ibm_kingston)
 
@@ -142,7 +142,8 @@ $\mathfrak{su}(2^{n-1}) \oplus \mathfrak{su}(2^{n-1})$ under the
 parity operator $P = \prod_i Z_i$. The SCPN simulator predicts the
 odd ("feedback") sub-block is more robust to depolarising noise than
 the even ("projection") sub-block by 4.5–9.6 % at moderate Trotter
-depths. The Phase 1 campaign on ibm_kingston confirms this directly:
+depths. The Phase 1 campaign on ibm_kingston reproduces this from committed
+raw counts:
 
 | Trotter depth | Leak even | Leak odd | Asymmetry | Welch $p$ | Reps |
 |---:|---:|---:|---:|---:|---:|
@@ -170,10 +171,12 @@ A 267-line short paper draft for *Quantum Science and Technology* /
 *Physical Review Research* is in
 [`paper/phase1_dla_parity_short_paper.md`](https://github.com/anulum/scpn-quantum-control/blob/main/paper/phase1_dla_parity_short_paper.md).
 
-### Legacy ibm_fez Results (February 2026)
+### Legacy ibm_fez Results (March 2026)
 
-All experiments run on **ibm_fez** (Heron r2, 156 qubits), March 2026.
-22 jobs, 176,000+ shots, 20/20 roadmap experiments complete.
+The `ibm_fez` rows below are retained as legacy hardware observations. They
+must be cited with artifact paths from `results/ibm_hardware_2026-03-28/`,
+`results/march_2026/`, or the hardware ledger, and they are not evidence for
+broad quantum advantage or any frontier claim.
 
 ### Bell Test and QKD
 

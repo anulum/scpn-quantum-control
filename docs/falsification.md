@@ -60,7 +60,7 @@ Each claim has four fields:
   (ii) the sign flips (odd > even);
   (iii) Welch's two-sample $t$-test returns $p > 0.05$ on 7 of 8
   depths.
-- **Evidence.** `data/phase1_dla_parity/*.json` (348 circuits across
+- **Evidence.** `data/phase1_dla_parity/*.json` (342 circuits across
   4 sub-phases on `ibm_kingston`, April 2026). Mean asymmetry
   $+10.8\,\%$ for depth $\ge 4$, peak $+17.48\,\%$ at depth 6, Welch
   $p < 0.05$ on 7/8 depths, Fisher combined $\chi^2 = 123.4$

@@ -74,14 +74,14 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
 
 ## [0.9.5] - 2026-03-29 / 2026-04-11
 
-**Phase 1 IBM hardware confirmation of the DLA parity asymmetry +
+**Phase 1 IBM raw-count observation of the DLA parity asymmetry +
 five strategic tweaks (GUESS, DynQ, ICI, hypergeometric, FFI hardening)
 + repository hygiene (gitleaks + custom secret scanner).**
 
 ### Phase 1 IBM ibm_kingston campaign (2026-04-10)
 
-- **First publishable hardware confirmation** of the DLA parity
-  asymmetry on IBM ibm_kingston (Heron r2, 156 qubits). 348 circuits
+- **First publishable raw-count hardware observation** of the DLA parity
+  asymmetry on IBM ibm_kingston (Heron r2, 156 qubits). 342 circuits
   with up to 21 reps per (depth, sector) point at $n = 4$. Mean
   asymmetry $+10.8\,\%$ for Trotter depths $\ge 4$, peak $+17.48\,\%$
   at depth 6. Welch's t-test 7/8 depths at $p < 0.05$, Fisher's
@@ -134,7 +134,8 @@ five strategic tweaks (GUESS, DynQ, ICI, hypergeometric, FFI hardening)
 - 10X Strange Loop co-evolution engine, DynamicCouplingEngine,
   TopologicalCouplingOptimizer, BiologicalSurfaceCode,
   LindbladSyncEngine (MCWF), StructuredAnsatz.
-- 27 FIM experiment notebooks (NB14–47), 81 FIM tests, IBM hardware v2.
+- 27 FIM experiment notebooks (NB14–47), 81 FIM tests, IBM hardware v2
+  aggregate artifacts retained as unpromoted evidence.
 - 19 scientific discoveries + 6 honest negative results.
 
 ## [0.9.4] - 2026-03-29
@@ -147,10 +148,10 @@ five strategic tweaks (GUESS, DynQ, ICI, hypergeometric, FFI hardening)
 
 ## [0.9.3] - 2026-03-28
 
-**Rust engine 15 functions, IBM 20/20 experiments, 16 figures.**
+**Rust engine 15 functions, IBM baseline artifacts, 16 figures.**
 
 - 4 new Rust functions (11→15): lanczos, OTOC, dense Hamiltonian, batch Pauli
-- IBM hardware: 22 jobs on ibm_fez, CHSH S=2.165, 16q UPDE
+- IBM baseline artifacts on ibm_fez, including CHSH and 16q UPDE rows
 - JAX GPU backend, PyPI Rust wheel CI, BKT universality
 
 ## [0.9.2] - 2026-03-26
