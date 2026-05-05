@@ -248,6 +248,17 @@ with three seeds and 80 COBYLA iterations per seed.}
 \label{tab:ansatz}
 \end{table}
 
+A follow-up scaling artefact extends the circuit-size and truncation
+diagnostics to $n=4,6,8,10,12$. Dense exact diagonalisation is used up to
+$n=8$, and sparse \texttt{eigsh} ground-state references are used for
+$n=10,12$. The generated sparse residual norms are
+$1.12\times10^{-11}$ at $n=10$ and $8.70\times10^{-10}$ at $n=12$.
+The corresponding MPS truncation diagnostic gives mid-chain entropies of
+$0.9999$ bits at $n=10$ and $1.3143$ bits at $n=12$ for the canonical
+Kuramoto--XY coupling matrix. These rows strengthen the scaling
+diagnostic, but they remain ground-state reference data rather than a
+large-system VQE optimisation theorem.
+
 \section{Generated CPU benchmark artefacts}
 
 Table~\ref{tab:performance} lists conservative local performance facts generated
@@ -443,6 +454,9 @@ in this manuscript are:
   \item \path{remote_knm_benchmark_ml350_2026-05-05.json},
   \item \path{remote_knm_benchmark_vertex_n1_standard_4_2026-05-05.json},
   \item \path{gpu_benchmark_summary_vertex_t4_2026-05-05.json},
+  \item \path{ansatz_scaling_tn_summary_2026-05-05.json},
+  \item \path{ansatz_scaling_summary_2026-05-05.csv},
+  \item \path{tn_truncation_summary_2026-05-05.csv},
   \item \path{combined_methods_benchmark_summary_2026-05-05.json}.
 \end{itemize}
 %

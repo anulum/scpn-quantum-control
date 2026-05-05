@@ -20,12 +20,14 @@ from pathlib import Path
 import numpy as np
 from qiskit import transpile
 from qiskit.circuit.library import efficient_su2, n_local
+from scipy.sparse.linalg import eigsh
 
 from scpn_quantum_control.bridge.knm_hamiltonian import (
     OMEGA_N_16,
     build_knm_paper27,
     knm_to_ansatz,
     knm_to_dense_matrix,
+    knm_to_sparse_matrix,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -95,12 +97,23 @@ def ansatz_scaling_rows(n_values: list[int], reps_values: list[int]) -> list[dic
     return rows
 
 
-def _ground_state(n_qubits: int) -> tuple[float, np.ndarray]:
+def _dense_ground_state(n_qubits: int) -> tuple[float, np.ndarray]:
     k_matrix = build_knm_paper27(n_qubits)
     omega = OMEGA_N_16[:n_qubits]
     hamiltonian = knm_to_dense_matrix(k_matrix, omega)
     eigenvalues, eigenvectors = np.linalg.eigh(hamiltonian)
     return float(eigenvalues[0]), np.asarray(eigenvectors[:, 0], dtype=np.complex128)
+
+
+def _sparse_ground_state(n_qubits: int) -> tuple[float, np.ndarray, float]:
+    k_matrix = build_knm_paper27(n_qubits)
+    omega = OMEGA_N_16[:n_qubits]
+    hamiltonian = knm_to_sparse_matrix(k_matrix, omega)
+    eigenvalues, eigenvectors = eigsh(hamiltonian, k=1, which="SA", tol=1e-10)
+    eigenvalue = float(eigenvalues[0])
+    eigenvector = np.asarray(eigenvectors[:, 0], dtype=np.complex128)
+    residual = hamiltonian @ eigenvector - eigenvalue * eigenvector
+    return eigenvalue, eigenvector, float(np.linalg.norm(residual))
 
 
 def _schmidt_values(state: np.ndarray, n_qubits: int, cut: int) -> np.ndarray:
@@ -121,18 +134,29 @@ def mps_truncation_rows(
     n_values: list[int],
     max_bonds: list[int],
     exact_max_qubits: int,
+    sparse_max_qubits: int,
 ) -> list[dict[str, object]]:
     """Return exact-ground-state MPS truncation diagnostics where feasible."""
 
     rows: list[dict[str, object]] = []
     for n_qubits in n_values:
-        if n_qubits > exact_max_qubits:
+        if n_qubits <= exact_max_qubits:
+            ground_energy, state = _dense_ground_state(n_qubits)
+            solver = "dense_eigh"
+            residual_norm = 0.0
+        elif n_qubits <= sparse_max_qubits:
+            ground_energy, state, residual_norm = _sparse_ground_state(n_qubits)
+            solver = "sparse_eigsh"
+        else:
             rows.append(
                 {
                     "n_qubits": n_qubits,
                     "status": "skipped",
                     "reason": "above_exact_max_qubits",
                     "exact_max_qubits": exact_max_qubits,
+                    "sparse_max_qubits": sparse_max_qubits,
+                    "solver": None,
+                    "eigen_residual_norm": None,
                     "ground_energy": None,
                     "max_bond": None,
                     "worst_cut_discarded_weight": None,
@@ -140,7 +164,6 @@ def mps_truncation_rows(
                 }
             )
             continue
-        ground_energy, state = _ground_state(n_qubits)
         cut_spectra = [_schmidt_values(state, n_qubits, cut) for cut in range(1, n_qubits)]
         entropies = []
         for spectrum in cut_spectra:
@@ -154,6 +177,9 @@ def mps_truncation_rows(
                     "status": "ok",
                     "reason": None,
                     "exact_max_qubits": exact_max_qubits,
+                    "sparse_max_qubits": sparse_max_qubits,
+                    "solver": solver,
+                    "eigen_residual_norm": residual_norm,
                     "ground_energy": ground_energy,
                     "max_bond": max_bond,
                     "worst_cut_discarded_weight": float(
@@ -184,6 +210,12 @@ def main() -> int:
         default=8,
         help="Largest n for exact ground-state generation before rows are marked skipped.",
     )
+    parser.add_argument(
+        "--sparse-max-qubits",
+        type=int,
+        default=12,
+        help="Largest n for sparse ground-state generation before rows are marked skipped.",
+    )
     parser.add_argument("--output-dir", type=Path, default=OUT_DIR)
     ns = parser.parse_args()
 
@@ -193,7 +225,12 @@ def main() -> int:
     ns.output_dir.mkdir(parents=True, exist_ok=True)
 
     ansatz_rows = ansatz_scaling_rows(n_values, reps_values)
-    tn_rows = mps_truncation_rows(n_values, max_bonds, ns.exact_max_qubits)
+    tn_rows = mps_truncation_rows(
+        n_values,
+        max_bonds,
+        ns.exact_max_qubits,
+        ns.sparse_max_qubits,
+    )
     summary = {
         "date": DATE,
         "schema": "scpn_ansatz_scaling_tn_v1",
@@ -201,13 +238,15 @@ def main() -> int:
         "environment": {"python": platform.python_version(), "platform": platform.platform()},
         "claim_boundary": (
             "Circuit-size rows cover n=4--12. Tensor-network diagnostics are "
-            "MPS truncation diagnostics computed from exact ground states only "
-            "up to exact_max_qubits; skipped rows are not extrapolated."
+            "MPS truncation diagnostics computed from dense exact ground states "
+            "up to exact_max_qubits and sparse eigensolver ground states up to "
+            "sparse_max_qubits; skipped rows are not extrapolated."
         ),
         "n_values": n_values,
         "reps_values": reps_values,
         "max_bonds": max_bonds,
         "exact_max_qubits": ns.exact_max_qubits,
+        "sparse_max_qubits": ns.sparse_max_qubits,
         "ansatz_rows": ansatz_rows,
         "tensor_network_rows": tn_rows,
     }

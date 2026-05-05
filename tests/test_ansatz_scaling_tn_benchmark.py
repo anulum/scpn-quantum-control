@@ -53,17 +53,31 @@ def test_schmidt_values_for_product_state() -> None:
 def test_mps_rows_mark_large_n_skipped() -> None:
     module = _load_module()
 
-    rows = module.mps_truncation_rows([4], [4], exact_max_qubits=3)  # type: ignore[attr-defined]
+    rows = module.mps_truncation_rows([4], [4], exact_max_qubits=2, sparse_max_qubits=3)  # type: ignore[attr-defined]
 
     assert rows == [
         {
             "n_qubits": 4,
             "status": "skipped",
             "reason": "above_exact_max_qubits",
-            "exact_max_qubits": 3,
+            "exact_max_qubits": 2,
+            "sparse_max_qubits": 3,
+            "solver": None,
+            "eigen_residual_norm": None,
             "ground_energy": None,
             "max_bond": None,
             "worst_cut_discarded_weight": None,
             "max_midchain_entropy_bits": None,
         }
     ]
+
+
+def test_mps_rows_use_sparse_solver_above_dense_limit() -> None:
+    module = _load_module()
+
+    rows = module.mps_truncation_rows([4], [4], exact_max_qubits=2, sparse_max_qubits=4)  # type: ignore[attr-defined]
+
+    assert len(rows) == 1
+    assert rows[0]["status"] == "ok"
+    assert rows[0]["solver"] == "sparse_eigsh"
+    assert float(rows[0]["eigen_residual_norm"]) < 1e-8

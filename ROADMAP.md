@@ -149,10 +149,11 @@ Remaining items:
   - **Ansatz scaling plus tensor-network baseline — initial harness
     implemented 2026-05-06; next strengthening task.**
     `scripts/benchmark_ansatz_scaling_tn.py` generates n=4--12 ansatz
-    scaling rows and tensor-network truncation diagnostics. Remaining work:
-    replace status-only larger-n tensor rows with validated sparse or MPS
-    reference calculations where feasible, then update the methods paper only
-    from regenerated artefacts.
+    scaling rows and tensor-network truncation diagnostics. Sparse eigensolver
+    references now strengthen larger-n rows where feasible. Remaining work:
+    extend beyond ground-state truncation diagnostics into richer MPS/VQE
+    reference comparisons, then update methods-paper claims only from
+    regenerated artefacts.
   - **Native or analogue FIM implementation — initial compiler path
     implemented 2026-05-06.**
     The analogue Kuramoto compiler accepts `lambda_fim` and decomposes
