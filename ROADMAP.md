@@ -136,35 +136,41 @@ Remaining items:
 ## Future
 
 - **Phase 4 / follow-up validation and reproducibility**
-  - **Immediate next priority: one-command reproducibility CLI.**
-    Add `scpn-bench reproduce-methods`, `scpn-bench fim-all`, or a
-    consolidated `scpn-bench all` entry point that runs every committed
-    benchmark harness, regenerates the JSON/CSV artefacts used by the
-    methods and FIM papers, and diffs the regenerated files against the
-    committed artefacts. This strengthens all current papers without
-    spending additional QPU time.
-  - **Public benchmark dashboard.** Add a GitHub Pages or MkDocs page
-    that displays the latest benchmark artefacts, machine metadata,
-    regeneration commands, and reproducibility status for CPU, GPU,
-    ansatz, VQE, and FIM workflows.
-  - **Ansatz scaling plus tensor-network baseline.** Extend the current
-    n=4 VQE methods comparison to n=6--12 with sparse or tensor-network
-    classical references such as quimb or ITensor-style baselines, so the
-    topology-informed ansatz claim is tested beyond the smallest
-    demonstration size.
-  - **Native or analogue FIM implementation.** Prototype a pulse-level,
-    dynamic-circuit, Pulser, Bloqade, or other neutral-atom/analogue XY
-    bridge for the FIM Hamiltonian, so the negative digital-Trotter IBM
-    result can be separated from the question of whether native collective
-    feedback can help on a platform with lower compilation overhead.
-  - **Adaptive lambda feedback loop.** Promote the fixed
-    `H_FIM(lambda)` study into a closed-loop protocol where `lambda` is
-    updated from magnetisation or parity witnesses, using mid-circuit or
-    batch-level feedback where hardware permits.
-  - **Scalable readout-mitigation cross-check.** Add a TREM/M3-style
-    offline mitigation path for n<=8 datasets where the required
-    calibration counts already exist, and explicitly mark any dataset
-    needing new calibration circuits before spending additional QPU time.
+  - **One-command reproducibility CLI — implemented 2026-05-06.**
+    `scpn-bench reproduce-methods`, `scpn-bench fim-all`, and
+    `scpn-bench all` now run committed benchmark harness groups, regenerate
+    JSON/CSV artefacts, and report drift against committed files without
+    submitting IBM jobs.
+  - **Public benchmark dashboard — implemented 2026-05-06.**
+    `docs/methods_benchmark_dashboard.md` is wired into MkDocs and links
+    benchmark artefacts, generator scripts, machine provenance,
+    reproducibility commands, optional GPU/scaling/readout harnesses, and
+    no-QPU-spend boundaries.
+  - **Ansatz scaling plus tensor-network baseline — initial harness
+    implemented 2026-05-06; next strengthening task.**
+    `scripts/benchmark_ansatz_scaling_tn.py` generates n=4--12 ansatz
+    scaling rows and tensor-network truncation diagnostics. Remaining work:
+    replace status-only larger-n tensor rows with validated sparse or MPS
+    reference calculations where feasible, then update the methods paper only
+    from regenerated artefacts.
+  - **Native or analogue FIM implementation — initial compiler path
+    implemented 2026-05-06.**
+    The analogue Kuramoto compiler accepts `lambda_fim` and decomposes
+    `-lambda M^2/n` into the documented all-to-all `Z_i Z_j` payload for
+    backend design studies. Remaining work: wire a real provider-specific
+    Pulser/Bloqade/pulse-level backend before making any execution claim.
+  - **Adaptive lambda feedback loop — scaffold implemented 2026-05-06.**
+    `AdaptiveFIMConfig`, `FIMWitness`, `propose_next_lambda`, and
+    `adaptive_lambda_schedule` provide a deterministic controller over
+    measured or simulated witnesses. Remaining work: design a separately
+    approved hardware protocol before any adaptive-QPU claim.
+  - **Scalable readout-mitigation cross-check — FIM repeated dataset
+    implemented 2026-05-06.**
+    Full 16-state readout-matrix inversion is implemented for the repeated
+    SCPN/FIM follow-up, where the required calibration basis exists. Remaining
+    work: add dataset-level eligibility markers for any n<=8 campaign that
+    lacks complete basis calibration, before spending QPU time on new
+    calibration circuits.
 - Fault-tolerant UPDE on surface code logical qubits (post-2030, hardware-dependent)
 - QSNN training loop on real hardware (parameter-shift STDP)
 - Quantum disruption classifier on ITER disruption database
