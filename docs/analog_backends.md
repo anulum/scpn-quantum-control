@@ -36,9 +36,38 @@ The returned `AnalogKuramotoProgram` contains:
 
 - `coupling_terms`: upper-triangular native couplings with magnitude and phase.
 - `drive_terms`: per-oscillator detunings from `omega`.
+- `feedback_terms`: optional FIM feedback terms for
+  `H_FIM(lambda) = -lambda M^2 / n`.
 - `payload`: platform-specific serialisable programme schema.
 - `metadata`: oscillator count, coupler count, native term, scaling, and user
   metadata.
+
+## FIM feedback compilation
+
+The compiler can include the static collective term used in the SCPN/FIM
+Hamiltonian paper:
+
+```python
+program = compile_analog_kuramoto(
+    K,
+    omega,
+    platform="circuit_qed",
+    duration=1.25,
+    lambda_fim=4.0,
+)
+```
+
+The Hamiltonian identity is:
+
+```text
+-lambda M^2 / n = -lambda I - (2 lambda / n) sum_{i<j} Z_i Z_j.
+```
+
+The global shift is recorded as `fim_global_energy_shift`; the pairwise
+feedback terms are emitted as `feedback_terms` and mirrored into the platform
+payload. This is a native-programme schema for follow-up platform work, not
+evidence that a specific cloud provider accepts or faithfully executes the
+term.
 
 ## Platform Schemas
 
@@ -47,6 +76,7 @@ Neutral atoms emit `native_ahs_v1` payloads with:
 - square-grid register coordinates,
 - local detunings,
 - Rydberg interaction terms with equivalent radii,
+- optional FIM feedback terms for an Ising-style collective interaction,
 - a three-point global Rabi envelope.
 
 Circuit-QED emits `exchange_resonator_v1` payloads with:
@@ -54,12 +84,14 @@ Circuit-QED emits `exchange_resonator_v1` payloads with:
 - mode-frequency detuning terms,
 - flat-top tunable exchange couplers,
 - sign encoded as phase `0` or `pi`.
+- optional cross-Kerr-style FIM feedback terms.
 
 Continuous-variable platforms emit `cv_gaussian_schedule_v1` payloads with:
 
 - phase rotations for natural frequencies,
 - beam-splitter operations for non-zero couplings,
 - coupling sign encoded in the beam-splitter phase.
+- optional number-feedback terms for the collective FIM proposal.
 
 ## Registry Integration
 

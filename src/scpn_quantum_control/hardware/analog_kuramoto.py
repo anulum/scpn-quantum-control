@@ -83,6 +83,27 @@ class AnalogDriveTerm:
 
 
 @dataclass(frozen=True)
+class AnalogFeedbackTerm:
+    """Collective feedback term for native analogue Hamiltonian proposals."""
+
+    source: int
+    target: int
+    coefficient: float
+    phase: float
+    operator: str = "Z_i Z_j"
+
+    def to_payload(self) -> dict[str, float | int | str]:
+        """Return a serialisable representation."""
+        return {
+            "source": self.source,
+            "target": self.target,
+            "coefficient": self.coefficient,
+            "phase": self.phase,
+            "operator": self.operator,
+        }
+
+
+@dataclass(frozen=True)
 class AnalogKuramotoProgram:
     """Compiled analog Kuramoto execution programme."""
 
@@ -92,6 +113,7 @@ class AnalogKuramotoProgram:
     drive_terms: tuple[AnalogDriveTerm, ...]
     payload: dict[str, Any]
     metadata: dict[str, Any] = field(default_factory=dict)
+    feedback_terms: tuple[AnalogFeedbackTerm, ...] = ()
 
     @property
     def n_oscillators(self) -> int:
@@ -110,6 +132,7 @@ class AnalogKuramotoProgram:
             "duration": self.duration,
             "coupling_terms": [term.to_payload() for term in self.coupling_terms],
             "drive_terms": [term.to_payload() for term in self.drive_terms],
+            "feedback_terms": [term.to_payload() for term in self.feedback_terms],
             "payload": self.payload,
             "metadata": self.metadata,
         }
@@ -146,6 +169,7 @@ class AnalogKuramotoBackendProtocol(Protocol):
         *,
         duration: float,
         coupling_scale: float = 1.0,
+        lambda_fim: float = 0.0,
     ) -> AnalogKuramotoProgram:
         """Compile a Kuramoto problem into a native analog programme."""
         ...
@@ -179,10 +203,12 @@ class AnalogKuramotoBackend:
         *,
         duration: float,
         coupling_scale: float = 1.0,
+        lambda_fim: float = 0.0,
     ) -> AnalogKuramotoProgram:
         """Compile a Kuramoto problem into this backend's native schema."""
         duration = _require_positive(duration, "duration")
         coupling_scale = _require_positive(coupling_scale, "coupling_scale")
+        lambda_fim = _require_non_negative(lambda_fim, "lambda_fim")
         if problem.n_oscillators > self.capabilities.max_oscillators:
             raise ValueError(
                 f"{self.platform.value} supports at most "
@@ -201,11 +227,15 @@ class AnalogKuramotoBackend:
             AnalogDriveTerm(oscillator=index, detuning=float(detuning))
             for index, detuning in enumerate(problem.omega)
         )
-        payload = _build_payload(self.platform, duration, terms, drives)
+        feedback_terms = _fim_feedback_terms(problem.n_oscillators, lambda_fim)
+        payload = _build_payload(self.platform, duration, terms, drives, feedback_terms)
         metadata = {
             "n_oscillators": problem.n_oscillators,
             "n_couplers": len(terms),
+            "n_feedback_terms": len(feedback_terms),
             "coupling_scale": coupling_scale,
+            "lambda_fim": lambda_fim,
+            "fim_global_energy_shift": -lambda_fim if lambda_fim > 0.0 else 0.0,
             "zero_threshold": self.zero_threshold,
             "native_term": self.capabilities.native_term,
             "supports_signed_couplings": self.capabilities.supports_signed_couplings,
@@ -218,6 +248,7 @@ class AnalogKuramotoBackend:
             drive_terms=drives,
             payload=payload,
             metadata=metadata,
+            feedback_terms=feedback_terms,
         )
 
 
@@ -228,12 +259,18 @@ def compile_analog_kuramoto(
     platform: AnalogKuramotoPlatform | str,
     duration: float,
     coupling_scale: float = 1.0,
+    lambda_fim: float = 0.0,
     metadata: dict[str, str | int | float | bool | None] | None = None,
 ) -> AnalogKuramotoProgram:
     """Validate and compile an analog Kuramoto programme in one call."""
     problem = build_kuramoto_problem(K_nm, omega, metadata=metadata or {})
     backend = AnalogKuramotoBackend(platform)
-    return backend.compile(problem, duration=duration, coupling_scale=coupling_scale)
+    return backend.compile(
+        problem,
+        duration=duration,
+        coupling_scale=coupling_scale,
+        lambda_fim=lambda_fim,
+    )
 
 
 def analog_kuramoto_factory() -> AnalogKuramotoBackend:
@@ -343,18 +380,20 @@ def _build_payload(
     duration: float,
     terms: tuple[AnalogCouplingTerm, ...],
     drives: tuple[AnalogDriveTerm, ...],
+    feedback_terms: tuple[AnalogFeedbackTerm, ...],
 ) -> dict[str, Any]:
     if platform == AnalogKuramotoPlatform.NEUTRAL_ATOMS:
-        return _neutral_atom_payload(duration, terms, drives)
+        return _neutral_atom_payload(duration, terms, drives, feedback_terms)
     if platform == AnalogKuramotoPlatform.CIRCUIT_QED:
-        return _circuit_qed_payload(duration, terms, drives)
-    return _continuous_variable_payload(duration, terms, drives)
+        return _circuit_qed_payload(duration, terms, drives, feedback_terms)
+    return _continuous_variable_payload(duration, terms, drives, feedback_terms)
 
 
 def _neutral_atom_payload(
     duration: float,
     terms: tuple[AnalogCouplingTerm, ...],
     drives: tuple[AnalogDriveTerm, ...],
+    feedback_terms: tuple[AnalogFeedbackTerm, ...],
 ) -> dict[str, Any]:
     positions = _neutral_atom_positions(
         max((drive.oscillator for drive in drives), default=-1) + 1
@@ -365,6 +404,7 @@ def _neutral_atom_payload(
         "register": [{"site": index, "x": x, "y": y} for index, (x, y) in enumerate(positions)],
         "local_detunings": [drive.to_payload() for drive in drives],
         "rydberg_interactions": [term.to_payload() for term in terms],
+        "fim_feedback_terms": [term.to_payload() for term in feedback_terms],
         "global_rabi_envelope": [
             {"time": 0.0, "amplitude": 0.0, "phase": 0.0},
             {"time": duration / 2.0, "amplitude": 1.0, "phase": 0.0},
@@ -377,11 +417,13 @@ def _circuit_qed_payload(
     duration: float,
     terms: tuple[AnalogCouplingTerm, ...],
     drives: tuple[AnalogDriveTerm, ...],
+    feedback_terms: tuple[AnalogFeedbackTerm, ...],
 ) -> dict[str, Any]:
     return {
         "schema": "exchange_resonator_v1",
         "duration": duration,
         "mode_frequencies": [drive.to_payload() for drive in drives],
+        "fim_cross_kerr_feedback": [term.to_payload() for term in feedback_terms],
         "exchange_couplers": [
             {
                 "source": term.source,
@@ -401,6 +443,7 @@ def _continuous_variable_payload(
     duration: float,
     terms: tuple[AnalogCouplingTerm, ...],
     drives: tuple[AnalogDriveTerm, ...],
+    feedback_terms: tuple[AnalogFeedbackTerm, ...],
 ) -> dict[str, Any]:
     rotations = [
         {
@@ -422,8 +465,26 @@ def _continuous_variable_payload(
     return {
         "schema": "cv_gaussian_schedule_v1",
         "duration": duration,
+        "fim_number_feedback": [term.to_payload() for term in feedback_terms],
         "operations": rotations + beamsplitters,
     }
+
+
+def _fim_feedback_terms(n_oscillators: int, lambda_fim: float) -> tuple[AnalogFeedbackTerm, ...]:
+    if lambda_fim <= 0.0:
+        return ()
+    coefficient = -2.0 * lambda_fim / float(n_oscillators)
+    phase = 0.0 if coefficient >= 0.0 else float(np.pi)
+    return tuple(
+        AnalogFeedbackTerm(
+            source=i,
+            target=j,
+            coefficient=coefficient,
+            phase=phase,
+        )
+        for i in range(n_oscillators)
+        for j in range(i + 1, n_oscillators)
+    )
 
 
 def _neutral_atom_positions(n: int) -> list[tuple[float, float]]:

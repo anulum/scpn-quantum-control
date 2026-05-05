@@ -52,6 +52,7 @@ def test_circuit_qed_program_contains_signed_exchange_terms():
     assert strengths[(0, 1)] == pytest.approx(1.0)
     assert phases[(0, 2)] == pytest.approx(np.pi)
     assert len(program.payload["exchange_couplers"]) == 3
+    assert program.feedback_terms == ()
 
 
 def test_neutral_atom_program_adds_register_and_rydberg_radii():
@@ -120,6 +121,8 @@ def test_backend_validation_rejects_invalid_platform_and_limits():
         )
     with pytest.raises(ValueError, match="duration"):
         AnalogKuramotoBackend().compile(problem, duration=0.0)
+    with pytest.raises(ValueError, match="lambda_fim"):
+        AnalogKuramotoBackend().compile(problem, duration=1.0, lambda_fim=-1.0)
 
 
 def test_numpy_kernel_filters_zero_edges_and_matches_sign_phase():
@@ -137,3 +140,24 @@ def test_numpy_kernel_filters_zero_edges_and_matches_sign_phase():
     np.testing.assert_allclose(strengths, np.array([0.5, 0.25]))
     np.testing.assert_allclose(phases, np.array([0.0, np.pi]))
     np.testing.assert_allclose(radii, (64.0 / strengths) ** (1.0 / 6.0))
+
+
+def test_fim_feedback_terms_encode_collective_magnetisation_pair_term():
+    K, omega = _inputs()
+    program = compile_analog_kuramoto(
+        K,
+        omega,
+        platform=AnalogKuramotoPlatform.CIRCUIT_QED,
+        duration=2.0,
+        lambda_fim=3.0,
+    )
+
+    assert len(program.feedback_terms) == 3
+    assert program.metadata["lambda_fim"] == pytest.approx(3.0)
+    assert program.metadata["fim_global_energy_shift"] == pytest.approx(-3.0)
+    assert program.metadata["n_feedback_terms"] == 3
+    first = program.feedback_terms[0]
+    assert first.operator == "Z_i Z_j"
+    assert first.coefficient == pytest.approx(-2.0)
+    assert first.phase == pytest.approx(np.pi)
+    assert program.payload["fim_cross_kerr_feedback"][0]["coefficient"] == pytest.approx(-2.0)
