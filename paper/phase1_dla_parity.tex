@@ -55,7 +55,8 @@ with the $4.5$--$9.6\,\%$ prediction band of a classical Lindblad
 simulator calibrated with published \texttt{ibm\_fez} $T_1/T_2$ and
 gate-error rates, once the circuit enters the saturation regime at
 $d \ge 14$. All raw count dictionaries, analysis scripts, and figures
-are open-source at \url{https://github.com/anulum/scpn-quantum-control}
+are open-source in the GitHub repository
+\href{https://github.com/anulum/scpn-quantum-control}{\texttt{anulum/scpn-quantum-control}}
 under the AGPL-3.0 licence.
 
 A preregistered May 2026 Phase~2 continuation strengthens but also
@@ -425,8 +426,9 @@ $\chi^2=29.420107$, $p=2.68\times10^{-4}$ \\
 \bottomrule
 \end{tabular}
 \caption{Compact Phase~2 hardware result table. A+G used jobs
-\texttt{d7stu94t738s73ch5keg} and \texttt{d7su3tkt738s73ch5ql0};
-B-C used job \texttt{d7sudr2udops7397ae30}. Raw-count SHA256 hashes
+\mbox{\texttt{d7stu94t738s73ch5keg}} and
+\mbox{\texttt{d7su3tkt738s73ch5ql0}}; B-C used job
+\mbox{\texttt{d7sudr2udops7397ae30}}. Raw-count SHA256 hashes
 are indexed in the publication package manifest.}
 \label{tab:phase2}
 \end{table*}
@@ -532,7 +534,8 @@ check, not a demonstrated zero-noise extrapolation.
 
 All raw count dictionaries, per-circuit metadata, analysis scripts,
 and figure-generation code are open-sourced at
-\url{https://github.com/anulum/scpn-quantum-control} under the
+\href{https://github.com/anulum/scpn-quantum-control}{\texttt{anulum/scpn-quantum-control}}
+under the
 AGPL-3.0 licence. The Phase~1 dataset lives in
 \path{data/phase1_dla_parity/} (four JSON files, 342 circuits at
 $n = 4$), and the full analysis can be reproduced with
@@ -552,7 +555,7 @@ The popcount-control dataset lives in
 \path{scripts/analyse_phase2_popcount_control.py}.
 The no-new-QPU readout and GUESS-readiness cross-checks are reproduced
 with \path{scripts/analyse_phase2_readout_mitigation.py} and
-\path{scripts/analyse_phase2_guess_calibration.py}; their derived
+\mbox{\texttt{scripts/analyse\_phase2\_guess\_calibration.py}}; their derived
 JSON summaries live in \path{data/phase2_readout_mitigation/} and
 \path{data/phase2_guess_calibration/}. Prepared but unsubmitted
 state/layout-randomisation and multi-device replication protocols are
