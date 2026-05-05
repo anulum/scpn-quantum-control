@@ -135,6 +135,32 @@ Remaining items:
 
 ## Future
 
+- **Phase 4 / follow-up validation and reproducibility**
+  - **Immediate next priority: one-command reproducibility CLI.**
+    Add `scpn-bench reproduce-methods`, `scpn-bench fim-all`, or a
+    consolidated `scpn-bench all` entry point that runs every committed
+    benchmark harness, regenerates the JSON/CSV artefacts used by the
+    methods and FIM papers, and diffs the regenerated files against the
+    committed artefacts. This strengthens all current papers without
+    spending additional QPU time.
+  - **Public benchmark dashboard.** Add a GitHub Pages or MkDocs page
+    that displays the latest benchmark artefacts, machine metadata,
+    regeneration commands, and reproducibility status for CPU, GPU,
+    ansatz, VQE, and FIM workflows.
+  - **Ansatz scaling plus tensor-network baseline.** Extend the current
+    n=4 VQE methods comparison to n=6--12 with sparse or tensor-network
+    classical references such as quimb or ITensor-style baselines, so the
+    topology-informed ansatz claim is tested beyond the smallest
+    demonstration size.
+  - **Native or analogue FIM implementation.** Prototype a pulse-level,
+    dynamic-circuit, Pulser, Bloqade, or other neutral-atom/analogue XY
+    bridge for the FIM Hamiltonian, so the negative digital-Trotter IBM
+    result can be separated from the question of whether native collective
+    feedback can help on a platform with lower compilation overhead.
+  - **Adaptive lambda feedback loop.** Promote the fixed
+    `H_FIM(lambda)` study into a closed-loop protocol where `lambda` is
+    updated from magnetisation or parity witnesses, using mid-circuit or
+    batch-level feedback where hardware permits.
 - Fault-tolerant UPDE on surface code logical qubits (post-2030, hardware-dependent)
 - QSNN training loop on real hardware (parameter-shift STDP)
 - Quantum disruption classifier on ITER disruption database

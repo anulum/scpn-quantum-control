@@ -47,6 +47,9 @@ dependencies = [
     "networkx>=3.0,<4.0",
 ]
 
+[project.scripts]
+scpn-bench = "scpn_quantum_control.bench_cli:main"
+
 [project.optional-dependencies]
 viz = ["matplotlib>=3.5,<4.0"]
 gpu = ["cupy-cuda12x>=13.0"]
