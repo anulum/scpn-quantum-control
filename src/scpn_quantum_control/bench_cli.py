@@ -50,6 +50,12 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         "scripts/summarise_rust_vqe_method_artifacts.py",
         frozenset({"methods"}),
     ),
+    Harness(
+        "methods-ansatz-scaling-tn",
+        "scripts/benchmark_ansatz_scaling_tn.py",
+        frozenset({"methods"}),
+        optional_flag="scaling",
+    ),
     Harness("fim-spectrum", "scripts/analyse_fim_spectrum.py", frozenset({"fim"})),
     Harness("fim-level-spacing", "scripts/analyse_fim_level_spacing.py", frozenset({"fim"})),
     Harness("fim-entanglement", "scripts/analyse_fim_entanglement.py", frozenset({"fim"})),
@@ -109,6 +115,11 @@ def _add_run_options(parser: argparse.ArgumentParser, *, default_group: str) -> 
         help="Include GPU benchmark harnesses that may require CUDA/CuPy/PyTorch.",
     )
     parser.add_argument(
+        "--include-scaling",
+        action="store_true",
+        help="Include heavier n=4--12 ansatz-scaling and tensor-network diagnostics.",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Print selected harnesses without executing them.",
@@ -125,13 +136,20 @@ def _add_run_options(parser: argparse.ArgumentParser, *, default_group: str) -> 
     )
 
 
-def _selected_harnesses(group: str, *, include_gpu: bool) -> list[Harness]:
+def _selected_harnesses(
+    group: str,
+    *,
+    include_gpu: bool,
+    include_scaling: bool = False,
+) -> list[Harness]:
     wanted_groups = {"methods", "fim"} if group == "all" else {group}
     selected: list[Harness] = []
     for harness in HARNESS_REGISTRY:
         if not harness.groups.intersection(wanted_groups):
             continue
         if harness.optional_flag == "gpu" and not include_gpu:
+            continue
+        if harness.optional_flag == "scaling" and not include_scaling:
             continue
         selected.append(harness)
     return selected
@@ -171,7 +189,11 @@ def _print_diff_summary() -> int:
 
 def run(argv: Sequence[str] | None = None) -> int:
     ns = _parse_args(sys.argv[1:] if argv is None else argv)
-    harnesses = _selected_harnesses(ns.group, include_gpu=ns.include_gpu)
+    harnesses = _selected_harnesses(
+        ns.group,
+        include_gpu=ns.include_gpu,
+        include_scaling=ns.include_scaling,
+    )
     if not harnesses:
         print("[scpn-bench] no harnesses selected", file=sys.stderr)
         return 2

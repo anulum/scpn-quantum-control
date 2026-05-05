@@ -1,0 +1,441 @@
+{
+  "date": "2026-05-05",
+  "schema": "scpn_ansatz_scaling_tn_v1",
+  "command": "python scripts/benchmark_ansatz_scaling_tn.py",
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
+  },
+  "claim_boundary": "Circuit-size rows cover n=4--12. Tensor-network diagnostics are MPS truncation diagnostics computed from exact ground states only up to exact_max_qubits; skipped rows are not extrapolated.",
+  "n_values": [
+    4,
+    6,
+    8,
+    10,
+    12
+  ],
+  "reps_values": [
+    1,
+    2
+  ],
+  "max_bonds": [
+    4,
+    8,
+    16
+  ],
+  "exact_max_qubits": 8,
+  "ansatz_rows": [
+    {
+      "ansatz": "knm_informed",
+      "n_qubits": 4,
+      "reps": 1,
+      "parameters": 8,
+      "raw_depth": 7,
+      "raw_two_qubit_gates": 6,
+      "transpiled_depth": 20,
+      "transpiled_two_qubit_gates": 6
+    },
+    {
+      "ansatz": "two_local",
+      "n_qubits": 4,
+      "reps": 1,
+      "parameters": 16,
+      "raw_depth": 9,
+      "raw_two_qubit_gates": 6,
+      "transpiled_depth": 24,
+      "transpiled_two_qubit_gates": 6
+    },
+    {
+      "ansatz": "efficient_su2",
+      "n_qubits": 4,
+      "reps": 1,
+      "parameters": 16,
+      "raw_depth": 7,
+      "raw_two_qubit_gates": 3,
+      "transpiled_depth": 13,
+      "transpiled_two_qubit_gates": 3
+    },
+    {
+      "ansatz": "knm_informed",
+      "n_qubits": 4,
+      "reps": 2,
+      "parameters": 16,
+      "raw_depth": 13,
+      "raw_two_qubit_gates": 12,
+      "transpiled_depth": 34,
+      "transpiled_two_qubit_gates": 12
+    },
+    {
+      "ansatz": "two_local",
+      "n_qubits": 4,
+      "reps": 2,
+      "parameters": 24,
+      "raw_depth": 15,
+      "raw_two_qubit_gates": 12,
+      "transpiled_depth": 38,
+      "transpiled_two_qubit_gates": 12
+    },
+    {
+      "ansatz": "efficient_su2",
+      "n_qubits": 4,
+      "reps": 2,
+      "parameters": 24,
+      "raw_depth": 11,
+      "raw_two_qubit_gates": 6,
+      "transpiled_depth": 20,
+      "transpiled_two_qubit_gates": 6
+    },
+    {
+      "ansatz": "knm_informed",
+      "n_qubits": 6,
+      "reps": 1,
+      "parameters": 12,
+      "raw_depth": 11,
+      "raw_two_qubit_gates": 15,
+      "transpiled_depth": 28,
+      "transpiled_two_qubit_gates": 15
+    },
+    {
+      "ansatz": "two_local",
+      "n_qubits": 6,
+      "reps": 1,
+      "parameters": 24,
+      "raw_depth": 13,
+      "raw_two_qubit_gates": 15,
+      "transpiled_depth": 32,
+      "transpiled_two_qubit_gates": 15
+    },
+    {
+      "ansatz": "efficient_su2",
+      "n_qubits": 6,
+      "reps": 1,
+      "parameters": 24,
+      "raw_depth": 9,
+      "raw_two_qubit_gates": 5,
+      "transpiled_depth": 15,
+      "transpiled_two_qubit_gates": 5
+    },
+    {
+      "ansatz": "knm_informed",
+      "n_qubits": 6,
+      "reps": 2,
+      "parameters": 24,
+      "raw_depth": 19,
+      "raw_two_qubit_gates": 30,
+      "transpiled_depth": 44,
+      "transpiled_two_qubit_gates": 30
+    },
+    {
+      "ansatz": "two_local",
+      "n_qubits": 6,
+      "reps": 2,
+      "parameters": 36,
+      "raw_depth": 21,
+      "raw_two_qubit_gates": 30,
+      "transpiled_depth": 48,
+      "transpiled_two_qubit_gates": 30
+    },
+    {
+      "ansatz": "efficient_su2",
+      "n_qubits": 6,
+      "reps": 2,
+      "parameters": 36,
+      "raw_depth": 13,
+      "raw_two_qubit_gates": 10,
+      "transpiled_depth": 22,
+      "transpiled_two_qubit_gates": 10
+    },
+    {
+      "ansatz": "knm_informed",
+      "n_qubits": 8,
+      "reps": 1,
+      "parameters": 16,
+      "raw_depth": 15,
+      "raw_two_qubit_gates": 28,
+      "transpiled_depth": 36,
+      "transpiled_two_qubit_gates": 28
+    },
+    {
+      "ansatz": "two_local",
+      "n_qubits": 8,
+      "reps": 1,
+      "parameters": 32,
+      "raw_depth": 17,
+      "raw_two_qubit_gates": 28,
+      "transpiled_depth": 40,
+      "transpiled_two_qubit_gates": 28
+    },
+    {
+      "ansatz": "efficient_su2",
+      "n_qubits": 8,
+      "reps": 1,
+      "parameters": 32,
+      "raw_depth": 11,
+      "raw_two_qubit_gates": 7,
+      "transpiled_depth": 17,
+      "transpiled_two_qubit_gates": 7
+    },
+    {
+      "ansatz": "knm_informed",
+      "n_qubits": 8,
+      "reps": 2,
+      "parameters": 32,
+      "raw_depth": 25,
+      "raw_two_qubit_gates": 56,
+      "transpiled_depth": 54,
+      "transpiled_two_qubit_gates": 56
+    },
+    {
+      "ansatz": "two_local",
+      "n_qubits": 8,
+      "reps": 2,
+      "parameters": 48,
+      "raw_depth": 27,
+      "raw_two_qubit_gates": 56,
+      "transpiled_depth": 58,
+      "transpiled_two_qubit_gates": 56
+    },
+    {
+      "ansatz": "efficient_su2",
+      "n_qubits": 8,
+      "reps": 2,
+      "parameters": 48,
+      "raw_depth": 15,
+      "raw_two_qubit_gates": 14,
+      "transpiled_depth": 24,
+      "transpiled_two_qubit_gates": 14
+    },
+    {
+      "ansatz": "knm_informed",
+      "n_qubits": 10,
+      "reps": 1,
+      "parameters": 20,
+      "raw_depth": 19,
+      "raw_two_qubit_gates": 45,
+      "transpiled_depth": 44,
+      "transpiled_two_qubit_gates": 45
+    },
+    {
+      "ansatz": "two_local",
+      "n_qubits": 10,
+      "reps": 1,
+      "parameters": 40,
+      "raw_depth": 21,
+      "raw_two_qubit_gates": 45,
+      "transpiled_depth": 48,
+      "transpiled_two_qubit_gates": 45
+    },
+    {
+      "ansatz": "efficient_su2",
+      "n_qubits": 10,
+      "reps": 1,
+      "parameters": 40,
+      "raw_depth": 13,
+      "raw_two_qubit_gates": 9,
+      "transpiled_depth": 19,
+      "transpiled_two_qubit_gates": 9
+    },
+    {
+      "ansatz": "knm_informed",
+      "n_qubits": 10,
+      "reps": 2,
+      "parameters": 40,
+      "raw_depth": 31,
+      "raw_two_qubit_gates": 90,
+      "transpiled_depth": 64,
+      "transpiled_two_qubit_gates": 90
+    },
+    {
+      "ansatz": "two_local",
+      "n_qubits": 10,
+      "reps": 2,
+      "parameters": 60,
+      "raw_depth": 33,
+      "raw_two_qubit_gates": 90,
+      "transpiled_depth": 68,
+      "transpiled_two_qubit_gates": 90
+    },
+    {
+      "ansatz": "efficient_su2",
+      "n_qubits": 10,
+      "reps": 2,
+      "parameters": 60,
+      "raw_depth": 17,
+      "raw_two_qubit_gates": 18,
+      "transpiled_depth": 26,
+      "transpiled_two_qubit_gates": 18
+    },
+    {
+      "ansatz": "knm_informed",
+      "n_qubits": 12,
+      "reps": 1,
+      "parameters": 24,
+      "raw_depth": 23,
+      "raw_two_qubit_gates": 66,
+      "transpiled_depth": 52,
+      "transpiled_two_qubit_gates": 66
+    },
+    {
+      "ansatz": "two_local",
+      "n_qubits": 12,
+      "reps": 1,
+      "parameters": 48,
+      "raw_depth": 25,
+      "raw_two_qubit_gates": 66,
+      "transpiled_depth": 56,
+      "transpiled_two_qubit_gates": 66
+    },
+    {
+      "ansatz": "efficient_su2",
+      "n_qubits": 12,
+      "reps": 1,
+      "parameters": 48,
+      "raw_depth": 15,
+      "raw_two_qubit_gates": 11,
+      "transpiled_depth": 21,
+      "transpiled_two_qubit_gates": 11
+    },
+    {
+      "ansatz": "knm_informed",
+      "n_qubits": 12,
+      "reps": 2,
+      "parameters": 48,
+      "raw_depth": 37,
+      "raw_two_qubit_gates": 132,
+      "transpiled_depth": 74,
+      "transpiled_two_qubit_gates": 132
+    },
+    {
+      "ansatz": "two_local",
+      "n_qubits": 12,
+      "reps": 2,
+      "parameters": 72,
+      "raw_depth": 39,
+      "raw_two_qubit_gates": 132,
+      "transpiled_depth": 78,
+      "transpiled_two_qubit_gates": 132
+    },
+    {
+      "ansatz": "efficient_su2",
+      "n_qubits": 12,
+      "reps": 2,
+      "parameters": 72,
+      "raw_depth": 19,
+      "raw_two_qubit_gates": 22,
+      "transpiled_depth": 28,
+      "transpiled_two_qubit_gates": 22
+    }
+  ],
+  "tensor_network_rows": [
+    {
+      "n_qubits": 4,
+      "status": "ok",
+      "reason": null,
+      "exact_max_qubits": 8,
+      "ground_energy": -6.303000000000001,
+      "max_bond": 4,
+      "worst_cut_discarded_weight": 0.0,
+      "max_midchain_entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 4,
+      "status": "ok",
+      "reason": null,
+      "exact_max_qubits": 8,
+      "ground_energy": -6.303000000000001,
+      "max_bond": 8,
+      "worst_cut_discarded_weight": 0.0,
+      "max_midchain_entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 4,
+      "status": "ok",
+      "reason": null,
+      "exact_max_qubits": 8,
+      "ground_energy": -6.303000000000001,
+      "max_bond": 16,
+      "worst_cut_discarded_weight": 0.0,
+      "max_midchain_entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 6,
+      "status": "ok",
+      "reason": null,
+      "exact_max_qubits": 8,
+      "ground_energy": -10.793000000000001,
+      "max_bond": 4,
+      "worst_cut_discarded_weight": 0.0,
+      "max_midchain_entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 6,
+      "status": "ok",
+      "reason": null,
+      "exact_max_qubits": 8,
+      "ground_energy": -10.793000000000001,
+      "max_bond": 8,
+      "worst_cut_discarded_weight": 0.0,
+      "max_midchain_entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 6,
+      "status": "ok",
+      "reason": null,
+      "exact_max_qubits": 8,
+      "ground_energy": -10.793000000000001,
+      "max_bond": 16,
+      "worst_cut_discarded_weight": 0.0,
+      "max_midchain_entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 8,
+      "status": "ok",
+      "reason": null,
+      "exact_max_qubits": 8,
+      "ground_energy": -12.755724606401255,
+      "max_bond": 4,
+      "worst_cut_discarded_weight": 7.128577242845541e-35,
+      "max_midchain_entropy_bits": 0.9778011757860785
+    },
+    {
+      "n_qubits": 8,
+      "status": "ok",
+      "reason": null,
+      "exact_max_qubits": 8,
+      "ground_energy": -12.755724606401255,
+      "max_bond": 8,
+      "worst_cut_discarded_weight": 2.699915425655394e-68,
+      "max_midchain_entropy_bits": 0.9778011757860785
+    },
+    {
+      "n_qubits": 8,
+      "status": "ok",
+      "reason": null,
+      "exact_max_qubits": 8,
+      "ground_energy": -12.755724606401255,
+      "max_bond": 16,
+      "worst_cut_discarded_weight": 0.0,
+      "max_midchain_entropy_bits": 0.9778011757860785
+    },
+    {
+      "n_qubits": 10,
+      "status": "skipped",
+      "reason": "above_exact_max_qubits",
+      "exact_max_qubits": 8,
+      "ground_energy": null,
+      "max_bond": null,
+      "worst_cut_discarded_weight": null,
+      "max_midchain_entropy_bits": null
+    },
+    {
+      "n_qubits": 12,
+      "status": "skipped",
+      "reason": "above_exact_max_qubits",
+      "exact_max_qubits": 8,
+      "ground_energy": null,
+      "max_bond": null,
+      "worst_cut_discarded_weight": null,
+      "max_midchain_entropy_bits": null
+    }
+  ]
+}

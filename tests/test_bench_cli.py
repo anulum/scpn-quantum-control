@@ -22,6 +22,7 @@ def test_methods_selection_excludes_gpu_by_default() -> None:
     labels = [harness.label for harness in harnesses]
     assert "methods-rust-core" in labels
     assert "methods-gpu" not in labels
+    assert "methods-ansatz-scaling-tn" not in labels
     assert all("fim" not in harness.groups for harness in harnesses)
 
 
@@ -32,6 +33,17 @@ def test_methods_selection_can_include_gpu() -> None:
     assert "methods-gpu" in labels
 
 
+def test_methods_selection_can_include_scaling() -> None:
+    harnesses = bench_cli._selected_harnesses(
+        "methods",
+        include_gpu=False,
+        include_scaling=True,
+    )
+
+    labels = [harness.label for harness in harnesses]
+    assert "methods-ansatz-scaling-tn" in labels
+
+
 def test_all_selection_includes_methods_and_fim() -> None:
     harnesses = bench_cli._selected_harnesses("all", include_gpu=False)
 
@@ -39,6 +51,7 @@ def test_all_selection_includes_methods_and_fim() -> None:
     assert "methods-rust-core" in labels
     assert "fim-spectrum" in labels
     assert "methods-gpu" not in labels
+    assert "methods-ansatz-scaling-tn" not in labels
 
 
 def test_dry_run_prints_selected_harnesses(capsys: pytest.CaptureFixture[str]) -> None:

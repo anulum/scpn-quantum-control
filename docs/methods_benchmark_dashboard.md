@@ -48,6 +48,7 @@ included only where they consume already committed JSON data.
 | Cross-machine CPU | `data/rust_vqe_methods/remote_knm_benchmark_*_2026-05-05.json` | `scripts/benchmark_remote_knm_machine.py` |
 | Vertex T4 GPU | `data/rust_vqe_methods/gpu_benchmark_summary_vertex_t4_2026-05-05.json` | `scripts/benchmark_gpu_methods.py` |
 | Combined methods summary | `data/rust_vqe_methods/combined_methods_benchmark_summary_2026-05-05.json` | `scripts/summarise_rust_vqe_method_artifacts.py` |
+| Ansatz scaling plus tensor-network diagnostics | `data/rust_vqe_methods/ansatz_scaling_tn_summary_2026-05-05.json` | `scripts/benchmark_ansatz_scaling_tn.py` |
 | FIM spectra | `data/scpn_fim_hamiltonian/fim_spectrum_summary_2026-05-05.json` | `scripts/analyse_fim_spectrum.py` |
 | FIM level spacing | `data/scpn_fim_hamiltonian/fim_level_spacing_summary_2026-05-05.json` | `scripts/analyse_fim_level_spacing.py` |
 | FIM entanglement | `data/scpn_fim_hamiltonian/fim_entanglement_summary_2026-05-05.json` | `scripts/analyse_fim_entanglement.py` |
@@ -76,6 +77,7 @@ python scripts/benchmark_vqe_methods.py
 python scripts/benchmark_multilang_knm_methods.py
 python scripts/benchmark_gpu_methods.py
 python scripts/summarise_rust_vqe_method_artifacts.py
+python scripts/benchmark_ansatz_scaling_tn.py
 python scripts/analyse_fim_spectrum.py
 python scripts/analyse_fim_level_spacing.py
 python scripts/analyse_fim_entanglement.py
@@ -117,10 +119,14 @@ papers should not interpret them as universal hardware performance constants.
 
 The next benchmark extension is an n=6--12 ansatz-scaling study with exact
 diagonalisation where feasible and tensor-network references where exact
-methods become impractical. Candidate outputs:
+methods become impractical. The initial harness records circuit scaling for
+n=4--12 and MPS truncation diagnostics from exact ground states up to the
+configured exact limit. Larger tensor-network rows are marked as skipped until
+a non-exact backend is wired and validated. Current outputs:
 
 - `data/rust_vqe_methods/ansatz_scaling_tn_summary_*.json`
-- `data/rust_vqe_methods/ansatz_scaling_tn_summary_*.csv`
+- `data/rust_vqe_methods/ansatz_scaling_summary_*.csv`
+- `data/rust_vqe_methods/tn_truncation_summary_*.csv`
 
 ### Analog XY bridge
 
