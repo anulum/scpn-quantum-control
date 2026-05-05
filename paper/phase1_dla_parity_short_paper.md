@@ -36,6 +36,16 @@ classical Lindblad simulator (calibrated with the published ibm\_fez
 $T_1/T_2$ and gate-error rates) once the circuit enters the saturation
 regime at depth $\ge 14$.
 
+**2026-05-05 update.** A preregistered reduced Phase 2 replication on
+the same backend repeated the $n=4$ test with 600 raw-count circuits
+and 4096 shots per circuit, plus a 12-circuit readout baseline. The
+count-to-statistic reproducer gives Fisher $\chi^2 = 140.671952$,
+$p = 3.77 \times 10^{-20}$, with 6/10 depths individually significant.
+A B-C continuation at $n=6,8$ gives mixed scaling evidence: $n=8$
+preserves a positive middle-depth sign, while $n=6$ shows negative
+significant depths. This falsifies a simple monotone scaling story and
+is not a broad quantum-advantage claim.
+
 ---
 
 ## 1. Introduction
@@ -199,6 +209,37 @@ $+3.0\,\%$ and $+1.7\,\%$ respectively. The weaker $n = 8$ signal is
 expected given the smaller rep count and the larger intrinsic
 decoherence at 8 qubits; a more statistically powerful follow-up is
 proposed in the next section.
+
+### Phase 2 replication and mixed scaling update
+
+The May 2026 Phase 2 continuation strengthens the $n=4$ result while
+also constraining the scaling story. The reduced A+G run repeated the
+$n=4$ parity-leakage protocol with 30 repetitions per depth/sector
+and 4096 shots per circuit. It produced Fisher
+$\chi^2 = 140.671952$, $p = 3.77\times 10^{-20}$, with six of ten
+depths individually significant. The strongest replicated middle-depth
+asymmetry is at $d=4$, where
+$L_\mathrm{even}=0.12009$, $L_\mathrm{odd}=0.11053$, and
+$A(d)=+8.65\,\%$.
+
+![Phase 2 n=4 replication asymmetry](../figures/phase2/phase2_n4_replication_asymmetry.png)
+
+The B-C scaling continuation tested $n=6$ and $n=8$ only. It should be
+reported as mixed evidence rather than monotone scaling validation. At
+$n=8$, depths $4,8,14$ preserve a positive sign
+($+3.33\,\%$, $+1.58\,\%$, $+1.33\,\%$) with Fisher
+$p=2.68\times10^{-4}$. At $n=6$, two significant depths have the
+opposite sign ($-3.74\,\%$ at $d=8$, $-1.94\,\%$ at $d=20$), with
+Fisher $p=1.88\times10^{-7}$. This falsifies a simple monotone scaling
+interpretation and indicates that the parity-sector noise response is
+size- and depth-window dependent.
+
+![Phase 2 mixed scaling asymmetry](../figures/phase2/phase2_bc_scaling_mixed_asymmetry.png)
+
+The promoted Phase 2 scope is therefore narrow: robust $n=4$
+replication, same-day readout control, and mixed early scaling at
+$n=6,8$. It does not promote $n=10,12$ scaling, GUESS mitigation,
+multi-device replication, or broad quantum advantage.
 
 ### Statistical caveats
 

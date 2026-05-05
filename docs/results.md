@@ -177,6 +177,8 @@ The reduced Phase 2 run repeated the `n=4` DLA parity test with 30 reps per
 depth/sector at 4096 shots, plus a same-run readout baseline. Blocks B-F
 (`n=6-12` scaling and GUESS calibration) were not submitted.
 
+![Phase 2 n=4 replication asymmetry](../figures/phase2/phase2_n4_replication_asymmetry.png)
+
 | Trotter depth | Leak even | Leak odd | Asymmetry | Welch p |
 |---:|---:|---:|---:|---:|
 | 2 | 0.08370 | 0.08247 | +1.49% | 0.278 |
@@ -202,6 +204,8 @@ Reproduce from raw counts via
 
 The B-C continuation tested only `n=6` and `n=8`; blocks A, D, E, F, and G were
 skipped. The same-day A+G readout baseline remains the readout-control source.
+
+![Phase 2 B-C mixed scaling asymmetry](../figures/phase2/phase2_bc_scaling_mixed_asymmetry.png)
 
 | n | Trotter depth | Leak even | Leak odd | Asymmetry | Welch p |
 |---:|---:|---:|---:|---:|---:|
