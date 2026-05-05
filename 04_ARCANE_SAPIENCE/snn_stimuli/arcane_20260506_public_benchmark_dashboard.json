@@ -1,0 +1,5 @@
+{
+  "text": "Promoted the methods benchmark dashboard into a public reproducibility page with scpn-bench recipes, direct artefact/script links, current FIM readout-mitigation status, and explicit no-QPU-spend boundaries.",
+  "source": "codex",
+  "project": "SCPN-QUANTUM-CONTROL"
+}

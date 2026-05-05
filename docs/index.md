@@ -156,6 +156,7 @@ for name, w in results.items():
 - [Notebooks](notebooks.md) — 98 notebooks (13 core + 34 FIM investigation)
 - [Language Policy](language_policy.md) — Rust / Julia / Go / Mojo accel-chain rules
 - [Pipeline Performance](pipeline_performance.md) — measured wall-times + multi-language benchmarks
+- [Methods Benchmark Dashboard](methods_benchmark_dashboard.md) — one-command artefact regeneration and paper-supporting benchmark provenance
 - [Issue Triage](triage.md) — label taxonomy, SLAs, routing
 - [Falsification](falsification.md) — 8 named claims + falsifiers
 
