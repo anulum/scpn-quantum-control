@@ -20,8 +20,8 @@ theoretical, simulated, hardware-measured, mitigated, or noise-limited.
 
 | Area | Public status |
 |---|---|
-| Promoted hardware campaigns | April 2026 `ibm_kingston` Phase 1 DLA parity raw-count dataset; legacy artifact-backed `ibm_fez` baseline rows. |
-| Simulator-only families | BKT scaling, OTOC, Floquet DTC, MBL/eigenstate scans, FIM, and classical wall-time baselines unless a hardware artifact is named. |
+| Promoted hardware campaigns | April 2026 `ibm_kingston` Phase 1 DLA parity raw-count dataset; legacy artefact-backed `ibm_fez` baseline rows. |
+| Simulator-only families | BKT scaling, OTOC, Floquet DTC, MBL/eigenstate scans, FIM, and classical wall-time baselines unless a hardware artefact is named. |
 | Pending / quarantined IBM batches | V2, frontier, queued-job, placeholder, and aggregate-only IBM outputs are not promoted here until raw counts, retrieval manifests, and analysis scripts are reviewed and committed. |
 | Canonical status source | [Hardware Status Ledger](hardware_status_ledger.md). |
 
@@ -31,18 +31,18 @@ theoretical, simulated, hardware-measured, mitigated, or noise-limited.
 
 | # | Finding | Measured Value | Source |
 |---|---------|---------------|--------|
-| 1 | DLA parity raw-count reproduction | 342 circuits; peak asymmetry +17.48% at depth 6 | `data/phase1_dla_parity/` + `scripts/run_dla_parity_suite.py` |
-| 2 | Bell inequality row | CHSH S=2.165, S=2.188 (>8σ) | Legacy `ibm_fez` artifact row |
-| 3 | QKD row | QBER 5.5% < BB84 threshold (11%) | Legacy `ibm_fez` artifact row |
-| 4 | State preparation row | 94.6% (∣0⟩), 89.8% (∣1⟩) | Legacy `ibm_fez` artifact row |
-| 5 | ZNE row | Range 0.259–0.272 across folds 1–9 | Legacy `ibm_fez` artifact row |
-| 6 | Knm ansatz row | 2.36 bits vs TwoLocal 3.46 | Legacy `ibm_fez` artifact row |
-| 7 | 16-qubit UPDE row | 13/16 qubits ∣⟨Z⟩∣>0.3 | Legacy `ibm_fez` artifact row |
+| 1 | DLA parity raw-count reproduction | Phase 1: 342 circuits, peak asymmetry +17.48% at depth 6; Phase 2 reduced A+G: 612 circuits, Fisher p=3.77e-20 | `data/phase1_dla_parity/`, `data/phase2_dla_parity/`, `scripts/run_dla_parity_suite.py`, `scripts/analyse_phase2_dla_parity.py` |
+| 2 | Bell inequality row | CHSH S=2.165, S=2.188 (>8σ) | Legacy `ibm_fez` artefact row |
+| 3 | QKD row | QBER 5.5% < BB84 threshold (11%) | Legacy `ibm_fez` artefact row |
+| 4 | State preparation row | 94.6% (∣0⟩), 89.8% (∣1⟩) | Legacy `ibm_fez` artefact row |
+| 5 | ZNE row | Range 0.259–0.272 across folds 1–9 | Legacy `ibm_fez` artefact row |
+| 6 | Knm ansatz row | 2.36 bits vs TwoLocal 3.46 | Legacy `ibm_fez` artefact row |
+| 7 | 16-qubit UPDE row | 13/16 qubits ∣⟨Z⟩∣>0.3 | Legacy `ibm_fez` artefact row |
 | 8 | Schmidt gap transition | K=3.44 (n=8) | Exact simulation |
 | 9 | Critical coupling extrapolation | K_c(∞): BKT≈2.20, power≈2.94 | Finite-size scaling |
 | 10 | DTC survives disorder | 15/15 drive amplitudes | Floquet simulation |
 | 11 | Scrambling peak | 4× faster at K=4 vs K=1 | OTOC simulation |
-| 12 | Trotter error row | dt=0.1 vs dt=0.05 flips Q1 sign | Legacy `ibm_fez` artifact row |
+| 12 | Trotter error row | dt=0.1 vs dt=0.05 flips Q1 sign | Legacy `ibm_fez` artefact row |
 | 13 | Non-ergodic regime (not deep MBL) | Poisson level spacing + 25-33% sub-thermal eigenstate S | Level spacing + eigenstate scan |
 | 14 | **BKT universality preserved** | CFT c=1.04 (n=8), gap R²>0.96 | Kaggle computation (n=4-12) |
 | 15 | Exact-simulation crossover | n≈11.6, exact Hilbert-space only | Classical baselines plus hardware-budget estimates; not broad advantage |
@@ -123,8 +123,8 @@ Paper 27 heterogeneous frequencies.
 
 Two campaigns on Heron r2 (156-qubit) processors:
 
-- **`ibm_fez`** — legacy March 2026 baseline artifacts. Values may be quoted
-  only with their committed artifact path and should not be used as broad
+- **`ibm_fez`** — legacy March 2026 baseline artefacts. Values may be quoted
+  only with their committed artefact path and should not be used as broad
   advantage or frontier validation.
 - **`ibm_kingston`** — April 2026 Phase 1 DLA-parity campaign,
   342 circuits across 4 sub-phases. This is the promoted raw-count hardware
@@ -171,10 +171,37 @@ A 267-line short paper draft for *Quantum Science and Technology* /
 *Physical Review Research* is in
 [`paper/phase1_dla_parity_short_paper.md`](https://github.com/anulum/scpn-quantum-control/blob/main/paper/phase1_dla_parity_short_paper.md).
 
+### Phase 2 — Reduced A+G Replication (May 2026, ibm_kingston)
+
+The reduced Phase 2 run repeated the `n=4` DLA parity test with 30 reps per
+depth/sector at 4096 shots, plus a same-run readout baseline. Blocks B-F
+(`n=6-12` scaling and GUESS calibration) were not submitted.
+
+| Trotter depth | Leak even | Leak odd | Asymmetry | Welch p |
+|---:|---:|---:|---:|---:|
+| 2 | 0.08370 | 0.08247 | +1.49% | 0.278 |
+| 4 | 0.12009 | 0.11053 | +8.65% | 1.56e-08 |
+| 6 | 0.15296 | 0.14659 | +4.35% | 1.94e-04 |
+| 8 | 0.17339 | 0.16879 | +2.72% | 0.00352 |
+| 10 | 0.19599 | 0.18761 | +4.47% | 9.64e-07 |
+| 14 | 0.23883 | 0.22912 | +4.24% | 6.14e-06 |
+| 20 | 0.28904 | 0.28035 | +3.10% | 2.59e-05 |
+| 30 | 0.34557 | 0.34524 | +0.10% | 0.857 |
+| 40 | 0.38906 | 0.38868 | +0.10% | 0.855 |
+| 50 | 0.42153 | 0.42188 | -0.08% | 0.857 |
+
+- **Fisher's combined statistic:** chi2 `140.671952`, p `3.773718e-20`.
+- **Significant depths:** 6/10 at Welch p < 0.05.
+- **Readout baseline:** 12/12 circuits complete at 8192 shots, with state
+  retention from 95.0% to 99.2%.
+
+Reproduce from raw counts via
+`PYTHONDONTWRITEBYTECODE=1 /home/anulum/.local/bin/python scripts/analyse_phase2_dla_parity.py --verify-integrity`.
+
 ### Legacy ibm_fez Results (March 2026)
 
 The `ibm_fez` rows below are retained as legacy hardware observations. They
-must be cited with artifact paths from `results/ibm_hardware_2026-03-28/`,
+must be cited with artefact paths from `results/ibm_hardware_2026-03-28/`,
 `results/march_2026/`, or the hardware ledger, and they are not evidence for
 broad quantum advantage or any frontier claim.
 

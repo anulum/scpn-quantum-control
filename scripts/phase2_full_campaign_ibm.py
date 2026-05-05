@@ -583,6 +583,9 @@ def main() -> int:
         "t_step": T_STEP,
         "shots_main": SHOTS_MAIN,
         "shots_baseline": SHOTS_BASELINE,
+        "max_live_depth": args.max_live_depth,
+        "live_depth_summary": live_depth_summary,
+        "live_gate_summary": live_gate_summary,
         "circuits": all_results,
         "aggregated_experiment_A": agg_a,
     }

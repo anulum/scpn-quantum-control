@@ -233,7 +233,7 @@ def aggregate_experiment_a(results: list[dict]) -> list[dict]:
     """Compute mean leakage per (depth, sector) across reps."""
     buckets: dict[tuple[int, str], list[float]] = {}
     for r in results:
-        if r["meta"]["experiment"] != "A_dla_parity_n4":
+        if r["meta"]["experiment"] not in {"A_dla_parity_n4", "A_dla_parity_n4_phase2"}:
             continue
         stats = r.get("stats", {})
         if "parity_leakage" not in stats:

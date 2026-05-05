@@ -117,3 +117,20 @@ This cancelled job is quarantined execution evidence only. It supplies no raw
 counts and closes no validation claim. The follow-up script now performs a
 hardware-backend transpilation precheck before submission and requires the live
 max depth to remain within the manifest budget.
+
+## 2026-05-05 completed run update
+
+The reduced A+G Phase 2 run completed on `ibm_kingston`:
+
+- Main job: `d7stu94t738s73ch5keg`, 600 circuits, 4096 shots, IBM-reported
+  quantum seconds `660`.
+- Readout job: `d7su3tkt738s73ch5ql0`, 12 circuits, 8192 shots, IBM-reported
+  quantum seconds `27`.
+- Raw-count dataset: `data/phase2_dla_parity/phase2_reduced_ag_2026-05-05T121357Z.json`.
+- Reproducer: `scripts/analyse_phase2_dla_parity.py --verify-integrity`.
+
+The verified reproducer reports Fisher chi2 `140.671952`, Fisher p
+`3.773718e-20`, and 6/10 depths significant at Welch p < 0.05. This promotes
+only the reduced `n=4` DLA parity replication plus readout baseline. It does
+not promote `n=6-12` scaling, GUESS calibration, broad quantum advantage, or
+frontier claims.
