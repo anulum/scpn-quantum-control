@@ -24,7 +24,7 @@ not a broad quantum-advantage claim and not any frontier or live-loop claim.
 | Available QPU budget assumption | Approximately 120 minutes remaining |
 | Required account state | IBM promotional or credit window active |
 | Submission guard | `--confirm-promo-active` plus explicit human approval |
-| Live-ready reduced command | `PYTHONDONTWRITEBYTECODE=1 /home/anulum/.local/bin/python scripts/phase2_full_campaign_ibm.py --confirm-promo-active --backend ibm_kingston --skip B C D E F` |
+| Live-ready reduced command | `PYTHONDONTWRITEBYTECODE=1 /home/anulum/.local/bin/python scripts/phase2_full_campaign_ibm.py --confirm-promo-active --backend ibm_kingston --skip B C D E F --max-live-depth 1100` |
 | Dry-run command | `PYTHONDONTWRITEBYTECODE=1 /home/anulum/.local/bin/python scripts/phase2_full_campaign_ibm.py --dry-run --backend ibm_kingston --skip B C D E F` |
 | Dry-run result | Passed on 2026-05-05 |
 | 2026-05-05 live attempt | Aborted and cancelled after hardware transpilation drift |
@@ -205,12 +205,12 @@ Reduced dry-run, already passed:
 PYTHONDONTWRITEBYTECODE=1 /home/anulum/.local/bin/python scripts/phase2_full_campaign_ibm.py --dry-run --backend ibm_kingston --skip B C D E F
 ```
 
-Reduced live submission is blocked until a hardware-backend transpilation
-precheck is added or the manifest budget is updated. Do not rerun the live
-command below until that correction is committed:
+Reduced live submission now includes a pre-submit hardware-backend transpilation
+check. The accepted live depth budget is `1100`, above the observed `1014`
+depth from the cancelled attempt and still below a manifest-controlled guard:
 
 ```bash
-PYTHONDONTWRITEBYTECODE=1 /home/anulum/.local/bin/python scripts/phase2_full_campaign_ibm.py --confirm-promo-active --backend ibm_kingston --skip B C D E F
+PYTHONDONTWRITEBYTECODE=1 /home/anulum/.local/bin/python scripts/phase2_full_campaign_ibm.py --confirm-promo-active --backend ibm_kingston --skip B C D E F --max-live-depth 1100
 ```
 
 Deferred scaling/GUESS follow-up, blocked until the reduced primary run is

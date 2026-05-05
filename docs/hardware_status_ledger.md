@@ -117,7 +117,7 @@ raw IBM counts and promoted here.
 - Gap B close-out review status: **DONE 2026-05-05** — the validation readiness gate records the Phase 1 raw-count reproducer pass, a current-commit classical/Rust matrix smoke check, and the promotion rules for future broad-advantage or hardware claims.
 - Phase 2 preregistration status: **DONE 2026-05-05** — `docs/ibm_phase2_preregistered_manifest_2026-05-05.md` and `results/ibm_phase2_preregistration_2026-05-05.json` record the QPU-minimised A+G first live command, dry-run circuit inventory, abort criteria, evidence path, and promotion gates.
 - 2026-05-05 live attempt status: **ABORTED / CANCELLED** — `ibm_kingston` job `d7stqj7ljm6s73bbu080` was cancelled after live hardware transpilation exceeded the reduced dry-run depth budget; IBM metadata reported `0` quantum seconds and `0` usage seconds. This job is quarantined and not evidence.
-- Next pending item: **hardware-transpilation precheck** — no further hardware submission until the live backend transpilation budget is checked before job submission or the manifest budget is updated and approved.
+- Next pending item: **reduced A+G hardware submission with precheck** — the script now checks live backend transpilation before submission and aborts above the manifest budget; no B-F blocks are approved before primary raw-count review.
 
 ## EEG Condition Comparison — 2026-04-30
 

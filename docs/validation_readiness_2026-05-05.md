@@ -114,6 +114,6 @@ IBM job `d7stqj7ljm6s73bbu080` is recorded as `CANCELLED`, with IBM metadata
 reporting `0` quantum seconds and `0` usage seconds.
 
 This cancelled job is quarantined execution evidence only. It supplies no raw
-counts and closes no validation claim. The next required step is a
-hardware-backend transpilation precheck or an updated manifest budget before any
-new IBM submission.
+counts and closes no validation claim. The follow-up script now performs a
+hardware-backend transpilation precheck before submission and requires the live
+max depth to remain within the manifest budget.

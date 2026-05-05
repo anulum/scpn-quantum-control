@@ -312,6 +312,12 @@ def main() -> int:
         choices=["A", "B", "C", "D", "E", "F", "G"],
         help="Skip specific experiments",
     )
+    parser.add_argument(
+        "--max-live-depth",
+        type=int,
+        default=1100,
+        help="Abort before submission if live-backend transpilation exceeds this depth.",
+    )
     args = parser.parse_args()
 
     if not args.dry_run and not args.confirm_promo_active:
@@ -417,6 +423,54 @@ def main() -> int:
     print(f"Connected: {runner.backend_name}")
     print()
 
+    print("Pre-submit hardware transpilation budget check...")
+    all_isa = [runner.transpile(qc) for _, qc in all_circuits]
+    depths_isa = [c.depth() for c in all_isa]
+    gate_counts = [sum(c.count_ops().values()) for c in all_isa]
+    live_depth_summary = {
+        "min": min(depths_isa),
+        "max": max(depths_isa),
+        "mean": float(np.mean(depths_isa)),
+    }
+    live_gate_summary = {
+        "min": min(gate_counts),
+        "max": max(gate_counts),
+        "mean": float(np.mean(gate_counts)),
+    }
+    print(
+        f"Live ISA depths: min={live_depth_summary['min']}, "
+        f"max={live_depth_summary['max']}, mean={live_depth_summary['mean']:.1f}"
+    )
+    print(
+        f"Live gate counts: min={live_gate_summary['min']}, "
+        f"max={live_gate_summary['max']}, mean={live_gate_summary['mean']:.1f}"
+    )
+    if live_depth_summary["max"] > args.max_live_depth:
+        with open(results_path, "w") as f:
+            json.dump(
+                {
+                    "status": "aborted_live_transpile_depth_budget",
+                    "timestamp": timestamp,
+                    "backend": args.backend,
+                    "max_live_depth": args.max_live_depth,
+                    "live_depth_summary": live_depth_summary,
+                    "live_gate_summary": live_gate_summary,
+                    "n_circuits_main": len(circuits_main),
+                    "n_circuits_baseline": len(circuits_baseline),
+                },
+                f,
+                indent=2,
+                default=str,
+            )
+        print(
+            f"ERROR: live max depth {live_depth_summary['max']} exceeds "
+            f"--max-live-depth {args.max_live_depth}; no IBM job submitted.",
+            file=sys.stderr,
+        )
+        return 4
+    print(f"Live transpilation budget accepted (max <= {args.max_live_depth}).")
+    print()
+
     # Pre-save metadata
     with open(results_path, "w") as f:
         json.dump(
@@ -424,6 +478,9 @@ def main() -> int:
                 "status": "submitted",
                 "timestamp": timestamp,
                 "backend": args.backend,
+                "max_live_depth": args.max_live_depth,
+                "live_depth_summary": live_depth_summary,
+                "live_gate_summary": live_gate_summary,
                 "n_circuits_main": len(circuits_main),
                 "n_circuits_baseline": len(circuits_baseline),
                 "metas_main": metas_main,
