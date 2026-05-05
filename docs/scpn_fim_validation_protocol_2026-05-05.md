@@ -217,8 +217,30 @@ Scientific boundary:
 - It does not submit QPU jobs.
 - It does not reverse the negative fixed-`lambda` IBM result.
 - A hardware claim would require a separately approved adaptive or batched
-  follow-up experiment with fresh raw counts, live transpilation metadata, and
-  readout controls.
+  follow-up experiment with fresh raw counts, live transpilation metadata,
+  readout controls, and a documented stop rule.
+
+## Phase 6 — Full-basis readout-matrix mitigation cross-check
+
+Goal: close the scalable readout-mitigation review point without spending new
+QPU time.
+
+Implemented path:
+
+- Module: `src/scpn_quantum_control/mitigation/readout_matrix.py`.
+- Script: `scripts/analyse_fim_readout_matrix_mitigation.py`.
+- CLI wiring: `scpn-bench fim-all --include-readout`.
+
+Scientific boundary:
+
+- The repeated SCPN/FIM follow-up includes all 16 computational-basis readout
+  calibration circuits for `n=4`, so a literal `2^n x 2^n` confusion-matrix
+  inversion is valid for that dataset.
+- The mitigation operates only on measurement confusion in the committed raw
+  counts. It does not correct coherent gate errors, Trotter overhead, layout
+  routing noise, or backend drift.
+- Datasets without a complete basis calibration remain limited to exact-state or
+  parity-readout corrections unless new calibration circuits are collected.
 
 ## QPU budget guard
 

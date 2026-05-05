@@ -17,6 +17,18 @@ from .mitiq_integration import (
     zne_mitigated_expectation,
 )
 from .pec import PECResult, pauli_twirl_decompose, pec_sample
+from .readout_matrix import (
+    ReadoutConfusionMatrix,
+    build_readout_confusion_matrix,
+    computational_basis_labels,
+    counts_to_probabilities,
+    mitigate_counts,
+    mitigate_probabilities,
+    probability_magnetisation_leakage,
+    probability_mean_magnetisation,
+    probability_parity_leakage,
+    probability_state_retention,
+)
 from .symmetry_decay import (
     GUESSResult,
     SymmetryDecayModel,
@@ -44,6 +56,16 @@ __all__ = [
     "PECResult",
     "pauli_twirl_decompose",
     "pec_sample",
+    "ReadoutConfusionMatrix",
+    "computational_basis_labels",
+    "counts_to_probabilities",
+    "build_readout_confusion_matrix",
+    "mitigate_counts",
+    "mitigate_probabilities",
+    "probability_state_retention",
+    "probability_parity_leakage",
+    "probability_magnetisation_leakage",
+    "probability_mean_magnetisation",
     "CPDRResult",
     "cpdr_mitigate",
     "cpdr_full_pipeline",

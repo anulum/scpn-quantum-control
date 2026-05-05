@@ -30,6 +30,7 @@ Useful options:
 | --- | --- |
 | `--dry-run` | Print selected harnesses without executing them. |
 | `--include-gpu` | Include optional GPU harnesses. |
+| `--include-readout` | Include full-basis offline readout-matrix mitigation where the calibration basis is complete. |
 | `--keep-going` | Continue after a failed harness and report all failures. |
 | `--no-diff` | Skip the post-run committed-artefact diff summary. |
 
@@ -56,6 +57,7 @@ included only where they consume already committed JSON data.
 | FIM VQE | `data/scpn_fim_hamiltonian/fim_vqe_ground_state_summary_2026-05-05.json` | `scripts/benchmark_fim_vqe_ground_state.py` |
 | FIM IBM pilot analysis | `data/scpn_fim_hamiltonian/fim_ibm_pilot_analysis_2026-05-05.json` | `scripts/analyse_fim_ibm_pilot.py` |
 | FIM IBM repeated analysis | `data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_analysis_2026-05-05.json` | `scripts/analyse_fim_ibm_repeated_followup.py` |
+| FIM full-basis readout matrix | `data/scpn_fim_hamiltonian/fim_readout_matrix_mitigation_summary_2026-05-05_d7t5gtaudops7397ikn0.json` | `scripts/analyse_fim_readout_matrix_mitigation.py` |
 
 ## Current combined artefact hashes
 
@@ -85,6 +87,7 @@ python scripts/analyse_fim_sector_survival.py
 python scripts/benchmark_fim_vqe_ground_state.py
 python scripts/analyse_fim_ibm_pilot.py
 python scripts/analyse_fim_ibm_repeated_followup.py
+python scripts/analyse_fim_readout_matrix_mitigation.py
 ```
 
 Remote or non-local machine artefacts should record the machine identity,
@@ -99,6 +102,9 @@ hardware context, command, timestamp, and checksum before being promoted into
 - Compare regenerated artefacts with committed files.
 - Report changed artefacts explicitly instead of silently accepting drift.
 - Avoid spending QPU time or submitting hardware jobs.
+- Keep full-basis readout-matrix mitigation optional behind
+  `--include-readout`, because it is only valid for hardware datasets with a
+  complete calibration basis.
 
 ## Machine provenance
 

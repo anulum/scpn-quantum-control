@@ -1,0 +1,5 @@
+{
+  "text": "Implemented full-basis readout-matrix mitigation for the SCPN/FIM repeated IBM follow-up. The 16-state calibration basis is complete and well-conditioned; mitigation preserves the negative hardware result with increased magnetisation leakage and decreased retention for lambda=4.",
+  "source": "codex",
+  "project": "SCPN-QUANTUM-CONTROL"
+}

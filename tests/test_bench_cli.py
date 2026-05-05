@@ -52,6 +52,18 @@ def test_all_selection_includes_methods_and_fim() -> None:
     assert "fim-spectrum" in labels
     assert "methods-gpu" not in labels
     assert "methods-ansatz-scaling-tn" not in labels
+    assert "fim-readout-matrix-mitigation" not in labels
+
+
+def test_fim_selection_can_include_readout_matrix_mitigation() -> None:
+    harnesses = bench_cli._selected_harnesses(
+        "fim",
+        include_gpu=False,
+        include_readout=True,
+    )
+
+    labels = [harness.label for harness in harnesses]
+    assert "fim-readout-matrix-mitigation" in labels
 
 
 def test_dry_run_prints_selected_harnesses(capsys: pytest.CaptureFixture[str]) -> None:

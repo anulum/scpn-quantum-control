@@ -59,7 +59,11 @@ by a repeated randomized run with 166 circuits and 339968 shots. The repeated
 run is a negative validation result: at $\lambda=4$ relative to $\lambda=0$,
 magnetisation leakage increased by $0.0896$ on average across matched
 state/depth comparisons (Fisher combined $p=7.49\times10^{-55}$), while
-exact-state retention decreased by $0.0797$ on average. Thus the tested digital
+exact-state retention decreased by $0.0797$ on average. A full 16-state
+readout-confusion-matrix inversion on the same repeated run preserves this
+negative conclusion: magnetisation leakage still increases by $0.0917$
+($p=8.14\times10^{-55}$) and state retention still decreases by $0.0815$
+($p=1.19\times10^{-48}$). Thus the tested digital
 Trotter implementation falsifies the simple hypothesis that this FIM term acts
 as a hardware coherence-protection mechanism. The paper is deliberately
 bounded: the artefacts support exact small-system Hamiltonian findings and a
@@ -176,7 +180,8 @@ under \path{data/scpn_fim_hamiltonian/}. The scripts are:
   \item \path{scripts/analyse_fim_entanglement.py},
   \item \path{scripts/analyse_fim_sector_survival.py},
   \item \path{scripts/benchmark_fim_vqe_ground_state.py}, and
-  \item \path{scripts/analyse_fim_ibm_repeated_followup.py}.
+  \item \path{scripts/analyse_fim_ibm_repeated_followup.py},
+  \item \path{scripts/analyse_fim_readout_matrix_mitigation.py}.
 \end{itemize}
 %
 The claim boundary is maintained separately in
@@ -330,10 +335,20 @@ Readout-corrected parity leakage & $+0.0644$ & $6.27\times10^{-48}$ & $13/15$ & 
 \caption{Repeated IBM Heron r2 follow-up on \texttt{ibm\_kingston}. Positive
 leakage deltas mean $\lambda=4$ leaked more than $\lambda=0$ within matched
 initial state and depth. The readout correction is a state-specific parity-flip
-correction from the available basis-state readout baselines, not a full
-confusion-matrix inversion.}
+correction from the available basis-state readout baselines.}
 \label{tab:ibm}
 \end{table}
+
+Because the repeated design included all 16 computational-basis readout
+baseline circuits, we also applied a literal $2^n\times 2^n$ readout
+confusion-matrix inversion offline. The calibration matrix is well-conditioned
+for this dataset (condition number $1.049$). The mitigated results preserve the
+same sign and scale: state retention changes by $-0.0815$ on average
+($p=1.19\times10^{-48}$), magnetisation leakage changes by $+0.0917$
+($p=8.14\times10^{-55}$), and parity leakage changes by $+0.0642$
+($p=6.19\times10^{-48}$). This removes the scalable-readout-mitigation
+objection for the repeated FIM follow-up while leaving the negative hardware
+interpretation unchanged.
 
 \section{Discussion}
 
@@ -380,12 +395,16 @@ $n=4$ VQE scoring grid. The level-spacing and entropy results are
 localisation-like diagnostics only. They do not prove strict many-body
 localisation. The VQE result uses a small optimiser budget and should be treated
 as an ansatz-design signal, not a theorem. The IBM hardware result is
-single-backend and circuit-family specific. The readout correction is not a
-full confusion-matrix inversion. The Fisher combined p-values in the hardware
-table combine matched-condition Welch tests and should be read as compact
-evidence of sign stability across the repeated design, not as proof of
-backend-general behaviour. No hardware coherence improvement, quantum
-advantage, or universal protection claim is made.
+single-backend and circuit-family specific. Full readout-matrix mitigation is
+available for the repeated FIM follow-up because it includes all 16 readout
+baseline circuits, but this does not correct gate errors, Trotter overhead,
+layout routing, or calibration drift. Datasets without complete basis
+calibration remain limited to exact-state or parity-readout corrections. The
+Fisher combined p-values in the hardware table combine matched-condition Welch
+tests and should be read as compact evidence of sign stability across the
+repeated design, not as proof of backend-general behaviour. No hardware
+coherence improvement, quantum advantage, or universal protection claim is
+made.
 
 \section{Data and code availability}
 
@@ -401,7 +420,10 @@ analysis artefacts include:
   \item \path{fim_ibm_pilot_raw_counts_2026-05-05_d7t53ofljm6s73bc6bj0.json},
   \item \path{fim_ibm_pilot_analysis_2026-05-05_d7t53ofljm6s73bc6bj0.json},
   \item \path{fim_ibm_repeated_followup_raw_counts_2026-05-05_d7t5gtaudops7397ikn0.json}, and
-  \item \path{fim_ibm_repeated_followup_analysis_2026-05-05_d7t5gtaudops7397ikn0.json}.
+  \item \path{fim_ibm_repeated_followup_analysis_2026-05-05_d7t5gtaudops7397ikn0.json},
+  \item \path{fim_readout_matrix_mitigation_summary_2026-05-05_d7t5gtaudops7397ikn0.json},
+  \item \path{fim_readout_matrix_mitigation_rows_2026-05-05_d7t5gtaudops7397ikn0.csv}, and
+  \item \path{fim_readout_matrix_mitigation_comparisons_2026-05-05_d7t5gtaudops7397ikn0.csv}.
 \end{itemize}
 
 \section*{AI usage disclosure}

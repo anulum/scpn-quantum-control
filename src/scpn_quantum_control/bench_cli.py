@@ -67,6 +67,12 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         "scripts/analyse_fim_ibm_repeated_followup.py",
         frozenset({"fim"}),
     ),
+    Harness(
+        "fim-readout-matrix-mitigation",
+        "scripts/analyse_fim_readout_matrix_mitigation.py",
+        frozenset({"fim"}),
+        optional_flag="readout",
+    ),
 )
 
 ARTEFACT_PATHS = (
@@ -120,6 +126,11 @@ def _add_run_options(parser: argparse.ArgumentParser, *, default_group: str) -> 
         help="Include heavier n=4--12 ansatz-scaling and tensor-network diagnostics.",
     )
     parser.add_argument(
+        "--include-readout",
+        action="store_true",
+        help="Include full-basis offline readout-matrix mitigation cross-checks.",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Print selected harnesses without executing them.",
@@ -141,6 +152,7 @@ def _selected_harnesses(
     *,
     include_gpu: bool,
     include_scaling: bool = False,
+    include_readout: bool = False,
 ) -> list[Harness]:
     wanted_groups = {"methods", "fim"} if group == "all" else {group}
     selected: list[Harness] = []
@@ -150,6 +162,8 @@ def _selected_harnesses(
         if harness.optional_flag == "gpu" and not include_gpu:
             continue
         if harness.optional_flag == "scaling" and not include_scaling:
+            continue
+        if harness.optional_flag == "readout" and not include_readout:
             continue
         selected.append(harness)
     return selected
@@ -193,6 +207,7 @@ def run(argv: Sequence[str] | None = None) -> int:
         ns.group,
         include_gpu=ns.include_gpu,
         include_scaling=ns.include_scaling,
+        include_readout=ns.include_readout,
     )
     if not harnesses:
         print("[scpn-bench] no harnesses selected", file=sys.stderr)
@@ -200,7 +215,7 @@ def run(argv: Sequence[str] | None = None) -> int:
 
     print("[scpn-bench] selected harnesses:")
     for harness in harnesses:
-        suffix = " (optional GPU)" if harness.optional_flag == "gpu" else ""
+        suffix = " (optional)" if harness.optional_flag is not None else ""
         print(f"  - {harness.label}: {harness.script}{suffix}")
     if ns.dry_run:
         return 0
