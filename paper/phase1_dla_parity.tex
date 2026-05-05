@@ -26,8 +26,8 @@
 
 \begin{document}
 
-\title{Replicated hardware observation of dynamical Lie-algebra parity asymmetry\\
-in the XY Hamiltonian}
+\title{Replicated hardware observation of parity-sector and excitation-number\\
+correlated decoherence asymmetry in the XY Hamiltonian}
 
 \author{Miroslav \v{S}otek}
 \email{protoscience@anulum.li}
@@ -267,11 +267,13 @@ two parity-labelled DLA blocks can have different effective leakage
 responses under realistic noise. However, the specific computational
 basis states used here also differ in excitation number. The result
 should therefore be read conservatively as a parity-sector and
-excitation-number correlated leakage asymmetry until the dedicated
-popcount-control run described below is completed. The magnitude of
-the effect at large depths agrees with the apriori classical
-simulator prediction, giving confidence that the observed asymmetry
-is not only a readout artefact specific to \texttt{ibm\_kingston}.
+excitation-number correlated leakage asymmetry. The completed
+popcount-control run below confirms that excitation count and
+computational-basis state choice materially contribute to the
+observed pattern. The magnitude of the original effect at large
+depths agrees with the apriori classical simulator prediction, giving
+confidence that the observed asymmetry is not only a readout artefact
+specific to \texttt{ibm\_kingston}.
 
 A ruled-out alternative explanation is readout-basis asymmetry:
 Experiment~C readout calibration shows a mean retention of
@@ -320,7 +322,15 @@ the calibration spread ($0.014$) is already an order of magnitude
 smaller than the observed asymmetry. The Phase~2 A+G run added a
 same-day readout baseline for $n=4,6,8$ computational basis states,
 but the promoted analyses still report unmitigated raw-count leakage
-statistics rather than confusion-matrix-inverted estimates.
+statistics rather than confusion-matrix-inverted estimates. As a
+post-hoc robustness check, we also performed the strongest readout
+correction supported by the existing raw counts: exact-state
+parity-confusion inversion for initial states with matching
+readout-only calibration circuits. A literal full $2^n\times2^n$
+confusion-matrix inversion is not available without new calibration
+circuits for all basis states. The parity-readout-corrected Phase~2
+$n=4$ replication remains significant, with Fisher
+$\chi^2=73.894393$, $p=4.16\times10^{-8}$ across the ten depths.
 
 \subsection{Possible confounds the protocol does not yet rule out}
 
@@ -427,7 +437,11 @@ $p=3.773718\times10^{-20}$, and six of ten depths are individually
 significant. The replicated effect is concentrated at depths
 $d=4$--20; by $d=30,40,50$ the asymmetry is statistically consistent
 with zero, consistent with a saturation regime in which both sectors
-approach comparable leakage.
+approach comparable leakage. The exact-state parity-readout
+correction reduces but does not remove this replication signal
+($p=4.16\times10^{-8}$), indicating that the promoted sign and
+statistical conclusion are not an artefact of the measured readout-only
+parity flips.
 
 The B-C block constrains the scaling claim. At $n=8$, depths
 $4,8,14$ preserve the positive sign, with relative asymmetries
@@ -462,14 +476,30 @@ are also significant: the even swap has Fisher
 $p=2.06\times10^{-19}$ across depths, and the odd swap has Fisher
 $p=4.62\times10^{-14}$. Finally, the excitation-inversion arm shows
 that the popcount-3 odd state generally leaks more than the popcount-2
-even state, with Fisher $p=8.83\times10^{-24}$ for the signed
+even state, with Fisher $p=8.829457\times10^{-24}$ for the signed
 $|0011\rangle-|0111\rangle$ comparison. These results indicate that
 state preparation, layout, and excitation count materially contribute
 to the leakage response. The promoted interpretation is therefore a
 reproducible parity-sector/excitation-number correlated hardware
 phenomenon, not an isolated proof that DLA parity alone determines
-decoherence robustness.
-decoherence robustness.
+decoherence robustness. The same exact-state parity-readout correction
+preserves all four popcount-control comparison families: the corrected
+original contrast gives Fisher $p=9.27\times10^{-18}$, the corrected
+within-even and within-odd swaps give $p=4.47\times10^{-20}$ and
+$p=3.59\times10^{-15}$, and the corrected excitation-inversion arm
+gives $p=5.93\times10^{-18}$.
+
+\begin{figure}[tb]
+\centering
+\includegraphics[width=0.95\columnwidth]{../figures/phase2/phase2_popcount_control_leakage.png}
+\caption{Phase~2 popcount-control leakage curves. The original
+even--odd contrast remains visible in the middle-depth window, but
+same-popcount within-sector swaps and the popcount-3 odd state also
+show state-dependent leakage. The control supports a multifactorial
+parity-sector/excitation-number interpretation rather than a
+DLA-parity-only causal claim.}
+\label{fig:popcount}
+\end{figure}
 
 %% ====================================================================
 \section{Conclusion}
@@ -489,7 +519,12 @@ follow-up shows that excitation count and state choice materially
 contribute to the signal. The validated claim is therefore an $n=4$
 raw-count hardware phenomenon with constrained early scaling evidence
 and an explicitly limited causal interpretation, not a broad
-quantum-advantage result and not a DLA-parity-only result.
+quantum-advantage result and not a DLA-parity-only result. Existing
+data also support two no-new-QPU follow-up conclusions: exact-state
+parity-readout correction preserves the main Phase~2 signs, and
+parity survival is smooth enough versus depth to motivate a future
+GUESS-style folded-noise protocol. The latter is only a readiness
+check, not a demonstrated zero-noise extrapolation.
 
 %% ====================================================================
 \section*{Data and code availability}
@@ -499,7 +534,7 @@ All raw count dictionaries, per-circuit metadata, analysis scripts,
 and figure-generation code are open-sourced at
 \url{https://github.com/anulum/scpn-quantum-control} under the
 AGPL-3.0 licence. The Phase~1 dataset lives in
-\texttt{data/phase1\_dla\_parity/} (four JSON files, 342 circuits at
+\path{data/phase1_dla_parity/} (four JSON files, 342 circuits at
 $n = 4$), and the full analysis can be reproduced with
 %
 \begin{verbatim}
@@ -507,14 +542,21 @@ python scripts/analyse_phase1_dla_parity.py
 \end{verbatim}
 %
 The Phase~2 A+G raw-count dataset lives in
-\texttt{data/phase2\_dla\_parity/}. The Phase~2 B-C raw-count dataset
-lives in \texttt{data/phase2\_scaling\_bc/}. The exact Phase~2
+\path{data/phase2_dla_parity/}. The Phase~2 B-C raw-count dataset
+lives in \path{data/phase2_scaling_bc/}. The exact Phase~2
 reproduction commands, job identifiers, figure artefacts, and SHA256
 hashes are indexed in
-\texttt{docs/publication\_phase2\_package\_2026-05-05.md}.
+\path{docs/publication_phase2_package_2026-05-05.md}.
 The popcount-control dataset lives in
-\texttt{data/phase2\_popcount\_control/} and is reproduced with
-\texttt{scripts/analyse\_phase2\_popcount\_control.py}.
+\path{data/phase2_popcount_control/} and is reproduced with
+\path{scripts/analyse_phase2_popcount_control.py}.
+The no-new-QPU readout and GUESS-readiness cross-checks are reproduced
+with \path{scripts/analyse_phase2_readout_mitigation.py} and
+\path{scripts/analyse_phase2_guess_calibration.py}; their derived
+JSON summaries live in \path{data/phase2_readout_mitigation/} and
+\path{data/phase2_guess_calibration/}. Prepared but unsubmitted
+state/layout-randomisation and multi-device replication protocols are
+documented in \path{docs/next_validation_protocols_2026-05-05.md}.
 The campaign archive carries Zenodo
 DOI~\href{https://doi.org/10.5281/zenodo.18821929}{10.5281/zenodo.18821929}.
 
@@ -561,7 +603,7 @@ arXiv:2504.08031 (2025).
 
 \bibitem{Liu2023ICI}
 H.~Liu \emph{et al.},
-``Optimal STIREP with ICI pulse sequences'' (2023).
+``Optimal STIRAP with ICI pulse sequences'' (2023).
 
 \bibitem{Sotek2025}
 M.~\v{S}otek,

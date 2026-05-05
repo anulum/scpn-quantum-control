@@ -1,0 +1,113 @@
+{
+  "method": "log_linear_fit_of_parity_survival_vs_depth",
+  "not_zero_noise_extrapolation": true,
+  "interpretation": "Depth is used only as a cumulative-noise proxy. Future GUESS validation requires explicit folded noise scales or another controlled noise knob.",
+  "fits": [
+    {
+      "dataset": "phase2_ag_n4",
+      "series": "even",
+      "n_points": 10,
+      "alpha_per_depth": 0.03419002227162116,
+      "intercept": -0.15001799287987183,
+      "r_squared": 0.9989439072560926,
+      "rmse_log_survival": 0.01733080517420871,
+      "min_survival": 0.1569498697916667,
+      "max_survival": 0.8326009114583334,
+      "usable_for_future_guess": true
+    },
+    {
+      "dataset": "phase2_ag_n4",
+      "series": "odd",
+      "n_points": 10,
+      "alpha_per_depth": 0.03466194625398003,
+      "intercept": -0.12483056623328491,
+      "r_squared": 0.9997072659334383,
+      "rmse_log_survival": 0.009246812073918182,
+      "min_survival": 0.15623372395833335,
+      "max_survival": 0.83505859375,
+      "usable_for_future_guess": true
+    },
+    {
+      "dataset": "phase2_ag_n4",
+      "series": "sector_mean",
+      "n_points": 10,
+      "alpha_per_depth": 0.03442720212282315,
+      "intercept": -0.13734075588601832,
+      "r_squared": 0.9994750769970462,
+      "rmse_log_survival": 0.012299923926591436,
+      "min_survival": 0.15659179687500002,
+      "max_survival": 0.8338297526041667,
+      "usable_for_future_guess": true
+    },
+    {
+      "dataset": "phase2_popcount",
+      "series": "E0_original_even",
+      "n_points": 6,
+      "alpha_per_depth": 0.01708306250832445,
+      "intercept": -0.14504935134772745,
+      "r_squared": 0.9614064433047272,
+      "rmse_log_survival": 0.018290051348930265,
+      "min_survival": 0.609375,
+      "max_survival": 0.8240559895833334,
+      "usable_for_future_guess": true
+    },
+    {
+      "dataset": "phase2_popcount",
+      "series": "E1_even_swap",
+      "n_points": 6,
+      "alpha_per_depth": 0.023118957597496114,
+      "intercept": -0.09800956161164906,
+      "r_squared": 0.9920662972938693,
+      "rmse_log_survival": 0.011047936480889291,
+      "min_survival": 0.5661214192708333,
+      "max_survival": 0.8122151692708334,
+      "usable_for_future_guess": true
+    },
+    {
+      "dataset": "phase2_popcount",
+      "series": "O0_original_odd",
+      "n_points": 6,
+      "alpha_per_depth": 0.023154853982706114,
+      "intercept": -0.07454093036853143,
+      "r_squared": 0.9581657685596766,
+      "rmse_log_survival": 0.025854308424414916,
+      "min_survival": 0.5666097005208333,
+      "max_survival": 0.8303629557291666,
+      "usable_for_future_guess": true
+    },
+    {
+      "dataset": "phase2_popcount",
+      "series": "O1_odd_swap",
+      "n_points": 6,
+      "alpha_per_depth": 0.017751862810408973,
+      "intercept": -0.12464034112493544,
+      "r_squared": 0.97841316683107,
+      "rmse_log_survival": 0.01409037537819294,
+      "min_survival": 0.62841796875,
+      "max_survival": 0.8369954427083334,
+      "usable_for_future_guess": true
+    },
+    {
+      "dataset": "phase2_popcount",
+      "series": "O3_odd_high_excitation",
+      "n_points": 6,
+      "alpha_per_depth": 0.01733786520737688,
+      "intercept": -0.18244652332121722,
+      "r_squared": 0.9767202602888203,
+      "rmse_log_survival": 0.014303584667050848,
+      "min_survival": 0.5909423828125,
+      "max_survival": 0.7640787760416666,
+      "usable_for_future_guess": true
+    }
+  ],
+  "usable_series": [
+    "even",
+    "odd",
+    "sector_mean",
+    "E0_original_even",
+    "E1_even_swap",
+    "O0_original_odd",
+    "O1_odd_swap",
+    "O3_odd_high_excitation"
+  ]
+}
