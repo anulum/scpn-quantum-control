@@ -95,8 +95,12 @@ update this table first, then refresh the summary pages.
   `run_scaling_benchmark` and crossover-point loaders.
 - Gap B item 2 status: **DONE** — separate exact-simulation crossover from
   observable-level broad-advantage claims in the public benchmark wording.
-- Next pending item: **Gap B item 3** — run the classical/Rust/GPU matrix before
-  spending additional QPU budget.
+- Gap B item 3 status: **DONE** — ran the classical/Rust/GPU benchmark matrix
+  for the quantum-advantage comparison and saved it as
+  `results/classical_rust_gpu_matrix_2026-05-03.json`.
+- Next pending item: **Gap B close-out review** — apply the matrix evidence to
+  the next broad-advantage evidence gate and any remaining observable-level
+  claim wording.
 
 ## EEG Condition Comparison — 2026-04-30
 

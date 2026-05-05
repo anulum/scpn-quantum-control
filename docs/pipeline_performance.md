@@ -689,6 +689,31 @@ These rows are a smoke-scale provenance table, not the publication
 scaling claim. Sparse SciPy emitted conversion warnings during the
 run, which is useful context for interpreting the small-n noise.
 
+### Quantum Advantage — Classical / Rust / GPU Matrix (Gap B item 3)
+
+Gap B item 3 now tracks the pre-QPU guardrail matrix in
+`results/classical_rust_gpu_matrix_2026-05-03.json`. It records, for matching
+problem sizes:
+
+- classical order-parameter ODE (SciPy path),
+- classical exact diagonalisation (CPU dense and sparse),
+- exact diagonalisation on GPU when available,
+- Rust ODE kernel timing.
+
+Run:
+
+```bash
+python scripts/bench_quantum_advantage_classical_matrix.py \
+  --sizes 4,6,8,10 \
+  --max-dense-dim 64 \
+  --max-sparse-dim 64 \
+  --max-sparse-iter 20 \
+  --output results/classical_rust_gpu_matrix_2026-05-03.json
+```
+
+Matrix rows are used as the classical-rank evidence gate before expanding frontier
+QPU campaigns.
+
 ### Broad Quantum Advantage (Observable-Level) — Not yet claimed
 
 No broad observable-level advantage claim is documented yet. The committed evidence
