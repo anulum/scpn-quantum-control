@@ -58,7 +58,15 @@ $d \ge 14$. All raw count dictionaries, analysis scripts, and figures
 are open-source at \url{https://github.com/anulum/scpn-quantum-control}
 under the AGPL-3.0 licence.
 
-A preregistered May 2026 Phase~2 continuation strengthens but also qualifies the claim: a reduced $n=4$ replication gives Fisher $\chi^2=140.671952$, $p=3.77\times10^{-20}$, while a B-C scaling continuation gives mixed $n=6,8$ evidence. The $n=8$ middle depths preserve the positive sign, whereas $n=6$ has negative significant depths. The follow-up therefore falsifies a simple monotone scaling story and does not constitute a broad quantum-advantage claim.
+A preregistered May 2026 Phase~2 continuation strengthens but also
+qualifies the claim: a reduced $n=4$ replication gives Fisher
+$\chi^2=140.671952$, $p=3.77\times10^{-20}$, while a B-C scaling
+continuation gives mixed $n=6,8$ evidence. A subsequent popcount
+control shows that excitation count and computational-basis state
+choice materially contribute to the leakage pattern. The follow-up
+therefore falsifies both a simple monotone scaling story and a clean
+``DLA parity alone'' causal interpretation; it does not constitute a
+broad quantum-advantage claim.
 \end{abstract}
 
 \maketitle
@@ -316,7 +324,8 @@ statistics rather than confusion-matrix-inverted estimates.
 
 \subsection{Possible confounds the protocol does not yet rule out}
 
-Two confounds remain open after the reduced Phase~2 continuation.
+Two confounds remained open after the reduced Phase~2 continuation;
+the first has now been directly probed by a popcount-control run.
 
 \textbf{Excitation-count confound.} The two primary initial states
 differ by one excitation: $|\psi_e\rangle = |0011\rangle$ has
@@ -324,13 +333,17 @@ popcount 2 while $|\psi_o\rangle = |0001\rangle$ has popcount 1.
 Under a pure amplitude-damping ($T_1$) channel, the higher-excitation
 state can decay into lower-excitation manifolds faster, which may
 explain part of the observed asymmetry without invoking only the DLA
-block structure. A dedicated control is therefore required before the
-causal wording can be strengthened. The preregistered control should
-include within-sector state swaps
+block structure. We therefore ran a preregistered popcount control
+with within-sector state swaps
 ($|0011\rangle$ vs $|0101\rangle$ and
 $|0001\rangle$ vs $|0010\rangle$) and an excitation-inversion arm
-($|0011\rangle$ vs $|0111\rangle$), where a pure $T_1$ explanation
-predicts the higher-excitation odd state to leak more strongly.
+($|0011\rangle$ vs $|0111\rangle$), where a pure $T_1$ contribution
+predicts the higher-excitation odd state to leak more strongly. The
+control does not support a clean ``DLA parity alone'' causal claim:
+the original contrast remains significant at middle depths, but
+within-sector same-popcount state swaps are also significant and the
+popcount-3 odd state leaks more than the popcount-2 even state at
+four of six depths.
 
 \textbf{Temporal drift between sub-phases.} The 342 circuits were
 submitted across four sub-phases between 2026-04-10 18:37~UTC and
@@ -426,6 +439,38 @@ $n=6,8$ early scaling. Phase~2 falsifies a simple monotone scaling
 story and does not constitute broad quantum advantage, GUESS
 mitigation validation, or $n=10,12$ hardware validation.
 
+\subsection{Popcount-control follow-up}
+\label{sec:popcount}
+
+After the B-C scaling run, we executed the preregistered popcount
+control on \texttt{ibm\_kingston}. The run used 360 parity-leakage
+circuits and five readout circuits. It tested five $n=4$ initial
+states: the original even state $|0011\rangle$, an even same-popcount
+swap $|0101\rangle$, the original odd state $|0001\rangle$, an odd
+same-popcount swap $|0010\rangle$, and a higher-excitation odd state
+$|0111\rangle$. The jobs were
+\texttt{d7svcnkt738s73ch7agg} and
+\texttt{d7svhsaudops7397bp30}; the raw-count SHA256 hash is indexed
+in the publication package manifest.
+
+The control is scientifically useful because it downgrades the causal
+interpretation. The original $|0011\rangle-|0001\rangle$ contrast is
+still significant in the middle-depth window ($+9.73\,\%$ at
+$d=6$, $+17.13\,\%$ at $d=8$, and $+14.42\,\%$ at $d=10$), but it
+reverses by $d=20$ ($-9.87\,\%$). Same-popcount within-sector swaps
+are also significant: the even swap has Fisher
+$p=2.06\times10^{-19}$ across depths, and the odd swap has Fisher
+$p=4.62\times10^{-14}$. Finally, the excitation-inversion arm shows
+that the popcount-3 odd state generally leaks more than the popcount-2
+even state, with Fisher $p=8.83\times10^{-24}$ for the signed
+$|0011\rangle-|0111\rangle$ comparison. These results indicate that
+state preparation, layout, and excitation count materially contribute
+to the leakage response. The promoted interpretation is therefore a
+reproducible parity-sector/excitation-number correlated hardware
+phenomenon, not an isolated proof that DLA parity alone determines
+decoherence robustness.
+decoherence robustness.
+
 %% ====================================================================
 \section{Conclusion}
 %% ====================================================================
@@ -437,12 +482,14 @@ an independent same-device raw-count continuation. The Phase~1
 observation gives a
 $(10.8 \pm 1.1)\,\%$ mean asymmetry across depths $d \ge 4$ and agrees
 quantitatively with an independent classical simulator prediction.
-The Phase~2 A+G block independently strengthens the $n=4$ claim with
-Fisher $p=3.77\times10^{-20}$, while the B-C block shows that scaling
-is mixed rather than monotone. The validated claim is therefore an
-$n=4$ raw-count hardware replication with constrained early scaling
-evidence and an explicitly open excitation-count confound, not a
-broad quantum-advantage result.
+The Phase~2 A+G block independently strengthens the $n=4$ raw-count
+observation with Fisher $p=3.77\times10^{-20}$, while the B-C block
+shows that scaling is mixed rather than monotone. The popcount-control
+follow-up shows that excitation count and state choice materially
+contribute to the signal. The validated claim is therefore an $n=4$
+raw-count hardware phenomenon with constrained early scaling evidence
+and an explicitly limited causal interpretation, not a broad
+quantum-advantage result and not a DLA-parity-only result.
 
 %% ====================================================================
 \section*{Data and code availability}
@@ -465,6 +512,9 @@ lives in \texttt{data/phase2\_scaling\_bc/}. The exact Phase~2
 reproduction commands, job identifiers, figure artefacts, and SHA256
 hashes are indexed in
 \texttt{docs/publication\_phase2\_package\_2026-05-05.md}.
+The popcount-control dataset lives in
+\texttt{data/phase2\_popcount\_control/} and is reproduced with
+\texttt{scripts/analyse\_phase2\_popcount\_control.py}.
 The campaign archive carries Zenodo
 DOI~\href{https://doi.org/10.5281/zenodo.18821929}{10.5281/zenodo.18821929}.
 

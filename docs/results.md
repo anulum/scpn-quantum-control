@@ -238,8 +238,37 @@ artefacts, reproduction commands, and claim boundaries.
 
 The excitation-count confound control is preregistered in
 [`docs/ibm_popcount_control_manifest_2026-05-05.md`](ibm_popcount_control_manifest_2026-05-05.md).
-Until that control is complete, the paper should use the conservative wording
-`parity-sector and excitation-number correlated leakage asymmetry`.
+It has now been executed and promoted under
+`data/phase2_popcount_control/`. The control shows that the original middle-depth
+contrast survives, but same-popcount within-sector swaps are also significant
+and the popcount-3 odd arm generally leaks more than the popcount-2 even arm.
+The paper should therefore use the conservative wording `parity-sector and
+excitation-number correlated leakage asymmetry`, not `DLA parity alone`.
+
+### Phase 2 — Popcount-Control Follow-up (May 2026, ibm_kingston)
+
+The popcount-control run tested the main excitation-count confound in the `n=4`
+DLA parity protocol. It used 360 parity-leakage circuits and 5 readout circuits.
+
+| Comparison | Fisher chi2 | Fisher p | Significant depths | Interpretation |
+|---|---:|---:|---:|---|
+| E0 `0011` minus O0 `0001` | 127.260593 | 2.186677e-21 | 4/6 | Original contrast persists at middle depths but reverses at depth 20. |
+| E0 `0011` minus E1 `0101` | 117.374982 | 2.059878e-19 | 5/6 | Within-even same-popcount state spread is large. |
+| O0 `0001` minus O1 `0010` | 90.150466 | 4.617056e-14 | 4/6 | Within-odd same-popcount state spread is large. |
+| E0 `0011` minus O3 `0111` | 139.164854 | 8.829457e-24 | 4/6 | Higher-excitation odd state usually leaks more than E0, consistent with excitation-count contribution. |
+
+Jobs:
+
+- Main: `d7svcnkt738s73ch7agg`
+- Readout: `d7svhsaudops7397bp30`
+
+Raw JSON SHA256:
+
+`f43cbd7e466a3267847b44a750aeba7801cbc52ef10e9808573ef7ed01ec3cf0`
+
+Reproduce:
+
+`PYTHONDONTWRITEBYTECODE=1 /home/anulum/.local/bin/python scripts/analyse_phase2_popcount_control.py --verify-integrity`
 
 ### Legacy ibm_fez Results (March 2026)
 
