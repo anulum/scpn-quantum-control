@@ -1,0 +1,120 @@
+{
+  "artefacts": {
+    "csv": "/workspace/scpn/out/gpu_benchmark_summary_vertex_t4_2026-05-05.csv",
+    "csv_sha256": "ac83c94dcdd7361f09afeebe9a0777ea0448ebe77f0108f60c4ce00ad3db25c3",
+    "json": "/workspace/scpn/out/gpu_benchmark_summary_vertex_t4_2026-05-05.json",
+    "json_sha256": "4148173f271c2803cc5a6e64995555d878b7ee2623dd056ae014304392551267"
+  },
+  "command": "PYTHONDONTWRITEBYTECODE=1 .venv-linux/bin/python scripts/benchmark_gpu_methods.py --include-torch-cpu",
+  "date": "2026-05-05",
+  "label": "vertex_t4",
+  "machine": {
+    "cpu_count": 4,
+    "hostname": "cmle-training-workerpool0-9445b2655f-0-nwrkt",
+    "load_average": [
+      6.923828125,
+      3.15869140625,
+      1.18505859375
+    ],
+    "platform": "Linux-6.6.122+-x86_64-with-glibc2.35",
+    "processor": "x86_64",
+    "python": "3.11.10"
+  },
+  "rows": [
+    {
+      "backend": "numpy_cpu",
+      "batch_size": 64,
+      "checksum": 0.857848584651947,
+      "hilbert_dim": 256,
+      "max_ms": 21.970106,
+      "mean_ms": 11.8909144,
+      "median_ms": 11.121263500000001,
+      "min_ms": 0.2969,
+      "n_qubits": 8,
+      "p95_ms": 21.404656,
+      "repeats": 20,
+      "status": "ok"
+    },
+    {
+      "backend": "torch_cuda",
+      "batch_size": 64,
+      "checksum": 0.8578481674194336,
+      "hilbert_dim": 256,
+      "max_ms": 0.621347,
+      "mean_ms": 0.20840065,
+      "median_ms": 0.176173,
+      "min_ms": 0.124132,
+      "n_qubits": 8,
+      "p95_ms": 0.329064,
+      "repeats": 20,
+      "status": "ok"
+    },
+    {
+      "backend": "numpy_cpu",
+      "batch_size": 64,
+      "checksum": -0.10259348154067993,
+      "hilbert_dim": 1024,
+      "max_ms": 9.372274,
+      "mean_ms": 4.2305231,
+      "median_ms": 3.557195,
+      "min_ms": 3.073063,
+      "n_qubits": 10,
+      "p95_ms": 8.569693,
+      "repeats": 20,
+      "status": "ok"
+    },
+    {
+      "backend": "torch_cuda",
+      "batch_size": 64,
+      "checksum": -0.10259251296520233,
+      "hilbert_dim": 1024,
+      "max_ms": 0.668913,
+      "mean_ms": 0.3294871,
+      "median_ms": 0.2895635,
+      "min_ms": 0.284625,
+      "n_qubits": 10,
+      "p95_ms": 0.569753,
+      "repeats": 20,
+      "status": "ok"
+    },
+    {
+      "backend": "numpy_cpu",
+      "batch_size": 64,
+      "checksum": 0.10653353482484818,
+      "hilbert_dim": 2048,
+      "max_ms": 66.975152,
+      "mean_ms": 21.2523327,
+      "median_ms": 12.0942805,
+      "min_ms": 10.836898,
+      "n_qubits": 11,
+      "p95_ms": 56.884837,
+      "repeats": 20,
+      "status": "ok"
+    },
+    {
+      "backend": "torch_cuda",
+      "batch_size": 64,
+      "checksum": 0.10653345286846161,
+      "hilbert_dim": 2048,
+      "max_ms": 1.400814,
+      "mean_ms": 0.9328792,
+      "median_ms": 0.9054774999999999,
+      "min_ms": 0.898402,
+      "n_qubits": 11,
+      "p95_ms": 0.93332,
+      "repeats": 20,
+      "status": "ok"
+    }
+  ],
+  "schema": "scpn_gpu_methods_benchmark_v1",
+  "timing_caveat": "Opportunistic shared-machine timing. GPU clocks, CPU affinity, thermal state, driver version, and competing workloads were not pinned. The workload is batched state-vector expectation evaluation for classical validation and VQE scoring, not K_nm construction.",
+  "torch": {
+    "available": true,
+    "cuda_available": true,
+    "cuda_device_count": 1,
+    "cuda_devices": [
+      "Tesla T4"
+    ],
+    "version": "2.5.1+cu124"
+  }
+}

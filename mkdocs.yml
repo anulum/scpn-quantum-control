@@ -99,10 +99,14 @@ nav:
       - "Preprint: Quantum Kuramoto-XY on Hardware": preprint.md
       - "Paper: Synchronisation Witnesses": paper_sync_witnesses.md
       - "Paper: DLA Parity Theorem": paper_dla_parity.md
+      - "Paper Plan: SCPN/FIM Hamiltonian": scpn_fim_hamiltonian_paper_plan_2026-05-05.md
+      - "Protocol: SCPN/FIM Validation": scpn_fim_validation_protocol_2026-05-05.md
+      - "Claim Boundary: SCPN/FIM": scpn_fim_claim_boundary_2026-05-05.md
       - "DLA-parity Validation": dla_parity.md
       - "Classical Irreproducibility": classical_irreproducibility.md
       - Hardware Status Ledger: hardware_status_ledger.md
       - Results Gallery: results.md
+      - Methods Benchmark Dashboard: methods_benchmark_dashboard.md
   - Hardware:
       - IBM Guide: hardware_guide.md
       - Experiment Roadmap: EXPERIMENT_ROADMAP.md

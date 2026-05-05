@@ -1,0 +1,134 @@
+{
+  "date": "2026-05-05",
+  "command": "PYTHONDONTWRITEBYTECODE=1 /home/anulum/.local/bin/python scripts/benchmark_multilang_knm_methods.py",
+  "timing_caveat": "Opportunistic local timing on a shared workstation. CPU load from other processes was not pinned or isolated; publication-grade numbers should be rerun on an isolated benchmark host with governor/load metadata.",
+  "rows": [
+    {
+      "language": "python_numpy",
+      "n": 4,
+      "median_ms": 0.012648,
+      "status": "ok"
+    },
+    {
+      "language": "rust_pyo3",
+      "n": 4,
+      "median_ms": 0.0010915,
+      "status": "ok"
+    },
+    {
+      "language": "python_numpy",
+      "n": 8,
+      "median_ms": 0.0133465,
+      "status": "ok"
+    },
+    {
+      "language": "rust_pyo3",
+      "n": 8,
+      "median_ms": 0.0015834999999999998,
+      "status": "ok"
+    },
+    {
+      "language": "python_numpy",
+      "n": 16,
+      "median_ms": 0.013388500000000001,
+      "status": "ok"
+    },
+    {
+      "language": "rust_pyo3",
+      "n": 16,
+      "median_ms": 0.0032960000000000003,
+      "status": "ok"
+    },
+    {
+      "language": "python_numpy",
+      "n": 32,
+      "median_ms": 0.0203765,
+      "status": "ok"
+    },
+    {
+      "language": "rust_pyo3",
+      "n": 32,
+      "median_ms": 0.010518,
+      "status": "ok"
+    },
+    {
+      "language": "python_numpy",
+      "n": 64,
+      "median_ms": 0.0305735,
+      "status": "ok"
+    },
+    {
+      "language": "rust_pyo3",
+      "n": 64,
+      "median_ms": 0.044694,
+      "status": "ok"
+    },
+    {
+      "language": "julia",
+      "median_ms": 0.000339,
+      "n": 4,
+      "status": "ok"
+    },
+    {
+      "language": "julia",
+      "median_ms": 0.0012655,
+      "n": 8,
+      "status": "ok"
+    },
+    {
+      "language": "julia",
+      "median_ms": 0.0050865,
+      "n": 16,
+      "status": "ok"
+    },
+    {
+      "language": "julia",
+      "median_ms": 0.0170205,
+      "n": 32,
+      "status": "ok"
+    },
+    {
+      "language": "julia",
+      "median_ms": 0.0655105,
+      "n": 64,
+      "status": "ok"
+    },
+    {
+      "language": "go",
+      "n": 4,
+      "median_ms": 0.000386,
+      "status": "ok"
+    },
+    {
+      "language": "go",
+      "n": 8,
+      "median_ms": 0.000855,
+      "status": "ok"
+    },
+    {
+      "language": "go",
+      "n": 16,
+      "median_ms": 0.004017,
+      "status": "ok"
+    },
+    {
+      "language": "go",
+      "n": 32,
+      "median_ms": 0.014891,
+      "status": "ok"
+    },
+    {
+      "language": "go",
+      "n": 64,
+      "median_ms": 0.055793,
+      "status": "ok"
+    },
+    {
+      "language": "mojo",
+      "n": null,
+      "median_ms": null,
+      "status": "detected_not_benchmarked",
+      "note": "Mojo runtime detected, but no stable local K_nm kernel is implemented in this harness yet."
+    }
+  ]
+}

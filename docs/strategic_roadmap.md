@@ -22,6 +22,21 @@ crossover closes a manuscript resource-boundary figure only. It does not
 activate S2 or claim broad quantum advantage; S2 still requires the full
 N=4--20 exact/MPS/GPU/noisy-hardware benchmark matrix and CEO approval.
 
+**Methods-paper follow-up candidates (2026-05-05):** the Rust/VQE methods
+papers identify four concrete next steps: a one-command reproducibility CLI,
+a public benchmark dashboard, n=6--12 ansatz scaling with tensor-network
+baselines, and an optional Pulser/Bloqade analog XY bridge. The CLI and
+dashboard are publication infrastructure. The scaling study maps to S2/S20,
+and the analog bridge maps to S10; both require separate activation before
+heavy benchmark or dependency work.
+
+**SCPN/FIM Hamiltonian paper track (2026-05-05):** the third paper is activated
+as a documentation and offline-validation track. It covers the collective
+Fisher-information-inspired term `H_FIM = -lambda * M^2 / n`, its
+magnetisation-sector consequences, and hardware-facing predictions. IBM runs are
+not activated by this note; they require offline artefacts, equal-depth circuit
+protocols, QPU-time estimates, and explicit approval.
+
 **Relationship to `ROADMAP.md`:** that file tracks release-scoped
 work (v0.9.x → v1.0). This file tracks post-v1.0 differentiation
 work that pushes the project into novel territory rather than
@@ -329,7 +344,7 @@ the 5–20 % band). Raw data archived to Zenodo.
 ### Motivation
 
 Phase 1 raw data lives in `data/phase1_dla_parity/*.json` and has
-a Zenodo DOI (10.5281/zenodo.18821929). A community-usable
+a Zenodo DOI (Zenodo record 18821929). A community-usable
 benchmark would ship: the raw data, the classical reference
 solvers, a reproducer script, and a diff-check harness against the
 published statistics — all in one `pip install`-able subpackage.

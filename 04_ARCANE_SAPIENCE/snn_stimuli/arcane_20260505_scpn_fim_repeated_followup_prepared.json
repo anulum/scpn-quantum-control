@@ -1,0 +1,28 @@
+{
+  "schema": "arcane_sapience_stimulus_v1",
+  "timestamp_utc": "2026-05-05T203709Z",
+  "project": "SCPN-QUANTUM-CONTROL",
+  "source": "local_research_agent",
+  "event": "scpn_fim_repeated_followup_protocol_prepared",
+  "workspace": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL",
+  "protocol": {
+    "lambdas": [0, 4],
+    "depths": [2, 4, 6],
+    "initial_states": ["0000", "0001", "0011", "0111", "1111"],
+    "replicates_per_condition": 5,
+    "shots_per_circuit": 2048,
+    "main_circuits": 150,
+    "readout_circuits": 16,
+    "total_circuits": 166,
+    "total_shots": 339968,
+    "randomization_seed": 2026050503
+  },
+  "artefacts": {
+    "generator": "scripts/prepare_fim_ibm_repeated_followup.py",
+    "protocol_json": "data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_protocol_2026-05-05.json",
+    "protocol_csv": "data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_protocol_2026-05-05.csv",
+    "protocol_doc": "docs/scpn_fim_repeated_followup_protocol_2026-05-05.md"
+  },
+  "submission_status": "not_submitted",
+  "next_gate": "live backend readiness and QPU budget check"
+}

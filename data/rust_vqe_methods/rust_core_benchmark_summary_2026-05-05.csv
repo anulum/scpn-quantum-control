@@ -1,0 +1,10 @@
+benchmark,hermitian_max_abs_error,hilbert_dim,max_ms,mean_ms,median_ms,min_ms,n,p95_ms,parity_with_python_reference,python_mean_ms,python_median_ms,repeats,rust_engine_build_knm_available,rust_path_mean_ms,rust_path_median_ms,speedup_vs_python_median
+knm_construction,,,,,,,4,,True,0.007090417,0.005899,1000,True,0.002267129,0.0019554999999999998,3.016619790334953
+knm_construction,,,,,,,8,,True,0.014993651,0.013137,1000,True,0.002439172,0.002443,5.377404830126893
+knm_construction,,,,,,,16,,True,0.01626673,0.0129515,1000,True,0.006217371,0.004534,2.8565284516982796
+knm_construction,,,,,,,32,,True,0.016921854,0.0161805,1000,True,0.014450418,0.013787500000000001,1.1735630099728014
+knm_construction,,,,,,,64,,True,0.029642563333333333,0.02776,300,True,0.05217384333333333,0.050867,0.5457369217763972
+dense_hamiltonian_construction,0.0,8,0.061581,0.00883438,0.0072855,0.007028,3,0.009622,,,,50,,,,
+dense_hamiltonian_construction,0.0,16,0.01502,0.00816978,0.0079165,0.007663,4,0.00872,,,,50,,,,
+dense_hamiltonian_construction,0.0,64,0.02638,0.0147812,0.014134,0.013738,6,0.0155,,,,50,,,,
+dense_hamiltonian_construction,0.0,256,1.341437,0.252299,0.1293845,0.117976,8,0.173849,,,,10,,,,

@@ -1,0 +1,204 @@
+{
+  "artefacts": {
+    "csv": "data/rust_vqe_methods/remote_knm_benchmark_ml350_2026-05-05.csv",
+    "csv_sha256": "19ba862a690faa4bb48c94deefb7ee3ff5efcd90443301f42658e045d1df70f3",
+    "json": "data/rust_vqe_methods/remote_knm_benchmark_ml350_2026-05-05.json",
+    "json_sha256": "960cf35d4256e6558b7489e27fbacb11fa0eeeb87de7c05e28c641ca340399cb"
+  },
+  "generated_at": "2026-05-05T15:50:00Z",
+  "label": "ml350",
+  "machine": {
+    "cpu_count": 24,
+    "hostname": "god-of-the-math",
+    "load_average": [
+      8.33203125,
+      9.5322265625,
+      11.29345703125
+    ],
+    "machine": "x86_64",
+    "platform": "Linux-6.8.0-110-generic-x86_64-with-glibc2.39",
+    "processor": "x86_64",
+    "python": "3.12.3",
+    "timing_caveat": "Opportunistic shared-machine timings; CPU affinity, turbo state, thermal state, and competing workloads were not controlled."
+  },
+  "parameters": {
+    "alpha": 0.3,
+    "iterations": 1000,
+    "k0": 0.45,
+    "sizes": [
+      4,
+      8,
+      16,
+      32,
+      64
+    ]
+  },
+  "rows": [
+    {
+      "checksum": 3.353982834576425,
+      "iterations": 1000,
+      "language": "python",
+      "max_ms": 0.023816,
+      "mean_ms": 0.006862725,
+      "median_ms": 0.007733500000000001,
+      "min_ms": 0.004454,
+      "n": 4,
+      "status": "ok"
+    },
+    {
+      "checksum": 11.55480047354649,
+      "iterations": 1000,
+      "language": "python",
+      "max_ms": 0.072864,
+      "mean_ms": 0.024012672,
+      "median_ms": 0.0176685,
+      "min_ms": 0.015575,
+      "n": 8,
+      "status": "ok"
+    },
+    {
+      "checksum": 31.315807863229047,
+      "iterations": 1000,
+      "language": "python",
+      "max_ms": 0.413443,
+      "mean_ms": 0.088460583,
+      "median_ms": 0.0762025,
+      "min_ms": 0.062362,
+      "n": 16,
+      "status": "ok"
+    },
+    {
+      "checksum": 72.39425824114845,
+      "iterations": 1000,
+      "language": "python",
+      "max_ms": 0.76073,
+      "mean_ms": 0.345254965,
+      "median_ms": 0.305584,
+      "min_ms": 0.248614,
+      "n": 32,
+      "status": "ok"
+    },
+    {
+      "checksum": 154.71250836528142,
+      "iterations": 1000,
+      "language": "python",
+      "max_ms": 2.120885,
+      "mean_ms": 1.292911633,
+      "median_ms": 1.281825,
+      "min_ms": 0.997135,
+      "n": 64,
+      "status": "ok"
+    },
+    {
+      "checksum": 3.3539828345764247,
+      "iterations": 1000,
+      "language": "rust",
+      "max_ms": 0.016277,
+      "mean_ms": 0.0003712160000000021,
+      "median_ms": 0.00031800000000000003,
+      "min_ms": 0.000311,
+      "n": 4,
+      "status": "ok"
+    },
+    {
+      "checksum": 11.554800473546496,
+      "iterations": 1000,
+      "language": "rust",
+      "max_ms": 0.012195,
+      "mean_ms": 0.001267004999999998,
+      "median_ms": 0.001224,
+      "min_ms": 0.001198,
+      "n": 8,
+      "status": "ok"
+    },
+    {
+      "checksum": 31.315807863229015,
+      "iterations": 1000,
+      "language": "rust",
+      "max_ms": 0.07716,
+      "mean_ms": 0.005117891999999998,
+      "median_ms": 0.004928,
+      "min_ms": 0.004848,
+      "n": 16,
+      "status": "ok"
+    },
+    {
+      "checksum": 72.39425824114878,
+      "iterations": 1000,
+      "language": "rust",
+      "max_ms": 0.039048000000000006,
+      "mean_ms": 0.02048563099999999,
+      "median_ms": 0.019894,
+      "min_ms": 0.019789,
+      "n": 32,
+      "status": "ok"
+    },
+    {
+      "checksum": 154.7125083652821,
+      "iterations": 1000,
+      "language": "rust",
+      "max_ms": 0.45761599999999997,
+      "mean_ms": 0.09443762500000004,
+      "median_ms": 0.086725,
+      "min_ms": 0.08023,
+      "n": 64,
+      "status": "ok"
+    },
+    {
+      "checksum": 3.353982834576,
+      "iterations": 1000,
+      "language": "go",
+      "max_ms": 0.030207,
+      "mean_ms": 0.000746328,
+      "median_ms": 0.000457,
+      "min_ms": 0.000447,
+      "n": 4,
+      "status": "ok"
+    },
+    {
+      "checksum": 11.554800473546,
+      "iterations": 1000,
+      "language": "go",
+      "max_ms": 0.077779,
+      "mean_ms": 0.002531852,
+      "median_ms": 0.00175,
+      "min_ms": 0.001715,
+      "n": 8,
+      "status": "ok"
+    },
+    {
+      "checksum": 31.315807863229,
+      "iterations": 1000,
+      "language": "go",
+      "max_ms": 0.049889,
+      "mean_ms": 0.011573061,
+      "median_ms": 0.010232,
+      "min_ms": 0.007222,
+      "n": 16,
+      "status": "ok"
+    },
+    {
+      "checksum": 72.394258241149,
+      "iterations": 1000,
+      "language": "go",
+      "max_ms": 0.782595,
+      "mean_ms": 0.03766903,
+      "median_ms": 0.034799,
+      "min_ms": 0.029982,
+      "n": 32,
+      "status": "ok"
+    },
+    {
+      "checksum": 154.712508365282,
+      "iterations": 1000,
+      "language": "go",
+      "max_ms": 1.137255,
+      "mean_ms": 0.192226485,
+      "median_ms": 0.173995,
+      "min_ms": 0.120715,
+      "n": 64,
+      "status": "ok"
+    }
+  ],
+  "schema": "scpn_remote_knm_machine_benchmark_v1"
+}

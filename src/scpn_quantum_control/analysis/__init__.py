@@ -33,6 +33,20 @@ from .entanglement_spectrum import (
     entanglement_analysis,
     entropy_vs_coupling_scan,
 )
+from .fim_hamiltonian import (
+    SpectrumSummary,
+    add_fim_feedback,
+    adjacent_gap_ratio,
+    bipartite_entropy_from_statevector,
+    commutator_frobenius_norm_with_diagonal,
+    computational_magnetisations,
+    fim_diagonal,
+    magnetisation_operator_diagonal,
+    magnetisation_sector_indices,
+    sector_coupling_rows,
+    sector_spectrum_rows,
+    summarise_spectrum,
+)
 from .finite_size_scaling import FSSResult
 from .finite_size_scaling import finite_size_scaling as compute_finite_size_scaling
 from .h1_persistence import H1PersistenceResult, scan_h1_persistence
@@ -160,6 +174,18 @@ __all__ = [
     "percolation_scan",
     "FSSResult",
     "compute_finite_size_scaling",
+    "SpectrumSummary",
+    "add_fim_feedback",
+    "adjacent_gap_ratio",
+    "bipartite_entropy_from_statevector",
+    "commutator_frobenius_norm_with_diagonal",
+    "computational_magnetisations",
+    "fim_diagonal",
+    "magnetisation_operator_diagonal",
+    "magnetisation_sector_indices",
+    "sector_coupling_rows",
+    "sector_spectrum_rows",
+    "summarise_spectrum",
     "SelfConsistencyResult",
     "self_consistency_from_exact",
     "KrylovResult",

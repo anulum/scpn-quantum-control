@@ -1,0 +1,120 @@
+{
+  "date": "2026-05-05",
+  "command": "PYTHONDONTWRITEBYTECODE=1 /home/anulum/.local/bin/python scripts/benchmark_rust_core_methods.py",
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39",
+    "processor": "x86_64"
+  },
+  "timing_caveat": "Opportunistic local timing on a shared workstation. CPU load from other processes was not pinned or isolated; publication-grade numbers should be rerun on an isolated benchmark host with governor/load metadata.",
+  "rows": [
+    {
+      "benchmark": "knm_construction",
+      "n": 4,
+      "python_mean_ms": 0.007090417,
+      "python_median_ms": 0.005899,
+      "rust_path_mean_ms": 0.002267129,
+      "rust_path_median_ms": 0.0019554999999999998,
+      "speedup_vs_python_median": 3.016619790334953,
+      "repeats": 1000,
+      "rust_engine_build_knm_available": true,
+      "parity_with_python_reference": true
+    },
+    {
+      "benchmark": "knm_construction",
+      "n": 8,
+      "python_mean_ms": 0.014993651,
+      "python_median_ms": 0.013137,
+      "rust_path_mean_ms": 0.002439172,
+      "rust_path_median_ms": 0.002443,
+      "speedup_vs_python_median": 5.377404830126893,
+      "repeats": 1000,
+      "rust_engine_build_knm_available": true,
+      "parity_with_python_reference": true
+    },
+    {
+      "benchmark": "knm_construction",
+      "n": 16,
+      "python_mean_ms": 0.01626673,
+      "python_median_ms": 0.0129515,
+      "rust_path_mean_ms": 0.006217371,
+      "rust_path_median_ms": 0.004534,
+      "speedup_vs_python_median": 2.8565284516982796,
+      "repeats": 1000,
+      "rust_engine_build_knm_available": true,
+      "parity_with_python_reference": true
+    },
+    {
+      "benchmark": "knm_construction",
+      "n": 32,
+      "python_mean_ms": 0.016921854,
+      "python_median_ms": 0.0161805,
+      "rust_path_mean_ms": 0.014450418,
+      "rust_path_median_ms": 0.013787500000000001,
+      "speedup_vs_python_median": 1.1735630099728014,
+      "repeats": 1000,
+      "rust_engine_build_knm_available": true,
+      "parity_with_python_reference": true
+    },
+    {
+      "benchmark": "knm_construction",
+      "n": 64,
+      "python_mean_ms": 0.029642563333333333,
+      "python_median_ms": 0.02776,
+      "rust_path_mean_ms": 0.05217384333333333,
+      "rust_path_median_ms": 0.050867,
+      "speedup_vs_python_median": 0.5457369217763972,
+      "repeats": 300,
+      "rust_engine_build_knm_available": true,
+      "parity_with_python_reference": true
+    },
+    {
+      "benchmark": "dense_hamiltonian_construction",
+      "n": 3,
+      "hilbert_dim": 8,
+      "mean_ms": 0.00883438,
+      "median_ms": 0.0072855,
+      "p95_ms": 0.009622,
+      "min_ms": 0.007028,
+      "max_ms": 0.061581,
+      "repeats": 50,
+      "hermitian_max_abs_error": 0.0
+    },
+    {
+      "benchmark": "dense_hamiltonian_construction",
+      "n": 4,
+      "hilbert_dim": 16,
+      "mean_ms": 0.00816978,
+      "median_ms": 0.0079165,
+      "p95_ms": 0.00872,
+      "min_ms": 0.007663,
+      "max_ms": 0.01502,
+      "repeats": 50,
+      "hermitian_max_abs_error": 0.0
+    },
+    {
+      "benchmark": "dense_hamiltonian_construction",
+      "n": 6,
+      "hilbert_dim": 64,
+      "mean_ms": 0.0147812,
+      "median_ms": 0.014134,
+      "p95_ms": 0.0155,
+      "min_ms": 0.013738,
+      "max_ms": 0.02638,
+      "repeats": 50,
+      "hermitian_max_abs_error": 0.0
+    },
+    {
+      "benchmark": "dense_hamiltonian_construction",
+      "n": 8,
+      "hilbert_dim": 256,
+      "mean_ms": 0.252299,
+      "median_ms": 0.1293845,
+      "p95_ms": 0.173849,
+      "min_ms": 0.117976,
+      "max_ms": 1.341437,
+      "repeats": 10,
+      "hermitian_max_abs_error": 0.0
+    }
+  ]
+}

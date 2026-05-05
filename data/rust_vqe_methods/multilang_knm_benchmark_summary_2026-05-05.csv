@@ -1,0 +1,22 @@
+language,median_ms,n,note,status
+python_numpy,0.012648,4,,ok
+rust_pyo3,0.0010915,4,,ok
+python_numpy,0.0133465,8,,ok
+rust_pyo3,0.0015834999999999998,8,,ok
+python_numpy,0.013388500000000001,16,,ok
+rust_pyo3,0.0032960000000000003,16,,ok
+python_numpy,0.0203765,32,,ok
+rust_pyo3,0.010518,32,,ok
+python_numpy,0.0305735,64,,ok
+rust_pyo3,0.044694,64,,ok
+julia,0.000339,4,,ok
+julia,0.0012655,8,,ok
+julia,0.0050865,16,,ok
+julia,0.0170205,32,,ok
+julia,0.0655105,64,,ok
+go,0.000386,4,,ok
+go,0.000855,8,,ok
+go,0.004017,16,,ok
+go,0.014891,32,,ok
+go,0.055793,64,,ok
+mojo,,,"Mojo runtime detected, but no stable local K_nm kernel is implemented in this harness yet.",detected_not_benchmarked

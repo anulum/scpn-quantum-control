@@ -1,0 +1,22 @@
+{
+  "workerPoolSpecs": [
+    {
+      "machineSpec": {
+        "machineType": "n1-standard-4",
+        "acceleratorType": "NVIDIA_TESLA_T4",
+        "acceleratorCount": 1
+      },
+      "replicaCount": "1",
+      "containerSpec": {
+        "imageUri": "pytorch/pytorch:2.5.1-cuda12.4-cudnn9-runtime",
+        "command": [
+          "bash",
+          "-lc"
+        ],
+        "args": [
+          "set -euo pipefail; python -m pip install -q google-cloud-storage; mkdir -p /workspace/scpn/out; python -c \"from google.cloud import storage; c=storage.Client(); b=c.bucket('gotm-sc-neurocore'); b.blob('scpn-quantum-control/rust-vqe-methods/benchmark_gpu_methods.py').download_to_filename('/workspace/scpn/benchmark_gpu_methods.py')\"; python /workspace/scpn/benchmark_gpu_methods.py --label vertex_t4 --sizes 8 10 11 --batch-size 64 --repeats 20 --output-dir /workspace/scpn/out; python -c \"from google.cloud import storage; c=storage.Client(); b=c.bucket('gotm-sc-neurocore'); [b.blob('scpn-quantum-control/rust-vqe-methods/' + name).upload_from_filename('/workspace/scpn/out/' + name) for name in ['gpu_benchmark_summary_vertex_t4_2026-05-05.json', 'gpu_benchmark_summary_vertex_t4_2026-05-05.csv']]\""
+        ]
+      }
+    }
+  ]
+}

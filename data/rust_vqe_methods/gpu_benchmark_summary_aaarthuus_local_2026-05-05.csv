@@ -1,0 +1,10 @@
+backend,batch_size,checksum,hilbert_dim,label,max_ms,mean_ms,median_ms,min_ms,n_qubits,p95_ms,reason,repeats,status
+numpy_cpu,64,1.3768670558929443,256,aaarthuus_local,88.791749,39.53274745,33.847055999999995,16.956923,8,72.83765,,20,ok
+torch_cpu,64,1.376865029335022,256,aaarthuus_local,20.79952,10.1512925,9.223332500000001,4.092013,8,16.885447,,20,ok
+torch_cuda,64,,256,aaarthuus_local,,,,,8,,CUDA backend unavailable in this Python environment,20,unavailable
+numpy_cpu,64,-0.723466157913208,1024,aaarthuus_local,133.481649,75.0097132,70.65411499999999,50.029697,10,98.622575,,20,ok
+torch_cpu,64,-0.7234693169593811,1024,aaarthuus_local,56.785359,28.059310449999998,25.046999999999997,6.259931,10,51.257491,,20,ok
+torch_cuda,64,,1024,aaarthuus_local,,,,,10,,CUDA backend unavailable in this Python environment,20,unavailable
+numpy_cpu,64,-0.5258352160453796,4096,aaarthuus_local,556.787651,319.6202159,310.17321400000003,246.409247,12,378.132274,,20,ok
+torch_cpu,64,-0.5258322358131409,4096,aaarthuus_local,200.827782,150.2121689,152.534721,100.07419,12,174.415042,,20,ok
+torch_cuda,64,,4096,aaarthuus_local,,,,,12,,CUDA backend unavailable in this Python environment,20,unavailable

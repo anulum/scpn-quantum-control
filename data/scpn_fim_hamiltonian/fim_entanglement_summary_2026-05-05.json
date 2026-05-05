@@ -1,0 +1,1541 @@
+{
+  "schema": "scpn_fim_entanglement_v1",
+  "date": "2026-05-05",
+  "command": "python scripts/analyse_fim_entanglement.py",
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
+  },
+  "claim_boundary": "Exact small-n bipartition entropies of low-energy eigenstates. These diagnostics do not by themselves prove hardware robustness or strict many-body localisation.",
+  "n_values": [
+    4,
+    6,
+    8
+  ],
+  "lambda_values": [
+    0.0,
+    0.25,
+    0.5,
+    1.0,
+    2.0,
+    4.0,
+    8.0
+  ],
+  "eigenstates_per_hamiltonian": 8,
+  "rows": [
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 0,
+      "energy": -6.303000000000001,
+      "bipartition_keep": "0,1",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 1,
+      "energy": -5.171253248508573,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.7430106146879321
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 2,
+      "energy": -3.5494180103293465,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.9603087938798581
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 3,
+      "energy": -3.019863367935672,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.7249007324686982
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 4,
+      "energy": -2.757785255609534,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.972758927375251
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 5,
+      "energy": -1.4248728528525327,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 1.0822194530017948
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 6,
+      "energy": -0.8654653732264087,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.1895377530498336
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 7,
+      "energy": -0.49798926248712233,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.7364562002745788
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 0,
+      "energy": -7.303000000000001,
+      "bipartition_keep": "0,1",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 1,
+      "energy": -5.421253248508572,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.7430106146879334
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 2,
+      "energy": -3.799418010329345,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.9603087938798591
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 3,
+      "energy": -3.2698633679356743,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.7249007324686996
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 4,
+      "energy": -2.757785255609533,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.9727589273752523
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 5,
+      "energy": -1.4248728528525332,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 1.0822194530017957
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 6,
+      "energy": -1.1154653732264106,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.18953775304983395
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 7,
+      "energy": -0.49798926248712205,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.7364562002745785
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 0,
+      "energy": -8.303,
+      "bipartition_keep": "0,1",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 1,
+      "energy": -5.671253248508572,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.7430106146879338
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 2,
+      "energy": -4.0494180103293465,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.9603087938798579
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 3,
+      "energy": -3.519863367935671,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.724900732468697
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 4,
+      "energy": -2.7577852556095337,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.9727589273752518
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 5,
+      "energy": -1.4248728528525318,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 1.0822194530017952
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 6,
+      "energy": -1.3654653732264086,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.18953775304983694
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 7,
+      "energy": -0.49798926248712233,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.7364562002745774
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 0,
+      "energy": -10.303,
+      "bipartition_keep": "0,1",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 1,
+      "energy": -6.171253248508572,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.743010614687933
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 2,
+      "energy": -4.549418010329347,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.9603087938798587
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 3,
+      "energy": -4.019863367935671,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.7249007324686982
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 4,
+      "energy": -2.757785255609534,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.972758927375252
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 5,
+      "energy": -1.865465373226411,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.18953775304983556
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 6,
+      "energy": -1.4248728528525318,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 1.082219453001795
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 7,
+      "energy": -0.4979892624871238,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.7364562002745773
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 0,
+      "energy": -14.303,
+      "bipartition_keep": "0,1",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 1,
+      "energy": -7.171253248508571,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.743010614687934
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 2,
+      "energy": -5.549418010329348,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.9603087938798585
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 3,
+      "energy": -5.019863367935671,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.7249007324686978
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 4,
+      "energy": -2.865465373226408,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.18953775304983383
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 5,
+      "energy": -2.75778525560953,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.9727589273752537
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 6,
+      "energy": -1.6969999999999992,
+      "bipartition_keep": "0,1",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 7,
+      "energy": -1.4248728528525316,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 1.0822194530017955
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 0,
+      "energy": -22.303,
+      "bipartition_keep": "0,1",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 1,
+      "energy": -9.697,
+      "bipartition_keep": "0,1",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 2,
+      "energy": -9.17125324850857,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.7430106146879345
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 3,
+      "energy": -7.549418010329346,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.9603087938798579
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 4,
+      "energy": -7.019863367935668,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.7249007324686954
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 5,
+      "energy": -4.86546537322641,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.18953775304983667
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 6,
+      "energy": -3.2803282418187503,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.4226828494236561
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 7,
+      "energy": -2.7577852556095324,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.9727589273752525
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 0,
+      "energy": -38.303,
+      "bipartition_keep": "0,1",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 1,
+      "energy": -25.697,
+      "bipartition_keep": "0,1",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 2,
+      "energy": -13.171253248508572,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.7430106146879338
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 3,
+      "energy": -11.549418010329347,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.9603087938798596
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 4,
+      "energy": -11.019863367935674,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.7249007324687015
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 5,
+      "energy": -8.86546537322641,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.18953775304983483
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 6,
+      "energy": -7.280328241818749,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.4226828494236574
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 7,
+      "energy": -4.882963297439141,
+      "bipartition_keep": "0,1",
+      "entropy_bits": 0.8764341894331529
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 0,
+      "energy": -10.793000000000001,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 1,
+      "energy": -10.34619301469925,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.9996673065949868
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 2,
+      "energy": -8.863143900288451,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 1.0710437403465736
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 3,
+      "energy": -8.8324000795915,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.9754981537982312
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 4,
+      "energy": -8.035241102938217,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.4427149035646138
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 5,
+      "energy": -7.521087915961757,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.7595458032878308
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 6,
+      "energy": -7.124451277901318,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 1.4008752149944093
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 7,
+      "energy": -6.671559517539307,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 1.4782287863843029
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 0,
+      "energy": -12.293000000000001,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 1,
+      "energy": -11.012859681365912,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.999667306594987
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 2,
+      "energy": -9.49906674625818,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.9754981537982321
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 3,
+      "energy": -9.029810566955115,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 1.0710437403465722
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 4,
+      "energy": -8.701907769604885,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.44271490356461873
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 5,
+      "energy": -8.187754582628427,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.7595458032878316
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 6,
+      "energy": -7.291117944567986,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 1.4008752149944106
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 7,
+      "energy": -6.8382261842059755,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 1.478228786384317
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 0,
+      "energy": -13.793000000000001,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 1,
+      "energy": -11.679526348032581,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.9996673065949864
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 2,
+      "energy": -10.16573341292483,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.9754981537982316
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 3,
+      "energy": -9.36857443627155,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.44271490356462045
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 4,
+      "energy": -9.196477233621785,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 1.0710437403465738
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 5,
+      "energy": -8.854421249295093,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.7595458032878335
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 6,
+      "energy": -7.457784611234652,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 1.4008752149944097
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 7,
+      "energy": -7.004892850872647,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 1.4782287863843073
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 0,
+      "energy": -16.793,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 1,
+      "energy": -13.01285968136591,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.999667306594986
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 2,
+      "energy": -11.49906674625817,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.975498153798232
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 3,
+      "energy": -10.70190776960488,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.4427149035646101
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 4,
+      "energy": -10.18775458262842,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.7595458032878285
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 5,
+      "energy": -9.529810566955115,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 1.0710437403465738
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 6,
+      "energy": -8.012669010904727,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.20157496859358376
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 7,
+      "energy": -7.791117944567988,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 1.4008752149944106
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 0,
+      "energy": -22.793,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 1,
+      "energy": -15.679526348032587,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.9996673065949864
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 2,
+      "energy": -14.165733412924833,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.9754981537982317
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 3,
+      "energy": -13.368574436271551,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.442714903564611
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 4,
+      "energy": -12.85442124929509,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.7595458032878273
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 5,
+      "energy": -10.67933567757139,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.2015749685935848
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 6,
+      "energy": -10.196477233621787,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 1.0710437403465725
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 7,
+      "energy": -8.457784611234652,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 1.4008752149944093
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 0,
+      "energy": -34.793,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 1,
+      "energy": -21.012859681365903,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.9996673065949866
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 2,
+      "energy": -19.499066746258173,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.9754981537982321
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 3,
+      "energy": -18.701907769604883,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.44271490356460236
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 4,
+      "energy": -18.187754582628425,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.7595458032878255
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 5,
+      "energy": -16.012669010904716,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.20157496859358437
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 6,
+      "energy": -13.757742209237895,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.055035704272953644
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 7,
+      "energy": -13.206999999999999,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 0,
+      "energy": -58.793,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 1,
+      "energy": -37.207,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 2,
+      "energy": -31.67952634803259,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.9996673065949867
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 3,
+      "energy": -30.16573341292483,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.9754981537982335
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 4,
+      "energy": -29.368574436271555,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.4427149035646323
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 5,
+      "energy": -28.854421249295093,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.7595458032878368
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 6,
+      "energy": -26.679335677571377,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.20157496859358265
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 7,
+      "energy": -24.424408875904554,
+      "bipartition_keep": "0,1,2",
+      "entropy_bits": 0.055035704272952124
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 0,
+      "energy": -12.755724606401255,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.904411749331407
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 1,
+      "energy": -12.473,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 2,
+      "energy": -12.201223139004158,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 1.2463534278032582
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 3,
+      "energy": -11.053854238779778,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.9115485042503152
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 4,
+      "energy": -10.793644221543957,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 1.3049309378474325
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 5,
+      "energy": -10.50050892576083,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.9471719599928842
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 6,
+      "energy": -10.305246972406493,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 1.5751072682136587
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.0,
+      "eigenstate_index": 7,
+      "energy": -9.95610345483037,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.31048534493481944
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 0,
+      "energy": -14.473,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 1,
+      "energy": -13.880724606401262,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.904411749331404
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 2,
+      "energy": -12.701223139004162,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 1.2463534278032582
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 3,
+      "energy": -12.178854238779769,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.9115485042503175
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 4,
+      "energy": -11.625508925760832,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.9471719599928826
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 5,
+      "energy": -11.081103454830371,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.3104853449348183
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 6,
+      "energy": -10.918644221543962,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 1.3049309378474312
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.25,
+      "eigenstate_index": 7,
+      "energy": -10.827224852819233,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.20632383494060588
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 0,
+      "energy": -16.473,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 1,
+      "energy": -15.005724606401257,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.9044117493314048
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 2,
+      "energy": -13.303854238779774,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.9115485042503173
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 3,
+      "energy": -13.201223139004162,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 1.2463534278032584
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 4,
+      "energy": -12.75050892576083,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.947171959992884
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 5,
+      "energy": -12.206103454830364,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.31048534493482033
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 6,
+      "energy": -11.952224852819224,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.20632383494060522
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.5,
+      "eigenstate_index": 7,
+      "energy": -11.400212945573433,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.24672898726857695
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 0,
+      "energy": -20.473,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 1,
+      "energy": -17.255724606401255,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.9044117493314079
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 2,
+      "energy": -15.553854238779772,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.9115485042503114
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 3,
+      "energy": -15.000508925760819,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.9471719599928858
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 4,
+      "energy": -14.456103454830368,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.31048534493482144
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 5,
+      "energy": -14.202224852819226,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.2063238349406072
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 6,
+      "energy": -14.201223139004156,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 1.2463534278032575
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 1.0,
+      "eigenstate_index": 7,
+      "energy": -13.650212945573431,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.24672898726858083
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 0,
+      "energy": -28.473,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 1,
+      "energy": -21.755724606401248,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.9044117493314043
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 2,
+      "energy": -20.05385423877977,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.9115485042503149
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 3,
+      "energy": -19.500508925760833,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.9471719599928842
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 4,
+      "energy": -18.956103454830355,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.31048534493482693
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 5,
+      "energy": -18.702224852819228,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.20632383494061238
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 6,
+      "energy": -18.150212945573436,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.2467289872685795
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 2.0,
+      "eigenstate_index": 7,
+      "energy": -16.201223139004167,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 1.2463534278032586
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 0,
+      "energy": -44.473,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 1,
+      "energy": -30.75572460640126,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.904411749331403
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 2,
+      "energy": -29.053854238779742,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.9115485042503174
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 3,
+      "energy": -28.500508925760823,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.9471719599928852
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 4,
+      "energy": -27.956103454830362,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.31048534493482055
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 5,
+      "energy": -27.702224852819228,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.20632383494060716
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 6,
+      "energy": -27.150212945573426,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.246728987268575
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 4.0,
+      "eigenstate_index": 7,
+      "energy": -25.022986163178704,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.04803905356730744
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 0,
+      "energy": -76.473,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 1,
+      "energy": -51.527,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": -0.0
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 2,
+      "energy": -48.75572460640126,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.9044117493314083
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 3,
+      "energy": -47.05385423877977,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.9115485042503272
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 4,
+      "energy": -46.50050892576081,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.9471719599928713
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 5,
+      "energy": -45.95610345483036,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.31048534493482816
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 6,
+      "energy": -45.70222485281924,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.20632383494061385
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 8.0,
+      "eigenstate_index": 7,
+      "energy": -45.15021294557345,
+      "bipartition_keep": "0,1,2,3",
+      "entropy_bits": 0.24672898726857684
+    }
+  ],
+  "aggregate_rows": [
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "n_eigenstates": 8,
+      "ground_entropy_bits": -0.0,
+      "mean_low_energy_entropy_bits": 0.6761490593422432,
+      "max_low_energy_entropy_bits": 1.0822194530017948
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.25,
+      "n_eigenstates": 8,
+      "ground_entropy_bits": -0.0,
+      "mean_low_energy_entropy_bits": 0.6761490593422441,
+      "max_low_energy_entropy_bits": 1.0822194530017957
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 0.5,
+      "n_eigenstates": 8,
+      "ground_entropy_bits": -0.0,
+      "mean_low_energy_entropy_bits": 0.6761490593422438,
+      "max_low_energy_entropy_bits": 1.0822194530017952
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "n_eigenstates": 8,
+      "ground_entropy_bits": -0.0,
+      "mean_low_energy_entropy_bits": 0.6761490593422437,
+      "max_low_energy_entropy_bits": 1.082219453001795
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 2.0,
+      "n_eigenstates": 8,
+      "ground_entropy_bits": -0.0,
+      "mean_low_energy_entropy_bits": 0.5840920343079217,
+      "max_low_energy_entropy_bits": 1.0822194530017955
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "n_eigenstates": 8,
+      "ground_entropy_bits": -0.0,
+      "mean_low_energy_entropy_bits": 0.5016499588606542,
+      "max_low_energy_entropy_bits": 0.9727589273752525
+    },
+    {
+      "n_qubits": 4,
+      "lambda_fim": 8.0,
+      "n_eigenstates": 8,
+      "ground_entropy_bits": -0.0,
+      "mean_low_energy_entropy_bits": 0.4896093666178925,
+      "max_low_energy_entropy_bits": 0.9603087938798596
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.0,
+      "n_eigenstates": 8,
+      "ground_entropy_bits": -0.0,
+      "mean_low_energy_entropy_bits": 0.8909467386213685,
+      "max_low_energy_entropy_bits": 1.4782287863843029
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.25,
+      "n_eigenstates": 8,
+      "ground_entropy_bits": -0.0,
+      "mean_low_energy_entropy_bits": 0.8909467386213711,
+      "max_low_energy_entropy_bits": 1.478228786384317
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 0.5,
+      "n_eigenstates": 8,
+      "ground_entropy_bits": -0.0,
+      "mean_low_energy_entropy_bits": 0.8909467386213703,
+      "max_low_energy_entropy_bits": 1.4782287863843073
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 1.0,
+      "n_eigenstates": 8,
+      "ground_entropy_bits": -0.0,
+      "mean_low_energy_entropy_bits": 0.7313650113975281,
+      "max_low_energy_entropy_bits": 1.4008752149944106
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 2.0,
+      "n_eigenstates": 8,
+      "ground_entropy_bits": -0.0,
+      "mean_low_energy_entropy_bits": 0.7313650113975279,
+      "max_low_energy_entropy_bits": 1.4008752149944093
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 4.0,
+      "n_eigenstates": 8,
+      "ground_entropy_bits": -0.0,
+      "mean_low_energy_entropy_bits": 0.42925460501402307,
+      "max_low_energy_entropy_bits": 0.9996673065949866
+    },
+    {
+      "n_qubits": 6,
+      "lambda_fim": 8.0,
+      "n_eigenstates": 8,
+      "ground_entropy_bits": -0.0,
+      "mean_low_energy_entropy_bits": 0.429254605014028,
+      "max_low_energy_entropy_bits": 0.9996673065949867
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.0,
+      "n_eigenstates": 8,
+      "ground_entropy_bits": 0.904411749331407,
+      "mean_low_energy_entropy_bits": 0.9000011490467219,
+      "max_low_energy_entropy_bits": 1.5751072682136587
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.25,
+      "n_eigenstates": 8,
+      "ground_entropy_bits": -0.0,
+      "mean_low_energy_entropy_bits": 0.7289032198875898,
+      "max_low_energy_entropy_bits": 1.3049309378474312
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 0.5,
+      "n_eigenstates": 8,
+      "ground_entropy_bits": -0.0,
+      "mean_low_energy_entropy_bits": 0.5966279760652333,
+      "max_low_energy_entropy_bits": 1.2463534278032584
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 1.0,
+      "n_eigenstates": 8,
+      "ground_entropy_bits": -0.0,
+      "mean_low_energy_entropy_bits": 0.596627976065234,
+      "max_low_energy_entropy_bits": 1.2463534278032575
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 2.0,
+      "n_eigenstates": 8,
+      "ground_entropy_bits": -0.0,
+      "mean_low_energy_entropy_bits": 0.5966279760652351,
+      "max_low_energy_entropy_bits": 1.2463534278032586
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 4.0,
+      "n_eigenstates": 8,
+      "ground_entropy_bits": -0.0,
+      "mean_low_energy_entropy_bits": 0.4468386792857395,
+      "max_low_energy_entropy_bits": 0.9471719599928852
+    },
+    {
+      "n_qubits": 8,
+      "lambda_fim": 8.0,
+      "n_eigenstates": 8,
+      "ground_entropy_bits": -0.0,
+      "mean_low_energy_entropy_bits": 0.4408337975898282,
+      "max_low_energy_entropy_bits": 0.9471719599928713
+    }
+  ]
+}

@@ -1,0 +1,3676 @@
+{
+  "schema": "scpn_fim_ibm_pilot_submission_v1",
+  "date": "2026-05-05",
+  "experiment": "scpn_fim_ibm_pilot",
+  "backend": "ibm_kingston",
+  "channel": "ibm_cloud",
+  "credential_source": "vault",
+  "job_id": "d7t53ofljm6s73bc6bj0",
+  "submitted_at_utc": "2026-05-05T20:24:00.169917+00:00",
+  "status": "completed",
+  "total_circuits": 61,
+  "shots_per_circuit": 4096,
+  "total_shots": 249856,
+  "metadata_rows": [
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "depth": 2,
+      "initial_bitstring": "0000",
+      "magnetisation": 4,
+      "popcount": 0,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 0,
+      "circuit_name": "fim_submit_000_fim_sector_survival_pilot",
+      "live_transpiled_depth": 54,
+      "live_transpiled_size": 114,
+      "live_transpiled_ops": {
+        "rz": 51,
+        "sx": 47,
+        "cz": 12,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "depth": 2,
+      "initial_bitstring": "0001",
+      "magnetisation": 2,
+      "popcount": 1,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 1,
+      "circuit_name": "fim_submit_001_fim_sector_survival_pilot",
+      "live_transpiled_depth": 54,
+      "live_transpiled_size": 114,
+      "live_transpiled_ops": {
+        "rz": 51,
+        "sx": 47,
+        "cz": 12,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "depth": 2,
+      "initial_bitstring": "0011",
+      "magnetisation": 0,
+      "popcount": 2,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 2,
+      "circuit_name": "fim_submit_002_fim_sector_survival_pilot",
+      "live_transpiled_depth": 51,
+      "live_transpiled_size": 109,
+      "live_transpiled_ops": {
+        "rz": 47,
+        "sx": 46,
+        "cz": 12,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "depth": 2,
+      "initial_bitstring": "0111",
+      "magnetisation": -2,
+      "popcount": 3,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 3,
+      "circuit_name": "fim_submit_003_fim_sector_survival_pilot",
+      "live_transpiled_depth": 49,
+      "live_transpiled_size": 107,
+      "live_transpiled_ops": {
+        "rz": 46,
+        "sx": 45,
+        "cz": 12,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "depth": 2,
+      "initial_bitstring": "1111",
+      "magnetisation": -4,
+      "popcount": 4,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 4,
+      "circuit_name": "fim_submit_004_fim_sector_survival_pilot",
+      "live_transpiled_depth": 54,
+      "live_transpiled_size": 114,
+      "live_transpiled_ops": {
+        "rz": 51,
+        "sx": 47,
+        "cz": 12,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "depth": 4,
+      "initial_bitstring": "0000",
+      "magnetisation": 4,
+      "popcount": 0,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 5,
+      "circuit_name": "fim_submit_005_fim_sector_survival_pilot",
+      "live_transpiled_depth": 94,
+      "live_transpiled_size": 222,
+      "live_transpiled_ops": {
+        "rz": 99,
+        "sx": 95,
+        "cz": 24,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "depth": 4,
+      "initial_bitstring": "0001",
+      "magnetisation": 2,
+      "popcount": 1,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 6,
+      "circuit_name": "fim_submit_006_fim_sector_survival_pilot",
+      "live_transpiled_depth": 94,
+      "live_transpiled_size": 222,
+      "live_transpiled_ops": {
+        "rz": 99,
+        "sx": 95,
+        "cz": 24,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "depth": 4,
+      "initial_bitstring": "0011",
+      "magnetisation": 0,
+      "popcount": 2,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 7,
+      "circuit_name": "fim_submit_007_fim_sector_survival_pilot",
+      "live_transpiled_depth": 88,
+      "live_transpiled_size": 205,
+      "live_transpiled_ops": {
+        "sx": 89,
+        "rz": 88,
+        "cz": 24,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "depth": 4,
+      "initial_bitstring": "0111",
+      "magnetisation": -2,
+      "popcount": 3,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 8,
+      "circuit_name": "fim_submit_008_fim_sector_survival_pilot",
+      "live_transpiled_depth": 93,
+      "live_transpiled_size": 222,
+      "live_transpiled_ops": {
+        "rz": 99,
+        "sx": 95,
+        "cz": 24,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "depth": 4,
+      "initial_bitstring": "1111",
+      "magnetisation": -4,
+      "popcount": 4,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 9,
+      "circuit_name": "fim_submit_009_fim_sector_survival_pilot",
+      "live_transpiled_depth": 88,
+      "live_transpiled_size": 205,
+      "live_transpiled_ops": {
+        "sx": 89,
+        "rz": 88,
+        "cz": 24,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "depth": 6,
+      "initial_bitstring": "0000",
+      "magnetisation": 4,
+      "popcount": 0,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 10,
+      "circuit_name": "fim_submit_010_fim_sector_survival_pilot",
+      "live_transpiled_depth": 134,
+      "live_transpiled_size": 330,
+      "live_transpiled_ops": {
+        "rz": 147,
+        "sx": 143,
+        "cz": 36,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "depth": 6,
+      "initial_bitstring": "0001",
+      "magnetisation": 2,
+      "popcount": 1,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 11,
+      "circuit_name": "fim_submit_011_fim_sector_survival_pilot",
+      "live_transpiled_depth": 134,
+      "live_transpiled_size": 330,
+      "live_transpiled_ops": {
+        "rz": 147,
+        "sx": 143,
+        "cz": 36,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "depth": 6,
+      "initial_bitstring": "0011",
+      "magnetisation": 0,
+      "popcount": 2,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 12,
+      "circuit_name": "fim_submit_012_fim_sector_survival_pilot",
+      "live_transpiled_depth": 126,
+      "live_transpiled_size": 303,
+      "live_transpiled_ops": {
+        "sx": 133,
+        "rz": 130,
+        "cz": 36,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "depth": 6,
+      "initial_bitstring": "0111",
+      "magnetisation": -2,
+      "popcount": 3,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 13,
+      "circuit_name": "fim_submit_013_fim_sector_survival_pilot",
+      "live_transpiled_depth": 133,
+      "live_transpiled_size": 330,
+      "live_transpiled_ops": {
+        "rz": 147,
+        "sx": 143,
+        "cz": 36,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 0.0,
+      "depth": 6,
+      "initial_bitstring": "1111",
+      "magnetisation": -4,
+      "popcount": 4,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 14,
+      "circuit_name": "fim_submit_014_fim_sector_survival_pilot",
+      "live_transpiled_depth": 134,
+      "live_transpiled_size": 330,
+      "live_transpiled_ops": {
+        "rz": 147,
+        "sx": 143,
+        "cz": 36,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "depth": 2,
+      "initial_bitstring": "0000",
+      "magnetisation": 4,
+      "popcount": 0,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 15,
+      "circuit_name": "fim_submit_015_fim_sector_survival_pilot",
+      "live_transpiled_depth": 172,
+      "live_transpiled_size": 244,
+      "live_transpiled_ops": {
+        "sx": 106,
+        "rz": 84,
+        "cz": 49,
+        "measure": 4,
+        "x": 1
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "depth": 2,
+      "initial_bitstring": "0001",
+      "magnetisation": 2,
+      "popcount": 1,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 16,
+      "circuit_name": "fim_submit_016_fim_sector_survival_pilot",
+      "live_transpiled_depth": 174,
+      "live_transpiled_size": 244,
+      "live_transpiled_ops": {
+        "sx": 105,
+        "rz": 84,
+        "cz": 49,
+        "measure": 4,
+        "x": 2
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "depth": 2,
+      "initial_bitstring": "0011",
+      "magnetisation": 0,
+      "popcount": 2,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 17,
+      "circuit_name": "fim_submit_017_fim_sector_survival_pilot",
+      "live_transpiled_depth": 159,
+      "live_transpiled_size": 274,
+      "live_transpiled_ops": {
+        "sx": 122,
+        "rz": 92,
+        "cz": 55,
+        "measure": 4,
+        "x": 1
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "depth": 2,
+      "initial_bitstring": "0111",
+      "magnetisation": -2,
+      "popcount": 3,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 18,
+      "circuit_name": "fim_submit_018_fim_sector_survival_pilot",
+      "live_transpiled_depth": 170,
+      "live_transpiled_size": 244,
+      "live_transpiled_ops": {
+        "sx": 106,
+        "rz": 84,
+        "cz": 49,
+        "measure": 4,
+        "x": 1
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "depth": 2,
+      "initial_bitstring": "1111",
+      "magnetisation": -4,
+      "popcount": 4,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 19,
+      "circuit_name": "fim_submit_019_fim_sector_survival_pilot",
+      "live_transpiled_depth": 171,
+      "live_transpiled_size": 244,
+      "live_transpiled_ops": {
+        "sx": 106,
+        "rz": 84,
+        "cz": 49,
+        "measure": 4,
+        "x": 1
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "depth": 4,
+      "initial_bitstring": "0000",
+      "magnetisation": 4,
+      "popcount": 0,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 20,
+      "circuit_name": "fim_submit_020_fim_sector_survival_pilot",
+      "live_transpiled_depth": 355,
+      "live_transpiled_size": 503,
+      "live_transpiled_ops": {
+        "sx": 221,
+        "rz": 171,
+        "cz": 103,
+        "x": 4,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "depth": 4,
+      "initial_bitstring": "0001",
+      "magnetisation": 2,
+      "popcount": 1,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 21,
+      "circuit_name": "fim_submit_021_fim_sector_survival_pilot",
+      "live_transpiled_depth": 357,
+      "live_transpiled_size": 503,
+      "live_transpiled_ops": {
+        "sx": 220,
+        "rz": 171,
+        "cz": 103,
+        "x": 5,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "depth": 4,
+      "initial_bitstring": "0011",
+      "magnetisation": 0,
+      "popcount": 2,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 22,
+      "circuit_name": "fim_submit_022_fim_sector_survival_pilot",
+      "live_transpiled_depth": 354,
+      "live_transpiled_size": 503,
+      "live_transpiled_ops": {
+        "sx": 221,
+        "rz": 171,
+        "cz": 103,
+        "x": 4,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "depth": 4,
+      "initial_bitstring": "0111",
+      "magnetisation": -2,
+      "popcount": 3,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 23,
+      "circuit_name": "fim_submit_023_fim_sector_survival_pilot",
+      "live_transpiled_depth": 353,
+      "live_transpiled_size": 503,
+      "live_transpiled_ops": {
+        "sx": 221,
+        "rz": 171,
+        "cz": 103,
+        "x": 4,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "depth": 4,
+      "initial_bitstring": "1111",
+      "magnetisation": -4,
+      "popcount": 4,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 24,
+      "circuit_name": "fim_submit_024_fim_sector_survival_pilot",
+      "live_transpiled_depth": 354,
+      "live_transpiled_size": 503,
+      "live_transpiled_ops": {
+        "sx": 221,
+        "rz": 171,
+        "cz": 103,
+        "x": 4,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "depth": 6,
+      "initial_bitstring": "0000",
+      "magnetisation": 4,
+      "popcount": 0,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 25,
+      "circuit_name": "fim_submit_025_fim_sector_survival_pilot",
+      "live_transpiled_depth": 538,
+      "live_transpiled_size": 762,
+      "live_transpiled_ops": {
+        "sx": 336,
+        "rz": 258,
+        "cz": 157,
+        "x": 7,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "depth": 6,
+      "initial_bitstring": "0001",
+      "magnetisation": 2,
+      "popcount": 1,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 26,
+      "circuit_name": "fim_submit_026_fim_sector_survival_pilot",
+      "live_transpiled_depth": 540,
+      "live_transpiled_size": 762,
+      "live_transpiled_ops": {
+        "sx": 335,
+        "rz": 258,
+        "cz": 157,
+        "x": 8,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "depth": 6,
+      "initial_bitstring": "0011",
+      "magnetisation": 0,
+      "popcount": 2,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 27,
+      "circuit_name": "fim_submit_027_fim_sector_survival_pilot",
+      "live_transpiled_depth": 537,
+      "live_transpiled_size": 762,
+      "live_transpiled_ops": {
+        "sx": 336,
+        "rz": 258,
+        "cz": 157,
+        "x": 7,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "depth": 6,
+      "initial_bitstring": "0111",
+      "magnetisation": -2,
+      "popcount": 3,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 28,
+      "circuit_name": "fim_submit_028_fim_sector_survival_pilot",
+      "live_transpiled_depth": 536,
+      "live_transpiled_size": 762,
+      "live_transpiled_ops": {
+        "sx": 336,
+        "rz": 258,
+        "cz": 157,
+        "x": 7,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 1.0,
+      "depth": 6,
+      "initial_bitstring": "1111",
+      "magnetisation": -4,
+      "popcount": 4,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 29,
+      "circuit_name": "fim_submit_029_fim_sector_survival_pilot",
+      "live_transpiled_depth": 537,
+      "live_transpiled_size": 762,
+      "live_transpiled_ops": {
+        "sx": 336,
+        "rz": 258,
+        "cz": 157,
+        "x": 7,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "depth": 2,
+      "initial_bitstring": "0000",
+      "magnetisation": 4,
+      "popcount": 0,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 30,
+      "circuit_name": "fim_submit_030_fim_sector_survival_pilot",
+      "live_transpiled_depth": 172,
+      "live_transpiled_size": 244,
+      "live_transpiled_ops": {
+        "sx": 106,
+        "rz": 84,
+        "cz": 49,
+        "measure": 4,
+        "x": 1
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "depth": 2,
+      "initial_bitstring": "0001",
+      "magnetisation": 2,
+      "popcount": 1,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 31,
+      "circuit_name": "fim_submit_031_fim_sector_survival_pilot",
+      "live_transpiled_depth": 174,
+      "live_transpiled_size": 244,
+      "live_transpiled_ops": {
+        "sx": 105,
+        "rz": 84,
+        "cz": 49,
+        "measure": 4,
+        "x": 2
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "depth": 2,
+      "initial_bitstring": "0011",
+      "magnetisation": 0,
+      "popcount": 2,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 32,
+      "circuit_name": "fim_submit_032_fim_sector_survival_pilot",
+      "live_transpiled_depth": 171,
+      "live_transpiled_size": 244,
+      "live_transpiled_ops": {
+        "sx": 106,
+        "rz": 84,
+        "cz": 49,
+        "measure": 4,
+        "x": 1
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "depth": 2,
+      "initial_bitstring": "0111",
+      "magnetisation": -2,
+      "popcount": 3,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 33,
+      "circuit_name": "fim_submit_033_fim_sector_survival_pilot",
+      "live_transpiled_depth": 170,
+      "live_transpiled_size": 244,
+      "live_transpiled_ops": {
+        "sx": 106,
+        "rz": 84,
+        "cz": 49,
+        "measure": 4,
+        "x": 1
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "depth": 2,
+      "initial_bitstring": "1111",
+      "magnetisation": -4,
+      "popcount": 4,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 34,
+      "circuit_name": "fim_submit_034_fim_sector_survival_pilot",
+      "live_transpiled_depth": 171,
+      "live_transpiled_size": 244,
+      "live_transpiled_ops": {
+        "sx": 106,
+        "rz": 84,
+        "cz": 49,
+        "measure": 4,
+        "x": 1
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "depth": 4,
+      "initial_bitstring": "0000",
+      "magnetisation": 4,
+      "popcount": 0,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 35,
+      "circuit_name": "fim_submit_035_fim_sector_survival_pilot",
+      "live_transpiled_depth": 355,
+      "live_transpiled_size": 503,
+      "live_transpiled_ops": {
+        "sx": 221,
+        "rz": 171,
+        "cz": 103,
+        "x": 4,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "depth": 4,
+      "initial_bitstring": "0001",
+      "magnetisation": 2,
+      "popcount": 1,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 36,
+      "circuit_name": "fim_submit_036_fim_sector_survival_pilot",
+      "live_transpiled_depth": 357,
+      "live_transpiled_size": 503,
+      "live_transpiled_ops": {
+        "sx": 220,
+        "rz": 171,
+        "cz": 103,
+        "x": 5,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "depth": 4,
+      "initial_bitstring": "0011",
+      "magnetisation": 0,
+      "popcount": 2,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 37,
+      "circuit_name": "fim_submit_037_fim_sector_survival_pilot",
+      "live_transpiled_depth": 354,
+      "live_transpiled_size": 503,
+      "live_transpiled_ops": {
+        "sx": 221,
+        "rz": 171,
+        "cz": 103,
+        "x": 4,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "depth": 4,
+      "initial_bitstring": "0111",
+      "magnetisation": -2,
+      "popcount": 3,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 38,
+      "circuit_name": "fim_submit_038_fim_sector_survival_pilot",
+      "live_transpiled_depth": 353,
+      "live_transpiled_size": 503,
+      "live_transpiled_ops": {
+        "sx": 221,
+        "rz": 171,
+        "cz": 103,
+        "x": 4,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "depth": 4,
+      "initial_bitstring": "1111",
+      "magnetisation": -4,
+      "popcount": 4,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 39,
+      "circuit_name": "fim_submit_039_fim_sector_survival_pilot",
+      "live_transpiled_depth": 354,
+      "live_transpiled_size": 503,
+      "live_transpiled_ops": {
+        "sx": 221,
+        "rz": 171,
+        "cz": 103,
+        "x": 4,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "depth": 6,
+      "initial_bitstring": "0000",
+      "magnetisation": 4,
+      "popcount": 0,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 40,
+      "circuit_name": "fim_submit_040_fim_sector_survival_pilot",
+      "live_transpiled_depth": 539,
+      "live_transpiled_size": 761,
+      "live_transpiled_ops": {
+        "sx": 335,
+        "rz": 257,
+        "cz": 157,
+        "x": 8,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "depth": 6,
+      "initial_bitstring": "0001",
+      "magnetisation": 2,
+      "popcount": 1,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 41,
+      "circuit_name": "fim_submit_041_fim_sector_survival_pilot",
+      "live_transpiled_depth": 540,
+      "live_transpiled_size": 762,
+      "live_transpiled_ops": {
+        "sx": 335,
+        "rz": 258,
+        "cz": 157,
+        "x": 8,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "depth": 6,
+      "initial_bitstring": "0011",
+      "magnetisation": 0,
+      "popcount": 2,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 42,
+      "circuit_name": "fim_submit_042_fim_sector_survival_pilot",
+      "live_transpiled_depth": 537,
+      "live_transpiled_size": 762,
+      "live_transpiled_ops": {
+        "sx": 336,
+        "rz": 258,
+        "cz": 157,
+        "x": 7,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "depth": 6,
+      "initial_bitstring": "0111",
+      "magnetisation": -2,
+      "popcount": 3,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 43,
+      "circuit_name": "fim_submit_043_fim_sector_survival_pilot",
+      "live_transpiled_depth": 536,
+      "live_transpiled_size": 762,
+      "live_transpiled_ops": {
+        "sx": 336,
+        "rz": 258,
+        "cz": 157,
+        "x": 7,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "fim_sector_survival_pilot",
+      "n_qubits": 4,
+      "lambda_fim": 4.0,
+      "depth": 6,
+      "initial_bitstring": "1111",
+      "magnetisation": -4,
+      "popcount": 4,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 44,
+      "circuit_name": "fim_submit_044_fim_sector_survival_pilot",
+      "live_transpiled_depth": 537,
+      "live_transpiled_size": 762,
+      "live_transpiled_ops": {
+        "sx": 336,
+        "rz": 258,
+        "cz": 157,
+        "x": 7,
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "readout_baseline",
+      "n_qubits": 4,
+      "lambda_fim": null,
+      "depth": 0,
+      "initial_bitstring": "0000",
+      "magnetisation": 4,
+      "popcount": 0,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 45,
+      "circuit_name": "fim_submit_045_readout_baseline",
+      "live_transpiled_depth": 1,
+      "live_transpiled_size": 4,
+      "live_transpiled_ops": {
+        "measure": 4
+      }
+    },
+    {
+      "protocol_arm": "readout_baseline",
+      "n_qubits": 4,
+      "lambda_fim": null,
+      "depth": 0,
+      "initial_bitstring": "0001",
+      "magnetisation": 2,
+      "popcount": 1,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 46,
+      "circuit_name": "fim_submit_046_readout_baseline",
+      "live_transpiled_depth": 2,
+      "live_transpiled_size": 5,
+      "live_transpiled_ops": {
+        "measure": 4,
+        "x": 1
+      }
+    },
+    {
+      "protocol_arm": "readout_baseline",
+      "n_qubits": 4,
+      "lambda_fim": null,
+      "depth": 0,
+      "initial_bitstring": "0010",
+      "magnetisation": 2,
+      "popcount": 1,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 47,
+      "circuit_name": "fim_submit_047_readout_baseline",
+      "live_transpiled_depth": 2,
+      "live_transpiled_size": 5,
+      "live_transpiled_ops": {
+        "measure": 4,
+        "x": 1
+      }
+    },
+    {
+      "protocol_arm": "readout_baseline",
+      "n_qubits": 4,
+      "lambda_fim": null,
+      "depth": 0,
+      "initial_bitstring": "0011",
+      "magnetisation": 0,
+      "popcount": 2,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 48,
+      "circuit_name": "fim_submit_048_readout_baseline",
+      "live_transpiled_depth": 2,
+      "live_transpiled_size": 6,
+      "live_transpiled_ops": {
+        "measure": 4,
+        "x": 2
+      }
+    },
+    {
+      "protocol_arm": "readout_baseline",
+      "n_qubits": 4,
+      "lambda_fim": null,
+      "depth": 0,
+      "initial_bitstring": "0100",
+      "magnetisation": 2,
+      "popcount": 1,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 49,
+      "circuit_name": "fim_submit_049_readout_baseline",
+      "live_transpiled_depth": 2,
+      "live_transpiled_size": 5,
+      "live_transpiled_ops": {
+        "measure": 4,
+        "x": 1
+      }
+    },
+    {
+      "protocol_arm": "readout_baseline",
+      "n_qubits": 4,
+      "lambda_fim": null,
+      "depth": 0,
+      "initial_bitstring": "0101",
+      "magnetisation": 0,
+      "popcount": 2,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 50,
+      "circuit_name": "fim_submit_050_readout_baseline",
+      "live_transpiled_depth": 2,
+      "live_transpiled_size": 6,
+      "live_transpiled_ops": {
+        "measure": 4,
+        "x": 2
+      }
+    },
+    {
+      "protocol_arm": "readout_baseline",
+      "n_qubits": 4,
+      "lambda_fim": null,
+      "depth": 0,
+      "initial_bitstring": "0110",
+      "magnetisation": 0,
+      "popcount": 2,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 51,
+      "circuit_name": "fim_submit_051_readout_baseline",
+      "live_transpiled_depth": 2,
+      "live_transpiled_size": 6,
+      "live_transpiled_ops": {
+        "measure": 4,
+        "x": 2
+      }
+    },
+    {
+      "protocol_arm": "readout_baseline",
+      "n_qubits": 4,
+      "lambda_fim": null,
+      "depth": 0,
+      "initial_bitstring": "0111",
+      "magnetisation": -2,
+      "popcount": 3,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 52,
+      "circuit_name": "fim_submit_052_readout_baseline",
+      "live_transpiled_depth": 2,
+      "live_transpiled_size": 7,
+      "live_transpiled_ops": {
+        "measure": 4,
+        "x": 3
+      }
+    },
+    {
+      "protocol_arm": "readout_baseline",
+      "n_qubits": 4,
+      "lambda_fim": null,
+      "depth": 0,
+      "initial_bitstring": "1000",
+      "magnetisation": 2,
+      "popcount": 1,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 53,
+      "circuit_name": "fim_submit_053_readout_baseline",
+      "live_transpiled_depth": 2,
+      "live_transpiled_size": 5,
+      "live_transpiled_ops": {
+        "measure": 4,
+        "x": 1
+      }
+    },
+    {
+      "protocol_arm": "readout_baseline",
+      "n_qubits": 4,
+      "lambda_fim": null,
+      "depth": 0,
+      "initial_bitstring": "1001",
+      "magnetisation": 0,
+      "popcount": 2,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 54,
+      "circuit_name": "fim_submit_054_readout_baseline",
+      "live_transpiled_depth": 2,
+      "live_transpiled_size": 6,
+      "live_transpiled_ops": {
+        "measure": 4,
+        "x": 2
+      }
+    },
+    {
+      "protocol_arm": "readout_baseline",
+      "n_qubits": 4,
+      "lambda_fim": null,
+      "depth": 0,
+      "initial_bitstring": "1010",
+      "magnetisation": 0,
+      "popcount": 2,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 55,
+      "circuit_name": "fim_submit_055_readout_baseline",
+      "live_transpiled_depth": 2,
+      "live_transpiled_size": 6,
+      "live_transpiled_ops": {
+        "measure": 4,
+        "x": 2
+      }
+    },
+    {
+      "protocol_arm": "readout_baseline",
+      "n_qubits": 4,
+      "lambda_fim": null,
+      "depth": 0,
+      "initial_bitstring": "1011",
+      "magnetisation": -2,
+      "popcount": 3,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 56,
+      "circuit_name": "fim_submit_056_readout_baseline",
+      "live_transpiled_depth": 2,
+      "live_transpiled_size": 7,
+      "live_transpiled_ops": {
+        "measure": 4,
+        "x": 3
+      }
+    },
+    {
+      "protocol_arm": "readout_baseline",
+      "n_qubits": 4,
+      "lambda_fim": null,
+      "depth": 0,
+      "initial_bitstring": "1100",
+      "magnetisation": 0,
+      "popcount": 2,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 57,
+      "circuit_name": "fim_submit_057_readout_baseline",
+      "live_transpiled_depth": 2,
+      "live_transpiled_size": 6,
+      "live_transpiled_ops": {
+        "measure": 4,
+        "x": 2
+      }
+    },
+    {
+      "protocol_arm": "readout_baseline",
+      "n_qubits": 4,
+      "lambda_fim": null,
+      "depth": 0,
+      "initial_bitstring": "1101",
+      "magnetisation": -2,
+      "popcount": 3,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 58,
+      "circuit_name": "fim_submit_058_readout_baseline",
+      "live_transpiled_depth": 2,
+      "live_transpiled_size": 7,
+      "live_transpiled_ops": {
+        "measure": 4,
+        "x": 3
+      }
+    },
+    {
+      "protocol_arm": "readout_baseline",
+      "n_qubits": 4,
+      "lambda_fim": null,
+      "depth": 0,
+      "initial_bitstring": "1110",
+      "magnetisation": -2,
+      "popcount": 3,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 59,
+      "circuit_name": "fim_submit_059_readout_baseline",
+      "live_transpiled_depth": 2,
+      "live_transpiled_size": 7,
+      "live_transpiled_ops": {
+        "measure": 4,
+        "x": 3
+      }
+    },
+    {
+      "protocol_arm": "readout_baseline",
+      "n_qubits": 4,
+      "lambda_fim": null,
+      "depth": 0,
+      "initial_bitstring": "1111",
+      "magnetisation": -4,
+      "popcount": 4,
+      "shots": 4096,
+      "submission_status": "not_submitted",
+      "circuit_index": 60,
+      "circuit_name": "fim_submit_060_readout_baseline",
+      "live_transpiled_depth": 2,
+      "live_transpiled_size": 8,
+      "live_transpiled_ops": {
+        "x": 4,
+        "measure": 4
+      }
+    }
+  ],
+  "completed_at_utc": "2026-05-05T20:29:00.097626+00:00",
+  "wait_wall_time_s": 297.535683631897,
+  "result_rows": [
+    {
+      "circuit_index": 0,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 0.0,
+        "depth": 2,
+        "initial_bitstring": "0000",
+        "magnetisation": 4,
+        "popcount": 0,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 0,
+        "circuit_name": "fim_submit_000_fim_sector_survival_pilot",
+        "live_transpiled_depth": 54,
+        "live_transpiled_size": 114,
+        "live_transpiled_ops": {
+          "rz": 51,
+          "sx": 47,
+          "cz": 12,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "0000": 3746,
+        "0100": 59,
+        "0111": 4,
+        "0011": 14,
+        "1000": 113,
+        "0010": 64,
+        "1100": 20,
+        "0001": 55,
+        "0110": 10,
+        "1101": 1,
+        "1010": 4,
+        "0101": 4,
+        "1111": 1,
+        "1110": 1
+      }
+    },
+    {
+      "circuit_index": 1,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 0.0,
+        "depth": 2,
+        "initial_bitstring": "0001",
+        "magnetisation": 2,
+        "popcount": 1,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 1,
+        "circuit_name": "fim_submit_001_fim_sector_survival_pilot",
+        "live_transpiled_depth": 54,
+        "live_transpiled_size": 114,
+        "live_transpiled_ops": {
+          "rz": 51,
+          "sx": 47,
+          "cz": 12,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "1000": 3257,
+        "0100": 497,
+        "0110": 9,
+        "0000": 109,
+        "1010": 35,
+        "0011": 3,
+        "1100": 70,
+        "1001": 57,
+        "1011": 23,
+        "1101": 4,
+        "0010": 7,
+        "0101": 5,
+        "1111": 6,
+        "0111": 3,
+        "1110": 8,
+        "0001": 3
+      }
+    },
+    {
+      "circuit_index": 2,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 0.0,
+        "depth": 2,
+        "initial_bitstring": "0011",
+        "magnetisation": 0,
+        "popcount": 2,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 2,
+        "circuit_name": "fim_submit_002_fim_sector_survival_pilot",
+        "live_transpiled_depth": 51,
+        "live_transpiled_size": 109,
+        "live_transpiled_ops": {
+          "rz": 47,
+          "sx": 46,
+          "cz": 12,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "1100": 3090,
+        "0110": 51,
+        "0100": 146,
+        "1000": 62,
+        "1001": 11,
+        "1010": 461,
+        "1101": 55,
+        "1110": 112,
+        "1111": 45,
+        "0111": 6,
+        "0010": 20,
+        "1011": 12,
+        "0000": 18,
+        "0101": 5,
+        "0001": 2
+      }
+    },
+    {
+      "circuit_index": 3,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 0.0,
+        "depth": 2,
+        "initial_bitstring": "0111",
+        "magnetisation": -2,
+        "popcount": 3,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 3,
+        "circuit_name": "fim_submit_003_fim_sector_survival_pilot",
+        "live_transpiled_depth": 49,
+        "live_transpiled_size": 107,
+        "live_transpiled_ops": {
+          "rz": 46,
+          "sx": 45,
+          "cz": 12,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "1101": 583,
+        "1110": 3206,
+        "1111": 79,
+        "1010": 35,
+        "1100": 86,
+        "0110": 30,
+        "1011": 47,
+        "1001": 6,
+        "1000": 8,
+        "0010": 7,
+        "0111": 1,
+        "0001": 4,
+        "0101": 2,
+        "0100": 2
+      }
+    },
+    {
+      "circuit_index": 4,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 0.0,
+        "depth": 2,
+        "initial_bitstring": "1111",
+        "magnetisation": -4,
+        "popcount": 4,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 4,
+        "circuit_name": "fim_submit_004_fim_sector_survival_pilot",
+        "live_transpiled_depth": 54,
+        "live_transpiled_size": 114,
+        "live_transpiled_ops": {
+          "rz": 51,
+          "sx": 47,
+          "cz": 12,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "1111": 3753,
+        "0111": 109,
+        "1101": 82,
+        "1011": 67,
+        "1110": 46,
+        "1100": 18,
+        "0011": 13,
+        "0101": 3,
+        "0001": 1,
+        "1001": 2,
+        "1010": 2
+      }
+    },
+    {
+      "circuit_index": 5,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 0.0,
+        "depth": 4,
+        "initial_bitstring": "0000",
+        "magnetisation": 4,
+        "popcount": 0,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 5,
+        "circuit_name": "fim_submit_005_fim_sector_survival_pilot",
+        "live_transpiled_depth": 94,
+        "live_transpiled_size": 222,
+        "live_transpiled_ops": {
+          "rz": 99,
+          "sx": 95,
+          "cz": 24,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "0000": 3692,
+        "1000": 100,
+        "1100": 28,
+        "0001": 80,
+        "1010": 8,
+        "0010": 55,
+        "0011": 31,
+        "0110": 11,
+        "0100": 60,
+        "0101": 7,
+        "1101": 1,
+        "1001": 6,
+        "0111": 6,
+        "1111": 4,
+        "1110": 5,
+        "1011": 2
+      }
+    },
+    {
+      "circuit_index": 6,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 0.0,
+        "depth": 4,
+        "initial_bitstring": "0001",
+        "magnetisation": 2,
+        "popcount": 1,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 6,
+        "circuit_name": "fim_submit_006_fim_sector_survival_pilot",
+        "live_transpiled_depth": 94,
+        "live_transpiled_size": 222,
+        "live_transpiled_ops": {
+          "rz": 99,
+          "sx": 95,
+          "cz": 24,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "0100": 1505,
+        "1000": 1981,
+        "1100": 76,
+        "1010": 47,
+        "0010": 173,
+        "0000": 122,
+        "1110": 18,
+        "0110": 27,
+        "1001": 54,
+        "0011": 6,
+        "1011": 22,
+        "0101": 32,
+        "0111": 13,
+        "0001": 9,
+        "1101": 7,
+        "1111": 4
+      }
+    },
+    {
+      "circuit_index": 7,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 0.0,
+        "depth": 4,
+        "initial_bitstring": "0011",
+        "magnetisation": 0,
+        "popcount": 2,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 7,
+        "circuit_name": "fim_submit_007_fim_sector_survival_pilot",
+        "live_transpiled_depth": 88,
+        "live_transpiled_size": 205,
+        "live_transpiled_ops": {
+          "sx": 89,
+          "rz": 88,
+          "cz": 24,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "1010": 1251,
+        "1011": 35,
+        "1100": 1935,
+        "1001": 102,
+        "0101": 65,
+        "1111": 19,
+        "0110": 347,
+        "1110": 73,
+        "1101": 57,
+        "0010": 31,
+        "0000": 21,
+        "1000": 81,
+        "0111": 5,
+        "0100": 67,
+        "0011": 6,
+        "0001": 1
+      }
+    },
+    {
+      "circuit_index": 8,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 0.0,
+        "depth": 4,
+        "initial_bitstring": "0111",
+        "magnetisation": -2,
+        "popcount": 3,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 8,
+        "circuit_name": "fim_submit_008_fim_sector_survival_pilot",
+        "live_transpiled_depth": 93,
+        "live_transpiled_size": 222,
+        "live_transpiled_ops": {
+          "rz": 99,
+          "sx": 95,
+          "cz": 24,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "1110": 1788,
+        "1111": 112,
+        "1011": 418,
+        "1001": 44,
+        "1101": 1343,
+        "0101": 38,
+        "1010": 67,
+        "0100": 10,
+        "0111": 77,
+        "0110": 63,
+        "1100": 79,
+        "1000": 16,
+        "0011": 14,
+        "0001": 15,
+        "0010": 10,
+        "0000": 2
+      }
+    },
+    {
+      "circuit_index": 9,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 0.0,
+        "depth": 4,
+        "initial_bitstring": "1111",
+        "magnetisation": -4,
+        "popcount": 4,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 9,
+        "circuit_name": "fim_submit_009_fim_sector_survival_pilot",
+        "live_transpiled_depth": 88,
+        "live_transpiled_size": 205,
+        "live_transpiled_ops": {
+          "sx": 89,
+          "rz": 88,
+          "cz": 24,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "1111": 3569,
+        "1101": 118,
+        "0111": 90,
+        "1110": 130,
+        "1100": 21,
+        "0010": 1,
+        "1010": 10,
+        "1011": 75,
+        "1001": 17,
+        "0110": 8,
+        "0011": 28,
+        "1000": 4,
+        "0101": 11,
+        "0100": 6,
+        "0001": 7,
+        "0000": 1
+      }
+    },
+    {
+      "circuit_index": 10,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 0.0,
+        "depth": 6,
+        "initial_bitstring": "0000",
+        "magnetisation": 4,
+        "popcount": 0,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 10,
+        "circuit_name": "fim_submit_010_fim_sector_survival_pilot",
+        "live_transpiled_depth": 134,
+        "live_transpiled_size": 330,
+        "live_transpiled_ops": {
+          "rz": 147,
+          "sx": 143,
+          "cz": 36,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "0100": 87,
+        "0000": 3535,
+        "0001": 99,
+        "0010": 90,
+        "1001": 12,
+        "1000": 125,
+        "0011": 28,
+        "0110": 26,
+        "0101": 16,
+        "1100": 27,
+        "1010": 20,
+        "1110": 10,
+        "1101": 7,
+        "0111": 5,
+        "1011": 5,
+        "1111": 4
+      }
+    },
+    {
+      "circuit_index": 11,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 0.0,
+        "depth": 6,
+        "initial_bitstring": "0001",
+        "magnetisation": 2,
+        "popcount": 1,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 11,
+        "circuit_name": "fim_submit_011_fim_sector_survival_pilot",
+        "live_transpiled_depth": 134,
+        "live_transpiled_size": 330,
+        "live_transpiled_ops": {
+          "rz": 147,
+          "sx": 143,
+          "cz": 36,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "0100": 1952,
+        "0010": 716,
+        "0011": 23,
+        "0000": 87,
+        "1000": 856,
+        "1100": 85,
+        "0101": 77,
+        "1011": 14,
+        "0001": 85,
+        "1101": 15,
+        "1010": 48,
+        "0110": 67,
+        "1001": 30,
+        "0111": 16,
+        "1110": 23,
+        "1111": 2
+      }
+    },
+    {
+      "circuit_index": 12,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 0.0,
+        "depth": 6,
+        "initial_bitstring": "0011",
+        "magnetisation": 0,
+        "popcount": 2,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 12,
+        "circuit_name": "fim_submit_012_fim_sector_survival_pilot",
+        "live_transpiled_depth": 126,
+        "live_transpiled_size": 303,
+        "live_transpiled_ops": {
+          "sx": 133,
+          "rz": 130,
+          "cz": 36,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "0101": 477,
+        "1100": 853,
+        "0110": 746,
+        "1010": 1166,
+        "1110": 90,
+        "1111": 24,
+        "0111": 45,
+        "1101": 40,
+        "1001": 322,
+        "1011": 45,
+        "0100": 64,
+        "0000": 29,
+        "0011": 51,
+        "1000": 81,
+        "0001": 17,
+        "0010": 46
+      }
+    },
+    {
+      "circuit_index": 13,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 0.0,
+        "depth": 6,
+        "initial_bitstring": "0111",
+        "magnetisation": -2,
+        "popcount": 3,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 13,
+        "circuit_name": "fim_submit_013_fim_sector_survival_pilot",
+        "live_transpiled_depth": 133,
+        "live_transpiled_size": 330,
+        "live_transpiled_ops": {
+          "rz": 147,
+          "sx": 143,
+          "cz": 36,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "1110": 748,
+        "0111": 390,
+        "1101": 1497,
+        "1011": 909,
+        "1111": 110,
+        "1100": 110,
+        "1000": 15,
+        "0001": 18,
+        "0100": 11,
+        "1010": 47,
+        "0011": 41,
+        "0110": 39,
+        "0101": 76,
+        "1001": 72,
+        "0010": 11,
+        "0000": 2
+      }
+    },
+    {
+      "circuit_index": 14,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 0.0,
+        "depth": 6,
+        "initial_bitstring": "1111",
+        "magnetisation": -4,
+        "popcount": 4,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 14,
+        "circuit_name": "fim_submit_014_fim_sector_survival_pilot",
+        "live_transpiled_depth": 134,
+        "live_transpiled_size": 330,
+        "live_transpiled_ops": {
+          "rz": 147,
+          "sx": 143,
+          "cz": 36,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "1111": 3461,
+        "1011": 127,
+        "0111": 92,
+        "1110": 141,
+        "1101": 113,
+        "1000": 8,
+        "0011": 36,
+        "1100": 39,
+        "0101": 20,
+        "1010": 18,
+        "0110": 11,
+        "1001": 16,
+        "0001": 3,
+        "0100": 5,
+        "0010": 6
+      }
+    },
+    {
+      "circuit_index": 15,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 1.0,
+        "depth": 2,
+        "initial_bitstring": "0000",
+        "magnetisation": 4,
+        "popcount": 0,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 15,
+        "circuit_name": "fim_submit_015_fim_sector_survival_pilot",
+        "live_transpiled_depth": 172,
+        "live_transpiled_size": 244,
+        "live_transpiled_ops": {
+          "sx": 106,
+          "rz": 84,
+          "cz": 49,
+          "measure": 4,
+          "x": 1
+        }
+      },
+      "counts": {
+        "0000": 3695,
+        "1000": 85,
+        "1100": 39,
+        "1111": 8,
+        "0110": 33,
+        "0001": 23,
+        "0010": 63,
+        "0100": 76,
+        "0011": 8,
+        "1001": 4,
+        "1101": 8,
+        "1110": 15,
+        "1011": 8,
+        "1010": 20,
+        "0111": 5,
+        "0101": 6
+      }
+    },
+    {
+      "circuit_index": 16,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 1.0,
+        "depth": 2,
+        "initial_bitstring": "0001",
+        "magnetisation": 2,
+        "popcount": 1,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 16,
+        "circuit_name": "fim_submit_016_fim_sector_survival_pilot",
+        "live_transpiled_depth": 174,
+        "live_transpiled_size": 244,
+        "live_transpiled_ops": {
+          "sx": 105,
+          "rz": 84,
+          "cz": 49,
+          "measure": 4,
+          "x": 2
+        }
+      },
+      "counts": {
+        "1000": 3000,
+        "0000": 185,
+        "0100": 635,
+        "1100": 87,
+        "0010": 26,
+        "1010": 42,
+        "0001": 6,
+        "1110": 28,
+        "1111": 9,
+        "0110": 26,
+        "1001": 16,
+        "0101": 9,
+        "0111": 9,
+        "1011": 10,
+        "0011": 5,
+        "1101": 3
+      }
+    },
+    {
+      "circuit_index": 17,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 1.0,
+        "depth": 2,
+        "initial_bitstring": "0011",
+        "magnetisation": 0,
+        "popcount": 2,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 17,
+        "circuit_name": "fim_submit_017_fim_sector_survival_pilot",
+        "live_transpiled_depth": 159,
+        "live_transpiled_size": 274,
+        "live_transpiled_ops": {
+          "sx": 122,
+          "rz": 92,
+          "cz": 55,
+          "measure": 4,
+          "x": 1
+        }
+      },
+      "counts": {
+        "1100": 2870,
+        "0000": 56,
+        "0010": 33,
+        "0110": 69,
+        "1001": 28,
+        "1010": 534,
+        "0001": 33,
+        "1101": 59,
+        "1000": 127,
+        "0100": 96,
+        "1011": 31,
+        "0111": 14,
+        "1110": 80,
+        "1111": 16,
+        "0011": 13,
+        "0101": 37
+      }
+    },
+    {
+      "circuit_index": 18,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 1.0,
+        "depth": 2,
+        "initial_bitstring": "0111",
+        "magnetisation": -2,
+        "popcount": 3,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 18,
+        "circuit_name": "fim_submit_018_fim_sector_survival_pilot",
+        "live_transpiled_depth": 170,
+        "live_transpiled_size": 244,
+        "live_transpiled_ops": {
+          "sx": 106,
+          "rz": 84,
+          "cz": 49,
+          "measure": 4,
+          "x": 1
+        }
+      },
+      "counts": {
+        "1110": 2866,
+        "1100": 165,
+        "1111": 44,
+        "1001": 39,
+        "1101": 473,
+        "0010": 35,
+        "0110": 126,
+        "1010": 152,
+        "1011": 51,
+        "1000": 36,
+        "0111": 14,
+        "0000": 27,
+        "0001": 12,
+        "0100": 26,
+        "0011": 8,
+        "0101": 22
+      }
+    },
+    {
+      "circuit_index": 19,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 1.0,
+        "depth": 2,
+        "initial_bitstring": "1111",
+        "magnetisation": -4,
+        "popcount": 4,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 19,
+        "circuit_name": "fim_submit_019_fim_sector_survival_pilot",
+        "live_transpiled_depth": 171,
+        "live_transpiled_size": 244,
+        "live_transpiled_ops": {
+          "sx": 106,
+          "rz": 84,
+          "cz": 49,
+          "measure": 4,
+          "x": 1
+        }
+      },
+      "counts": {
+        "1111": 3251,
+        "1001": 52,
+        "1101": 168,
+        "1100": 38,
+        "1011": 154,
+        "1110": 113,
+        "0111": 134,
+        "0100": 10,
+        "0011": 51,
+        "0001": 27,
+        "0101": 35,
+        "1000": 8,
+        "0110": 21,
+        "1010": 20,
+        "0010": 5,
+        "0000": 9
+      }
+    },
+    {
+      "circuit_index": 20,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 1.0,
+        "depth": 4,
+        "initial_bitstring": "0000",
+        "magnetisation": 4,
+        "popcount": 0,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 20,
+        "circuit_name": "fim_submit_020_fim_sector_survival_pilot",
+        "live_transpiled_depth": 355,
+        "live_transpiled_size": 503,
+        "live_transpiled_ops": {
+          "sx": 221,
+          "rz": 171,
+          "cz": 103,
+          "x": 4,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "1100": 70,
+        "0000": 3364,
+        "0100": 123,
+        "1000": 130,
+        "0010": 88,
+        "0110": 46,
+        "1010": 56,
+        "0011": 36,
+        "0001": 47,
+        "1111": 14,
+        "1101": 15,
+        "1001": 26,
+        "0101": 18,
+        "1110": 19,
+        "1011": 26,
+        "0111": 18
+      }
+    },
+    {
+      "circuit_index": 21,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 1.0,
+        "depth": 4,
+        "initial_bitstring": "0001",
+        "magnetisation": 2,
+        "popcount": 1,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 21,
+        "circuit_name": "fim_submit_021_fim_sector_survival_pilot",
+        "live_transpiled_depth": 357,
+        "live_transpiled_size": 503,
+        "live_transpiled_ops": {
+          "sx": 220,
+          "rz": 171,
+          "cz": 103,
+          "x": 5,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "0100": 1620,
+        "1000": 1585,
+        "1110": 57,
+        "0010": 209,
+        "1010": 77,
+        "1100": 104,
+        "1001": 34,
+        "0101": 36,
+        "0000": 225,
+        "0110": 42,
+        "0011": 14,
+        "1011": 21,
+        "1101": 18,
+        "0001": 23,
+        "0111": 22,
+        "1111": 9
+      }
+    },
+    {
+      "circuit_index": 22,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 1.0,
+        "depth": 4,
+        "initial_bitstring": "0011",
+        "magnetisation": 0,
+        "popcount": 2,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 22,
+        "circuit_name": "fim_submit_022_fim_sector_survival_pilot",
+        "live_transpiled_depth": 354,
+        "live_transpiled_size": 503,
+        "live_transpiled_ops": {
+          "sx": 221,
+          "rz": 171,
+          "cz": 103,
+          "x": 4,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "1000": 245,
+        "1100": 1711,
+        "0110": 333,
+        "1010": 1014,
+        "0100": 184,
+        "0000": 69,
+        "1011": 31,
+        "1101": 42,
+        "1111": 32,
+        "1001": 104,
+        "0001": 33,
+        "1110": 82,
+        "0101": 75,
+        "0010": 108,
+        "0011": 12,
+        "0111": 21
+      }
+    },
+    {
+      "circuit_index": 23,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 1.0,
+        "depth": 4,
+        "initial_bitstring": "0111",
+        "magnetisation": -2,
+        "popcount": 3,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 23,
+        "circuit_name": "fim_submit_023_fim_sector_survival_pilot",
+        "live_transpiled_depth": 353,
+        "live_transpiled_size": 503,
+        "live_transpiled_ops": {
+          "sx": 221,
+          "rz": 171,
+          "cz": 103,
+          "x": 4,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "1100": 253,
+        "0111": 72,
+        "1000": 66,
+        "1001": 96,
+        "1101": 1129,
+        "1110": 1476,
+        "1011": 318,
+        "1010": 168,
+        "0110": 134,
+        "0100": 61,
+        "0000": 29,
+        "0001": 36,
+        "0011": 41,
+        "0010": 65,
+        "0101": 95,
+        "1111": 57
+      }
+    },
+    {
+      "circuit_index": 24,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 1.0,
+        "depth": 4,
+        "initial_bitstring": "1111",
+        "magnetisation": -4,
+        "popcount": 4,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 24,
+        "circuit_name": "fim_submit_024_fim_sector_survival_pilot",
+        "live_transpiled_depth": 354,
+        "live_transpiled_size": 503,
+        "live_transpiled_ops": {
+          "sx": 221,
+          "rz": 171,
+          "cz": 103,
+          "x": 4,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "1100": 45,
+        "0110": 39,
+        "0111": 231,
+        "1111": 2786,
+        "0011": 77,
+        "1011": 250,
+        "1110": 168,
+        "1101": 239,
+        "0101": 56,
+        "1001": 56,
+        "0001": 42,
+        "1010": 38,
+        "0010": 21,
+        "0000": 17,
+        "1000": 15,
+        "0100": 16
+      }
+    },
+    {
+      "circuit_index": 25,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 1.0,
+        "depth": 6,
+        "initial_bitstring": "0000",
+        "magnetisation": 4,
+        "popcount": 0,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 25,
+        "circuit_name": "fim_submit_025_fim_sector_survival_pilot",
+        "live_transpiled_depth": 538,
+        "live_transpiled_size": 762,
+        "live_transpiled_ops": {
+          "sx": 336,
+          "rz": 258,
+          "cz": 157,
+          "x": 7,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "0000": 3186,
+        "0001": 82,
+        "0011": 40,
+        "0100": 155,
+        "1110": 36,
+        "1100": 80,
+        "1000": 177,
+        "1111": 14,
+        "0010": 102,
+        "1010": 50,
+        "0101": 43,
+        "0110": 44,
+        "0111": 22,
+        "1001": 28,
+        "1011": 19,
+        "1101": 18
+      }
+    },
+    {
+      "circuit_index": 26,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 1.0,
+        "depth": 6,
+        "initial_bitstring": "0001",
+        "magnetisation": 2,
+        "popcount": 1,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 26,
+        "circuit_name": "fim_submit_026_fim_sector_survival_pilot",
+        "live_transpiled_depth": 540,
+        "live_transpiled_size": 762,
+        "live_transpiled_ops": {
+          "sx": 335,
+          "rz": 258,
+          "cz": 157,
+          "x": 8,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "1010": 79,
+        "0100": 1919,
+        "0010": 645,
+        "0000": 338,
+        "0110": 84,
+        "1000": 542,
+        "0011": 32,
+        "0101": 53,
+        "0111": 36,
+        "1101": 26,
+        "1110": 54,
+        "1100": 120,
+        "0001": 89,
+        "1001": 42,
+        "1111": 14,
+        "1011": 23
+      }
+    },
+    {
+      "circuit_index": 27,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 1.0,
+        "depth": 6,
+        "initial_bitstring": "0011",
+        "magnetisation": 0,
+        "popcount": 2,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 27,
+        "circuit_name": "fim_submit_027_fim_sector_survival_pilot",
+        "live_transpiled_depth": 537,
+        "live_transpiled_size": 762,
+        "live_transpiled_ops": {
+          "sx": 336,
+          "rz": 258,
+          "cz": 157,
+          "x": 7,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "0110": 638,
+        "1000": 251,
+        "0001": 70,
+        "1010": 943,
+        "1100": 723,
+        "1001": 260,
+        "0011": 76,
+        "0101": 363,
+        "0100": 202,
+        "0000": 110,
+        "1101": 53,
+        "0010": 215,
+        "1011": 32,
+        "1111": 31,
+        "1110": 101,
+        "0111": 28
+      }
+    },
+    {
+      "circuit_index": 28,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 1.0,
+        "depth": 6,
+        "initial_bitstring": "0111",
+        "magnetisation": -2,
+        "popcount": 3,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 28,
+        "circuit_name": "fim_submit_028_fim_sector_survival_pilot",
+        "live_transpiled_depth": 536,
+        "live_transpiled_size": 762,
+        "live_transpiled_ops": {
+          "sx": 336,
+          "rz": 258,
+          "cz": 157,
+          "x": 7,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "0111": 306,
+        "0010": 56,
+        "1101": 1099,
+        "1100": 242,
+        "1011": 640,
+        "1110": 653,
+        "0110": 118,
+        "0101": 173,
+        "0011": 121,
+        "1010": 164,
+        "0100": 81,
+        "1000": 82,
+        "1001": 195,
+        "0001": 57,
+        "0000": 59,
+        "1111": 50
+      }
+    },
+    {
+      "circuit_index": 29,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 1.0,
+        "depth": 6,
+        "initial_bitstring": "1111",
+        "magnetisation": -4,
+        "popcount": 4,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 29,
+        "circuit_name": "fim_submit_029_fim_sector_survival_pilot",
+        "live_transpiled_depth": 537,
+        "live_transpiled_size": 762,
+        "live_transpiled_ops": {
+          "sx": 336,
+          "rz": 258,
+          "cz": 157,
+          "x": 7,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "1111": 2333,
+        "0111": 304,
+        "1011": 292,
+        "1010": 77,
+        "1101": 285,
+        "1100": 74,
+        "1110": 230,
+        "0110": 70,
+        "1001": 80,
+        "0101": 94,
+        "0000": 21,
+        "0100": 35,
+        "0011": 93,
+        "0001": 45,
+        "1000": 36,
+        "0010": 27
+      }
+    },
+    {
+      "circuit_index": 30,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 4.0,
+        "depth": 2,
+        "initial_bitstring": "0000",
+        "magnetisation": 4,
+        "popcount": 0,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 30,
+        "circuit_name": "fim_submit_030_fim_sector_survival_pilot",
+        "live_transpiled_depth": 172,
+        "live_transpiled_size": 244,
+        "live_transpiled_ops": {
+          "sx": 106,
+          "rz": 84,
+          "cz": 49,
+          "measure": 4,
+          "x": 1
+        }
+      },
+      "counts": {
+        "0000": 3633,
+        "0010": 67,
+        "0001": 43,
+        "1000": 65,
+        "1011": 11,
+        "0011": 17,
+        "1010": 28,
+        "1111": 4,
+        "1001": 13,
+        "0110": 36,
+        "0100": 92,
+        "1100": 42,
+        "1101": 9,
+        "1110": 20,
+        "0101": 12,
+        "0111": 4
+      }
+    },
+    {
+      "circuit_index": 31,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 4.0,
+        "depth": 2,
+        "initial_bitstring": "0001",
+        "magnetisation": 2,
+        "popcount": 1,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 31,
+        "circuit_name": "fim_submit_031_fim_sector_survival_pilot",
+        "live_transpiled_depth": 174,
+        "live_transpiled_size": 244,
+        "live_transpiled_ops": {
+          "sx": 105,
+          "rz": 84,
+          "cz": 49,
+          "measure": 4,
+          "x": 2
+        }
+      },
+      "counts": {
+        "0100": 659,
+        "1000": 2986,
+        "0000": 129,
+        "1100": 71,
+        "1010": 57,
+        "1001": 24,
+        "1110": 46,
+        "0010": 39,
+        "1011": 13,
+        "0110": 30,
+        "0111": 8,
+        "0101": 5,
+        "1111": 9,
+        "0011": 8,
+        "0001": 9,
+        "1101": 3
+      }
+    },
+    {
+      "circuit_index": 32,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 4.0,
+        "depth": 2,
+        "initial_bitstring": "0011",
+        "magnetisation": 0,
+        "popcount": 2,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 32,
+        "circuit_name": "fim_submit_032_fim_sector_survival_pilot",
+        "live_transpiled_depth": 171,
+        "live_transpiled_size": 244,
+        "live_transpiled_ops": {
+          "sx": 106,
+          "rz": 84,
+          "cz": 49,
+          "measure": 4,
+          "x": 1
+        }
+      },
+      "counts": {
+        "1100": 2923,
+        "1101": 28,
+        "1010": 533,
+        "0010": 34,
+        "1000": 154,
+        "0100": 149,
+        "0110": 86,
+        "0000": 59,
+        "1110": 57,
+        "1001": 16,
+        "0011": 7,
+        "1011": 10,
+        "1111": 11,
+        "0001": 15,
+        "0101": 8,
+        "0111": 6
+      }
+    },
+    {
+      "circuit_index": 33,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 4.0,
+        "depth": 2,
+        "initial_bitstring": "0111",
+        "magnetisation": -2,
+        "popcount": 3,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 33,
+        "circuit_name": "fim_submit_033_fim_sector_survival_pilot",
+        "live_transpiled_depth": 170,
+        "live_transpiled_size": 244,
+        "live_transpiled_ops": {
+          "sx": 106,
+          "rz": 84,
+          "cz": 49,
+          "measure": 4,
+          "x": 1
+        }
+      },
+      "counts": {
+        "1110": 2823,
+        "1101": 519,
+        "0000": 30,
+        "1010": 148,
+        "1001": 27,
+        "0110": 133,
+        "0101": 32,
+        "0100": 48,
+        "1100": 136,
+        "1000": 41,
+        "0010": 35,
+        "0011": 13,
+        "1111": 33,
+        "1011": 53,
+        "0111": 11,
+        "0001": 14
+      }
+    },
+    {
+      "circuit_index": 34,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 4.0,
+        "depth": 2,
+        "initial_bitstring": "1111",
+        "magnetisation": -4,
+        "popcount": 4,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 34,
+        "circuit_name": "fim_submit_034_fim_sector_survival_pilot",
+        "live_transpiled_depth": 171,
+        "live_transpiled_size": 244,
+        "live_transpiled_ops": {
+          "sx": 106,
+          "rz": 84,
+          "cz": 49,
+          "measure": 4,
+          "x": 1
+        }
+      },
+      "counts": {
+        "1111": 3241,
+        "0111": 155,
+        "1001": 42,
+        "1011": 170,
+        "1110": 119,
+        "1101": 161,
+        "0011": 45,
+        "1100": 27,
+        "0101": 27,
+        "1010": 33,
+        "1000": 9,
+        "0110": 24,
+        "0010": 7,
+        "0001": 15,
+        "0000": 8,
+        "0100": 13
+      }
+    },
+    {
+      "circuit_index": 35,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 4.0,
+        "depth": 4,
+        "initial_bitstring": "0000",
+        "magnetisation": 4,
+        "popcount": 0,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 35,
+        "circuit_name": "fim_submit_035_fim_sector_survival_pilot",
+        "live_transpiled_depth": 355,
+        "live_transpiled_size": 503,
+        "live_transpiled_ops": {
+          "sx": 221,
+          "rz": 171,
+          "cz": 103,
+          "x": 4,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "0000": 3438,
+        "0100": 144,
+        "1000": 127,
+        "1011": 11,
+        "1001": 16,
+        "0110": 30,
+        "0010": 73,
+        "0001": 67,
+        "1110": 36,
+        "0101": 20,
+        "1010": 33,
+        "1111": 11,
+        "1100": 53,
+        "0011": 22,
+        "1101": 9,
+        "0111": 6
+      }
+    },
+    {
+      "circuit_index": 36,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 4.0,
+        "depth": 4,
+        "initial_bitstring": "0001",
+        "magnetisation": 2,
+        "popcount": 1,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 36,
+        "circuit_name": "fim_submit_036_fim_sector_survival_pilot",
+        "live_transpiled_depth": 357,
+        "live_transpiled_size": 503,
+        "live_transpiled_ops": {
+          "sx": 220,
+          "rz": 171,
+          "cz": 103,
+          "x": 5,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "1000": 1540,
+        "0010": 198,
+        "0100": 1616,
+        "0001": 21,
+        "0000": 269,
+        "1110": 28,
+        "0110": 66,
+        "1010": 65,
+        "0101": 23,
+        "1001": 53,
+        "1100": 143,
+        "1101": 16,
+        "1011": 19,
+        "0111": 18,
+        "0011": 11,
+        "1111": 10
+      }
+    },
+    {
+      "circuit_index": 37,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 4.0,
+        "depth": 4,
+        "initial_bitstring": "0011",
+        "magnetisation": 0,
+        "popcount": 2,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 37,
+        "circuit_name": "fim_submit_037_fim_sector_survival_pilot",
+        "live_transpiled_depth": 354,
+        "live_transpiled_size": 503,
+        "live_transpiled_ops": {
+          "sx": 221,
+          "rz": 171,
+          "cz": 103,
+          "x": 4,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "1001": 135,
+        "1100": 1567,
+        "0101": 84,
+        "1010": 1097,
+        "0110": 325,
+        "1101": 41,
+        "0100": 208,
+        "1111": 36,
+        "0010": 107,
+        "1000": 254,
+        "1011": 24,
+        "0000": 83,
+        "1110": 80,
+        "0111": 16,
+        "0001": 23,
+        "0011": 16
+      }
+    },
+    {
+      "circuit_index": 38,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 4.0,
+        "depth": 4,
+        "initial_bitstring": "0111",
+        "magnetisation": -2,
+        "popcount": 3,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 38,
+        "circuit_name": "fim_submit_038_fim_sector_survival_pilot",
+        "live_transpiled_depth": 353,
+        "live_transpiled_size": 503,
+        "live_transpiled_ops": {
+          "sx": 221,
+          "rz": 171,
+          "cz": 103,
+          "x": 4,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "1110": 1471,
+        "1001": 102,
+        "0110": 143,
+        "1101": 1126,
+        "0011": 37,
+        "1100": 252,
+        "0111": 67,
+        "0100": 61,
+        "1111": 52,
+        "1011": 318,
+        "1010": 160,
+        "0000": 40,
+        "1000": 57,
+        "0001": 38,
+        "0101": 104,
+        "0010": 68
+      }
+    },
+    {
+      "circuit_index": 39,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 4.0,
+        "depth": 4,
+        "initial_bitstring": "1111",
+        "magnetisation": -4,
+        "popcount": 4,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 39,
+        "circuit_name": "fim_submit_039_fim_sector_survival_pilot",
+        "live_transpiled_depth": 354,
+        "live_transpiled_size": 503,
+        "live_transpiled_ops": {
+          "sx": 221,
+          "rz": 171,
+          "cz": 103,
+          "x": 4,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "1111": 2744,
+        "1001": 73,
+        "1011": 194,
+        "1101": 249,
+        "0111": 232,
+        "0101": 68,
+        "1000": 31,
+        "0011": 70,
+        "1110": 199,
+        "0001": 28,
+        "0010": 26,
+        "1100": 56,
+        "0110": 49,
+        "0100": 19,
+        "1010": 45,
+        "0000": 13
+      }
+    },
+    {
+      "circuit_index": 40,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 4.0,
+        "depth": 6,
+        "initial_bitstring": "0000",
+        "magnetisation": 4,
+        "popcount": 0,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 40,
+        "circuit_name": "fim_submit_040_fim_sector_survival_pilot",
+        "live_transpiled_depth": 539,
+        "live_transpiled_size": 761,
+        "live_transpiled_ops": {
+          "sx": 335,
+          "rz": 257,
+          "cz": 157,
+          "x": 8,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "0100": 175,
+        "0000": 3231,
+        "1000": 183,
+        "0010": 105,
+        "1100": 68,
+        "0001": 68,
+        "0101": 21,
+        "0110": 37,
+        "1110": 39,
+        "1010": 47,
+        "1001": 29,
+        "0011": 23,
+        "1011": 19,
+        "0111": 19,
+        "1111": 17,
+        "1101": 15
+      }
+    },
+    {
+      "circuit_index": 41,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 4.0,
+        "depth": 6,
+        "initial_bitstring": "0001",
+        "magnetisation": 2,
+        "popcount": 1,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 41,
+        "circuit_name": "fim_submit_041_fim_sector_survival_pilot",
+        "live_transpiled_depth": 540,
+        "live_transpiled_size": 762,
+        "live_transpiled_ops": {
+          "sx": 335,
+          "rz": 258,
+          "cz": 157,
+          "x": 8,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "0000": 361,
+        "0100": 1876,
+        "1000": 478,
+        "0101": 72,
+        "0110": 85,
+        "0010": 671,
+        "1010": 88,
+        "1100": 177,
+        "0111": 30,
+        "0001": 90,
+        "1110": 42,
+        "1011": 21,
+        "1001": 41,
+        "1101": 18,
+        "0011": 26,
+        "1111": 20
+      }
+    },
+    {
+      "circuit_index": 42,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 4.0,
+        "depth": 6,
+        "initial_bitstring": "0011",
+        "magnetisation": 0,
+        "popcount": 2,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 42,
+        "circuit_name": "fim_submit_042_fim_sector_survival_pilot",
+        "live_transpiled_depth": 537,
+        "live_transpiled_size": 762,
+        "live_transpiled_ops": {
+          "sx": 336,
+          "rz": 258,
+          "cz": 157,
+          "x": 7,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "0111": 26,
+        "0110": 660,
+        "0010": 181,
+        "0011": 88,
+        "1100": 702,
+        "1010": 931,
+        "1000": 260,
+        "0100": 213,
+        "0101": 389,
+        "1111": 24,
+        "1001": 265,
+        "1011": 40,
+        "0001": 87,
+        "1101": 45,
+        "1110": 97,
+        "0000": 88
+      }
+    },
+    {
+      "circuit_index": 43,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 4.0,
+        "depth": 6,
+        "initial_bitstring": "0111",
+        "magnetisation": -2,
+        "popcount": 3,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 43,
+        "circuit_name": "fim_submit_043_fim_sector_survival_pilot",
+        "live_transpiled_depth": 536,
+        "live_transpiled_size": 762,
+        "live_transpiled_ops": {
+          "sx": 336,
+          "rz": 258,
+          "cz": 157,
+          "x": 7,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "1011": 605,
+        "1100": 249,
+        "1110": 658,
+        "0111": 267,
+        "0011": 125,
+        "1101": 1093,
+        "1111": 75,
+        "1001": 200,
+        "1010": 169,
+        "0110": 143,
+        "0001": 59,
+        "0000": 52,
+        "0010": 64,
+        "0100": 89,
+        "1000": 103,
+        "0101": 145
+      }
+    },
+    {
+      "circuit_index": 44,
+      "metadata": {
+        "protocol_arm": "fim_sector_survival_pilot",
+        "n_qubits": 4,
+        "lambda_fim": 4.0,
+        "depth": 6,
+        "initial_bitstring": "1111",
+        "magnetisation": -4,
+        "popcount": 4,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 44,
+        "circuit_name": "fim_submit_044_fim_sector_survival_pilot",
+        "live_transpiled_depth": 537,
+        "live_transpiled_size": 762,
+        "live_transpiled_ops": {
+          "sx": 336,
+          "rz": 258,
+          "cz": 157,
+          "x": 7,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "1111": 2328,
+        "1101": 269,
+        "1011": 261,
+        "1100": 94,
+        "1110": 268,
+        "0011": 71,
+        "0111": 289,
+        "0010": 37,
+        "1010": 86,
+        "1000": 33,
+        "0001": 48,
+        "0101": 92,
+        "1001": 88,
+        "0100": 34,
+        "0000": 27,
+        "0110": 71
+      }
+    },
+    {
+      "circuit_index": 45,
+      "metadata": {
+        "protocol_arm": "readout_baseline",
+        "n_qubits": 4,
+        "lambda_fim": null,
+        "depth": 0,
+        "initial_bitstring": "0000",
+        "magnetisation": 4,
+        "popcount": 0,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 45,
+        "circuit_name": "fim_submit_045_readout_baseline",
+        "live_transpiled_depth": 1,
+        "live_transpiled_size": 4,
+        "live_transpiled_ops": {
+          "measure": 4
+        }
+      },
+      "counts": {
+        "0000": 4081,
+        "0100": 8,
+        "0010": 5,
+        "0001": 2
+      }
+    },
+    {
+      "circuit_index": 46,
+      "metadata": {
+        "protocol_arm": "readout_baseline",
+        "n_qubits": 4,
+        "lambda_fim": null,
+        "depth": 0,
+        "initial_bitstring": "0001",
+        "magnetisation": 2,
+        "popcount": 1,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 46,
+        "circuit_name": "fim_submit_046_readout_baseline",
+        "live_transpiled_depth": 2,
+        "live_transpiled_size": 5,
+        "live_transpiled_ops": {
+          "measure": 4,
+          "x": 1
+        }
+      },
+      "counts": {
+        "1000": 4051,
+        "0000": 33,
+        "1100": 6,
+        "1010": 2,
+        "1001": 4
+      }
+    },
+    {
+      "circuit_index": 47,
+      "metadata": {
+        "protocol_arm": "readout_baseline",
+        "n_qubits": 4,
+        "lambda_fim": null,
+        "depth": 0,
+        "initial_bitstring": "0010",
+        "magnetisation": 2,
+        "popcount": 1,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 47,
+        "circuit_name": "fim_submit_047_readout_baseline",
+        "live_transpiled_depth": 2,
+        "live_transpiled_size": 5,
+        "live_transpiled_ops": {
+          "measure": 4,
+          "x": 1
+        }
+      },
+      "counts": {
+        "0100": 4049,
+        "0101": 2,
+        "0000": 29,
+        "1100": 13,
+        "0110": 3
+      }
+    },
+    {
+      "circuit_index": 48,
+      "metadata": {
+        "protocol_arm": "readout_baseline",
+        "n_qubits": 4,
+        "lambda_fim": null,
+        "depth": 0,
+        "initial_bitstring": "0011",
+        "magnetisation": 0,
+        "popcount": 2,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 48,
+        "circuit_name": "fim_submit_048_readout_baseline",
+        "live_transpiled_depth": 2,
+        "live_transpiled_size": 6,
+        "live_transpiled_ops": {
+          "measure": 4,
+          "x": 2
+        }
+      },
+      "counts": {
+        "1100": 4043,
+        "1000": 24,
+        "0100": 25,
+        "0000": 2,
+        "1110": 1,
+        "1101": 1
+      }
+    },
+    {
+      "circuit_index": 49,
+      "metadata": {
+        "protocol_arm": "readout_baseline",
+        "n_qubits": 4,
+        "lambda_fim": null,
+        "depth": 0,
+        "initial_bitstring": "0100",
+        "magnetisation": 2,
+        "popcount": 1,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 49,
+        "circuit_name": "fim_submit_049_readout_baseline",
+        "live_transpiled_depth": 2,
+        "live_transpiled_size": 5,
+        "live_transpiled_ops": {
+          "measure": 4,
+          "x": 1
+        }
+      },
+      "counts": {
+        "0010": 4054,
+        "1010": 15,
+        "0000": 25,
+        "0011": 1,
+        "1000": 1
+      }
+    },
+    {
+      "circuit_index": 50,
+      "metadata": {
+        "protocol_arm": "readout_baseline",
+        "n_qubits": 4,
+        "lambda_fim": null,
+        "depth": 0,
+        "initial_bitstring": "0101",
+        "magnetisation": 0,
+        "popcount": 2,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 50,
+        "circuit_name": "fim_submit_050_readout_baseline",
+        "live_transpiled_depth": 2,
+        "live_transpiled_size": 6,
+        "live_transpiled_ops": {
+          "measure": 4,
+          "x": 2
+        }
+      },
+      "counts": {
+        "1010": 4031,
+        "1110": 4,
+        "1000": 30,
+        "0010": 27,
+        "1011": 4
+      }
+    },
+    {
+      "circuit_index": 51,
+      "metadata": {
+        "protocol_arm": "readout_baseline",
+        "n_qubits": 4,
+        "lambda_fim": null,
+        "depth": 0,
+        "initial_bitstring": "0110",
+        "magnetisation": 0,
+        "popcount": 2,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 51,
+        "circuit_name": "fim_submit_051_readout_baseline",
+        "live_transpiled_depth": 2,
+        "live_transpiled_size": 6,
+        "live_transpiled_ops": {
+          "measure": 4,
+          "x": 2
+        }
+      },
+      "counts": {
+        "0110": 4035,
+        "0010": 40,
+        "0100": 20,
+        "0111": 1
+      }
+    },
+    {
+      "circuit_index": 52,
+      "metadata": {
+        "protocol_arm": "readout_baseline",
+        "n_qubits": 4,
+        "lambda_fim": null,
+        "depth": 0,
+        "initial_bitstring": "0111",
+        "magnetisation": -2,
+        "popcount": 3,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 52,
+        "circuit_name": "fim_submit_052_readout_baseline",
+        "live_transpiled_depth": 2,
+        "live_transpiled_size": 7,
+        "live_transpiled_ops": {
+          "measure": 4,
+          "x": 3
+        }
+      },
+      "counts": {
+        "1110": 4021,
+        "0110": 29,
+        "1100": 23,
+        "1111": 5,
+        "1010": 17,
+        "1000": 1
+      }
+    },
+    {
+      "circuit_index": 53,
+      "metadata": {
+        "protocol_arm": "readout_baseline",
+        "n_qubits": 4,
+        "lambda_fim": null,
+        "depth": 0,
+        "initial_bitstring": "1000",
+        "magnetisation": 2,
+        "popcount": 1,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 53,
+        "circuit_name": "fim_submit_053_readout_baseline",
+        "live_transpiled_depth": 2,
+        "live_transpiled_size": 5,
+        "live_transpiled_ops": {
+          "measure": 4,
+          "x": 1
+        }
+      },
+      "counts": {
+        "0001": 4034,
+        "0000": 32,
+        "0011": 1,
+        "0101": 13,
+        "1001": 16
+      }
+    },
+    {
+      "circuit_index": 54,
+      "metadata": {
+        "protocol_arm": "readout_baseline",
+        "n_qubits": 4,
+        "lambda_fim": null,
+        "depth": 0,
+        "initial_bitstring": "1001",
+        "magnetisation": 0,
+        "popcount": 2,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 54,
+        "circuit_name": "fim_submit_054_readout_baseline",
+        "live_transpiled_depth": 2,
+        "live_transpiled_size": 6,
+        "live_transpiled_ops": {
+          "measure": 4,
+          "x": 2
+        }
+      },
+      "counts": {
+        "1001": 4046,
+        "1000": 18,
+        "0001": 27,
+        "1011": 3,
+        "1101": 2
+      }
+    },
+    {
+      "circuit_index": 55,
+      "metadata": {
+        "protocol_arm": "readout_baseline",
+        "n_qubits": 4,
+        "lambda_fim": null,
+        "depth": 0,
+        "initial_bitstring": "1010",
+        "magnetisation": 0,
+        "popcount": 2,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 55,
+        "circuit_name": "fim_submit_055_readout_baseline",
+        "live_transpiled_depth": 2,
+        "live_transpiled_size": 6,
+        "live_transpiled_ops": {
+          "measure": 4,
+          "x": 2
+        }
+      },
+      "counts": {
+        "0101": 4025,
+        "0111": 2,
+        "0001": 30,
+        "0100": 34,
+        "1101": 5
+      }
+    },
+    {
+      "circuit_index": 56,
+      "metadata": {
+        "protocol_arm": "readout_baseline",
+        "n_qubits": 4,
+        "lambda_fim": null,
+        "depth": 0,
+        "initial_bitstring": "1011",
+        "magnetisation": -2,
+        "popcount": 3,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 56,
+        "circuit_name": "fim_submit_056_readout_baseline",
+        "live_transpiled_depth": 2,
+        "live_transpiled_size": 7,
+        "live_transpiled_ops": {
+          "measure": 4,
+          "x": 3
+        }
+      },
+      "counts": {
+        "1101": 4011,
+        "1001": 23,
+        "1100": 23,
+        "0101": 35,
+        "1111": 4
+      }
+    },
+    {
+      "circuit_index": 57,
+      "metadata": {
+        "protocol_arm": "readout_baseline",
+        "n_qubits": 4,
+        "lambda_fim": null,
+        "depth": 0,
+        "initial_bitstring": "1100",
+        "magnetisation": 0,
+        "popcount": 2,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 57,
+        "circuit_name": "fim_submit_057_readout_baseline",
+        "live_transpiled_depth": 2,
+        "live_transpiled_size": 6,
+        "live_transpiled_ops": {
+          "measure": 4,
+          "x": 2
+        }
+      },
+      "counts": {
+        "0011": 4021,
+        "1011": 15,
+        "0001": 25,
+        "0010": 31,
+        "0111": 4
+      }
+    },
+    {
+      "circuit_index": 58,
+      "metadata": {
+        "protocol_arm": "readout_baseline",
+        "n_qubits": 4,
+        "lambda_fim": null,
+        "depth": 0,
+        "initial_bitstring": "1101",
+        "magnetisation": -2,
+        "popcount": 3,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 58,
+        "circuit_name": "fim_submit_058_readout_baseline",
+        "live_transpiled_depth": 2,
+        "live_transpiled_size": 7,
+        "live_transpiled_ops": {
+          "measure": 4,
+          "x": 3
+        }
+      },
+      "counts": {
+        "1011": 4030,
+        "1001": 28,
+        "1111": 2,
+        "1010": 15,
+        "0011": 20,
+        "1000": 1
+      }
+    },
+    {
+      "circuit_index": 59,
+      "metadata": {
+        "protocol_arm": "readout_baseline",
+        "n_qubits": 4,
+        "lambda_fim": null,
+        "depth": 0,
+        "initial_bitstring": "1110",
+        "magnetisation": -2,
+        "popcount": 3,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 59,
+        "circuit_name": "fim_submit_059_readout_baseline",
+        "live_transpiled_depth": 2,
+        "live_transpiled_size": 7,
+        "live_transpiled_ops": {
+          "measure": 4,
+          "x": 3
+        }
+      },
+      "counts": {
+        "0111": 4008,
+        "0101": 29,
+        "0110": 24,
+        "1111": 7,
+        "0011": 27,
+        "0001": 1
+      }
+    },
+    {
+      "circuit_index": 60,
+      "metadata": {
+        "protocol_arm": "readout_baseline",
+        "n_qubits": 4,
+        "lambda_fim": null,
+        "depth": 0,
+        "initial_bitstring": "1111",
+        "magnetisation": -4,
+        "popcount": 4,
+        "shots": 4096,
+        "submission_status": "not_submitted",
+        "circuit_index": 60,
+        "circuit_name": "fim_submit_060_readout_baseline",
+        "live_transpiled_depth": 2,
+        "live_transpiled_size": 8,
+        "live_transpiled_ops": {
+          "x": 4,
+          "measure": 4
+        }
+      },
+      "counts": {
+        "1111": 3997,
+        "1011": 24,
+        "1101": 28,
+        "0111": 23,
+        "1110": 20,
+        "0101": 1,
+        "0011": 1,
+        "0110": 1,
+        "1001": 1
+      }
+    }
+  ]
+}

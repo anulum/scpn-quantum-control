@@ -1,0 +1,509 @@
+% SPDX-License-Identifier: AGPL-3.0-or-later
+% Commercial license available
+% (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved.
+% (c) Code 2020-2026 Miroslav Sotek. All rights reserved.
+% ORCID: 0009-0009-3560-0851
+% Contact: www.anulum.li | protoscience@anulum.li
+% scpn-quantum-control -- Rust/VQE methodology manuscript draft
+
+\documentclass[preprint,aps,physrev,superscriptaddress,floatfix,longbibliography]{revtex4-2}
+
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{siunitx}
+\usepackage{seqsplit}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!60!black,
+    citecolor=blue!60!black,
+    urlcolor=blue!60!black,
+}
+
+\begin{document}
+\emergencystretch=3em
+
+\title{A Rust-accelerated, topology-informed workflow for Kuramoto--XY
+quantum simulation and NISQ benchmarking}
+
+\author{Miroslav \v{S}otek}
+\email{protoscience@anulum.li}
+\affiliation{ANULUM, Marbach SG, Switzerland}
+\affiliation{ORCID: 0009-0009-3560-0851}
+
+\date{\today}
+
+\begin{abstract}
+We describe the software and experimental workflow behind
+\texttt{scpn-quantum-control}, an open-source framework for mapping
+heterogeneous Kuramoto-type oscillator networks to XY spin Hamiltonians,
+compiling topology-informed variational ansatze, benchmarking classical
+and quantum simulation paths, and executing reproducible NISQ hardware
+experiments. The framework combines Python/Qiskit orchestration with a
+Rust/PyO3 acceleration layer for hot-path kernels such as coupling-matrix
+construction, Hamiltonian assembly, trajectory features, hybrid
+digital--analog partitioning, and protected-subspace diagnostics. We report
+artefact-generated timings on three CPU sources (local workstation, ML350,
+and Vertex AI \texttt{n1-standard-4}) and one Vertex AI Tesla T4 GPU run.
+Fresh benchmark artefacts generated on 2026-05-05 show direct
+Rust coupling-matrix speedups of $15.5$--$44.1\times$ at $n=16$
+across the three self-contained CPU runs, exact checksum parity across
+Python, Rust, and Go kernels, and a
+three-seed $n=4$ VQE comparison in which the topology-informed ansatz
+achieves a mean relative energy error of $0.455\,\%$, compared with
+$6.136\,\%$ for \texttt{TwoLocal} and $7.522\,\%$ for
+\texttt{EfficientSU2} at the same iteration budget. A batched
+state-vector expectation benchmark on Vertex T4 gives CUDA median
+times of $0.176$--$0.905\,\mathrm{ms}$ for $n=8$--$11$, compared with
+Vertex CPU medians of $3.557$--$12.094\,\mathrm{ms}$ for the same
+workload. The paper is
+methodological rather than a quantum-advantage claim: small-system exact
+simulation remains classically tractable, and hardware results are used
+to validate compilation, noise budgeting, and experiment reproducibility.
+All code, benchmark commands, hardware raw counts, and derived artefacts are public at
+\href{https://github.com/anulum/scpn-quantum-control}{\texttt{anulum/scpn-quantum-control}}.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+
+Quantum simulation papers often underreport the engineering layer that
+connects a model Hamiltonian to executable circuits, raw-count archives,
+analysis scripts, and reproducible performance claims. This omission is
+especially problematic for NISQ studies, where small changes in ansatz
+topology, transpilation, hardware calibration, readout processing, or
+classical baseline implementation can dominate the advertised physics.
+
+This manuscript presents the computational methodology used in the
+\texttt{scpn-quantum-control} Kuramoto--XY campaign~\cite{SotekSCPNSoftware}.
+The contribution is
+not a broad quantum-advantage result. Instead, it is a reproducible
+pipeline for:
+%
+\begin{enumerate}
+  \item compiling heterogeneous oscillator couplings into XY Hamiltonians,
+  \item generating coupling-topology-informed ansatze and Trotter circuits,
+  \item dispatching hot kernels to Rust while preserving Python/Qiskit
+        usability,
+  \item benchmarking classical, simulator, and hardware paths with
+        command-level provenance, and
+  \item archiving raw IBM hardware counts with integrity hashes and
+        reproduction scripts.
+\end{enumerate}
+
+The immediate use case is Kuramoto-type synchronisation mapped to the
+XY Hamiltonian
+%
+\begin{equation}
+  H_{XY} =
+  \sum_{i<j} K_{ij}\left(X_i X_j + Y_i Y_j\right)
+  + \sum_i \omega_i Z_i,
+\end{equation}
+%
+where $K_{ij}$ encodes the oscillator coupling topology and $\omega_i$
+are heterogeneous natural frequencies. The same workflow also supports
+VQE, Trotterised dynamics, readout/post-processing studies, DLA-parity
+diagnostics, and hardware experiment packaging.
+
+The paper is intentionally separated from the companion IBM hardware
+preprint. The hardware preprint asks whether a parity-sector and
+excitation-number correlated leakage signal is reproducible on real Heron
+r2 hardware~\cite{SotekDLA2026,SotekDLAData2026}. The present manuscript asks a different question: whether
+the software stack that generated, validated, and analysed those
+experiments is itself reproducible, benchmarked, and reusable.
+
+\section{Software architecture and artefact discipline}
+
+The framework is organised as a Python front-end with a Rust/PyO3 engine
+for hot paths. The Python layer provides model construction, Qiskit
+circuits, hardware runners, analysis scripts, and documentation. The Rust
+layer provides deterministic kernels for coupling construction, trajectory
+features, Hamiltonian-adjacent operations, and selected diagnostics. This
+division keeps the public API accessible while reducing overhead in loops
+where Python object allocation would dominate.
+
+The central reproducibility rule in this manuscript is that numerical
+tables are not hand-authored. Benchmarks are generated by scripts under
+\texttt{scripts/} and written to JSON/CSV artefacts under
+\texttt{data/rust\_vqe\_methods/}. The manuscript cites those artefacts
+directly. This prevents stale performance claims and makes later
+reruns auditable when compilers, CPUs, cloud machines, or Python
+dependencies change.
+
+\begin{table}[tb]
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+Layer & Representative modules & Role \\
+\midrule
+Bridge & \texttt{bridge/knm\_hamiltonian.py} & $K_{ij}\rightarrow H_{XY}$ \\
+Ansatz & \texttt{control/structured\_ansatz.py} & topology-informed circuits \\
+Phase & \texttt{phase/phase\_vqe.py} & VQE and dynamics workflows \\
+Hardware & \texttt{hardware/runner.py} & simulator / IBM execution \\
+Rust & \texttt{scpn\_quantum\_engine} & hot-path kernels \\
+\bottomrule
+\end{tabular}
+\caption{High-level workflow components. The paper reports only
+auditable functions with command-level provenance or committed test
+coverage.}
+\label{tab:architecture}
+\end{table}
+
+\section{Minimal working example}
+
+The core user workflow is intentionally short: construct a Kuramoto--XY
+coupling matrix, convert it into an operator, generate a topology-informed
+ansatz, and then pass the same artefacts to a VQE or benchmark harness.
+The following sketch is representative of the public API used by the
+benchmark scripts:
+
+\begin{verbatim}
+from scpn_quantum_control.bridge.knm_hamiltonian import (
+    OMEGA_N_16,
+    build_knm_paper27,
+    knm_to_ansatz,
+    knm_to_hamiltonian,
+)
+
+n = 4
+k_matrix = build_knm_paper27(n)
+hamiltonian = knm_to_hamiltonian(k_matrix, OMEGA_N_16[:n])
+ansatz = knm_to_ansatz(k_matrix, reps=2)
+\end{verbatim}
+
+The benchmark artefacts in \texttt{data/rust\_vqe\_methods/} are produced
+by extending this workflow with fixed seeds, fixed optimiser budgets,
+explicit machine metadata, and JSON/CSV output. This keeps the examples
+close to the submitted hardware and methods data rather than presenting
+toy APIs unrelated to the reported numbers.
+
+\section{Rust kernel boundary}
+
+The Rust layer is deliberately narrow. It accelerates deterministic kernels
+that are called repeatedly from Python workflows, while Qiskit remains the
+circuit, operator, and transpilation layer. For the coupling-matrix
+benchmark, the accelerated operation has the conceptual signature
+
+\begin{verbatim}
+pub fn build_knm(n: usize, k0: f64, alpha: f64) -> Vec<f64>
+\end{verbatim}
+
+and returns a row-major dense representation of the exponentially decaying
+coupling matrix. The benchmark harness compares this path against matched
+Python and Go implementations using checksum parity before reporting timing
+statistics. The reported speedups therefore refer to this kernel boundary,
+not to the entire Qiskit workflow.
+
+\section{Topology-informed ansatz design}
+
+The topology-informed ansatz uses the support of $K_{ij}$ to decide which
+qubit pairs receive entangling gates. This is a simple design principle:
+do not spend variational capacity on edges absent from the physical
+coupling graph. For sparse or structured oscillator networks, this can
+reduce parameter count and circuit clutter relative to generic linear or
+all-to-all ansatze.
+
+The current benchmark harness regenerates ansatz construction and VQE
+tables from source. For the representative $n=4$, two-repetition case,
+the topology-informed ansatz uses fewer parameters than the generic
+alternatives while retaining the same raw two-qubit-gate count as
+\texttt{TwoLocal}. The generated VQE artefact then compares all three
+ansatze over three random seeds with identical COBYLA iteration budgets.
+
+\begin{table}[tb]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+Ansatz & Params & Raw depth & 2q gates & Median VQE error \\
+\midrule
+$K_{ij}$-informed & 16 & 13 & 12 & $0.372\,\%$ \\
+\texttt{TwoLocal} & 24 & 15 & 12 & $7.164\,\%$ \\
+\texttt{EfficientSU2} & 24 & 11 & 6 & $7.708\,\%$ \\
+\bottomrule
+\end{tabular}
+\caption{Generated $n=4$, two-repetition ansatz/VQE benchmark. Circuit
+columns come from
+\texttt{ansatz\_benchmark\_summary\_2026-05-05.json};
+VQE errors come from
+\texttt{vqe\_benchmark\_summary\_2026-05-05.json}
+with three seeds and 80 COBYLA iterations per seed.}
+\label{tab:ansatz}
+\end{table}
+
+\section{Generated CPU benchmark artefacts}
+
+Table~\ref{tab:performance} lists conservative local performance facts generated
+by the new benchmark harnesses. These are opportunistic timings on a shared
+workstation, not final publication-grade timing claims; CPU load from other
+processes was not pinned or isolated. The older internal claim of a
+$5401\times$ Hamiltonian-construction speedup is not used here because it
+has not yet been reproduced by the present harness with a matched baseline.
+The fresh coupling-matrix benchmark shows useful speedups at $n=4$--$32$,
+but not at $n=64$; the manuscript therefore reports bounded kernel-level
+acceleration rather than a universal speedup.
+
+To make the comparison extensible, we added a multi-language
+coupling-matrix harness. It currently reports Python/NumPy, direct
+Rust/PyO3, Julia, and Go timings where local runtimes are available. The
+Mojo runtime was detected, but no stable Mojo $K_{ij}$ kernel is included
+yet, so Mojo is recorded as detected-not-benchmarked rather than reported
+as a result.
+
+\begin{table*}[tb]
+\centering
+\small
+\begin{tabular}{lrrr}
+\toprule
+Task & $n$ & Median time & Note \\
+\midrule
+\texttt{build\_knm}, Python & 4 & $0.00627\,\mathrm{ms}$ & reference \\
+\texttt{build\_knm}, Rust & 4 & $0.00106\,\mathrm{ms}$ & $5.89\times$ \\
+\texttt{build\_knm}, Python & 16 & $0.01028\,\mathrm{ms}$ & reference \\
+\texttt{build\_knm}, Rust & 16 & $0.00277\,\mathrm{ms}$ & $3.71\times$ \\
+\texttt{build\_knm}, Python & 32 & $0.01148\,\mathrm{ms}$ & reference \\
+\texttt{build\_knm}, Rust & 32 & $0.00828\,\mathrm{ms}$ & $1.39\times$ \\
+Dense $H_{XY}$ & 8 & $0.11705\,\mathrm{ms}$ & Hermitian error 0 \\
+\emph{Timing context} & -- & -- & shared workstation; non-isolated \\
+\bottomrule
+\end{tabular}
+\caption{Generated opportunistic shared-workstation core benchmark table from
+\texttt{rust\_core\_benchmark\_summary\_2026-05-05.json}. Python/Rust
+coupling matrices match to the configured tolerance for all tested
+sizes $n\in\{4,8,16,32,64\}$. The dense $H_{XY}$ row reports the maximum
+absolute Hermiticity residual, which is zero for the generated matrix.}
+\label{tab:performance}
+\end{table*}
+
+\begin{table}[tb]
+\centering
+\small
+\begin{tabular}{lcc}
+\toprule
+Language path & $n=16$ median & Status \\
+\midrule
+Python/NumPy & $0.01339\,\mathrm{ms}$ & ok \\
+Rust/PyO3 & $0.00330\,\mathrm{ms}$ & ok \\
+Julia & $0.00509\,\mathrm{ms}$ & ok \\
+Go & $0.00402\,\mathrm{ms}$ & ok \\
+Mojo & -- & detected, no kernel \\
+\bottomrule
+\end{tabular}
+\caption{Generated multi-language $K_{ij}$ construction comparison at
+$n=16$ from
+\texttt{multilang\_knm\_benchmark\_summary\_2026-05-05.json}.
+The same shared-workstation caveat applies; this table is a comparator
+framework, not yet a final language shootout.}
+\label{tab:multilang}
+\end{table}
+
+The self-contained cross-machine harness was then executed on three
+independent CPU sources: the local workstation \texttt{aaarthuus}, the
+ML350 server \texttt{god-of-the-math}, and a Vertex AI
+\texttt{n1-standard-4} worker. This harness deliberately avoids importing
+the project package so that a secondary machine can run the same
+Python/Rust/Go kernels before the full project environment is installed.
+All three runs report matching checksums for the three language kernels,
+which makes the timings meaningful as implementation comparisons rather
+than unrelated algorithms.
+
+\begin{table*}[tb]
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Machine & Python $n=16$ & Rust $n=16$ & Go $n=16$ & Rust/Python \\
+\midrule
+Local workstation & $0.06631\,\mathrm{ms}$ & $0.00150\,\mathrm{ms}$ & $0.00437\,\mathrm{ms}$ & $44.1\times$ \\
+ML350 & $0.07620\,\mathrm{ms}$ & $0.00493\,\mathrm{ms}$ & $0.01023\,\mathrm{ms}$ & $15.5\times$ \\
+Vertex CPU & $0.04705\,\mathrm{ms}$ & $0.00260\,\mathrm{ms}$ & $0.00667\,\mathrm{ms}$ & $18.1\times$ \\
+\bottomrule
+\end{tabular}
+\caption{Generated cross-machine $K_{ij}$ construction comparison at
+$n=16$ from \texttt{remote\_knm\_benchmark\_*2026-05-05.json} and
+\texttt{combined\_methods\_benchmark\_summary\_2026-05-05.json}. Each
+row uses the self-contained benchmark harness with 1000 iterations. The
+reported machines had non-zero load averages during measurement, so the
+table supports robustness of the ordering, not isolated microbenchmark
+claims.}
+\label{tab:crossmachine}
+\end{table*}
+
+\section{GPU-assisted validation benchmark}
+
+GPU acceleration is useful for a different part of the workflow than the
+Rust kernels. The $K_{ij}$ construction kernel is small and allocation
+sensitive; moving it to a GPU would mostly benchmark transfer overhead.
+The GPU-relevant workload is batched classical validation: evaluating
+many state-vector energies or VQE candidate states against the same
+dense Hamiltonian. We therefore added a separate GPU harness for batched
+expectation values,
+\begin{equation}
+  E_b = \langle \psi_b | H_{XY} | \psi_b \rangle,
+  \qquad b=1,\ldots,B,
+\end{equation}
+with $B=64$ random normalised complex state vectors.
+
+Local GPU timings are not reported as valid because the local NVIDIA
+stack was inconsistent during this session: \texttt{nvidia-smi} failed
+with an NVML driver/library mismatch, and CUDA initialisation in the
+local CUDA-enabled PyTorch environment failed with error 804. Instead,
+the valid GPU artefact is the Vertex AI Tesla T4 run using
+\texttt{pytorch/pytorch:2.5.1-cuda12.4-cudnn9-runtime}.
+
+\begin{table}[tb]
+\centering
+\small
+\begin{tabular}{rrrr}
+\toprule
+$n$ & Hilbert dim. & Vertex CPU median & T4 CUDA median \\
+\midrule
+8 & 256 & $11.121\,\mathrm{ms}$ & $0.176\,\mathrm{ms}$ \\
+10 & 1024 & $3.557\,\mathrm{ms}$ & $0.290\,\mathrm{ms}$ \\
+11 & 2048 & $12.094\,\mathrm{ms}$ & $0.905\,\mathrm{ms}$ \\
+\bottomrule
+\end{tabular}
+\caption{Generated batched expectation benchmark from
+\texttt{gpu\_benchmark\_summary\_vertex\_t4\_2026-05-05.json}. The
+workload uses batch size 64 and 20 timing repeats. The CPU column is the
+NumPy path inside the same Vertex worker; the CUDA column is the PyTorch
+CUDA path on one Tesla T4 using the
+\texttt{pytorch/pytorch:2.5.1-cuda12.4-cudnn9-runtime} container.}
+\label{tab:gpu}
+\end{table}
+
+These results support a hybrid implementation strategy. Rust is used for
+low-latency CPU kernels and deterministic orchestration hot paths; GPU
+acceleration is used for batched dense linear algebra in classical
+validation and VQE scoring. QPU time is reserved for hardware-noise
+questions that cannot be answered by classical simulation alone.
+
+\section{Hardware workflow and reproducibility}
+
+The same repository contains the raw-count hardware workflow used for the
+DLA-parity paper. That campaign is not the central result of the present
+methodology paper, but it demonstrates why the software architecture is
+useful: each promoted hardware dataset carries raw counts, circuit
+metadata, IBM job identifiers, SHA256 hashes, and reproducer scripts. This
+paper should cite the DLA-parity preprint as an application case study,
+while keeping the main methodological claim focused on the toolchain and
+benchmarking discipline.
+
+\section{Limitations}
+
+The benchmark results are deliberately bounded. First, the CPU timings
+are opportunistic shared-machine timings. They record machine metadata
+and load averages, but do not pin CPU affinity, clock governor, cache
+state, or thermal state. They are sufficient to document the pipeline and
+compare implementation ordering; they are not a final language shootout.
+
+Second, the VQE comparison is small. The $n=4$ topology-informed ansatz
+result is a useful methods signal, but it should not be interpreted as a
+universal optimisation theorem. Larger ansatz matrices, more seeds, and
+additional Hamiltonian families are natural extensions.
+
+Third, the GPU benchmark is a classical-validation workload, not a claim
+that the full Qiskit circuit-construction path is GPU accelerated. Circuit
+construction and transpilation remain mostly Python/object-graph
+workloads. The GPU contribution is batched dense linear algebra.
+
+Finally, the hardware experiments that motivated this pipeline remain
+small-N NISQ experiments. The software stack improves reproducibility and
+throughput, but it does not by itself establish quantum advantage.
+
+\section{Data and code availability}
+
+The public repository is
+\href{https://github.com/anulum/scpn-quantum-control}{\texttt{https://github.com/anulum/scpn-quantum-control}}.
+The methods-paper benchmark artefacts are under
+\path{data/rust_vqe_methods/}. The primary generated summaries used
+in this manuscript are:
+%
+\begin{itemize}
+  \item \path{rust_core_benchmark_summary_2026-05-05.json},
+  \item \path{ansatz_benchmark_summary_2026-05-05.json},
+  \item \path{vqe_benchmark_summary_2026-05-05.json},
+  \item \path{multilang_knm_benchmark_summary_2026-05-05.json},
+  \item \path{remote_knm_benchmark_aaarthuus_local_2026-05-05.json},
+  \item \path{remote_knm_benchmark_ml350_2026-05-05.json},
+  \item \path{remote_knm_benchmark_vertex_n1_standard_4_2026-05-05.json},
+  \item \path{gpu_benchmark_summary_vertex_t4_2026-05-05.json},
+  \item \path{combined_methods_benchmark_summary_2026-05-05.json}.
+\end{itemize}
+%
+The latest combined summary hashes at the time of this draft are
+\texttt{\seqsplit{593330a1dd19f495b899be1031ebe3dd4caa07171053aa376c2f761e557c1428}}
+for JSON and
+\texttt{\seqsplit{e69b94df590ff06708b3b21245864f74c3df630b514254526dc6c4af3fe24c2f}}
+for CSV. The corresponding generator scripts are
+\path{scripts/benchmark_rust_core_methods.py},
+\path{scripts/benchmark_ansatz_methods.py},
+\path{scripts/benchmark_vqe_methods.py},
+\path{scripts/benchmark_multilang_knm_methods.py},
+\path{scripts/benchmark_remote_knm_machine.py},
+\path{scripts/benchmark_gpu_methods.py}, and
+\path{scripts/summarise_rust_vqe_method_artifacts.py}.
+
+\section{Conclusion}
+
+We have presented a conservative methodology paper around
+\texttt{scpn-quantum-control}: a Rust-accelerated, topology-informed
+workflow for Kuramoto--XY quantum simulation, VQE benchmarking, and NISQ
+hardware reproducibility. The strongest near-term contribution is not an
+unqualified speedup headline, but a transparent engineering stack that
+connects physical coupling graphs to circuits, benchmark artefacts,
+hardware raw counts, and reproducible analysis. The generated artefacts
+show that Rust gives consistent low-latency CPU benefits for the
+coupling-matrix kernel across three CPU sources, that topology-informed
+ansatz design improves the tested small VQE case, and that Vertex T4 GPU
+acceleration is useful for batched classical expectation evaluation.
+
+\begin{thebibliography}{9}
+
+\bibitem{SotekSCPNSoftware}
+M.~\v{S}otek,
+\emph{\texttt{scpn-quantum-control}: Quantum-Native SCPN Phase Dynamics
+and Control}, version 0.9.6,
+Zenodo record 18821929 (2026).
+
+\bibitem{SotekDLA2026}
+M.~\v{S}otek,
+``Replicated hardware observation of parity-sector and excitation-number
+correlated decoherence asymmetry in the XY Hamiltonian,''
+preprint manuscript (2026).
+
+\bibitem{SotekDLAData2026}
+M.~\v{S}otek,
+\emph{DLA parity hardware validation package for heterogeneous
+Kuramoto--XY circuits},
+Zenodo dataset and public repository artefacts (2026),
+Zenodo record 19098792.
+
+\bibitem{Qiskit}
+Qiskit contributors,
+\emph{Qiskit: An Open-source Framework for Quantum Computing}.
+
+\bibitem{Peruzzo2014}
+A.~Peruzzo \emph{et al.},
+``A variational eigenvalue solver on a photonic quantum processor,''
+Nature Communications \textbf{5}, 4213 (2014).
+
+\bibitem{Kandala2017}
+A.~Kandala \emph{et al.},
+``Hardware-efficient variational quantum eigensolver for small molecules
+and quantum magnets,''
+Nature \textbf{549}, 242--246 (2017).
+
+\bibitem{Kuramoto1984}
+Y.~Kuramoto,
+\emph{Chemical Oscillations, Waves, and Turbulence}
+(Springer, Berlin, 1984).
+
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,20 @@
+{
+  "workerPoolSpecs": [
+    {
+      "machineSpec": {
+        "machineType": "n1-standard-4"
+      },
+      "replicaCount": "1",
+      "containerSpec": {
+        "imageUri": "python:3.11-bookworm",
+        "command": [
+          "bash",
+          "-lc"
+        ],
+        "args": [
+          "set -euo pipefail; export DEBIAN_FRONTEND=noninteractive; apt-get update -qq; apt-get install -y -qq rustc golang-go >/tmp/apt.log; python -m pip install -q google-cloud-storage; mkdir -p /workspace/scpn/out; python -c \"from google.cloud import storage; c=storage.Client(); b=c.bucket('gotm-sc-neurocore'); b.blob('scpn-quantum-control/rust-vqe-methods/benchmark_remote_knm_machine.py').download_to_filename('/workspace/scpn/benchmark_remote_knm_machine.py')\"; python /workspace/scpn/benchmark_remote_knm_machine.py --label vertex_n1_standard_4 --iterations 1000 --output-dir /workspace/scpn/out; python -c \"from google.cloud import storage; c=storage.Client(); b=c.bucket('gotm-sc-neurocore'); [b.blob('scpn-quantum-control/rust-vqe-methods/' + name).upload_from_filename('/workspace/scpn/out/' + name) for name in ['remote_knm_benchmark_vertex_n1_standard_4_2026-05-05.json', 'remote_knm_benchmark_vertex_n1_standard_4_2026-05-05.csv']]\""
+        ]
+      }
+    }
+  ]
+}

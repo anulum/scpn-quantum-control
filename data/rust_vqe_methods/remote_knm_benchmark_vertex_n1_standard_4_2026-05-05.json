@@ -1,0 +1,204 @@
+{
+  "artefacts": {
+    "csv": "/workspace/scpn/out/remote_knm_benchmark_vertex_n1_standard_4_2026-05-05.csv",
+    "csv_sha256": "d6763de9f2b3e5713340e700294e588251ba7e395b0bdfef13f3456f1f56f463",
+    "json": "/workspace/scpn/out/remote_knm_benchmark_vertex_n1_standard_4_2026-05-05.json",
+    "json_sha256": "848d8dcb532f6ba8c96c852b7bede4b03e08f6dfc616e9c0e8182cb5cfc06fb7"
+  },
+  "generated_at": "2026-05-05T16:01:06Z",
+  "label": "vertex_n1_standard_4",
+  "machine": {
+    "cpu_count": 4,
+    "hostname": "cmle-training-workerpool0-92b00982dd-0-56hwq",
+    "load_average": [
+      2.3603515625,
+      2.62841796875,
+      1.4404296875
+    ],
+    "machine": "x86_64",
+    "platform": "Linux-6.6.122+-x86_64-with-glibc2.36",
+    "processor": "",
+    "python": "3.11.15",
+    "timing_caveat": "Opportunistic shared-machine timings; CPU affinity, turbo state, thermal state, and competing workloads were not controlled."
+  },
+  "parameters": {
+    "alpha": 0.3,
+    "iterations": 1000,
+    "k0": 0.45,
+    "sizes": [
+      4,
+      8,
+      16,
+      32,
+      64
+    ]
+  },
+  "rows": [
+    {
+      "checksum": 3.353982834576425,
+      "iterations": 1000,
+      "language": "python",
+      "max_ms": 0.052595,
+      "mean_ms": 0.0036896520000000003,
+      "median_ms": 0.003451,
+      "min_ms": 0.003323,
+      "n": 4,
+      "status": "ok"
+    },
+    {
+      "checksum": 11.554800473546488,
+      "iterations": 1000,
+      "language": "python",
+      "max_ms": 0.069319,
+      "mean_ms": 0.013322813,
+      "median_ms": 0.0119715,
+      "min_ms": 0.011707,
+      "n": 8,
+      "status": "ok"
+    },
+    {
+      "checksum": 31.315807863229047,
+      "iterations": 1000,
+      "language": "python",
+      "max_ms": 0.172087,
+      "mean_ms": 0.049031093,
+      "median_ms": 0.0470475,
+      "min_ms": 0.04618,
+      "n": 16,
+      "status": "ok"
+    },
+    {
+      "checksum": 72.39425824114842,
+      "iterations": 1000,
+      "language": "python",
+      "max_ms": 0.493136,
+      "mean_ms": 0.192164216,
+      "median_ms": 0.18289149999999998,
+      "min_ms": 0.18074,
+      "n": 32,
+      "status": "ok"
+    },
+    {
+      "checksum": 154.71250836528134,
+      "iterations": 1000,
+      "language": "python",
+      "max_ms": 3.333837,
+      "mean_ms": 0.801321329,
+      "median_ms": 0.7565385,
+      "min_ms": 0.710767,
+      "n": 64,
+      "status": "ok"
+    },
+    {
+      "checksum": 3.3539828345764247,
+      "iterations": 1000,
+      "language": "rust",
+      "max_ms": 0.01533,
+      "mean_ms": 0.00021197999999999912,
+      "median_ms": 0.000185,
+      "min_ms": 0.00017900000000000001,
+      "n": 4,
+      "status": "ok"
+    },
+    {
+      "checksum": 11.554800473546496,
+      "iterations": 1000,
+      "language": "rust",
+      "max_ms": 0.03522,
+      "mean_ms": 0.0014048599999999987,
+      "median_ms": 0.001008,
+      "min_ms": 0.0006209999999999999,
+      "n": 8,
+      "status": "ok"
+    },
+    {
+      "checksum": 31.315807863229015,
+      "iterations": 1000,
+      "language": "rust",
+      "max_ms": 0.060703,
+      "mean_ms": 0.0028056970000000046,
+      "median_ms": 0.002601,
+      "min_ms": 0.002575,
+      "n": 16,
+      "status": "ok"
+    },
+    {
+      "checksum": 72.39425824114878,
+      "iterations": 1000,
+      "language": "rust",
+      "max_ms": 0.057557,
+      "mean_ms": 0.010946876999999999,
+      "median_ms": 0.010168,
+      "min_ms": 0.010108,
+      "n": 32,
+      "status": "ok"
+    },
+    {
+      "checksum": 154.7125083652821,
+      "iterations": 1000,
+      "language": "rust",
+      "max_ms": 0.11308,
+      "mean_ms": 0.041970423,
+      "median_ms": 0.040277,
+      "min_ms": 0.038945,
+      "n": 64,
+      "status": "ok"
+    },
+    {
+      "checksum": 3.353982834576,
+      "iterations": 1000,
+      "language": "go",
+      "max_ms": 0.016423,
+      "mean_ms": 0.000597508,
+      "median_ms": 0.00044,
+      "min_ms": 0.000403,
+      "n": 4,
+      "status": "ok"
+    },
+    {
+      "checksum": 11.554800473546,
+      "iterations": 1000,
+      "language": "go",
+      "max_ms": 0.062439,
+      "mean_ms": 0.00168407,
+      "median_ms": 0.001037,
+      "min_ms": 0.001026,
+      "n": 8,
+      "status": "ok"
+    },
+    {
+      "checksum": 31.315807863229,
+      "iterations": 1000,
+      "language": "go",
+      "max_ms": 0.07524,
+      "mean_ms": 0.00639598,
+      "median_ms": 0.006666,
+      "min_ms": 0.004183,
+      "n": 16,
+      "status": "ok"
+    },
+    {
+      "checksum": 72.394258241149,
+      "iterations": 1000,
+      "language": "go",
+      "max_ms": 0.42888,
+      "mean_ms": 0.024405158,
+      "median_ms": 0.022643,
+      "min_ms": 0.018386,
+      "n": 32,
+      "status": "ok"
+    },
+    {
+      "checksum": 154.712508365282,
+      "iterations": 1000,
+      "language": "go",
+      "max_ms": 1.138129,
+      "mean_ms": 0.095825817,
+      "median_ms": 0.077029,
+      "min_ms": 0.071758,
+      "n": 64,
+      "status": "ok"
+    }
+  ],
+  "schema": "scpn_remote_knm_machine_benchmark_v1"
+}

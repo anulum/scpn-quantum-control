@@ -1,0 +1,145 @@
+{
+  "artefacts": {
+    "csv": "data/rust_vqe_methods/gpu_benchmark_summary_aaarthuus_local_2026-05-05.csv",
+    "csv_sha256": "f1af159ccbec7e27c479bbb0a05d06bbe229621617268d50df717925ee91a093",
+    "json": "data/rust_vqe_methods/gpu_benchmark_summary_aaarthuus_local_2026-05-05.json",
+    "json_sha256": "9b60c0801fe41796c122648260813a4d1db9685c7119451d17de8f6ea3c8bd7a"
+  },
+  "command": "PYTHONDONTWRITEBYTECODE=1 .venv-linux/bin/python scripts/benchmark_gpu_methods.py --include-torch-cpu",
+  "date": "2026-05-05",
+  "label": "aaarthuus_local",
+  "machine": {
+    "cpu_count": 12,
+    "hostname": "aaarthuus",
+    "load_average": [
+      22.81884765625,
+      16.2412109375,
+      14.05810546875
+    ],
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39",
+    "processor": "x86_64",
+    "python": "3.12.3"
+  },
+  "rows": [
+    {
+      "backend": "numpy_cpu",
+      "batch_size": 64,
+      "checksum": 1.3768670558929443,
+      "hilbert_dim": 256,
+      "max_ms": 88.791749,
+      "mean_ms": 39.53274745,
+      "median_ms": 33.847055999999995,
+      "min_ms": 16.956923,
+      "n_qubits": 8,
+      "p95_ms": 72.83765,
+      "repeats": 20,
+      "status": "ok"
+    },
+    {
+      "backend": "torch_cpu",
+      "batch_size": 64,
+      "checksum": 1.376865029335022,
+      "hilbert_dim": 256,
+      "max_ms": 20.79952,
+      "mean_ms": 10.1512925,
+      "median_ms": 9.223332500000001,
+      "min_ms": 4.092013,
+      "n_qubits": 8,
+      "p95_ms": 16.885447,
+      "repeats": 20,
+      "status": "ok"
+    },
+    {
+      "backend": "torch_cuda",
+      "batch_size": 64,
+      "hilbert_dim": 256,
+      "n_qubits": 8,
+      "reason": "CUDA backend unavailable in this Python environment",
+      "repeats": 20,
+      "status": "unavailable"
+    },
+    {
+      "backend": "numpy_cpu",
+      "batch_size": 64,
+      "checksum": -0.723466157913208,
+      "hilbert_dim": 1024,
+      "max_ms": 133.481649,
+      "mean_ms": 75.0097132,
+      "median_ms": 70.65411499999999,
+      "min_ms": 50.029697,
+      "n_qubits": 10,
+      "p95_ms": 98.622575,
+      "repeats": 20,
+      "status": "ok"
+    },
+    {
+      "backend": "torch_cpu",
+      "batch_size": 64,
+      "checksum": -0.7234693169593811,
+      "hilbert_dim": 1024,
+      "max_ms": 56.785359,
+      "mean_ms": 28.059310449999998,
+      "median_ms": 25.046999999999997,
+      "min_ms": 6.259931,
+      "n_qubits": 10,
+      "p95_ms": 51.257491,
+      "repeats": 20,
+      "status": "ok"
+    },
+    {
+      "backend": "torch_cuda",
+      "batch_size": 64,
+      "hilbert_dim": 1024,
+      "n_qubits": 10,
+      "reason": "CUDA backend unavailable in this Python environment",
+      "repeats": 20,
+      "status": "unavailable"
+    },
+    {
+      "backend": "numpy_cpu",
+      "batch_size": 64,
+      "checksum": -0.5258352160453796,
+      "hilbert_dim": 4096,
+      "max_ms": 556.787651,
+      "mean_ms": 319.6202159,
+      "median_ms": 310.17321400000003,
+      "min_ms": 246.409247,
+      "n_qubits": 12,
+      "p95_ms": 378.132274,
+      "repeats": 20,
+      "status": "ok"
+    },
+    {
+      "backend": "torch_cpu",
+      "batch_size": 64,
+      "checksum": -0.5258322358131409,
+      "hilbert_dim": 4096,
+      "max_ms": 200.827782,
+      "mean_ms": 150.2121689,
+      "median_ms": 152.534721,
+      "min_ms": 100.07419,
+      "n_qubits": 12,
+      "p95_ms": 174.415042,
+      "repeats": 20,
+      "status": "ok"
+    },
+    {
+      "backend": "torch_cuda",
+      "batch_size": 64,
+      "hilbert_dim": 4096,
+      "n_qubits": 12,
+      "reason": "CUDA backend unavailable in this Python environment",
+      "repeats": 20,
+      "status": "unavailable"
+    }
+  ],
+  "schema": "scpn_gpu_methods_benchmark_v1",
+  "timing_caveat": "Opportunistic shared-machine timing. GPU clocks, CPU affinity, thermal state, driver version, and competing workloads were not pinned. The workload is batched state-vector expectation evaluation for classical validation and VQE scoring, not K_nm construction.",
+  "torch": {
+    "available": true,
+    "cuda_available": false,
+    "cuda_device_count": 0,
+    "cuda_devices": [],
+    "version": "2.11.0+cpu"
+  }
+}

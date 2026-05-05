@@ -1,0 +1,13 @@
+{
+  "schema": "arcane_sapience_stimulus_v1",
+  "timestamp_utc": "2026-05-05T211154Z",
+  "project": "SCPN-QUANTUM-CONTROL",
+  "source": "local_research_agent",
+  "event": "scpn_fim_pdf_rebuilt",
+  "workspace": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL",
+  "pdf": "paper/scpn_fim_hamiltonian.pdf",
+  "sha256": "5c3a699fcc9d46d5f35905b1df2abeab5798602c2553c1a5e0d5d9c2e692167d",
+  "pages": 9,
+  "build_status": "success",
+  "scientific_frame": "IBM repeated follow-up falsifies the simple FIM hardware-protection interpretation for the tested backend/circuit family."
+}
