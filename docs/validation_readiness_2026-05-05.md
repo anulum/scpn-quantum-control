@@ -134,3 +134,23 @@ The verified reproducer reports Fisher chi2 `140.671952`, Fisher p
 only the reduced `n=4` DLA parity replication plus readout baseline. It does
 not promote `n=6-12` scaling, GUESS calibration, broad quantum advantage, or
 frontier claims.
+
+## 2026-05-05 B-C scaling continuation update
+
+The preregistered B-C continuation completed on `ibm_kingston`:
+
+- Job: `d7sudr2udops7397ae30`, 280 circuits, 4096 shots, IBM-reported quantum
+  seconds `305`.
+- Raw-count dataset: `data/phase2_scaling_bc/phase2_scaling_bc_2026-05-05T124722Z.json`.
+- Reproducer: `scripts/analyse_phase2_scaling_bc.py`.
+
+The verified reproducer reports mixed scaling evidence:
+
+- `n=6`: Fisher chi2 `46.531552`, p `1.883218e-07`, 2/4 significant depths,
+  with negative significant asymmetry at depths 8 and 20.
+- `n=8`: Fisher chi2 `29.420107`, p `2.675193e-04`, 3/4 significant depths,
+  with positive middle-depth sign.
+
+This promotes only mixed `n=6,8` scaling evidence. It falsifies a simple
+monotone scaling story and does not promote D-E larger scaling, GUESS
+calibration, broad quantum advantage, frontier, multi-QPU, or live-loop claims.

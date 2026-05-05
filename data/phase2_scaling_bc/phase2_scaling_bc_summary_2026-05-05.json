@@ -1,0 +1,127 @@
+{
+  "backend": "ibm_kingston",
+  "job_ids": [
+    "d7sudr2udops7397ae30"
+  ],
+  "n_circuits": 280,
+  "depth_summaries": [
+    {
+      "n_qubits": 6,
+      "depth": 4,
+      "leakage_even": 0.20653076171875,
+      "leakage_odd": 0.20592041015625,
+      "sem_even": 0.001468957845712762,
+      "sem_odd": 0.0012961708484253982,
+      "asymmetry_relative": 0.002964016835615626,
+      "welch_t": 0.31155409115646415,
+      "welch_p": 0.7571086571303003,
+      "n_even": 20,
+      "n_odd": 20
+    },
+    {
+      "n_qubits": 6,
+      "depth": 8,
+      "leakage_even": 0.27606201171875,
+      "leakage_odd": 0.28677978515625,
+      "sem_even": 0.0012382926554046151,
+      "sem_odd": 0.0013357198061738288,
+      "asymmetry_relative": -0.03737283446132898,
+      "welch_t": -5.88434398467367,
+      "welch_p": 8.368153696255666e-07,
+      "n_even": 20,
+      "n_odd": 20
+    },
+    {
+      "n_qubits": 6,
+      "depth": 14,
+      "leakage_even": 0.35408935546875,
+      "leakage_odd": 0.355859375,
+      "sem_even": 0.0012430210795437314,
+      "sem_odd": 0.0017047939697359463,
+      "asymmetry_relative": -0.004973929747530187,
+      "welch_t": -0.838935520497237,
+      "welch_p": 0.40723968151036727,
+      "n_even": 20,
+      "n_odd": 20
+    },
+    {
+      "n_qubits": 6,
+      "depth": 20,
+      "leakage_even": 0.4068115234375,
+      "leakage_odd": 0.41484375,
+      "sem_even": 0.0014525962260430458,
+      "sem_odd": 0.001405006438856988,
+      "asymmetry_relative": -0.01936205273069685,
+      "welch_t": -3.9745584558927387,
+      "welch_p": 0.00030490450433854135,
+      "n_even": 20,
+      "n_odd": 20
+    },
+    {
+      "n_qubits": 8,
+      "depth": 4,
+      "leakage_even": 0.266259765625,
+      "leakage_odd": 0.2576822916666667,
+      "sem_even": 0.0016652091783340274,
+      "sem_odd": 0.0015739145088231887,
+      "asymmetry_relative": 0.03328701364325405,
+      "welch_t": 3.74347073284378,
+      "welch_p": 0.0008353640158165355,
+      "n_even": 15,
+      "n_odd": 15
+    },
+    {
+      "n_qubits": 8,
+      "depth": 8,
+      "leakage_even": 0.37185872395833336,
+      "leakage_odd": 0.366064453125,
+      "sem_even": 0.001585413930566068,
+      "sem_odd": 0.0018126007703507814,
+      "asymmetry_relative": 0.015828553643679702,
+      "welch_t": 2.4061352281322432,
+      "welch_p": 0.023097530160902005,
+      "n_even": 15,
+      "n_odd": 15
+    },
+    {
+      "n_qubits": 8,
+      "depth": 14,
+      "leakage_even": 0.4486328125,
+      "leakage_odd": 0.4427571614583333,
+      "sem_even": 0.0018738867467216784,
+      "sem_odd": 0.0016257197052038468,
+      "asymmetry_relative": 0.013270595154946113,
+      "welch_t": 2.3684409814373364,
+      "welch_p": 0.02514993429403085,
+      "n_even": 15,
+      "n_odd": 15
+    },
+    {
+      "n_qubits": 8,
+      "depth": 20,
+      "leakage_even": 0.43387044270833336,
+      "leakage_odd": 0.43333333333333335,
+      "sem_even": 0.0014066977351603147,
+      "sem_odd": 0.002271509738906453,
+      "asymmetry_relative": 0.0012394831730769486,
+      "welch_t": 0.20102847472146335,
+      "welch_p": 0.8424163188393463,
+      "n_even": 15,
+      "n_odd": 15
+    }
+  ],
+  "fisher_by_n": {
+    "6": {
+      "chi2": 46.53155235146184,
+      "p": 1.8832181637342359e-07,
+      "n_depths_significant_at_0_05": 2,
+      "n_depths_tested": 4
+    },
+    "8": {
+      "chi2": 29.420107018297664,
+      "p": 0.0002675192892389719,
+      "n_depths_significant_at_0_05": 3,
+      "n_depths_tested": 4
+    }
+  }
+}

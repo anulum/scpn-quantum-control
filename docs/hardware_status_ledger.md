@@ -46,6 +46,7 @@ update this table first, then refresh the summary pages.
 | Baseline IBM roadmap experiments | `ibm_fez` Heron r2 | 2026-03 | Legacy hardware artefacts; quote artefact-backed rows only | `results/ibm_hardware_2026-03-28/`, `results/march_2026/`, `results/IBM_HARDWARE_COMPLETE_AUDIT_2026-03-30.md` | Baseline Bell, QKD, VQE, ZNE, Trotter, and UPDE observations, with no broad-advantage promotion. |
 | DLA parity Phase 1 | `ibm_kingston` Heron r2 | 2026-04 | Promoted hardware dataset with raw-count reproducer | `data/phase1_dla_parity/`, `paper/phase1_dla_parity_short_paper.md`, `docs/dla_parity.md`, `scripts/run_dla_parity_suite.py` | DLA parity asymmetry paper and result figures. |
 | DLA parity Phase 2 reduced A+G | `ibm_kingston` Heron r2 | 2026-05 | Promoted hardware replication dataset with raw-count reproducer | `data/phase2_dla_parity/`, `scripts/analyse_phase2_dla_parity.py`, `results/ibm_phase2_preregistration_2026-05-05.json` | High-statistics `n=4` DLA parity replication plus readout baseline only; no `n=6-12`, GUESS, or broad-advantage claim. |
+| DLA parity Phase 2 B-C scaling | `ibm_kingston` Heron r2 | 2026-05 | Promoted mixed scaling dataset with raw-count reproducer | `data/phase2_scaling_bc/`, `scripts/analyse_phase2_scaling_bc.py`, `docs/ibm_phase2_scaling_bc_manifest_2026-05-05.md` | Mixed `n=6,8` scaling evidence: `n=8` positive middle-depth sign, `n=6` negative at significant depths; no monotone scaling claim. |
 | Simulator and classical baselines | local CPU/GPU where noted | 2026-03 onward | Simulator | `results/*_2026-03-*.json`, `results/SIMULATOR_RESULTS.md`, `results/classical_baselines_2026-03-30.json` | BKT, OTOC, Floquet, MBL, FIM, and classical comparison material. |
 
 ## Quarantined / Unpromoted IBM Artifacts
@@ -119,7 +120,8 @@ raw IBM counts and promoted here.
 - Phase 2 preregistration status: **DONE 2026-05-05** — `docs/ibm_phase2_preregistered_manifest_2026-05-05.md` and `results/ibm_phase2_preregistration_2026-05-05.json` record the QPU-minimised A+G first live command, dry-run circuit inventory, abort criteria, evidence path, and promotion gates.
 - 2026-05-05 live attempt status: **ABORTED / CANCELLED** — `ibm_kingston` job `d7stqj7ljm6s73bbu080` was cancelled after live hardware transpilation exceeded the reduced dry-run depth budget; IBM metadata reported `0` quantum seconds and `0` usage seconds. This job is quarantined and not evidence.
 - 2026-05-05 reduced A+G hardware run status: **DONE / PROMOTED** — `ibm_kingston` jobs `d7stu94t738s73ch5keg` and `d7su3tkt738s73ch5ql0` completed with 612 raw-count circuits. The committed reproducer reports Fisher chi2 `140.671952`, Fisher p `3.773718e-20`, and 6/10 significant depths at `p < 0.05`.
-- Next pending item: **Phase 2 publication integration** — update paper/result figures only from `data/phase2_dla_parity/`; no B-F blocks are approved before a separate budget review.
+- 2026-05-05 B-C scaling run status: **DONE / PROMOTED AS MIXED** — `ibm_kingston` job `d7sudr2udops7397ae30` completed with 280 raw-count circuits and IBM-reported usage `305` quantum seconds. The committed reproducer reports `n=6` Fisher p `1.883218e-07` with negative significant depths and `n=8` Fisher p `2.675193e-04` with positive middle-depth sign.
+- Next pending item: **Phase 2 publication integration** — update paper/result figures only from `data/phase2_dla_parity/` and `data/phase2_scaling_bc/`; no D-E-F blocks are approved before a separate budget review.
 
 ## EEG Condition Comparison — 2026-04-30
 

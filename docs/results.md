@@ -31,7 +31,7 @@ theoretical, simulated, hardware-measured, mitigated, or noise-limited.
 
 | # | Finding | Measured Value | Source |
 |---|---------|---------------|--------|
-| 1 | DLA parity raw-count reproduction | Phase 1: 342 circuits, peak asymmetry +17.48% at depth 6; Phase 2 reduced A+G: 612 circuits, Fisher p=3.77e-20 | `data/phase1_dla_parity/`, `data/phase2_dla_parity/`, `scripts/run_dla_parity_suite.py`, `scripts/analyse_phase2_dla_parity.py` |
+| 1 | DLA parity raw-count reproduction | Phase 1: 342 circuits, peak asymmetry +17.48% at depth 6; Phase 2 reduced A+G: 612 circuits, Fisher p=3.77e-20; Phase 2 B-C: mixed `n=6,8` scaling | `data/phase1_dla_parity/`, `data/phase2_dla_parity/`, `data/phase2_scaling_bc/`, `scripts/run_dla_parity_suite.py`, `scripts/analyse_phase2_dla_parity.py`, `scripts/analyse_phase2_scaling_bc.py` |
 | 2 | Bell inequality row | CHSH S=2.165, S=2.188 (>8σ) | Legacy `ibm_fez` artefact row |
 | 3 | QKD row | QBER 5.5% < BB84 threshold (11%) | Legacy `ibm_fez` artefact row |
 | 4 | State preparation row | 94.6% (∣0⟩), 89.8% (∣1⟩) | Legacy `ibm_fez` artefact row |
@@ -197,6 +197,33 @@ depth/sector at 4096 shots, plus a same-run readout baseline. Blocks B-F
 
 Reproduce from raw counts via
 `PYTHONDONTWRITEBYTECODE=1 /home/anulum/.local/bin/python scripts/analyse_phase2_dla_parity.py --verify-integrity`.
+
+### Phase 2 — B-C Scaling Continuation (May 2026, ibm_kingston)
+
+The B-C continuation tested only `n=6` and `n=8`; blocks A, D, E, F, and G were
+skipped. The same-day A+G readout baseline remains the readout-control source.
+
+| n | Trotter depth | Leak even | Leak odd | Asymmetry | Welch p |
+|---:|---:|---:|---:|---:|---:|
+| 6 | 4 | 0.20653 | 0.20592 | +0.30% | 0.757 |
+| 6 | 8 | 0.27606 | 0.28678 | -3.74% | 8.37e-07 |
+| 6 | 14 | 0.35409 | 0.35586 | -0.50% | 0.407 |
+| 6 | 20 | 0.40681 | 0.41484 | -1.94% | 3.05e-04 |
+| 8 | 4 | 0.26626 | 0.25768 | +3.33% | 8.35e-04 |
+| 8 | 8 | 0.37186 | 0.36606 | +1.58% | 0.0231 |
+| 8 | 14 | 0.44863 | 0.44276 | +1.33% | 0.0252 |
+| 8 | 20 | 0.43387 | 0.43333 | +0.12% | 0.842 |
+
+- `n=6`: Fisher chi2 `46.531552`, p `1.883218e-07`, 2/4 significant depths.
+- `n=8`: Fisher chi2 `29.420107`, p `2.675193e-04`, 3/4 significant depths.
+- IBM-reported usage: `305` quantum seconds for job `d7sudr2udops7397ae30`.
+
+Interpretation: this is mixed scaling evidence. The `n=8` middle-depth sign is
+positive, but `n=6` has negative significant depths. It falsifies a simple
+monotone scaling story and must not be cited as broad scaling validation.
+
+Reproduce from raw counts via
+`PYTHONDONTWRITEBYTECODE=1 /home/anulum/.local/bin/python scripts/analyse_phase2_scaling_bc.py data/phase2_scaling_bc/phase2_scaling_bc_2026-05-05T124722Z.json --sha256 f9718c3789329dbaa96a1667f8a581e3d1774632b961a1760c044138ccab6550`.
 
 ### Legacy ibm_fez Results (March 2026)
 
