@@ -140,6 +140,19 @@ $M=n-2k$, and the FIM shift is
 Thus Eq.~\eqref{eq:fim} separates sectors by a known collective diagonal
 contribution.
 
+The same identity also explains the digital hardware burden. Because
+%
+\begin{equation}
+  M^2 = nI + 2\sum_{i<j} Z_iZ_j,
+  \label{eq:m2_pairwise}
+\end{equation}
+%
+the $\lambda>0$ term is not a single local correction after compilation: it
+adds an all-to-all pairwise $Z_iZ_j$ layer, up to a global energy shift. On a
+sparse heavy-hex device this all-pair interaction pattern must be routed and
+Trotterised, so any ideal spectral gap effect competes directly with extra
+two-qubit-gate and depth overhead.
+
 The key scientific boundary follows immediately. Both $H_{XY}$ and
 $H_{\mathrm{FIM}}$ commute with total magnetisation, so the ideal Hamiltonian
 does not create unitary leakage between magnetisation sectors:
@@ -338,6 +351,15 @@ burden that measured leakage increases rather than decreases. This separates
 mathematical sector engineering from actual NISQ robustness and prevents an
 incorrect coherence-protection claim.
 
+The live-transpilation metadata makes this burden explicit. In the repeated
+follow-up artefact, the $\lambda=0$ main circuits averaged transpiled depth
+$92.13$ and $24.0$ two-qubit gates, with maxima $134$ and $36$. The
+$\lambda=4$ main circuits averaged transpiled depth $354.65$ and
+$103.05$ two-qubit gates, with maxima $540$ and $158$. Thus the negative
+hardware result is not mysterious: the tested digital implementation asks the
+processor to realise an all-to-all $Z_iZ_j$ feedback graph, and the added
+noise burden overwhelms the ideal small-system gap widening.
+
 This distinction is the main scientific value of the hardware section. It shows
 that a diagonal collective term can be mathematically meaningful while still
 being operationally counterproductive after compilation to a noisy
@@ -346,10 +368,10 @@ experiment; it is the evidence that fixes the claim boundary.
 
 The negative result should not be overgeneralised. It does not prove that all
 FIM-like Hamiltonian designs are unhelpful, nor does it exclude other encodings,
-native analog implementations, different layouts, lower-depth constructions, or
-future devices. It does show that the direct all-pair digital implementation
-tested here is not a hardware-protection mechanism on this backend and
-calibration window.
+native analog implementations, different layouts, lower-depth constructions,
+adaptive feedback, or future devices. It does show that the direct all-pair
+digital implementation tested here is not a hardware-protection mechanism on
+this backend and calibration window.
 
 \section{Limitations}
 

@@ -199,6 +199,18 @@ Python and Go implementations using checksum parity before reporting timing
 statistics. The reported speedups therefore refer to this kernel boundary,
 not to the entire Qiskit workflow.
 
+This distinction is an Amdahl's-law caveat rather than a weakness. For
+example, reducing a $K_{ij}$ construction call from roughly
+$10^{-2}\,\mathrm{ms}$ to $10^{-3}\,\mathrm{ms}$ is useful when the kernel is
+called many times inside scans or packaging loops, but it does not remove the
+dominant costs of an end-to-end VQE or hardware workflow. Qiskit circuit
+construction and transpilation, optimiser evaluations, state-vector
+expectation calculations, GPU/CPU dense linear algebra, queue latency, and QPU
+execution can each dominate the wall time in different regimes. The software
+claim is therefore bounded to reducing specific deterministic bottlenecks and
+improving reproducibility, not to accelerating every workflow stage by the
+reported kernel factor.
+
 \section{Topology-informed ansatz design}
 
 The topology-informed ansatz uses the support of $K_{ij}$ to decide which

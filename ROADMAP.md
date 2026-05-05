@@ -161,6 +161,10 @@ Remaining items:
     `H_FIM(lambda)` study into a closed-loop protocol where `lambda` is
     updated from magnetisation or parity witnesses, using mid-circuit or
     batch-level feedback where hardware permits.
+  - **Scalable readout-mitigation cross-check.** Add a TREM/M3-style
+    offline mitigation path for n<=8 datasets where the required
+    calibration counts already exist, and explicitly mark any dataset
+    needing new calibration circuits before spending additional QPU time.
 - Fault-tolerant UPDE on surface code logical qubits (post-2030, hardware-dependent)
 - QSNN training loop on real hardware (parameter-shift STDP)
 - Quantum disruption classifier on ITER disruption database
