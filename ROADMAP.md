@@ -409,9 +409,14 @@ explicit QPU-time estimate before submission.
   QPU-time estimates and ceilings, live layout gates, analysis plan,
   falsification rules, and output artefact paths. Calibration execution
   remains separate and approval-gated.
-- [ ] **Full readout-mitigation calibration execution.** Run complete
-  basis calibration only for a specified dataset/layout after live
-  readiness checks, budget confirmation, and explicit approval.
+- [x] **Full readout-mitigation calibration execution.** Completed
+  2026-05-06 for the Phase 3 `ibm_marrakesh` `n=4` dataset on physical
+  qubits `[5,6,7,8]` after live readiness checks, budget confirmation,
+  and explicit approval. Job `d7tnljvljm6s73bcsql0` produced the
+  full-basis assignment artefacts under `data/readout_full_basis/` and
+  manifest `docs/readout_full_basis_manifest_2026-05-06.md`.
+  Calibration quality: mean retention `0.96999`, max parity flip
+  `0.04724`, condition number `1.07570`.
 - [x] **GUESS / symmetry-decay calibration preregistration.**
   Completed 2026-05-06:
   `docs/guess_symmetry_decay_prereg_2026-05-06.md` defines the

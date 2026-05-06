@@ -1,0 +1,41 @@
+{
+  "schema": "scpn_readout_full_basis_summary_v1",
+  "source_raw": "data/readout_full_basis/readout_full_basis_ibm_marrakesh_4q_2026-05-06T173054Z.json",
+  "backend": "ibm_marrakesh",
+  "job_ids": [
+    "d7tnljvljm6s73bcsql0"
+  ],
+  "physical_qubits": [
+    5,
+    6,
+    7,
+    8
+  ],
+  "target_dataset": "data/phase3_multidevice_dla/phase3_multidevice_ibm_marrakesh_2026-05-06T171231Z.json",
+  "states": [
+    "0000",
+    "0001",
+    "0010",
+    "0011",
+    "0100",
+    "0101",
+    "0110",
+    "0111",
+    "1000",
+    "1001",
+    "1010",
+    "1011",
+    "1100",
+    "1101",
+    "1110",
+    "1111"
+  ],
+  "mean_retention": 0.9699935913085938,
+  "min_retention": 0.952392578125,
+  "max_retention": 0.98193359375,
+  "mean_parity_flip": 0.0296478271484375,
+  "max_parity_flip": 0.0472412109375,
+  "condition_number": 1.0756988057943142,
+  "matrix_orientation": "rows=prepared little-endian bitstring, columns=observed little-endian bitstring",
+  "claim_boundary": "readout assignment calibration only for ibm_marrakesh physical qubits [5,6,7,8] near the Phase 3 DLA run"
+}
