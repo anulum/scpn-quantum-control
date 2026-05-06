@@ -59,8 +59,8 @@ def optimal_contraction_path(
         try:
             path, info = cotengra.einsum_path(subscripts, *operands)
             return path, {"method": "cotengra", "info": str(info)}
-        except Exception:
-            pass  # fall through to numpy
+        except Exception as exc:
+            fallback_reason = exc.__class__.__name__
 
     # Fallback: numpy optimal path
     path, path_info = np.einsum_path(subscripts, *operands, optimize="optimal")
@@ -68,6 +68,7 @@ def optimal_contraction_path(
         "flops": 0,  # numpy doesn't report flops
         "max_size": 0,
         "method": "numpy_optimal",
+        "fallback_reason": locals().get("fallback_reason"),
         "info_string": path_info,
     }
 
@@ -111,7 +112,7 @@ def benchmark_contraction(
     opt = (time.perf_counter() - t0) / n_repeats * 1000
 
     return {
-        "naive_ms": round(naive, 2),
-        "optimised_ms": round(opt, 2),
-        "speedup": round(naive / opt, 1) if opt > 0 else float("inf"),
+        "naive_ms": naive,
+        "optimised_ms": opt,
+        "speedup": naive / opt if opt > 0 else float("inf"),
     }

@@ -8,6 +8,11 @@
 
 # Experiment Roadmap: March-June 2026
 
+> **Canonical status note (2026-05-06):** active experiment selection
+> is consolidated in `ROADMAP.md` under "Canonical work queue". This
+> document remains the detailed historical experiment ledger and should
+> not independently authorise QPU spend.
+
 Backend: ibm_fez (Heron r2, 156 qubits)
 Budget: 10 min QPU / month (free tier)
 Repository: scpn-quantum-control v0.9.0+

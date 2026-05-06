@@ -8,6 +8,11 @@
 
 # Strategic Roadmap — Post-v1.0 Differentiation
 
+> **Canonical status note (2026-05-06):** active task selection is
+> consolidated in `ROADMAP.md`. This document remains the detailed
+> deferred/CEO-gated strategic catalogue; items here are not activated
+> unless copied into the canonical work queue.
+
 Fifty-three differentiation items scoped beyond the feature list in
 `ROADMAP.md`. Each item is a multi-week-to-multi-month track with
 explicit prerequisites, deliverables, and risks. None is scheduled

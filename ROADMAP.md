@@ -1,5 +1,218 @@
 # Roadmap
 
+## Canonical work queue
+
+This file is the single source of truth for active roadmap and TODO
+selection. Older planning files under `.coordination/` and
+`docs/internal/` are retained as historical context only unless an item
+is copied here.
+
+### Current top priority: repository hygiene and release safety
+
+- [ ] **GitHub Actions history audit.** Classify the full workflow-run
+  history into resolved failures, unresolved failures, and cancelled
+  superseded runs. Do not delete any run until the corresponding failure
+  is demonstrably resolved by a later successful run or superseded by a
+  closed branch/PR.
+- [ ] **Latest CI/link-check failures.** Inspect the latest failing
+  `Link Check` runs on `main`, fix any live issue, and record whether
+  older link failures are resolved by the fix.
+- [ ] **Security alert audit.** Check open CodeQL, Dependabot security,
+  and secret-scanning alerts. Fix true positives; document API-permission
+  limits or accepted false positives internally.
+- [ ] **PR and branch hygiene.** Review open Dependabot PRs and stale
+  branches, decide whether to merge, rebase, close, or leave blocked,
+  then document the decision.
+- [ ] **Safe workflow-run cleanup.** After classification, delete only
+  cancelled or fully resolved failed runs where deletion does not remove
+  the only evidence for an unresolved defect.
+- [ ] **Session log, handover, and Arcane notification.** Keep a new
+  timestamped log and handover for the repository-hygiene audit, and
+  emit a factual Arcane stimulus.
+
+### Active release tasks
+
+- [ ] **Coverage and test-quality closure.** Push the release baseline
+  from the documented `~97.6 %` coverage state toward 100 %, then audit
+  behavioural value rather than relying on line coverage alone.
+- [ ] **Behavioural-test audit.** Review every test module for
+  assertions that constrain numerical invariants, state transitions,
+  exception contracts, provenance, or integration behaviour.
+- [ ] **E2E and contract audit.** Cover or explicitly document blocked
+  boundaries for hardware/QPU, bridge, SC-NeuroCore, Phase Orchestrator,
+  notebook, and example workflows.
+- [ ] **Mutation-test expansion.** Start with `phase/xy_kuramoto.py`,
+  `hardware/async_runner.py`, `hardware/backends.py`, `bridge/*`,
+  `analysis/dla*`, and `mitigation/*`.
+- [ ] **Mock/stub audit.** Ensure mocks only model third-party
+  boundaries and never fabricate scientific results, provenance,
+  datasets, or successful hardware execution.
+- [ ] **Full-suite ordering audit.** Detect hidden state pollution from
+  reloads, monkeypatches, optional imports, random seeds, and backend
+  globals.
+- [ ] **Static-analysis pass.** Run and triage full Bandit plus Semgrep
+  or a local equivalent, fixing easy true positives and documenting
+  accepted false positives.
+- [ ] **`QuantumKuramotoSolver` validation.** Validate coupling-matrix
+  shape, squareness, symmetry or directionality semantics, zero diagonal,
+  finite values, and matching finite `omega`.
+- [ ] **Trotter/config public surface.** Replace hardcoded circuit
+  defaults with a typed config object or documented keyword surface while
+  preserving backwards compatibility.
+- [ ] **Expectation hot path.** Replace avoidable per-qubit Python loops
+  with vectorised NumPy or Rust offload where measured benchmarks justify
+  it.
+- [ ] **Rust import failure policy.** Distinguish expected optional
+  extension absence from broken extension imports across accelerated
+  modules.
+- [ ] **README and public framing sync.** Keep public badges, release
+  status, validated hardware claims, examples, and roadmap language in
+  sync with current artefacts.
+- [ ] **Architecture data-flow diagram.** Document the stable pipeline:
+  `K_nm/omega -> Hamiltonian -> circuit -> backend/QPU -> counts ->
+  mitigation -> DLA/sync observables -> reports`.
+- [ ] **Curated researcher examples.** Promote selected GraphML/CSV,
+  EEG, power-grid, plasma/tokamak, and notebook workflows with
+  provenance and deterministic outputs.
+
+### Active paper and submission tasks
+
+- [ ] **DLA parity preprint submission package.** Keep the
+  parity-sector/excitation-number framing conservative and ensure all
+  cited paths, job IDs, figures, and artefacts match committed files.
+- [ ] **Rust/VQE methods paper package.** Keep all tables generated from
+  committed JSON/CSV artefacts and include current CLI/dashboard output
+  only after regeneration.
+- [ ] **JOSS-style software paper package.** Prepare the short software
+  note for JOSS/pyOpenSci submission with repository, Zenodo, and
+  reproducibility links aligned.
+- [ ] **SCPN/FIM Hamiltonian paper package.** Preserve the negative
+  hardware falsification boundary: mathematical sector engineering is
+  not promoted as NISQ coherence protection.
+- [ ] **Combined submission checklist.** Build final PDFs, verify
+  references and URLs, prepare arXiv metadata, and keep AI disclosures
+  minimal but compliant with target venue policy.
+- [ ] **IBM Quantum Credits follow-up.** Use the current affiliation and
+  submitted papers to revisit the credits request without shrinking the
+  scientific scope below the requested 5--10 hour QPU window.
+
+### Active Phase 4 follow-up tasks
+
+- [x] **One-command reproducibility CLI.** Implemented 2026-05-06:
+  `scpn-bench reproduce-methods`, `scpn-bench fim-all`, and
+  `scpn-bench all` regenerate committed benchmark artefacts and report
+  drift without submitting IBM jobs.
+- [x] **Public benchmark dashboard.** Implemented 2026-05-06:
+  `docs/methods_benchmark_dashboard.md` is wired into MkDocs and links
+  artefacts, generator scripts, provenance, reproducibility commands,
+  optional GPU/scaling/readout harnesses, and no-QPU-spend boundaries.
+- [x] **Ansatz scaling plus tensor-network baseline: initial harness.**
+  Implemented 2026-05-06 with n=4--12 ansatz scaling rows and
+  tensor-network truncation diagnostics.
+- [x] **Ansatz scaling sparse strengthening.** Implemented 2026-05-06
+  using sparse eigensolver references where feasible for larger-n rows.
+- [ ] **Richer ansatz/TN reference comparisons.** Extend beyond
+  ground-state truncation diagnostics into MPS/VQE reference comparisons
+  and update paper claims only from regenerated artefacts.
+- [x] **Native or analogue FIM compiler path.** Initial
+  `lambda_fim` compiler payload implemented 2026-05-06 by decomposing
+  `-lambda M^2/n` into all-to-all `Z_i Z_j` terms for backend design
+  studies.
+- [ ] **Provider-specific analogue backend.** Wire a real
+  Pulser/Bloqade/pulse-level backend before making any analogue
+  execution claim.
+- [x] **Adaptive lambda feedback scaffold.** Implemented 2026-05-06:
+  `AdaptiveFIMConfig`, `FIMWitness`, `propose_next_lambda`, and
+  `adaptive_lambda_schedule`.
+- [ ] **Adaptive-QPU protocol.** Design a separately approved hardware
+  protocol before any adaptive feedback claim or IBM submission.
+- [x] **FIM repeated full-basis readout mitigation.** Implemented
+  2026-05-06 for the repeated dataset where the required 16-state
+  calibration basis exists.
+- [ ] **Readout-mitigation eligibility markers.** Add dataset-level
+  markers for n<=8 campaigns lacking complete basis calibration before
+  spending QPU time on new calibration circuits.
+
+### Hardware experiment candidates
+
+These are candidates, not authorisations to spend QPU time. Each needs
+offline artefacts, a preregistered manifest, depth/shot gates, and an
+explicit QPU-time estimate before submission.
+
+- [ ] **Multi-device DLA replication.** Repeat a small validated subset
+  on a second Heron backend to test backend/calibration specificity.
+- [ ] **Systematic state/layout randomisation.** Separate symmetry
+  sector, excitation count, physical layout, readout, and topology
+  contributions.
+- [ ] **Full readout-mitigation calibration where missing.** Only run
+  complete basis calibration when the scientific value outweighs QPU
+  cost.
+- [ ] **GUESS / symmetry-decay calibration.** Use parity leakage as a
+  real hardware witness for symmetry-guided extrapolation if stability
+  is sufficient.
+- [ ] **Layer-selective qubit assignment.** Assign strongly coupled
+  layers to low-error physical qubits and compare with default layout.
+- [ ] **Entanglement entropy or tomography check.** Use shadow
+  tomography or small-n tomography only after cost and claim boundaries
+  are fixed.
+- [ ] **Depth-optimal native decomposition.** Reduce Kuramoto evolution
+  depth by targeting Heron native gates directly.
+- [ ] **Variational quantum simulation alternative.** Compare VQS
+  against Trotter where it can reduce compiled depth.
+- [ ] **Multi-circuit QEC demonstration.** Evaluate physics-aware
+  decoding only with clear logical-error metrics.
+
+### Visibility and registration tasks
+
+- [x] **GitHub topics.** Completed 2026-04-17.
+- [x] **QOSF awesome-quantum-software.** Merged 2026-03-30.
+- [x] **CiteAs verification.** Verified 2026-04-17.
+- [x] **PyPI publication.** Completed for the current package line.
+- [x] **OpenSSF Best Practices.** Passing badge is present.
+- [x] **Zenodo DOI.** Existing DOI is live.
+- [x] **GitHub Pages docs.** Published.
+- [ ] **Software Heritage SWHID follow-up.** Check the submitted save
+  request and publish the SWHID once the crawl completes.
+- [ ] **Zenodo communities and metadata refresh.** Add the DOI to
+  quantum/physics communities and refresh stale version metadata during
+  a manual Zenodo login session.
+- [ ] **Qiskit Ecosystem Catalog.** Submit ecosystem metadata before
+  attempting `awesome-qiskit`.
+- [ ] **awesome-qiskit.** Blocked until Qiskit Ecosystem membership is
+  accepted.
+- [ ] **Conda-forge recipe.** Prepare and submit staged-recipes package.
+- [ ] **Metriq submission.** Submit only validated, bounded benchmark
+  results.
+- [ ] **pyOpenSci review.** Submit the software package for review and
+  possible JOSS fast-track.
+- [ ] **JOSS submission.** Submit after paper package and metadata are
+  aligned.
+- [ ] **arXiv submission.** Submit the paper set once final PDFs,
+  references, source tarballs, and artefact links are aligned.
+- [ ] **SciPy 2026 CFP.** Prepare talk/poster proposal if strategically
+  useful.
+- [ ] **Community announcements.** Prepare Reddit, Qiskit Slack,
+  Unitary Discord, Hacker News, LinkedIn, and X posts only after the
+  public preprints are live.
+- [ ] **Registry listings.** Quantiki, QOSF project list, best-of-python,
+  Papers With Code, SciCrunch RRID, Open Hub, and Research Software
+  Directory.
+
+### Deferred / CEO-gated strategic tracks
+
+These tracks remain scoped in `docs/strategic_roadmap.md` and must not
+be executed until individually activated.
+
+- [ ] **S1** Hybrid classical--quantum feedback loop.
+- [ ] **S2** Quantum advantage benchmarks at scale.
+- [ ] **S3** ML-augmented pulse / ansatz design.
+- [ ] **S4** Multi-hardware backend + pulse-level control.
+- [ ] **S5** Open-data + classical validation harness.
+- [ ] **S6** Decoupled `quantum-kuramoto` subpackage.
+- [ ] **S7** Fault-tolerant / logical-level extension roadmap.
+- [ ] **S8--S53** Scientific, foundational, and applied post-v1.0
+  differentiation tracks listed in the strategic roadmap.
+
 ## Recently closed
 
 - **S5** Open-data + classical validation for the DLA-parity dataset

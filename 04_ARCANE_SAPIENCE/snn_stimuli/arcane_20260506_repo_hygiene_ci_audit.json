@@ -1,0 +1,5 @@
+{
+  "text": "Repository hygiene audit for SCPN-QUANTUM-CONTROL identified current main blockers: a broken dashboard link in Link Check and a Python 3.13 microbenchmark rounding failure in CI. Local patches fix both, and console output was reduced in the FIM IBM readiness script to address CodeQL clear-text logging alerts. Dependabot security and secret-scanning APIs returned no open alerts. Four Dependabot PRs remain open; PR #63 needs separate CI investigation. No runs, branches, or PRs were deleted or merged.",
+  "source": "codex",
+  "project": "SCPN-QUANTUM-CONTROL"
+}

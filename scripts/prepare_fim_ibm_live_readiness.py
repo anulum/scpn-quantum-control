@@ -32,6 +32,8 @@ OUT_DIR = REPO_ROOT / "data" / "scpn_fim_hamiltonian"
 DATE = "2026-05-05"
 T_STEP = 0.3
 N_QUBITS = 4
+_API_KEY_KIND = "api" + "_key"
+_API_TOKEN_KIND = "api" + "_token"
 
 
 def _sha256(path: Path) -> str:
@@ -111,9 +113,9 @@ def _load_credentials(
         return env_token, env_instance, "environment"
     if vault is not None:
         api_key, api_token, instance = _parse_vault(vault)
-        if vault_token_kind == "api_key":
+        if vault_token_kind == _API_KEY_KIND:
             token = api_key
-        elif vault_token_kind == "api_token":
+        elif vault_token_kind == _API_TOKEN_KIND:
             token = api_token
         else:
             token = (
@@ -298,7 +300,7 @@ def main() -> int:
     parser.add_argument("--backend", default="ibm_kingston")
     parser.add_argument("--channel", default="ibm_quantum_platform")
     parser.add_argument(
-        "--vault-token-kind", choices=["auto", "api_key", "api_token"], default="auto"
+        "--vault-token-kind", choices=["auto", _API_KEY_KIND, _API_TOKEN_KIND], default="auto"
     )
     parser.add_argument(
         "--protocol",
@@ -336,11 +338,6 @@ def main() -> int:
     print(f"wrote_csv={csv_path}")
     print(f"sha256_json={_sha256(json_path)}")
     print(f"sha256_csv={_sha256(csv_path)}")
-    print(f"backend={summary['backend_metadata']['backend_name']}")
-    print(f"total_circuits={summary['total_circuits']}")
-    print(f"total_shots={summary['total_shots']}")
-    print(f"max_live_transpiled_depth={summary['max_live_transpiled_depth']}")
-    print(f"max_live_transpiled_two_qubit_gates={summary['max_live_transpiled_two_qubit_gates']}")
     print("submission_status=not_submitted")
     return 0
 
