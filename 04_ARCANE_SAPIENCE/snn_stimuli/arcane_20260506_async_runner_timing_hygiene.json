@@ -1,0 +1,10 @@
+{
+  "spdx": "AGPL-3.0-or-later | Commercial license available",
+  "copyright": "Concepts 1996-2026 Miroslav Sotek; Code 2020-2026 Miroslav Sotek",
+  "orcid": "0009-0009-3560-0851",
+  "contact": "www.anulum.li | protoscience@anulum.li",
+  "project": "SCPN-QUANTUM-CONTROL",
+  "source": "codex",
+  "timestamp_utc": "2026-05-06T00:00:00Z",
+  "text": "Replaced the async hardware runner concurrency test's brittle absolute wall-clock threshold with a thread-safe overlap assertion so macOS runner timing jitter does not create tolerated CI failures."
+}

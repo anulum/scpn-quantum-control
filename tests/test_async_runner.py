@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import asyncio
 import sys
+import threading
 import time
 import types
 from typing import Any
@@ -238,25 +239,33 @@ class TestSubmitBatch:
         )
 
     def test_batch_concurrency_beats_serial(self) -> None:
-        """With max_concurrent=3 wall-clock should be roughly one slow
-        submission, not three."""
+        """With max_concurrent=3, submissions must overlap semantically."""
         r = _StubRunner()
         a = ar.AsyncHardwareRunner(r, max_concurrent=3)  # type: ignore[arg-type]
 
         real_submit = a._submit_blocking  # type: ignore[attr-defined]
+        lock = threading.Lock()
+        active = 0
+        max_active = 0
 
         def _slow_submit(*args: Any, **kwargs: Any) -> ar.AsyncJobHandle:
-            time.sleep(0.10)
-            return real_submit(*args, **kwargs)
+            nonlocal active, max_active
+            with lock:
+                active += 1
+                max_active = max(max_active, active)
+            try:
+                time.sleep(0.10)
+                return real_submit(*args, **kwargs)
+            finally:
+                with lock:
+                    active -= 1
 
         a._submit_blocking = _slow_submit  # type: ignore[method-assign]
 
         batches = [_fake_circuits(1) for _ in range(3)]
-        t0 = time.time()
         asyncio.run(a.submit_batch_async(batches))
-        wall = time.time() - t0
-        # Serial would be ~0.30 s; parallel should stay well below two submissions.
-        assert wall < 0.22, f"fan-out did not parallelise; wall={wall:.3f}s"
+
+        assert max_active == 3, f"fan-out did not parallelise; max_active={max_active}"
 
 
 # ---------------------------------------------------------------------------
