@@ -103,6 +103,7 @@ included only where they consume already committed JSON data.
 | FIM exact Hamiltonian | Spectra, level spacing, entanglement, sector survival, and VQE scoring are generated offline. | `data/scpn_fim_hamiltonian/` | Exact small-system structure, not a hardware-protection claim. |
 | FIM hardware repeated run | Repeated IBM follow-up falsifies the simple `lambda=4` hardware-protection hypothesis. | `fim_ibm_repeated_followup_analysis_2026-05-05_d7t5gtaudops7397ikn0.json` | Backend/circuit-family specific. |
 | FIM full-basis readout mitigation | Full 16-state readout inversion preserves the negative FIM result; matrix condition number is `1.049`. | `fim_readout_matrix_mitigation_summary_2026-05-05_d7t5gtaudops7397ikn0.json` | Measurement-confusion mitigation only; no gate-error or Trotter correction. |
+| Readout-mitigation eligibility | Promoted n<=8 raw-count datasets are marked as full-basis eligible, partial exact-state baseline only, or missing readout calibration. | `readout_mitigation_eligibility_2026-05-06.json` | Marker only; new calibration circuits still require separate QPU approval. |
 
 ## Current artefact groups
 
@@ -124,6 +125,7 @@ included only where they consume already committed JSON data.
 | FIM IBM pilot analysis | [`fim_ibm_pilot_analysis_2026-05-05_d7t53ofljm6s73bc6bj0.json`](https://github.com/anulum/scpn-quantum-control/blob/main/data/scpn_fim_hamiltonian/fim_ibm_pilot_analysis_2026-05-05_d7t53ofljm6s73bc6bj0.json) | [`analyse_fim_ibm_pilot.py`](https://github.com/anulum/scpn-quantum-control/blob/main/scripts/analyse_fim_ibm_pilot.py) |
 | FIM IBM repeated analysis | [`fim_ibm_repeated_followup_analysis_2026-05-05_d7t5gtaudops7397ikn0.json`](https://github.com/anulum/scpn-quantum-control/blob/main/data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_analysis_2026-05-05_d7t5gtaudops7397ikn0.json) | [`analyse_fim_ibm_repeated_followup.py`](https://github.com/anulum/scpn-quantum-control/blob/main/scripts/analyse_fim_ibm_repeated_followup.py) |
 | FIM full-basis readout matrix | [`fim_readout_matrix_mitigation_summary_2026-05-05_d7t5gtaudops7397ikn0.json`](https://github.com/anulum/scpn-quantum-control/blob/main/data/scpn_fim_hamiltonian/fim_readout_matrix_mitigation_summary_2026-05-05_d7t5gtaudops7397ikn0.json) | [`analyse_fim_readout_matrix_mitigation.py`](https://github.com/anulum/scpn-quantum-control/blob/main/scripts/analyse_fim_readout_matrix_mitigation.py) |
+| Readout eligibility markers | [`readout_mitigation_eligibility_2026-05-06.json`](https://github.com/anulum/scpn-quantum-control/blob/main/data/readout_mitigation_eligibility/readout_mitigation_eligibility_2026-05-06.json) | [`audit_readout_mitigation_eligibility.py`](https://github.com/anulum/scpn-quantum-control/blob/main/scripts/audit_readout_mitigation_eligibility.py) |
 
 ## Current combined artefact hashes
 
@@ -154,6 +156,7 @@ python scripts/benchmark_fim_vqe_ground_state.py
 python scripts/analyse_fim_ibm_pilot.py
 python scripts/analyse_fim_ibm_repeated_followup.py
 python scripts/analyse_fim_readout_matrix_mitigation.py
+python scripts/audit_readout_mitigation_eligibility.py
 ```
 
 Remote or non-local machine artefacts should record the machine identity,

@@ -1,0 +1,5 @@
+{
+  "text": "SCPN-QUANTUM-CONTROL added offline readout-mitigation eligibility markers for promoted n<=8 raw-count datasets. The audit classifies full-basis confusion-matrix availability, partial exact-state readout baselines, and missing calibration before any new QPU calibration spend.",
+  "source": "codex",
+  "project": "SCPN-QUANTUM-CONTROL"
+}

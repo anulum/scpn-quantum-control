@@ -264,9 +264,12 @@ is copied here.
 - [x] **FIM repeated full-basis readout mitigation.** Implemented
   2026-05-06 for the repeated dataset where the required 16-state
   calibration basis exists.
-- [ ] **Readout-mitigation eligibility markers.** Add dataset-level
-  markers for n<=8 campaigns lacking complete basis calibration before
-  spending QPU time on new calibration circuits.
+- [x] **Readout-mitigation eligibility markers.** Implemented
+  2026-05-06: `audit_readout_mitigation_eligibility.py` generates
+  `data/readout_mitigation_eligibility/readout_mitigation_eligibility_2026-05-06.json`
+  with dataset-level and per-`n` markers for full-basis, partial
+  exact-state, and missing-calibration readout-mitigation eligibility
+  before any new QPU calibration spend.
 
 ### Hardware experiment candidates
 
