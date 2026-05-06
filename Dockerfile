@@ -24,6 +24,7 @@ RUN pip install --no-cache-dir --require-hashes -r requirements-ci-py312-linux.t
 COPY tests/ tests/
 COPY tools/ tools/
 COPY examples/ examples/
+COPY notebooks/ notebooks/
 COPY results/ results/
 # `data/` holds curated hardware-result JSONs that
 # `tests/test_phase1_dla_parity_reproduces.py` asserts against; the

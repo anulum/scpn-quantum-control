@@ -12,7 +12,6 @@ dist/
 build/
 docs/
 docs-site/
-notebooks/
 paper/
 site/
 .coordination/
