@@ -182,6 +182,18 @@ def test_s4_provider_preregistration_selection_is_dossier_harness() -> None:
     ]
 
 
+def test_s4_neutral_atom_preregistration_selection_is_dossier_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("s4-neutral", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "s4-neutral-atom-preregistration",
+            "scripts/export_s4_neutral_atom_preregistration.py",
+            frozenset({"s4-neutral"}),
+        )
+    ]
+
+
 def test_dry_run_prints_selected_harnesses(capsys: pytest.CaptureFixture[str]) -> None:
     rc = bench_cli.run(["fim-all", "--dry-run"])
 

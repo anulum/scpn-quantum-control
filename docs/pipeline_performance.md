@@ -1186,3 +1186,13 @@ scpn-bench s4-provider-preregistration
 ```
 
 Regenerates `data/s4_multi_hardware_control/s4_ibm_pulse_preregistration_2026-05-06.json` and `docs/s4_ibm_pulse_preregistration_2026-05-06.md`. The harness reads the S4 readiness payload and packages the IBM pulse-level route as a calibration-review dossier. It performs no provider contact, creates no calibrated pulse schedule, and requests no QPU time.
+
+### S4 neutral-atom preregistration
+
+Command:
+
+```bash
+scpn-bench s4-neutral-atom-preregistration
+```
+
+Regenerates `data/s4_multi_hardware_control/s4_neutral_atom_preregistration_2026-05-06.json` and `docs/s4_neutral_atom_preregistration_2026-05-06.md`. The harness reads the S4 readiness payload and packages the Pulser/Bloqade neutral-atom routes as provider-object construction review dossiers. It performs no provider SDK construction, no emulator run, no cloud contact, and no QPU submission.

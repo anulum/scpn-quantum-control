@@ -858,6 +858,12 @@ be executed until individually activated.
   with purpose, hypothesis, falsification condition, expected capability
   observables, blocked QPU budget, platform fit, decision tree, paper
   impact, follow-up route, and prerequisites before any pulse job.
+- [x] **S4 neutral-atom preregistration dossier.** Implemented
+  2026-05-06: `scpn-bench s4-neutral-atom-preregistration` packages
+  the Pulser and Bloqade neutral-atom payloads into a no-submit
+  provider-object review dossier with geometry, SDK, emulator-only,
+  comparator-observable, cost/credit, and QPU-budget gates before any
+  cloud provider session.
 - [ ] **S5** Open-data + classical validation harness.
 - [ ] **S6** Decoupled `quantum-kuramoto` subpackage.
 - [ ] **S7** Fault-tolerant / logical-level extension roadmap.
