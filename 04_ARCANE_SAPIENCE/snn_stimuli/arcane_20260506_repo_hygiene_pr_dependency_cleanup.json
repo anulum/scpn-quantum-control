@@ -1,0 +1,5 @@
+{
+  "text": "Repository hygiene audit for SCPN-QUANTUM-CONTROL continued: the four open Dependabot PRs were traced as the remaining failed-run source. A compliant manual dependency patch now replaces their contents and stabilises the stochastic ZNE simulator assertion before PR closure and final failed-run deletion.",
+  "source": "codex",
+  "project": "SCPN-QUANTUM-CONTROL"
+}
