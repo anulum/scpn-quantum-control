@@ -67,7 +67,8 @@ def jax_device_name() -> str:
 def _build_xy_hamiltonian_jax(K: jax.Array, omega: jax.Array, n: int) -> jax.Array:
     """Build XY Hamiltonian on JAX device. Same bitwise flip-flop as Rust."""
     dim = 1 << n
-    assert _jnp is not None  # caller checks _JAX_AVAILABLE
+    if _jnp is None:
+        raise RuntimeError("JAX NumPy backend is unavailable")
     jnp = _jnp
 
     h = jnp.zeros((dim, dim))

@@ -56,13 +56,12 @@ def extract_counts(pub):
         try:
             return reg.get_counts()
         except Exception:
-            pass
-        try:
-            from collections import Counter
+            try:
+                from collections import Counter
 
-            return dict(Counter(reg.get_bitstrings()))
-        except Exception:
-            pass
+                return dict(Counter(reg.get_bitstrings()))
+            except Exception as exc:
+                del exc
     return None
 
 

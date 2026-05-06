@@ -162,8 +162,8 @@ def _resolve(level: str | None, fmt: str | None) -> tuple[str, str]:
         cfg = get_config()
         cfg_level = cfg.log_level
         cfg_format = cfg.log_format
-    except Exception:
-        pass
+    except Exception as exc:
+        del exc
 
     resolved_level = (level or cfg_level).upper()
     resolved_format = (fmt or cfg_format).lower()

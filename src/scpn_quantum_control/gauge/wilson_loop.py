@@ -86,7 +86,8 @@ def _build_wilson_operator(loop: list[int], n_qubits: int) -> SparsePauliOp:
         else:
             result = (result @ link).simplify()
 
-    assert result is not None
+    if result is None:
+        raise ValueError("Wilson loop requires at least one link")
     return result
 
 

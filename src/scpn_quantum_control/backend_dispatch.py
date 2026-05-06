@@ -103,13 +103,13 @@ def available_backends() -> list[str]:
 
         del _jnp
         backends.append("jax")
-    except Exception:
-        pass
+    except Exception as exc:
+        del exc
     try:
         import torch
 
         del torch  # used only for availability check
         backends.append("torch")
-    except Exception:
-        pass
+    except Exception as exc:
+        del exc
     return backends

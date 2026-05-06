@@ -233,13 +233,18 @@ is copied here.
   injection, random seed mutation, and backend/cache/registry global
   mutations so ordering risks can be reviewed without relying on ad-hoc
   greps.
-- [ ] **Full-suite ordering audit.** Detect hidden state pollution from
-  reloads, monkeypatches, optional imports, random seeds, and backend
-  globals, then document accepted isolation patterns and any required
-  fixes.
-- [ ] **Static-analysis pass.** Run and triage full Bandit plus Semgrep
-  or a local equivalent, fixing easy true positives and documenting
-  accepted false positives.
+- [x] **Full-suite ordering audit.** Completed 2026-05-06: a local
+  internal audit record documents the
+  `tools/audit_test_ordering_state.py` result (`420` findings), accepted
+  isolation patterns for monkeypatch-managed state, optional dependency
+  module injections, and paired reload tests, plus the high-density files
+  to prioritise if ordering randomisation later exposes flakes.
+- [x] **Static-analysis pass.** Completed 2026-05-06: Semgrep was added
+  as a development dependency and run with explicit Python/security
+  rules (`0` findings); Bandit was run over `src`, `scripts`, and
+  `tools`, easy true positives were fixed, and the remaining `57` low
+  findings were documented locally as accepted subprocess/provenance
+  tooling or deterministic non-cryptographic shuffling.
 - [ ] **`QuantumKuramotoSolver` validation.** Validate coupling-matrix
   shape, squareness, symmetry or directionality semantics, zero diagonal,
   finite values, and matching finite `omega`.

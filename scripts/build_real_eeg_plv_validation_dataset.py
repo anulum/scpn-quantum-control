@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import http.client
 import json
 import platform
 import subprocess
@@ -22,6 +21,7 @@ from typing import Any
 from urllib.parse import urlsplit
 
 import numpy as np
+import requests
 from scipy.signal import butter, hilbert, sosfiltfilt
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -65,41 +65,34 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _validated_https_url(url: str) -> tuple[str, str]:
+def _validated_https_url(url: str) -> str:
     parsed = urlsplit(url)
     if parsed.scheme != "https" or not parsed.netloc or not parsed.path:
         raise ValueError(f"Only absolute HTTPS EDF URLs are allowed: {url!r}")
-    target = parsed.path
-    if parsed.query:
-        target = f"{target}?{parsed.query}"
-    return parsed.netloc, target
+    return url
 
 
 def download_https_file(source_url: str, path: Path, *, redirects_remaining: int) -> None:
-    host, target = _validated_https_url(source_url)
-    connection = http.client.HTTPSConnection(host, timeout=60)
+    if redirects_remaining < 0:
+        raise RuntimeError(f"Could not download EDF from {source_url}: redirect limit exceeded")
+    validated_url = _validated_https_url(source_url)
     try:
-        connection.request(
-            "GET",
-            target,
+        with requests.get(
+            validated_url,
             headers={"User-Agent": "scpn-quantum-control-eeg-validation/1.0"},
-        )
-        response = connection.getresponse()
-        if response.status in {301, 302, 303, 307, 308}:
-            location = response.getheader("Location")
-            if not location or redirects_remaining <= 0:
-                raise RuntimeError(f"Could not download EDF from {source_url}: redirect failed")
-            download_https_file(location, path, redirects_remaining=redirects_remaining - 1)
-            return
-        if response.status != 200:
-            raise RuntimeError(f"Could not download EDF from {source_url}: HTTP {response.status}")
-        partial_path = path.with_suffix(f"{path.suffix}.part")
-        with partial_path.open("wb") as handle:
-            while chunk := response.read(1024 * 1024):
-                handle.write(chunk)
-        partial_path.replace(path)
-    finally:
-        connection.close()
+            stream=True,
+            timeout=60,
+        ) as response:
+            _validated_https_url(response.url)
+            response.raise_for_status()
+            partial_path = path.with_suffix(f"{path.suffix}.part")
+            with partial_path.open("wb") as handle:
+                for chunk in response.iter_content(chunk_size=1024 * 1024):
+                    if chunk:
+                        handle.write(chunk)
+            partial_path.replace(path)
+    except requests.RequestException as exc:
+        raise RuntimeError(f"Could not download EDF from {source_url}: {exc}") from exc
 
 
 def ensure_edf(path: Path, *, source_url: str, download: bool) -> None:
