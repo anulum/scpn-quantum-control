@@ -294,9 +294,10 @@ is copied here.
   the artefact-first table boundary, supported/unsupported claims,
   generator-script index, `scpn-bench reproduce-methods` gate, and
   no-QPU final pre-upload checklist.
-- [ ] **JOSS-style software paper package.** Prepare the short software
-  note for JOSS/pyOpenSci submission with repository, Zenodo, and
-  reproducibility links aligned.
+- [x] **JOSS-style software paper package.** Completed 2026-05-06:
+  `docs/joss_software_submission_checklist_2026-05-06.md` freezes the
+  software-paper claim boundary, JOSS/pyOpenSci framing, metadata gate,
+  reproducibility gate, and no-QPU final pre-upload checklist.
 - [ ] **SCPN/FIM Hamiltonian paper package.** Preserve the negative
   hardware falsification boundary: mathematical sector engineering is
   not promoted as NISQ coherence protection.
