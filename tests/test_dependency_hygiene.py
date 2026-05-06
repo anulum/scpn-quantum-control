@@ -82,6 +82,51 @@ def test_dependency_drift_checker_treats_order_as_part_of_the_mirror(tmp_path: P
     assert not report.extra_in_requirements
 
 
+def test_dependency_drift_checker_accepts_pins_within_declared_ranges(tmp_path: Path) -> None:
+    (tmp_path / "pyproject.toml").write_text(
+        "\n".join(
+            [
+                "[project]",
+                "dependencies = [",
+                '    "numpy>=1.24,<3.0",',
+                '    "scipy>=1.10,<2.0",',
+                "]",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "requirements.txt").write_text(
+        "numpy==2.2.6\nscipy==1.15.3\n",
+        encoding="utf-8",
+    )
+
+    report = dependency_drift_report(tmp_path)
+
+    assert report.in_sync
+    assert main(["--root", str(tmp_path)]) == 0
+
+
+def test_dependency_drift_checker_rejects_pins_outside_declared_ranges(tmp_path: Path) -> None:
+    (tmp_path / "pyproject.toml").write_text(
+        "\n".join(
+            [
+                "[project]",
+                "dependencies = [",
+                '    "numpy>=1.24,<3.0",',
+                "]",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "requirements.txt").write_text("numpy==3.1.0\n", encoding="utf-8")
+
+    report = dependency_drift_report(tmp_path)
+
+    assert not report.in_sync
+    assert report.unsatisfied_pins == ("numpy==3.1.0",)
+    assert main(["--root", str(tmp_path)]) == 1
+
+
 def test_all_extra_is_portable_and_accelerators_are_explicit() -> None:
     text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
     assert "all = [" in text

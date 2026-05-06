@@ -14,6 +14,8 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
+from packaging.requirements import Requirement
+
 
 @dataclass(frozen=True)
 class DependencyDriftReport:
@@ -24,31 +26,77 @@ class DependencyDriftReport:
 
     @property
     def in_sync(self) -> bool:
-        """Return True when requirements match pyproject dependencies exactly."""
-        return self.project_dependencies == self.runtime_requirements
+        """Return True when requirements pin the declared runtime surface."""
+        return (
+            not self.missing_from_requirements
+            and not self.extra_in_requirements
+            and not self.order_mismatch
+            and not self.unsatisfied_pins
+        )
 
     @property
     def missing_from_requirements(self) -> tuple[str, ...]:
         """Dependencies present in pyproject but absent from requirements."""
+        requirement_names = _requirement_names(self.runtime_requirements)
         return tuple(
-            dep for dep in self.project_dependencies if dep not in self.runtime_requirements
+            dep
+            for dep in self.project_dependencies
+            if _requirement_name(dep) not in requirement_names
         )
 
     @property
     def extra_in_requirements(self) -> tuple[str, ...]:
         """Requirements present in requirements.txt but absent from pyproject."""
+        project_names = _requirement_names(self.project_dependencies)
         return tuple(
-            req for req in self.runtime_requirements if req not in self.project_dependencies
+            req for req in self.runtime_requirements if _requirement_name(req) not in project_names
         )
 
     @property
     def order_mismatch(self) -> bool:
-        """Return True when the sets match but the mirror order differs."""
+        """Return True when the dependency names match but order differs."""
         return (
-            not self.in_sync
+            _requirement_names(self.project_dependencies)
+            != _requirement_names(self.runtime_requirements)
             and not self.missing_from_requirements
             and not self.extra_in_requirements
         )
+
+    @property
+    def unsatisfied_pins(self) -> tuple[str, ...]:
+        """Pinned runtime requirements outside the declared pyproject ranges."""
+        if self.missing_from_requirements or self.extra_in_requirements:
+            return ()
+        projects = {_requirement_name(dep): Requirement(dep) for dep in self.project_dependencies}
+        unsatisfied: list[str] = []
+        for requirement_text in self.runtime_requirements:
+            requirement = Requirement(requirement_text)
+            project = projects[requirement.name.lower()]
+            if not _is_exact_pin(requirement) or not _pin_satisfies(requirement, project):
+                unsatisfied.append(requirement_text)
+        return tuple(unsatisfied)
+
+
+def _requirement_name(requirement_text: str) -> str:
+    """Return the canonical package name used by the dependency checker."""
+    return Requirement(requirement_text).name.lower()
+
+
+def _requirement_names(requirements: tuple[str, ...]) -> tuple[str, ...]:
+    """Return requirement names in declared order."""
+    return tuple(_requirement_name(requirement) for requirement in requirements)
+
+
+def _is_exact_pin(requirement: Requirement) -> bool:
+    """Return True when a requirement is pinned with a single equality specifier."""
+    specs = tuple(requirement.specifier)
+    return len(specs) == 1 and specs[0].operator == "=="
+
+
+def _pin_satisfies(pinned: Requirement, declared: Requirement) -> bool:
+    """Return True when a pinned version is admitted by the declared range."""
+    version = next(iter(pinned.specifier)).version
+    return declared.specifier.contains(version, prereleases=True)
 
 
 def project_dependencies(pyproject_path: Path) -> tuple[str, ...]:
@@ -103,6 +151,9 @@ def format_report(report: DependencyDriftReport) -> str:
         lines.extend(f"  - {req}" for req in report.extra_in_requirements)
     if report.order_mismatch:
         lines.append("Dependency order differs; keep requirements.txt in pyproject order.")
+    if report.unsatisfied_pins:
+        lines.append("Pins outside declared pyproject ranges:")
+        lines.extend(f"  - {req}" for req in report.unsatisfied_pins)
     return "\n".join(lines)
 
 
