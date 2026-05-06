@@ -206,6 +206,18 @@ def test_s5_benchmark_suite_selection_is_open_data_harness() -> None:
     ]
 
 
+def test_s5_benchmark_registry_selection_is_registry_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("s5-registry", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "s5-benchmark-registry",
+            "scripts/export_benchmark_registry.py",
+            frozenset({"s5-registry"}),
+        )
+    ]
+
+
 def test_dry_run_prints_selected_harnesses(capsys: pytest.CaptureFixture[str]) -> None:
     rc = bench_cli.run(["fim-all", "--dry-run"])
 

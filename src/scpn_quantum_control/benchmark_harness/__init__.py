@@ -18,6 +18,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
+from scpn_quantum_control.benchmark_harness.registry import (
+    BenchmarkFamily,
+    benchmark_registry_payload,
+    list_benchmark_families,
+)
 from scpn_quantum_control.dla_parity import (
     ClassicalLeakageReference,
     DlaParityDataset,
@@ -82,8 +87,11 @@ __all__ = [
     "FullHarnessResult",
     "ReproductionResult",
     "ReproductionTolerance",
+    "BenchmarkFamily",
     "available_baselines",
+    "benchmark_registry_payload",
     "compute_classical_leakage_reference",
+    "list_benchmark_families",
     "load_phase1_dataset",
     "reproduce_phase1_statistics",
     "run_phase1_benchmark",

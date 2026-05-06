@@ -131,6 +131,11 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         "scripts/run_benchmark_suite.py",
         frozenset({"s5"}),
     ),
+    Harness(
+        "s5-benchmark-registry",
+        "scripts/export_benchmark_registry.py",
+        frozenset({"s5-registry"}),
+    ),
 )
 
 ARTEFACT_PATHS = (
@@ -244,6 +249,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate the no-QPU S5 open-data benchmark harness artefacts.",
     )
     _add_run_options(s5, default_group="s5")
+
+    s5_registry = subparsers.add_parser(
+        "s5-benchmark-registry",
+        help="Regenerate the S5 benchmark-harness registry artefacts.",
+    )
+    _add_run_options(s5_registry, default_group="s5-registry")
 
     return parser.parse_args(argv)
 

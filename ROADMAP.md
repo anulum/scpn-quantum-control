@@ -876,6 +876,11 @@ be executed until individually activated.
   harness JSON/Markdown artefacts from committed raw counts, verifies
   published statistics against the tolerance bundle, records the
   classical baseline, and performs no QPU submission.
+- [x] **S5 benchmark registry/index.** Implemented 2026-05-06:
+  `scpn-bench s5-benchmark-registry` exports a public benchmark-family
+  registry distinguishing the implemented Phase 1 DLA-parity benchmark
+  from planned CHSH, BKT, OTOC, and DLA-dimension entries, with blockers
+  and claim boundaries so unavailable rows are not mistaken for results.
 - [ ] **S6** Decoupled `quantum-kuramoto` subpackage.
 - [ ] **S7** Fault-tolerant / logical-level extension roadmap.
 - [ ] **S8--S53** Scientific, foundational, and applied post-v1.0

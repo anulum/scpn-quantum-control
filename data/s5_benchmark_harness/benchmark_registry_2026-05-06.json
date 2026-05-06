@@ -1,0 +1,69 @@
+{
+  "blocked_count": 0,
+  "families": [
+    {
+      "baseline": "noiseless numpy/qutip parity-conservation reference",
+      "benchmark_id": "phase1_dla_parity",
+      "blocker": null,
+      "claim_boundary": "Reproduces committed raw-count statistics and a noiseless classical reference; does not submit QPU jobs or claim quantum advantage.",
+      "command": "scpn-bench s5-benchmark-suite",
+      "dataset": "data/phase1_dla_parity/*.json",
+      "generated_artifact": "data/s5_benchmark_harness/phase1_benchmark_harness_2026-05-06.json",
+      "public_api": "scpn_quantum_control.benchmark_harness.run_phase1_benchmark",
+      "status": "implemented",
+      "title": "Phase 1 DLA-parity leakage reproduction"
+    },
+    {
+      "baseline": "classical CHSH bound and Bell-state simulator reference",
+      "benchmark_id": "chsh_hardware",
+      "blocker": "promote existing CHSH artefacts into a typed raw-data loader and reproducer",
+      "claim_boundary": "Not exposed until raw counts, loader, tolerance bundle, and baseline are committed.",
+      "command": null,
+      "dataset": null,
+      "generated_artifact": null,
+      "public_api": null,
+      "status": "planned",
+      "title": "CHSH hardware sanity benchmark"
+    },
+    {
+      "baseline": "classical XY/Kuramoto finite-size diagnostic reference",
+      "benchmark_id": "bkt_phase_transition",
+      "blocker": "define stable BKT raw-data schema, summary statistics, and reproducibility tolerances",
+      "claim_boundary": "Not exposed until the dataset schema and finite-size tolerance policy are committed.",
+      "command": null,
+      "dataset": null,
+      "generated_artifact": null,
+      "public_api": null,
+      "status": "planned",
+      "title": "BKT phase-transition diagnostic benchmark"
+    },
+    {
+      "baseline": "exact diagonalisation or tensor-network OTOC reference",
+      "benchmark_id": "otoc_scrambling",
+      "blocker": "identify canonical OTOC dataset and baseline implementation",
+      "claim_boundary": "Not exposed until OTOC raw data and classical reference are committed.",
+      "command": null,
+      "dataset": null,
+      "generated_artifact": null,
+      "public_api": null,
+      "status": "planned",
+      "title": "OTOC scrambling benchmark"
+    },
+    {
+      "baseline": "symbolic or exact commutator-closure reference",
+      "benchmark_id": "dla_dimension",
+      "blocker": "package DLA-dimension rows with independent closure validation",
+      "claim_boundary": "Not exposed until exact algebra rows and independent reference checks are committed.",
+      "command": null,
+      "dataset": null,
+      "generated_artifact": null,
+      "public_api": null,
+      "status": "planned",
+      "title": "Dynamical Lie-algebra dimension benchmark"
+    }
+  ],
+  "implemented_count": 1,
+  "include_planned": true,
+  "planned_count": 4,
+  "schema": "benchmark_harness_registry_v1"
+}
