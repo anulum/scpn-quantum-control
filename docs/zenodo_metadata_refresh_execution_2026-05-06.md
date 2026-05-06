@@ -35,7 +35,7 @@ https://zenodo.org/records/18821930
 
 ## Authenticated API Result
 
-The `codex` Zenodo token was added to the shared credential vault before this
+The project Zenodo token was added to the shared credential vault before this
 execution. The token has `deposit:actions`, `deposit:write`, and `user:email`
 scopes.
 
@@ -109,11 +109,11 @@ communities: null
 Zenodo's current public help describes submission of published records to
 communities as a separate review workflow from the record page's communities
 menu. Zenodo's public developer documentation lists deposit, records, and files
-as stable REST APIs and describes communities APIs as still in testing. No
-stable community-submission REST endpoint was found during this execution.
+as stable REST APIs and describes communities APIs as still in testing.
 
-Community submission therefore remains a browser/UI follow-up, not a completed
-API action.
+The follow-up check on 2026-05-06 confirmed a submitted `community-inclusion`
+request for the `Research Software Engineering` community. See
+`docs/zenodo_community_submission_2026-05-06.md`.
 
 Relevant public documentation checked:
 

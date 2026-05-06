@@ -499,11 +499,12 @@ explicit QPU-time estimate before submission.
   `agpl-3.0-or-later`, bounded description, and refreshed keywords for
   record `10.5281/zenodo.18821930` under concept DOI
   `10.5281/zenodo.18821929`.
-- [ ] **Zenodo community submission UI follow-up.** Submit the
-  published Zenodo record to appropriate communities through Zenodo's
-  record-page community review workflow and document pending/accepted
-  moderation status. The API metadata update accepted `rse` in draft
-  metadata, but the published record still reports `communities: null`.
+- [x] **Zenodo community submission UI follow-up.** Completed
+  2026-05-06:
+  `docs/zenodo_community_submission_2026-05-06.md` records the pending
+  Zenodo `community-inclusion` request for the `Research Software
+  Engineering` community. Public record community membership remains
+  pending curator acceptance.
 - [ ] **Qiskit Ecosystem Catalog.** Submit ecosystem metadata before
   attempting `awesome-qiskit`.
 - [ ] **awesome-qiskit.** Blocked until Qiskit Ecosystem membership is
