@@ -576,6 +576,12 @@ explicit QPU-time estimate before submission.
   aligned.
 - [ ] **arXiv submission.** Submit the paper set once final PDFs,
   references, source tarballs, and artefact links are aligned.
+- [x] **arXiv source packaging preparation.** Completed 2026-05-06:
+  `docs/arxiv_source_packaging_readiness_2026-05-06.md` records the
+  public source-bundle boundaries, build gates, claim gates, metadata
+  draft, and private-file exclusions for the DLA parity, Rust/VQE
+  methods, and SCPN/FIM papers. Actual arXiv upload remains open until
+  explicitly approved and recorded.
 - [ ] **SciPy 2026 CFP.** Prepare talk/poster proposal if strategically
   useful.
 - [ ] **Community announcements.** Prepare Reddit, Qiskit Slack,
