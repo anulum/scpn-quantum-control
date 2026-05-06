@@ -1,0 +1,77 @@
+{
+  "date": "2026-05-06",
+  "script": "scripts/probe_s3_pulse_feasibility.py",
+  "hardware_submission": false,
+  "provider_session_opened": false,
+  "schedule_family": "hypergeometric_trotter_step",
+  "decisions": [
+    {
+      "provider": "ibm_pulse",
+      "backend_name": "ibm_pulse_metadata_template",
+      "status": "ready",
+      "reasons": [
+        "provider metadata satisfies S3 pulse schedule requirements"
+      ],
+      "schedule": {
+        "n_qubits": 4,
+        "pulse_count": 6,
+        "total_time": 0.2,
+        "max_points_per_pulse": 200,
+        "min_sample_spacing": 0.0010050251256281326,
+        "infidelity_bound": 208.00085712700695
+      },
+      "supports_pulse_control": true,
+      "supports_native_xy": false,
+      "supported_features": [
+        "pulse_control",
+        "calibrated_drives"
+      ],
+      "hardware_submission": false
+    },
+    {
+      "provider": "neutral_atom_analog",
+      "backend_name": "neutral_atom_xy_review_template",
+      "status": "ready",
+      "reasons": [
+        "provider metadata satisfies S3 pulse schedule requirements"
+      ],
+      "schedule": {
+        "n_qubits": 4,
+        "pulse_count": 6,
+        "total_time": 0.2,
+        "max_points_per_pulse": 200,
+        "min_sample_spacing": 0.0010050251256281326,
+        "infidelity_bound": 208.00085712700695
+      },
+      "supports_pulse_control": false,
+      "supports_native_xy": true,
+      "supported_features": [
+        "native_xy",
+        "global_detuning"
+      ],
+      "hardware_submission": false
+    },
+    {
+      "provider": "metadata_light",
+      "backend_name": "unknown_pulse_target",
+      "status": "unknown",
+      "reasons": [
+        "provider declares neither pulse control nor native XY execution",
+        "provider did not declare supported_features"
+      ],
+      "schedule": {
+        "n_qubits": 4,
+        "pulse_count": 6,
+        "total_time": 0.2,
+        "max_points_per_pulse": 200,
+        "min_sample_spacing": 0.0010050251256281326,
+        "infidelity_bound": 208.00085712700695
+      },
+      "supports_pulse_control": false,
+      "supports_native_xy": false,
+      "supported_features": [],
+      "hardware_submission": false
+    }
+  ],
+  "claim_boundary": "This is a metadata-only feasibility probe. It does not calibrate pulses, open provider sessions, submit jobs, or establish hardware performance."
+}

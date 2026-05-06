@@ -127,6 +127,16 @@ The output records exact statevector energy expectation, dense exact ground
 energy, energy error, and a synchronisation proxy for the promoted ansatz
 candidates. This remains an observable validation, not VQE optimisation.
 
+Provider pulse feasibility is checked by metadata-only probes:
+
+```bash
+scpn-bench s3-pulse-feasibility
+```
+
+The probe compares schedule duration, sample spacing, pulse count, qubit count,
+and declared pulse or native-XY support. It does not open a provider session or
+submit hardware jobs.
+
 `docs/s3_design_readiness_index_2026-05-06.md` records allowed claims,
 forbidden claims, and the follow-up path for S3.
 

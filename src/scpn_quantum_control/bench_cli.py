@@ -101,6 +101,11 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         "scripts/validate_s3_ansatz_observables.py",
         frozenset({"s3-observables"}),
     ),
+    Harness(
+        "s3-pulse-feasibility",
+        "scripts/probe_s3_pulse_feasibility.py",
+        frozenset({"s3-pulse"}),
+    ),
 )
 
 ARTEFACT_PATHS = (
@@ -174,6 +179,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate no-QPU S3 ansatz observable-validation artefacts.",
     )
     _add_run_options(s3_observables, default_group="s3-observables")
+
+    s3_pulse = subparsers.add_parser(
+        "s3-pulse-feasibility",
+        help="Regenerate no-submit S3 pulse feasibility artefacts.",
+    )
+    _add_run_options(s3_pulse, default_group="s3-pulse")
 
     return parser.parse_args(argv)
 

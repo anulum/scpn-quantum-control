@@ -73,3 +73,16 @@ The validation reports exact statevector energy expectation, exact dense ground
 energy, energy error, and a simple synchronisation proxy for the lowest-resource
 ansatz candidates. It is an observable sanity check, not VQE optimisation and
 not a hardware result.
+
+## Pulse feasibility probe
+
+Provider metadata can be checked against the S3 hypergeometric pulse schedule
+without opening provider sessions:
+
+```bash
+scpn-bench s3-pulse-feasibility
+```
+
+The probe reports ready, blocked, manual-review, or unknown decisions from
+metadata only. It does not calibrate pulses, submit jobs, or establish hardware
+performance.

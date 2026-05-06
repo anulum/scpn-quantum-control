@@ -832,6 +832,12 @@ be executed until individually activated.
   synchronisation proxy. The artefact is no-QPU and explicitly not VQE
   optimisation, pulse validation, hardware evidence, or an advantage
   claim.
+- [x] **S3 provider-specific pulse feasibility probes.** Implemented
+  2026-05-06: `hardware/pulse_feasibility.py` and
+  `scripts/probe_s3_pulse_feasibility.py` assess provider metadata
+  against the S3 hypergeometric pulse schedule for qubit count, pulse
+  count, duration, sample spacing, pulse-control support, and native-XY
+  support. The probe opens no provider session and submits no job.
 - [ ] **S4** Multi-hardware backend + pulse-level control.
 - [ ] **S5** Open-data + classical validation harness.
 - [ ] **S6** Decoupled `quantum-kuramoto` subpackage.

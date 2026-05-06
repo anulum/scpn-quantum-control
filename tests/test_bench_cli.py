@@ -134,6 +134,18 @@ def test_s3_ansatz_observables_selection_is_observable_harness() -> None:
     ]
 
 
+def test_s3_pulse_feasibility_selection_is_probe_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("s3-pulse", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "s3-pulse-feasibility",
+            "scripts/probe_s3_pulse_feasibility.py",
+            frozenset({"s3-pulse"}),
+        )
+    ]
+
+
 def test_dry_run_prints_selected_harnesses(capsys: pytest.CaptureFixture[str]) -> None:
     rc = bench_cli.run(["fim-all", "--dry-run"])
 
