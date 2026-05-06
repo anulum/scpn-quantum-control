@@ -166,6 +166,24 @@ are separated. The API contract then checks that each proposed
 current package, avoids deferred runner/provenance surfaces, and records
 SCPN-specific rows as warnings rather than silently promoting them.
 
+## Phase 3 State/Layout DLA Randomisation
+
+The state/layout mechanism-separation control has a dedicated fail-closed IBM
+submitter:
+
+```bash
+python scripts/phase3_state_layout_dla_ibm.py --backend ibm_marrakesh
+python scripts/phase3_state_layout_dla_ibm.py --backend ibm_marrakesh --submit --confirm-budget
+```
+
+The first command performs live readiness only. It selects three connected
+four-qubit windows before outcome data exists, builds the preregistered
+495-circuit matrix, live-transpiles every circuit with fixed initial layouts,
+records depth/gate summaries, and writes a readiness artefact under
+`data/phase3_state_layout_dla/`. The second command is the only submitting path
+and remains blocked unless the depth/gate guards and the 20-minute QPU ceiling
+pass.
+
 `docs/s3_design_readiness_index_2026-05-06.md` records allowed claims,
 forbidden claims, and the follow-up path for S3.
 

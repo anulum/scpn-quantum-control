@@ -452,6 +452,14 @@ explicit QPU-time estimate before submission.
 - [ ] **Systematic state/layout randomisation execution.** Execute only
   after live backend/layout selection, transpilation/depth gates, QPU
   budget confirmation, and explicit approval.
+- [x] **Systematic state/layout randomisation live submitter.**
+  Implemented 2026-05-07:
+  `scripts/phase3_state_layout_dla_ibm.py` builds the preregistered
+  495-circuit state/layout matrix, selects three connected four-qubit
+  windows before outcome data exists, live-transpiles with fixed
+  initial layouts, records readiness artefacts, enforces depth/gate and
+  20-minute QPU ceilings, and requires both `--submit` and
+  `--confirm-budget` before any IBM job is launched.
 - [x] **Full readout-mitigation calibration preregistration.**
   Completed 2026-05-06:
   `docs/readout_full_basis_calibration_prereg_2026-05-06.md` defines
