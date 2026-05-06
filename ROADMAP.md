@@ -88,6 +88,10 @@ is copied here.
   2026-05-06: the behavioural audit now counts assertion helper calls
   such as `assert_*` functions instead of misclassifying them as smoke
   tests.
+- [x] **Class-based test audit coverage.** Implemented 2026-05-06:
+  `tools/audit_test_behaviour.py` now counts `test_` methods inside
+  `Test*` classes, so class-based pytest modules are no longer
+  misreported as empty.
 - [ ] **Behavioural-test audit.** Review every test module for
   assertions that constrain numerical invariants, state transitions,
   exception contracts, provenance, or integration behaviour.

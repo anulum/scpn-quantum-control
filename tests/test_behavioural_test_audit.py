@@ -82,6 +82,30 @@ def test_behaviour_audit_counts_assertion_helper_calls(tmp_path: Path) -> None:
     assert audit.smoke_only_tests == ()
 
 
+def test_behaviour_audit_counts_test_class_methods(tmp_path: Path) -> None:
+    module = tmp_path / "test_classes.py"
+    module.write_text(
+        "\n".join(
+            [
+                "class TestContracts:",
+                "    def test_method_contract(self):",
+                "        assert 2 + 2 == 4",
+                "",
+                "class Helper:",
+                "    def test_not_pytest_class(self):",
+                "        pass",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    audit = audit_test_module(module)
+
+    assert audit.test_count == 1
+    assert audit.assertion_count == 1
+    assert audit.smoke_only_tests == ()
+
+
 def test_behaviour_audit_flags_smoke_only_tests(tmp_path: Path) -> None:
     module = tmp_path / "test_smoke.py"
     module.write_text(

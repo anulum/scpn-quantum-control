@@ -140,6 +140,12 @@ def audit_test_module(path: Path) -> TestModuleAudit:
             "test_"
         ):
             tests.append(_function_audit(node))
+        elif isinstance(node, ast.ClassDef) and node.name.startswith("Test"):
+            for member in node.body:
+                if isinstance(
+                    member, ast.FunctionDef | ast.AsyncFunctionDef
+                ) and member.name.startswith("test_"):
+                    tests.append(_function_audit(member))
     return TestModuleAudit(path=str(path), test_functions=tuple(tests))
 
 
