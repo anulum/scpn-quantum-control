@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — read-only GitHub Actions history audit
+name: Actions History Audit
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Weekly Monday 06:10 UTC, after scheduled link-check and trailer audits.
+    - cron: '10 6 * * 1'
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  classify-history:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - name: Collect workflow history
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh run list
+          --repo "${{ github.repository }}"
+          --limit 500
+          --json databaseId,conclusion,status,workflowName,headSha,headBranch,createdAt,event
+          > actions-history.json
+      - name: Classify workflow history
+        continue-on-error: true
+        run: >-
+          python tools/audit_github_actions_history.py
+          --input actions-history.json
+          --json
+          > actions-history-audit.json
+      - name: Upload audit artefact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
+        with:
+          name: actions-history-audit
+          path: |
+            actions-history.json
+            actions-history-audit.json
+          retention-days: 30

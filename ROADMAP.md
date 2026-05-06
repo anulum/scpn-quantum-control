@@ -36,12 +36,17 @@ is copied here.
   runs, unresolved failures, resolved failures, unresolved cancellations,
   superseded cancellations, and safe delete candidates without deleting
   any run.
-- [ ] **Actions audit GitHub workflow integration.** Add a scheduled or
-  manually triggered workflow that runs the history classifier and
-  publishes an internal audit artefact without performing deletions.
-- [ ] **Link-check history automation.** Add a link-check summary command
-  that records live broken links, resolved historical failures, and
-  accepted external-transient failures.
+- [x] **Actions audit GitHub workflow integration.** Implemented
+  2026-05-06: `.github/workflows/actions-history-audit.yml` runs the
+  classifier on a schedule or manually, uploads read-only audit
+  artefacts, and performs no deletions.
+- [x] **Link-check history automation.** Implemented 2026-05-06:
+  `tools/audit_link_check_history.py` records live link-check failures,
+  resolved historical failures, accepted external-transient failures,
+  and safe delete candidates from workflow history.
+- [ ] **Actions-history dashboard documentation.** Add a short docs page
+  explaining how to read the history-audit artefacts and when a run is
+  safe to delete.
 
 ### Archived repository hygiene checklist
 
