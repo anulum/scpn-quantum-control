@@ -382,10 +382,16 @@ explicit QPU-time estimate before submission.
   148-circuit scope, 3--6 minute estimate, 10-minute ceiling,
   live-depth gates, analysis plan, falsification rules, and output
   artefact paths. QPU execution remains separate and approval-gated.
-- [ ] **Multi-device DLA replication execution.** Execute the
-  preregistered second-Heron run only after live backend selection,
+- [x] **Multi-device DLA replication execution.** Completed
+  2026-05-06 on `ibm_marrakesh` after live backend selection,
   transpilation/depth gates, QPU budget confirmation, and explicit
-  approval.
+  approval. Jobs `d7tnd3vljm6s73bcsh6g` and
+  `d7tnehqudops73988btg` produced the raw-count artefact,
+  generated summary, row metrics, and manifest in
+  `data/phase3_multidevice_dla/` and
+  `docs/phase3_multidevice_dla_manifest_2026-05-06.md`. Result:
+  mixed/mostly opposite-sign backend-transfer evidence, weakening any
+  backend-stable DLA leakage-asymmetry claim.
 - [x] **Systematic state/layout randomisation preregistration.**
   Completed 2026-05-06:
   `docs/dla_state_layout_randomisation_prereg_2026-05-06.md` defines

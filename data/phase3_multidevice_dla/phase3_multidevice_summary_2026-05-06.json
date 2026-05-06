@@ -1,0 +1,108 @@
+{
+  "schema": "scpn_phase3_multidevice_dla_summary_v1",
+  "source_raw": "data/phase3_multidevice_dla/phase3_multidevice_ibm_marrakesh_2026-05-06T171231Z.json",
+  "generated_at_utc": "2026-05-06T17:16:53Z",
+  "backend": "ibm_marrakesh",
+  "job_ids": [
+    "d7tnd3vljm6s73bcsh6g",
+    "d7tnehqudops73988btg"
+  ],
+  "status": "completed",
+  "n_circuits": 148,
+  "readiness": {
+    "accepted": true,
+    "max_depth": 1267,
+    "reference_phase2_ag_observed_max_depth": 1014,
+    "depth_summary": {
+      "min": 1,
+      "max": 414,
+      "mean": 214.75
+    },
+    "total_gate_summary": {
+      "min": 4,
+      "max": 1086,
+      "mean": 548.9121621621622
+    },
+    "ecr_gate_summary": {
+      "min": 0,
+      "max": 0,
+      "mean": 0.0
+    },
+    "per_preregistered_depth_max": {
+      "0": 2,
+      "4": 94,
+      "6": 134,
+      "8": 174,
+      "10": 214,
+      "14": 294,
+      "20": 414
+    },
+    "rejection_reason": null
+  },
+  "estimated_qpu_minutes": 1.3566666666666667,
+  "wall_time_main_s": 187.51547503471375,
+  "wall_time_readout_s": 25.64307999610901,
+  "per_depth": [
+    {
+      "depth": 4,
+      "mean_leakage_even": 0.0821533203125,
+      "mean_leakage_odd": 0.08428955078125,
+      "sem_leakage_even": 0.00147329646730401,
+      "sem_leakage_odd": 0.0012420180539419055,
+      "asymmetry_relative": -0.025343953656770456,
+      "n_reps_even": 12,
+      "n_reps_odd": 12
+    },
+    {
+      "depth": 6,
+      "mean_leakage_even": 0.10518391927083333,
+      "mean_leakage_odd": 0.1014404296875,
+      "sem_leakage_even": 0.0012001229375743988,
+      "sem_leakage_odd": 0.0011817974442216452,
+      "asymmetry_relative": 0.03690332932210184,
+      "n_reps_even": 12,
+      "n_reps_odd": 12
+    },
+    {
+      "depth": 8,
+      "mean_leakage_even": 0.12310791015625,
+      "mean_leakage_odd": 0.12327067057291667,
+      "sem_leakage_even": 0.0009816930841427055,
+      "sem_leakage_odd": 0.0021833413159235305,
+      "asymmetry_relative": -0.0013203498927216086,
+      "n_reps_even": 12,
+      "n_reps_odd": 12
+    },
+    {
+      "depth": 10,
+      "mean_leakage_even": 0.13358561197916666,
+      "mean_leakage_odd": 0.13698323567708334,
+      "sem_leakage_even": 0.0018716241649412645,
+      "sem_leakage_odd": 0.0015705992085492928,
+      "asymmetry_relative": -0.024803208079608036,
+      "n_reps_even": 12,
+      "n_reps_odd": 12
+    },
+    {
+      "depth": 14,
+      "mean_leakage_even": 0.16312662760416666,
+      "mean_leakage_odd": 0.17622884114583334,
+      "sem_leakage_even": 0.0017671365621194552,
+      "sem_leakage_odd": 0.0014149288629702697,
+      "asymmetry_relative": -0.07434772569845312,
+      "n_reps_even": 12,
+      "n_reps_odd": 12
+    },
+    {
+      "depth": 20,
+      "mean_leakage_even": 0.19877115885416666,
+      "mean_leakage_odd": 0.20589192708333334,
+      "sem_leakage_even": 0.0022401740899252614,
+      "sem_leakage_odd": 0.001926197970222254,
+      "asymmetry_relative": -0.03458498023715424,
+      "n_reps_even": 12,
+      "n_reps_odd": 12
+    }
+  ],
+  "claim_boundary": "second-backend n=4 DLA parity/excitation-number correlated leakage replication only; no DLA-only causality, monotone scaling, or quantum-advantage claim"
+}
