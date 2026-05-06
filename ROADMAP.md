@@ -80,6 +80,10 @@ is copied here.
 - [ ] **Coverage and test-quality closure.** Push the release baseline
   from the documented `~97.6 %` coverage state toward 100 %, then audit
   behavioural value rather than relying on line coverage alone.
+- [x] **Behavioural-test audit automation.** Implemented 2026-05-06:
+  `tools/audit_test_behaviour.py` inventories test modules for
+  assertion-bearing tests, exception contracts, parametrisation, and
+  smoke-only tests so the manual behavioural audit can be prioritised.
 - [ ] **Behavioural-test audit.** Review every test module for
   assertions that constrain numerical invariants, state transitions,
   exception contracts, provenance, or integration behaviour.
