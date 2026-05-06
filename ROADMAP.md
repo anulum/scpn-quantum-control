@@ -882,6 +882,12 @@ be executed until individually activated.
   from planned CHSH, BKT, OTOC, and DLA-dimension entries, with blockers
   and claim boundaries so unavailable rows are not mistaken for results.
 - [ ] **S6** Decoupled `quantum-kuramoto` subpackage.
+- [x] **S6 import-graph split audit.** Implemented 2026-05-07:
+  `scpn-bench s6-split-audit` inventories candidate `phase`, `bridge`,
+  `hardware`, and `accel` modules, classifies each row as reusable,
+  needs-review, or SCPN-specific, records blockers and next steps, and
+  explicitly blocks second-package publication until the boundary is
+  manually reviewed.
 - [ ] **S7** Fault-tolerant / logical-level extension roadmap.
 - [ ] **S8--S53** Scientific, foundational, and applied post-v1.0
   differentiation tracks listed in the strategic roadmap.

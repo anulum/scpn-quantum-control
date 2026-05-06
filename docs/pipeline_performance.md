@@ -1216,3 +1216,13 @@ scpn-bench s5-benchmark-registry
 ```
 
 Regenerates `data/s5_benchmark_harness/benchmark_registry_2026-05-06.json` and `docs/benchmark_harness_registry_2026-05-06.md`. The registry lists implemented and planned benchmark families separately so CHSH, BKT, OTOC, and DLA-dimension plans are visible without being presented as available benchmark results.
+
+### S6 quantum-kuramoto split audit
+
+Command:
+
+```bash
+scpn-bench s6-split-audit
+```
+
+Regenerates `data/s6_quantum_kuramoto_split/quantum_kuramoto_split_audit_2026-05-07.json` and `docs/quantum_kuramoto_split_audit_2026-05-07.md`. The audit classifies candidate `phase`, `bridge`, `hardware`, and `accel` modules as reusable, needs-review, or SCPN-specific. It does not create or publish a second package.

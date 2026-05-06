@@ -1,0 +1,1558 @@
+{
+  "acceptance_boundary": {
+    "reason": "first-pass import audit only; no package skeleton or publish workflow yet",
+    "required_next_steps": [
+      "manually review needs_review rows",
+      "define stable public API for reusable rows",
+      "create package skeleton only after boundary review",
+      "add import-compatibility tests for scpn_quantum_control re-exports"
+    ],
+    "safe_to_publish_package_now": false
+  },
+  "candidate_packages": [
+    "phase",
+    "bridge",
+    "hardware",
+    "accel"
+  ],
+  "date": "2026-05-07",
+  "rows": [
+    {
+      "external_import_roots": [],
+      "internal_imports": [
+        "scpn_quantum_control.phase.adapt_vqe",
+        "scpn_quantum_control.phase.adiabatic_preparation",
+        "scpn_quantum_control.phase.ansatz_bench",
+        "scpn_quantum_control.phase.ansatz_methodology",
+        "scpn_quantum_control.phase.avqds",
+        "scpn_quantum_control.phase.cross_domain_transfer",
+        "scpn_quantum_control.phase.floquet_kuramoto",
+        "scpn_quantum_control.phase.kuramoto_variants",
+        "scpn_quantum_control.phase.lindblad_engine",
+        "scpn_quantum_control.phase.phase_vqe",
+        "scpn_quantum_control.phase.pulse_shaping",
+        "scpn_quantum_control.phase.qsvt_evolution",
+        "scpn_quantum_control.phase.structured_ansatz",
+        "scpn_quantum_control.phase.trotter_error",
+        "scpn_quantum_control.phase.trotter_upde",
+        "scpn_quantum_control.phase.varqite",
+        "scpn_quantum_control.phase.xy_kuramoto"
+      ],
+      "module": "scpn_quantum_control.phase.__init__",
+      "path": "src/scpn_quantum_control/phase/__init__.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "dataclasses",
+        "numpy",
+        "qiskit",
+        "scipy"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian"
+      ],
+      "module": "scpn_quantum_control.phase.adapt_vqe",
+      "path": "src/scpn_quantum_control/phase/adapt_vqe.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "dataclasses",
+        "numpy",
+        "scipy"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian"
+      ],
+      "module": "scpn_quantum_control.phase.adiabatic_preparation",
+      "path": "src/scpn_quantum_control/phase/adiabatic_preparation.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy",
+        "qiskit"
+      ],
+      "internal_imports": [],
+      "module": "scpn_quantum_control.phase.ancilla_lindblad",
+      "path": "src/scpn_quantum_control/phase/ancilla_lindblad.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy",
+        "qiskit",
+        "scipy"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian"
+      ],
+      "module": "scpn_quantum_control.phase.ansatz_bench",
+      "path": "src/scpn_quantum_control/phase/ansatz_bench.py",
+      "reasons": [
+        "source_contains_scpn_specific_marker"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "dataclasses",
+        "numpy",
+        "qiskit",
+        "scipy"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian",
+        "scpn_quantum_control.hardware.classical"
+      ],
+      "module": "scpn_quantum_control.phase.ansatz_methodology",
+      "path": "src/scpn_quantum_control/phase/ansatz_methodology.py",
+      "reasons": [
+        "source_contains_scpn_specific_marker"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "dataclasses",
+        "numpy",
+        "qiskit"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian",
+        "scpn_quantum_control.hardware.gpu_accel"
+      ],
+      "module": "scpn_quantum_control.phase.avqds",
+      "path": "src/scpn_quantum_control/phase/avqds.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "math",
+        "numpy"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.analysis.magnetisation_sectors",
+        "scpn_quantum_control.analysis.symmetry_sectors",
+        "scpn_quantum_control.bridge.knm_hamiltonian",
+        "scpn_quantum_control.phase.lindblad",
+        "scpn_quantum_control.phase.mps_evolution",
+        "scpn_quantum_control.phase.xy_kuramoto"
+      ],
+      "module": "scpn_quantum_control.phase.backend_selector",
+      "path": "src/scpn_quantum_control/phase/backend_selector.py",
+      "reasons": [
+        "imports_non_foundation_scpn_module"
+      ],
+      "status": "needs_review"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "cotengra",
+        "numpy",
+        "time"
+      ],
+      "internal_imports": [],
+      "module": "scpn_quantum_control.phase.contraction_optimiser",
+      "path": "src/scpn_quantum_control/phase/contraction_optimiser.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "dataclasses",
+        "numpy",
+        "qiskit",
+        "scipy"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian",
+        "scpn_quantum_control.hardware.classical"
+      ],
+      "module": "scpn_quantum_control.phase.cross_domain_transfer",
+      "path": "src/scpn_quantum_control/phase/cross_domain_transfer.py",
+      "reasons": [
+        "source_contains_scpn_specific_marker"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "dataclasses",
+        "numpy",
+        "scipy"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.accel.rust_import",
+        "scpn_quantum_control.bridge.knm_hamiltonian",
+        "scpn_quantum_control.hardware.classical"
+      ],
+      "module": "scpn_quantum_control.phase.floquet_kuramoto",
+      "path": "src/scpn_quantum_control/phase/floquet_kuramoto.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy",
+        "torch",
+        "typing"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian"
+      ],
+      "module": "scpn_quantum_control.phase.gpu_batch_vqe",
+      "path": "src/scpn_quantum_control/phase/gpu_batch_vqe.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "jax",
+        "numpy",
+        "typing"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian"
+      ],
+      "module": "scpn_quantum_control.phase.jax_nqs",
+      "path": "src/scpn_quantum_control/phase/jax_nqs.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "collections",
+        "dataclasses",
+        "enum",
+        "json",
+        "numpy",
+        "scpn_quantum_engine",
+        "types",
+        "typing"
+      ],
+      "internal_imports": [],
+      "module": "scpn_quantum_control.phase.kuramoto_variants",
+      "path": "src/scpn_quantum_control/phase/kuramoto_variants.py",
+      "reasons": [
+        "source_contains_scpn_specific_marker"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy",
+        "scipy"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian"
+      ],
+      "module": "scpn_quantum_control.phase.lindblad",
+      "path": "src/scpn_quantum_control/phase/lindblad.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy",
+        "qiskit",
+        "scipy",
+        "scpn_quantum_engine",
+        "typing"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian"
+      ],
+      "module": "scpn_quantum_control.phase.lindblad_engine",
+      "path": "src/scpn_quantum_control/phase/lindblad_engine.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy",
+        "quimb",
+        "typing"
+      ],
+      "internal_imports": [],
+      "module": "scpn_quantum_control.phase.mps_evolution",
+      "path": "src/scpn_quantum_control/phase/mps_evolution.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian"
+      ],
+      "module": "scpn_quantum_control.phase.nqs_ansatz",
+      "path": "src/scpn_quantum_control/phase/nqs_ansatz.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy",
+        "typing"
+      ],
+      "internal_imports": [],
+      "module": "scpn_quantum_control.phase.param_shift",
+      "path": "src/scpn_quantum_control/phase/param_shift.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy",
+        "qiskit",
+        "scipy"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian",
+        "scpn_quantum_control.hardware.classical"
+      ],
+      "module": "scpn_quantum_control.phase.phase_vqe",
+      "path": "src/scpn_quantum_control/phase/phase_vqe.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "collections",
+        "dataclasses",
+        "numpy",
+        "scipy"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.accel.rust_import"
+      ],
+      "module": "scpn_quantum_control.phase.pulse_shaping",
+      "path": "src/scpn_quantum_control/phase/pulse_shaping.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "dataclasses",
+        "numpy",
+        "scipy"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian"
+      ],
+      "module": "scpn_quantum_control.phase.qsvt_evolution",
+      "path": "src/scpn_quantum_control/phase/qsvt_evolution.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy",
+        "qiskit"
+      ],
+      "internal_imports": [],
+      "module": "scpn_quantum_control.phase.structured_ansatz",
+      "path": "src/scpn_quantum_control/phase/structured_ansatz.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy",
+        "scipy",
+        "scpn_quantum_engine"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian",
+        "scpn_quantum_control.phase.lindblad"
+      ],
+      "module": "scpn_quantum_control.phase.tensor_jump",
+      "path": "src/scpn_quantum_control/phase/tensor_jump.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy",
+        "qiskit",
+        "scipy"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian"
+      ],
+      "module": "scpn_quantum_control.phase.trotter_error",
+      "path": "src/scpn_quantum_control/phase/trotter_error.py",
+      "reasons": [
+        "core_kuramoto_candidate"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy",
+        "qiskit"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian",
+        "scpn_quantum_control.phase.xy_kuramoto"
+      ],
+      "module": "scpn_quantum_control.phase.trotter_upde",
+      "path": "src/scpn_quantum_control/phase/trotter_upde.py",
+      "reasons": [
+        "source_contains_scpn_specific_marker"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "dataclasses",
+        "numpy",
+        "qiskit"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian",
+        "scpn_quantum_control.hardware.classical"
+      ],
+      "module": "scpn_quantum_control.phase.varqite",
+      "path": "src/scpn_quantum_control/phase/varqite.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy",
+        "qiskit"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian"
+      ],
+      "module": "scpn_quantum_control.phase.xy_compiler",
+      "path": "src/scpn_quantum_control/phase/xy_compiler.py",
+      "reasons": [
+        "core_kuramoto_candidate"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "dataclasses",
+        "numpy",
+        "qiskit"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.accel.rust_import",
+        "scpn_quantum_control.bridge.knm_hamiltonian"
+      ],
+      "module": "scpn_quantum_control.phase.xy_kuramoto",
+      "path": "src/scpn_quantum_control/phase/xy_kuramoto.py",
+      "reasons": [
+        "core_kuramoto_candidate"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.control_plasma_knm",
+        "scpn_quantum_control.bridge.knm_hamiltonian",
+        "scpn_quantum_control.bridge.orchestrator_adapter",
+        "scpn_quantum_control.bridge.phase_artifact",
+        "scpn_quantum_control.bridge.qpu_data_artifact",
+        "scpn_quantum_control.bridge.sc_to_quantum",
+        "scpn_quantum_control.bridge.snn_adapter",
+        "scpn_quantum_control.bridge.spn_to_qcircuit",
+        "scpn_quantum_control.bridge.ssgf_adapter"
+      ],
+      "module": "scpn_quantum_control.bridge.__init__",
+      "path": "src/scpn_quantum_control/bridge/__init__.py",
+      "reasons": [
+        "source_contains_scpn_specific_marker"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "importlib",
+        "numpy",
+        "pathlib",
+        "sys",
+        "typing"
+      ],
+      "internal_imports": [],
+      "module": "scpn_quantum_control.bridge.control_plasma_knm",
+      "path": "src/scpn_quantum_control/bridge/control_plasma_knm.py",
+      "reasons": [
+        "module_name_contains_scpn_specific_marker"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy",
+        "qiskit"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control._constants",
+        "scpn_quantum_control.accel.rust_import"
+      ],
+      "module": "scpn_quantum_control.bridge.knm_hamiltonian",
+      "path": "src/scpn_quantum_control/bridge/knm_hamiltonian.py",
+      "reasons": [
+        "source_contains_scpn_specific_marker",
+        "imports_non_foundation_scpn_module"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "collections",
+        "numpy",
+        "typing"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.phase_artifact"
+      ],
+      "module": "scpn_quantum_control.bridge.orchestrator_adapter",
+      "path": "src/scpn_quantum_control/bridge/orchestrator_adapter.py",
+      "reasons": [
+        "module_name_contains_scpn_specific_marker",
+        "source_contains_scpn_specific_marker"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "dataclasses",
+        "numpy"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.l16.quantum_director"
+      ],
+      "module": "scpn_quantum_control.bridge.orchestrator_feedback",
+      "path": "src/scpn_quantum_control/bridge/orchestrator_feedback.py",
+      "reasons": [
+        "module_name_contains_scpn_specific_marker",
+        "source_contains_scpn_specific_marker",
+        "imports_non_foundation_scpn_module"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "collections",
+        "dataclasses",
+        "json",
+        "math",
+        "numpy",
+        "typing"
+      ],
+      "internal_imports": [],
+      "module": "scpn_quantum_control.bridge.phase_artifact",
+      "path": "src/scpn_quantum_control/bridge/phase_artifact.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "collections",
+        "dataclasses",
+        "hashlib",
+        "json",
+        "numpy",
+        "pathlib",
+        "typing"
+      ],
+      "internal_imports": [],
+      "module": "scpn_quantum_control.bridge.qpu_data_artifact",
+      "path": "src/scpn_quantum_control/bridge/qpu_data_artifact.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy"
+      ],
+      "internal_imports": [],
+      "module": "scpn_quantum_control.bridge.sc_to_quantum",
+      "path": "src/scpn_quantum_control/bridge/sc_to_quantum.py",
+      "reasons": [
+        "module_name_contains_scpn_specific_marker"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy",
+        "sc_neurocore"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.qsnn.qlayer"
+      ],
+      "module": "scpn_quantum_control.bridge.snn_adapter",
+      "path": "src/scpn_quantum_control/bridge/snn_adapter.py",
+      "reasons": [
+        "module_name_contains_scpn_specific_marker",
+        "source_contains_scpn_specific_marker",
+        "imports_non_foundation_scpn_module"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "dataclasses",
+        "numpy",
+        "qiskit"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.qsnn.qlayer"
+      ],
+      "module": "scpn_quantum_control.bridge.snn_backward",
+      "path": "src/scpn_quantum_control/bridge/snn_backward.py",
+      "reasons": [
+        "module_name_contains_scpn_specific_marker",
+        "source_contains_scpn_specific_marker",
+        "imports_non_foundation_scpn_module"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy",
+        "scipy",
+        "scpn_quantum_engine"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.analysis.magnetisation_sectors"
+      ],
+      "module": "scpn_quantum_control.bridge.sparse_hamiltonian",
+      "path": "src/scpn_quantum_control/bridge/sparse_hamiltonian.py",
+      "reasons": [
+        "imports_non_foundation_scpn_module"
+      ],
+      "status": "needs_review"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy",
+        "qiskit"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control._constants",
+        "scpn_quantum_control.bridge.sc_to_quantum"
+      ],
+      "module": "scpn_quantum_control.bridge.spn_to_qcircuit",
+      "path": "src/scpn_quantum_control/bridge/spn_to_qcircuit.py",
+      "reasons": [
+        "source_contains_scpn_specific_marker",
+        "imports_non_foundation_scpn_module"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy",
+        "qiskit",
+        "typing"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian"
+      ],
+      "module": "scpn_quantum_control.bridge.ssgf_adapter",
+      "path": "src/scpn_quantum_control/bridge/ssgf_adapter.py",
+      "reasons": [
+        "module_name_contains_scpn_specific_marker",
+        "source_contains_scpn_specific_marker"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "dataclasses",
+        "numpy",
+        "qiskit"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.ssgf_adapter"
+      ],
+      "module": "scpn_quantum_control.bridge.ssgf_w_adapter",
+      "path": "src/scpn_quantum_control/bridge/ssgf_w_adapter.py",
+      "reasons": [
+        "module_name_contains_scpn_specific_marker",
+        "source_contains_scpn_specific_marker"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [],
+      "internal_imports": [
+        "scpn_quantum_control.hardware.analog_kuramoto",
+        "scpn_quantum_control.hardware.async_runner",
+        "scpn_quantum_control.hardware.backends",
+        "scpn_quantum_control.hardware.classical",
+        "scpn_quantum_control.hardware.experiments",
+        "scpn_quantum_control.hardware.feedback_capability_probe",
+        "scpn_quantum_control.hardware.feedback_dryrun",
+        "scpn_quantum_control.hardware.feedback_hardware_scheduler",
+        "scpn_quantum_control.hardware.feedback_loop",
+        "scpn_quantum_control.hardware.feedback_provider_metadata",
+        "scpn_quantum_control.hardware.feedback_submission",
+        "scpn_quantum_control.hardware.hybrid_digital_analog",
+        "scpn_quantum_control.hardware.job_dossier",
+        "scpn_quantum_control.hardware.noise_model",
+        "scpn_quantum_control.hardware.qubit_mapper",
+        "scpn_quantum_control.hardware.runner",
+        "scpn_quantum_control.hardware.trapped_ion"
+      ],
+      "module": "scpn_quantum_control.hardware.__init__",
+      "path": "src/scpn_quantum_control/hardware/__init__.py",
+      "reasons": [
+        "source_contains_scpn_specific_marker"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy",
+        "qiskit"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian"
+      ],
+      "module": "scpn_quantum_control.hardware._experiment_helpers",
+      "path": "src/scpn_quantum_control/hardware/_experiment_helpers.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "dataclasses",
+        "enum",
+        "importlib",
+        "numpy",
+        "scpn_quantum_engine",
+        "typing"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.kuramoto_core"
+      ],
+      "module": "scpn_quantum_control.hardware.analog_kuramoto",
+      "path": "src/scpn_quantum_control/hardware/analog_kuramoto.py",
+      "reasons": [
+        "source_contains_scpn_specific_marker",
+        "imports_non_foundation_scpn_module"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "asyncio",
+        "dataclasses",
+        "datetime",
+        "logging",
+        "mitiq",
+        "os",
+        "qiskit",
+        "qiskit_ibm_runtime",
+        "time",
+        "typing"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.analysis",
+        "scpn_quantum_control.hardware.runner",
+        "scpn_quantum_control.logging_setup"
+      ],
+      "module": "scpn_quantum_control.hardware.async_runner",
+      "path": "src/scpn_quantum_control/hardware/async_runner.py",
+      "reasons": [
+        "source_contains_scpn_specific_marker",
+        "imports_non_foundation_scpn_module",
+        "hardware_core_candidate"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "collections",
+        "importlib",
+        "logging",
+        "qiskit_ibm_runtime",
+        "typing"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.hardware.analog_kuramoto",
+        "scpn_quantum_control.hardware.hybrid_digital_analog",
+        "scpn_quantum_control.hardware.pennylane_adapter"
+      ],
+      "module": "scpn_quantum_control.hardware.backends",
+      "path": "src/scpn_quantum_control/hardware/backends.py",
+      "reasons": [
+        "hardware_core_candidate"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "dataclasses",
+        "numpy"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian"
+      ],
+      "module": "scpn_quantum_control.hardware.circuit_cutting",
+      "path": "src/scpn_quantum_control/hardware/circuit_cutting.py",
+      "reasons": [
+        "source_contains_scpn_specific_marker"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "cirq",
+        "contextlib",
+        "mitiq",
+        "numpy",
+        "qiskit",
+        "typing"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian"
+      ],
+      "module": "scpn_quantum_control.hardware.circuit_export",
+      "path": "src/scpn_quantum_control/hardware/circuit_export.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "cirq",
+        "dataclasses",
+        "numpy"
+      ],
+      "internal_imports": [],
+      "module": "scpn_quantum_control.hardware.cirq_adapter",
+      "path": "src/scpn_quantum_control/hardware/cirq_adapter.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "json",
+        "numpy",
+        "pathlib",
+        "scipy"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.accel",
+        "scpn_quantum_control.accel.rust_import",
+        "scpn_quantum_control.bridge.knm_hamiltonian",
+        "scpn_quantum_control.hardware.gpu_accel"
+      ],
+      "module": "scpn_quantum_control.hardware.classical",
+      "path": "src/scpn_quantum_control/hardware/classical.py",
+      "reasons": [
+        "source_contains_scpn_specific_marker"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "dataclasses",
+        "numpy",
+        "qiskit"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian",
+        "scpn_quantum_control.bridge.ssgf_adapter",
+        "scpn_quantum_control.hardware.circuit_cutting"
+      ],
+      "module": "scpn_quantum_control.hardware.cutting_runner",
+      "path": "src/scpn_quantum_control/hardware/cutting_runner.py",
+      "reasons": [
+        "source_contains_scpn_specific_marker",
+        "imports_non_foundation_scpn_module"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy",
+        "scipy"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian",
+        "scpn_quantum_control.control.qaoa_mpc",
+        "scpn_quantum_control.crypto.entanglement_qkd",
+        "scpn_quantum_control.crypto.knm_key",
+        "scpn_quantum_control.crypto.noise_analysis",
+        "scpn_quantum_control.hardware._experiment_helpers",
+        "scpn_quantum_control.hardware.classical"
+      ],
+      "module": "scpn_quantum_control.hardware.experiment_control",
+      "path": "src/scpn_quantum_control/hardware/experiment_control.py",
+      "reasons": [
+        "source_contains_scpn_specific_marker",
+        "imports_non_foundation_scpn_module"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy",
+        "qiskit"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian",
+        "scpn_quantum_control.hardware._experiment_helpers",
+        "scpn_quantum_control.hardware.classical"
+      ],
+      "module": "scpn_quantum_control.hardware.experiment_dynamics",
+      "path": "src/scpn_quantum_control/hardware/experiment_dynamics.py",
+      "reasons": [
+        "source_contains_scpn_specific_marker"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian",
+        "scpn_quantum_control.hardware._experiment_helpers",
+        "scpn_quantum_control.hardware.classical",
+        "scpn_quantum_control.mitigation.zne"
+      ],
+      "module": "scpn_quantum_control.hardware.experiment_mitigation",
+      "path": "src/scpn_quantum_control/hardware/experiment_mitigation.py",
+      "reasons": [
+        "source_contains_scpn_specific_marker",
+        "imports_non_foundation_scpn_module"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy",
+        "qiskit",
+        "scipy"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian",
+        "scpn_quantum_control.hardware.classical"
+      ],
+      "module": "scpn_quantum_control.hardware.experiment_vqe",
+      "path": "src/scpn_quantum_control/hardware/experiment_vqe.py",
+      "reasons": [
+        "source_contains_scpn_specific_marker"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.hardware._experiment_helpers",
+        "scpn_quantum_control.hardware.experiment_control",
+        "scpn_quantum_control.hardware.experiment_dynamics",
+        "scpn_quantum_control.hardware.experiment_mitigation",
+        "scpn_quantum_control.hardware.experiment_vqe"
+      ],
+      "module": "scpn_quantum_control.hardware.experiments",
+      "path": "src/scpn_quantum_control/hardware/experiments.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy",
+        "scipy"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.accel.rust_import",
+        "scpn_quantum_control.bridge.knm_hamiltonian"
+      ],
+      "module": "scpn_quantum_control.hardware.fast_classical",
+      "path": "src/scpn_quantum_control/hardware/fast_classical.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "collections",
+        "dataclasses",
+        "typing"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.hardware.feedback_submission"
+      ],
+      "module": "scpn_quantum_control.hardware.feedback_capability_probe",
+      "path": "src/scpn_quantum_control/hardware/feedback_capability_probe.py",
+      "reasons": [
+        "module_name_contains_scpn_specific_marker",
+        "source_contains_scpn_specific_marker"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "dataclasses",
+        "typing"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.hardware.feedback_submission"
+      ],
+      "module": "scpn_quantum_control.hardware.feedback_dryrun",
+      "path": "src/scpn_quantum_control/hardware/feedback_dryrun.py",
+      "reasons": [
+        "module_name_contains_scpn_specific_marker",
+        "source_contains_scpn_specific_marker"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "collections",
+        "dataclasses",
+        "hashlib",
+        "json",
+        "typing"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.hardware.feedback_loop"
+      ],
+      "module": "scpn_quantum_control.hardware.feedback_hardware_scheduler",
+      "path": "src/scpn_quantum_control/hardware/feedback_hardware_scheduler.py",
+      "reasons": [
+        "module_name_contains_scpn_specific_marker",
+        "source_contains_scpn_specific_marker"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "collections",
+        "dataclasses",
+        "math",
+        "time",
+        "typing"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.control.realtime_feedback"
+      ],
+      "module": "scpn_quantum_control.hardware.feedback_loop",
+      "path": "src/scpn_quantum_control/hardware/feedback_loop.py",
+      "reasons": [
+        "module_name_contains_scpn_specific_marker",
+        "source_contains_scpn_specific_marker",
+        "imports_non_foundation_scpn_module"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "collections",
+        "typing"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.hardware.feedback_capability_probe"
+      ],
+      "module": "scpn_quantum_control.hardware.feedback_provider_metadata",
+      "path": "src/scpn_quantum_control/hardware/feedback_provider_metadata.py",
+      "reasons": [
+        "module_name_contains_scpn_specific_marker",
+        "source_contains_scpn_specific_marker"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "collections",
+        "dataclasses",
+        "qiskit",
+        "typing"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.control.realtime_feedback",
+        "scpn_quantum_control.hardware.job_dossier"
+      ],
+      "module": "scpn_quantum_control.hardware.feedback_submission",
+      "path": "src/scpn_quantum_control/hardware/feedback_submission.py",
+      "reasons": [
+        "module_name_contains_scpn_specific_marker",
+        "source_contains_scpn_specific_marker",
+        "imports_non_foundation_scpn_module"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "cupy",
+        "numpy",
+        "os",
+        "scipy"
+      ],
+      "internal_imports": [],
+      "module": "scpn_quantum_control.hardware.gpu_accel",
+      "path": "src/scpn_quantum_control/hardware/gpu_accel.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "dataclasses",
+        "enum",
+        "numpy",
+        "qiskit",
+        "scpn_quantum_engine",
+        "typing"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.hardware.analog_kuramoto",
+        "scpn_quantum_control.kuramoto_core"
+      ],
+      "module": "scpn_quantum_control.hardware.hybrid_digital_analog",
+      "path": "src/scpn_quantum_control/hardware/hybrid_digital_analog.py",
+      "reasons": [
+        "imports_non_foundation_scpn_module"
+      ],
+      "status": "needs_review"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "jax",
+        "numpy",
+        "os"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian"
+      ],
+      "module": "scpn_quantum_control.hardware.jax_accel",
+      "path": "src/scpn_quantum_control/hardware/jax_accel.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "collections",
+        "dataclasses",
+        "typing"
+      ],
+      "internal_imports": [],
+      "module": "scpn_quantum_control.hardware.job_dossier",
+      "path": "src/scpn_quantum_control/hardware/job_dossier.py",
+      "reasons": [
+        "source_contains_scpn_specific_marker"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "qiskit_aer",
+        "typing"
+      ],
+      "internal_imports": [],
+      "module": "scpn_quantum_control.hardware.noise_model",
+      "path": "src/scpn_quantum_control/hardware/noise_model.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "dataclasses",
+        "numpy",
+        "pennylane",
+        "typing"
+      ],
+      "internal_imports": [],
+      "module": "scpn_quantum_control.hardware.pennylane_adapter",
+      "path": "src/scpn_quantum_control/hardware/pennylane_adapter.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "importlib",
+        "typing"
+      ],
+      "internal_imports": [],
+      "module": "scpn_quantum_control.hardware.plugin_registry",
+      "path": "src/scpn_quantum_control/hardware/plugin_registry.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "datetime",
+        "hashlib",
+        "importlib",
+        "os",
+        "pathlib",
+        "platform",
+        "socket",
+        "subprocess",
+        "sys"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.config"
+      ],
+      "module": "scpn_quantum_control.hardware.provenance",
+      "path": "src/scpn_quantum_control/hardware/provenance.py",
+      "reasons": [
+        "imports_non_foundation_scpn_module"
+      ],
+      "status": "needs_review"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "collections",
+        "dataclasses",
+        "typing"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.phase.pulse_shaping"
+      ],
+      "module": "scpn_quantum_control.hardware.pulse_feasibility",
+      "path": "src/scpn_quantum_control/hardware/pulse_feasibility.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "dataclasses",
+        "numpy",
+        "qiskit"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian"
+      ],
+      "module": "scpn_quantum_control.hardware.qasm_export",
+      "path": "src/scpn_quantum_control/hardware/qasm_export.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "dataclasses",
+        "numpy",
+        "qiskit"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.bridge.knm_hamiltonian",
+        "scpn_quantum_control.hardware.classical",
+        "scpn_quantum_control.phase.phase_vqe"
+      ],
+      "module": "scpn_quantum_control.hardware.qcvv",
+      "path": "src/scpn_quantum_control/hardware/qcvv.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "importlib",
+        "qiskit"
+      ],
+      "internal_imports": [],
+      "module": "scpn_quantum_control.hardware.qiskit_compat",
+      "path": "src/scpn_quantum_control/hardware/qiskit_compat.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "dataclasses",
+        "networkx",
+        "numpy"
+      ],
+      "internal_imports": [],
+      "module": "scpn_quantum_control.hardware.qubit_mapper",
+      "path": "src/scpn_quantum_control/hardware/qubit_mapper.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "dataclasses",
+        "datetime",
+        "json",
+        "logging",
+        "numpy",
+        "os",
+        "pathlib",
+        "qiskit",
+        "qiskit_aer",
+        "qiskit_ibm_runtime",
+        "tempfile",
+        "time",
+        "typing"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.config",
+        "scpn_quantum_control.hardware.provenance",
+        "scpn_quantum_control.logging_setup",
+        "scpn_quantum_control.mitigation.zne"
+      ],
+      "module": "scpn_quantum_control.hardware.runner",
+      "path": "src/scpn_quantum_control/hardware/runner.py",
+      "reasons": [
+        "imports_non_foundation_scpn_module",
+        "hardware_core_candidate"
+      ],
+      "status": "needs_review"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "qiskit",
+        "qiskit_aer",
+        "typing"
+      ],
+      "internal_imports": [],
+      "module": "scpn_quantum_control.hardware.trapped_ion",
+      "path": "src/scpn_quantum_control/hardware/trapped_ion.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "numpy"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.accel.dispatcher"
+      ],
+      "module": "scpn_quantum_control.accel.__init__",
+      "path": "src/scpn_quantum_control/accel/__init__.py",
+      "reasons": [
+        "source_contains_scpn_specific_marker"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "collections",
+        "juliacall",
+        "numpy",
+        "typing"
+      ],
+      "internal_imports": [
+        "scpn_quantum_control.accel.julia",
+        "scpn_quantum_control.accel.rust_import"
+      ],
+      "module": "scpn_quantum_control.accel.dispatcher",
+      "path": "src/scpn_quantum_control/accel/dispatcher.py",
+      "reasons": [
+        "source_contains_scpn_specific_marker",
+        "acceleration_candidate"
+      ],
+      "status": "scpn_specific"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "juliacall",
+        "numpy",
+        "pathlib",
+        "typing"
+      ],
+      "internal_imports": [],
+      "module": "scpn_quantum_control.accel.julia.__init__",
+      "path": "src/scpn_quantum_control/accel/julia/__init__.py",
+      "reasons": [
+        "no_scpn_specific_marker_detected"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [
+        "__future__",
+        "scpn_quantum_engine",
+        "types"
+      ],
+      "internal_imports": [],
+      "module": "scpn_quantum_control.accel.rust_import",
+      "path": "src/scpn_quantum_control/accel/rust_import.py",
+      "reasons": [
+        "acceleration_candidate"
+      ],
+      "status": "reusable"
+    },
+    {
+      "external_import_roots": [],
+      "internal_imports": [],
+      "module": "scpn_quantum_control.accel.rust_kuramoto_classical",
+      "path": "src/scpn_quantum_control/accel/rust_kuramoto_classical.py",
+      "reasons": [
+        "source_contains_scpn_specific_marker",
+        "acceleration_candidate"
+      ],
+      "status": "scpn_specific"
+    }
+  ],
+  "schema": "s6_quantum_kuramoto_split_audit_v1",
+  "statuses": {
+    "needs_review": 5,
+    "reusable": 44,
+    "scpn_specific": 36
+  }
+}

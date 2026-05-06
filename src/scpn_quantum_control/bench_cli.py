@@ -136,6 +136,11 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         "scripts/export_benchmark_registry.py",
         frozenset({"s5-registry"}),
     ),
+    Harness(
+        "s6-split-audit",
+        "scripts/audit_quantum_kuramoto_split.py",
+        frozenset({"s6"}),
+    ),
 )
 
 ARTEFACT_PATHS = (
@@ -146,6 +151,7 @@ ARTEFACT_PATHS = (
     "data/s3_pulse_ansatz_design",
     "data/s4_multi_hardware_control",
     "data/s5_benchmark_harness",
+    "data/s6_quantum_kuramoto_split",
 )
 
 
@@ -255,6 +261,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate the S5 benchmark-harness registry artefacts.",
     )
     _add_run_options(s5_registry, default_group="s5-registry")
+
+    s6 = subparsers.add_parser(
+        "s6-split-audit",
+        help="Regenerate the S6 quantum-kuramoto split audit artefacts.",
+    )
+    _add_run_options(s6, default_group="s6")
 
     return parser.parse_args(argv)
 

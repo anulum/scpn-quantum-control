@@ -218,6 +218,18 @@ def test_s5_benchmark_registry_selection_is_registry_harness() -> None:
     ]
 
 
+def test_s6_split_audit_selection_is_boundary_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("s6", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "s6-split-audit",
+            "scripts/audit_quantum_kuramoto_split.py",
+            frozenset({"s6"}),
+        )
+    ]
+
+
 def test_dry_run_prints_selected_harnesses(capsys: pytest.CaptureFixture[str]) -> None:
     rc = bench_cli.run(["fim-all", "--dry-run"])
 
