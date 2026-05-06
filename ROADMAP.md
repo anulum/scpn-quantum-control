@@ -825,6 +825,13 @@ be executed until individually activated.
   train, held-out, and per-family metrics. The artefact remains no-QPU,
   proxy-labelled, and explicitly non-evidential for hardware pulse or
   VQE improvement.
+- [x] **S3 promoted ansatz observable validation.** Implemented
+  2026-05-06: `scripts/validate_s3_ansatz_observables.py` checks
+  lowest-resource promoted ansatz candidates against exact statevector
+  energy expectation, dense exact ground energy, energy error, and a
+  synchronisation proxy. The artefact is no-QPU and explicitly not VQE
+  optimisation, pulse validation, hardware evidence, or an advantage
+  claim.
 - [ ] **S4** Multi-hardware backend + pulse-level control.
 - [ ] **S5** Open-data + classical validation harness.
 - [ ] **S6** Decoupled `quantum-kuramoto` subpackage.

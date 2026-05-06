@@ -96,6 +96,11 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         "scripts/train_s3_design_surrogate.py",
         frozenset({"s3-surrogate"}),
     ),
+    Harness(
+        "s3-ansatz-observables",
+        "scripts/validate_s3_ansatz_observables.py",
+        frozenset({"s3-observables"}),
+    ),
 )
 
 ARTEFACT_PATHS = (
@@ -163,6 +168,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate no-QPU S3 design-surrogate rehearsal artefacts.",
     )
     _add_run_options(s3_surrogate, default_group="s3-surrogate")
+
+    s3_observables = subparsers.add_parser(
+        "s3-ansatz-observables",
+        help="Regenerate no-QPU S3 ansatz observable-validation artefacts.",
+    )
+    _add_run_options(s3_observables, default_group="s3-observables")
 
     return parser.parse_args(argv)
 

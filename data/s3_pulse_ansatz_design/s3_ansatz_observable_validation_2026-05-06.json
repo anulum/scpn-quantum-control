@@ -1,0 +1,174 @@
+{
+  "date": "2026-05-06",
+  "script": "scripts/validate_s3_ansatz_observables.py",
+  "hardware_submission": false,
+  "observable_validation_performed": true,
+  "sizes": [
+    3,
+    4
+  ],
+  "top_k": 4,
+  "rows": [
+    {
+      "candidate_label": "ansatz_d1_c0p75",
+      "n_qubits": 3,
+      "status": "ok",
+      "parameters": {
+        "trotter_depth": 1,
+        "time_step": 0.1,
+        "coupling_scale": 0.75
+      },
+      "depth": 5,
+      "size": 9,
+      "two_qubit_gates": 3,
+      "energy": -0.7264978089208209,
+      "exact_ground_energy": -4.783,
+      "energy_absolute_error": 4.056502191079179,
+      "relative_energy_error_pct": 84.81083401796317,
+      "sync_proxy": 0.9875023600586487,
+      "hardware_submission": false
+    },
+    {
+      "candidate_label": "ansatz_d1_c1p0",
+      "n_qubits": 3,
+      "status": "ok",
+      "parameters": {
+        "trotter_depth": 1,
+        "time_step": 0.1,
+        "coupling_scale": 1.0
+      },
+      "depth": 5,
+      "size": 9,
+      "two_qubit_gates": 3,
+      "energy": -0.7264654710735117,
+      "exact_ground_energy": -4.783,
+      "energy_absolute_error": 4.0565345289264885,
+      "relative_energy_error_pct": 84.81151011763512,
+      "sync_proxy": 0.9863921899044442,
+      "hardware_submission": false
+    },
+    {
+      "candidate_label": "ansatz_d1_c1p5",
+      "n_qubits": 3,
+      "status": "ok",
+      "parameters": {
+        "trotter_depth": 1,
+        "time_step": 0.1,
+        "coupling_scale": 1.5
+      },
+      "depth": 5,
+      "size": 9,
+      "two_qubit_gates": 3,
+      "energy": -0.7263730812475253,
+      "exact_ground_energy": -4.783,
+      "energy_absolute_error": 4.056626918752475,
+      "relative_energy_error_pct": 84.81344174686336,
+      "sync_proxy": 0.9832248006007563,
+      "hardware_submission": false
+    },
+    {
+      "candidate_label": "ansatz_d1_c2p0",
+      "n_qubits": 3,
+      "status": "ok",
+      "parameters": {
+        "trotter_depth": 1,
+        "time_step": 0.1,
+        "coupling_scale": 2.0
+      },
+      "depth": 5,
+      "size": 9,
+      "two_qubit_gates": 3,
+      "energy": -0.726243745504682,
+      "exact_ground_energy": -4.783,
+      "energy_absolute_error": 4.056756254495318,
+      "relative_energy_error_pct": 84.81614581842605,
+      "sync_proxy": 0.9788017051876611,
+      "hardware_submission": false
+    },
+    {
+      "candidate_label": "ansatz_d1_c0p75",
+      "n_qubits": 4,
+      "status": "ok",
+      "parameters": {
+        "trotter_depth": 1,
+        "time_step": 0.1,
+        "coupling_scale": 0.75
+      },
+      "depth": 7,
+      "size": 14,
+      "two_qubit_gates": 6,
+      "energy": -1.400045162764938,
+      "exact_ground_energy": -6.303000000000001,
+      "energy_absolute_error": 4.902954837235063,
+      "relative_energy_error_pct": 77.78763822362465,
+      "sync_proxy": 0.9897249904862493,
+      "hardware_submission": false
+    },
+    {
+      "candidate_label": "ansatz_d1_c1p0",
+      "n_qubits": 4,
+      "status": "ok",
+      "parameters": {
+        "trotter_depth": 1,
+        "time_step": 0.1,
+        "coupling_scale": 1.0
+      },
+      "depth": 7,
+      "size": 14,
+      "two_qubit_gates": 6,
+      "energy": -1.3999382268649043,
+      "exact_ground_energy": -6.303000000000001,
+      "energy_absolute_error": 4.9030617731350965,
+      "relative_energy_error_pct": 77.78933481096455,
+      "sync_proxy": 0.9882077906730953,
+      "hardware_submission": false
+    },
+    {
+      "candidate_label": "ansatz_d1_c1p5",
+      "n_qubits": 4,
+      "status": "ok",
+      "parameters": {
+        "trotter_depth": 1,
+        "time_step": 0.1,
+        "coupling_scale": 1.5
+      },
+      "depth": 7,
+      "size": 14,
+      "two_qubit_gates": 6,
+      "energy": -1.399632730803206,
+      "exact_ground_energy": -6.303000000000001,
+      "energy_absolute_error": 4.903367269196795,
+      "relative_energy_error_pct": 77.79418164678398,
+      "sync_proxy": 0.9838826976079063,
+      "hardware_submission": false
+    },
+    {
+      "candidate_label": "ansatz_d1_c2p0",
+      "n_qubits": 4,
+      "status": "ok",
+      "parameters": {
+        "trotter_depth": 1,
+        "time_step": 0.1,
+        "coupling_scale": 2.0
+      },
+      "depth": 7,
+      "size": 14,
+      "two_qubit_gates": 6,
+      "energy": -1.3992051236199248,
+      "exact_ground_energy": -6.303000000000001,
+      "energy_absolute_error": 4.903794876380076,
+      "relative_energy_error_pct": 77.80096583182731,
+      "sync_proxy": 0.9778518125895215,
+      "hardware_submission": false
+    }
+  ],
+  "aggregate": {
+    "row_count": 8,
+    "mean_energy_absolute_error": 4.479949831150062,
+    "best_energy_absolute_error": 4.056502191079179,
+    "mean_sync_proxy": 0.9844485433885354,
+    "best_candidate_by_energy": "ansatz_d1_c0p75",
+    "best_candidate_n_qubits": 3
+  },
+  "claim_boundary": "This validates concrete ansatz candidates against exact no-QPU observables. It is not VQE optimisation, not pulse-level validation, not a hardware result, and not a quantum-advantage claim."
+}

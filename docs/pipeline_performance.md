@@ -117,6 +117,16 @@ It expands the candidate grid across small system sizes, trains a closed-form
 ridge linear surrogate on proxy scores, and reports held-out plus per-family
 metrics. It remains a rehearsal over deterministic proxy labels.
 
+Promoted ansatz candidates can then be checked against exact no-QPU observables:
+
+```bash
+scpn-bench s3-ansatz-observables
+```
+
+The output records exact statevector energy expectation, dense exact ground
+energy, energy error, and a synchronisation proxy for the promoted ansatz
+candidates. This remains an observable validation, not VQE optimisation.
+
 `docs/s3_design_readiness_index_2026-05-06.md` records allowed claims,
 forbidden claims, and the follow-up path for S3.
 

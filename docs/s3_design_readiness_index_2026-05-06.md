@@ -60,3 +60,16 @@ It expands the deterministic candidate grid across several small system sizes,
 fits a closed-form ridge linear surrogate to proxy scores, and reports held-out
 and per-family metrics. This is deliberately a rehearsal over proxy scores, not
 evidence of a hardware pulse improvement or VQE improvement.
+
+## Ansatz observable validation
+
+Promoted ansatz candidates are checked against exact no-QPU observables with:
+
+```bash
+scpn-bench s3-ansatz-observables
+```
+
+The validation reports exact statevector energy expectation, exact dense ground
+energy, energy error, and a simple synchronisation proxy for the lowest-resource
+ansatz candidates. It is an observable sanity check, not VQE optimisation and
+not a hardware result.
