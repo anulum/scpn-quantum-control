@@ -324,9 +324,15 @@ class TestShrinkingSanity:
     """
 
     def test_plv_boundary_both_inclusive(self) -> None:
-        LockSignatureArtifact(source_layer=0, target_layer=0, plv=0.0, mean_lag=0.0)
-        LockSignatureArtifact(source_layer=0, target_layer=0, plv=1.0, mean_lag=0.0)
+        lower = LockSignatureArtifact(source_layer=0, target_layer=0, plv=0.0, mean_lag=0.0)
+        upper = LockSignatureArtifact(source_layer=0, target_layer=0, plv=1.0, mean_lag=0.0)
+
+        assert lower.plv == 0.0
+        assert upper.plv == 1.0
 
     def test_R_boundary_both_inclusive(self) -> None:
-        LayerStateArtifact(R=0.0, psi=0.0)
-        LayerStateArtifact(R=1.0, psi=0.0)
+        lower = LayerStateArtifact(R=0.0, psi=0.0)
+        upper = LayerStateArtifact(R=1.0, psi=0.0)
+
+        assert lower.R == 0.0
+        assert upper.R == 1.0

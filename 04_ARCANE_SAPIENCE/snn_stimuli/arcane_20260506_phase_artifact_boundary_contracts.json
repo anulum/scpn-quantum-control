@@ -1,0 +1,7 @@
+{
+  "_spdx": "SPDX-FileCopyrightText: 2026 Arcane Sapience <protoscience@anulum.li>; SPDX-License-Identifier: MIT",
+  "project": "SCPN-QUANTUM-CONTROL",
+  "source": "codex",
+  "timestamp": "2026-05-06T00:00:00+02:00",
+  "text": "Phase-artifact fuzz boundary tests now assert retained inclusive endpoint values for PLV and R, reducing behavioural smoke-only audit debt without changing production code."
+}

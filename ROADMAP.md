@@ -105,6 +105,9 @@ is copied here.
 - [x] **Coverage 0.95 import contracts.** Implemented 2026-05-06:
   `tests/test_coverage_095_push.py` import checks now assert module
   identity and public surface instead of only importing modules.
+- [x] **Phase-artifact fuzz boundary contracts.** Implemented
+  2026-05-06: inclusive PLV and `R` boundary tests now assert retained
+  endpoint values instead of only constructing artefacts.
 - [ ] **E2E and contract audit.** Cover or explicitly document blocked
   boundaries for hardware/QPU, bridge, SC-NeuroCore, Phase Orchestrator,
   notebook, and example workflows.
