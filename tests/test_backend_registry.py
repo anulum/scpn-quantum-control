@@ -124,7 +124,9 @@ class TestRegistration:
         assert "fake" not in registry.names()
 
     def test_unregister_missing_is_silent(self, registry: be.BackendRegistry) -> None:
+        before = registry.names()
         registry.unregister("never-there")  # must not raise
+        assert registry.names() == before
 
     def test_clear_empties(self, registry: be.BackendRegistry) -> None:
         registry.register("a", _fake_factory)

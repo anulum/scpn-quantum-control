@@ -99,6 +99,9 @@ is copied here.
   `tests/test_public_api.py` now asserts explicit export-count
   contracts in addition to delegated import/type checks, closing the
   remaining smoke-only module found by `tools/audit_test_behaviour.py`.
+- [x] **Backend registry no-op contract.** Implemented 2026-05-06:
+  `test_unregister_missing_is_silent` now asserts registry state is
+  unchanged when unregistering a missing backend.
 - [ ] **E2E and contract audit.** Cover or explicitly document blocked
   boundaries for hardware/QPU, bridge, SC-NeuroCore, Phase Orchestrator,
   notebook, and example workflows.
