@@ -120,6 +120,8 @@ nav:
       - Strategic Roadmap: strategic_roadmap.md
       - Actions History Dashboard: actions_history_dashboard.md
       - E2E Contract Boundaries: e2e_contract_boundaries.md
+      - Behavioural Test Audit Closure: behavioural_test_audit_closure_2026-05-06.md
+      - Coverage Gap Audit: coverage_gap_audit_2026-05-06.md
   - Changelog: changelog.md
 
 markdown_extensions:
