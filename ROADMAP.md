@@ -9,24 +9,60 @@ is copied here.
 
 ### Current top priority: repository hygiene and release safety
 
-- [ ] **GitHub Actions history audit.** Classify the full workflow-run
+- [x] **GitHub Actions history audit.** Completed 2026-05-06:
+  current failed and cancelled workflow-run queries are empty after
+  resolved superseded runs were classified and removed.
+- [x] **Latest CI/link-check failures.** Completed 2026-05-06:
+  latest `main` CI run `25412632454` passed lint, tests, security,
+  Rust audit, optional integration, hardware smoke, and CI gate.
+- [x] **Security alert audit.** Completed 2026-05-06: open CodeQL,
+  Dependabot security, and secret-scanning alert queries returned empty
+  lists.
+- [x] **PR and branch hygiene.** Completed 2026-05-06 for active
+  repository state: no open pull requests were present during the
+  hygiene pass.
+- [x] **Safe workflow-run cleanup.** Completed 2026-05-06: deleted only
+  resolved or superseded failed/cancelled workflow runs after their
+  causes were fixed by later successful commits.
+- [x] **Session log, handover, and Arcane notification.** Completed
+  2026-05-06 with append-only coordination records and a new SNN
+  stimulus.
+
+### Next repository hygiene follow-up
+
+- [x] **Full historical Actions audit automation.** Implemented
+  2026-05-06: `tools/audit_github_actions_history.py` classifies
+  `gh run list --json ...` history into clean successes, in-progress
+  runs, unresolved failures, resolved failures, unresolved cancellations,
+  superseded cancellations, and safe delete candidates without deleting
+  any run.
+- [ ] **Actions audit GitHub workflow integration.** Add a scheduled or
+  manually triggered workflow that runs the history classifier and
+  publishes an internal audit artefact without performing deletions.
+- [ ] **Link-check history automation.** Add a link-check summary command
+  that records live broken links, resolved historical failures, and
+  accepted external-transient failures.
+
+### Archived repository hygiene checklist
+
+- [x] **GitHub Actions history audit.** Classify the full workflow-run
   history into resolved failures, unresolved failures, and cancelled
   superseded runs. Do not delete any run until the corresponding failure
   is demonstrably resolved by a later successful run or superseded by a
   closed branch/PR.
-- [ ] **Latest CI/link-check failures.** Inspect the latest failing
+- [x] **Latest CI/link-check failures.** Inspect the latest failing
   `Link Check` runs on `main`, fix any live issue, and record whether
   older link failures are resolved by the fix.
-- [ ] **Security alert audit.** Check open CodeQL, Dependabot security,
+- [x] **Security alert audit.** Check open CodeQL, Dependabot security,
   and secret-scanning alerts. Fix true positives; document API-permission
   limits or accepted false positives internally.
-- [ ] **PR and branch hygiene.** Review open Dependabot PRs and stale
+- [x] **PR and branch hygiene.** Review open Dependabot PRs and stale
   branches, decide whether to merge, rebase, close, or leave blocked,
   then document the decision.
-- [ ] **Safe workflow-run cleanup.** After classification, delete only
+- [x] **Safe workflow-run cleanup.** After classification, delete only
   cancelled or fully resolved failed runs where deletion does not remove
   the only evidence for an unresolved defect.
-- [ ] **Session log, handover, and Arcane notification.** Keep a new
+- [x] **Session log, handover, and Arcane notification.** Keep a new
   timestamped log and handover for the repository-hygiene audit, and
   emit a factual Arcane stimulus.
 
