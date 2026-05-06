@@ -1,5 +1,0 @@
-{
-  "text": "Added a mock/stub audit helper that inventories unittest.mock, monkeypatch, fake, and stub usage, classifies apparent third-party boundaries, and flags result-term contexts for manual review.",
-  "source": "codex",
-  "project": "SCPN-QUANTUM-CONTROL"
-}

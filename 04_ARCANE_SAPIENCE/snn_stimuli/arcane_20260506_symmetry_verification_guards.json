@@ -1,5 +1,0 @@
-{
-  "text": "Added symmetry-verification guards for invalid Z2 parity labels and invalid computational-basis count labels before post-selection or symmetry expansion.",
-  "source": "codex",
-  "project": "SCPN-QUANTUM-CONTROL"
-}

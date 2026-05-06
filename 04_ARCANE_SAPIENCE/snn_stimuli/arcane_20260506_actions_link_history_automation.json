@@ -1,7 +1,0 @@
-{
-  "_spdx": "SPDX-License-Identifier: AGPL-3.0-or-later",
-  "project": "SCPN-QUANTUM-CONTROL",
-  "source": "codex",
-  "timestamp_utc": "2026-05-06T03:10:00Z",
-  "text": "Added read-only Actions history workflow automation and a Link Check history audit helper so workflow failures can be classified without deleting evidence or mutating GitHub state."
-}

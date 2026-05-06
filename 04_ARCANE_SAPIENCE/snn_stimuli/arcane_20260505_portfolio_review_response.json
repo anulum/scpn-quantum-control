@@ -1,9 +1,0 @@
-{
-  "schema": "arcane_sapience_stimulus_v1",
-  "timestamp_utc": "2026-05-05T222719Z",
-  "project": "SCPN-QUANTUM-CONTROL",
-  "source": "local_research_agent",
-  "event": "portfolio_review_response",
-  "workspace": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL",
-  "change": "Applied portfolio-review manuscript clarifications: T1 popcount physics, correlation-aware Fisher framing, FIM all-to-all ZZ hardware burden, Amdahl caveat, and readout-mitigation roadmap item."
-}

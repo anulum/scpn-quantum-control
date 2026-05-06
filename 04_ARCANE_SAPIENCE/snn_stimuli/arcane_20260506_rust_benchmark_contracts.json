@@ -1,7 +1,0 @@
-{
-  "_spdx": "SPDX-FileCopyrightText: 2026 Arcane Sapience <protoscience@anulum.li>; SPDX-License-Identifier: MIT",
-  "project": "SCPN-QUANTUM-CONTROL",
-  "source": "codex",
-  "timestamp": "2026-05-06T00:00:00+02:00",
-  "text": "Rust-path benchmark-only tests now assert finite non-negative timing samples, closing the behavioural smoke-only audit debt without adding fragile speed thresholds."
-}

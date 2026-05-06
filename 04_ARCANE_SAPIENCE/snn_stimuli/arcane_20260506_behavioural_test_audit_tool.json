@@ -1,7 +1,0 @@
-{
-  "_spdx": "SPDX-License-Identifier: AGPL-3.0-or-later",
-  "project": "SCPN-QUANTUM-CONTROL",
-  "source": "codex",
-  "timestamp_utc": "2026-05-06T04:05:00Z",
-  "text": "Added a behavioural-test audit helper that inventories pytest modules for assertions, exception contracts, parametrisation, and smoke-only tests without mutating repository state."
-}

@@ -83,6 +83,9 @@ scripts/*/campaign_run.log
 # Internal assistant transcripts
 docs/internal/gemini/
 
+# Arcane runtime stimuli are private agent metadata, never public artefacts.
+04_ARCANE_SAPIENCE/snn_stimuli/
+
 # Agent metadata (audit state, etc.)
 .agent_metadata.json
 

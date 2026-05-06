@@ -1,5 +1,0 @@
-{
-  "text": "Patched docs/results.md strict-build blocker by replacing Phase 2 figure links outside the MkDocs docs tree with raw GitHub image URLs matching the existing Phase 1 documentation pattern.",
-  "source": "codex",
-  "project": "SCPN-QUANTUM-CONTROL"
-}

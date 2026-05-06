@@ -1,7 +1,0 @@
-{
-  "_spdx": "SPDX-License-Identifier: AGPL-3.0-or-later",
-  "project": "SCPN-QUANTUM-CONTROL",
-  "source": "codex",
-  "timestamp_utc": "2026-05-06T05:05:00Z",
-  "text": "Closed a backend-registry smoke-only test by asserting that unregistering a missing backend leaves registry state unchanged."
-}

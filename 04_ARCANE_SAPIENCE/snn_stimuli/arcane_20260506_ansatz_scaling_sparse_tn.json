@@ -1,5 +1,0 @@
-{
-  "text": "Strengthened the ansatz scaling tensor-network harness with a sparse eigensolver ground-state path via the existing sparse Kuramoto-XY compiler, preserving explicit skipped rows beyond the validated sparse limit.",
-  "source": "codex",
-  "project": "SCPN-QUANTUM-CONTROL"
-}

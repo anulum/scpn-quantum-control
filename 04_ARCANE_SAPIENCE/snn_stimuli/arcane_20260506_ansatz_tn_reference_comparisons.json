@@ -1,5 +1,0 @@
-{
-  "text": "SCPN-QUANTUM-CONTROL Phase 4 ansatz scaling was strengthened: the benchmark_ansatz_scaling_tn harness now emits generated per-n MPS/VQE reference-comparison rows, preserves skipped markers for missing larger-n VQE optimisation artefacts, regenerates the ansatz/TN JSON and CSV artefacts, and documents the bounded dashboard claim.",
-  "source": "codex",
-  "project": "SCPN-QUANTUM-CONTROL"
-}

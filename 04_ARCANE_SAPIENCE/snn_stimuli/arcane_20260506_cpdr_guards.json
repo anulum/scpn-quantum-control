@@ -1,5 +1,0 @@
-{
-  "text": "Added CPDR mitigation behavioural guards for Clifford snapping without target mutation, little-endian observable extraction, zero-slope fallback, and backend training-count boundaries.",
-  "source": "codex",
-  "project": "SCPN-QUANTUM-CONTROL"
-}

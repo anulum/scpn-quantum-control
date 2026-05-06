@@ -215,15 +215,28 @@ is copied here.
   `patch`, `monkeypatch`, and fake/stub helper usage, flags apparent
   third-party boundaries, and highlights result-term contexts for manual
   review without deleting or rewriting tests.
-- [ ] **Mock/stub audit.** Ensure mocks only model third-party
+- [x] **Mock/stub audit.** Completed 2026-05-06:
+  an internal local audit record captures the
+  `tools/audit_mock_stub_usage.py` inventory, manual classification of
+  the 22 result-term contexts, and the decision that current mocks model
+  branch control, optional dependencies, configuration, or executor
+  boundaries rather than fabricated publication data or successful
+  hardware execution. Ensure future mocks only model third-party
   boundaries and never fabricate scientific results, provenance,
   datasets, or successful hardware execution.
-  Initial target list: `phase/xy_kuramoto.py`,
+  Initial target list reviewed: `phase/xy_kuramoto.py`,
   `hardware/async_runner.py`, `hardware/backends.py`, `bridge/*`,
   `analysis/dla*`, and `mitigation/*`.
+- [x] **Full-suite ordering audit automation.** Implemented
+  2026-05-06: `tools/audit_test_ordering_state.py` inventories module
+  reloads, monkeypatch state changes, environment mutation, module
+  injection, random seed mutation, and backend/cache/registry global
+  mutations so ordering risks can be reviewed without relying on ad-hoc
+  greps.
 - [ ] **Full-suite ordering audit.** Detect hidden state pollution from
   reloads, monkeypatches, optional imports, random seeds, and backend
-  globals.
+  globals, then document accepted isolation patterns and any required
+  fixes.
 - [ ] **Static-analysis pass.** Run and triage full Bandit plus Semgrep
   or a local equivalent, fixing easy true positives and documenting
   accepted false positives.

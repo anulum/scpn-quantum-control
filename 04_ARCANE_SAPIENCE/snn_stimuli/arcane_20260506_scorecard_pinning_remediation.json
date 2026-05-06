@@ -1,5 +1,0 @@
-{
-  "text": "SCPN-QUANTUM-CONTROL Scorecard pinning remediation prepared: the superseded cancelled CI run was deleted, Dependabot and secret-scanning alerts were empty, runtime requirements pinning removed the Scorecard vulnerability aggregate, and CI/Docker editable installs were replaced by pinned requirements plus PYTHONPATH-based source-tree checks while retaining wheel-check as the packaging install test.",
-  "source": "codex",
-  "project": "SCPN-QUANTUM-CONTROL"
-}

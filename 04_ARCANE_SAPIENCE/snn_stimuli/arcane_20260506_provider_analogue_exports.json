@@ -1,5 +1,0 @@
-{
-  "text": "SCPN-QUANTUM-CONTROL Phase 4 analogue backend work added provider-specific export plans for Pulser, Bloqade, and IBM pulse-level targets. The layer records SDK availability, enforces compatible generic analogue platforms, emits serialisable provider design payloads, and keeps can_submit=false so no analogue hardware execution claim is made.",
-  "source": "codex",
-  "project": "SCPN-QUANTUM-CONTROL"
-}

@@ -1,7 +1,0 @@
-{
-  "_spdx": "SPDX-License-Identifier: AGPL-3.0-or-later",
-  "project": "SCPN-QUANTUM-CONTROL",
-  "source": "codex",
-  "timestamp_utc": "2026-05-06T04:50:00Z",
-  "text": "Improved the behavioural-test audit helper so pytest methods inside Test classes are included in module-level behavioural coverage summaries."
-}

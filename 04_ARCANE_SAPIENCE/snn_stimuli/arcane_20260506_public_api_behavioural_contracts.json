@@ -1,7 +1,0 @@
-{
-  "_spdx": "SPDX-License-Identifier: AGPL-3.0-or-later",
-  "project": "SCPN-QUANTUM-CONTROL",
-  "source": "codex",
-  "timestamp_utc": "2026-05-06T04:35:00Z",
-  "text": "Closed the remaining public API smoke-only tests by adding explicit export-count assertions while retaining delegated import and type checks."
-}
