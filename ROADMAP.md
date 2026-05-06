@@ -276,9 +276,11 @@ is copied here.
   pipeline from `K_nm/omega` through Hamiltonian compilation,
   circuit/simulator kernels, CPU/GPU/Rust/QPU execution, raw counts,
   mitigation, DLA/sync/FIM/VQE observables, and reports/ledgers.
-- [ ] **Curated researcher examples.** Promote selected GraphML/CSV,
-  EEG, power-grid, plasma/tokamak, and notebook workflows with
-  provenance and deterministic outputs.
+- [x] **Curated researcher examples.** Completed 2026-05-06:
+  `docs/application_benchmarks.md`, `examples/README.md`, and
+  `data/public_application_benchmarks/README.md` now promote selected
+  GraphML/CSV, EEG, power-grid, plasma/tokamak, and notebook workflows
+  with provenance boundaries and deterministic no-QPU smoke commands.
 
 ### Active paper and submission tasks
 

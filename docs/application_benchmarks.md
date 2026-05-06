@@ -56,3 +56,32 @@ Third-party plugins register factories under the
 `scpn_quantum_control.application_plugins` entry-point group. A broken
 plugin is logged and skipped so one domain adapter cannot block the
 rest of the benchmark suite.
+
+## Curated Researcher Workflows
+
+The promoted researcher workflows are deliberately small and
+deterministic. They are meant to demonstrate the application boundary,
+provenance trail, and QPU-ready artefact format without presenting
+compact benchmark matrices as substitutes for raw domain archives.
+
+| Workflow | Promoted artefacts | Provenance boundary | Deterministic regeneration |
+|----------|--------------------|---------------------|----------------------------|
+| GraphML/CSV topology import | External user-supplied graph or edge table converted to `QPUDataArtifact`. | Bring-your-own topology path; the repository does not ship private third-party graph archives. | Use the application-plugin registry and validate the converted artefact before adapting it to `KuramotoProblem`. |
+| EEG alpha PLV | `data/public_application_benchmarks/eeg_alpha_plv_8ch.json`; measured audit artefacts in `data/knm_physical_validation/`. | Public-literature benchmark matrix for examples; raw EDF cohorts stay outside Git under `.coordination/datasets/`. | `scripts/build_real_eeg_plv_validation_dataset.py` and `scripts/compare_eeg_plv_cohorts.py` regenerate the measured audit artefacts. |
+| IEEE power grid | `data/public_application_benchmarks/ieee5bus_power_grid.json`; `data/knm_physical_validation/measured_couplings_power_grid_ieee5bus.json`. | Public IEEE 5-bus constants converted to swing-equation coupling; current measured-system comparison is a negative/control result. | `scripts/build_power_grid_measured_couplings.py` regenerates the measured coupling and K_nm comparison artefacts. |
+| Plasma/tokamak | `data/public_application_benchmarks/iter_mhd_8mode.json`. | Curated ITER-scale mode-locking topology from public MHD literature, not raw discharge traces. | `run_application_benchmark_suite()` includes the packaged plasma benchmark without optional HDF5 dependencies. |
+| Notebook and example workflows | `examples/02_kuramoto_xy_demo.py`, `examples/05_vqe_ansatz_comparison.py`, `examples/09_classical_vs_quantum_benchmark.py`, `examples/13_iter_disruption_demo.py`, `examples/18_end_to_end_pipeline.py`, `examples/19_sync_witness_operator.py`, and `examples/20_quantum_persistent_homology.py`. | Notebooks remain narrative wrappers; reusable logic stays in `src/`, `scripts/`, and versioned example files. | Static example tests ensure promoted examples remain parseable, expose `main()`, and are listed in `examples/README.md`. |
+
+For a no-credential smoke path, run:
+
+```bash
+.venv-linux/bin/python - <<'PY'
+from scpn_quantum_control.applications import run_application_benchmark_suite
+
+results = run_application_benchmark_suite()
+print(sorted(results))
+PY
+```
+
+This command loads the packaged JSON artefacts only. It does not submit
+IBM jobs, download raw EEG data, or touch private datasets.

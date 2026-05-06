@@ -7,6 +7,24 @@ Install first:
 pip install -e ".[dev]"
 ```
 
+## Curated Researcher Workflows
+
+Domain-facing workflows with provenance boundaries and deterministic
+artefact paths are promoted in `docs/application_benchmarks.md`. The
+examples below remain no-credential entry points; the reusable research
+logic lives in `src/`, `scripts/`, and committed JSON/CSV artefacts
+rather than in untracked notebooks.
+
+Recommended researcher quick path:
+
+- `02_kuramoto_xy_demo.py` for the Kuramoto-XY mapping.
+- `05_vqe_ansatz_comparison.py` for topology-informed ansatz behaviour.
+- `09_classical_vs_quantum_benchmark.py` for classical/statevector/Trotter comparisons.
+- `13_iter_disruption_demo.py` for the plasma/tokamak benchmark boundary.
+- `18_end_to_end_pipeline.py` for the packaged workflow path.
+- `19_sync_witness_operator.py` for synchronisation observables.
+- `20_quantum_persistent_homology.py` for topology diagnostics.
+
 ## 01_qlif_demo.py — Quantum LIF Neuron
 
 Constructs a quantum leaky integrate-and-fire neuron that encodes membrane

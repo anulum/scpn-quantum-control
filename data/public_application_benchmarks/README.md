@@ -31,3 +31,17 @@ The raw-source distinction is explicit:
 - The power-grid file is a small public benchmark-constant conversion.
 - The FEP file is a workflow benchmark with beliefs, observations, and
   sensory precision in metadata; it contains no human-subject data.
+
+Deterministic smoke command:
+
+```bash
+.venv-linux/bin/python - <<'PY'
+from scpn_quantum_control.applications import run_application_benchmark_suite
+
+results = run_application_benchmark_suite()
+print(sorted(results))
+PY
+```
+
+This command exercises the packaged artefacts only. It does not download
+raw EEG files, submit QPU jobs, or require optional domain dependencies.
