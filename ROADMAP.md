@@ -383,9 +383,16 @@ explicit QPU-time estimate before submission.
   preregistered second-Heron run only after live backend selection,
   transpilation/depth gates, QPU budget confirmation, and explicit
   approval.
-- [ ] **Systematic state/layout randomisation.** Separate symmetry
-  sector, excitation count, physical layout, readout, and topology
-  contributions.
+- [x] **Systematic state/layout randomisation preregistration.**
+  Completed 2026-05-06:
+  `docs/dla_state_layout_randomisation_prereg_2026-05-06.md` defines
+  the `n=4` state/depth/layout matrix, 495-circuit scope, 8--15 minute
+  estimate, 20-minute ceiling, layout-selection gates, analysis plan,
+  readout boundary, falsification rules, and output artefact paths. QPU
+  execution remains separate and approval-gated.
+- [ ] **Systematic state/layout randomisation execution.** Execute only
+  after live backend/layout selection, transpilation/depth gates, QPU
+  budget confirmation, and explicit approval.
 - [ ] **Full readout-mitigation calibration where missing.** Only run
   complete basis calibration when the scientific value outweighs QPU
   cost.
