@@ -69,14 +69,17 @@ continuation gives mixed $n=6,8$ evidence. A subsequent popcount
 control shows that excitation count and computational-basis state
 choice materially contribute to the leakage pattern. The follow-up
 therefore falsifies both a simple monotone scaling story and a clean
-``DLA parity alone'' causal interpretation. A Phase~3 second-backend
-test on \texttt{ibm\_marrakesh} further rejects a backend-stable
-positive-sign claim: after matching full-basis readout correction on
-physical qubits [5,6,7,8], all promoted depths have non-positive
-relative asymmetry. The result is therefore a real
-\texttt{ibm\_kingston} hardware phenomenon with explicit backend,
-calibration, layout, and excitation-count boundaries; it does not
-constitute a broad quantum-advantage claim.
+``DLA parity alone'' causal interpretation. Phase~3 tests on
+\texttt{ibm\_marrakesh} further reject backend-stable and
+layout-independent positive-sign claims: a second-backend fixed-layout
+test has non-positive readout-corrected asymmetry at all promoted
+depths, and a 495-circuit state/layout randomisation control finds
+mixed signs in the original contrast, significant within-sector state
+effects, and layout spread larger than the mean original contrast. The
+result is therefore a real \texttt{ibm\_kingston} hardware phenomenon
+with explicit backend, calibration, layout, state-choice, and
+excitation-count boundaries; it does not constitute a broad
+quantum-advantage claim.
 \end{abstract}
 
 \maketitle
@@ -365,7 +368,10 @@ $\chi^2=73.894393$, $p=4.16\times10^{-8}$ across the ten depths.
 Phase~3 subsequently added a literal full-basis $n=4$ readout
 calibration on \texttt{ibm\_marrakesh}; that correction strengthens,
 rather than removes, the second-backend non-replication boundary
-reported below.
+reported below. The later state/layout randomisation campaign used
+layout-matched five-state readout checks and found that layout and
+same-sector state choice are not small residual effects relative to
+the original parity-sector contrast.
 
 \subsection{Possible confounds the protocol does not yet rule out}
 
@@ -590,6 +596,41 @@ calibration window. Any future positive universality claim therefore
 requires layout-randomised or multi-backend statistics rather than a
 single-device replication.
 
+\subsection{Phase 3 state/layout randomisation}
+\label{sec:phase3layout}
+
+The second Phase~3 control asked whether the original-state contrast
+survives controlled changes in both physical layout and same-sector
+computational-basis state. The campaign submitted 480 parity circuits
+to \texttt{ibm\_marrakesh} (job \texttt{d7ts9avljm6s73bd2ej0}) plus a
+layout-matched five-state readout calibration
+(\texttt{d7tsdnfljm6s73bd2j70}). It used depths
+$d\in\{6,8,10,14\}$, three connected four-qubit layouts, eight
+repetitions per state/depth/layout cell, and live transpilation gates
+that accepted a maximum observed depth of 294 under a 700-depth cap
+and 762 total gates under a 1500-gate cap.
+
+The preregistered analysis again rejects a simple symmetry-only
+interpretation. For the original even--odd comparison
+(\texttt{E0-O0}), the mean leakage difference is positive but small
+($+0.006312$), with six positive and six negative layout-depth cells.
+Within-sector controls are not null: the even-sector state swap
+(\texttt{E0-E1}) has Fisher $p=2.52\times10^{-59}$ and the odd-sector
+state swap (\texttt{O0-O1}) has Fisher $p=1.40\times10^{-27}$. The
+excitation-inversion arm (\texttt{E0-O3}) has seven negative and five
+positive cells. The derived decision flags record that the layout
+spread exceeds the mean original contrast, the original contrast has
+mixed sign, and both within-sector controls are significant.
+
+This does not erase the Phase~1/2 \texttt{ibm\_kingston} observation.
+It sharpens the mechanism boundary: parity sector, excitation count,
+prepared computational-basis state, physical layout, backend, and
+calibration window are all experimentally relevant at this scale.
+Consequently, this paper reports a reproducible same-device leakage
+asymmetry and a sequence of controls that falsify progressively
+stronger causal claims, not a layout-independent DLA-protection
+mechanism.
+
 %% ====================================================================
 \section{Conclusion}
 %% ====================================================================
@@ -608,10 +649,13 @@ follow-up shows that excitation count and state choice materially
 contribute to the signal. The Phase~3 \texttt{ibm\_marrakesh}
 boundary test then shows that the positive \texttt{ibm\_kingston}
 sign is not backend-stable after matching full-basis readout
-correction. The validated claim is therefore an $n=4$ same-device
-raw-count hardware phenomenon with constrained early scaling evidence,
-backend sensitivity, and an explicitly limited causal interpretation,
-not a broad quantum-advantage result and not a DLA-parity-only result.
+correction. The state/layout randomisation control then shows that
+layout and same-sector state choice can be comparable to, or larger
+than, the mean original contrast. The validated claim is therefore an
+$n=4$ same-device raw-count hardware phenomenon with constrained early
+scaling evidence, backend and layout sensitivity, and an explicitly
+limited causal interpretation, not a broad quantum-advantage result
+and not a DLA-parity-only result.
 Existing data also support two no-new-QPU follow-up conclusions:
 exact-state parity-readout correction preserves the main Phase~2
 signs, and parity survival is smooth enough versus depth to motivate
@@ -656,9 +700,14 @@ matching full-basis readout calibration lives in
 \path{data/readout_full_basis/} and is indexed in
 \path{docs/readout_full_basis_manifest_2026-05-06.md}. The submission
 drivers are \path{scripts/phase3_multidevice_dla_ibm.py} and
-\path{scripts/readout_full_basis_calibration_ibm.py}. Prepared but
-unsubmitted state/layout-randomisation protocols remain documented in
-\path{docs/next_validation_protocols_2026-05-05.md}.
+\path{scripts/readout_full_basis_calibration_ibm.py}. The Phase~3
+state/layout-randomisation raw counts and generated row, layout, and
+readout metrics live in \path{data/phase3_state_layout_dla/}; they are
+reproduced with \path{scripts/analyse_phase3_state_layout_dla.py} and
+indexed in
+\path{docs/phase3_state_layout_dla_manifest_2026-05-07.md}. The
+state/layout submission driver is
+\path{scripts/phase3_state_layout_dla_ibm.py}.
 The campaign archive carries Zenodo
 DOI~\href{https://doi.org/10.5281/zenodo.18821929}{10.5281/zenodo.18821929}.
 

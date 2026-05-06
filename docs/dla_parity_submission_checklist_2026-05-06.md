@@ -17,13 +17,18 @@ Supported:
 - Phase 2 popcount-control follow-up under `data/phase2_popcount_control/`.
 - Exact-state parity-readout correction under `data/phase2_readout_mitigation/`.
 - Offline GUESS-readiness depth fit under `data/phase2_guess_calibration/`.
+- Phase 3 second-backend fixed-layout non-replication under
+  `data/phase3_multidevice_dla/`.
+- Phase 3 full-basis readout calibration under `data/readout_full_basis/`.
+- Phase 3 state/layout randomisation under `data/phase3_state_layout_dla/`.
 
 Not supported:
 
 - DLA-parity-only causality.
 - Broad quantum advantage.
 - Monotone scaling.
-- Multi-device replication.
+- Backend-stable parity protection.
+- Layout-independent parity protection.
 - Full confusion-matrix readout mitigation for datasets without complete basis
   calibration.
 - Demonstrated GUESS zero-noise extrapolation.
@@ -45,6 +50,10 @@ The popcount-control result must remain visible in the abstract, conclusion, or
 claim-boundary paragraph. It is not a minor control; it is the reason the causal
 language is downgraded.
 
+The Phase 3 state/layout result must also remain visible in the abstract,
+conclusion, or claim-boundary paragraph. It is the reason layout-independent and
+same-sector-state-independent causal language is rejected.
+
 ## Committed Artefact Index
 
 | Item | Path |
@@ -58,6 +67,8 @@ language is downgraded.
 | Popcount-control analysis | `scripts/analyse_phase2_popcount_control.py` |
 | Readout-correction analysis | `scripts/analyse_phase2_readout_mitigation.py` |
 | GUESS-readiness analysis | `scripts/analyse_phase2_guess_calibration.py` |
+| Phase 3 state/layout analysis | `scripts/analyse_phase3_state_layout_dla.py` |
+| Phase 3 state/layout manifest | `docs/phase3_state_layout_dla_manifest_2026-05-07.md` |
 | Paper source | `paper/phase1_dla_parity.tex` |
 | Paper PDF | `paper/phase1_dla_parity.pdf` |
 
@@ -70,6 +81,11 @@ language is downgraded.
 | Phase 2 B-C scaling | `ibm_kingston` | `d7sudr2udops7397ae30` |
 | Popcount main | `ibm_kingston` | `d7svcnkt738s73ch7agg` |
 | Popcount readout | `ibm_kingston` | `d7svhsaudops7397bp30` |
+| Phase 3 multi-device main | `ibm_marrakesh` | `d7tnd3vljm6s73bcsh6g` |
+| Phase 3 multi-device readout | `ibm_marrakesh` | `d7tnehqudops73988btg` |
+| Phase 3 full-basis readout | `ibm_marrakesh` | `d7tnljvljm6s73bcsql0` |
+| Phase 3 state/layout main | `ibm_marrakesh` | `d7ts9avljm6s73bd2ej0` |
+| Phase 3 state/layout readout | `ibm_marrakesh` | `d7tsdnfljm6s73bd2j70` |
 
 Do not allow line-break artefacts, plus signs, or punctuation changes inside
 these job IDs.
@@ -91,7 +107,9 @@ Before arXiv or journal upload:
 
 ## QPU Boundary
 
-No additional QPU time is required for this submission package. Multi-device
-replication, layout randomisation, full missing readout calibration, and GUESS
-zero-noise extrapolation remain follow-up experiments requiring separate
+No additional QPU time is required for this submission package. The completed
+Phase 3 second-backend, full-basis-readout, and state/layout controls are part
+of the current claim boundary. Further multi-backend statistics, additional
+layout randomisation, full missing readout calibration for older datasets, and
+GUESS zero-noise extrapolation remain follow-up experiments requiring separate
 offline manifests, QPU-time estimates, and explicit approval.
