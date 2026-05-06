@@ -513,10 +513,22 @@ explicit QPU-time estimate before submission.
   15-minute ceiling, live folding/depth gates, analysis plan,
   falsification rules, and output artefact paths. Execution remains
   separate and approval-gated.
-- [ ] **GUESS / symmetry-decay calibration execution.** Run the
-  folded-noise witness experiment only after backend selection,
-  folded-circuit readiness checks, budget confirmation, and explicit
-  approval.
+- [x] **GUESS / symmetry-decay calibration execution.** Completed
+  2026-05-07 on `ibm_marrakesh` after backend selection, committed
+  submitter checks, live folded-circuit readiness, conservative
+  12-minute QPU estimate under the 15-minute ceiling, and explicit
+  approval. Jobs `d7tt5lkt738s73cib64g` and
+  `d7tt7oaudops7398fdt0` produced the raw-count artefact
+  `data/phase3_guess_dla/phase3_guess_ibm_marrakesh_2026-05-06T234602Z.json`.
+- [x] **GUESS / symmetry-decay calibration analysis.** Completed
+  2026-05-07: `scripts/analyse_phase3_guess_dla.py` generated
+  `data/phase3_guess_dla/phase3_guess_summary_2026-05-07.json`,
+  fit rows, witness/extrapolation rows, and
+  `docs/phase3_guess_dla_manifest_2026-05-07.md`. Result: 6 raw
+  log-survival fits and 5 exact-state-readout-corrected fits pass the
+  preregistered monotone/R2/RMSE witness criteria; universal GUESS
+  mitigation, backend-general transfer, and full confusion-matrix
+  mitigation remain blocked claims.
 - [x] **Layer-selective qubit assignment preregistration.** Completed
   2026-05-06:
   `docs/layer_selective_qubit_assignment_prereg_2026-05-06.md`
