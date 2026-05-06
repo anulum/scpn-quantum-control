@@ -271,9 +271,11 @@ is copied here.
   reflect promoted Phase 2 DLA artefacts, SCPN/FIM negative hardware
   results, benchmark dashboard/CLI availability, and conservative
   no-advantage/no-DLA-only/no-FIM-protection boundaries.
-- [ ] **Architecture data-flow diagram.** Document the stable pipeline:
-  `K_nm/omega -> Hamiltonian -> circuit -> backend/QPU -> counts ->
-  mitigation -> DLA/sync observables -> reports`.
+- [x] **Architecture data-flow diagram.** Completed 2026-05-06:
+  `docs/architecture.md` now documents the stable artefact-first
+  pipeline from `K_nm/omega` through Hamiltonian compilation,
+  circuit/simulator kernels, CPU/GPU/Rust/QPU execution, raw counts,
+  mitigation, DLA/sync/FIM/VQE observables, and reports/ledgers.
 - [ ] **Curated researcher examples.** Promote selected GraphML/CSV,
   EEG, power-grid, plasma/tokamak, and notebook workflows with
   provenance and deterministic outputs.

@@ -88,6 +88,43 @@ graph TD
 
 ## Hardware Execution Pipeline
 
+The stable data flow is deliberately artefact-first. Each stage either emits a
+typed object inside the Python process or a committed/retrievable artefact with
+provenance. This is the public pipeline boundary used by the hardware ledger,
+methods benchmark dashboard, and paper reproduction scripts.
+
+```mermaid
+flowchart LR
+    A["K_nm / omega\nproblem input"] --> B["Hamiltonian compiler\nSparsePauliOp / dense / sparse"]
+    B --> C["Circuit or simulator kernel\nTrotter / VQE / analogue payload"]
+    C --> D{"Execution target"}
+    D --> E["CPU / GPU / Rust\nclassical reference"]
+    D --> F["Backend / QPU\nIBM or provider runner"]
+    F --> G["Raw counts\njob ids + metadata"]
+    E --> H["Reference artefacts\nJSON / CSV / figures"]
+    G --> I["Mitigation layer\nreadout / ZNE / GUESS / symmetry"]
+    H --> J["Observable extractors"]
+    I --> J
+    J --> K["DLA / sync / FIM / VQE\nobservables"]
+    K --> L["Reports and ledgers\npapers / docs / dashboards"]
+
+    style A fill:#6929C4,color:#fff
+    style G fill:#2ecc71,color:#000
+    style I fill:#d4a017,color:#000
+    style L fill:#34495e,color:#fff
+```
+
+| Stage | Primary modules | Contract |
+|---|---|---|
+| Problem input | `kuramoto_core`, `bridge/phase_artifact.py`, `applications/*` | Validate `K_nm`, `omega`, labels, units, and provenance before compilation. |
+| Hamiltonian compiler | `bridge/knm_hamiltonian.py`, `bridge/sparse_hamiltonian.py` | Emit Pauli, dense, sparse, or analogue design representations without changing claim class. |
+| Circuit or simulator kernel | `phase/*`, `hardware/analog_kuramoto.py`, `control/*` | Build the executable circuit/kernel and record depth, shots, seeds, and parameterisation. |
+| Execution target | `hardware/*`, `benchmarks/*`, `scpn_quantum_engine` | Route to CPU/GPU/Rust references or a QPU runner; QPU submission needs explicit budget and promotion gates. |
+| Raw counts and references | `data/*`, `results/*`, `scripts/*` | Store raw counts or generated summaries with job IDs, commands, hashes, and no hand-authored numerical tables. |
+| Mitigation layer | `mitigation/*`, readout-analysis scripts | Apply readout correction, ZNE, symmetry verification, GUESS, or document why mitigation is unavailable. |
+| Observable extractors | `analysis/*`, `scripts/analyse_*` | Convert counts/statevectors into DLA, synchronisation, FIM, VQE, and scaling observables. |
+| Reports and ledgers | `docs/hardware_status_ledger.md`, `docs/methods_benchmark_dashboard.md`, `paper/*` | Publish only artefact-backed claims with explicit simulator/hardware/falsification class. |
+
 Circuit depth after transpilation determines which decoherence regime applies.
 The pipeline is the same for all experiments — only the circuit construction
 step differs.
