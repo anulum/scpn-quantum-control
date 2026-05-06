@@ -483,8 +483,10 @@ explicit QPU-time estimate before submission.
 - [x] **OpenSSF Best Practices.** Passing badge is present.
 - [x] **Zenodo DOI.** Existing DOI is live.
 - [x] **GitHub Pages docs.** Published.
-- [ ] **Software Heritage SWHID follow-up.** Check the submitted save
-  request and publish the SWHID once the crawl completes.
+- [x] **Software Heritage SWHID follow-up.** Completed 2026-05-06:
+  `docs/software_heritage_swhid_2026-05-06.md` records the successful
+  Software Heritage save request, full visit status, origin SWHID, and
+  archived snapshot SWHID.
 - [ ] **Zenodo communities and metadata refresh.** Add the DOI to
   quantum/physics communities and refresh stale version metadata during
   a manual Zenodo login session.
