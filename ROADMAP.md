@@ -438,8 +438,18 @@ explicit QPU-time estimate before submission.
   readiness and any optional hardware block only after observable
   definitions, backend selection, budget confirmation, and explicit
   approval for QPU submission.
-- [ ] **Depth-optimal native decomposition.** Reduce Kuramoto evolution
-  depth by targeting Heron native gates directly.
+- [x] **Depth-optimal native decomposition preregistration.**
+  Completed 2026-05-06:
+  `docs/depth_optimal_native_decomposition_prereg_2026-05-06.md`
+  defines comparator circuits, native-target candidate rules, offline
+  readiness matrix, equivalence gates, optional 160-circuit hardware
+  follow-up, 12-minute ceiling, live gates, analysis plan,
+  falsification rules, and artefact paths. Execution remains separate
+  and approval-gated.
+- [ ] **Depth-optimal native decomposition execution.** Run the
+  offline-readiness pass and any optional hardware block only after
+  equivalence checks, backend selection, budget confirmation, and
+  explicit approval for QPU submission.
 - [ ] **Variational quantum simulation alternative.** Compare VQS
   against Trotter where it can reduce compiled depth.
 - [ ] **Multi-circuit QEC demonstration.** Evaluate physics-aware
