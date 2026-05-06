@@ -158,6 +158,10 @@ is copied here.
   2026-05-06: `tests/test_dla_parity_theorem.py` now guards parity
   operator popcount ordering, even/odd projector orthogonality and
   reconstruction, and unnormalised weight accounting.
+- [x] **Mutation-test expansion: ZNE mitigation invariants.**
+  Implemented 2026-05-06: `tests/test_zne.py` now guards terminal
+  measurement stripping/re-append behaviour, exact odd-scale fold gate
+  counts, and immutable result copies for extrapolation inputs.
 - [ ] **Mutation-test expansion.** Start with `phase/xy_kuramoto.py`,
   `hardware/async_runner.py`, `hardware/backends.py`, `bridge/*`,
   `analysis/dla*`, and `mitigation/*`.

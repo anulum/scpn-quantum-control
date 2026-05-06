@@ -69,6 +69,23 @@ def test_measurements_preserved():
     assert folded.num_clbits > 0
 
 
+def test_folded_measurement_reappend_is_terminal_and_single_round():
+    """Mutation guard: terminal measurements are stripped before folding and re-appended once."""
+    qc = QuantumCircuit(2)
+    qc.h(0)
+    qc.cx(0, 1)
+    qc.measure_all()
+
+    folded = gate_fold_circuit(qc, scale=5)
+    op_names = [instruction.operation.name for instruction in folded.data]
+
+    assert op_names.count("measure") == 2
+    assert op_names[-2:] == ["measure", "measure"]
+    assert op_names.count("h") == 5
+    assert op_names.count("cx") == 5
+    assert op_names.count("barrier") == 1
+
+
 def test_linear_extrapolation():
     """Linear extrapolation of y = 1 - 0.1*x should give ~1.0 at x=0."""
     scales = [1, 3, 5]
@@ -88,7 +105,12 @@ def test_quadratic_extrapolation():
 
 
 def test_zne_result_fields():
-    result = zne_extrapolate([1, 3], [0.8, 0.6], order=1)
+    scales = [1, 3]
+    values = [0.8, 0.6]
+    result = zne_extrapolate(scales, values, order=1)
+    scales.append(5)
+    values.append(0.4)
+
     assert result.noise_scales == [1, 3]
     assert result.expectation_values == [0.8, 0.6]
     assert np.isfinite(result.fit_residual)
