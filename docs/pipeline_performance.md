@@ -1196,3 +1196,13 @@ scpn-bench s4-neutral-atom-preregistration
 ```
 
 Regenerates `data/s4_multi_hardware_control/s4_neutral_atom_preregistration_2026-05-06.json` and `docs/s4_neutral_atom_preregistration_2026-05-06.md`. The harness reads the S4 readiness payload and packages the Pulser/Bloqade neutral-atom routes as provider-object construction review dossiers. It performs no provider SDK construction, no emulator run, no cloud contact, and no QPU submission.
+
+### S5 benchmark suite
+
+Command:
+
+```bash
+scpn-bench s5-benchmark-suite
+```
+
+Regenerates `data/s5_benchmark_harness/phase1_benchmark_harness_2026-05-06.json` and `docs/benchmark_harness_phase1_2026-05-06.md`. The harness exposes the Phase 1 DLA-parity raw-count dataset through `scpn_quantum_control.benchmark_harness`, recomputes the published statistics, checks the noiseless classical parity-conservation baseline, and performs no QPU submission.

@@ -126,6 +126,11 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         "scripts/export_s4_neutral_atom_preregistration.py",
         frozenset({"s4-neutral"}),
     ),
+    Harness(
+        "s5-benchmark-suite",
+        "scripts/run_benchmark_suite.py",
+        frozenset({"s5"}),
+    ),
 )
 
 ARTEFACT_PATHS = (
@@ -135,6 +140,7 @@ ARTEFACT_PATHS = (
     "data/s2_scaling",
     "data/s3_pulse_ansatz_design",
     "data/s4_multi_hardware_control",
+    "data/s5_benchmark_harness",
 )
 
 
@@ -232,6 +238,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate the no-submit S4 neutral-atom preregistration dossier.",
     )
     _add_run_options(s4_neutral, default_group="s4-neutral")
+
+    s5 = subparsers.add_parser(
+        "s5-benchmark-suite",
+        help="Regenerate the no-QPU S5 open-data benchmark harness artefacts.",
+    )
+    _add_run_options(s5, default_group="s5")
 
     return parser.parse_args(argv)
 

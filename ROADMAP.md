@@ -865,6 +865,17 @@ be executed until individually activated.
   comparator-observable, cost/credit, and QPU-budget gates before any
   cloud provider session.
 - [ ] **S5** Open-data + classical validation harness.
+- [x] **S5 public Phase 1 benchmark harness facade.** Implemented
+  2026-05-06: `scpn_quantum_control.benchmark_harness` exposes
+  `load_phase1_dataset`, `reproduce_phase1_statistics`, and
+  `run_phase1_benchmark` as the community-facing open-data API over the
+  committed Phase 1 DLA-parity raw counts and noiseless classical
+  parity-conservation reference.
+- [x] **S5 benchmark-suite CLI artefact.** Implemented 2026-05-06:
+  `scpn-bench s5-benchmark-suite` regenerates the Phase 1 benchmark
+  harness JSON/Markdown artefacts from committed raw counts, verifies
+  published statistics against the tolerance bundle, records the
+  classical baseline, and performs no QPU submission.
 - [ ] **S6** Decoupled `quantum-kuramoto` subpackage.
 - [ ] **S7** Fault-tolerant / logical-level extension roadmap.
 - [ ] **S8--S53** Scientific, foundational, and applied post-v1.0

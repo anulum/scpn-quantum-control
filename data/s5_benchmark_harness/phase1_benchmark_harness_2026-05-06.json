@@ -1,0 +1,400 @@
+{
+  "available_baselines": {
+    "numpy": true,
+    "qutip": true
+  },
+  "benchmark": "phase1_dla_parity",
+  "claim_boundary": [
+    "no new hardware execution",
+    "no quantum advantage claim",
+    "classical baseline is noiseless parity-conservation reference",
+    "published hardware statistics are reproduced from committed raw counts"
+  ],
+  "classical_reference": {
+    "backend": "numpy",
+    "depths": [
+      2,
+      4,
+      6,
+      8,
+      10,
+      14,
+      20,
+      30
+    ],
+    "is_zero_within_tolerance": true,
+    "max_abs_leakage": 0.0,
+    "n_qubits": 4,
+    "t_step": 0.3
+  },
+  "dataset": {
+    "backends": [
+      "ibm_kingston"
+    ],
+    "n_circuits_total": 342,
+    "n_runs": 4,
+    "verify_integrity": false
+  },
+  "date": "2026-05-06",
+  "hardware_submission": false,
+  "qpu_budget_requested_seconds": 0.0,
+  "reproduction": {
+    "claims_checked": [
+      {
+        "actual": 0.08064778645833333,
+        "difference": 0.0,
+        "name": "depth=2.leakage_even",
+        "published": 0.08064778645833333
+      },
+      {
+        "actual": 0.08272298177083333,
+        "difference": 0.0,
+        "name": "depth=2.leakage_odd",
+        "published": 0.08272298177083333
+      },
+      {
+        "actual": 0.0016545691855692725,
+        "difference": 0.0,
+        "name": "depth=2.sem_even",
+        "published": 0.0016545691855692725
+      },
+      {
+        "actual": 0.002095405684270719,
+        "difference": 0.0,
+        "name": "depth=2.sem_odd",
+        "published": 0.002095405684270719
+      },
+      {
+        "actual": -0.025086079685194294,
+        "difference": 0.0,
+        "name": "depth=2.asymmetry_relative",
+        "published": -0.025086079685194294
+      },
+      {
+        "actual": -0.7772581004886522,
+        "difference": 0.0,
+        "name": "depth=2.welch_t",
+        "published": -0.7772581004886522
+      },
+      {
+        "actual": 0.44572513008185377,
+        "difference": 1.1102230246251565e-16,
+        "name": "depth=2.welch_p",
+        "published": 0.44572513008185366
+      },
+      {
+        "actual": 0.09821428571428571,
+        "difference": 0.0,
+        "name": "depth=4.leakage_even",
+        "published": 0.09821428571428571
+      },
+      {
+        "actual": 0.08617001488095238,
+        "difference": 0.0,
+        "name": "depth=4.leakage_odd",
+        "published": 0.08617001488095238
+      },
+      {
+        "actual": 0.0017310260511410054,
+        "difference": 0.0,
+        "name": "depth=4.sem_even",
+        "published": 0.0017310260511410054
+      },
+      {
+        "actual": 0.001145427870390288,
+        "difference": 0.0,
+        "name": "depth=4.sem_odd",
+        "published": 0.001145427870390288
+      },
+      {
+        "actual": 0.13977334052887205,
+        "difference": 0.0,
+        "name": "depth=4.asymmetry_relative",
+        "published": 0.13977334052887205
+      },
+      {
+        "actual": 5.802560426444603,
+        "difference": 0.0,
+        "name": "depth=4.welch_t",
+        "published": 5.802560426444603
+      },
+      {
+        "actual": 1.4486417848706598e-06,
+        "difference": 1.0587911840678754e-21,
+        "name": "depth=4.welch_p",
+        "published": 1.4486417848706588e-06
+      },
+      {
+        "actual": 0.12909226190476192,
+        "difference": 0.0,
+        "name": "depth=6.leakage_even",
+        "published": 0.12909226190476192
+      },
+      {
+        "actual": 0.10988653273809523,
+        "difference": 0.0,
+        "name": "depth=6.leakage_odd",
+        "published": 0.10988653273809523
+      },
+      {
+        "actual": 0.0030878816594271945,
+        "difference": 0.0,
+        "name": "depth=6.sem_even",
+        "published": 0.0030878816594271945
+      },
+      {
+        "actual": 0.001802102831069441,
+        "difference": 0.0,
+        "name": "depth=6.sem_odd",
+        "published": 0.001802102831069441
+      },
+      {
+        "actual": 0.17477782479898452,
+        "difference": 0.0,
+        "name": "depth=6.asymmetry_relative",
+        "published": 0.17477782479898452
+      },
+      {
+        "actual": 5.3718194678871125,
+        "difference": 0.0,
+        "name": "depth=6.welch_t",
+        "published": 5.3718194678871125
+      },
+      {
+        "actual": 6.607941730175389e-06,
+        "difference": 8.470329472543003e-22,
+        "name": "depth=6.welch_p",
+        "published": 6.6079417301753894e-06
+      },
+      {
+        "actual": 0.14429873511904762,
+        "difference": 0.0,
+        "name": "depth=8.leakage_even",
+        "published": 0.14429873511904762
+      },
+      {
+        "actual": 0.12837146577380953,
+        "difference": 0.0,
+        "name": "depth=8.leakage_odd",
+        "published": 0.12837146577380953
+      },
+      {
+        "actual": 0.003095069154034413,
+        "difference": 0.0,
+        "name": "depth=8.sem_even",
+        "published": 0.003095069154034413
+      },
+      {
+        "actual": 0.001723341571867124,
+        "difference": 0.0,
+        "name": "depth=8.sem_odd",
+        "published": 0.001723341571867124
+      },
+      {
+        "actual": 0.12407172613656935,
+        "difference": 0.0,
+        "name": "depth=8.asymmetry_relative",
+        "published": 0.12407172613656935
+      },
+      {
+        "actual": 4.496043956963236,
+        "difference": 0.0,
+        "name": "depth=8.welch_t",
+        "published": 4.496043956963236
+      },
+      {
+        "actual": 8.88609097086364e-05,
+        "difference": 6.776263578034403e-20,
+        "name": "depth=8.welch_p",
+        "published": 8.886090970863646e-05
+      },
+      {
+        "actual": 0.16575985863095238,
+        "difference": 0.0,
+        "name": "depth=10.leakage_even",
+        "published": 0.16575985863095238
+      },
+      {
+        "actual": 0.14946056547619047,
+        "difference": 0.0,
+        "name": "depth=10.leakage_odd",
+        "published": 0.14946056547619047
+      },
+      {
+        "actual": 0.002173659740419513,
+        "difference": 0.0,
+        "name": "depth=10.sem_even",
+        "published": 0.002173659740419513
+      },
+      {
+        "actual": 0.002274299829309458,
+        "difference": 0.0,
+        "name": "depth=10.sem_odd",
+        "published": 0.002274299829309458
+      },
+      {
+        "actual": 0.10905413814561304,
+        "difference": 0.0,
+        "name": "depth=10.asymmetry_relative",
+        "published": 0.10905413814561304
+      },
+      {
+        "actual": 5.180978612605204,
+        "difference": 0.0,
+        "name": "depth=10.welch_t",
+        "published": 5.180978612605204
+      },
+      {
+        "actual": 6.67308991779397e-06,
+        "difference": 8.470329472543003e-21,
+        "name": "depth=10.welch_p",
+        "published": 6.6730899177939615e-06
+      },
+      {
+        "actual": 0.18975539434523808,
+        "difference": 0.0,
+        "name": "depth=14.leakage_even",
+        "published": 0.18975539434523808
+      },
+      {
+        "actual": 0.17973400297619047,
+        "difference": 0.0,
+        "name": "depth=14.leakage_odd",
+        "published": 0.17973400297619047
+      },
+      {
+        "actual": 0.0030937588129612906,
+        "difference": 0.0,
+        "name": "depth=14.sem_even",
+        "published": 0.0030937588129612906
+      },
+      {
+        "actual": 0.001974200592312555,
+        "difference": 0.0,
+        "name": "depth=14.sem_odd",
+        "published": 0.001974200592312555
+      },
+      {
+        "actual": 0.0557567917205692,
+        "difference": 0.0,
+        "name": "depth=14.asymmetry_relative",
+        "published": 0.0557567917205692
+      },
+      {
+        "actual": 2.7306333150856883,
+        "difference": 0.0,
+        "name": "depth=14.welch_t",
+        "published": 2.7306333150856883
+      },
+      {
+        "actual": 0.009948014192978909,
+        "difference": 3.469446951953614e-18,
+        "name": "depth=14.welch_p",
+        "published": 0.009948014192978912
+      },
+      {
+        "actual": 0.22945149739583334,
+        "difference": 0.0,
+        "name": "depth=20.leakage_even",
+        "published": 0.22945149739583334
+      },
+      {
+        "actual": 0.21138509114583334,
+        "difference": 0.0,
+        "name": "depth=20.leakage_odd",
+        "published": 0.21138509114583334
+      },
+      {
+        "actual": 0.004665832662782977,
+        "difference": 0.0,
+        "name": "depth=20.sem_even",
+        "published": 0.004665832662782977
+      },
+      {
+        "actual": 0.003777650910755816,
+        "difference": 0.0,
+        "name": "depth=20.sem_odd",
+        "published": 0.003777650910755816
+      },
+      {
+        "actual": 0.08546679499518768,
+        "difference": 0.0,
+        "name": "depth=20.asymmetry_relative",
+        "published": 0.08546679499518768
+      },
+      {
+        "actual": 3.0093695304233683,
+        "difference": 0.0,
+        "name": "depth=20.welch_t",
+        "published": 3.0093695304233683
+      },
+      {
+        "actual": 0.006656740689987428,
+        "difference": 2.6020852139652106e-18,
+        "name": "depth=20.welch_p",
+        "published": 0.0066567406899874304
+      },
+      {
+        "actual": 0.277099609375,
+        "difference": 0.0,
+        "name": "depth=30.leakage_even",
+        "published": 0.277099609375
+      },
+      {
+        "actual": 0.257568359375,
+        "difference": 0.0,
+        "name": "depth=30.leakage_odd",
+        "published": 0.257568359375
+      },
+      {
+        "actual": 0.0056887353348809835,
+        "difference": 0.0,
+        "name": "depth=30.sem_even",
+        "published": 0.0056887353348809835
+      },
+      {
+        "actual": 0.0036680231606448194,
+        "difference": 0.0,
+        "name": "depth=30.sem_odd",
+        "published": 0.0036680231606448194
+      },
+      {
+        "actual": 0.07582938388625593,
+        "difference": 0.0,
+        "name": "depth=30.asymmetry_relative",
+        "published": 0.07582938388625593
+      },
+      {
+        "actual": 2.8854992307966425,
+        "difference": 0.0,
+        "name": "depth=30.welch_t",
+        "published": 2.8854992307966425
+      },
+      {
+        "actual": 0.009547189064832233,
+        "difference": 1.214306433183765e-17,
+        "name": "depth=30.welch_p",
+        "published": 0.009547189064832245
+      },
+      {
+        "actual": 123.40011440581384,
+        "difference": 0.0,
+        "name": "fisher.chi2",
+        "published": 123.40011440581384
+      }
+    ],
+    "fisher": {
+      "chi2": 123.40011440581384,
+      "combined_p": 0.0,
+      "degrees_of_freedom": 16,
+      "n_depths_significant_at_0_05": 7,
+      "n_depths_tested": 8
+    },
+    "mean_asymmetry_relative": 0.09245549006585718,
+    "n_circuits_used": 282,
+    "n_depths": 8,
+    "peak_asymmetry_depth": 6,
+    "peak_asymmetry_relative": 0.17477782479898452
+  },
+  "schema": "s5_phase1_benchmark_harness_v1"
+}
