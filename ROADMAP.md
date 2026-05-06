@@ -284,9 +284,11 @@ is copied here.
 
 ### Active paper and submission tasks
 
-- [ ] **DLA parity preprint submission package.** Keep the
-  parity-sector/excitation-number framing conservative and ensure all
-  cited paths, job IDs, figures, and artefacts match committed files.
+- [x] **DLA parity preprint submission package.** Completed 2026-05-06:
+  `docs/dla_parity_submission_checklist_2026-05-06.md` freezes the
+  conservative parity-sector/excitation-number framing, required job IDs,
+  committed artefact index, unsupported claims, and final no-QPU
+  pre-upload gate.
 - [ ] **Rust/VQE methods paper package.** Keep all tables generated from
   committed JSON/CSV artefacts and include current CLI/dashboard output
   only after regeneration.
