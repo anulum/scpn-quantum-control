@@ -78,6 +78,14 @@ def test_s1_feedback_selection_is_no_qpu_latency_harness() -> None:
     ]
 
 
+def test_s2_scaling_lite_selection_includes_protocol_and_lite_rows() -> None:
+    harnesses = bench_cli._selected_harnesses("s2", include_gpu=False)
+
+    labels = [harness.label for harness in harnesses]
+
+    assert labels == ["s2-scaling-protocol", "s2-scaling-lite", "s2-claim-boundary"]
+
+
 def test_dry_run_prints_selected_harnesses(capsys: pytest.CaptureFixture[str]) -> None:
     rc = bench_cli.run(["fim-all", "--dry-run"])
 

@@ -680,6 +680,57 @@ be executed until individually activated.
   possibilities opened, claim boundary, and reproducibility package.
   The S1 readiness package embeds the dossier by default.
 - [ ] **S2** Quantum advantage benchmarks at scale.
+- [x] **S2 scaling protocol manifest.** Implemented 2026-05-06:
+  `benchmarks/advantage_protocol.py` and
+  `scripts/export_s2_scaling_protocol.py` define the S2 no-claim
+  scaling protocol, required baselines, size grid, output schema,
+  acceptance rules, falsification rules, and claim boundary before any
+  heavy sweep or hardware row is promoted.
+- [x] **S2 scaling row validator.** Implemented 2026-05-06:
+  `validate_scaling_rows` and `scripts/validate_s2_scaling_rows.py`
+  enforce the preregistered S2 row schema, required baselines, known
+  baseline labels, valid statuses, and wall-time requirements for
+  successful rows before any scaling table or figure is promoted.
+- [x] **S2 lite scaling harness.** Implemented 2026-05-06:
+  `scripts/bench_s2_scaling_lite.py` emits protocol-compliant rows for
+  small selected sizes, measures cheap classical ODE and dense exact
+  diagonalisation rows, records explicit `skipped` rows for heavier
+  required baselines, validates the output, and records no hardware
+  submission or advantage claim.
+- [x] **S2 lite sparse eigensolver row.** Implemented 2026-05-06:
+  the lite scaling harness now measures gated `sparse_eigsh` rows for
+  small sizes, including ground energy, residual norm, Hilbert dimension,
+  wall time, and memory estimate, instead of treating sparse classical
+  support as skipped in the rehearsal path.
+- [x] **S2 lite MPS/TN spoofability row.** Implemented 2026-05-06:
+  the lite scaling harness now measures small-size tensor-network
+  spoofability diagnostics from exact ground-state Schmidt spectra,
+  including max bond, worst-cut discarded weight, midchain entropy,
+  Hilbert dimension, wall time, and memory estimate.
+- [x] **S2 lite Aer/statevector row.** Implemented 2026-05-06:
+  the lite scaling harness now measures gated Aer/statevector-style
+  statevector evolution rows through `QuantumKuramotoSolver`, including
+  Trotter steps, circuit depth, final synchronisation observables,
+  Hilbert dimension, wall time, and memory estimate.
+- [x] **S2 benchmark CLI wiring.** Implemented 2026-05-06:
+  `scpn-bench s2-scaling-lite` regenerates the S2 scaling protocol and
+  lite scaling rows through the canonical benchmark CLI without hardware
+  submission or advantage claims.
+- [x] **S2 claim-boundary report.** Implemented 2026-05-06:
+  `scripts/report_s2_scaling_claim_boundary.py` reads S2 rows, validates
+  them, and emits JSON/Markdown reports listing allowed claims,
+  forbidden claims, remaining blockers, validation state, hardware
+  submission status, and advantage-claim status.
+- [x] **S2 scaling readiness index.** Implemented 2026-05-06:
+  `docs/s2_scaling_readiness_index_2026-05-06.md` summarises the S2
+  lite baseline rows, canonical command, artefacts, allowed claims,
+  forbidden claims, full-campaign blockers, hardware boundary, and next
+  non-QPU scaling step.
+- [x] **S2 lite memory instrumentation and size gates.** Implemented
+  2026-05-06: `scripts/bench_s2_scaling_lite.py` now records
+  `tracemalloc` peak bytes for measured rows, keeps estimated dense or
+  statevector bytes in metric payloads, and exposes explicit dense,
+  sparse, tensor-network, and statevector size gates.
 - [ ] **S3** ML-augmented pulse / ansatz design.
 - [ ] **S4** Multi-hardware backend + pulse-level control.
 - [ ] **S5** Open-data + classical validation harness.

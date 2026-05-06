@@ -1,0 +1,84 @@
+{
+  "rows": [
+    {
+      "protocol_id": "s2_quantum_advantage_scaling_2026-05-06",
+      "n_qubits": 4,
+      "baseline": "classical_ode",
+      "status": "ok",
+      "wall_time_ms": 1.0,
+      "memory_bytes": 1024,
+      "metric_payload": {
+        "final_R": 0.5
+      },
+      "command": "schema-fixture",
+      "machine": "schema-fixture",
+      "dependencies": {},
+      "git_commit": "schema-fixture",
+      "notes": []
+    },
+    {
+      "protocol_id": "s2_quantum_advantage_scaling_2026-05-06",
+      "n_qubits": 4,
+      "baseline": "dense_eigh",
+      "status": "skipped",
+      "wall_time_ms": null,
+      "memory_bytes": null,
+      "metric_payload": {},
+      "command": "schema-fixture",
+      "machine": "schema-fixture",
+      "dependencies": {},
+      "git_commit": "schema-fixture",
+      "notes": [
+        "schema fixture skip"
+      ]
+    },
+    {
+      "protocol_id": "s2_quantum_advantage_scaling_2026-05-06",
+      "n_qubits": 4,
+      "baseline": "sparse_eigsh",
+      "status": "skipped",
+      "wall_time_ms": null,
+      "memory_bytes": null,
+      "metric_payload": {},
+      "command": "schema-fixture",
+      "machine": "schema-fixture",
+      "dependencies": {},
+      "git_commit": "schema-fixture",
+      "notes": [
+        "schema fixture skip"
+      ]
+    },
+    {
+      "protocol_id": "s2_quantum_advantage_scaling_2026-05-06",
+      "n_qubits": 4,
+      "baseline": "mps_tensor_network",
+      "status": "skipped",
+      "wall_time_ms": null,
+      "memory_bytes": null,
+      "metric_payload": {},
+      "command": "schema-fixture",
+      "machine": "schema-fixture",
+      "dependencies": {},
+      "git_commit": "schema-fixture",
+      "notes": [
+        "schema fixture skip"
+      ]
+    },
+    {
+      "protocol_id": "s2_quantum_advantage_scaling_2026-05-06",
+      "n_qubits": 4,
+      "baseline": "aer_statevector",
+      "status": "skipped",
+      "wall_time_ms": null,
+      "memory_bytes": null,
+      "metric_payload": {},
+      "command": "schema-fixture",
+      "machine": "schema-fixture",
+      "dependencies": {},
+      "git_commit": "schema-fixture",
+      "notes": [
+        "schema fixture skip"
+      ]
+    }
+  ]
+}

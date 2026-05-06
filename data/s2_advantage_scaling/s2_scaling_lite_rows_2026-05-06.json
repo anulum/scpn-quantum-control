@@ -1,0 +1,251 @@
+{
+  "date": "2026-05-06",
+  "script": "scripts/bench_s2_scaling_lite.py",
+  "hardware_submission": false,
+  "advantage_claim": false,
+  "size_gates": {
+    "max_dense_qubits": 6,
+    "max_sparse_qubits": 6,
+    "max_tn_qubits": 6,
+    "max_statevector_qubits": 6
+  },
+  "rows": [
+    {
+      "protocol_id": "s2_quantum_advantage_scaling_2026-05-06",
+      "n_qubits": 4,
+      "baseline": "classical_ode",
+      "status": "ok",
+      "wall_time_ms": 6.22414,
+      "memory_bytes": 45958,
+      "metric_payload": {
+        "final_R": 0.7952928318152384,
+        "input_bytes": 160,
+        "peak_tracemalloc_bytes": 45958
+      },
+      "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/bench_s2_scaling_lite.py",
+      "machine": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39",
+      "dependencies": {
+        "python": "3.12.3",
+        "numpy": "2.2.6"
+      },
+      "git_commit": "bdf655a72ea4a073ca5fb979d973f1df795b8981",
+      "notes": []
+    },
+    {
+      "protocol_id": "s2_quantum_advantage_scaling_2026-05-06",
+      "n_qubits": 4,
+      "baseline": "dense_eigh",
+      "status": "ok",
+      "wall_time_ms": 0.199287,
+      "memory_bytes": 5282,
+      "metric_payload": {
+        "ground_energy": -6.303000000000001,
+        "hilbert_dim": 16,
+        "estimated_dense_matrix_bytes": 4096,
+        "peak_tracemalloc_bytes": 5282
+      },
+      "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/bench_s2_scaling_lite.py",
+      "machine": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39",
+      "dependencies": {
+        "python": "3.12.3",
+        "numpy": "2.2.6"
+      },
+      "git_commit": "bdf655a72ea4a073ca5fb979d973f1df795b8981",
+      "notes": []
+    },
+    {
+      "protocol_id": "s2_quantum_advantage_scaling_2026-05-06",
+      "n_qubits": 4,
+      "baseline": "sparse_eigsh",
+      "status": "ok",
+      "wall_time_ms": 7.834792,
+      "memory_bytes": 49972,
+      "metric_payload": {
+        "ground_energy": -6.303,
+        "residual_norm": 7.635490396491078e-15,
+        "hilbert_dim": 16,
+        "estimated_statevector_bytes": 256,
+        "peak_tracemalloc_bytes": 49972
+      },
+      "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/bench_s2_scaling_lite.py",
+      "machine": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39",
+      "dependencies": {
+        "python": "3.12.3",
+        "numpy": "2.2.6"
+      },
+      "git_commit": "bdf655a72ea4a073ca5fb979d973f1df795b8981",
+      "notes": []
+    },
+    {
+      "protocol_id": "s2_quantum_advantage_scaling_2026-05-06",
+      "n_qubits": 4,
+      "baseline": "mps_tensor_network",
+      "status": "ok",
+      "wall_time_ms": 1.028118,
+      "memory_bytes": 10880,
+      "metric_payload": {
+        "ground_energy": -6.303000000000001,
+        "max_bond": 8,
+        "worst_cut_discarded_weight": 0.0,
+        "max_midchain_entropy_bits": -0.0,
+        "hilbert_dim": 16,
+        "estimated_dense_matrix_bytes": 4096,
+        "peak_tracemalloc_bytes": 10880
+      },
+      "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/bench_s2_scaling_lite.py",
+      "machine": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39",
+      "dependencies": {
+        "python": "3.12.3",
+        "numpy": "2.2.6"
+      },
+      "git_commit": "bdf655a72ea4a073ca5fb979d973f1df795b8981",
+      "notes": []
+    },
+    {
+      "protocol_id": "s2_quantum_advantage_scaling_2026-05-06",
+      "n_qubits": 4,
+      "baseline": "aer_statevector",
+      "status": "ok",
+      "wall_time_ms": 35.209414,
+      "memory_bytes": 242415,
+      "metric_payload": {
+        "trotter_steps": 1,
+        "circuit_depth": 1,
+        "final_R": 0.0,
+        "final_psi": 0.0,
+        "hilbert_dim": 16,
+        "estimated_statevector_bytes": 256,
+        "peak_tracemalloc_bytes": 242415
+      },
+      "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/bench_s2_scaling_lite.py",
+      "machine": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39",
+      "dependencies": {
+        "python": "3.12.3",
+        "numpy": "2.2.6"
+      },
+      "git_commit": "bdf655a72ea4a073ca5fb979d973f1df795b8981",
+      "notes": []
+    },
+    {
+      "protocol_id": "s2_quantum_advantage_scaling_2026-05-06",
+      "n_qubits": 6,
+      "baseline": "classical_ode",
+      "status": "ok",
+      "wall_time_ms": 15.331815,
+      "memory_bytes": 563384,
+      "metric_payload": {
+        "final_R": 0.5443559200364483,
+        "input_bytes": 336,
+        "peak_tracemalloc_bytes": 563384
+      },
+      "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/bench_s2_scaling_lite.py",
+      "machine": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39",
+      "dependencies": {
+        "python": "3.12.3",
+        "numpy": "2.2.6"
+      },
+      "git_commit": "bdf655a72ea4a073ca5fb979d973f1df795b8981",
+      "notes": []
+    },
+    {
+      "protocol_id": "s2_quantum_advantage_scaling_2026-05-06",
+      "n_qubits": 6,
+      "baseline": "dense_eigh",
+      "status": "ok",
+      "wall_time_ms": 9.78733,
+      "memory_bytes": 67106,
+      "metric_payload": {
+        "ground_energy": -10.793000000000001,
+        "hilbert_dim": 64,
+        "estimated_dense_matrix_bytes": 65536,
+        "peak_tracemalloc_bytes": 67106
+      },
+      "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/bench_s2_scaling_lite.py",
+      "machine": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39",
+      "dependencies": {
+        "python": "3.12.3",
+        "numpy": "2.2.6"
+      },
+      "git_commit": "bdf655a72ea4a073ca5fb979d973f1df795b8981",
+      "notes": []
+    },
+    {
+      "protocol_id": "s2_quantum_advantage_scaling_2026-05-06",
+      "n_qubits": 6,
+      "baseline": "sparse_eigsh",
+      "status": "ok",
+      "wall_time_ms": 30.785312,
+      "memory_bytes": 90731,
+      "metric_payload": {
+        "ground_energy": -10.793000000000015,
+        "residual_norm": 8.260446987822233e-11,
+        "hilbert_dim": 64,
+        "estimated_statevector_bytes": 1024,
+        "peak_tracemalloc_bytes": 90731
+      },
+      "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/bench_s2_scaling_lite.py",
+      "machine": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39",
+      "dependencies": {
+        "python": "3.12.3",
+        "numpy": "2.2.6"
+      },
+      "git_commit": "bdf655a72ea4a073ca5fb979d973f1df795b8981",
+      "notes": []
+    },
+    {
+      "protocol_id": "s2_quantum_advantage_scaling_2026-05-06",
+      "n_qubits": 6,
+      "baseline": "mps_tensor_network",
+      "status": "ok",
+      "wall_time_ms": 9.282952,
+      "memory_bytes": 134528,
+      "metric_payload": {
+        "ground_energy": -10.793000000000001,
+        "max_bond": 8,
+        "worst_cut_discarded_weight": 0.0,
+        "max_midchain_entropy_bits": -0.0,
+        "hilbert_dim": 64,
+        "estimated_dense_matrix_bytes": 65536,
+        "peak_tracemalloc_bytes": 134528
+      },
+      "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/bench_s2_scaling_lite.py",
+      "machine": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39",
+      "dependencies": {
+        "python": "3.12.3",
+        "numpy": "2.2.6"
+      },
+      "git_commit": "bdf655a72ea4a073ca5fb979d973f1df795b8981",
+      "notes": []
+    },
+    {
+      "protocol_id": "s2_quantum_advantage_scaling_2026-05-06",
+      "n_qubits": 6,
+      "baseline": "aer_statevector",
+      "status": "ok",
+      "wall_time_ms": 94.839876,
+      "memory_bytes": 391809,
+      "metric_payload": {
+        "trotter_steps": 1,
+        "circuit_depth": 1,
+        "final_R": 0.0,
+        "final_psi": 0.0,
+        "hilbert_dim": 64,
+        "estimated_statevector_bytes": 1024,
+        "peak_tracemalloc_bytes": 391809
+      },
+      "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/bench_s2_scaling_lite.py",
+      "machine": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39",
+      "dependencies": {
+        "python": "3.12.3",
+        "numpy": "2.2.6"
+      },
+      "git_commit": "bdf655a72ea4a073ca5fb979d973f1df795b8981",
+      "notes": []
+    }
+  ],
+  "validation": {
+    "valid": true,
+    "missing_required": [],
+    "invalid_rows": []
+  }
+}

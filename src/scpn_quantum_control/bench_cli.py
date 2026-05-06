@@ -74,6 +74,13 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         optional_flag="readout",
     ),
     Harness("s1-feedback-loop", "scripts/benchmark_s1_feedback_loop.py", frozenset({"s1"})),
+    Harness("s2-scaling-protocol", "scripts/export_s2_scaling_protocol.py", frozenset({"s2"})),
+    Harness("s2-scaling-lite", "scripts/bench_s2_scaling_lite.py", frozenset({"s2"})),
+    Harness(
+        "s2-claim-boundary",
+        "scripts/report_s2_scaling_claim_boundary.py",
+        frozenset({"s2"}),
+    ),
 )
 
 ARTEFACT_PATHS = (
@@ -117,6 +124,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate no-QPU S1 feedback-loop latency artefacts.",
     )
     _add_run_options(s1, default_group="s1")
+
+    s2 = subparsers.add_parser(
+        "s2-scaling-lite",
+        help="Regenerate no-QPU S2 scaling protocol and lite rows.",
+    )
+    _add_run_options(s2, default_group="s2")
 
     return parser.parse_args(argv)
 

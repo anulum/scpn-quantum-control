@@ -1,0 +1,159 @@
+{
+  "protocol_id": "s2_quantum_advantage_scaling_2026-05-06",
+  "sizes": [
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20
+  ],
+  "baselines": [
+    {
+      "kind": "classical_ode",
+      "label": "classical_ode",
+      "required": true,
+      "max_qubits": 20,
+      "metrics": [
+        "wall_time_ms",
+        "memory_bytes",
+        "status",
+        "notes",
+        "final_R"
+      ],
+      "claim_boundary": "Classical oscillator ODE baseline; not a Hilbert-space solver."
+    },
+    {
+      "kind": "dense_exact_diagonalisation",
+      "label": "dense_eigh",
+      "required": true,
+      "max_qubits": 14,
+      "metrics": [
+        "wall_time_ms",
+        "memory_bytes",
+        "status",
+        "notes",
+        "ground_energy"
+      ],
+      "claim_boundary": "Dense exact diagonalisation is skipped by memory gate above its cap."
+    },
+    {
+      "kind": "sparse_eigsh",
+      "label": "sparse_eigsh",
+      "required": true,
+      "max_qubits": 20,
+      "metrics": [
+        "wall_time_ms",
+        "memory_bytes",
+        "status",
+        "notes",
+        "ground_energy",
+        "residual_norm"
+      ],
+      "claim_boundary": "Sparse eigensolver timing is not equivalent to full dynamics."
+    },
+    {
+      "kind": "mps_tensor_network",
+      "label": "mps_tensor_network",
+      "required": true,
+      "max_qubits": 20,
+      "metrics": [
+        "wall_time_ms",
+        "memory_bytes",
+        "status",
+        "notes",
+        "max_bond",
+        "discarded_weight"
+      ],
+      "claim_boundary": "MPS results bound classical spoofability; low entanglement weakens advantage claims."
+    },
+    {
+      "kind": "gpu_dense_reference",
+      "label": "gpu_dense_reference",
+      "required": false,
+      "max_qubits": 13,
+      "metrics": [
+        "wall_time_ms",
+        "memory_bytes",
+        "status",
+        "notes",
+        "device"
+      ],
+      "claim_boundary": "GPU dense timings are classical-validation support, not a quantum baseline."
+    },
+    {
+      "kind": "aer_statevector",
+      "label": "aer_statevector",
+      "required": true,
+      "max_qubits": 20,
+      "metrics": [
+        "wall_time_ms",
+        "memory_bytes",
+        "status",
+        "notes",
+        "trotter_steps",
+        "circuit_depth"
+      ],
+      "claim_boundary": "Aer statevector is a simulator baseline, not hardware evidence."
+    },
+    {
+      "kind": "qpu_hardware",
+      "label": "qpu_hardware",
+      "required": false,
+      "max_qubits": 8,
+      "metrics": [
+        "shots",
+        "job_ids",
+        "backend",
+        "raw_counts_path",
+        "status",
+        "notes"
+      ],
+      "claim_boundary": "Hardware column is evidence only for submitted preregistered sizes; absence of IBM credits must degrade gracefully without broad advantage claims."
+    }
+  ],
+  "required_baselines": [
+    "classical_ode",
+    "dense_eigh",
+    "sparse_eigsh",
+    "mps_tensor_network",
+    "aer_statevector"
+  ],
+  "acceptance": [
+    "All required classical and simulator columns either contain measured rows or explicit size-gated skips.",
+    "Every timing row records command, machine, dependency versions, and git commit.",
+    "MPS/TN diagnostics are present before any advantage-language figure is promoted.",
+    "Hardware rows are optional until credits are approved and must never be extrapolated as broad advantage."
+  ],
+  "falsification": [
+    "If MPS discarded weight remains small at target sizes, any strong quantum-advantage framing is rejected.",
+    "If Aer/statevector or sparse classical baselines dominate the proposed quantum path, crossover language is rejected.",
+    "If hardware rows are unavailable or noisy, the result remains a classical scaling study only."
+  ],
+  "claim_boundary": "S2 may publish scaling, memory, and spoofability boundaries. It must not claim broad quantum advantage without preregistered hardware data and classical tensor-network baselines at the same problem family.",
+  "output_schema": {
+    "row_keys": [
+      "protocol_id",
+      "n_qubits",
+      "baseline",
+      "status",
+      "wall_time_ms",
+      "memory_bytes",
+      "metric_payload",
+      "command",
+      "machine",
+      "dependencies",
+      "git_commit",
+      "notes"
+    ]
+  },
+  "export": {
+    "date": "2026-05-06",
+    "script": "scripts/export_s2_scaling_protocol.py",
+    "hardware_submission": false,
+    "advantage_claim": false
+  }
+}
