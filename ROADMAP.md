@@ -149,6 +149,11 @@ is copied here.
   discovery-state reset on `clear()`, sorted known-backend diagnostics
   for missing names, and one-shot discovery semantics after broken
   plugin load attempts.
+- [x] **Mutation-test expansion: Knm Hamiltonian bridge invariants.**
+  Implemented 2026-05-06: `tests/test_knm_hamiltonian.py` now guards
+  Kuramoto ring self-coupling/edge count, inclusive ansatz thresholding,
+  and delta-zero equivalence across XY, XXZ, sparse, and dense
+  Hamiltonian paths.
 - [ ] **Mutation-test expansion.** Start with `phase/xy_kuramoto.py`,
   `hardware/async_runner.py`, `hardware/backends.py`, `bridge/*`,
   `analysis/dla*`, and `mitigation/*`.

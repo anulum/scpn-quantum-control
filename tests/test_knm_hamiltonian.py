@@ -15,7 +15,10 @@ from scpn_quantum_control.bridge.knm_hamiltonian import (
     build_knm_paper27,
     build_kuramoto_ring,
     knm_to_ansatz,
+    knm_to_dense_matrix,
     knm_to_hamiltonian,
+    knm_to_sparse_matrix,
+    knm_to_xxz_hamiltonian,
 )
 
 SIZES = [2, 3, 4, 6, 8, 16]
@@ -133,3 +136,48 @@ def test_kuramoto_ring_custom_omega():
     omega_in = np.array([1.0, 2.0, 3.0])
     K, omega_out = build_kuramoto_ring(3, omega=omega_in)
     np.testing.assert_array_equal(omega_out, omega_in)
+
+
+def test_kuramoto_ring_has_no_self_coupling_and_expected_edges():
+    """Mutation guard: ring construction must not add diagonal or extra edges."""
+    K, omega = build_kuramoto_ring(5, coupling=0.75, omega=np.arange(5, dtype=float))
+
+    np.testing.assert_allclose(np.diag(K), 0.0)
+    assert np.count_nonzero(K) == 10
+    assert K[0, 1] == pytest.approx(0.75)
+    assert K[0, 4] == pytest.approx(0.75)
+    assert K[0, 2] == pytest.approx(0.0)
+    np.testing.assert_array_equal(omega, np.arange(5, dtype=float))
+
+
+def test_ansatz_threshold_includes_equal_weight_edges_only():
+    """Mutation guard: threshold comparison is inclusive at equality."""
+    K = np.array(
+        [
+            [0.0, 0.2, 0.199],
+            [0.2, 0.0, 0.5],
+            [0.199, 0.5, 0.0],
+        ]
+    )
+
+    qc = knm_to_ansatz(K, reps=1, threshold=0.2)
+    cz_edges = [
+        tuple(inst.qubits) for inst in qc.data if getattr(inst.operation, "name", "") == "cz"
+    ]
+
+    assert len(cz_edges) == 2
+
+
+def test_xxz_delta_zero_matches_xy_and_sparse_dense_paths():
+    """Mutation guard: delta=0 path must match the public XY helper exactly."""
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+
+    H_xy = knm_to_hamiltonian(K, omega).to_matrix()
+    H_xxz = knm_to_xxz_hamiltonian(K, omega, delta=0.0).to_matrix()
+    H_sparse = knm_to_sparse_matrix(K, omega, delta=0.0).toarray()
+    H_dense = knm_to_dense_matrix(K, omega, delta=0.0)
+
+    np.testing.assert_allclose(H_xxz, H_xy, atol=1e-12)
+    np.testing.assert_allclose(H_sparse, H_xy, atol=1e-12)
+    np.testing.assert_allclose(H_dense, H_xy, atol=1e-12)
