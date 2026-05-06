@@ -373,8 +373,16 @@ These are candidates, not authorisations to spend QPU time. Each needs
 offline artefacts, a preregistered manifest, depth/shot gates, and an
 explicit QPU-time estimate before submission.
 
-- [ ] **Multi-device DLA replication.** Repeat a small validated subset
-  on a second Heron backend to test backend/calibration specificity.
+- [x] **Multi-device DLA replication preregistration.** Completed
+  2026-05-06: `docs/dla_multidevice_replication_prereg_2026-05-06.md`
+  defines the second-Heron backend rule, reduced `n=4` circuit matrix,
+  148-circuit scope, 3--6 minute estimate, 10-minute ceiling,
+  live-depth gates, analysis plan, falsification rules, and output
+  artefact paths. QPU execution remains separate and approval-gated.
+- [ ] **Multi-device DLA replication execution.** Execute the
+  preregistered second-Heron run only after live backend selection,
+  transpilation/depth gates, QPU budget confirmation, and explicit
+  approval.
 - [ ] **Systematic state/layout randomisation.** Separate symmetry
   sector, excitation count, physical layout, readout, and topology
   contributions.
