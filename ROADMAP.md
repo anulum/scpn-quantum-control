@@ -48,9 +48,10 @@ is copied here.
   2026-05-06: `docs/actions_history_dashboard.md` documents audit
   artefacts, bucket meanings, accepted external-transient Link Check
   failures, and the manual safe-delete rule.
-- [ ] **Post-push Actions history workflow observation.** After pushing
-  the workflow, confirm the new `Actions History Audit` workflow can be
-  triggered and uploads the expected artefacts.
+- [x] **Post-push Actions history workflow observation.** Completed
+  2026-05-06: manually triggered `Actions History Audit` run
+  `25436780329`; the `classify-history` job passed and uploaded the
+  `actions-history-audit` artefact.
 
 ### Archived repository hygiene checklist
 
