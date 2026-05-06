@@ -16,6 +16,8 @@ Quantum hardware simulates this natively via Trotterized time evolution.
 
 from __future__ import annotations
 
+from dataclasses import dataclass, replace
+
 import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import PauliEvolutionGate
@@ -23,6 +25,31 @@ from qiskit.quantum_info import SparsePauliOp, Statevector
 from qiskit.synthesis import LieTrotter, SuzukiTrotter
 
 from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+
+
+@dataclass(frozen=True)
+class TrotterEvolutionConfig:
+    """Typed defaults for Kuramoto-XY Trotter evolution.
+
+    `order` selects Lie-Trotter (`1`) or second-order Suzuki-Trotter (`2`).
+    `evolve_steps` is used when `evolve()` is called without an explicit
+    `trotter_steps` value. `run_steps_per_step` is used when `run()` is called
+    without an explicit `trotter_per_step` value.
+    """
+
+    order: int = 1
+    evolve_steps: int = 10
+    run_steps_per_step: int = 5
+
+    def __post_init__(self) -> None:
+        if self.order not in (1, 2):
+            raise ValueError(f"order must be 1 or 2, got {self.order}")
+        if not isinstance(self.evolve_steps, int) or self.evolve_steps < 1:
+            raise ValueError(f"evolve_steps must be a positive integer, got {self.evolve_steps}")
+        if not isinstance(self.run_steps_per_step, int) or self.run_steps_per_step < 1:
+            raise ValueError(
+                f"run_steps_per_step must be a positive integer, got {self.run_steps_per_step}"
+            )
 
 
 class QuantumKuramotoSolver:
@@ -37,7 +64,8 @@ class QuantumKuramotoSolver:
         n_oscillators: int,
         K_coupling: np.ndarray,
         omega_natural: np.ndarray,
-        trotter_order: int = 1,
+        trotter_order: int | None = None,
+        evolution_config: TrotterEvolutionConfig | None = None,
     ):
         """K_coupling: (n,n) coupling matrix, omega_natural: (n,) frequencies."""
         self.n = self._validate_n_oscillators(n_oscillators)
@@ -45,9 +73,12 @@ class QuantumKuramotoSolver:
         self.omega = np.array(omega_natural, dtype=np.float64, copy=True)
         self._validate_coupling_inputs(self.n, self.K, self.omega)
         np.fill_diagonal(self.K, 0.0)
-        if trotter_order not in (1, 2):
-            raise ValueError(f"trotter_order must be 1 or 2, got {trotter_order}")
-        self.trotter_order = trotter_order
+        config = evolution_config or TrotterEvolutionConfig()
+        order = config.order if trotter_order is None else trotter_order
+        if order not in (1, 2):
+            raise ValueError(f"trotter_order must be 1 or 2, got {order}")
+        self.evolution_config = replace(config, order=order)
+        self.trotter_order = self.evolution_config.order
         self._hamiltonian: SparsePauliOp | None = None
 
     @staticmethod
@@ -74,7 +105,7 @@ class QuantumKuramotoSolver:
         self._hamiltonian = knm_to_hamiltonian(self.K, self.omega)
         return self._hamiltonian
 
-    def evolve(self, time: float, trotter_steps: int = 10) -> QuantumCircuit:
+    def evolve(self, time: float, trotter_steps: int | None = None) -> QuantumCircuit:
         """Build Trotterized evolution circuit U(t) = exp(-iHt).
 
         Uses LieTrotter (order=1, O(t²/reps)) or SuzukiTrotter (order=2,
@@ -82,6 +113,9 @@ class QuantumKuramotoSolver:
         """
         if not np.isfinite(time) or time < 0.0:
             raise ValueError(f"time must be finite and non-negative, got {time}")
+        trotter_steps = (
+            self.evolution_config.evolve_steps if trotter_steps is None else trotter_steps
+        )
         if not isinstance(trotter_steps, int) or trotter_steps < 1:
             raise ValueError(f"trotter_steps must be a positive integer, got {trotter_steps}")
         if self._hamiltonian is None:
@@ -125,12 +159,14 @@ class QuantumKuramotoSolver:
         psi = float(np.angle(z_complex))
         return R, psi
 
-    def run(self, t_max: float, dt: float, trotter_per_step: int = 5) -> dict:
+    def run(self, t_max: float, dt: float, trotter_per_step: int | None = None) -> dict:
         """Time-stepped evolution returning R(t) and per-qubit expectations."""
         if not np.isfinite(t_max) or t_max < 0.0:
             raise ValueError(f"t_max must be finite and non-negative, got {t_max}")
         if not np.isfinite(dt) or dt <= 0.0:
             raise ValueError(f"dt must be finite and positive, got {dt}")
+        if trotter_per_step is None:
+            trotter_per_step = self.evolution_config.run_steps_per_step
         if not isinstance(trotter_per_step, int) or trotter_per_step < 1:
             raise ValueError(
                 f"trotter_per_step must be a positive integer, got {trotter_per_step}"

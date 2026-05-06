@@ -45,10 +45,11 @@ from .structured_ansatz import build_structured_ansatz
 from .trotter_error import trotter_error_norm, trotter_error_sweep
 from .trotter_upde import QuantumUPDESolver
 from .varqite import VarQITEResult, varqite_ground_state
-from .xy_kuramoto import QuantumKuramotoSolver
+from .xy_kuramoto import QuantumKuramotoSolver, TrotterEvolutionConfig
 
 __all__ = [
     "QuantumKuramotoSolver",
+    "TrotterEvolutionConfig",
     "QuantumUPDESolver",
     "PhaseVQE",
     "trotter_error_norm",

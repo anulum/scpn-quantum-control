@@ -128,7 +128,7 @@ from .phase.lindblad_engine import LindbladSyncEngine
 from .phase.phase_vqe import PhaseVQE
 from .phase.structured_ansatz import build_structured_ansatz
 from .phase.trotter_upde import QuantumUPDESolver
-from .phase.xy_kuramoto import QuantumKuramotoSolver
+from .phase.xy_kuramoto import QuantumKuramotoSolver, TrotterEvolutionConfig
 from .qec.biological_surface_code import BiologicalMWPMDecoder, BiologicalSurfaceCode
 from .qec.control_qec import ControlQEC
 from .qec.fault_tolerant import FaultTolerantUPDE, LogicalQubit
@@ -200,6 +200,7 @@ __all__ = [
     "ssgf_state_to_quantum",
     "quantum_to_ssgf_state",
     "QuantumKuramotoSolver",
+    "TrotterEvolutionConfig",
     "QuantumUPDESolver",
     "PhaseVQE",
     "HardwareRunner",

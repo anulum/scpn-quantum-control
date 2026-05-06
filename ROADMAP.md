@@ -251,9 +251,11 @@ is copied here.
   symmetric XY semantics, finite coupling and `omega` values, matching
   finite `omega` length, and canonicalises the solver-owned coupling
   diagonal to zero without mutating caller input.
-- [ ] **Trotter/config public surface.** Replace hardcoded circuit
-  defaults with a typed config object or documented keyword surface while
-  preserving backwards compatibility.
+- [x] **Trotter/config public surface.** Completed 2026-05-06:
+  `TrotterEvolutionConfig` now exposes typed defaults for evolution
+  order, `evolve()` Trotter steps, and `run()` per-step Trotterisation;
+  legacy `trotter_order`, `trotter_steps`, and `trotter_per_step`
+  arguments remain supported and take explicit precedence.
 - [ ] **Expectation hot path.** Replace avoidable per-qubit Python loops
   with vectorised NumPy or Rust offload where measured benchmarks justify
   it.

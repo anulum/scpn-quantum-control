@@ -13,7 +13,7 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
-from scpn_quantum_control.phase.xy_kuramoto import QuantumKuramotoSolver
+from scpn_quantum_control.phase.xy_kuramoto import QuantumKuramotoSolver, TrotterEvolutionConfig
 
 SIZES = [2, 3, 4]
 
@@ -76,12 +76,42 @@ def test_rejects_invalid_trotter_settings():
     omega = np.zeros(2)
     with pytest.raises(ValueError, match="trotter_order must be 1 or 2"):
         QuantumKuramotoSolver(2, K, omega, trotter_order=3)
+    with pytest.raises(ValueError, match="order must be 1 or 2"):
+        TrotterEvolutionConfig(order=3)
+    with pytest.raises(ValueError, match="evolve_steps must be a positive integer"):
+        TrotterEvolutionConfig(evolve_steps=0)
+    with pytest.raises(ValueError, match="run_steps_per_step must be a positive integer"):
+        TrotterEvolutionConfig(run_steps_per_step=0)
 
     solver = QuantumKuramotoSolver(2, K, omega)
     with pytest.raises(ValueError, match="trotter_steps must be a positive integer"):
         solver.evolve(1.0, trotter_steps=0)
     with pytest.raises(ValueError, match="time must be finite and non-negative"):
         solver.evolve(-1.0)
+
+
+def test_trotter_config_sets_default_public_surface():
+    K = np.array([[0.0, 1.0], [1.0, 0.0]])
+    omega = np.zeros(2)
+    config = TrotterEvolutionConfig(order=2, evolve_steps=3, run_steps_per_step=2)
+    solver = QuantumKuramotoSolver(2, K, omega, evolution_config=config)
+
+    assert solver.trotter_order == 2
+    assert solver.evolution_config == config
+    assert solver.evolve(0.2).num_qubits == 2
+    result = solver.run(t_max=0.1, dt=0.1)
+    assert len(result["R"]) == 2
+
+
+def test_legacy_trotter_order_overrides_config_order_only():
+    K = np.array([[0.0, 1.0], [1.0, 0.0]])
+    omega = np.zeros(2)
+    config = TrotterEvolutionConfig(order=2, evolve_steps=4, run_steps_per_step=3)
+    solver = QuantumKuramotoSolver(2, K, omega, trotter_order=1, evolution_config=config)
+
+    assert solver.evolution_config.order == 1
+    assert solver.evolution_config.evolve_steps == 4
+    assert solver.evolution_config.run_steps_per_step == 3
 
 
 def test_rejects_invalid_run_grid():
