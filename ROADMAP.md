@@ -567,6 +567,11 @@ explicit QPU-time estimate before submission.
   schema proposal.
 - [ ] **pyOpenSci review.** Submit the software package for review and
   possible JOSS fast-track.
+- [x] **pyOpenSci review preparation.** Completed 2026-05-06:
+  `docs/pyopensci_submission_readiness_2026-05-06.md` records the
+  package scope, unsupported claims, metadata gate, reviewer evidence,
+  no-QPU pre-submission gates, and suggested issue summary. External
+  issue submission remains open until an issue URL is recorded.
 - [ ] **JOSS submission.** Submit after paper package and metadata are
   aligned.
 - [ ] **arXiv submission.** Submit the paper set once final PDFs,
