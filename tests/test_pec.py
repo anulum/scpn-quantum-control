@@ -35,6 +35,18 @@ def test_decompose_normalization():
     assert np.sum(coeffs) == pytest.approx(1.0)
 
 
+def test_decompose_matches_closed_form_coefficients():
+    """Mutation guard: inverse depolarising coefficients follow the Temme formula."""
+    p = 0.2
+    coeffs = pauli_twirl_decompose(p)
+    denom = 4.0 - 4.0 * p
+
+    np.testing.assert_allclose(
+        coeffs,
+        np.array([1.0 + 3.0 * p / denom, -p / denom, -p / denom, -p / denom]),
+    )
+
+
 def test_decompose_rejects_invalid_rate():
     with pytest.raises(ValueError, match="gate_error_rate"):
         pauli_twirl_decompose(1.0)
@@ -54,6 +66,7 @@ def test_pec_sample_returns_result():
     assert isinstance(result, PECResult)
     assert result.n_samples == 50
     assert len(result.sign_distribution) == 50
+    assert set(result.sign_distribution) <= {-1.0, 1.0}
 
 
 def test_pec_zero_noise_recovers_ideal():
@@ -70,6 +83,22 @@ def test_pec_overhead_increases_with_error():
     r1 = pec_sample(qc, 0.01, n_samples=10, rng=np.random.default_rng(0))
     r2 = pec_sample(qc, 0.1, n_samples=10, rng=np.random.default_rng(0))
     assert r2.overhead > r1.overhead
+
+
+def test_pec_overhead_uses_circuit_gate_count_exponent():
+    """Mutation guard: total overhead is gamma_single raised to circuit size."""
+    qc = QuantumCircuit(1)
+    qc.x(0)
+    qc.h(0)
+    qc.z(0)
+    p = 0.05
+    coeffs = pauli_twirl_decompose(p)
+    expected = float(np.sum(np.abs(coeffs)) ** qc.size())
+
+    result = pec_sample(qc, p, n_samples=5, rng=np.random.default_rng(0))
+
+    assert qc.size() == 3
+    assert result.overhead == pytest.approx(expected)
 
 
 def test_pec_sample_deterministic_with_seed():

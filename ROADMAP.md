@@ -162,6 +162,10 @@ is copied here.
   Implemented 2026-05-06: `tests/test_zne.py` now guards terminal
   measurement stripping/re-append behaviour, exact odd-scale fold gate
   counts, and immutable result copies for extrapolation inputs.
+- [x] **Mutation-test expansion: PEC mitigation invariants.**
+  Implemented 2026-05-06: `tests/test_pec.py` now guards exact
+  inverse-channel coefficient formulae, sign-distribution support, and
+  circuit-size exponentiation of PEC overhead.
 - [ ] **Mutation-test expansion.** Start with `phase/xy_kuramoto.py`,
   `hardware/async_runner.py`, `hardware/backends.py`, `bridge/*`,
   `analysis/dla*`, and `mitigation/*`.
