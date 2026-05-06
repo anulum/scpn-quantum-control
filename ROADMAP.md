@@ -544,9 +544,24 @@ explicit QPU-time estimate before submission.
 - [ ] **Community announcements.** Prepare Reddit, Qiskit Slack,
   Unitary Discord, Hacker News, LinkedIn, and X posts only after the
   public preprints are live.
-- [ ] **Registry listings.** Quantiki, QOSF project list, best-of-python,
-  Papers With Code, SciCrunch RRID, Open Hub, and Research Software
-  Directory.
+- [x] **Registry-listing preparation pack.** Completed 2026-05-06:
+  `docs/registry_listing_plan_2026-05-06.md` records the canonical
+  metadata, target-by-target readiness, account/manual blockers,
+  submission copy, and do-not-submit-yet boundaries for Quantiki, QOSF,
+  best-of-python, Papers With Code, SciCrunch RRID, Open Hub, and
+  Research Software Directory.
+- [x] **Community-announcement preparation pack.** Completed
+  2026-05-06:
+  `docs/community_announcement_pack_2026-05-06.md` prepares bounded
+  Reddit, Qiskit Slack, Unitary Discord, Hacker News, LinkedIn, and X
+  copy while keeping publication deferred until public preprint links
+  are live.
+- [ ] **Registry listings.** Execute only the entries that pass their
+  readiness gates. QOSF is already listed in
+  `qosf/awesome-quantum-software`; Papers With Code and community
+  announcements remain blocked until arXiv/JOSS links exist; Quantiki,
+  SciCrunch RRID, Open Hub, and Research Software Directory require
+  account/manual form completion.
 
 ### Deferred / CEO-gated strategic tracks
 
