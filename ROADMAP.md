@@ -85,6 +85,13 @@ is copied here.
   `tools/audit_test_behaviour.py` inventories test modules for
   assertion-bearing tests, exception contracts, parametrisation, and
   smoke-only tests so the manual behavioural audit can be prioritised.
+- [x] **Coverage-gap audit automation.** Implemented 2026-05-06:
+  `tools/audit_coverage_gaps.py` parses `coverage.xml`, inventories
+  package source files missing from coverage reports or below a
+  per-file threshold, and provides `--fail-on-gap` for release-gating
+  without running tests or treating line coverage as scientific
+  validation. Usage and boundaries are documented in
+  `docs/coverage_gap_audit_2026-05-06.md`.
 - [x] **Behavioural assertion-helper recognition.** Implemented
   2026-05-06: the behavioural audit now counts assertion helper calls
   such as `assert_*` functions instead of misclassifying them as smoke
