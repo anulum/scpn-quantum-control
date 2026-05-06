@@ -58,6 +58,30 @@ def test_behaviour_audit_counts_assertions_raises_and_parametrisation(tmp_path: 
     assert audit.smoke_only_tests == ()
 
 
+def test_behaviour_audit_counts_assertion_helper_calls(tmp_path: Path) -> None:
+    module = tmp_path / "test_helpers.py"
+    module.write_text(
+        "\n".join(
+            [
+                "import numpy as np",
+                "",
+                "def test_numpy_contract():",
+                "    np.testing.assert_allclose([1.0], [1.0])",
+                "",
+                "def test_local_helper_contract():",
+                "    assert_state_matches({'ok': True})",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    audit = audit_test_module(module)
+
+    assert audit.test_count == 2
+    assert audit.assertion_count == 2
+    assert audit.smoke_only_tests == ()
+
+
 def test_behaviour_audit_flags_smoke_only_tests(tmp_path: Path) -> None:
     module = tmp_path / "test_smoke.py"
     module.write_text(

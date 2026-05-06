@@ -84,6 +84,10 @@ is copied here.
   `tools/audit_test_behaviour.py` inventories test modules for
   assertion-bearing tests, exception contracts, parametrisation, and
   smoke-only tests so the manual behavioural audit can be prioritised.
+- [x] **Behavioural assertion-helper recognition.** Implemented
+  2026-05-06: the behavioural audit now counts assertion helper calls
+  such as `assert_*` functions instead of misclassifying them as smoke
+  tests.
 - [ ] **Behavioural-test audit.** Review every test module for
   assertions that constrain numerical invariants, state transitions,
   exception contracts, provenance, or integration behaviour.

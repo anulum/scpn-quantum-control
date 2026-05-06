@@ -22,6 +22,11 @@ BEHAVIOURAL_CALLS = {
     "warns",
 }
 
+ASSERTION_CALL_PREFIXES = (
+    "assert",
+    "assert_",
+)
+
 
 @dataclass(frozen=True)
 class TestFunctionAudit:
@@ -83,6 +88,11 @@ def _call_name(node: ast.AST) -> str:
     return ""
 
 
+def _is_assertion_call(name: str) -> bool:
+    """Return True when a call name is an assertion helper."""
+    return any(name.startswith(prefix) for prefix in ASSERTION_CALL_PREFIXES)
+
+
 def _is_pytest_mark_parametrize(decorator: ast.AST) -> bool:
     """Return True when a decorator is pytest.mark.parametrize."""
     target = decorator.func if isinstance(decorator, ast.Call) else decorator
@@ -106,7 +116,9 @@ def _function_audit(node: ast.FunctionDef | ast.AsyncFunctionDef) -> TestFunctio
             assertions += 1
         elif isinstance(child, ast.Call):
             name = _call_name(child.func)
-            if name == "raises":
+            if _is_assertion_call(name):
+                assertions += 1
+            elif name == "raises":
                 raises_contracts += 1
             if name in BEHAVIOURAL_CALLS:
                 behavioural_calls += 1
