@@ -104,6 +104,10 @@ is copied here.
   without reading the real vault, added-line diff scanning, keyword
   secret detection, placeholder and variable-reference suppression, and
   safe redaction output.
+- [x] **Commit-trailer hook coverage.** Implemented 2026-05-06:
+  `tests/test_check_commit_trailers.py` now covers accepted trailer
+  messages, missing-trailer rejection, banned-subject-word rejection,
+  default body-word allowance, stricter body scanning, and help output.
 - [x] **Coverage-gap audit automation.** Implemented 2026-05-06:
   `tools/audit_coverage_gaps.py` parses `coverage.xml`, inventories
   package source files missing from coverage reports or below a
