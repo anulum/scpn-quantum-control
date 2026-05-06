@@ -1226,3 +1226,13 @@ scpn-bench s6-split-audit
 ```
 
 Regenerates `data/s6_quantum_kuramoto_split/quantum_kuramoto_split_audit_2026-05-07.json` and `docs/quantum_kuramoto_split_audit_2026-05-07.md`. The audit classifies candidate `phase`, `bridge`, `hardware`, and `accel` modules as reusable, needs-review, or SCPN-specific. It does not create or publish a second package.
+
+### S6 quantum-kuramoto boundary review
+
+Command:
+
+```bash
+scpn-bench s6-boundary-review
+```
+
+Regenerates `data/s6_quantum_kuramoto_split/quantum_kuramoto_boundary_review_2026-05-07.json` and `docs/quantum_kuramoto_boundary_review_2026-05-07.md`. The review proposes a stable public API surface, documents decisions for needs-review rows, and keeps package-skeleton creation blocked until config/provenance/analysis-dependent refactors are closed.

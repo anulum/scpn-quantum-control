@@ -1,0 +1,138 @@
+{
+  "compatibility_requirements": [
+    "existing scpn_quantum_control imports must remain unchanged",
+    "quantum_kuramoto must not import SCPN-specific SSGF/SNN/orchestrator modules",
+    "runner skeleton must start with async/backend abstractions before parent config is split",
+    "separate pyproject is allowed only after import-compatibility tests pass"
+  ],
+  "date": "2026-05-07",
+  "needs_review_decisions": [
+    {
+      "audit_status": "needs_review",
+      "decision": "defer",
+      "module": "scpn_quantum_control.phase.backend_selector",
+      "reason": "depends on analysis-sector helpers outside the proposed lightweight package",
+      "required_refactor": "move sector summaries behind optional adapter or duplicate minimal selector logic"
+    },
+    {
+      "audit_status": "needs_review",
+      "decision": "defer",
+      "module": "scpn_quantum_control.bridge.sparse_hamiltonian",
+      "reason": "depends on analysis.magnetisation_sectors",
+      "required_refactor": "extract magnetisation-sector primitive into the reusable boundary"
+    },
+    {
+      "audit_status": "needs_review",
+      "decision": "promote_after_facade",
+      "module": "scpn_quantum_control.hardware.hybrid_digital_analog",
+      "reason": "scientifically reusable, but imports kuramoto_core facade from the parent package",
+      "required_refactor": "route through quantum_kuramoto public facade after skeleton exists"
+    },
+    {
+      "audit_status": "needs_review",
+      "decision": "defer",
+      "module": "scpn_quantum_control.hardware.provenance",
+      "reason": "depends on parent package configuration semantics",
+      "required_refactor": "define package-local provenance config or keep provenance in parent package"
+    },
+    {
+      "audit_status": "needs_review",
+      "decision": "defer",
+      "module": "scpn_quantum_control.hardware.runner",
+      "reason": "depends on parent config, logging setup, provenance, and mitigation modules",
+      "required_refactor": "start with AsyncHardwareRunner and add full runner only after config/provenance split"
+    }
+  ],
+  "next_steps": [
+    "add API-surface contract tests for proposed exports",
+    "extract or wrap magnetisation-sector primitive if sparse_hamiltonian is promoted",
+    "define package-local config/provenance policy before promoting hardware.runner",
+    "create skeleton only after the above blockers are closed"
+  ],
+  "package_skeleton_allowed": false,
+  "proposed_public_api": [
+    {
+      "current_status": "reusable",
+      "module": "scpn_quantum_control.phase.xy_kuramoto",
+      "proposed_export": "quantum_kuramoto.phase.xy_kuramoto"
+    },
+    {
+      "current_status": "reusable",
+      "module": "scpn_quantum_control.phase.xy_compiler",
+      "proposed_export": "quantum_kuramoto.phase.xy_compiler"
+    },
+    {
+      "current_status": "reusable",
+      "module": "scpn_quantum_control.phase.trotter_error",
+      "proposed_export": "quantum_kuramoto.phase.trotter_error"
+    },
+    {
+      "current_status": "reusable",
+      "module": "scpn_quantum_control.phase.structured_ansatz",
+      "proposed_export": "quantum_kuramoto.phase.structured_ansatz"
+    },
+    {
+      "current_status": "reusable",
+      "module": "scpn_quantum_control.phase.phase_vqe",
+      "proposed_export": "quantum_kuramoto.phase.phase_vqe"
+    },
+    {
+      "current_status": "reusable",
+      "module": "scpn_quantum_control.phase.pulse_shaping",
+      "proposed_export": "quantum_kuramoto.phase.pulse_shaping"
+    },
+    {
+      "current_status": "reusable",
+      "module": "scpn_quantum_control.phase.lindblad",
+      "proposed_export": "quantum_kuramoto.phase.lindblad"
+    },
+    {
+      "current_status": "reusable",
+      "module": "scpn_quantum_control.phase.mps_evolution",
+      "proposed_export": "quantum_kuramoto.phase.mps_evolution"
+    },
+    {
+      "current_status": "reusable",
+      "module": "scpn_quantum_control.hardware.backends",
+      "proposed_export": "quantum_kuramoto.hardware.backends"
+    },
+    {
+      "current_status": "scpn_specific",
+      "module": "scpn_quantum_control.hardware.async_runner",
+      "proposed_export": "quantum_kuramoto.hardware.async_runner"
+    },
+    {
+      "current_status": "reusable",
+      "module": "scpn_quantum_control.hardware.qubit_mapper",
+      "proposed_export": "quantum_kuramoto.hardware.qubit_mapper"
+    },
+    {
+      "current_status": "reusable",
+      "module": "scpn_quantum_control.hardware.qasm_export",
+      "proposed_export": "quantum_kuramoto.hardware.qasm_export"
+    },
+    {
+      "current_status": "reusable",
+      "module": "scpn_quantum_control.hardware.circuit_export",
+      "proposed_export": "quantum_kuramoto.hardware.circuit_export"
+    },
+    {
+      "current_status": "scpn_specific",
+      "module": "scpn_quantum_control.hardware.analog_kuramoto",
+      "proposed_export": "quantum_kuramoto.hardware.analog_kuramoto"
+    },
+    {
+      "current_status": "reusable",
+      "module": "scpn_quantum_control.hardware.plugin_registry",
+      "proposed_export": "quantum_kuramoto.hardware.plugin_registry"
+    },
+    {
+      "current_status": "reusable",
+      "module": "scpn_quantum_control.accel.rust_import",
+      "proposed_export": "quantum_kuramoto.accel.rust_import"
+    }
+  ],
+  "reason": "manual boundary review still requires refactors for config/provenance/analysis-dependent rows",
+  "schema": "s6_quantum_kuramoto_boundary_review_v1",
+  "source_audit": "data/s6_quantum_kuramoto_split/quantum_kuramoto_split_audit_2026-05-07.json"
+}

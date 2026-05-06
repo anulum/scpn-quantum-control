@@ -230,6 +230,18 @@ def test_s6_split_audit_selection_is_boundary_harness() -> None:
     ]
 
 
+def test_s6_boundary_review_selection_is_review_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("s6-review", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "s6-boundary-review",
+            "scripts/export_quantum_kuramoto_boundary_review.py",
+            frozenset({"s6-review"}),
+        )
+    ]
+
+
 def test_dry_run_prints_selected_harnesses(capsys: pytest.CaptureFixture[str]) -> None:
     rc = bench_cli.run(["fim-all", "--dry-run"])
 

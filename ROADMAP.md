@@ -888,6 +888,11 @@ be executed until individually activated.
   needs-review, or SCPN-specific, records blockers and next steps, and
   explicitly blocks second-package publication until the boundary is
   manually reviewed.
+- [x] **S6 boundary-review report.** Implemented 2026-05-07:
+  `scpn-bench s6-boundary-review` converts the split audit into a
+  conservative public-API proposal, defers config/provenance/analysis
+  dependent rows, records compatibility requirements, and keeps the
+  `quantum_kuramoto` package skeleton blocked until refactors close.
 - [ ] **S7** Fault-tolerant / logical-level extension roadmap.
 - [ ] **S8--S53** Scientific, foundational, and applied post-v1.0
   differentiation tracks listed in the strategic roadmap.
