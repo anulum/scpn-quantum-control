@@ -457,10 +457,11 @@ explicit QPU-time estimate before submission.
   `data/phase3_state_layout_dla/phase3_state_layout_ibm_marrakesh_2026-05-06T224531Z.json`.
   Result interpretation remains blocked until the analysis/manifest
   artefacts are generated.
-- [ ] **Systematic state/layout randomisation analysis.** Generate the
-  preregistered state/depth/layout leakage summary, row metrics, layout
-  metrics, manifest, claim boundary, and paper-update inputs from the
-  committed raw-count artefact.
+- [x] **Systematic state/layout randomisation analysis.** Completed
+  2026-05-07: `scripts/analyse_phase3_state_layout_dla.py` generated
+  the preregistered state/depth/layout leakage summary, row metrics,
+  layout metrics, readout metrics, manifest, decision flags, and claim
+  boundary from the committed raw-count artefact.
 - [x] **Systematic state/layout randomisation live submitter.**
   Implemented 2026-05-07:
   `scripts/phase3_state_layout_dla_ibm.py` builds the preregistered
