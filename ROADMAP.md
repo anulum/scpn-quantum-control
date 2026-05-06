@@ -340,7 +340,10 @@ is copied here.
   `docs/dla_parity_submission_checklist_2026-05-06.md` freezes the
   conservative parity-sector/excitation-number framing, required job IDs,
   committed artefact index, unsupported claims, and final no-QPU
-  pre-upload gate.
+  pre-upload gate. Updated 2026-05-07 after the Phase 3 state/layout
+  analysis so the checklist and paper source explicitly reject
+  layout-independent and same-sector-state-independent parity-protection
+  claims.
 - [x] **Rust/VQE methods paper package.** Completed 2026-05-06:
   `docs/rust_vqe_methods_submission_checklist_2026-05-06.md` freezes
   the artefact-first table boundary, supported/unsupported claims,
@@ -455,13 +458,17 @@ explicit QPU-time estimate before submission.
   approval. Jobs `d7ts9avljm6s73bd2ej0` and
   `d7tsdnfljm6s73bd2j70` produced the committed raw-count artefact
   `data/phase3_state_layout_dla/phase3_state_layout_ibm_marrakesh_2026-05-06T224531Z.json`.
-  Result interpretation remains blocked until the analysis/manifest
-  artefacts are generated.
+  Result interpretation is now closed by the generated analysis and
+  manifest artefacts: the original contrast has mixed sign across
+  layout-depth cells, within-sector state controls are significant, and
+  layout spread exceeds the mean original contrast.
 - [x] **Systematic state/layout randomisation analysis.** Completed
   2026-05-07: `scripts/analyse_phase3_state_layout_dla.py` generated
   the preregistered state/depth/layout leakage summary, row metrics,
   layout metrics, readout metrics, manifest, decision flags, and claim
-  boundary from the committed raw-count artefact.
+  boundary from the committed raw-count artefact. The DLA parity paper
+  and submission checklist were updated 2026-05-07 to include this
+  mechanism-boundary result.
 - [x] **Systematic state/layout randomisation live submitter.**
   Implemented 2026-05-07:
   `scripts/phase3_state_layout_dla_ibm.py` builds the preregistered
