@@ -123,6 +123,11 @@ is copied here.
   without running tests or treating line coverage as scientific
   validation. Usage and boundaries are documented in
   `docs/coverage_gap_audit_2026-05-06.md`.
+- [x] **Coverage XML freshness guard.** Implemented 2026-05-07:
+  `tools/audit_coverage_gaps.py` now emits an explicit
+  `coverage_report_warning` when no selected package source files match
+  the supplied coverage XML, uses `defusedxml` for hardened XML parsing,
+  and has focused behavioural coverage for the warning path.
 - [x] **Coverage-gap CI observation.** Implemented 2026-05-06:
   the Python 3.12 coverage job now emits `coverage-gap-audit.json`
   from `tools/audit_coverage_gaps.py` and uploads it as a 30-day

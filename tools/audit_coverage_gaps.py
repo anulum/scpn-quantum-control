@@ -11,11 +11,13 @@ from __future__ import annotations
 
 import argparse
 import json
-import xml.etree.ElementTree as ET
 from collections.abc import Iterable, Sequence
 from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
+
+from defusedxml import ElementTree as ET
 
 
 @dataclass(frozen=True)
@@ -57,12 +59,14 @@ def _normalise_path(path: str, project_root: Path) -> str:
     return raw.as_posix()
 
 
-def _class_entries(coverage_xml: Path, project_root: Path) -> dict[str, ET.Element]:
+def _class_entries(coverage_xml: Path, project_root: Path) -> dict[str, Any]:
     """Return coverage XML class entries by normalised filename."""
     if not coverage_xml.exists():
         return {}
     root = ET.parse(coverage_xml).getroot()
-    entries: dict[str, ET.Element] = {}
+    if root is None:
+        return {}
+    entries: dict[str, Any] = {}
     for item in root.findall(".//class"):
         filename = item.attrib.get("filename", "")
         if filename:
@@ -70,7 +74,7 @@ def _class_entries(coverage_xml: Path, project_root: Path) -> dict[str, ET.Eleme
     return entries
 
 
-def _line_counts(item: ET.Element) -> tuple[int, int]:
+def _line_counts(item: Any) -> tuple[int, int]:
     """Return covered and valid executable line counts for one class entry."""
     valid = 0
     covered = 0
@@ -160,6 +164,12 @@ def format_audits(audits: Iterable[CoverageFileAudit]) -> str:
     ]
     if aggregate is not None:
         lines.append(f"- aggregate_line_percent_in_report: {aggregate:.2f}")
+    elif rows:
+        lines.append(
+            "- coverage_report_warning: no source files from the selected "
+            "package root matched the coverage XML; regenerate coverage.xml "
+            "before treating this as a real coverage gap list"
+        )
     for item in low[:20]:
         percent = item.line_percent if item.line_percent is not None else 0.0
         lines.append(f"- below_threshold: {item.path} ({percent:.2f}%)")

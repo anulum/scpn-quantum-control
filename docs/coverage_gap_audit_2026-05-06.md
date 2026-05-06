@@ -38,6 +38,9 @@ The machine-readable form is:
 ./.venv-linux/bin/python tools/audit_coverage_gaps.py --json
 ```
 
+If the human-readable summary reports `coverage_report_warning`, regenerate
+`coverage.xml` before treating `missing_from_report` rows as real coverage gaps.
+
 The release-gating form is:
 
 ```bash

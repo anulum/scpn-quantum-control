@@ -110,3 +110,23 @@ def test_coverage_gap_outputs_are_deterministic(tmp_path: Path):
 
     assert '"status": "ok"' in audits_to_json(audits)
     assert "Coverage gap audit summary:" in format_audits(audits)
+
+
+def test_coverage_gap_summary_warns_when_report_matches_no_source_files(tmp_path: Path):
+    project_root = tmp_path / "repo"
+    source_root = project_root / "src" / "scpn_quantum_control"
+    source_root.mkdir(parents=True)
+    (source_root / "module.py").write_text("x = 1\n", encoding="utf-8")
+
+    audits = audit_coverage_gaps(
+        project_root=project_root,
+        source_root=source_root,
+        coverage_xml=project_root / "missing-coverage.xml",
+        min_file_percent=95.0,
+    )
+
+    summary = format_audits(audits)
+
+    assert "coverage_report_warning" in summary
+    assert "regenerate coverage.xml" in summary
+    assert "missing_from_report: src/scpn_quantum_control/module.py" in summary

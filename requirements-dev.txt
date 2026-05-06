@@ -17,6 +17,7 @@ bandit==1.9.4
 semgrep==1.161.0
 pre-commit==4.5.1
 build==1.5.0
+types-defusedxml==0.7.0.20260504
 # Docs
 mkdocs==1.6.1
 mkdocs-material==9.7.6
