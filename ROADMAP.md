@@ -799,6 +799,25 @@ be executed until individually activated.
   statevector bytes in metric payloads, and exposes explicit dense,
   sparse, tensor-network, and statevector size gates.
 - [ ] **S3** ML-augmented pulse / ansatz design.
+- [x] **S3 deterministic pulse/ansatz design-readiness gate.**
+  Implemented 2026-05-06:
+  `benchmarks/s3_design_protocol.py` and
+  `scripts/export_s3_design_readiness.py` define a no-QPU candidate
+  ranking protocol for structured Kuramoto-XY ansatz candidates and
+  hypergeometric pulse-schedule candidates. The artefact records
+  `hardware_submission=false`, `ml_training_performed=false`, allowed
+  claims, forbidden claims, and required follow-ups before any ML
+  surrogate training or pulse-level hardware work.
+- [x] **S3 benchmark CLI wiring.** Implemented 2026-05-06:
+  `scpn-bench s3-design-ready` regenerates the deterministic S3
+  design-readiness JSON/Markdown artefacts through the canonical
+  benchmark CLI without hardware submission.
+- [x] **S3 design readiness index.** Implemented 2026-05-06:
+  `docs/s3_design_readiness_index_2026-05-06.md` documents the
+  candidate families, canonical command, allowed claims, forbidden
+  claims, and the next S3 steps: held-out surrogate training, VQE or
+  observable validation, provider-specific pulse feasibility probes, and
+  hardware-job dossiers before execution.
 - [ ] **S4** Multi-hardware backend + pulse-level control.
 - [ ] **S5** Open-data + classical validation harness.
 - [ ] **S6** Decoupled `quantum-kuramoto` subpackage.

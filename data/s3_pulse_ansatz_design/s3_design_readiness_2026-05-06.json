@@ -1,0 +1,130 @@
+{
+  "date": "2026-05-06",
+  "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+  "script": "scripts/export_s3_design_readiness.py",
+  "hardware_submission": false,
+  "ml_training_performed": false,
+  "n_qubits": 4,
+  "protocol": {
+    "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+    "objective": "Rank small Kuramoto-XY pulse and ansatz candidates by deterministic resource and analytic-error proxies before any ML training or QPU use.",
+    "acceptance_rule": "A candidate is promotable only when it has finite metrics, a finite score, no hardware submission, and an explicit follow-up validation path.",
+    "forbidden_claims": [
+      "No learned optimiser is demonstrated by this readiness gate.",
+      "No pulse-level hardware improvement is established without provider calibration data.",
+      "No quantum advantage or backend-independent performance claim is permitted."
+    ],
+    "required_followups": [
+      "Train or evaluate the ML surrogate on generated candidate rows with held-out checks.",
+      "Compare promoted ansatz candidates against VQE or observable targets.",
+      "Run provider-specific pulse feasibility checks before any pulse submission.",
+      "Attach hardware-job dossiers before QPU or pulse-level execution."
+    ],
+    "candidates": [
+      {
+        "label": "ansatz_shallow_knm",
+        "family": "ansatz",
+        "parameters": {
+          "trotter_depth": 2,
+          "time_step": 0.12,
+          "coupling_scale": 1.0
+        }
+      },
+      {
+        "label": "ansatz_mid_knm",
+        "family": "ansatz",
+        "parameters": {
+          "trotter_depth": 4,
+          "time_step": 0.08,
+          "coupling_scale": 1.5
+        }
+      },
+      {
+        "label": "pulse_stirap_balanced",
+        "family": "pulse",
+        "parameters": {
+          "alpha": 0.5,
+          "beta": 0.5,
+          "t_step": 0.2,
+          "omega_0": 10.0
+        }
+      },
+      {
+        "label": "pulse_demkov_kunike",
+        "family": "pulse",
+        "parameters": {
+          "alpha": 1.0,
+          "beta": 0.5,
+          "t_step": 0.2,
+          "omega_0": 10.0
+        }
+      }
+    ]
+  },
+  "rows": [
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_shallow_knm",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 66.0,
+      "metrics": {
+        "n_qubits": 4,
+        "depth": 12,
+        "size": 24,
+        "two_qubit_gates": 12,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim."
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_mid_knm",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 129.0,
+      "metrics": {
+        "n_qubits": 4,
+        "depth": 22,
+        "size": 44,
+        "two_qubit_gates": 24,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim."
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_stirap_balanced",
+      "family": "pulse",
+      "status": "ok",
+      "score": 208.08085712700696,
+      "metrics": {
+        "n_qubits": 4,
+        "pulse_count": 6,
+        "max_points_per_pulse": 200,
+        "total_time": 0.2,
+        "infidelity_bound": 208.00085712700695,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required."
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_demkov_kunike",
+      "family": "pulse",
+      "status": "ok",
+      "score": 218.31276115302487,
+      "metrics": {
+        "n_qubits": 4,
+        "pulse_count": 6,
+        "max_points_per_pulse": 200,
+        "total_time": 0.2,
+        "infidelity_bound": 218.23276115302485,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required."
+    }
+  ]
+}

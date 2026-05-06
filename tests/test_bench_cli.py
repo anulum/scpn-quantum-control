@@ -98,6 +98,18 @@ def test_s2_scaling_lite_selection_includes_protocol_and_lite_rows() -> None:
     assert labels == ["s2-scaling-protocol", "s2-scaling-lite", "s2-claim-boundary"]
 
 
+def test_s3_design_ready_selection_is_readiness_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("s3", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "s3-design-readiness",
+            "scripts/export_s3_design_readiness.py",
+            frozenset({"s3"}),
+        )
+    ]
+
+
 def test_dry_run_prints_selected_harnesses(capsys: pytest.CaptureFixture[str]) -> None:
     rc = bench_cli.run(["fim-all", "--dry-run"])
 

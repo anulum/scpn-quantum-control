@@ -87,6 +87,29 @@ state, and the protocol claim boundary for the current rows.
 baseline rows, allowed claims, forbidden claims, full-campaign blockers, and
 hardware boundary.
 
+## S3 Pulse / Ansatz Design Readiness
+
+The S3 ML-augmented pulse / ansatz track starts from a deterministic no-QPU
+candidate-ranking gate:
+
+```bash
+scpn-bench s3-design-ready
+```
+
+The gate ranks structured Kuramoto-XY ansatz candidates by depth, size, and
+two-qubit gate proxies, and hypergeometric pulse-schedule candidates by analytic
+infidelity and pulse-count proxies. It records `hardware_submission=false` and
+`ml_training_performed=false`; the output is a schema and claim-boundary layer
+for later surrogate training, not evidence of a learned optimiser.
+
+Generated artefacts:
+
+- `data/s3_pulse_ansatz_design/s3_design_readiness_2026-05-06.json`
+- `data/s3_pulse_ansatz_design/s3_design_readiness_2026-05-06.md`
+
+`docs/s3_design_readiness_index_2026-05-06.md` records allowed claims,
+forbidden claims, and the follow-up path for S3.
+
 **Hardware:** ML350 Gen8, 2× Xeon E5-2650v2, 128 GB RAM, Ubuntu 24.04.
 **Python:** 3.12.3 with Qiskit 1.4.5, Aer 0.17.2.
 **Rust:** scpn-quantum-engine 0.2.0 (PyO3 + rayon).

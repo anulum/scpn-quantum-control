@@ -86,6 +86,11 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         "scripts/report_s2_scaling_claim_boundary.py",
         frozenset({"s2"}),
     ),
+    Harness(
+        "s3-design-readiness",
+        "scripts/export_s3_design_readiness.py",
+        frozenset({"s3"}),
+    ),
 )
 
 ARTEFACT_PATHS = (
@@ -141,6 +146,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate no-QPU S2 scaling protocol and lite rows.",
     )
     _add_run_options(s2, default_group="s2")
+
+    s3 = subparsers.add_parser(
+        "s3-design-ready",
+        help="Regenerate no-QPU S3 pulse/ansatz design-readiness artefacts.",
+    )
+    _add_run_options(s3, default_group="s3")
 
     return parser.parse_args(argv)
 
