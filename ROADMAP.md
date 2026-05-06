@@ -85,6 +85,11 @@ is copied here.
   `tools/audit_test_behaviour.py` inventories test modules for
   assertion-bearing tests, exception contracts, parametrisation, and
   smoke-only tests so the manual behavioural audit can be prioritised.
+- [x] **Behavioural-audit tool test coverage.** Implemented
+  2026-05-06: `tests/test_audit_test_behaviour.py` now covers
+  function and class-based test detection, assertion-helper contracts,
+  `pytest.raises` contracts, parametrisation counts, smoke-only
+  reporting, deterministic JSON/text output, and CLI failure status.
 - [x] **Coverage-gap audit automation.** Implemented 2026-05-06:
   `tools/audit_coverage_gaps.py` parses `coverage.xml`, inventories
   package source files missing from coverage reports or below a
