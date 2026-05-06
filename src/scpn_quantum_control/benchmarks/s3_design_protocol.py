@@ -268,3 +268,54 @@ def _validate_problem(k: np.ndarray, omega: np.ndarray) -> None:
         raise ValueError("omega length must match k_matrix")
     if not np.all(np.isfinite(k)) or not np.all(np.isfinite(omega)):
         raise ValueError("S3 problem inputs must be finite")
+
+
+def generate_s3_candidate_grid() -> tuple[S3DesignCandidate, ...]:
+    """Generate a deterministic candidate grid for S3 surrogate rehearsal."""
+    candidates: list[S3DesignCandidate] = []
+    for depth in (1, 2, 3, 4):
+        for coupling_scale in (0.75, 1.0, 1.5, 2.0):
+            candidates.append(
+                S3DesignCandidate(
+                    label=f"ansatz_d{depth}_c{str(coupling_scale).replace('.', 'p')}",
+                    family="ansatz",
+                    parameters={
+                        "trotter_depth": depth,
+                        "time_step": 0.1,
+                        "coupling_scale": coupling_scale,
+                    },
+                )
+            )
+    for alpha in (0.0, 0.5, 1.0):
+        for beta in (0.5, 1.0):
+            for t_step in (0.2, 0.3):
+                candidates.append(
+                    S3DesignCandidate(
+                        label=(
+                            "pulse_a"
+                            f"{str(alpha).replace('.', 'p')}_b{str(beta).replace('.', 'p')}"
+                            f"_t{str(t_step).replace('.', 'p')}"
+                        ),
+                        family="pulse",
+                        parameters={
+                            "alpha": alpha,
+                            "beta": beta,
+                            "t_step": t_step,
+                            "omega_0": 10.0,
+                        },
+                    )
+                )
+    return tuple(candidates)
+
+
+def grid_s3_design_protocol() -> S3DesignProtocol:
+    """Return the expanded deterministic protocol used for surrogate rehearsal."""
+    base = default_s3_design_protocol()
+    return S3DesignProtocol(
+        protocol_id=base.protocol_id,
+        objective=base.objective,
+        acceptance_rule=base.acceptance_rule,
+        forbidden_claims=base.forbidden_claims,
+        required_followups=base.required_followups,
+        candidates=generate_s3_candidate_grid(),
+    )

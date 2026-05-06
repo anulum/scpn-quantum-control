@@ -107,6 +107,16 @@ Generated artefacts:
 - `data/s3_pulse_ansatz_design/s3_design_readiness_2026-05-06.json`
 - `data/s3_pulse_ansatz_design/s3_design_readiness_2026-05-06.md`
 
+The first surrogate rehearsal is also no-QPU:
+
+```bash
+scpn-bench s3-design-surrogate
+```
+
+It expands the candidate grid across small system sizes, trains a closed-form
+ridge linear surrogate on proxy scores, and reports held-out plus per-family
+metrics. It remains a rehearsal over deterministic proxy labels.
+
 `docs/s3_design_readiness_index_2026-05-06.md` records allowed claims,
 forbidden claims, and the follow-up path for S3.
 

@@ -1,0 +1,1492 @@
+{
+  "date": "2026-05-06",
+  "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+  "script": "scripts/train_s3_design_surrogate.py",
+  "hardware_submission": false,
+  "ml_training_performed": true,
+  "sizes": [
+    3,
+    4,
+    5
+  ],
+  "row_count": 84,
+  "rows": [
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d1_c0p75",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 19.25,
+      "metrics": {
+        "n_qubits": 3,
+        "depth": 5,
+        "size": 9,
+        "two_qubit_gates": 3,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d1_c1p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 19.25,
+      "metrics": {
+        "n_qubits": 3,
+        "depth": 5,
+        "size": 9,
+        "two_qubit_gates": 3,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d1_c1p5",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 19.25,
+      "metrics": {
+        "n_qubits": 3,
+        "depth": 5,
+        "size": 9,
+        "two_qubit_gates": 3,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d1_c2p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 19.25,
+      "metrics": {
+        "n_qubits": 3,
+        "depth": 5,
+        "size": 9,
+        "two_qubit_gates": 3,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d2_c0p75",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 36.75,
+      "metrics": {
+        "n_qubits": 3,
+        "depth": 9,
+        "size": 15,
+        "two_qubit_gates": 6,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d2_c1p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 36.75,
+      "metrics": {
+        "n_qubits": 3,
+        "depth": 9,
+        "size": 15,
+        "two_qubit_gates": 6,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d2_c1p5",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 36.75,
+      "metrics": {
+        "n_qubits": 3,
+        "depth": 9,
+        "size": 15,
+        "two_qubit_gates": 6,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d2_c2p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 36.75,
+      "metrics": {
+        "n_qubits": 3,
+        "depth": 9,
+        "size": 15,
+        "two_qubit_gates": 6,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d3_c0p75",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 54.25,
+      "metrics": {
+        "n_qubits": 3,
+        "depth": 13,
+        "size": 21,
+        "two_qubit_gates": 9,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d3_c1p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 54.25,
+      "metrics": {
+        "n_qubits": 3,
+        "depth": 13,
+        "size": 21,
+        "two_qubit_gates": 9,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d3_c1p5",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 54.25,
+      "metrics": {
+        "n_qubits": 3,
+        "depth": 13,
+        "size": 21,
+        "two_qubit_gates": 9,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d3_c2p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 54.25,
+      "metrics": {
+        "n_qubits": 3,
+        "depth": 13,
+        "size": 21,
+        "two_qubit_gates": 9,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d4_c0p75",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 71.75,
+      "metrics": {
+        "n_qubits": 3,
+        "depth": 17,
+        "size": 27,
+        "two_qubit_gates": 12,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d4_c1p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 71.75,
+      "metrics": {
+        "n_qubits": 3,
+        "depth": 17,
+        "size": 27,
+        "two_qubit_gates": 12,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d4_c1p5",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 71.75,
+      "metrics": {
+        "n_qubits": 3,
+        "depth": 17,
+        "size": 27,
+        "two_qubit_gates": 12,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d4_c2p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 71.75,
+      "metrics": {
+        "n_qubits": 3,
+        "depth": 17,
+        "size": 27,
+        "two_qubit_gates": 12,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p0_b0p5_t0p2",
+      "family": "pulse",
+      "status": "ok",
+      "score": 102.4989457879448,
+      "metrics": {
+        "n_qubits": 3,
+        "pulse_count": 3,
+        "max_points_per_pulse": 200,
+        "total_time": 0.2,
+        "infidelity_bound": 102.44894578794481,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p0_b0p5_t0p3",
+      "family": "pulse",
+      "status": "ok",
+      "score": 45.58286479464214,
+      "metrics": {
+        "n_qubits": 3,
+        "pulse_count": 3,
+        "max_points_per_pulse": 200,
+        "total_time": 0.3,
+        "infidelity_bound": 45.53286479464214,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p0_b1p0_t0p2",
+      "family": "pulse",
+      "status": "ok",
+      "score": 120.97465003991036,
+      "metrics": {
+        "n_qubits": 3,
+        "pulse_count": 3,
+        "max_points_per_pulse": 200,
+        "total_time": 0.2,
+        "infidelity_bound": 120.92465003991036,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p0_b1p0_t0p3",
+      "family": "pulse",
+      "status": "ok",
+      "score": 53.79428890662683,
+      "metrics": {
+        "n_qubits": 3,
+        "pulse_count": 3,
+        "max_points_per_pulse": 200,
+        "total_time": 0.3,
+        "infidelity_bound": 53.74428890662683,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p5_b0p5_t0p2",
+      "family": "pulse",
+      "status": "ok",
+      "score": 95.02399805082474,
+      "metrics": {
+        "n_qubits": 3,
+        "pulse_count": 3,
+        "max_points_per_pulse": 200,
+        "total_time": 0.2,
+        "infidelity_bound": 94.97399805082475,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p5_b0p5_t0p3",
+      "family": "pulse",
+      "status": "ok",
+      "score": 42.26066580036656,
+      "metrics": {
+        "n_qubits": 3,
+        "pulse_count": 3,
+        "max_points_per_pulse": 200,
+        "total_time": 0.3,
+        "infidelity_bound": 42.210665800366556,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p5_b1p0_t0p2",
+      "family": "pulse",
+      "status": "ok",
+      "score": 99.69592511134586,
+      "metrics": {
+        "n_qubits": 3,
+        "pulse_count": 3,
+        "max_points_per_pulse": 200,
+        "total_time": 0.2,
+        "infidelity_bound": 99.64592511134586,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p5_b1p0_t0p3",
+      "family": "pulse",
+      "status": "ok",
+      "score": 44.33707782726483,
+      "metrics": {
+        "n_qubits": 3,
+        "pulse_count": 3,
+        "max_points_per_pulse": 200,
+        "total_time": 0.3,
+        "infidelity_bound": 44.287077827264824,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a1p0_b0p5_t0p2",
+      "family": "pulse",
+      "status": "ok",
+      "score": 99.69592511134586,
+      "metrics": {
+        "n_qubits": 3,
+        "pulse_count": 3,
+        "max_points_per_pulse": 200,
+        "total_time": 0.2,
+        "infidelity_bound": 99.64592511134586,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a1p0_b0p5_t0p3",
+      "family": "pulse",
+      "status": "ok",
+      "score": 44.33707782726483,
+      "metrics": {
+        "n_qubits": 3,
+        "pulse_count": 3,
+        "max_points_per_pulse": 200,
+        "total_time": 0.3,
+        "infidelity_bound": 44.287077827264824,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a1p0_b1p0_t0p2",
+      "family": "pulse",
+      "status": "ok",
+      "score": 95.02399805082474,
+      "metrics": {
+        "n_qubits": 3,
+        "pulse_count": 3,
+        "max_points_per_pulse": 200,
+        "total_time": 0.2,
+        "infidelity_bound": 94.97399805082475,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a1p0_b1p0_t0p3",
+      "family": "pulse",
+      "status": "ok",
+      "score": 42.26066580036656,
+      "metrics": {
+        "n_qubits": 3,
+        "pulse_count": 3,
+        "max_points_per_pulse": 200,
+        "total_time": 0.3,
+        "infidelity_bound": 42.210665800366556,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 3
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d1_c0p75",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 34.5,
+      "metrics": {
+        "n_qubits": 4,
+        "depth": 7,
+        "size": 14,
+        "two_qubit_gates": 6,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d1_c1p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 34.5,
+      "metrics": {
+        "n_qubits": 4,
+        "depth": 7,
+        "size": 14,
+        "two_qubit_gates": 6,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d1_c1p5",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 34.5,
+      "metrics": {
+        "n_qubits": 4,
+        "depth": 7,
+        "size": 14,
+        "two_qubit_gates": 6,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d1_c2p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 34.5,
+      "metrics": {
+        "n_qubits": 4,
+        "depth": 7,
+        "size": 14,
+        "two_qubit_gates": 6,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d2_c0p75",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 66.0,
+      "metrics": {
+        "n_qubits": 4,
+        "depth": 12,
+        "size": 24,
+        "two_qubit_gates": 12,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d2_c1p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 66.0,
+      "metrics": {
+        "n_qubits": 4,
+        "depth": 12,
+        "size": 24,
+        "two_qubit_gates": 12,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d2_c1p5",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 66.0,
+      "metrics": {
+        "n_qubits": 4,
+        "depth": 12,
+        "size": 24,
+        "two_qubit_gates": 12,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d2_c2p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 66.0,
+      "metrics": {
+        "n_qubits": 4,
+        "depth": 12,
+        "size": 24,
+        "two_qubit_gates": 12,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d3_c0p75",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 97.5,
+      "metrics": {
+        "n_qubits": 4,
+        "depth": 17,
+        "size": 34,
+        "two_qubit_gates": 18,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d3_c1p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 97.5,
+      "metrics": {
+        "n_qubits": 4,
+        "depth": 17,
+        "size": 34,
+        "two_qubit_gates": 18,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d3_c1p5",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 97.5,
+      "metrics": {
+        "n_qubits": 4,
+        "depth": 17,
+        "size": 34,
+        "two_qubit_gates": 18,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d3_c2p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 97.5,
+      "metrics": {
+        "n_qubits": 4,
+        "depth": 17,
+        "size": 34,
+        "two_qubit_gates": 18,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d4_c0p75",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 129.0,
+      "metrics": {
+        "n_qubits": 4,
+        "depth": 22,
+        "size": 44,
+        "two_qubit_gates": 24,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d4_c1p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 129.0,
+      "metrics": {
+        "n_qubits": 4,
+        "depth": 22,
+        "size": 44,
+        "two_qubit_gates": 24,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d4_c1p5",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 129.0,
+      "metrics": {
+        "n_qubits": 4,
+        "depth": 22,
+        "size": 44,
+        "two_qubit_gates": 24,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d4_c2p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 129.0,
+      "metrics": {
+        "n_qubits": 4,
+        "depth": 22,
+        "size": 44,
+        "two_qubit_gates": 24,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p0_b0p5_t0p2",
+      "family": "pulse",
+      "status": "ok",
+      "score": 224.4516066817273,
+      "metrics": {
+        "n_qubits": 4,
+        "pulse_count": 6,
+        "max_points_per_pulse": 200,
+        "total_time": 0.2,
+        "infidelity_bound": 224.3716066817273,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p0_b0p5_t0p3",
+      "family": "pulse",
+      "status": "ok",
+      "score": 99.80071408076768,
+      "metrics": {
+        "n_qubits": 4,
+        "pulse_count": 6,
+        "max_points_per_pulse": 200,
+        "total_time": 0.3,
+        "infidelity_bound": 99.72071408076768,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p0_b1p0_t0p2",
+      "family": "pulse",
+      "status": "ok",
+      "score": 264.914916632914,
+      "metrics": {
+        "n_qubits": 4,
+        "pulse_count": 6,
+        "max_points_per_pulse": 200,
+        "total_time": 0.2,
+        "infidelity_bound": 264.83491663291403,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p0_b1p0_t0p3",
+      "family": "pulse",
+      "status": "ok",
+      "score": 117.78440739240621,
+      "metrics": {
+        "n_qubits": 4,
+        "pulse_count": 6,
+        "max_points_per_pulse": 200,
+        "total_time": 0.3,
+        "infidelity_bound": 117.70440739240621,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p5_b0p5_t0p2",
+      "family": "pulse",
+      "status": "ok",
+      "score": 208.08085712700696,
+      "metrics": {
+        "n_qubits": 4,
+        "pulse_count": 6,
+        "max_points_per_pulse": 200,
+        "total_time": 0.2,
+        "infidelity_bound": 208.00085712700695,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p5_b0p5_t0p3",
+      "family": "pulse",
+      "status": "ok",
+      "score": 92.52482538978086,
+      "metrics": {
+        "n_qubits": 4,
+        "pulse_count": 6,
+        "max_points_per_pulse": 200,
+        "total_time": 0.3,
+        "infidelity_bound": 92.44482538978086,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p5_b1p0_t0p2",
+      "family": "pulse",
+      "status": "ok",
+      "score": 218.31276115302487,
+      "metrics": {
+        "n_qubits": 4,
+        "pulse_count": 6,
+        "max_points_per_pulse": 200,
+        "total_time": 0.2,
+        "infidelity_bound": 218.23276115302485,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p5_b1p0_t0p3",
+      "family": "pulse",
+      "status": "ok",
+      "score": 97.07233829023325,
+      "metrics": {
+        "n_qubits": 4,
+        "pulse_count": 6,
+        "max_points_per_pulse": 200,
+        "total_time": 0.3,
+        "infidelity_bound": 96.99233829023325,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a1p0_b0p5_t0p2",
+      "family": "pulse",
+      "status": "ok",
+      "score": 218.31276115302487,
+      "metrics": {
+        "n_qubits": 4,
+        "pulse_count": 6,
+        "max_points_per_pulse": 200,
+        "total_time": 0.2,
+        "infidelity_bound": 218.23276115302485,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a1p0_b0p5_t0p3",
+      "family": "pulse",
+      "status": "ok",
+      "score": 97.07233829023325,
+      "metrics": {
+        "n_qubits": 4,
+        "pulse_count": 6,
+        "max_points_per_pulse": 200,
+        "total_time": 0.3,
+        "infidelity_bound": 96.99233829023325,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a1p0_b1p0_t0p2",
+      "family": "pulse",
+      "status": "ok",
+      "score": 208.08085712700696,
+      "metrics": {
+        "n_qubits": 4,
+        "pulse_count": 6,
+        "max_points_per_pulse": 200,
+        "total_time": 0.2,
+        "infidelity_bound": 208.00085712700695,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a1p0_b1p0_t0p3",
+      "family": "pulse",
+      "status": "ok",
+      "score": 92.52482538978086,
+      "metrics": {
+        "n_qubits": 4,
+        "pulse_count": 6,
+        "max_points_per_pulse": 200,
+        "total_time": 0.3,
+        "infidelity_bound": 92.44482538978086,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 4
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d1_c0p75",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 54.0,
+      "metrics": {
+        "n_qubits": 5,
+        "depth": 9,
+        "size": 20,
+        "two_qubit_gates": 10,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d1_c1p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 54.0,
+      "metrics": {
+        "n_qubits": 5,
+        "depth": 9,
+        "size": 20,
+        "two_qubit_gates": 10,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d1_c1p5",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 54.0,
+      "metrics": {
+        "n_qubits": 5,
+        "depth": 9,
+        "size": 20,
+        "two_qubit_gates": 10,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d1_c2p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 54.0,
+      "metrics": {
+        "n_qubits": 5,
+        "depth": 9,
+        "size": 20,
+        "two_qubit_gates": 10,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d2_c0p75",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 103.75,
+      "metrics": {
+        "n_qubits": 5,
+        "depth": 15,
+        "size": 35,
+        "two_qubit_gates": 20,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d2_c1p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 103.75,
+      "metrics": {
+        "n_qubits": 5,
+        "depth": 15,
+        "size": 35,
+        "two_qubit_gates": 20,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d2_c1p5",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 103.75,
+      "metrics": {
+        "n_qubits": 5,
+        "depth": 15,
+        "size": 35,
+        "two_qubit_gates": 20,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d2_c2p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 103.75,
+      "metrics": {
+        "n_qubits": 5,
+        "depth": 15,
+        "size": 35,
+        "two_qubit_gates": 20,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d3_c0p75",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 153.5,
+      "metrics": {
+        "n_qubits": 5,
+        "depth": 21,
+        "size": 50,
+        "two_qubit_gates": 30,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d3_c1p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 153.5,
+      "metrics": {
+        "n_qubits": 5,
+        "depth": 21,
+        "size": 50,
+        "two_qubit_gates": 30,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d3_c1p5",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 153.5,
+      "metrics": {
+        "n_qubits": 5,
+        "depth": 21,
+        "size": 50,
+        "two_qubit_gates": 30,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d3_c2p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 153.5,
+      "metrics": {
+        "n_qubits": 5,
+        "depth": 21,
+        "size": 50,
+        "two_qubit_gates": 30,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d4_c0p75",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 203.25,
+      "metrics": {
+        "n_qubits": 5,
+        "depth": 27,
+        "size": 65,
+        "two_qubit_gates": 40,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d4_c1p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 203.25,
+      "metrics": {
+        "n_qubits": 5,
+        "depth": 27,
+        "size": 65,
+        "two_qubit_gates": 40,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d4_c1p5",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 203.25,
+      "metrics": {
+        "n_qubits": 5,
+        "depth": 27,
+        "size": 65,
+        "two_qubit_gates": 40,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "ansatz_d4_c2p0",
+      "family": "ansatz",
+      "status": "ok",
+      "score": 203.25,
+      "metrics": {
+        "n_qubits": 5,
+        "depth": 27,
+        "size": 65,
+        "two_qubit_gates": 40,
+        "parameters": 0,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p0_b0p5_t0p2",
+      "family": "pulse",
+      "status": "ok",
+      "score": 505.36845003883303,
+      "metrics": {
+        "n_qubits": 5,
+        "pulse_count": 10,
+        "max_points_per_pulse": 200,
+        "total_time": 0.2,
+        "infidelity_bound": 505.248450038833,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p0_b0p5_t0p3",
+      "family": "pulse",
+      "status": "ok",
+      "score": 224.67486668392573,
+      "metrics": {
+        "n_qubits": 5,
+        "pulse_count": 10,
+        "max_points_per_pulse": 200,
+        "total_time": 0.3,
+        "infidelity_bound": 224.55486668392572,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p0_b1p0_t0p2",
+      "family": "pulse",
+      "status": "ok",
+      "score": 596.4852581707904,
+      "metrics": {
+        "n_qubits": 5,
+        "pulse_count": 10,
+        "max_points_per_pulse": 200,
+        "total_time": 0.2,
+        "infidelity_bound": 596.3652581707904,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p0_b1p0_t0p3",
+      "family": "pulse",
+      "status": "ok",
+      "score": 265.17122585368463,
+      "metrics": {
+        "n_qubits": 5,
+        "pulse_count": 10,
+        "max_points_per_pulse": 200,
+        "total_time": 0.3,
+        "infidelity_bound": 265.0512258536846,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p5_b0p5_t0p2",
+      "family": "pulse",
+      "status": "ok",
+      "score": 468.50417848138386,
+      "metrics": {
+        "n_qubits": 5,
+        "pulse_count": 10,
+        "max_points_per_pulse": 200,
+        "total_time": 0.2,
+        "infidelity_bound": 468.38417848138386,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p5_b0p5_t0p3",
+      "family": "pulse",
+      "status": "ok",
+      "score": 208.2907459917261,
+      "metrics": {
+        "n_qubits": 5,
+        "pulse_count": 10,
+        "max_points_per_pulse": 200,
+        "total_time": 0.3,
+        "infidelity_bound": 208.1707459917261,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p5_b1p0_t0p2",
+      "family": "pulse",
+      "status": "ok",
+      "score": 491.54476604300356,
+      "metrics": {
+        "n_qubits": 5,
+        "pulse_count": 10,
+        "max_points_per_pulse": 200,
+        "total_time": 0.2,
+        "infidelity_bound": 491.42476604300356,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a0p5_b1p0_t0p3",
+      "family": "pulse",
+      "status": "ok",
+      "score": 218.53100713022377,
+      "metrics": {
+        "n_qubits": 5,
+        "pulse_count": 10,
+        "max_points_per_pulse": 200,
+        "total_time": 0.3,
+        "infidelity_bound": 218.41100713022377,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a1p0_b0p5_t0p2",
+      "family": "pulse",
+      "status": "ok",
+      "score": 491.54476604300356,
+      "metrics": {
+        "n_qubits": 5,
+        "pulse_count": 10,
+        "max_points_per_pulse": 200,
+        "total_time": 0.2,
+        "infidelity_bound": 491.42476604300356,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a1p0_b0p5_t0p3",
+      "family": "pulse",
+      "status": "ok",
+      "score": 218.53100713022377,
+      "metrics": {
+        "n_qubits": 5,
+        "pulse_count": 10,
+        "max_points_per_pulse": 200,
+        "total_time": 0.3,
+        "infidelity_bound": 218.41100713022377,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a1p0_b1p0_t0p2",
+      "family": "pulse",
+      "status": "ok",
+      "score": 468.50417848138386,
+      "metrics": {
+        "n_qubits": 5,
+        "pulse_count": 10,
+        "max_points_per_pulse": 200,
+        "total_time": 0.2,
+        "infidelity_bound": 468.38417848138386,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 5
+    },
+    {
+      "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+      "candidate_label": "pulse_a1p0_b1p0_t0p3",
+      "family": "pulse",
+      "status": "ok",
+      "score": 208.2907459917261,
+      "metrics": {
+        "n_qubits": 5,
+        "pulse_count": 10,
+        "max_points_per_pulse": 200,
+        "total_time": 0.3,
+        "infidelity_bound": 208.1707459917261,
+        "hardware_submission": false
+      },
+      "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+      "n_qubits": 5
+    }
+  ],
+  "surrogate": {
+    "model": "closed_form_ridge_linear_surrogate",
+    "ridge_alpha": 1e-06,
+    "feature_names": [
+      "is_ansatz",
+      "is_pulse",
+      "n_qubits",
+      "depth",
+      "two_qubit_gates",
+      "pulse_count",
+      "infidelity_bound",
+      "max_points_per_pulse"
+    ],
+    "coefficients": [
+      0.30994714348774277,
+      -4.447077786936382e-06,
+      0.08475512387290939,
+      1.174212823393404,
+      4.2705448947581575,
+      -0.014374023480364526,
+      1.0000075352603204,
+      -0.0008294754962515088
+    ],
+    "train_rows": 67,
+    "holdout_rows": 17,
+    "train_metrics": {
+      "mae": 0.009061197257228261,
+      "rmse": 0.01105378554803588,
+      "r2": 0.999999991977534
+    },
+    "holdout_metrics": {
+      "mae": 0.009179707010294096,
+      "rmse": 0.011105732775517062,
+      "r2": 0.9999999903608034
+    },
+    "family_metrics": {
+      "ansatz": {
+        "mae": 0.012044526092507132,
+        "rmse": 0.013807304320792111,
+        "r2": 0.9999999301734435
+      },
+      "pulse": {
+        "mae": 0.005139388415803402,
+        "rmse": 0.005608546316306375,
+        "r2": 0.9999999986492824
+      }
+    }
+  },
+  "claim_boundary": "This is a deterministic no-QPU surrogate rehearsal over proxy scores. It does not demonstrate pulse-level hardware improvement, VQE improvement, or quantum advantage."
+}

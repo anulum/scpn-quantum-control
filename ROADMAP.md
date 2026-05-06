@@ -818,6 +818,13 @@ be executed until individually activated.
   claims, and the next S3 steps: held-out surrogate training, VQE or
   observable validation, provider-specific pulse feasibility probes, and
   hardware-job dossiers before execution.
+- [x] **S3 held-out surrogate rehearsal.** Implemented 2026-05-06:
+  `scripts/train_s3_design_surrogate.py` expands the deterministic
+  pulse/ansatz candidate grid across small system sizes, trains a
+  closed-form ridge linear surrogate on proxy scores, and reports
+  train, held-out, and per-family metrics. The artefact remains no-QPU,
+  proxy-labelled, and explicitly non-evidential for hardware pulse or
+  VQE improvement.
 - [ ] **S4** Multi-hardware backend + pulse-level control.
 - [ ] **S5** Open-data + classical validation harness.
 - [ ] **S6** Decoupled `quantum-kuramoto` subpackage.

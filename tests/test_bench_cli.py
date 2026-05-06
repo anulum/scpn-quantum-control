@@ -110,6 +110,18 @@ def test_s3_design_ready_selection_is_readiness_harness() -> None:
     ]
 
 
+def test_s3_design_surrogate_selection_is_surrogate_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("s3-surrogate", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "s3-design-surrogate",
+            "scripts/train_s3_design_surrogate.py",
+            frozenset({"s3-surrogate"}),
+        )
+    ]
+
+
 def test_dry_run_prints_selected_harnesses(capsys: pytest.CaptureFixture[str]) -> None:
     rc = bench_cli.run(["fim-all", "--dry-run"])
 

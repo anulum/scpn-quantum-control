@@ -47,3 +47,16 @@ Next S3 work:
 2. Compare promoted ansatz candidates against VQE or observable targets.
 3. Add provider-specific pulse feasibility probes before any pulse-level submission.
 4. Attach hardware-job dossiers before QPU or pulse-level execution.
+
+## Surrogate rehearsal
+
+The first no-QPU surrogate rehearsal is regenerated with:
+
+```bash
+scpn-bench s3-design-surrogate
+```
+
+It expands the deterministic candidate grid across several small system sizes,
+fits a closed-form ridge linear surrogate to proxy scores, and reports held-out
+and per-family metrics. This is deliberately a rehearsal over proxy scores, not
+evidence of a hardware pulse improvement or VQE improvement.
