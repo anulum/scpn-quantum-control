@@ -303,9 +303,11 @@ is copied here.
   negative hardware falsification boundary, committed artefact index,
   IBM job IDs, `scpn-bench fim-all` gate, full-basis readout-mitigation
   scope, and blocked hardware-protection claims.
-- [ ] **Combined submission checklist.** Build final PDFs, verify
-  references and URLs, prepare arXiv metadata, and keep AI disclosures
-  minimal but compliant with target venue policy.
+- [x] **Combined submission checklist.** Completed 2026-05-06:
+  `docs/combined_submission_checklist_2026-05-06.md` ties the four
+  paper packages together with final PDF build commands, no-QPU
+  reproduction gates, arXiv metadata draft, URL/identifier checks, and a
+  minimal venue-conditional AI disclosure policy.
 - [ ] **IBM Quantum Credits follow-up.** Use the current affiliation and
   submitted papers to revisit the credits request without shrinking the
   scientific scope below the requested 5--10 hour QPU window.
