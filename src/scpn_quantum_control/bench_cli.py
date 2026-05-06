@@ -106,6 +106,11 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         "scripts/probe_s3_pulse_feasibility.py",
         frozenset({"s3-pulse"}),
     ),
+    Harness(
+        "s3-hardware-dossiers",
+        "scripts/export_s3_hardware_dossiers.py",
+        frozenset({"s3-dossiers"}),
+    ),
 )
 
 ARTEFACT_PATHS = (
@@ -185,6 +190,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate no-submit S3 pulse feasibility artefacts.",
     )
     _add_run_options(s3_pulse, default_group="s3-pulse")
+
+    s3_dossiers = subparsers.add_parser(
+        "s3-hardware-dossiers",
+        help="Regenerate no-submit S3 hardware-job dossier artefacts.",
+    )
+    _add_run_options(s3_dossiers, default_group="s3-dossiers")
 
     return parser.parse_args(argv)
 

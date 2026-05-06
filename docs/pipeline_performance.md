@@ -137,6 +137,16 @@ The probe compares schedule duration, sample spacing, pulse count, qubit count,
 and declared pulse or native-XY support. It does not open a provider session or
 submit hardware jobs.
 
+Human-reviewable hardware-job dossiers are exported with:
+
+```bash
+scpn-bench s3-hardware-dossiers
+```
+
+These dossiers document the promoted ansatz and pulse follow-up routes, QPU
+budget state, prerequisites, falsification boundaries, and reproducibility
+artefacts. They do not authorise execution.
+
 `docs/s3_design_readiness_index_2026-05-06.md` records allowed claims,
 forbidden claims, and the follow-up path for S3.
 

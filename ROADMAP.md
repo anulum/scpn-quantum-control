@@ -838,6 +838,13 @@ be executed until individually activated.
   against the S3 hypergeometric pulse schedule for qubit count, pulse
   count, duration, sample spacing, pulse-control support, and native-XY
   support. The probe opens no provider session and submits no job.
+- [x] **S3 promoted-candidate hardware-job dossiers.** Implemented
+  2026-05-06: `scripts/export_s3_hardware_dossiers.py` packages the
+  promoted ansatz and pulse follow-up routes into the standard hardware
+  dossier schema, including purpose, hypothesis, falsification boundary,
+  observables, QPU budget state, platform fit, risks, decision tree,
+  paper impact, follow-up avenues, prerequisites, and reproducibility
+  artefacts. The dossiers do not authorise hardware execution.
 - [ ] **S4** Multi-hardware backend + pulse-level control.
 - [ ] **S5** Open-data + classical validation harness.
 - [ ] **S6** Decoupled `quantum-kuramoto` subpackage.

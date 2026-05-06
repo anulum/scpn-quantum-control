@@ -146,6 +146,18 @@ def test_s3_pulse_feasibility_selection_is_probe_harness() -> None:
     ]
 
 
+def test_s3_hardware_dossiers_selection_is_dossier_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("s3-dossiers", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "s3-hardware-dossiers",
+            "scripts/export_s3_hardware_dossiers.py",
+            frozenset({"s3-dossiers"}),
+        )
+    ]
+
+
 def test_dry_run_prints_selected_harnesses(capsys: pytest.CaptureFixture[str]) -> None:
     rc = bench_cli.run(["fim-all", "--dry-run"])
 

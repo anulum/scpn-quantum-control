@@ -86,3 +86,16 @@ scpn-bench s3-pulse-feasibility
 The probe reports ready, blocked, manual-review, or unknown decisions from
 metadata only. It does not calibrate pulses, submit jobs, or establish hardware
 performance.
+
+## Hardware-job dossiers
+
+Promoted S3 follow-up candidates are packaged for human review with:
+
+```bash
+scpn-bench s3-hardware-dossiers
+```
+
+The dossiers record purpose, hypothesis, falsification boundary, expected
+observables, budget state, platform fit, risks, decision tree, paper impact,
+follow-up avenues, prerequisites, and reproducibility artefacts. They do not
+authorise hardware execution.

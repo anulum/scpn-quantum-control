@@ -1,0 +1,136 @@
+{
+  "date": "2026-05-06",
+  "script": "scripts/export_s3_hardware_dossiers.py",
+  "hardware_submission": false,
+  "provider_session_opened": false,
+  "dossiers": [
+    {
+      "job_id": "s3_ansatz_observable_followup",
+      "title": "S3 promoted ansatz observable follow-up run",
+      "purpose": "Test whether the promoted structured Kuramoto-XY ansatz candidate retains its no-QPU observable behaviour under real backend transpilation, layout, and noise.",
+      "hypothesis": "If the structured candidate is hardware-usable, its measured observable proxies should remain directionally consistent with the exact statevector baseline under a matched simulator and backend layout package.",
+      "falsification_condition": "The candidate is falsified for hardware follow-up if transpilation depth, layout noise, or readout effects destroy the observed energy/synchronisation ordering relative to matched baseline candidates.",
+      "expected_observables": [
+        "energy expectation estimate",
+        "synchronisation proxy",
+        "transpiled depth and two-qubit gate count",
+        "layout and readout metadata",
+        "matched simulator comparison"
+      ],
+      "circuit_summary": {
+        "candidate_label": "ansatz_d1_c0p75",
+        "n_qubits": 3,
+        "depth": 5,
+        "size": 9,
+        "two_qubit_gates": 3,
+        "parameters": {
+          "trotter_depth": 1,
+          "time_step": 0.1,
+          "coupling_scale": 0.75
+        }
+      },
+      "qpu_budget": {
+        "status": "not_requested",
+        "recommended_initial_scope": "transpile-only plus optional small shot-count observable run after approval",
+        "estimated_execution_seconds": 0.0,
+        "hardware_submission": false
+      },
+      "platform_fit": {
+        "gate_based": "manual_review_required",
+        "pulse_level": "not_required_for_this_ansatz_dossier",
+        "analogue": "separate native formulation required"
+      },
+      "risks_and_confounds": [
+        "The current observable row is not VQE optimisation.",
+        "Energy estimation may require many Pauli measurements if promoted beyond simulation.",
+        "The shallow resource winner may not be the best accuracy winner after noise.",
+        "Backend layout and readout can dominate the observable proxy."
+      ],
+      "decision_tree": {
+        "positive": "Promote to a small hardware observable comparison against matched ansatz baselines.",
+        "null": "Keep as software-only design evidence and improve candidate generation.",
+        "negative": "Reject this resource-ranked candidate for hardware follow-up and use accuracy-ranked candidates instead."
+      },
+      "paper_impact": "Would support the S3 design-methods narrative by connecting no-QPU candidate selection to a bounded hardware-readiness package.",
+      "follow_up_avenue": "Provider-specific transpilation probes, then small observable runs only after budget approval.",
+      "possibilities_opened": [
+        "budget-justified ansatz hardware screening",
+        "layout-aware candidate promotion",
+        "observable-driven candidate rejection before expensive QPU use"
+      ],
+      "claim_boundary": "This dossier does not authorise submission and does not claim VQE improvement, pulse-level performance, quantum advantage, or backend-independent behaviour.",
+      "reproducibility_package": {
+        "ansatz_validation": "data/s3_pulse_ansatz_design/s3_ansatz_observable_validation_2026-05-06.json",
+        "dossier_script": "scripts/export_s3_hardware_dossiers.py",
+        "bench_command": "scpn-bench s3-hardware-dossiers"
+      },
+      "prerequisites": [
+        "run transpile-only backend feasibility checks",
+        "attach exact measurement grouping before hardware execution",
+        "obtain explicit QPU-budget approval"
+      ]
+    },
+    {
+      "job_id": "s3_pulse_feasibility_followup",
+      "title": "S3 pulse-schedule feasibility follow-up run",
+      "purpose": "Test whether the hypergeometric Kuramoto-XY pulse schedule can be mapped to a provider-supported pulse-control or native-XY execution path after calibration review.",
+      "hypothesis": "If provider timing, pulse-count, and native interaction constraints are satisfied, a small calibrated pulse follow-up can test whether pulse shaping reduces digital Trotter overhead for the same observable family.",
+      "falsification_condition": "The pulse route is falsified for near-term hardware if provider calibration, timing granularity, pulse duration, or native interaction constraints cannot realise the schedule within the documented budget and error boundary.",
+      "expected_observables": [
+        "provider pulse feasibility status",
+        "calibrated duration and sample spacing",
+        "pulse-count and qubit-count fit",
+        "matched digital ansatz observable comparison",
+        "post-calibration error budget"
+      ],
+      "circuit_summary": {
+        "schedule_family": "hypergeometric_trotter_step",
+        "n_qubits": 4,
+        "pulse_count": 6,
+        "total_time": 0.2,
+        "min_sample_spacing": 0.0010050251256281326,
+        "ready_targets": "ibm_pulse_metadata_template, neutral_atom_xy_review_template"
+      },
+      "qpu_budget": {
+        "status": "not_requested",
+        "recommended_initial_scope": "provider calibration review only; no pulse job before approval",
+        "estimated_execution_seconds": 0.0,
+        "hardware_submission": false
+      },
+      "platform_fit": {
+        "ibm_pulse_metadata_template": "ready",
+        "neutral_atom_xy_review_template": "ready"
+      },
+      "risks_and_confounds": [
+        "Metadata readiness is not calibration readiness.",
+        "Pulse schedules may require provider-specific waveform constraints not captured in metadata.",
+        "Native-XY analogue execution is not equivalent to a gate-level pulse schedule without a separate mapping.",
+        "The current analytic infidelity proxy is not a measured hardware error model."
+      ],
+      "decision_tree": {
+        "positive": "Prepare a provider-specific calibrated pulse preregistration package.",
+        "manual_review": "Request platform-specific waveform constraints before any execution.",
+        "negative": "Keep S3 pulse work as simulation-only and prioritise gate-based ansatz validation."
+      },
+      "paper_impact": "Would define the bridge from S3 design methods to S4 multi-hardware pulse-level control.",
+      "follow_up_avenue": "S4 provider-specific pulse adapter and calibrated no-submit waveform package.",
+      "possibilities_opened": [
+        "analogue/native XY follow-up planning",
+        "pulse-vs-digital Trotter comparison",
+        "provider-specific QPU budget justification"
+      ],
+      "claim_boundary": "This dossier is metadata-only and does not calibrate pulses, open provider sessions, submit jobs, or establish hardware performance.",
+      "reproducibility_package": {
+        "pulse_feasibility": "data/s3_pulse_ansatz_design/s3_pulse_feasibility_summary_2026-05-06.json",
+        "dossier_script": "scripts/export_s3_hardware_dossiers.py",
+        "bench_command": "scpn-bench s3-hardware-dossiers"
+      },
+      "prerequisites": [
+        "obtain provider-specific waveform and calibration constraints",
+        "run no-submit waveform compilation",
+        "obtain explicit QPU-budget approval"
+      ]
+    }
+  ],
+  "claim_boundary": "Dossiers document readiness only; they do not authorise hardware execution."
+}
