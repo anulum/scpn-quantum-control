@@ -184,3 +184,33 @@ All 5 stages in one script.
 ```bash
 python examples/18_end_to_end_pipeline.py
 ```
+
+## 19_sync_witness_operator.py — Synchronisation Witness
+
+Constructs the quantum synchronisation witness operator and evaluates
+its expectation value across a coupling sweep. A negative witness value
+marks entry into the synchronised phase for the demonstrated threshold.
+
+```bash
+python examples/19_sync_witness_operator.py
+```
+
+## 20_quantum_persistent_homology.py — Quantum Persistent Homology
+
+Generates simulated X/Y-basis measurement counts from Kuramoto--XY
+statevectors and extracts persistent homology diagnostics for the
+synchronisation transition. Requires `ripser` for the homology backend.
+
+```bash
+python examples/20_quantum_persistent_homology.py
+```
+
+## 21_biological_qec_scpn16.py — SCPN-Topology QEC
+
+Maps surface-code stabilisers and decoding weights onto the SCPN
+16-layer coupling topology, then demonstrates a single-error syndrome
+and correction path on that graph.
+
+```bash
+python examples/21_biological_qec_scpn16.py
+```

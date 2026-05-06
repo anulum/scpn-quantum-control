@@ -1,0 +1,7 @@
+{
+  "_spdx": "SPDX-FileCopyrightText: 2026 Arcane Sapience <protoscience@anulum.li>; SPDX-License-Identifier: MIT",
+  "project": "SCPN-QUANTUM-CONTROL",
+  "source": "codex",
+  "timestamp": "2026-05-06T00:00:00+02:00",
+  "text": "Example workflow coverage now has a static contract verifying parseability, main entry points, execution guards, and README listings for all 21 example scripts."
+}

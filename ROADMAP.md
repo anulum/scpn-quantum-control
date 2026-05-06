@@ -123,6 +123,10 @@ is copied here.
   bridge, SC-NeuroCore, Phase Orchestrator, notebook, and example
   workflow test boundaries without fabricating coverage for missing
   categories.
+- [x] **Example workflow contract.** Implemented 2026-05-06:
+  `tests/test_example_workflows.py` statically verifies every example
+  script parses, exposes `main()`, has an execution guard, and is listed
+  in `examples/README.md`; the README now includes examples 19--21.
 - [ ] **E2E and contract audit.** Cover or explicitly document blocked
   boundaries for hardware/QPU, bridge, SC-NeuroCore, Phase Orchestrator,
   notebook, and example workflows.
