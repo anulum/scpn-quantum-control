@@ -99,6 +99,11 @@ is copied here.
   `tests/test_check_version_consistency.py` now covers matching version
   carriers, mismatched carrier reporting, missing carrier reporting, and
   unmatched-version-pattern reporting for the pre-commit release hook.
+- [x] **Secret-scanner hook coverage.** Implemented 2026-05-06:
+  `tests/test_check_secrets.py` now covers vault-token extraction
+  without reading the real vault, added-line diff scanning, keyword
+  secret detection, placeholder and variable-reference suppression, and
+  safe redaction output.
 - [x] **Coverage-gap audit automation.** Implemented 2026-05-06:
   `tools/audit_coverage_gaps.py` parses `coverage.xml`, inventories
   package source files missing from coverage reports or below a
