@@ -505,8 +505,10 @@ explicit QPU-time estimate before submission.
   Zenodo `community-inclusion` request for the `Research Software
   Engineering` community. Public record community membership remains
   pending curator acceptance.
-- [ ] **Qiskit Ecosystem Catalog.** Submit ecosystem metadata before
-  attempting `awesome-qiskit`.
+- [x] **Qiskit Ecosystem Catalog.** Submitted 2026-05-06:
+  `docs/qiskit_ecosystem_submission_2026-05-06.md` records the
+  submitted project metadata and open review issue
+  `Qiskit/ecosystem#1123`.
 - [ ] **awesome-qiskit.** Blocked until Qiskit Ecosystem membership is
   accepted.
 - [ ] **Conda-forge recipe.** Prepare and submit staged-recipes package.
