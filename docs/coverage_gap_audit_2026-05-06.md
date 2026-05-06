@@ -61,6 +61,21 @@ Then run the audit:
 The tool is intentionally read-only. It does not run tests, mutate coverage
 settings, or infer scientific validation from coverage percentage alone.
 
+## CI Integration
+
+The main CI workflow runs the audit after the Python 3.12 coverage job creates
+`coverage.xml`:
+
+```bash
+python tools/audit_coverage_gaps.py --json > coverage-gap-audit.json
+```
+
+CI uploads `coverage-gap-audit.json` as a 30-day artifact named
+`coverage-gap-audit-3.12`. This is intentionally an observation step, not a hard
+per-file gate. The existing CI gate remains `--cov-fail-under=95`; the stricter
+`--fail-on-gap` mode is reserved for release closure once uncovered files have
+been closed with behavioural tests or explicitly justified exclusions.
+
 ## Claim Boundary
 
 This closes only the release-safety need for a reproducible coverage-gap

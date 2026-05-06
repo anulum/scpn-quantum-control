@@ -56,6 +56,16 @@ jobs:
         if: matrix.python-version == '3.12'
         run: |
           pytest tests/ --cov=scpn_quantum_control --cov-report=xml --cov-fail-under=95 -m "not slow" --ignore=tests/test_hardware_runner.py
+      - name: Audit coverage gaps (3.12 only)
+        if: matrix.python-version == '3.12'
+        run: python tools/audit_coverage_gaps.py --json > coverage-gap-audit.json
+      - name: Upload coverage gap audit (3.12 only)
+        if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
+        with:
+          name: coverage-gap-audit-${{ matrix.python-version }}
+          path: coverage-gap-audit.json
+          retention-days: 30
       - name: Smoke-test DLA-parity validation CLI (3.12 only)
         if: matrix.python-version == '3.12'
         run: python scripts/run_dla_parity_suite.py --json > /tmp/dla_parity_result.json

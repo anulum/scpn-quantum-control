@@ -92,6 +92,11 @@ is copied here.
   without running tests or treating line coverage as scientific
   validation. Usage and boundaries are documented in
   `docs/coverage_gap_audit_2026-05-06.md`.
+- [x] **Coverage-gap CI observation.** Implemented 2026-05-06:
+  the Python 3.12 coverage job now emits `coverage-gap-audit.json`
+  from `tools/audit_coverage_gaps.py` and uploads it as a 30-day
+  artifact. It is intentionally observational rather than a hard
+  per-file gate until the broader coverage-to-100% release task closes.
 - [x] **Behavioural assertion-helper recognition.** Implemented
   2026-05-06: the behavioural audit now counts assertion helper calls
   such as `assert_*` functions instead of misclassifying them as smoke
