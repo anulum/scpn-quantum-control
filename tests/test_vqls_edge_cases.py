@@ -225,6 +225,8 @@ class TestSolveEdgeCases:
         ):
             v.solve(reps=1, maxiter=2, seed=0)
 
+        assert call_count[0] >= 1
+
     def test_large_imag_tol_succeeds(self):
         """Very large tolerance should always pass."""
         v = VQLS_GradShafranov(n_qubits=2, imag_tol=1e6)

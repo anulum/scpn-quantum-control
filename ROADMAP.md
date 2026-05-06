@@ -108,6 +108,9 @@ is copied here.
 - [x] **Phase-artifact fuzz boundary contracts.** Implemented
   2026-05-06: inclusive PLV and `R` boundary tests now assert retained
   endpoint values instead of only constructing artefacts.
+- [x] **VQLS denominator guard contract.** Implemented 2026-05-06:
+  `test_denominator_guard_path` now asserts the patched statevector
+  path is exercised while forcing the near-zero denominator branch.
 - [ ] **E2E and contract audit.** Cover or explicitly document blocked
   boundaries for hardware/QPU, bridge, SC-NeuroCore, Phase Orchestrator,
   notebook, and example workflows.
