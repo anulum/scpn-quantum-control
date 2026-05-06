@@ -103,8 +103,15 @@ class TestRegistration:
             registry.register("fake", lambda: _FakeBackend(name="other"))
 
     def test_get_unknown_raises(self, registry: be.BackendRegistry) -> None:
+        registry.register("z_backend", _fake_factory)
+        registry.register("a_backend", _fake_factory)
+
         with pytest.raises(KeyError, match="Unknown backend"):
             registry.get("no-such-thing")
+        with pytest.raises(KeyError) as exc_info:
+            registry.get("still-missing")
+
+        assert "['a_backend', 'z_backend']" in str(exc_info.value)
 
     def test_get_rejects_protocol_violating_factory(
         self,
@@ -131,8 +138,12 @@ class TestRegistration:
     def test_clear_empties(self, registry: be.BackendRegistry) -> None:
         registry.register("a", _fake_factory)
         registry.register("b", _fake_factory)
+        with patch.object(importlib.metadata, "entry_points", return_value=[]):
+            registry.discover()
         registry.clear()
         assert registry.names() == []
+        with patch.object(importlib.metadata, "entry_points", return_value=[]):
+            assert registry.discover() == []
 
     def test_names_preserve_insertion_order(
         self,
@@ -208,6 +219,21 @@ class TestDiscovery:
             loaded = registry.discover()
         assert loaded == ["good"], "broken plugin must not block the good one"
         assert "broken" not in registry.names()
+
+    def test_failed_discovery_still_marks_pass_complete(
+        self,
+        registry: be.BackendRegistry,
+    ) -> None:
+        class _BrokenEP:
+            name = "broken"
+            value = "<test:broken>"
+
+            def load(self) -> object:
+                raise RuntimeError("load() failed")
+
+        with patch.object(importlib.metadata, "entry_points", return_value=[_BrokenEP()]):
+            assert registry.discover() == []
+            assert registry.discover() == []
 
     def test_discover_skips_invalid_name(
         self,

@@ -144,6 +144,11 @@ is copied here.
   Implemented 2026-05-06: `tests/test_async_runner.py` now guards
   round-robin index progression, submitted timestamp capture, underlying
   job-handle preservation, and timeout propagation into result polling.
+- [x] **Mutation-test expansion: backend registry state contracts.**
+  Implemented 2026-05-06: `tests/test_backend_registry.py` now guards
+  discovery-state reset on `clear()`, sorted known-backend diagnostics
+  for missing names, and one-shot discovery semantics after broken
+  plugin load attempts.
 - [ ] **Mutation-test expansion.** Start with `phase/xy_kuramoto.py`,
   `hardware/async_runner.py`, `hardware/backends.py`, `bridge/*`,
   `analysis/dla*`, and `mitigation/*`.
