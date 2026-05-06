@@ -89,18 +89,24 @@ The first path is lower risk and should be preferred for an initial submission.
 
 ## Suggested Initial Benchmark
 
-A no-QPU readiness run should use a local simulator first:
+A no-QPU readiness run was completed with a local simulator first and is
+recorded in `docs/metriq_local_smoke_2026-05-06.md`.
+
+The executed smoke workflow was:
 
 ```bash
-mgym job dispatch metriq_gym/schemas/examples/<benchmark>.example.json \
+mgym job dispatch /tmp/scpn_metriq_bv_local_smoke_2026-05-06.json \
   --provider local \
   --device aer_simulator
-mgym job poll latest
+mgym job poll b96914ac-2e2f-461e-84a8-b61d81300fb2
 ```
 
-Only after local schema, environment, and upload behaviour are understood should
-any hardware benchmark be considered. Hardware execution must remain explicitly
-approved and budget-gated.
+The run used the standard Metriq-Gym Bernstein--Vazirani schema, reported local
+simulator execution, and did not upload a result.
+
+Only after local schema, environment, and upload behaviour are understood
+should any hardware benchmark be considered. Hardware execution must remain
+explicitly approved and budget-gated.
 
 ## Claim Boundary
 
@@ -114,4 +120,5 @@ This note does not claim:
   artefacts.
 
 It records the submission gate required to keep Metriq results scientifically
-and procedurally valid.
+and procedurally valid. The local smoke result confirms CLI readiness only; it
+is not a submitted or endorsed project benchmark.

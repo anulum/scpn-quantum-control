@@ -517,6 +517,12 @@ explicit QPU-time estimate before submission.
 - [x] **Conda-forge recipe.** Submitted 2026-05-06:
   `docs/conda_forge_submission_2026-05-06.md` records the staged-recipes
   recipe metadata and open PR `conda-forge/staged-recipes#33236`.
+- [x] **Metriq local readiness smoke.** Completed 2026-05-06:
+  `docs/metriq_local_smoke_2026-05-06.md` records a no-QPU
+  `metriq-gym` Bernstein--Vazirani local simulator dispatch and poll
+  using the isolated `/home/anulum/.venvs/scpn-metriq` environment.
+  This proves the Metriq CLI path is executable without treating SCPN
+  paper benchmark tables as Metriq-native results.
 - [ ] **Metriq submission.** Submit only validated, bounded benchmark
   results. Readiness gate documented 2026-05-06 in
   `docs/metriq_submission_readiness_2026-05-06.md`: Metriq currently
@@ -524,7 +530,9 @@ explicit QPU-time estimate before submission.
   arbitrary project benchmark tables should be submitted as Metriq
   results. `metriq-gym` is installed in the isolated environment
   `/home/anulum/.venvs/scpn-metriq`; the project venv remains
-  dependency-consistent.
+  dependency-consistent. The remaining step is a deliberate upload
+  decision for a Metriq-native result or an upstream SCPN benchmark
+  schema proposal.
 - [ ] **pyOpenSci review.** Submit the software package for review and
   possible JOSS fast-track.
 - [ ] **JOSS submission.** Submit after paper package and metadata are
