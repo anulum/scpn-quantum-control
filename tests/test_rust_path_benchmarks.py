@@ -50,6 +50,12 @@ def _perf(label, dt_rust, dt_py=None):
     print(f"\n  RUST {label}: {dt_rust:.2f} ms{extra}")
 
 
+def _assert_benchmark_time(dt_ms: float) -> None:
+    """Assert benchmark timing samples are finite non-negative measurements."""
+    assert np.isfinite(dt_ms)
+    assert dt_ms >= 0.0
+
+
 # ---------------------------------------------------------------------------
 # 1. build_knm — exponential-decay coupling matrix
 # ---------------------------------------------------------------------------
@@ -124,6 +130,8 @@ class TestKuramotoEuler:
 
         _, dt_r = _timed(eng.kuramoto_euler, theta0, omega, K, 0.01, 1000)
         _, dt_p = _timed(classical_kuramoto_reference, n_osc=n, t_max=10.0, dt=0.01)
+        _assert_benchmark_time(dt_r)
+        _assert_benchmark_time(dt_p)
         _perf("kuramoto_euler (8 osc, 1000 steps)", dt_r, dt_p)
 
 
@@ -184,6 +192,7 @@ class TestKuramotoTrajectory:
         omega = np.ones(n, dtype=np.float64)
         K = np.array(eng.build_knm(n, 0.45, 0.3), dtype=np.float64)
         _, dt = _timed(eng.kuramoto_trajectory, theta0, omega, K, 0.001, 10000)
+        _assert_benchmark_time(dt)
         _perf("kuramoto_trajectory (16 osc, 10k steps)", dt)
 
 
@@ -284,6 +293,7 @@ class TestExpectationPauliFast:
         psi_im = np.ascontiguousarray(psi.imag, dtype=np.float64)
 
         _, dt = _timed(eng.expectation_pauli_fast, psi_re, psi_im, n, 0, 3)
+        _assert_benchmark_time(dt)
         _perf(f"expectation_pauli_fast ({n}q, Z)", dt)
 
 
@@ -384,6 +394,7 @@ class TestPECSampleParallel:
 
     def test_performance(self):
         _, dt = _timed(eng.pec_sample_parallel, 0.01, 5, 100000, 0.5, 42)
+        _assert_benchmark_time(dt)
         _perf("pec_sample_parallel (100k samples, 5 gates)", dt)
 
 
@@ -410,6 +421,7 @@ class TestMCXYSimulate:
         n = 8
         K_flat = np.ascontiguousarray(np.eye(n, dtype=np.float64).ravel() * 0.5)
         _, dt = _timed(eng.mc_xy_simulate, K_flat, n, 1.0, 5000, 2000, 42)
+        _assert_benchmark_time(dt)
         _perf(f"mc_xy_simulate ({n} osc, 5k therm, 2k meas)", dt)
 
 
@@ -470,6 +482,7 @@ class TestBruteMPC:
         B = np.ascontiguousarray(np.eye(3, dtype=np.float64).ravel())
         target = np.ones(3, dtype=np.float64)
         _, dt = _timed(eng.brute_mpc, B, target, 3, 4)
+        _assert_benchmark_time(dt)
         _perf("brute_mpc (dim=3, horizon=4)", dt)
 
 
@@ -620,6 +633,7 @@ class TestCorrelationMatrixXY:
             psi = rng.standard_normal(2**n) + 1j * rng.standard_normal(2**n)
             psi /= np.linalg.norm(psi)
             _, dt = _timed(eng.correlation_matrix_xy, psi.real.copy(), psi.imag.copy(), n)
+            _assert_benchmark_time(dt)
             _perf(f"correlation_matrix_xy (n={n})", dt)
 
 
@@ -697,6 +711,7 @@ class TestLindbladJumpOpsCOO:
             K = (K + K.T) / 2
             np.fill_diagonal(K, 0)
             _, dt = _timed(eng.lindblad_jump_ops_coo, K.ravel(), n, 1e-5)
+            _assert_benchmark_time(dt)
             _perf(f"lindblad_jump_ops_coo (n={n})", dt)
 
 
@@ -770,4 +785,5 @@ class TestParityFilterMask:
         rng = np.random.default_rng(42)
         bs = rng.integers(0, 2**20, size=10_000).astype(np.uint64)
         _, dt = _timed(eng.parity_filter_mask, bs, 0)
+        _assert_benchmark_time(dt)
         _perf("parity_filter_mask (10k × 20-bit)", dt)

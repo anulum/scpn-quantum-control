@@ -114,6 +114,10 @@ is copied here.
 - [x] **STDP pipeline update contract.** Implemented 2026-05-06:
   pipeline wiring now asserts Hebbian pre/post firing increases the
   synaptic weight while preserving configured clamp bounds.
+- [x] **Rust benchmark timing contracts.** Implemented 2026-05-06:
+  pure performance rows in `tests/test_rust_path_benchmarks.py` now
+  assert finite non-negative timing samples instead of only printing
+  benchmark lines.
 - [ ] **E2E and contract audit.** Cover or explicitly document blocked
   boundaries for hardware/QPU, bridge, SC-NeuroCore, Phase Orchestrator,
   notebook, and example workflows.
