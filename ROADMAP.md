@@ -131,9 +131,11 @@ is copied here.
   `tests/test_notebook_workflows.py` statically verifies committed
   notebooks are valid nbformat-4 JSON artefacts with cells, metadata,
   recognised cell types, and notebook-compatible source fields.
-- [ ] **E2E and contract audit.** Cover or explicitly document blocked
-  boundaries for hardware/QPU, bridge, SC-NeuroCore, Phase Orchestrator,
-  notebook, and example workflows.
+- [x] **E2E and contract audit.** Completed 2026-05-06:
+  `tools/audit_e2e_contract_boundaries.py --fail-on-missing` now
+  reports all six tracked boundaries covered; static notebook/example
+  contracts are documented in `docs/e2e_contract_boundaries.md` without
+  claiming executed scientific validation.
 - [ ] **Mutation-test expansion.** Start with `phase/xy_kuramoto.py`,
   `hardware/async_runner.py`, `hardware/backends.py`, `bridge/*`,
   `analysis/dla*`, and `mitigation/*`.

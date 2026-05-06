@@ -119,6 +119,7 @@ nav:
   - Roadmap:
       - Strategic Roadmap: strategic_roadmap.md
       - Actions History Dashboard: actions_history_dashboard.md
+      - E2E Contract Boundaries: e2e_contract_boundaries.md
   - Changelog: changelog.md
 
 markdown_extensions:
