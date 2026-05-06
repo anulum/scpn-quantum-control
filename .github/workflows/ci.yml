@@ -29,7 +29,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: 'pip'
-      - run: pip install ruff==0.15.12
+      - run: pip install --require-hashes -r requirements-ci-py312-linux.txt
       - run: ruff check src/ tests/
       - run: ruff format --check src/ tests/
 
@@ -103,7 +103,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: 'pip'
-      - run: pip install -r requirements-dev.txt
+      - run: pip install --require-hashes -r requirements-ci-py312-linux.txt
       - run: python tools/check_rust_pyi_exports.py
       - run: mypy
 
@@ -138,7 +138,7 @@ jobs:
           python-version: "3.12"
           cache: 'pip'
       - name: Install pinned CI dependency surface
-        run: pip install -r requirements-dev.txt
+        run: pip install --require-hashes -r requirements-ci-py312-linux.txt
       - name: Import installed package and optional bridges
         run: |
           python -c "import scpn_quantum_control; print(scpn_quantum_control.__version__)"
@@ -154,7 +154,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: 'pip'
-      - run: pip install -r requirements-dev.txt
+      - run: pip install --require-hashes -r requirements-ci-py312-linux.txt
       - run: bandit -r src/ scripts/ -ll -q
       # CVE-2026-4539: pygments ≤2.19.2 ReDoS in AdlLexer (local-only, no fix available)
       - run: pip-audit -r requirements-dev.txt --desc on --ignore-vuln CVE-2026-4539
