@@ -69,9 +69,10 @@ nav:
           - Pipeline Runtime Contract: pipeline_runtime_contract.md
           - QPU Compute Unit: qpu_compute_unit.md
           - QPU Provider Readiness: qpu_provider_readiness.md
-          - QPU System Capability Dossier: qpu_system_capability_dossier.md
-          - Pipeline Performance: pipeline_performance.md
-          - Artifact Storage Audit: artifact_storage.md
+      - QPU System Capability Dossier: qpu_system_capability_dossier.md
+      - Pipeline Performance: pipeline_performance.md
+      - Hybrid Feedback Loop S1: hybrid_feedback_loop_s1_2026-05-06.md
+      - Artifact Storage Audit: artifact_storage.md
       - Advanced Module Reference:
           - Auto-Generated Module Index: autodoc.md
           - Analysis API: analysis_api.md

@@ -648,6 +648,14 @@ These tracks remain scoped in `docs/strategic_roadmap.md` and must not
 be executed until individually activated.
 
 - [ ] **S1** Hybrid classical--quantum feedback loop.
+- [x] **S1 cross-shot feedback-loop foundation.** Implemented
+  2026-05-06: `hardware/feedback_loop.py` adds scheduler/observer
+  protocols, `FeedbackRunner`, step records, latency and QPU-budget
+  gates, explicit hardware approval enforcement, and a proportional
+  metric observer. Tests and documentation are in
+  `tests/test_feedback_loop.py` and
+  `docs/hybrid_feedback_loop_s1_2026-05-06.md`. This does not submit
+  IBM jobs and does not claim intra-shot feedback.
 - [ ] **S2** Quantum advantage benchmarks at scale.
 - [ ] **S3** ML-augmented pulse / ansatz design.
 - [ ] **S4** Multi-hardware backend + pulse-level control.

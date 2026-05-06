@@ -68,6 +68,16 @@ from .experiments import (
     vqe_landscape_experiment,
     zne_higher_order_experiment,
 )
+from .feedback_loop import (
+    FeedbackCommand,
+    FeedbackLoopConfig,
+    FeedbackObserver,
+    FeedbackResult,
+    FeedbackRunner,
+    FeedbackScheduler,
+    FeedbackStepRecord,
+    ProportionalMetricObserver,
+)
 from .hybrid_digital_analog import (
     HybridCouplingAssignment,
     HybridCouplingPartition,
@@ -115,6 +125,14 @@ __all__ = [
     "HybridDigitalAnalogBackendProtocol",
     "HybridDigitalAnalogProgram",
     "HybridRoute",
+    "FeedbackCommand",
+    "FeedbackLoopConfig",
+    "FeedbackObserver",
+    "FeedbackResult",
+    "FeedbackRunner",
+    "FeedbackScheduler",
+    "FeedbackStepRecord",
+    "ProportionalMetricObserver",
     "compile_hybrid_digital_analog",
     "hybrid_digital_analog_factory",
     "partition_kuramoto_couplings",
