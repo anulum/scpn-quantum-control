@@ -518,7 +518,13 @@ explicit QPU-time estimate before submission.
   `docs/conda_forge_submission_2026-05-06.md` records the staged-recipes
   recipe metadata and open PR `conda-forge/staged-recipes#33236`.
 - [ ] **Metriq submission.** Submit only validated, bounded benchmark
-  results.
+  results. Readiness gate documented 2026-05-06 in
+  `docs/metriq_submission_readiness_2026-05-06.md`: Metriq currently
+  expects `metriq-gym` benchmark outputs uploaded through its CLI, so no
+  arbitrary project benchmark tables should be submitted as Metriq
+  results. `metriq-gym` is installed in the isolated environment
+  `/home/anulum/.venvs/scpn-metriq`; the project venv remains
+  dependency-consistent.
 - [ ] **pyOpenSci review.** Submit the software package for review and
   possible JOSS fast-track.
 - [ ] **JOSS submission.** Submit after paper package and metadata are
