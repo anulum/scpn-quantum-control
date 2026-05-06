@@ -327,6 +327,12 @@ is copied here.
   `data/public_application_benchmarks/README.md` now promote selected
   GraphML/CSV, EEG, power-grid, plasma/tokamak, and notebook workflows
   with provenance boundaries and deterministic no-QPU smoke commands.
+- [x] **Quantum-Kuramoto API-surface contract.** Implemented
+  2026-05-07: `scpn-bench s6-api-contract` validates the proposed
+  `quantum_kuramoto.*` export names, current source-module
+  importability, duplicate/export-blocker state, and SCPN-specific
+  warning rows while keeping package-skeleton creation blocked until
+  boundary refactors are complete.
 
 ### Active paper and submission tasks
 

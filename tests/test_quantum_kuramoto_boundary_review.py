@@ -9,7 +9,28 @@
 
 from __future__ import annotations
 
-from scripts.export_quantum_kuramoto_boundary_review import build_boundary_review
+import importlib.util
+from pathlib import Path
+from types import ModuleType
+
+
+def _load_boundary_review_module() -> ModuleType:
+    script_path = (
+        Path(__file__).resolve().parents[1]
+        / "scripts"
+        / "export_quantum_kuramoto_boundary_review.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "export_quantum_kuramoto_boundary_review", script_path
+    )
+    if spec is None or spec.loader is None:
+        raise RuntimeError("cannot load S6 boundary-review script")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+build_boundary_review = _load_boundary_review_module().build_boundary_review
 
 
 def test_boundary_review_keeps_skeleton_blocked() -> None:

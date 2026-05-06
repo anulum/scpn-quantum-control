@@ -147,6 +147,25 @@ These dossiers document the promoted ansatz and pulse follow-up routes, QPU
 budget state, prerequisites, falsification boundaries, and reproducibility
 artefacts. They do not authorise execution.
 
+## S6 Quantum-Kuramoto Package Boundary
+
+The S6 decoupling track is deliberately gated before any package skeleton is
+created:
+
+```bash
+scpn-bench s6-split-audit
+scpn-bench s6-boundary-review
+scpn-bench s6-api-contract
+```
+
+The split audit inventories reusable, needs-review, and SCPN-specific modules.
+The boundary review selects a conservative future public surface and keeps
+package creation blocked until config, provenance, and analysis-dependent rows
+are separated. The API contract then checks that each proposed
+`quantum_kuramoto.*` export has a valid package-local name, imports from the
+current package, avoids deferred runner/provenance surfaces, and records
+SCPN-specific rows as warnings rather than silently promoting them.
+
 `docs/s3_design_readiness_index_2026-05-06.md` records allowed claims,
 forbidden claims, and the follow-up path for S3.
 

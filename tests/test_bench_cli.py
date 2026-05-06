@@ -242,6 +242,18 @@ def test_s6_boundary_review_selection_is_review_harness() -> None:
     ]
 
 
+def test_s6_api_contract_selection_is_contract_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("s6-contract", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "s6-api-contract",
+            "scripts/export_quantum_kuramoto_api_contract.py",
+            frozenset({"s6-contract"}),
+        )
+    ]
+
+
 def test_dry_run_prints_selected_harnesses(capsys: pytest.CaptureFixture[str]) -> None:
     rc = bench_cli.run(["fim-all", "--dry-run"])
 

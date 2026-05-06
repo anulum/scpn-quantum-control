@@ -1,0 +1,219 @@
+{
+  "contract_passed": true,
+  "date": "2026-05-07",
+  "errors": [],
+  "next_steps": [
+    "extract package-local facades for non-reusable proposed rows",
+    "add import-compatibility tests before skeleton creation",
+    "create the skeleton only after contract_passed remains true and boundary blockers are closed"
+  ],
+  "package_skeleton_allowed": false,
+  "reason": "API targets are being contracted before any separate package skeleton is created",
+  "rows": [
+    {
+      "blocked_source": false,
+      "current_status": "reusable",
+      "duplicate_export": false,
+      "immediately_promotable": true,
+      "import_error": null,
+      "importable": true,
+      "module": "scpn_quantum_control.phase.xy_kuramoto",
+      "proposed_export": "quantum_kuramoto.phase.xy_kuramoto",
+      "public_member_count": 14,
+      "target_valid": true
+    },
+    {
+      "blocked_source": false,
+      "current_status": "reusable",
+      "duplicate_export": false,
+      "immediately_promotable": true,
+      "import_error": null,
+      "importable": true,
+      "module": "scpn_quantum_control.phase.xy_compiler",
+      "proposed_export": "quantum_kuramoto.phase.xy_compiler",
+      "public_member_count": 6,
+      "target_valid": true
+    },
+    {
+      "blocked_source": false,
+      "current_status": "reusable",
+      "duplicate_export": false,
+      "immediately_promotable": true,
+      "import_error": null,
+      "importable": true,
+      "module": "scpn_quantum_control.phase.trotter_error",
+      "proposed_export": "quantum_kuramoto.phase.trotter_error",
+      "public_member_count": 11,
+      "target_valid": true
+    },
+    {
+      "blocked_source": false,
+      "current_status": "reusable",
+      "duplicate_export": false,
+      "immediately_promotable": true,
+      "import_error": null,
+      "importable": true,
+      "module": "scpn_quantum_control.phase.structured_ansatz",
+      "proposed_export": "quantum_kuramoto.phase.structured_ansatz",
+      "public_member_count": 5,
+      "target_valid": true
+    },
+    {
+      "blocked_source": false,
+      "current_status": "reusable",
+      "duplicate_export": false,
+      "immediately_promotable": true,
+      "import_error": null,
+      "importable": true,
+      "module": "scpn_quantum_control.phase.phase_vqe",
+      "proposed_export": "quantum_kuramoto.phase.phase_vqe",
+      "public_member_count": 8,
+      "target_valid": true
+    },
+    {
+      "blocked_source": false,
+      "current_status": "reusable",
+      "duplicate_export": false,
+      "immediately_promotable": true,
+      "import_error": null,
+      "importable": true,
+      "module": "scpn_quantum_control.phase.pulse_shaping",
+      "proposed_export": "quantum_kuramoto.phase.pulse_shaping",
+      "public_member_count": 16,
+      "target_valid": true
+    },
+    {
+      "blocked_source": false,
+      "current_status": "reusable",
+      "duplicate_export": false,
+      "immediately_promotable": true,
+      "import_error": null,
+      "importable": true,
+      "module": "scpn_quantum_control.phase.lindblad",
+      "proposed_export": "quantum_kuramoto.phase.lindblad",
+      "public_member_count": 5,
+      "target_valid": true
+    },
+    {
+      "blocked_source": false,
+      "current_status": "reusable",
+      "duplicate_export": false,
+      "immediately_promotable": true,
+      "import_error": null,
+      "importable": true,
+      "module": "scpn_quantum_control.phase.mps_evolution",
+      "proposed_export": "quantum_kuramoto.phase.mps_evolution",
+      "public_member_count": 8,
+      "target_valid": true
+    },
+    {
+      "blocked_source": false,
+      "current_status": "reusable",
+      "duplicate_export": false,
+      "immediately_promotable": true,
+      "import_error": null,
+      "importable": true,
+      "module": "scpn_quantum_control.hardware.backends",
+      "proposed_export": "quantum_kuramoto.hardware.backends",
+      "public_member_count": 22,
+      "target_valid": true
+    },
+    {
+      "blocked_source": false,
+      "current_status": "scpn_specific",
+      "duplicate_export": false,
+      "immediately_promotable": false,
+      "import_error": null,
+      "importable": true,
+      "module": "scpn_quantum_control.hardware.async_runner",
+      "proposed_export": "quantum_kuramoto.hardware.async_runner",
+      "public_member_count": 11,
+      "target_valid": true
+    },
+    {
+      "blocked_source": false,
+      "current_status": "reusable",
+      "duplicate_export": false,
+      "immediately_promotable": true,
+      "import_error": null,
+      "importable": true,
+      "module": "scpn_quantum_control.hardware.qubit_mapper",
+      "proposed_export": "quantum_kuramoto.hardware.qubit_mapper",
+      "public_member_count": 12,
+      "target_valid": true
+    },
+    {
+      "blocked_source": false,
+      "current_status": "reusable",
+      "duplicate_export": false,
+      "immediately_promotable": true,
+      "import_error": null,
+      "importable": true,
+      "module": "scpn_quantum_control.hardware.qasm_export",
+      "proposed_export": "quantum_kuramoto.hardware.qasm_export",
+      "public_member_count": 13,
+      "target_valid": true
+    },
+    {
+      "blocked_source": false,
+      "current_status": "reusable",
+      "duplicate_export": false,
+      "immediately_promotable": true,
+      "import_error": null,
+      "importable": true,
+      "module": "scpn_quantum_control.hardware.circuit_export",
+      "proposed_export": "quantum_kuramoto.hardware.circuit_export",
+      "public_member_count": 12,
+      "target_valid": true
+    },
+    {
+      "blocked_source": false,
+      "current_status": "scpn_specific",
+      "duplicate_export": false,
+      "immediately_promotable": false,
+      "import_error": null,
+      "importable": true,
+      "module": "scpn_quantum_control.hardware.analog_kuramoto",
+      "proposed_export": "quantum_kuramoto.hardware.analog_kuramoto",
+      "public_member_count": 29,
+      "target_valid": true
+    },
+    {
+      "blocked_source": false,
+      "current_status": "reusable",
+      "duplicate_export": false,
+      "immediately_promotable": true,
+      "import_error": null,
+      "importable": true,
+      "module": "scpn_quantum_control.hardware.plugin_registry",
+      "proposed_export": "quantum_kuramoto.hardware.plugin_registry",
+      "public_member_count": 4,
+      "target_valid": true
+    },
+    {
+      "blocked_source": false,
+      "current_status": "reusable",
+      "duplicate_export": false,
+      "immediately_promotable": true,
+      "import_error": null,
+      "importable": true,
+      "module": "scpn_quantum_control.accel.rust_import",
+      "proposed_export": "quantum_kuramoto.accel.rust_import",
+      "public_member_count": 3,
+      "target_valid": true
+    }
+  ],
+  "schema": "s6_quantum_kuramoto_api_contract_v1",
+  "source_review": "data/s6_quantum_kuramoto_split/quantum_kuramoto_boundary_review_2026-05-07.json",
+  "summary": {
+    "error_count": 0,
+    "immediately_promotable_exports": 14,
+    "importable_exports": 16,
+    "proposed_exports": 16,
+    "warning_count": 2
+  },
+  "warnings": [
+    "scpn_quantum_control.hardware.async_runner has status scpn_specific; require facade or isolation before promotion",
+    "scpn_quantum_control.hardware.analog_kuramoto has status scpn_specific; require facade or isolation before promotion"
+  ]
+}

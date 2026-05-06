@@ -146,6 +146,11 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         "scripts/export_quantum_kuramoto_boundary_review.py",
         frozenset({"s6-review"}),
     ),
+    Harness(
+        "s6-api-contract",
+        "scripts/export_quantum_kuramoto_api_contract.py",
+        frozenset({"s6-contract"}),
+    ),
 )
 
 ARTEFACT_PATHS = (
@@ -278,6 +283,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate the S6 quantum-kuramoto boundary-review artefacts.",
     )
     _add_run_options(s6_review, default_group="s6-review")
+
+    s6_contract = subparsers.add_parser(
+        "s6-api-contract",
+        help="Regenerate the S6 quantum-kuramoto API-contract artefacts.",
+    )
+    _add_run_options(s6_contract, default_group="s6-contract")
 
     return parser.parse_args(argv)
 
