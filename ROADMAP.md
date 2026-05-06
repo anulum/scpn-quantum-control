@@ -461,8 +461,18 @@ explicit QPU-time estimate before submission.
   offline readiness and any optional hardware comparison only after VQS
   target-observable tolerances pass, backend selection, budget
   confirmation, and explicit approval for QPU submission.
-- [ ] **Multi-circuit QEC demonstration.** Evaluate physics-aware
-  decoding only with clear logical-error metrics.
+- [x] **Multi-circuit QEC demonstration preregistration.** Completed
+  2026-05-06:
+  `docs/multicircuit_qec_prereg_2026-05-06.md` defines required
+  baselines, logical-error metrics, observable tolerances, offline
+  readiness matrix, promotion gates, optional 180-circuit hardware
+  scope, 15-minute ceiling, live gates, analysis plan, ablations,
+  falsification rules, and artefact paths. Execution remains separate
+  and approval-gated.
+- [ ] **Multi-circuit QEC demonstration execution.** Run offline
+  readiness and any optional hardware block only after logical metrics
+  beat baselines under preregistered noise, backend selection, budget
+  confirmation, and explicit approval for QPU submission.
 
 ### Visibility and registration tasks
 
