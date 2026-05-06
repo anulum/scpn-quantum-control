@@ -146,6 +146,15 @@ class TestConstruction:
         assert a.n_runners == 1
         assert a._runners[0] is runner_set  # type: ignore[attr-defined]
 
+    def test_next_runner_advances_round_robin_index(self) -> None:
+        r1, r2 = _StubRunner("ibm_a"), _StubRunner("ibm_b")
+        a = ar.AsyncHardwareRunner([r1, r2])  # type: ignore[list-item]
+
+        assert a._next_runner() is r1
+        assert a._next_runner() is r2
+        assert a._next_runner() is r1
+        assert a._rr_index == 3  # type: ignore[attr-defined]
+
 
 # ---------------------------------------------------------------------------
 # submit_one_async
@@ -156,12 +165,16 @@ class TestSubmitOne:
     def test_submit_one_returns_handle(self) -> None:
         r = _StubRunner("ibm_test")
         a = ar.AsyncHardwareRunner(r)  # type: ignore[arg-type]
+        before = time.time()
         handle = asyncio.run(
             a.submit_one_async(_fake_circuits(3), shots=1024, name="phase1_even"),
         )
+        after = time.time()
         assert handle.job_id.startswith("job_")
         assert handle.runner is r
         assert handle.experiment == "phase1_even"
+        assert before <= handle.submitted_at <= after
+        assert handle._job is not None
 
     def test_submit_one_transpiles_all_circuits(self) -> None:
         r = _StubRunner()
@@ -278,12 +291,13 @@ class TestWaitForResults:
         r = _StubRunner()
         a = ar.AsyncHardwareRunner(r)  # type: ignore[arg-type]
         handle = asyncio.run(a.submit_one_async(_fake_circuits(2), name="exp"))
-        results = asyncio.run(a.wait_for_job_async(handle))
+        results = asyncio.run(a.wait_for_job_async(handle, timeout_s=123.0))
         assert len(results) == 2
         assert results[0].job_id == handle.job_id
         assert results[0].counts == {"0000": 1024}
         assert results[0].backend_name == r.backend_name
         assert results[0].experiment_name == "exp_0"
+        handle._job.result.assert_called_once_with(timeout=123.0)
 
     def test_wait_raises_without_job(self) -> None:
         r = _StubRunner()

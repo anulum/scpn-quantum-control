@@ -140,6 +140,10 @@ is copied here.
   2026-05-06: `tests/test_xy_kuramoto.py` now includes mutation guards
   for zero-time identity evolution, internal Pauli qubit ordering, and
   trajectory time-grid endpoints.
+- [x] **Mutation-test expansion: async runner state contracts.**
+  Implemented 2026-05-06: `tests/test_async_runner.py` now guards
+  round-robin index progression, submitted timestamp capture, underlying
+  job-handle preservation, and timeout propagation into result polling.
 - [ ] **Mutation-test expansion.** Start with `phase/xy_kuramoto.py`,
   `hardware/async_runner.py`, `hardware/backends.py`, `bridge/*`,
   `analysis/dla*`, and `mitigation/*`.
