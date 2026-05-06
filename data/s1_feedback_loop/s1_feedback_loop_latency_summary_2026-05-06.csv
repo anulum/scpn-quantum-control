@@ -1,0 +1,4 @@
+benchmark,max_latency_ms,max_steps,mean_completed_steps,mean_final_coupling_scale,mean_final_r_live,mean_latency_ms,measurement_shots,median_latency_ms,min_latency_ms,n_qubits,p95_latency_ms,qpu_seconds,repeats
+s1_realtime_controller_scheduler,24.339491,4,4.0,1.094638296422158,0.5622695059630701,15.941307777777778,32,13.588179,12.319398,2,19.23464,0.0,9
+s1_realtime_controller_scheduler,28.224054,4,4.0,1.0950583882226492,0.5615693529622513,19.469818857142858,64,18.747157,14.342479,3,22.652896,0.0,7
+s1_realtime_controller_scheduler,36.734355,4,4.0,1.1000695373128402,0.5532174378119329,28.7668378,64,28.25345,19.828811,4,34.601979,0.0,5

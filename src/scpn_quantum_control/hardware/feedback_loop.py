@@ -17,10 +17,13 @@ primitives rather than this runner.
 
 from __future__ import annotations
 
+import math
 import time
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Protocol
+
+from ..control.realtime_feedback import FeedbackStep, RealtimeSyncFeedbackController
 
 
 @dataclass(frozen=True)
@@ -182,6 +185,48 @@ class FeedbackRunner:
         return history
 
 
+class RealtimeControllerScheduler:
+    """Simulator scheduler backed by ``RealtimeSyncFeedbackController``.
+
+    Commands may provide ``{"coupling_scale": float}`` to override the next
+    cross-shot coupling multiplier and ``{"seed": int}`` for deterministic
+    finite-shot sampling. When no seed is supplied, ``base_seed`` creates a
+    deterministic seed stream by adding the submission index.
+    """
+
+    is_hardware = False
+
+    def __init__(
+        self,
+        controller: RealtimeSyncFeedbackController,
+        *,
+        base_seed: int | None = None,
+    ) -> None:
+        if not isinstance(controller, RealtimeSyncFeedbackController):
+            raise TypeError("controller must be a RealtimeSyncFeedbackController")
+        if base_seed is not None and (not isinstance(base_seed, int) or base_seed < 0):
+            raise ValueError("base_seed must be a non-negative integer or None")
+        self.controller = controller
+        self.base_seed = base_seed
+        self._submitted = 0
+
+    @property
+    def submitted(self) -> int:
+        """Number of simulator steps submitted through this scheduler."""
+        return self._submitted
+
+    def submit(self, command: FeedbackCommand) -> FeedbackResult:
+        """Apply one cross-shot command and return simulator-observed metrics."""
+        payload = _mapping_payload(command)
+        coupling_scale = payload.get("coupling_scale", payload.get("value"))
+        if coupling_scale is not None:
+            self.controller.set_coupling_scale(_finite_float(coupling_scale, "coupling_scale"))
+        seed = _payload_seed(payload, self.base_seed, self._submitted)
+        step = self.controller.step(seed=seed)
+        self._submitted += 1
+        return _feedback_result_from_realtime_step(step, seed=seed, command_label=command.label)
+
+
 class ProportionalMetricObserver:
     """Reference observer that tunes one numeric command parameter from a metric."""
 
@@ -245,9 +290,62 @@ def _require_non_negative(value: float, name: str) -> None:
 
 
 def _require_finite(value: float, name: str) -> None:
-    if (
-        not isinstance(value, int | float)
-        or value != value
-        or value in {float("inf"), float("-inf")}
-    ):
+    if not isinstance(value, int | float) or not math.isfinite(value):
         raise ValueError(f"{name} must be finite")
+
+
+def _mapping_payload(command: FeedbackCommand) -> Mapping[str, Any]:
+    if command.payload is None:
+        return {}
+    if not isinstance(command.payload, Mapping):
+        raise TypeError("feedback command payload must be a mapping for realtime scheduling")
+    return command.payload
+
+
+def _finite_float(value: Any, name: str) -> float:
+    if not isinstance(value, int | float) or not math.isfinite(value):
+        raise ValueError(f"{name} must be finite")
+    return float(value)
+
+
+def _payload_seed(
+    payload: Mapping[str, Any],
+    base_seed: int | None,
+    submitted: int,
+) -> int | None:
+    if "seed" in payload:
+        seed = payload["seed"]
+        if not isinstance(seed, int) or seed < 0:
+            raise ValueError("seed must be a non-negative integer")
+        return seed
+    if base_seed is None:
+        return None
+    return base_seed + submitted
+
+
+def _feedback_result_from_realtime_step(
+    step: FeedbackStep,
+    *,
+    seed: int | None,
+    command_label: str,
+) -> FeedbackResult:
+    return FeedbackResult(
+        counts=step.readout_counts,
+        metrics={
+            "r_live": step.r_live,
+            "r_statevector": step.r_statevector,
+            "psi_statevector": step.psi_statevector,
+            "error": step.error,
+            "applied_coupling_scale": step.applied_coupling_scale,
+            "next_coupling_scale": step.next_coupling_scale,
+            "correction_angle": step.correction_angle,
+        },
+        qpu_seconds=0.0,
+        metadata={
+            "source": "realtime_sync_feedback_controller",
+            "step_index": step.index,
+            "action": step.action,
+            "seed": seed,
+            "command_label": command_label,
+        },
+    )

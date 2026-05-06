@@ -77,6 +77,18 @@ from .feedback_loop import (
     FeedbackScheduler,
     FeedbackStepRecord,
     ProportionalMetricObserver,
+    RealtimeControllerScheduler,
+)
+from .feedback_submission import (
+    FeedbackBudgetEstimate,
+    FeedbackCircuitSummary,
+    FeedbackPlatformCapability,
+    FeedbackSubmissionPackage,
+    PlatformReadiness,
+    assess_platform_readiness,
+    build_s1_feedback_submission_package,
+    default_s1_platforms,
+    summarise_feedback_circuit,
 )
 from .hybrid_digital_analog import (
     HybridCouplingAssignment,
@@ -89,6 +101,7 @@ from .hybrid_digital_analog import (
     hybrid_digital_analog_factory,
     partition_kuramoto_couplings,
 )
+from .job_dossier import HardwareJobDossier, build_s1_feedback_job_dossier
 from .noise_model import heron_r2_noise_model
 from .qubit_mapper import (
     ExecutionRegion,
@@ -133,6 +146,18 @@ __all__ = [
     "FeedbackScheduler",
     "FeedbackStepRecord",
     "ProportionalMetricObserver",
+    "RealtimeControllerScheduler",
+    "FeedbackBudgetEstimate",
+    "FeedbackCircuitSummary",
+    "FeedbackPlatformCapability",
+    "FeedbackSubmissionPackage",
+    "PlatformReadiness",
+    "assess_platform_readiness",
+    "build_s1_feedback_submission_package",
+    "default_s1_platforms",
+    "summarise_feedback_circuit",
+    "HardwareJobDossier",
+    "build_s1_feedback_job_dossier",
     "compile_hybrid_digital_analog",
     "hybrid_digital_analog_factory",
     "partition_kuramoto_couplings",

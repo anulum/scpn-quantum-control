@@ -66,6 +66,18 @@ def test_fim_selection_can_include_readout_matrix_mitigation() -> None:
     assert "fim-readout-matrix-mitigation" in labels
 
 
+def test_s1_feedback_selection_is_no_qpu_latency_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("s1", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "s1-feedback-loop",
+            "scripts/benchmark_s1_feedback_loop.py",
+            frozenset({"s1"}),
+        )
+    ]
+
+
 def test_dry_run_prints_selected_harnesses(capsys: pytest.CaptureFixture[str]) -> None:
     rc = bench_cli.run(["fim-all", "--dry-run"])
 

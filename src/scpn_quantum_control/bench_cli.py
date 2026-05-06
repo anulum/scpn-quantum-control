@@ -73,11 +73,13 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         frozenset({"fim"}),
         optional_flag="readout",
     ),
+    Harness("s1-feedback-loop", "scripts/benchmark_s1_feedback_loop.py", frozenset({"s1"})),
 )
 
 ARTEFACT_PATHS = (
     "data/rust_vqe_methods",
     "data/scpn_fim_hamiltonian",
+    "data/s1_feedback_loop",
 )
 
 
@@ -109,6 +111,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate methods and FIM artefacts in one run.",
     )
     _add_run_options(all_parser, default_group="all")
+
+    s1 = subparsers.add_parser(
+        "s1-feedback",
+        help="Regenerate no-QPU S1 feedback-loop latency artefacts.",
+    )
+    _add_run_options(s1, default_group="s1")
 
     return parser.parse_args(argv)
 

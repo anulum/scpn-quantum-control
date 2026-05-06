@@ -1,0 +1,61 @@
+{
+  "date": "2026-05-06",
+  "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/benchmark_s1_feedback_loop.py",
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39",
+    "processor": "x86_64"
+  },
+  "scope": "No-QPU simulator latency for FeedbackRunner + RealtimeControllerScheduler wrapping RealtimeSyncFeedbackController. These timings do not include IBM Runtime session creation, queue time, provider round-trip latency, or QPU execution time.",
+  "timing_caveat": "Opportunistic local timing on a shared workstation. Use the command field to regenerate on an isolated host before making publication-grade latency claims.",
+  "rows": [
+    {
+      "benchmark": "s1_realtime_controller_scheduler",
+      "n_qubits": 2,
+      "repeats": 9,
+      "max_steps": 4,
+      "measurement_shots": 32,
+      "mean_latency_ms": 15.941307777777778,
+      "median_latency_ms": 13.588179,
+      "p95_latency_ms": 19.23464,
+      "min_latency_ms": 12.319398,
+      "max_latency_ms": 24.339491,
+      "mean_completed_steps": 4.0,
+      "mean_final_r_live": 0.5622695059630701,
+      "mean_final_coupling_scale": 1.094638296422158,
+      "qpu_seconds": 0.0
+    },
+    {
+      "benchmark": "s1_realtime_controller_scheduler",
+      "n_qubits": 3,
+      "repeats": 7,
+      "max_steps": 4,
+      "measurement_shots": 64,
+      "mean_latency_ms": 19.469818857142858,
+      "median_latency_ms": 18.747157,
+      "p95_latency_ms": 22.652896,
+      "min_latency_ms": 14.342479,
+      "max_latency_ms": 28.224054,
+      "mean_completed_steps": 4.0,
+      "mean_final_r_live": 0.5615693529622513,
+      "mean_final_coupling_scale": 1.0950583882226492,
+      "qpu_seconds": 0.0
+    },
+    {
+      "benchmark": "s1_realtime_controller_scheduler",
+      "n_qubits": 4,
+      "repeats": 5,
+      "max_steps": 4,
+      "measurement_shots": 64,
+      "mean_latency_ms": 28.7668378,
+      "median_latency_ms": 28.25345,
+      "p95_latency_ms": 34.601979,
+      "min_latency_ms": 19.828811,
+      "max_latency_ms": 36.734355,
+      "mean_completed_steps": 4.0,
+      "mean_final_r_live": 0.5532174378119329,
+      "mean_final_coupling_scale": 1.1000695373128402,
+      "qpu_seconds": 0.0
+    }
+  ]
+}

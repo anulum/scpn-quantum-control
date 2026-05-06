@@ -11,8 +11,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import numpy as np
 import pytest
 
+from scpn_quantum_control.control.realtime_feedback import (
+    RealtimeFeedbackConfig,
+    RealtimeSyncFeedbackController,
+)
 from scpn_quantum_control.hardware.feedback_loop import (
     FeedbackCommand,
     FeedbackLoopConfig,
@@ -20,6 +25,7 @@ from scpn_quantum_control.hardware.feedback_loop import (
     FeedbackRunner,
     FeedbackStepRecord,
     ProportionalMetricObserver,
+    RealtimeControllerScheduler,
 )
 
 
@@ -121,3 +127,39 @@ def test_proportional_observer_clips_and_requires_metric():
     assert state["converged"] is False
     with pytest.raises(KeyError, match="missing feedback metric"):
         observer.update(FeedbackResult(metrics={"other": 0.5}), ())
+
+
+def test_realtime_controller_scheduler_runs_deterministic_simulator_steps():
+    controller = RealtimeSyncFeedbackController(
+        K_coupling=np.array([[0.0, 0.2], [0.2, 0.0]], dtype=np.float64),
+        omega_natural=np.array([0.1, 0.3], dtype=np.float64),
+        config=RealtimeFeedbackConfig(measurement_shots=32, base_dt=0.02, trotter_steps=1),
+    )
+    scheduler = RealtimeControllerScheduler(controller, base_seed=10)
+
+    result = scheduler.submit(FeedbackCommand(payload={"coupling_scale": 1.2}, label="sim"))
+
+    assert scheduler.is_hardware is False
+    assert scheduler.submitted == 1
+    assert result.qpu_seconds == 0.0
+    assert result.metadata["source"] == "realtime_sync_feedback_controller"
+    assert result.metadata["seed"] == 10
+    assert result.metadata["action"] in {"release", "hold", "synchronise"}
+    assert result.metrics["applied_coupling_scale"] == pytest.approx(1.2)
+    assert result.metrics["next_coupling_scale"] == pytest.approx(controller.coupling_scale)
+    assert sum(result.counts.values()) == 32
+
+
+def test_realtime_controller_scheduler_rejects_invalid_payloads():
+    controller = RealtimeSyncFeedbackController(
+        K_coupling=np.array([[0.0, 0.2], [0.2, 0.0]], dtype=np.float64),
+        omega_natural=np.array([0.1, 0.3], dtype=np.float64),
+    )
+    scheduler = RealtimeControllerScheduler(controller)
+
+    with pytest.raises(TypeError, match="payload must be a mapping"):
+        scheduler.submit(FeedbackCommand(payload=0.5))
+    with pytest.raises(ValueError, match="seed must be"):
+        scheduler.submit(FeedbackCommand(payload={"seed": -1}))
+    with pytest.raises(ValueError, match="scale must be"):
+        scheduler.submit(FeedbackCommand(payload={"coupling_scale": 3.0}))

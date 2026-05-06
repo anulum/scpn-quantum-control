@@ -656,6 +656,29 @@ be executed until individually activated.
   `tests/test_feedback_loop.py` and
   `docs/hybrid_feedback_loop_s1_2026-05-06.md`. This does not submit
   IBM jobs and does not claim intra-shot feedback.
+- [x] **S1 realtime-controller simulator scheduler.** Implemented
+  2026-05-06: `RealtimeControllerScheduler` wraps
+  `RealtimeSyncFeedbackController` as a zero-QPU scheduler, adds bounded
+  cross-shot coupling overrides, deterministic finite-shot seeds,
+  auditable simulator metrics, focused tests, and S1 documentation.
+- [x] **S1 no-QPU feedback latency benchmark.** Implemented
+  2026-05-06: `scripts/benchmark_s1_feedback_loop.py` and
+  `scpn-bench s1-feedback` regenerate JSON/CSV latency artefacts for
+  `FeedbackRunner` plus `RealtimeControllerScheduler`; pipeline
+  performance documentation records the command and IBM/QPU boundary.
+- [x] **S1 provider-neutral submission-readiness package.** Implemented
+  2026-05-06: `hardware/feedback_submission.py` builds no-submission
+  dynamic-circuit readiness packages with circuit summaries, QPU-budget
+  estimates, platform capability checks, ready/blocked/manual-review
+  decisions for IBM, generic gate, analogue, CV, and simulator targets,
+  focused tests, and S1 documentation.
+- [x] **Hardware-job dossier standard.** Implemented 2026-05-06:
+  `hardware/job_dossier.py` defines the required dossier schema for
+  every submission-ready hardware job, including purpose, hypothesis,
+  falsification condition, observables, circuit summary, QPU budget,
+  platform fit, risks, decision tree, paper impact, follow-up avenues,
+  possibilities opened, claim boundary, and reproducibility package.
+  The S1 readiness package embeds the dossier by default.
 - [ ] **S2** Quantum advantage benchmarks at scale.
 - [ ] **S3** ML-augmented pulse / ansatz design.
 - [ ] **S4** Multi-hardware backend + pulse-level control.

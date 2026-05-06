@@ -108,6 +108,11 @@ class RealtimeSyncFeedbackController:
         """Coupling multiplier that will be applied on the next step."""
         return self._coupling_scale
 
+    def set_coupling_scale(self, scale: float) -> None:
+        """Set the next cross-shot coupling multiplier within policy bounds."""
+        _require_range(scale, 1.0 / self.config.max_gain, self.config.max_gain, "scale")
+        self._coupling_scale = float(scale)
+
     def reset(self) -> None:
         """Reset the controller to the prepared Kuramoto initial state."""
         self._state = self._initial_statevector()
