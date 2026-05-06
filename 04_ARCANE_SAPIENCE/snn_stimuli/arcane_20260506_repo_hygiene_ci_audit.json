@@ -1,5 +1,5 @@
 {
-  "text": "Repository hygiene audit for SCPN-QUANTUM-CONTROL resolved current main blockers: Link Check and Python 3.13 CI passed after the dashboard-link and microbenchmark fixes. CodeQL clear-text logging alerts closed after reducing FIM IBM readiness console output. Dependabot security and secret-scanning APIs returned no open alerts. After replacement workflows passed, 186 classified safe GitHub Actions runs were deleted: cancelled runs, failed main-branch runs superseded by later successful runs, failed closed/superseded Dependabot branch runs, and old dynamic dependency-update failures. Only five failed runs remain, all on currently open Dependabot PR branches. Four Dependabot PRs remain open; PR #63 needs separate CI investigation.",
+  "text": "Repository hygiene audit for SCPN-QUANTUM-CONTROL continued: the four open Dependabot PRs were traced as the remaining failed-run source. A compliant manual dependency patch now replaces their contents and stabilises the stochastic ZNE simulator assertion before PR closure and final failed-run deletion.",
   "source": "codex",
   "project": "SCPN-QUANTUM-CONTROL"
 }
