@@ -93,9 +93,12 @@ is copied here.
   `tools/audit_test_behaviour.py` now counts `test_` methods inside
   `Test*` classes, so class-based pytest modules are no longer
   misreported as empty.
-- [ ] **Behavioural-test audit.** Review every test module for
-  assertions that constrain numerical invariants, state transitions,
-  exception contracts, provenance, or integration behaviour.
+- [x] **Behavioural-test audit.** Completed 2026-05-06:
+  `docs/behavioural_test_audit_closure_2026-05-06.md` records the
+  final audit state after targeted hardening passes. The current
+  automated inventory covers `319` test modules and reports no
+  smoke-only tests; broader coverage-to-100% work remains open as a
+  separate release task.
 - [x] **Behavioural-test audit: topological coupling guard.**
   Implemented 2026-05-06: `tests/test_topological_coupling_guard.py`
   now asserts coupling symmetrisation, diagonal clearing, omega/config
