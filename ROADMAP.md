@@ -393,9 +393,16 @@ explicit QPU-time estimate before submission.
 - [ ] **Systematic state/layout randomisation execution.** Execute only
   after live backend/layout selection, transpilation/depth gates, QPU
   budget confirmation, and explicit approval.
-- [ ] **Full readout-mitigation calibration where missing.** Only run
-  complete basis calibration when the scientific value outweighs QPU
-  cost.
+- [x] **Full readout-mitigation calibration preregistration.**
+  Completed 2026-05-06:
+  `docs/readout_full_basis_calibration_prereg_2026-05-06.md` defines
+  the eligibility boundary, basis-state calibration matrix for `n=4,6,8`,
+  QPU-time estimates and ceilings, live layout gates, analysis plan,
+  falsification rules, and output artefact paths. Calibration execution
+  remains separate and approval-gated.
+- [ ] **Full readout-mitigation calibration execution.** Run complete
+  basis calibration only for a specified dataset/layout after live
+  readiness checks, budget confirmation, and explicit approval.
 - [ ] **GUESS / symmetry-decay calibration.** Use parity leakage as a
   real hardware witness for symmetry-guided extrapolation if stability
   is sufficient.
