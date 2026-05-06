@@ -403,9 +403,18 @@ explicit QPU-time estimate before submission.
 - [ ] **Full readout-mitigation calibration execution.** Run complete
   basis calibration only for a specified dataset/layout after live
   readiness checks, budget confirmation, and explicit approval.
-- [ ] **GUESS / symmetry-decay calibration.** Use parity leakage as a
-  real hardware witness for symmetry-guided extrapolation if stability
-  is sufficient.
+- [x] **GUESS / symmetry-decay calibration preregistration.**
+  Completed 2026-05-06:
+  `docs/guess_symmetry_decay_prereg_2026-05-06.md` defines the
+  folded-noise parity-leakage witness protocol, readiness basis, `n=4`
+  circuit matrix, 196-circuit default scope, 5--12 minute estimate,
+  15-minute ceiling, live folding/depth gates, analysis plan,
+  falsification rules, and output artefact paths. Execution remains
+  separate and approval-gated.
+- [ ] **GUESS / symmetry-decay calibration execution.** Run the
+  folded-noise witness experiment only after backend selection,
+  folded-circuit readiness checks, budget confirmation, and explicit
+  approval.
 - [ ] **Layer-selective qubit assignment.** Assign strongly coupled
   layers to low-error physical qubits and compare with default layout.
 - [ ] **Entanglement entropy or tomography check.** Use shadow
