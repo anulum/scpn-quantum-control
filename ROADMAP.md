@@ -112,6 +112,10 @@ is copied here.
   2026-05-06: `tests/test_bench_cli.py` now covers default stop-on-first
   harness failure, `--keep-going` execution after failures, and
   `--no-diff` skipping of artefact-drift checks.
+- [x] **Local preflight tool coverage.** Implemented 2026-05-06:
+  `tests/test_preflight_tool.py` now covers gate pass/fail output,
+  stdout/stderr tail reporting, `--no-tests`, `--no-coverage`, and
+  stop-on-first-failure behaviour without running the full suite.
 - [x] **Coverage-gap audit automation.** Implemented 2026-05-06:
   `tools/audit_coverage_gaps.py` parses `coverage.xml`, inventories
   package source files missing from coverage reports or below a
