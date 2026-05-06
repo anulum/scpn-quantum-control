@@ -492,9 +492,18 @@ explicit QPU-time estimate before submission.
   `docs/zenodo_metadata_refresh_checklist_2026-05-06.md` records the
   DOI, current version consistency, community targets, related
   identifiers, claim boundary, and manual-session update procedure.
-- [ ] **Zenodo communities and metadata refresh execution.** Complete
-  the authenticated Zenodo login session, request/add appropriate
-  communities, and record any new version DOI or moderation status.
+- [x] **Zenodo metadata refresh execution.** Completed 2026-05-06:
+  `docs/zenodo_metadata_refresh_execution_2026-05-06.md` records the
+  authenticated Zenodo API edit/publish cycle. Public metadata now
+  reports version `0.9.6`, publication date `2026-03-29`, license
+  `agpl-3.0-or-later`, bounded description, and refreshed keywords for
+  record `10.5281/zenodo.18821930` under concept DOI
+  `10.5281/zenodo.18821929`.
+- [ ] **Zenodo community submission UI follow-up.** Submit the
+  published Zenodo record to appropriate communities through Zenodo's
+  record-page community review workflow and document pending/accepted
+  moderation status. The API metadata update accepted `rse` in draft
+  metadata, but the published record still reports `communities: null`.
 - [ ] **Qiskit Ecosystem Catalog.** Submit ecosystem metadata before
   attempting `awesome-qiskit`.
 - [ ] **awesome-qiskit.** Blocked until Qiskit Ecosystem membership is
