@@ -95,6 +95,10 @@ is copied here.
   export parsing, namespace stripping, private `.pyi` helper exclusion,
   matching-contract success output, and missing/stale export failure
   reporting for the CI typing-contract gate.
+- [x] **Version-consistency hook coverage.** Implemented 2026-05-06:
+  `tests/test_check_version_consistency.py` now covers matching version
+  carriers, mismatched carrier reporting, missing carrier reporting, and
+  unmatched-version-pattern reporting for the pre-commit release hook.
 - [x] **Coverage-gap audit automation.** Implemented 2026-05-06:
   `tools/audit_coverage_gaps.py` parses `coverage.xml`, inventories
   package source files missing from coverage reports or below a
