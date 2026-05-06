@@ -204,6 +204,17 @@ class TestPipelineIntegration:
         assert isinstance(model.alpha, float)
         assert isinstance(model.fit_residual, float)
 
+    def test_decay_model_copies_input_sequences(self) -> None:
+        noisy = [3.8, 3.2]
+        scales = [1, 3]
+
+        model = learn_symmetry_decay(4.0, noisy, scales)
+        noisy[0] = 0.0
+        scales[0] = 99
+
+        assert model.noisy_symmetry_values == [3.8, 3.2]
+        assert model.noise_scales == [1, 3]
+
 
 # ===== 5. Roundtrip =====
 
@@ -232,6 +243,21 @@ class TestRoundtrip:
         r1 = guess_extrapolate(0.5, 3.5, model)
         r2 = guess_extrapolate(0.5, 2.0, model)
         assert r2.correction_factor > r1.correction_factor
+
+    def test_guess_uses_absolute_symmetry_ratio_for_sign_flips(self) -> None:
+        """Sign-flipped symmetry measurements keep a real positive correction."""
+        model = SymmetryDecayModel(
+            ideal_symmetry_value=4.0,
+            noisy_symmetry_values=[-3.0, -2.0],
+            noise_scales=[1, 3],
+            alpha=0.5,
+            fit_residual=0.01,
+        )
+
+        result = guess_extrapolate(0.5, -2.0, model)
+
+        assert result.correction_factor == pytest.approx(np.sqrt(2.0))
+        assert result.mitigated_value == pytest.approx(0.5 * np.sqrt(2.0))
 
     def test_guess_result_fields(self) -> None:
         model = learn_symmetry_decay(4.0, [3.8, 3.0], [1, 3])

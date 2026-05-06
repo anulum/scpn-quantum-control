@@ -1,0 +1,5 @@
+{
+  "text": "SCPN-QUANTUM-CONTROL behavioural-test and mitigation guard follow-up strengthened readout matrix tests. The tests now assert column stochasticity, condition number and shot accounting, spaced bitstring indexing, unknown-label and empty-count rejection, counts mitigation normalisation, and mean magnetisation observables.",
+  "source": "codex",
+  "project": "SCPN-QUANTUM-CONTROL"
+}

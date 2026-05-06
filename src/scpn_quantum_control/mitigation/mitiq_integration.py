@@ -92,7 +92,11 @@ def zne_mitigated_expectation(
     if not _MITIQ_AVAILABLE:
         raise ImportError("mitiq not installed: pip install mitiq")
 
-    exec_fn: Any = executor if executor is not None else _qiskit_executor_default
+    exec_fn: Any = (
+        executor
+        if executor is not None
+        else lambda folded_circuit: _qiskit_executor(folded_circuit, shots=shots)
+    )
 
     if scale_factors is None:
         scale_factors = [1.0, 3.0, 5.0]
@@ -120,7 +124,11 @@ def ddd_mitigated_expectation(
     if not _MITIQ_AVAILABLE:
         raise ImportError("mitiq not installed: pip install mitiq")
 
-    exec_fn: Any = executor if executor is not None else _qiskit_executor_default
+    exec_fn: Any = (
+        executor
+        if executor is not None
+        else lambda folded_circuit: _qiskit_executor(folded_circuit, shots=shots)
+    )
 
     rule = ddd.rules.xx
 

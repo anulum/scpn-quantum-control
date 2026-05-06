@@ -55,12 +55,24 @@ class SymmetryVerificationResult:
     expected_parity: int
 
 
+def _clean_bitstring(bitstring: str) -> str:
+    clean = bitstring.replace(" ", "")
+    if not clean or any(bit not in {"0", "1"} for bit in clean):
+        raise ValueError(f"invalid computational-basis bitstring: {bitstring!r}")
+    return clean
+
+
+def _validate_expected_parity(expected_parity: int) -> None:
+    if expected_parity not in {0, 1}:
+        raise ValueError(f"expected_parity must be 0 or 1, got {expected_parity!r}")
+
+
 def bitstring_parity(bitstring: str) -> int:
     """Compute Z₂ parity of a measurement bitstring.
 
     Returns 0 (even) or 1 (odd) = number of '1' bits mod 2.
     """
-    return bitstring.replace(" ", "").count("1") % 2
+    return _clean_bitstring(bitstring).count("1") % 2
 
 
 def initial_state_parity(omega: np.ndarray) -> int:
@@ -93,6 +105,9 @@ def parity_postselect(
     Returns:
         SymmetryVerificationResult with verified and rejected counts.
     """
+    _validate_expected_parity(expected_parity)
+    for bitstring in counts:
+        _clean_bitstring(bitstring)
     verified: dict[str, int] = {}
     rejected: dict[str, int] = {}
 
@@ -146,10 +161,11 @@ def symmetry_expand(
     are sensitive to parity (energy, correlators). Use expansion for
     observables that tolerate small bias (order parameter R).
     """
+    _validate_expected_parity(expected_parity)
     expanded: dict[str, int] = {}
 
     for bitstring, count in counts.items():
-        clean = bitstring.replace(" ", "")
+        clean = _clean_bitstring(bitstring)
         if bitstring_parity(clean) == expected_parity:
             expanded[clean] = expanded.get(clean, 0) + count
         else:

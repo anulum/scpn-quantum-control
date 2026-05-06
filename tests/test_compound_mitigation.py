@@ -27,8 +27,12 @@ class TestCompoundMitigation:
 
         # Mock counts: 80% perfect even parity, 20% odd parity noise
         target_counts = {"00": 800, "01": 200}
+        backend_calls = []
 
         def mock_backend(circuits):
+            backend_calls.append(circuits)
+            assert len(circuits) == 5
+            assert all(isinstance(circuit, QuantumCircuit) for circuit in circuits)
             # Same mock counts for training
             return [{"00": 800, "01": 200} for _ in circuits]
 
@@ -44,6 +48,7 @@ class TestCompoundMitigation:
 
         assert isinstance(res, CompoundMitigationResult)
         assert res.n_training_circuits == 5
+        assert len(backend_calls) == 1
         # 20% odd parity should be rejected
         assert abs(res.mean_rejection_rate - 0.2) < 1e-6
         assert np.isfinite(res.mitigated_value)
@@ -63,8 +68,10 @@ class TestCompoundMitigation:
         """All-correct parity yields zero rejection."""
         qc = QuantumCircuit(2)
         target_counts = {"00": 500, "11": 500}
+        backend_call_sizes = []
 
         def mock_backend(circuits):
+            backend_call_sizes.append(len(circuits))
             return [{"00": 500, "11": 500} for _ in circuits]
 
         res = compound_mitigate_pipeline(
@@ -76,6 +83,7 @@ class TestCompoundMitigation:
             seed=42,
         )
         assert res.mean_rejection_rate == 0.0
+        assert backend_call_sizes == [5]
 
     def test_full_rejection_rate(self):
         """All-wrong parity yields 100% rejection."""

@@ -1,0 +1,5 @@
+{
+  "text": "Added DD mitigation guards for negative idle-qubit rejection, exact sequence ordering, idle-qubit placement, and source-circuit immutability.",
+  "source": "codex",
+  "project": "SCPN-QUANTUM-CONTROL"
+}

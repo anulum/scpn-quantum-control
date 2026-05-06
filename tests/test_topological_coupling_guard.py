@@ -21,10 +21,18 @@ def test_step_requires_ripser(monkeypatch):
     coupling_class = getattr(module, "TopologicalCoupling" + "Optimiz" + "er")
 
     n = 2
-    initial_K = np.zeros((n, n))
+    initial_K = np.array([[3.0, 0.2], [0.6, 7.0]])
     omega = np.ones(n)
     coupling = coupling_class(n_qubits=n, initial_K=initial_K, omega=omega)
+    expected_initial = np.array([[0.0, 0.4], [0.4, 0.0]])
+
+    np.testing.assert_allclose(coupling.K, expected_initial)
+    np.testing.assert_allclose(coupling.omega, omega)
+    assert coupling.n == n
+    assert coupling.lr == 0.05
+    assert coupling.dt == 1.0
 
     monkeypatch.setattr(module, "_RIPSER_AVAILABLE", False)
     with pytest.raises(ImportError, match="ripser not installed"):
         coupling.step(n_samples=1)
+    np.testing.assert_allclose(coupling.K, expected_initial)

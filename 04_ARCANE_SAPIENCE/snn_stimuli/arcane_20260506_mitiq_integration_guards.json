@@ -1,0 +1,5 @@
+{
+  "text": "Added Mitiq integration guards ensuring default ZNE and DDD paths forward requested shot counts into the Qiskit executor.",
+  "source": "codex",
+  "project": "SCPN-QUANTUM-CONTROL"
+}

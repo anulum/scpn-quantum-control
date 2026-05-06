@@ -45,7 +45,7 @@ def insert_dd_sequence(
     """
     out = circuit.copy()
     for q in idle_qubits:
-        if q >= out.num_qubits:
+        if q < 0 or q >= out.num_qubits:
             raise ValueError(f"qubit {q} out of range for {out.num_qubits}-qubit circuit")
     pulses = _PULSE_MAP[sequence]
     for q in idle_qubits:

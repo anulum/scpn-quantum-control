@@ -50,6 +50,14 @@ class TestBitstringParity:
         assert bitstring_parity("00 11") == 0
         assert bitstring_parity("0 0 0 1") == 1
 
+    def test_rejects_non_binary_labels(self):
+        with pytest.raises(ValueError, match="invalid computational-basis bitstring"):
+            bitstring_parity("0102")
+
+    def test_rejects_empty_labels(self):
+        with pytest.raises(ValueError, match="invalid computational-basis bitstring"):
+            bitstring_parity(" ")
+
 
 class TestInitialStateParity:
     def test_zero_frequencies_even(self):
@@ -119,6 +127,14 @@ class TestParityPostselect:
         result = parity_postselect(counts, expected_parity=0)
         assert isinstance(result, SymmetryVerificationResult)
 
+    def test_rejects_invalid_expected_parity(self):
+        with pytest.raises(ValueError, match="expected_parity must be 0 or 1"):
+            parity_postselect({"00": 100}, expected_parity=2)
+
+    def test_rejects_invalid_count_labels(self):
+        with pytest.raises(ValueError, match="invalid computational-basis bitstring"):
+            parity_postselect({"0a": 100}, expected_parity=0)
+
 
 class TestSymmetryExpand:
     def test_correct_parity_unchanged(self):
@@ -148,6 +164,14 @@ class TestSymmetryExpand:
         counts = {"00 00": 100}
         expanded = symmetry_expand(counts, expected_parity=0)
         assert "0000" in expanded
+
+    def test_rejects_invalid_expected_parity(self):
+        with pytest.raises(ValueError, match="expected_parity must be 0 or 1"):
+            symmetry_expand({"00": 100}, expected_parity=-1)
+
+    def test_rejects_invalid_count_labels(self):
+        with pytest.raises(ValueError, match="invalid computational-basis bitstring"):
+            symmetry_expand({"0x": 100}, expected_parity=0)
 
 
 class TestParityVerifiedExpectation:

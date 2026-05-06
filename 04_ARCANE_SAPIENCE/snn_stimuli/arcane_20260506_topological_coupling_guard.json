@@ -1,0 +1,5 @@
+{
+  "text": "SCPN-QUANTUM-CONTROL behavioural-test audit follow-up strengthened the topological coupling guard test. The test now asserts constructor symmetrisation, diagonal clearing, omega retention, scalar configuration defaults, and no K mutation when the optional persistent-homology dependency is unavailable.",
+  "source": "codex",
+  "project": "SCPN-QUANTUM-CONTROL"
+}

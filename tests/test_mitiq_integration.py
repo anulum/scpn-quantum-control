@@ -14,6 +14,8 @@ physical bounds, noiseless invariants.
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import numpy as np
 import pytest
 
@@ -331,3 +333,66 @@ class TestMitiqCoverage:
         qc.measure_all()
         result = zne_mitigated_expectation(qc, scale_factors=None, shots=1000)
         assert -1.05 <= result <= 1.05
+
+    def test_default_zne_executor_forwards_requested_shots(self, monkeypatch):
+        from qiskit import QuantumCircuit
+
+        import scpn_quantum_control.mitigation.mitiq_integration as mitiq_module
+
+        calls = []
+
+        def fake_executor(circuit, shots=8192):
+            calls.append(shots)
+            return 0.25
+
+        def fake_execute_with_zne(circuit, executor, factory):
+            return executor(circuit)
+
+        fake_zne = SimpleNamespace(
+            inference=SimpleNamespace(RichardsonFactory=lambda scale_factors: scale_factors),
+            execute_with_zne=fake_execute_with_zne,
+        )
+        monkeypatch.setattr(mitiq_module, "_MITIQ_AVAILABLE", True)
+        monkeypatch.setattr(mitiq_module, "_qiskit_executor", fake_executor)
+        monkeypatch.setattr(mitiq_module, "zne", fake_zne)
+
+        result = zne_mitigated_expectation(
+            QuantumCircuit(1),
+            scale_factors=[1.0, 3.0],
+            shots=1234,
+        )
+
+        assert result == pytest.approx(0.25)
+        assert calls == [1234]
+
+    def test_default_ddd_executor_forwards_requested_shots(self, monkeypatch):
+        from qiskit import QuantumCircuit
+
+        import scpn_quantum_control.mitigation.mitiq_integration as mitiq_module
+
+        calls = []
+
+        def fake_executor(circuit, shots=8192):
+            calls.append(shots)
+            return -0.5
+
+        def fake_execute_with_ddd(circuit, executor, rule):
+            assert rule == "xx-rule"
+            return executor(circuit)
+
+        fake_ddd = SimpleNamespace(
+            rules=SimpleNamespace(xx="xx-rule"),
+            execute_with_ddd=fake_execute_with_ddd,
+        )
+        monkeypatch.setattr(mitiq_module, "_MITIQ_AVAILABLE", True)
+        monkeypatch.setattr(mitiq_module, "_qiskit_executor", fake_executor)
+        monkeypatch.setattr(mitiq_module, "ddd", fake_ddd)
+
+        from scpn_quantum_control.mitigation.mitiq_integration import (
+            ddd_mitigated_expectation,
+        )
+
+        result = ddd_mitigated_expectation(QuantumCircuit(1), shots=4321)
+
+        assert result == pytest.approx(-0.5)
+        assert calls == [4321]

@@ -46,6 +46,12 @@ def test_invalid_qubit_raises():
         insert_dd_sequence(qc, idle_qubits=[5])
 
 
+def test_negative_qubit_raises():
+    qc = QuantumCircuit(2)
+    with pytest.raises(ValueError, match="out of range"):
+        insert_dd_sequence(qc, idle_qubits=[-1])
+
+
 def test_empty_idle_qubits():
     qc = QuantumCircuit(2)
     qc.h(0)
@@ -107,3 +113,17 @@ def test_dd_3_idle_3_active():
         qc.h(i)
     result = insert_dd_sequence(qc, idle_qubits=[3, 4, 5])
     assert result.num_qubits == 6
+
+
+def test_dd_appends_exact_sequence_without_mutating_input():
+    qc = QuantumCircuit(2)
+    qc.h(0)
+
+    result = insert_dd_sequence(qc, idle_qubits=[1], sequence=DDSequence.CPMG)
+
+    original_ops = [instruction.operation.name for instruction in qc.data]
+    result_ops = [instruction.operation.name for instruction in result.data]
+    result_qubits = [result.find_bit(instruction.qubits[0]).index for instruction in result.data]
+    assert original_ops == ["h"]
+    assert result_ops == ["h", "y", "x", "y", "x"]
+    assert result_qubits == [0, 1, 1, 1, 1]

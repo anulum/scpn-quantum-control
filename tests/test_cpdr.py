@@ -107,6 +107,31 @@ class TestGenerateTrainingCircuits:
             p_b = [float(p) for inst in b.data for p in inst.operation.params]
             assert p_a == p_b
 
+    def test_zero_perturbation_snaps_rotations_to_clifford_grid(self):
+        qc = QuantumCircuit(2)
+        qc.rz(0.49, 0)
+        qc.ry(1.70, 1)
+        qc.measure_all()
+
+        circuits = generate_training_circuits(
+            qc,
+            n_training=1,
+            perturbation_scale=0.0,
+            seed=7,
+        )
+
+        training_params = [
+            float(param)
+            for instruction in circuits[0].data
+            for param in instruction.operation.params
+        ]
+        target_params = [
+            float(param) for instruction in qc.data for param in instruction.operation.params
+        ]
+
+        assert training_params == pytest.approx([0.0, np.pi / 2])
+        assert target_params == pytest.approx([0.49, 1.70])
+
 
 class TestComputeIdealValues:
     def test_identity_circuit(self):
@@ -164,6 +189,23 @@ class TestComputeNoisyValues:
         assert vals[1] == pytest.approx(-1.0)
         assert vals[2] == pytest.approx(0.0)
 
+    def test_observable_qubits_use_little_endian_measurement_order(self):
+        counts = [{"01": 1000}]
+
+        q0_values = compute_noisy_values_from_counts(
+            counts,
+            n_qubits=2,
+            observable_qubits=[0],
+        )
+        q1_values = compute_noisy_values_from_counts(
+            counts,
+            n_qubits=2,
+            observable_qubits=[1],
+        )
+
+        assert q0_values[0] == pytest.approx(-1.0)
+        assert q1_values[0] == pytest.approx(1.0)
+
 
 class TestFitRegression:
     def test_perfect_linear(self):
@@ -186,6 +228,17 @@ class TestFitRegression:
         slope, intercept, r_sq = fit_regression([1.0], [0.5])
         assert slope == 1.0
         assert intercept == 0.0
+
+    def test_zero_slope_regression_preserves_raw_value(self):
+        result = cpdr_mitigate(
+            raw_noisy_value=0.42,
+            ideal_training=np.array([0.0, 1.0]),
+            noisy_training=np.array([0.5, 0.5]),
+        )
+
+        assert result.mitigated_value == pytest.approx(0.42)
+        assert result.regression_slope == pytest.approx(0.0)
+        assert result.n_training_circuits == 2
 
 
 class TestCPDRMitigate:
@@ -249,3 +302,29 @@ class TestCPDRFullPipeline:
         assert isinstance(result, CPDRResult)
         # With noiseless backend, mitigated ≈ raw
         assert abs(result.mitigated_value - result.raw_value) < 0.15
+
+    def test_full_pipeline_calls_backend_once_with_requested_training_count(self):
+        qc = QuantumCircuit(1)
+        qc.rx(0.3, 0)
+        qc.measure_all()
+        target_counts = {"0": 7, "1": 3}
+        backend_calls = []
+
+        def mock_backend(circuits):
+            backend_calls.append(circuits)
+            assert len(circuits) == 4
+            assert all(isinstance(circuit, QuantumCircuit) for circuit in circuits)
+            return [{"0": 8, "1": 2} for _ in circuits]
+
+        result = cpdr_full_pipeline(
+            qc,
+            target_counts,
+            mock_backend,
+            n_training=4,
+            perturbation_scale=0.0,
+            seed=11,
+        )
+
+        assert len(backend_calls) == 1
+        assert result.raw_value == pytest.approx(0.4)
+        assert result.n_training_circuits == 4

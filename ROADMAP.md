@@ -95,6 +95,16 @@ is copied here.
 - [ ] **Behavioural-test audit.** Review every test module for
   assertions that constrain numerical invariants, state transitions,
   exception contracts, provenance, or integration behaviour.
+- [x] **Behavioural-test audit: topological coupling guard.**
+  Implemented 2026-05-06: `tests/test_topological_coupling_guard.py`
+  now asserts coupling symmetrisation, diagonal clearing, omega/config
+  retention, and no state mutation on the missing optional dependency
+  path.
+- [x] **Behavioural-test audit: readout matrix guards.** Implemented
+  2026-05-06: `tests/test_readout_matrix.py` now asserts confusion
+  matrix column stochasticity, condition number and shot accounting,
+  bitstring parsing, invalid-count rejection, mitigation normalisation,
+  and mean-magnetisation observables.
 - [x] **Public API smoke-only audit closure.** Implemented 2026-05-06:
   `tests/test_public_api.py` now asserts explicit export-count
   contracts in addition to delegated import/type checks, closing the
@@ -166,12 +176,51 @@ is copied here.
   Implemented 2026-05-06: `tests/test_pec.py` now guards exact
   inverse-channel coefficient formulae, sign-distribution support, and
   circuit-size exponentiation of PEC overhead.
-- [ ] **Mutation-test expansion.** Start with `phase/xy_kuramoto.py`,
-  `hardware/async_runner.py`, `hardware/backends.py`, `bridge/*`,
-  `analysis/dla*`, and `mitigation/*`.
+- [x] **Mutation-test expansion: readout-matrix mitigation invariants.**
+  Implemented 2026-05-06: `tests/test_readout_matrix.py` now guards
+  full-basis matrix stochasticity, prepared-state shot accounting,
+  invalid observed labels, and probability-observable contracts.
+- [x] **Mutation-test expansion: symmetry-decay mitigation invariants.**
+  Implemented 2026-05-06: `tests/test_symmetry_decay.py` now guards
+  copied decay-model sequences and real positive GUESS correction
+  factors under sign-flipped symmetry readings.
+- [x] **Mutation-test expansion: compound-mitigation pipeline guards.**
+  Implemented 2026-05-06: `tests/test_compound_mitigation.py` now
+  asserts the CPDR plus symmetry pipeline calls the backend exactly once
+  with the generated training circuits and preserves requested
+  training-count boundaries.
+- [x] **Mutation-test expansion: CPDR mitigation guards.**
+  Implemented 2026-05-06: `tests/test_cpdr.py` now guards Clifford
+  snapping without target mutation, little-endian observable-qubit
+  extraction, zero-slope fallback, and backend training-count
+  boundaries.
+- [x] **Mutation-test expansion: DD mitigation guards.**
+  Implemented 2026-05-06: `tests/test_dd.py` now guards negative idle
+  qubit rejection, exact DD sequence ordering, idle-qubit placement, and
+  source-circuit immutability.
+- [x] **Mutation-test expansion: symmetry-verification guards.**
+  Implemented 2026-05-06: `tests/test_symmetry_verification.py` now
+  guards invalid Z2 parity labels and invalid computational-basis count
+  labels before post-selection or symmetry expansion.
+- [x] **Mutation-test expansion: Mitiq integration guards.**
+  Implemented 2026-05-06: `tests/test_mitiq_integration.py` now guards
+  that default ZNE and DDD executor paths forward the requested shot
+  count into the Qiskit executor instead of silently using its default.
+- [x] **Mutation-test expansion.** Completed 2026-05-06 across the
+  listed initial targets: `phase/xy_kuramoto.py`, hardware runner and
+  backend registry state contracts, Hamiltonian bridge invariants,
+  DLA-parity analysis contracts, and mitigation modules.
+- [x] **Mock/stub audit automation.** Implemented 2026-05-06:
+  `tools/audit_mock_stub_usage.py` inventories `Mock`, `MagicMock`,
+  `patch`, `monkeypatch`, and fake/stub helper usage, flags apparent
+  third-party boundaries, and highlights result-term contexts for manual
+  review without deleting or rewriting tests.
 - [ ] **Mock/stub audit.** Ensure mocks only model third-party
   boundaries and never fabricate scientific results, provenance,
   datasets, or successful hardware execution.
+  Initial target list: `phase/xy_kuramoto.py`,
+  `hardware/async_runner.py`, `hardware/backends.py`, `bridge/*`,
+  `analysis/dla*`, and `mitigation/*`.
 - [ ] **Full-suite ordering audit.** Detect hidden state pollution from
   reloads, monkeypatches, optional imports, random seeds, and backend
   globals.
