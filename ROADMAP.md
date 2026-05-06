@@ -514,7 +514,9 @@ explicit QPU-time estimate before submission.
   `Qiskit/ecosystem#1123`.
 - [ ] **awesome-qiskit.** Blocked until Qiskit Ecosystem membership is
   accepted.
-- [ ] **Conda-forge recipe.** Prepare and submit staged-recipes package.
+- [x] **Conda-forge recipe.** Submitted 2026-05-06:
+  `docs/conda_forge_submission_2026-05-06.md` records the staged-recipes
+  recipe metadata and open PR `conda-forge/staged-recipes#33236`.
 - [ ] **Metriq submission.** Submit only validated, bounded benchmark
   results.
 - [ ] **pyOpenSci review.** Submit the software package for review and
