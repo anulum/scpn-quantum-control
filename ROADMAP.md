@@ -111,6 +111,9 @@ is copied here.
 - [x] **VQLS denominator guard contract.** Implemented 2026-05-06:
   `test_denominator_guard_path` now asserts the patched statevector
   path is exercised while forcing the near-zero denominator branch.
+- [x] **STDP pipeline update contract.** Implemented 2026-05-06:
+  pipeline wiring now asserts Hebbian pre/post firing increases the
+  synaptic weight while preserving configured clamp bounds.
 - [ ] **E2E and contract audit.** Cover or explicitly document blocked
   boundaries for hardware/QPU, bridge, SC-NeuroCore, Phase Orchestrator,
   notebook, and example workflows.

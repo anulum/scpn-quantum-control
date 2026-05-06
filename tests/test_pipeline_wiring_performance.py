@@ -255,6 +255,8 @@ class TestQSNNPipeline:
         syn = sqc.QuantumSynapse(0.5)
         w_before = syn.weight
         stdp.update(syn, pre_measured=1, post_measured=1)
+        assert syn.weight > w_before
+        assert syn.w_min <= syn.weight <= syn.w_max
         _report("QuantumSTDP update", 0, f"w: {w_before:.3f} → {syn.weight:.3f}")
 
 
