@@ -582,8 +582,13 @@ explicit QPU-time estimate before submission.
   draft, and private-file exclusions for the DLA parity, Rust/VQE
   methods, and SCPN/FIM papers. Actual arXiv upload remains open until
   explicitly approved and recorded.
-- [ ] **SciPy 2026 CFP.** Prepare talk/poster proposal if strategically
-  useful.
+- [x] **SciPy 2026 CFP preparation.** Completed 2026-05-06:
+  `docs/scipy_2026_cfp_readiness_2026-05-06.md` records the proposed
+  SciPy angle, format options, title options, draft abstract,
+  reviewer-visible evidence, claims to avoid, and no-QPU submission
+  boundary. Actual CFP submission remains external and should only be
+  marked complete after the current CFP page and submitted proposal URL
+  are recorded.
 - [ ] **Community announcements.** Prepare Reddit, Qiskit Slack,
   Unitary Discord, Hacker News, LinkedIn, and X posts only after the
   public preprints are live.

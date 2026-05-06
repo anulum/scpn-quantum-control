@@ -124,6 +124,7 @@ nav:
       - Coverage Gap Audit: coverage_gap_audit_2026-05-06.md
       - pyOpenSci Submission Readiness: pyopensci_submission_readiness_2026-05-06.md
       - arXiv Source Packaging Readiness: arxiv_source_packaging_readiness_2026-05-06.md
+      - SciPy 2026 CFP Readiness: scipy_2026_cfp_readiness_2026-05-06.md
   - Changelog: changelog.md
 
 markdown_extensions:
