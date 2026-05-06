@@ -90,6 +90,11 @@ is copied here.
   function and class-based test detection, assertion-helper contracts,
   `pytest.raises` contracts, parametrisation counts, smoke-only
   reporting, deterministic JSON/text output, and CLI failure status.
+- [x] **Rust `.pyi` contract checker coverage.** Implemented
+  2026-05-06: `tests/test_check_rust_pyi_exports.py` now covers PyO3
+  export parsing, namespace stripping, private `.pyi` helper exclusion,
+  matching-contract success output, and missing/stale export failure
+  reporting for the CI typing-contract gate.
 - [x] **Coverage-gap audit automation.** Implemented 2026-05-06:
   `tools/audit_coverage_gaps.py` parses `coverage.xml`, inventories
   package source files missing from coverage reports or below a
