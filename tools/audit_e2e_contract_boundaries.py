@@ -72,7 +72,7 @@ def _normalise_path(path: Path, root: Path) -> str:
 
 def _matches_boundary(path: Path, spec: BoundarySpec) -> bool:
     """Return True when a test path name matches one boundary spec."""
-    haystack = path.as_posix().lower()
+    haystack = path.name.lower()
     return any(indicator.lower() in haystack for indicator in spec.indicators)
 
 
