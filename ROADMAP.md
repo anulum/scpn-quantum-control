@@ -289,9 +289,11 @@ is copied here.
   conservative parity-sector/excitation-number framing, required job IDs,
   committed artefact index, unsupported claims, and final no-QPU
   pre-upload gate.
-- [ ] **Rust/VQE methods paper package.** Keep all tables generated from
-  committed JSON/CSV artefacts and include current CLI/dashboard output
-  only after regeneration.
+- [x] **Rust/VQE methods paper package.** Completed 2026-05-06:
+  `docs/rust_vqe_methods_submission_checklist_2026-05-06.md` freezes
+  the artefact-first table boundary, supported/unsupported claims,
+  generator-script index, `scpn-bench reproduce-methods` gate, and
+  no-QPU final pre-upload checklist.
 - [ ] **JOSS-style software paper package.** Prepare the short software
   note for JOSS/pyOpenSci submission with repository, Zenodo, and
   reproducibility links aligned.
