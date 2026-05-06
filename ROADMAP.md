@@ -449,9 +449,18 @@ explicit QPU-time estimate before submission.
   estimate, 20-minute ceiling, layout-selection gates, analysis plan,
   readout boundary, falsification rules, and output artefact paths. QPU
   execution remains separate and approval-gated.
-- [ ] **Systematic state/layout randomisation execution.** Execute only
-  after live backend/layout selection, transpilation/depth gates, QPU
-  budget confirmation, and explicit approval.
+- [x] **Systematic state/layout randomisation execution.** Completed
+  2026-05-07 on `ibm_marrakesh` after live backend/layout selection,
+  transpilation/depth gates, QPU budget confirmation, and explicit
+  approval. Jobs `d7ts9avljm6s73bd2ej0` and
+  `d7tsdnfljm6s73bd2j70` produced the committed raw-count artefact
+  `data/phase3_state_layout_dla/phase3_state_layout_ibm_marrakesh_2026-05-06T224531Z.json`.
+  Result interpretation remains blocked until the analysis/manifest
+  artefacts are generated.
+- [ ] **Systematic state/layout randomisation analysis.** Generate the
+  preregistered state/depth/layout leakage summary, row metrics, layout
+  metrics, manifest, claim boundary, and paper-update inputs from the
+  committed raw-count artefact.
 - [x] **Systematic state/layout randomisation live submitter.**
   Implemented 2026-05-07:
   `scripts/phase3_state_layout_dla_ibm.py` builds the preregistered
