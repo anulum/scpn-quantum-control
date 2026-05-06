@@ -332,9 +332,12 @@ is copied here.
   Pulser, Bloqade, and IBM pulse-level design payloads with SDK
   availability metadata, platform-compatibility checks, and explicit
   `can_submit=False` boundaries.
-- [ ] **Executable provider analogue backend.** Add calibrated SDK object
-  construction and provider/emulator execution only after dependencies,
-  unit calibration, and submission boundaries are approved.
+- [x] **Executable provider analogue backend: approval-gated plan.**
+  Implemented 2026-05-06: provider exports can now be wrapped in
+  `ProviderAnalogExecutionPlan` via `prepare_provider_execution_plan`,
+  requiring calibration metadata and explicit approval before SDK-object
+  construction or emulator execution is marked possible. Cloud submission
+  remains blocked until a separately approved provider runner exists.
 - [x] **Adaptive lambda feedback scaffold.** Implemented 2026-05-06:
   `AdaptiveFIMConfig`, `FIMWitness`, `propose_next_lambda`, and
   `adaptive_lambda_schedule`.

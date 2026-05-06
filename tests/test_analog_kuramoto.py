@@ -18,6 +18,7 @@ from scpn_quantum_control.hardware.analog_kuramoto import (
     _analog_terms_numpy,
     compile_analog_kuramoto,
     export_provider_payload,
+    prepare_provider_execution_plan,
 )
 from scpn_quantum_control.kuramoto_core import build_kuramoto_problem, compile_analog_program
 
@@ -245,3 +246,64 @@ def test_provider_export_rejects_incompatible_platform_and_unknown_provider():
         export_provider_payload(neutral_atom_program, "ibm_pulse")
     with pytest.raises(ValueError, match="Unknown analog provider"):
         export_provider_payload(neutral_atom_program, "not-a-provider")
+
+
+def test_provider_execution_plan_is_approval_and_calibration_gated():
+    K, omega = _inputs()
+    program = compile_analog_kuramoto(
+        K,
+        omega,
+        platform=AnalogKuramotoPlatform.NEUTRAL_ATOMS,
+        duration=1.5,
+    )
+    export = export_provider_payload(program, "pulser")
+    calibration = {
+        "calibration_id": "local-emulator-units-v1",
+        "duration_unit": "us",
+        "coupling_unit": "rad/us",
+        "detuning_unit": "rad/us",
+    }
+
+    blocked = prepare_provider_execution_plan(export, calibration=calibration)
+
+    assert blocked.approved is False
+    assert blocked.can_construct_sdk_object is False
+    assert blocked.can_execute is False
+    assert blocked.reason == "blocked_until_explicit_execution_approval"
+    assert "execution_plan_only_no_provider_contact" in blocked.limitations
+    assert blocked.to_dict()["calibration"]["calibration_id"] == "local-emulator-units-v1"
+
+    approved = prepare_provider_execution_plan(
+        export,
+        calibration=calibration,
+        approved=True,
+    )
+
+    assert approved.can_construct_sdk_object is export.sdk_available
+    assert approved.can_execute is export.sdk_available
+
+
+def test_provider_execution_plan_rejects_missing_calibration_and_cloud_submission():
+    K, omega = _inputs()
+    program = compile_analog_kuramoto(
+        K,
+        omega,
+        platform=AnalogKuramotoPlatform.CIRCUIT_QED,
+        duration=2.0,
+    )
+    export = export_provider_payload(program, "ibm_pulse")
+
+    with pytest.raises(ValueError, match="calibration metadata missing"):
+        prepare_provider_execution_plan(export, calibration={"calibration_id": "x"})
+    with pytest.raises(ValueError, match="cloud submission is outside"):
+        prepare_provider_execution_plan(
+            export,
+            calibration={
+                "calibration_id": "ibm-pulse-design-units-v1",
+                "duration_unit": "dt",
+                "coupling_unit": "arb",
+                "detuning_unit": "arb",
+            },
+            approved=True,
+            allow_cloud_submission=True,
+        )

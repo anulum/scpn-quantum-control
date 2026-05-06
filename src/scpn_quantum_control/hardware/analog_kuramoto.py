@@ -173,6 +173,44 @@ class ProviderAnalogPayload:
 
 
 @dataclass(frozen=True)
+class ProviderAnalogExecutionPlan:
+    """Approval-gated provider/emulator execution plan.
+
+    This object is still non-submitting. It records whether the exported
+    programme has enough local evidence to construct provider SDK objects or
+    run an approved emulator path. Cloud submission remains a separate action.
+    """
+
+    provider: AnalogProviderTarget
+    sdk_module: str
+    sdk_available: bool
+    approved: bool
+    emulator_only: bool
+    can_construct_sdk_object: bool
+    can_execute: bool
+    reason: str
+    calibration: dict[str, Any]
+    payload: dict[str, Any]
+    limitations: tuple[str, ...]
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a JSON-serialisable execution-plan dictionary."""
+        return {
+            "provider": self.provider.value,
+            "sdk_module": self.sdk_module,
+            "sdk_available": self.sdk_available,
+            "approved": self.approved,
+            "emulator_only": self.emulator_only,
+            "can_construct_sdk_object": self.can_construct_sdk_object,
+            "can_execute": self.can_execute,
+            "reason": self.reason,
+            "calibration": self.calibration,
+            "payload": self.payload,
+            "limitations": list(self.limitations),
+        }
+
+
+@dataclass(frozen=True)
 class AnalogBackendCapabilities:
     """Capability envelope for an analog Kuramoto compiler target."""
 
@@ -364,6 +402,54 @@ def export_provider_payload(
             "pulse_schedule_is_a_design_plan_not_a_calibrated_instruction_schedule",
             "fim_cross_kerr_feedback_requires backend-native calibration",
         ),
+    )
+
+
+def prepare_provider_execution_plan(
+    export: ProviderAnalogPayload,
+    *,
+    calibration: dict[str, Any],
+    approved: bool = False,
+    emulator_only: bool = True,
+    allow_cloud_submission: bool = False,
+) -> ProviderAnalogExecutionPlan:
+    """Build an approval-gated provider execution plan.
+
+    The function intentionally stops before importing SDK constructors or
+    contacting provider services. It is the executable-adapter gate: callers
+    must supply calibration metadata and an explicit approval flag before the
+    returned plan can be treated as constructible or executable.
+    """
+
+    if allow_cloud_submission:
+        raise ValueError(
+            "cloud submission is outside prepare_provider_execution_plan; "
+            "use a separately approved provider runner"
+        )
+    _validate_execution_calibration(calibration)
+    limitations = tuple(export.limitations) + (
+        "execution_plan_only_no_provider_contact",
+        "cloud_submission_requires_separate_runner_approval",
+    )
+    can_construct_sdk_object = bool(approved and export.sdk_available)
+    can_execute = bool(can_construct_sdk_object and emulator_only)
+    reason = _execution_plan_reason(
+        approved=approved,
+        sdk_available=export.sdk_available,
+        emulator_only=emulator_only,
+    )
+    return ProviderAnalogExecutionPlan(
+        provider=export.provider,
+        sdk_module=export.sdk_module,
+        sdk_available=export.sdk_available,
+        approved=bool(approved),
+        emulator_only=bool(emulator_only),
+        can_construct_sdk_object=can_construct_sdk_object,
+        can_execute=can_execute,
+        reason=reason,
+        calibration=dict(calibration),
+        payload=export.payload,
+        limitations=limitations,
     )
 
 
@@ -710,6 +796,37 @@ def _module_available(module_name: str) -> bool:
         return find_spec(module_name) is not None
     except (ImportError, ModuleNotFoundError, ValueError):
         return False
+
+
+def _validate_execution_calibration(calibration: dict[str, Any]) -> None:
+    required = {
+        "calibration_id",
+        "duration_unit",
+        "coupling_unit",
+        "detuning_unit",
+    }
+    missing = sorted(key for key in required if key not in calibration)
+    if missing:
+        raise ValueError("calibration metadata missing required fields: " + ", ".join(missing))
+    for key in required:
+        value = calibration[key]
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(f"calibration field {key!r} must be a non-empty string")
+
+
+def _execution_plan_reason(
+    *,
+    approved: bool,
+    sdk_available: bool,
+    emulator_only: bool,
+) -> str:
+    if not approved:
+        return "blocked_until_explicit_execution_approval"
+    if not sdk_available:
+        return "blocked_until_provider_sdk_dependency_available"
+    if not emulator_only:
+        return "blocked_until_cloud_submission_runner_is_separately_approved"
+    return "approved_for_local_provider_emulator_or_sdk_object_construction"
 
 
 def _platform_code(platform: AnalogKuramotoPlatform) -> int:

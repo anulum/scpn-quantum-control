@@ -162,6 +162,32 @@ These provider payloads intentionally stop before SDK object construction or
 cloud execution. A future executable adapter must add provider-unit calibration,
 backend capability checks, and an explicit submission approval gate.
 
+## Execution Plan Gate
+
+Provider exports can now be wrapped in an approval-gated execution plan:
+
+```python
+from scpn_quantum_control.hardware import prepare_provider_execution_plan
+
+plan = prepare_provider_execution_plan(
+    pulser_plan,
+    calibration={
+        "calibration_id": "local-emulator-units-v1",
+        "duration_unit": "us",
+        "coupling_unit": "rad/us",
+        "detuning_unit": "rad/us",
+    },
+    approved=False,
+)
+```
+
+The execution plan is still non-submitting. It records whether the provider SDK
+is locally importable, whether execution has been explicitly approved, whether
+the path is emulator-only, and whether SDK-object construction is allowed. Cloud
+submission is deliberately rejected by this function; a separate provider runner
+with a project-specific approval, budget, and calibration gate is required
+before any QPU or provider-cloud claim can be made.
+
 ## Registry Integration
 
 The backend is registered as `analog_kuramoto` in the

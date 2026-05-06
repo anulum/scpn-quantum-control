@@ -19,10 +19,12 @@ from .analog_kuramoto import (
     AnalogKuramotoPlatform,
     AnalogKuramotoProgram,
     AnalogProviderTarget,
+    ProviderAnalogExecutionPlan,
     ProviderAnalogPayload,
     analog_kuramoto_factory,
     compile_analog_kuramoto,
     export_provider_payload,
+    prepare_provider_execution_plan,
 )
 from .async_runner import AsyncHardwareRunner, AsyncJobHandle
 from .backends import (
@@ -101,10 +103,12 @@ __all__ = [
     "AnalogKuramotoPlatform",
     "AnalogKuramotoProgram",
     "AnalogProviderTarget",
+    "ProviderAnalogExecutionPlan",
     "ProviderAnalogPayload",
     "analog_kuramoto_factory",
     "compile_analog_kuramoto",
     "export_provider_payload",
+    "prepare_provider_execution_plan",
     "HybridCouplingAssignment",
     "HybridCouplingPartition",
     "HybridDigitalAnalogBackend",
