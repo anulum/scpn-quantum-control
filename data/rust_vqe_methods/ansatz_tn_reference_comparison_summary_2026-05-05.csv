@@ -1,0 +1,6 @@
+n_qubits,tn_eigen_residual_norm,tn_ground_energy,tn_max_bond,tn_retained_weight_lower_bound,tn_solver,tn_status,tn_worst_cut_discarded_weight,vqe_best_ansatz,vqe_best_energy,vqe_best_relative_error_pct,vqe_median_relative_error_pct,vqe_n_seeds,vqe_reps,vqe_skip_reason,vqe_status
+4,0.0,-6.303000000000001,16,1.0,dense_eigh,ok,0.0,knm_informed,-6.302999931994375,1.0789406000219748e-06,3.482137543387466e-05,3,1,,ok
+6,0.0,-10.793000000000001,16,1.0,dense_eigh,ok,0.0,,,,,,,no_committed_vqe_reference,skipped
+8,0.0,-12.755724606401255,16,1.0,dense_eigh,ok,0.0,,,,,,,no_committed_vqe_reference,skipped
+10,1.1194471313066198e-11,-17.00918752070761,16,1.0,sparse_eigsh,ok,2.2533055566001992e-26,,,,,,,no_committed_vqe_reference,skipped
+12,8.698156735772023e-10,-21.259681076001918,16,1.0,sparse_eigsh,ok,2.8947165467078974e-22,,,,,,,no_committed_vqe_reference,skipped

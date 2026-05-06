@@ -236,21 +236,31 @@ is copied here.
   tensor-network truncation diagnostics.
 - [x] **Ansatz scaling sparse strengthening.** Implemented 2026-05-06
   using sparse eigensolver references where feasible for larger-n rows.
-- [ ] **Richer ansatz/TN reference comparisons.** Extend beyond
-  ground-state truncation diagnostics into MPS/VQE reference comparisons
-  and update paper claims only from regenerated artefacts.
+- [x] **Richer ansatz/TN reference comparisons.** Implemented
+  2026-05-06: `benchmark_ansatz_scaling_tn.py` now emits generated
+  per-`n` reference-comparison rows pairing MPS truncation diagnostics
+  with committed VQE aggregate references and marks missing larger-n VQE
+  rows as skipped rather than extrapolated.
 - [x] **Native or analogue FIM compiler path.** Initial
   `lambda_fim` compiler payload implemented 2026-05-06 by decomposing
   `-lambda M^2/n` into all-to-all `Z_i Z_j` terms for backend design
   studies.
-- [ ] **Provider-specific analogue backend.** Wire a real
-  Pulser/Bloqade/pulse-level backend before making any analogue
-  execution claim.
+- [x] **Provider-specific analogue backend export layer.** Implemented
+  2026-05-06: generic analogue programmes can now be exported into
+  Pulser, Bloqade, and IBM pulse-level design payloads with SDK
+  availability metadata, platform-compatibility checks, and explicit
+  `can_submit=False` boundaries.
+- [ ] **Executable provider analogue backend.** Add calibrated SDK object
+  construction and provider/emulator execution only after dependencies,
+  unit calibration, and submission boundaries are approved.
 - [x] **Adaptive lambda feedback scaffold.** Implemented 2026-05-06:
   `AdaptiveFIMConfig`, `FIMWitness`, `propose_next_lambda`, and
   `adaptive_lambda_schedule`.
-- [ ] **Adaptive-QPU protocol.** Design a separately approved hardware
-  protocol before any adaptive feedback claim or IBM submission.
+- [x] **Adaptive-QPU protocol.** Implemented 2026-05-06:
+  `docs/adaptive_fim_qpu_protocol_2026-05-06.md` defines the
+  non-submitting adaptive `lambda_fim` hardware boundary, QPU budget
+  gate, live transpilation gate, falsification rules, artefact names,
+  and blocked claims before any IBM submission.
 - [x] **FIM repeated full-basis readout mitigation.** Implemented
   2026-05-06 for the repeated dataset where the required 16-state
   calibration basis exists.

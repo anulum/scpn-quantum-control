@@ -81,3 +81,83 @@ def test_mps_rows_use_sparse_solver_above_dense_limit() -> None:
     assert rows[0]["status"] == "ok"
     assert rows[0]["solver"] == "sparse_eigsh"
     assert float(rows[0]["eigen_residual_norm"]) < 1e-8
+
+
+def test_reference_comparison_marks_missing_vqe_reference_skipped(tmp_path: Path) -> None:
+    module = _load_module()
+    tn_rows = [
+        {
+            "n_qubits": 6,
+            "status": "ok",
+            "solver": "dense_eigh",
+            "ground_energy": -1.25,
+            "eigen_residual_norm": 0.0,
+            "max_bond": 8,
+            "worst_cut_discarded_weight": 0.125,
+        }
+    ]
+
+    rows = module.reference_comparison_rows([6], tn_rows, tmp_path / "missing.json")  # type: ignore[attr-defined]
+
+    assert rows[0]["tn_retained_weight_lower_bound"] == 0.875
+    assert rows[0]["vqe_status"] == "skipped"
+    assert rows[0]["vqe_skip_reason"] == "no_committed_vqe_reference"
+
+
+def test_reference_comparison_uses_best_committed_vqe_aggregate(tmp_path: Path) -> None:
+    module = _load_module()
+    summary_path = tmp_path / "vqe.json"
+    summary_path.write_text(
+        """
+        {
+          "aggregate": [
+            {
+              "ansatz": "two_local",
+              "n_qubits": 4,
+              "reps": 1,
+              "n_seeds": 3,
+              "best_energy": -5.0,
+              "median_relative_error_pct": 7.0,
+              "best_relative_error_pct": 2.0
+            },
+            {
+              "ansatz": "knm_informed",
+              "n_qubits": 4,
+              "reps": 2,
+              "n_seeds": 3,
+              "best_energy": -6.0,
+              "median_relative_error_pct": 0.3,
+              "best_relative_error_pct": 0.1
+            }
+          ]
+        }
+        """,
+        encoding="utf-8",
+    )
+    tn_rows = [
+        {
+            "n_qubits": 4,
+            "status": "ok",
+            "solver": "dense_eigh",
+            "ground_energy": -6.3,
+            "eigen_residual_norm": 0.0,
+            "max_bond": 4,
+            "worst_cut_discarded_weight": 0.02,
+        },
+        {
+            "n_qubits": 4,
+            "status": "ok",
+            "solver": "dense_eigh",
+            "ground_energy": -6.3,
+            "eigen_residual_norm": 0.0,
+            "max_bond": 8,
+            "worst_cut_discarded_weight": 0.01,
+        },
+    ]
+
+    rows = module.reference_comparison_rows([4], tn_rows, summary_path)  # type: ignore[attr-defined]
+
+    assert rows[0]["tn_max_bond"] == 8
+    assert rows[0]["vqe_status"] == "ok"
+    assert rows[0]["vqe_best_ansatz"] == "knm_informed"
+    assert rows[0]["vqe_median_relative_error_pct"] == 0.3

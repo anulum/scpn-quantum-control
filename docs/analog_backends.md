@@ -32,6 +32,43 @@ program = compile_analog_kuramoto(
 )
 ```
 
+## Provider-specific exports
+
+The generic programme can be exported into provider-specific design payloads
+without submitting a job:
+
+```python
+from scpn_quantum_control.hardware import export_provider_payload
+
+neutral_program = compile_analog_kuramoto(
+    K,
+    omega,
+    platform="neutral_atoms",
+    duration=1.25,
+)
+
+pulser_plan = export_provider_payload(neutral_program, "pulser")
+bloqade_plan = export_provider_payload(neutral_program, "bloqade")
+```
+
+For circuit-QED pulse-level design studies:
+
+```python
+circuit_qed_program = compile_analog_kuramoto(
+    K,
+    omega,
+    platform="circuit_qed",
+    duration=1.25,
+)
+
+ibm_pulse_plan = export_provider_payload(circuit_qed_program, "ibm_pulse")
+```
+
+Each `ProviderAnalogPayload` records the provider target, required platform,
+SDK module name, local SDK availability, serialisable payload, and limitations.
+`can_submit` is always `False` in this layer. Provider exports are design
+artefacts and must not be reported as analogue hardware execution.
+
 The returned `AnalogKuramotoProgram` contains:
 
 - `coupling_terms`: upper-triangular native couplings with magnitude and phase.
@@ -92,6 +129,38 @@ Continuous-variable platforms emit `cv_gaussian_schedule_v1` payloads with:
 - beam-splitter operations for non-zero couplings,
 - coupling sign encoded in the beam-splitter phase.
 - optional number-feedback terms for the collective FIM proposal.
+
+## Provider Export Schemas
+
+Pulser exports require `neutral_atoms` programmes and emit
+`pulser_sequence_plan_v1` with:
+
+- register coordinates keyed by site,
+- `rydberg_global` channel metadata,
+- Rabi envelope points,
+- local detunings,
+- Rydberg interaction terms,
+- optional FIM feedback design terms.
+
+Bloqade exports require `neutral_atoms` programmes and emit
+`bloqade_ahs_plan_v1` with:
+
+- atom positions,
+- piecewise-linear Rabi amplitude and phase schedules,
+- local detunings,
+- Rydberg interaction terms,
+- optional FIM feedback design terms.
+
+IBM pulse-level exports require `circuit_qed` programmes and emit
+`qiskit_pulse_schedule_plan_v1` with:
+
+- mode-frequency detuning terms,
+- exchange-coupler channel plans,
+- optional cross-Kerr-style FIM feedback design terms.
+
+These provider payloads intentionally stop before SDK object construction or
+cloud execution. A future executable adapter must add provider-unit calibration,
+backend capability checks, and an explicit submission approval gate.
 
 ## Registry Integration
 

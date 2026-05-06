@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
+from importlib.util import find_spec
 from typing import Any, Protocol, runtime_checkable
 
 import numpy as np
@@ -40,6 +41,14 @@ class AnalogKuramotoPlatform(str, Enum):
     NEUTRAL_ATOMS = "neutral_atoms"
     CIRCUIT_QED = "circuit_qed"
     CONTINUOUS_VARIABLE = "continuous_variable"
+
+
+class AnalogProviderTarget(str, Enum):
+    """Provider-specific analogue export targets."""
+
+    PULSER = "pulser"
+    BLOQADE = "bloqade"
+    IBM_PULSE = "ibm_pulse"
 
 
 @dataclass(frozen=True)
@@ -135,6 +144,31 @@ class AnalogKuramotoProgram:
             "feedback_terms": [term.to_payload() for term in self.feedback_terms],
             "payload": self.payload,
             "metadata": self.metadata,
+        }
+
+
+@dataclass(frozen=True)
+class ProviderAnalogPayload:
+    """Provider-specific analogue programme export without submission."""
+
+    provider: AnalogProviderTarget
+    required_platform: AnalogKuramotoPlatform
+    sdk_module: str
+    sdk_available: bool
+    payload: dict[str, Any]
+    limitations: tuple[str, ...]
+    can_submit: bool = False
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a JSON-serialisable provider export dictionary."""
+        return {
+            "provider": self.provider.value,
+            "required_platform": self.required_platform.value,
+            "sdk_module": self.sdk_module,
+            "sdk_available": self.sdk_available,
+            "can_submit": self.can_submit,
+            "payload": self.payload,
+            "limitations": list(self.limitations),
         }
 
 
@@ -276,6 +310,61 @@ def compile_analog_kuramoto(
 def analog_kuramoto_factory() -> AnalogKuramotoBackend:
     """Entry-point target for the built-in analog Kuramoto compiler."""
     return AnalogKuramotoBackend()
+
+
+def export_provider_payload(
+    program: AnalogKuramotoProgram,
+    provider: AnalogProviderTarget | str,
+) -> ProviderAnalogPayload:
+    """Translate a generic analogue programme into a provider-specific plan.
+
+    The export is intentionally non-submitting. It records the provider SDK
+    module needed for a later executable adapter and whether that module is
+    importable in the current environment.
+    """
+
+    target = _coerce_provider(provider)
+    if target == AnalogProviderTarget.PULSER:
+        _require_platform(program, AnalogKuramotoPlatform.NEUTRAL_ATOMS, target)
+        return ProviderAnalogPayload(
+            provider=target,
+            required_platform=AnalogKuramotoPlatform.NEUTRAL_ATOMS,
+            sdk_module="pulser",
+            sdk_available=_module_available("pulser"),
+            payload=_pulser_payload(program),
+            limitations=(
+                "export_only_no_cloud_submission",
+                "rydberg_interaction_signs_remain_phase_labelled",
+                "fim_feedback_terms_require_provider_native_validation",
+            ),
+        )
+    if target == AnalogProviderTarget.BLOQADE:
+        _require_platform(program, AnalogKuramotoPlatform.NEUTRAL_ATOMS, target)
+        return ProviderAnalogPayload(
+            provider=target,
+            required_platform=AnalogKuramotoPlatform.NEUTRAL_ATOMS,
+            sdk_module="bloqade",
+            sdk_available=_module_available("bloqade"),
+            payload=_bloqade_payload(program),
+            limitations=(
+                "export_only_no_cloud_submission",
+                "geometry_and_units_need_provider_calibration",
+                "fim_feedback_terms_are_design_terms_not_execution_claims",
+            ),
+        )
+    _require_platform(program, AnalogKuramotoPlatform.CIRCUIT_QED, target)
+    return ProviderAnalogPayload(
+        provider=target,
+        required_platform=AnalogKuramotoPlatform.CIRCUIT_QED,
+        sdk_module="qiskit.pulse",
+        sdk_available=_module_available("qiskit.pulse"),
+        payload=_ibm_pulse_payload(program),
+        limitations=(
+            "export_only_no_backend_submission",
+            "pulse_schedule_is_a_design_plan_not_a_calibrated_instruction_schedule",
+            "fim_cross_kerr_feedback_requires backend-native calibration",
+        ),
+    )
 
 
 def _compile_coupling_terms(
@@ -470,6 +559,63 @@ def _continuous_variable_payload(
     }
 
 
+def _pulser_payload(program: AnalogKuramotoProgram) -> dict[str, Any]:
+    return {
+        "schema": "pulser_sequence_plan_v1",
+        "duration": program.duration,
+        "register": {
+            str(site["site"]): [site["x"], site["y"]] for site in program.payload["register"]
+        },
+        "rydberg_channel": "rydberg_global",
+        "rabi_envelope": program.payload["global_rabi_envelope"],
+        "local_detunings": program.payload["local_detunings"],
+        "interaction_terms": program.payload["rydberg_interactions"],
+        "fim_feedback_terms": program.payload["fim_feedback_terms"],
+    }
+
+
+def _bloqade_payload(program: AnalogKuramotoProgram) -> dict[str, Any]:
+    return {
+        "schema": "bloqade_ahs_plan_v1",
+        "duration": program.duration,
+        "atoms": [
+            {"index": site["site"], "position": [site["x"], site["y"]]}
+            for site in program.payload["register"]
+        ],
+        "rabi_amplitude_piecewise_linear": [
+            [point["time"], point["amplitude"]]
+            for point in program.payload["global_rabi_envelope"]
+        ],
+        "rabi_phase_piecewise_linear": [
+            [point["time"], point["phase"]] for point in program.payload["global_rabi_envelope"]
+        ],
+        "local_detunings": program.payload["local_detunings"],
+        "rydberg_interactions": program.payload["rydberg_interactions"],
+        "fim_feedback_terms": program.payload["fim_feedback_terms"],
+    }
+
+
+def _ibm_pulse_payload(program: AnalogKuramotoProgram) -> dict[str, Any]:
+    return {
+        "schema": "qiskit_pulse_schedule_plan_v1",
+        "duration": program.duration,
+        "mode_frequencies": program.payload["mode_frequencies"],
+        "exchange_couplers": [
+            {
+                "channel": f"u{term['source']}_{term['target']}",
+                "source": term["source"],
+                "target": term["target"],
+                "amplitude": term["g_exchange"],
+                "phase": term["phase"],
+                "start": term["start"],
+                "stop": term["stop"],
+            }
+            for term in program.payload["exchange_couplers"]
+        ],
+        "fim_cross_kerr_feedback": program.payload["fim_cross_kerr_feedback"],
+    }
+
+
 def _fim_feedback_terms(n_oscillators: int, lambda_fim: float) -> tuple[AnalogFeedbackTerm, ...]:
     if lambda_fim <= 0.0:
         return ()
@@ -537,6 +683,33 @@ def _coerce_platform(platform: AnalogKuramotoPlatform | str) -> AnalogKuramotoPl
     except ValueError as exc:
         known = ", ".join(item.value for item in AnalogKuramotoPlatform)
         raise ValueError(f"Unknown analog platform {platform!r}; expected one of {known}") from exc
+
+
+def _coerce_provider(provider: AnalogProviderTarget | str) -> AnalogProviderTarget:
+    try:
+        return AnalogProviderTarget(provider)
+    except ValueError as exc:
+        known = ", ".join(item.value for item in AnalogProviderTarget)
+        raise ValueError(f"Unknown analog provider {provider!r}; expected one of {known}") from exc
+
+
+def _require_platform(
+    program: AnalogKuramotoProgram,
+    expected: AnalogKuramotoPlatform,
+    provider: AnalogProviderTarget,
+) -> None:
+    if program.platform != expected:
+        raise ValueError(
+            f"{provider.value} export requires {expected.value} programs, "
+            f"got {program.platform.value}"
+        )
+
+
+def _module_available(module_name: str) -> bool:
+    try:
+        return find_spec(module_name) is not None
+    except (ImportError, ModuleNotFoundError, ValueError):
+        return False
 
 
 def _platform_code(platform: AnalogKuramotoPlatform) -> int:

@@ -14,8 +14,10 @@ from scpn_quantum_control.hardware import backends as be
 from scpn_quantum_control.hardware.analog_kuramoto import (
     AnalogKuramotoBackend,
     AnalogKuramotoPlatform,
+    AnalogProviderTarget,
     _analog_terms_numpy,
     compile_analog_kuramoto,
+    export_provider_payload,
 )
 from scpn_quantum_control.kuramoto_core import build_kuramoto_problem, compile_analog_program
 
@@ -161,3 +163,85 @@ def test_fim_feedback_terms_encode_collective_magnetisation_pair_term():
     assert first.coefficient == pytest.approx(-2.0)
     assert first.phase == pytest.approx(np.pi)
     assert program.payload["fim_cross_kerr_feedback"][0]["coefficient"] == pytest.approx(-2.0)
+
+
+def test_pulser_export_wraps_neutral_atom_program_without_submission():
+    K, omega = _inputs()
+    program = compile_analog_kuramoto(
+        K,
+        omega,
+        platform=AnalogKuramotoPlatform.NEUTRAL_ATOMS,
+        duration=1.5,
+        lambda_fim=2.0,
+    )
+
+    export = export_provider_payload(program, AnalogProviderTarget.PULSER)
+
+    assert export.provider == AnalogProviderTarget.PULSER
+    assert export.required_platform == AnalogKuramotoPlatform.NEUTRAL_ATOMS
+    assert export.can_submit is False
+    assert isinstance(export.sdk_available, bool)
+    assert export.payload["schema"] == "pulser_sequence_plan_v1"
+    assert export.payload["rydberg_channel"] == "rydberg_global"
+    assert len(export.payload["register"]) == 3
+    assert len(export.payload["fim_feedback_terms"]) == 3
+    assert "export_only_no_cloud_submission" in export.limitations
+
+
+def test_bloqade_export_uses_neutral_atom_ahs_shape():
+    K, omega = _inputs()
+    program = compile_analog_kuramoto(
+        K,
+        omega,
+        platform="neutral_atoms",
+        duration=1.5,
+    )
+
+    export = export_provider_payload(program, "bloqade")
+
+    assert export.provider == AnalogProviderTarget.BLOQADE
+    assert export.payload["schema"] == "bloqade_ahs_plan_v1"
+    assert export.payload["atoms"][0] == {"index": 0, "position": [0.0, 0.0]}
+    assert len(export.payload["rabi_amplitude_piecewise_linear"]) == 3
+    assert export.to_dict()["can_submit"] is False
+
+
+def test_ibm_pulse_export_requires_circuit_qed_program():
+    K, omega = _inputs()
+    program = compile_analog_kuramoto(
+        K,
+        omega,
+        platform=AnalogKuramotoPlatform.CIRCUIT_QED,
+        duration=2.0,
+        lambda_fim=3.0,
+    )
+
+    export = export_provider_payload(program, "ibm_pulse")
+
+    assert export.required_platform == AnalogKuramotoPlatform.CIRCUIT_QED
+    assert export.payload["schema"] == "qiskit_pulse_schedule_plan_v1"
+    assert export.payload["exchange_couplers"][0]["channel"] == "u0_1"
+    assert export.payload["fim_cross_kerr_feedback"][0]["coefficient"] == pytest.approx(-2.0)
+
+
+def test_provider_export_rejects_incompatible_platform_and_unknown_provider():
+    K, omega = _inputs()
+    circuit_qed_program = compile_analog_kuramoto(
+        K,
+        omega,
+        platform=AnalogKuramotoPlatform.CIRCUIT_QED,
+        duration=1.0,
+    )
+    neutral_atom_program = compile_analog_kuramoto(
+        K,
+        omega,
+        platform=AnalogKuramotoPlatform.NEUTRAL_ATOMS,
+        duration=1.0,
+    )
+
+    with pytest.raises(ValueError, match="pulser export requires neutral_atoms"):
+        export_provider_payload(circuit_qed_program, "pulser")
+    with pytest.raises(ValueError, match="ibm_pulse export requires circuit_qed"):
+        export_provider_payload(neutral_atom_program, "ibm_pulse")
+    with pytest.raises(ValueError, match="Unknown analog provider"):
+        export_provider_payload(neutral_atom_program, "not-a-provider")

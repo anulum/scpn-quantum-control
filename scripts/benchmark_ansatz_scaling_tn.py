@@ -33,6 +33,7 @@ from scpn_quantum_control.bridge.knm_hamiltonian import (
 REPO_ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = REPO_ROOT / "data" / "rust_vqe_methods"
 DATE = "2026-05-05"
+VQE_SUMMARY_PATH = OUT_DIR / f"vqe_benchmark_summary_{DATE}.json"
 
 
 def _sha256(path: Path) -> str:
@@ -191,6 +192,92 @@ def mps_truncation_rows(
     return rows
 
 
+def _load_best_vqe_reference_rows(path: Path) -> dict[int, dict[str, object]]:
+    """Return the best committed VQE aggregate row for each qubit count."""
+
+    if not path.exists():
+        return {}
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    best_by_n: dict[int, dict[str, object]] = {}
+    for row in payload.get("aggregate", []):
+        n_qubits = int(row["n_qubits"])
+        current = best_by_n.get(n_qubits)
+        current_error = float("inf")
+        if current is not None:
+            current_error = float(current["median_relative_error_pct"])
+        candidate_error = float(row["median_relative_error_pct"])
+        if candidate_error < current_error:
+            best_by_n[n_qubits] = row
+    return best_by_n
+
+
+def reference_comparison_rows(
+    n_values: list[int],
+    tn_rows: list[dict[str, object]],
+    vqe_summary_path: Path = VQE_SUMMARY_PATH,
+) -> list[dict[str, object]]:
+    """Pair tensor-network diagnostics with committed VQE aggregate references.
+
+    Missing VQE rows are recorded as skipped rows. This avoids presenting
+    unrun optimisation data for larger systems as a measured result.
+    """
+
+    best_vqe = _load_best_vqe_reference_rows(vqe_summary_path)
+    rows: list[dict[str, object]] = []
+    for n_qubits in n_values:
+        ok_tn_rows = [
+            row for row in tn_rows if row["n_qubits"] == n_qubits and row["status"] == "ok"
+        ]
+        if ok_tn_rows:
+            tn_reference = max(ok_tn_rows, key=lambda row: int(row["max_bond"]))
+            discarded_weight = float(tn_reference["worst_cut_discarded_weight"])
+            retained_weight = float(max(0.0, 1.0 - discarded_weight))
+            tn_status = "ok"
+        else:
+            tn_reference = next(
+                (row for row in tn_rows if row["n_qubits"] == n_qubits),
+                {},
+            )
+            discarded_weight = None
+            retained_weight = None
+            tn_status = "skipped"
+
+        vqe_reference = best_vqe.get(n_qubits)
+        row: dict[str, object] = {
+            "n_qubits": n_qubits,
+            "tn_status": tn_status,
+            "tn_solver": tn_reference.get("solver"),
+            "tn_ground_energy": tn_reference.get("ground_energy"),
+            "tn_eigen_residual_norm": tn_reference.get("eigen_residual_norm"),
+            "tn_max_bond": tn_reference.get("max_bond"),
+            "tn_worst_cut_discarded_weight": discarded_weight,
+            "tn_retained_weight_lower_bound": retained_weight,
+            "vqe_status": "skipped",
+            "vqe_skip_reason": "no_committed_vqe_reference",
+            "vqe_best_ansatz": None,
+            "vqe_reps": None,
+            "vqe_n_seeds": None,
+            "vqe_best_energy": None,
+            "vqe_median_relative_error_pct": None,
+            "vqe_best_relative_error_pct": None,
+        }
+        if vqe_reference is not None:
+            row.update(
+                {
+                    "vqe_status": "ok",
+                    "vqe_skip_reason": None,
+                    "vqe_best_ansatz": vqe_reference["ansatz"],
+                    "vqe_reps": vqe_reference["reps"],
+                    "vqe_n_seeds": vqe_reference["n_seeds"],
+                    "vqe_best_energy": vqe_reference["best_energy"],
+                    "vqe_median_relative_error_pct": vqe_reference["median_relative_error_pct"],
+                    "vqe_best_relative_error_pct": vqe_reference["best_relative_error_pct"],
+                }
+            )
+        rows.append(row)
+    return rows
+
+
 def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
     with path.open("w", newline="", encoding="utf-8") as handle:
         fieldnames = sorted({key for row in rows for key in row})
@@ -217,6 +304,7 @@ def main() -> int:
         help="Largest n for sparse ground-state generation before rows are marked skipped.",
     )
     parser.add_argument("--output-dir", type=Path, default=OUT_DIR)
+    parser.add_argument("--vqe-summary", type=Path, default=VQE_SUMMARY_PATH)
     ns = parser.parse_args()
 
     n_values = _parse_csv_ints(ns.n_values)
@@ -231,16 +319,19 @@ def main() -> int:
         ns.exact_max_qubits,
         ns.sparse_max_qubits,
     )
+    comparison_rows = reference_comparison_rows(n_values, tn_rows, ns.vqe_summary)
     summary = {
         "date": DATE,
-        "schema": "scpn_ansatz_scaling_tn_v1",
+        "schema": "scpn_ansatz_scaling_tn_v2",
         "command": "python scripts/benchmark_ansatz_scaling_tn.py",
         "environment": {"python": platform.python_version(), "platform": platform.platform()},
         "claim_boundary": (
             "Circuit-size rows cover n=4--12. Tensor-network diagnostics are "
             "MPS truncation diagnostics computed from dense exact ground states "
             "up to exact_max_qubits and sparse eigensolver ground states up to "
-            "sparse_max_qubits; skipped rows are not extrapolated."
+            "sparse_max_qubits. VQE reference comparisons use only committed "
+            "aggregate rows from vqe_benchmark_summary_2026-05-05.json; missing "
+            "larger-n VQE rows are marked skipped, not extrapolated."
         ),
         "n_values": n_values,
         "reps_values": reps_values,
@@ -249,20 +340,25 @@ def main() -> int:
         "sparse_max_qubits": ns.sparse_max_qubits,
         "ansatz_rows": ansatz_rows,
         "tensor_network_rows": tn_rows,
+        "reference_comparison_rows": comparison_rows,
     }
 
     json_path = ns.output_dir / f"ansatz_scaling_tn_summary_{DATE}.json"
     ansatz_csv = ns.output_dir / f"ansatz_scaling_summary_{DATE}.csv"
     tn_csv = ns.output_dir / f"tn_truncation_summary_{DATE}.csv"
+    comparison_csv = ns.output_dir / f"ansatz_tn_reference_comparison_summary_{DATE}.csv"
     json_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
     _write_csv(ansatz_csv, ansatz_rows)
     _write_csv(tn_csv, tn_rows)
+    _write_csv(comparison_csv, comparison_rows)
     print(f"wrote_json={json_path}")
     print(f"wrote_ansatz_csv={ansatz_csv}")
     print(f"wrote_tn_csv={tn_csv}")
+    print(f"wrote_comparison_csv={comparison_csv}")
     print(f"sha256_json={_sha256(json_path)}")
     print(f"sha256_ansatz_csv={_sha256(ansatz_csv)}")
     print(f"sha256_tn_csv={_sha256(tn_csv)}")
+    print(f"sha256_comparison_csv={_sha256(comparison_csv)}")
     return 0
 
 
