@@ -3,12 +3,13 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Runtime Dependency Compatibility Mirror
+# scpn-quantum-control — Pinned Runtime Dependency Compatibility Mirror
 #
-# pyproject.toml is the canonical dependency source. Keep this file as a
-# pip-compatible mirror for users who still install from requirements files.
-qiskit>=2.2,<3.0
-qiskit-aer>=0.15,<1.0
-numpy>=1.24,<3.0
-scipy>=1.10,<2.0
-networkx>=3.0,<4.0
+# pyproject.toml is the canonical dependency source for package metadata.
+# This pip-compatible mirror is pinned for reproducible user installs and
+# supply-chain scanners that evaluate requirements files directly.
+qiskit==2.4.1
+qiskit-aer==0.17.2
+numpy==2.2.6
+scipy==1.15.3
+networkx==3.4.2

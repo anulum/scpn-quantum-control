@@ -29,7 +29,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: 'pip'
-      - run: pip install ruff==0.15.10
+      - run: pip install ruff==0.15.12
       - run: ruff check src/ tests/
       - run: ruff format --check src/ tests/
 
@@ -110,7 +110,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: 'pip'
-      - run: pip install build==1.4.3
+      - run: pip install build==1.5.0
       - run: python -m build
       - name: Install from wheel
         run: pip install dist/*.whl
