@@ -228,7 +228,7 @@ def _state_order_param(psi: np.ndarray, n_osc: int) -> float:
     """Compute R from statevector via X,Y expectations per qubit.
 
     Tries Rust fast path first (vectorised bitwise ops), falls back to
-    Python kron-based implementation.
+    NumPy bitwise-vectorised single-qubit expectations.
     """
     try:
         import scpn_quantum_engine as _engine
@@ -243,13 +243,8 @@ def _state_order_param(psi: np.ndarray, n_osc: int) -> float:
     except (ImportError, AttributeError):
         pass
 
-    z_complex = 0.0 + 0.0j
-    for q in range(n_osc):
-        exp_x = _expectation_pauli(psi, n_osc, q, "X")
-        exp_y = _expectation_pauli(psi, n_osc, q, "Y")
-        z_complex += exp_x + 1j * exp_y
-
-    z_complex /= n_osc
+    exp_x, exp_y = _xy_expectations_vectorized(psi, n_osc)
+    z_complex = np.mean(exp_x + 1j * exp_y)
     return float(abs(z_complex))
 
 
@@ -273,32 +268,42 @@ def _state_order_param_sparse(psi: np.ndarray, n_osc: int) -> float:
     except (ImportError, AttributeError):
         pass
 
-    dim = len(psi)
-    indices = np.arange(dim, dtype=np.int64)
-    psi_conj = psi.conj()
-    z_complex = 0.0 + 0.0j
-
-    for q in range(n_osc):
-        mask = 1 << q
-        flipped = indices ^ mask
-        psi_flipped = psi[flipped]
-
-        exp_x = np.sum(psi_conj * psi_flipped).real
-
-        bits = (indices >> q) & 1
-        signs = 1.0 - 2.0 * bits
-        exp_y = np.sum(psi_conj * (1j * signs) * psi_flipped).real
-
-        z_complex += exp_x + 1j * exp_y
-
-    z_complex /= n_osc
+    exp_x, exp_y = _xy_expectations_vectorized(psi, n_osc)
+    z_complex = np.mean(exp_x + 1j * exp_y)
     return float(abs(z_complex))
+
+
+def _xy_expectations_vectorized(psi: np.ndarray, n: int) -> tuple[np.ndarray, np.ndarray]:
+    """Return all single-qubit X and Y expectations using bitwise indexing.
+
+    This is the Python fallback for the Rust expectation hot path. It avoids
+    constructing one dense Kronecker operator or Qiskit Pauli object per qubit
+    while preserving Qiskit's little-endian statevector convention.
+    """
+    state = np.asarray(psi, dtype=complex)
+    dim = len(state)
+    indices = np.arange(dim, dtype=np.int64)
+    state_conj = state.conj()
+    exp_x = np.empty(n, dtype=float)
+    exp_y = np.empty(n, dtype=float)
+
+    for qubit in range(n):
+        mask = 1 << qubit
+        flipped = indices ^ mask
+        flipped_state = state[flipped]
+        bits = (indices >> qubit) & 1
+        y_phase = -1j * (1.0 - 2.0 * bits)
+
+        exp_x[qubit] = float(np.sum(state_conj * flipped_state).real)
+        exp_y[qubit] = float(np.sum(state_conj * y_phase * flipped_state).real)
+
+    return exp_x, exp_y
 
 
 def _expectation_pauli(psi: np.ndarray, n: int, qubit: int, pauli: str) -> float:
     """<psi| P_qubit |psi> where P acts on one qubit, identity elsewhere.
 
-    Tries Rust bitwise fast path first, falls back to kron-based Python.
+    Tries Rust bitwise fast path first, falls back to NumPy bitwise indexing.
     """
     try:
         import scpn_quantum_engine as _engine
@@ -317,17 +322,18 @@ def _expectation_pauli(psi: np.ndarray, n: int, qubit: int, pauli: str) -> float
         pass
 
     if pauli == "X":
-        p = np.array([[0, 1], [1, 0]], dtype=complex)
+        exp_x, _ = _xy_expectations_vectorized(psi, n)
+        return float(exp_x[qubit])
     elif pauli == "Y":
-        p = np.array([[0, -1j], [1j, 0]], dtype=complex)
-    else:
-        p = np.array([[1, 0], [0, -1]], dtype=complex)
-
-    kron_pos = n - 1 - qubit
-    op = np.array([[1.0]])
-    for i in range(n):
-        op = np.kron(op, p if i == kron_pos else np.eye(2))
-    return float(np.real(psi.conj() @ op @ psi))
+        _, exp_y = _xy_expectations_vectorized(psi, n)
+        return float(exp_y[qubit])
+    if pauli == "Z":
+        state = np.asarray(psi, dtype=complex)
+        indices = np.arange(len(state), dtype=np.int64)
+        signs = 1.0 - 2.0 * ((indices >> qubit) & 1)
+        probabilities = np.abs(state) ** 2
+        return float(np.sum(signs * probabilities).real)
+    raise ValueError(f"unsupported Pauli label: {pauli!r}")
 
 
 def bloch_vectors_from_json(path: str) -> dict:

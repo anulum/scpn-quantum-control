@@ -256,9 +256,11 @@ is copied here.
   order, `evolve()` Trotter steps, and `run()` per-step Trotterisation;
   legacy `trotter_order`, `trotter_steps`, and `trotter_per_step`
   arguments remain supported and take explicit precedence.
-- [ ] **Expectation hot path.** Replace avoidable per-qubit Python loops
-  with vectorised NumPy or Rust offload where measured benchmarks justify
-  it.
+- [x] **Expectation hot path.** Implemented 2026-05-06:
+  statevector X/Y/Z expectation fallbacks now use bitwise-vectorised
+  NumPy instead of per-qubit dense Kronecker or Qiskit Pauli object
+  construction; Rust remains the preferred accelerated path when the
+  extension is available.
 - [ ] **Rust import failure policy.** Distinguish expected optional
   extension absence from broken extension imports across accelerated
   modules.

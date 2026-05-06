@@ -63,18 +63,10 @@ def _order_parameter(psi: np.ndarray, n: int) -> float:
     except (ImportError, AttributeError):
         pass
 
-    from qiskit.quantum_info import SparsePauliOp, Statevector
+    from ..hardware.classical import _xy_expectations_vectorized
 
-    sv = Statevector(np.ascontiguousarray(psi))
-    phases = np.zeros(n)
-    for k in range(n):
-        x_str = ["I"] * n
-        x_str[k] = "X"
-        y_str = ["I"] * n
-        y_str[k] = "Y"
-        ex = float(sv.expectation_value(SparsePauliOp("".join(reversed(x_str)))).real)
-        ey = float(sv.expectation_value(SparsePauliOp("".join(reversed(y_str)))).real)
-        phases[k] = np.arctan2(ey, ex)
+    exp_x, exp_y = _xy_expectations_vectorized(np.ascontiguousarray(psi), n)
+    phases = np.arctan2(exp_y, exp_x)
     return float(abs(np.mean(np.exp(1j * phases))))
 
 

@@ -58,6 +58,19 @@ class TestClassicalPythonFallback:
                 val = _expectation_pauli(psi, 2, 0, pauli)
             assert isinstance(val, float)
 
+    def test_vectorized_xy_expectations_match_known_product_state(self):
+        from scpn_quantum_control.hardware.classical import _xy_expectations_vectorized
+
+        plus_y = np.array([1.0, 1j], dtype=complex) / np.sqrt(2.0)
+        plus_x = np.array([1.0, 1.0], dtype=complex) / np.sqrt(2.0)
+        psi = np.kron(plus_y, plus_x)
+
+        with _hide_engine():
+            exp_x, exp_y = _xy_expectations_vectorized(psi, 2)
+
+        np.testing.assert_allclose(exp_x, [1.0, 0.0], atol=1e-12)
+        np.testing.assert_allclose(exp_y, [0.0, 1.0], atol=1e-12)
+
     def test_classical_brute_mpc_python(self):
         from scpn_quantum_control.hardware.classical import classical_brute_mpc
 
