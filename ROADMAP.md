@@ -427,9 +427,17 @@ explicit QPU-time estimate before submission.
   offline-readiness pass and any hardware comparison only after backend
   selection, calibration capture, budget confirmation, and explicit
   approval for QPU submission.
-- [ ] **Entanglement entropy or tomography check.** Use shadow
-  tomography or small-n tomography only after cost and claim boundaries
-  are fixed.
+- [x] **Entanglement entropy or tomography check preregistration.**
+  Completed 2026-05-06:
+  `docs/entanglement_tomography_prereg_2026-05-06.md` defines the
+  reduced-tomography/shadow-tomography decision rule, small-`n` claim
+  boundary, offline readiness matrix, optional hardware scope, circuit
+  and QPU-time ceilings, live gates, analysis plan, falsification rules,
+  and artefact paths. Execution remains separate and approval-gated.
+- [ ] **Entanglement entropy or tomography execution.** Run offline
+  readiness and any optional hardware block only after observable
+  definitions, backend selection, budget confirmation, and explicit
+  approval for QPU submission.
 - [ ] **Depth-optimal native decomposition.** Reduce Kuramoto evolution
   depth by targeting Heron native gates directly.
 - [ ] **Variational quantum simulation alternative.** Compare VQS
