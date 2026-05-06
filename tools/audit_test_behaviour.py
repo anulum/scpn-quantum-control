@@ -23,6 +23,8 @@ BEHAVIOURAL_CALLS = {
 }
 
 ASSERTION_CALL_PREFIXES = (
+    "_assert",
+    "_assert_",
     "assert",
     "assert_",
 )

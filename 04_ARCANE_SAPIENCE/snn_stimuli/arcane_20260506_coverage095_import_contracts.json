@@ -1,0 +1,7 @@
+{
+  "_spdx": "SPDX-FileCopyrightText: 2026 Arcane Sapience <protoscience@anulum.li>; SPDX-License-Identifier: MIT",
+  "project": "SCPN-QUANTUM-CONTROL",
+  "source": "codex",
+  "timestamp": "2026-05-06T00:00:00+02:00",
+  "text": "Coverage 0.95 import-only analysis tests were converted into explicit module identity and public-surface contracts, reducing behavioural smoke-only audit debt without changing scientific artefacts."
+}

@@ -160,33 +160,90 @@ class TestPersistentHomology:
         assert np.allclose(np.diag(D), 0)
 
 
+def _assert_analysis_module_contract(module: object, expected_name: str) -> None:
+    """Assert imported analysis modules expose a non-empty public surface."""
+    assert getattr(module, "__name__", "") == expected_name
+    public_names = [name for name in dir(module) if not name.startswith("_")]
+    assert public_names
+
+
 class TestImports:
     def test_graph_topology_scan(self):
-        from scpn_quantum_control.analysis import graph_topology_scan  # noqa: F401
+        from scpn_quantum_control.analysis import graph_topology_scan
+
+        _assert_analysis_module_contract(
+            graph_topology_scan,
+            "scpn_quantum_control.analysis.graph_topology_scan",
+        )
 
     def test_critical_concordance(self):
-        from scpn_quantum_control.analysis import critical_concordance  # noqa: F401
+        from scpn_quantum_control.analysis import critical_concordance
+
+        _assert_analysis_module_contract(
+            critical_concordance,
+            "scpn_quantum_control.analysis.critical_concordance",
+        )
 
     def test_qfi_criticality(self):
-        from scpn_quantum_control.analysis import qfi_criticality  # noqa: F401
+        from scpn_quantum_control.analysis import qfi_criticality
+
+        _assert_analysis_module_contract(
+            qfi_criticality,
+            "scpn_quantum_control.analysis.qfi_criticality",
+        )
 
     def test_entanglement_percolation(self):
-        from scpn_quantum_control.analysis import entanglement_percolation  # noqa: F401
+        from scpn_quantum_control.analysis import entanglement_percolation
+
+        _assert_analysis_module_contract(
+            entanglement_percolation,
+            "scpn_quantum_control.analysis.entanglement_percolation",
+        )
 
     def test_hamiltonian_self_consistency(self):
-        from scpn_quantum_control.analysis import hamiltonian_self_consistency  # noqa: F401
+        from scpn_quantum_control.analysis import hamiltonian_self_consistency
+
+        _assert_analysis_module_contract(
+            hamiltonian_self_consistency,
+            "scpn_quantum_control.analysis.hamiltonian_self_consistency",
+        )
 
     def test_dla_parity(self):
-        from scpn_quantum_control.analysis import dla_parity_theorem  # noqa: F401
+        from scpn_quantum_control.analysis import dla_parity_theorem
+
+        _assert_analysis_module_contract(
+            dla_parity_theorem,
+            "scpn_quantum_control.analysis.dla_parity_theorem",
+        )
 
     def test_berry_phase(self):
-        from scpn_quantum_control.analysis import berry_phase  # noqa: F401
+        from scpn_quantum_control.analysis import berry_phase
+
+        _assert_analysis_module_contract(
+            berry_phase,
+            "scpn_quantum_control.analysis.berry_phase",
+        )
 
     def test_entanglement_enhanced_sync(self):
-        from scpn_quantum_control.analysis import entanglement_enhanced_sync  # noqa: F401
+        from scpn_quantum_control.analysis import entanglement_enhanced_sync
+
+        _assert_analysis_module_contract(
+            entanglement_enhanced_sync,
+            "scpn_quantum_control.analysis.entanglement_enhanced_sync",
+        )
 
     def test_finite_size_scaling(self):
-        from scpn_quantum_control.analysis import finite_size_scaling  # noqa: F401
+        from scpn_quantum_control.analysis import finite_size_scaling
+
+        _assert_analysis_module_contract(
+            finite_size_scaling,
+            "scpn_quantum_control.analysis.finite_size_scaling",
+        )
 
     def test_monte_carlo_xy(self):
-        from scpn_quantum_control.analysis import monte_carlo_xy  # noqa: F401
+        from scpn_quantum_control.analysis import monte_carlo_xy
+
+        _assert_analysis_module_contract(
+            monte_carlo_xy,
+            "scpn_quantum_control.analysis.monte_carlo_xy",
+        )

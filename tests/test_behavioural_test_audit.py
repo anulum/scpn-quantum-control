@@ -70,6 +70,9 @@ def test_behaviour_audit_counts_assertion_helper_calls(tmp_path: Path) -> None:
                 "",
                 "def test_local_helper_contract():",
                 "    assert_state_matches({'ok': True})",
+                "",
+                "def test_private_helper_contract():",
+                "    _assert_module_contract(object())",
             ]
         ),
         encoding="utf-8",
@@ -77,8 +80,8 @@ def test_behaviour_audit_counts_assertion_helper_calls(tmp_path: Path) -> None:
 
     audit = audit_test_module(module)
 
-    assert audit.test_count == 2
-    assert audit.assertion_count == 2
+    assert audit.test_count == 3
+    assert audit.assertion_count == 3
     assert audit.smoke_only_tests == ()
 
 

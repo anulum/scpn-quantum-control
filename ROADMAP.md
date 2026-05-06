@@ -102,6 +102,9 @@ is copied here.
 - [x] **Backend registry no-op contract.** Implemented 2026-05-06:
   `test_unregister_missing_is_silent` now asserts registry state is
   unchanged when unregistering a missing backend.
+- [x] **Coverage 0.95 import contracts.** Implemented 2026-05-06:
+  `tests/test_coverage_095_push.py` import checks now assert module
+  identity and public surface instead of only importing modules.
 - [ ] **E2E and contract audit.** Cover or explicitly document blocked
   boundaries for hardware/QPU, bridge, SC-NeuroCore, Phase Orchestrator,
   notebook, and example workflows.
