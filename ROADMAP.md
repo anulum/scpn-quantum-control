@@ -118,6 +118,11 @@ is copied here.
   pure performance rows in `tests/test_rust_path_benchmarks.py` now
   assert finite non-negative timing samples instead of only printing
   benchmark lines.
+- [x] **E2E boundary audit automation.** Implemented 2026-05-06:
+  `tools/audit_e2e_contract_boundaries.py` inventories hardware/QPU,
+  bridge, SC-NeuroCore, Phase Orchestrator, notebook, and example
+  workflow test boundaries without fabricating coverage for missing
+  categories.
 - [ ] **E2E and contract audit.** Cover or explicitly document blocked
   boundaries for hardware/QPU, bridge, SC-NeuroCore, Phase Orchestrator,
   notebook, and example workflows.

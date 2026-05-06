@@ -1,0 +1,7 @@
+{
+  "_spdx": "SPDX-FileCopyrightText: 2026 Arcane Sapience <protoscience@anulum.li>; SPDX-License-Identifier: MIT",
+  "project": "SCPN-QUANTUM-CONTROL",
+  "source": "codex",
+  "timestamp": "2026-05-06T00:00:00+02:00",
+  "text": "E2E contract boundary audit automation now inventories hardware/QPU, bridge, SC-NeuroCore, Phase Orchestrator, notebook, and example workflow test coverage categories without claiming missing categories are covered."
+}
