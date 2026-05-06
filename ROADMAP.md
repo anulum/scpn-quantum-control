@@ -308,9 +308,11 @@ is copied here.
   paper packages together with final PDF build commands, no-QPU
   reproduction gates, arXiv metadata draft, URL/identifier checks, and a
   minimal venue-conditional AI disclosure policy.
-- [ ] **IBM Quantum Credits follow-up.** Use the current affiliation and
-  submitted papers to revisit the credits request without shrinking the
-  scientific scope below the requested 5--10 hour QPU window.
+- [x] **IBM Quantum Credits follow-up.** Completed 2026-05-06:
+  `docs/ibm_quantum_credits_followup_2026-05-06.md` records the
+  5--10 hour QPU allocation boundary, current evidence package,
+  affiliation wording, draft locations, and per-run spend gates. The
+  older allocation draft now matches the 5--10 hour scope.
 
 ### Active Phase 4 follow-up tasks
 
