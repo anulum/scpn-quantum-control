@@ -41,9 +41,10 @@ class QuantumKuramotoSolver:
     ):
         """K_coupling: (n,n) coupling matrix, omega_natural: (n,) frequencies."""
         self.n = self._validate_n_oscillators(n_oscillators)
-        self.K = np.asarray(K_coupling, dtype=np.float64)
-        self.omega = np.asarray(omega_natural, dtype=np.float64)
+        self.K = np.array(K_coupling, dtype=np.float64, copy=True)
+        self.omega = np.array(omega_natural, dtype=np.float64, copy=True)
         self._validate_coupling_inputs(self.n, self.K, self.omega)
+        np.fill_diagonal(self.K, 0.0)
         if trotter_order not in (1, 2):
             raise ValueError(f"trotter_order must be 1 or 2, got {trotter_order}")
         self.trotter_order = trotter_order

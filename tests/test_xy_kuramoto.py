@@ -62,6 +62,15 @@ def test_rejects_asymmetric_coupling_matrix():
         QuantumKuramotoSolver(2, K, omega)
 
 
+def test_canonicalises_nonzero_coupling_diagonal_without_mutating_input():
+    K = np.array([[0.1, 1.0], [1.0, 0.0]])
+    omega = np.zeros(2)
+    solver = QuantumKuramotoSolver(2, K, omega)
+
+    np.testing.assert_allclose(np.diag(solver.K), 0.0)
+    np.testing.assert_allclose(np.diag(K), [0.1, 0.0])
+
+
 def test_rejects_invalid_trotter_settings():
     K = np.zeros((2, 2))
     omega = np.zeros(2)

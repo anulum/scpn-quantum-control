@@ -246,9 +246,11 @@ is copied here.
   `tools`, easy true positives were fixed, and the remaining `57` low
   findings were documented locally as accepted subprocess/provenance
   tooling or deterministic non-cryptographic shuffling.
-- [ ] **`QuantumKuramotoSolver` validation.** Validate coupling-matrix
-  shape, squareness, symmetry or directionality semantics, zero diagonal,
-  finite values, and matching finite `omega`.
+- [x] **`QuantumKuramotoSolver` validation.** Completed 2026-05-06:
+  validates oscillator count, coupling-matrix shape/squareness,
+  symmetric XY semantics, finite coupling and `omega` values, matching
+  finite `omega` length, and canonicalises the solver-owned coupling
+  diagonal to zero without mutating caller input.
 - [ ] **Trotter/config public surface.** Replace hardcoded circuit
   defaults with a typed config object or documented keyword surface while
   preserving backwards compatibility.
