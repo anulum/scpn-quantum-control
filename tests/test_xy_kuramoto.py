@@ -274,6 +274,45 @@ def test_evolution_unitarity():
     np.testing.assert_allclose(float(np.sum(np.abs(sv) ** 2)), 1.0, atol=1e-12)
 
 
+def test_zero_time_evolution_is_identity():
+    """Mutation guard: zero-time evolution must leave arbitrary states unchanged."""
+    from qiskit import QuantumCircuit
+    from qiskit.quantum_info import Statevector
+
+    K = build_knm_paper27(L=3)
+    omega = OMEGA_N_16[:3]
+    solver = QuantumKuramotoSolver(3, K, omega)
+
+    init = QuantumCircuit(3)
+    init.ry(0.3, 0)
+    init.rx(0.7, 1)
+    init.rz(1.1, 2)
+    before = Statevector.from_instruction(init)
+    after = before.evolve(solver.evolve(0.0, trotter_steps=4))
+
+    np.testing.assert_allclose(after.data, before.data, atol=1e-12)
+
+
+def test_pauli_operator_targets_requested_qubit():
+    """Mutation guard: internal Pauli labels must respect Qiskit qubit ordering."""
+    solver = QuantumKuramotoSolver(3, np.zeros((3, 3)), np.zeros(3))
+
+    assert str(solver._pauli_op("X", 0).paulis[0]) == "IIX"
+    assert str(solver._pauli_op("Y", 1).paulis[0]) == "IYI"
+    assert str(solver._pauli_op("Z", 2).paulis[0]) == "ZII"
+
+
+def test_run_time_grid_preserves_requested_endpoints():
+    """Mutation guard: trajectory grid must include the requested start and stop times."""
+    solver = QuantumKuramotoSolver(2, np.zeros((2, 2)), np.array([0.2, 0.4]))
+
+    result = solver.run(t_max=0.35, dt=0.1, trotter_per_step=1)
+
+    assert result["times"][0] == pytest.approx(0.0)
+    assert result["times"][-1] == pytest.approx(0.35)
+    assert len(result["times"]) == len(result["R"])
+
+
 # ---------------------------------------------------------------------------
 # Rust path: Kuramoto Euler vs quantum Trotter parity
 # ---------------------------------------------------------------------------

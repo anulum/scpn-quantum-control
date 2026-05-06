@@ -136,6 +136,10 @@ is copied here.
   reports all six tracked boundaries covered; static notebook/example
   contracts are documented in `docs/e2e_contract_boundaries.md` without
   claiming executed scientific validation.
+- [x] **Mutation-test expansion: XY Kuramoto invariants.** Implemented
+  2026-05-06: `tests/test_xy_kuramoto.py` now includes mutation guards
+  for zero-time identity evolution, internal Pauli qubit ordering, and
+  trajectory time-grid endpoints.
 - [ ] **Mutation-test expansion.** Start with `phase/xy_kuramoto.py`,
   `hardware/async_runner.py`, `hardware/backends.py`, `bridge/*`,
   `analysis/dla*`, and `mitigation/*`.
