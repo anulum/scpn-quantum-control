@@ -1,0 +1,1171 @@
+{
+  "blocked_claims": [
+    "no non-IBM hardware result",
+    "no pulse-level calibration result",
+    "no cross-vendor replication claim",
+    "no hardware performance improvement claim",
+    "no quantum-advantage claim"
+  ],
+  "cloud_contact": false,
+  "date": "2026-05-06",
+  "falsification_boundary": "S4 provider promotion is blocked unless the selected provider SDK is available, calibration metadata are attached, live resource checks pass, and explicit budget approval is recorded.",
+  "hardware_submission": false,
+  "next_actions": [
+    "select one provider route with available credits",
+    "construct provider SDK object in emulator-only mode after approval",
+    "prepare a provider-specific preregistration dossier",
+    "run budget-gated hardware only after live readiness checks"
+  ],
+  "programmes": {
+    "circuit_qed": {
+      "coupling_terms": [
+        {
+          "phase": 0.0,
+          "source": 0,
+          "strength": 0.22649999999999998,
+          "target": 1
+        },
+        {
+          "phase": 0.0,
+          "source": 0,
+          "strength": 0.18522392718173392,
+          "target": 2
+        },
+        {
+          "phase": 0.0,
+          "source": 0,
+          "strength": 0.13721726016245223,
+          "target": 3
+        },
+        {
+          "phase": 0.0,
+          "source": 1,
+          "strength": 0.15075,
+          "target": 2
+        },
+        {
+          "phase": 0.0,
+          "source": 1,
+          "strength": 0.18522392718173392,
+          "target": 3
+        },
+        {
+          "phase": 0.0,
+          "source": 2,
+          "strength": 0.189,
+          "target": 3
+        }
+      ],
+      "drive_terms": [
+        {
+          "detuning": -0.3,
+          "oscillator": 0,
+          "phase": 0.0
+        },
+        {
+          "detuning": -0.1,
+          "oscillator": 1,
+          "phase": 0.0
+        },
+        {
+          "detuning": 0.09999999999999998,
+          "oscillator": 2,
+          "phase": 0.0
+        },
+        {
+          "detuning": 0.3,
+          "oscillator": 3,
+          "phase": 0.0
+        }
+      ],
+      "duration": 0.2,
+      "feedback_terms": [],
+      "metadata": {
+        "coupling_scale": 0.75,
+        "date": "2026-05-06",
+        "fim_global_energy_shift": 0.0,
+        "lambda_fim": 0.0,
+        "n_couplers": 6,
+        "n_feedback_terms": 0,
+        "n_oscillators": 4,
+        "native_term": "tunable exchange g_ij(a_i^\u2020 a_j + a_j^\u2020 a_i)",
+        "purpose": "multi_hardware_readiness",
+        "supports_signed_couplings": true,
+        "track": "S4",
+        "zero_threshold": 1e-12
+      },
+      "payload": {
+        "duration": 0.2,
+        "exchange_couplers": [
+          {
+            "g_exchange": 0.22649999999999998,
+            "phase": 0.0,
+            "pulse": "flat_top",
+            "source": 0,
+            "start": 0.0,
+            "stop": 0.2,
+            "target": 1
+          },
+          {
+            "g_exchange": 0.18522392718173392,
+            "phase": 0.0,
+            "pulse": "flat_top",
+            "source": 0,
+            "start": 0.0,
+            "stop": 0.2,
+            "target": 2
+          },
+          {
+            "g_exchange": 0.13721726016245223,
+            "phase": 0.0,
+            "pulse": "flat_top",
+            "source": 0,
+            "start": 0.0,
+            "stop": 0.2,
+            "target": 3
+          },
+          {
+            "g_exchange": 0.15075,
+            "phase": 0.0,
+            "pulse": "flat_top",
+            "source": 1,
+            "start": 0.0,
+            "stop": 0.2,
+            "target": 2
+          },
+          {
+            "g_exchange": 0.18522392718173392,
+            "phase": 0.0,
+            "pulse": "flat_top",
+            "source": 1,
+            "start": 0.0,
+            "stop": 0.2,
+            "target": 3
+          },
+          {
+            "g_exchange": 0.189,
+            "phase": 0.0,
+            "pulse": "flat_top",
+            "source": 2,
+            "start": 0.0,
+            "stop": 0.2,
+            "target": 3
+          }
+        ],
+        "fim_cross_kerr_feedback": [],
+        "mode_frequencies": [
+          {
+            "detuning": -0.3,
+            "oscillator": 0,
+            "phase": 0.0
+          },
+          {
+            "detuning": -0.1,
+            "oscillator": 1,
+            "phase": 0.0
+          },
+          {
+            "detuning": 0.09999999999999998,
+            "oscillator": 2,
+            "phase": 0.0
+          },
+          {
+            "detuning": 0.3,
+            "oscillator": 3,
+            "phase": 0.0
+          }
+        ],
+        "schema": "exchange_resonator_v1"
+      },
+      "platform": "circuit_qed"
+    },
+    "neutral_atoms": {
+      "coupling_terms": [
+        {
+          "phase": 0.0,
+          "radius": 1.2808215683961086,
+          "source": 0,
+          "strength": 0.22649999999999998,
+          "target": 1
+        },
+        {
+          "phase": 0.0,
+          "radius": 1.3244954945640983,
+          "source": 0,
+          "strength": 0.18522392718173392,
+          "target": 2
+        },
+        {
+          "phase": 0.0,
+          "radius": 1.3924038307155038,
+          "source": 0,
+          "strength": 0.13721726016245223,
+          "target": 3
+        },
+        {
+          "phase": 0.0,
+          "radius": 1.3707463975738328,
+          "source": 1,
+          "strength": 0.15075,
+          "target": 2
+        },
+        {
+          "phase": 0.0,
+          "radius": 1.3244954945640983,
+          "source": 1,
+          "strength": 0.18522392718173392,
+          "target": 3
+        },
+        {
+          "phase": 0.0,
+          "radius": 1.3200479266232599,
+          "source": 2,
+          "strength": 0.189,
+          "target": 3
+        }
+      ],
+      "drive_terms": [
+        {
+          "detuning": -0.3,
+          "oscillator": 0,
+          "phase": 0.0
+        },
+        {
+          "detuning": -0.1,
+          "oscillator": 1,
+          "phase": 0.0
+        },
+        {
+          "detuning": 0.09999999999999998,
+          "oscillator": 2,
+          "phase": 0.0
+        },
+        {
+          "detuning": 0.3,
+          "oscillator": 3,
+          "phase": 0.0
+        }
+      ],
+      "duration": 0.2,
+      "feedback_terms": [],
+      "metadata": {
+        "coupling_scale": 0.75,
+        "date": "2026-05-06",
+        "fim_global_energy_shift": 0.0,
+        "lambda_fim": 0.0,
+        "n_couplers": 6,
+        "n_feedback_terms": 0,
+        "n_oscillators": 4,
+        "native_term": "Rydberg blockade detuning with phase-labelled interaction signs",
+        "purpose": "multi_hardware_readiness",
+        "supports_signed_couplings": true,
+        "track": "S4",
+        "zero_threshold": 1e-12
+      },
+      "payload": {
+        "duration": 0.2,
+        "fim_feedback_terms": [],
+        "global_rabi_envelope": [
+          {
+            "amplitude": 0.0,
+            "phase": 0.0,
+            "time": 0.0
+          },
+          {
+            "amplitude": 1.0,
+            "phase": 0.0,
+            "time": 0.1
+          },
+          {
+            "amplitude": 0.0,
+            "phase": 0.0,
+            "time": 0.2
+          }
+        ],
+        "local_detunings": [
+          {
+            "detuning": -0.3,
+            "oscillator": 0,
+            "phase": 0.0
+          },
+          {
+            "detuning": -0.1,
+            "oscillator": 1,
+            "phase": 0.0
+          },
+          {
+            "detuning": 0.09999999999999998,
+            "oscillator": 2,
+            "phase": 0.0
+          },
+          {
+            "detuning": 0.3,
+            "oscillator": 3,
+            "phase": 0.0
+          }
+        ],
+        "register": [
+          {
+            "site": 0,
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "site": 1,
+            "x": 1.0,
+            "y": 0.0
+          },
+          {
+            "site": 2,
+            "x": 0.0,
+            "y": 1.0
+          },
+          {
+            "site": 3,
+            "x": 1.0,
+            "y": 1.0
+          }
+        ],
+        "rydberg_interactions": [
+          {
+            "phase": 0.0,
+            "radius": 1.2808215683961086,
+            "source": 0,
+            "strength": 0.22649999999999998,
+            "target": 1
+          },
+          {
+            "phase": 0.0,
+            "radius": 1.3244954945640983,
+            "source": 0,
+            "strength": 0.18522392718173392,
+            "target": 2
+          },
+          {
+            "phase": 0.0,
+            "radius": 1.3924038307155038,
+            "source": 0,
+            "strength": 0.13721726016245223,
+            "target": 3
+          },
+          {
+            "phase": 0.0,
+            "radius": 1.3707463975738328,
+            "source": 1,
+            "strength": 0.15075,
+            "target": 2
+          },
+          {
+            "phase": 0.0,
+            "radius": 1.3244954945640983,
+            "source": 1,
+            "strength": 0.18522392718173392,
+            "target": 3
+          },
+          {
+            "phase": 0.0,
+            "radius": 1.3200479266232599,
+            "source": 2,
+            "strength": 0.189,
+            "target": 3
+          }
+        ],
+        "schema": "native_ahs_v1"
+      },
+      "platform": "neutral_atoms"
+    }
+  },
+  "promotion_gates": [
+    "provider account or research-credit route exists",
+    "provider SDK object construction succeeds locally or in an approved emulator",
+    "provider calibration metadata are recorded",
+    "live transpilation or provider resource estimate is below the preregistered ceiling",
+    "QPU budget is approved for a named provider and backend",
+    "raw data, job identifiers, and analysis scripts are assigned before submission"
+  ],
+  "provider_plans": [
+    {
+      "execution_plan": {
+        "approved": false,
+        "calibration": {
+          "calibration_id": "pulser-local-design-units-v1",
+          "coupling_unit": "rad/us",
+          "detuning_unit": "rad/us",
+          "duration_unit": "us"
+        },
+        "can_construct_sdk_object": false,
+        "can_execute": false,
+        "emulator_only": true,
+        "limitations": [
+          "export_only_no_cloud_submission",
+          "rydberg_interaction_signs_remain_phase_labelled",
+          "fim_feedback_terms_require_provider_native_validation",
+          "execution_plan_only_no_provider_contact",
+          "cloud_submission_requires_separate_runner_approval"
+        ],
+        "payload": {
+          "duration": 0.2,
+          "fim_feedback_terms": [],
+          "interaction_terms": [
+            {
+              "phase": 0.0,
+              "radius": 1.2808215683961086,
+              "source": 0,
+              "strength": 0.22649999999999998,
+              "target": 1
+            },
+            {
+              "phase": 0.0,
+              "radius": 1.3244954945640983,
+              "source": 0,
+              "strength": 0.18522392718173392,
+              "target": 2
+            },
+            {
+              "phase": 0.0,
+              "radius": 1.3924038307155038,
+              "source": 0,
+              "strength": 0.13721726016245223,
+              "target": 3
+            },
+            {
+              "phase": 0.0,
+              "radius": 1.3707463975738328,
+              "source": 1,
+              "strength": 0.15075,
+              "target": 2
+            },
+            {
+              "phase": 0.0,
+              "radius": 1.3244954945640983,
+              "source": 1,
+              "strength": 0.18522392718173392,
+              "target": 3
+            },
+            {
+              "phase": 0.0,
+              "radius": 1.3200479266232599,
+              "source": 2,
+              "strength": 0.189,
+              "target": 3
+            }
+          ],
+          "local_detunings": [
+            {
+              "detuning": -0.3,
+              "oscillator": 0,
+              "phase": 0.0
+            },
+            {
+              "detuning": -0.1,
+              "oscillator": 1,
+              "phase": 0.0
+            },
+            {
+              "detuning": 0.09999999999999998,
+              "oscillator": 2,
+              "phase": 0.0
+            },
+            {
+              "detuning": 0.3,
+              "oscillator": 3,
+              "phase": 0.0
+            }
+          ],
+          "rabi_envelope": [
+            {
+              "amplitude": 0.0,
+              "phase": 0.0,
+              "time": 0.0
+            },
+            {
+              "amplitude": 1.0,
+              "phase": 0.0,
+              "time": 0.1
+            },
+            {
+              "amplitude": 0.0,
+              "phase": 0.0,
+              "time": 0.2
+            }
+          ],
+          "register": {
+            "0": [
+              0.0,
+              0.0
+            ],
+            "1": [
+              1.0,
+              0.0
+            ],
+            "2": [
+              0.0,
+              1.0
+            ],
+            "3": [
+              1.0,
+              1.0
+            ]
+          },
+          "rydberg_channel": "rydberg_global",
+          "schema": "pulser_sequence_plan_v1"
+        },
+        "provider": "pulser",
+        "reason": "blocked_until_explicit_execution_approval",
+        "sdk_available": false,
+        "sdk_module": "pulser"
+      },
+      "export": {
+        "can_submit": false,
+        "limitations": [
+          "export_only_no_cloud_submission",
+          "rydberg_interaction_signs_remain_phase_labelled",
+          "fim_feedback_terms_require_provider_native_validation"
+        ],
+        "payload": {
+          "duration": 0.2,
+          "fim_feedback_terms": [],
+          "interaction_terms": [
+            {
+              "phase": 0.0,
+              "radius": 1.2808215683961086,
+              "source": 0,
+              "strength": 0.22649999999999998,
+              "target": 1
+            },
+            {
+              "phase": 0.0,
+              "radius": 1.3244954945640983,
+              "source": 0,
+              "strength": 0.18522392718173392,
+              "target": 2
+            },
+            {
+              "phase": 0.0,
+              "radius": 1.3924038307155038,
+              "source": 0,
+              "strength": 0.13721726016245223,
+              "target": 3
+            },
+            {
+              "phase": 0.0,
+              "radius": 1.3707463975738328,
+              "source": 1,
+              "strength": 0.15075,
+              "target": 2
+            },
+            {
+              "phase": 0.0,
+              "radius": 1.3244954945640983,
+              "source": 1,
+              "strength": 0.18522392718173392,
+              "target": 3
+            },
+            {
+              "phase": 0.0,
+              "radius": 1.3200479266232599,
+              "source": 2,
+              "strength": 0.189,
+              "target": 3
+            }
+          ],
+          "local_detunings": [
+            {
+              "detuning": -0.3,
+              "oscillator": 0,
+              "phase": 0.0
+            },
+            {
+              "detuning": -0.1,
+              "oscillator": 1,
+              "phase": 0.0
+            },
+            {
+              "detuning": 0.09999999999999998,
+              "oscillator": 2,
+              "phase": 0.0
+            },
+            {
+              "detuning": 0.3,
+              "oscillator": 3,
+              "phase": 0.0
+            }
+          ],
+          "rabi_envelope": [
+            {
+              "amplitude": 0.0,
+              "phase": 0.0,
+              "time": 0.0
+            },
+            {
+              "amplitude": 1.0,
+              "phase": 0.0,
+              "time": 0.1
+            },
+            {
+              "amplitude": 0.0,
+              "phase": 0.0,
+              "time": 0.2
+            }
+          ],
+          "register": {
+            "0": [
+              0.0,
+              0.0
+            ],
+            "1": [
+              1.0,
+              0.0
+            ],
+            "2": [
+              0.0,
+              1.0
+            ],
+            "3": [
+              1.0,
+              1.0
+            ]
+          },
+          "rydberg_channel": "rydberg_global",
+          "schema": "pulser_sequence_plan_v1"
+        },
+        "provider": "pulser",
+        "required_platform": "neutral_atoms",
+        "sdk_available": false,
+        "sdk_module": "pulser"
+      },
+      "platform": "neutral_atoms",
+      "programme_summary": {
+        "duration": 0.2,
+        "n_couplers": 6,
+        "n_drives": 4,
+        "n_oscillators": 4,
+        "native_schema": "native_ahs_v1"
+      },
+      "provider": "pulser",
+      "readiness": "blocked_until_sdk_calibration_approval"
+    },
+    {
+      "execution_plan": {
+        "approved": false,
+        "calibration": {
+          "calibration_id": "bloqade-local-design-units-v1",
+          "coupling_unit": "rad/us",
+          "detuning_unit": "rad/us",
+          "duration_unit": "us"
+        },
+        "can_construct_sdk_object": false,
+        "can_execute": false,
+        "emulator_only": true,
+        "limitations": [
+          "export_only_no_cloud_submission",
+          "geometry_and_units_need_provider_calibration",
+          "fim_feedback_terms_are_design_terms_not_execution_claims",
+          "execution_plan_only_no_provider_contact",
+          "cloud_submission_requires_separate_runner_approval"
+        ],
+        "payload": {
+          "atoms": [
+            {
+              "index": 0,
+              "position": [
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "index": 1,
+              "position": [
+                1.0,
+                0.0
+              ]
+            },
+            {
+              "index": 2,
+              "position": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "index": 3,
+              "position": [
+                1.0,
+                1.0
+              ]
+            }
+          ],
+          "duration": 0.2,
+          "fim_feedback_terms": [],
+          "local_detunings": [
+            {
+              "detuning": -0.3,
+              "oscillator": 0,
+              "phase": 0.0
+            },
+            {
+              "detuning": -0.1,
+              "oscillator": 1,
+              "phase": 0.0
+            },
+            {
+              "detuning": 0.09999999999999998,
+              "oscillator": 2,
+              "phase": 0.0
+            },
+            {
+              "detuning": 0.3,
+              "oscillator": 3,
+              "phase": 0.0
+            }
+          ],
+          "rabi_amplitude_piecewise_linear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.1,
+              1.0
+            ],
+            [
+              0.2,
+              0.0
+            ]
+          ],
+          "rabi_phase_piecewise_linear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.1,
+              0.0
+            ],
+            [
+              0.2,
+              0.0
+            ]
+          ],
+          "rydberg_interactions": [
+            {
+              "phase": 0.0,
+              "radius": 1.2808215683961086,
+              "source": 0,
+              "strength": 0.22649999999999998,
+              "target": 1
+            },
+            {
+              "phase": 0.0,
+              "radius": 1.3244954945640983,
+              "source": 0,
+              "strength": 0.18522392718173392,
+              "target": 2
+            },
+            {
+              "phase": 0.0,
+              "radius": 1.3924038307155038,
+              "source": 0,
+              "strength": 0.13721726016245223,
+              "target": 3
+            },
+            {
+              "phase": 0.0,
+              "radius": 1.3707463975738328,
+              "source": 1,
+              "strength": 0.15075,
+              "target": 2
+            },
+            {
+              "phase": 0.0,
+              "radius": 1.3244954945640983,
+              "source": 1,
+              "strength": 0.18522392718173392,
+              "target": 3
+            },
+            {
+              "phase": 0.0,
+              "radius": 1.3200479266232599,
+              "source": 2,
+              "strength": 0.189,
+              "target": 3
+            }
+          ],
+          "schema": "bloqade_ahs_plan_v1"
+        },
+        "provider": "bloqade",
+        "reason": "blocked_until_explicit_execution_approval",
+        "sdk_available": false,
+        "sdk_module": "bloqade"
+      },
+      "export": {
+        "can_submit": false,
+        "limitations": [
+          "export_only_no_cloud_submission",
+          "geometry_and_units_need_provider_calibration",
+          "fim_feedback_terms_are_design_terms_not_execution_claims"
+        ],
+        "payload": {
+          "atoms": [
+            {
+              "index": 0,
+              "position": [
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "index": 1,
+              "position": [
+                1.0,
+                0.0
+              ]
+            },
+            {
+              "index": 2,
+              "position": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "index": 3,
+              "position": [
+                1.0,
+                1.0
+              ]
+            }
+          ],
+          "duration": 0.2,
+          "fim_feedback_terms": [],
+          "local_detunings": [
+            {
+              "detuning": -0.3,
+              "oscillator": 0,
+              "phase": 0.0
+            },
+            {
+              "detuning": -0.1,
+              "oscillator": 1,
+              "phase": 0.0
+            },
+            {
+              "detuning": 0.09999999999999998,
+              "oscillator": 2,
+              "phase": 0.0
+            },
+            {
+              "detuning": 0.3,
+              "oscillator": 3,
+              "phase": 0.0
+            }
+          ],
+          "rabi_amplitude_piecewise_linear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.1,
+              1.0
+            ],
+            [
+              0.2,
+              0.0
+            ]
+          ],
+          "rabi_phase_piecewise_linear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.1,
+              0.0
+            ],
+            [
+              0.2,
+              0.0
+            ]
+          ],
+          "rydberg_interactions": [
+            {
+              "phase": 0.0,
+              "radius": 1.2808215683961086,
+              "source": 0,
+              "strength": 0.22649999999999998,
+              "target": 1
+            },
+            {
+              "phase": 0.0,
+              "radius": 1.3244954945640983,
+              "source": 0,
+              "strength": 0.18522392718173392,
+              "target": 2
+            },
+            {
+              "phase": 0.0,
+              "radius": 1.3924038307155038,
+              "source": 0,
+              "strength": 0.13721726016245223,
+              "target": 3
+            },
+            {
+              "phase": 0.0,
+              "radius": 1.3707463975738328,
+              "source": 1,
+              "strength": 0.15075,
+              "target": 2
+            },
+            {
+              "phase": 0.0,
+              "radius": 1.3244954945640983,
+              "source": 1,
+              "strength": 0.18522392718173392,
+              "target": 3
+            },
+            {
+              "phase": 0.0,
+              "radius": 1.3200479266232599,
+              "source": 2,
+              "strength": 0.189,
+              "target": 3
+            }
+          ],
+          "schema": "bloqade_ahs_plan_v1"
+        },
+        "provider": "bloqade",
+        "required_platform": "neutral_atoms",
+        "sdk_available": false,
+        "sdk_module": "bloqade"
+      },
+      "platform": "neutral_atoms",
+      "programme_summary": {
+        "duration": 0.2,
+        "n_couplers": 6,
+        "n_drives": 4,
+        "n_oscillators": 4,
+        "native_schema": "native_ahs_v1"
+      },
+      "provider": "bloqade",
+      "readiness": "blocked_until_sdk_calibration_approval"
+    },
+    {
+      "execution_plan": {
+        "approved": false,
+        "calibration": {
+          "calibration_id": "ibm-pulse-design-units-v1",
+          "coupling_unit": "arb",
+          "detuning_unit": "arb",
+          "duration_unit": "dt"
+        },
+        "can_construct_sdk_object": false,
+        "can_execute": false,
+        "emulator_only": true,
+        "limitations": [
+          "export_only_no_backend_submission",
+          "pulse_schedule_is_a_design_plan_not_a_calibrated_instruction_schedule",
+          "fim_cross_kerr_feedback_requires backend-native calibration",
+          "execution_plan_only_no_provider_contact",
+          "cloud_submission_requires_separate_runner_approval"
+        ],
+        "payload": {
+          "duration": 0.2,
+          "exchange_couplers": [
+            {
+              "amplitude": 0.22649999999999998,
+              "channel": "u0_1",
+              "phase": 0.0,
+              "source": 0,
+              "start": 0.0,
+              "stop": 0.2,
+              "target": 1
+            },
+            {
+              "amplitude": 0.18522392718173392,
+              "channel": "u0_2",
+              "phase": 0.0,
+              "source": 0,
+              "start": 0.0,
+              "stop": 0.2,
+              "target": 2
+            },
+            {
+              "amplitude": 0.13721726016245223,
+              "channel": "u0_3",
+              "phase": 0.0,
+              "source": 0,
+              "start": 0.0,
+              "stop": 0.2,
+              "target": 3
+            },
+            {
+              "amplitude": 0.15075,
+              "channel": "u1_2",
+              "phase": 0.0,
+              "source": 1,
+              "start": 0.0,
+              "stop": 0.2,
+              "target": 2
+            },
+            {
+              "amplitude": 0.18522392718173392,
+              "channel": "u1_3",
+              "phase": 0.0,
+              "source": 1,
+              "start": 0.0,
+              "stop": 0.2,
+              "target": 3
+            },
+            {
+              "amplitude": 0.189,
+              "channel": "u2_3",
+              "phase": 0.0,
+              "source": 2,
+              "start": 0.0,
+              "stop": 0.2,
+              "target": 3
+            }
+          ],
+          "fim_cross_kerr_feedback": [],
+          "mode_frequencies": [
+            {
+              "detuning": -0.3,
+              "oscillator": 0,
+              "phase": 0.0
+            },
+            {
+              "detuning": -0.1,
+              "oscillator": 1,
+              "phase": 0.0
+            },
+            {
+              "detuning": 0.09999999999999998,
+              "oscillator": 2,
+              "phase": 0.0
+            },
+            {
+              "detuning": 0.3,
+              "oscillator": 3,
+              "phase": 0.0
+            }
+          ],
+          "schema": "qiskit_pulse_schedule_plan_v1"
+        },
+        "provider": "ibm_pulse",
+        "reason": "blocked_until_explicit_execution_approval",
+        "sdk_available": false,
+        "sdk_module": "qiskit.pulse"
+      },
+      "export": {
+        "can_submit": false,
+        "limitations": [
+          "export_only_no_backend_submission",
+          "pulse_schedule_is_a_design_plan_not_a_calibrated_instruction_schedule",
+          "fim_cross_kerr_feedback_requires backend-native calibration"
+        ],
+        "payload": {
+          "duration": 0.2,
+          "exchange_couplers": [
+            {
+              "amplitude": 0.22649999999999998,
+              "channel": "u0_1",
+              "phase": 0.0,
+              "source": 0,
+              "start": 0.0,
+              "stop": 0.2,
+              "target": 1
+            },
+            {
+              "amplitude": 0.18522392718173392,
+              "channel": "u0_2",
+              "phase": 0.0,
+              "source": 0,
+              "start": 0.0,
+              "stop": 0.2,
+              "target": 2
+            },
+            {
+              "amplitude": 0.13721726016245223,
+              "channel": "u0_3",
+              "phase": 0.0,
+              "source": 0,
+              "start": 0.0,
+              "stop": 0.2,
+              "target": 3
+            },
+            {
+              "amplitude": 0.15075,
+              "channel": "u1_2",
+              "phase": 0.0,
+              "source": 1,
+              "start": 0.0,
+              "stop": 0.2,
+              "target": 2
+            },
+            {
+              "amplitude": 0.18522392718173392,
+              "channel": "u1_3",
+              "phase": 0.0,
+              "source": 1,
+              "start": 0.0,
+              "stop": 0.2,
+              "target": 3
+            },
+            {
+              "amplitude": 0.189,
+              "channel": "u2_3",
+              "phase": 0.0,
+              "source": 2,
+              "start": 0.0,
+              "stop": 0.2,
+              "target": 3
+            }
+          ],
+          "fim_cross_kerr_feedback": [],
+          "mode_frequencies": [
+            {
+              "detuning": -0.3,
+              "oscillator": 0,
+              "phase": 0.0
+            },
+            {
+              "detuning": -0.1,
+              "oscillator": 1,
+              "phase": 0.0
+            },
+            {
+              "detuning": 0.09999999999999998,
+              "oscillator": 2,
+              "phase": 0.0
+            },
+            {
+              "detuning": 0.3,
+              "oscillator": 3,
+              "phase": 0.0
+            }
+          ],
+          "schema": "qiskit_pulse_schedule_plan_v1"
+        },
+        "provider": "ibm_pulse",
+        "required_platform": "circuit_qed",
+        "sdk_available": false,
+        "sdk_module": "qiskit.pulse"
+      },
+      "platform": "circuit_qed",
+      "programme_summary": {
+        "duration": 0.2,
+        "n_couplers": 6,
+        "n_drives": 4,
+        "n_oscillators": 4,
+        "native_schema": "exchange_resonator_v1"
+      },
+      "provider": "ibm_pulse",
+      "readiness": "blocked_until_sdk_calibration_approval"
+    }
+  ],
+  "qpu_budget_requested_seconds": 0.0,
+  "schema": "s4_multi_hardware_readiness_v1",
+  "scientific_question": "Can the Kuramoto-XY pulse/analogue programme family be represented as provider-specific no-submit payloads before any cross-vendor hardware run?",
+  "track": "S4 Multi-hardware backend + pulse-level control"
+}

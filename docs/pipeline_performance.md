@@ -1166,3 +1166,13 @@ ordering changes (e.g. Julia overtakes Rust on a future runner with
 a smaller FFI overhead), update the chain comment at the top of
 `_ORDER_PARAMETER_CHAIN` in
 `src/scpn_quantum_control/accel/dispatcher.py` to match.
+
+### S4 multi-hardware readiness
+
+Command:
+
+```bash
+scpn-bench s4-multi-hardware-ready
+```
+
+Regenerates `data/s4_multi_hardware_control/s4_multi_hardware_readiness_2026-05-06.json` and `docs/s4_multi_hardware_readiness_2026-05-06.md`. The harness compiles the Kuramoto-XY programme into neutral-atom and circuit-QED analogue forms, exports Pulser, Bloqade, and IBM pulse-level provider payloads, and wraps each route in an approval-gated execution plan. It performs no provider contact, no emulator execution, and no QPU submission.

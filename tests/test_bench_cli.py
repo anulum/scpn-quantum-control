@@ -158,6 +158,18 @@ def test_s3_hardware_dossiers_selection_is_dossier_harness() -> None:
     ]
 
 
+def test_s4_multi_hardware_selection_is_readiness_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("s4", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "s4-multi-hardware-readiness",
+            "scripts/export_s4_multi_hardware_readiness.py",
+            frozenset({"s4"}),
+        )
+    ]
+
+
 def test_dry_run_prints_selected_harnesses(capsys: pytest.CaptureFixture[str]) -> None:
     rc = bench_cli.run(["fim-all", "--dry-run"])
 

@@ -111,12 +111,20 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         "scripts/export_s3_hardware_dossiers.py",
         frozenset({"s3-dossiers"}),
     ),
+    Harness(
+        "s4-multi-hardware-readiness",
+        "scripts/export_s4_multi_hardware_readiness.py",
+        frozenset({"s4"}),
+    ),
 )
 
 ARTEFACT_PATHS = (
     "data/rust_vqe_methods",
     "data/scpn_fim_hamiltonian",
     "data/s1_feedback_loop",
+    "data/s2_scaling",
+    "data/s3_pulse_ansatz_design",
+    "data/s4_multi_hardware_control",
 )
 
 
@@ -196,6 +204,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate no-submit S3 hardware-job dossier artefacts.",
     )
     _add_run_options(s3_dossiers, default_group="s3-dossiers")
+
+    s4 = subparsers.add_parser(
+        "s4-multi-hardware-ready",
+        help="Regenerate no-submit S4 multi-hardware readiness artefacts.",
+    )
+    _add_run_options(s4, default_group="s4")
 
     return parser.parse_args(argv)
 

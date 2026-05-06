@@ -846,6 +846,12 @@ be executed until individually activated.
   paper impact, follow-up avenues, prerequisites, and reproducibility
   artefacts. The dossiers do not authorise hardware execution.
 - [ ] **S4** Multi-hardware backend + pulse-level control.
+- [x] **S4 multi-hardware no-submit readiness gate.** Implemented
+  2026-05-06: `scpn-bench s4-multi-hardware-ready` exports
+  provider-specific Pulser, Bloqade, and IBM pulse-level design payloads
+  from the analogue Kuramoto compiler, wraps them in approval-gated
+  execution plans, documents blocked claims and promotion gates, and
+  performs no provider contact or QPU submission.
 - [ ] **S5** Open-data + classical validation harness.
 - [ ] **S6** Decoupled `quantum-kuramoto` subpackage.
 - [ ] **S7** Fault-tolerant / logical-level extension roadmap.
