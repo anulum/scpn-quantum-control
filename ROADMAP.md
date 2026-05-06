@@ -415,8 +415,18 @@ explicit QPU-time estimate before submission.
   folded-noise witness experiment only after backend selection,
   folded-circuit readiness checks, budget confirmation, and explicit
   approval.
-- [ ] **Layer-selective qubit assignment.** Assign strongly coupled
-  layers to low-error physical qubits and compare with default layout.
+- [x] **Layer-selective qubit assignment preregistration.** Completed
+  2026-05-06:
+  `docs/layer_selective_qubit_assignment_prereg_2026-05-06.md`
+  defines the coupling-aware scoring rule, comparator layouts, offline
+  readiness matrix, optional 152-circuit hardware follow-up, 4--10
+  minute estimate, 12-minute ceiling, live gates, analysis plan,
+  falsification rules, and artefact paths. Execution remains separate
+  and approval-gated.
+- [ ] **Layer-selective qubit assignment execution.** Run the
+  offline-readiness pass and any hardware comparison only after backend
+  selection, calibration capture, budget confirmation, and explicit
+  approval for QPU submission.
 - [ ] **Entanglement entropy or tomography check.** Use shadow
   tomography or small-n tomography only after cost and claim boundaries
   are fixed.
