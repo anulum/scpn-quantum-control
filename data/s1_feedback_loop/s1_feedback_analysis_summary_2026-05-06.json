@@ -1,0 +1,31 @@
+{
+  "experiment_id": "s1_synthetic_feedback_fixture_2026-05-06",
+  "target_r": 0.72,
+  "job_ids": [
+    "synthetic-feedback",
+    "synthetic-control"
+  ],
+  "arm_summaries": [
+    {
+      "arm": "feedback",
+      "repetitions": 3,
+      "total_shots": 768,
+      "mean_r_live": 0.6633333333333333,
+      "mean_target_error": 0.05666666666666664,
+      "final_r_live": 0.7
+    },
+    {
+      "arm": "matched_open_loop_control",
+      "repetitions": 3,
+      "total_shots": 768,
+      "mean_r_live": 0.5566666666666666,
+      "mean_target_error": 0.1633333333333333,
+      "final_r_live": 0.57
+    }
+  ],
+  "feedback_minus_control_mean_r_live": 0.10666666666666669,
+  "target_error_improvement": 0.10666666666666666,
+  "relative_target_error_improvement": 0.653061224489796,
+  "decision": "positive",
+  "claim_boundary": "This analysis compares the preregistered feedback and matched open-loop arms only. It does not establish sub-microsecond feedback, quantum advantage, or backend-independent behaviour."
+}

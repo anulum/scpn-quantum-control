@@ -1,0 +1,27 @@
+{
+  "provider": "generic_gate",
+  "backend_name": "openqasm3_dynamic_metadata_template",
+  "n_qubits": 32,
+  "basis_gates": [
+    "rz",
+    "sx",
+    "x",
+    "cx",
+    "measure",
+    "reset",
+    "if_else"
+  ],
+  "supported_features": [
+    "cross_shot_batches",
+    "mid_circuit_measurement",
+    "conditional_control",
+    "conditional_reset"
+  ],
+  "max_shots": 2048,
+  "max_circuits": 8,
+  "simulator": false,
+  "metadata": {
+    "schema": "provider_neutral_gate_metadata_v1",
+    "submission": false
+  }
+}

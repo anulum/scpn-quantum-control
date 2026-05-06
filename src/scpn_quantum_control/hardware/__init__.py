@@ -68,6 +68,26 @@ from .experiments import (
     vqe_landscape_experiment,
     zne_higher_order_experiment,
 )
+from .feedback_capability_probe import (
+    BackendCapabilitySnapshot,
+    FeedbackCapabilityDecision,
+    assess_feedback_backend_capability,
+    assess_feedback_backend_fleet,
+    required_s1_dynamic_features,
+)
+from .feedback_dryrun import (
+    FeedbackDryRunPayload,
+    build_analog_native_review_payload,
+    build_ibm_runtime_dry_run,
+    build_openqasm3_gate_dry_run,
+    build_s1_feedback_dry_run_bundle,
+)
+from .feedback_hardware_scheduler import (
+    ApprovalGatedFeedbackHardwareScheduler,
+    HardwareApprovalRecord,
+    HardwareSubmissionRecord,
+    hash_package_manifest,
+)
 from .feedback_loop import (
     FeedbackCommand,
     FeedbackLoopConfig,
@@ -78,6 +98,10 @@ from .feedback_loop import (
     FeedbackStepRecord,
     ProportionalMetricObserver,
     RealtimeControllerScheduler,
+)
+from .feedback_provider_metadata import (
+    snapshot_from_generic_metadata,
+    snapshot_from_qiskit_backend,
 )
 from .feedback_submission import (
     FeedbackBudgetEstimate,
@@ -156,6 +180,22 @@ __all__ = [
     "build_s1_feedback_submission_package",
     "default_s1_platforms",
     "summarise_feedback_circuit",
+    "FeedbackDryRunPayload",
+    "build_analog_native_review_payload",
+    "build_ibm_runtime_dry_run",
+    "build_openqasm3_gate_dry_run",
+    "build_s1_feedback_dry_run_bundle",
+    "ApprovalGatedFeedbackHardwareScheduler",
+    "HardwareApprovalRecord",
+    "HardwareSubmissionRecord",
+    "hash_package_manifest",
+    "BackendCapabilitySnapshot",
+    "FeedbackCapabilityDecision",
+    "assess_feedback_backend_capability",
+    "assess_feedback_backend_fleet",
+    "required_s1_dynamic_features",
+    "snapshot_from_generic_metadata",
+    "snapshot_from_qiskit_backend",
     "HardwareJobDossier",
     "build_s1_feedback_job_dossier",
     "compile_hybrid_digital_analog",

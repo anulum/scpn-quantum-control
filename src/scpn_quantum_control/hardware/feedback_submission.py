@@ -94,6 +94,7 @@ class FeedbackCircuitSummary:
     operation_counts: Mapping[str, int]
     has_mid_circuit_measurement: bool
     has_conditional_control: bool
+    has_conditional_reset: bool
     n_rounds: int
 
 
@@ -138,6 +139,7 @@ class FeedbackSubmissionPackage:
                 "operation_counts": dict(self.circuit.operation_counts),
                 "has_mid_circuit_measurement": self.circuit.has_mid_circuit_measurement,
                 "has_conditional_control": self.circuit.has_conditional_control,
+                "has_conditional_reset": self.circuit.has_conditional_reset,
                 "n_rounds": self.circuit.n_rounds,
             },
             "budget": {
@@ -228,6 +230,7 @@ def build_s1_feedback_submission_package(
     *,
     experiment_id: str = "s1_dynamic_feedback_readiness",
     n_rounds: int = 3,
+    circuits: int = 2,
     shots_per_circuit: int = 1024,
     repetitions: int = 12,
     estimated_seconds_per_circuit: float = 1.0,
@@ -238,6 +241,8 @@ def build_s1_feedback_submission_package(
         raise ValueError("experiment_id must be non-empty")
     if n_rounds < 1:
         raise ValueError("n_rounds must be positive")
+    if circuits < 1:
+        raise ValueError("circuits must be positive")
     if shots_per_circuit < 1:
         raise ValueError("shots_per_circuit must be positive")
     if repetitions < 1:
@@ -246,10 +251,10 @@ def build_s1_feedback_submission_package(
     circuit = controller.build_monitored_circuit(n_rounds)
     summary = summarise_feedback_circuit(circuit, n_rounds=n_rounds)
     budget = FeedbackBudgetEstimate(
-        circuits=1,
+        circuits=circuits,
         shots_per_circuit=shots_per_circuit,
         repetitions=repetitions,
-        estimated_execution_seconds=estimated_seconds_per_circuit * repetitions,
+        estimated_execution_seconds=estimated_seconds_per_circuit * repetitions * circuits,
     )
     targets = tuple(platforms or default_s1_platforms())
     decisions = tuple(assess_platform_readiness(platform, summary, budget) for platform in targets)
@@ -273,6 +278,7 @@ def build_s1_feedback_submission_package(
                 "n_clbits": summary.n_clbits,
                 "depth": summary.depth,
                 "operation_counts": dict(summary.operation_counts),
+                "has_conditional_reset": summary.has_conditional_reset,
                 "n_rounds": summary.n_rounds,
             },
             qpu_budget={
@@ -299,6 +305,7 @@ def summarise_feedback_circuit(
     counts = {str(name): int(count) for name, count in circuit.count_ops().items()}
     has_measure = counts.get("measure", 0) > 0
     has_conditional = _circuit_has_conditionals(circuit)
+    has_conditional_reset = has_conditional and _circuit_has_operation(circuit, "reset")
     return FeedbackCircuitSummary(
         n_qubits=circuit.num_qubits,
         n_clbits=circuit.num_clbits,
@@ -306,6 +313,7 @@ def summarise_feedback_circuit(
         operation_counts=counts,
         has_mid_circuit_measurement=has_measure,
         has_conditional_control=has_conditional,
+        has_conditional_reset=has_conditional_reset,
         n_rounds=n_rounds,
     )
 
@@ -325,7 +333,7 @@ def assess_platform_readiness(
         reasons.append("payload requires mid-circuit measurement")
     if circuit.has_conditional_control and not platform.supports_conditional_rotation:
         reasons.append("payload requires conditional rotations")
-    if "reset" in circuit.operation_counts and not platform.supports_conditional_reset:
+    if circuit.has_conditional_reset and not platform.supports_conditional_reset:
         reasons.append("payload requires conditional reset")
     if budget.total_reserved_seconds <= 0.0:
         reasons.append("budget estimate must reserve positive execution time")
@@ -361,6 +369,17 @@ def _circuit_has_conditionals(circuit: QuantumCircuit) -> bool:
             return True
         if operation.name in {"if_else", "while_loop", "for_loop", "switch_case"}:
             return True
+    return False
+
+
+def _circuit_has_operation(circuit: QuantumCircuit, operation_name: str) -> bool:
+    for instruction in circuit.data:
+        operation = instruction.operation
+        if operation.name == operation_name:
+            return True
+        for block in getattr(operation, "blocks", ()):
+            if _circuit_has_operation(block, operation_name):
+                return True
     return False
 
 

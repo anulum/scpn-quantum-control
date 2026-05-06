@@ -679,6 +679,73 @@ be executed until individually activated.
   platform fit, risks, decision tree, paper impact, follow-up avenues,
   possibilities opened, claim boundary, and reproducibility package.
   The S1 readiness package embeds the dossier by default.
+- [x] **S1 preregistration manifest export.** Implemented
+  2026-05-06: `scripts/export_s1_feedback_preregistration.py`
+  exports JSON and Markdown preregistration manifests from the
+  provider-neutral S1 package and embedded hardware-job dossier. The
+  default budget explicitly includes a monitored feedback arm and a
+  matched open-loop control arm; no credentials are read and no hardware
+  job is submitted.
+- [x] **S1 provider dry-run payloads.** Implemented 2026-05-06:
+  `hardware/feedback_dryrun.py` emits no-submit payloads for IBM
+  Runtime dynamic circuits, provider-neutral OpenQASM 3 style gate
+  execution, and analogue-native review. The preregistration export
+  embeds the dry-run bundle and keeps analogue targets behind a separate
+  native-feedback dossier requirement.
+- [x] **S1 approval-gated hardware scheduler boundary.** Implemented
+  2026-05-06: `hardware/feedback_hardware_scheduler.py` provides a
+  fail-closed scheduler wrapper requiring an injected provider submitter,
+  explicit approval, matching provider, matching preregistration package
+  hash, and estimated/reported QPU budget compliance before any hardware
+  submission can pass.
+- [x] **S1 no-submit capability probes.** Implemented 2026-05-06:
+  `hardware/feedback_capability_probe.py` evaluates backend metadata
+  snapshots against the S1 dynamic-circuit package for qubit count,
+  shot/circuit limits, mid-circuit measurement, conditional control,
+  conditional reset, and cross-shot batch support. The preregistration
+  export embeds template probe decisions without reading credentials or
+  submitting jobs.
+- [x] **S1 raw-count analysis harness.** Implemented 2026-05-06:
+  `scripts/analyse_s1_feedback_hardware.py` defines the preregistered
+  feedback-vs-matched-open-loop-control analysis before live hardware
+  submission, including raw-count schema checks, per-arm summaries,
+  target-error improvement, decision boundary, and claim boundary tests.
+- [x] **S1 synthetic analysis rehearsal fixture.** Implemented
+  2026-05-06: `data/s1_feedback_loop/s1_feedback_synthetic_raw_counts_2026-05-06.json`
+  provides a non-hardware fixture for exercising the preregistered S1
+  raw-count analysis path, and the S1 documentation records the exact
+  raw-count JSON schema required for live packages.
+- [x] **S1 no-submit provider metadata adapters.** Implemented
+  2026-05-06: `hardware/feedback_provider_metadata.py` converts
+  provider-neutral metadata records and Qiskit-style backend objects into
+  `BackendCapabilitySnapshot` inputs for the S1 capability probes without
+  reading credentials, opening provider sessions, or submitting jobs.
+- [x] **S1 one-command readiness bundle.** Implemented 2026-05-06:
+  `scripts/reproduce_s1_feedback_readiness.py` and
+  `scpn-bench s1-feedback-ready` regenerate the no-QPU S1 latency,
+  preregistration, provider dry-run, capability-example, and synthetic
+  analysis artefacts in one command.
+- [x] **S1 live-submission preflight checklist.** Implemented
+  2026-05-06: `docs/s1_live_submission_preflight_2026-05-06.md`
+  records the mandatory manual gates for artefacts, scientific purpose,
+  provider capability, budget, reproducibility, approval records, stop
+  conditions, and post-run handling before any live S1 provider submitter
+  may be wired.
+- [x] **S1 IBM metadata probe command.** Implemented 2026-05-06:
+  `scripts/probe_s1_ibm_metadata.py` writes no-submit capability
+  decisions from offline provider metadata JSON or an already-authenticated
+  Qiskit Runtime backend metadata lookup. The command does not accept
+  credential strings, does not submit jobs, and records `hardware_submission=false`.
+- [x] **S1 generic gate metadata probe command.** Implemented
+  2026-05-06: `scripts/probe_s1_generic_gate_metadata.py` writes
+  no-submit, no-network capability decisions for non-IBM gate-based
+  targets from provider-neutral metadata JSON and records
+  `hardware_submission=false` plus `network_access=false`.
+- [x] **S1 readiness index.** Implemented 2026-05-06:
+  `docs/s1_feedback_readiness_index_2026-05-06.md` consolidates the S1
+  no-QPU readiness state, artefact inventory, exact commands,
+  preregistered job shape, claim boundary, platform interpretation, and
+  remaining live-submission blockers.
 - [ ] **S2** Quantum advantage benchmarks at scale.
 - [x] **S2 scaling protocol manifest.** Implemented 2026-05-06:
   `benchmarks/advantage_protocol.py` and

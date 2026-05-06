@@ -1,0 +1,27 @@
+{
+  "provider": "ibm",
+  "backend_name": "ibm_dynamic_metadata_template",
+  "n_qubits": 100,
+  "basis_gates": [
+    "rz",
+    "sx",
+    "x",
+    "ecr",
+    "measure",
+    "reset",
+    "if_else"
+  ],
+  "supported_features": [
+    "cross_shot_batches",
+    "mid_circuit_measurement",
+    "conditional_control",
+    "conditional_reset"
+  ],
+  "max_shots": 4096,
+  "max_circuits": 16,
+  "simulator": false,
+  "metadata": {
+    "source": "template_no_live_backend_query",
+    "submission": false
+  }
+}

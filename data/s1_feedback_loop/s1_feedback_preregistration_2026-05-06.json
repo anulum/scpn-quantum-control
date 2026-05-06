@@ -1,0 +1,398 @@
+{
+  "experiment_id": "s1_dynamic_feedback_preregistration_2026-05-06",
+  "circuit": {
+    "n_qubits": 4,
+    "n_clbits": 6,
+    "depth": 41,
+    "operation_counts": {
+      "cx": 18,
+      "ry": 12,
+      "measure": 6,
+      "if_else": 6,
+      "PauliEvolution": 3
+    },
+    "has_mid_circuit_measurement": true,
+    "has_conditional_control": true,
+    "has_conditional_reset": true,
+    "n_rounds": 3
+  },
+  "budget": {
+    "circuits": 2,
+    "shots_per_circuit": 1024,
+    "repetitions": 12,
+    "estimated_execution_seconds": 24.0,
+    "queue_seconds": 0.0,
+    "calibration_seconds": 0.0,
+    "total_reserved_seconds": 24.0
+  },
+  "platform_readiness": [
+    {
+      "platform": "IBM Heron dynamic-circuit backend",
+      "kind": "ibm_dynamic_circuits",
+      "status": "ready",
+      "reasons": [
+        "declared capabilities satisfy the dynamic-circuit payload"
+      ],
+      "payload": {
+        "kind": "ibm_dynamic_circuits",
+        "n_qubits": 4,
+        "n_clbits": 6,
+        "depth": 41,
+        "operation_counts": {
+          "cx": 18,
+          "ry": 12,
+          "measure": 6,
+          "if_else": 6,
+          "PauliEvolution": 3
+        },
+        "shots_per_circuit": 1024,
+        "repetitions": 12,
+        "estimated_execution_seconds": 24.0
+      }
+    },
+    {
+      "platform": "Generic dynamic-circuit gate backend",
+      "kind": "gate_based_dynamic_circuits",
+      "status": "ready",
+      "reasons": [
+        "declared capabilities satisfy the dynamic-circuit payload"
+      ],
+      "payload": {
+        "kind": "gate_based_dynamic_circuits",
+        "n_qubits": 4,
+        "n_clbits": 6,
+        "depth": 41,
+        "operation_counts": {
+          "cx": 18,
+          "ry": 12,
+          "measure": 6,
+          "if_else": 6,
+          "PauliEvolution": 3
+        },
+        "shots_per_circuit": 1024,
+        "repetitions": 12,
+        "estimated_execution_seconds": 24.0
+      }
+    },
+    {
+      "platform": "Neutral-atom analogue XY target",
+      "kind": "neutral_atom_analog",
+      "status": "manual_review",
+      "reasons": [
+        "payload requires mid-circuit measurement",
+        "payload requires conditional rotations",
+        "payload requires conditional reset"
+      ],
+      "payload": {
+        "kind": "neutral_atom_analog",
+        "n_qubits": 4,
+        "n_clbits": 6,
+        "depth": 41,
+        "operation_counts": {
+          "cx": 18,
+          "ry": 12,
+          "measure": 6,
+          "if_else": 6,
+          "PauliEvolution": 3
+        },
+        "shots_per_circuit": 1024,
+        "repetitions": 12,
+        "estimated_execution_seconds": 24.0
+      }
+    },
+    {
+      "platform": "Continuous-variable analogue target",
+      "kind": "continuous_variable",
+      "status": "manual_review",
+      "reasons": [
+        "payload requires mid-circuit measurement",
+        "payload requires conditional rotations",
+        "payload requires conditional reset"
+      ],
+      "payload": {
+        "kind": "continuous_variable",
+        "n_qubits": 4,
+        "n_clbits": 6,
+        "depth": 41,
+        "operation_counts": {
+          "cx": 18,
+          "ry": 12,
+          "measure": 6,
+          "if_else": 6,
+          "PauliEvolution": 3
+        },
+        "shots_per_circuit": 1024,
+        "repetitions": 12,
+        "estimated_execution_seconds": 24.0
+      }
+    },
+    {
+      "platform": "Local statevector simulator",
+      "kind": "simulator",
+      "status": "ready",
+      "reasons": [
+        "declared capabilities satisfy the dynamic-circuit payload"
+      ],
+      "payload": {
+        "kind": "simulator",
+        "n_qubits": 4,
+        "n_clbits": 6,
+        "depth": 41,
+        "operation_counts": {
+          "cx": 18,
+          "ry": 12,
+          "measure": 6,
+          "if_else": 6,
+          "PauliEvolution": 3
+        },
+        "shots_per_circuit": 1024,
+        "repetitions": 12,
+        "estimated_execution_seconds": 24.0
+      }
+    }
+  ],
+  "ready_platforms": [
+    "IBM Heron dynamic-circuit backend",
+    "Generic dynamic-circuit gate backend",
+    "Local statevector simulator"
+  ],
+  "claim_boundary": "Readiness package only: no credentials are read, no job is submitted, and platform readiness does not replace live backend calibration, queue, depth, or budget approval checks.",
+  "dossier": {
+    "job_id": "s1_dynamic_feedback_readiness",
+    "title": "S1 monitored Kuramoto-XY feedback dynamic-circuit run",
+    "purpose": "Test whether a monitored cross-shot feedback policy can steer the Kuramoto-XY synchronisation observable on hardware under a bounded dynamic-circuit payload.",
+    "hypothesis": "If the feedback loop survives hardware noise and provider-side dynamic-circuit execution, the observed live order parameter should move toward the preregistered target more often than a matched open-loop control at the same circuit family, shots, and layout.",
+    "falsification_condition": "The feedback arm fails if it does not improve the target-order-parameter error relative to the matched open-loop control, or if transpilation/readout/latency overhead dominates so strongly that the feedback action is statistically indistinguishable from noise.",
+    "expected_observables": [
+      "live finite-shot Kuramoto order parameter R_live",
+      "statevector/simulator reference R where available",
+      "feedback action sequence",
+      "applied and next coupling-scale sequence",
+      "readout-count distribution per round",
+      "target-error reduction against matched open-loop control"
+    ],
+    "circuit_summary": {
+      "n_qubits": 4,
+      "n_clbits": 6,
+      "depth": 41,
+      "operation_counts": {
+        "cx": 18,
+        "ry": 12,
+        "measure": 6,
+        "if_else": 6,
+        "PauliEvolution": 3
+      },
+      "has_conditional_reset": true,
+      "n_rounds": 3
+    },
+    "qpu_budget": {
+      "circuits": 2,
+      "shots_per_circuit": 1024,
+      "repetitions": 12,
+      "estimated_execution_seconds": 24.0,
+      "total_reserved_seconds": 24.0
+    },
+    "platform_fit": {
+      "ready": "IBM Heron dynamic-circuit backend, Generic dynamic-circuit gate backend, Local statevector simulator",
+      "manual_review": "Neutral-atom analogue XY target, Continuous-variable analogue target"
+    },
+    "risks_and_confounds": [
+      "Python-level feedback is only cross-shot/cross-circuit; intra-shot feedback must be provider-side.",
+      "Dynamic-circuit transpilation may add depth and conditional-control overhead.",
+      "Readout asymmetry and reset errors can mimic feedback success or failure.",
+      "Backend calibration drift can change the open-loop and feedback arms differently.",
+      "Analogue/native XY platforms require a separate formulation rather than this dynamic-circuit payload."
+    ],
+    "decision_tree": {
+      "positive": "Promote to a replicated feedback-vs-open-loop hardware study and prepare a paper section on hardware-observed synchronisation steering.",
+      "null": "Report as a bounded negative/no-effect result and inspect readout, layout, and conditional-control overhead before any larger run.",
+      "negative": "Treat dynamic feedback as harmful for this circuit family and pivot toward analogue/native XY or offline adaptive-design variants.",
+      "contradictory": "Run only preregistered diagnostics: layout replay, readout-mitigation cross-check, and matched simulator/noise-model comparison."
+    },
+    "paper_impact": "Would update the S1 feedback documentation and, if hardware data are accepted, seed a dedicated hybrid-feedback paper or a follow-up section in the software-methods series.",
+    "follow_up_avenue": "A positive result opens replicated backend studies and adaptive feedback policy learning; a negative result motivates native analogue feedback or provider-side lower-latency dynamic-circuit variants.",
+    "possibilities_opened": [
+      "feedback-stabilised synchronisation witnesses",
+      "hardware-calibrated adaptive Kuramoto control",
+      "comparison of dynamic-circuit and analogue-native feedback platforms",
+      "budget-justified QPU requests for feedback control rather than exploratory runs"
+    ],
+    "claim_boundary": "This job cannot prove sub-microsecond real-time control unless feedback is implemented provider-side, cannot establish quantum advantage, and cannot generalise beyond the tested backend, layout, circuit family, and calibration window.",
+    "reproducibility_package": {
+      "preregistration_manifest": "data/s1_feedback_loop/s1_feedback_preregistration_2026-05-06.json",
+      "raw_counts_path": "data/s1_feedback_loop/raw_counts/",
+      "analysis_script": "scripts/analyse_s1_feedback_hardware.py",
+      "latency_benchmark": "data/s1_feedback_loop/s1_feedback_loop_latency_summary_2026-05-06.json",
+      "claim_boundary_doc": "docs/hybrid_feedback_loop_s1_2026-05-06.md"
+    },
+    "prerequisites": [
+      "export preregistration manifest before any submission",
+      "confirm backend supports required dynamic-circuit operations",
+      "record live transpiled depth and operation counts",
+      "obtain explicit QPU-budget approval"
+    ]
+  },
+  "export": {
+    "date": "2026-05-06",
+    "script": "scripts/export_s1_feedback_preregistration.py",
+    "submission_state": "prepared_no_submission",
+    "hardware_submission": false,
+    "credential_access": false
+  },
+  "arms": [
+    {
+      "label": "feedback",
+      "description": "Monitored dynamic-circuit feedback arm with conditional reset and rotation."
+    },
+    {
+      "label": "matched_open_loop_control",
+      "description": "Same oscillator family, shots, repetitions, and layout target without feedback action; required to decide whether feedback improves target-error."
+    }
+  ],
+  "provider_dry_runs": [
+    {
+      "provider": "ibm_runtime",
+      "submission_enabled": false,
+      "payload": {
+        "runtime_program": "sampler",
+        "backend_family": "ibm_heron_dynamic_circuits",
+        "experiment_id": "s1_dynamic_feedback_preregistration_2026-05-06",
+        "circuits": 2,
+        "shots_per_circuit": 1024,
+        "repetitions": 12,
+        "circuit_summary": {
+          "n_qubits": 4,
+          "n_clbits": 6,
+          "depth": 41,
+          "operation_counts": {
+            "cx": 18,
+            "ry": 12,
+            "measure": 6,
+            "if_else": 6,
+            "PauliEvolution": 3
+          },
+          "has_mid_circuit_measurement": true,
+          "has_conditional_control": true
+        },
+        "required_backend_features": [
+          "mid_circuit_measurement",
+          "conditional_reset",
+          "conditional_rotation",
+          "dynamic_circuit_control_flow"
+        ],
+        "pre_submit_checks": [
+          "confirm backend supports dynamic circuits on the selected instance",
+          "transpile live circuit and record depth plus operation counts",
+          "confirm QPU budget approval",
+          "write raw counts and job metadata before analysis"
+        ]
+      },
+      "warnings": [
+        "No IBM credentials are read by this dry-run payload.",
+        "Queue time and live calibration are not represented.",
+        "Submission requires an explicit approval-gated hardware scheduler."
+      ]
+    },
+    {
+      "provider": "openqasm3_gate",
+      "submission_enabled": false,
+      "payload": {
+        "schema": "openqasm3_dynamic_feedback_dry_run_v1",
+        "experiment_id": "s1_dynamic_feedback_preregistration_2026-05-06",
+        "program_requirements": {
+          "qubits": 4,
+          "classical_bits": 6,
+          "mid_circuit_measurement": true,
+          "conditionals": true,
+          "rounds": 3
+        },
+        "budget": {
+          "circuits": 2,
+          "shots_per_circuit": 1024,
+          "repetitions": 12,
+          "estimated_execution_seconds": 24.0
+        },
+        "semantic_controls": [
+          "monitor qubit measurement",
+          "conditional monitor reset",
+          "conditional system-qubit rotation",
+          "matched open-loop control arm"
+        ]
+      },
+      "warnings": [
+        "This payload is an interchange description, not a provider submission.",
+        "Provider-specific OpenQASM 3 syntax support must be checked separately."
+      ]
+    },
+    {
+      "provider": "analog_native_review",
+      "submission_enabled": false,
+      "payload": {
+        "schema": "analog_native_feedback_review_v1",
+        "experiment_id": "s1_dynamic_feedback_preregistration_2026-05-06",
+        "native_candidate": "open_loop_or_global_feedback_xy",
+        "dynamic_circuit_features_not_portable": [
+          "mid_circuit_measurement",
+          "conditional_reset",
+          "conditional_rotation"
+        ],
+        "required_reformulation": [
+          "native XY Hamiltonian schedule",
+          "global feedback parameter schedule or batch-level adaptive update",
+          "separate matched open-loop analogue control",
+          "platform-specific observable mapping for synchronisation R"
+        ]
+      },
+      "warnings": [
+        "Analogue targets are scientifically relevant but do not execute the same dynamic-circuit payload.",
+        "A separate native-feedback dossier is required before analogue submission."
+      ]
+    }
+  ],
+  "capability_probe_examples": [
+    {
+      "provider": "ibm",
+      "backend_name": "ibm_dynamic_metadata_template",
+      "status": "ready",
+      "reasons": [
+        "backend metadata satisfies S1 dynamic-circuit requirements"
+      ],
+      "required_features": [
+        "cross_shot_batches",
+        "mid_circuit_measurement",
+        "conditional_control",
+        "conditional_reset"
+      ],
+      "missing_features": [],
+      "n_qubits": 100,
+      "max_shots": 4096,
+      "max_circuits": 16,
+      "simulator": false
+    },
+    {
+      "provider": "analog",
+      "backend_name": "analog_native_review_template",
+      "status": "blocked",
+      "reasons": [
+        "missing required feature: mid_circuit_measurement",
+        "missing required feature: conditional_control",
+        "missing required feature: conditional_reset"
+      ],
+      "required_features": [
+        "cross_shot_batches",
+        "mid_circuit_measurement",
+        "conditional_control",
+        "conditional_reset"
+      ],
+      "missing_features": [
+        "mid_circuit_measurement",
+        "conditional_control",
+        "conditional_reset"
+      ],
+      "n_qubits": 64,
+      "max_shots": 4096,
+      "max_circuits": 16,
+      "simulator": false
+    }
+  ]
+}

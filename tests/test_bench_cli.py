@@ -78,6 +78,18 @@ def test_s1_feedback_selection_is_no_qpu_latency_harness() -> None:
     ]
 
 
+def test_s1_feedback_ready_selection_is_bundle_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("s1-ready", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "s1-feedback-readiness",
+            "scripts/reproduce_s1_feedback_readiness.py",
+            frozenset({"s1-ready"}),
+        )
+    ]
+
+
 def test_s2_scaling_lite_selection_includes_protocol_and_lite_rows() -> None:
     harnesses = bench_cli._selected_harnesses("s2", include_gpu=False)
 

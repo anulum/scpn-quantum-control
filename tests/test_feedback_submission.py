@@ -42,14 +42,17 @@ def test_s1_feedback_submission_package_marks_dynamic_backends_ready() -> None:
 
     data = package.to_dict()
 
-    assert package.budget.total_reserved_seconds == 6.0
+    assert package.budget.total_reserved_seconds == 12.0
     assert package.circuit.n_qubits == 3
     assert package.circuit.n_clbits == 4
     assert package.circuit.has_mid_circuit_measurement is True
     assert package.circuit.has_conditional_control is True
+    assert package.circuit.has_conditional_reset is True
     assert "IBM Heron dynamic-circuit backend" in package.ready_platforms
     assert "Local statevector simulator" in package.ready_platforms
     assert data["budget"]["shots_per_circuit"] == 512
+    assert data["circuit"]["has_conditional_reset"] is True
+    assert data["budget"]["circuits"] == 2
     assert data["platform_readiness"][0]["payload"]["repetitions"] == 8
     assert data["dossier"]["job_id"] == "s1_dynamic_feedback_readiness"
     assert "falsification_condition" in data["dossier"]

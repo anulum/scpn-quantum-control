@@ -73,6 +73,8 @@ nav:
       - Pipeline Performance: pipeline_performance.md
       - S2 Scaling Readiness Index: s2_scaling_readiness_index_2026-05-06.md
       - Hybrid Feedback Loop S1: hybrid_feedback_loop_s1_2026-05-06.md
+      - S1 Feedback Readiness Index: s1_feedback_readiness_index_2026-05-06.md
+      - S1 Live Submission Preflight: s1_live_submission_preflight_2026-05-06.md
       - Artifact Storage Audit: artifact_storage.md
       - Advanced Module Reference:
           - Auto-Generated Module Index: autodoc.md

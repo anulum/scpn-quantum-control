@@ -1,0 +1,32 @@
+{
+  "date": "2026-05-06",
+  "script": "scripts/probe_s1_ibm_metadata.py",
+  "submission_state": "metadata_probe_no_submission",
+  "hardware_submission": false,
+  "credential_argument_supported": false,
+  "experiment_id": "s1_dynamic_feedback_preregistration_2026-05-06",
+  "package_budget": {
+    "circuits": 2,
+    "shots_per_circuit": 1024,
+    "repetitions": 12,
+    "total_reserved_seconds": 24.0
+  },
+  "capability_decision": {
+    "provider": "ibm",
+    "backend_name": "ibm_dynamic_metadata_template",
+    "status": "ready",
+    "reasons": [
+      "backend metadata satisfies S1 dynamic-circuit requirements"
+    ],
+    "required_features": [
+      "cross_shot_batches",
+      "mid_circuit_measurement",
+      "conditional_control"
+    ],
+    "missing_features": [],
+    "n_qubits": 100,
+    "max_shots": 4096,
+    "max_circuits": 16,
+    "simulator": false
+  }
+}

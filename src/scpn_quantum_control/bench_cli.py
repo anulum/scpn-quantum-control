@@ -74,6 +74,11 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         optional_flag="readout",
     ),
     Harness("s1-feedback-loop", "scripts/benchmark_s1_feedback_loop.py", frozenset({"s1"})),
+    Harness(
+        "s1-feedback-readiness",
+        "scripts/reproduce_s1_feedback_readiness.py",
+        frozenset({"s1-ready"}),
+    ),
     Harness("s2-scaling-protocol", "scripts/export_s2_scaling_protocol.py", frozenset({"s2"})),
     Harness("s2-scaling-lite", "scripts/bench_s2_scaling_lite.py", frozenset({"s2"})),
     Harness(
@@ -124,6 +129,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate no-QPU S1 feedback-loop latency artefacts.",
     )
     _add_run_options(s1, default_group="s1")
+
+    s1_ready = subparsers.add_parser(
+        "s1-feedback-ready",
+        help="Regenerate the complete no-QPU S1 readiness bundle.",
+    )
+    _add_run_options(s1_ready, default_group="s1-ready")
 
     s2 = subparsers.add_parser(
         "s2-scaling-lite",

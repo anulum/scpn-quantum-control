@@ -142,6 +142,203 @@ This is the object we can use to state QPU need clearly: circuits,
 shots-per-circuit, repetitions, estimated execution seconds, supported
 platforms, blocked/manual-review platforms, and claim boundary.
 
+The default S1 budget reserves two arms: the monitored feedback circuit and a
+matched open-loop control. This is necessary because the job is only
+interpretable if feedback is compared against the same oscillator family, shots,
+repetitions, and layout target without feedback action.
+
+The preregistration export is regenerated with:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python scripts/export_s1_feedback_preregistration.py
+```
+
+It writes:
+
+- `data/s1_feedback_loop/s1_feedback_preregistration_2026-05-06.json`;
+- `data/s1_feedback_loop/s1_feedback_preregistration_2026-05-06.md`.
+
+The manifest includes no-submit provider dry-runs for:
+
+- IBM Runtime dynamic-circuit execution;
+- provider-neutral OpenQASM 3 style gate execution;
+- analogue-native review, explicitly requiring a separate native-feedback
+  formulation before any analogue submission.
+
+## Approval-gated Hardware Scheduler
+
+`src/scpn_quantum_control/hardware/feedback_hardware_scheduler.py` defines the
+hardware boundary for eventual submission. It is deliberately fail-closed:
+
+- a provider submitter must be injected by the caller;
+- the scheduler does not read credentials;
+- the scheduler does not create provider sessions;
+- the approval record must set `approved=True`;
+- the approval provider must match the scheduler provider;
+- the approval package hash must match the preregistered manifest;
+- estimated and reported QPU seconds must stay inside the approved budget.
+
+This means S1 can be technically prepared for IBM or another provider without
+creating an accidental submission path. A live job still requires explicit QPU
+approval and a provider submitter wired for the selected backend.
+
+## No-submit Capability Probes
+
+`src/scpn_quantum_control/hardware/feedback_capability_probe.py` evaluates
+backend metadata snapshots against the S1 preregistered package without
+submitting jobs. It checks:
+
+- qubit count;
+- shot limit;
+- circuit-batch limit;
+- mid-circuit measurement support;
+- conditional-control support;
+- conditional-reset support;
+- cross-shot batch support.
+
+The preregistration manifest includes template probe decisions for a dynamic
+gate backend and an analogue-native review target. Live provider adapters can
+later feed real backend metadata into the same probe before any approval-gated
+submission is considered.
+
+`src/scpn_quantum_control/hardware/feedback_provider_metadata.py` provides the
+no-submit metadata adapters for that step:
+
+- `snapshot_from_generic_metadata(...)` for provider-neutral metadata records;
+- `snapshot_from_qiskit_backend(...)` for Qiskit-style backend objects.
+
+These adapters only inspect local metadata already supplied by the caller. They
+do not fetch credentials, open provider sessions, or submit jobs.
+
+## One-command Readiness Bundle
+
+The complete no-QPU S1 readiness bundle is regenerated with:
+
+```bash
+scpn-bench s1-feedback-ready
+```
+
+This runs:
+
+- `scripts/benchmark_s1_feedback_loop.py`;
+- `scripts/export_s1_feedback_preregistration.py`;
+- `scripts/analyse_s1_feedback_hardware.py` on the synthetic fixture.
+
+The command regenerates latency artefacts, preregistration JSON/Markdown,
+provider dry-runs, capability examples, and the synthetic-analysis summary
+without credentials or hardware submission.
+
+## Live Submission Preflight
+
+`docs/s1_feedback_readiness_index_2026-05-06.md` summarises the full no-QPU
+readiness state, artefact inventory, commands, current preregistered job shape,
+claim boundary, and remaining live-submission blockers.
+
+`docs/s1_live_submission_preflight_2026-05-06.md` is mandatory before any live
+provider submitter is wired. It records required artefacts, scientific gates,
+provider capability gates, budget gates, reproducibility gates, approval-record
+requirements, stop conditions, and post-run requirements.
+
+The key rule is simple: valid credentials, dry-runs, and capability probes are
+not enough. A live S1 job requires the completed preflight checklist, a matching
+`HardwareApprovalRecord`, and a new session log before submission.
+
+## IBM Metadata Probe Command
+
+`scripts/probe_s1_ibm_metadata.py` writes a no-submit S1 capability decision for
+IBM/Qiskit-style metadata. Offline template usage:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python scripts/probe_s1_ibm_metadata.py \
+  --metadata-json data/s1_feedback_loop/s1_ibm_metadata_template_2026-05-06.json
+```
+
+Already-authenticated runtime usage:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python scripts/probe_s1_ibm_metadata.py \
+  --backend <backend-name> \
+  --instance <optional-instance>
+```
+
+The script does not accept credential strings, does not submit jobs, and writes
+`hardware_submission=false` into the output JSON. The `--backend` path only loads
+backend metadata through the user's existing Qiskit Runtime authentication.
+
+## Generic Gate Metadata Probe Command
+
+`scripts/probe_s1_generic_gate_metadata.py` writes a no-submit capability
+decision for non-IBM gate-based targets from provider-neutral metadata:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python scripts/probe_s1_generic_gate_metadata.py \
+  data/s1_feedback_loop/s1_generic_gate_metadata_template_2026-05-06.json
+```
+
+The command performs no network access and writes both
+`hardware_submission=false` and `network_access=false` into the output JSON.
+
+## Raw-count Analysis Harness
+
+`scripts/analyse_s1_feedback_hardware.py` defines the preregistered analysis for
+future S1 raw-count packages. It requires a JSON object with:
+
+- `experiment_id`;
+- `target_r`;
+- optional `job_ids`;
+- an `arms` list containing `feedback` and `matched_open_loop_control`;
+- per-arm records with `r_live` and raw `counts`.
+
+The generated summary reports per-arm total shots, mean live order parameter,
+mean target error, final live order parameter, feedback-minus-control mean R,
+absolute and relative target-error improvement, a positive/null-or-negative
+decision, and the claim boundary. The analysis script exists before the live
+run so the result cannot be interpreted post hoc.
+
+Synthetic rehearsal fixture:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python scripts/analyse_s1_feedback_hardware.py \
+  data/s1_feedback_loop/s1_feedback_synthetic_raw_counts_2026-05-06.json
+```
+
+The fixture is not hardware data. It exists only to prove the schema and
+analysis path before QPU time is spent.
+
+### S1 Raw-count Schema
+
+```json
+{
+  "experiment_id": "string",
+  "target_r": 0.72,
+  "job_ids": ["optional-provider-job-id"],
+  "arms": [
+    {
+      "label": "feedback",
+      "records": [
+        {
+          "r_live": 0.62,
+          "counts": {"000": 180, "001": 76}
+        }
+      ]
+    },
+    {
+      "label": "matched_open_loop_control",
+      "records": [
+        {
+          "r_live": 0.54,
+          "counts": {"000": 148, "001": 108}
+        }
+      ]
+    }
+  ]
+}
+```
+
+`counts` are raw bitstring count dictionaries. `r_live` is the preregistered
+finite-shot synchronisation observable for the same record. Each live package
+must preserve provider job IDs and raw counts before derived analysis is run.
+
 ## Hardware Job Dossier Requirement
 
 Every submission-ready hardware job must carry a dossier generated from
@@ -170,8 +367,5 @@ preparation. Jobs without a dossier are not submission-ready.
 
 Remaining S1 implementation should proceed in this order:
 
-1. Export a JSON preregistration manifest from the S1 submission package.
-2. Add provider-specific dry-run adapters for IBM Runtime and at least one
-   non-IBM target; do not submit hardware.
-3. Add an approval-gated hardware scheduler only after a preregistered QPU budget and
-   explicit approval.
+1. Add a provider-submitter implementation only after the live-submission
+   preflight has been completed and explicitly approved.

@@ -1,0 +1,62 @@
+{
+  "experiment_id": "s1_synthetic_feedback_fixture_2026-05-06",
+  "target_r": 0.72,
+  "job_ids": [
+    "synthetic-feedback",
+    "synthetic-control"
+  ],
+  "arms": [
+    {
+      "label": "feedback",
+      "records": [
+        {
+          "r_live": 0.62,
+          "counts": {
+            "000": 180,
+            "001": 76
+          }
+        },
+        {
+          "r_live": 0.67,
+          "counts": {
+            "000": 192,
+            "001": 64
+          }
+        },
+        {
+          "r_live": 0.70,
+          "counts": {
+            "000": 201,
+            "001": 55
+          }
+        }
+      ]
+    },
+    {
+      "label": "matched_open_loop_control",
+      "records": [
+        {
+          "r_live": 0.54,
+          "counts": {
+            "000": 148,
+            "001": 108
+          }
+        },
+        {
+          "r_live": 0.56,
+          "counts": {
+            "000": 152,
+            "001": 104
+          }
+        },
+        {
+          "r_live": 0.57,
+          "counts": {
+            "000": 156,
+            "001": 100
+          }
+        }
+      ]
+    }
+  ]
+}
