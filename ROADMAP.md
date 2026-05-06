@@ -154,6 +154,10 @@ is copied here.
   Kuramoto ring self-coupling/edge count, inclusive ansatz thresholding,
   and delta-zero equivalence across XY, XXZ, sparse, and dense
   Hamiltonian paths.
+- [x] **Mutation-test expansion: DLA parity invariants.** Implemented
+  2026-05-06: `tests/test_dla_parity_theorem.py` now guards parity
+  operator popcount ordering, even/odd projector orthogonality and
+  reconstruction, and unnormalised weight accounting.
 - [ ] **Mutation-test expansion.** Start with `phase/xy_kuramoto.py`,
   `hardware/async_runner.py`, `hardware/backends.py`, `bridge/*`,
   `analysis/dla*`, and `mitigation/*`.

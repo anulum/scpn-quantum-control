@@ -133,6 +133,13 @@ class TestParityOperator:
         P = parity_operator(4)
         assert np.allclose(P, np.diag(np.diag(P)))
 
+    def test_diagonal_matches_popcount_ordering(self):
+        """Mutation guard: basis ordering must follow (-1)^popcount(i)."""
+        P = parity_operator(4)
+        expected = np.array([1.0 - 2.0 * (bin(i).count("1") % 2) for i in range(16)])
+
+        np.testing.assert_array_equal(np.diag(P), expected)
+
 
 class TestProjectToParity:
     def test_even_projection(self):
@@ -155,6 +162,16 @@ class TestProjectToParity:
         assert np.linalg.norm(even) == pytest.approx(1 / np.sqrt(2))
         assert np.linalg.norm(odd) == pytest.approx(1 / np.sqrt(2))
 
+    def test_even_and_odd_projections_are_orthogonal_and_reconstruct(self):
+        """Mutation guard: parity masks must be complementary projectors."""
+        rng = np.random.default_rng(7)
+        state = rng.standard_normal(16) + 1j * rng.standard_normal(16)
+        even = project_to_parity_sector(state, 0, 4)
+        odd = project_to_parity_sector(state, 1, 4)
+
+        np.testing.assert_allclose(np.vdot(even, odd), 0.0, atol=1e-14)
+        np.testing.assert_allclose(even + odd, state, atol=1e-14)
+
 
 class TestDecomposeByParity:
     def test_pure_even(self):
@@ -176,3 +193,14 @@ class TestDecomposeByParity:
         result = decompose_state_by_parity(state, 3)
         total = result["even_weight"] + result["odd_weight"]
         assert total == pytest.approx(1.0)
+
+    def test_unnormalised_weights_sum_to_state_norm_squared(self):
+        """Mutation guard: decomposition must not silently normalise weights."""
+        state = np.array([2 + 0j, 1j, 3 + 0j, -4j], dtype=complex)
+        result = decompose_state_by_parity(state, 2)
+
+        total = result["even_weight"] + result["odd_weight"]
+        assert total == pytest.approx(float(np.vdot(state, state).real))
+        assert result["parity_imbalance"] == pytest.approx(
+            abs(result["even_weight"] - result["odd_weight"])
+        )
