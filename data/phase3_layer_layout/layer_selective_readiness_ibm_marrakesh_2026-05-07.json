@@ -1,0 +1,127 @@
+{
+  "backend": "ibm_marrakesh",
+  "canonical_logical_edges": [
+    {
+      "priority": 0.333368199306773,
+      "source": 0,
+      "target": 1
+    },
+    {
+      "priority": 0.333368199306773,
+      "source": 1,
+      "target": 2
+    },
+    {
+      "priority": 0.333368199306773,
+      "source": 2,
+      "target": 3
+    },
+    {
+      "priority": 0.24696523624231187,
+      "source": 0,
+      "target": 2
+    },
+    {
+      "priority": 0.24696523624231187,
+      "source": 1,
+      "target": 3
+    },
+    {
+      "priority": 0.18295634688326962,
+      "source": 0,
+      "target": 3
+    }
+  ],
+  "claim_boundary": {
+    "blocked": [
+      "layer-selective improvement claim",
+      "hardware leakage reduction claim",
+      "default-versus-SABRE-versus-layer-selective comparison",
+      "QPU submission authorisation"
+    ],
+    "supported": [
+      "saved connected-layout resource summary",
+      "missing-comparator blocker for layer-selective hardware promotion"
+    ]
+  },
+  "comparator_methods_present": [
+    "saved_connected_low_readout_windows"
+  ],
+  "depths": [
+    6,
+    8,
+    10,
+    14
+  ],
+  "generated_at_utc": "2026-05-06T23:34:09+00:00",
+  "hardware_submission": false,
+  "layout_resource_rows": [
+    {
+      "high_priority_cost": 0.112385498046875,
+      "layout_id": "L1",
+      "max_depth": 294,
+      "max_ecr_gates": 0,
+      "max_total_gates": 762,
+      "mean_depth": 203.6,
+      "mean_ecr_gates": 0.0,
+      "mean_total_gates": 519.0,
+      "n_rows": 160,
+      "physical_qubits": "1 2 3 4",
+      "readout_error_mean": 0.006927490234375,
+      "two_qubit_error_mean": null
+    },
+    {
+      "high_priority_cost": 0.11228784179687501,
+      "layout_id": "L2",
+      "max_depth": 294,
+      "max_ecr_gates": 0,
+      "max_total_gates": 762,
+      "mean_depth": 203.6,
+      "mean_ecr_gates": 0.0,
+      "mean_total_gates": 519.0,
+      "n_rows": 160,
+      "physical_qubits": "2 3 4 5",
+      "readout_error_mean": 0.006439208984375,
+      "two_qubit_error_mean": null
+    },
+    {
+      "high_priority_cost": 0.11212304687500001,
+      "layout_id": "L3",
+      "max_depth": 294,
+      "max_ecr_gates": 0,
+      "max_total_gates": 762,
+      "mean_depth": 203.6,
+      "mean_ecr_gates": 0.0,
+      "mean_total_gates": 519.0,
+      "n_rows": 160,
+      "physical_qubits": "3 4 5 6",
+      "readout_error_mean": 0.005615234375,
+      "two_qubit_error_mean": null
+    }
+  ],
+  "missing_comparator_methods": [
+    "default",
+    "sabre",
+    "layer_selective"
+  ],
+  "next_required_step": "Generate default, SABRE, and true layer-selective transpilation rows from a fresh backend snapshot before considering the 152-circuit hardware follow-up.",
+  "qpu_minutes_spent": 0.0,
+  "readiness_decision": "blocked_missing_comparators",
+  "ready_for_hardware_comparison": false,
+  "required_methods": [
+    "default",
+    "sabre",
+    "layer_selective"
+  ],
+  "schema": "scpn_phase3_layer_selective_readiness_v1",
+  "source_artifact": "data/phase3_state_layout_dla/phase3_state_layout_ibm_marrakesh_2026-05-06T224531Z.json",
+  "source_sha256": "03068ddaa9794f1ac19614e700887a84dd013cd5af107f49b39c3cff9e5674ac",
+  "states": [
+    "0001",
+    "0010",
+    "0011",
+    "0101",
+    "0111"
+  ],
+  "transpiler_seeds_present": []
+}

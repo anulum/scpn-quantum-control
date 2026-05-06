@@ -1,0 +1,4 @@
+layout_id,physical_qubits,n_rows,max_depth,mean_depth,max_total_gates,mean_total_gates,max_ecr_gates,mean_ecr_gates,readout_error_mean,two_qubit_error_mean,high_priority_cost
+L1,1 2 3 4,160,294,203.6,762,519.0,0,0.0,0.006927490234375,,0.112385498046875
+L2,2 3 4 5,160,294,203.6,762,519.0,0,0.0,0.006439208984375,,0.11228784179687501
+L3,3 4 5 6,160,294,203.6,762,519.0,0,0.0,0.005615234375,,0.11212304687500001

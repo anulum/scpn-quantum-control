@@ -525,6 +525,17 @@ explicit QPU-time estimate before submission.
   minute estimate, 12-minute ceiling, live gates, analysis plan,
   falsification rules, and artefact paths. Execution remains separate
   and approval-gated.
+- [x] **Layer-selective qubit assignment offline readiness audit.**
+  Completed 2026-05-07:
+  `scripts/analyse_layer_selective_readiness.py` consumes the committed
+  Phase 3 state/layout artefact and generates
+  `data/phase3_layer_layout/layer_selective_readiness_ibm_marrakesh_2026-05-07.json`,
+  `data/phase3_layer_layout/layer_selective_transpile_rows_2026-05-07.csv`,
+  and `docs/phase3_layer_layout_readiness_2026-05-07.md`. Decision:
+  `blocked_missing_comparators`, because the saved artefact has
+  connected low-readout layout rows but not the preregistered default,
+  SABRE, and true layer-selective comparator matrix required before a
+  hardware follow-up can be promoted.
 - [ ] **Layer-selective qubit assignment execution.** Run the
   offline-readiness pass and any hardware comparison only after backend
   selection, calibration capture, budget confirmation, and explicit
