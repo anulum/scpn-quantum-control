@@ -19,10 +19,16 @@ physics venues. This document defines how to frame the work for publication.
 
 ## What We Claim (Publishable)
 
-1. K_nm-informed VQE ansatz converges 6x faster than generic (hardware data)
-2. The XY model on a complete graph exhibits BKT-class critical behaviour
-3. The decoherence budget at 16 qubits on Heron r2 is characterised
-4. QSVT provides 260x query reduction vs first-order Trotter
+1. K_nm-informed ansatz construction is a reproducible methods signal in the
+   committed VQE artefacts; it is not an optimiser theorem.
+2. DLA parity leakage asymmetry is replicated on `ibm_kingston`, but the
+   popcount controls require multifactorial parity-sector, excitation-number,
+   state-choice, and layout/readout framing.
+3. The SCPN/FIM term changes exact small-n spectra and sector structure, while
+   the tested digital `ibm_kingston` implementation falsifies the simple
+   hardware-protection hypothesis.
+4. BKT, OTOC, Floquet, MBL, QSVT, tensor-network, and GPU claims remain
+   simulator/methods claims unless a specific raw hardware artefact is named.
 5. Persistent homology threshold p_h1 = 0.72 is empirical (NOT derived from BKT on this graph)
 
 ## What We Do NOT Claim
@@ -31,6 +37,8 @@ physics venues. This document defines how to frame the work for publication.
 2. The K_nm values model any specific physical system
 3. Consciousness — the word does not appear in the manuscript
 4. p_h1 is a BKT universal (Monte Carlo falsified this on the K_nm graph)
+5. A DLA-parity-only mechanism explains the observed leakage asymmetry
+6. Gate-model Heron circuits using the SCPN/FIM term provide coherence protection
 
 ## Scientific Claim Boundaries
 

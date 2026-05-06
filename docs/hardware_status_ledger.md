@@ -13,7 +13,7 @@ may quote selected results, but every quoted campaign should point back here or
 to a campaign-specific artefact with backend, date, mitigation state, job count,
 and raw-data path.
 
-## Status Snapshot — 2026-05-05
+## Status Snapshot — 2026-05-06
 
 | Area | Current public status | Canonical source |
 |---|---|---|
@@ -21,7 +21,8 @@ and raw-data path.
 | Generic compiler entry point | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` problems and compiles Hamiltonians, dense matrices, Trotter circuits, and order-parameter measurements. | `docs/kuramoto_core_facade.md` |
 | Core-package licence boundary | Possible future lightweight core split is documented, but no permissive relicensing has occurred. | `docs/core_package_boundary.md` |
 | Baseline hardware campaign | `ibm_fez` Heron r2 baseline artefacts are retained as legacy QPU evidence. Quote only values that name a committed raw artefact or retrieval file; do not use this campaign as proof of broad advantage. | `results/ibm_hardware_2026-03-28/`, `results/march_2026/`, `results/IBM_HARDWARE_COMPLETE_AUDIT_2026-03-30.md` |
-| DLA parity campaigns | `ibm_kingston` Heron r2 Phase 1 and reduced Phase 2 A+G campaigns are promoted hardware datasets: raw counts, job IDs, integrity checks, and reproduction harnesses are committed. | `data/phase1_dla_parity/`, `data/phase2_dla_parity/`, `docs/dla_parity.md`, `scripts/run_dla_parity_suite.py`, `scripts/analyse_phase2_dla_parity.py` |
+| DLA parity campaigns | `ibm_kingston` Heron r2 Phase 1, Phase 2 A+G, Phase 2 B-C, and popcount-control campaigns are promoted hardware datasets: raw counts, job IDs, integrity checks, and reproduction harnesses are committed. | `data/phase1_dla_parity/`, `data/phase2_dla_parity/`, `data/phase2_scaling_bc/`, `data/phase2_popcount_control/`, `docs/publication_phase2_package_2026-05-05.md`, `scripts/analyse_phase2_dla_parity.py`, `scripts/analyse_phase2_scaling_bc.py`, `scripts/analyse_phase2_popcount_control.py` |
+| SCPN/FIM hardware campaign | `ibm_kingston` Heron r2 pilot and repeated follow-up are promoted as a negative/falsification result for the simple digital `lambda=4` hardware-protection hypothesis on the tested circuit family. | `data/scpn_fim_hamiltonian/`, `docs/scpn_fim_claim_boundary_2026-05-05.md`, `scripts/analyse_fim_ibm_pilot.py`, `scripts/analyse_fim_ibm_repeated_followup.py`, `scripts/analyse_fim_readout_matrix_mitigation.py` |
 | Simulator claims | BKT, OTOC, Floquet, MBL, FIM, and classical comparison material remain simulator or classical-baseline claims unless a hardware artefact is named. | `results/SIMULATOR_RESULTS.md`, `results/classical_baselines_2026-03-30.json` |
 | Quarantined / unpromoted IBM output | Any frontier, V2, queued-job, placeholder, or aggregate-only IBM output is not promoted until it has raw counts, retrieval manifest, analysis code, and an explicit ledger row. | `results/ibm_hardware_v2_2026-03-29/`, `results/ibm_runs/jobs.json`, `docs/internal/gemini_chat_export_full_2026-04-25.md` |
 
@@ -47,6 +48,8 @@ update this table first, then refresh the summary pages.
 | DLA parity Phase 1 | `ibm_kingston` Heron r2 | 2026-04 | Promoted hardware dataset with raw-count reproducer | `data/phase1_dla_parity/`, `paper/phase1_dla_parity_short_paper.md`, `docs/dla_parity.md`, `scripts/run_dla_parity_suite.py` | DLA parity asymmetry paper and result figures. |
 | DLA parity Phase 2 reduced A+G | `ibm_kingston` Heron r2 | 2026-05 | Promoted hardware replication dataset with raw-count reproducer | `data/phase2_dla_parity/`, `scripts/analyse_phase2_dla_parity.py`, `results/ibm_phase2_preregistration_2026-05-05.json` | High-statistics `n=4` DLA parity replication plus readout baseline only; no `n=6-12`, GUESS, or broad-advantage claim. |
 | DLA parity Phase 2 B-C scaling | `ibm_kingston` Heron r2 | 2026-05 | Promoted mixed scaling dataset with raw-count reproducer | `data/phase2_scaling_bc/`, `scripts/analyse_phase2_scaling_bc.py`, `docs/ibm_phase2_scaling_bc_manifest_2026-05-05.md` | Mixed `n=6,8` scaling evidence: `n=8` positive middle-depth sign, `n=6` negative at significant depths; no monotone scaling claim. |
+| DLA parity Phase 2 popcount control | `ibm_kingston` Heron r2 | 2026-05 | Promoted hardware control dataset with raw-count reproducer | `data/phase2_popcount_control/`, `scripts/analyse_phase2_popcount_control.py`, `docs/publication_phase2_package_2026-05-05.md` | Excitation count and state choice materially contribute; no DLA-parity-only causal claim. |
+| SCPN/FIM pilot and repeated follow-up | `ibm_kingston` Heron r2 | 2026-05 | Promoted negative/falsification hardware result | `data/scpn_fim_hamiltonian/`, `docs/scpn_fim_claim_boundary_2026-05-05.md`, `scripts/analyse_fim_ibm_repeated_followup.py` | Digital `lambda=4` implementation increases leakage/decreases retention for the tested circuit family; no coherence-protection claim. |
 | Simulator and classical baselines | local CPU/GPU where noted | 2026-03 onward | Simulator | `results/*_2026-03-*.json`, `results/SIMULATOR_RESULTS.md`, `results/classical_baselines_2026-03-30.json` | BKT, OTOC, Floquet, MBL, FIM, and classical comparison material. |
 
 ## Quarantined / Unpromoted IBM Artifacts
@@ -93,7 +96,7 @@ raw IBM counts and promoted here.
 |---|---|---|
 | High-impact execution TODO | Complete locally. Dependency hygiene, core facade, documentation ergonomics, baselines, maintenance, frontier-track scaffolding, and CI timing-gate stabilization are checked off. | Keep CI green on `main`; add only scoped follow-up work. |
 | Scientific gaps | Partially closed. The EEG PLV K_nm validation artefacts now cover the full 109-subject PhysioNet EEGMMIDB baseline eyes-open and eyes-closed cohorts, with a derived condition comparison. The first physical-unit measured-system control, IEEE 5-bus, is committed and does not close K_nm physical validation; broad quantum advantage remains open; `p_h1 = 0.72` is an explicit open empirical/theoretical parameter. | Additional physical-unit measured coupling candidates with null models; provenance-rich advantage benchmark tables; TCBO or first-principles p_h1 reproduction. |
-| Hardware experiments | March/April evidence is narrowed to the legacy `ibm_fez` baseline artefacts and the promoted raw-count `ibm_kingston` Phase 1 DLA parity dataset. Phase 2 DLA parity expansion is ready but blocked on promo/credits. | IBM credit/promo availability plus preregistered run manifest; no frontier promotion without raw-count review. |
+| Hardware experiments | March/April/May evidence is narrowed to legacy `ibm_fez` baseline artefacts, promoted raw-count `ibm_kingston` DLA Phase 1/2 datasets, and the promoted SCPN/FIM negative result. | Further QPU work needs a preregistered manifest, depth/shot gates, QPU-time estimate, and explicit approval; no frontier promotion without raw-count review. |
 | Strategic roadmap | All 53 post-v1.0 differentiation tracks remain deferred / CEO-gated. | Activate one track explicitly before implementation. |
 
 ### 2026-05-03 Scientific-Gap Roadmap Progress
@@ -121,7 +124,9 @@ raw IBM counts and promoted here.
 - 2026-05-05 live attempt status: **ABORTED / CANCELLED** — `ibm_kingston` job `d7stqj7ljm6s73bbu080` was cancelled after live hardware transpilation exceeded the reduced dry-run depth budget; IBM metadata reported `0` quantum seconds and `0` usage seconds. This job is quarantined and not evidence.
 - 2026-05-05 reduced A+G hardware run status: **DONE / PROMOTED** — `ibm_kingston` jobs `d7stu94t738s73ch5keg` and `d7su3tkt738s73ch5ql0` completed with 612 raw-count circuits. The committed reproducer reports Fisher chi2 `140.671952`, Fisher p `3.773718e-20`, and 6/10 significant depths at `p < 0.05`.
 - 2026-05-05 B-C scaling run status: **DONE / PROMOTED AS MIXED** — `ibm_kingston` job `d7sudr2udops7397ae30` completed with 280 raw-count circuits and IBM-reported usage `305` quantum seconds. The committed reproducer reports `n=6` Fisher p `1.883218e-07` with negative significant depths and `n=8` Fisher p `2.675193e-04` with positive middle-depth sign.
-- Next pending item: **Phase 2 publication integration** — update paper/result figures only from `data/phase2_dla_parity/` and `data/phase2_scaling_bc/`; no D-E-F blocks are approved before a separate budget review.
+- Phase 2 publication package status: **DONE / PROMOTED** —
+  `docs/publication_phase2_package_2026-05-05.md` records the promoted
+  A+G, B-C, and popcount-control artefacts plus conservative claim boundaries.
 
 ## EEG Condition Comparison — 2026-04-30
 

@@ -266,9 +266,11 @@ is copied here.
   `optional_rust_engine()`, treating only true
   `scpn_quantum_engine` absence as optional while propagating broken
   installed-extension import failures.
-- [ ] **README and public framing sync.** Keep public badges, release
-  status, validated hardware claims, examples, and roadmap language in
-  sync with current artefacts.
+- [x] **README and public framing sync.** Completed 2026-05-06:
+  README, publication framing guide, and hardware status ledger now
+  reflect promoted Phase 2 DLA artefacts, SCPN/FIM negative hardware
+  results, benchmark dashboard/CLI availability, and conservative
+  no-advantage/no-DLA-only/no-FIM-protection boundaries.
 - [ ] **Architecture data-flow diagram.** Document the stable pipeline:
   `K_nm/omega -> Hamiltonian -> circuit -> backend/QPU -> counts ->
   mitigation -> DLA/sync observables -> reports`.

@@ -25,24 +25,25 @@
 > [Hardware Status Ledger](docs/hardware_status_ledger.md),
 > which separates theory, simulator, unmitigated hardware, mitigated hardware,
 > and noise-limited claims. Current promoted hardware evidence is narrowed to
-> artifact-backed `ibm_fez` baseline rows and the April 2026 `ibm_kingston`
-> DLA parity raw-count dataset. APIs may evolve as this work progresses.
+> artefact-backed `ibm_fez` baseline rows, the April/May 2026
+> `ibm_kingston` DLA parity raw-count datasets, and the May 2026 SCPN/FIM
+> falsification artefacts. APIs may evolve as this work progresses.
 
 **Version:** 0.9.6
 **Status:** Kuramoto-XY compiler + hardware runners + analysis stack | 37 Rust functions | 47 notebooks | 21 examples | 97%+ coverage | IBM Heron r2 evidence ledgered
 
 ---
 
-## Status Snapshot — 2026-04-29
+## Status Snapshot — 2026-05-06
 
 | Area | Public status |
 |---|---|
 | Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, and order-parameter measurements. |
-| Hardware evidence | `ibm_fez` baseline rows are legacy artifact-backed observations; `ibm_kingston` Phase 1 DLA parity is the promoted raw-count dataset. |
-| Simulator evidence | BKT, OTOC, Floquet, MBL, FIM, and classical comparison claims stay marked as simulator/classical unless a hardware artifact is named. |
+| Hardware evidence | `ibm_fez` baseline rows are legacy artefact-backed observations; `ibm_kingston` Phase 1, Phase 2 A+G, Phase 2 B-C, and popcount DLA datasets are promoted with raw-count artefacts. The SCPN/FIM `ibm_kingston` result is promoted as a negative/falsification result for the tested digital circuit family. |
+| Simulator and methods evidence | BKT, OTOC, Floquet, MBL, FIM, VQE, GPU, tensor-network, and classical comparison claims stay marked as simulator/classical/methods unless a hardware artefact is named. Generated benchmark artefacts are indexed from the benchmark dashboard and reproducibility CLI. |
 | Licence boundary | The possible lightweight core split is documented, but all in-repository code remains AGPL/commercial unless a future release changes metadata and SPDX headers. |
 
-For claim classes, raw-artifact pointers, and promotion rules, see the
+For claim classes, raw-artefact pointers, and promotion rules, see the
 [Hardware Status Ledger](docs/hardware_status_ledger.md).
 
 ## Richer Presentation
@@ -79,8 +80,11 @@ Direct entry points:
 - [The Science](https://anulum.li/scpn-quantum-control/science.html)
   — plain-language primer on SCPN, Kuramoto-XY, and why the DLA
   parity result matters
-- [Research Timeline](https://anulum.li/scpn-quantum-control/timeline.html)
-  — past milestones, current blockers, planned Phase 2
+- [Methods Benchmark Dashboard](docs/methods_benchmark_dashboard.md)
+  — generated Rust/VQE, GPU, tensor-network, FIM, and reproducibility
+  artefact index
+- [Roadmap](ROADMAP.md)
+  — canonical active work queue and completed release-safety tasks
 
 ---
 
@@ -115,8 +119,9 @@ Pass any coupling matrix; the built-in SCPN benchmark is just one example.
 
 **A Kuramoto-XY compiler and hardware-evidence workbench for heterogeneous
 coupled oscillators.** The repository contains legacy `ibm_fez` baseline
-artifacts and a promoted `ibm_kingston` DLA parity dataset with raw counts,
-job IDs, integrity checks, and a count-to-statistic reproduction harness.
+artefacts, promoted `ibm_kingston` DLA parity datasets, and SCPN/FIM
+falsification artefacts with raw counts, job IDs, integrity checks, and
+count-to-statistic reproduction harnesses.
 
 The package provides:
 
@@ -131,9 +136,10 @@ The package provides:
    applications of existing tools to Kuramoto-XY; the rest are standard
    many-body diagnostics applied to this system.
 
-3. **Hardware evidence with claim classes** — legacy `ibm_fez` baseline rows
-   and the promoted `ibm_kingston` DLA parity dataset are separated from
-   simulator-only, frontier, queued-job, and aggregate-only outputs.
+3. **Hardware evidence with claim classes** — legacy `ibm_fez` baseline rows,
+   promoted `ibm_kingston` DLA parity datasets, and the SCPN/FIM negative
+   hardware result are separated from simulator-only, frontier, queued-job, and
+   aggregate-only outputs.
 
 Think of it as a **quantum microscope for synchronisation**: classical Kuramoto
 tells you *when* oscillators lock in step; this package tells you *what the
@@ -155,8 +161,10 @@ information scrambles*, and *whether the system thermalises*.
 | Result | Value |
 |--------|-------|
 | `ibm_kingston` DLA parity Phase 1 | 342 circuits, raw counts, job IDs, integrity checks, and reproduction harness in `data/phase1_dla_parity/` |
-| `ibm_fez` baseline rows | Legacy QPU observations retained in `results/ibm_hardware_2026-03-28/` and `results/march_2026/`; quote only artifact-backed values through the ledger |
-| Quarantined IBM outputs | V2/frontier/queued-job/aggregate-only artifacts are not promoted until raw counts, retrieval manifests, and analysis code are reviewed |
+| `ibm_kingston` DLA parity Phase 2 | Promoted A+G `n=4` replication, B-C mixed `n=6,8` scaling, and popcount controls in `data/phase2_dla_parity/`, `data/phase2_scaling_bc/`, and `data/phase2_popcount_control/`; no DLA-parity-only or monotone-scaling claim |
+| `ibm_kingston` SCPN/FIM hardware test | Pilot and repeated follow-up artefacts in `data/scpn_fim_hamiltonian/`; promoted as a negative result for simple digital `lambda=4` hardware protection on the tested circuit family |
+| `ibm_fez` baseline rows | Legacy QPU observations retained in `results/ibm_hardware_2026-03-28/` and `results/march_2026/`; quote only artefact-backed values through the ledger |
+| Quarantined IBM outputs | V2/frontier/queued-job/aggregate-only artefacts are not promoted until raw counts, retrieval manifests, and analysis code are reviewed |
 
 ### Simulation
 
@@ -177,6 +185,7 @@ information scrambles*, and *whether the system thermalises*.
 | Python modules | **201** + Rust crate (3,983 lines, 21 source files) |
 | Publication figures | **17** (simulation + hardware, including the Phase 1 DLA parity panels and exact-simulation crossover) |
 | Test suite | CI-gated suite with 97%+ coverage |
+| Reproducibility CLI | `scpn-bench reproduce-methods`, `scpn-bench fim-all`, and `scpn-bench all` regenerate committed methods/FIM artefacts without IBM submission |
 
 ### Exact-Simulation Wall-Time (Not broad quantum-advantage claim)
 
