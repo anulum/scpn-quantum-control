@@ -1,0 +1,86 @@
+{
+  "schema": "scpn_phase3_multidevice_readout_corrected_v1",
+  "source_raw": "data/phase3_multidevice_dla/phase3_multidevice_ibm_marrakesh_2026-05-06T171231Z.json",
+  "source_readout_summary": "data/readout_full_basis/readout_full_basis_summary_2026-05-06.json",
+  "source_readout_matrix": "data/readout_full_basis/readout_full_basis_matrix_2026-05-06.csv",
+  "backend": "ibm_marrakesh",
+  "job_ids": [
+    "d7tnd3vljm6s73bcsh6g",
+    "d7tnehqudops73988btg"
+  ],
+  "readout_job_ids": [
+    "d7tnljvljm6s73bcsql0"
+  ],
+  "physical_qubits": [
+    5,
+    6,
+    7,
+    8
+  ],
+  "readout_condition_number": 1.0756988057943142,
+  "readout_mean_retention": 0.9699935913085938,
+  "readout_max_parity_flip": 0.0472412109375,
+  "per_depth": [
+    {
+      "depth": 4,
+      "mitigated_mean_leakage_even": 0.04393626237700946,
+      "mitigated_mean_leakage_odd": 0.06423309403446226,
+      "mitigated_sem_leakage_even": 0.0015424889106829918,
+      "mitigated_sem_leakage_odd": 0.0013065696397240726,
+      "mitigated_asymmetry_relative": -0.3159871396910005,
+      "n_reps_even": 12,
+      "n_reps_odd": 12
+    },
+    {
+      "depth": 6,
+      "mitigated_mean_leakage_even": 0.07290024933211989,
+      "mitigated_mean_leakage_odd": 0.0806630492371441,
+      "mitigated_sem_leakage_even": 0.0012810306000214516,
+      "mitigated_sem_leakage_odd": 0.0012452558908162114,
+      "mitigated_asymmetry_relative": -0.09623737235871266,
+      "n_reps_even": 12,
+      "n_reps_odd": 12
+    },
+    {
+      "depth": 8,
+      "mitigated_mean_leakage_even": 0.0965148671065966,
+      "mitigated_mean_leakage_odd": 0.10009821631014192,
+      "mitigated_sem_leakage_even": 0.001049657879673567,
+      "mitigated_sem_leakage_odd": 0.0023332887398305143,
+      "mitigated_asymmetry_relative": -0.03579833223444018,
+      "n_reps_even": 12,
+      "n_reps_odd": 12
+    },
+    {
+      "depth": 10,
+      "mitigated_mean_leakage_even": 0.11072273534572905,
+      "mitigated_mean_leakage_odd": 0.1109394334867869,
+      "mitigated_sem_leakage_even": 0.0020105845727464186,
+      "mitigated_sem_leakage_odd": 0.0016812910539355699,
+      "mitigated_asymmetry_relative": -0.001953301312681304,
+      "n_reps_even": 12,
+      "n_reps_odd": 12
+    },
+    {
+      "depth": 14,
+      "mitigated_mean_leakage_even": 0.14352177955535297,
+      "mitigated_mean_leakage_odd": 0.1503749370527278,
+      "mitigated_sem_leakage_even": 0.00188447287304668,
+      "mitigated_sem_leakage_odd": 0.0015246308147925953,
+      "mitigated_asymmetry_relative": -0.045573801270964644,
+      "n_reps_even": 12,
+      "n_reps_odd": 12
+    },
+    {
+      "depth": 20,
+      "mitigated_mean_leakage_even": 0.17895178406989143,
+      "mitigated_mean_leakage_odd": 0.18836451701379145,
+      "mitigated_sem_leakage_even": 0.002405497179968887,
+      "mitigated_sem_leakage_odd": 0.002045616003343326,
+      "mitigated_asymmetry_relative": -0.0499708389516421,
+      "n_reps_even": 12,
+      "n_reps_odd": 12
+    }
+  ],
+  "claim_boundary": "full-basis readout-only correction for matching ibm_marrakesh n=4 Phase 3 dataset; no gate/decoherence mitigation"
+}

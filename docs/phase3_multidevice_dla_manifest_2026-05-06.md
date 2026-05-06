@@ -63,6 +63,8 @@ A+G live envelope. No extra QPU job was submitted outside this circuit matrix.
 | `data/phase3_multidevice_dla/phase3_multidevice_ibm_marrakesh_2026-05-06T171231Z.json` | `cf76b66c69fd6901bc2a9e2c527e978a1c3c1347761d6c16656831a7babfa36a` |
 | `data/phase3_multidevice_dla/phase3_multidevice_summary_2026-05-06.json` | `751965194a1449767c623dcb119c2514be800efcea1a9652d8acf711cd5471eb` |
 | `data/phase3_multidevice_dla/phase3_multidevice_row_metrics_2026-05-06.csv` | `15f5de37592947452e1b076e50d7f74b23854b3ca579eb489f0809db9b143eec` |
+| `data/phase3_multidevice_dla/phase3_multidevice_readout_corrected_summary_2026-05-06.json` | `c43e25d56555f4e1a4593185efddbe51877f638b607c9fa84bcfc07c58ae916f` |
+| `data/phase3_multidevice_dla/phase3_multidevice_readout_corrected_rows_2026-05-06.csv` | `707d9b2767e3d5a635a6919318119653b495b00ca3661247c41fcd3c3756bc33` |
 
 ## Per-Depth Summary
 
@@ -78,6 +80,25 @@ Relative asymmetry is `(mean_even - mean_odd) / mean_odd`.
 | `14` | `0.163127` | `0.176229` | `-0.074348` | opposite sign |
 | `20` | `0.198771` | `0.205892` | `-0.034585` | opposite sign |
 
+## Full-Basis Readout-Corrected Summary
+
+The matching `ibm_marrakesh` full-basis readout calibration is documented in
+`docs/readout_full_basis_manifest_2026-05-06.md`. It uses physical qubits
+`[5,6,7,8]` and has assignment-matrix condition number `1.0756988057943142`.
+
+| Depth | Corrected even leakage | Corrected odd leakage | Corrected relative asymmetry | Interpretation |
+|---:|---:|---:|---:|---|
+| `4` | `0.043936` | `0.064233` | `-0.315987` | opposite sign |
+| `6` | `0.072900` | `0.080663` | `-0.096237` | opposite sign |
+| `8` | `0.096515` | `0.100098` | `-0.035798` | opposite sign |
+| `10` | `0.110723` | `0.110939` | `-0.001953` | near zero |
+| `14` | `0.143522` | `0.150375` | `-0.045574` | opposite sign |
+| `20` | `0.178952` | `0.188365` | `-0.049971` | opposite sign |
+
+The full-basis readout correction does not rescue a positive backend-transfer
+replication. It strengthens the conservative conclusion that the previously
+promoted `ibm_kingston` sign is backend/calibration/layout sensitive.
+
 ## Claim Boundary
 
 The result is best read as a multi-device boundary condition. It does not
@@ -92,6 +113,9 @@ Supported:
   depths;
 - evidence that the earlier `ibm_kingston` effect is backend/calibration/layout
   sensitive.
+- full-basis readout-corrected evidence on the matching `ibm_marrakesh`
+  four-qubit layout showing non-positive relative asymmetry across all
+  promoted depths.
 
 Blocked:
 

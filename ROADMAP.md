@@ -390,7 +390,8 @@ explicit QPU-time estimate before submission.
   generated summary, row metrics, and manifest in
   `data/phase3_multidevice_dla/` and
   `docs/phase3_multidevice_dla_manifest_2026-05-06.md`. Result:
-  mixed/mostly opposite-sign backend-transfer evidence, weakening any
+  mixed/mostly opposite-sign backend-transfer evidence, later
+  strengthened by matching full-basis readout correction, weakening any
   backend-stable DLA leakage-asymmetry claim.
 - [x] **Systematic state/layout randomisation preregistration.**
   Completed 2026-05-06:
@@ -417,6 +418,14 @@ explicit QPU-time estimate before submission.
   manifest `docs/readout_full_basis_manifest_2026-05-06.md`.
   Calibration quality: mean retention `0.96999`, max parity flip
   `0.04724`, condition number `1.07570`.
+- [x] **Phase 3 full-basis readout correction.** Completed
+  2026-05-06: the stable `ibm_marrakesh` full-basis assignment matrix
+  was applied offline to the Phase 3 DLA rows, generating
+  `data/phase3_multidevice_dla/phase3_multidevice_readout_corrected_summary_2026-05-06.json`
+  and
+  `data/phase3_multidevice_dla/phase3_multidevice_readout_corrected_rows_2026-05-06.csv`.
+  The corrected asymmetry is non-positive at all promoted depths, so
+  readout correction does not rescue backend-transfer replication.
 - [x] **GUESS / symmetry-decay calibration preregistration.**
   Completed 2026-05-06:
   `docs/guess_symmetry_decay_prereg_2026-05-06.md` defines the
