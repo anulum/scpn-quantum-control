@@ -1176,3 +1176,13 @@ scpn-bench s4-multi-hardware-ready
 ```
 
 Regenerates `data/s4_multi_hardware_control/s4_multi_hardware_readiness_2026-05-06.json` and `docs/s4_multi_hardware_readiness_2026-05-06.md`. The harness compiles the Kuramoto-XY programme into neutral-atom and circuit-QED analogue forms, exports Pulser, Bloqade, and IBM pulse-level provider payloads, and wraps each route in an approval-gated execution plan. It performs no provider contact, no emulator execution, and no QPU submission.
+
+### S4 IBM pulse-level preregistration
+
+Command:
+
+```bash
+scpn-bench s4-provider-preregistration
+```
+
+Regenerates `data/s4_multi_hardware_control/s4_ibm_pulse_preregistration_2026-05-06.json` and `docs/s4_ibm_pulse_preregistration_2026-05-06.md`. The harness reads the S4 readiness payload and packages the IBM pulse-level route as a calibration-review dossier. It performs no provider contact, creates no calibrated pulse schedule, and requests no QPU time.

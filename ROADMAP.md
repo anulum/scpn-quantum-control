@@ -852,6 +852,12 @@ be executed until individually activated.
   from the analogue Kuramoto compiler, wraps them in approval-gated
   execution plans, documents blocked claims and promotion gates, and
   performs no provider contact or QPU submission.
+- [x] **S4 IBM pulse-level preregistration dossier.** Implemented
+  2026-05-06: `scpn-bench s4-provider-preregistration` turns the IBM
+  pulse-level design payload into a no-submit calibration-review dossier
+  with purpose, hypothesis, falsification condition, expected capability
+  observables, blocked QPU budget, platform fit, decision tree, paper
+  impact, follow-up route, and prerequisites before any pulse job.
 - [ ] **S5** Open-data + classical validation harness.
 - [ ] **S6** Decoupled `quantum-kuramoto` subpackage.
 - [ ] **S7** Fault-tolerant / logical-level extension roadmap.

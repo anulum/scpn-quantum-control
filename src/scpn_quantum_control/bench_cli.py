@@ -116,6 +116,11 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         "scripts/export_s4_multi_hardware_readiness.py",
         frozenset({"s4"}),
     ),
+    Harness(
+        "s4-provider-preregistration",
+        "scripts/export_s4_provider_preregistration.py",
+        frozenset({"s4-provider"}),
+    ),
 )
 
 ARTEFACT_PATHS = (
@@ -210,6 +215,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate no-submit S4 multi-hardware readiness artefacts.",
     )
     _add_run_options(s4, default_group="s4")
+
+    s4_provider = subparsers.add_parser(
+        "s4-provider-preregistration",
+        help="Regenerate the no-submit S4 IBM pulse-level preregistration dossier.",
+    )
+    _add_run_options(s4_provider, default_group="s4-provider")
 
     return parser.parse_args(argv)
 
