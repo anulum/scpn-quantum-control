@@ -108,6 +108,10 @@ is copied here.
   `tests/test_check_commit_trailers.py` now covers accepted trailer
   messages, missing-trailer rejection, banned-subject-word rejection,
   default body-word allowance, stricter body scanning, and help output.
+- [x] **Benchmark CLI failure-policy coverage.** Implemented
+  2026-05-06: `tests/test_bench_cli.py` now covers default stop-on-first
+  harness failure, `--keep-going` execution after failures, and
+  `--no-diff` skipping of artefact-drift checks.
 - [x] **Coverage-gap audit automation.** Implemented 2026-05-06:
   `tools/audit_coverage_gaps.py` parses `coverage.xml`, inventories
   package source files missing from coverage reports or below a

@@ -118,3 +118,58 @@ def test_run_returns_diff_status_when_harnesses_pass(monkeypatch: pytest.MonkeyP
     monkeypatch.setattr(bench_cli, "_print_diff_summary", lambda: 2)
 
     assert bench_cli.run(["reproduce-methods"]) == 2
+
+
+def test_run_stops_after_first_failure_without_keep_going(monkeypatch: pytest.MonkeyPatch):
+    selected = [
+        bench_cli.Harness("broken", "scripts/broken.py", frozenset({"methods"})),
+        bench_cli.Harness("skipped", "scripts/skipped.py", frozenset({"methods"})),
+    ]
+    calls: list[str] = []
+
+    def fake_run_harness(harness: bench_cli.Harness) -> int:
+        calls.append(harness.label)
+        return 5
+
+    monkeypatch.setattr(bench_cli, "_selected_harnesses", lambda *args, **kwargs: selected)
+    monkeypatch.setattr(bench_cli, "_run_harness", fake_run_harness)
+    monkeypatch.setattr(bench_cli, "_print_diff_summary", lambda: 0)
+
+    assert bench_cli.run(["reproduce-methods"]) == 1
+    assert calls == ["broken"]
+
+
+def test_run_keep_going_executes_later_harnesses_after_failure(monkeypatch: pytest.MonkeyPatch):
+    selected = [
+        bench_cli.Harness("broken", "scripts/broken.py", frozenset({"methods"})),
+        bench_cli.Harness("later", "scripts/later.py", frozenset({"methods"})),
+    ]
+    calls: list[str] = []
+
+    def fake_run_harness(harness: bench_cli.Harness) -> int:
+        calls.append(harness.label)
+        return 7 if harness.label == "broken" else 0
+
+    monkeypatch.setattr(bench_cli, "_selected_harnesses", lambda *args, **kwargs: selected)
+    monkeypatch.setattr(bench_cli, "_run_harness", fake_run_harness)
+    monkeypatch.setattr(bench_cli, "_print_diff_summary", lambda: 0)
+
+    assert bench_cli.run(["reproduce-methods", "--keep-going"]) == 1
+    assert calls == ["broken", "later"]
+
+
+def test_run_no_diff_skips_diff_summary(monkeypatch: pytest.MonkeyPatch):
+    selected = [bench_cli.Harness("ok", "scripts/ok.py", frozenset({"methods"}))]
+    diff_called = False
+
+    def fail_if_called() -> int:
+        nonlocal diff_called
+        diff_called = True
+        return 2
+
+    monkeypatch.setattr(bench_cli, "_selected_harnesses", lambda *args, **kwargs: selected)
+    monkeypatch.setattr(bench_cli, "_run_harness", lambda harness: 0)
+    monkeypatch.setattr(bench_cli, "_print_diff_summary", fail_if_called)
+
+    assert bench_cli.run(["reproduce-methods", "--no-diff"]) == 0
+    assert diff_called is False
