@@ -487,9 +487,14 @@ explicit QPU-time estimate before submission.
   `docs/software_heritage_swhid_2026-05-06.md` records the successful
   Software Heritage save request, full visit status, origin SWHID, and
   archived snapshot SWHID.
-- [ ] **Zenodo communities and metadata refresh.** Add the DOI to
-  quantum/physics communities and refresh stale version metadata during
-  a manual Zenodo login session.
+- [x] **Zenodo communities and metadata refresh preparation.**
+  Completed 2026-05-06:
+  `docs/zenodo_metadata_refresh_checklist_2026-05-06.md` records the
+  DOI, current version consistency, community targets, related
+  identifiers, claim boundary, and manual-session update procedure.
+- [ ] **Zenodo communities and metadata refresh execution.** Complete
+  the authenticated Zenodo login session, request/add appropriate
+  communities, and record any new version DOI or moderation status.
 - [ ] **Qiskit Ecosystem Catalog.** Submit ecosystem metadata before
   attempting `awesome-qiskit`.
 - [ ] **awesome-qiskit.** Blocked until Qiskit Ecosystem membership is
