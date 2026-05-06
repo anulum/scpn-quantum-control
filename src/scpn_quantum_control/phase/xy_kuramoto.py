@@ -24,6 +24,7 @@ from qiskit.circuit.library import PauliEvolutionGate
 from qiskit.quantum_info import SparsePauliOp, Statevector
 from qiskit.synthesis import LieTrotter, SuzukiTrotter
 
+from ..accel.rust_import import optional_rust_engine
 from ..bridge.knm_hamiltonian import knm_to_hamiltonian
 
 
@@ -136,8 +137,9 @@ class QuantumKuramotoSolver:
         """
         z_complex: complex
         try:
-            import scpn_quantum_engine as _engine
-
+            _engine = optional_rust_engine()
+            if _engine is None:
+                raise AttributeError("scpn_quantum_engine absent")
             # Fast Rust path: compute all X,Y expectations in one parallel pass
             sv_arr = np.asarray(sv.data)
             exp_x, exp_y = _engine.all_xy_expectations(
@@ -146,7 +148,7 @@ class QuantumKuramotoSolver:
                 self.n,
             )
             z_complex = complex(np.sum(exp_x) + 1j * np.sum(exp_y)) / self.n
-        except (ImportError, AttributeError):
+        except AttributeError:
             # Fallback to slow Qiskit path
             z_complex = 0.0 + 0.0j
             for j in range(self.n):

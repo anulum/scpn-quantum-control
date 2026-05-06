@@ -28,6 +28,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.linalg import expm
 
+from ..accel.rust_import import optional_rust_engine
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 
 
@@ -53,14 +54,15 @@ def _order_parameter(psi: np.ndarray, n: int) -> float:
     Rust fast path uses bitwise Pauli expectations (no Qiskit overhead).
     """
     try:
-        import scpn_quantum_engine as _engine
-
+        _engine = optional_rust_engine()
+        if _engine is None:
+            raise AttributeError("scpn_quantum_engine absent")
         psi_re = np.ascontiguousarray(psi.real)
         psi_im = np.ascontiguousarray(psi.imag)
         exp_x, exp_y = _engine.all_xy_expectations(psi_re, psi_im, n)
         phases = np.arctan2(np.asarray(exp_y), np.asarray(exp_x))
         return float(abs(np.mean(np.exp(1j * phases))))
-    except (ImportError, AttributeError):
+    except AttributeError:
         pass
 
     from ..hardware.classical import _xy_expectations_vectorized

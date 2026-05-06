@@ -28,20 +28,14 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.special import hyp2f1
 
-try:
-    from scpn_quantum_engine import (
-        hypergeometric_envelope_batch as _envelope_rust,
-    )
-    from scpn_quantum_engine import (
-        ici_mixing_angle_batch as _ici_mixing_rust,
-    )
-    from scpn_quantum_engine import (
-        ici_three_level_evolution_batch as _ici_evol_rust,
-    )
+from ..accel.rust_import import optional_rust_engine
 
-    _HAS_RUST = True
-except ImportError:
-    _HAS_RUST = False
+_engine = optional_rust_engine()
+_HAS_RUST = _engine is not None
+if _engine is not None:
+    _envelope_rust = _engine.hypergeometric_envelope_batch
+    _ici_mixing_rust = _engine.ici_mixing_angle_batch
+    _ici_evol_rust = _engine.ici_three_level_evolution_batch
 
 # ============================================================
 # Data structures

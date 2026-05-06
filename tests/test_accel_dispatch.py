@@ -29,6 +29,7 @@ three-tier chain end-to-end.
 from __future__ import annotations
 
 import math
+import sys
 from unittest.mock import patch
 
 import numpy as np
@@ -150,6 +151,39 @@ class TestPythonFloor:
 
 
 class TestRustTier:
+    def test_optional_rust_engine_absence_is_optional(self) -> None:
+        from scpn_quantum_control.accel.rust_import import optional_rust_engine
+
+        with patch.dict(sys.modules, {"scpn_quantum_engine": None}):
+            assert optional_rust_engine() is None
+
+    def test_optional_rust_engine_broken_dependency_propagates(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from scpn_quantum_control.accel.rust_import import optional_rust_engine
+
+        real_import = __import__
+
+        def broken_engine_import(name: str, *args: object, **kwargs: object) -> object:
+            if name == "scpn_quantum_engine":
+                raise ModuleNotFoundError("missing native dependency", name="libstdc++")
+            return real_import(name, *args, **kwargs)
+
+        monkeypatch.setattr("builtins.__import__", broken_engine_import)
+        with pytest.raises(ModuleNotFoundError, match="missing native dependency"):
+            optional_rust_engine()
+
+    def test_rust_probe_propagates_broken_engine(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        real_optional = d.optional_rust_engine
+
+        def broken_engine() -> object:
+            raise ModuleNotFoundError("broken installed engine", name="libstdc++")
+
+        monkeypatch.setattr(d, "optional_rust_engine", broken_engine)
+        with pytest.raises(ModuleNotFoundError, match="broken installed engine"):
+            d._rust_available()
+        monkeypatch.setattr(d, "optional_rust_engine", real_optional)
+
     def test_rust_probe_reflects_engine(self) -> None:
         """Probe must return True iff `scpn_quantum_engine` is importable.
 
@@ -333,7 +367,7 @@ class TestProbeNegativePaths:
 
         def _fail(name: str, *args: object, **kwargs: object) -> object:
             if name == "scpn_quantum_engine":
-                raise ImportError("simulated")
+                raise ModuleNotFoundError("simulated absence", name="scpn_quantum_engine")
             return real_import(name, *args, **kwargs)
 
         monkeypatch.setattr(builtins, "__import__", _fail)

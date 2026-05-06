@@ -22,6 +22,7 @@ from qiskit.circuit import ParameterVector, QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp
 
 from .._constants import COUPLING_SPARSITY_EPS
+from ..accel.rust_import import optional_rust_engine
 
 KNM_SPARSITY_EPS = COUPLING_SPARSITY_EPS
 
@@ -192,8 +193,9 @@ def knm_to_dense_matrix(K: np.ndarray, omega: np.ndarray, delta: float = 0.0) ->
     # Rust engine only supports delta=0.0 for now
     if abs(delta) < 1e-12:
         try:
-            import scpn_quantum_engine as _engine
-
+            _engine = optional_rust_engine()
+            if _engine is None:
+                raise AttributeError("scpn_quantum_engine absent")
             h_flat = np.asarray(
                 _engine.build_xy_hamiltonian_dense(
                     K.ravel().astype(np.float64),
@@ -202,7 +204,7 @@ def knm_to_dense_matrix(K: np.ndarray, omega: np.ndarray, delta: float = 0.0) ->
                 )
             )
             return h_flat.reshape(2**n, 2**n).astype(complex)
-        except (ImportError, AttributeError):
+        except AttributeError:
             pass
 
     H_op = knm_to_xxz_hamiltonian(K, omega, delta)

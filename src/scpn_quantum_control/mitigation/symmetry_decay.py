@@ -24,12 +24,12 @@ from dataclasses import dataclass
 
 import numpy as np
 
-try:
-    from scpn_quantum_engine import fit_symmetry_decay as _fit_rust
+from ..accel.rust_import import optional_rust_engine
 
-    _HAS_RUST = True
-except ImportError:
-    _HAS_RUST = False
+_engine = optional_rust_engine()
+_HAS_RUST = _engine is not None
+if _engine is not None:
+    _fit_rust = _engine.fit_symmetry_decay
 
 
 @dataclass

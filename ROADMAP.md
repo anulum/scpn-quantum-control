@@ -261,9 +261,11 @@ is copied here.
   NumPy instead of per-qubit dense Kronecker or Qiskit Pauli object
   construction; Rust remains the preferred accelerated path when the
   extension is available.
-- [ ] **Rust import failure policy.** Distinguish expected optional
-  extension absence from broken extension imports across accelerated
-  modules.
+- [x] **Rust import failure policy.** Implemented 2026-05-06:
+  optional Rust acceleration imports now share
+  `optional_rust_engine()`, treating only true
+  `scpn_quantum_engine` absence as optional while propagating broken
+  installed-extension import failures.
 - [ ] **README and public framing sync.** Keep public badges, release
   status, validated hardware claims, examples, and roadmap language in
   sync with current artefacts.

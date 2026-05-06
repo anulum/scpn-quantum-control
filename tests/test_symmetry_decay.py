@@ -98,7 +98,7 @@ class TestErrorHandling:
 
         def blocked_import(name, *args, **kwargs):
             if name == "scpn_quantum_engine":
-                raise ImportError("blocked in test")
+                raise ModuleNotFoundError("blocked in test", name="scpn_quantum_engine")
             return original_import(name, *args, **kwargs)
 
         monkeypatch.setattr(builtins, "__import__", blocked_import)

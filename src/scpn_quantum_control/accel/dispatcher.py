@@ -41,6 +41,8 @@ from typing import Any
 
 import numpy as np
 
+from .rust_import import optional_rust_engine
+
 # ---------------------------------------------------------------------------
 # Tier probes — each returns True if the tier is usable *without*
 # triggering its warm-up cost (we do NOT call is_available() here
@@ -49,11 +51,7 @@ import numpy as np
 
 
 def _rust_available() -> bool:
-    try:
-        import scpn_quantum_engine  # noqa: F401
-    except Exception:
-        return False
-    return True
+    return optional_rust_engine() is not None
 
 
 def _julia_available() -> bool:
@@ -91,7 +89,10 @@ def available_tiers() -> list[str]:
 
 
 def _rust_order_parameter(theta: np.ndarray) -> float:
-    from scpn_quantum_engine import order_parameter as rust_op
+    engine = optional_rust_engine()
+    if engine is None:
+        raise ModuleNotFoundError("scpn_quantum_engine")
+    rust_op = engine.order_parameter
 
     return float(rust_op(np.ascontiguousarray(theta, dtype=np.float64)))
 

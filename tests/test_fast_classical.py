@@ -30,7 +30,7 @@ class TestFastSparseEvolution:
 
         def guarded_import(name, *args, **kwargs):
             if name == "scpn_quantum_engine":
-                raise ImportError("blocked engine")
+                raise ModuleNotFoundError("blocked engine", name="scpn_quantum_engine")
             return real_import(name, *args, **kwargs)
 
         monkeypatch.setattr(builtins, "__import__", guarded_import)

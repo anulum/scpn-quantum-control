@@ -18,6 +18,7 @@ from scipy.linalg import expm
 from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import eigsh, expm_multiply
 
+from ..accel.rust_import import optional_rust_engine
 from ..bridge.knm_hamiltonian import (
     OMEGA_N_16,
     build_knm_paper27,
@@ -53,8 +54,9 @@ def classical_kuramoto_reference(
 
     # Rust fast path: ~100x faster for N >= 8
     try:
-        import scpn_quantum_engine as _engine
-
+        _engine = optional_rust_engine()
+        if _engine is None:
+            raise AttributeError("scpn_quantum_engine absent")
         times_rs, R_rs = _engine.kuramoto_trajectory(theta0, omega, K, dt, n_steps)
         theta_history_rs = np.zeros((n_steps + 1, n_osc))
         theta_history_rs[0] = theta0
@@ -67,7 +69,7 @@ def classical_kuramoto_reference(
             "theta": theta_history_rs,
             "R": np.asarray(R_rs),
         }
-    except (ImportError, AttributeError):
+    except AttributeError:
         pass
 
     times = np.linspace(0, t_max, n_steps + 1)
@@ -231,8 +233,9 @@ def _state_order_param(psi: np.ndarray, n_osc: int) -> float:
     NumPy bitwise-vectorised single-qubit expectations.
     """
     try:
-        import scpn_quantum_engine as _engine
-
+        _engine = optional_rust_engine()
+        if _engine is None:
+            raise AttributeError("scpn_quantum_engine absent")
         return float(
             _engine.state_order_param_sparse(
                 np.ascontiguousarray(psi.real),
@@ -240,7 +243,7 @@ def _state_order_param(psi: np.ndarray, n_osc: int) -> float:
                 n_osc,
             )
         )
-    except (ImportError, AttributeError):
+    except AttributeError:
         pass
 
     exp_x, exp_y = _xy_expectations_vectorized(psi, n_osc)
@@ -256,8 +259,9 @@ def _state_order_param_sparse(psi: np.ndarray, n_osc: int) -> float:
     O(n_osc * 2^n) time, O(2^n) memory.
     """
     try:
-        import scpn_quantum_engine as _engine
-
+        _engine = optional_rust_engine()
+        if _engine is None:
+            raise AttributeError("scpn_quantum_engine absent")
         return float(
             _engine.state_order_param_sparse(
                 np.ascontiguousarray(psi.real),
@@ -265,7 +269,7 @@ def _state_order_param_sparse(psi: np.ndarray, n_osc: int) -> float:
                 n_osc,
             )
         )
-    except (ImportError, AttributeError):
+    except AttributeError:
         pass
 
     exp_x, exp_y = _xy_expectations_vectorized(psi, n_osc)
@@ -306,8 +310,9 @@ def _expectation_pauli(psi: np.ndarray, n: int, qubit: int, pauli: str) -> float
     Tries Rust bitwise fast path first, falls back to NumPy bitwise indexing.
     """
     try:
-        import scpn_quantum_engine as _engine
-
+        _engine = optional_rust_engine()
+        if _engine is None:
+            raise AttributeError("scpn_quantum_engine absent")
         pauli_idx = {"X": 0, "Y": 1, "Z": 2}[pauli]
         return float(
             _engine.expectation_pauli_fast(
@@ -318,7 +323,7 @@ def _expectation_pauli(psi: np.ndarray, n: int, qubit: int, pauli: str) -> float
                 pauli_idx,
             )
         )
-    except (ImportError, AttributeError):
+    except AttributeError:
         pass
 
     if pauli == "X":
@@ -373,8 +378,9 @@ def classical_brute_mpc(
     Returns optimal actions, optimal cost, all costs for comparison.
     """
     try:
-        import scpn_quantum_engine as _engine
-
+        _engine = optional_rust_engine()
+        if _engine is None:
+            raise AttributeError("scpn_quantum_engine absent")
         dim = B_matrix.shape[0]
         actions, cost, all_costs, n_eval = _engine.brute_mpc(
             B_matrix.ravel().astype(np.float64),
@@ -388,7 +394,7 @@ def classical_brute_mpc(
             "all_costs": np.asarray(all_costs),
             "n_evaluated": int(n_eval),
         }
-    except (ImportError, AttributeError):
+    except AttributeError:
         pass
 
     n_actions = 2**horizon
