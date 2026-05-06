@@ -450,8 +450,17 @@ explicit QPU-time estimate before submission.
   offline-readiness pass and any optional hardware block only after
   equivalence checks, backend selection, budget confirmation, and
   explicit approval for QPU submission.
-- [ ] **Variational quantum simulation alternative.** Compare VQS
-  against Trotter where it can reduce compiled depth.
+- [x] **Variational quantum simulation alternative preregistration.**
+  Completed 2026-05-06:
+  `docs/vqs_alternative_prereg_2026-05-06.md` defines candidate VQS
+  modes, offline readiness matrix, promotion gates, tolerances,
+  optional hardware scope, QPU-time ceilings, live gates, analysis
+  plan, falsification rules, and artefact paths. Execution remains
+  separate and approval-gated.
+- [ ] **Variational quantum simulation alternative execution.** Run
+  offline readiness and any optional hardware comparison only after VQS
+  target-observable tolerances pass, backend selection, budget
+  confirmation, and explicit approval for QPU submission.
 - [ ] **Multi-circuit QEC demonstration.** Evaluate physics-aware
   decoding only with clear logical-error metrics.
 
