@@ -91,6 +91,10 @@ is copied here.
 - [ ] **Behavioural-test audit.** Review every test module for
   assertions that constrain numerical invariants, state transitions,
   exception contracts, provenance, or integration behaviour.
+- [x] **Public API smoke-only audit closure.** Implemented 2026-05-06:
+  `tests/test_public_api.py` now asserts explicit export-count
+  contracts in addition to delegated import/type checks, closing the
+  remaining smoke-only module found by `tools/audit_test_behaviour.py`.
 - [ ] **E2E and contract audit.** Cover or explicitly document blocked
   boundaries for hardware/QPU, bridge, SC-NeuroCore, Phase Orchestrator,
   notebook, and example workflows.

@@ -28,43 +28,44 @@ def test_top_level_version():
         assert len(scpn_quantum_control.__version__.split(".")) >= 3
 
 
-def _check_exports(submod: str) -> None:
+def _check_exports(submod: str) -> int:
     mod = __import__(f"scpn_quantum_control.{submod}", fromlist=["__all__"])
     for name in mod.__all__:
         obj = getattr(mod, name)
         assert callable(obj) or isinstance(obj, (type, np.ndarray, dict, list, str)), (
             f"{submod}.{name} has unexpected type {type(obj)}"
         )
+    return len(mod.__all__)
 
 
 def test_bridge_exports():
     """bridge.__all__ exports are importable and typed."""
-    _check_exports("bridge")
+    assert _check_exports("bridge") > 0
 
 
 def test_phase_exports():
     """phase.__all__ exports are importable and typed."""
-    _check_exports("phase")
+    assert _check_exports("phase") > 0
 
 
 def test_control_exports():
     """control.__all__ exports are importable and typed."""
-    _check_exports("control")
+    assert _check_exports("control") > 0
 
 
 def test_qsnn_exports():
     """qsnn.__all__ exports are importable and typed."""
-    _check_exports("qsnn")
+    assert _check_exports("qsnn") > 0
 
 
 def test_mitigation_exports():
     """mitigation.__all__ exports are importable and typed."""
-    _check_exports("mitigation")
+    assert _check_exports("mitigation") > 0
 
 
 def test_hardware_exports():
     """hardware.__all__ exports are importable and typed."""
-    _check_exports("hardware")
+    assert _check_exports("hardware") > 0
 
 
 def test_no_private_in_all():
@@ -97,7 +98,7 @@ def test_top_level_all_no_duplicates():
 
 def test_qec_exports():
     """qec.__all__ exports are importable and typed."""
-    _check_exports("qec")
+    assert _check_exports("qec") > 0
 
 
 def test_all_submodules_importable():
