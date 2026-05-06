@@ -79,12 +79,12 @@ def test_optimal_bitstring_matches_brute_force():
 
 
 def test_optimize_before_build_raises():
-    """AssertionError fires when auto-build is sabotaged."""
+    """RuntimeError fires when auto-build is sabotaged."""
     B = np.array([[1.0]])
     target = np.array([1.0])
     mpc = QAOA_MPC(B, target, horizon=2, p_layers=1)
     mpc.build_cost_hamiltonian = lambda: None  # break auto-build
-    with pytest.raises(AssertionError):
+    with pytest.raises(RuntimeError, match="cost Hamiltonian construction failed"):
         mpc.optimize()
 
 

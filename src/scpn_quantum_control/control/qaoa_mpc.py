@@ -107,6 +107,8 @@ class QAOA_MPC:
         """
         if self._cost_ham is None:
             self.build_cost_hamiltonian()
+        if self._cost_ham is None:
+            raise RuntimeError("cost Hamiltonian construction failed")
 
         def cost_fn(params):
             gamma = params[: self.p]
