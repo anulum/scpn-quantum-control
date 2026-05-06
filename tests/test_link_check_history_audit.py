@@ -14,6 +14,8 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 TOOLS = ROOT / "tools"
 sys.path.insert(0, str(TOOLS))
@@ -27,6 +29,7 @@ _SPEC.loader.exec_module(_MODULE)
 
 accepted_failures_from_json = _MODULE.accepted_failures_from_json
 classify_link_check_runs = _MODULE.classify_link_check_runs
+classified_link_runs_to_json = _MODULE.classified_link_runs_to_json
 format_classified_link_runs = _MODULE.format_classified_link_runs
 main = _MODULE.main
 workflow_runs_from_json = _MODULE.workflow_runs_from_json
@@ -146,3 +149,44 @@ def test_link_check_audit_summary_lists_accepted_and_deletable_runs() -> None:
     assert "resolved_link_failure: 1" in summary
     assert "51: Vendor rate-limit transient." in summary
     assert "50 main resolved_link_failure" in summary
+
+
+def test_link_check_audit_json_output_preserves_live_failure_contract() -> None:
+    runs = workflow_runs_from_json(json.dumps([_run(60, "failure", "2026-05-06T00:00:00Z")]))
+
+    encoded = classified_link_runs_to_json(classify_link_check_runs(runs))
+    decoded = json.loads(encoded)
+
+    assert decoded[0]["databaseId"] == 60
+    assert decoded[0]["bucket"] == "live_link_failure"
+    assert decoded[0]["safeDeleteCandidate"] is False
+
+
+def test_link_check_audit_cli_accepts_external_transient_file(
+    tmp_path: Path, capsys: object
+) -> None:
+    fixture = tmp_path / "runs.json"
+    accepted = tmp_path / "accepted.json"
+    fixture.write_text(
+        json.dumps([_run(70, "failure", "2026-05-06T00:00:00Z")]),
+        encoding="utf-8",
+    )
+    accepted.write_text(
+        json.dumps([{"databaseId": 70, "reason": "External HTTP 429 transient."}]),
+        encoding="utf-8",
+    )
+
+    assert main(["--input", str(fixture), "--accepted", str(accepted), "--json"]) == 0
+    decoded = json.loads(capsys.readouterr().out)
+    assert decoded[0]["bucket"] == "accepted_external_transient"
+    assert decoded[0]["reason"] == "External HTTP 429 transient."
+
+
+def test_link_check_audit_rejects_non_array_accepted_failure_json() -> None:
+    with pytest.raises(ValueError, match="must be a JSON array"):
+        accepted_failures_from_json(json.dumps({"databaseId": 80}))
+
+
+def test_link_check_audit_rejects_non_object_accepted_failure_entries() -> None:
+    with pytest.raises(ValueError, match="entries must be JSON objects"):
+        accepted_failures_from_json(json.dumps([80]))

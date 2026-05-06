@@ -14,6 +14,8 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 _AUDIT_TOOL = ROOT / "tools" / "audit_github_actions_history.py"
 _SPEC = importlib.util.spec_from_file_location("audit_github_actions_history", _AUDIT_TOOL)
@@ -24,8 +26,10 @@ sys.modules[_SPEC.name] = _MODULE
 _SPEC.loader.exec_module(_MODULE)
 
 classify_workflow_runs = _MODULE.classify_workflow_runs
+classified_runs_to_json = _MODULE.classified_runs_to_json
 format_classified_runs = _MODULE.format_classified_runs
 main = _MODULE.main
+workflow_run_from_mapping = _MODULE.workflow_run_from_mapping
 workflow_runs_from_json = _MODULE.workflow_runs_from_json
 
 
@@ -140,3 +144,49 @@ def test_actions_audit_text_summary_lists_safe_delete_candidates() -> None:
 
     assert "resolved_failure: 1" in summary
     assert "40 CI main resolved_failure" in summary
+
+
+def test_actions_audit_json_output_is_deterministic_and_machine_readable() -> None:
+    runs = workflow_runs_from_json(
+        json.dumps(
+            [
+                _run(60, "failure", "2026-05-06T00:00:00Z"),
+                _run(61, "success", "2026-05-06T01:00:00Z"),
+            ]
+        )
+    )
+
+    encoded = classified_runs_to_json(classify_workflow_runs(runs))
+    decoded = json.loads(encoded)
+
+    assert decoded[0]["databaseId"] == 60
+    assert decoded[0]["bucket"] == "resolved_failure"
+    assert decoded[0]["safeDeleteCandidate"] is True
+    assert decoded[0]["createdAt"] == "2026-05-06T00:00:00Z"
+
+
+def test_actions_audit_cli_json_mode_returns_zero_when_no_unresolved_runs(
+    tmp_path: Path, capsys: object
+) -> None:
+    fixture = tmp_path / "runs.json"
+    fixture.write_text(
+        json.dumps([_run(70, "success", "2026-05-06T00:00:00Z")]),
+        encoding="utf-8",
+    )
+
+    assert main(["--input", str(fixture), "--json"]) == 0
+    decoded = json.loads(capsys.readouterr().out)
+    assert decoded[0]["bucket"] == "clean_success"
+
+
+def test_actions_audit_rejects_non_array_json() -> None:
+    with pytest.raises(ValueError, match="must be an array"):
+        workflow_runs_from_json(json.dumps({"databaseId": 80}))
+
+
+def test_actions_audit_normalises_naive_timestamps_to_utc() -> None:
+    run = workflow_run_from_mapping(_run(90, "success", "2026-05-06T00:00:00"))
+
+    encoded = classified_runs_to_json(classify_workflow_runs((run,)))
+
+    assert json.loads(encoded)[0]["createdAt"] == "2026-05-06T00:00:00Z"
