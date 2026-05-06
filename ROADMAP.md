@@ -298,9 +298,11 @@ is copied here.
   `docs/joss_software_submission_checklist_2026-05-06.md` freezes the
   software-paper claim boundary, JOSS/pyOpenSci framing, metadata gate,
   reproducibility gate, and no-QPU final pre-upload checklist.
-- [ ] **SCPN/FIM Hamiltonian paper package.** Preserve the negative
-  hardware falsification boundary: mathematical sector engineering is
-  not promoted as NISQ coherence protection.
+- [x] **SCPN/FIM Hamiltonian paper package.** Completed 2026-05-06:
+  `docs/scpn_fim_submission_checklist_2026-05-06.md` freezes the
+  negative hardware falsification boundary, committed artefact index,
+  IBM job IDs, `scpn-bench fim-all` gate, full-basis readout-mitigation
+  scope, and blocked hardware-protection claims.
 - [ ] **Combined submission checklist.** Build final PDFs, verify
   references and URLs, prepare arXiv metadata, and keep AI disclosures
   minimal but compliant with target venue policy.
