@@ -1,0 +1,7 @@
+{
+  "_spdx": "SPDX-License-Identifier: AGPL-3.0-or-later",
+  "project": "SCPN-QUANTUM-CONTROL",
+  "source": "codex",
+  "timestamp_utc": "2026-05-06T03:30:00Z",
+  "text": "Documented the read-only Actions history dashboard, including audit artefacts, classifier buckets, Link Check transient handling, and the manual safe-delete boundary."
+}

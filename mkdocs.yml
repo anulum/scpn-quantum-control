@@ -118,6 +118,7 @@ nav:
       - Notebooks: notebooks.md
   - Roadmap:
       - Strategic Roadmap: strategic_roadmap.md
+      - Actions History Dashboard: actions_history_dashboard.md
   - Changelog: changelog.md
 
 markdown_extensions:

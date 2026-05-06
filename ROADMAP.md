@@ -44,9 +44,13 @@ is copied here.
   `tools/audit_link_check_history.py` records live link-check failures,
   resolved historical failures, accepted external-transient failures,
   and safe delete candidates from workflow history.
-- [ ] **Actions-history dashboard documentation.** Add a short docs page
-  explaining how to read the history-audit artefacts and when a run is
-  safe to delete.
+- [x] **Actions-history dashboard documentation.** Implemented
+  2026-05-06: `docs/actions_history_dashboard.md` documents audit
+  artefacts, bucket meanings, accepted external-transient Link Check
+  failures, and the manual safe-delete rule.
+- [ ] **Post-push Actions history workflow observation.** After pushing
+  the workflow, confirm the new `Actions History Audit` workflow can be
+  triggered and uploads the expected artefacts.
 
 ### Archived repository hygiene checklist
 
