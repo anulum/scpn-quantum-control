@@ -75,14 +75,16 @@ this alignment.
 
 ### Quantum XY Hamiltonian
 
-The quantum analogue maps each oscillator to a qubit on the Bloch sphere. The
-$\sin(\theta_j - \theta_i)$ coupling becomes a pairwise XY interaction, and the
-natural frequencies become longitudinal fields:
+The quantum analogue represents each oscillator by a qubit on the Bloch sphere.
+The coupling structure is encoded as pairwise XY interactions, and the natural
+frequencies become longitudinal fields:
 
 $$H = -\sum_{i<j} K_{ij} (X_i X_j + Y_i Y_j) - \sum_i \omega_i Z_i$$
 
-This is the central equation of the entire codebase. Every analysis module, every
-variational algorithm, every hardware experiment starts from this Hamiltonian.
+This is the central Hamiltonian used by the codebase. It is a linear analogue or
+embedding of oscillator-network structure; it is not direct Trotterisation of
+the nonlinear classical Kuramoto ODE unless a Koopman, Carleman, or equivalent
+linear embedding is explicitly stated and validated.
 
 **Module:** `bridge/knm_hamiltonian.py` → `knm_to_hamiltonian(K, omega)`
 
@@ -102,9 +104,10 @@ $$R = \frac{1}{N} \left|\sum_i \left(\langle X_i \rangle + i\langle Y_i \rangle\
 
 $R = 0$: completely incoherent (random phases). $R = 1$: perfect synchronization
 (all phases equal). The transition from $R \approx 0$ to $R \approx 1$ as coupling
-strength increases is the synchronization phase transition — the quantum analogue of
-the classical Kuramoto transition, and in the SCPN framework, the mechanism by which
-consciousness emerges.
+strength increases is the synchronization phase transition in the model. For
+publication, biological or cognitive datasets are treated as classical
+complex-network inputs to this analysis pipeline, not as claims of quantum
+causation.
 
 ### XXZ Generalization (Kouchekian-Teodorescu S² Embedding)
 

@@ -6,6 +6,10 @@ The real-time feedback controller closes the Kuramoto-XY loop in software
 while keeping the circuit shape compatible with dynamic-circuit execution.
 It is not a hardware latency claim: the shipped path is a deterministic
 statevector/live-shot simulator plus an exportable monitored circuit template.
+Python execution is suitable for simulation, batch orchestration, and
+across-shot policy updates. Sub-microsecond or within-coherence-window feedback
+must be implemented with provider-native dynamic circuits, OpenQASM 3 control
+flow, pulse-level control, FPGA logic, or an equivalent hardware controller.
 
 ## Control Surface
 

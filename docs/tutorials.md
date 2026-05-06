@@ -103,9 +103,12 @@ rate, but the beam transmits vibrations between them. If the beam is stiff enoug
 the pendulums gradually fall into step. The order parameter $R$ measures how well
 they are marching together.
 
-The quantum version maps each oscillator to a qubit. The phases live on the Bloch
-sphere's equatorial plane, the $\sin$ coupling becomes an XY interaction, and
-time evolution is implemented via Trotter decomposition on a quantum circuit.
+The quantum version is a linear Kuramoto-XY analogue: each oscillator is
+represented by a qubit, phases are encoded on the Bloch sphere's equatorial
+plane, and the coupling structure becomes an XY interaction. Gate-model time
+evolution Trotterises this Hamiltonian analogue, not the nonlinear classical
+Kuramoto ODE directly. Direct nonlinear simulation requires an explicit
+Koopman, Carleman, or equivalent embedding.
 
 ```python
 from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27, OMEGA_N_16
@@ -564,10 +567,11 @@ print(f"Fraction:              {dim / (4**3 - 1):.2%}")
 # (compute ground state via exact diag, then measure M_2)
 ```
 
-**Key insight:** Magic peaks where synchronization happens. The quantum state
-that describes synchronised oscillators is precisely the state that is hardest
-to simulate classically. In the SCPN framework, this means consciousness emerges
-at the computational complexity boundary.
+**Key insight:** Magic can peak near the synchronisation transition in the
+linear Kuramoto-XY analogue. Treat this as a computational-complexity diagnostic
+for the Hamiltonian model; publication-facing biological or cognitive claims
+must remain framed as classical complex-network analysis, not quantum
+causation.
 
 ---
 

@@ -141,9 +141,12 @@ quantum state looks like* at the transition, *how entangled it is*, *how fast
 information scrambles*, and *whether the system thermalises*.
 
 > **Advanced benchmark:** The built-in SCPN 16-layer coupling matrix (Paper 27)
-> provides a heterogeneous-frequency benchmark from the Sentient-Consciousness
-> Projection Network framework, where synchronisation models consciousness
-> dynamics across ontological layers. See [SCPN Foundations](https://anulum.github.io/scpn-quantum-control/theory/).
+> provides a heterogeneous-frequency benchmark for structured
+> oscillator-network experiments. Publication-facing claims should treat this
+> as a classical complex-network input to quantum-inspired Hamiltonian,
+> tensor-network, topological, and DLA analyses, not as a quantum-biological or
+> clinical causation claim. See
+> [SCPN Foundations](https://anulum.github.io/scpn-quantum-control/theory/).
 
 ## Key Results
 
@@ -179,6 +182,9 @@ information scrambles*, and *whether the system thermalises*.
 
 This section covers exact Hilbert-space simulation crossover only.
 No broad observable-level quantum-advantage claim is closed yet.
+Any broader advantage claim requires comparison against state-of-the-art
+tensor-network or GPU baselines and explicit accounting for data-loading and
+state-preparation cost.
 
 No quantum advantage at n ≤ 16 in this exact-simulation path. Classical ODE is
 faster for all accessible sizes. The value of the quantum approach is
@@ -203,8 +209,11 @@ Hamiltonian construction only; the eigh bottleneck is LAPACK in all cases.
 
 ## Background: Kuramoto → XY Mapping
 
-Any network of N coupled Kuramoto oscillators can be mapped to a quantum
-XY Hamiltonian. The built-in SCPN example uses 16 oscillators with a
+Any network of N coupled Kuramoto oscillators can be represented by a linear
+Kuramoto-XY Hamiltonian analogue or embedding. This is not a claim that a
+gate-model circuit directly Trotterises the nonlinear classical Kuramoto ODE;
+direct nonlinear simulation requires an explicit Koopman, Carleman, or
+equivalent embedding. The built-in SCPN example uses 16 oscillators with a
 coupling matrix K_nm:
 
 ```
@@ -227,15 +236,15 @@ The classical dynamics follow the Kuramoto ODE:
 d(theta_i)/dt = omega_i + sum_j K_ij sin(theta_j - theta_i)
 ```
 
-The core isomorphism: this ODE maps to the quantum XY Hamiltonian
+The working quantum analogue uses the XY Hamiltonian
 
 ```
 H = -sum_{i<j} K_ij (X_i X_j + Y_i Y_j) - sum_i omega_i Z_i
 ```
 
-where X, Y, Z are Pauli operators. Superconducting transmon qubits implement
-XX+YY interactions natively through controlled-Z gates, making quantum hardware
-a natural simulator for Kuramoto phase dynamics. The order parameter R — a
+where X, Y, Z are Pauli operators. Superconducting transmon devices can compile
+XX+YY interactions through native-gate decompositions, making quantum hardware
+a useful test bed for the corresponding Hamiltonian dynamics. The order parameter R — a
 measure of global synchronization — is extracted from qubit expectations:
 R = (1/N)|sum_i (<X_i> + i<Y_i>)|.
 

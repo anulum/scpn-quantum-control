@@ -32,6 +32,32 @@ physics venues. This document defines how to frame the work for publication.
 3. Consciousness — the word does not appear in the manuscript
 4. p_h1 is a BKT universal (Monte Carlo falsified this on the K_nm graph)
 
+## Scientific Claim Boundaries
+
+- Biological and clinical datasets are treated as classical complex-network
+  signals. The publication framing is quantum-inspired Hamiltonian,
+  tensor-network, topological, or DLA analysis of those classical signals; it
+  is not a claim of quantum biological causation, diagnosis, treatment, or
+  cure.
+- The Kuramoto-XY construction is a linear quantum analogue or embedding of
+  oscillator-network structure. It is not direct Trotterisation of the
+  nonlinear classical Kuramoto ODE unless an explicit Koopman, Carleman, or
+  equivalent linear embedding is stated and validated.
+- Python feedback loops are orchestration, simulation, and across-shot update
+  loops. Hardware-timescale feedback requires provider-native dynamic
+  circuits, OpenQASM 3 control flow, pulse-level control, FPGA logic, or an
+  equivalent vendor controller.
+- Quantum-advantage or crossover language is conditional on the named
+  baseline. Broad advantage claims require state-of-the-art tensor-network or
+  GPU baselines and explicit accounting for data loading and state preparation.
+- Git stores small reproducibility artefacts: scripts, manifests, checksums,
+  summaries, and selected raw-count JSON files. Heavy generated artefacts
+  should be archived through Zenodo, DVC-style pointers, or an experiment
+  tracker rather than accumulated indefinitely in Git history.
+- Notebooks are demonstrations, provenance records, and paper companions.
+  Reusable algorithms belong under `src/scpn_quantum_control/`, especially
+  `applications/`, with tests and command-line regeneration paths.
+
 ## Reviewer Objections (Pre-Addressed)
 
 | Objection | Response |

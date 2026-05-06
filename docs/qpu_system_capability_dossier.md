@@ -37,7 +37,7 @@ The system needs six classes of data.
 |------------|----------|-------|-----|
 | Source data | EEG windows, connectomes, plasma mode measurements, grid frequency traces, biological networks, recorded campaign inputs. | SC-NeuroCore or domain source repository. | Defines the real-world state to be compiled. |
 | Oscillator artifact | `K_nm`, `omega`, optional `theta0`, layer labels, provenance, hashes. | Phase Orchestrator emits; Quantum Control validates. | Canonical input for QPU/CPU/GPU kernels. |
-| Stream deltas | Changed phases, frequencies, couplings, control settings, event times, deadlines. | Live bridge and runtime broker. | Real-time or near-real-time updates without recompiling a whole experiment from scratch. |
+| Stream deltas | Changed phases, frequencies, couplings, control settings, event times, deadlines. | Live bridge and runtime broker. | Batch or near-real-time updates without recompiling a whole experiment from scratch. Hardware-timescale feedback needs provider-native dynamic circuits, pulse control, FPGA logic, or equivalent controllers. |
 | QPU node data | Backend topology, native gates, qubit count, queue status, calibration, cost units, availability. | Provider adapter. | Routing, cost control, and compilation. |
 | Compute request | Kernel, backend policy, budget, circuit limits, mitigation plan, idempotency key. | Quantum Control scheduler. | Auditable admission control before compute. |
 | Result artifact | Job ids, counts, observable values, confidence, mitigation metadata, result hashes. | Quantum Control runtime. | Downstream memory, analysis, publication, and control. |
