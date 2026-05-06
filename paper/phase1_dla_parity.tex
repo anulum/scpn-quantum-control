@@ -26,7 +26,7 @@
 
 \begin{document}
 
-\title{Replicated hardware observation of parity-sector and excitation-number\\
+\title{Backend-sensitive hardware observation of parity-sector and excitation-number\\
 correlated decoherence asymmetry in the XY Hamiltonian}
 
 \author{Miroslav \v{S}otek}
@@ -69,8 +69,14 @@ continuation gives mixed $n=6,8$ evidence. A subsequent popcount
 control shows that excitation count and computational-basis state
 choice materially contribute to the leakage pattern. The follow-up
 therefore falsifies both a simple monotone scaling story and a clean
-``DLA parity alone'' causal interpretation; it does not constitute a
-broad quantum-advantage claim.
+``DLA parity alone'' causal interpretation. A Phase~3 second-backend
+test on \texttt{ibm\_marrakesh} further rejects a backend-stable
+positive-sign claim: after matching full-basis readout correction on
+physical qubits [5,6,7,8], all promoted depths have non-positive
+relative asymmetry. The result is therefore a real
+\texttt{ibm\_kingston} hardware phenomenon with explicit backend,
+calibration, layout, and excitation-count boundaries; it does not
+constitute a broad quantum-advantage claim.
 \end{abstract}
 
 \maketitle
@@ -353,9 +359,13 @@ correction supported by the existing raw counts: exact-state
 parity-confusion inversion for initial states with matching
 readout-only calibration circuits. A literal full $2^n\times2^n$
 confusion-matrix inversion is not available without new calibration
-circuits for all basis states. The parity-readout-corrected Phase~2
-$n=4$ replication remains significant, with Fisher
+circuits for all basis states on \texttt{ibm\_kingston}. The
+parity-readout-corrected Phase~2 $n=4$ replication remains significant, with Fisher
 $\chi^2=73.894393$, $p=4.16\times10^{-8}$ across the ten depths.
+Phase~3 subsequently added a literal full-basis $n=4$ readout
+calibration on \texttt{ibm\_marrakesh}; that correction strengthens,
+rather than removes, the second-backend non-replication boundary
+reported below.
 
 \subsection{Possible confounds the protocol does not yet rule out}
 
@@ -527,6 +537,59 @@ DLA-parity-only causal claim.}
 \label{fig:popcount}
 \end{figure}
 
+\subsection{Phase 3 multi-device boundary}
+\label{sec:phase3}
+
+On 2026-05-06 we executed the next preregistered boundary test: a
+small second-backend repetition on \texttt{ibm\_marrakesh}. The run
+used the same $n=4$ parity-leakage observable at promoted depths
+$d\in\{4,6,8,10,14,20\}$, plus a full-basis readout calibration on
+the same physical qubits [5,6,7,8]. The parity job
+\texttt{d7tnd3vljm6s73bcsh6g} submitted 148 circuits; the matching
+readout job \texttt{d7tnljvljm6s73bcsql0} submitted all 16
+computational-basis calibration states with 8192 shots per state. The
+calibration matrix is well conditioned (condition number $1.07570$),
+with mean state retention $0.96999$ and maximum measured parity-flip
+probability $0.04724$.
+
+The second-backend result does not reproduce the positive
+\texttt{ibm\_kingston} sign. Table~\ref{tab:phase3} reports the raw
+relative asymmetry and the full-basis readout-corrected relative
+asymmetry. The only raw positive point, $d=6$, becomes negative after
+readout correction, and all corrected promoted depths are
+non-positive.
+
+\begin{table}[tb]
+\centering
+\small
+\begin{tabular}{rcc}
+\toprule
+$d$ & Raw $A(d)$ & Full-basis corrected $A(d)$ \\
+\midrule
+ 4 & $-2.53\,\%$ & $-31.60\,\%$ \\
+ 6 & $+3.69\,\%$ & $-9.62\,\%$ \\
+ 8 & $-0.13\,\%$ & $-3.58\,\%$ \\
+10 & $-2.48\,\%$ & $-0.20\,\%$ \\
+14 & $-7.43\,\%$ & $-4.56\,\%$ \\
+20 & $-3.46\,\%$ & $-5.00\,\%$ \\
+\bottomrule
+\end{tabular}
+\caption{Phase~3 second-backend boundary on \texttt{ibm\_marrakesh}.
+The full-basis readout correction uses the matching 16-state
+calibration job on physical qubits [5,6,7,8]. The promoted conclusion
+is backend sensitivity, not backend-stable parity protection.}
+\label{tab:phase3}
+\end{table}
+
+This is a falsification of the strongest transfer claim. The Phase~1
+and Phase~2 \texttt{ibm\_kingston} signal remains a reproducible
+same-device raw-count phenomenon, and the popcount-control structure
+remains scientifically informative, but the sign and magnitude are
+not backend-stable under this \texttt{ibm\_marrakesh} layout and
+calibration window. Any future positive universality claim therefore
+requires layout-randomised or multi-backend statistics rather than a
+single-device replication.
+
 %% ====================================================================
 \section{Conclusion}
 %% ====================================================================
@@ -542,15 +605,18 @@ The Phase~2 A+G block independently strengthens the $n=4$ raw-count
 observation with Fisher $p=3.77\times10^{-20}$, while the B-C block
 shows that scaling is mixed rather than monotone. The popcount-control
 follow-up shows that excitation count and state choice materially
-contribute to the signal. The validated claim is therefore an $n=4$
-raw-count hardware phenomenon with constrained early scaling evidence
-and an explicitly limited causal interpretation, not a broad
-quantum-advantage result and not a DLA-parity-only result. Existing
-data also support two no-new-QPU follow-up conclusions: exact-state
-parity-readout correction preserves the main Phase~2 signs, and
-parity survival is smooth enough versus depth to motivate a future
-GUESS-style folded-noise protocol. The latter is only a readiness
-check, not a demonstrated zero-noise extrapolation.
+contribute to the signal. The Phase~3 \texttt{ibm\_marrakesh}
+boundary test then shows that the positive \texttt{ibm\_kingston}
+sign is not backend-stable after matching full-basis readout
+correction. The validated claim is therefore an $n=4$ same-device
+raw-count hardware phenomenon with constrained early scaling evidence,
+backend sensitivity, and an explicitly limited causal interpretation,
+not a broad quantum-advantage result and not a DLA-parity-only result.
+Existing data also support two no-new-QPU follow-up conclusions:
+exact-state parity-readout correction preserves the main Phase~2
+signs, and parity survival is smooth enough versus depth to motivate
+a future GUESS-style folded-noise protocol. The latter is only a
+readiness check, not a demonstrated zero-noise extrapolation.
 
 %% ====================================================================
 \section*{Data and code availability}
@@ -581,9 +647,18 @@ The no-new-QPU readout and GUESS-readiness cross-checks are reproduced
 with \path{scripts/analyse_phase2_readout_mitigation.py} and
 \mbox{\texttt{scripts/analyse\_phase2\_guess\_calibration.py}}; their derived
 JSON summaries live in \path{data/phase2_readout_mitigation/} and
-\path{data/phase2_guess_calibration/}. Prepared but unsubmitted
-state/layout-randomisation and multi-device replication protocols are
-documented in \path{docs/next_validation_protocols_2026-05-05.md}.
+\path{data/phase2_guess_calibration/}. The Phase~3 second-backend
+\texttt{ibm\_marrakesh} raw counts, row metrics, and full-basis
+readout-corrected summaries live in
+\path{data/phase3_multidevice_dla/} and are indexed in
+\path{docs/phase3_multidevice_dla_manifest_2026-05-06.md}. The
+matching full-basis readout calibration lives in
+\path{data/readout_full_basis/} and is indexed in
+\path{docs/readout_full_basis_manifest_2026-05-06.md}. The submission
+drivers are \path{scripts/phase3_multidevice_dla_ibm.py} and
+\path{scripts/readout_full_basis_calibration_ibm.py}. Prepared but
+unsubmitted state/layout-randomisation protocols remain documented in
+\path{docs/next_validation_protocols_2026-05-05.md}.
 The campaign archive carries Zenodo
 DOI~\href{https://doi.org/10.5281/zenodo.18821929}{10.5281/zenodo.18821929}.
 
@@ -591,10 +666,10 @@ DOI~\href{https://doi.org/10.5281/zenodo.18821929}{10.5281/zenodo.18821929}.
 \section*{Acknowledgements}
 %% ====================================================================
 
-Access to \texttt{ibm\_kingston} was provided through IBM Quantum's
-Open Plan free tier. The author thanks Dr Berk Kovos (IBM Quantum
-Solutions Strategy Lead) for guidance on the Open Plan promotional
-pathway.
+Access to \texttt{ibm\_kingston} and \texttt{ibm\_marrakesh} was
+provided through IBM Quantum's Open Plan free tier. The author thanks
+Dr Berk Kovos (IBM Quantum Solutions Strategy Lead) for guidance on
+the Open Plan promotional pathway.
 
 %% ====================================================================
 \bibliographystyle{apsrev4-2}

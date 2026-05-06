@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 
-# Hardware observation of dynamical Lie-algebra parity asymmetry in the XY Hamiltonian on IBM Heron r2
+# Backend-sensitive hardware observation of parity-sector and excitation-number correlated decoherence asymmetry in the XY Hamiltonian
 
 **Miroslav Šotek** [ORCID: 0009-0009-3560-0851]
 *ANULUM Research, Marbach SG, Switzerland*
@@ -45,6 +45,15 @@ A B-C continuation at $n=6,8$ gives mixed scaling evidence: $n=8$
 preserves a positive middle-depth sign, while $n=6$ shows negative
 significant depths. This falsifies a simple monotone scaling story and
 is not a broad quantum-advantage claim.
+
+**2026-05-06 update.** A Phase 3 second-backend boundary test on
+ibm\_marrakesh does not reproduce the positive ibm\_kingston sign.
+The run used promoted depths $d\in\{4,6,8,10,14,20\}$ and a matching
+full-basis readout calibration on physical qubits [5,6,7,8]. After
+full-basis readout correction, all promoted depths have non-positive
+relative asymmetry. The promoted claim is therefore backend-sensitive:
+real and same-device replicated on ibm\_kingston, but not established
+as backend-stable parity protection.
 
 ---
 
@@ -241,6 +250,29 @@ replication, same-day readout control, and mixed early scaling at
 $n=6,8$. It does not promote $n=10,12$ scaling, GUESS mitigation,
 multi-device replication, or broad quantum advantage.
 
+### Phase 3 multi-device boundary update
+
+The May 2026 Phase 3 second-backend test was run on ibm\_marrakesh
+with 148 parity circuits and a separate 16-state full-basis readout
+calibration. The parity job was `d7tnd3vljm6s73bcsh6g`; the matching
+readout job was `d7tnljvljm6s73bcsql0`. The calibration matrix was
+well conditioned (condition number 1.07570), with mean state retention
+0.96999 and maximum measured parity-flip probability 0.04724.
+
+| $d$ | Raw $A(d)$ | Full-basis corrected $A(d)$ |
+|----:|-----------:|----------------------------:|
+| 4 | $-2.53\,\%$ | $-31.60\,\%$ |
+| 6 | $+3.69\,\%$ | $-9.62\,\%$ |
+| 8 | $-0.13\,\%$ | $-3.58\,\%$ |
+| 10 | $-2.48\,\%$ | $-0.20\,\%$ |
+| 14 | $-7.43\,\%$ | $-4.56\,\%$ |
+| 20 | $-3.46\,\%$ | $-5.00\,\%$ |
+
+This rejects the strongest backend-transfer claim. The correct
+interpretation is an ibm\_kingston same-device hardware phenomenon
+with explicit backend, calibration, layout, state-choice, and
+excitation-count boundaries.
+
 ### Statistical caveats
 
 Three points of statistical hygiene are worth flagging because a real
@@ -336,15 +368,16 @@ on a second Heron r2 device (e.g. ibm\_marrakesh).
 
 ## 6. Conclusion
 
-We have measured the parity-sector decoherence asymmetry of the XY
-Hamiltonian's dynamical Lie algebra on real superconducting hardware
-for the first time. The observed $(10.8 \pm 1.1)\,\%$ mean asymmetry
-across depths $d \ge 4$ is in quantitative agreement with an
-independent classical simulator prediction, and is statistically
-significant at $p \ll 10^{-16}$ combined across 8 depth points. The
-result opens a concrete experimental handle on the DLA structure of
-the Kuramoto–XY Hamiltonian and provides the noise profile needed to
-calibrate physics-informed error mitigation for deeper runs.
+We have measured a parity-sector and excitation-number correlated
+decoherence asymmetry of the XY Hamiltonian's dynamical Lie algebra
+on real superconducting hardware. The observed ibm\_kingston
+$(10.8 \pm 1.1)\,\%$ mean asymmetry across depths $d \ge 4$ is in
+quantitative agreement with an independent classical simulator
+prediction and was strengthened by a same-device Phase 2 continuation.
+However, the Phase 2 popcount control and Phase 3 ibm\_marrakesh
+boundary test rule out a clean DLA-parity-only or backend-stable
+protection claim. The result is a bounded NISQ hardware phenomenology
+observation, not a broad quantum-advantage claim.
 
 ## Data and code availability
 
@@ -359,10 +392,17 @@ and the full analysis can be reproduced with
 python scripts/analyse_phase1_dla_parity.py
 ```
 
+The Phase 2 datasets are in `data/phase2_dla_parity/`,
+`data/phase2_scaling_bc/`, and `data/phase2_popcount_control/`. The
+Phase 3 multi-device and readout-calibration artefacts are in
+`data/phase3_multidevice_dla/` and `data/readout_full_basis/`, with
+manifests in `docs/phase3_multidevice_dla_manifest_2026-05-06.md` and
+`docs/readout_full_basis_manifest_2026-05-06.md`.
+
 ## Acknowledgements
 
-Access to ibm\_kingston was provided through IBM Quantum's Open Plan
-free-tier. The author thanks Dr Berk Kovos (IBM Quantum Solutions
+Access to ibm\_kingston and ibm\_marrakesh was provided through IBM
+Quantum's Open Plan free-tier. The author thanks Dr Berk Kovos (IBM Quantum Solutions
 Strategy Lead) for guidance on the Open Plan promotional pathway.
 
 ## References
