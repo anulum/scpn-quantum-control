@@ -9,14 +9,31 @@
 
 from __future__ import annotations
 
+import importlib.util
+import sys
 from pathlib import Path
+from types import ModuleType
 
-from tools.audit_mock_stub_usage import (
-    audit_mock_stub_file,
-    audit_mock_stub_tree,
-    findings_to_json,
-    format_findings,
+
+def _load_tool_module(module_name: str, filename: str) -> ModuleType:
+    module_path = Path(__file__).resolve().parents[1] / "tools" / filename
+    spec = importlib.util.spec_from_file_location(module_name, module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot load {module_name} from {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+_audit_mock_stub_usage = _load_tool_module(
+    "audit_mock_stub_usage_for_tests",
+    "audit_mock_stub_usage.py",
 )
+audit_mock_stub_file = _audit_mock_stub_usage.audit_mock_stub_file
+audit_mock_stub_tree = _audit_mock_stub_usage.audit_mock_stub_tree
+findings_to_json = _audit_mock_stub_usage.findings_to_json
+format_findings = _audit_mock_stub_usage.format_findings
 
 
 def test_audit_detects_monkeypatch_and_mock_calls(tmp_path: Path):

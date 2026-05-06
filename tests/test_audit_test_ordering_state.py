@@ -9,15 +9,32 @@
 
 from __future__ import annotations
 
+import importlib.util
+import sys
 from pathlib import Path
+from types import ModuleType
 
-from tools.audit_test_ordering_state import (
-    audit_ordering_file,
-    audit_ordering_tree,
-    category_counts,
-    findings_to_json,
-    format_findings,
+
+def _load_tool_module(module_name: str, filename: str) -> ModuleType:
+    module_path = Path(__file__).resolve().parents[1] / "tools" / filename
+    spec = importlib.util.spec_from_file_location(module_name, module_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot load {module_name} from {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+_audit_test_ordering_state = _load_tool_module(
+    "audit_test_ordering_state_for_tests",
+    "audit_test_ordering_state.py",
 )
+audit_ordering_file = _audit_test_ordering_state.audit_ordering_file
+audit_ordering_tree = _audit_test_ordering_state.audit_ordering_tree
+category_counts = _audit_test_ordering_state.category_counts
+findings_to_json = _audit_test_ordering_state.findings_to_json
+format_findings = _audit_test_ordering_state.format_findings
 
 
 def test_detects_reload_environment_and_module_injection(tmp_path: Path):
