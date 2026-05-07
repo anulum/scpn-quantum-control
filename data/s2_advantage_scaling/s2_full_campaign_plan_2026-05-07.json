@@ -1,0 +1,222 @@
+{
+  "advantage_claim": false,
+  "campaign_decision": "ready_for_deliberate_no_qpu_full_classical_campaign",
+  "claim_boundary": {
+    "allowed": [
+      "full-grid S2 execution plan",
+      "explicit size gates and optional hardware blockers",
+      "next no-QPU classical/simulator workload list"
+    ],
+    "blocked": [
+      "broad quantum advantage",
+      "hardware scaling claim",
+      "publication crossover figure",
+      "QPU submission"
+    ]
+  },
+  "date": "2026-05-07",
+  "gates": [
+    {
+      "blocker": null,
+      "evidence": "all protocol sizes and baseline columns have a planning row",
+      "name": "full_grid_enumerated",
+      "passed": true,
+      "required": true
+    },
+    {
+      "blocker": null,
+      "evidence": "required rows are classified as measured, ready, or size-gated",
+      "name": "required_rows_classified",
+      "passed": true,
+      "required": true
+    },
+    {
+      "blocker": null,
+      "evidence": "planner does not fabricate heavy benchmark rows",
+      "name": "full_campaign_not_executed",
+      "passed": true,
+      "required": true
+    },
+    {
+      "blocker": null,
+      "evidence": "hardware rows remain approval-gated",
+      "name": "hardware_rows_not_promoted",
+      "passed": true,
+      "required": true
+    },
+    {
+      "blocker": "broad quantum-advantage language remains blocked",
+      "evidence": "no full benchmark matrix or QPU rows exist",
+      "name": "advantage_claim_blocked",
+      "passed": true,
+      "required": true
+    }
+  ],
+  "generated_at_utc": "2026-05-07T01:15:04+00:00",
+  "hardware_submission": false,
+  "protocol": {
+    "acceptance": [
+      "All required classical and simulator columns either contain measured rows or explicit size-gated skips.",
+      "Every timing row records command, machine, dependency versions, and git commit.",
+      "MPS/TN diagnostics are present before any advantage-language figure is promoted.",
+      "Hardware rows are optional until credits are approved and must never be extrapolated as broad advantage."
+    ],
+    "baselines": [
+      {
+        "claim_boundary": "Classical oscillator ODE baseline; not a Hilbert-space solver.",
+        "kind": "classical_ode",
+        "label": "classical_ode",
+        "max_qubits": 20,
+        "metrics": [
+          "wall_time_ms",
+          "memory_bytes",
+          "status",
+          "notes",
+          "final_R"
+        ],
+        "required": true
+      },
+      {
+        "claim_boundary": "Dense exact diagonalisation is skipped by memory gate above its cap.",
+        "kind": "dense_exact_diagonalisation",
+        "label": "dense_eigh",
+        "max_qubits": 14,
+        "metrics": [
+          "wall_time_ms",
+          "memory_bytes",
+          "status",
+          "notes",
+          "ground_energy"
+        ],
+        "required": true
+      },
+      {
+        "claim_boundary": "Sparse eigensolver timing is not equivalent to full dynamics.",
+        "kind": "sparse_eigsh",
+        "label": "sparse_eigsh",
+        "max_qubits": 20,
+        "metrics": [
+          "wall_time_ms",
+          "memory_bytes",
+          "status",
+          "notes",
+          "ground_energy",
+          "residual_norm"
+        ],
+        "required": true
+      },
+      {
+        "claim_boundary": "MPS results bound classical spoofability; low entanglement weakens advantage claims.",
+        "kind": "mps_tensor_network",
+        "label": "mps_tensor_network",
+        "max_qubits": 20,
+        "metrics": [
+          "wall_time_ms",
+          "memory_bytes",
+          "status",
+          "notes",
+          "max_bond",
+          "discarded_weight"
+        ],
+        "required": true
+      },
+      {
+        "claim_boundary": "GPU dense timings are classical-validation support, not a quantum baseline.",
+        "kind": "gpu_dense_reference",
+        "label": "gpu_dense_reference",
+        "max_qubits": 13,
+        "metrics": [
+          "wall_time_ms",
+          "memory_bytes",
+          "status",
+          "notes",
+          "device"
+        ],
+        "required": false
+      },
+      {
+        "claim_boundary": "Aer statevector is a simulator baseline, not hardware evidence.",
+        "kind": "aer_statevector",
+        "label": "aer_statevector",
+        "max_qubits": 20,
+        "metrics": [
+          "wall_time_ms",
+          "memory_bytes",
+          "status",
+          "notes",
+          "trotter_steps",
+          "circuit_depth"
+        ],
+        "required": true
+      },
+      {
+        "claim_boundary": "Hardware column is evidence only for submitted preregistered sizes; absence of IBM credits must degrade gracefully without broad advantage claims.",
+        "kind": "qpu_hardware",
+        "label": "qpu_hardware",
+        "max_qubits": 8,
+        "metrics": [
+          "shots",
+          "job_ids",
+          "backend",
+          "raw_counts_path",
+          "status",
+          "notes"
+        ],
+        "required": false
+      }
+    ],
+    "claim_boundary": "S2 may publish scaling, memory, and spoofability boundaries. It must not claim broad quantum advantage without preregistered hardware data and classical tensor-network baselines at the same problem family.",
+    "falsification": [
+      "If MPS discarded weight remains small at target sizes, any strong quantum-advantage framing is rejected.",
+      "If Aer/statevector or sparse classical baselines dominate the proposed quantum path, crossover language is rejected.",
+      "If hardware rows are unavailable or noisy, the result remains a classical scaling study only."
+    ],
+    "output_schema": {
+      "row_keys": [
+        "protocol_id",
+        "n_qubits",
+        "baseline",
+        "status",
+        "wall_time_ms",
+        "memory_bytes",
+        "metric_payload",
+        "command",
+        "machine",
+        "dependencies",
+        "git_commit",
+        "notes"
+      ]
+    },
+    "protocol_id": "s2_quantum_advantage_scaling_2026-05-06",
+    "required_baselines": [
+      "classical_ode",
+      "dense_eigh",
+      "sparse_eigsh",
+      "mps_tensor_network",
+      "aer_statevector"
+    ],
+    "sizes": [
+      4,
+      6,
+      8,
+      10,
+      12,
+      14,
+      16,
+      18,
+      20
+    ]
+  },
+  "qpu_minutes_spent": 0.0,
+  "ready_required_rows": 32,
+  "rows_sha256": "7951078b7509083af84c2d939c345e5d83318870dd308bdb1b29251031147f92",
+  "schema": "scpn_s2_full_scaling_campaign_plan_v1",
+  "status_counts": {
+    "blocked_optional_hardware": 9,
+    "measured_lite": 10,
+    "ready_full_campaign": 32,
+    "ready_optional_gpu": 5,
+    "size_gated": 3,
+    "size_gated_optional": 4
+  }
+}

@@ -940,6 +940,17 @@ be executed until individually activated.
   `tracemalloc` peak bytes for measured rows, keeps estimated dense or
   statevector bytes in metric payloads, and exposes explicit dense,
   sparse, tensor-network, and statevector size gates.
+- [x] **S2 full-campaign execution plan.** Implemented 2026-05-07:
+  `scripts/plan_s2_full_scaling_campaign.py` enumerates the full
+  `N=4,6,8,10,12,14,16,18,20` scaling matrix across every protocol
+  baseline, classifies rows as lite-measured, ready for deliberate
+  no-QPU full-campaign execution, size-gated, optional GPU, or blocked
+  optional hardware, and generates
+  `data/s2_advantage_scaling/s2_full_campaign_plan_2026-05-07.json`,
+  `data/s2_advantage_scaling/s2_full_campaign_rows_2026-05-07.csv`,
+  and `docs/s2_full_campaign_plan_2026-05-07.md`. Decision:
+  `ready_for_deliberate_no_qpu_full_classical_campaign`; hardware rows
+  and broad quantum-advantage language remain blocked.
 - [ ] **S3** ML-augmented pulse / ansatz design.
 - [x] **S3 deterministic pulse/ansatz design-readiness gate.**
   Implemented 2026-05-06:
