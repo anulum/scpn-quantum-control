@@ -9,12 +9,15 @@
 
 from __future__ import annotations
 
-import importlib.util
-
 import numpy as np
 import pytest
 
-HAS_RUST = importlib.util.find_spec("scpn_quantum_engine") is not None
+try:
+    import scpn_quantum_engine as _engine
+
+    HAS_RUST = callable(getattr(_engine, "build_knm", None))
+except ImportError:
+    HAS_RUST = False
 pytestmark = pytest.mark.skipif(not HAS_RUST, reason="scpn_quantum_engine not installed")
 
 

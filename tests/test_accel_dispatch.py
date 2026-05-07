@@ -225,7 +225,9 @@ class TestRustTier:
         seed=st.integers(min_value=0, max_value=2**31 - 1),
     )
     def test_rust_matches_python_floor(self, n: int, seed: int) -> None:
-        pytest.importorskip("scpn_quantum_engine")
+        engine = pytest.importorskip("scpn_quantum_engine")
+        if not callable(getattr(engine, "order_parameter", None)):
+            pytest.skip("scpn_quantum_engine.order_parameter unavailable")
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-10 * math.pi, 10 * math.pi, size=n)
         r_rust = d._rust_order_parameter(theta)
