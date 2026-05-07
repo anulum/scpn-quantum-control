@@ -1,0 +1,128 @@
+{
+  "basis_settings": [
+    "IIXX",
+    "IIYY",
+    "IIZZ",
+    "IXXI",
+    "IYYI",
+    "IZZI",
+    "XXII",
+    "YYII",
+    "ZZII"
+  ],
+  "claim_boundary": {
+    "blocked": [
+      "hardware entanglement claim",
+      "full-state tomography claim",
+      "backend-general entanglement dynamics",
+      "quantum advantage",
+      "QPU submission authorisation"
+    ],
+    "supported": [
+      "exact reduced-Pauli reference values",
+      "small-system half-chain purity proxy",
+      "measurement-setting and circuit-count readiness"
+    ]
+  },
+  "families": [
+    "dla_parity",
+    "fim_pair"
+  ],
+  "full_tomography_unnecessary": true,
+  "generated_at_utc": "2026-05-07T00:21:24+00:00",
+  "hardware_submission": false,
+  "main_circuits": 162,
+  "mode": "reduced_pauli_tomography",
+  "n_basis_settings": 9,
+  "n_observable_rows": 54,
+  "n_qubits": 4,
+  "n_source_circuits": 6,
+  "observable_rows_sha256": "8c4143b5b0148927a87b8e6e65542a23f5c65cbe0765401300d6454369b1ef18",
+  "qpu_minutes_spent": 0.0,
+  "readiness_decision": "ready_for_optional_hardware_preregistration",
+  "readout_circuits": 4,
+  "readout_shots": 8192,
+  "readout_states": [
+    "0000",
+    "0001",
+    "0011",
+    "1111"
+  ],
+  "ready_for_optional_hardware": true,
+  "repetitions": 3,
+  "schema": "scpn_phase3_entanglement_tomography_readiness_v1",
+  "shots_per_setting": 2048,
+  "source_metrics": [
+    {
+      "depth": 6,
+      "family": "dla_parity",
+      "half_chain_purity": 0.6011084911996126,
+      "initial": "0011",
+      "label": "dla_even_shallow",
+      "lambda_fim": null,
+      "parity_survival_ideal": 1.0000000000000038,
+      "source_depth": 32,
+      "source_size": 62
+    },
+    {
+      "depth": 6,
+      "family": "dla_parity",
+      "half_chain_purity": 0.6564223888300256,
+      "initial": "0001",
+      "label": "dla_odd_shallow",
+      "lambda_fim": null,
+      "parity_survival_ideal": 1.000000000000003,
+      "source_depth": 32,
+      "source_size": 61
+    },
+    {
+      "depth": 10,
+      "family": "dla_parity",
+      "half_chain_purity": 0.5528498324338822,
+      "initial": "0011",
+      "label": "dla_even_signal",
+      "lambda_fim": null,
+      "parity_survival_ideal": 1.0000000000000053,
+      "source_depth": 52,
+      "source_size": 102
+    },
+    {
+      "depth": 10,
+      "family": "dla_parity",
+      "half_chain_purity": 0.6393284143740503,
+      "initial": "0001",
+      "label": "dla_odd_signal",
+      "lambda_fim": null,
+      "parity_survival_ideal": 1.0000000000000053,
+      "source_depth": 52,
+      "source_size": 101
+    },
+    {
+      "depth": 4,
+      "family": "fim_pair",
+      "half_chain_purity": 0.5000513647720345,
+      "initial": "0011",
+      "label": "fim_lambda0_reference",
+      "lambda_fim": 0.0,
+      "parity_survival_ideal": 1.0000000000000024,
+      "source_depth": 22,
+      "source_size": 42
+    },
+    {
+      "depth": 4,
+      "family": "fim_pair",
+      "half_chain_purity": 0.5000513647720353,
+      "initial": "0011",
+      "label": "fim_lambda4_feedback",
+      "lambda_fim": 4.0,
+      "parity_survival_ideal": 1.000000000000003,
+      "source_depth": 41,
+      "source_size": 66
+    }
+  ],
+  "states": [
+    "0001",
+    "0011"
+  ],
+  "total_circuits": 166
+}

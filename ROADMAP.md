@@ -570,10 +570,24 @@ explicit QPU-time estimate before submission.
   boundary, offline readiness matrix, optional hardware scope, circuit
   and QPU-time ceilings, live gates, analysis plan, falsification rules,
   and artefact paths. Execution remains separate and approval-gated.
-- [ ] **Entanglement entropy or tomography execution.** Run offline
-  readiness and any optional hardware block only after observable
-  definitions, backend selection, budget confirmation, and explicit
-  approval for QPU submission.
+- [x] **Entanglement entropy or tomography offline readiness.**
+  Completed 2026-05-07:
+  `scripts/generate_entanglement_tomography_readiness.py` generated exact
+  reduced-Pauli reference values, half-chain purity proxies, basis
+  settings, and circuit-count gates for DLA parity plus FIM `n=4`
+  families. Artefacts:
+  `data/phase3_entanglement_tomography/entanglement_tomography_readiness_2026-05-07.json`,
+  `data/phase3_entanglement_tomography/entanglement_observable_rows_2026-05-07.csv`,
+  and `docs/phase3_entanglement_tomography_readiness_2026-05-07.md`.
+  Decision: `ready_for_optional_hardware_preregistration`; the promoted
+  reduced-tomography block uses `9` basis settings and `166` total
+  circuits, so full tomography is unnecessary and the optional hardware
+  block is scientifically promotable after backend selection, live
+  transpilation gates, budget confirmation, and explicit approval.
+- [ ] **Entanglement entropy or tomography hardware execution.** Optional
+  QPU follow-up remains blocked until backend selection, live
+  transpilation, QPU-minute estimate, and explicit approval are completed
+  from committed code.
 - [x] **Depth-optimal native decomposition preregistration.**
   Completed 2026-05-06:
   `docs/depth_optimal_native_decomposition_prereg_2026-05-06.md`
