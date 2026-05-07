@@ -596,10 +596,26 @@ explicit QPU-time estimate before submission.
   follow-up, 12-minute ceiling, live gates, analysis plan,
   falsification rules, and artefact paths. Execution remains separate
   and approval-gated.
-- [ ] **Depth-optimal native decomposition execution.** Run the
-  offline-readiness pass and any optional hardware block only after
-  equivalence checks, backend selection, budget confirmation, and
-  explicit approval for QPU submission.
+- [x] **Depth-optimal native decomposition offline readiness.**
+  Completed 2026-05-07:
+  `scripts/generate_native_decomposition_readiness.py` generated local
+  basis-gate resource rows plus unitary/observable equivalence rows for
+  generic Pauli evolution, current XY compiler, and native-targeted
+  `rxx+ryy` decomposition across `n=4,6,8` readiness cases. Artefacts:
+  `data/phase3_native_decomposition/native_decomposition_readiness_2026-05-07.json`,
+  `data/phase3_native_decomposition/native_decomposition_transpile_rows_2026-05-07.csv`,
+  `data/phase3_native_decomposition/native_decomposition_equivalence_rows_2026-05-07.csv`,
+  and `docs/phase3_native_decomposition_readiness_2026-05-07.md`.
+  Decision: `blocked_current_xy_invalid_no_native_gain_vs_generic`. The
+  native-targeted `rxx+ryy` path passes equivalence but has no median
+  depth or two-qubit-gate gain versus the generic Pauli baseline, while
+  the current XY compiler comparator fails equivalence and cannot be used
+  as a valid resource baseline. Optional hardware execution is therefore
+  not promoted.
+- [ ] **Depth-optimal native decomposition hardware execution.** Blocked
+  until a revised equivalent candidate shows a resource gain in the
+  offline gate, then passes backend selection, live transpilation,
+  budget confirmation, and explicit approval for QPU submission.
 - [x] **Variational quantum simulation alternative preregistration.**
   Completed 2026-05-06:
   `docs/vqs_alternative_prereg_2026-05-06.md` defines candidate VQS

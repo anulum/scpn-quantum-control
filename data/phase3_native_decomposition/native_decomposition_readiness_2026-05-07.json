@@ -1,0 +1,76 @@
+{
+  "basis_gates": [
+    "rz",
+    "sx",
+    "x",
+    "cx"
+  ],
+  "claim_boundary": {
+    "blocked": [
+      "hardware coherence improvement",
+      "backend-general native optimality",
+      "QPU submission authorisation",
+      "quantum advantage"
+    ],
+    "supported": [
+      "local basis-gate resource comparison",
+      "small-system unitary or observable equivalence diagnostics",
+      "promotion or rejection before live backend transpilation"
+    ]
+  },
+  "current_xy_equivalence_passed": false,
+  "equivalence_rows_sha256": "214b3a26c5ad0c1aecce2013a9221c1f8d5598472e41762bb5517028c275177e",
+  "generated_at_utc": "2026-05-07T00:31:36+00:00",
+  "hardware_submission": false,
+  "method_summaries": {
+    "current_xy_compiler": {
+      "max_depth": 5,
+      "max_two_qubit_gates": 0,
+      "mean_depth": 5.0,
+      "mean_two_qubit_gates": 0.0,
+      "median_depth": 5.0,
+      "median_two_qubit_gates": 0.0,
+      "method": "current_xy_compiler",
+      "n_rows": 30
+    },
+    "generic_pauli": {
+      "max_depth": 173,
+      "max_two_qubit_gates": 60,
+      "mean_depth": 113.0,
+      "mean_two_qubit_gates": 42.333333333333336,
+      "median_depth": 103.0,
+      "median_two_qubit_gates": 40.0,
+      "method": "generic_pauli",
+      "n_rows": 30
+    },
+    "native_targeted_rxx_ryy": {
+      "max_depth": 173,
+      "max_two_qubit_gates": 60,
+      "mean_depth": 113.33333333333333,
+      "mean_two_qubit_gates": 42.333333333333336,
+      "median_depth": 103.0,
+      "median_two_qubit_gates": 40.0,
+      "method": "native_targeted_rxx_ryy",
+      "n_rows": 30
+    }
+  },
+  "native_median_depth_delta_vs_current_xy": 19.6,
+  "native_median_depth_delta_vs_generic": 0.0,
+  "native_median_two_qubit_delta_vs_current_xy": 40.0,
+  "native_median_two_qubit_delta_vs_generic": 0.0,
+  "native_targeted_equivalence_passed": true,
+  "observable_tolerance": 1e-06,
+  "qpu_minutes_spent": 0.0,
+  "readiness_decision": "blocked_current_xy_invalid_no_native_gain_vs_generic",
+  "ready_for_optional_hardware": false,
+  "schema": "scpn_phase3_native_decomposition_readiness_v1",
+  "transpile_rows_sha256": "8727d8edd07f82f83c77f8d7a17afd1efbcfebc22c48b93f967e558ac417eacf",
+  "transpiler_seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "unitary_tolerance": 1e-08
+}
