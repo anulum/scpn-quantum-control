@@ -17,7 +17,7 @@ WORKDIR /app
 COPY pyproject.toml requirements.txt requirements-dev.txt requirements-ci-py312-linux.txt README.md LICENSE ./
 COPY src/ src/
 
-ENV PYTHONPATH=/app/src
+ENV PYTHONPATH=/app/src:/app
 
 RUN pip install --no-cache-dir --require-hashes -r requirements-ci-py312-linux.txt
 
