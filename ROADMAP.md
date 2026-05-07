@@ -623,10 +623,24 @@ explicit QPU-time estimate before submission.
   optional hardware scope, QPU-time ceilings, live gates, analysis
   plan, falsification rules, and artefact paths. Execution remains
   separate and approval-gated.
-- [ ] **Variational quantum simulation alternative execution.** Run
-  offline readiness and any optional hardware comparison only after VQS
-  target-observable tolerances pass, backend selection, budget
-  confirmation, and explicit approval for QPU submission.
+- [x] **Variational quantum simulation alternative offline readiness.**
+  Completed 2026-05-07:
+  `scripts/generate_vqs_alternative_readiness.py` generated exact-state
+  VQS refit rows for `n=4` DLA, popcount, and FIM cases plus local
+  basis-gate resource rows for `n=4,6,8` Trotter and VQS candidate
+  circuits. Artefacts:
+  `data/phase3_vqs_alternative/vqs_readiness_2026-05-07.json`,
+  `data/phase3_vqs_alternative/vqs_candidate_rows_2026-05-07.csv`,
+  `data/phase3_vqs_alternative/vqs_resource_rows_2026-05-07.csv`, and
+  `docs/phase3_vqs_alternative_readiness_2026-05-07.md`. Decision:
+  `blocked_no_vqs_candidate_passed_promotion_gate`. No shallow VQS
+  ansatz family passed both the preregistered target-observable accuracy
+  gate and the compiled-resource gate, so hardware execution is not
+  promoted.
+- [ ] **Variational quantum simulation alternative hardware execution.**
+  Blocked until a revised VQS candidate passes the offline promotion
+  gate, backend selection, live transpilation, budget confirmation, and
+  explicit approval for QPU submission.
 - [x] **Multi-circuit QEC demonstration preregistration.** Completed
   2026-05-06:
   `docs/multicircuit_qec_prereg_2026-05-06.md` defines required
