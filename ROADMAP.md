@@ -951,6 +951,16 @@ be executed until individually activated.
   and `docs/s2_full_campaign_plan_2026-05-07.md`. Decision:
   `ready_for_deliberate_no_qpu_full_classical_campaign`; hardware rows
   and broad quantum-advantage language remain blocked.
+- [x] **S2 bounded full-campaign execution slice.** Implemented
+  2026-05-07: `scripts/run_s2_full_campaign_slice.py` consumes the S2
+  campaign plan and executes only no-QPU required rows under explicit
+  dense, sparse, tensor-network, and statevector size caps. The default
+  `n=8` slice generated
+  `data/s2_advantage_scaling/s2_full_campaign_slice_n8_2026-05-07.json`,
+  `data/s2_advantage_scaling/s2_full_campaign_slice_rows_n8_2026-05-07.csv`,
+  and `docs/s2_full_campaign_slice_n8_2026-05-07.md`. Decision:
+  `completed_no_qpu_campaign_slice`; this is not the full campaign, not
+  hardware evidence, and not a quantum-advantage claim.
 - [ ] **S3** ML-augmented pulse / ansatz design.
 - [x] **S3 deterministic pulse/ansatz design-readiness gate.**
   Implemented 2026-05-06:
