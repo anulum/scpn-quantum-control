@@ -1,0 +1,90 @@
+{
+  "advantage_claim": false,
+  "all_rows_ok": true,
+  "claim_boundary": {
+    "allowed": [
+      "aggregate no-QPU S2 progress across completed bounded slices",
+      "resource-growth warning from generated timing and memory rows"
+    ],
+    "blocked": [
+      "hardware scaling evidence",
+      "full N=4..20 campaign completion",
+      "broad quantum advantage",
+      "publication crossover figure"
+    ]
+  },
+  "date": "2026-05-07",
+  "full_campaign_complete": false,
+  "generated_at_utc": "2026-05-07T01:46:30+00:00",
+  "hardware_submission": false,
+  "max_hilbert_dim": 4096,
+  "max_memory_bytes": 2416024559,
+  "progress_decision": "ready_for_next_bounded_no_qpu_slice",
+  "schema": "scpn_s2_slice_progress_v1",
+  "sizes": [
+    8,
+    10,
+    12
+  ],
+  "slice_count": 3,
+  "slice_summaries": [
+    {
+      "advantage_claim": false,
+      "executed_rows": 5,
+      "full_campaign_complete": false,
+      "hardware_submission": false,
+      "max_hilbert_dim": 256,
+      "max_memory_bytes": 8935750,
+      "max_peak_tracemalloc_bytes": 8935750,
+      "n_qubits": 8,
+      "ok_rows": 5,
+      "skipped_rows": 0,
+      "slice_decision": "completed_no_qpu_campaign_slice",
+      "slice_json": "data/s2_advantage_scaling/s2_full_campaign_slice_n8_2026-05-07.json",
+      "slice_rows": "data/s2_advantage_scaling/s2_full_campaign_slice_rows_n8_2026-05-07.csv",
+      "slowest_baseline": "classical_ode",
+      "slowest_wall_time_ms": 879.263117,
+      "total_wall_time_ms": 2889.019883
+    },
+    {
+      "advantage_claim": false,
+      "executed_rows": 5,
+      "full_campaign_complete": false,
+      "hardware_submission": false,
+      "max_hilbert_dim": 1024,
+      "max_memory_bytes": 142658102,
+      "max_peak_tracemalloc_bytes": 142658102,
+      "n_qubits": 10,
+      "ok_rows": 5,
+      "skipped_rows": 0,
+      "slice_decision": "completed_no_qpu_campaign_slice",
+      "slice_json": "data/s2_advantage_scaling/s2_full_campaign_slice_n10_2026-05-07.json",
+      "slice_rows": "data/s2_advantage_scaling/s2_full_campaign_slice_rows_n10_2026-05-07.csv",
+      "slowest_baseline": "mps_tensor_network",
+      "slowest_wall_time_ms": 7735.83339,
+      "total_wall_time_ms": 17356.461616
+    },
+    {
+      "advantage_claim": false,
+      "executed_rows": 5,
+      "full_campaign_complete": false,
+      "hardware_submission": false,
+      "max_hilbert_dim": 4096,
+      "max_memory_bytes": 2416024559,
+      "max_peak_tracemalloc_bytes": 2416024559,
+      "n_qubits": 12,
+      "ok_rows": 5,
+      "skipped_rows": 0,
+      "slice_decision": "completed_no_qpu_campaign_slice",
+      "slice_json": "data/s2_advantage_scaling/s2_full_campaign_slice_n12_2026-05-07.json",
+      "slice_rows": "data/s2_advantage_scaling/s2_full_campaign_slice_rows_n12_2026-05-07.csv",
+      "slowest_baseline": "mps_tensor_network",
+      "slowest_wall_time_ms": 262562.761072,
+      "total_wall_time_ms": 490662.466345
+    }
+  ],
+  "total_executed_rows": 15,
+  "total_ok_rows": 15,
+  "total_skipped_rows": 0,
+  "total_wall_time_ms": 510907.947844
+}

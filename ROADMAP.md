@@ -980,6 +980,15 @@ be executed until individually activated.
   5 executed rows, 5 successful rows, 0 skipped rows, and decision
   `completed_no_qpu_campaign_slice`; this is still not the full campaign,
   not hardware evidence, and not a quantum-advantage claim.
+- [x] **S2 slice progress aggregation.** Implemented 2026-05-07:
+  `scripts/report_s2_slice_progress.py` aggregates the completed bounded
+  no-QPU S2 slices for `n=8,10,12` from committed JSON/CSV artefacts and
+  writes `data/s2_advantage_scaling/s2_slice_progress_report_2026-05-07.json`
+  plus `docs/s2_slice_progress_report_2026-05-07.md`. The aggregate report
+  records 15 successful rows out of 15 executed rows, total measured wall time
+  `510907.947844` ms, maximum recorded memory `2416024559` bytes, and decision
+  `ready_for_next_bounded_no_qpu_slice`; this is still not hardware evidence,
+  not full S2 completion, and not a quantum-advantage claim.
 - [ ] **S3** ML-augmented pulse / ansatz design.
 - [x] **S3 deterministic pulse/ansatz design-readiness gate.**
   Implemented 2026-05-06:
