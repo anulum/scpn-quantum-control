@@ -989,6 +989,16 @@ be executed until individually activated.
   `510907.947844` ms, maximum recorded memory `2416024559` bytes, and decision
   `ready_for_next_bounded_no_qpu_slice`; this is still not hardware evidence,
   not full S2 completion, and not a quantum-advantage claim.
+- [x] **S2 `n=14` resource gate.** Implemented 2026-05-07:
+  `scripts/report_s2_n14_resource_gate.py` compares the planned `n=14`
+  required rows against the committed `n=8,10,12` progress artefacts and
+  writes `data/s2_advantage_scaling/s2_n14_resource_gate_2026-05-07.json`
+  plus `docs/s2_n14_resource_gate_2026-05-07.md`. The report records a
+  dense-matrix estimate of `4294967296` bytes, prior maximum recorded memory
+  `2416024559` bytes, dense/prior-memory ratio `1.7777`, and decision
+  `blocked_for_scheduled_or_offloaded_no_qpu_run`; this is a resource gate,
+  not an `n=14` execution result, not hardware evidence, and not a
+  quantum-advantage claim.
 - [ ] **S3** ML-augmented pulse / ansatz design.
 - [x] **S3 deterministic pulse/ansatz design-readiness gate.**
   Implemented 2026-05-06:

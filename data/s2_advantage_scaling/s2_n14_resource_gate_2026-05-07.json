@@ -1,0 +1,52 @@
+{
+  "advantage_claim": false,
+  "claim_boundary": {
+    "allowed": [
+      "resource-gate decision for the next S2 no-QPU slice",
+      "comparison of n=14 estimated memory against committed n=8..12 progress"
+    ],
+    "blocked": [
+      "n=14 slice completion",
+      "hardware scaling evidence",
+      "full S2 campaign completion",
+      "broad quantum advantage"
+    ]
+  },
+  "date": "2026-05-07",
+  "dense_to_prior_memory_ratio": 1.7777,
+  "estimated_dense_matrix_bytes": 4294967296,
+  "estimated_statevector_bytes": 262144,
+  "full_campaign_complete": false,
+  "generated_at_utc": "2026-05-07T02:10:23+00:00",
+  "hardware_submission": false,
+  "interactive_n14_promotion": false,
+  "n_qubits": 14,
+  "plan_rows": "data/s2_advantage_scaling/s2_full_campaign_rows_2026-05-07.csv",
+  "prior_completed_sizes": [
+    8,
+    10,
+    12
+  ],
+  "prior_max_memory_bytes": 2416024559,
+  "prior_total_executed_rows": 15,
+  "prior_total_ok_rows": 15,
+  "progress_report": "data/s2_advantage_scaling/s2_slice_progress_report_2026-05-07.json",
+  "qpu_minutes_spent": 0.0,
+  "recommended_next": [
+    "schedule n=14 as a deliberate long local run with runtime budget",
+    "or offload n=14 classical rows to ML350 or Vertex before promotion",
+    "or promote an explicitly capped scout with skipped dense/TN rows as a scout, not a completed slice"
+  ],
+  "required_baselines": [
+    "classical_ode",
+    "dense_eigh",
+    "sparse_eigsh",
+    "mps_tensor_network",
+    "aer_statevector"
+  ],
+  "required_statuses": [
+    "ready_full_campaign"
+  ],
+  "resource_gate_decision": "blocked_for_scheduled_or_offloaded_no_qpu_run",
+  "schema": "scpn_s2_n14_resource_gate_v1"
+}
