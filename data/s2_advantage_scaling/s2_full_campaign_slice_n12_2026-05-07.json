@@ -1,0 +1,43 @@
+{
+  "advantage_claim": false,
+  "claim_boundary": {
+    "allowed": [
+      "bounded no-QPU S2 slice timing/memory rows",
+      "row-schema and campaign-executor validation"
+    ],
+    "blocked": [
+      "full N=4..20 campaign completion",
+      "hardware scaling evidence",
+      "broad quantum advantage",
+      "publication crossover figure"
+    ]
+  },
+  "date": "2026-05-07",
+  "executed_rows": 5,
+  "full_campaign_complete": false,
+  "generated_at_utc": "2026-05-07T01:38:54+00:00",
+  "hardware_submission": false,
+  "ok_rows": 5,
+  "plan_path": "data/s2_advantage_scaling/s2_full_campaign_plan_2026-05-07.json",
+  "qpu_minutes_spent": 0.0,
+  "rows_sha256": "3a00fc7ff677f7bc0c19a19abc8edd3b17c75cc25cf6d46bf3cc20b7b736289a",
+  "schema": "scpn_s2_full_campaign_slice_v1",
+  "selected_plan_rows": 5,
+  "size_gates": {
+    "max_dense_qubits": 12,
+    "max_sparse_qubits": 12,
+    "max_statevector_qubits": 12,
+    "max_tn_qubits": 12
+  },
+  "sizes": [
+    12
+  ],
+  "skipped_rows": 0,
+  "slice_decision": "completed_no_qpu_campaign_slice",
+  "unplanned_rows": [],
+  "validation": {
+    "invalid_rows": [],
+    "missing_required": [],
+    "valid": true
+  }
+}

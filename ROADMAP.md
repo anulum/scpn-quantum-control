@@ -970,6 +970,16 @@ be executed until individually activated.
   5 executed rows, 5 successful rows, 0 skipped rows, and decision
   `completed_no_qpu_campaign_slice`; this is still not the full campaign,
   not hardware evidence, and not a quantum-advantage claim.
+- [x] **S2 bounded full-campaign execution slice, `n=12`.** Implemented
+  2026-05-07: the no-QPU slice runner executed the next bounded `n=12`
+  scaling slice with dense, sparse, tensor-network, and statevector caps
+  all set to 12 qubits. It generated
+  `data/s2_advantage_scaling/s2_full_campaign_slice_n12_2026-05-07.json`,
+  `data/s2_advantage_scaling/s2_full_campaign_slice_rows_n12_2026-05-07.csv`,
+  and `docs/s2_full_campaign_slice_n12_2026-05-07.md`. The slice recorded
+  5 executed rows, 5 successful rows, 0 skipped rows, and decision
+  `completed_no_qpu_campaign_slice`; this is still not the full campaign,
+  not hardware evidence, and not a quantum-advantage claim.
 - [ ] **S3** ML-augmented pulse / ansatz design.
 - [x] **S3 deterministic pulse/ansatz design-readiness gate.**
   Implemented 2026-05-06:
