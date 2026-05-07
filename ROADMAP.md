@@ -726,10 +726,18 @@ explicit QPU-time estimate before submission.
   local simulator result rather than an SCPN/Kuramoto--XY benchmark.
   Arbitrary Rust/VQE/DLA/FIM project tables remain out of scope for
   Metriq upload unless an accepted Metriq schema exists.
-- [ ] **Metriq SCPN benchmark schema proposal.** Optional future work:
-  propose a Kuramoto--XY/SCPN benchmark definition upstream to
-  Metriq-Gym, wait for review or acceptance, then run and upload results
-  under that accepted schema.
+- [x] **Metriq SCPN benchmark schema proposal preparation.**
+  Completed 2026-05-07:
+  `docs/metriq_scpn_benchmark_schema_proposal_2026-05-07.md` defines a
+  bounded Kuramoto--XY parity-leakage benchmark proposal with required
+  inputs, circuit definition, primary score, secondary metrics,
+  acceptance gates, non-claim boundary, and upstream draft text. It is a
+  prepared proposal only; it has not been submitted upstream and is not
+  an accepted Metriq-Gym schema.
+- [ ] **Metriq SCPN benchmark schema upstream submission.** Optional
+  external follow-up: submit the prepared schema proposal to
+  Metriq-Gym maintainers, wait for review or acceptance, then run and
+  upload results only under the accepted schema.
 - [ ] **pyOpenSci review.** Submit the software package for review and
   possible JOSS fast-track.
 - [x] **pyOpenSci review preparation.** Completed 2026-05-06:
