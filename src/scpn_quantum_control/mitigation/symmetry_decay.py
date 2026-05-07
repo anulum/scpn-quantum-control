@@ -27,9 +27,8 @@ import numpy as np
 from ..accel.rust_import import optional_rust_engine
 
 _engine = optional_rust_engine()
-_HAS_RUST = _engine is not None
-if _engine is not None:
-    _fit_rust = _engine.fit_symmetry_decay
+_fit_rust = getattr(_engine, "fit_symmetry_decay", None)
+_HAS_RUST = _fit_rust is not None
 
 
 @dataclass
@@ -74,7 +73,7 @@ def learn_symmetry_decay(
     if abs(ideal_symmetry_value) < 1e-15:
         raise ValueError("ideal_symmetry_value too close to zero")
 
-    if _HAS_RUST:
+    if _fit_rust is not None:
         alpha, residual = _fit_rust(
             ideal_symmetry_value,
             np.array(noisy_symmetry_values, dtype=np.float64),

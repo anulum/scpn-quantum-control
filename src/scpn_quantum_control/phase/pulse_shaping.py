@@ -31,6 +31,7 @@ from scipy.special import hyp2f1
 from ..accel.rust_import import optional_rust_engine
 
 _engine = optional_rust_engine()
+_HAS_RUST = _engine is not None
 _envelope_rust = getattr(_engine, "hypergeometric_envelope_batch", None)
 _ici_mixing_rust = getattr(_engine, "ici_mixing_angle_batch", None)
 _ici_evol_rust = getattr(_engine, "ici_three_level_evolution_batch", None)
@@ -99,7 +100,7 @@ def ici_mixing_angle(
         t_total: total pulse duration
         theta_jump: jump angle at boundaries (controls speed vs. loss)
     """
-    if _ici_mixing_rust is not None:
+    if _HAS_RUST and _ici_mixing_rust is not None:
         result: np.ndarray = np.asarray(
             _ici_mixing_rust(np.asarray(t, dtype=np.float64), t_total, theta_jump)
         )
@@ -194,7 +195,7 @@ def ici_three_level_evolution(
     """
     gamma = gamma_decay if gamma_decay is not None else pulse.gamma_decay
 
-    if _ici_evol_rust is not None:
+    if _HAS_RUST and _ici_evol_rust is not None:
         flat: np.ndarray = np.asarray(
             _ici_evol_rust(
                 np.asarray(pulse.times, dtype=np.float64),
@@ -288,7 +289,7 @@ def hypergeometric_envelope(
     if alpha < 0 or beta < 0:
         raise ValueError(f"alpha, beta must be >= 0, got ({alpha}, {beta})")
 
-    if _envelope_rust is not None:
+    if _HAS_RUST and _envelope_rust is not None:
         result: np.ndarray = np.asarray(
             _envelope_rust(np.asarray(t, dtype=np.float64), alpha, beta, gamma_width)
         )
