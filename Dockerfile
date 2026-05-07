@@ -31,6 +31,7 @@ COPY results/ results/
 # reproducer ERRORs out without the fixture. `scripts/` holds the
 # analysis module the reproducer imports.
 COPY data/ data/
+COPY figures/ figures/
 COPY scripts/ scripts/
 
 USER sqc

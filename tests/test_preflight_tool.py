@@ -58,7 +58,7 @@ def test_run_gate_reports_failure_tail(monkeypatch, capsys):
     assert "out-11" in output
     assert "err-2" in output
     assert "err-11" in output
-    assert "out-1" not in output
+    assert "        out-1\n" not in output
 
 
 def test_main_skips_tests_with_no_tests_flag(monkeypatch, capsys):

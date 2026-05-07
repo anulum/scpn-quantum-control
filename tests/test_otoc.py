@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import builtins
+import importlib
 
 import numpy as np
 import pytest
@@ -152,6 +153,9 @@ class TestOTOCCoverage:
         times = np.linspace(0, 0.5, 5)
 
         real_import = builtins.__import__
+        otoc_module = importlib.import_module("scpn_quantum_control.analysis.otoc")
+        real_knm_to_dense = otoc_module.knm_to_dense_matrix
+        H_mat = real_knm_to_dense(K, omega)
 
         def import_without_engine(name, *args, **kwargs):
             if name == "scpn_quantum_engine":
@@ -159,10 +163,12 @@ class TestOTOCCoverage:
             return real_import(name, *args, **kwargs)
 
         try:
+            otoc_module.knm_to_dense_matrix = lambda *_args, **_kwargs: H_mat
             builtins.__import__ = import_without_engine
             result = compute_otoc(K, omega, times=times)
         finally:
             builtins.__import__ = real_import
+            otoc_module.knm_to_dense_matrix = real_knm_to_dense
 
         assert len(result.otoc_values) == 5
         assert np.isfinite(result.otoc_values).all()
