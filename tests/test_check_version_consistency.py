@@ -90,7 +90,7 @@ def test_version_consistency_reports_mismatched_carrier(tmp_path: Path, monkeypa
     _patch_contract_paths(monkeypatch, tmp_path, files)
 
     assert _check_version_consistency.main() == 1
-    output = capsys.readouterr().out
+    output = capsys.readouterr().out.replace("\\", "/")
     assert "Version mismatch (canonical: 0.9.6)" in output
     assert "src/scpn_quantum_control/__init__.py: 0.9.7 (expected 0.9.6)" in output
 
