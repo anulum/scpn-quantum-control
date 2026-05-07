@@ -718,16 +718,18 @@ explicit QPU-time estimate before submission.
   using the isolated `/home/anulum/.venvs/scpn-metriq` environment.
   This proves the Metriq CLI path is executable without treating SCPN
   paper benchmark tables as Metriq-native results.
-- [ ] **Metriq submission.** Submit only validated, bounded benchmark
-  results. Readiness gate documented 2026-05-06 in
-  `docs/metriq_submission_readiness_2026-05-06.md`: Metriq currently
-  expects `metriq-gym` benchmark outputs uploaded through its CLI, so no
-  arbitrary project benchmark tables should be submitted as Metriq
-  results. `metriq-gym` is installed in the isolated environment
-  `/home/anulum/.venvs/scpn-metriq`; the project venv remains
-  dependency-consistent. The remaining step is a deliberate upload
-  decision for a Metriq-native result or an upstream SCPN benchmark
-  schema proposal.
+- [x] **Metriq submission decision.** Completed 2026-05-07:
+  `docs/metriq_submission_decision_2026-05-07.md` records a deliberate
+  no-upload decision. The Metriq-Gym upload path was verified in
+  dry-run mode for the local Bernstein--Vazirani smoke result, but no
+  public upload was made because the available artefact is a generic
+  local simulator result rather than an SCPN/Kuramoto--XY benchmark.
+  Arbitrary Rust/VQE/DLA/FIM project tables remain out of scope for
+  Metriq upload unless an accepted Metriq schema exists.
+- [ ] **Metriq SCPN benchmark schema proposal.** Optional future work:
+  propose a Kuramoto--XY/SCPN benchmark definition upstream to
+  Metriq-Gym, wait for review or acceptance, then run and upload results
+  under that accepted schema.
 - [ ] **pyOpenSci review.** Submit the software package for review and
   possible JOSS fast-track.
 - [x] **pyOpenSci review preparation.** Completed 2026-05-06:
