@@ -999,6 +999,19 @@ be executed until individually activated.
   `blocked_for_scheduled_or_offloaded_no_qpu_run`; this is a resource gate,
   not an `n=14` execution result, not hardware evidence, and not a
   quantum-advantage claim.
+- [x] **S2 ML350 `n=14` full no-QPU slice.** Implemented 2026-05-07:
+  the resource-gated `n=14` slice was executed on ML350 in the non-SAS
+  workspace `/home/anulum/scpn_quantum_control_ntfs_worktree` from NTFS
+  source commit `842c529da89f88b68a75582fba7a0076a1a34c1f`. The generated
+  artefacts are
+  `data/s2_advantage_scaling/s2_full_campaign_slice_n14_2026-05-07.json`,
+  `data/s2_advantage_scaling/s2_full_campaign_slice_rows_n14_2026-05-07.csv`,
+  and `docs/s2_full_campaign_slice_n14_2026-05-07.md`. The slice recorded
+  5 executed rows, 5 successful rows, 0 skipped rows, decision
+  `completed_no_qpu_campaign_slice`, all caps set to 14 qubits, and no QPU
+  time. The ML350 timing log reported wall time `3:03:29`, peak RSS
+  `21583552` KiB, and 0 swaps. This is still not hardware evidence, not full
+  S2 completion, and not a quantum-advantage claim.
 - [ ] **S3** ML-augmented pulse / ansatz design.
 - [x] **S3 deterministic pulse/ansatz design-readiness gate.**
   Implemented 2026-05-06:
