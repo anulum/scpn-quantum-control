@@ -649,10 +649,28 @@ explicit QPU-time estimate before submission.
   scope, 15-minute ceiling, live gates, analysis plan, ablations,
   falsification rules, and artefact paths. Execution remains separate
   and approval-gated.
-- [ ] **Multi-circuit QEC demonstration execution.** Run offline
-  readiness and any optional hardware block only after logical metrics
-  beat baselines under preregistered noise, backend selection, budget
-  confirmation, and explicit approval for QPU submission.
+- [x] **Multi-circuit QEC demonstration offline readiness.**
+  Completed 2026-05-07:
+  `scripts/generate_multicircuit_qec_readiness.py` generated
+  Monte Carlo logical-failure rows for the unencoded physical baseline,
+  standard MWPM decoder, K-matrix-weighted physics-aware decoder, and
+  feature-disabled ablation across ideal, depolarising, and
+  readout-biased noise models. It also generated encoded/unencoded
+  circuit-resource rows for the DLA parity pair. Artefacts:
+  `data/phase3_multicircuit_qec/qec_readiness_2026-05-07.json`,
+  `data/phase3_multicircuit_qec/qec_decoder_rows_2026-05-07.csv`,
+  `data/phase3_multicircuit_qec/qec_resource_rows_2026-05-07.csv`,
+  and `docs/phase3_multicircuit_qec_readiness_2026-05-07.md`.
+  Decision:
+  `blocked_physics_aware_decoder_did_not_beat_baselines`. Hardware
+  execution is not promoted because the physics-aware decoder did not
+  beat the standard decoder and its own feature-disabled ablation under
+  the preregistered logical metric.
+- [ ] **Multi-circuit QEC demonstration hardware execution.** Blocked
+  until a revised QEC/decoder candidate passes offline logical metrics
+  against unencoded, standard-decoder, and ablation baselines, then
+  passes backend selection, live transpilation, budget confirmation,
+  and explicit approval for QPU submission.
 
 ### Visibility and registration tasks
 
