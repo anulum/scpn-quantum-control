@@ -44,10 +44,18 @@ jobs:
               ;;
             push)
               # Just the commits introduced by this push.
-              if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
-                RANGE="${{ github.event.after }}~1..${{ github.event.after }}"
+              BEFORE="${{ github.event.before }}"
+              AFTER="${{ github.event.after }}"
+              if [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+                RANGE="$AFTER^!"
+              elif git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+                RANGE="$BEFORE..$AFTER"
               else
-                RANGE="${{ github.event.before }}..${{ github.event.after }}"
+                # Force-push / history-rewrite events can report a
+                # `before` SHA that no longer exists in the rewritten
+                # checkout. Audit the resulting tip instead of failing
+                # on an invalid revision range.
+                RANGE="$AFTER^!"
               fi
               ;;
             *)
