@@ -51,7 +51,8 @@ from .rust_import import optional_rust_engine
 
 
 def _rust_available() -> bool:
-    return optional_rust_engine() is not None
+    engine = optional_rust_engine()
+    return engine is not None and callable(getattr(engine, "order_parameter", None))
 
 
 def _julia_available() -> bool:
@@ -92,7 +93,9 @@ def _rust_order_parameter(theta: np.ndarray) -> float:
     engine = optional_rust_engine()
     if engine is None:
         raise ModuleNotFoundError("scpn_quantum_engine")
-    rust_op = engine.order_parameter
+    rust_op = getattr(engine, "order_parameter", None)
+    if not callable(rust_op):
+        raise ImportError("scpn_quantum_engine.order_parameter is unavailable")
 
     return float(rust_op(np.ascontiguousarray(theta, dtype=np.float64)))
 

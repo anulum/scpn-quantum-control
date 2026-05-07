@@ -184,21 +184,40 @@ class TestRustTier:
             d._rust_available()
         monkeypatch.setattr(d, "optional_rust_engine", real_optional)
 
-    def test_rust_probe_reflects_engine(self) -> None:
-        """Probe must return True iff `scpn_quantum_engine` is importable.
+    def test_rust_probe_reflects_usable_engine(self) -> None:
+        """Probe must return True iff `order_parameter` is callable.
 
         The Rust wheel is optional (ships via the `[rust]` extra). When
         it is installed, the probe is True and the engine must match the
         Python floor (covered below). When it is missing — minimal
         install, Docker without the wheel, a CI image without maturin —
-        the probe must cleanly say False and the dispatcher must fall
-        through to the next tier."""
+        or present without this symbol, the probe must cleanly say False
+        and the dispatcher must fall through to the next tier."""
         try:
-            import scpn_quantum_engine  # noqa: F401
+            import scpn_quantum_engine
         except Exception:
             assert d._rust_available() is False
         else:
-            assert d._rust_available() is True
+            assert d._rust_available() is callable(
+                getattr(scpn_quantum_engine, "order_parameter", None)
+            )
+
+    def test_partial_rust_engine_falls_through_to_python(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        class PartialEngine:
+            pass
+
+        monkeypatch.setattr(d, "optional_rust_engine", lambda: PartialEngine())
+        disp = d.MultiLangDispatcher(
+            [
+                ("rust", d._rust_order_parameter),
+                ("python", d._python_order_parameter),
+            ],
+        )
+        assert disp(np.zeros(4)) == pytest.approx(1.0)
+        assert disp.last_tier == "python"
 
     @_GLOBAL_SETTINGS
     @given(
