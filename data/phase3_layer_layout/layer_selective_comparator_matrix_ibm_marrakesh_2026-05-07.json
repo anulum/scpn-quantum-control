@@ -1,0 +1,97 @@
+{
+  "backend": "ibm_marrakesh",
+  "backend_status": {
+    "name": "ibm_marrakesh",
+    "num_qubits": 156,
+    "operational": true,
+    "pending_jobs": 0,
+    "status_msg": "active"
+  },
+  "claim_boundary": {
+    "blocked": [
+      "hardware leakage reduction claim",
+      "backend-general layout optimality",
+      "QPU submission authorisation",
+      "outcome-data claim"
+    ],
+    "supported": [
+      "no-submit compiled-resource comparison between default, SABRE, and layer-selective layouts",
+      "fresh-backend comparator matrix for the preregistered layer-selective gate"
+    ]
+  },
+  "depth_delta_vs_default": 0.7952218430034129,
+  "depths": [
+    6,
+    10,
+    14
+  ],
+  "generated_at_utc": "2026-05-07T00:11:42+00:00",
+  "hardware_submission": false,
+  "layer_selective_layout": {
+    "logical_edge_cost": 0.28811004868104956,
+    "physical_qubits": [
+      2,
+      3,
+      4,
+      16
+    ],
+    "readout_error_mean": 0.00830078125,
+    "score": 0.30077020493104956,
+    "two_qubit_error_mean": null
+  },
+  "method_summaries": {
+    "default": {
+      "max_depth": 293,
+      "max_total_gates": 738,
+      "max_two_qubit_gates": 84,
+      "mean_depth": 211.5,
+      "mean_total_gates": 526.4166666666666,
+      "mean_two_qubit_gates": 60.0,
+      "method": "default",
+      "n_rows": 60
+    },
+    "layer_selective": {
+      "max_depth": 526,
+      "max_total_gates": 900,
+      "max_two_qubit_gates": 123,
+      "mean_depth": 373.75,
+      "mean_total_gates": 642.0,
+      "mean_two_qubit_gates": 87.0,
+      "method": "layer_selective",
+      "n_rows": 60
+    },
+    "sabre": {
+      "max_depth": 293,
+      "max_total_gates": 738,
+      "max_two_qubit_gates": 84,
+      "mean_depth": 205.95,
+      "mean_total_gates": 510.25,
+      "mean_two_qubit_gates": 60.0,
+      "method": "sabre",
+      "n_rows": 60
+    }
+  },
+  "methods": [
+    "default",
+    "sabre",
+    "layer_selective"
+  ],
+  "qpu_minutes_spent": 0.0,
+  "readiness_decision": "blocked_layer_selective_worse_than_default",
+  "ready_for_hardware_comparison": false,
+  "schema": "scpn_phase3_layer_selective_comparator_matrix_v1",
+  "states": [
+    "0011",
+    "0001",
+    "0101",
+    "0010"
+  ],
+  "transpiler_seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "two_qubit_delta_vs_default": 0.4642857142857143
+}

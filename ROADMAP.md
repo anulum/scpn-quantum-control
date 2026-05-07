@@ -548,10 +548,21 @@ explicit QPU-time estimate before submission.
   connected low-readout layout rows but not the preregistered default,
   SABRE, and true layer-selective comparator matrix required before a
   hardware follow-up can be promoted.
-- [ ] **Layer-selective qubit assignment execution.** Run the
-  offline-readiness pass and any hardware comparison only after backend
-  selection, calibration capture, budget confirmation, and explicit
-  approval for QPU submission.
+- [x] **Layer-selective comparator matrix.** Completed 2026-05-07:
+  `scripts/generate_layer_selective_comparator_matrix.py` opened a
+  no-submit `ibm_marrakesh` backend snapshot and generated the missing
+  default, SABRE, and true layer-selective transpilation matrix in
+  `data/phase3_layer_layout/layer_selective_comparator_matrix_ibm_marrakesh_2026-05-07.json`,
+  row CSV, SHA256 sidecar, and
+  `docs/phase3_layer_layout_comparator_matrix_2026-05-07.md`.
+  Decision: `blocked_layer_selective_worse_than_default`; layer-selective
+  increased max depth by `79.5 %` and max two-qubit gates by `46.4 %`
+  versus default, so the optional hardware follow-up is not promoted.
+- [ ] **Layer-selective qubit assignment execution.** Blocked until a
+  future backend snapshot or revised layer-selective heuristic passes the
+  preregistered comparator matrix. Current 2026-05-07 matrix rejects QPU
+  submission, so running this job now would not isolate a useful layout
+  mechanism.
 - [x] **Entanglement entropy or tomography check preregistration.**
   Completed 2026-05-06:
   `docs/entanglement_tomography_prereg_2026-05-06.md` defines the
