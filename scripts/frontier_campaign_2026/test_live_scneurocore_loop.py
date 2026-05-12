@@ -10,7 +10,8 @@ import asyncio
 import json
 
 from campaign_io import result_path
-from scpneurocore.bridge import load_live_stream
+from generate_params import _matrix_from_source, _omega_from_source
+from scpn_neurocore.bridge import load_live_stream
 
 from scpn_quantum_control.analysis import DLAParityWitness, SyncOrderParameter
 from scpn_quantum_control.control import StructuredAnsatz
@@ -24,7 +25,11 @@ async def run_live_scneurocore():
 
     results = []
     for step in range(50):
-        K_nm, omega = load_live_stream(source="eeg_powergrid", step=step)
+        payload = load_live_stream(source="eeg_powergrid", step=step)
+        K_nm = _matrix_from_source(payload, source_name="eeg_powergrid")
+        omega = _omega_from_source(payload, source_name="eeg_powergrid", expected_n=K_nm.shape[0])
+        if omega is None:
+            raise ValueError("eeg_powergrid live stream did not provide omega")
 
         ansatz = StructuredAnsatz.from_kuramoto(K_nm, omega, trotter_depth=6)
         job = runner.submit_circuit_batch(

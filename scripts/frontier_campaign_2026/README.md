@@ -27,7 +27,7 @@ only when intentionally writing a separate cache.
 | Test | Script | Required `.npy` files |
 |------|--------|-----------------------|
 | T1   | test_quantum_advantage_scaling.py   | `scale_Knm_20x20.npy`, `scale_omega_20.npy`, `scale_Knm_40x40.npy`, `scale_omega_40.npy`, `scale_Knm_80x80.npy`, `scale_omega_80.npy`, `scale_Knm_160x160.npy`, `scale_omega_160.npy` |
-| T2   | test_live_scneurocore_loop.py       | *(none — live stream via `scpneurocore.bridge.load_live_stream`)* |
+| T2   | test_live_scneurocore_loop.py       | *(none — live stream via `scpn_neurocore.bridge.load_live_stream`)* |
 | T3   | test_sync_distillation.py           | `distill_Knm_12x12.npy` |
 | T4   | test_multi_backend_distributed.py   | `distributed_Knm_20x20.npy` |
 | T5   | test_dla_tensor_network.py          | `tn_Knm_64x64.npy` |
@@ -57,7 +57,7 @@ only when intentionally writing a separate cache.
 | Test | Extra module beyond core |
 |------|--------------------------|
 | T1   | `scpn_quantum_control.accel.rust_kuramoto_classical.run_large_n` |
-| T2   | `scpneurocore.bridge.load_live_stream` |
+| T2   | `scpn_neurocore.bridge.load_live_stream` |
 | T5   | `scpn_quantum_control.analysis.dla_truncated_tn` |
 | T6   | `scpn_quantum_control.analysis.RLPulseOptimizer` |
 

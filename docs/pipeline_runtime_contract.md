@@ -17,7 +17,7 @@ output artifact.
 
 | Repository | Runtime role | Contract |
 |------------|--------------|----------|
-| SC-NeuroCore | Source-facing data bridge and neural/SCPN payload provider. | Provides `scpneurocore.bridge` loaders and labelled source artifacts. |
+| SC-NeuroCore | Source-facing data bridge and neural/SCPN payload provider. | Provides `scpn_neurocore.bridge` loaders and labelled source artifacts. |
 | Phase Orchestrator | Domain-to-oscillator compiler. | Emits validated QPU data artifacts from binding specs, domain packs, or calibrated streams. |
 | SCPN Quantum Control | QPU compiler, executor, and measurement analyser. | Consumes QPU data artifacts and produces hardware/simulator result artifacts. |
 
@@ -101,7 +101,7 @@ publication evidence.
 As of 2026-04-27:
 
 - SC-NeuroCore has the compatibility import surface under
-  `scpneurocore.bridge`; focused bridge tests pass locally.
+  `scpn_neurocore.bridge`; focused bridge tests pass locally.
 - Phase Orchestrator has a QPU data artifact emitter/validator; focused
   artifact tests pass locally.
 - Quantum Control has the consumer-side artifact validator and

@@ -23,8 +23,13 @@ SCRIPT_PATH = (
 
 
 def _install_bridge(monkeypatch: pytest.MonkeyPatch, *, mode: str) -> None:
-    bridge = types.ModuleType("scpneurocore.bridge")
-    package = types.ModuleType("scpneurocore")
+    bridge = types.ModuleType("scpn_neurocore.bridge")
+    package = types.ModuleType("scpn_neurocore")
+
+    class _BridgeArtifact:
+        def __init__(self, n: int, span: float) -> None:
+            self.K_nm = _matrix(n)
+            self.omega = np.linspace(-span, span, n)
 
     def _matrix(n: int) -> np.ndarray:
         K = np.full((n, n), 0.5, dtype=np.float64)
@@ -55,14 +60,14 @@ def _install_bridge(monkeypatch: pytest.MonkeyPatch, *, mode: str) -> None:
 
     elif mode == "with-omega":
 
-        def load_connectome(name: str, n: int) -> tuple[np.ndarray, np.ndarray]:
-            return _matrix(n), np.linspace(-0.1, 0.1, n)
+        def load_connectome(name: str, n: int) -> _BridgeArtifact:
+            return _BridgeArtifact(n, 0.1)
 
-        def load_power_grid(n: int) -> tuple[np.ndarray, np.ndarray]:
-            return _matrix(n), np.linspace(-0.2, 0.2, n)
+        def load_power_grid(n: int) -> _BridgeArtifact:
+            return _BridgeArtifact(n, 0.2)
 
-        def load_tokamak_data() -> tuple[np.ndarray, np.ndarray]:
-            return _matrix(16), np.linspace(-0.3, 0.3, 16)
+        def load_tokamak_data() -> _BridgeArtifact:
+            return _BridgeArtifact(16, 0.3)
 
     else:
         raise AssertionError(f"unsupported bridge mode: {mode}")
@@ -70,8 +75,8 @@ def _install_bridge(monkeypatch: pytest.MonkeyPatch, *, mode: str) -> None:
     bridge.load_connectome = load_connectome
     bridge.load_power_grid = load_power_grid
     bridge.load_tokamak_data = load_tokamak_data
-    monkeypatch.setitem(sys.modules, "scpneurocore", package)
-    monkeypatch.setitem(sys.modules, "scpneurocore.bridge", bridge)
+    monkeypatch.setitem(sys.modules, "scpn_neurocore", package)
+    monkeypatch.setitem(sys.modules, "scpn_neurocore.bridge", bridge)
 
 
 def _load_generate_params_module(monkeypatch: pytest.MonkeyPatch, *, mode: str):

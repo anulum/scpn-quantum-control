@@ -44,7 +44,7 @@ only; they are not publication-safe QPU source material.
 Campaign code may depend on the compatibility import surface:
 
 ```python
-from scpneurocore.bridge import (
+from scpn_neurocore.bridge import (
     load_connectome,
     load_live_stream,
     load_power_grid,

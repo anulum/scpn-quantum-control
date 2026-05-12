@@ -10,7 +10,7 @@ from typing import Any
 
 import numpy as np
 from campaign_io import campaign_path
-from scpneurocore.bridge import (
+from scpn_neurocore.bridge import (
     load_connectome,
     load_power_grid,
     load_tokamak_data,
