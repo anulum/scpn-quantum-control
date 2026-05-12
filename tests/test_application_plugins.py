@@ -75,6 +75,8 @@ def test_domain_plugins_emit_expected_metrics() -> None:
 
     assert eeg.metrics["topology_correlation"] == pytest.approx(1.0)
     assert plasma.metrics["mode_locking_risk"] > 0.0
+    assert plasma.metadata["reference_source_mode"] == "curated"
+    assert plasma.metadata["reference_publication_safe"] is True
     assert grid.metrics["coupling_ratio"] == pytest.approx(1.0)
     assert fep.metrics["prediction_error_norm"] > 0.0
     assert fep.metrics["belief_update_norm"] > 0.0

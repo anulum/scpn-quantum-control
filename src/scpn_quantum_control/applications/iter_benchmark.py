@@ -34,6 +34,11 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.stats import spearmanr
 
+from scpn_quantum_control.bridge.qpu_data_artifact import (
+    ALL_SOURCE_MODES,
+    SYNTHETIC_SOURCE_MODES,
+)
+
 # Synthetic ITER MHD mode parameters (8 modes)
 # Based on published NTM/RWM mode structure for ITER-scale tokamak
 ITER_MODE_LABELS = [
@@ -76,19 +81,60 @@ class ITERBenchmarkResult:
     coupling_ratio: float
     mode_locking_risk: float  # fraction of strongly coupled pairs
     summary: str
+    source_mode: str
+    publication_safe: bool
 
 
-def iter_coupling_matrix() -> tuple[np.ndarray, np.ndarray]:
-    """Get ITER synthetic MHD mode coupling and frequencies."""
+def iter_coupling_matrix(
+    *,
+    allow_synthetic_reference: bool = False,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Get the built-in synthetic ITER MHD mode coupling and frequencies."""
+    if not allow_synthetic_reference:
+        raise RuntimeError(
+            "Refusing built-in synthetic ITER reference without "
+            "allow_synthetic_reference=True. Pass curated or recorded ITER mode "
+            "coupling data to iter_benchmark for publication-safe claims."
+        )
     return ITER_MODE_COUPLING.copy(), ITER_MODE_FREQ.copy()
 
 
 def iter_benchmark(
     K_scpn: np.ndarray,
     omega_scpn: np.ndarray,
+    *,
+    iter_coupling: np.ndarray | None = None,
+    iter_frequencies: np.ndarray | None = None,
+    reference_source_mode: str = "curated",
+    allow_synthetic_reference: bool = False,
 ) -> ITERBenchmarkResult:
     """Compare SCPN K_nm with ITER MHD mode coupling."""
-    K_iter, omega_iter = iter_coupling_matrix()
+    if iter_coupling is None or iter_frequencies is None:
+        if iter_coupling is not None or iter_frequencies is not None:
+            raise ValueError("iter_coupling and iter_frequencies must be supplied together.")
+        K_iter, omega_iter = iter_coupling_matrix(
+            allow_synthetic_reference=allow_synthetic_reference
+        )
+        source_mode = "synthetic"
+    else:
+        source_mode = str(reference_source_mode).strip()
+        if source_mode not in ALL_SOURCE_MODES:
+            raise ValueError(f"reference_source_mode must be one of {sorted(ALL_SOURCE_MODES)}")
+        K_iter = np.asarray(iter_coupling, dtype=float)
+        omega_iter = np.asarray(iter_frequencies, dtype=float)
+    publication_safe = source_mode not in SYNTHETIC_SOURCE_MODES
+
+    K_scpn = np.asarray(K_scpn, dtype=float)
+    omega_scpn = np.asarray(omega_scpn, dtype=float)
+    if K_scpn.ndim != 2 or K_scpn.shape[0] != K_scpn.shape[1]:
+        raise ValueError("K_scpn must be a square matrix.")
+    if omega_scpn.ndim != 1 or omega_scpn.shape[0] < K_scpn.shape[0]:
+        raise ValueError("omega_scpn must be a vector covering K_scpn.")
+    if K_iter.ndim != 2 or K_iter.shape[0] != K_iter.shape[1]:
+        raise ValueError("iter_coupling must be a square matrix.")
+    if omega_iter.ndim != 1 or omega_iter.shape[0] != K_iter.shape[0]:
+        raise ValueError("iter_frequencies must be a vector matching iter_coupling.")
+
     n_iter = K_iter.shape[0]
     n_scpn = K_scpn.shape[0]
     n = min(n_iter, n_scpn)
@@ -135,4 +181,6 @@ def iter_benchmark(
         coupling_ratio=ratio,
         mode_locking_risk=locking_risk,
         summary=summary,
+        source_mode=source_mode,
+        publication_safe=publication_safe,
     )

@@ -96,7 +96,7 @@ def run_cross_domain_validation(
     results_freq.append(eeg.frequency_correlation)
 
     # ITER (8 modes)
-    it = iter_benchmark(K8, omega8)
+    it = iter_benchmark(K8, omega8, allow_synthetic_reference=True)
     names.append("ITER MHD (fusion)")
     results_topo.append(it.topology_correlation)
     results_freq.append(it.frequency_correlation)

@@ -78,7 +78,7 @@ def test_iter_benchmark_small_scpn():
 
     K = np.array([[0, 0.1], [0.1, 0]])
     omega = np.array([1.0, 2.0])
-    result = iter_benchmark(K, omega)
+    result = iter_benchmark(K, omega, allow_synthetic_reference=True)
     assert result.topology_correlation == 0.0
 
 
@@ -91,7 +91,7 @@ def test_iter_benchmark_freq_corr_small():
 
     K = np.array([[0, 0.5], [0.5, 0]])
     omega = np.array([1.0, 2.0])
-    result = iter_benchmark(K, omega)
+    result = iter_benchmark(K, omega, allow_synthetic_reference=True)
     assert result.frequency_correlation == 0.0
 
 

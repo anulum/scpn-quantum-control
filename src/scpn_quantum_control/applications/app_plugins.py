@@ -259,7 +259,13 @@ class PlasmaApplicationPlugin(_PackagedDatasetPlugin):
     def benchmark_dataset(self, dataset_id: str | None = None) -> ApplicationPluginBenchmark:
         """Run the plasma mode-locking benchmark."""
         artifact = self.load_dataset(dataset_id)
-        result = iter_benchmark(artifact.K_nm, artifact.omega)
+        result = iter_benchmark(
+            artifact.K_nm,
+            artifact.omega,
+            iter_coupling=artifact.K_nm,
+            iter_frequencies=artifact.omega,
+            reference_source_mode=artifact.source_mode,
+        )
         return self._base_result(
             artifact,
             backend="scipy.stats.spearmanr+numpy",
@@ -270,7 +276,11 @@ class PlasmaApplicationPlugin(_PackagedDatasetPlugin):
                 "mode_locking_risk": result.mode_locking_risk,
             },
             summary=result.summary,
-            metadata={"modes": list(artifact.layer_assignments)},
+            metadata={
+                "modes": list(artifact.layer_assignments),
+                "reference_source_mode": result.source_mode,
+                "reference_publication_safe": result.publication_safe,
+            },
         )
 
 
