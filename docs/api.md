@@ -220,12 +220,23 @@ Open quantum system solver. Supports memory-efficient Monte Carlo Wavefunction (
 ### `xy_kuramoto.QuantumKuramotoSolver`
 
 ```python
-QuantumKuramotoSolver(n_oscillators, K_coupling, omega_natural, backend=None)
+QuantumKuramotoSolver(
+    n_oscillators,
+    K_coupling,
+    omega_natural,
+    trotter_order=None,
+    evolution_config=None,
+)
     .build_hamiltonian() -> SparsePauliOp
-    .evolve(time, trotter_steps=1) -> QuantumCircuit
+    .evolve(time, trotter_steps=None) -> QuantumCircuit
     .measure_order_parameter(statevector) -> tuple[float, float]  # (R, psi)
-    .run(t_max: float, dt: float, trotter_per_step: int = 5) -> dict  # times, R
+    .run(t_max: float, dt: float, trotter_per_step: int | None = None) -> dict  # times, R
 ```
+
+`TrotterEvolutionConfig` carries the default Trotter order and repetition
+counts. `run()` uses exact labelled time boundaries: when `t_max` is not an
+integer multiple of `dt`, the final interval is shortened so the state evolution
+and returned `times[-1]` both end at `t_max`.
 
 ### `trotter_upde.QuantumUPDESolver`
 

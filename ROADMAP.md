@@ -88,6 +88,11 @@ is copied here.
   provenance-rich classical/Rust/GPU matrix before any new QPU spend,
   and `p_h1 = 0.72` remains open until a K_nm-specific derivation or
   measured/TCBO reproduction includes uncertainty crossing 0.72.
+- [x] **XY Kuramoto trajectory time-grid hardening.** Implemented
+  2026-05-12: `QuantumKuramotoSolver.run()` now builds explicit time
+  boundaries and evolves a final partial interval when `t_max` is not an
+  integer multiple of `dt`, preventing state/label drift in non-divisible
+  horizons. API and performance docs record the exact endpoint contract.
 - [x] **TCBO coupling-weighted complex reconstruction.** Implemented
   2026-05-12: `tcbo_weighted_complex.py` reconstructs the roadmap
   blocker using `K_ij * |cos(theta_j - theta_i)|` edge weights, a

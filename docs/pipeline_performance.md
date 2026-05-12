@@ -239,6 +239,9 @@ couplings) — exact parity with Python `build_knm_paper27`.
 ### QuantumKuramotoSolver
 
 The core solver maps Kuramoto dynamics to Trotterised XY Hamiltonian evolution.
+Trajectory sampling uses explicit time boundaries rather than rescaled labels:
+for non-divisible horizons, the last evolution interval is shortened so the
+state reaches the reported final time exactly.
 
 | Operation | System | Time | Output |
 |-----------|--------|------|--------|
