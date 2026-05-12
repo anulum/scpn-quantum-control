@@ -12,6 +12,7 @@ from __future__ import annotations
 import warnings
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.applications.iter_benchmark import (
     ITER_MODE_COUPLING,
@@ -37,8 +38,12 @@ class TestITERData:
 
 
 class TestITERCouplingMatrix:
+    def test_builtin_synthetic_reference_requires_explicit_opt_in(self):
+        with pytest.raises(RuntimeError, match="allow_synthetic_reference"):
+            iter_coupling_matrix()
+
     def test_shape(self):
-        K, omega = iter_coupling_matrix()
+        K, omega = iter_coupling_matrix(allow_synthetic_reference=True)
         assert K.shape == (8, 8)
         assert omega.shape == (8,)
 
@@ -47,25 +52,25 @@ class TestITERBenchmark:
     def test_returns_result(self):
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
-        result = iter_benchmark(K, omega)
+        result = iter_benchmark(K, omega, allow_synthetic_reference=True)
         assert isinstance(result, ITERBenchmarkResult)
 
     def test_n_modes(self):
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
-        result = iter_benchmark(K, omega)
+        result = iter_benchmark(K, omega, allow_synthetic_reference=True)
         assert result.n_modes == 8
 
     def test_correlation_bounded(self):
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
-        result = iter_benchmark(K, omega)
+        result = iter_benchmark(K, omega, allow_synthetic_reference=True)
         assert -1 <= result.topology_correlation <= 1
 
     def test_fewer_oscillators(self):
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]
-        result = iter_benchmark(K, omega)
+        result = iter_benchmark(K, omega, allow_synthetic_reference=True)
         assert result.n_modes == 5
 
     def test_constant_frequency_vector_returns_zero_correlation(self):
@@ -73,7 +78,7 @@ class TestITERBenchmark:
         omega = np.ones(5)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)
-            result = iter_benchmark(K, omega)
+            result = iter_benchmark(K, omega, allow_synthetic_reference=True)
         assert result.frequency_correlation == 0.0
         assert result.n_modes == 5
         assert "freq r=0.000" in result.summary
@@ -81,19 +86,116 @@ class TestITERBenchmark:
     def test_locking_risk_bounded(self):
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
-        result = iter_benchmark(K, omega)
+        result = iter_benchmark(K, omega, allow_synthetic_reference=True)
         assert 0 <= result.mode_locking_risk <= 1.0
 
     def test_summary_string(self):
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
-        result = iter_benchmark(K, omega)
+        result = iter_benchmark(K, omega, allow_synthetic_reference=True)
         assert "SCPN vs ITER" in result.summary
+
+    def test_benchmark_refuses_implicit_synthetic_reference(self):
+        K = build_knm_paper27(L=8)
+        omega = OMEGA_N_16[:8]
+        with pytest.raises(RuntimeError, match="allow_synthetic_reference"):
+            iter_benchmark(K, omega)
+
+    def test_result_labels_synthetic_reference_source_mode(self):
+        K = build_knm_paper27(L=8)
+        omega = OMEGA_N_16[:8]
+        result = iter_benchmark(K, omega, allow_synthetic_reference=True)
+        assert result.source_mode == "synthetic"
+        assert result.publication_safe is False
+
+    def test_result_labels_curated_reference_source_mode(self):
+        K_iter, omega_iter = iter_coupling_matrix(allow_synthetic_reference=True)
+        result = iter_benchmark(
+            K_iter,
+            omega_iter,
+            iter_coupling=K_iter,
+            iter_frequencies=omega_iter,
+            reference_source_mode="curated",
+        )
+        assert result.source_mode == "curated"
+        assert result.publication_safe is True
+
+    def test_reference_matrix_and_frequency_vector_must_be_supplied_together(self):
+        K_iter, omega_iter = iter_coupling_matrix(allow_synthetic_reference=True)
+        with pytest.raises(ValueError, match="iter_coupling and iter_frequencies"):
+            iter_benchmark(K_iter, omega_iter, iter_coupling=K_iter)
 
     def test_scpn_vs_iter(self):
         """Record SCPN vs ITER — Gap 1 fusion data."""
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
-        result = iter_benchmark(K, omega)
+        result = iter_benchmark(K, omega, allow_synthetic_reference=True)
         print(f"\n  {result.summary}")
         assert isinstance(result.topology_correlation, float)
+
+    def test_rejects_non_square_scpn_coupling(self):
+        K = np.ones((2, 3))
+        omega = np.ones(2)
+        with pytest.raises(ValueError, match="K_scpn must be a square"):
+            iter_benchmark(K, omega, allow_synthetic_reference=True)
+
+    def test_rejects_scpn_frequency_shape_mismatch(self):
+        K = build_knm_paper27(L=4)
+        omega = np.ones(3)
+        with pytest.raises(ValueError, match="omega_scpn must match"):
+            iter_benchmark(K, omega, allow_synthetic_reference=True)
+
+    def test_rejects_non_finite_scpn_coupling(self):
+        K = build_knm_paper27(L=4)
+        K[0, 1] = np.nan
+        omega = OMEGA_N_16[:4]
+        with pytest.raises(ValueError, match="K_scpn must contain only finite"):
+            iter_benchmark(K, omega, allow_synthetic_reference=True)
+
+    def test_rejects_too_small_comparison_system(self):
+        K = np.array([[0.0]])
+        omega = np.array([2.5])
+        with pytest.raises(ValueError, match="at least two coupled modes"):
+            iter_benchmark(K, omega, allow_synthetic_reference=True)
+
+    def test_rejects_iter_coupling_asymmetry(self):
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        iter_K = np.array(
+            [
+                [0.0, 0.8, 0.1],
+                [0.2, 0.0, 0.3],
+                [0.1, 0.3, 0.0],
+            ]
+        )
+        iter_omega = np.array([2.5, 4.0, 8.0])
+        with pytest.raises(ValueError, match="iter_coupling must be symmetric"):
+            iter_benchmark(K, omega, iter_coupling=iter_K, iter_frequencies=iter_omega)
+
+    def test_rejects_negative_iter_coupling(self):
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        iter_K = np.array(
+            [
+                [0.0, -0.1, 0.1],
+                [-0.1, 0.0, 0.3],
+                [0.1, 0.3, 0.0],
+            ]
+        )
+        iter_omega = np.array([2.5, 4.0, 8.0])
+        with pytest.raises(ValueError, match="iter_coupling values must be non-negative"):
+            iter_benchmark(K, omega, iter_coupling=iter_K, iter_frequencies=iter_omega)
+
+    def test_rejects_iter_coupling_nonzero_diagonal(self):
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        iter_K = np.array(
+            [
+                [1.0, 0.8, 0.1],
+                [0.8, 0.0, 0.3],
+                [0.1, 0.3, 0.0],
+            ]
+        )
+        iter_omega = np.array([2.5, 4.0, 8.0])
+        with pytest.raises(ValueError, match="iter_coupling diagonal must be zero"):
+            iter_benchmark(K, omega, iter_coupling=iter_K, iter_frequencies=iter_omega)

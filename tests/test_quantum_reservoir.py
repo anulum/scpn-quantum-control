@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.applications.quantum_reservoir import (
     ReservoirResult,
@@ -53,6 +54,26 @@ class TestReservoirFeatures:
         result = reservoir_features(x, K, max_weight=2)
         assert len(result.feature_labels) == result.n_features
 
+    def test_rejects_empty_feature_vector(self):
+        K = build_knm_paper27(L=3)
+        with pytest.raises(ValueError, match="at least one feature"):
+            reservoir_features(np.array([]), K)
+
+    def test_rejects_non_square_coupling_matrix(self):
+        K = build_knm_paper27(L=3)
+        with pytest.raises(ValueError, match="K must be a square"):
+            reservoir_features(np.array([0.1]), K[:2, :])
+
+    def test_rejects_omega_shape_mismatch(self):
+        K = build_knm_paper27(L=3)
+        with pytest.raises(ValueError, match="omega must be a vector matching K"):
+            reservoir_features(np.array([0.1]), K, omega=np.zeros(2))
+
+    def test_rejects_invalid_max_weight(self):
+        K = build_knm_paper27(L=3)
+        with pytest.raises(ValueError, match="max_weight must be between"):
+            reservoir_features(np.array([0.1]), K, max_weight=0)
+
 
 class TestReservoirFeatureMatrix:
     def test_shape(self):
@@ -61,6 +82,21 @@ class TestReservoirFeatureMatrix:
         F = reservoir_feature_matrix(X, K, max_weight=1)
         assert F.shape[0] == 5
         assert F.shape[1] == 9  # 3 × 3 weight-1 Pauli features
+
+    def test_rejects_one_dimensional_input(self):
+        K = build_knm_paper27(L=3)
+        with pytest.raises(ValueError, match="X must be a 2-D"):
+            reservoir_feature_matrix(np.array([0.1, 0.2, 0.3]), K)
+
+    def test_rejects_empty_sample_set(self):
+        K = build_knm_paper27(L=3)
+        with pytest.raises(ValueError, match="at least one sample"):
+            reservoir_feature_matrix(np.empty((0, 3)), K)
+
+    def test_rejects_empty_feature_columns(self):
+        K = build_knm_paper27(L=3)
+        with pytest.raises(ValueError, match="at least one feature"):
+            reservoir_feature_matrix(np.empty((2, 0)), K)
 
 
 class TestReservoirRidgeRegression:
@@ -78,6 +114,19 @@ class TestReservoirRidgeRegression:
         y = np.sin(X[:, 0])
         _, preds = reservoir_ridge_regression(X, y, K, max_weight=1)
         assert np.all(np.isfinite(preds))
+
+    def test_rejects_mismatched_targets(self):
+        K = build_knm_paper27(L=3)
+        X = np.random.default_rng(42).uniform(size=(8, 3))
+        with pytest.raises(ValueError, match="y_train must be a vector matching"):
+            reservoir_ridge_regression(X, np.ones(7), K, max_weight=1)
+
+    def test_rejects_non_positive_regularisation(self):
+        K = build_knm_paper27(L=3)
+        X = np.random.default_rng(42).uniform(size=(8, 3))
+        y = np.sin(X[:, 0])
+        with pytest.raises(ValueError, match="alpha must be finite and positive"):
+            reservoir_ridge_regression(X, y, K, alpha=0.0, max_weight=1)
 
 
 # ---------------------------------------------------------------------------

@@ -20,20 +20,20 @@ on a 156-qubit superconducting processor}
 \begin{abstract}
 We present a Kuramoto--XY synchronisation study with heterogeneous natural
 frequencies, simulator baselines, and ledgered IBM Heron~r2 evidence. A
-Rust-accelerated pipeline ($5{,}401\times$
-faster Hamiltonian construction than Qiskit) enables entanglement entropy,
-Krylov complexity, OTOC scrambling, and Floquet discrete time crystal
-diagnostics for systems of 2--16~qubits. Legacy ibm\_fez artifacts include
+Rust/PyO3-assisted pipeline enables entanglement entropy, Krylov complexity,
+OTOC scrambling, and Floquet discrete-time-crystal diagnostics for systems
+of 2--16~qubits. Legacy ibm\_fez artefacts include
 Bell, QKD, VQE, ZNE, Trotter, and UPDE rows that must be cited by committed
-artifact path rather than as broad validation. Finite-size scaling yields
-$K_c(\infty) \approx 2.2$ consistent with Berezinskii--Kosterlitz--Thouless
-universality ($c = 1.04$). Heterogeneous frequencies preserve discrete
-time crystal order and induce a non-ergodic spectral regime (Poisson
-level statistics at $n = 8$) without deep many-body localisation. A
-hardware-anchored scaling analysis places the exact Hilbert-space
-simulation crossover at $n \approx 11.6$, while leaving broad quantum
-advantage open because Rust Kuramoto ODE baselines remain faster for the
-measured $n \leq 16$ regime.
+artefact path rather than as aggregate validation. Finite-size diagnostics are
+consistent with Berezinskii--Kosterlitz--Thouless scaling in the small
+systems studied, including a periodic-boundary central-charge estimate
+$c = 1.04$ at $n = 8$, while larger sizes show finite-size drift. The
+same exact-simulation diagnostics show subharmonic Floquet response and
+non-ergodic level-spacing behaviour for heterogeneous frequencies. A
+hardware-anchored scaling analysis gives a resource boundary for exact
+Hilbert-space simulation; it is not a broad quantum-advantage claim because
+Rust Kuramoto ODE baselines remain faster for the measured $n \leq 16$
+observable-level regime.
 All code, data, and figures are open-source at
 \url{https://github.com/anulum/scpn-quantum-control}.
 \end{abstract}
@@ -65,8 +65,9 @@ Hamiltonian~\cite{Pikovsky2001}:
 %
 where the $XX + YY$ flip-flop interaction preserves the in-plane ($S^1$)
 dynamics while introducing entanglement and quantum tunnelling between
-phase configurations. Superconducting qubits are native simulators of
-this physics: each qubit is an oscillator on the Bloch sphere.
+phase configurations. Superconducting-qubit circuits provide a digital
+testbed for this spin-model dynamics: each qubit supplies a controllable
+two-level oscillator degree of freedom on the Bloch sphere.
 
 Prior quantum simulation of the XY model uses homogeneous frequencies
 ($\omega_i = \omega$ for all $i$), preserving translational invariance
@@ -74,10 +75,10 @@ and the well-characterised BKT universality
 class~\cite{Berezinskii1972,Kosterlitz1973}. Theoretical quantum
 Kuramoto models with heterogeneous frequencies
 exist~\cite{Pikovsky2001,Acebron2005}, and quantum synchronisation
-measures have been proposed~\cite{Ameri2015,Galve2013,Ma2020,Giorgi2013},
-but to our knowledge no prior hardware demonstration studies the quantum
-synchronisation transition with heterogeneous frequencies on a
-superconducting processor.
+measures have been proposed~\cite{Ameri2015,Galve2013,Ma2020,Giorgi2013}.
+The present work contributes a bounded superconducting-processor workflow
+for this heterogeneous-frequency setting, with simulator and hardware
+claims separated by artefact provenance.
 
 We study the heterogeneous case using a 16-oscillator coupling matrix
 $K_{nm} = K_{\mathrm{base}} \cdot \exp(-\alpha|n-m|)$ with
@@ -104,10 +105,11 @@ Qiskit's \texttt{SparsePauliOp}:
 \end{align}
 %
 where $b_i(k)$ is the $i$-th bit of basis state $|k\rangle$ and
-$\mathrm{mask}_{ij}$ flips bits $i$ and $j$. This Rust
-implementation~(PyO3) is $5{,}401\times$ faster than Qiskit
-\texttt{SparsePauliOp} at $n=4$ and $158\times$ at $n=8$
-(Table~\ref{tab:speedup}).
+$\mathrm{mask}_{ij}$ flips bits $i$ and $j$. Current benchmark artefacts
+report bounded Rust/PyO3 kernel-level acceleration for selected tasks
+(Table~\ref{tab:speedup}). Earlier unmatched internal timing numbers are
+not reported because they have not been reproduced under the current
+matched benchmark harness.
 
 \begin{table}[b]
 \caption{\label{tab:speedup}%
@@ -116,8 +118,8 @@ Measured Rust vs.\ Python/Qiskit/scipy speedups.}
 \begin{tabular}{lrl}
 Module & Speedup & Method \\
 \colrule
-Hamiltonian ($n=4$) & $5{,}401\times$ & Bitwise flip-flop \\
-Hamiltonian ($n=8$) & $158\times$ & Same \\
+Knm build ($n=4$) & $5.89\times$ & Matched current harness \\
+Knm build ($n=16$) & $3.71\times$ & Matched current harness \\
 OTOC ($n=4$) & $264\times$ & Eigendecomp + rayon \\
 Krylov ($n=3$) & $27\times$ & Complex Lanczos \\
 Order param.\ ($n=4$) & $6.2\times$ & Batch Pauli \\
@@ -140,9 +142,10 @@ $\bar{r} = \langle\min(\delta_n, \delta_{n+1}) /
 
 \subsection{Hardware evidence}
 
-The March~2026 \textbf{ibm\_fez} material is retained as legacy
-artifact-backed evidence. Individual Bell, QKD, VQE, ZNE, Trotter, and UPDE
-values must cite their committed result artifact or the hardware ledger. The
+The March~2026 \textbf{ibm\_fez} material is retained as a separate
+legacy artefact-backed campaign, not as the promoted dataset for the later
+DLA/parity claim. Individual Bell, QKD, VQE, ZNE, Trotter, and UPDE
+values must cite their committed result artefact or the hardware ledger. The
 promoted raw-count IBM dataset is the April~2026 \textbf{ibm\_kingston}
 Phase~1 DLA parity campaign, which includes job IDs, counts, integrity checks,
 and a count-to-statistic reproduction harness.
@@ -193,10 +196,12 @@ coupling for $n = 4, 6, 8$.}
 
 \subsection{Floquet discrete time crystal}
 
-All 15 drive amplitudes show subharmonic response with heterogeneous
-frequencies (Fig.~\ref{fig:dtc}). Frequency disorder does not destroy
-the DTC. The non-ergodic spectrum (Sec.~\ref{sec:mbl}) provides the
-stabilisation mechanism.
+The exact-simulation scan shows subharmonic response across the 15 drive
+amplitudes tested with heterogeneous frequencies (Fig.~\ref{fig:dtc}).
+Within this finite-size diagnostic, frequency disorder does not remove the
+Floquet response. The non-ergodic spectrum (Sec.~\ref{sec:mbl}) is a
+candidate stabilisation mechanism rather than a hardware-demonstrated DTC
+mechanism.
 
 \begin{figure}[t]
 \includegraphics[width=\columnwidth]{../figures/publication/fig9_floquet_dtc_n3456.pdf}
@@ -207,11 +212,12 @@ amplitude $\delta$ for $n = 3, 4, 6$.}
 
 \subsection{Finite-size scaling}
 
-BKT ansatz yields $K_c(\infty) \approx 2.20$ (Fig.~\ref{fig:fss}).
-The spectral gap closes exponentially $n = 4 \to 6$, consistent with
-BKT universality. Central charge $c = 1.04$ at $n = 8$ ($c = 1$
-expected for BKT). Drifts to $c = 1.21$ at $n = 10$ may indicate
-finite-size corrections.
+The BKT ansatz gives $K_c(\infty) \approx 2.20$ in the current
+finite-size fit (Fig.~\ref{fig:fss}). The spectral-gap fits at
+$n=4,6,8$ are consistent with BKT-like scaling, and the periodic-boundary
+central-charge estimate is $c = 1.04$ at $n = 8$ ($c = 1$ expected for
+BKT). The failed or drifting larger-size fits are treated as finite-size
+limitations, not as evidence of asymptotic universality.
 
 \begin{figure}[t]
 \includegraphics[width=\columnwidth]{../figures/publication/fig6_finite_size_scaling.pdf}
@@ -234,7 +240,7 @@ ${>}8\sigma$ significance (Fig.~\ref{fig:hardware}).
 
 Quantum bit error rate in matched bases: ZZ 5.5\%, XX 5.8\% --- below
 the BB84 security threshold of 11\%. Mismatched basis (ZX): 93.9\%
-error, confirming correct basis discrimination.
+error, consistent with basis discrimination in this protocol.
 
 \subsection{ZNE stability}
 
@@ -244,9 +250,9 @@ ${<}2\%$ correction to raw values.
 
 \subsection{16-qubit dynamics}
 
-13 of 16~qubits show $|\langle Z \rangle| > 0.3$, demonstrating that
-the Kuramoto coupling structure survives hardware noise at full scale
-(Fig.~\ref{fig:hardware16}).
+13 of 16~qubits show $|\langle Z \rangle| > 0.3$ in the legacy UPDE row,
+showing that part of the Kuramoto coupling pattern remains visible, while
+the 16-qubit circuit is explicitly noise-limited (Fig.~\ref{fig:hardware16}).
 
 \begin{figure}[t]
 \includegraphics[width=\columnwidth]{../figures/publication/fig10_ibm_hardware.pdf}
@@ -295,9 +301,9 @@ $n \approx 11.6$ applies only to exact Hilbert-space simulation.}
 
 The physics-informed Knm ansatz (CZ gates between coupled pairs)
 concentrates 42\% of probability in the top bitstring vs.\ 20\% for
-TwoLocal and 21\% for EfficientSU2, confirming that circuit design
-reflecting the coupling topology outperforms generic variational
-ansatze on hardware.
+TwoLocal and 21\% for EfficientSU2 in this legacy hardware row, supporting
+the narrower claim that topology-reflecting circuit design can improve this
+benchmark against the two generic ansatze tested.
 
 \subsection{Non-ergodicity diagnostic}\label{sec:mbl}
 
@@ -320,30 +326,31 @@ frequencies protect the coupling topology from thermal scrambling.
 \begin{figure}[t]
 \includegraphics[width=\columnwidth]{../figures/publication/fig15_mbl_level_spacing.pdf}
 \caption{\label{fig:mbl}%
-Level-spacing ratio $\bar{r}$ vs.\ coupling. At $n = 8$ the system
-never reaches GOE --- non-ergodic protection strengthens with size.}
+Level-spacing ratio $\bar{r}$ vs.\ coupling. At $n = 8$ the finite-size
+diagnostic remains below the GOE reference across the tested grid.}
 \end{figure}
 
 %% ====================================================================
 \section{Discussion}
 %% ====================================================================
 
-\textbf{BKT universality preserved.}
-Two independent tests confirm BKT universality: central charge
-$c = 1.04$ at $n = 8$ (expected $c = 1$), and spectral gap essential
-singularity $\Delta \sim \exp(-b/\sqrt{K-K_c})$ with $R^2 > 0.96$.
-Heterogeneous frequencies shift $K_c$ but do not change the universality
-class.
+\textbf{BKT-like finite-size diagnostics.}
+Two diagnostics support a BKT-like interpretation in the small systems
+studied: the periodic-boundary central-charge estimate $c = 1.04$ at
+$n = 8$ (expected $c = 1$), and spectral-gap essential-singularity fits
+$\Delta \sim \exp(-b/\sqrt{K-K_c})$ with $R^2 > 0.96$ for the supported
+sizes. Larger-size drift keeps this as a finite-size diagnostic rather
+than an asymptotic-universality conclusion.
 
 \textbf{DTC resilience.}
-The non-ergodic spectrum provides the mechanism: heterogeneous
-frequencies prevent thermalisation, stabilising the subharmonic
-response without requiring deep MBL.
+The non-ergodic spectrum provides a plausible mechanism in exact
+simulation: heterogeneous frequencies suppress thermalisation trends and
+coincide with a stable subharmonic response without requiring deep MBL.
 
 \textbf{Noise budget.}
-The 5.5\% QBER and 94\% state preparation fidelity establish that
-Heron~r2 has sufficient coherence for Kuramoto-XY simulation at
-$n \leq 8$. The 16-qubit experiment is viable but noise-limited
+The 5.5\% QBER and 94\% state preparation fidelity in the retained
+legacy rows indicate usable shallow-circuit performance for the tested
+Kuramoto--XY circuits. The 16-qubit row remains explicitly noise-limited
 (depth $\leq 50$ CX gates).
 
 \textbf{Limitations.}
@@ -361,13 +368,14 @@ coupling matrix.
 \section{Conclusion}
 %% ====================================================================
 
-We have presented a comprehensive quantum hardware study of
+We have presented a bounded quantum hardware study of
 coupled-oscillator synchronisation with heterogeneous natural
 frequencies. Key results: Bell inequality violation ($S = 2.165$),
 sub-threshold QKD error rate (5.5\%), BKT critical coupling
-$K_c \approx 2.2$, DTC order surviving frequency disorder, and a
-non-ergodic spectral regime at $n = 8$. A Rust-accelerated pipeline
-enables $5{,}401\times$ faster Hamiltonian construction vs.\ Qiskit.
+$K_c \approx 2.2$ in the finite-size fit, subharmonic Floquet response in
+exact simulation, and a non-ergodic spectral regime at $n = 8$. The
+software pipeline combines Python/Qiskit orchestration with Rust/PyO3
+kernel acceleration for selected reproducibility and benchmarking tasks.
 All code, data, and 17~figures are open-source (AGPL-3.0) at
 \url{https://github.com/anulum/scpn-quantum-control}.
 
@@ -375,7 +383,7 @@ All code, data, and 17~figures are open-source (AGPL-3.0) at
 \section*{Data availability}
 %% ====================================================================
 
-Simulation data, ledgered hardware artifacts, Python modules, Rust engine
+Simulation data, ledgered hardware artefacts, Python modules, Rust engine
 source, and publication figures are available at the GitHub repository under
 AGPL-3.0. Zenodo archive:
 DOI~\href{https://doi.org/10.5281/zenodo.18821929}{10.5281/zenodo.18821929}.

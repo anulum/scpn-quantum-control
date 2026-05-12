@@ -13,7 +13,7 @@ import json
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -23,7 +23,7 @@ from scpn_quantum_control.applications.power_grid import ieee_5bus_coupling_matr
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.hardware.classical import classical_kuramoto_reference
 
-FloatArray = NDArray[np.float64]
+FloatArray: TypeAlias = NDArray[np.float64]
 
 _REPO_ROOT = project_data_root("results/hw_kuramoto_4osc.json")
 _DEFAULT_HARDWARE_TRACE = _REPO_ROOT / "results" / "hw_kuramoto_4osc.json"
@@ -162,7 +162,7 @@ def load_ieee5bus_sync_forecast_case(
     """
     if disturbance_scale <= 0.0 or not np.isfinite(disturbance_scale):
         raise ValueError("disturbance_scale must be finite and positive")
-    coupling, omega = ieee_5bus_coupling_matrix()
+    coupling, omega = ieee_5bus_coupling_matrix(allow_builtin_reference=True)
     theta0 = np.asarray([0.0, 0.03, -0.025, 0.04, -0.015], dtype=np.float64)
     observed = _scipy_reference_trace(
         coupling,

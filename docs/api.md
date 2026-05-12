@@ -220,12 +220,23 @@ Open quantum system solver. Supports memory-efficient Monte Carlo Wavefunction (
 ### `xy_kuramoto.QuantumKuramotoSolver`
 
 ```python
-QuantumKuramotoSolver(n_oscillators, K_coupling, omega_natural, backend=None)
+QuantumKuramotoSolver(
+    n_oscillators,
+    K_coupling,
+    omega_natural,
+    trotter_order=None,
+    evolution_config=None,
+)
     .build_hamiltonian() -> SparsePauliOp
-    .evolve(time, trotter_steps=1) -> QuantumCircuit
+    .evolve(time, trotter_steps=None) -> QuantumCircuit
     .measure_order_parameter(statevector) -> tuple[float, float]  # (R, psi)
-    .run(t_max: float, dt: float, trotter_per_step: int = 5) -> dict  # times, R
+    .run(t_max: float, dt: float, trotter_per_step: int | None = None) -> dict  # times, R
 ```
+
+`TrotterEvolutionConfig` carries the default Trotter order and repetition
+counts. `run()` uses exact labelled time boundaries: when `t_max` is not an
+integer multiple of `dt`, the final interval is shortened so the state evolution
+and returned `times[-1]` both end at `t_max`.
 
 ### `trotter_upde.QuantumUPDESolver`
 
@@ -384,9 +395,13 @@ QuantumDisruptionClassifier(n_features=11, n_layers=3)
 ```python
 ITERFeatureSpec()  # 11 ITER disruption features with min/max ranges
 normalize_iter_features(raw: np.ndarray) -> np.ndarray  # min-max to [0, 1]
-generate_synthetic_iter_data(n_samples, disruption_fraction=0.3) -> (X, y)
-from_fusion_core_shot(shot_data: dict) -> (features, label, warnings)
-DisruptionBenchmark(n_train=100, n_test=50).run(epochs=10) -> dict
+generate_synthetic_iter_data(n_samples, disruption_fraction=0.3, allow_synthetic=True) -> (X, y)
+from_fusion_core_shot(
+    shot_data: dict,
+    allow_center_defaults=False,
+    allow_density_proxy=False,
+) -> (features, label, warnings)
+DisruptionBenchmark(n_train=100, n_test=50, allow_synthetic=True).run(epochs=10) -> dict
 ```
 
 ## applications
@@ -509,6 +524,9 @@ BiologicalSurfaceCode(K, threshold=1e-5)
     .verify_css_commutation() -> bool
 ```
 Native topological error correction code mapped directly to the hierarchical SCPN coupling graph.
+`K` must be a finite square symmetric zero-diagonal coupling matrix.
+`threshold` must be finite and non-negative; edges with
+`abs(K[i, j]) >= threshold` are data qubits.
 
 ### `biological_surface_code.BiologicalMWPMDecoder`
 
@@ -517,6 +535,11 @@ BiologicalMWPMDecoder(code)
     .decode_z_errors(syndrome_x) -> np.ndarray
 ```
 Minimum Weight Perfect Matching decoder using biological coupling strengths as distance metrics.
+`syndrome_x` must be a one-dimensional binary vector with length equal
+to the number of X stabilizers. Because this graph decoder does not
+model rough boundaries, every connected component must have even
+syndrome parity; odd component parity raises `ValueError` instead of
+silently discarding an unmatched defect.
 
 ### `control_qec.ControlQEC`
 

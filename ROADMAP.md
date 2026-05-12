@@ -81,6 +81,164 @@ is copied here.
 - [ ] **Coverage and test-quality closure.** Push the release baseline
   from the documented `~97.6 %` coverage state toward 100 %, then audit
   behavioural value rather than relying on line coverage alone.
+- [ ] **Scientific gap queue.** Keep the public claim surface bounded by
+  the internal scientific-gap ledger: K_nm measured-system validation
+  still needs additional physical-unit candidates beyond the negative
+  IEEE 5-bus control, broad quantum advantage still needs the
+  provenance-rich classical/Rust/GPU matrix before any new QPU spend,
+  and `p_h1 = 0.72` remains open until a K_nm-specific derivation or
+  measured/TCBO reproduction includes uncertainty crossing 0.72.
+- [x] **XY Kuramoto trajectory time-grid hardening.** Implemented
+  2026-05-12: `QuantumKuramotoSolver.run()` now builds explicit time
+  boundaries and evolves a final partial interval when `t_max` is not an
+  integer multiple of `dt`, preventing state/label drift in non-divisible
+  horizons. API and performance docs record the exact endpoint contract.
+- [x] **TCBO coupling-weighted complex reconstruction.** Implemented
+  2026-05-12: `tcbo_weighted_complex.py` reconstructs the roadmap
+  blocker using `K_ij * |cos(theta_j - theta_i)|` edge weights, a
+  thresholded flag complex, beta-1 over GF(2), and a threshold scan
+  against the `0.72` target. The audit runner records this reconstruction
+  separately from the legacy delay-embedded observer path; the claim
+  remains unpromoted pending preregistered replay with uncertainty.
+- [x] **QSVT resource-estimator input hardening.** Implemented
+  2026-05-12: the QSVT resource estimator and query-count helpers now
+  reject non-square, dimension-mismatched, asymmetric, or non-finite
+  `K_nm/omega` inputs plus invalid simulation-time and error-budget
+  parameters before any Hamiltonian construction or resource claim is
+  produced. The phase API documents the validation contract.
+- [x] **QSP seed-angle degree validation.** Implemented 2026-05-12:
+  `qsp_phase_angles()` now rejects boolean, fractional, string, and
+  negative degrees with explicit `ValueError` messages before reaching
+  the non-production initial-guess path or the production synthesis gate.
+  The phase API documents that seed angles are offline optimiser inputs,
+  not compiled QSP phases.
+- [x] **Koopman Rust-kernel routing hardening.** Implemented
+  2026-05-12: `build_koopman_generator_rust()` now uses the optional
+  native `scpn_quantum_engine.koopman_generator` export when available,
+  exposes `require_rust=True` for benchmark/release gates that must
+  reject fallback execution, and keeps the NumPy generator as the
+  explicit fallback path. The Rust crate and `.pyi` contract now carry
+  the Koopman dense-generator export.
+- [x] **Second-order Trotter nested-commutator bound hardening.**
+  Implemented 2026-05-12: second-order `trotter_error_bound()` and
+  `optimal_dt()` now use an exact spectral-norm nested commutator for
+  small systems and a rigorous Pauli coefficient-norm upper bound for
+  larger systems, replacing the previous heuristic `gamma²/max(K)`
+  estimate.
+- [x] **R-witness entanglement-depth claim hardening.** Implemented
+  2026-05-12: `detect_entanglement_from_R()` now reports only the
+  certified lower-bound depth from the R separability witness: `1` when
+  the separable bound is not violated and `2` when nonseparability is
+  certified. Stronger multipartite-depth claims are no longer inferred
+  from heuristic R thresholds.
+- [x] **PennyLane VQE observable hardening.** Implemented 2026-05-12:
+  `PennyLaneRunner.run_vqe()` now measures the Kuramoto order parameter
+  from the optimized hardware-efficient ansatz using the same local
+  X/Y-expectation phase reconstruction as the Trotter path. VQE results
+  no longer report an unmeasured `order_parameter=0.0` placeholder.
+- [x] **Biological MWPM syndrome-parity hardening.** Implemented
+  2026-05-12: `BiologicalMWPMDecoder.decode_z_errors()` now rejects
+  malformed syndromes and odd syndrome parity in any connected component
+  when no explicit rough-boundary model is present. The decoder no
+  longer drops an unmatched defect to force even cardinality.
+- [x] **Biological surface-code K-matrix hardening.** Implemented
+  2026-05-12: `BiologicalSurfaceCode` now validates that `K` is a
+  finite square symmetric zero-diagonal coupling matrix and that
+  `threshold` is finite and non-negative before constructing the graph
+  code, preventing malformed matrices from reaching stabilizer or MWPM
+  logic.
+- [x] **MPS long-range truncation hardening.** Implemented 2026-05-12:
+  the quimb DMRG/TEBD paths now reject non-nearest-neighbour couplings
+  by default because `SpinHam1D`/`LocalHam1D` only represent adjacent
+  bonds. Callers that intentionally run the truncated tensor-network
+  diagnostic must pass `allow_long_range_truncation=True`; returned
+  metadata records `coupling_scope` and `omitted_coupling_l1`.
+- [x] **Paper claim-boundary audit after hardening.** Implemented
+  2026-05-12: the Phase 1 DLA short paper now states that the IBM
+  circuit used the nearest-neighbour truncation of the exponential
+  coupling matrix, and the benchmark API no longer turns crossover
+  estimates into a broad hardware-only dynamics claim.
+- [x] **Legacy preprint claim-boundary audit.** Implemented
+  2026-05-12: `docs/preprint.md` now frames ibm_fez material as
+  artifact-backed legacy hardware evidence, removes "first hardware
+  demonstration" and backend-general outperformance phrasing, and keeps
+  16-qubit/ansatz observations descriptive unless a later ledger review
+  promotes a specific raw-count claim.
+- [x] **Coauthor meeting claim-readiness pass.** Implemented
+  2026-05-12 for the 2026-05-13 15:00 Europe/Zurich Teams meeting:
+  `paper/main.tex`, `docs/preprint.md`, and `docs/PAPER_CLAIMS.md`
+  now avoid first-hardware, hardware-DTC, backend-general coherence,
+  generic-outperformance, and clean-readout overclaims. The FIM
+  manuscript boundary remains regression-tested as a backend/circuit-
+  specific negative hardware result, and an internal meeting brief was
+  added at `docs/internal/coauthor_meeting_readiness_2026-05-13.md`.
+- [x] **NumPy NQS sampling-contract hardening.** Implemented
+  2026-05-12: `vmc_ground_state()` now rejects explicit `n_samples`
+  because the current NumPy RBM path performs exact enumeration with
+  central finite-difference gradients, not sampled VMC. Returned
+  metadata labels `sampling_mode`, `n_samples_used`, and
+  `gradient_method`.
+- [x] **Trapped-ion proxy-basis hardening.** Implemented 2026-05-12:
+  `transpile_for_trapped_ion()` now requires
+  `allow_proxy_basis=True` when multiqubit instructions need the CX
+  proxy for native MS/RXX-style trapped-ion gates. Returned circuit
+  metadata records the representative basis, all-to-all connectivity
+  model, and non-calibrated hardware-claim boundary.
+- [x] **GPU batch VQE backend-contract hardening.** Implemented
+  2026-05-12: `batch_vqe_scan()` no longer ignores `use_gpu=True`;
+  that request requires PyTorch plus CUDA or fails clearly. The default
+  NumPy path now reports backend, product-Ry diagnostic ansatz,
+  random-scan optimizer, and no-hardware-claim metadata while rejecting
+  invalid sample and parameter counts before execution.
+- [x] **Integrated-information wrapper production route.** Implemented
+  2026-05-12: `IntegratedInformationPhi` now routes explicit
+  `coupling_matrix` and `natural_frequencies` inputs to the
+  `compute_quantum_phi` Kuramoto-XY density-matrix engine with shape,
+  symmetry, and finite-value validation. Counts-only entropy remains an
+  opt-in `entropy_proxy` diagnostic and is never returned as `phi`.
+- [x] **QFI production-adapter input hardening.** Implemented
+  2026-05-12: `QuantumFisherInformation` now rejects non-finite
+  Hamiltonian inputs, non-integer measurement budgets, boolean shot
+  counts, and malformed/out-of-range/diagonal `coupling_pairs` before
+  routing to the spectral QFI engine. The analysis API documents the
+  production contract and keeps counts-derived sync/DLA estimates
+  labelled as opt-in proxy diagnostics.
+- [x] **DLA-protected witness count normalisation hardening.**
+  Implemented 2026-05-12: `evaluate_dla_protected_memory()` now
+  rejects fractional, boolean, and negative count values before shot
+  total normalisation, preventing malformed hardware/simulator payloads
+  from being coerced into invalid probability mass. The DLA-protected
+  subspace docs record the count contract.
+- [x] **Logical-sync fidelity proxy domain hardening.** Implemented
+  2026-05-12: `LogicalSyncWitness` now rejects non-finite and
+  out-of-range scalar fidelity diagnostics even on the explicit
+  `allow_fidelity_proxy=True` path. The reproducibility table records
+  that this remains a labelled finite unit-interval proxy, not a
+  production logical synchronisation witness.
+- [x] **RL witness-discovery wrapper contract hardening.**
+  Implemented 2026-05-12: `RLDiscoveryAgent` now rejects unwired
+  compatibility parameters (`runner`, unsupported `observables`,
+  unsupported `reward_function`, and non-positive `n_episodes`) at
+  construction time. The wrapper contract is documented in the analysis
+  and witness-discovery API pages.
+- [x] **RL pulse-optimiser interface configuration hardening.**
+  Implemented 2026-05-12: `RLPulseOptimizer` now rejects missing
+  runners, non-finite/out-of-range `target_sync_order`, and non-positive,
+  fractional, or boolean `episodes` before the intentionally gated
+  optimisation methods can be called. The language-tier policy records
+  that this remains a fail-fast interface pending a real objective,
+  benchmark, and replayable training trace.
+- [x] **DLA tensor-network interface configuration hardening.**
+  Implemented 2026-05-12: `dla_truncated_tn()` now rejects non-square,
+  non-finite, or asymmetric `K_nm` inputs, invalid bond dimensions,
+  non-positive/non-finite DLA cutoffs, and unsupported observables before
+  reaching the intentionally gated tensor-network implementation path.
+  The language-tier policy records the validated fail-fast boundary.
+- [x] **PEC local multi-qubit coefficient decomposition.** Implemented
+  2026-05-12: `pauli_twirl_decompose()` now returns tensor-product
+  quasi-probability coefficients for `n_qubits >= 1`, preserving exact
+  single-qubit Rust parity while documenting that correlated multi-qubit
+  noise still requires a separately characterised inverse channel.
 - [x] **Behavioural-test audit automation.** Implemented 2026-05-06:
   `tools/audit_test_behaviour.py` inventories test modules for
   assertion-bearing tests, exception contracts, parametrisation, and
@@ -666,6 +824,13 @@ explicit QPU-time estimate before submission.
   execution is not promoted because the physics-aware decoder did not
   beat the standard decoder and its own feature-disabled ablation under
   the preregistered logical metric.
+- [x] **Multi-circuit QEC offline-boundary terminology hardening.**
+  Implemented 2026-05-12:
+  the readiness generator and committed artefacts now identify the
+  encoded comparator as `distance3_surface_code_offline` and describe
+  the supported claim as a distance-3 surface-code offline
+  logical-failure comparison, avoiding imprecise informal language while
+  preserving the no-hardware and no-fault-tolerance boundary.
 - [ ] **Multi-circuit QEC demonstration hardware execution.** Blocked
   until a revised QEC/decoder candidate passes offline logical metrics
   against unencoded, standard-decoder, and ablation baselines, then
@@ -900,6 +1065,16 @@ be executed until individually activated.
   enforce the preregistered S2 row schema, required baselines, known
   baseline labels, valid statuses, and wall-time requirements for
   successful rows before any scaling table or figure is promoted.
+- [x] **S2 validator matrix completeness hardening.** Implemented
+  2026-05-12: `validate_scaling_rows` now enforces every required
+  baseline per observed size, rejects off-protocol sizes and protocol
+  ids, requires finite non-negative timing plus memory for `ok` rows,
+  and requires explanatory notes for skipped or failed rows.
+- [x] **S2 validator provenance hardening.** Implemented 2026-05-12:
+  duplicate `(n_qubits, baseline)` rows are rejected, and row-level
+  provenance payloads must use structured metric, command, machine,
+  dependency, git-commit, and notes fields before a scaling matrix can
+  pass validation.
 - [x] **S2 lite scaling harness.** Implemented 2026-05-06:
   `scripts/bench_s2_scaling_lite.py` emits protocol-compliant rows for
   small selected sizes, measures cheap classical ODE and dense exact
@@ -1156,7 +1331,7 @@ be executed until individually activated.
 | Module | Description |
 |--------|-------------|
 | `mitigation/pec.py` | Probabilistic Error Cancellation (Temme et al. PRL 119 180509) |
-| `hardware/trapped_ion.py` | Trapped-ion noise model (MS gate, T1/T2) + transpilation |
+| `hardware/trapped_ion.py` | Trapped-ion representative noise model (MS gate, T1/T2) + explicit CX-proxy transpilation metadata |
 | `control/q_disruption_iter.py` | ITER 11-feature disruption classifier + synthetic data |
 | `benchmarks/quantum_advantage.py` | Classical vs quantum scaling + crossover extrapolation |
 | `bridge/snn_adapter.py` | SNN ↔ quantum bridge + ArcaneNeuronBridge (sc-neurocore) |

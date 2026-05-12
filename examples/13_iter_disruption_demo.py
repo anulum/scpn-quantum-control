@@ -24,12 +24,15 @@ def main() -> None:
     for name, lo, hi in zip(spec.names, spec.mins, spec.maxs):
         print(f"  {name:>15}: [{lo:.1f}, {hi:.1f}]")
 
-    X, y = generate_synthetic_iter_data(200, disruption_fraction=0.3, rng=None)
-    print(f"\nSynthetic data: {X.shape[0]} samples, {int(y.sum())} disruptions")
+    X, y = generate_synthetic_iter_data(
+        200, disruption_fraction=0.3, rng=None, allow_synthetic=True
+    )
+    print(f"\nGenerated data: {X.shape[0]} samples, {int(y.sum())} disruptions")
 
-    bench = DisruptionBenchmark(n_train=80, n_test=40, seed=42)
+    bench = DisruptionBenchmark(n_train=80, n_test=40, seed=42, allow_synthetic=True)
     result = bench.run(epochs=5, lr=0.1)
     print(f"Accuracy: {result['accuracy']:.1%} ({result['n_test']} test samples)")
+    print(f"Source mode: {result['source_mode']}; publication safe: {result['publication_safe']}")
 
 
 if __name__ == "__main__":

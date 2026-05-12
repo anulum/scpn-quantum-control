@@ -287,14 +287,13 @@ class TestSyncWitnessTopological:
 
 
 class TestSyncEntanglementWitnessEdge:
-    def test_entanglement_depth_high_R(self):
+    def test_certified_entanglement_depth_is_conservative(self):
         from scpn_quantum_control.analysis.sync_entanglement_witness import (
-            _estimate_entanglement_depth,
+            _certified_entanglement_depth,
         )
 
-        assert _estimate_entanglement_depth(0.995, 4) == 4
-        assert _estimate_entanglement_depth(0.6, 4) == 2
-        assert _estimate_entanglement_depth(0.3, 4) == 1
+        assert _certified_entanglement_depth(False) == 1
+        assert _certified_entanglement_depth(True) == 2
 
     def test_R_from_statevector(self):
         from scpn_quantum_control.analysis.sync_entanglement_witness import (

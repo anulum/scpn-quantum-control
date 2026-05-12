@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -22,7 +22,10 @@ from .witness_discovery import (
     discover_kuramoto_witnesses,
 )
 
-FloatArray = NDArray[np.float64]
+FloatArray: TypeAlias = NDArray[np.float64]
+
+_SUPPORTED_OBSERVABLES = ("correlation", "fiedler")
+_SUPPORTED_REWARD_FUNCTION = "witness_score"
 
 
 class RLDiscoveryAgent:
@@ -40,8 +43,23 @@ class RLDiscoveryAgent:
         theta0: FloatArray | None = None,
         spec: WitnessDiscoverySpec | None = None,
     ) -> None:
+        if runner is not None:
+            raise ValueError(
+                "runner is not supported by RLDiscoveryAgent; configure K_nm, omega, "
+                "theta0, and WitnessDiscoverySpec for replayable local discovery."
+            )
+        configured_observables = tuple(observables or _SUPPORTED_OBSERVABLES)
+        if configured_observables != _SUPPORTED_OBSERVABLES:
+            raise ValueError(
+                "observables must be exactly ['correlation', 'fiedler']; these are the "
+                "witnesses wired into the discovery objective."
+            )
+        if reward_function != _SUPPORTED_REWARD_FUNCTION:
+            raise ValueError("reward_function must be 'witness_score'.")
+        if n_episodes <= 0:
+            raise ValueError("n_episodes must be a positive integer.")
         self.runner = runner
-        self.observables = observables or ["correlation", "fiedler"]
+        self.observables = list(configured_observables)
         self.n_episodes = n_episodes
         self.reward_function = reward_function
         self.K_nm = None if K_nm is None else np.array(K_nm, dtype=np.float64, copy=True)
@@ -55,8 +73,8 @@ class RLDiscoveryAgent:
         """Run the configured witness-discovery loop."""
         if self.K_nm is None or self.omega is None:
             raise NotImplementedError(
-                "RLDiscoveryAgent requires K_nm and omega. The previous placeholder "
-                "phase output has been removed; configure a real Kuramoto problem."
+                "RLDiscoveryAgent requires K_nm and omega. Compatibility fallback phase "
+                "output has been removed; configure a real Kuramoto problem."
             )
         spec = self.spec or WitnessDiscoverySpec(n_iterations=self.n_episodes)
         self.result = discover_kuramoto_witnesses(

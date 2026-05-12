@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import numpy as np
 import pytest
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
@@ -86,6 +87,33 @@ class TestQueryCounts:
         ratio = q100 / q10
         assert 5 < ratio < 15  # approximately 10x at large t
 
+    @pytest.mark.parametrize("alpha", [0.0, -1.0, float("inf"), float("nan")])
+    def test_query_counts_reject_invalid_alpha(self, alpha):
+        with pytest.raises(ValueError, match="alpha"):
+            qsvt_query_count(alpha, 1.0, 0.01)
+        with pytest.raises(ValueError, match="alpha"):
+            trotter1_step_count(alpha, 1.0, 0.01)
+        with pytest.raises(ValueError, match="alpha"):
+            trotter2_step_count(alpha, 1.0, 0.01)
+
+    @pytest.mark.parametrize("epsilon", [0.0, -0.1, 1.0, 1.5, float("nan")])
+    def test_query_counts_reject_invalid_error_budget(self, epsilon):
+        with pytest.raises(ValueError, match="epsilon"):
+            qsvt_query_count(1.0, 1.0, epsilon)
+        with pytest.raises(ValueError, match="epsilon"):
+            trotter1_step_count(1.0, 1.0, epsilon)
+        with pytest.raises(ValueError, match="epsilon"):
+            trotter2_step_count(1.0, 1.0, epsilon)
+
+    @pytest.mark.parametrize("time", [-1.0, float("inf"), float("nan")])
+    def test_query_counts_reject_invalid_time(self, time):
+        with pytest.raises(ValueError, match="simulation time"):
+            qsvt_query_count(1.0, time, 0.01)
+        with pytest.raises(ValueError, match="simulation time"):
+            trotter1_step_count(1.0, time, 0.01)
+        with pytest.raises(ValueError, match="simulation time"):
+            trotter2_step_count(1.0, time, 0.01)
+
 
 class TestQSVTResourceEstimate:
     def test_returns_result(self):
@@ -128,14 +156,51 @@ class TestQSVTResourceEstimate:
         print(f"  Ancilla qubits: {result.n_ancilla_qsvt}")
         assert result.qsvt_queries > 0
 
+    @pytest.mark.parametrize(
+        ("K", "omega", "match"),
+        [
+            (np.ones((2, 3)), np.ones(2), "square"),
+            (np.eye(3), np.ones(2), "omega"),
+            (np.array([[0.0, np.nan], [np.nan, 0.0]]), np.ones(2), "finite"),
+            (np.eye(2), np.array([0.0, np.inf]), "finite"),
+        ],
+    )
+    def test_resource_estimate_rejects_invalid_problem_shapes_and_values(self, K, omega, match):
+        with pytest.raises(ValueError, match=match):
+            qsvt_resource_estimate(K, omega)
+
+    @pytest.mark.parametrize(
+        ("time", "epsilon", "match"),
+        [
+            (-1.0, 0.01, "simulation time"),
+            (1.0, 0.0, "epsilon"),
+            (1.0, 1.0, "epsilon"),
+        ],
+    )
+    def test_resource_estimate_rejects_invalid_budget_parameters(self, time, epsilon, match):
+        K = build_knm_paper27(L=4)
+        omega = OMEGA_N_16[:4]
+
+        with pytest.raises(ValueError, match=match):
+            qsvt_resource_estimate(K, omega, t=time, epsilon=epsilon)
+
 
 class TestQSPPhaseAngles:
-    def test_length(self):
-        phases = qsp_phase_angles(10)
+    def test_refuses_unoptimised_phase_claim(self):
+        with pytest.raises(NotImplementedError, match="QSP phase synthesis"):
+            qsp_phase_angles(10)
+
+    @pytest.mark.parametrize("degree", [1.5, True, "4"])
+    def test_rejects_non_integer_degree(self, degree):
+        with pytest.raises(ValueError, match="degree"):
+            qsp_phase_angles(degree, allow_initial_guess=True)
+
+    def test_initial_guess_length_when_explicitly_requested(self):
+        phases = qsp_phase_angles(10, allow_initial_guess=True)
         assert len(phases) == 11
 
-    def test_symmetric(self):
-        phases = qsp_phase_angles(8)
+    def test_initial_guess_symmetric_when_explicitly_requested(self):
+        phases = qsp_phase_angles(8, allow_initial_guess=True)
         assert phases[0] == pytest.approx(phases[-1])
 
 

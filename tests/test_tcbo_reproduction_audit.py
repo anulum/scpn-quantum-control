@@ -34,6 +34,9 @@ def _load_script_module():
 audit_module = _load_script_module()
 classify_observer_source = audit_module.classify_observer_source
 deterministic_phase_stream = audit_module.deterministic_phase_stream
+build_coupling_weighted_reconstruction_payload = (
+    audit_module.build_coupling_weighted_reconstruction_payload
+)
 
 
 def test_classify_observer_source_identifies_delay_embedded_vietoris_rips():
@@ -80,3 +83,14 @@ def test_deterministic_phase_stream_is_reproducible():
     assert len(first) == 3
     assert first[0].shape == (4,)
     assert all(np.allclose(a, b) for a, b in zip(first, second, strict=True))
+
+
+def test_coupling_weighted_reconstruction_payload_records_threshold_scan():
+    payload = build_coupling_weighted_reconstruction_payload(n_layers=4, seed=7)
+
+    assert payload["construction"] == "K_ij_abs_cos_phase_difference_flag_complex"
+    assert payload["n_layers"] == 4
+    assert payload["target_p_h1"] == 0.72
+    assert payload["promotes_target"] is False
+    assert len(payload["threshold_results"]) > 1
+    assert {"threshold", "beta_1", "p_h1"}.issubset(payload["threshold_results"][0])

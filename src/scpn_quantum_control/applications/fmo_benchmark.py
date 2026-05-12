@@ -26,6 +26,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from scipy.stats import spearmanr
 
 # FMO site energies (cm⁻¹, Adolphs & Renger 2006, Table 1)
 # Relative to average: ε_n - ⟨ε⟩
@@ -56,11 +57,20 @@ FMO_COUPLING = np.array(
 )
 
 
-def fmo_coupling_matrix() -> tuple[np.ndarray, np.ndarray]:
-    """Return the FMO coupling matrix and site energies.
+def fmo_coupling_matrix(
+    *,
+    allow_builtin_reference: bool = False,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Return the built-in FMO coupling matrix and site energies.
 
     Scaled to natural units: energies in rad/ps (divide cm⁻¹ by 5309).
     """
+    if not allow_builtin_reference:
+        raise RuntimeError(
+            "Refusing built-in FMO reference matrix without allow_builtin_reference=True. "
+            "Pass measured FMO coupling and frequency data to fmo_benchmark for "
+            "publication-safe claims."
+        )
     # Convert cm⁻¹ to rad/ps: 1 cm⁻¹ ≈ 0.0001884 rad/ps × 2π ≈ 0.001884 rad/ps
     cm_to_radps = 2.0 * np.pi * 2.998e10 * 1e-12  # 2π × c(cm/s) × 10⁻¹² s/ps
     omega = FMO_SITE_ENERGIES * cm_to_radps
@@ -79,11 +89,58 @@ class FMOBenchmarkResult:
     frequency_ratio: float
     n_oscillators: int
     summary: str
+    source_mode: str
+    publication_safe: bool
+
+
+def _validated_square_matrix(
+    matrix: np.ndarray,
+    name: str,
+    *,
+    require_coupling_structure: bool = False,
+) -> np.ndarray:
+    values = np.asarray(matrix, dtype=float)
+    if values.ndim != 2 or values.shape[0] != values.shape[1]:
+        raise ValueError(f"{name} must be a square 2-D matrix.")
+    if values.shape[0] < 2:
+        raise ValueError(f"{name} must contain at least two coupled sites.")
+    if not np.all(np.isfinite(values)):
+        raise ValueError(f"{name} must contain only finite values.")
+    if require_coupling_structure:
+        if not np.allclose(values, values.T, atol=1e-12):
+            raise ValueError(f"{name} must be symmetric.")
+        if not np.allclose(np.diag(values), 0.0, atol=1e-12):
+            raise ValueError(f"{name} diagonal must be zero.")
+    return values
+
+
+def _validated_frequency_vector(
+    frequencies: np.ndarray,
+    n_sites: int,
+    name: str,
+    matrix_name: str,
+) -> np.ndarray:
+    values = np.asarray(frequencies, dtype=float)
+    if values.ndim != 1 or values.shape != (n_sites,):
+        raise ValueError(f"{name} must match {matrix_name} site count.")
+    if not np.all(np.isfinite(values)):
+        raise ValueError(f"{name} must contain only finite values.")
+    return values
+
+
+def _finite_correlation(value: float) -> float:
+    if np.isnan(value):
+        return 0.0
+    return float(value)
 
 
 def fmo_benchmark(
     K_scpn: np.ndarray,
     omega_scpn: np.ndarray,
+    *,
+    fmo_coupling: np.ndarray | None = None,
+    fmo_frequencies: np.ndarray | None = None,
+    allow_builtin_reference: bool = False,
 ) -> FMOBenchmarkResult:
     """Compare SCPN coupling structure (7-oscillator subset) against FMO.
 
@@ -93,9 +150,47 @@ def fmo_benchmark(
     3. Coupling ratio: mean(K_scpn) / mean(K_fmo)
     4. Frequency ratio: mean(ω_scpn) / mean(ω_fmo)
     """
-    K_fmo, omega_fmo = fmo_coupling_matrix()
+    if fmo_coupling is None or fmo_frequencies is None:
+        if fmo_coupling is not None or fmo_frequencies is not None:
+            raise ValueError("fmo_coupling and fmo_frequencies must be supplied together.")
+        K_fmo, omega_fmo = fmo_coupling_matrix(allow_builtin_reference=allow_builtin_reference)
+        source_mode = "builtin_literature_reference"
+        publication_safe = False
+    else:
+        K_fmo = _validated_square_matrix(
+            fmo_coupling,
+            "fmo_coupling",
+            require_coupling_structure=True,
+        )
+        omega_fmo = _validated_frequency_vector(
+            fmo_frequencies,
+            K_fmo.shape[0],
+            "fmo_frequencies",
+            "fmo_coupling",
+        )
+        source_mode = "measured"
+        publication_safe = True
 
-    n = min(len(omega_scpn), 7)
+    K_scpn = _validated_square_matrix(K_scpn, "K_scpn")
+    omega_scpn = _validated_frequency_vector(
+        omega_scpn,
+        K_scpn.shape[0],
+        "omega_scpn",
+        "K_scpn",
+    )
+    K_fmo = _validated_square_matrix(
+        K_fmo,
+        "fmo_coupling",
+        require_coupling_structure=True,
+    )
+    omega_fmo = _validated_frequency_vector(
+        omega_fmo,
+        K_fmo.shape[0],
+        "fmo_frequencies",
+        "fmo_coupling",
+    )
+
+    n = min(len(omega_scpn), K_scpn.shape[0], len(omega_fmo), K_fmo.shape[0], 7)
     K_s = K_scpn[:n, :n]
     omega_s = omega_scpn[:n]
     K_f = K_fmo[:n, :n]
@@ -107,14 +202,13 @@ def fmo_benchmark(
     k_f_flat = K_f[idx]
 
     # Topology correlation (Spearman rank)
-    from scipy.stats import spearmanr
-
     rho_topo, _ = spearmanr(k_s_flat, k_f_flat)
+    rho_topo = _finite_correlation(float(rho_topo))
 
     # Frequency correlation (Pearson)
     omega_s_norm = (omega_s - np.mean(omega_s)) / max(np.std(omega_s), 1e-10)
     omega_f_norm = (omega_f - np.mean(omega_f)) / max(np.std(omega_f), 1e-10)
-    rho_freq = float(np.corrcoef(omega_s_norm, omega_f_norm)[0, 1])
+    rho_freq = _finite_correlation(float(np.corrcoef(omega_s_norm, omega_f_norm)[0, 1]))
 
     # Ratios
     coupling_ratio = float(np.mean(k_s_flat) / max(float(np.mean(k_f_flat)), 1e-10))
@@ -143,4 +237,6 @@ def fmo_benchmark(
         frequency_ratio=freq_ratio,
         n_oscillators=n,
         summary=summary,
+        source_mode=source_mode,
+        publication_safe=publication_safe,
     )

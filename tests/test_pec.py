@@ -54,9 +54,19 @@ def test_decompose_rejects_invalid_rate():
         pauli_twirl_decompose(-0.1)
 
 
-def test_decompose_multi_qubit_not_implemented():
-    with pytest.raises(NotImplementedError):
-        pauli_twirl_decompose(0.01, n_qubits=2)
+def test_decompose_two_qubit_tensor_product_coefficients():
+    one_qubit = pauli_twirl_decompose(0.01, n_qubits=1)
+    two_qubit = pauli_twirl_decompose(0.01, n_qubits=2)
+
+    assert two_qubit.shape == (16,)
+    np.testing.assert_allclose(two_qubit, np.kron(one_qubit, one_qubit), atol=1e-12)
+    assert np.sum(two_qubit) == pytest.approx(1.0)
+    assert np.sum(np.abs(two_qubit)) == pytest.approx(np.sum(np.abs(one_qubit)) ** 2)
+
+
+def test_decompose_rejects_invalid_qubit_count():
+    with pytest.raises(ValueError, match="n_qubits"):
+        pauli_twirl_decompose(0.01, n_qubits=0)
 
 
 def test_pec_sample_returns_result():

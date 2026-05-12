@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -24,8 +24,8 @@ from .dla_protected_subspace import (
     evaluate_dla_protected_memory,
 )
 
-FloatArray = NDArray[np.float64]
-ComplexArray = NDArray[np.complex128]
+FloatArray: TypeAlias = NDArray[np.float64]
+ComplexArray: TypeAlias = NDArray[np.complex128]
 
 
 @dataclass(frozen=True)
@@ -63,7 +63,7 @@ class DLAProtectedScarSpec:
     @property
     def energy_spacing(self) -> float:
         """Energy spacing that produces a full revival at ``revival_period``."""
-        return 2.0 * np.pi / self.revival_period
+        return float(2.0 * np.pi / self.revival_period)
 
 
 @dataclass(frozen=True)

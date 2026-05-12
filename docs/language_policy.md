@@ -113,8 +113,8 @@ applicable for this module.
 | `hardware/async_runner.py` | **No** | **Exempt** | — | — | Go (future) | asyncio orchestration over IBM Python client. If a fan-out daemon pattern emerges, Go is the candidate tier. |
 | `bridge/qpu_data_artifact.py` | **No** | **Exempt** | — | — | — | Schema validation, array hashing, and JSON serialisation boundary. NumPy and hashlib provide compiled primitives; there is no project hot loop. |
 | `qpu_compute.py` | **No** | **Exempt now** | Qiskit / Rust shadow path | Qiskit / provider emulators | Provider adapters | Request/result schema plus deterministic statevector dry-run orchestration. The heavy simulation is delegated to Qiskit; hardware adapters will own provider-specific compiled paths. |
-| `analysis/dla_truncated_tn.py` | **No** | **Exempt now** | TBD | TBD | — | Fail-fast interface only. A real tensor-network implementation will need its own benchmark and language-tier row. |
-| `analysis/rl_pulse_optimizer.py` | **No** | **Exempt now** | — | TBD | TBD | Fail-fast interface only. A real optimiser will need objective benchmarks and a training trace before publication use. |
+| `analysis/dla_truncated_tn.py` | **No** | **Exempt now** | TBD | TBD | — | Fail-fast interface only with validated coupling matrix, bond dimension, DLA cutoff, and observable selection. A real tensor-network implementation will need its own benchmark and language-tier row. |
+| `analysis/rl_pulse_optimizer.py` | **No** | **Exempt now** | — | TBD | TBD | Fail-fast interface only with validated runner, target-sync, and episode configuration. A real optimiser will need objective benchmarks and a training trace before publication use. |
 
 Every new module added to this repository must appear in this audit
 table as either a compiled-path row or an explicit exempt row.

@@ -209,9 +209,10 @@ match with full ED, level spacing bounded, memory estimates)
 Matrix Product State backend for systems beyond ED limits (n=32-64).
 DMRG for ground state, TEBD for time evolution.
 
-Currently nearest-neighbour couplings only (quimb `SpinHam1D` limitation).
-Longer-range couplings from $K_{nm}$ are dropped; for the exponential-decay
-matrix, NN terms dominate.
+Currently nearest-neighbour couplings only (quimb `SpinHam1D` /
+`LocalHam1D` limitation). Full-K inputs with non-adjacent couplings are
+rejected by default; callers must pass `allow_long_range_truncation=True`
+for the explicitly labelled nearest-neighbour diagnostic path.
 
 Requires `pip install quimb`.
 
@@ -290,7 +291,10 @@ Restricted Boltzmann Machine wavefunction for variational ground state search.
 $\log\psi(\sigma) = \sum_i a_i \sigma_i + \sum_j \log\cosh(\sum_i W_{ji}\sigma_i + b_j)$.
 
 Pure numpy, no JAX/torch. Exact mode for n ≤ 12 (all $2^n$ configurations).
-For production at larger scales, use NetKet.
+This path uses central finite-difference gradients and rejects `n_samples`
+instead of silently ignoring requested sampling budgets. Returned metadata
+records `sampling_mode`, `n_samples_used`, and `gradient_method`. For
+production at larger scales or sampled VMC, use NetKet.
 
 Based on Carleo & Troyer, Science 355, 602 (2017).
 
@@ -301,8 +305,9 @@ result = vmc_ground_state(K, omega, n_iterations=200, seed=42)
 print(f"VMC energy: {result['energy']:.4f}, params: {result['n_params']}")
 ```
 
-**Tests:** 10 (log_psi type, normalisation, n_params, reproducibility, VMC energy,
-convergence, output keys, large-n rejection)
+**Tests:** RBM amplitude invariants, normalisation, parameter counting,
+reproducibility, variational energy checks, output metadata, explicit
+`n_samples` rejection, and large-n rejection.
 
 ---
 
@@ -553,8 +558,9 @@ class MyRunner:
 
 ### `phase/gpu_batch_vqe.py` — Parallel VQE Parameter Scan
 
-Evaluate multiple VQE parameter sets in batch. CPU baseline with numpy,
-GPU path with PyTorch.
+Evaluate multiple VQE parameter sets in batch. CPU baseline with NumPy;
+`use_gpu=True` requests a PyTorch/CUDA execution path and raises if CUDA is
+not available rather than silently falling back.
 
 Inspired by TorchQuantum (MIT HAN Lab).
 
@@ -572,9 +578,13 @@ print(f"Scanned {result['n_samples']} parameter sets")
 |----------|---------|
 | `batch_energy_numpy(H, param_sets, ansatz_fn)` | energies array |
 | `batch_energy_torch(H, param_sets, ansatz_fn, device)` | energies array (GPU) |
-| `batch_vqe_scan(K, omega, n_samples, seed, use_gpu)` | `{energies, params, best_energy, best_params}` |
+| `batch_vqe_scan(K, omega, n_samples, seed, use_gpu)` | `{energies, params, best_energy, best_params, n_samples, backend, ansatz_family, optimizer, hardware_claim}` |
 
-**Tests:** 3 (batch energy, VQE scan, output keys)
+The built-in scan is a product-Ry random-parameter statevector expectation
+diagnostic, not a gradient-optimised or hardware-executed VQE.
+
+**Tests:** batch energy, VQE scan, output keys, backend contract, input
+validation.
 
 ---
 

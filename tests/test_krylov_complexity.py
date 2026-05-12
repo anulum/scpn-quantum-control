@@ -295,6 +295,30 @@ class TestKrylovComplexityEdgeCases:
 class TestLanczosPythonFallback:
     """Cover lines 98-133: Python Lanczos when Rust unavailable."""
 
+    def test_lanczos_coefficients_never_returns_uncomputed_basis_from_rust_path(self, monkeypatch):
+        """A coefficient-only accelerator must not fabricate basis vectors."""
+        import sys
+        from types import SimpleNamespace
+
+        def coefficient_only_lanczos_b_coefficients(*_args):
+            return [1.0, 0.5]
+
+        monkeypatch.setitem(
+            sys.modules,
+            "scpn_quantum_engine",
+            SimpleNamespace(lanczos_b_coefficients=coefficient_only_lanczos_b_coefficients),
+        )
+
+        H = np.array([[1.0, 0.2], [0.2, -1.0]], dtype=complex)
+        X = np.array([[0.0, 1.0], [1.0, 0.0]], dtype=complex)
+
+        b, basis = lanczos_coefficients(H, X, max_steps=4)
+
+        assert len(b) > 0
+        assert len(basis) == len(b) + 1
+        assert all(vector.shape == H.shape for vector in basis)
+        assert all(vector.size > 0 for vector in basis)
+
     def test_python_lanczos_no_rust(self):
         """Mock Rust import to fail → Python Lanczos executes."""
         from unittest.mock import patch

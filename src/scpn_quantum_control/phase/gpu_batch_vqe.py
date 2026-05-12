@@ -107,11 +107,17 @@ def batch_vqe_scan(
 ) -> dict:
     """Scan VQE landscape by evaluating random parameter sets in batch.
 
-    Uses a simple Ry-layer ansatz for demonstration.
+    Uses a product Ry-layer diagnostic ansatz and random parameter scan.
+    This is a landscape scanner, not a gradient-optimised production VQE.
+    Passing ``use_gpu=True`` requires PyTorch and a CUDA device; it is not
+    silently downgraded to the NumPy path.
 
-    Returns dict with: energies, params, best_energy, best_params
+    Returns dict with energies, parameters, best point, and contract metadata.
     """
     from ..bridge.knm_hamiltonian import knm_to_dense_matrix
+
+    if n_samples < 1:
+        raise ValueError("n_samples must be >= 1")
 
     n = K.shape[0]
     dim = 2**n
@@ -119,12 +125,14 @@ def batch_vqe_scan(
 
     if n_params is None:
         n_params = n * 2  # 2 layers of Ry
+    if n_params < 1:
+        raise ValueError("n_params must be >= 1")
 
     rng = np.random.default_rng(seed)
     param_sets = rng.normal(0, 1.0, (n_samples, n_params)).astype(np.float32)
 
     def numpy_ansatz(params: np.ndarray) -> np.ndarray:
-        """Simple Ry-layer ansatz producing statevector."""
+        """Product Ry-layer diagnostic ansatz producing a statevector."""
         psi = np.zeros(dim, dtype=np.complex128)
         psi[0] = 1.0
         # Apply Ry rotations layer by layer
@@ -148,7 +156,44 @@ def batch_vqe_scan(
                     psi[:] = new_psi
         return psi
 
-    energies = batch_energy_numpy(H, param_sets, numpy_ansatz)
+    backend = "numpy"
+    if use_gpu:
+        try:
+            import torch
+        except ImportError as e:
+            raise ImportError("PyTorch not installed: pip install torch") from e
+
+        if not torch.cuda.is_available():
+            raise RuntimeError("use_gpu=True requires an available CUDA device")
+
+        def torch_ansatz(params: torch.Tensor) -> torch.Tensor:
+            """Product Ry-layer diagnostic ansatz producing a torch statevector."""
+            psi = torch.zeros(dim, dtype=torch.complex64, device=params.device)
+            psi[0] = torch.tensor(1.0 + 0.0j, dtype=torch.complex64, device=params.device)
+            for layer in range(n_params // n):
+                for i in range(n):
+                    idx = layer * n + i
+                    if idx < params.numel():
+                        angle = params[idx]
+                        c = torch.cos(angle / 2).to(torch.complex64)
+                        s = torch.sin(angle / 2).to(torch.complex64)
+                        new_psi = torch.zeros_like(psi)
+                        for k in range(dim):
+                            bi = (k >> i) & 1
+                            k_flip = k ^ (1 << i)
+                            if bi == 0:
+                                new_psi[k] += c * psi[k]
+                                new_psi[k_flip] += s * psi[k]
+                            else:
+                                new_psi[k] += c * psi[k]
+                                new_psi[k_flip] -= s * psi[k]
+                        psi = new_psi
+            return psi
+
+        energies = batch_energy_torch(H, param_sets, torch_ansatz, device="cuda")
+        backend = "torch_cuda"
+    else:
+        energies = batch_energy_numpy(H, param_sets, numpy_ansatz)
 
     best_idx = int(np.argmin(energies))
     return {
@@ -157,4 +202,8 @@ def batch_vqe_scan(
         "best_energy": float(energies[best_idx]),
         "best_params": param_sets[best_idx],
         "n_samples": n_samples,
+        "backend": backend,
+        "ansatz_family": "product_ry_layers",
+        "optimizer": "random_parameter_scan",
+        "hardware_claim": "none_statevector_expectation_scan",
     }
