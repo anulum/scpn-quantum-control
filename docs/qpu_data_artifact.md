@@ -39,9 +39,9 @@ not provide `omega`. Deterministic synthetic arrays require the explicit
 `source_mode="synthetic"` entries. Such arrays are smoke-test inputs
 only; they are not publication-safe QPU source material.
 
-## SC-NeuroCore compatibility bridge
+## SC-NeuroCore canonical bridge
 
-Campaign code may depend on the compatibility import surface:
+Campaign code may depend on the canonical source-facing bridge namespace:
 
 ```python
 from scpn_neurocore.bridge import (
@@ -52,8 +52,9 @@ from scpn_neurocore.bridge import (
 )
 ```
 
-Those functions must not silently generate random matrices. Each loader
-must return, or point to, an auditable source artifact containing at
+The prior unseparated package spelling is not the active tracked
+package. Those functions must not silently generate random matrices.
+Each loader must return, or point to, an auditable source artifact containing at
 least `K_nm`, `omega`, `source_mode`, `source_name`, `normalization`,
 `extraction_method`, and either `source_timestamp` or `replay_id` for
 publication use.

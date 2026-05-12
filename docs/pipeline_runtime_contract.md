@@ -98,15 +98,19 @@ publication evidence.
 
 ## Current readiness snapshot
 
-As of 2026-04-27:
+As of 2026-05-12:
 
-- SC-NeuroCore has the compatibility import surface under
-  `scpn_neurocore.bridge`; focused bridge tests pass locally.
+- SC-NeuroCore exposes the canonical source-facing bridge namespace
+  `scpn_neurocore.bridge`. The prior unseparated package spelling is no
+  longer the active tracked package.
+- `scpn_neurocore.bridge.load_live_stream` returns an artifact object
+  with `K_nm` and `omega`, and bridge-only imports do not eagerly load
+  datastream codec dependencies.
 - Phase Orchestrator has a QPU data artifact emitter/validator; focused
   artifact tests pass locally.
-- Quantum Control has the consumer-side artifact validator and
-  StructuredAnsatz tests staged; focused tests and pre-commit pass on
-  the staged slice.
+- Quantum Control imports the canonical namespace in the frontier
+  parameter generator and live-loop script. Focused generator tests
+  consume SC-NeuroCore-style artifact objects.
 
 The next integration target is a one-command dry run:
 

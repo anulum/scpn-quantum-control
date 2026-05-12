@@ -289,7 +289,7 @@ print(job.result())
 1. **Shot cap:** `min(shots, 4000)` — higher shot requests are silently capped.
 2. **N=160 skipped:** IBM Heron r2 has 156 qubits; T1 N=160 point is always skipped.
 3. **Integrated information:** `IntegratedInformationPhi` does not report Φ from output counts. Near-uniform entropy over 12–20 qubits at 4000 shots is available only as a labelled entropy diagnostic and is not a meaningful IIT measurement.
-4. **T2 skipped:** `scpn_neurocore.bridge.load_live_stream` not implemented; live SCNeuroCore loop test not run.
+4. **T2 hardware run not executed:** `scpn_neurocore.bridge.load_live_stream` now exposes a replayable artifact contract for the live-loop script, but the historical T2 IBM hardware run remains unexecuted in this record.
 5. **ZNE job_id:** When ZNE succeeds, `job_id` is set to `"zne_mitigated"` — individual scale-factor job IDs are managed internally by mitiq and not exposed in result JSON.
 6. **ZNE cost:** Each ZNE run submits 3 circuits (scale=1,2,3) plus 1 final run = 4× IBM job cost vs unmitigated. T4 ZNE = 80 × 4 = 320 IBM jobs.
 7. **Batch 1 baseline:** Run without DD or ZNE; inflated sync_order (0.14) is dominated by noise artefacts, not physical synchronisation.
