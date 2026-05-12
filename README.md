@@ -582,9 +582,9 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 | Repository | Description |
 |-----------|-------------|
 | [sc-neurocore](https://github.com/anulum/sc-neurocore) | Classical SCPN spiking neural network engine (v3.13.3, 2155+ tests) |
-| [scpn-fusion-core](https://github.com/anulum/scpn-fusion-core) | Classical SCPN algorithms: Kuramoto solvers, coupling calibration, transport (v3.9.3, 3300+ tests) |
+| `scpn-fusion-core` | Classical SCPN algorithms: Kuramoto solvers, coupling calibration, transport (v3.9.3, 3300+ tests) |
 | [scpn-phase-orchestrator](https://github.com/anulum/scpn-phase-orchestrator) | SCPN phase orchestration: regime detection, UPDE engine, Petri-net supervisor (v0.5.0, 2321 tests) |
-| [scpn-control](https://github.com/anulum/scpn-control) | SCPN control systems: plasma MPC, disruption mitigation (v0.18.0, 3015 tests) |
+| `scpn-control` | SCPN control systems: plasma MPC, disruption mitigation (v0.18.0, 3015 tests) |
 
 ## Citation
 

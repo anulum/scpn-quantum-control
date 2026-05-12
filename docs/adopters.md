@@ -18,8 +18,8 @@ alongside it.
 | --- | --- | --- |
 | [sc-neurocore](https://github.com/anulum/sc-neurocore) | Classical spiking-neural-network engine. Feeds spike trains into `scpn_quantum_control.bridge.snn_adapter.ArcaneNeuronBridge`, which maps them onto a quantum XY Hamiltonian and returns current-feedback to close the loop. | `src/scpn_quantum_control/bridge/snn_adapter.py` + sc-neurocore's `cross_repo_wiring.py` + CI job `integration-optional` in `.github/workflows/ci.yml`. |
 | [scpn-phase-orchestrator](https://github.com/anulum/scpn-phase-orchestrator) | SCPN phase-dynamics orchestrator. Invokes `scpn_quantum_control.bridge.ssgf_adapter.SSGFQuantumLoop` for the quantum-in-the-loop phase-update step. | `src/scpn_quantum_control/bridge/ssgf_adapter.py`. |
-| [scpn-control](https://github.com/anulum/scpn-control) | Plasma / disruption control. Uses `scpn_quantum_control.control.q_disruption_iter` (ITER 11-feature disruption classifier) and the `hardware/` runner to benchmark against classical baselines. | `src/scpn_quantum_control/control/q_disruption_iter.py`. |
-| [scpn-fusion-core](https://github.com/anulum/scpn-fusion-core) | Tokamak digital twin. Cross-references the DLA parity asymmetry result (Phase 1 campaign on `ibm_kingston`) for quantum-informed stability analysis. | `docs/results.md` §Phase 1; `data/phase1_dla_parity/`. |
+| `scpn-control` | Plasma / disruption control. Uses `scpn_quantum_control.control.q_disruption_iter` (ITER 11-feature disruption classifier) and the `hardware/` runner to benchmark against classical baselines. | `src/scpn_quantum_control/control/q_disruption_iter.py`. |
+| `scpn-fusion-core` | Tokamak digital twin. Cross-references the DLA parity asymmetry result (Phase 1 campaign on `ibm_kingston`) for quantum-informed stability analysis. | `docs/results.md` §Phase 1; `data/phase1_dla_parity/`. |
 | remanentia | Persistent-memory MCP. Indexes `docs/`, `paper/`, and `CHANGELOG.md` for cross-repo recall via `remanentia_recall`. | `.mcp.json` at the GOTM root. |
 
 ## External adopters
