@@ -4,29 +4,29 @@ Date: 2026-05-05
 
 Backend: `ibm_kingston`
 
-Job ID: `d7t53ofljm6s73bc6bj0`
+Public run label: `ibm-run-4c0bd60c3fc2c532`
 
 ## Artefacts
 
 Raw counts:
 
-- `data/scpn_fim_hamiltonian/fim_ibm_pilot_raw_counts_2026-05-05_d7t53ofljm6s73bc6bj0.json`
+- `data/scpn_fim_hamiltonian/fim_ibm_pilot_raw_counts_2026-05-05_ibm-run-4c0bd60c3fc2c532.json`
 - SHA256: `be284b9b2f71dfecd978703d979a8893e79b35dcc4537d7a372b83ba48305790`
 
 Analysis:
 
 - `scripts/analyse_fim_ibm_pilot.py`
-- `data/scpn_fim_hamiltonian/fim_ibm_pilot_analysis_2026-05-05_d7t53ofljm6s73bc6bj0.json`
+- `data/scpn_fim_hamiltonian/fim_ibm_pilot_analysis_2026-05-05_ibm-run-4c0bd60c3fc2c532.json`
 - SHA256: `90ca87916a0ae92bbf2d7212ee7def265f76b59e73925963eaedca3955c8d98b`
 
 Row metrics:
 
-- `data/scpn_fim_hamiltonian/fim_ibm_pilot_row_metrics_2026-05-05_d7t53ofljm6s73bc6bj0.csv`
+- `data/scpn_fim_hamiltonian/fim_ibm_pilot_row_metrics_2026-05-05_ibm-run-4c0bd60c3fc2c532.csv`
 - SHA256: `84ed542516dd69161ece84cbb936058f78fbf1a443e474d19f25bdacead50c6f`
 
 Lambda trends:
 
-- `data/scpn_fim_hamiltonian/fim_ibm_pilot_lambda_trends_2026-05-05_d7t53ofljm6s73bc6bj0.csv`
+- `data/scpn_fim_hamiltonian/fim_ibm_pilot_lambda_trends_2026-05-05_ibm-run-4c0bd60c3fc2c532.csv`
 - SHA256: `967bcd8d51373e514347351dc52ff35d59bde1eabe7dad8fba9b503460b8171b`
 
 Reproduction command:

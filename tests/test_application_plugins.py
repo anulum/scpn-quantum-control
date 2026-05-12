@@ -27,6 +27,7 @@ from scpn_quantum_control.applications.app_plugins import (
     ApplicationPluginRegistry,
     EEGApplicationPlugin,
     FEPApplicationPlugin,
+    _select_dataset_id,
     get_application_plugin,
     get_application_plugin_registry,
 )
@@ -136,6 +137,81 @@ def test_application_registry_skips_broken_entry_points() -> None:
     ):
         assert registry.discover() == ["friston_fep"]
     assert registry.names() == ["friston_fep"]
+
+
+def test_application_registry_rejects_duplicate_factory_rebinding() -> None:
+    registry = ApplicationPluginRegistry()
+    registry.register("eeg_alpha", EEGApplicationPlugin)
+
+    with pytest.raises(ValueError, match="already registered"):
+        registry.register("eeg_alpha", FEPApplicationPlugin)
+
+
+def test_application_registry_rejects_empty_name_and_non_callable_factory() -> None:
+    registry = ApplicationPluginRegistry()
+
+    with pytest.raises(ValueError, match="non-empty"):
+        registry.register(" ", EEGApplicationPlugin)
+    with pytest.raises(TypeError, match="callable"):
+        registry.register("not_callable", object())
+
+
+def test_application_registry_unregisters_and_clears_cached_plugins() -> None:
+    registry = ApplicationPluginRegistry()
+    registry.register("eeg_alpha", EEGApplicationPlugin)
+    first = registry.get("eeg_alpha")
+
+    registry.unregister("eeg_alpha")
+
+    with pytest.raises(KeyError, match="unknown application plugin"):
+        registry.get("eeg_alpha")
+
+    registry.register("eeg_alpha", EEGApplicationPlugin)
+    assert registry.get("eeg_alpha") is not first
+    registry.clear()
+    with patch.object(importlib.metadata, "entry_points", return_value=[]):
+        assert registry.names() == []
+
+
+def test_application_registry_rejects_factory_returning_wrong_plugin_name() -> None:
+    registry = ApplicationPluginRegistry()
+    registry.register("expected_name", EEGApplicationPlugin)
+
+    with pytest.raises(ValueError, match="expected_name"):
+        registry.get("expected_name")
+
+
+def test_application_registry_rejects_plugin_without_dataset_ids() -> None:
+    class _NoDatasetPlugin:
+        name = "empty"
+        domain = "empty"
+        required_extra = "app-empty"
+        dataset_ids: tuple[str, ...] = ()
+
+        def load_dataset(self, dataset_id=None):
+            raise AssertionError("not reached")
+
+        def benchmark_dataset(self, dataset_id=None):
+            raise AssertionError("not reached")
+
+    registry = ApplicationPluginRegistry()
+    registry.register("empty", _NoDatasetPlugin)
+
+    with pytest.raises(ValueError, match="at least one dataset"):
+        registry.get("empty")
+
+
+def test_application_registry_datasets_instantiates_and_validates_plugins() -> None:
+    registry = ApplicationPluginRegistry()
+    registry.register("eeg_alpha", EEGApplicationPlugin)
+
+    with patch.object(importlib.metadata, "entry_points", return_value=[]):
+        assert registry.datasets() == {"eeg_alpha": ("eeg_alpha_plv_8ch",)}
+
+
+def test_select_dataset_requires_explicit_id_for_multi_dataset_plugin() -> None:
+    with pytest.raises(ValueError, match="dataset_id is required"):
+        _select_dataset_id(("alpha", "beta"), None)
 
 
 def test_registry_rejects_unknown_dataset_for_plugin() -> None:

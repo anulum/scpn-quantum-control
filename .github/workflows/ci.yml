@@ -171,6 +171,7 @@ jobs:
           python-version: "3.12"
           cache: 'pip'
       - run: pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: python tools/audit_serialization_surface.py
       - run: bandit -r src/ scripts/ -ll -q
       # CVE-2026-4539: pygments ≤2.19.2 ReDoS in AdlLexer (local-only, no fix available)
       - run: pip-audit -r requirements-dev.txt --desc on --ignore-vuln CVE-2026-4539

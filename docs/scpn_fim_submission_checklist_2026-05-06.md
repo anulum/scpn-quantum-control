@@ -71,10 +71,10 @@ falsification visible. It is part of the contribution.
 | Entanglement summary | `data/scpn_fim_hamiltonian/fim_entanglement_summary_2026-05-05.json` |
 | Sector-survival prediction | `data/scpn_fim_hamiltonian/fim_sector_survival_prediction_2026-05-05.json` |
 | FIM VQE summary | `data/scpn_fim_hamiltonian/fim_vqe_ground_state_summary_2026-05-05.json` |
-| Pilot raw counts | `data/scpn_fim_hamiltonian/fim_ibm_pilot_raw_counts_2026-05-05_d7t53ofljm6s73bc6bj0.json` |
-| Repeated raw counts | `data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_raw_counts_2026-05-05_d7t5gtaudops7397ikn0.json` |
-| Repeated analysis | `data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_analysis_2026-05-05_d7t5gtaudops7397ikn0.json` |
-| Full-basis readout matrix mitigation | `data/scpn_fim_hamiltonian/fim_readout_matrix_mitigation_summary_2026-05-05_d7t5gtaudops7397ikn0.json` |
+| Pilot raw counts | `data/scpn_fim_hamiltonian/fim_ibm_pilot_raw_counts_2026-05-05_ibm-run-4c0bd60c3fc2c532.json` |
+| Repeated raw counts | `data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_raw_counts_2026-05-05_ibm-run-cf4835290f607387.json` |
+| Repeated analysis | `data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_analysis_2026-05-05_ibm-run-cf4835290f607387.json` |
+| Full-basis readout matrix mitigation | `data/scpn_fim_hamiltonian/fim_readout_matrix_mitigation_summary_2026-05-05_ibm-run-cf4835290f607387.json` |
 
 ## Generator Scripts
 
@@ -93,8 +93,8 @@ falsification visible. It is part of the contribution.
 
 | Block | Backend | Job ID |
 |-------|---------|--------|
-| FIM pilot | `ibm_kingston` | `d7t53ofljm6s73bc6bj0` |
-| FIM repeated follow-up | `ibm_kingston` | `d7t5gtaudops7397ikn0` |
+| FIM pilot | `ibm_kingston` | `ibm-run-4c0bd60c3fc2c532` |
+| FIM repeated follow-up | `ibm_kingston` | `ibm-run-cf4835290f607387` |
 
 Do not allow line-break artefacts, punctuation changes, or invented job IDs.
 

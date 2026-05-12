@@ -37,7 +37,7 @@ backed by a committed artefact and does not exceed the evidence boundary.
 | Adjacent-gap ratios shift on n=6 and n=8 as lambda increases. | validated offline | `fim_level_spacing_summary_2026-05-05.json` | The full-spectrum adjacent-gap mean is lower at large lambda for n=6 and n=8 in the generated artefact. | Small-n exact diagnostic; use "localisation-like" only with caveats. |
 | A topology-informed ansatz performs better than generic baselines in the n=4 FIM VQE grid. | validated offline | `fim_vqe_ground_state_summary_2026-05-05.json` | In the n=4, reps=2, three-seed benchmark, the K_nm-informed ansatz has lower median relative energy error than `TwoLocal` and `EfficientSU2` for `lambda in {0,1,4}`. | Small optimiser budget and n=4 only; not an ansatz theorem. |
 | The IBM pilot is ready as a candidate protocol. | protocol-ready, not executed | `fim_ibm_candidate_protocol_2026-05-05.json` | A non-submitting n=4 pilot protocol exists with lambda/depth/state/readout controls and a falsification rule. | Requires backend selection, live transpilation, QPU-time estimate, and explicit approval. |
-| The IBM pilot raw counts exist. | data collected, analysis pending | `fim_ibm_pilot_raw_counts_2026-05-05_d7t53ofljm6s73bc6bj0.json` | The n=4 SCPN/FIM pilot completed on `ibm_kingston` with 61 circuits and 249856 shots. | No result claim is promoted until the analysis and readout-control scripts are run. |
+| The IBM pilot raw counts exist. | data collected, analysis pending | `fim_ibm_pilot_raw_counts_2026-05-05_ibm-run-4c0bd60c3fc2c532.json` | The n=4 SCPN/FIM pilot completed on `ibm_kingston` with 61 circuits and 249856 shots. | No result claim is promoted until the analysis and readout-control scripts are run. |
 
 ## Claims that remain blocked
 
@@ -126,7 +126,7 @@ The project can now either:
 ## 2026-05-05 IBM pilot boundary update
 
 The n=4 SCPN/FIM pilot on `ibm_kingston` completed as job
-`d7t53ofljm6s73bc6bj0`. It is a valid hardware pilot, but it is not a
+`ibm-run-4c0bd60c3fc2c532`. It is a valid hardware pilot, but it is not a
 positive hardware-protection result.
 
 Allowed claims:
@@ -149,7 +149,7 @@ Blocked claims:
 ## 2026-05-05 repeated follow-up boundary update
 
 The repeated/randomized SCPN/FIM follow-up completed as IBM job
-`d7t5gtaudops7397ikn0`.
+`ibm-run-cf4835290f607387`.
 
 This is now stronger than a pilot boundary: the simple hardware-protection
 interpretation is falsified for the tested `ibm_kingston` circuit family.

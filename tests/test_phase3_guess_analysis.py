@@ -35,7 +35,7 @@ def test_phase3_guess_analysis_shape_and_jobs() -> None:
 
     assert summary["schema"] == "scpn_phase3_guess_dla_analysis_v1"
     assert summary["backend"] == "ibm_marrakesh"
-    assert summary["job_ids"] == ["d7tt5lkt738s73cib64g", "d7tt7oaudops7398fdt0"]
+    assert summary["job_ids"] == ["ibm-run-72cd6f926fcf15fc", "ibm-run-24d759b97fcbdbac"]
     assert summary["n_witness_rows"] == 24
     assert summary["n_fit_rows"] == 16
 

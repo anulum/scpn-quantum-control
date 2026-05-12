@@ -22,8 +22,8 @@ the excitation-count confound in the DLA parity leakage experiment.
 
 | Block | Job ID | Circuits | Shots |
 |---|---|---:|---:|
-| Main parity leakage | `d7svcnkt738s73ch7agg` | 360 | 4096 |
-| Readout baseline | `d7svhsaudops7397bp30` | 5 | 8192 |
+| Main parity leakage | `ibm-run-7d468e2b1e44b406` | 360 | 4096 |
+| Readout baseline | `ibm-run-b3424c38cfe03c86` | 5 | 8192 |
 
 Live transpilation:
 

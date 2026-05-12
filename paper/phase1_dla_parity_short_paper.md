@@ -260,8 +260,8 @@ multi-device replication, or broad quantum advantage.
 
 The May 2026 Phase 3 second-backend test was run on ibm\_marrakesh
 with 148 parity circuits and a separate 16-state full-basis readout
-calibration. The parity job was `d7tnd3vljm6s73bcsh6g`; the matching
-readout job was `d7tnljvljm6s73bcsql0`. The calibration matrix was
+calibration. The parity job was `ibm-run-63e0a1af74a38c9c`; the matching
+readout job was `ibm-run-ddd29a2fbcaeed61`. The calibration matrix was
 well conditioned (condition number 1.07570), with mean state retention
 0.96999 and maximum measured parity-flip probability 0.04724.
 

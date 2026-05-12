@@ -13,7 +13,7 @@ Date: 2026-05-07
 ## Hardware jobs
 
 - Backend: `ibm_marrakesh`
-- Job IDs: `d7tt5lkt738s73cib64g, d7tt7oaudops7398fdt0`
+- Public run labels: `ibm-run-72cd6f926fcf15fc, ibm-run-24d759b97fcbdbac`
 - Source artefact: `data/phase3_guess_dla/phase3_guess_ibm_marrakesh_2026-05-06T234602Z.json`
 - Source SHA256: `ea9f87139679c933da1ad0ee35954a60701064a25281c02c252a3fa5d4bae3bc`
 

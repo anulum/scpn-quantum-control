@@ -80,7 +80,7 @@ def _summarise(payload: dict[str, Any]) -> dict[str, Any]:
         raise ValueError(f"unexpected backend: {payload.get('backend')}")
     if payload.get("n_circuits") != 612:
         raise ValueError(f"unexpected circuit count: {payload.get('n_circuits')}")
-    if payload.get("job_ids") != ["d7stu94t738s73ch5keg", "d7su3tkt738s73ch5ql0"]:
+    if payload.get("job_ids") != ["ibm-run-7da8644af35021fb", "ibm-run-6f9990bba1d90a12"]:
         raise ValueError("job ID list does not match the preregistered Phase 2 run")
 
     phase_rows = [

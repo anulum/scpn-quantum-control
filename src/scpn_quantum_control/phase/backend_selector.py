@@ -220,6 +220,14 @@ def auto_solve(
         result = dmrg_ground_state(K, omega, bond_dim=64, max_sweeps=20)
         return {"backend_used": backend, "result": result, "recommendation": rec}
 
+    if backend == "hardware":
+        raise RuntimeError(
+            "auto_solve is a local simulation helper and will not substitute a "
+            "statevector proxy when the selected backend is hardware. Use "
+            "AsyncHardwareRunner with an explicit preregistered hardware package, "
+            "or enable a feasible sparse/MPS/GPU backend."
+        )
+
     # Fallback: Qiskit statevector
     from ..phase.xy_kuramoto import QuantumKuramotoSolver
 

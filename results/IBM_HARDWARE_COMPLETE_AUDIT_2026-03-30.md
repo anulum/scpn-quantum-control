@@ -11,7 +11,7 @@
 > **2026-05-05 claim-hygiene note:** this audit is retained as historical
 > evidence, but `docs/hardware_status_ledger.md` is now the canonical source
 > for public promotion status. Campaign 4 / V2 aggregate outputs are not
-> promoted until raw counts, retrieval manifest, and reproduction analysis are
+> promoted until raw counts, private retrieval map, and reproduction analysis are
 > reviewed. The March 29 DLA parity attempt is superseded by the April
 > `data/phase1_dla_parity/` raw-count dataset.
 
@@ -31,15 +31,15 @@ All 7 queued jobs completed between submission and 2026-03-28.
 
 | Job ID | Experiment | PUBs | Shots | Status |
 |--------|-----------|:----:|------:|--------|
-| d6t9asmsh9gc73did75g | baseline_pair_a | 1 | 500 | DONE |
-| d6t9c8n90okc73et6ho0 | baseline_pair_b | 3 | 1,500 | DONE |
-| d6t9e7f90okc73et6jlg | noise_baseline | 3 | 12,000 | DONE |
-| d6t9eabbjfas73fpbmv0 | kuramoto_4osc_s1 | 3 | 12,000 | DONE |
-| d6t9egbbjfas73fpbn40 | kuramoto_4osc_s3_proxy | 3 | 12,000 | DONE |
-| d6t9ejfgtkcc73cmemv0 | kuramoto_8osc | 3 | 12,000 | DONE |
-| d6t9emf90okc73et6k50 | kuramoto_4osc_trotter2 | 3 | 12,000 | DONE |
-| d6t9eqush9gc73didba0 | bell_test_4q | 4 | 16,000 | DONE |
-| d6t9erfgtkcc73cmen70 | correlator_4q | 4 | 16,000 | DONE |
+| ibm-run-9317279194d1c740 | baseline_pair_a | 1 | 500 | DONE |
+| ibm-run-93b07b15459915d2 | baseline_pair_b | 3 | 1,500 | DONE |
+| ibm-run-3821495c7a7a1e0f | noise_baseline | 3 | 12,000 | DONE |
+| ibm-run-2ddff7bbc36988b7 | kuramoto_4osc_s1 | 3 | 12,000 | DONE |
+| ibm-run-dba7b17d1f4089cd | kuramoto_4osc_s3_proxy | 3 | 12,000 | DONE |
+| ibm-run-5f238ed35d404e61 | kuramoto_8osc | 3 | 12,000 | DONE |
+| ibm-run-b6d84688f60da3ca | kuramoto_4osc_trotter2 | 3 | 12,000 | DONE |
+| ibm-run-245f36b7a6aa4b1d | bell_test_4q | 4 | 16,000 | DONE |
+| ibm-run-ed48720009580850 | correlator_4q | 4 | 16,000 | DONE |
 
 **Results:** `results/march_2026/job_*.json` (9 files, freshly retrieved)
 **Also in:** `results/ibm_hardware_2026-03-18/` (same job IDs, older format, retrieved 28.3.)
@@ -95,8 +95,8 @@ Submitted and retrieved during the March 28 session.
 
 | Job ID | Experiment | Fidelity |
 |--------|-----------|----------|
-| d74fqk5koquc73e2ngjg | even parity | **0.994** |
-| d74fqka3qcgc73fqhm9g | odd parity | **0.932** |
+| ibm-run-d0ff68f141e586b2 | even parity | **0.994** |
+| ibm-run-e013d50173ffe3c7 | odd parity | **0.932** |
 
 **Results:** `results/ibm_hardware_2026-03-29/dla_parity_results.json`
 
@@ -110,15 +110,15 @@ Submitted and retrieved during the March 28 session.
 
 | Job ID | Experiment | Mean Fidelity | Std |
 |--------|-----------|:------------:|:---:|
-| d74hi5i3qcgc73fqjdog | A_even | 0.9185 | 0.0023 |
-| d74hi623qcgc73fqjdq0 | A_odd | 0.8526 | 0.0037 |
-| d74hi698qmgc73fm2ng0 | C_xy | 0.8484 | 0.0032 |
-| d74hi6i3qcgc73fqjdr0 | C_fim | **0.9158** | 0.0023 |
-| d74hi718qmgc73fm2nhg | B_M+4 | **0.9936** | 0.0000 |
-| d74hi78qhmps73b44dkg | B_M+2 | 0.0000 | 0.0000 |
-| d74hi7lkoquc73e2p800 | B_M0 | 0.0000 | 0.0000 |
-| d74hi80qhmps73b44dlg | B_M-2 | 0.0000 | 0.0000 |
-| d74hi8dkoquc73e2p810 | B_M-4 | **0.9595** | 0.0000 |
+| ibm-run-f303eb8f4cae6b90 | A_even | 0.9185 | 0.0023 |
+| ibm-run-1db7222826cba2cc | A_odd | 0.8526 | 0.0037 |
+| ibm-run-e161b54f52c388c6 | C_xy | 0.8484 | 0.0032 |
+| ibm-run-721a50394119e791 | C_fim | **0.9158** | 0.0023 |
+| ibm-run-e25ce044a9384cf8 | B_M+4 | **0.9936** | 0.0000 |
+| ibm-run-25507365c5e83e6f | B_M+2 | 0.0000 | 0.0000 |
+| ibm-run-0fff063bb180f5ea | B_M0 | 0.0000 | 0.0000 |
+| ibm-run-1e872de0fb7926a1 | B_M-2 | 0.0000 | 0.0000 |
+| ibm-run-cff643fd2ec8df51 | B_M-4 | **0.9595** | 0.0000 |
 
 **Results:** `results/ibm_hardware_v2_2026-03-29/full_results.json`
 
@@ -144,15 +144,15 @@ Submitted and retrieved during the March 28 session.
 ```
 results/
 ├── march_2026/                          # Campaign 1 (retrieved 2026-03-30)
-│   ├── job_d6t9asmsh9gc73did75g.json    # baseline_pair_a
-│   ├── job_d6t9c8n90okc73et6ho0.json    # baseline_pair_b
-│   ├── job_d6t9e7f90okc73et6jlg.json    # noise_baseline
-│   ├── job_d6t9eabbjfas73fpbmv0.json    # kuramoto_4osc_s1
-│   ├── job_d6t9egbbjfas73fpbn40.json    # kuramoto_4osc_s3_proxy
-│   ├── job_d6t9ejfgtkcc73cmemv0.json    # kuramoto_8osc
-│   ├── job_d6t9emf90okc73et6k50.json    # kuramoto_4osc_trotter2
-│   ├── job_d6t9eqush9gc73didba0.json    # bell_test_4q
-│   ├── job_d6t9erfgtkcc73cmen70.json    # correlator_4q
+│   ├── job_ibm-run-9317279194d1c740.json    # baseline_pair_a
+│   ├── job_ibm-run-93b07b15459915d2.json    # baseline_pair_b
+│   ├── job_ibm-run-3821495c7a7a1e0f.json    # noise_baseline
+│   ├── job_ibm-run-2ddff7bbc36988b7.json    # kuramoto_4osc_s1
+│   ├── job_ibm-run-dba7b17d1f4089cd.json    # kuramoto_4osc_s3_proxy
+│   ├── job_ibm-run-5f238ed35d404e61.json    # kuramoto_8osc
+│   ├── job_ibm-run-b6d84688f60da3ca.json    # kuramoto_4osc_trotter2
+│   ├── job_ibm-run-245f36b7a6aa4b1d.json    # bell_test_4q
+│   ├── job_ibm-run-ed48720009580850.json    # correlator_4q
 │   ├── campaign_manifest.json
 │   └── retrieval_summary.json
 ├── ibm_hardware_2026-03-18/             # Campaign 1 (old format, retrieved 28.3.)

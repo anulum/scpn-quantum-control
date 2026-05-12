@@ -220,7 +220,7 @@ skipped. The same-day A+G readout baseline remains the readout-control source.
 
 - `n=6`: Fisher chi2 `46.531552`, p `1.883218e-07`, 2/4 significant depths.
 - `n=8`: Fisher chi2 `29.420107`, p `2.675193e-04`, 3/4 significant depths.
-- IBM-reported usage: `305` quantum seconds for job `d7sudr2udops7397ae30`.
+- IBM-reported usage: `305` quantum seconds for job `ibm-run-1f46ebd0da8912ff`.
 
 Interpretation: this is mixed scaling evidence. The `n=8` middle-depth sign is
 positive, but `n=6` has negative significant depths. It falsifies a simple
@@ -259,8 +259,8 @@ DLA parity protocol. It used 360 parity-leakage circuits and 5 readout circuits.
 
 Jobs:
 
-- Main: `d7svcnkt738s73ch7agg`
-- Readout: `d7svhsaudops7397bp30`
+- Main: `ibm-run-7d468e2b1e44b406`
+- Readout: `ibm-run-b3424c38cfe03c86`
 
 Raw JSON SHA256:
 

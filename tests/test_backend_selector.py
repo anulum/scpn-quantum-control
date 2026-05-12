@@ -19,6 +19,7 @@ Covers:
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.phase.backend_selector import auto_solve, recommend_backend
 
@@ -222,23 +223,24 @@ class TestAutoSolve:
             assert result["backend_used"] == "statevector"
 
     def test_hardware_recommendation_does_not_submit_qpu_job(self):
-        """The selector recommends hardware; auto_solve remains a local helper."""
+        """The selector recommends hardware; auto_solve fails closed locally."""
         from unittest.mock import patch
 
         K, omega = _system(4)
-        with patch(
-            "scpn_quantum_control.phase.backend_selector.recommend_backend",
-            return_value={
-                "backend": "hardware",
-                "reason": "test",
-                "memory_mb": 0,
-                "feasible": True,
-                "note": "Recommendation only; submit with AsyncHardwareRunner.",
-            },
+        with (
+            patch(
+                "scpn_quantum_control.phase.backend_selector.recommend_backend",
+                return_value={
+                    "backend": "hardware",
+                    "reason": "test",
+                    "memory_mb": 0,
+                    "feasible": True,
+                    "note": "Recommendation only; submit with AsyncHardwareRunner.",
+                },
+            ),
+            pytest.raises(RuntimeError, match="will not substitute a statevector proxy"),
         ):
-            result = auto_solve(K, omega, t_max=0.1, dt=0.1)
-            assert result["backend_used"] == "statevector"
-            assert result["recommendation"]["backend"] == "hardware"
+            auto_solve(K, omega, t_max=0.1, dt=0.1)
 
     def test_quimb_import_exception(self):
         """Cover except branch when mps_evolution import fails."""

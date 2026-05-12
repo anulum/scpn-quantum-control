@@ -9,9 +9,12 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import numpy as np
 import pytest
 
+import scpn_quantum_control.control.topological_optimizer as topology
 from scpn_quantum_control.analysis.quantum_persistent_homology import _RIPSER_AVAILABLE
 from scpn_quantum_control.control.topological_optimizer import TopologicalCouplingOptimizer
 
@@ -111,3 +114,66 @@ class TestTopologicalOptimizer:
         res = opt.step(n_samples=2)
         assert np.isfinite(res["gradient_norm"])
         assert res["gradient_norm"] >= 0
+
+    def test_initialiser_enforces_physical_coupling_constraints(self):
+        K0 = np.array([[1.0, 0.1, 0.4], [0.5, 2.0, 0.3], [0.2, 0.9, 3.0]])
+        omega = np.array([5.0, 7.0, 9.0])
+
+        opt = TopologicalCouplingOptimizer(n_qubits=3, initial_K=K0, omega=omega)
+
+        np.testing.assert_allclose(opt.K, opt.K.T)
+        np.testing.assert_allclose(np.diag(opt.K), 0.0)
+        np.testing.assert_allclose(opt.K[0, 1], 0.3)
+
+    def test_step_requires_persistent_homology_backend(self, monkeypatch):
+        monkeypatch.setattr(topology, "_RIPSER_AVAILABLE", False)
+        opt = TopologicalCouplingOptimizer(
+            n_qubits=2,
+            initial_K=np.array([[0.0, 0.1], [0.1, 0.0]]),
+            omega=np.array([5.0, 10.0]),
+        )
+
+        with pytest.raises(ImportError, match="ripser"):
+            opt.step(n_samples=1)
+
+    def test_finite_difference_measures_candidate_couplings(self, monkeypatch):
+        monkeypatch.setattr(topology, "_RIPSER_AVAILABLE", True)
+        initial_K = np.array([[0.0, 0.2], [0.2, 0.0]], dtype=float)
+        delta = np.array([[0.0, 0.05], [0.05, 0.0]], dtype=float)
+        observed_couplings: list[np.ndarray] = []
+
+        def fake_fast_sparse_evolution(K, omega, *, t_total, n_steps):
+            return {"final_state": np.array([1.0, 0.0, 0.0, 0.0], dtype=complex)}
+
+        def fake_measurement(self, psi, shots=5000, *, K_candidate=None):
+            observed_couplings.append(np.array(K_candidate, dtype=float).copy())
+            score = float(np.sum(K_candidate))
+            return {"score": score}, {"score": score}
+
+        monkeypatch.setattr(topology, "fast_sparse_evolution", fake_fast_sparse_evolution)
+        monkeypatch.setattr(
+            TopologicalCouplingOptimizer, "_simulate_measurement_counts", fake_measurement
+        )
+        monkeypatch.setattr(topology.np.random, "normal", lambda *args, **kwargs: delta)
+        monkeypatch.setattr(
+            topology,
+            "quantum_persistent_homology",
+            lambda x_counts, y_counts, n, persistence_threshold: SimpleNamespace(
+                p_h1=x_counts["score"]
+            ),
+        )
+
+        opt = TopologicalCouplingOptimizer(
+            n_qubits=2,
+            initial_K=initial_K,
+            omega=np.array([5.0, 10.0]),
+            learning_rate=0.1,
+        )
+
+        result = opt.step(n_samples=1)
+
+        np.testing.assert_allclose(observed_couplings[0], initial_K)
+        assert any(np.allclose(K, initial_K + delta) for K in observed_couplings[1:])
+        assert any(np.allclose(K, initial_K - delta) for K in observed_couplings[1:])
+        np.testing.assert_allclose(result["K_updated"], result["K_updated"].T)
+        np.testing.assert_allclose(np.diag(result["K_updated"]), 0.0)

@@ -37,7 +37,7 @@ def test_hardware_trace_loader_preserves_committed_measurements():
     np.testing.assert_allclose(dataset.times, [0.1, 0.2, 0.3, 0.4])
     np.testing.assert_allclose(dataset.observed_order_parameter[-1], 0.3757)
     assert dataset.holdout_size == 2
-    assert dataset.provenance["job_id"] == "d6h2qbf3o3rs73caft20"
+    assert dataset.provenance["job_id"] == "ibm-run-ae59c470c6422e99"
 
 
 def test_hardware_forecast_improves_held_out_mse_without_holdout_fit():

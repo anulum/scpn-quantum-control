@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.control.realtime_feedback import (
     RealtimeFeedbackConfig,
@@ -100,3 +101,89 @@ def test_feedback_budget_total_includes_queue_and_calibration_seconds() -> None:
     )
 
     assert budget.total_reserved_seconds == 23.0
+
+
+def test_platform_readiness_blocks_zero_reserved_budget_without_submitting() -> None:
+    package = build_s1_feedback_submission_package(_controller(), n_rounds=1)
+    ready_platform = next(
+        decision.platform
+        for decision in package.platform_readiness
+        if decision.platform.name == "IBM Heron dynamic-circuit backend"
+    )
+    zero_budget = FeedbackBudgetEstimate(
+        circuits=1,
+        shots_per_circuit=32,
+        repetitions=1,
+        estimated_execution_seconds=0.0,
+    )
+
+    decision = assess_platform_readiness(ready_platform, package.circuit, zero_budget)
+
+    assert decision.status == "blocked"
+    assert decision.reasons == ("budget estimate must reserve positive execution time",)
+    assert decision.payload["estimated_execution_seconds"] == 0.0
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    (
+        ({"circuits": 0}, "circuits"),
+        ({"shots_per_circuit": 0}, "shots_per_circuit"),
+        ({"repetitions": 0}, "repetitions"),
+        ({"estimated_seconds_per_circuit": -0.1}, "estimated_seconds_per_circuit"),
+    ),
+)
+def test_s1_feedback_submission_package_rejects_invalid_budget_boundaries(
+    kwargs: dict[str, object],
+    message: str,
+) -> None:
+    with pytest.raises(ValueError, match=message):
+        build_s1_feedback_submission_package(_controller(), **kwargs)
+
+
+def test_feedback_platform_capability_rejects_invalid_target_metadata() -> None:
+    with pytest.raises(ValueError, match="platform name"):
+        FeedbackPlatformCapability(
+            name="",
+            kind="simulator",
+            max_qubits=1,
+            supports_mid_circuit_measurement=True,
+            supports_conditional_reset=True,
+            supports_conditional_rotation=True,
+            supports_cross_shot_batches=True,
+        )
+    with pytest.raises(ValueError, match="max_qubits"):
+        FeedbackPlatformCapability(
+            name="invalid",
+            kind="simulator",
+            max_qubits=0,
+            supports_mid_circuit_measurement=True,
+            supports_conditional_reset=True,
+            supports_conditional_rotation=True,
+            supports_cross_shot_batches=True,
+        )
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    (
+        ({"circuits": 0}, "circuits"),
+        ({"shots_per_circuit": 0}, "shots_per_circuit"),
+        ({"repetitions": 0}, "repetitions"),
+        ({"queue_seconds": -1.0}, "queue_seconds"),
+        ({"calibration_seconds": -1.0}, "calibration_seconds"),
+    ),
+)
+def test_feedback_budget_estimate_rejects_invalid_boundaries(
+    kwargs: dict[str, object],
+    message: str,
+) -> None:
+    params = {
+        "circuits": 1,
+        "shots_per_circuit": 32,
+        "repetitions": 1,
+        "estimated_execution_seconds": 1.0,
+    } | kwargs
+
+    with pytest.raises(ValueError, match=message):
+        FeedbackBudgetEstimate(**params)

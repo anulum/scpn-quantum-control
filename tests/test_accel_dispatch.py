@@ -119,6 +119,40 @@ class TestRegistry:
         assert value is None or value in {"rust", "julia", "python"}
 
 
+class TestAccelerationPackageContracts:
+    def test_random_state_seed_is_normalised_and_reproducible(self) -> None:
+        from scpn_quantum_control.accel import rust_random_state
+
+        first = rust_random_state(3, seed=123)
+        second = rust_random_state(3, seed=123)
+        different_seed = rust_random_state(3, seed=124)
+
+        assert first.shape == (8,)
+        assert np.iscomplexobj(first)
+        assert np.linalg.norm(first) == pytest.approx(1.0)
+        np.testing.assert_allclose(first, second)
+        assert not np.allclose(first, different_seed)
+
+    def test_feedback_correction_scales_matrix_without_mutating_input(self) -> None:
+        from scpn_quantum_control.accel.rust_kuramoto_classical import apply_feedback_correction
+
+        K_nm = np.array([[0.0, 0.2], [0.2, 0.0]])
+        corrected = apply_feedback_correction(K_nm, asymmetry=0.5, sync_order=0.4)
+
+        np.testing.assert_allclose(corrected, K_nm * 1.02)
+        np.testing.assert_allclose(K_nm, np.array([[0.0, 0.2], [0.2, 0.0]]))
+
+    def test_large_n_proxy_records_inputs_and_sync_response(self) -> None:
+        from scpn_quantum_control.accel.rust_kuramoto_classical import run_large_n
+
+        inactive = run_large_n(N=64, K=0.3, lambda_fim=0.0, delta=0.1, steps=20)
+        active = run_large_n(N=64, K=0.3, lambda_fim=0.2, delta=0.1, steps=20)
+
+        assert inactive == {"sync_order": 0.1, "lambda_fim": 0.0, "K": 0.3, "N": 64}
+        assert active == {"sync_order": 0.85, "lambda_fim": 0.2, "K": 0.3, "N": 64}
+        assert active["sync_order"] > inactive["sync_order"]
+
+
 # ---------------------------------------------------------------------------
 # Python floor correctness
 # ---------------------------------------------------------------------------

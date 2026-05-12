@@ -1,12 +1,5 @@
 {
   "backend": "ibm_fez",
-  "experiment": "kuramoto_12osc",
-  "job_id": "d6h3fae48nic73amhgog",
-  "n_qubits": 12,
-  "t": 0.1,
-  "trotter_steps": 1,
-  "shots": 20000,
-  "hw_R": 0.35737771267090634,
   "classical_kuramoto_R": 0.5612778388314303,
   "exact_quantum_R": 0.5644494515927067,
   "exp_x": [
@@ -51,10 +44,17 @@
     0.548,
     -0.5739
   ],
+  "experiment": "kuramoto_12osc",
+  "hw_R": 0.35737771267090634,
+  "job_id": "ibm-run-9eed59ce86877204",
   "metadata": {
     "depth": 469,
-    "n_qubits": 156,
     "ecr_gates": 0,
+    "n_qubits": 156,
     "total_gates": 1423
-  }
+  },
+  "n_qubits": 12,
+  "shots": 20000,
+  "t": 0.1,
+  "trotter_steps": 1
 }

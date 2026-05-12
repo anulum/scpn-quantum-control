@@ -89,7 +89,7 @@ def _summarise(payload: dict[str, Any]) -> dict[str, Any]:
         raise ValueError(f"unexpected experiment: {payload.get('experiment')}")
     if payload.get("backend") != "ibm_kingston":
         raise ValueError(f"unexpected backend: {payload.get('backend')}")
-    if payload.get("job_ids") != ["d7svcnkt738s73ch7agg", "d7svhsaudops7397bp30"]:
+    if payload.get("job_ids") != ["ibm-run-7d468e2b1e44b406", "ibm-run-b3424c38cfe03c86"]:
         raise ValueError("job IDs do not match the promoted popcount-control run")
     if payload.get("n_circuits") != 365:
         raise ValueError(f"unexpected circuit count: {payload.get('n_circuits')}")

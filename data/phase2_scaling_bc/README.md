@@ -22,7 +22,7 @@ Phase 2 B-C scaling run on `ibm_kingston`, executed on 2026-05-05.
 
 | Job ID | Backend | Circuits | Shots | IBM reported quantum seconds |
 |---|---|---:|---:|---:|
-| `d7sudr2udops7397ae30` | `ibm_kingston` | 280 | 4096 | 305 |
+| `ibm-run-1f46ebd0da8912ff` | `ibm_kingston` | 280 | 4096 | 305 |
 
 ## Reproduce
 

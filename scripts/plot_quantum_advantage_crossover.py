@@ -167,8 +167,8 @@ def load_hardware_points(results_dir: Path = RESULTS_DIR) -> list[HardwarePoint]
             msg = f"{filename} backend={backend}, expected ibm_fez"
             raise ValueError(msg)
         job_id = str(payload["job_id"])
-        if not job_id.startswith("d6h"):
-            msg = f"{filename} job_id={job_id!r} is not an ibm_fez campaign job"
+        if not job_id.startswith("ibm-run-"):
+            msg = f"{filename} job_id={job_id!r} is not a public IBM run label"
             raise ValueError(msg)
         points.append(
             HardwarePoint(

@@ -139,7 +139,7 @@ def _load_payload(path: Path) -> dict[str, Any]:
         raise ValueError(f"unexpected schema: {payload.get('schema')}")
     if payload.get("status") != "completed":
         raise ValueError(f"input is not a completed hardware artefact: {payload.get('status')}")
-    if payload.get("job_ids") != ["d7ts9avljm6s73bd2ej0", "d7tsdnfljm6s73bd2j70"]:
+    if payload.get("job_ids") != ["ibm-run-aabcf620230b1438", "ibm-run-eea172711aa52b78"]:
         raise ValueError("job IDs do not match the committed state/layout run")
     if payload.get("n_circuits") != 495:
         raise ValueError(f"unexpected circuit count: {payload.get('n_circuits')}")

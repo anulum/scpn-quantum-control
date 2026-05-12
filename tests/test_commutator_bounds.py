@@ -9,10 +9,25 @@
 
 from __future__ import annotations
 
+import sys
+from types import SimpleNamespace
+
 import numpy as np
 import pytest
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.phase import kuramoto_variants as kuramoto_variant_mod
+from scpn_quantum_control.phase.kuramoto_variants import (
+    HigherOrderKuramotoSpec,
+    KuramotoVariant,
+    KuramotoVariantResult,
+    MonitoredKuramotoSpec,
+    PTSymmetricKuramotoSpec,
+    build_triadic_ring_terms,
+    simulate_higher_order_kuramoto,
+    simulate_monitored_kuramoto,
+    simulate_pt_symmetric_kuramoto,
+)
 from scpn_quantum_control.phase.trotter_error import (
     commutator_norm_bound,
     frequency_heterogeneity,
@@ -21,6 +36,21 @@ from scpn_quantum_control.phase.trotter_error import (
     trotter_error_bound,
     trotter_error_norm,
 )
+
+
+def _variant_problem() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    K_nm = np.array(
+        [
+            [0.0, 0.4, 0.0, 0.2],
+            [0.4, 0.0, 0.3, 0.0],
+            [0.0, 0.3, 0.0, 0.5],
+            [0.2, 0.0, 0.5, 0.0],
+        ],
+        dtype=np.float64,
+    )
+    omega = np.array([0.1, 0.4, 0.8, 1.1], dtype=np.float64)
+    theta0 = np.array([0.0, 0.5, 1.7, 2.9], dtype=np.float64)
+    return K_nm, omega, theta0
 
 
 class TestCommutatorBounds:
@@ -149,6 +179,188 @@ class TestCommutatorPhysics:
         omega = OMEGA_N_16[:3]
         b = trotter_error_bound(K, omega, 1.0, 5, order=1)
         assert b >= 0
+
+    def test_invalid_trotter_bound_contracts_are_rejected(self):
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+
+        with pytest.raises(ValueError, match="exact_qubit_limit"):
+            nested_commutator_norm_bound(K, omega, exact_qubit_limit=-1)
+        with pytest.raises(ValueError, match="order must be 1 or 2"):
+            trotter_error_bound(K, omega, t=0.1, reps=1, order=3)
+        with pytest.raises(ValueError, match="order must be 1 or 2"):
+            optimal_dt(K, omega, epsilon=0.01, t_total=1.0, order=4)
+
+    @pytest.mark.parametrize(
+        ("bad_K", "bad_omega", "message"),
+        [
+            (np.ones(3), np.ones(3), "square 2-D"),
+            (np.eye(3), np.ones(2), "omega must be 1-D"),
+            (np.array([[0.0, np.inf], [np.inf, 0.0]]), np.ones(2), "K contains"),
+            (np.eye(2), np.array([0.0, np.nan]), "omega contains"),
+        ],
+    )
+    def test_nested_bound_validates_problem_shape_and_finiteness(self, bad_K, bad_omega, message):
+        with pytest.raises(ValueError, match=message):
+            nested_commutator_norm_bound(bad_K, bad_omega)
+
+    def test_frequency_heterogeneity_single_frequency_is_zero(self):
+        assert frequency_heterogeneity(np.array([1.25])) == pytest.approx(0.0)
+
+
+class TestKuramotoVariantContracts:
+    def test_variant_result_rejects_invalid_trajectory_and_diagnostics(self):
+        times = np.array([0.0, 0.1], dtype=np.float64)
+        with pytest.raises(ValueError, match="one-dimensional"):
+            KuramotoVariantResult(KuramotoVariant.MONITORED, times[:, None], times, "numpy")
+        with pytest.raises(ValueError, match="same shape"):
+            KuramotoVariantResult(
+                KuramotoVariant.MONITORED,
+                times,
+                np.array([0.2], dtype=np.float64),
+                "numpy",
+            )
+        with pytest.raises(ValueError, match="inside \\[0, 1\\]"):
+            KuramotoVariantResult(
+                KuramotoVariant.MONITORED,
+                times,
+                np.array([0.2, 1.2], dtype=np.float64),
+                "numpy",
+            )
+        with pytest.raises(ValueError, match="diagnostic 'readout'"):
+            KuramotoVariantResult(
+                KuramotoVariant.MONITORED,
+                times,
+                np.array([0.2, 0.3], dtype=np.float64),
+                "numpy",
+                diagnostics={"readout": np.array([0.2], dtype=np.float64)},
+            )
+        with pytest.raises(TypeError, match="unsupported diagnostic"):
+            KuramotoVariantResult(
+                KuramotoVariant.MONITORED,
+                times,
+                np.array([0.2, 0.3], dtype=np.float64),
+                "numpy",
+                diagnostics={"raw": {"not": "serialisable"}},
+            )
+
+    def test_variant_specs_reject_metadata_and_shape_errors(self):
+        K_nm, omega, theta0 = _variant_problem()
+        hyperedges, weights = build_triadic_ring_terms(4, weight=0.15)
+
+        with pytest.raises(ValueError, match="hyper_weights"):
+            HigherOrderKuramotoSpec(K_nm, omega, hyperedges, weights[:-1], theta0=theta0)
+        with pytest.raises(ValueError, match="theta0"):
+            HigherOrderKuramotoSpec(K_nm, omega, hyperedges, weights, theta0=theta0[:-1])
+        with pytest.raises(TypeError, match="metadata keys"):
+            MonitoredKuramotoSpec(K_nm, omega, theta0=theta0, metadata={1: "bad"})
+        with pytest.raises(TypeError, match="JSON-serialisable"):
+            MonitoredKuramotoSpec(K_nm, omega, theta0=theta0, metadata={"bad": object()})
+        with pytest.raises(ValueError, match="K_nm must be a square"):
+            MonitoredKuramotoSpec(np.ones(4), omega, theta0=theta0)
+        with pytest.raises(ValueError, match="omega must have shape"):
+            MonitoredKuramotoSpec(K_nm, omega[:-1], theta0=theta0)
+        with pytest.raises(ValueError, match="symmetric"):
+            MonitoredKuramotoSpec(K_nm + np.triu(np.ones_like(K_nm), 1), omega, theta0=theta0)
+        with pytest.raises(ValueError, match="monitor_gain"):
+            MonitoredKuramotoSpec(K_nm, omega, monitor_gain=-0.1, theta0=theta0)
+        with pytest.raises(ValueError, match="measurement_strength"):
+            MonitoredKuramotoSpec(K_nm, omega, measurement_strength=np.inf, theta0=theta0)
+        with pytest.raises(ValueError, match="finite values"):
+            PTSymmetricKuramotoSpec(
+                K_nm,
+                omega,
+                gain_loss=np.array([0.1, -0.1, np.nan, 0.0], dtype=np.float64),
+                theta0=theta0,
+            )
+
+    def test_default_theta_initialisation_follows_frequency_phases(self):
+        K_nm, omega, _theta0 = _variant_problem()
+        hyperedges, weights = build_triadic_ring_terms(4, weight=0.15)
+
+        spec = HigherOrderKuramotoSpec(K_nm, omega, hyperedges, weights)
+
+        np.testing.assert_allclose(spec.theta0, np.mod(omega, 2.0 * np.pi))
+        assert spec.theta0.flags.writeable is False
+
+    def test_missing_initial_state_guard_is_explicit(self):
+        with pytest.raises(ValueError, match="theta0 was not initialised"):
+            kuramoto_variant_mod._required_theta0(None)
+
+    def test_variant_time_grid_and_ring_weight_validation(self):
+        K_nm, omega, theta0 = _variant_problem()
+        hyperedges, weights = build_triadic_ring_terms(4, weight=0.15)
+        spec = HigherOrderKuramotoSpec(K_nm, omega, hyperedges, weights, theta0=theta0)
+
+        with pytest.raises(ValueError, match="weight must be finite"):
+            build_triadic_ring_terms(4, weight=np.inf)
+        with pytest.raises(ValueError, match="dt must be finite and positive"):
+            simulate_higher_order_kuramoto(spec, dt=0.0, n_steps=2, prefer_rust=False)
+        with pytest.raises(ValueError, match="n_steps must be a positive integer"):
+            simulate_higher_order_kuramoto(spec, dt=0.1, n_steps=0, prefer_rust=False)
+
+    def test_hyperedge_bounds_are_checked_before_simulation(self):
+        K_nm, omega, theta0 = _variant_problem()
+
+        with pytest.raises(ValueError, match="hyperedge indices"):
+            HigherOrderKuramotoSpec(
+                K_nm,
+                omega,
+                np.array([[0, 1, 4]], dtype=np.int64),
+                np.array([0.2], dtype=np.float64),
+                theta0=theta0,
+            )
+
+    def test_preferred_rust_backends_preserve_metadata(self, monkeypatch):
+        K_nm, omega, theta0 = _variant_problem()
+        hyperedges, weights = build_triadic_ring_terms(4, weight=0.15)
+        times = np.array([0.0, 0.1, 0.2], dtype=np.float64)
+        r_values = np.array([0.2, 0.35, 0.5], dtype=np.float64)
+
+        fake_engine = SimpleNamespace(
+            higher_order_kuramoto_trajectory=lambda *args: (times, r_values),
+            monitored_kuramoto_trajectory=lambda *args: (
+                times,
+                r_values,
+                np.array([0.3, 0.4, 0.5], dtype=np.float64),
+                np.array([0.1, 0.0, -0.1], dtype=np.float64),
+            ),
+            pt_symmetric_kuramoto_trajectory=lambda *args: (
+                times,
+                r_values,
+                np.ones(3, dtype=np.float64),
+                np.array([0.0, 0.01, -0.01], dtype=np.float64),
+            ),
+        )
+        monkeypatch.setitem(sys.modules, "scpn_quantum_engine", fake_engine)
+
+        higher = simulate_higher_order_kuramoto(
+            HigherOrderKuramotoSpec(K_nm, omega, hyperedges, weights, theta0=theta0),
+            dt=0.1,
+            n_steps=2,
+        )
+        monitored = simulate_monitored_kuramoto(
+            MonitoredKuramotoSpec(K_nm, omega, theta0=theta0),
+            dt=0.1,
+            n_steps=2,
+        )
+        pt_result = simulate_pt_symmetric_kuramoto(
+            PTSymmetricKuramotoSpec(
+                K_nm,
+                omega,
+                gain_loss=np.array([0.1, -0.1, 0.05, -0.05], dtype=np.float64),
+                theta0=theta0,
+            ),
+            dt=0.1,
+            n_steps=2,
+        )
+
+        assert higher.backend == "rust:higher_order_kuramoto_trajectory"
+        assert higher.diagnostics["n_hyperedges"] == 4
+        assert monitored.backend == "rust:monitored_kuramoto_trajectory"
+        assert monitored.diagnostics["target_r"] == pytest.approx(0.75)
+        assert pt_result.backend == "rust:pt_symmetric_kuramoto_trajectory"
+        np.testing.assert_allclose(pt_result.diagnostics["pt_norm"], 1.0)
 
 
 # ---------------------------------------------------------------------------

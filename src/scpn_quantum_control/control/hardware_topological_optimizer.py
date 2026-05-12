@@ -38,11 +38,16 @@ class HardwareTopologicalOptimizer(TopologicalCouplingOptimizer):
         self.runner = runner
 
     def _simulate_measurement_counts(
-        self, psi: np.ndarray, shots: int = 5000
+        self,
+        psi: np.ndarray,
+        shots: int = 5000,
+        *,
+        K_candidate: np.ndarray | None = None,
     ) -> tuple[dict, dict]:
         """Override to use the HardwareRunner for evolution and measurement."""
         # Build Trotter circuit for current K and omega
-        base_qc = _build_evo_base(self.n, self.K, self.omega, t=self.dt, trotter_reps=1)
+        K_for_circuit = self.K if K_candidate is None else K_candidate
+        base_qc = _build_evo_base(self.n, K_for_circuit, self.omega, t=self.dt, trotter_reps=1)
 
         # Build X and Y measurement circuits
         qc_z, qc_x, qc_y = _build_xyz_circuits(base_qc, self.n)

@@ -28,7 +28,7 @@ not a broad quantum-advantage claim and not any frontier or live-loop claim.
 | Dry-run command | `PYTHONDONTWRITEBYTECODE=1 /home/anulum/.local/bin/python scripts/phase2_full_campaign_ibm.py --dry-run --backend ibm_kingston --skip B C D E F` |
 | Dry-run result | Passed on 2026-05-05 |
 | 2026-05-05 live attempt | Aborted and cancelled after hardware transpilation drift |
-| Cancelled job | `d7stqj7ljm6s73bbu080`, IBM status `CANCELLED`, reported usage `0` quantum seconds |
+| Cancelled job | `ibm-run-ca8b9612732b84dc`, IBM status `CANCELLED`, reported usage `0` quantum seconds |
 
 No IBM job may be submitted from this manifest until the promotional or credit
 window is live and the exact command is approved immediately before execution.
@@ -114,7 +114,7 @@ the reduced simulator dry-run manifest:
 | Live hardware transpilation log | `1014` |
 
 This triggered the manifest drift abort rule. The submitted main-batch job
-`d7stqj7ljm6s73bbu080` was immediately cancelled.
+`ibm-run-ca8b9612732b84dc` was immediately cancelled.
 
 IBM job metadata after cancellation:
 

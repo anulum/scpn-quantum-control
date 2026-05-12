@@ -41,16 +41,16 @@ DEFAULT_DATA_DIR = Path(__file__).resolve().parents[3] / "data" / "phase1_dla_pa
 
 PUBLISHED_SHA256: dict[str, str] = {
     "phase1_bench_2026-04-10T183728Z.json": (
-        "700273064367b0fbe1bd245c448eee0611d62f5c7e94a0bcf0b0c12e63840599"
+        "dbf4e1878deedc0400b6b645d1d276ca0a18d3c2b18248429aab605c983a18e7"
     ),
     "phase1_5_reinforce_2026-04-10T184909Z.json": (
-        "7d4c7455203adf0637f14b9a5e913d34c36367dd9b879784d3826d24da793ade"
+        "cb07cf43c2144d60879628e9f782bec9d171150711d0998904bce8d0fe8f498d"
     ),
     "phase2_exhaust_2026-04-10T185634Z.json": (
-        "77cea12482377478af69964ecef346cc363b30baddc83521fe421d84c00d299e"
+        "43f2ff09f8929e772f544ed71e4d5498471dace6d68c2e0b32e675bb5b28a752"
     ),
     "phase2_5_final_burn_2026-04-10T190136Z.json": (
-        "03cd28c060aee97302bf697ce0fdee910a533715bee5124778e0a36b42e159eb"
+        "69dfff29666e900f238574437933c71fb1e8ac3b380e94518412a741e44eb038"
     ),
 }
 

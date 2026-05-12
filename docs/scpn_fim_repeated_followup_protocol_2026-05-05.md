@@ -6,7 +6,7 @@ Purpose: replace the first descriptive SCPN/FIM IBM pilot with a smaller but rep
 
 ## Background
 
-The first SCPN/FIM n=4 IBM pilot on `ibm_kingston` completed as job `d7t53ofljm6s73bc6bj0`. It returned complete raw counts, but it had one hardware sample per lambda/depth/state condition. The analysis therefore blocks formal p-values and blocks any claim that the FIM term improves hardware coherence.
+The first SCPN/FIM n=4 IBM pilot on `ibm_kingston` completed as job `ibm-run-4c0bd60c3fc2c532`. It returned complete raw counts, but it had one hardware sample per lambda/depth/state condition. The analysis therefore blocks formal p-values and blocks any claim that the FIM term improves hardware coherence.
 
 The observed pilot direction was also not favourable to a protection claim:
 
@@ -117,12 +117,12 @@ If `lambda = 4` again increases leakage consistently, or if the sign is unstable
 
 ## 2026-05-05 repeated run outcome
 
-The repeated follow-up was submitted and completed as IBM job `d7t5gtaudops7397ikn0`.
+The repeated follow-up was submitted and completed as IBM job `ibm-run-cf4835290f607387`.
 
 Analysis:
 
 - `scripts/analyse_fim_ibm_repeated_followup.py`
-- `data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_analysis_2026-05-05_d7t5gtaudops7397ikn0.json`
+- `data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_analysis_2026-05-05_ibm-run-cf4835290f607387.json`
 - `docs/scpn_fim_repeated_followup_analysis_2026-05-05.md`
 
 Outcome: the run falsifies the simple FIM hardware-protection interpretation for this backend/circuit family.

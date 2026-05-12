@@ -22,7 +22,7 @@ trapped ion, PennyLane, Cirq, GPU acceleration, and circuit cutting.
 | `ibm_kingston` | Heron r2, 156 q | April 2026 Phase 1, 342 circuits | Promoted raw-count DLA parity dataset: peak $+17.48\,\%$ at depth 6, reproduced by `scripts/run_dla_parity_suite.py`. |
 
 V2, frontier, queued-job, placeholder, and aggregate-only IBM outputs are
-not promoted unless the hardware ledger names raw counts, retrieval manifest,
+not promoted unless the hardware ledger names raw counts, private retrieval map,
 analysis code, and review status.
 
 ## Architecture

@@ -39,6 +39,14 @@ class TestSyntheticData:
         _, y = generate_synthetic_disruption_data(n_samples=30, allow_synthetic=True)
         assert 0 in y and 1 in y
 
+    def test_rejects_invalid_generation_contracts(self):
+        with pytest.raises(ValueError, match="n_samples"):
+            generate_synthetic_disruption_data(n_samples=0, allow_synthetic=True)
+        with pytest.raises(ValueError, match="n_features"):
+            generate_synthetic_disruption_data(n_features=4, allow_synthetic=True)
+        with pytest.raises(ValueError, match="disruption_fraction"):
+            generate_synthetic_disruption_data(disruption_fraction=1.0, allow_synthetic=True)
+
 
 class TestTrainClassifier:
     def test_returns_weights(self):
@@ -63,6 +71,34 @@ class TestTrainClassifier:
         with pytest.raises(ValueError, match="alpha must be positive"):
             train_disruption_classifier(X, y, n_qubits=3, alpha=0.0)
 
+    def test_rejects_nonfinite_training_features(self):
+        X, y = generate_synthetic_disruption_data(n_samples=10, allow_synthetic=True)
+        X[0, 0] = np.inf
+        with pytest.raises(ValueError, match="X_train must contain only finite"):
+            train_disruption_classifier(X, y, n_qubits=3)
+
+    def test_rejects_nonfinite_training_labels(self):
+        X, y = generate_synthetic_disruption_data(n_samples=10, allow_synthetic=True)
+        y = y.astype(float)
+        y[0] = np.nan
+        with pytest.raises(ValueError, match="y_train must contain only finite"):
+            train_disruption_classifier(X, y, n_qubits=3)
+
+    def test_rejects_non_matrix_training_features(self):
+        with pytest.raises(ValueError, match="X_train must be a 2-D"):
+            train_disruption_classifier(np.array([0.1, 0.2]), np.array([0, 1]), n_qubits=2)
+
+    def test_rejects_empty_training_matrix_contracts(self):
+        with pytest.raises(ValueError, match="at least one sample"):
+            train_disruption_classifier(np.empty((0, 5)), np.empty((0,)), n_qubits=2)
+        with pytest.raises(ValueError, match="at least one feature"):
+            train_disruption_classifier(np.empty((2, 0)), np.array([0, 1]), n_qubits=2)
+
+    def test_rejects_non_vector_labels(self):
+        X, _ = generate_synthetic_disruption_data(n_samples=4, allow_synthetic=True)
+        with pytest.raises(ValueError, match="1-D label"):
+            train_disruption_classifier(X, np.array([[0, 1], [1, 0]]), n_qubits=2)
+
 
 class TestPredictClassifier:
     def test_rejects_train_weight_count_mismatch(self):
@@ -76,6 +112,25 @@ class TestPredictClassifier:
         weights, _ = train_disruption_classifier(X, y, n_qubits=3)
         with pytest.raises(ValueError, match="X_test feature dimension must match X_train"):
             predict_disruption(X[:2, :4], X, weights, n_qubits=3)
+
+    def test_predictions_are_binary_for_measured_shape_contract(self):
+        X, y = generate_synthetic_disruption_data(n_samples=12, allow_synthetic=True)
+        weights, _ = train_disruption_classifier(X[:8], y[:8], n_qubits=3)
+
+        predictions = predict_disruption(X[8:], X[:8], weights, n_qubits=3)
+
+        assert predictions.shape == (4,)
+        assert set(np.unique(predictions)).issubset({0, 1})
+
+    def test_rejects_invalid_weight_vector_contracts(self):
+        X, y = generate_synthetic_disruption_data(n_samples=10, allow_synthetic=True)
+        weights, _ = train_disruption_classifier(X, y, n_qubits=3)
+        with pytest.raises(ValueError, match="1-D vector"):
+            predict_disruption(X[:2], X, weights.reshape(1, -1), n_qubits=3)
+        bad_weights = weights.copy()
+        bad_weights[0] = np.inf
+        with pytest.raises(ValueError, match="weights must contain only finite"):
+            predict_disruption(X[:2], X, bad_weights, n_qubits=3)
 
 
 class TestRunBenchmark:

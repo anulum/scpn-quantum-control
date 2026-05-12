@@ -60,7 +60,7 @@ All measurements at t=0.1, XY-basis (Z+X+Y measurement circuits).
 
 ### 1. Kuramoto 4-Oscillator XY Dynamics
 
-Job: `d6h2qbf3o3rs73caft20` | 10k shots | 12 circuits (4 steps x 3 bases)
+Job: `ibm-run-ae59c470c6422e99` | 10k shots | 12 circuits (4 steps x 3 bases)
 
 | t (s) | hw_R   | sim_R  | exact_R | hw_err  | sim_err |
 |-------|--------|--------|---------|---------|---------|
@@ -100,7 +100,7 @@ Horizon 4 | Z-diagonal cost Hamiltonian | COBYLA
 
 ### 4. Kuramoto 8-Oscillator (Full 6-Step Trajectory)
 
-Jobs: `d6h36av3o3rs73cagcfg` + `d6h3b8pkeb2s73be4gvg` | 10k shots | 18 circuits
+Jobs: `ibm-run-0e2f804d5d61ad80` + `ibm-run-1db0ff874210e43b` | 10k shots | 18 circuits
 
 | t (s) | hw_R   | exact_R | hw_err  | depth |
 |-------|--------|---------|---------|-------|
@@ -120,8 +120,8 @@ R approaches noise floor (~0.1) at depth >1000.
 
 | dt   | Job                          | hw_R   | Classical R | Depth     |
 |------|------------------------------|--------|-------------|-----------|
-| 0.05 | `d6h392n3o3rs73cagfqg`       | 0.3321 | 0.6154      | 669-770   |
-| 0.10 | `d6h3e2f3o3rs73caglmg`       | 0.1528 | 0.6134      | 935-1033  |
+| 0.05 | `ibm-run-3503062ec1e0b5d9`       | 0.3321 | 0.6154      | 669-770   |
+| 0.10 | `ibm-run-46e1869f6319f53c`       | 0.1528 | 0.6134      | 935-1033  |
 
 Per-layer <X> expectations at dt=0.05 (strongest to weakest):
 L10=0.64, L4=0.59, L3=0.55, L14=0.45, L16=0.44, L8=0.43,
@@ -150,12 +150,12 @@ Optimal strategy: fewest Trotter reps that capture the physics.
 
 | Qubits | Job                          | hw_R   | exact_R | Error  | Depth |
 |--------|------------------------------|--------|---------|--------|-------|
-| 4      | `d6h3e9qthhns7391ks3g`       | 0.6662 | 0.8015  | 16.9%  | 149   |
-| 6      | `d6h3jt2thhns7391l2eg`       | 0.4822 | 0.5317  | 9.3%   | 147   |
-| 8      | `d6h3hh2thhns7391kvlg`       | 0.4648 | 0.5816  | 20.1%  | 233   |
-| 10     | `d6h3koe48nic73amhn50`       | 0.4224 | 0.6417  | 34.2%  | 395   |
-| 12     | `d6h3fae48nic73amhgog`       | 0.3574 | 0.5644  | 36.7%  | 469   |
-| 14     | `d6h3lkpkeb2s73be4ttg`       | 0.3814 | ~0.60*  | ~38%   | 747   |
+| 4      | `ibm-run-7a29dd9834f6b3c2`       | 0.6662 | 0.8015  | 16.9%  | 149   |
+| 6      | `ibm-run-b6e4ece4d18d0ecc`       | 0.4822 | 0.5317  | 9.3%   | 147   |
+| 8      | `ibm-run-42d0cf4b51542738`       | 0.4648 | 0.5816  | 20.1%  | 233   |
+| 10     | `ibm-run-787c5eae210e1fa7`       | 0.4224 | 0.6417  | 34.2%  | 395   |
+| 12     | `ibm-run-9eed59ce86877204`       | 0.3574 | 0.5644  | 36.7%  | 469   |
+| 14     | `ibm-run-1664f532d9927b27`       | 0.3814 | ~0.60*  | ~38%   | 747   |
 
 6q has the lowest error (9.3%) because: same depth as 4q but smaller exact_R,
 so decoherence destroys less of the signal proportionally.
@@ -165,10 +165,10 @@ so decoherence destroys less of the signal proportionally.
 
 | Experiment         | Job                          | Depth | hw_R   |
 |--------------------|------------------------------|-------|--------|
-| Noise baseline     | `d6h3oupkeb2s73be5200`       | 5     | 0.8054 |
-| 2-osc minimal      | `d6h3rfm48nic73amhvpg`       | 13    | 0.7369 |
-| Manual XY layer    | `d6h3qr9keb2s73be54d0`       | 25    | 0.7727 |
-| 1 Trotter rep      | `d6h3pqe48nic73amhtu0`       | 85    | 0.7427 |
+| Noise baseline     | `ibm-run-8b64b2125937514e`       | 5     | 0.8054 |
+| 2-osc minimal      | `ibm-run-78be2196d382912d`       | 13    | 0.7369 |
+| Manual XY layer    | `ibm-run-7b294a4b412a2b2c`       | 25    | 0.7727 |
+| 1 Trotter rep      | `ibm-run-92234467fd509af1`       | 85    | 0.7427 |
 
 Noise baseline (depth 5, 0.1% error) proves Heron r2 readout is near-perfect.
 All error in the scaling curve comes from gate decoherence during evolution.

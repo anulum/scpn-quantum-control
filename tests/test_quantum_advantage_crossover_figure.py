@@ -34,7 +34,7 @@ def test_hardware_points_cover_full_committed_ibm_fez_scaling(crossover_module):
     points = crossover_module.load_hardware_points()
     assert [p.n_qubits for p in points] == [4, 6, 8, 10, 12, 14, 16]
     assert {p.backend for p in points} == {"ibm_fez"}
-    assert all(p.job_id.startswith("d6h") for p in points)
+    assert all(p.job_id.startswith("ibm-run-") for p in points)
     assert sum(p.shots for p in points) == 130_000
     assert points[-1].source_file == "results/hw_upde_16_snapshot.json"
     assert points[-1].depth == 770

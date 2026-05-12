@@ -4,7 +4,6 @@
     "name": "ibm_marrakesh",
     "num_qubits": 156,
     "operational": true,
-    "pending_jobs": 0,
     "status_msg": "active"
   },
   "claim_boundary": {

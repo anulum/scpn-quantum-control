@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+import importlib
+import sys
 import time
 
 import numpy as np
@@ -182,6 +184,34 @@ class TestJaxVMCGroundState:
 
 class TestJaxNQSImportErrors:
     """Cover ImportError paths when JAX unavailable (lines 50, 89)."""
+
+    def test_import_guard_reports_unavailable_when_jax_import_fails(self):
+        import scpn_quantum_control.phase.jax_nqs as jax_mod
+
+        class BlockJaxImport:
+            def find_spec(self, fullname, path=None, target=None):
+                if fullname == "jax" or fullname.startswith("jax."):
+                    raise ImportError("blocked jax")
+                return None
+
+        blocker = BlockJaxImport()
+        saved_modules = {
+            name: module
+            for name, module in sys.modules.items()
+            if name == "jax" or name.startswith("jax.")
+        }
+        for name in saved_modules:
+            sys.modules.pop(name, None)
+        sys.meta_path.insert(0, blocker)
+        try:
+            reloaded = importlib.reload(jax_mod)
+            assert reloaded.is_jax_available() is False
+            with pytest.raises(ImportError, match="JAX not installed"):
+                reloaded.jax_vmc_ground_state(np.eye(2), np.ones(2), n_iterations=1)
+        finally:
+            sys.meta_path.remove(blocker)
+            sys.modules.update(saved_modules)
+            importlib.reload(jax_mod)
 
     def test_jax_rbm_energy_raises_without_jax(self):
         import scpn_quantum_control.phase.jax_nqs as jax_mod

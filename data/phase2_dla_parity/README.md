@@ -28,8 +28,8 @@ The run was deliberately narrowed to the QPU-minimised A+G plan:
 
 | Block | Job ID | Backend | Circuits | Shots | IBM reported quantum seconds |
 |---|---|---|---:|---:|---:|
-| A main | `d7stu94t738s73ch5keg` | `ibm_kingston` | 600 | 4096 | 660 |
-| G readout | `d7su3tkt738s73ch5ql0` | `ibm_kingston` | 12 | 8192 | 27 |
+| A main | `ibm-run-7da8644af35021fb` | `ibm_kingston` | 600 | 4096 | 660 |
+| G readout | `ibm-run-6f9990bba1d90a12` | `ibm_kingston` | 12 | 8192 | 27 |
 
 Total IBM-reported usage: 687 quantum seconds.
 

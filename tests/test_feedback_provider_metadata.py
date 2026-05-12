@@ -74,3 +74,126 @@ def test_snapshot_from_qiskit_backend_infers_dynamic_features_without_submission
 def test_snapshot_from_generic_metadata_rejects_missing_required_fields() -> None:
     with pytest.raises(ValueError, match="provider"):
         snapshot_from_generic_metadata({"backend_name": "x", "n_qubits": 2})
+
+
+def test_snapshot_from_generic_metadata_rejects_non_text_feature_entries() -> None:
+    with pytest.raises(ValueError, match="string sequences"):
+        snapshot_from_generic_metadata(
+            {
+                "provider": "generic",
+                "backend_name": "bad_features",
+                "n_qubits": 4,
+                "supported_features": ["mid_circuit_measurement", 7],
+            }
+        )
+
+
+def test_snapshot_from_qiskit_backend_preserves_no_submit_provenance_for_callable_name() -> None:
+    class CallableNameBackend:
+        num_qubits = 3
+        simulator = True
+
+        def name(self) -> str:
+            return "callable_backend"
+
+    snapshot = snapshot_from_qiskit_backend(CallableNameBackend(), provider="local_qiskit")
+
+    assert snapshot.provider == "local_qiskit"
+    assert snapshot.backend_name == "callable_backend"
+    assert snapshot.simulator is True
+    assert snapshot.supported_features == ("cross_shot_batches",)
+    assert snapshot.metadata == {"adapter": "qiskit_backend_no_submit"}
+
+
+def test_snapshot_from_qiskit_backend_uses_configuration_qubits_and_limits() -> None:
+    class ConfigOnlyBackend:
+        name = "config_only"
+
+        def configuration(self) -> DummyConfig:
+            return DummyConfig()
+
+    snapshot = snapshot_from_qiskit_backend(ConfigOnlyBackend())
+
+    assert snapshot.n_qubits == 8
+    assert snapshot.basis_gates == tuple(DummyConfig.basis_gates)
+    assert snapshot.max_shots == 4096
+    assert snapshot.max_circuits == 16
+
+
+@pytest.mark.parametrize(
+    ("metadata", "message"),
+    (
+        ({"provider": "generic", "backend_name": "x", "n_qubits": 0}, "n_qubits"),
+        (
+            {"provider": "generic", "backend_name": "x", "n_qubits": 2, "max_shots": 0},
+            "max_shots",
+        ),
+        (
+            {"provider": "generic", "backend_name": "x", "n_qubits": 2, "basis_gates": [None]},
+            "string sequences",
+        ),
+    ),
+)
+def test_snapshot_from_generic_metadata_rejects_invalid_boundary_fields(
+    metadata: dict[str, object],
+    message: str,
+) -> None:
+    with pytest.raises(ValueError, match=message):
+        snapshot_from_generic_metadata(metadata)
+
+
+def test_snapshot_from_qiskit_backend_rejects_missing_backend_identity() -> None:
+    with pytest.raises(ValueError, match="backend name"):
+        snapshot_from_qiskit_backend(object())
+
+
+def test_snapshot_from_qiskit_backend_tolerates_target_without_operation_names() -> None:
+    class TargetOnlyBackend:
+        name = "target_only"
+        num_qubits = 4
+        target = object()
+
+    snapshot = snapshot_from_qiskit_backend(TargetOnlyBackend())
+
+    assert snapshot.basis_gates == ()
+    assert snapshot.supported_features == ("cross_shot_batches", "mid_circuit_measurement")
+
+
+def test_snapshot_from_qiskit_backend_accepts_configuration_without_limits() -> None:
+    class MinimalConfig:
+        num_qubits = 4
+        basis_gates = "measure"
+
+    class Backend:
+        name = "minimal_config"
+
+        def configuration(self) -> MinimalConfig:
+            return MinimalConfig()
+
+    snapshot = snapshot_from_qiskit_backend(Backend())
+
+    assert snapshot.basis_gates == ("measure",)
+    assert snapshot.max_shots is None
+    assert snapshot.max_circuits is None
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    (
+        ("basis_gates", 7),
+        ("supported_features", ["mid_circuit_measurement", ""]),
+    ),
+)
+def test_snapshot_from_generic_metadata_rejects_malformed_string_sequences(
+    field: str,
+    value: object,
+) -> None:
+    with pytest.raises(ValueError):
+        snapshot_from_generic_metadata(
+            {
+                "provider": "generic",
+                "backend_name": "bad_sequence",
+                "n_qubits": 4,
+                field: value,
+            }
+        )

@@ -35,8 +35,8 @@ scripts/phase3_multidevice_dla_ibm.py
 | Backend class | 156-qubit Heron-class backend |
 | Excluded backend | `ibm_kingston` |
 | Live readiness timestamp | `2026-05-06T171231Z` |
-| Main job | `d7tnd3vljm6s73bcsh6g` |
-| Readout job | `d7tnehqudops73988btg` |
+| Main job | `ibm-run-63e0a1af74a38c9c` |
+| Readout job | `ibm-run-0f96961442e05a77` |
 | Main circuits | `144` |
 | Readout circuits | `4` |
 | Total circuits | `148` |

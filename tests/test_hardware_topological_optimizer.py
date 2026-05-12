@@ -9,9 +9,14 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import numpy as np
 import pytest
+from qiskit import QuantumCircuit
 
+import scpn_quantum_control.control.hardware_topological_optimizer as hardware_topology
+import scpn_quantum_control.control.topological_optimizer as topology
 from scpn_quantum_control.analysis.quantum_persistent_homology import _RIPSER_AVAILABLE
 from scpn_quantum_control.control.hardware_topological_optimizer import (
     HardwareTopologicalOptimizer,
@@ -83,3 +88,50 @@ class TestHardwareTopologicalOptimizer:
         )
         res = opt.step(n_samples=1)
         assert np.all(res["K_updated"] >= -1e-15)
+
+    def test_hardware_finite_difference_measures_candidate_couplings(self, monkeypatch):
+        """Hardware finite differences must run circuits for K, K+delta, and K-delta."""
+        monkeypatch.setattr(topology, "_RIPSER_AVAILABLE", True)
+        observed_couplings: list[np.ndarray] = []
+        initial_K = np.array([[0.0, 0.2], [0.2, 0.0]], dtype=float)
+        delta = np.array([[0.0, 0.05], [0.05, 0.0]], dtype=float)
+
+        def fake_fast_sparse_evolution(K, omega, *, t_total, n_steps):
+            return {"final_state": np.array([1.0, 0.0, 0.0, 0.0], dtype=complex)}
+
+        def fake_build_evo_base(n, K, omega, *, t, trotter_reps):
+            observed_couplings.append(np.array(K, dtype=float).copy())
+            return QuantumCircuit(n)
+
+        def fake_build_xyz_circuits(base_qc, n):
+            return QuantumCircuit(n, n), QuantumCircuit(n, n), QuantumCircuit(n, n)
+
+        class RecordingRunner:
+            def run_sampler(self, circuits, *, shots, name):
+                return [
+                    SimpleNamespace(counts={"00": shots}),
+                    SimpleNamespace(counts={"00": shots}),
+                ]
+
+        monkeypatch.setattr(topology, "fast_sparse_evolution", fake_fast_sparse_evolution)
+        monkeypatch.setattr(hardware_topology, "_build_evo_base", fake_build_evo_base)
+        monkeypatch.setattr(hardware_topology, "_build_xyz_circuits", fake_build_xyz_circuits)
+        monkeypatch.setattr(topology.np.random, "normal", lambda *args, **kwargs: delta)
+        monkeypatch.setattr(
+            topology,
+            "quantum_persistent_homology",
+            lambda x_counts, y_counts, n, persistence_threshold: SimpleNamespace(p_h1=0.0),
+        )
+
+        opt = HardwareTopologicalOptimizer(
+            runner=RecordingRunner(),
+            n_qubits=2,
+            initial_K=initial_K,
+            omega=np.array([5.0, 10.0]),
+        )
+
+        opt.step(n_samples=1)
+
+        np.testing.assert_allclose(observed_couplings[0], initial_K)
+        assert any(np.allclose(K, initial_K + delta) for K in observed_couplings[1:])
+        assert any(np.allclose(K, initial_K - delta) for K in observed_couplings[1:])

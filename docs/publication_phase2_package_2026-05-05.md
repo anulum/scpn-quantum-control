@@ -29,11 +29,11 @@ it does not introduce new analysis results.
 
 | Block | Backend | Jobs | Circuits | Shots | IBM-reported QPU seconds |
 |---|---|---|---:|---:|---:|
-| A main | `ibm_kingston` | `d7stu94t738s73ch5keg` | 600 | 4096 | 660 |
-| G readout | `ibm_kingston` | `d7su3tkt738s73ch5ql0` | 12 | 8192 | 27 |
-| B-C scaling | `ibm_kingston` | `d7sudr2udops7397ae30` | 280 | 4096 | 305 |
-| Popcount main | `ibm_kingston` | `d7svcnkt738s73ch7agg` | 360 | 4096 | not yet recorded |
-| Popcount readout | `ibm_kingston` | `d7svhsaudops7397bp30` | 5 | 8192 | not yet recorded |
+| A main | `ibm_kingston` | `ibm-run-7da8644af35021fb` | 600 | 4096 | 660 |
+| G readout | `ibm_kingston` | `ibm-run-6f9990bba1d90a12` | 12 | 8192 | 27 |
+| B-C scaling | `ibm_kingston` | `ibm-run-1f46ebd0da8912ff` | 280 | 4096 | 305 |
+| Popcount main | `ibm_kingston` | `ibm-run-7d468e2b1e44b406` | 360 | 4096 | not yet recorded |
+| Popcount readout | `ibm_kingston` | `ibm-run-b3424c38cfe03c86` | 5 | 8192 | not yet recorded |
 
 Promoted A+G plus B-C QPU use: 992 quantum seconds, or 16.53 minutes.
 The popcount-control jobs completed successfully; IBM-reported QPU seconds are

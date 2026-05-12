@@ -54,11 +54,11 @@ together constitute the full 342-circuit Phase 1 dataset at $n = 4$.
 ## IBM Quantum job IDs
 
 ```
-d7ck79m5nvhs73a4nr10   phase1_bench
-d7ck7hb0g7hs73dqvbg0   phase1_bench
-d7ckcrh5a5qc73dosbmg   phase1_5_reinforce
-d7ckft95a5qc73doseu0   phase2_exhaust
-d7ckide5nvhs73a4o780   phase2_5_final_burn
+ibm-run-ecf490aec9c2405b   phase1_bench
+ibm-run-b9141dcd7f32c9d8   phase1_bench
+ibm-run-15d0c46dff8797b3   phase1_5_reinforce
+ibm-run-dd41a90491e86f89   phase2_exhaust
+ibm-run-763b5f0212c5d3d2   phase2_5_final_burn
 ```
 
 All five jobs are retained in the IBM Quantum Platform job log.

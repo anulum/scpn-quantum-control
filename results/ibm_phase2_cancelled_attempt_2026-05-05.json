@@ -1,13 +1,6 @@
 {
-  "spdx_license": "AGPL-3.0-or-later",
-  "commercial_license": "available",
-  "concepts_copyright": "1996-2026 Miroslav Sotek",
-  "code_copyright": "2020-2026 Miroslav Sotek",
-  "orcid": "0009-0009-3560-0851",
-  "contact": "www.anulum.li | protoscience@anulum.li",
-  "schema_version": 1,
   "attempt": {
-    "timestamp_utc": "2026-05-05T12:06:11Z",
+    "abort_reason": "Live hardware transpilation exceeded the reduced dry-run depth budget before usable raw counts were retrieved.",
     "backend": "ibm_kingston",
     "command": [
       "scripts/phase2_full_campaign_ibm.py",
@@ -21,27 +14,34 @@
       "E",
       "F"
     ],
-    "planned_blocks": ["A", "G"],
-    "planned_circuits": 612,
-    "status": "aborted_cancelled",
-    "abort_reason": "Live hardware transpilation exceeded the reduced dry-run depth budget before usable raw counts were retrieved.",
-    "reduced_dry_run_max_depth": 605,
     "live_hardware_transpile_max_depth_observed": 1014,
-    "promotable_evidence": false
+    "planned_blocks": [
+      "A",
+      "G"
+    ],
+    "planned_circuits": 612,
+    "promotable_evidence": false,
+    "reduced_dry_run_max_depth": 605,
+    "status": "aborted_cancelled",
+    "timestamp_utc": "2026-05-05T12:06:11Z"
   },
-  "ibm_job": {
-    "job_id": "d7stqj7ljm6s73bbu080",
-    "status_after_cancel": "CANCELLED",
-    "created_utc": "2026-05-05T12:06:37.041668Z",
-    "running_utc": "2026-05-05T12:06:38.800236Z",
-    "finished_utc": "2026-05-05T12:07:19.703948Z",
-    "reported_quantum_seconds": 0,
-    "reported_usage_seconds": 0
-  },
+  "code_copyright": "2020-2026 Miroslav Sotek",
+  "commercial_license": "available",
+  "concepts_copyright": "1996-2026 Miroslav Sotek",
+  "contact": "www.anulum.li | protoscience@anulum.li",
   "decision": {
+    "next_gate": "Add hardware-backend transpilation precheck or update the manifest budget before any further IBM submission.",
     "quarantine": true,
     "raw_counts_available": false,
-    "validation_claim_closed": false,
-    "next_gate": "Add hardware-backend transpilation precheck or update the manifest budget before any further IBM submission."
-  }
+    "validation_claim_closed": false
+  },
+  "ibm_job": {
+    "job_id": "ibm-run-ca8b9612732b84dc",
+    "reported_quantum_seconds": 0,
+    "reported_usage_seconds": 0,
+    "status_after_cancel": "CANCELLED"
+  },
+  "orcid": "0009-0009-3560-0851",
+  "schema_version": 1,
+  "spdx_license": "AGPL-3.0-or-later"
 }

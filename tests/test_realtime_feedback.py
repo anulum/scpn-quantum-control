@@ -36,6 +36,13 @@ def test_config_validation_rejects_invalid_shots():
         RealtimeFeedbackConfig(measurement_shots=0)
 
 
+def test_config_validation_rejects_invalid_control_parameters():
+    with pytest.raises(ValueError, match="trotter_steps"):
+        RealtimeFeedbackConfig(trotter_steps=0)
+    with pytest.raises(ValueError, match="max_gain"):
+        RealtimeFeedbackConfig(max_gain=0.5)
+
+
 def test_feedback_policy_numpy_actions_and_bounds():
     actions, gains, errors = feedback_policy_numpy(
         np.array([0.2, 0.75, 0.95], dtype=np.float64),
@@ -50,6 +57,32 @@ def test_feedback_policy_numpy_actions_and_bounds():
     assert 1.0 / 1.5 <= gains[2] < 1.0
     assert errors[0] > 0.0
     assert errors[2] < 0.0
+
+
+def test_feedback_policy_rejects_nonfinite_live_order_parameter():
+    with pytest.raises(ValueError, match="r_values"):
+        feedback_policy_numpy(
+            np.array([0.5, np.nan], dtype=np.float64),
+            target_r=0.75,
+            deadband=0.03,
+            base_gain=0.8,
+            max_gain=1.5,
+        )
+
+
+def test_feedback_policy_rejects_invalid_gain_and_target_contracts():
+    with pytest.raises(ValueError, match="target_r"):
+        feedback_policy_numpy(
+            np.array([0.5]), target_r=1.5, deadband=0.03, base_gain=0.8, max_gain=1.5
+        )
+    with pytest.raises(ValueError, match="base_gain"):
+        feedback_policy_numpy(
+            np.array([0.5]), target_r=0.7, deadband=0.03, base_gain=-0.1, max_gain=1.5
+        )
+    with pytest.raises(ValueError, match="max_gain"):
+        feedback_policy_numpy(
+            np.array([0.5]), target_r=0.7, deadband=0.03, base_gain=0.8, max_gain=0.9
+        )
 
 
 def test_monitored_circuit_contains_conditional_reset_and_correction():
@@ -73,6 +106,12 @@ def test_monitored_circuit_contains_conditional_reset_and_correction():
         any(inner.operation.name == "ry" for inner in block.blocks[0].data)
         for block in conditional_blocks
     )
+
+
+def test_monitored_circuit_rejects_zero_rounds():
+    K, omega = _inputs()
+    with pytest.raises(ValueError, match="n_rounds"):
+        build_monitored_feedback_circuit(K, omega, n_rounds=0)
 
 
 def test_controller_run_is_seeded_and_live_shot_driven():
@@ -102,6 +141,46 @@ def test_controller_low_target_can_release_coupling():
     step = controller.step(seed=7)
     assert step.action in {"release", "hold"}
     assert 1.0 / cfg.max_gain <= step.next_coupling_scale <= cfg.max_gain
+
+
+def test_controller_rejects_out_of_policy_coupling_scale():
+    K, omega = _inputs()
+    cfg = RealtimeFeedbackConfig(max_gain=1.25)
+    controller = RealtimeSyncFeedbackController(K, omega, config=cfg)
+
+    with pytest.raises(ValueError, match="scale"):
+        controller.set_coupling_scale(2.0)
+
+
+def test_controller_hold_action_applies_no_correction():
+    K, omega = _inputs()
+    controller = RealtimeSyncFeedbackController(K, omega)
+
+    assert controller._apply_feedback_correction(0.2, "hold") == 0.0
+
+
+def test_controller_reset_restores_state_and_clears_history():
+    K, omega = _inputs()
+    controller = RealtimeSyncFeedbackController(K, omega)
+    controller.step(seed=12)
+    controller.set_coupling_scale(1.2)
+
+    controller.reset()
+
+    assert controller.history == []
+    assert controller.coupling_scale == 1.0
+    np.testing.assert_allclose(
+        controller.statevector.data,
+        RealtimeSyncFeedbackController(K, omega).statevector.data,
+    )
+
+
+def test_controller_run_rejects_zero_steps():
+    K, omega = _inputs()
+    controller = RealtimeSyncFeedbackController(K, omega)
+
+    with pytest.raises(ValueError, match="n_steps"):
+        controller.run(0)
 
 
 def test_controller_builds_instance_monitored_circuit():

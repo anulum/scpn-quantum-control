@@ -110,7 +110,7 @@ before execution.
 
 The first reduced A+G live attempt was cancelled after the hardware
 transpilation path produced deeper circuits than the reduced dry-run manifest.
-IBM job `d7stqj7ljm6s73bbu080` is recorded as `CANCELLED`, with IBM metadata
+IBM job `ibm-run-ca8b9612732b84dc` is recorded as `CANCELLED`, with IBM metadata
 reporting `0` quantum seconds and `0` usage seconds.
 
 This cancelled job is quarantined execution evidence only. It supplies no raw
@@ -122,9 +122,9 @@ max depth to remain within the manifest budget.
 
 The reduced A+G Phase 2 run completed on `ibm_kingston`:
 
-- Main job: `d7stu94t738s73ch5keg`, 600 circuits, 4096 shots, IBM-reported
+- Main job: `ibm-run-7da8644af35021fb`, 600 circuits, 4096 shots, IBM-reported
   quantum seconds `660`.
-- Readout job: `d7su3tkt738s73ch5ql0`, 12 circuits, 8192 shots, IBM-reported
+- Readout job: `ibm-run-6f9990bba1d90a12`, 12 circuits, 8192 shots, IBM-reported
   quantum seconds `27`.
 - Raw-count dataset: `data/phase2_dla_parity/phase2_reduced_ag_2026-05-05T121357Z.json`.
 - Reproducer: `scripts/analyse_phase2_dla_parity.py --verify-integrity`.
@@ -139,7 +139,7 @@ frontier claims.
 
 The preregistered B-C continuation completed on `ibm_kingston`:
 
-- Job: `d7sudr2udops7397ae30`, 280 circuits, 4096 shots, IBM-reported quantum
+- Job: `ibm-run-1f46ebd0da8912ff`, 280 circuits, 4096 shots, IBM-reported quantum
   seconds `305`.
 - Raw-count dataset: `data/phase2_scaling_bc/phase2_scaling_bc_2026-05-05T124722Z.json`.
 - Reproducer: `scripts/analyse_phase2_scaling_bc.py`.

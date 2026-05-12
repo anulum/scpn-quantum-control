@@ -1,8 +1,4 @@
 {
-  "even_job_id": "d74fqk5koquc73e2ngjg",
-  "odd_job_id": "d74fqka3qcgc73fqhm9g",
-  "backend": "ibm_fez",
-  "status": "complete",
   "F_even": [
     0.9928,
     0.9943,
@@ -27,9 +23,13 @@
     0.9283,
     0.9286
   ],
+  "backend": "ibm_fez",
+  "even_job_id": "ibm-run-d0ff68f141e586b2",
   "mean_F_even": 0.994,
   "mean_F_odd": 0.9316,
-  "t_stat": 47.7518,
+  "odd_job_id": "ibm-run-e013d50173ffe3c7",
   "p_value": 3.8812132998900355e-12,
-  "significant": true
+  "significant": true,
+  "status": "complete",
+  "t_stat": 47.7518
 }

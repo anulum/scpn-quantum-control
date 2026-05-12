@@ -165,6 +165,11 @@ def batch_vqe_scan(
 
         if not torch.cuda.is_available():
             raise RuntimeError("use_gpu=True requires an available CUDA device")
+        try:
+            torch.zeros(1, device="cuda").cpu()
+            torch.cuda.synchronize()
+        except Exception as e:
+            raise RuntimeError("use_gpu=True requires a usable CUDA device") from e
 
         def torch_ansatz(params: torch.Tensor) -> torch.Tensor:
             """Product Ry-layer diagnostic ansatz producing a torch statevector."""

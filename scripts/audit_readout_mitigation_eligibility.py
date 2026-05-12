@@ -39,11 +39,11 @@ PROMOTED_DATASETS = (
     REPO_ROOT
     / "data"
     / "scpn_fim_hamiltonian"
-    / "fim_ibm_pilot_raw_counts_2026-05-05_d7t53ofljm6s73bc6bj0.json",
+    / "fim_ibm_pilot_raw_counts_2026-05-05_ibm-run-4c0bd60c3fc2c532.json",
     REPO_ROOT
     / "data"
     / "scpn_fim_hamiltonian"
-    / "fim_ibm_repeated_followup_raw_counts_2026-05-05_d7t5gtaudops7397ikn0.json",
+    / "fim_ibm_repeated_followup_raw_counts_2026-05-05_ibm-run-cf4835290f607387.json",
 )
 
 

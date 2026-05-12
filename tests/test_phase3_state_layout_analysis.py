@@ -35,7 +35,7 @@ def test_build_analysis_matches_preregistered_shape() -> None:
 
     assert summary["schema"] == "scpn_phase3_state_layout_dla_analysis_v1"
     assert summary["backend"] == "ibm_marrakesh"
-    assert summary["job_ids"] == ["d7ts9avljm6s73bd2ej0", "d7tsdnfljm6s73bd2j70"]
+    assert summary["job_ids"] == ["ibm-run-aabcf620230b1438", "ibm-run-eea172711aa52b78"]
     assert len(summary["state_depth_layout_rows"]) == 60
     assert len(summary["comparison_rows"]) == 48
     assert len(summary["layout_summaries"]) == 3

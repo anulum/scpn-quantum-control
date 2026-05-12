@@ -76,16 +76,16 @@ same-sector-state-independent causal language is rejected.
 
 | Block | Backend | Job ID |
 |-------|---------|--------|
-| Phase 2 A main | `ibm_kingston` | `d7stu94t738s73ch5keg` |
-| Phase 2 G readout | `ibm_kingston` | `d7su3tkt738s73ch5ql0` |
-| Phase 2 B-C scaling | `ibm_kingston` | `d7sudr2udops7397ae30` |
-| Popcount main | `ibm_kingston` | `d7svcnkt738s73ch7agg` |
-| Popcount readout | `ibm_kingston` | `d7svhsaudops7397bp30` |
-| Phase 3 multi-device main | `ibm_marrakesh` | `d7tnd3vljm6s73bcsh6g` |
-| Phase 3 multi-device readout | `ibm_marrakesh` | `d7tnehqudops73988btg` |
-| Phase 3 full-basis readout | `ibm_marrakesh` | `d7tnljvljm6s73bcsql0` |
-| Phase 3 state/layout main | `ibm_marrakesh` | `d7ts9avljm6s73bd2ej0` |
-| Phase 3 state/layout readout | `ibm_marrakesh` | `d7tsdnfljm6s73bd2j70` |
+| Phase 2 A main | `ibm_kingston` | `ibm-run-7da8644af35021fb` |
+| Phase 2 G readout | `ibm_kingston` | `ibm-run-6f9990bba1d90a12` |
+| Phase 2 B-C scaling | `ibm_kingston` | `ibm-run-1f46ebd0da8912ff` |
+| Popcount main | `ibm_kingston` | `ibm-run-7d468e2b1e44b406` |
+| Popcount readout | `ibm_kingston` | `ibm-run-b3424c38cfe03c86` |
+| Phase 3 multi-device main | `ibm_marrakesh` | `ibm-run-63e0a1af74a38c9c` |
+| Phase 3 multi-device readout | `ibm_marrakesh` | `ibm-run-0f96961442e05a77` |
+| Phase 3 full-basis readout | `ibm_marrakesh` | `ibm-run-ddd29a2fbcaeed61` |
+| Phase 3 state/layout main | `ibm_marrakesh` | `ibm-run-aabcf620230b1438` |
+| Phase 3 state/layout readout | `ibm_marrakesh` | `ibm-run-eea172711aa52b78` |
 
 Do not allow line-break artefacts, plus signs, or punctuation changes inside
 these job IDs.

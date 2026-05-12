@@ -64,15 +64,40 @@ class TestReservoirFeatures:
         with pytest.raises(ValueError, match="K must be a square"):
             reservoir_features(np.array([0.1]), K[:2, :])
 
+    def test_rejects_empty_or_nonfinite_coupling_matrix(self):
+        with pytest.raises(ValueError, match="at least one oscillator"):
+            reservoir_features(np.array([0.1]), np.empty((0, 0)))
+        K = build_knm_paper27(L=3)
+        K[0, 1] = np.nan
+        with pytest.raises(ValueError, match="K must contain only finite"):
+            reservoir_features(np.array([0.1, 0.2, 0.3]), K)
+
+    def test_rejects_non_vector_or_nonfinite_input_features(self):
+        K = build_knm_paper27(L=3)
+        with pytest.raises(ValueError, match="x must be a 1-D"):
+            reservoir_features(np.array([[0.1, 0.2, 0.3]]), K)
+        with pytest.raises(ValueError, match="x must contain only finite"):
+            reservoir_features(np.array([0.1, np.inf, 0.3]), K)
+
     def test_rejects_omega_shape_mismatch(self):
         K = build_knm_paper27(L=3)
         with pytest.raises(ValueError, match="omega must be a vector matching K"):
             reservoir_features(np.array([0.1]), K, omega=np.zeros(2))
 
+    def test_rejects_nonfinite_omega(self):
+        K = build_knm_paper27(L=3)
+        with pytest.raises(ValueError, match="omega must contain only finite"):
+            reservoir_features(np.array([0.1]), K, omega=np.array([0.0, np.nan, 0.2]))
+
     def test_rejects_invalid_max_weight(self):
         K = build_knm_paper27(L=3)
         with pytest.raises(ValueError, match="max_weight must be between"):
             reservoir_features(np.array([0.1]), K, max_weight=0)
+
+    def test_rejects_non_integer_max_weight(self):
+        K = build_knm_paper27(L=3)
+        with pytest.raises(TypeError, match="max_weight"):
+            reservoir_features(np.array([0.1]), K, max_weight=1.5)
 
 
 class TestReservoirFeatureMatrix:
@@ -97,6 +122,13 @@ class TestReservoirFeatureMatrix:
         K = build_knm_paper27(L=3)
         with pytest.raises(ValueError, match="at least one feature"):
             reservoir_feature_matrix(np.empty((2, 0)), K)
+
+    def test_rejects_nonfinite_feature_matrix(self):
+        K = build_knm_paper27(L=3)
+        X = np.random.default_rng(42).uniform(size=(3, 3))
+        X[1, 2] = np.nan
+        with pytest.raises(ValueError, match="X must contain only finite"):
+            reservoir_feature_matrix(X, K)
 
 
 class TestReservoirRidgeRegression:
@@ -127,6 +159,14 @@ class TestReservoirRidgeRegression:
         y = np.sin(X[:, 0])
         with pytest.raises(ValueError, match="alpha must be finite and positive"):
             reservoir_ridge_regression(X, y, K, alpha=0.0, max_weight=1)
+
+    def test_rejects_nonfinite_targets(self):
+        K = build_knm_paper27(L=3)
+        X = np.random.default_rng(42).uniform(size=(8, 3))
+        y = np.sin(X[:, 0])
+        y[0] = np.inf
+        with pytest.raises(ValueError, match="y_train must contain only finite"):
+            reservoir_ridge_regression(X, y, K, max_weight=1)
 
 
 # ---------------------------------------------------------------------------

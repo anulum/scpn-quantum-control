@@ -80,7 +80,6 @@ def test_feedback_runner_records_steps_until_observer_converges():
 
 def test_feedback_runner_enforces_qpu_budget_before_submission():
     scheduler = DummyScheduler(metrics=[0.0])
-    observer = ProportionalMetricObserver(initial_value=0.1, metric_name="r", target=0.5, gain=1.0)
 
     class CostlyObserver(ProportionalMetricObserver):
         def initial_command(self) -> FeedbackCommand:
@@ -96,6 +95,30 @@ def test_feedback_runner_enforces_qpu_budget_before_submission():
     with pytest.raises(RuntimeError, match="configured QPU budget"):
         runner.run()
     assert scheduler.submitted == []
+
+
+def test_feedback_runner_allows_hardware_only_when_approval_flag_is_explicit():
+    scheduler = DummyScheduler(metrics=[0.5], is_hardware=True)
+    observer = ProportionalMetricObserver(
+        initial_value=0.1,
+        metric_name="r",
+        target=0.5,
+        gain=1.0,
+        tolerance=0.0,
+    )
+
+    runner = FeedbackRunner(
+        scheduler,
+        observer,
+        FeedbackLoopConfig(max_steps=1, max_qpu_seconds=1.0),
+        hardware_approved=True,
+    )
+
+    history = runner.run()
+
+    assert len(history) == 1
+    assert history[0].stop_requested is True
+    assert scheduler.submitted[0].label == "proportional"
 
 
 def test_feedback_runner_enforces_qpu_budget_after_result():
@@ -163,3 +186,57 @@ def test_realtime_controller_scheduler_rejects_invalid_payloads():
         scheduler.submit(FeedbackCommand(payload={"seed": -1}))
     with pytest.raises(ValueError, match="scale must be"):
         scheduler.submit(FeedbackCommand(payload={"coupling_scale": 3.0}))
+
+
+def test_realtime_controller_scheduler_payload_seed_overrides_base_seed_provenance():
+    controller = RealtimeSyncFeedbackController(
+        K_coupling=np.array([[0.0, 0.2], [0.2, 0.0]], dtype=np.float64),
+        omega_natural=np.array([0.1, 0.3], dtype=np.float64),
+        config=RealtimeFeedbackConfig(measurement_shots=16, base_dt=0.02, trotter_steps=1),
+    )
+    scheduler = RealtimeControllerScheduler(controller, base_seed=10)
+
+    result = scheduler.submit(FeedbackCommand(payload={"seed": 42}, label="override"))
+
+    assert result.metadata["seed"] == 42
+    assert result.metadata["command_label"] == "override"
+    assert result.metadata["step_index"] == 0
+    assert sum(result.counts.values()) == 16
+
+
+def test_feedback_loop_value_objects_reject_invalid_runtime_boundaries():
+    with pytest.raises(ValueError, match="max_steps"):
+        FeedbackLoopConfig(max_steps=0)
+    with pytest.raises(ValueError, match="estimated_qpu_seconds"):
+        FeedbackCommand(payload={}, estimated_qpu_seconds=-0.1)
+    with pytest.raises(ValueError, match="count"):
+        FeedbackResult(counts={"0": -1})
+    with pytest.raises(ValueError, match="metric"):
+        FeedbackResult(metrics={"r": "not numeric"})
+
+
+def test_realtime_controller_scheduler_accepts_empty_payload_without_seed_provenance():
+    controller = RealtimeSyncFeedbackController(
+        K_coupling=np.array([[0.0, 0.2], [0.2, 0.0]], dtype=np.float64),
+        omega_natural=np.array([0.1, 0.3], dtype=np.float64),
+        config=RealtimeFeedbackConfig(measurement_shots=8, base_dt=0.02, trotter_steps=1),
+    )
+    scheduler = RealtimeControllerScheduler(controller)
+
+    result = scheduler.submit(FeedbackCommand(payload=None, label="empty"))
+
+    assert result.metadata["seed"] is None
+    assert result.metadata["command_label"] == "empty"
+    assert sum(result.counts.values()) == 8
+
+
+def test_proportional_observer_rejects_invalid_bounds() -> None:
+    with pytest.raises(ValueError, match="max_value"):
+        ProportionalMetricObserver(
+            initial_value=0.5,
+            metric_name="r",
+            target=0.5,
+            gain=1.0,
+            min_value=1.0,
+            max_value=0.0,
+        )

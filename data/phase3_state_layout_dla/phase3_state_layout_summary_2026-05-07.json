@@ -801,8 +801,8 @@
     }
   },
   "job_ids": [
-    "d7ts9avljm6s73bd2ej0",
-    "d7tsdnfljm6s73bd2j70"
+    "ibm-run-aabcf620230b1438",
+    "ibm-run-eea172711aa52b78"
   ],
   "layout_summaries": [
     {
@@ -843,7 +843,6 @@
       "name": "ibm_marrakesh",
       "num_qubits": 156,
       "operational": true,
-      "pending_jobs": 0,
       "status_msg": "active"
     },
     "depth_summary": {

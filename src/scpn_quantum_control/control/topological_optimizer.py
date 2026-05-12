@@ -51,7 +51,11 @@ class TopologicalCouplingOptimizer:
         np.fill_diagonal(self.K, 0.0)
 
     def _simulate_measurement_counts(
-        self, psi: np.ndarray, shots: int = 5000
+        self,
+        psi: np.ndarray,
+        shots: int = 5000,
+        *,
+        K_candidate: np.ndarray | None = None,
     ) -> tuple[dict, dict]:
         """Simulate X and Y basis measurements from the statevector."""
         import qiskit.quantum_info as qi
@@ -82,7 +86,10 @@ class TopologicalCouplingOptimizer:
             raise ImportError("ripser not installed: pip install ripser")
 
         res_base = fast_sparse_evolution(self.K, self.omega, t_total=self.dt, n_steps=1)
-        x_c, y_c = self._simulate_measurement_counts(res_base["final_state"])
+        x_c, y_c = self._simulate_measurement_counts(
+            res_base["final_state"],
+            K_candidate=self.K,
+        )
         ph_base = quantum_persistent_homology(x_c, y_c, self.n, persistence_threshold=0.1).p_h1
 
         grad_K = np.zeros_like(self.K)
@@ -97,13 +104,19 @@ class TopologicalCouplingOptimizer:
             # + Perturbation
             K_plus = np.maximum(self.K + delta_K, 0.0)
             res_p = fast_sparse_evolution(K_plus, self.omega, t_total=self.dt, n_steps=1)
-            x_p, y_p = self._simulate_measurement_counts(res_p["final_state"])
+            x_p, y_p = self._simulate_measurement_counts(
+                res_p["final_state"],
+                K_candidate=K_plus,
+            )
             ph_plus = quantum_persistent_homology(x_p, y_p, self.n, persistence_threshold=0.1).p_h1
 
             # - Perturbation
             K_minus = np.maximum(self.K - delta_K, 0.0)
             res_m = fast_sparse_evolution(K_minus, self.omega, t_total=self.dt, n_steps=1)
-            x_m, y_m = self._simulate_measurement_counts(res_m["final_state"])
+            x_m, y_m = self._simulate_measurement_counts(
+                res_m["final_state"],
+                K_candidate=K_minus,
+            )
             ph_minus = quantum_persistent_homology(
                 x_m, y_m, self.n, persistence_threshold=0.1
             ).p_h1

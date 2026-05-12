@@ -20,6 +20,7 @@ Usage:
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import sys
@@ -30,20 +31,49 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 RESULTS_DIR = REPO_ROOT / "results" / "march_2026"
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
-# All 9 jobs submitted to ibm_fez (Heron r2) in March 2026
-JOBS = {
+# Public labels for all 9 jobs submitted to ibm_fez (Heron r2) in March 2026.
+# Raw IBM job IDs must stay in an ignored private mapping file and are resolved
+# only at retrieval time.
+PUBLIC_JOBS = {
     # Baseline pair (submitted ~2026-03-18, 500 shots each)
-    "d6t9asmsh9gc73did75g": {"name": "baseline_pair_a", "group": "baseline"},
-    "d6t9c8n90okc73et6ho0": {"name": "baseline_pair_b", "group": "baseline"},
+    "ibm-run-9317279194d1c740": {"name": "baseline_pair_a", "campaign_group": "baseline"},
+    "ibm-run-93b07b15459915d2": {"name": "baseline_pair_b", "campaign_group": "baseline"},
     # Campaign batch (submitted 2026-03-18T12:14-12:15 UTC, 4000 shots each)
-    "d6t9e7f90okc73et6jlg": {"name": "noise_baseline", "group": "campaign"},
-    "d6t9eabbjfas73fpbmv0": {"name": "kuramoto_4osc_s1", "group": "campaign"},
-    "d6t9egbbjfas73fpbn40": {"name": "kuramoto_4osc_s3_proxy", "group": "campaign"},
-    "d6t9ejfgtkcc73cmemv0": {"name": "kuramoto_8osc", "group": "campaign"},
-    "d6t9emf90okc73et6k50": {"name": "kuramoto_4osc_trotter2", "group": "campaign"},
-    "d6t9eqush9gc73didba0": {"name": "bell_test_4q", "group": "campaign"},
-    "d6t9erfgtkcc73cmen70": {"name": "correlator_4q", "group": "campaign"},
+    "ibm-run-3821495c7a7a1e0f": {"name": "noise_baseline", "campaign_group": "campaign"},
+    "ibm-run-2ddff7bbc36988b7": {"name": "kuramoto_4osc_s1", "campaign_group": "campaign"},
+    "ibm-run-dba7b17d1f4089cd": {"name": "kuramoto_4osc_s3_proxy", "campaign_group": "campaign"},
+    "ibm-run-5f238ed35d404e61": {"name": "kuramoto_8osc", "campaign_group": "campaign"},
+    "ibm-run-b6d84688f60da3ca": {"name": "kuramoto_4osc_trotter2", "campaign_group": "campaign"},
+    "ibm-run-245f36b7a6aa4b1d": {"name": "bell_test_4q", "campaign_group": "campaign"},
+    "ibm-run-ed48720009580850": {"name": "correlator_4q", "campaign_group": "campaign"},
 }
+
+
+def load_private_job_mapping(path: Path) -> dict[str, str]:
+    """Load public-label to raw IBM job ID mappings from a private manifest."""
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    mapping: dict[str, str] = {}
+    for entry in payload.get("entries", []):
+        public_label = entry.get("public_label")
+        raw_value = entry.get("raw_value")
+        if (
+            entry.get("kind") in {"raw_ibm_job_id", "raw_ibm_job_id_text"}
+            and isinstance(public_label, str)
+            and isinstance(raw_value, str)
+        ):
+            mapping[public_label] = raw_value
+    return mapping
+
+
+def resolve_job_mapping(private_map: Path) -> dict[str, tuple[str, dict[str, str]]]:
+    """Return public labels paired with raw IBM job IDs and campaign metadata."""
+    raw_by_label = load_private_job_mapping(private_map)
+    missing = sorted(label for label in PUBLIC_JOBS if label not in raw_by_label)
+    if missing:
+        raise ValueError(
+            "private mapping is missing raw IBM job IDs for labels: " + ", ".join(missing)
+        )
+    return {label: (raw_by_label[label], meta) for label, meta in PUBLIC_JOBS.items()}
 
 
 def extract_counts(pub):
@@ -65,10 +95,15 @@ def extract_counts(pub):
     return None
 
 
-def run(status_only: bool = False):
+def run(*, private_map: Path, status_only: bool = False):
     token = os.environ.get("SCPN_IBM_TOKEN")
     if not token:
         print("ERROR: Set SCPN_IBM_TOKEN environment variable.")
+        sys.exit(1)
+    try:
+        jobs = resolve_job_mapping(private_map)
+    except Exception as exc:
+        print(f"ERROR: Could not load private IBM job mapping: {exc}")
         sys.exit(1)
 
     from qiskit_ibm_runtime import QiskitRuntimeService
@@ -83,28 +118,32 @@ def run(status_only: bool = False):
 
     results_log = []
 
-    for job_id, meta in JOBS.items():
-        label = f"[{meta['name']}] {job_id}"
+    for public_label, (raw_job_id, meta) in jobs.items():
+        label = f"[{meta['name']}] {public_label}"
         try:
-            job = service.job(job_id)
+            job = service.job(raw_job_id)
             status = str(job.status())
         except Exception as e:
             print(f"  {label}: ERROR fetching status — {e}")
-            results_log.append({"job_id": job_id, **meta, "status": "ERROR", "error": str(e)})
+            results_log.append(
+                {"job_id": public_label, **meta, "status": "ERROR", "error": str(e)}
+            )
             continue
 
         print(f"  {label}: {status}")
 
         if status_only or status not in ("DONE", "JobStatus.DONE"):
-            results_log.append({"job_id": job_id, **meta, "status": status, "retrieved": False})
+            results_log.append(
+                {"job_id": public_label, **meta, "status": status, "retrieved": False}
+            )
             continue
 
-        out_path = RESULTS_DIR / f"job_{job_id}.json"
+        out_path = RESULTS_DIR / f"job_{public_label}.json"
         if out_path.exists():
             print(f"    → already saved to {out_path}, skipping download")
             results_log.append(
                 {
-                    "job_id": job_id,
+                    "job_id": public_label,
                     **meta,
                     "status": status,
                     "retrieved": True,
@@ -139,13 +178,11 @@ def run(status_only: bool = False):
             )
 
         output = {
-            "job_id": job_id,
+            "job_id": public_label,
             "experiment": meta["name"],
-            "group": meta["group"],
+            "campaign_group": meta["campaign_group"],
             "backend": getattr(job, "_backend_name", "ibm_fez"),
             "status": status,
-            "creation_date": str(getattr(job, "creation_date", "unknown")),
-            "retrieved_at": datetime.now(timezone.utc).isoformat(),
             "n_pubs": n_pubs,
             "pubs": pubs,
         }
@@ -155,13 +192,19 @@ def run(status_only: bool = False):
         print(f"    → saved to {out_path}")
 
         results_log.append(
-            {"job_id": job_id, **meta, "status": status, "retrieved": True, "file": str(out_path)}
+            {
+                "job_id": public_label,
+                **meta,
+                "status": status,
+                "retrieved": True,
+                "file": str(out_path),
+            }
         )
 
     # Summary
     summary = {
-        "checked_at": datetime.now(timezone.utc).isoformat(),
-        "total_jobs": len(JOBS),
+        "checked_utc": datetime.now(timezone.utc).isoformat(),
+        "total_jobs": len(PUBLIC_JOBS),
         "done": sum(1 for r in results_log if r.get("status") in ("DONE", "JobStatus.DONE")),
         "queued": sum(1 for r in results_log if "QUEUED" in r.get("status", "")),
         "error": sum(1 for r in results_log if r.get("status") == "ERROR"),
@@ -181,4 +224,18 @@ def run(status_only: bool = False):
 
 
 if __name__ == "__main__":
-    run(status_only="--status-only" in sys.argv)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--status-only", action="store_true")
+    parser.add_argument(
+        "--private-map",
+        type=Path,
+        default=Path(
+            os.environ.get(
+                "SCPN_IBM_PRIVATE_MAP",
+                REPO_ROOT / "docs/internal/private_mappings/ibm_private_mapping_2026-05-13.json",
+            )
+        ),
+        help="Ignored private manifest mapping public run labels to raw IBM job IDs.",
+    )
+    args = parser.parse_args()
+    run(private_map=args.private_map, status_only=args.status_only)

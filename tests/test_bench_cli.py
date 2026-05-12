@@ -290,6 +290,50 @@ def test_diff_summary_returns_two_when_artifacts_changed(
     assert "data/rust_vqe_methods/example.json" in captured.out
 
 
+def test_diff_summary_propagates_git_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(command, 128, stdout="", stderr="fatal")
+
+    monkeypatch.setattr(bench_cli.subprocess, "run", fake_run)
+
+    assert bench_cli._print_diff_summary() == 128
+
+
+def test_run_harness_dispatches_repo_script_with_current_python(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[list[str], object]] = []
+
+    def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        calls.append((command, kwargs.get("cwd")))
+        return subprocess.CompletedProcess(command, 0)
+
+    monkeypatch.setattr(bench_cli.subprocess, "run", fake_run)
+
+    rc = bench_cli._run_harness(bench_cli.Harness("unit", "scripts/unit.py", frozenset({"unit"})))
+
+    assert rc == 0
+    assert calls == [
+        (
+            [bench_cli.PYTHON, str(bench_cli.REPO_ROOT / "scripts/unit.py")],
+            bench_cli.REPO_ROOT,
+        )
+    ]
+
+
+def test_run_returns_two_when_dispatch_selects_no_harnesses(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setattr(bench_cli, "_selected_harnesses", lambda *args, **kwargs: [])
+
+    rc = bench_cli.run(["reproduce-methods"])
+
+    captured = capsys.readouterr()
+    assert rc == 2
+    assert "no harnesses selected" in captured.err
+
+
 def test_run_propagates_harness_failure(monkeypatch: pytest.MonkeyPatch) -> None:
     selected = [bench_cli.Harness("broken", "scripts/missing.py", frozenset({"methods"}))]
     monkeypatch.setattr(bench_cli, "_selected_harnesses", lambda *args, **kwargs: selected)

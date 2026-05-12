@@ -4,34 +4,34 @@ Date: 2026-05-05
 
 Backend: `ibm_kingston`
 
-Job ID: `d7t5gtaudops7397ikn0`
+Public run label: `ibm-run-cf4835290f607387`
 
 ## Artefacts
 
 Pending submission:
 
-- `data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_pending_2026-05-05_d7t5gtaudops7397ikn0.json`
+- `data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_pending_2026-05-05_ibm-run-cf4835290f607387.json`
 - SHA256: `b2c183631e1ead2b41120a69eca311d784a067b3ad95489570061d9eac2858f9`
 
 Raw counts:
 
-- `data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_raw_counts_2026-05-05_d7t5gtaudops7397ikn0.json`
+- `data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_raw_counts_2026-05-05_ibm-run-cf4835290f607387.json`
 - SHA256: `6e4df78f1c679cd29b9c503bf1fecf39be76e707b1e6c4df99bbcc87b8e50d44`
 
 Analysis:
 
 - `scripts/analyse_fim_ibm_repeated_followup.py`
-- `data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_analysis_2026-05-05_d7t5gtaudops7397ikn0.json`
+- `data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_analysis_2026-05-05_ibm-run-cf4835290f607387.json`
 - SHA256: `8bd361b360248a0f00880ad23e9d4898d6e4b2c1ac12a60739e977890b0b18db`
 
 Row metrics:
 
-- `data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_row_metrics_2026-05-05_d7t5gtaudops7397ikn0.csv`
+- `data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_row_metrics_2026-05-05_ibm-run-cf4835290f607387.csv`
 - SHA256: `de26e6d9e9332e0fcc72e80948362a03326ab4b20add437f496fc6a1b28fa8c9`
 
 Comparisons:
 
-- `data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_comparisons_2026-05-05_d7t5gtaudops7397ikn0.csv`
+- `data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_comparisons_2026-05-05_ibm-run-cf4835290f607387.csv`
 - SHA256: `e9f78765d988224c95a40af9435446c12202079eb80e594b0fa315ae8c5569fe`
 
 Reproduction command:

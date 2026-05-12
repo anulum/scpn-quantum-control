@@ -23,6 +23,7 @@ from qiskit.quantum_info import SparsePauliOp
 
 from .._constants import COUPLING_SPARSITY_EPS
 from ..accel.rust_import import optional_rust_engine
+from ..dense_budget import require_dense_allocation
 
 KNM_SPARSITY_EPS = COUPLING_SPARSITY_EPS
 
@@ -180,12 +181,25 @@ def knm_to_sparse_matrix(K: np.ndarray, omega: np.ndarray, delta: float = 0.0):
     return raw.tocsc()
 
 
-def knm_to_dense_matrix(K: np.ndarray, omega: np.ndarray, delta: float = 0.0) -> np.ndarray:
+def knm_to_dense_matrix(
+    K: np.ndarray,
+    omega: np.ndarray,
+    delta: float = 0.0,
+    *,
+    max_dense_gib: float | None = None,
+) -> np.ndarray:
     """Build dense XY Hamiltonian matrix, Rust fast path with Qiskit fallback.
 
     Returns complex ndarray of shape (2^n, 2^n).
     """
     n = len(omega)
+    require_dense_allocation(
+        n,
+        dtype=np.complex128,
+        rank=2,
+        max_gib=max_dense_gib,
+        label="dense XY Hamiltonian",
+    )
 
     # Enforce symmetry (Finding #7: K Symmetry Broken by Gradient Training)
     K = (K + K.T) / 2.0

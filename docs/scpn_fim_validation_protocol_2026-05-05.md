@@ -163,11 +163,11 @@ Submission status:
 
 - Submitted after live readiness approval on 2026-05-05.
 - Backend: `ibm_kingston`.
-- Job ID: `d7t53ofljm6s73bc6bj0`.
+- Public run label: `ibm-run-4c0bd60c3fc2c532`.
 - Circuits: 61.
 - Shots: 249856 total.
 - Raw-count artefact:
-  `data/scpn_fim_hamiltonian/fim_ibm_pilot_raw_counts_2026-05-05_d7t53ofljm6s73bc6bj0.json`.
+  `data/scpn_fim_hamiltonian/fim_ibm_pilot_raw_counts_2026-05-05_ibm-run-4c0bd60c3fc2c532.json`.
 - Raw-count SHA256:
   `be284b9b2f71dfecd978703d979a8893e79b35dcc4537d7a372b83ba48305790`.
 - Analysis status: pending. No hardware claim is promoted until analysis and
@@ -254,15 +254,15 @@ No IBM job should be submitted until:
 ## 2026-05-05 IBM pilot analysis result
 
 The n=4 SCPN/FIM IBM pilot was submitted to `ibm_kingston` as job
-`d7t53ofljm6s73bc6bj0` and returned complete raw counts for 61 circuits
+`ibm-run-4c0bd60c3fc2c532` and returned complete raw counts for 61 circuits
 and 249,856 shots.
 
 Analysis artefacts:
 
 - `scripts/analyse_fim_ibm_pilot.py`
-- `data/scpn_fim_hamiltonian/fim_ibm_pilot_analysis_2026-05-05_d7t53ofljm6s73bc6bj0.json`
-- `data/scpn_fim_hamiltonian/fim_ibm_pilot_row_metrics_2026-05-05_d7t53ofljm6s73bc6bj0.csv`
-- `data/scpn_fim_hamiltonian/fim_ibm_pilot_lambda_trends_2026-05-05_d7t53ofljm6s73bc6bj0.csv`
+- `data/scpn_fim_hamiltonian/fim_ibm_pilot_analysis_2026-05-05_ibm-run-4c0bd60c3fc2c532.json`
+- `data/scpn_fim_hamiltonian/fim_ibm_pilot_row_metrics_2026-05-05_ibm-run-4c0bd60c3fc2c532.csv`
+- `data/scpn_fim_hamiltonian/fim_ibm_pilot_lambda_trends_2026-05-05_ibm-run-4c0bd60c3fc2c532.csv`
 - `docs/scpn_fim_ibm_pilot_analysis_2026-05-05.md`
 
 Outcome: descriptive pilot only. The run does not support a hardware claim that

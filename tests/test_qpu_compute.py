@@ -18,6 +18,7 @@ from scpn_quantum_control.bridge import artifact_from_arrays, write_qpu_data_art
 from scpn_quantum_control.qpu_compute import (
     QPUComputeRequest,
     QPUComputeResult,
+    QPUFusionResult,
     QPUNodeDescriptor,
     QPUStreamDelta,
     execute_simulator_request,
@@ -67,6 +68,28 @@ def test_request_hash_round_trip_is_stable():
 def test_request_rejects_unsupported_kernel():
     with pytest.raises(ValueError, match="kernel"):
         QPUComputeRequest(qpu_data_artifact_sha256="abc", kernel="unsupported")
+
+
+def test_request_rejects_empty_hash_backend_policy_and_shots():
+    with pytest.raises(ValueError, match="qpu_data_artifact_sha256"):
+        QPUComputeRequest(qpu_data_artifact_sha256=" ", kernel="sync_dla")
+    with pytest.raises(ValueError, match="backend_policy"):
+        QPUComputeRequest(
+            qpu_data_artifact_sha256="abc",
+            kernel="sync_dla",
+            backend_policy="live_unverified",
+        )
+    with pytest.raises(ValueError, match="shots"):
+        QPUComputeRequest(qpu_data_artifact_sha256="abc", kernel="sync_dla", shots=0)
+
+
+def test_request_rejects_tampered_request_hash():
+    request = QPUComputeRequest(qpu_data_artifact_sha256="abc", kernel="sync_dla")
+    payload = request.to_dict()
+    payload["request_sha256"] = "0" * 64
+
+    with pytest.raises(ValueError, match="request_sha256"):
+        QPUComputeRequest.from_dict(payload)
 
 
 def test_simulator_compute_result_contains_counts_and_observables():
@@ -206,6 +229,63 @@ def test_node_descriptor_rejects_unknown_modality():
         )
 
 
+@pytest.mark.parametrize(
+    ("field", "value", "match"),
+    [
+        ("access_route", "unsupported_route", "access_route"),
+        ("execution_model", "pulse_magic", "execution_model"),
+        ("latency_class", "instant", "latency_class"),
+    ],
+)
+def test_node_descriptor_rejects_unknown_routing_metadata(field, value, match):
+    kwargs = {
+        "node_id": "node",
+        "access_route": "local",
+        "provider": "local",
+        "modality": "simulator",
+        "execution_model": "emulator",
+        "latency_class": "near_real_time",
+        "qubit_or_variable_limit": 4,
+        "kernel_capabilities": ["sync_dla"],
+    }
+    kwargs[field] = value
+
+    with pytest.raises(ValueError, match=match):
+        QPUNodeDescriptor(**kwargs)
+
+
+def test_node_descriptor_rejects_empty_kernel_capabilities():
+    with pytest.raises(ValueError, match="kernel_capabilities"):
+        QPUNodeDescriptor(
+            node_id="node",
+            access_route="local",
+            provider="local",
+            modality="simulator",
+            execution_model="emulator",
+            latency_class="near_real_time",
+            qubit_or_variable_limit=4,
+            kernel_capabilities=[],
+        )
+
+
+def test_node_descriptor_rejects_tampered_descriptor_hash():
+    descriptor = QPUNodeDescriptor(
+        node_id="local.statevector",
+        access_route="local",
+        provider="local",
+        modality="simulator",
+        execution_model="emulator",
+        latency_class="near_real_time",
+        qubit_or_variable_limit=12,
+        kernel_capabilities=["sync_dla"],
+    )
+    payload = descriptor.to_dict()
+    payload["descriptor_sha256"] = "0" * 64
+
+    with pytest.raises(ValueError, match="descriptor_sha256"):
+        QPUNodeDescriptor.from_dict(payload)
+
+
 def test_stream_delta_round_trip_and_validation(tmp_path):
     artifact = _artifact()
     delta = QPUStreamDelta(
@@ -240,6 +320,18 @@ def test_stream_delta_round_trip_and_validation(tmp_path):
         )
 
 
+def test_stream_delta_rejects_negative_sequence():
+    with pytest.raises(ValueError, match="sequence_id"):
+        QPUStreamDelta(
+            stream_id="stream",
+            sequence_id=-1,
+            event_time="2026-04-27T10:00:00Z",
+            ingest_time="2026-04-27T10:00:01Z",
+            artifact_base_sha256="abc",
+            state_delta={},
+        )
+
+
 def test_fuse_compute_results_uses_shot_weighting_and_round_trips(tmp_path):
     artifact = _artifact()
     request = make_compute_request(artifact, shots=128, trotter_depth=1)
@@ -270,3 +362,140 @@ def test_fuse_compute_results_uses_shot_weighting_and_round_trips(tmp_path):
     write_fusion_result(path, fusion)
     loaded = read_fusion_result(path)
     assert loaded.fusion_sha256 == fusion.fusion_sha256
+
+
+def test_compute_result_rejects_negative_counts():
+    with pytest.raises(ValueError, match="counts"):
+        QPUComputeResult(
+            request_sha256="request",
+            qpu_data_artifact_sha256="artifact",
+            status="DONE_SIMULATED",
+            backend_name="local_statevector",
+            backend_family="simulator",
+            execution_model="exact_statevector",
+            kernel="sync_dla",
+            counts={"00": -1},
+        )
+
+
+def test_compute_result_rejects_empty_identity_fields_and_unsupported_kernel():
+    base = {
+        "request_sha256": "request",
+        "qpu_data_artifact_sha256": "artifact",
+        "status": "DONE_SIMULATED",
+        "backend_name": "local_statevector",
+        "backend_family": "simulator",
+        "execution_model": "exact_statevector",
+        "kernel": "sync_dla",
+    }
+    for field in ("request_sha256", "qpu_data_artifact_sha256", "status"):
+        payload = dict(base)
+        payload[field] = " "
+        with pytest.raises(ValueError, match=field):
+            QPUComputeResult(**payload)
+
+    payload = dict(base)
+    payload["kernel"] = "unsupported"
+    with pytest.raises(ValueError, match="kernel"):
+        QPUComputeResult(**payload)
+
+
+def test_compute_result_rejects_tampered_count_hash():
+    result = QPUComputeResult(
+        request_sha256="request",
+        qpu_data_artifact_sha256="artifact",
+        status="DONE_SIMULATED",
+        backend_name="local_statevector",
+        backend_family="simulator",
+        execution_model="exact_statevector",
+        kernel="sync_dla",
+        counts={"00": 3, "11": 5},
+    )
+    payload = result.to_dict()
+    payload["counts_sha256"] = "0" * 64
+
+    with pytest.raises(ValueError, match="counts_sha256"):
+        QPUComputeResult.from_dict(payload)
+
+
+def test_compute_result_rejects_tampered_result_hash():
+    result = QPUComputeResult(
+        request_sha256="request",
+        qpu_data_artifact_sha256="artifact",
+        status="DONE_SIMULATED",
+        backend_name="local_statevector",
+        backend_family="simulator",
+        execution_model="exact_statevector",
+        kernel="sync_dla",
+        counts={"00": 3},
+    )
+    payload = result.to_dict()
+    payload["result_sha256"] = "0" * 64
+
+    with pytest.raises(ValueError, match="result_sha256"):
+        QPUComputeResult.from_dict(payload)
+
+
+def test_serialised_contracts_reject_wrong_schema_versions():
+    request = QPUComputeRequest(qpu_data_artifact_sha256="abc", kernel="sync_dla").to_dict()
+    request["schema_version"] = "wrong"
+    with pytest.raises(ValueError, match="request schema"):
+        QPUComputeRequest.from_dict(request)
+
+    result = QPUComputeResult(
+        request_sha256="request",
+        qpu_data_artifact_sha256="artifact",
+        status="DONE_SIMULATED",
+        backend_name="local_statevector",
+        backend_family="simulator",
+        execution_model="exact_statevector",
+        kernel="sync_dla",
+    ).to_dict()
+    result["schema_version"] = "wrong"
+    with pytest.raises(ValueError, match="result schema"):
+        QPUComputeResult.from_dict(result)
+
+
+def test_fusion_result_rejects_empty_and_mismatched_contributors():
+    with pytest.raises(ValueError, match="contributing_result_sha256"):
+        QPUFusionResult(
+            fused_observables={},
+            contributing_result_sha256=[],
+            node_ids=[],
+            weighting_rule="shots",
+        )
+
+    with pytest.raises(ValueError, match="node_ids length"):
+        QPUFusionResult(
+            fused_observables={},
+            contributing_result_sha256=["abc"],
+            node_ids=[],
+            weighting_rule="shots",
+        )
+
+
+def test_fusion_result_rejects_tampered_hash_and_unsupported_weighting():
+    fusion = QPUFusionResult(
+        fused_observables={"sync_order": 0.5},
+        contributing_result_sha256=["abc"],
+        node_ids=["node"],
+        weighting_rule="shots",
+    )
+    payload = fusion.to_dict()
+    payload["fusion_sha256"] = "0" * 64
+
+    with pytest.raises(ValueError, match="fusion_sha256"):
+        QPUFusionResult.from_dict(payload)
+
+    result = QPUComputeResult(
+        request_sha256="request",
+        qpu_data_artifact_sha256="artifact",
+        status="DONE_SIMULATED",
+        backend_name="local_statevector",
+        backend_family="simulator",
+        execution_model="exact_statevector",
+        kernel="sync_dla",
+        counts={"00": 1},
+    )
+    with pytest.raises(ValueError, match="only shots"):
+        fuse_compute_results([result], weighting_rule="equal")

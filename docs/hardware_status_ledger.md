@@ -21,10 +21,10 @@ and raw-data path.
 | Generic compiler entry point | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` problems and compiles Hamiltonians, dense matrices, Trotter circuits, and order-parameter measurements. | `docs/kuramoto_core_facade.md` |
 | Core-package licence boundary | Possible future lightweight core split is documented, but no permissive relicensing has occurred. | `docs/core_package_boundary.md` |
 | Baseline hardware campaign | `ibm_fez` Heron r2 baseline artefacts are retained as legacy QPU evidence. Quote only values that name a committed raw artefact or retrieval file; do not use this campaign as proof of broad advantage. | `results/ibm_hardware_2026-03-28/`, `results/march_2026/`, `results/IBM_HARDWARE_COMPLETE_AUDIT_2026-03-30.md` |
-| DLA parity campaigns | `ibm_kingston` Heron r2 Phase 1, Phase 2 A+G, Phase 2 B-C, and popcount-control campaigns are promoted hardware datasets: raw counts, job IDs, integrity checks, and reproduction harnesses are committed. | `data/phase1_dla_parity/`, `data/phase2_dla_parity/`, `data/phase2_scaling_bc/`, `data/phase2_popcount_control/`, `docs/publication_phase2_package_2026-05-05.md`, `scripts/analyse_phase2_dla_parity.py`, `scripts/analyse_phase2_scaling_bc.py`, `scripts/analyse_phase2_popcount_control.py` |
+| DLA parity campaigns | `ibm_kingston` Heron r2 Phase 1, Phase 2 A+G, Phase 2 B-C, and popcount-control campaigns are promoted hardware datasets: raw counts, public run labels, integrity checks, and reproduction harnesses are committed. Raw IBM job identifiers are retained only in the private mapping. | `data/phase1_dla_parity/`, `data/phase2_dla_parity/`, `data/phase2_scaling_bc/`, `data/phase2_popcount_control/`, `docs/publication_phase2_package_2026-05-05.md`, `scripts/analyse_phase2_dla_parity.py`, `scripts/analyse_phase2_scaling_bc.py`, `scripts/analyse_phase2_popcount_control.py` |
 | SCPN/FIM hardware campaign | `ibm_kingston` Heron r2 pilot and repeated follow-up are promoted as a negative/falsification result for the simple digital `lambda=4` hardware-protection hypothesis on the tested circuit family. | `data/scpn_fim_hamiltonian/`, `docs/scpn_fim_claim_boundary_2026-05-05.md`, `scripts/analyse_fim_ibm_pilot.py`, `scripts/analyse_fim_ibm_repeated_followup.py`, `scripts/analyse_fim_readout_matrix_mitigation.py` |
 | Simulator claims | BKT, OTOC, Floquet, MBL, FIM, and classical comparison material remain simulator or classical-baseline claims unless a hardware artefact is named. | `results/SIMULATOR_RESULTS.md`, `results/classical_baselines_2026-03-30.json` |
-| Quarantined / unpromoted IBM output | Any frontier, V2, queued-job, placeholder, or aggregate-only IBM output is not promoted until it has raw counts, retrieval manifest, analysis code, and an explicit ledger row. | `results/ibm_hardware_v2_2026-03-29/`, `results/ibm_runs/jobs.json`, `docs/internal/gemini_chat_export_full_2026-04-25.md` |
+| Quarantined / unpromoted IBM output | Any frontier, V2, queued-job, placeholder, or aggregate-only IBM output is not promoted until it has raw counts, private retrieval map, analysis code, and an explicit ledger row. | `results/ibm_hardware_v2_2026-03-29/`, `results/ibm_runs/jobs.json`, `docs/internal/gemini_chat_export_full_2026-04-25.md` |
 
 README, `docs/index.md`, and `docs/results.md` should treat this dated snapshot
 as the source of truth for public status wording. If a campaign value changes,
@@ -36,7 +36,7 @@ update this table first, then refresh the summary pages.
 |---|---|---|
 | Theory | Analytic statement or theorem. | Derivation, assumptions, and testable prediction. |
 | Simulator | Classical, tensor-network, statevector, or noisy simulator result. | Script/notebook path, seed policy, package versions, and output artefact. |
-| Hardware, unmitigated | Raw QPU measurement without post-run mitigation beyond standard transpilation. | Backend, job IDs, shots, circuit family, and raw counts. |
+| Hardware, unmitigated | Raw QPU measurement without post-run mitigation beyond standard transpilation. | Backend, public run labels, shots, circuit family, and raw counts. |
 | Hardware, mitigated | QPU result after mitigation such as ZNE, symmetry checks, or dynamical decoupling. | Raw counts, mitigation parameters, and unmitigated comparator. |
 | Falsification or noise-limited | Negative or bounded result that constrains a claim. | Same evidence as the corresponding simulator or hardware class. |
 
@@ -61,10 +61,10 @@ raw IBM counts and promoted here.
 
 | Artifact family | Current status | Reason |
 |---|---|---|
-| `results/ibm_hardware_v2_2026-03-29/` | Unpromoted aggregate-only evidence. | Contains job IDs and aggregate metrics, but lacks the raw-count retrieval trail and reproduction harness required for a promoted claim. |
+| `results/ibm_hardware_v2_2026-03-29/` | Unpromoted aggregate-only evidence. | Contains public run labels and aggregate metrics, but lacks the raw-count private retrieval trail and reproduction harness required for a promoted claim. |
 | `results/ibm_hardware_2026-03-29/dla_parity_*.json` | Superseded / unpromoted. | The audit identifies a circuit-depth artefact in this March DLA parity attempt; use the April `data/phase1_dla_parity/` dataset instead. |
 | `results/ibm_runs/jobs.json` and frontier queue outputs | Quarantined. | Internal logs document queued-job placeholders and fake all-zero fallback counts in related workflows. |
-| Any "400 jobs", large-N frontier, multi-QPU, or live-loop claim | Not promoted. | Requires raw counts, retrieval manifest, analysis script, and a new ledger row before citation. |
+| Any "400 jobs", large-N frontier, multi-QPU, or live-loop claim | Not promoted. | Requires raw counts, private retrieval map, analysis script, and a new ledger row before citation. |
 
 ## Evidence Rules
 
@@ -72,7 +72,7 @@ raw IBM counts and promoted here.
 - Do not mix simulator and hardware numbers in one table without the evidence
   class column.
 - Do not promote internal or pending campaign output into public claims until
-  its raw counts, retrieval manifest, and analysis script are committed.
+  its raw counts, private retrieval map, and analysis script are committed.
 - If a later mitigation pass changes a conclusion, keep the older value as a
   historical row and add the newer value with its mitigation state.
 - Negative results stay in the ledger. They are evidence, not cleanup debt.
@@ -83,7 +83,7 @@ raw IBM counts and promoted here.
   is the canonical status index; further result-page edits should keep detailed
   provenance here rather than duplicating claim-state decisions.
 - Later frontier batches must be added only after their raw artefacts,
-  retrieval manifests, and analysis scripts are reviewed and committed.
+  private retrieval maps, and analysis scripts are reviewed and committed.
 - Do not cite aggregate-only IBM JSON, queued-job JSON, or placeholder-derived
   results as hardware validation.
 - Exact repository-wide test counts belong in CI summaries or release notes.
@@ -121,9 +121,9 @@ raw IBM counts and promoted here.
   `results/classical_rust_gpu_matrix_2026-05-03.json`.
 - Gap B close-out review status: **DONE 2026-05-05** — the validation readiness gate records the Phase 1 raw-count reproducer pass, a current-commit classical/Rust matrix smoke check, and the promotion rules for future broad-advantage or hardware claims.
 - Phase 2 preregistration status: **DONE 2026-05-05** — `docs/ibm_phase2_preregistered_manifest_2026-05-05.md` and `results/ibm_phase2_preregistration_2026-05-05.json` record the QPU-minimised A+G first live command, dry-run circuit inventory, abort criteria, evidence path, and promotion gates.
-- 2026-05-05 live attempt status: **ABORTED / CANCELLED** — `ibm_kingston` job `d7stqj7ljm6s73bbu080` was cancelled after live hardware transpilation exceeded the reduced dry-run depth budget; IBM metadata reported `0` quantum seconds and `0` usage seconds. This job is quarantined and not evidence.
-- 2026-05-05 reduced A+G hardware run status: **DONE / PROMOTED** — `ibm_kingston` jobs `d7stu94t738s73ch5keg` and `d7su3tkt738s73ch5ql0` completed with 612 raw-count circuits. The committed reproducer reports Fisher chi2 `140.671952`, Fisher p `3.773718e-20`, and 6/10 significant depths at `p < 0.05`.
-- 2026-05-05 B-C scaling run status: **DONE / PROMOTED AS MIXED** — `ibm_kingston` job `d7sudr2udops7397ae30` completed with 280 raw-count circuits and IBM-reported usage `305` quantum seconds. The committed reproducer reports `n=6` Fisher p `1.883218e-07` with negative significant depths and `n=8` Fisher p `2.675193e-04` with positive middle-depth sign.
+- 2026-05-05 live attempt status: **ABORTED / CANCELLED** — `ibm_kingston` job `ibm-run-ca8b9612732b84dc` was cancelled after live hardware transpilation exceeded the reduced dry-run depth budget; IBM metadata reported `0` quantum seconds and `0` usage seconds. This job is quarantined and not evidence.
+- 2026-05-05 reduced A+G hardware run status: **DONE / PROMOTED** — `ibm_kingston` jobs `ibm-run-7da8644af35021fb` and `ibm-run-6f9990bba1d90a12` completed with 612 raw-count circuits. The committed reproducer reports Fisher chi2 `140.671952`, Fisher p `3.773718e-20`, and 6/10 significant depths at `p < 0.05`.
+- 2026-05-05 B-C scaling run status: **DONE / PROMOTED AS MIXED** — `ibm_kingston` job `ibm-run-1f46ebd0da8912ff` completed with 280 raw-count circuits and IBM-reported usage `305` quantum seconds. The committed reproducer reports `n=6` Fisher p `1.883218e-07` with negative significant depths and `n=8` Fisher p `2.675193e-04` with positive middle-depth sign.
 - Phase 2 publication package status: **DONE / PROMOTED** —
   `docs/publication_phase2_package_2026-05-05.md` records the promoted
   A+G, B-C, and popcount-control artefacts plus conservative claim boundaries.

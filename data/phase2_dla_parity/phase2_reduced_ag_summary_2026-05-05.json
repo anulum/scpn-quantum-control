@@ -1,206 +1,206 @@
 {
   "backend": "ibm_kingston",
-  "job_ids": [
-    "d7stu94t738s73ch5keg",
-    "d7su3tkt738s73ch5ql0"
-  ],
-  "n_circuits": 612,
   "depth_summaries": [
     {
+      "asymmetry_relative": 0.014900335504243052,
       "depth": 2,
       "leakage_even": 0.08369954427083333,
       "leakage_odd": 0.082470703125,
+      "n_even": 30,
+      "n_odd": 30,
       "sem_even": 0.0007704488738223173,
       "sem_odd": 0.0008154056578876461,
-      "asymmetry_relative": 0.014900335504243052,
-      "welch_t": 1.0954005530272153,
       "welch_p": 0.277883528753233,
-      "n_even": 30,
-      "n_odd": 30
+      "welch_t": 1.0954005530272153
     },
     {
+      "asymmetry_relative": 0.08651155941687519,
       "depth": 4,
       "leakage_even": 0.1200927734375,
       "leakage_odd": 0.11053059895833334,
+      "n_even": 30,
+      "n_odd": 30,
       "sem_even": 0.001001934323736282,
       "sem_odd": 0.0010558424388829003,
-      "asymmetry_relative": 0.08651155941687519,
-      "welch_t": 6.56938064809793,
       "welch_p": 1.5608292151029505e-08,
-      "n_even": 30,
-      "n_odd": 30
+      "welch_t": 6.56938064809793
     },
     {
+      "asymmetry_relative": 0.04346860600677293,
       "depth": 6,
       "leakage_even": 0.15296223958333333,
       "leakage_odd": 0.14659016927083332,
+      "n_even": 30,
+      "n_odd": 30,
       "sem_even": 0.0012739128952591518,
       "sem_odd": 0.000955046181065025,
-      "asymmetry_relative": 0.04346860600677293,
-      "welch_t": 4.0021593910032776,
       "welch_p": 0.00019352317840348054,
-      "n_even": 30,
-      "n_odd": 30
+      "welch_t": 4.0021593910032776
     },
     {
+      "asymmetry_relative": 0.02724073091943499,
       "depth": 8,
       "leakage_even": 0.173388671875,
       "leakage_odd": 0.16879069010416667,
+      "n_even": 30,
+      "n_odd": 30,
       "sem_even": 0.0009955582244163385,
       "sem_odd": 0.0011354769230443162,
-      "asymmetry_relative": 0.02724073091943499,
-      "welch_t": 3.044791350237485,
       "welch_p": 0.003520404628529986,
-      "n_even": 30,
-      "n_odd": 30
+      "welch_t": 3.044791350237485
     },
     {
+      "asymmetry_relative": 0.04467965123845058,
       "depth": 10,
       "leakage_even": 0.19598795572916666,
       "leakage_odd": 0.18760579427083332,
+      "n_even": 30,
+      "n_odd": 30,
       "sem_even": 0.0009312195957906626,
       "sem_odd": 0.0011996822509549676,
-      "asymmetry_relative": 0.04467965123845058,
-      "welch_t": 5.519350914951738,
       "welch_p": 9.641423794121621e-07,
-      "n_even": 30,
-      "n_odd": 30
+      "welch_t": 5.519350914951738
     },
     {
+      "asymmetry_relative": 0.04237408538751153,
       "depth": 14,
       "leakage_even": 0.23882649739583334,
       "leakage_odd": 0.22911783854166667,
+      "n_even": 30,
+      "n_odd": 30,
       "sem_even": 0.0015955223412187885,
       "sem_odd": 0.0010755020390089602,
-      "asymmetry_relative": 0.04237408538751153,
-      "welch_t": 5.045657840956301,
       "welch_p": 6.137635743996302e-06,
-      "n_even": 30,
-      "n_odd": 30
+      "welch_t": 5.045657840956301
     },
     {
+      "asymmetry_relative": 0.030972423802612628,
       "depth": 20,
       "leakage_even": 0.2890380859375,
       "leakage_odd": 0.2803548177083333,
+      "n_even": 30,
+      "n_odd": 30,
       "sem_even": 0.0014580157518275304,
       "sem_odd": 0.0012085950630728692,
-      "asymmetry_relative": 0.030972423802612628,
-      "welch_t": 4.585081662657023,
       "welch_p": 2.5874530882799716e-05,
-      "n_even": 30,
-      "n_odd": 30
+      "welch_t": 4.585081662657023
     },
     {
+      "asymmetry_relative": 0.0009664568748085624,
       "depth": 30,
       "leakage_even": 0.3455729166666667,
       "leakage_odd": 0.3452392578125,
+      "n_even": 30,
+      "n_odd": 30,
       "sem_even": 0.001100065126686796,
       "sem_odd": 0.0014821101158308653,
-      "asymmetry_relative": 0.0009664568748085624,
-      "welch_t": 0.1807714067486222,
       "welch_p": 0.8572299087486507,
-      "n_even": 30,
-      "n_odd": 30
+      "welch_t": 0.1807714067486222
     },
     {
+      "asymmetry_relative": 0.0009840664977701092,
       "depth": 40,
       "leakage_even": 0.3890625,
       "leakage_odd": 0.3886800130208333,
+      "n_even": 30,
+      "n_odd": 30,
       "sem_even": 0.0013865930575321136,
       "sem_odd": 0.0015505225678215195,
-      "asymmetry_relative": 0.0009840664977701092,
-      "welch_t": 0.18388030908054548,
       "welch_p": 0.8547566440914348,
-      "n_even": 30,
-      "n_odd": 30
+      "welch_t": 0.18388030908054548
     },
     {
+      "asymmetry_relative": -0.000848749059624639,
       "depth": 50,
       "leakage_even": 0.42152506510416665,
       "leakage_odd": 0.4218831380208333,
+      "n_even": 30,
+      "n_odd": 30,
       "sem_even": 0.0013022069762708244,
       "sem_odd": 0.001488895874243738,
-      "asymmetry_relative": -0.000848749059624639,
-      "welch_t": -0.1810261458728213,
       "welch_p": 0.8569893272899012,
-      "n_even": 30,
-      "n_odd": 30
+      "welch_t": -0.1810261458728213
     }
   ],
   "fisher_chi2": 140.67195200006768,
   "fisher_p": 3.7737183058238786e-20,
+  "job_ids": [
+    "ibm-run-7da8644af35021fb",
+    "ibm-run-6f9990bba1d90a12"
+  ],
+  "n_circuits": 612,
   "n_depths_significant_at_0_05": 6,
   "n_depths_tested": 10,
   "readout": [
     {
-      "n_qubits": 4,
       "initial": "0000",
+      "n_qubits": 4,
       "retention": 0.9886474609375,
       "total_shots": 8192
     },
     {
-      "n_qubits": 4,
       "initial": "1111",
+      "n_qubits": 4,
       "retention": 0.9781494140625,
       "total_shots": 8192
     },
     {
-      "n_qubits": 4,
       "initial": "0101",
+      "n_qubits": 4,
       "retention": 0.97998046875,
       "total_shots": 8192
     },
     {
-      "n_qubits": 4,
       "initial": "1010",
+      "n_qubits": 4,
       "retention": 0.9844970703125,
       "total_shots": 8192
     },
     {
-      "n_qubits": 6,
       "initial": "000000",
+      "n_qubits": 6,
       "retention": 0.9918212890625,
       "total_shots": 8192
     },
     {
-      "n_qubits": 6,
       "initial": "111111",
+      "n_qubits": 6,
       "retention": 0.9659423828125,
       "total_shots": 8192
     },
     {
-      "n_qubits": 6,
       "initial": "010101",
+      "n_qubits": 6,
       "retention": 0.976318359375,
       "total_shots": 8192
     },
     {
-      "n_qubits": 6,
       "initial": "101010",
+      "n_qubits": 6,
       "retention": 0.98046875,
       "total_shots": 8192
     },
     {
-      "n_qubits": 8,
       "initial": "00000000",
+      "n_qubits": 8,
       "retention": 0.98779296875,
       "total_shots": 8192
     },
     {
-      "n_qubits": 8,
       "initial": "11111111",
+      "n_qubits": 8,
       "retention": 0.9503173828125,
       "total_shots": 8192
     },
     {
-      "n_qubits": 8,
       "initial": "01010101",
+      "n_qubits": 8,
       "retention": 0.97021484375,
       "total_shots": 8192
     },
     {
-      "n_qubits": 8,
       "initial": "10101010",
+      "n_qubits": 8,
       "retention": 0.97265625,
       "total_shots": 8192
     }

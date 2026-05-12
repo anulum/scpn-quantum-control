@@ -239,7 +239,9 @@ def _string_tuple(value: Any) -> tuple[str, ...]:
         return (value,)
     if not isinstance(value, tuple | list | set | frozenset):
         raise ValueError("expected a sequence of strings")
-    result = tuple(str(item) for item in value)
+    if any(not isinstance(item, str) for item in value):
+        raise ValueError("string sequences must contain only text entries")
+    result = tuple(value)
     if any(not item for item in result):
         raise ValueError("string sequences must not contain empty entries")
     return result

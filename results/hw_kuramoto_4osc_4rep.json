@@ -1,23 +1,23 @@
 {
   "backend": "ibm_fez",
   "experiment": "kuramoto_4osc_trotter_refinement",
-  "job_id": "d6h3il9keb2s73be4pn0",
+  "job_id": "ibm-run-877758ce3849440e",
   "n_qubits": 4,
-  "shots": 20000,
   "results": [
     {
-      "t": 0.1,
-      "trotter_reps": 4,
-      "hw_R": 0.625174528131945,
+      "depth": 290,
       "exact_R": 0.801509023084279,
-      "depth": 290
+      "hw_R": 0.625174528131945,
+      "t": 0.1,
+      "trotter_reps": 4
     },
     {
-      "t": 0.2,
-      "trotter_reps": 4,
-      "hw_R": 0.5577557944566779,
+      "depth": 292,
       "exact_R": 0.7883224715007977,
-      "depth": 292
+      "hw_R": 0.5577557944566779,
+      "t": 0.2,
+      "trotter_reps": 4
     }
-  ]
+  ],
+  "shots": 20000
 }

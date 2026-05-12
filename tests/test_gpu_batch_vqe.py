@@ -183,6 +183,79 @@ class TestBatchVQEScan:
         with pytest.raises(ImportError, match="PyTorch not installed"):
             batch_vqe_scan(K, omega, n_samples=2, seed=42, use_gpu=True)
 
+    def test_gpu_request_requires_cuda_device(self, monkeypatch):
+        torch = pytest.importorskip("torch")
+
+        K, omega = _system(2)
+        monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
+
+        with pytest.raises(RuntimeError, match="available CUDA device"):
+            batch_vqe_scan(K, omega, n_samples=2, seed=42, use_gpu=True)
+
+    def test_cuda_scan_reports_torch_backend_and_minimum_energy(self):
+        torch = pytest.importorskip("torch")
+        if not torch.cuda.is_available():
+            pytest.skip("CUDA device not available")
+
+        K, omega = _system(2)
+        try:
+            torch.zeros(1, device="cuda").cpu()
+            torch.cuda.synchronize()
+        except Exception:
+            with pytest.raises(RuntimeError, match="usable CUDA device"):
+                batch_vqe_scan(K, omega, n_samples=3, seed=123, use_gpu=True)
+            return
+
+        result = batch_vqe_scan(K, omega, n_samples=3, seed=123, use_gpu=True)
+
+        assert result["backend"] == "torch_cuda"
+        assert result["hardware_claim"] == "none_statevector_expectation_scan"
+        assert result["energies"].shape == (3,)
+        assert np.all(np.isfinite(result["energies"]))
+        assert result["best_energy"] == pytest.approx(float(np.min(result["energies"])))
+        np.testing.assert_array_equal(
+            result["best_params"],
+            result["params"][int(np.argmin(result["energies"]))],
+        )
+
+    def test_torch_branch_wires_ansatz_and_reports_backend(self, monkeypatch):
+        import scpn_quantum_control.phase.gpu_batch_vqe as vqe_mod
+
+        torch = pytest.importorskip("torch")
+        K, omega = _system(2)
+        captured_norms = []
+
+        monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
+        monkeypatch.setattr(torch.cuda, "synchronize", lambda: None)
+
+        original_zeros = torch.zeros
+
+        def cpu_zeros(*args, **kwargs):
+            if kwargs.get("device") == "cuda":
+                kwargs = {**kwargs, "device": "cpu"}
+            return original_zeros(*args, **kwargs)
+
+        def recording_energy(H, param_sets, ansatz_fn, device):
+            assert device == "cuda"
+            energies = []
+            for params in param_sets:
+                psi = ansatz_fn(torch.tensor(params, dtype=torch.float32))
+                captured_norms.append(float(torch.linalg.norm(psi)))
+                energies.append(
+                    float(np.real(psi.detach().numpy().conj() @ H @ psi.detach().numpy()))
+                )
+            return np.asarray(energies, dtype=np.float64)
+
+        monkeypatch.setattr(torch, "zeros", cpu_zeros)
+        monkeypatch.setattr(vqe_mod, "batch_energy_torch", recording_energy)
+
+        result = vqe_mod.batch_vqe_scan(K, omega, n_samples=4, seed=321, use_gpu=True)
+
+        assert result["backend"] == "torch_cuda"
+        assert result["energies"].shape == (4,)
+        assert result["best_energy"] == pytest.approx(float(np.min(result["energies"])))
+        np.testing.assert_allclose(captured_norms, 1.0, atol=1e-6)
+
     def test_invalid_scan_sizes_are_rejected(self):
         K, omega = _system(2)
         with pytest.raises(ValueError, match="n_samples"):

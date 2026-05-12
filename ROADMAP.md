@@ -600,8 +600,8 @@ explicit QPU-time estimate before submission.
 - [x] **Multi-device DLA replication execution.** Completed
   2026-05-06 on `ibm_marrakesh` after live backend selection,
   transpilation/depth gates, QPU budget confirmation, and explicit
-  approval. Jobs `d7tnd3vljm6s73bcsh6g` and
-  `d7tnehqudops73988btg` produced the raw-count artefact,
+  approval. Jobs `ibm-run-63e0a1af74a38c9c` and
+  `ibm-run-0f96961442e05a77` produced the raw-count artefact,
   generated summary, row metrics, and manifest in
   `data/phase3_multidevice_dla/` and
   `docs/phase3_multidevice_dla_manifest_2026-05-06.md`. Result:
@@ -618,8 +618,8 @@ explicit QPU-time estimate before submission.
 - [x] **Systematic state/layout randomisation execution.** Completed
   2026-05-07 on `ibm_marrakesh` after live backend/layout selection,
   transpilation/depth gates, QPU budget confirmation, and explicit
-  approval. Jobs `d7ts9avljm6s73bd2ej0` and
-  `d7tsdnfljm6s73bd2j70` produced the committed raw-count artefact
+  approval. Jobs `ibm-run-aabcf620230b1438` and
+  `ibm-run-eea172711aa52b78` produced the committed raw-count artefact
   `data/phase3_state_layout_dla/phase3_state_layout_ibm_marrakesh_2026-05-06T224531Z.json`.
   Result interpretation is now closed by the generated analysis and
   manifest artefacts: the original contrast has mixed sign across
@@ -650,7 +650,7 @@ explicit QPU-time estimate before submission.
 - [x] **Full readout-mitigation calibration execution.** Completed
   2026-05-06 for the Phase 3 `ibm_marrakesh` `n=4` dataset on physical
   qubits `[5,6,7,8]` after live readiness checks, budget confirmation,
-  and explicit approval. Job `d7tnljvljm6s73bcsql0` produced the
+  and explicit approval. Job `ibm-run-ddd29a2fbcaeed61` produced the
   full-basis assignment artefacts under `data/readout_full_basis/` and
   manifest `docs/readout_full_basis_manifest_2026-05-06.md`.
   Calibration quality: mean retention `0.96999`, max parity flip
@@ -675,8 +675,8 @@ explicit QPU-time estimate before submission.
   2026-05-07 on `ibm_marrakesh` after backend selection, committed
   submitter checks, live folded-circuit readiness, conservative
   12-minute QPU estimate under the 15-minute ceiling, and explicit
-  approval. Jobs `d7tt5lkt738s73cib64g` and
-  `d7tt7oaudops7398fdt0` produced the raw-count artefact
+  approval. Jobs `ibm-run-72cd6f926fcf15fc` and
+  `ibm-run-24d759b97fcbdbac` produced the raw-count artefact
   `data/phase3_guess_dla/phase3_guess_ibm_marrakesh_2026-05-06T234602Z.json`.
 - [x] **GUESS / symmetry-decay calibration analysis.** Completed
   2026-05-07: `scripts/analyse_phase3_guess_dla.py` generated
@@ -1400,7 +1400,7 @@ Cross-repo integrations wired:
 - **EEG Classification:** PLV-to-quantum pipeline for brain state analysis
 - **27 FIM notebooks** (NB14–47): 19 discoveries, 6 honest negative results
 - **IBM hardware v2:** aggregate-only ibm_fez artifacts retained but unpromoted
-  until raw counts, retrieval manifest, and reproduction analysis are reviewed
+  until raw counts, private retrieval map, and reproduction analysis are reviewed
 - **Rust engine expanded:** 15→22 functions (correlation_matrix_xy, lindblad_jump_ops_coo, lindblad_anti_hermitian_diag, parity_filter_mask)
 - **Documentation audit:** 21 discrepancies fixed, 26 analysis + 10 phase + 3 bridge exports added
 - Fixed backend_dispatch jax.numpy AttributeError
