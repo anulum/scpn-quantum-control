@@ -147,6 +147,12 @@ is copied here.
   `threshold` is finite and non-negative before constructing the graph
   code, preventing malformed matrices from reaching stabilizer or MWPM
   logic.
+- [x] **MPS long-range truncation hardening.** Implemented 2026-05-12:
+  the quimb DMRG/TEBD paths now reject non-nearest-neighbour couplings
+  by default because `SpinHam1D`/`LocalHam1D` only represent adjacent
+  bonds. Callers that intentionally run the truncated tensor-network
+  diagnostic must pass `allow_long_range_truncation=True`; returned
+  metadata records `coupling_scope` and `omitted_coupling_l1`.
 - [x] **Integrated-information wrapper production route.** Implemented
   2026-05-12: `IntegratedInformationPhi` now routes explicit
   `coupling_matrix` and `natural_frequencies` inputs to the

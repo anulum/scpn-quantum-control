@@ -209,9 +209,10 @@ match with full ED, level spacing bounded, memory estimates)
 Matrix Product State backend for systems beyond ED limits (n=32-64).
 DMRG for ground state, TEBD for time evolution.
 
-Currently nearest-neighbour couplings only (quimb `SpinHam1D` limitation).
-Longer-range couplings from $K_{nm}$ are dropped; for the exponential-decay
-matrix, NN terms dominate.
+Currently nearest-neighbour couplings only (quimb `SpinHam1D` /
+`LocalHam1D` limitation). Full-K inputs with non-adjacent couplings are
+rejected by default; callers must pass `allow_long_range_truncation=True`
+for the explicitly labelled nearest-neighbour diagnostic path.
 
 Requires `pip install quimb`.
 
