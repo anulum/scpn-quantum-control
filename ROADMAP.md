@@ -131,6 +131,11 @@ is copied here.
   the separable bound is not violated and `2` when nonseparability is
   certified. Stronger multipartite-depth claims are no longer inferred
   from heuristic R thresholds.
+- [x] **PennyLane VQE observable hardening.** Implemented 2026-05-12:
+  `PennyLaneRunner.run_vqe()` now measures the Kuramoto order parameter
+  from the optimized hardware-efficient ansatz using the same local
+  X/Y-expectation phase reconstruction as the Trotter path. VQE results
+  no longer report an unmeasured `order_parameter=0.0` placeholder.
 - [x] **Integrated-information wrapper production route.** Implemented
   2026-05-12: `IntegratedInformationPhi` now routes explicit
   `coupling_matrix` and `natural_frequencies` inputs to the
