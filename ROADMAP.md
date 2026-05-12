@@ -100,6 +100,12 @@ is copied here.
   against the `0.72` target. The audit runner records this reconstruction
   separately from the legacy delay-embedded observer path; the claim
   remains unpromoted pending preregistered replay with uncertainty.
+- [x] **QSVT resource-estimator input hardening.** Implemented
+  2026-05-12: the QSVT resource estimator and query-count helpers now
+  reject non-square, dimension-mismatched, asymmetric, or non-finite
+  `K_nm/omega` inputs plus invalid simulation-time and error-budget
+  parameters before any Hamiltonian construction or resource claim is
+  produced. The phase API documents the validation contract.
 - [x] **Behavioural-test audit automation.** Implemented 2026-05-06:
   `tools/audit_test_behaviour.py` inventories test modules for
   assertion-bearing tests, exception contracts, parametrisation, and

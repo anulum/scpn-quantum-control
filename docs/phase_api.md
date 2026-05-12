@@ -282,6 +282,13 @@ from scpn_quantum_control.phase.qsvt_evolution import (
 `qsvt_resource_estimate(K, omega, t_max, epsilon=1e-3)` → `QSVTResourceEstimate` with:
 `n_queries`, `trotter_depth_equivalent`, `speedup_factor`, `block_encoding_cost`.
 
+Inputs are validated before any Hamiltonian construction or resource-claim
+calculation: `K` must be a finite square symmetric coupling matrix, `omega`
+must be a finite vector with matching dimension, simulation time must be finite
+and non-negative, and `epsilon` must satisfy `0 < epsilon < 1`. The lower-level
+query-count helpers apply the same finite positive `alpha`, time, and
+error-budget checks so invalid budgets cannot be silently clamped.
+
 This module provides resource estimates, not executable circuits. QSVT circuits require
 block encoding of the Hamiltonian, which demands ancilla qubits and multi-controlled
 gates that exceed current hardware capabilities. The estimates inform hardware roadmap
