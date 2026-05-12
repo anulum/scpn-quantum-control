@@ -143,19 +143,28 @@ and gamma^n_gates total.
 
 #### `pauli_twirl_decompose(gate_error_rate, n_qubits=1)`
 
-Returns [q_I, q_X, q_Y, q_Z] quasi-probability coefficients.
+Returns quasi-probability coefficients for the local Pauli inverse channel.
+For `n_qubits=1`, the basis is `[I, X, Y, Z]`. For `n_qubits>1`, the output is
+the tensor product over the local `[I, X, Y, Z]` basis and therefore has length
+`4**n_qubits`.
 
 ```python
 from scpn_quantum_control.mitigation import pauli_twirl_decompose
 
 coeffs = pauli_twirl_decompose(0.01)
 # array([ 1.00757576, -0.00252525, -0.00252525, -0.00252525])
+
+two_qubit_coeffs = pauli_twirl_decompose(0.01, n_qubits=2)
+assert len(two_qubit_coeffs) == 16
 ```
 
-Currently single-qubit only. Raises `NotImplementedError` for n_qubits > 1.
+`n_qubits` must be a positive integer. The coefficient decomposition supports
+local tensor-product depolarising channels; correlated multi-qubit noise models
+require a separate characterised inverse channel.
 
 **Rust acceleration**: `scpn_quantum_engine.pec_coefficients()` produces
-identical coefficients. Parity verified in `test_rust_path_benchmarks.py`.
+identical single-qubit coefficients. Parity verified in
+`test_rust_path_benchmarks.py`.
 
 #### `pec_sample(circuit, gate_error_rate, n_samples, observable_qubit=0, rng=None)`
 

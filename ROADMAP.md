@@ -112,6 +112,11 @@ is copied here.
   `compute_quantum_phi` Kuramoto-XY density-matrix engine with shape,
   symmetry, and finite-value validation. Counts-only entropy remains an
   opt-in `entropy_proxy` diagnostic and is never returned as `phi`.
+- [x] **PEC local multi-qubit coefficient decomposition.** Implemented
+  2026-05-12: `pauli_twirl_decompose()` now returns tensor-product
+  quasi-probability coefficients for `n_qubits >= 1`, preserving exact
+  single-qubit Rust parity while documenting that correlated multi-qubit
+  noise still requires a separately characterised inverse channel.
 - [x] **Behavioural-test audit automation.** Implemented 2026-05-06:
   `tools/audit_test_behaviour.py` inventories test modules for
   assertion-bearing tests, exception contracts, parametrisation, and
