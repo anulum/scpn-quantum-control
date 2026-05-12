@@ -77,6 +77,49 @@ class EEGBenchmarkResult:
     publication_safe: bool
 
 
+def _validated_square_matrix(
+    matrix: np.ndarray,
+    name: str,
+    *,
+    require_plv: bool = False,
+) -> np.ndarray:
+    values = np.asarray(matrix, dtype=float)
+    if values.ndim != 2 or values.shape[0] != values.shape[1]:
+        raise ValueError(f"{name} must be a square 2-D matrix.")
+    if values.shape[0] < 2:
+        raise ValueError(f"{name} must contain at least two coupled channels.")
+    if not np.all(np.isfinite(values)):
+        raise ValueError(f"{name} must contain only finite values.")
+    if require_plv:
+        if np.any((values < 0.0) | (values > 1.0)):
+            raise ValueError(f"{name} values must be in [0, 1].")
+        if not np.allclose(values, values.T, atol=1e-12):
+            raise ValueError(f"{name} must be symmetric.")
+        if not np.allclose(np.diag(values), 0.0, atol=1e-12):
+            raise ValueError(f"{name} diagonal must be zero.")
+    return values
+
+
+def _validated_frequency_vector(
+    frequencies: np.ndarray,
+    n_channels: int,
+    name: str,
+    matrix_name: str,
+) -> np.ndarray:
+    values = np.asarray(frequencies, dtype=float)
+    if values.ndim != 1 or values.shape != (n_channels,):
+        raise ValueError(f"{name} must match {matrix_name} channel count.")
+    if not np.all(np.isfinite(values)):
+        raise ValueError(f"{name} must contain only finite values.")
+    return values
+
+
+def _finite_correlation(value: float) -> float:
+    if np.isnan(value):
+        return 0.0
+    return float(value)
+
+
 def eeg_coupling_matrix(
     band: str = "alpha",
     *,
@@ -103,6 +146,13 @@ def eeg_benchmark(
     allow_builtin_reference: bool = False,
 ) -> EEGBenchmarkResult:
     """Compare SCPN K_nm with EEG functional connectivity."""
+    K_scpn = _validated_square_matrix(K_scpn, "K_scpn")
+    omega_scpn = _validated_frequency_vector(
+        omega_scpn,
+        K_scpn.shape[0],
+        "omega_scpn",
+        "K_scpn",
+    )
     if eeg_coupling is None or eeg_frequencies is None:
         if eeg_coupling is not None or eeg_frequencies is not None:
             raise ValueError("eeg_coupling and eeg_frequencies must be supplied together.")
@@ -112,15 +162,23 @@ def eeg_benchmark(
         source_mode = "builtin_literature_shape"
         publication_safe = False
     else:
-        K_eeg = np.asarray(eeg_coupling, dtype=float)
-        omega_eeg = np.asarray(eeg_frequencies, dtype=float)
+        K_eeg = _validated_square_matrix(eeg_coupling, "eeg_coupling", require_plv=True)
+        omega_eeg = _validated_frequency_vector(
+            eeg_frequencies,
+            K_eeg.shape[0],
+            "eeg_frequencies",
+            "eeg_coupling",
+        )
         source_mode = "measured"
         publication_safe = True
 
-    if K_eeg.ndim != 2 or K_eeg.shape[0] != K_eeg.shape[1]:
-        raise ValueError("eeg_coupling must be a square matrix.")
-    if omega_eeg.ndim != 1 or omega_eeg.shape[0] != K_eeg.shape[0]:
-        raise ValueError("eeg_frequencies must be a vector matching eeg_coupling.")
+    K_eeg = _validated_square_matrix(K_eeg, "eeg_coupling", require_plv=True)
+    omega_eeg = _validated_frequency_vector(
+        omega_eeg,
+        K_eeg.shape[0],
+        "eeg_frequencies",
+        "eeg_coupling",
+    )
 
     n_eeg = K_eeg.shape[0]
     n_scpn = K_scpn.shape[0]
@@ -136,14 +194,12 @@ def eeg_benchmark(
     s_flat = K_s[triu_idx]
 
     if len(e_flat) >= 3:
-        topo_corr = float(spearmanr(e_flat, s_flat).statistic)
+        topo_corr = _finite_correlation(float(spearmanr(e_flat, s_flat).statistic))
     else:
         topo_corr = 0.0
 
     if n >= 3:
-        freq_corr = float(np.corrcoef(omega_e, omega_s)[0, 1])
-        if np.isnan(freq_corr):
-            freq_corr = 0.0
+        freq_corr = _finite_correlation(float(np.corrcoef(omega_e, omega_s)[0, 1]))
     else:
         freq_corr = 0.0
 

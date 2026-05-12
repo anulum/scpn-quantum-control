@@ -104,3 +104,70 @@ class TestEEGBenchmark:
         result = eeg_benchmark(K, omega, allow_builtin_reference=True)
         print(f"\n  {result.summary}")
         assert isinstance(result.topology_correlation, float)
+
+    def test_rejects_non_square_scpn_coupling(self):
+        K = np.ones((2, 3))
+        omega = np.ones(2)
+        with pytest.raises(ValueError, match="K_scpn must be a square"):
+            eeg_benchmark(K, omega, allow_builtin_reference=True)
+
+    def test_rejects_scpn_frequency_shape_mismatch(self):
+        K = build_knm_paper27(L=4)
+        omega = np.ones(3)
+        with pytest.raises(ValueError, match="omega_scpn must match"):
+            eeg_benchmark(K, omega, allow_builtin_reference=True)
+
+    def test_rejects_non_finite_scpn_coupling(self):
+        K = build_knm_paper27(L=4)
+        K[0, 1] = np.nan
+        omega = OMEGA_N_16[:4]
+        with pytest.raises(ValueError, match="K_scpn must contain only finite"):
+            eeg_benchmark(K, omega, allow_builtin_reference=True)
+
+    def test_rejects_too_small_comparison_system(self):
+        K = np.array([[0.0]])
+        omega = np.array([10.0])
+        with pytest.raises(ValueError, match="at least two coupled channels"):
+            eeg_benchmark(K, omega, allow_builtin_reference=True)
+
+    def test_rejects_measured_eeg_asymmetry(self):
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        eeg_K = np.array(
+            [
+                [0.0, 0.8, 0.1],
+                [0.2, 0.0, 0.3],
+                [0.1, 0.3, 0.0],
+            ]
+        )
+        eeg_omega = np.array([9.0, 10.0, 11.0])
+        with pytest.raises(ValueError, match="eeg_coupling must be symmetric"):
+            eeg_benchmark(K, omega, eeg_coupling=eeg_K, eeg_frequencies=eeg_omega)
+
+    def test_rejects_measured_eeg_outside_unit_interval(self):
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        eeg_K = np.array(
+            [
+                [0.0, 1.2, 0.1],
+                [1.2, 0.0, 0.3],
+                [0.1, 0.3, 0.0],
+            ]
+        )
+        eeg_omega = np.array([9.0, 10.0, 11.0])
+        with pytest.raises(ValueError, match="eeg_coupling values must be in"):
+            eeg_benchmark(K, omega, eeg_coupling=eeg_K, eeg_frequencies=eeg_omega)
+
+    def test_rejects_measured_eeg_nonzero_diagonal(self):
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        eeg_K = np.array(
+            [
+                [1.0, 0.8, 0.1],
+                [0.8, 0.0, 0.3],
+                [0.1, 0.3, 0.0],
+            ]
+        )
+        eeg_omega = np.array([9.0, 10.0, 11.0])
+        with pytest.raises(ValueError, match="eeg_coupling diagonal must be zero"):
+            eeg_benchmark(K, omega, eeg_coupling=eeg_K, eeg_frequencies=eeg_omega)
