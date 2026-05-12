@@ -15,6 +15,7 @@ import pytest
 from scpn_quantum_control.applications.disruption_classifier import (
     DisruptionClassifierResult,
     generate_synthetic_disruption_data,
+    predict_disruption,
     run_disruption_benchmark,
     train_disruption_classifier,
 )
@@ -45,6 +46,36 @@ class TestTrainClassifier:
         weights, K = train_disruption_classifier(X, y, n_qubits=3)
         assert len(weights) == 10
         assert K.shape == (10, 10)
+
+    def test_rejects_label_count_mismatch(self):
+        X, y = generate_synthetic_disruption_data(n_samples=10, allow_synthetic=True)
+        with pytest.raises(ValueError, match="y_train must match X_train sample count"):
+            train_disruption_classifier(X, y[:-1], n_qubits=3)
+
+    def test_rejects_non_binary_labels(self):
+        X, y = generate_synthetic_disruption_data(n_samples=10, allow_synthetic=True)
+        y[0] = 2
+        with pytest.raises(ValueError, match="y_train labels must be binary"):
+            train_disruption_classifier(X, y, n_qubits=3)
+
+    def test_rejects_non_positive_regularisation(self):
+        X, y = generate_synthetic_disruption_data(n_samples=10, allow_synthetic=True)
+        with pytest.raises(ValueError, match="alpha must be positive"):
+            train_disruption_classifier(X, y, n_qubits=3, alpha=0.0)
+
+
+class TestPredictClassifier:
+    def test_rejects_train_weight_count_mismatch(self):
+        X, y = generate_synthetic_disruption_data(n_samples=10, allow_synthetic=True)
+        weights, _ = train_disruption_classifier(X, y, n_qubits=3)
+        with pytest.raises(ValueError, match="weights must match X_train sample count"):
+            predict_disruption(X[:2], X, weights[:-1], n_qubits=3)
+
+    def test_rejects_feature_dimension_mismatch(self):
+        X, y = generate_synthetic_disruption_data(n_samples=10, allow_synthetic=True)
+        weights, _ = train_disruption_classifier(X, y, n_qubits=3)
+        with pytest.raises(ValueError, match="X_test feature dimension must match X_train"):
+            predict_disruption(X[:2, :4], X, weights, n_qubits=3)
 
 
 class TestRunBenchmark:
