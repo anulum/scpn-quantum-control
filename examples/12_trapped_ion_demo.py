@@ -27,7 +27,7 @@ def main() -> None:
     print("=" * 50)
     print(f"Original: {qc.size()} gates, depth {qc.depth()}")
 
-    qc_ion = transpile_for_trapped_ion(qc)
+    qc_ion = transpile_for_trapped_ion(qc, allow_proxy_basis=True)
     print(f"Transpiled: {qc_ion.size()} gates, depth {qc_ion.depth()}")
     print(f"Basis gates: {sorted(set(g.operation.name for g in qc_ion))}")
 

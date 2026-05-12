@@ -102,11 +102,17 @@ We prepare each of two initial states,
 ```
 
 on the first 4 qubits of ibm\_kingston and apply a first-order Trotter
-decomposition of $H_{XY}$ with $t_\mathrm{step} = 0.3$ and coupling
-matrix $K_{ij} = 0.45 \exp(-0.3 |i-j|)$. Each Trotter slice consists
-of nearest-neighbour $R_{XX}(\theta)R_{YY}(\theta)$ gates plus
-single-qubit $R_Z$ rotations, for a per-step ISA cost of approximately
-19 gates after Qiskit's `optimization_level = 2` transpilation.
+decomposition of the nearest-neighbour Hamiltonian obtained by taking
+the adjacent-bond truncation of
+$K_{ij} = 0.45 \exp(-0.3 |i-j|)$, with $t_\mathrm{step} = 0.3$.
+Each Trotter slice consists of nearest-neighbour
+$R_{XX}(\theta)R_{YY}(\theta)$ gates plus single-qubit $R_Z$ rotations,
+for a per-step ISA cost of approximately 19 gates after Qiskit's
+`optimization_level = 2` transpilation.
+
+This circuit family tests the parity-leakage prediction for the
+implemented nearest-neighbour truncation, not for an all-to-all
+implementation of the exponential coupling matrix.
 
 For each sector we measure the **parity leakage**
 

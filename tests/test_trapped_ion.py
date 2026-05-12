@@ -49,7 +49,7 @@ def test_transpile_removes_swaps():
     qc = QuantumCircuit(4)
     qc.cx(0, 3)
     qc.cx(1, 3)
-    result = transpile_for_trapped_ion(qc)
+    result = transpile_for_trapped_ion(qc, allow_proxy_basis=True)
     ops = result.count_ops()
     assert "swap" not in ops
 
@@ -59,7 +59,7 @@ def test_transpile_preserves_unitarity():
     qc.h(0)
     qc.cx(0, 1)
     original = Operator(qc)
-    transpiled = transpile_for_trapped_ion(qc)
+    transpiled = transpile_for_trapped_ion(qc, allow_proxy_basis=True)
     result = Operator(transpiled)
     assert original.equiv(result)
 
@@ -68,7 +68,7 @@ def test_transpile_all_to_all_connectivity():
     qc = QuantumCircuit(3)
     qc.cx(0, 2)
     qc.cx(1, 0)
-    result = transpile_for_trapped_ion(qc)
+    result = transpile_for_trapped_ion(qc, allow_proxy_basis=True)
     ops = result.count_ops()
     assert "swap" not in ops
 
@@ -77,6 +77,7 @@ def test_transpile_empty_circuit():
     qc = QuantumCircuit(2)
     result = transpile_for_trapped_ion(qc)
     assert result.num_qubits == 2
+    assert result.metadata["trapped_ion_basis_model"] == "no_entangling_proxy_required"
 
 
 def test_transpile_ghz_circuit():
@@ -85,7 +86,7 @@ def test_transpile_ghz_circuit():
     qc.h(0)
     for i in range(1, 4):
         qc.cx(0, i)
-    result = transpile_for_trapped_ion(qc)
+    result = transpile_for_trapped_ion(qc, allow_proxy_basis=True)
     assert result.num_qubits == 4
     assert result.depth() > 0
 
@@ -96,8 +97,29 @@ def test_transpile_preserves_qubit_count():
         qc = QuantumCircuit(n)
         qc.h(0)
         qc.cx(0, n - 1)
-        result = transpile_for_trapped_ion(qc)
+        result = transpile_for_trapped_ion(qc, allow_proxy_basis=True)
         assert result.num_qubits == n
+
+
+def test_transpile_requires_explicit_proxy_basis_for_multiqubit():
+    """CX-basis trapped-ion proxy compilation must be explicit."""
+    qc = QuantumCircuit(2)
+    qc.cx(0, 1)
+    try:
+        transpile_for_trapped_ion(qc)
+    except ValueError as exc:
+        assert "allow_proxy_basis" in str(exc)
+    else:
+        raise AssertionError("proxy trapped-ion transpilation must require explicit opt-in")
+
+
+def test_transpile_records_proxy_metadata():
+    """Returned circuit metadata labels the representative proxy basis."""
+    qc = QuantumCircuit(2)
+    qc.cx(0, 1)
+    result = transpile_for_trapped_ion(qc, allow_proxy_basis=True)
+    assert result.metadata["trapped_ion_basis_model"] == "cx_proxy_for_rxx"
+    assert result.metadata["hardware_claim"] == "representative_noise_model_not_device_calibration"
 
 
 def test_noise_model_has_error_instructions():
@@ -114,6 +136,6 @@ def test_pipeline_knm_to_trapped_ion():
     omega = OMEGA_N_16[:3]
     solver = QuantumKuramotoSolver(3, K, omega)
     qc = solver.evolve(time=0.1, trotter_steps=1)
-    result = transpile_for_trapped_ion(qc)
+    result = transpile_for_trapped_ion(qc, allow_proxy_basis=True)
     assert result.num_qubits == 3
     assert result.depth() > 0

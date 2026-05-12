@@ -207,6 +207,7 @@ def mps_tebd_baseline(
         dt=dt,
         bond_dim=bond_dim,
         cutoff=cutoff,
+        allow_long_range_truncation=True,
     )
     elapsed_ms = (time.perf_counter() - start) * 1000.0
     return ClassicalBaselineRun(
@@ -221,7 +222,8 @@ def mps_tebd_baseline(
             "bond_dim": bond_dim,
             "cutoff": cutoff,
             "bond_dims_final": list(result["bond_dims_final"]),
-            "coupling_scope": "nearest-neighbour terms used by quimb LocalHam1D",
+            "coupling_scope": result["coupling_scope"],
+            "omitted_coupling_l1": result["omitted_coupling_l1"],
         },
     )
 

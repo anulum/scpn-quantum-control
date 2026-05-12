@@ -10,8 +10,10 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.applications.josephson_array import (
+    JosephsonArrayParameters,
     JosephsonBenchmarkResult,
     jja_coupling_matrix,
     josephson_benchmark,
@@ -20,13 +22,27 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 
 
 class TestJJACouplingMatrix:
+    def test_refuses_nominal_parameters_by_default(self):
+        with pytest.raises(ValueError, match="JosephsonArrayParameters"):
+            jja_coupling_matrix(5, topology="linear", allow_illustrative_topology=True)
+
     def test_linear_shape(self):
-        K, omega = jja_coupling_matrix(5, topology="linear")
+        K, omega = jja_coupling_matrix(
+            5,
+            topology="linear",
+            parameters=JosephsonArrayParameters.nominal_transmon(),
+            allow_illustrative_topology=True,
+        )
         assert K.shape == (5, 5)
         assert omega.shape == (5,)
 
     def test_linear_tridiagonal(self):
-        K, _ = jja_coupling_matrix(5, topology="linear")
+        K, _ = jja_coupling_matrix(
+            5,
+            topology="linear",
+            parameters=JosephsonArrayParameters.nominal_transmon(),
+            allow_illustrative_topology=True,
+        )
         for i in range(5):
             for j in range(5):
                 if abs(i - j) > 1:
@@ -34,16 +50,31 @@ class TestJJACouplingMatrix:
 
     def test_symmetric(self):
         for topo in ["linear", "heavy_hex", "all_to_all"]:
-            K, _ = jja_coupling_matrix(6, topology=topo)
+            K, _ = jja_coupling_matrix(
+                6,
+                topology=topo,
+                parameters=JosephsonArrayParameters.nominal_transmon(),
+                allow_illustrative_topology=True,
+            )
             np.testing.assert_allclose(K, K.T, atol=1e-12)
 
     def test_non_negative(self):
         for topo in ["linear", "heavy_hex", "all_to_all"]:
-            K, _ = jja_coupling_matrix(6, topology=topo)
+            K, _ = jja_coupling_matrix(
+                6,
+                topology=topo,
+                parameters=JosephsonArrayParameters.nominal_transmon(),
+                allow_illustrative_topology=True,
+            )
             assert np.all(K >= 0)
 
     def test_all_to_all_fully_connected(self):
-        K, _ = jja_coupling_matrix(4, topology="all_to_all")
+        K, _ = jja_coupling_matrix(
+            4,
+            topology="all_to_all",
+            parameters=JosephsonArrayParameters.nominal_transmon(),
+            allow_illustrative_topology=True,
+        )
         for i in range(4):
             for j in range(4):
                 if i != j:
@@ -51,47 +82,92 @@ class TestJJACouplingMatrix:
 
 
 class TestJosephsonBenchmark:
+    def test_benchmark_refuses_illustrative_defaults(self):
+        K = build_knm_paper27(L=5)
+        omega = OMEGA_N_16[:5]
+        with pytest.raises(ValueError, match="measured parameters"):
+            josephson_benchmark(K, omega)
+
     def test_returns_result(self):
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]
-        result = josephson_benchmark(K, omega)
+        result = josephson_benchmark(
+            K,
+            omega,
+            parameters=JosephsonArrayParameters.nominal_transmon(),
+            allow_illustrative_topology=True,
+        )
         assert isinstance(result, JosephsonBenchmarkResult)
 
     def test_n_junctions(self):
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
-        result = josephson_benchmark(K, omega)
+        result = josephson_benchmark(
+            K,
+            omega,
+            parameters=JosephsonArrayParameters.nominal_transmon(),
+            allow_illustrative_topology=True,
+        )
         assert result.n_junctions == 4
 
     def test_transmon_regime(self):
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
-        result = josephson_benchmark(K, omega)
+        result = josephson_benchmark(
+            K,
+            omega,
+            parameters=JosephsonArrayParameters.nominal_transmon(),
+            allow_illustrative_topology=True,
+        )
         assert result.is_transmon_regime  # E_J/E_C = 60 > 20
 
     def test_topology_correlation_bounded(self):
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]
-        result = josephson_benchmark(K, omega)
+        result = josephson_benchmark(
+            K,
+            omega,
+            parameters=JosephsonArrayParameters.nominal_transmon(),
+            allow_illustrative_topology=True,
+        )
         assert -1 <= result.topology_correlation <= 1
 
     def test_summary_string(self):
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
-        result = josephson_benchmark(K, omega)
+        result = josephson_benchmark(
+            K,
+            omega,
+            parameters=JosephsonArrayParameters.nominal_transmon(),
+            allow_illustrative_topology=True,
+        )
         assert "SCPN vs JJA" in result.summary
 
     def test_different_topologies(self):
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]
         for topo in ["linear", "heavy_hex", "all_to_all"]:
-            result = josephson_benchmark(K, omega, topology=topo)
+            result = josephson_benchmark(
+                K,
+                omega,
+                topology=topo,
+                parameters=JosephsonArrayParameters.nominal_transmon(),
+                allow_illustrative_topology=True,
+            )
             assert isinstance(result.topology_correlation, float)
 
     def test_scpn_vs_jja(self):
         """Record SCPN vs JJA — self-simulation data."""
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]
-        result = josephson_benchmark(K, omega, topology="all_to_all")
+        result = josephson_benchmark(
+            K,
+            omega,
+            topology="all_to_all",
+            parameters=JosephsonArrayParameters.nominal_transmon(),
+            allow_illustrative_topology=True,
+        )
         print(f"\n  {result.summary}")
         assert isinstance(result.topology_correlation, float)
+        assert result.parameter_source == "nominal_transmon_literature"
+        assert result.topology_source == "illustrative_all_to_all"

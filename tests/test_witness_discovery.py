@@ -212,6 +212,20 @@ def test_rl_discovery_agent_requires_real_problem_and_runs_when_configured() -> 
         configured.update_reward({"score": 1.0})
 
 
+@pytest.mark.parametrize(
+    ("kwargs", "match"),
+    [
+        ({"runner": object()}, "runner"),
+        ({"observables": ["correlation"]}, "observables"),
+        ({"reward_function": "custom_reward"}, "reward_function"),
+        ({"n_episodes": 0}, "n_episodes"),
+    ],
+)
+def test_rl_discovery_agent_rejects_unwired_compatibility_parameters(kwargs, match) -> None:
+    with pytest.raises(ValueError, match=match):
+        RLDiscoveryAgent(**kwargs)
+
+
 def test_invalid_inputs_rejected_before_search() -> None:
     K_nm, omega, theta0 = _problem()
 

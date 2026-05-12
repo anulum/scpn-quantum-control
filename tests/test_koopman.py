@@ -89,6 +89,39 @@ class TestBuildKoopmanGenerator:
         np.testing.assert_allclose(rust_L, python_L)
         assert rust_labels == python_labels
 
+    def test_rust_wrapper_uses_available_native_kernel(self, monkeypatch):
+        from scpn_quantum_control.analysis import koopman
+
+        K = np.array([[0.0, 0.5], [0.5, 0.0]])
+        omega = np.array([1.0, 1.5])
+        expected = np.eye(4)
+        calls: list[tuple[tuple[int, ...], tuple[int, ...], tuple[int, ...]]] = []
+
+        class FakeEngine:
+            @staticmethod
+            def koopman_generator(k_arg, omega_arg, theta_arg):
+                calls.append((k_arg.shape, omega_arg.shape, theta_arg.shape))
+                return expected
+
+        monkeypatch.setattr(koopman, "optional_rust_engine", lambda: FakeEngine())
+
+        rust_L, rust_labels = build_koopman_generator_rust(K, omega, require_rust=True)
+
+        np.testing.assert_allclose(rust_L, expected)
+        assert rust_labels == ["θ_0", "θ_1", "cos(1-0)", "sin(1-0)"]
+        assert calls == [((2, 2), (2,), (2,))]
+
+    def test_rust_wrapper_can_require_native_kernel(self, monkeypatch):
+        from scpn_quantum_control.analysis import koopman
+
+        K = np.array([[0.0, 0.5], [0.5, 0.0]])
+        omega = np.array([1.0, 1.5])
+
+        monkeypatch.setattr(koopman, "optional_rust_engine", lambda: None)
+
+        with pytest.raises(ImportError, match="koopman_generator"):
+            build_koopman_generator_rust(K, omega, require_rust=True)
+
 
 class TestKoopmanAnalysis:
     def test_returns_result(self):

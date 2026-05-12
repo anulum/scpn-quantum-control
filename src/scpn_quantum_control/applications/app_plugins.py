@@ -225,7 +225,12 @@ class EEGApplicationPlugin(_PackagedDatasetPlugin):
     def benchmark_dataset(self, dataset_id: str | None = None) -> ApplicationPluginBenchmark:
         """Run the EEG topology benchmark."""
         artifact = self.load_dataset(dataset_id)
-        result = eeg_benchmark(artifact.K_nm, artifact.omega, band=str(artifact.metadata["band"]))
+        result = eeg_benchmark(
+            artifact.K_nm,
+            artifact.omega,
+            band=str(artifact.metadata["band"]),
+            allow_builtin_reference=True,
+        )
         return self._base_result(
             artifact,
             backend="scipy.stats.spearmanr+numpy",
@@ -235,7 +240,11 @@ class EEGApplicationPlugin(_PackagedDatasetPlugin):
                 "coupling_ratio": result.coupling_ratio,
             },
             summary=result.summary,
-            metadata={"channels": list(artifact.layer_assignments)},
+            metadata={
+                "channels": list(artifact.layer_assignments),
+                "reference_source_mode": result.source_mode,
+                "reference_publication_safe": result.publication_safe,
+            },
         )
 
 
@@ -250,7 +259,13 @@ class PlasmaApplicationPlugin(_PackagedDatasetPlugin):
     def benchmark_dataset(self, dataset_id: str | None = None) -> ApplicationPluginBenchmark:
         """Run the plasma mode-locking benchmark."""
         artifact = self.load_dataset(dataset_id)
-        result = iter_benchmark(artifact.K_nm, artifact.omega)
+        result = iter_benchmark(
+            artifact.K_nm,
+            artifact.omega,
+            iter_coupling=artifact.K_nm,
+            iter_frequencies=artifact.omega,
+            reference_source_mode=artifact.source_mode,
+        )
         return self._base_result(
             artifact,
             backend="scipy.stats.spearmanr+numpy",
@@ -261,7 +276,11 @@ class PlasmaApplicationPlugin(_PackagedDatasetPlugin):
                 "mode_locking_risk": result.mode_locking_risk,
             },
             summary=result.summary,
-            metadata={"modes": list(artifact.layer_assignments)},
+            metadata={
+                "modes": list(artifact.layer_assignments),
+                "reference_source_mode": result.source_mode,
+                "reference_publication_safe": result.publication_safe,
+            },
         )
 
 
@@ -276,7 +295,13 @@ class PowerGridApplicationPlugin(_PackagedDatasetPlugin):
     def benchmark_dataset(self, dataset_id: str | None = None) -> ApplicationPluginBenchmark:
         """Run the power-grid synchronisation benchmark."""
         artifact = self.load_dataset(dataset_id)
-        result = power_grid_benchmark(artifact.K_nm, artifact.omega)
+        result = power_grid_benchmark(
+            artifact.K_nm,
+            artifact.omega,
+            grid_coupling=artifact.K_nm,
+            grid_frequencies=artifact.omega,
+            reference_source_mode=artifact.source_mode,
+        )
         return self._base_result(
             artifact,
             backend="scipy.stats.spearmanr+numpy",
@@ -286,7 +311,11 @@ class PowerGridApplicationPlugin(_PackagedDatasetPlugin):
                 "coupling_ratio": result.coupling_ratio,
             },
             summary=result.summary,
-            metadata={"buses": list(artifact.layer_assignments)},
+            metadata={
+                "buses": list(artifact.layer_assignments),
+                "reference_source_mode": result.source_mode,
+                "reference_publication_safe": result.publication_safe,
+            },
         )
 
 

@@ -1,5 +1,5 @@
 family,label,n_qubits,initial,depth,target_observable,method,basis_gates,raw_qubits,raw_depth,raw_two_qubit_gates,transpiled_depth,transpiled_size,transpiled_two_qubit_gates,ops
 dla_parity,n4_even_signal,4,0011,6,parity_survival,unencoded_physical,rz sx x cx,4,32,36,149,312,72,"{""cx"": 72, ""rz"": 144, ""sx"": 96}"
-dla_parity,n4_even_signal,4,0011,6,parity_survival,encoded_surface_code_toy,rz sx x cx,68,25,230,38,486,284,"{""cx"": 284, ""rz"": 162, ""sx"": 40}"
+dla_parity,n4_even_signal,4,0011,6,parity_survival,distance3_surface_code_offline,rz sx x cx,68,25,230,38,486,284,"{""cx"": 284, ""rz"": 162, ""sx"": 40}"
 dla_parity,n4_odd_signal,4,0001,6,parity_survival,unencoded_physical,rz sx x cx,4,32,36,149,312,72,"{""cx"": 72, ""rz"": 144, ""sx"": 96}"
-dla_parity,n4_odd_signal,4,0001,6,parity_survival,encoded_surface_code_toy,rz sx x cx,68,25,230,38,486,284,"{""cx"": 284, ""rz"": 162, ""sx"": 40}"
+dla_parity,n4_odd_signal,4,0001,6,parity_survival,distance3_surface_code_offline,rz sx x cx,68,25,230,38,486,284,"{""cx"": 284, ""rz"": 162, ""sx"": 40}"
