@@ -27,7 +27,7 @@ def test_all_observables_with_real_counts():
     dla_res = dla(counts)
     sync_res = sync(counts)
     phi_res = phi(counts, allow_entropy_proxy=True)
-    qfi_res = qfi(counts, sync_order=0.95, dla_asymmetry=8.0)
+    qfi_res = qfi(counts, sync_order=0.95, dla_asymmetry=8.0, allow_proxy_estimate=True)
     thermo_res = thermo(counts, work_samples_joule=[1.19, 1.20, 1.21])
     logical_res = logical(counts, logical_fidelity=0.92)
 
@@ -42,6 +42,9 @@ def test_all_observables_with_real_counts():
     assert abs(dla_res["dla_asymmetry"]) <= 100  # ±100% is the physical maximum
     assert phi_res["is_integrated_information"] == 0.0
     assert "phi" not in phi_res
+    assert qfi_res["qfi_available"] == 0.0
+    assert qfi_res["is_quantum_fisher_information"] == 0.0
+    assert "qfi" not in qfi_res
 
     print("\nAll observables passed integration test with real circuit counts.")
 
@@ -86,6 +89,47 @@ def test_integrated_information_entropy_proxy_is_explicitly_labelled():
     assert result["entropy_proxy"] > 0.0
     assert result["is_integrated_information"] == 0.0
     assert "phi" not in result
+
+
+def test_quantum_fisher_information_refuses_proxy_by_default():
+    qfi = QuantumFisherInformation()
+
+    with pytest.raises(NotImplementedError, match="coupling_matrix"):
+        qfi({"00": 5, "11": 5}, sync_order=0.95, dla_asymmetry=8.0)
+
+
+def test_quantum_fisher_information_proxy_is_explicitly_labelled():
+    qfi = QuantumFisherInformation()
+
+    result = qfi({"00": 5, "11": 5}, sync_order=0.95, dla_asymmetry=8.0, allow_proxy_estimate=True)
+
+    assert result["qfi_available"] == 0.0
+    assert result["is_quantum_fisher_information"] == 0.0
+    assert result["qfi_proxy"] > 0.0
+    assert "qfi" not in result
+
+
+def test_quantum_fisher_information_routes_real_hamiltonian_inputs_to_qfi_engine():
+    import numpy as np
+
+    qfi = QuantumFisherInformation()
+    coupling_matrix = np.array([[0.0, 1.0], [1.0, 0.0]])
+    natural_frequencies = np.array([0.2, -0.2])
+
+    result = qfi(
+        coupling_matrix=coupling_matrix,
+        natural_frequencies=natural_frequencies,
+        coupling_pairs=[(0, 1)],
+        n_measurements=5000,
+    )
+
+    assert result["qfi_available"] == 1.0
+    assert result["is_quantum_fisher_information"] == 1.0
+    assert result["qfi"] > 0.0
+    assert result["qfi_matrix_shape_0"] == 1.0
+    assert result["qfi_matrix_shape_1"] == 1.0
+    assert result["precision_bound_for_measurement_budget"] > 0.0
+    assert result["n_measurements"] == 5000.0
 
 
 if __name__ == "__main__":

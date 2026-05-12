@@ -239,12 +239,12 @@ the phase-coherent regime (Kuramoto critical point ~K_c ≈ 2σ_ω/π).
 | `SyncOrderParameter` | ✅ YES | Kuramoto order parameter from bitstring marginals |
 | `DLAParityWitness` | ✅ YES | Odd/even Hamming-weight parity asymmetry |
 | `IntegratedInformationPhi` | ❌ NO | No production IIT/causal-state implementation is wired; entropy is available only as an explicitly labelled diagnostic |
-| `QuantumFisherInformation` | ⚠️ PROXY | Analytic estimate from sync_order + dla_asymmetry |
+| `QuantumFisherInformation` | ✅ YES, when Hamiltonian inputs are supplied | Routes explicit coupling matrix and natural frequencies through the spectral QFI engine; the sync-order/DLA estimate is available only as an explicitly labelled diagnostic proxy |
 | `ThermodynamicWitness` | ✅ YES, when work protocol data are supplied | Requires explicit work samples or a calibrated work value in joules; refuses default/synthetic work |
 | `LogicalSyncWitness` | ⚠️ PROXY | Model estimate using `kwargs.get("logical_fidelity", 0.92)` |
 
 > **Publication guidance:** Only ✅ observables are attributable to real QPU measurements.
-> ⚠️ PROXY observables must be labelled as model estimates.
+> ⚠️ PROXY observables must be labelled as model estimates and must not be reported under production observable keys.
 
 ---
 
