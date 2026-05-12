@@ -12,7 +12,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from operator import index
-from typing import Any
+from typing import Any, TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -20,8 +20,8 @@ from qiskit import QuantumCircuit
 
 from ..analysis.dla_parity_theorem import parity_sector_dimensions, predicted_dla_dimension
 
-FloatArray = NDArray[np.float64]
-BoolArray = NDArray[np.bool_]
+FloatArray: TypeAlias = NDArray[np.float64]
+BoolArray: TypeAlias = NDArray[np.bool_]
 
 
 @dataclass(frozen=True)

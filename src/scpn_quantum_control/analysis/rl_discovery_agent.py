@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -22,7 +22,7 @@ from .witness_discovery import (
     discover_kuramoto_witnesses,
 )
 
-FloatArray = NDArray[np.float64]
+FloatArray: TypeAlias = NDArray[np.float64]
 
 _SUPPORTED_OBSERVABLES = ("correlation", "fiedler")
 _SUPPORTED_REWARD_FUNCTION = "witness_score"

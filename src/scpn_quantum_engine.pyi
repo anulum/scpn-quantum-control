@@ -8,14 +8,16 @@
 
 """Typing contract for the optional Rust acceleration extension."""
 
+from typing import TypeAlias
+
 import numpy as np
 from numpy.typing import NDArray
 
-_BoolArray = NDArray[np.bool_]
-_F64Array = NDArray[np.float64]
-_I32Array = NDArray[np.int32]
-_I64Array = NDArray[np.int64]
-_U64Array = NDArray[np.uint64]
+_BoolArray: TypeAlias = NDArray[np.bool_]
+_F64Array: TypeAlias = NDArray[np.float64]
+_I32Array: TypeAlias = NDArray[np.int32]
+_I64Array: TypeAlias = NDArray[np.int64]
+_U64Array: TypeAlias = NDArray[np.uint64]
 
 def analog_coupling_terms(
     k_flat: _F64Array,

@@ -14,14 +14,14 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from enum import Enum
 from types import MappingProxyType
-from typing import Any, cast
+from typing import Any, TypeAlias, cast
 
 import numpy as np
 from numpy.typing import NDArray
 
 from .sync_witness import WitnessResult, fiedler_witness_from_correlator
 
-FloatArray = NDArray[np.float64]
+FloatArray: TypeAlias = NDArray[np.float64]
 JsonScalar = str | int | float | bool | None
 
 

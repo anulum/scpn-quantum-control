@@ -10,7 +10,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any
+from typing import Any, TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -21,7 +21,7 @@ from ..qec.dla_protected_subspace import (
     evaluate_dla_protected_memory,
 )
 
-FloatArray = NDArray[np.float64]
+FloatArray: TypeAlias = NDArray[np.float64]
 
 
 class LogicalSyncWitness:

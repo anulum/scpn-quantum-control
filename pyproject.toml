@@ -178,6 +178,14 @@ module = "matplotlib.*"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+module = "pydantic.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "pydantic_settings.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
 module = "sc_neurocore.*"
 ignore_missing_imports = true
 
@@ -217,6 +225,10 @@ follow_imports = "skip"
 module = "pennylane.*"
 ignore_missing_imports = true
 follow_imports = "skip"
+
+[[tool.mypy.overrides]]
+module = "structlog.*"
+ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "juliacall"
