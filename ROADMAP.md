@@ -81,6 +81,20 @@ is copied here.
 - [ ] **Coverage and test-quality closure.** Push the release baseline
   from the documented `~97.6 %` coverage state toward 100 %, then audit
   behavioural value rather than relying on line coverage alone.
+- [ ] **Scientific gap queue.** Keep the public claim surface bounded by
+  the internal scientific-gap ledger: K_nm measured-system validation
+  still needs additional physical-unit candidates beyond the negative
+  IEEE 5-bus control, broad quantum advantage still needs the
+  provenance-rich classical/Rust/GPU matrix before any new QPU spend,
+  and `p_h1 = 0.72` remains open until a K_nm-specific derivation or
+  measured/TCBO reproduction includes uncertainty crossing 0.72.
+- [x] **TCBO coupling-weighted complex reconstruction.** Implemented
+  2026-05-12: `tcbo_weighted_complex.py` reconstructs the roadmap
+  blocker using `K_ij * |cos(theta_j - theta_i)|` edge weights, a
+  thresholded flag complex, beta-1 over GF(2), and a threshold scan
+  against the `0.72` target. The audit runner records this reconstruction
+  separately from the legacy delay-embedded observer path; the claim
+  remains unpromoted pending preregistered replay with uncertainty.
 - [x] **Behavioural-test audit automation.** Implemented 2026-05-06:
   `tools/audit_test_behaviour.py` inventories test modules for
   assertion-bearing tests, exception contracts, parametrisation, and
