@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from math import isfinite
 from typing import Any, Literal
 
 BaselineKind = Literal[
@@ -126,30 +127,53 @@ def validate_scaling_rows(
     rows: list[dict[str, Any]],
 ) -> ScalingRowValidation:
     """Validate measured S2 rows against the preregistered protocol."""
-    present_required = {
-        str(row.get("baseline"))
-        for row in rows
-        if row.get("baseline") in protocol.required_baselines
-        and row.get("status") in {"ok", "skipped"}
-    }
-    missing_required = tuple(
-        baseline for baseline in protocol.required_baselines if baseline not in present_required
-    )
     required_keys = tuple(protocol.output_schema.get("row_keys", ()))
     invalid: list[str] = []
     allowed_baselines = {baseline.label for baseline in protocol.baselines}
+    observed_sizes: set[int] = set()
+    present_required_by_size: set[tuple[int, str]] = set()
     for index, row in enumerate(rows):
         missing_keys = [key for key in required_keys if key not in row]
         baseline = row.get("baseline")
         status = row.get("status")
+        n_qubits = row.get("n_qubits")
         if missing_keys:
             invalid.append(f"row {index}: missing keys {missing_keys}")
+        if row.get("protocol_id") != protocol.protocol_id:
+            invalid.append(f"row {index}: protocol_id must be {protocol.protocol_id!r}")
+        if not isinstance(n_qubits, int) or n_qubits not in protocol.sizes:
+            invalid.append(f"row {index}: n_qubits must be one of {protocol.sizes}")
+        else:
+            observed_sizes.add(n_qubits)
         if baseline not in allowed_baselines:
             invalid.append(f"row {index}: unknown baseline {baseline!r}")
         if status not in {"ok", "skipped", "failed"}:
             invalid.append(f"row {index}: invalid status {status!r}")
-        if status == "ok" and row.get("wall_time_ms") is None:
-            invalid.append(f"row {index}: ok row requires wall_time_ms")
+        if status in {"skipped", "failed"} and not row.get("notes"):
+            invalid.append(f"row {index}: {status} row requires notes")
+        if status == "ok":
+            wall_time = row.get("wall_time_ms")
+            if (
+                not isinstance(wall_time, int | float)
+                or not isfinite(wall_time)
+                or wall_time < 0.0
+            ):
+                invalid.append(f"row {index}: wall_time_ms must be finite and non-negative")
+            memory = row.get("memory_bytes")
+            if not isinstance(memory, int) or memory < 0:
+                invalid.append(f"row {index}: memory_bytes must be a non-negative integer")
+        if (
+            isinstance(n_qubits, int)
+            and baseline in protocol.required_baselines
+            and status in {"ok", "skipped"}
+        ):
+            present_required_by_size.add((n_qubits, str(baseline)))
+    missing_required = tuple(
+        f"n={size}:{baseline}"
+        for size in sorted(observed_sizes)
+        for baseline in protocol.required_baselines
+        if (size, baseline) not in present_required_by_size
+    )
     return ScalingRowValidation(
         valid=not missing_required and not invalid,
         missing_required=missing_required,
