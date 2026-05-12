@@ -266,6 +266,10 @@ class TestGPUBatchVQE:
             "best_energy",
             "best_params",
             "n_samples",
+            "backend",
+            "ansatz_family",
+            "optimizer",
+            "hardware_claim",
         }
 
     def test_batch_vqe_reproducible(self):

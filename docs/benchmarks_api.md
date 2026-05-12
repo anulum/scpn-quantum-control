@@ -351,10 +351,13 @@ The three crossover estimates address different classical methods:
 | GPU statevector | O(2^n × gates) | ~33 (A100) | GPU memory |
 | MPS tensor network | O(chi^3 × n × gates) | 32-40 (chi_max=256-1024) | Entanglement |
 
-Below n=14, classical exact methods win. Between 14 and 33, GPU
-simulation is fastest. Above n=33-40, only quantum hardware (or
-approximate classical methods with uncontrolled error) can solve the
-full Kuramoto-XY dynamics.
+Below n=14, classical exact methods win for the benchmarked workloads.
+Between 14 and 33, GPU statevector estimates set the relevant local
+memory boundary. Above n=33-40, exact statevector methods exceed the
+assumed GPU memory envelope and MPS estimates become entanglement- and
+bond-cap dependent. This is a resource-boundary diagnostic only; no broad
+quantum-advantage claim follows without a committed classical baseline,
+observable tolerance, and hardware dataset for the specific workload.
 
 ## Dependencies
 

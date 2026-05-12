@@ -100,6 +100,13 @@ from .sync_entanglement_witness import (
 )
 from .sync_order_parameter import SyncOrderParameter
 from .sync_witness import WitnessResult, evaluate_all_witnesses
+from .tcbo_weighted_complex import (
+    TCBOWeightedComplexResult,
+    TCBOWeightedThresholdScan,
+    coupling_weighted_edge_matrix,
+    tcbo_weighted_complex,
+    tcbo_weighted_threshold_scan,
+)
 from .thermodynamic_witness import ThermodynamicWitness
 from .vortex_binding import VortexBindingResult, compute_vortex_binding
 from .witness_discovery import (
@@ -238,6 +245,11 @@ __all__ = [
     "WitnessSearchMode",
     "discover_kuramoto_witnesses",
     "score_witness_candidates",
+    "TCBOWeightedComplexResult",
+    "TCBOWeightedThresholdScan",
+    "coupling_weighted_edge_matrix",
+    "tcbo_weighted_complex",
+    "tcbo_weighted_threshold_scan",
     "AnisotropyScanResult",
     "anisotropy_phase_diagram",
 ]

@@ -49,6 +49,32 @@ class QuantumKernelResult:
     feature_dim: int
 
 
+def _validated_coupling_matrix(K: np.ndarray, n_qubits: int) -> np.ndarray:
+    """Return a finite square coupling matrix matching the qubit count."""
+    K_array = np.asarray(K, dtype=float)
+    if K_array.ndim != 2 or K_array.shape[0] != K_array.shape[1]:
+        raise ValueError("K must be a square 2-D coupling matrix.")
+    if n_qubits <= 0:
+        raise ValueError("n_qubits must be positive.")
+    if K_array.shape[0] != n_qubits:
+        raise ValueError("n_qubits must match the dimension of K.")
+    if not np.all(np.isfinite(K_array)):
+        raise ValueError("K must contain only finite values.")
+    return K_array
+
+
+def _validated_feature_vector(x: np.ndarray, *, name: str = "x") -> np.ndarray:
+    """Return a finite non-empty 1-D feature vector."""
+    x_array = np.asarray(x, dtype=float)
+    if x_array.ndim != 1:
+        raise ValueError(f"{name} must be a 1-D feature vector.")
+    if x_array.size == 0:
+        raise ValueError(f"{name} must contain at least one feature.")
+    if not np.all(np.isfinite(x_array)):
+        raise ValueError(f"{name} must contain only finite values.")
+    return x_array
+
+
 def _encode_features(
     x: np.ndarray,
     K: np.ndarray,
@@ -60,6 +86,9 @@ def _encode_features(
 
     x modulates the coupling strengths: K_eff_ij = x[k] × K_ij.
     """
+    K = _validated_coupling_matrix(K, n_qubits)
+    x = _validated_feature_vector(x)
+
     # Map features to coupling modulation
     n_features = len(x)
 
@@ -100,6 +129,11 @@ def quantum_kernel_entry(
     n_qubits: int,
 ) -> float:
     """Compute single kernel entry K(x1, x2) = |<φ(x1)|φ(x2)>|²."""
+    x1 = _validated_feature_vector(x1, name="x1")
+    x2 = _validated_feature_vector(x2, name="x2")
+    if x1.shape != x2.shape:
+        raise ValueError("x1 and x2 must have the same feature dimension.")
+    K = _validated_coupling_matrix(K, n_qubits)
     sv1 = _encode_features(x1, K, n_qubits)
     sv2 = _encode_features(x2, K, n_qubits)
     overlap = abs(np.dot(sv1.data.conj(), sv2.data)) ** 2
@@ -118,6 +152,17 @@ def compute_kernel_matrix(
         K: coupling matrix
         n_qubits: number of qubits for encoding
     """
+    X = np.asarray(X, dtype=float)
+    if X.ndim != 2:
+        raise ValueError("X must be a 2-D feature matrix.")
+    if X.shape[0] == 0:
+        raise ValueError("X must contain at least one sample.")
+    if X.shape[1] == 0:
+        raise ValueError("X must contain at least one feature.")
+    if not np.all(np.isfinite(X)):
+        raise ValueError("X must contain only finite values.")
+    K = _validated_coupling_matrix(K, n_qubits)
+
     n_samples, n_features = X.shape
     kernel = np.zeros((n_samples, n_samples))
 

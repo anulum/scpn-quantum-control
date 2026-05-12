@@ -27,10 +27,11 @@ def _rows():
         row["machine"] = "test"
         row["dependencies"] = {}
         row["git_commit"] = "test"
-        row["notes"] = []
+        row["notes"] = ["size-gated fixture row"]
         rows.append(row)
     rows[0]["status"] = "ok"
     rows[0]["wall_time_ms"] = 1.0
+    rows[0]["memory_bytes"] = 1024
     return rows
 
 

@@ -80,7 +80,7 @@ def topological_charge(gauge: U1LatticGauge) -> float:
         # Wrap to [−π, π)
         wrapped = (phase + np.pi) % (2 * np.pi) - np.pi
         q += wrapped
-    return q / (2 * np.pi)
+    return float(q / (2 * np.pi))
 
 
 def string_tension_from_wilson(

@@ -27,16 +27,19 @@ class _MockQml:
         self.operations: list[tuple[str, object]] = []
 
     def PauliX(self, wire):
+        self.operations.append(("paulix", wire))
         m = MagicMock(name=f"PauliX({wire})")
         m.__matmul__ = lambda s, o: MagicMock(name=f"XX_{wire}")
         return m
 
     def PauliY(self, wire):
+        self.operations.append(("pauliy", wire))
         m = MagicMock(name=f"PauliY({wire})")
         m.__matmul__ = lambda s, o: MagicMock(name=f"YY_{wire}")
         return m
 
     def PauliZ(self, wire):
+        self.operations.append(("pauliz", wire))
         return MagicMock(name=f"PauliZ({wire})")
 
     def Hamiltonian(self, coeffs, ops):
@@ -182,9 +185,12 @@ def test_runner_run_vqe(mock_pl):
     result = runner.run_vqe(ansatz_depth=1, maxiter=3, seed=42)
     assert isinstance(result, pl_mod.PennyLaneResult)
     assert result.n_qubits == 2
-    assert result.order_parameter == 0.0
+    assert 0.0 <= result.order_parameter <= 1.0
+    assert result.order_parameter != 0.0
     assert any(op == "rot" for op, _payload in mock_pl.operations)
     assert any(op == "cnot" for op, _payload in mock_pl.operations)
+    assert any(op == "paulix" for op, _payload in mock_pl.operations)
+    assert any(op == "pauliy" for op, _payload in mock_pl.operations)
 
 
 def test_runner_shots_param(mock_pl):
@@ -233,6 +239,21 @@ def test_vqe_energy_is_float(mock_pl):
     runner = pl_mod.PennyLaneRunner(K, omega)
     result = runner.run_vqe(ansatz_depth=1, maxiter=2, seed=0)
     assert isinstance(result.energy, float)
+
+
+def test_vqe_order_parameter_is_measured_from_ansatz(mock_pl):
+    """VQE must report a measured Kuramoto order parameter, not a sentinel."""
+    K = np.array([[0, 0.3], [0.3, 0]])
+    omega = np.array([1.0, 1.5])
+    runner = pl_mod.PennyLaneRunner(K, omega)
+
+    result = runner.run_vqe(ansatz_depth=1, maxiter=1, seed=0)
+
+    assert np.isfinite(result.order_parameter)
+    assert 0.0 <= result.order_parameter <= 1.0
+    assert result.order_parameter != 0.0
+    assert [op for op, _payload in mock_pl.operations].count("paulix") >= runner.n
+    assert [op for op, _payload in mock_pl.operations].count("pauliy") >= runner.n
 
 
 # ---------------------------------------------------------------------------

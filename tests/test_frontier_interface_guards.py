@@ -82,6 +82,33 @@ def test_dla_truncated_tensor_network_fails_until_implemented():
         dla_truncated_tn(K_nm)
 
 
+@pytest.mark.parametrize(
+    ("kwargs", "match"),
+    [
+        ({"K_nm": np.ones((2, 3))}, "K_nm"),
+        ({"K_nm": np.array([[0.0, np.nan], [np.nan, 0.0]])}, "K_nm"),
+        ({"K_nm": np.array([[0.0, 1.0], [0.5, 0.0]])}, "symmetric"),
+        ({"max_bond_dim": 0}, "max_bond_dim"),
+        ({"max_bond_dim": 1.5}, "max_bond_dim"),
+        ({"max_bond_dim": True}, "max_bond_dim"),
+        ({"dla_cutoff": 0.0}, "dla_cutoff"),
+        ({"dla_cutoff": float("nan")}, "dla_cutoff"),
+        ({"observable": "unsupported"}, "observable"),
+    ],
+)
+def test_dla_truncated_tensor_network_rejects_invalid_configuration(kwargs, match):
+    params = {
+        "K_nm": np.array([[0.0, 1.0], [1.0, 0.0]], dtype=np.float64),
+        "max_bond_dim": 16,
+        "dla_cutoff": 1e-6,
+        "observable": "sync_order",
+    }
+    params.update(kwargs)
+
+    with pytest.raises(ValueError, match=match):
+        dla_truncated_tn(**params)
+
+
 def test_rl_pulse_optimizer_fails_until_implemented():
     optimiser = RLPulseOptimizer(runner=object(), target_sync_order=0.5, episodes=1)
 
@@ -90,6 +117,26 @@ def test_rl_pulse_optimizer_fails_until_implemented():
 
     with pytest.raises(NotImplementedError, match="No RL pulse"):
         optimiser.save_results("unused.json")
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "match"),
+    [
+        ({"runner": None}, "runner"),
+        ({"target_sync_order": float("nan")}, "target_sync_order"),
+        ({"target_sync_order": -0.1}, "target_sync_order"),
+        ({"target_sync_order": 1.1}, "target_sync_order"),
+        ({"episodes": 0}, "episodes"),
+        ({"episodes": 1.5}, "episodes"),
+        ({"episodes": True}, "episodes"),
+    ],
+)
+def test_rl_pulse_optimizer_rejects_invalid_configuration(kwargs, match):
+    params = {"runner": object(), "target_sync_order": 0.5, "episodes": 1}
+    params.update(kwargs)
+
+    with pytest.raises(ValueError, match=match):
+        RLPulseOptimizer(**params)
 
 
 @pytest.mark.parametrize(

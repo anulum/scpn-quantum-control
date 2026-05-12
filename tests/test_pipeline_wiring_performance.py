@@ -417,13 +417,20 @@ class TestCuttingPipeline:
     def test_cutting_24_oscillators(self):
         from scpn_quantum_control.hardware.cutting_runner import run_cutting_simulation
 
-        result, dt = _timed(run_cutting_simulation, n_oscillators=24, reps=1, max_partition_size=8)
+        result, dt = _timed(
+            run_cutting_simulation,
+            n_oscillators=24,
+            reps=1,
+            max_partition_size=8,
+            allow_partition_energy_estimate=True,
+        )
         assert result.n_partitions == 3
         assert 0 <= result.combined_r_global <= 1.0
+        assert result.energy_scope == "partition_local_sum"
         _report(
             "Cutting sim (24 osc, 3 partitions)",
             dt,
-            f"R={result.combined_r_global:.4f}, E={result.total_energy_estimate:.4f}",
+            f"R={result.combined_r_global:.4f}, E_scope={result.energy_scope}",
         )
 
 
