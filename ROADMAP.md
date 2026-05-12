@@ -1305,7 +1305,7 @@ be executed until individually activated.
 | Module | Description |
 |--------|-------------|
 | `mitigation/pec.py` | Probabilistic Error Cancellation (Temme et al. PRL 119 180509) |
-| `hardware/trapped_ion.py` | Trapped-ion noise model (MS gate, T1/T2) + transpilation |
+| `hardware/trapped_ion.py` | Trapped-ion representative noise model (MS gate, T1/T2) + explicit CX-proxy transpilation metadata |
 | `control/q_disruption_iter.py` | ITER 11-feature disruption classifier + synthetic data |
 | `benchmarks/quantum_advantage.py` | Classical vs quantum scaling + crossover extrapolation |
 | `bridge/snn_adapter.py` | SNN ↔ quantum bridge + ArcaneNeuronBridge (sc-neurocore) |

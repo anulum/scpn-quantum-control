@@ -327,12 +327,14 @@ Requires: `pip install cirq-core`
 ```python
 from scpn_quantum_control.hardware import transpile_for_trapped_ion, trapped_ion_noise_model
 
-ion_circuit = transpile_for_trapped_ion(circuit, n_qubits=4)
+ion_circuit = transpile_for_trapped_ion(circuit, allow_proxy_basis=True)
 model = trapped_ion_noise_model()
 ```
 
-Target: IonQ Forte / Quantinuum H-series. Native gate set: MS (Molmer-Sorensen),
-Rz, Ry.
+Representative target: all-to-all QCCD-style trapped-ion devices. The helper
+emits a CX-basis proxy for MS/RXX-style entangling operations, records that
+proxy in circuit metadata, and is not a vendor-native IonQ or Quantinuum
+compiler path.
 
 ### GPU Acceleration (`gpu_accel.py`)
 

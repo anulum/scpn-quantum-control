@@ -427,10 +427,12 @@ At default Heron r2 parameters (CZ error=0.005), noise degradation is minimal
 
 | Operation | System | Time | Output |
 |-----------|--------|------|--------|
-| `transpile_for_trapped_ion()` | 4 qubits | ~5 ms | All-to-all connectivity, no SWAPs |
+| `transpile_for_trapped_ion(allow_proxy_basis=True)` | 4 qubits | ~5 ms | All-to-all connectivity, no SWAPs |
 
-Kuramoto circuits transpile without SWAP gates (ion trap all-to-all).
-Unitarity preserved (Operator equivalence verified).
+Kuramoto circuits transpile without SWAP gates under the all-to-all
+representative model. The output circuit is metadata-labelled as a CX-basis
+proxy for native MS/RXX-style trapped-ion operations; unitarity preservation is
+verified by Operator equivalence.
 
 ### Circuit Depth Regression
 
