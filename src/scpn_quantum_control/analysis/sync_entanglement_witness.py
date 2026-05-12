@@ -65,7 +65,7 @@ class EntanglementWitnessResult:
     R_measured: float
     R_sep_max: float
     is_entangled: bool
-    entanglement_depth: int
+    entanglement_depth: int  # certified lower bound: 1 if not certified, 2 if entangled
     n_qubits: int
     energy: float
 
@@ -171,35 +171,28 @@ def detect_entanglement_from_R(
     R_ground = R_from_statevector(psi, n)
     R_sep = R_separable_bound_at_energy(K, omega, E_ground, n_samples, seed)
 
-    # Entanglement depth: how many qubits must be entangled?
-    # If R > k/N for k-producible states, depth ≥ k+1
-    depth = _estimate_entanglement_depth(R_ground, n)
+    is_entangled = R_ground > R_sep + 1e-10
+    depth = _certified_entanglement_depth(is_entangled)
 
     return EntanglementWitnessResult(
         R_measured=R_ground,
         R_sep_max=R_sep,
-        is_entangled=R_ground > R_sep + 1e-10,
+        is_entangled=is_entangled,
         entanglement_depth=depth,
         n_qubits=n,
         energy=E_ground,
     )
 
 
-def _estimate_entanglement_depth(R: float, n: int) -> int:
-    """Estimate entanglement depth from R value.
+def _certified_entanglement_depth(is_entangled: bool) -> int:
+    """Return the depth lower bound certified by the R witness.
 
-    For k-producible states (entangled in groups of at most k):
-    R ≤ 1 for all k. Finer bounds require system-specific analysis.
-    Here we use the simple bound: depth = N if R > 0 and
-    the state is confirmed entangled, else 1.
+    Exceeding the separable bound proves nonseparability, so the certified
+    depth lower bound is 2. This witness alone does not certify stronger
+    multipartite depth; such claims require k-producibility bounds or a
+    system-specific entanglement-depth witness.
     """
-    # Conservative: either fully separable (1) or at least 2-entangled
-    if R > 0.99:
-        return n  # near-maximal R suggests global entanglement
-    elif R > 0.5:
-        return max(2, n // 2)
-    else:
-        return 1
+    return 2 if is_entangled else 1
 
 
 def R_entanglement_scan(

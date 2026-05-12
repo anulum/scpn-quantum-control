@@ -38,13 +38,34 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.stats import spearmanr
 
-# Typical transmon parameters (IBM Heron r2, approximate)
-TRANSMON_EJ = 15.0  # GHz, Josephson energy
-TRANSMON_EC = 0.25  # GHz, charging energy
-TRANSMON_EJ_EC_RATIO = TRANSMON_EJ / TRANSMON_EC  # ~60, deep transmon regime
 
-# Nearest-neighbour coupling via bus resonator (typical)
-TRANSMON_COUPLING = 0.015  # GHz, exchange coupling J
+def _has_variation(values: np.ndarray) -> bool:
+    """True when correlation is statistically defined for a vector."""
+    return values.size >= 2 and float(np.ptp(values)) > 0.0
+
+
+@dataclass(frozen=True)
+class JosephsonArrayParameters:
+    """Physical Josephson-array parameters with provenance."""
+
+    ej_ghz: float
+    ec_ghz: float
+    coupling_ghz: float
+    parameter_source: str
+
+    @classmethod
+    def nominal_transmon(cls) -> JosephsonArrayParameters:
+        """Return explicitly labelled nominal transmon literature values.
+
+        These values are suitable for illustrative comparisons only; measured
+        hardware claims require backend calibration data and source metadata.
+        """
+        return cls(
+            ej_ghz=15.0,
+            ec_ghz=0.25,
+            coupling_ghz=0.015,
+            parameter_source="nominal_transmon_literature",
+        )
 
 
 @dataclass
@@ -57,40 +78,64 @@ class JosephsonBenchmarkResult:
     coupling_ratio: float  # J_JJA / K_scpn
     frequency_correlation: float
     is_transmon_regime: bool  # E_J/E_C > 20
+    parameter_source: str
+    topology_source: str
     summary: str
 
 
 def jja_coupling_matrix(
     n: int,
-    ej: float = TRANSMON_EJ,
-    ec: float = TRANSMON_EC,
-    j_coupling: float = TRANSMON_COUPLING,
+    parameters: JosephsonArrayParameters | None = None,
     topology: str = "linear",
+    coupling_edges: list[tuple[int, int, float]] | None = None,
+    allow_illustrative_topology: bool = False,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Build Kuramoto-equivalent coupling matrix from JJA parameters.
 
     Topologies:
         - "linear": nearest-neighbour chain
-        - "heavy_hex": IBM heavy-hex connectivity (approximate)
+        - "heavy_hex": illustrative heavy-hex-like connectivity
         - "all_to_all": complete graph (capacitive bus)
     """
+    if parameters is None:
+        raise ValueError(
+            "jja_coupling_matrix requires JosephsonArrayParameters with provenance; "
+            "use JosephsonArrayParameters.nominal_transmon() only for labelled "
+            "illustrative comparisons."
+        )
+    if parameters.ej_ghz <= 0.0 or parameters.ec_ghz <= 0.0 or parameters.coupling_ghz <= 0.0:
+        raise ValueError("Josephson parameters must be positive GHz values.")
+    if coupling_edges is None and not allow_illustrative_topology:
+        raise ValueError(
+            "Measured topology requires coupling_edges. Pass allow_illustrative_topology=True "
+            "only for labelled design-topology comparisons."
+        )
+
     K = np.zeros((n, n))
-    omega = np.full(n, ec)  # charging energy as frequency
+    omega = np.full(n, parameters.ec_ghz)  # charging energy as frequency
+
+    if coupling_edges is not None:
+        for i, j, coupling in coupling_edges:
+            if not 0 <= i < n or not 0 <= j < n or i == j:
+                raise ValueError(f"Invalid coupling edge ({i}, {j}) for n={n}.")
+            if coupling < 0.0:
+                raise ValueError("Coupling strengths must be non-negative.")
+            K[i, j] = K[j, i] = coupling
+        return K, omega
 
     if topology == "linear":
         for i in range(n - 1):
-            K[i, i + 1] = K[i + 1, i] = j_coupling
+            K[i, i + 1] = K[i + 1, i] = parameters.coupling_ghz
     elif topology == "heavy_hex":
-        # Approximate heavy-hex: each qubit coupled to 2-3 neighbours
         for i in range(n - 1):
-            K[i, i + 1] = K[i + 1, i] = j_coupling
+            K[i, i + 1] = K[i + 1, i] = parameters.coupling_ghz
         for i in range(0, n - 2, 2):
-            K[i, i + 2] = K[i + 2, i] = j_coupling * 0.5
+            K[i, i + 2] = K[i + 2, i] = parameters.coupling_ghz * 0.5
     elif topology == "all_to_all":
         for i in range(n):
             for j in range(i + 1, n):
                 dist = abs(j - i)
-                K[i, j] = K[j, i] = j_coupling * np.exp(-0.3 * dist)
+                K[i, j] = K[j, i] = parameters.coupling_ghz * np.exp(-0.3 * dist)
     else:
         raise ValueError(f"Unknown topology: {topology}")
 
@@ -101,10 +146,25 @@ def josephson_benchmark(
     K_scpn: np.ndarray,
     omega_scpn: np.ndarray,
     topology: str = "all_to_all",
+    parameters: JosephsonArrayParameters | None = None,
+    coupling_edges: list[tuple[int, int, float]] | None = None,
+    allow_illustrative_topology: bool = False,
 ) -> JosephsonBenchmarkResult:
     """Compare SCPN K_nm with Josephson junction array coupling."""
+    if parameters is None:
+        raise ValueError(
+            "josephson_benchmark requires measured parameters with provenance. "
+            "Use JosephsonArrayParameters.nominal_transmon() only for labelled "
+            "illustrative comparisons."
+        )
     n = K_scpn.shape[0]
-    K_jja, omega_jja = jja_coupling_matrix(n, topology=topology)
+    K_jja, omega_jja = jja_coupling_matrix(
+        n,
+        topology=topology,
+        parameters=parameters,
+        coupling_edges=coupling_edges,
+        allow_illustrative_topology=allow_illustrative_topology,
+    )
 
     triu_idx = np.triu_indices(n, k=1)
     jja_flat = K_jja[triu_idx]
@@ -112,7 +172,7 @@ def josephson_benchmark(
 
     # Filter to non-zero pairs for correlation
     mask = (jja_flat > 0) | (scpn_flat > 0)
-    if np.sum(mask) >= 3:
+    if np.sum(mask) >= 3 and _has_variation(jja_flat[mask]) and _has_variation(scpn_flat[mask]):
         topo_corr = float(spearmanr(jja_flat[mask], scpn_flat[mask]).statistic)
     else:
         topo_corr = 0.0
@@ -121,18 +181,19 @@ def josephson_benchmark(
     scpn_mean = float(np.mean(scpn_flat[scpn_flat > 0])) if np.any(scpn_flat > 0) else 0.0
     ratio = jja_mean / max(scpn_mean, 1e-15)
 
-    if n >= 3:
+    if n >= 3 and _has_variation(omega_jja[:n]) and _has_variation(omega_scpn[:n]):
         freq_corr = float(np.corrcoef(omega_jja[:n], omega_scpn[:n])[0, 1])
-        if np.isnan(freq_corr):
-            freq_corr = 0.0
     else:
         freq_corr = 0.0
 
-    ej_ec = TRANSMON_EJ / TRANSMON_EC
+    ej_ec = parameters.ej_ghz / parameters.ec_ghz
     is_transmon = ej_ec > 20
+    topology_source = (
+        "measured_edges" if coupling_edges is not None else f"illustrative_{topology}"
+    )
 
     summary = (
-        f"SCPN vs JJA ({topology}): topology ρ={topo_corr:.3f}, "
+        f"SCPN vs JJA ({topology_source}): topology ρ={topo_corr:.3f}, "
         f"coupling ratio={ratio:.4f}, E_J/E_C={ej_ec:.1f} ({'transmon' if is_transmon else 'charge'})"
     )
 
@@ -143,5 +204,7 @@ def josephson_benchmark(
         coupling_ratio=ratio,
         frequency_correlation=freq_corr,
         is_transmon_regime=is_transmon,
+        parameter_source=parameters.parameter_source,
+        topology_source=topology_source,
         summary=summary,
     )

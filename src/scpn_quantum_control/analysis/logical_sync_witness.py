@@ -10,7 +10,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any
+from typing import Any, TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -21,7 +21,7 @@ from ..qec.dla_protected_subspace import (
     evaluate_dla_protected_memory,
 )
 
-FloatArray = NDArray[np.float64]
+FloatArray: TypeAlias = NDArray[np.float64]
 
 
 class LogicalSyncWitness:
@@ -39,14 +39,18 @@ class LogicalSyncWitness:
     ) -> dict[str, float | bool | list[str]]:
         """Return the legacy dictionary shape with concrete DLA metrics."""
         if counts is None and probabilities is None and "logical_fidelity" in kwargs:
+            if not bool(kwargs.get("allow_fidelity_proxy", False)):
+                raise NotImplementedError(
+                    "LogicalSyncWitness requires counts or probabilities for production "
+                    "evaluation. Set allow_fidelity_proxy=True only for the labelled "
+                    "diagnostic fidelity proxy."
+                )
+            fidelity = _validate_logical_fidelity_proxy(kwargs["logical_fidelity"])
             return {
-                "logical_fidelity": float(kwargs["logical_fidelity"]),
-                "sync_weight": float(kwargs["logical_fidelity"]),
-                "logical_sync_order": float(kwargs["logical_fidelity"]),
-                "parity_leakage": 0.0,
-                "code_leakage": 0.0,
-                "passes": True,
-                "failure_reasons": [],
+                "logical_sync_available": 0.0,
+                "logical_fidelity_proxy": fidelity,
+                "sync_weight_proxy": fidelity,
+                "is_logical_sync_witness": 0.0,
             }
         result = self.evaluate(probabilities=probabilities, counts=counts)
         return {
@@ -85,3 +89,10 @@ def _infer_spec(
             raise ValueError("probabilities length must be a power of two")
         return DLAProtectedSubspaceSpec(n_logical=n_qubits, code_distance=1, target_parity=0)
     raise ValueError("counts, probabilities, or logical_fidelity must be provided")
+
+
+def _validate_logical_fidelity_proxy(value: Any) -> float:
+    fidelity = float(value)
+    if not np.isfinite(fidelity) or fidelity < 0.0 or fidelity > 1.0:
+        raise ValueError("logical_fidelity must be a finite value in [0, 1].")
+    return fidelity

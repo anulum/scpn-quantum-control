@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field
+from typing import TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -26,7 +27,7 @@ from qiskit.quantum_info import Statevector
 
 from ..phase.xy_kuramoto import QuantumKuramotoSolver
 
-FloatArray = NDArray[np.float64]
+FloatArray: TypeAlias = NDArray[np.float64]
 
 _ACTION_LABELS = {-1: "release", 0: "hold", 1: "synchronise"}
 

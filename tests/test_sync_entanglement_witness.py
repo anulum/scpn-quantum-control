@@ -68,6 +68,16 @@ class TestDetectEntanglement:
         assert result.n_qubits == 3
         assert 0.0 <= result.R_measured <= 1.0
         assert 0.0 <= result.R_sep_max <= 1.0
+        assert result.entanglement_depth in {1, 2}
+
+    def test_entanglement_depth_is_only_certified_pairwise(self):
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        result = detect_entanglement_from_R(K, omega, n_samples=200)
+
+        expected_depth = 2 if result.is_entangled else 1
+
+        assert result.entanglement_depth == expected_depth
 
     def test_strong_coupling_entangled(self):
         # At strong coupling, ground state should be entangled

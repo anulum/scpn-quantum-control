@@ -28,7 +28,7 @@ For hardware:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 
@@ -116,6 +116,38 @@ class PennyLaneRunner:
         self.shots = shots
         self.dev = qml.device(device, wires=self.n, shots=shots, **device_kwargs)
 
+    def _measure_order_parameter(self, prepare_state: Callable[[], None]) -> float:
+        """Measure Kuramoto R from local transverse Bloch-vector phases."""
+        phases = np.zeros(self.n)
+        for i in range(self.n):
+
+            @qml.qnode(self.dev)
+            def measure_x(qubit=i):
+                prepare_state()
+                return qml.expval(qml.PauliX(qubit))
+
+            @qml.qnode(self.dev)
+            def measure_y(qubit=i):
+                prepare_state()
+                return qml.expval(qml.PauliY(qubit))
+
+            ex = float(measure_x())
+            ey = float(measure_y())
+            phases[i] = np.arctan2(ey, ex)
+
+        z = np.mean(np.exp(1j * phases))
+        return float(np.clip(np.abs(z), 0.0, 1.0))
+
+    def _apply_vqe_ansatz(self, params: np.ndarray, ansatz_depth: int) -> None:
+        """Apply the hardware-efficient VQE ansatz used by this runner."""
+        idx = 0
+        for _layer in range(ansatz_depth):
+            for q in range(self.n):
+                qml.Rot(params[idx], params[idx + 1], params[idx + 2], wires=q)
+                idx += 3
+            for q in range(self.n - 1):
+                qml.CNOT(wires=[q, q + 1])
+
     def run_trotter(
         self,
         t: float = 1.0,
@@ -134,28 +166,11 @@ class PennyLaneRunner:
 
         energy = float(circuit())
 
-        # Order parameter from single-qubit expectations
-        phases = np.zeros(n)
-        for i in range(n):
+        def prepare_state() -> None:
+            for _r in range(reps):
+                qml.ApproxTimeEvolution(H, dt, 1)
 
-            @qml.qnode(self.dev)
-            def measure_x(qubit=i):
-                for _r in range(reps):
-                    qml.ApproxTimeEvolution(H, dt, 1)
-                return qml.expval(qml.PauliX(qubit))
-
-            @qml.qnode(self.dev)
-            def measure_y(qubit=i):
-                for _r in range(reps):
-                    qml.ApproxTimeEvolution(H, dt, 1)
-                return qml.expval(qml.PauliY(qubit))
-
-            ex = float(measure_x())
-            ey = float(measure_y())
-            phases[i] = np.arctan2(ey, ex)
-
-        z = np.mean(np.exp(1j * phases))
-        r_global = float(np.abs(z))
+        r_global = self._measure_order_parameter(prepare_state)
 
         return PennyLaneResult(
             energy=energy,
@@ -180,26 +195,28 @@ class PennyLaneRunner:
 
         @qml.qnode(self.dev)
         def cost_fn(params):
-            idx = 0
-            for _layer in range(ansatz_depth):
-                for q in range(n):
-                    qml.Rot(params[idx], params[idx + 1], params[idx + 2], wires=q)
-                    idx += 3
-                for q in range(n - 1):
-                    qml.CNOT(wires=[q, q + 1])
+            self._apply_vqe_ansatz(params, ansatz_depth)
             return qml.expval(H)
 
         opt = qml.GradientDescentOptimizer(stepsize=0.1)
-        params = rng.normal(0, 0.1, size=n_params)
+        initial_params = rng.normal(0, 0.1, size=n_params)
+        pl_np = getattr(qml, "numpy", np)
+        try:
+            params = pl_np.array(initial_params, requires_grad=True)
+        except TypeError:
+            params = pl_np.array(initial_params)
 
         for _step in range(maxiter):
             params = opt.step(cost_fn, params)
 
         energy = float(cost_fn(params))
+        r_global = self._measure_order_parameter(
+            lambda: self._apply_vqe_ansatz(params, ansatz_depth)
+        )
 
         return PennyLaneResult(
             energy=energy,
-            order_parameter=0.0,  # would need separate measurement
+            order_parameter=r_global,
             statevector=None,
             device_name=self.device_name,
             n_qubits=n,

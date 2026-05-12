@@ -77,6 +77,12 @@ parameter, mean pairwise correlation, and final phases for candidate batches.
 The Python scorer then evaluates the existing witness objects, so the discovery
 loop stays connected to the hardware-measurable witness definitions.
 
+`RLDiscoveryAgent` is a compatibility wrapper around the same production search.
+It accepts only the wired objective: correlation and Fiedler observables with
+`reward_function="witness_score"`, positive `n_episodes`, and no external
+`runner`. Unsupported compatibility parameters fail at construction instead of
+being silently ignored.
+
 ### `sync_entanglement_witness` — R as Entanglement Witness
 
 The Kuramoto order parameter $R$ reinterpreted as an entanglement witness. For separable
@@ -98,6 +104,11 @@ from scpn_quantum_control.analysis.sync_entanglement_witness import (
 | `R_separable_bound(n_qubits)` | Maximum $R$ achievable by any separable state (= 1.0) |
 | `R_separable_bound_at_energy(K, omega, target_energy, n_samples, seed)` | Max $R$ over product states at given energy |
 | `r_witness_from_statevector(sv, K, omega)` | Full witness evaluation: $R$, separable bound, entanglement certified? |
+
+The returned `entanglement_depth` is a certified lower bound from this witness:
+`1` when the separable bound is not violated and `2` when entanglement is
+certified. The R witness alone does not certify stronger multipartite depth;
+that requires separate k-producibility bounds or a dedicated depth witness.
 
 ### `critical_concordance` — Multi-Probe $K_c$ Agreement
 
@@ -357,6 +368,16 @@ from scpn_quantum_control.analysis.qfi import (
 | `spectral_gap(H)` | $E_1 - E_0$ |
 | `precision_bounds(qfi_matrix)` | Cramér-Rao lower bounds $\delta\theta_i \geq 1/\sqrt{F_{ii}}$ |
 
+`QuantumFisherInformation` is the observable-wrapper adapter for production
+metrology calls. When `coupling_matrix` and `natural_frequencies` are supplied
+it routes to the spectral QFI engine and validates that the coupling matrix is
+square, symmetric, finite-valued, and dimension-compatible with the frequency
+vector. Optional `coupling_pairs` must be distinct in-range integer index pairs,
+and `n_measurements` must be a positive integer because it rescales the
+Cramér-Rao precision bound. Counts-derived sync/DLA estimates are exposed only
+through the explicit `allow_proxy_estimate=True` diagnostic path and are labelled
+as proxy values, never as production QFI.
+
 ### `magic_nonstabilizerness` — Stabilizer Rényi Entropy
 
 Magic $M_2 = -\log_2(\sum_P \langle P\rangle^4 / 2^N)$ peaks at $K_c$ — the critical
@@ -374,14 +395,22 @@ from scpn_quantum_control.analysis.magic_nonstabilizerness import (
 
 ### `quantum_phi` — Integrated Information (IIT)
 
-Tononi's Φ (integrated information) from the quantum density matrix.
+Quantum integrated information from the Kuramoto-XY ground-state density
+matrix. `compute_quantum_phi(K, omega)` computes the minimum mutual information
+over bipartitions and reports the minimum-information partition.
 
 ```python
 from scpn_quantum_control.analysis.quantum_phi import (
-    compute_phi,
+    compute_quantum_phi,
     PhiResult,
 )
 ```
+
+`IntegratedInformationPhi` is the dashboard-facing wrapper. When supplied with
+`coupling_matrix` and `natural_frequencies`, it routes to `compute_quantum_phi`
+and returns `phi`, `phi_max`, entropy, and partition metadata. Counts-only
+entropy remains available only via `allow_entropy_proxy=True` and is labelled
+`entropy_proxy`, never `phi`.
 
 ### `shadow_tomography` — Classical Shadow Estimation
 
@@ -596,6 +625,12 @@ Network topology metrics (clustering, betweenness, modularity) of the $K_{nm}$ m
 
 Koopman operator for the nonlinear Kuramoto dynamics — the BQP argument for quantum
 advantage.
+
+`build_koopman_generator_rust()` now routes to the optional
+`scpn_quantum_engine.koopman_generator` kernel when that export is present and
+falls back to the validated NumPy generator otherwise. Set `require_rust=True`
+when a benchmark or release gate must prove that the native kernel, not the
+fallback, served the dense generator.
 
 ### `hamiltonian_learning` — Recover $K_{nm}$ from Measurements
 

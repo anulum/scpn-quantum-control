@@ -39,6 +39,8 @@ and phase angles; circuit compilation is deferred to hardware backends.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from operator import index
+from typing import Any
 
 import numpy as np
 
@@ -62,11 +64,43 @@ class QSVTResourceEstimate:
     n_ancilla_qsvt: int  # ancilla qubits for block encoding
 
 
+def _validate_problem_inputs(K: np.ndarray, omega: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    K_arr = np.asarray(K, dtype=np.float64)
+    omega_arr = np.asarray(omega, dtype=np.float64)
+    if K_arr.ndim != 2 or K_arr.shape[0] != K_arr.shape[1]:
+        raise ValueError("K must be a square two-dimensional coupling matrix.")
+    if omega_arr.ndim != 1:
+        raise ValueError("omega must be a one-dimensional natural-frequency vector.")
+    if omega_arr.shape[0] != K_arr.shape[0]:
+        raise ValueError("omega length must match the coupling matrix dimension.")
+    if not np.all(np.isfinite(K_arr)) or not np.all(np.isfinite(omega_arr)):
+        raise ValueError("K and omega must contain only finite values.")
+    if not np.allclose(K_arr, K_arr.T, rtol=1e-10, atol=1e-12):
+        raise ValueError("K must be symmetric for a Hermitian Kuramoto-XY Hamiltonian.")
+    return K_arr, omega_arr
+
+
+def _validate_resource_budget(
+    alpha: float, t: float, epsilon: float
+) -> tuple[float, float, float]:
+    alpha_value = float(alpha)
+    time_value = float(t)
+    epsilon_value = float(epsilon)
+    if not np.isfinite(alpha_value) or alpha_value <= 0.0:
+        raise ValueError("alpha must be finite and strictly positive.")
+    if not np.isfinite(time_value) or time_value < 0.0:
+        raise ValueError("simulation time must be finite and non-negative.")
+    if not np.isfinite(epsilon_value) or not 0.0 < epsilon_value < 1.0:
+        raise ValueError("epsilon must be finite and satisfy 0 < epsilon < 1.")
+    return alpha_value, time_value, epsilon_value
+
+
 def hamiltonian_1norm(K: np.ndarray, omega: np.ndarray) -> float:
     """1-norm of the Kuramoto-XY Hamiltonian: Σ |c_i| over Pauli terms.
 
     Computed directly from the SparsePauliOp for exactness.
     """
+    K, omega = _validate_problem_inputs(K, omega)
     H_op = knm_to_hamiltonian(K, omega)
     return float(np.sum(np.abs(H_op.coeffs)))
 
@@ -79,6 +113,7 @@ def hamiltonian_spectral_norm(K: np.ndarray, omega: np.ndarray) -> float:
     from scipy.sparse import csc_matrix
     from scipy.sparse.linalg import eigsh
 
+    K, omega = _validate_problem_inputs(K, omega)
     n = K.shape[0]
     knm_to_hamiltonian(K, omega)
     H_raw = knm_to_dense_matrix(K, omega)
@@ -101,8 +136,9 @@ def qsvt_query_count(alpha: float, t: float, epsilon: float) -> int:
     Q = O(α|t| + log(1/ε)) — optimal (Gilyén et al.)
     Using the concrete bound: Q = ceil(e × α × |t| + ln(2/ε) / ln(e))
     """
-    main_term = np.e * alpha * abs(t)
-    log_term = np.log(2.0 / max(epsilon, 1e-20))
+    alpha, t, epsilon = _validate_resource_budget(alpha, t, epsilon)
+    main_term = np.e * alpha * t
+    log_term = np.log(2.0 / epsilon)
     return max(int(np.ceil(main_term + log_term)), 1)
 
 
@@ -111,7 +147,8 @@ def trotter1_step_count(alpha: float, t: float, epsilon: float) -> int:
 
     r = ceil((α|t|)² / ε) — first-order product formula.
     """
-    return max(int(np.ceil((alpha * abs(t)) ** 2 / max(epsilon, 1e-20))), 1)
+    alpha, t, epsilon = _validate_resource_budget(alpha, t, epsilon)
+    return max(int(np.ceil((alpha * t) ** 2 / epsilon)), 1)
 
 
 def trotter2_step_count(alpha: float, t: float, epsilon: float) -> int:
@@ -119,7 +156,8 @@ def trotter2_step_count(alpha: float, t: float, epsilon: float) -> int:
 
     r = ceil((α|t|)^{3/2} / sqrt(ε)) — second-order product formula.
     """
-    return max(int(np.ceil((alpha * abs(t)) ** 1.5 / np.sqrt(max(epsilon, 1e-20)))), 1)
+    alpha, t, epsilon = _validate_resource_budget(alpha, t, epsilon)
+    return max(int(np.ceil((alpha * t) ** 1.5 / np.sqrt(epsilon))), 1)
 
 
 def qsvt_resource_estimate(
@@ -136,6 +174,8 @@ def qsvt_resource_estimate(
         t: simulation time
         epsilon: target error
     """
+    K, omega = _validate_problem_inputs(K, omega)
+    _, t, epsilon = _validate_resource_budget(1.0, t, epsilon)
     n = K.shape[0]
     alpha = hamiltonian_1norm(K, omega)
     spec_norm = hamiltonian_spectral_norm(K, omega)
@@ -166,21 +206,42 @@ def qsvt_resource_estimate(
     )
 
 
-def qsp_phase_angles(degree: int) -> np.ndarray:
-    """Compute QSP phase angles for cos(x) polynomial of given degree.
+def qsp_phase_angles(degree: int, *, allow_initial_guess: bool = False) -> np.ndarray:
+    """Return QSP phase angles for a cosine polynomial only when explicit.
 
-    Uses the Chebyshev approximation: cos(αt·x) ≈ Σ c_k T_k(x).
-    The phase angles are computed via the complementary polynomial method.
+    Production QSP phase synthesis requires a complementary-polynomial
+    optimisation/verification routine. That implementation is not wired here,
+    so the function fails by default rather than returning unverified seed angles.
 
-    This is a simplified version using equally-spaced angles as a starting
-    point. Full optimisation (Haah 2018) requires iterative refinement.
+    Set ``allow_initial_guess=True`` only when a caller needs the historical
+    symmetric seed angles for an offline optimiser. Those angles are not valid
+    compiled QSP phases and must not be used for resource or hardware claims.
     """
+    degree_value = _validate_non_negative_integer(degree, "degree")
+    if not allow_initial_guess:
+        raise NotImplementedError(
+            "QSP phase synthesis is not implemented. Pass allow_initial_guess=True "
+            "only to obtain non-production seed angles for an external optimiser."
+        )
+
     # Symmetric phase angles for even polynomial (cosine)
-    phases = np.zeros(degree + 1)
-    for k in range(degree + 1):
+    phases = np.zeros(degree_value + 1)
+    for k in range(degree_value + 1):
         phases[k] = np.pi / 4 * (-1) ** k
     # Correct first and last for QSP convention
     phases[0] = np.pi / 4
     phases[-1] = np.pi / 4
     result: np.ndarray = phases
     return result
+
+
+def _validate_non_negative_integer(value: Any, name: str) -> int:
+    if isinstance(value, bool):
+        raise ValueError(f"{name} must be a non-negative integer.")
+    try:
+        integer_value = index(value)
+    except TypeError as exc:
+        raise ValueError(f"{name} must be a non-negative integer.") from exc
+    if integer_value < 0:
+        raise ValueError(f"{name} must be non-negative, got {integer_value}")
+    return int(integer_value)

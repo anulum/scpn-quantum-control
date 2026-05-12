@@ -90,7 +90,10 @@ print(result.best.score, result.best.final_r)
 
 For fixed candidate batches, use `score_witness_candidates(...)`. The
 `RLDiscoveryAgent` compatibility class now delegates to this real discovery
-loop and fails loudly when no `K_nm`/`omega` problem is configured.
+loop and fails loudly when no `K_nm`/`omega` problem is configured. The wrapper
+does not accept unwired compatibility settings: `runner` must be `None`,
+`observables` must remain `["correlation", "fiedler"]`, `reward_function` must
+be `"witness_score"`, and `n_episodes` must be positive.
 
 ## Result Fields
 

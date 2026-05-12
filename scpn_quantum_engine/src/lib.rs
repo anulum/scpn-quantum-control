@@ -40,6 +40,7 @@ pub mod fep;
 pub mod gauge_lattice;
 pub mod hamiltonian;
 pub mod knm;
+pub mod koopman;
 pub mod krylov;
 pub mod kuramoto;
 pub mod lindblad;
@@ -68,6 +69,9 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(kuramoto::monitored_kuramoto_trajectory, m)?)?;
     m.add_function(wrap_pyfunction!(kuramoto::pt_symmetric_kuramoto_trajectory, m)?)?;
     m.add_function(wrap_pyfunction!(kuramoto::kuramoto_witness_candidate_features, m)?)?;
+
+    // Koopman
+    m.add_function(wrap_pyfunction!(koopman::koopman_generator, m)?)?;
 
     // Concatenated QEC
     m.add_function(wrap_pyfunction!(concat_qec::concatenated_logical_rate_rust, m)?)?;

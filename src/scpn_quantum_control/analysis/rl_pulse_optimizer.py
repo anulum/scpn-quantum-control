@@ -7,7 +7,10 @@
 # SCPN Quantum Control — RL pulse optimiser interface
 """Fail-fast interface for future RL pulse optimisation."""
 
+from operator import index
 from typing import Any
+
+import numpy as np
 
 
 class RLPulseOptimizer:
@@ -19,9 +22,15 @@ class RLPulseOptimizer:
     """
 
     def __init__(self, runner: Any, target_sync_order: float = 0.0, episodes: int = 250):
+        if runner is None:
+            raise ValueError("runner must be provided for RL pulse optimisation configuration.")
+        target = float(target_sync_order)
+        if not np.isfinite(target) or target < 0.0 or target > 1.0:
+            raise ValueError("target_sync_order must be a finite value in [0, 1].")
+        episode_count = _validate_episode_count(episodes)
         self.runner = runner
-        self.target_sync_order = target_sync_order
-        self.episodes = episodes
+        self.target_sync_order = target
+        self.episodes = episode_count
 
     async def optimize_pulses(self) -> None:
         raise NotImplementedError(
@@ -35,3 +44,15 @@ class RLPulseOptimizer:
         raise NotImplementedError(
             "No RL pulse optimisation results exist because optimisation has not been implemented."
         )
+
+
+def _validate_episode_count(episodes: Any) -> int:
+    if isinstance(episodes, bool):
+        raise ValueError("episodes must be a positive integer.")
+    try:
+        episode_count = index(episodes)
+    except TypeError as exc:
+        raise ValueError("episodes must be a positive integer.") from exc
+    if episode_count <= 0:
+        raise ValueError("episodes must be a positive integer.")
+    return int(episode_count)

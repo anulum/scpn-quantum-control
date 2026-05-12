@@ -8,6 +8,7 @@
 """Tests for Biological Surface Code and MWPM."""
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.qec.biological_surface_code import (
     BiologicalMWPMDecoder,
@@ -65,7 +66,7 @@ def test_mwpm_decoder_no_defects():
 
 
 def test_mwpm_decoder_odd_defects():
-    """Odd number of defects triggers truncation to even."""
+    """Odd syndrome parity is invalid without an explicit boundary model."""
     K = np.array(
         [[0.0, 1.0, 0.0, 0.0], [1.0, 0.0, 1.0, 0.0], [0.0, 1.0, 0.0, 1.0], [0.0, 0.0, 1.0, 0.0]]
     )
@@ -76,12 +77,12 @@ def test_mwpm_decoder_odd_defects():
     syn_x[0] = 1
     syn_x[1] = 1
     syn_x[2] = 1
-    correction = decoder.decode_z_errors(syn_x)
-    assert correction.shape == (code.num_data,)
+    with pytest.raises(ValueError, match="odd syndrome parity"):
+        decoder.decode_z_errors(syn_x)
 
 
 def test_mwpm_decoder_disconnected_nodes():
-    """Two disconnected components cannot form a path → NetworkXNoPath branch."""
+    """Disconnected components must each have even syndrome parity."""
     # Block-diagonal coupling: nodes {0,1} coupled, nodes {2,3} coupled, no cross
     K = np.array(
         [[0.0, 1.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0], [0.0, 0.0, 1.0, 0.0]]
@@ -92,8 +93,22 @@ def test_mwpm_decoder_disconnected_nodes():
     syn_x = np.zeros(code.num_x_stabs, dtype=np.int8)
     syn_x[0] = 1
     syn_x[2] = 1
-    correction = decoder.decode_z_errors(syn_x)
-    assert correction.shape == (code.num_data,)
+    with pytest.raises(ValueError, match="odd syndrome parity"):
+        decoder.decode_z_errors(syn_x)
+
+
+def test_mwpm_decoder_rejects_malformed_syndrome():
+    """Decoder accepts only binary one-dimensional X-syndrome vectors."""
+    K = np.array(
+        [[0.0, 1.0, 0.0, 0.0], [1.0, 0.0, 1.0, 0.0], [0.0, 1.0, 0.0, 1.0], [0.0, 0.0, 1.0, 0.0]]
+    )
+    code = BiologicalSurfaceCode(K)
+    decoder = BiologicalMWPMDecoder(code)
+
+    with pytest.raises(ValueError, match="length"):
+        decoder.decode_z_errors(np.zeros(code.num_x_stabs + 1, dtype=np.int8))
+    with pytest.raises(ValueError, match="binary"):
+        decoder.decode_z_errors(np.array([0, 1, 2, 0], dtype=np.int8))
 
 
 def test_correction_clears_syndrome():
@@ -181,8 +196,24 @@ def test_tree_graph_zero_z_stabs():
 
 def test_no_edges_raises():
     """Zero-edge coupling matrix must raise ValueError."""
-    import pytest
-
     K = np.zeros((3, 3))
     with pytest.raises(ValueError, match="no edges"):
         BiologicalSurfaceCode(K)
+
+
+@pytest.mark.parametrize(
+    "K, match",
+    [
+        (np.ones(3), "square"),
+        (np.ones((2, 3)), "square"),
+        (np.array([[0.0, np.nan], [np.nan, 0.0]]), "finite"),
+        (np.array([[0.0, 1.0], [0.5, 0.0]]), "symmetric"),
+        (np.array([[0.2, 1.0], [1.0, 0.0]]), "zero diagonal"),
+        (np.array([[0.0, 1.0], [1.0, 0.0]]), "threshold"),
+    ],
+)
+def test_surface_code_rejects_malformed_coupling_matrix(K, match):
+    """Biological graph-code construction requires a valid undirected K matrix."""
+    threshold = float("nan") if match == "threshold" else 1e-5
+    with pytest.raises(ValueError, match=match):
+        BiologicalSurfaceCode(K, threshold=threshold)

@@ -56,8 +56,68 @@ class ReservoirResult:
     feature_labels: list[str]
 
 
+def _validated_coupling_matrix(K: np.ndarray) -> np.ndarray:
+    """Return a finite square coupling matrix."""
+    K_array = np.asarray(K, dtype=float)
+    if K_array.ndim != 2 or K_array.shape[0] != K_array.shape[1]:
+        raise ValueError("K must be a square 2-D coupling matrix.")
+    if K_array.shape[0] == 0:
+        raise ValueError("K must contain at least one oscillator.")
+    if not np.all(np.isfinite(K_array)):
+        raise ValueError("K must contain only finite values.")
+    return K_array
+
+
+def _validated_feature_vector(x: np.ndarray, *, name: str = "x") -> np.ndarray:
+    """Return a finite non-empty 1-D feature vector."""
+    x_array = np.asarray(x, dtype=float)
+    if x_array.ndim != 1:
+        raise ValueError(f"{name} must be a 1-D feature vector.")
+    if x_array.size == 0:
+        raise ValueError(f"{name} must contain at least one feature.")
+    if not np.all(np.isfinite(x_array)):
+        raise ValueError(f"{name} must contain only finite values.")
+    return x_array
+
+
+def _validated_omega(omega: np.ndarray | None, n: int) -> np.ndarray:
+    """Return a finite frequency vector matching ``K``."""
+    if omega is None:
+        return np.zeros(n)
+    omega_array = np.asarray(omega, dtype=float)
+    if omega_array.ndim != 1 or omega_array.shape != (n,):
+        raise ValueError("omega must be a vector matching K.")
+    if not np.all(np.isfinite(omega_array)):
+        raise ValueError("omega must contain only finite values.")
+    return omega_array
+
+
+def _validated_max_weight(max_weight: int, n: int) -> int:
+    """Return a valid Pauli feature weight limit."""
+    if not isinstance(max_weight, int):
+        raise TypeError("max_weight must be an integer.")
+    if max_weight < 1 or max_weight > n:
+        raise ValueError("max_weight must be between 1 and n_qubits.")
+    return max_weight
+
+
+def _validated_feature_matrix(X: np.ndarray) -> np.ndarray:
+    """Return a finite non-empty 2-D feature matrix."""
+    X_array = np.asarray(X, dtype=float)
+    if X_array.ndim != 2:
+        raise ValueError("X must be a 2-D feature matrix.")
+    if X_array.shape[0] == 0:
+        raise ValueError("X must contain at least one sample.")
+    if X_array.shape[1] == 0:
+        raise ValueError("X must contain at least one feature.")
+    if not np.all(np.isfinite(X_array)):
+        raise ValueError("X must contain only finite values.")
+    return X_array
+
+
 def _pauli_feature_set(n: int, max_weight: int = 2) -> list[str]:
     """Generate Pauli feature labels up to given weight."""
+    max_weight = _validated_max_weight(max_weight, n)
     labels: list[str] = []
     paulis = ["I", "X", "Y", "Z"]
     for combo in product(paulis, repeat=n):
@@ -83,9 +143,11 @@ def reservoir_features(
         t: reservoir evolution time
         max_weight: maximum Pauli weight for features
     """
+    K = _validated_coupling_matrix(K)
     n = K.shape[0]
-    if omega is None:
-        omega = np.zeros(n)
+    x = _validated_feature_vector(x)
+    omega = _validated_omega(omega, n)
+    max_weight = _validated_max_weight(max_weight, n)
 
     H = knm_to_hamiltonian(K, omega)
 
@@ -135,6 +197,10 @@ def reservoir_feature_matrix(
     Returns:
         (n_samples, n_reservoir_features) feature matrix
     """
+    X = _validated_feature_matrix(X)
+    K = _validated_coupling_matrix(K)
+    omega = _validated_omega(omega, K.shape[0])
+    max_weight = _validated_max_weight(max_weight, K.shape[0])
     n_samples = X.shape[0]
     first = reservoir_features(X[0], K, omega, t, max_weight)
     n_feat = first.n_features
@@ -162,9 +228,18 @@ def reservoir_ridge_regression(
 
     Returns (weights, predictions_on_train).
     """
+    X_train = _validated_feature_matrix(X_train)
+    y_array = np.asarray(y_train, dtype=float)
+    if y_array.ndim != 1 or y_array.shape != (X_train.shape[0],):
+        raise ValueError("y_train must be a vector matching the number of rows in X_train.")
+    if not np.all(np.isfinite(y_array)):
+        raise ValueError("y_train must contain only finite values.")
+    if not np.isfinite(alpha) or alpha <= 0.0:
+        raise ValueError("alpha must be finite and positive.")
+
     F = reservoir_feature_matrix(X_train, K, omega, max_weight=max_weight)
     # Ridge: W = (F^T F + αI)^{-1} F^T y
     n_feat = F.shape[1]
-    W = np.linalg.solve(F.T @ F + alpha * np.eye(n_feat), F.T @ y_train)
+    W = np.linalg.solve(F.T @ F + alpha * np.eye(n_feat), F.T @ y_array)
     preds: np.ndarray = F @ W
     return W, preds

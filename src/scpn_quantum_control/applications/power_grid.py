@@ -37,6 +37,11 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.stats import spearmanr
 
+from scpn_quantum_control.bridge.qpu_data_artifact import (
+    ALL_SOURCE_MODES,
+    SYNTHETIC_SOURCE_MODES,
+)
+
 # IEEE 5-bus system (Stagg & El-Abiad, 5 generators)
 # Susceptance matrix B_ij (per-unit, 100 MVA base)
 IEEE_5BUS_SUSCEPTANCE = np.array(
@@ -69,14 +74,68 @@ class PowerGridBenchmarkResult:
     frequency_correlation: float  # correlation of frequency vectors
     grid_name: str
     summary: str
+    source_mode: str
+    publication_safe: bool
 
 
-def ieee_5bus_coupling_matrix() -> tuple[np.ndarray, np.ndarray]:
+def _validated_square_matrix(
+    matrix: np.ndarray,
+    name: str,
+    *,
+    require_grid_coupling: bool = False,
+) -> np.ndarray:
+    values = np.asarray(matrix, dtype=float)
+    if values.ndim != 2 or values.shape[0] != values.shape[1]:
+        raise ValueError(f"{name} must be a square 2-D matrix.")
+    if values.shape[0] < 2:
+        raise ValueError(f"{name} must contain at least two coupled grid nodes.")
+    if not np.all(np.isfinite(values)):
+        raise ValueError(f"{name} must contain only finite values.")
+    if require_grid_coupling:
+        if np.any(values < 0.0):
+            raise ValueError(f"{name} values must be non-negative.")
+        if not np.allclose(values, values.T, atol=1e-12):
+            raise ValueError(f"{name} must be symmetric.")
+        if not np.allclose(np.diag(values), 0.0, atol=1e-12):
+            raise ValueError(f"{name} diagonal must be zero.")
+    return values
+
+
+def _validated_frequency_vector(
+    frequencies: np.ndarray,
+    n_nodes: int,
+    name: str,
+    matrix_name: str,
+) -> np.ndarray:
+    values = np.asarray(frequencies, dtype=float)
+    if values.ndim != 1 or values.shape != (n_nodes,):
+        raise ValueError(f"{name} must match {matrix_name} node count.")
+    if not np.all(np.isfinite(values)):
+        raise ValueError(f"{name} must contain only finite values.")
+    return values
+
+
+def _finite_correlation(value: float) -> float:
+    if np.isnan(value):
+        return 0.0
+    return float(value)
+
+
+def ieee_5bus_coupling_matrix(
+    *,
+    allow_builtin_reference: bool = False,
+) -> tuple[np.ndarray, np.ndarray]:
     """Build Kuramoto coupling matrix from IEEE 5-bus data.
 
     K_ij = V_i × V_j × B_ij / (2 × H_i × ω_0)
     where ω_0 = 2π × 60 Hz (US standard).
     """
+    if not allow_builtin_reference:
+        raise RuntimeError(
+            "Refusing built-in IEEE 5-bus reference without allow_builtin_reference=True. "
+            "Pass curated grid_coupling and grid_frequencies to power_grid_benchmark "
+            "for explicit provenance."
+        )
     omega_0 = 2 * np.pi * 60.0
     n = 5
     K: np.ndarray = np.zeros((n, n))
@@ -100,15 +159,61 @@ def power_grid_benchmark(
     K_scpn: np.ndarray,
     omega_scpn: np.ndarray,
     grid_name: str = "IEEE-5bus",
+    *,
+    grid_coupling: np.ndarray | None = None,
+    grid_frequencies: np.ndarray | None = None,
+    reference_source_mode: str = "curated",
+    allow_builtin_reference: bool = False,
 ) -> PowerGridBenchmarkResult:
     """Compare SCPN coupling topology with power grid.
 
     Uses the smaller dimension (min(n_scpn, n_grid)) for comparison.
     """
-    if grid_name == "IEEE-5bus":
-        K_grid, omega_grid = ieee_5bus_coupling_matrix()
+    if grid_coupling is None or grid_frequencies is None:
+        if grid_coupling is not None or grid_frequencies is not None:
+            raise ValueError("grid_coupling and grid_frequencies must be supplied together.")
+        if grid_name == "IEEE-5bus":
+            K_grid, omega_grid = ieee_5bus_coupling_matrix(
+                allow_builtin_reference=allow_builtin_reference
+            )
+            source_mode = "curated"
+        else:
+            raise ValueError(f"Unknown grid: {grid_name}")
     else:
-        raise ValueError(f"Unknown grid: {grid_name}")
+        source_mode = str(reference_source_mode).strip()
+        if source_mode not in ALL_SOURCE_MODES:
+            raise ValueError(f"reference_source_mode must be one of {sorted(ALL_SOURCE_MODES)}")
+        K_grid = _validated_square_matrix(
+            grid_coupling,
+            "grid_coupling",
+            require_grid_coupling=True,
+        )
+        omega_grid = _validated_frequency_vector(
+            grid_frequencies,
+            K_grid.shape[0],
+            "grid_frequencies",
+            "grid_coupling",
+        )
+    publication_safe = source_mode not in SYNTHETIC_SOURCE_MODES
+
+    K_scpn = _validated_square_matrix(K_scpn, "K_scpn")
+    omega_scpn = _validated_frequency_vector(
+        omega_scpn,
+        K_scpn.shape[0],
+        "omega_scpn",
+        "K_scpn",
+    )
+    K_grid = _validated_square_matrix(
+        K_grid,
+        "grid_coupling",
+        require_grid_coupling=True,
+    )
+    omega_grid = _validated_frequency_vector(
+        omega_grid,
+        K_grid.shape[0],
+        "grid_frequencies",
+        "grid_coupling",
+    )
 
     n_grid = K_grid.shape[0]
     n_scpn = K_scpn.shape[0]
@@ -127,7 +232,7 @@ def power_grid_benchmark(
     if len(g_flat) < 3:
         topo_corr = 0.0
     else:
-        topo_corr = float(spearmanr(g_flat, s_flat).statistic)
+        topo_corr = _finite_correlation(float(spearmanr(g_flat, s_flat).statistic))
 
     # Coupling ratio
     g_mean = float(np.mean(g_flat[g_flat > 0])) if np.any(g_flat > 0) else 0.0
@@ -136,9 +241,7 @@ def power_grid_benchmark(
 
     # Frequency correlation
     if n >= 3:
-        freq_corr = float(np.corrcoef(omega_g, omega_s)[0, 1])
-        if np.isnan(freq_corr):
-            freq_corr = 0.0
+        freq_corr = _finite_correlation(float(np.corrcoef(omega_g, omega_s)[0, 1]))
     else:
         freq_corr = 0.0
 
@@ -154,4 +257,6 @@ def power_grid_benchmark(
         frequency_correlation=freq_corr,
         grid_name=grid_name,
         summary=summary,
+        source_mode=source_mode,
+        publication_safe=publication_safe,
     )

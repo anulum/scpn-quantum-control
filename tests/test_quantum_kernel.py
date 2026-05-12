@@ -43,6 +43,26 @@ class TestQuantumKernelEntry:
         k21 = quantum_kernel_entry(x2, x1, K, 3)
         assert k12 == pytest.approx(k21, abs=1e-10)
 
+    def test_rejects_empty_feature_vector(self):
+        K = build_knm_paper27(L=3)
+        with pytest.raises(ValueError, match="at least one feature"):
+            quantum_kernel_entry(np.array([]), np.array([0.1]), K, 3)
+
+    def test_rejects_mismatched_entry_feature_dimensions(self):
+        K = build_knm_paper27(L=3)
+        with pytest.raises(ValueError, match="same feature dimension"):
+            quantum_kernel_entry(np.array([0.1, 0.2]), np.array([0.1]), K, 3)
+
+    def test_rejects_k_shape_mismatch(self):
+        K = build_knm_paper27(L=3)
+        with pytest.raises(ValueError, match="K must be a square"):
+            quantum_kernel_entry(np.array([0.1]), np.array([0.2]), K[:2, :], 3)
+
+    def test_rejects_n_qubits_mismatch(self):
+        K = build_knm_paper27(L=3)
+        with pytest.raises(ValueError, match="n_qubits must match"):
+            quantum_kernel_entry(np.array([0.1]), np.array([0.2]), K, 2)
+
 
 class TestComputeKernelMatrix:
     def test_returns_result(self):
@@ -83,6 +103,21 @@ class TestComputeKernelMatrix:
         assert result.n_samples == 6
         assert result.feature_dim == 4
         assert result.n_qubits == 3
+
+    def test_rejects_one_dimensional_feature_input(self):
+        K = build_knm_paper27(L=3)
+        with pytest.raises(ValueError, match="X must be a 2-D"):
+            compute_kernel_matrix(np.array([0.1, 0.2, 0.3]), K, 3)
+
+    def test_rejects_empty_sample_set(self):
+        K = build_knm_paper27(L=3)
+        with pytest.raises(ValueError, match="at least one sample"):
+            compute_kernel_matrix(np.empty((0, 3)), K, 3)
+
+    def test_rejects_empty_feature_columns(self):
+        K = build_knm_paper27(L=3)
+        with pytest.raises(ValueError, match="at least one feature"):
+            compute_kernel_matrix(np.empty((2, 0)), K, 3)
 
 
 # ---------------------------------------------------------------------------

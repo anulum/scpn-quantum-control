@@ -30,7 +30,7 @@ from ..bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from .eeg_benchmark import eeg_benchmark
 from .fmo_benchmark import fmo_benchmark
 from .iter_benchmark import iter_benchmark
-from .josephson_array import josephson_benchmark
+from .josephson_array import JosephsonArrayParameters, josephson_benchmark
 from .power_grid import power_grid_benchmark
 
 
@@ -61,7 +61,7 @@ def run_cross_domain_validation(
     # FMO (7 oscillators)
     K7 = build_knm_paper27(L=7)
     omega7 = OMEGA_N_16[:7]
-    fmo = fmo_benchmark(K7, omega7)
+    fmo = fmo_benchmark(K7, omega7, allow_builtin_reference=True)
     names.append("FMO (photosynthesis)")
     results_topo.append(fmo.topology_correlation)
     results_freq.append(fmo.frequency_correlation)
@@ -69,27 +69,34 @@ def run_cross_domain_validation(
     # Power grid (5 oscillators)
     K5 = build_knm_paper27(L=5)
     omega5 = OMEGA_N_16[:5]
-    grid = power_grid_benchmark(K5, omega5)
+    grid = power_grid_benchmark(K5, omega5, allow_builtin_reference=True)
     names.append("IEEE 5-bus (power grid)")
     results_topo.append(grid.topology_correlation)
     results_freq.append(grid.frequency_correlation)
 
-    # Josephson (5 oscillators, all-to-all)
-    jja = josephson_benchmark(K5, omega5, topology="all_to_all")
-    names.append("JJA (self-simulation)")
+    # Josephson illustrative comparison; measured hardware claims require
+    # calibration-sourced parameters and coupling edges.
+    jja = josephson_benchmark(
+        K5,
+        omega5,
+        topology="all_to_all",
+        parameters=JosephsonArrayParameters.nominal_transmon(),
+        allow_illustrative_topology=True,
+    )
+    names.append("JJA (illustrative self-simulation)")
     results_topo.append(jja.topology_correlation)
     results_freq.append(jja.frequency_correlation)
 
     # EEG (8 oscillators)
     K8 = build_knm_paper27(L=8)
     omega8 = OMEGA_N_16[:8]
-    eeg = eeg_benchmark(K8, omega8)
+    eeg = eeg_benchmark(K8, omega8, allow_builtin_reference=True)
     names.append("EEG alpha (neuroscience)")
     results_topo.append(eeg.topology_correlation)
     results_freq.append(eeg.frequency_correlation)
 
     # ITER (8 modes)
-    it = iter_benchmark(K8, omega8)
+    it = iter_benchmark(K8, omega8, allow_synthetic_reference=True)
     names.append("ITER MHD (fusion)")
     results_topo.append(it.topology_correlation)
     results_freq.append(it.frequency_correlation)

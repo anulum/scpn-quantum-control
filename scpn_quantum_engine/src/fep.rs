@@ -17,9 +17,41 @@
 
 use ndarray::Array1;
 use numpy::{PyArray1, PyReadonlyArray1, PyReadonlyArray2};
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
 use crate::validation::validate_n;
+
+fn log_det_spd_with_ridge(
+    matrix: &ndarray::ArrayView2<'_, f64>,
+    ridge: f64,
+) -> Result<f64, &'static str> {
+    let n = matrix.nrows();
+    let mut chol = vec![vec![0.0f64; n]; n];
+
+    for i in 0..n {
+        for j in 0..=i {
+            let mut sum = matrix[[i, j]] + if i == j { ridge } else { 0.0 };
+            for k in 0..j {
+                sum -= chol[i][k] * chol[j][k];
+            }
+            if i == j {
+                if !sum.is_finite() || sum <= 0.0 {
+                    return Err("k_precision + ridge*I must be symmetric positive definite");
+                }
+                chol[i][j] = sum.sqrt();
+            } else {
+                chol[i][j] = sum / chol[j][j];
+            }
+        }
+    }
+
+    let mut log_det = 0.0f64;
+    for (i, row) in chol.iter().enumerate().take(n) {
+        log_det += 2.0 * row[i].ln();
+    }
+    Ok(log_det)
+}
 
 /// Free energy gradient ∂F/∂μ for belief update dynamics.
 ///
@@ -142,7 +174,7 @@ pub fn variational_free_energy_rust(
     let n = mu_arr.len();
 
     // Complexity: KL[q || prior] for diagonal Σ = sigma_diag × I
-    // KL = 0.5 × (tr(K_reg × Σ) + μᵀ K_reg μ − n + log|K_reg|/|Σ|)
+    // KL = 0.5 × (tr(K_reg × Σ) + μᵀ K_reg μ − n − log|K_reg| − log|Σ|)
     // For Σ = σ²I: tr(K_reg × Σ) = σ² × tr(K_reg)
     let mut trace_k = 0.0f64;
     let mut mu_k_mu = 0.0f64;
@@ -154,17 +186,11 @@ pub fn variational_free_energy_rust(
             mu_k_mu += mu_arr[i] * k_val * mu_arr[j];
         }
     }
-    // Simplified for diagonal sigma: log|Σ| = n × log(σ²)
+    // Diagonal posterior covariance: log|Σ| = n × log(σ²)
     let log_det_sigma = n as f64 * sigma_diag.ln();
-    // log|K_reg| approximated as sum of log of diagonal (valid for diagonal-dominant)
-    let mut log_det_k_approx = 0.0f64;
-    for i in 0..n {
-        log_det_k_approx += (k_arr[[i, i]] + ridge).max(1e-300).ln();
-    }
+    let log_det_k = log_det_spd_with_ridge(&k_arr, ridge).map_err(PyValueError::new_err)?;
 
-    let complexity = 0.5 * (
-        sigma_diag * trace_k + mu_k_mu - n as f64 + log_det_k_approx - log_det_sigma
-    );
+    let complexity = 0.5 * (sigma_diag * trace_k + mu_k_mu - n as f64 - log_det_k - log_det_sigma);
 
     // Accuracy: 0.5 × (x − μ)ᵀ Γ (x − μ)
     let mut accuracy = 0.0f64;
@@ -191,9 +217,7 @@ mod tests {
         let n = 3;
         let obs = vec![0.5, 0.5, 0.5];
         let beliefs = vec![0.5, 0.5, 0.5];
-        let k = Array2::from_shape_fn((n, n), |(i, j)| {
-            if i == j { 0.0 } else { 1.0 }
-        });
+        let k = Array2::from_shape_fn((n, n), |(i, j)| if i == j { 0.0 } else { 1.0 });
         let errors = prediction_error_inner(&obs, &beliefs, &k.view(), n);
         for e in &errors {
             assert!(e.abs() < 1e-10, "perfect prediction → zero error");
@@ -205,9 +229,7 @@ mod tests {
         let n = 2;
         let obs = vec![1.0, 0.0];
         let beliefs = vec![0.0, 1.0];
-        let k = Array2::from_shape_fn((n, n), |(i, j)| {
-            if i == j { 0.0 } else { 1.0 }
-        });
+        let k = Array2::from_shape_fn((n, n), |(i, j)| if i == j { 0.0 } else { 1.0 });
         let errors = prediction_error_inner(&obs, &beliefs, &k.view(), n);
         // obs[0]=1, prediction=K[0,1]*beliefs[1]/K[0,1]=1, error=0
         // obs[1]=0, prediction=K[1,0]*beliefs[0]/K[1,0]=0, error=0
@@ -235,10 +257,10 @@ mod tests {
         let n = 2;
         let mu = vec![0.0; n];
         let x = vec![0.0; n];
-        let k = Array2::<f64>::eye(n);
-        let gamma = Array2::<f64>::eye(n);
-        let sigma_diag = 1.0;
-        let ridge = 1e-10;
+        let _k = Array2::<f64>::eye(n);
+        let _gamma = Array2::<f64>::eye(n);
+        let _sigma_diag = 1.0;
+        let _ridge = 1e-10;
 
         let mu_a = Array1::from_vec(mu);
         let x_a = Array1::from_vec(x);
@@ -251,5 +273,22 @@ mod tests {
         }
         accuracy *= 0.5;
         assert!(accuracy.abs() < 1e-20);
+    }
+
+    #[test]
+    fn test_log_det_spd_uses_full_matrix_not_diagonal_product() {
+        let k = Array2::from_shape_vec((2, 2), vec![2.0, 0.5, 0.5, 1.5]).unwrap();
+        let log_det = log_det_spd_with_ridge(&k.view(), 0.0).unwrap();
+        let expected = 2.75f64.ln();
+        assert!((log_det - expected).abs() < 1e-12);
+        let diagonal_product = (2.0f64 * 1.5f64).ln();
+        assert!((log_det - diagonal_product).abs() > 1e-3);
+    }
+
+    #[test]
+    fn test_log_det_spd_rejects_non_positive_definite_precision() {
+        let k = Array2::from_shape_vec((2, 2), vec![1.0, 2.0, 2.0, 1.0]).unwrap();
+        let err = log_det_spd_with_ridge(&k.view(), 0.0).unwrap_err();
+        assert!(err.to_string().contains("positive definite"));
     }
 }

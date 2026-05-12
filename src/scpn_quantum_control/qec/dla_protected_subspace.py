@@ -11,7 +11,8 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any
+from operator import index
+from typing import Any, TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -19,8 +20,8 @@ from qiskit import QuantumCircuit
 
 from ..analysis.dla_parity_theorem import parity_sector_dimensions, predicted_dla_dimension
 
-FloatArray = NDArray[np.float64]
-BoolArray = NDArray[np.bool_]
+FloatArray: TypeAlias = NDArray[np.float64]
+BoolArray: TypeAlias = NDArray[np.bool_]
 
 
 @dataclass(frozen=True)
@@ -405,19 +406,32 @@ def _probabilities_from_counts(
     counts: Mapping[str, int], spec: DLAProtectedSubspaceSpec
 ) -> FloatArray:
     probs = np.zeros(spec.hilbert_dim, dtype=np.float64)
-    total = int(sum(counts.values()))
-    if total <= 0:
-        raise ValueError("counts must contain positive shot total")
+    total = 0
     for bitstring, shots in counts.items():
         clean = bitstring.replace(" ", "")
         if len(clean) != spec.n_physical or any(bit not in "01" for bit in clean):
             raise ValueError(
                 f"bitstrings must have length {spec.n_physical} and contain only 0/1 bits"
             )
-        if shots < 0:
-            raise ValueError("counts must be non-negative")
-        probs[int(clean[::-1], 2)] += shots / total
+        total += _validated_shot_count(shots)
+    if total <= 0:
+        raise ValueError("counts must contain positive shot total")
+    for bitstring, shots in counts.items():
+        clean = bitstring.replace(" ", "")
+        probs[int(clean[::-1], 2)] += _validated_shot_count(shots) / total
     return probs
+
+
+def _validated_shot_count(shots: Any) -> int:
+    if isinstance(shots, bool):
+        raise ValueError("counts must contain non-negative integer shot counts")
+    try:
+        shot_count = index(shots)
+    except TypeError as exc:
+        raise ValueError("counts must contain non-negative integer shot counts") from exc
+    if shot_count < 0:
+        raise ValueError("counts must contain non-negative integer shot counts")
+    return int(shot_count)
 
 
 def _validate_probabilities(

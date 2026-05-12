@@ -59,7 +59,7 @@ def test_validate_scaling_rows_accepts_required_ok_or_skipped_rows() -> None:
         row["machine"] = "test"
         row["dependencies"] = {}
         row["git_commit"] = "test"
-        row["notes"] = []
+        row["notes"] = ["size-gated"]
 
     validation = validate_scaling_rows(protocol, rows)
 
@@ -83,5 +83,112 @@ def test_validate_scaling_rows_rejects_missing_baseline_and_unknown_status() -> 
     )
 
     assert validation.valid is False
-    assert "dense_eigh" in validation.missing_required
+    assert "n=4:dense_eigh" in validation.missing_required
     assert any("invalid status" in item for item in validation.invalid_rows)
+
+
+def _complete_row(protocol_id: str, n_qubits: int, baseline: str) -> dict:
+    return {
+        "protocol_id": protocol_id,
+        "n_qubits": n_qubits,
+        "baseline": baseline,
+        "status": "skipped",
+        "wall_time_ms": None,
+        "memory_bytes": None,
+        "metric_payload": {},
+        "command": "test",
+        "machine": "test",
+        "dependencies": {},
+        "git_commit": "test",
+        "notes": ["size-gated test row"],
+    }
+
+
+def test_validate_scaling_rows_requires_each_required_baseline_per_size() -> None:
+    protocol = default_s2_scaling_protocol()
+    rows = [
+        _complete_row(protocol.protocol_id, 4, baseline)
+        for baseline in protocol.required_baselines
+    ]
+    rows.extend(
+        [
+            _complete_row(protocol.protocol_id, 6, "classical_ode"),
+            _complete_row(protocol.protocol_id, 6, "dense_eigh"),
+        ]
+    )
+
+    validation = validate_scaling_rows(protocol, rows)
+
+    assert validation.valid is False
+    assert "n=6:mps_tensor_network" in validation.missing_required
+    assert "n=6:sparse_eigsh" in validation.missing_required
+
+
+def test_validate_scaling_rows_rejects_unbounded_ok_and_unexplained_skip() -> None:
+    protocol = default_s2_scaling_protocol()
+    rows = [
+        _complete_row(protocol.protocol_id, 4, baseline)
+        for baseline in protocol.required_baselines
+    ]
+    rows[0]["status"] = "ok"
+    rows[0]["wall_time_ms"] = -1.0
+    rows[0]["memory_bytes"] = -5
+    rows[1]["notes"] = []
+
+    validation = validate_scaling_rows(protocol, rows)
+
+    assert validation.valid is False
+    assert any(
+        "wall_time_ms must be finite and non-negative" in item for item in validation.invalid_rows
+    )
+    assert any(
+        "memory_bytes must be a non-negative integer" in item for item in validation.invalid_rows
+    )
+    assert any("skipped row requires notes" in item for item in validation.invalid_rows)
+
+
+def test_validate_scaling_rows_rejects_duplicate_rows_for_same_size_baseline() -> None:
+    protocol = default_s2_scaling_protocol()
+    rows = [
+        _complete_row(protocol.protocol_id, 4, baseline)
+        for baseline in protocol.required_baselines
+    ]
+    rows.append(_complete_row(protocol.protocol_id, 4, "classical_ode"))
+
+    validation = validate_scaling_rows(protocol, rows)
+
+    assert validation.valid is False
+    assert any(
+        "duplicate row for n=4 baseline='classical_ode'" in item
+        for item in validation.invalid_rows
+    )
+
+
+def test_validate_scaling_rows_rejects_malformed_provenance_payloads() -> None:
+    protocol = default_s2_scaling_protocol()
+    rows = [
+        _complete_row(protocol.protocol_id, 4, baseline)
+        for baseline in protocol.required_baselines
+    ]
+    rows[0]["status"] = "ok"
+    rows[0]["wall_time_ms"] = 1.0
+    rows[0]["memory_bytes"] = 1024
+    rows[0]["metric_payload"] = []
+    rows[0]["command"] = []
+    rows[0]["machine"] = ""
+    rows[0]["dependencies"] = []
+    rows[0]["git_commit"] = ""
+    rows[0]["notes"] = "not-a-list"
+
+    validation = validate_scaling_rows(protocol, rows)
+
+    assert validation.valid is False
+    assert any("metric_payload must be a mapping" in item for item in validation.invalid_rows)
+    assert any(
+        "command must be a non-empty string or sequence" in item
+        for item in validation.invalid_rows
+    )
+    assert any("machine must be a non-empty string" in item for item in validation.invalid_rows)
+    assert any("dependencies must be a mapping" in item for item in validation.invalid_rows)
+    assert any("git_commit must be a non-empty string" in item for item in validation.invalid_rows)
+    assert any("notes must be a list" in item for item in validation.invalid_rows)

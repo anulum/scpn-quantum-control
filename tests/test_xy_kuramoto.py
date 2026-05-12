@@ -352,6 +352,27 @@ def test_run_time_grid_preserves_requested_endpoints():
     assert len(result["times"]) == len(result["R"])
 
 
+def test_run_evolves_final_partial_interval_without_time_label_drift():
+    """Non-divisible horizons must evolve exactly to the labelled final time."""
+    from qiskit import QuantumCircuit
+
+    class RecordingSolver(QuantumKuramotoSolver):
+        def __init__(self):
+            super().__init__(2, np.zeros((2, 2)), np.array([0.2, 0.4]))
+            self.evolution_times: list[float] = []
+
+        def evolve(self, time: float, trotter_steps: int | None = None) -> QuantumCircuit:
+            self.evolution_times.append(time)
+            return QuantumCircuit(self.n)
+
+    solver = RecordingSolver()
+
+    result = solver.run(t_max=0.35, dt=0.1, trotter_per_step=1)
+
+    np.testing.assert_allclose(result["times"], [0.0, 0.1, 0.2, 0.3, 0.35])
+    np.testing.assert_allclose(solver.evolution_times, [0.1, 0.1, 0.1, 0.05])
+
+
 # ---------------------------------------------------------------------------
 # Rust path: Kuramoto Euler vs quantum Trotter parity
 # ---------------------------------------------------------------------------

@@ -32,23 +32,24 @@ ORCID: [0009-0009-3560-0851](https://orcid.org/0009-0009-3560-0851)
 
 ## Abstract
 
-We present the first quantum hardware demonstration of Kuramoto-XY synchronisation
-with heterogeneous natural frequencies on IBM's ibm_fez (Heron r2, 156 qubits).
-Using a Rust-accelerated simulation pipeline (5,401× faster than Qiskit for
-Hamiltonian construction), we compute entanglement entropy, Krylov complexity,
-OTOC scrambling, and Floquet discrete time crystal signatures across the
-synchronisation transition for systems of 2–16 qubits. Key hardware results
-include CHSH Bell inequality violation ($S = 2.165$, $>8\sigma$), QKD bit error
-rate of 5.5% (below the BB84 threshold of 11%), and 16-qubit Kuramoto dynamics
-with visible coupling structure at 94% state preparation fidelity. We extract
-the critical coupling $K_c(\infty) \approx 2.2$ via BKT finite-size scaling
-and demonstrate that heterogeneous frequencies preserve discrete time crystal
-order — to our knowledge the first such measurement on hardware. A
-hardware-anchored scaling analysis places the exact Hilbert-space simulation
-crossover at n≈11.6, while broad quantum advantage remains open because the
-Rust Kuramoto ODE baseline stays faster through the measured n≤16 range.
-All code, data, and 17 figures are
-open-source (AGPL-3.0) at
+This legacy preprint records artifact-backed legacy hardware evidence for
+Kuramoto-XY synchronisation workflows with heterogeneous natural frequencies on
+IBM's ibm_fez (Heron r2, 156 qubits). It is retained as historical experiment
+context and is not promoted as broad hardware validation. Using a
+Rust-accelerated simulation pipeline (5,401× faster than Qiskit for Hamiltonian
+construction), we compute entanglement entropy, Krylov complexity, OTOC
+scrambling, and Floquet discrete time crystal diagnostics across the
+synchronisation transition for systems of 2–16 qubits. Legacy hardware snapshots
+include CHSH Bell inequality violation ($S = 2.165$), QKD bit error rate of 5.5%
+(below the BB84 threshold of 11%), and a 16-qubit descriptive hardware snapshot
+with visible per-qubit structure. We extract the critical coupling
+$K_c(\infty) \approx 2.2$ via BKT finite-size scaling and report
+simulator-backed DTC frequency-disorder diagnostics without claiming a promoted
+hardware DTC result. A hardware-anchored scaling analysis places the exact
+Hilbert-space simulation crossover at n≈11.6, while broad quantum advantage
+remains open because the Rust Kuramoto ODE baseline stays faster through the
+measured n≤16 range. All code, data, and 17 figures are open-source
+(AGPL-3.0) at
 [github.com/anulum/scpn-quantum-control](https://github.com/anulum/scpn-quantum-control).
 
 ---
@@ -75,9 +76,9 @@ tunnelling between phase configurations.
 **Prior work** on quantum simulation of the XY model uses homogeneous frequencies
 ($\omega_i = \omega$ for all $i$). This preserves translational invariance and
 the BKT universality class is well-characterised. Theoretical quantum Kuramoto
-models with heterogeneity exist (Pikovsky, Ha et al.), but to our knowledge no
-prior hardware demonstration studies the quantum synchronisation transition with
-heterogeneous frequencies on a superconducting processor.
+models with heterogeneity exist (Pikovsky, Ha et al.). This repository reports
+one legacy superconducting-processor workflow and preserves it with explicit
+artifact-bound claim limits.
 
 We study the heterogeneous case using parameters from the SCPN framework
 (Šotek, 2025): 16 natural frequencies and a nearest-neighbour coupling matrix
@@ -165,9 +166,9 @@ $t^* = 0.28$ (K=4) vs $t^* = 1.17$ (K=1) at $n=8$.*
 ![Floquet DTC](figures/publication/fig9_floquet_dtc_n3456.png)
 
 *Figure 9. Subharmonic ratio $P(\Omega/2)/P(\Omega)$ and mean $R$ vs
-drive amplitude $\delta$ for $n=3, 4, 6$. All 15 amplitudes show DTC
-signatures above threshold. **Heterogeneous frequencies do not destroy
-the discrete time crystal** — first such measurement.*
+drive amplitude $\delta$ for $n=3, 4, 6$. All 15 amplitudes show finite-size
+simulator DTC signatures above threshold. This is not a promoted hardware DTC
+measurement.*
 
 ### 3.5 Finite-Size Scaling
 
@@ -231,9 +232,10 @@ indicating well-characterised noise on Heron r2.
 alternating pattern across all 16 qubits — the Kuramoto coupling structure
 is visible at full UPDE scale. (d) VQE 8-qubit energy landscape.*
 
-13 of 16 qubits show $|\langle Z \rangle| > 0.3$, demonstrating that the
-Kuramoto coupling structure survives hardware noise at the full 16-qubit
-UPDE scale.
+13 of 16 qubits show $|\langle Z \rangle| > 0.3$ in this descriptive hardware
+snapshot. This is retained as an artifact-backed observation of visible
+per-qubit structure, not as proof that the full Kuramoto coupling structure
+survives hardware noise at UPDE scale.
 
 ### 4.6 Ansatz Comparison
 
@@ -243,10 +245,10 @@ UPDE scale.
 
 The physics-informed Knm ansatz (CZ gates only between coupled pairs)
 produces output entropy of 2.36 bits vs 3.46 (TwoLocal) and 3.39
-(EfficientSU2). The Knm ansatz concentrates 42% of probability in the
-top bitstring vs 20% for generic alternatives — confirming that
-physics-informed circuit design outperforms generic variational ansatze
-on hardware.
+(EfficientSU2) in the retained artifact. The Knm ansatz concentrates 42% of
+probability in the top bitstring vs 20% for those comparator circuits; this is
+a circuit-family-specific observation, not a backend-general outperformance
+claim.
 
 ### 4.7 Exact-Simulation Crossover Boundary
 
@@ -346,11 +348,11 @@ to protect the subharmonic response.
 
 ### Hardware Noise Budget
 
-The 5.5% QBER and 94% state preparation fidelity establish that Heron r2
-has sufficient coherence for Kuramoto-XY simulation at $n \leq 8$. The
-16-qubit experiment is viable but noise-limited (depth $\leq$ 50 CX gates).
-ZNE provides marginal improvement ($<2\%$), suggesting that the dominant
-noise source is coherent (gate errors) rather than incoherent (T1/T2 decay).
+The 5.5% QBER and 94% state preparation fidelity in the retained legacy rows
+indicate usable shallow-circuit performance for the tested Kuramoto-XY
+circuits. The 16-qubit experiment remains noise-limited (depth $\leq$ 50 CX
+gates). ZNE provides marginal improvement ($<2\%$), so the noise-budget
+discussion remains descriptive rather than a backend-general coherence claim.
 
 ### Limitations
 
@@ -367,14 +369,13 @@ noise source is coherent (gate errors) rather than incoherent (T1/T2 decay).
 
 ## 6. Conclusion
 
-We have presented the first comprehensive quantum hardware study of
+We have preserved a legacy artifact-backed hardware and simulation study of
 coupled-oscillator synchronisation with heterogeneous natural frequencies.
-Key results include Bell inequality violation ($S = 2.165$), sub-threshold
-QKD error rate (5.5%), finite-size extrapolation of the critical coupling
-($K_c \approx 2.2$), and the discovery that discrete time crystal order
-survives frequency disorder. A Rust-accelerated pipeline enables 5,401×
-faster Hamiltonian construction and 264× faster OTOC computation vs
-standard tools.
+Promoted claims should be drawn only from committed raw-count artefacts,
+analysis scripts, and ledger rows; the ibm_fez material remains descriptive
+unless a later review promotes a specific result. The Rust-accelerated pipeline
+enables 5,401× faster Hamiltonian construction and 264× faster OTOC computation
+vs the measured standard-tool baselines.
 
 All code, data, and figures are open-source:
 
