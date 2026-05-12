@@ -39,14 +39,18 @@ class LogicalSyncWitness:
     ) -> dict[str, float | bool | list[str]]:
         """Return the legacy dictionary shape with concrete DLA metrics."""
         if counts is None and probabilities is None and "logical_fidelity" in kwargs:
+            if not bool(kwargs.get("allow_fidelity_proxy", False)):
+                raise NotImplementedError(
+                    "LogicalSyncWitness requires counts or probabilities for production "
+                    "evaluation. Set allow_fidelity_proxy=True only for the labelled "
+                    "diagnostic fidelity proxy."
+                )
+            fidelity = float(kwargs["logical_fidelity"])
             return {
-                "logical_fidelity": float(kwargs["logical_fidelity"]),
-                "sync_weight": float(kwargs["logical_fidelity"]),
-                "logical_sync_order": float(kwargs["logical_fidelity"]),
-                "parity_leakage": 0.0,
-                "code_leakage": 0.0,
-                "passes": True,
-                "failure_reasons": [],
+                "logical_sync_available": 0.0,
+                "logical_fidelity_proxy": fidelity,
+                "sync_weight_proxy": fidelity,
+                "is_logical_sync_witness": 0.0,
             }
         result = self.evaluate(probabilities=probabilities, counts=counts)
         return {

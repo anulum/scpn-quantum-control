@@ -132,5 +132,24 @@ def test_quantum_fisher_information_routes_real_hamiltonian_inputs_to_qfi_engine
     assert result["n_measurements"] == 5000.0
 
 
+def test_logical_sync_witness_refuses_fidelity_only_proxy_by_default():
+    logical = LogicalSyncWitness()
+
+    with pytest.raises(NotImplementedError, match="counts or probabilities"):
+        logical(logical_fidelity=0.92)
+
+
+def test_logical_sync_witness_fidelity_proxy_is_explicitly_labelled():
+    logical = LogicalSyncWitness()
+
+    result = logical(logical_fidelity=0.92, allow_fidelity_proxy=True)
+
+    assert result["logical_sync_available"] == 0.0
+    assert result["is_logical_sync_witness"] == 0.0
+    assert result["logical_fidelity_proxy"] == pytest.approx(0.92)
+    assert "logical_sync_order" not in result
+    assert "passes" not in result
+
+
 if __name__ == "__main__":
     test_all_observables_with_real_counts()
