@@ -384,9 +384,9 @@ QuantumDisruptionClassifier(n_features=11, n_layers=3)
 ```python
 ITERFeatureSpec()  # 11 ITER disruption features with min/max ranges
 normalize_iter_features(raw: np.ndarray) -> np.ndarray  # min-max to [0, 1]
-generate_synthetic_iter_data(n_samples, disruption_fraction=0.3) -> (X, y)
+generate_synthetic_iter_data(n_samples, disruption_fraction=0.3, allow_synthetic=True) -> (X, y)
 from_fusion_core_shot(shot_data: dict) -> (features, label, warnings)
-DisruptionBenchmark(n_train=100, n_test=50).run(epochs=10) -> dict
+DisruptionBenchmark(n_train=100, n_test=50, allow_synthetic=True).run(epochs=10) -> dict
 ```
 
 ## applications

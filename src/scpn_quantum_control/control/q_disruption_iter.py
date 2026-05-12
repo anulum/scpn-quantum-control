@@ -75,6 +75,8 @@ def generate_synthetic_iter_data(
     n_samples: int,
     disruption_fraction: float = 0.3,
     rng: np.random.Generator | None = None,
+    *,
+    allow_synthetic: bool = False,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Synthetic ITER disruption data for classifier benchmarking.
 
@@ -82,6 +84,15 @@ def generate_synthetic_iter_data(
     Disruption samples: shifted locked_mode up, q95 down, beta_N up.
     Returns (X, y) where X is (n_samples, 11) normalized, y is binary labels.
     """
+    if not allow_synthetic:
+        raise RuntimeError(
+            "Refusing generated ITER disruption data without allow_synthetic=True. "
+            "Use from_fusion_core_shot() or measured plasma diagnostics for publication-safe claims."
+        )
+    if n_samples <= 0:
+        raise ValueError("n_samples must be positive.")
+    if not 0.0 < disruption_fraction < 1.0:
+        raise ValueError("disruption_fraction must be strictly between 0 and 1.")
     if rng is None:
         rng = np.random.default_rng()
 
@@ -150,10 +161,27 @@ def from_fusion_core_shot(shot_data: dict) -> tuple[np.ndarray, int, list[str]]:
 class DisruptionBenchmark:
     """ITER disruption classification benchmark using quantum circuit classifier."""
 
-    def __init__(self, n_train: int = 100, n_test: int = 50, seed: int = 42):
+    def __init__(
+        self,
+        n_train: int = 100,
+        n_test: int = 50,
+        seed: int = 42,
+        *,
+        allow_synthetic: bool = False,
+    ):
         self.rng = np.random.default_rng(seed)
-        self.X_train, self.y_train = generate_synthetic_iter_data(n_train, rng=self.rng)
-        self.X_test, self.y_test = generate_synthetic_iter_data(n_test, rng=self.rng)
+        self.source_mode = "synthetic"
+        self.publication_safe = False
+        self.X_train, self.y_train = generate_synthetic_iter_data(
+            n_train,
+            rng=self.rng,
+            allow_synthetic=allow_synthetic,
+        )
+        self.X_test, self.y_test = generate_synthetic_iter_data(
+            n_test,
+            rng=self.rng,
+            allow_synthetic=allow_synthetic,
+        )
         self.classifier = QuantumDisruptionClassifier(seed=seed)
 
     def run(self, epochs: int = 10, lr: float = 0.1) -> dict:
@@ -167,4 +195,6 @@ class DisruptionBenchmark:
             "predictions": predictions.tolist(),
             "n_train": len(self.X_train),
             "n_test": len(self.X_test),
+            "source_mode": self.source_mode,
+            "publication_safe": self.publication_safe,
         }

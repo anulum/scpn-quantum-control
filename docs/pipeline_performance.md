@@ -815,10 +815,11 @@ This benchmark is generated-data only and is not publication-safe without measur
 | Operation | System | Time | Output |
 |-----------|--------|------|--------|
 | `predict(features)` | 5 qubits | 4.6 ms | risk=0.495 |
-| `DisruptionBenchmark(20+10, 2 epochs)` | 5 qubits | 11.9 s | accuracy=70% |
+| `DisruptionBenchmark(20+10, allow_synthetic=True, 2 epochs)` | 5 qubits | 11.9 s | accuracy=70%, source_mode=synthetic |
 
 Feature normalisation clamps to [0, 1]. Prediction deterministic for same params.
 Circuit depth > 0. Training updates parameters.
+The benchmark dataset is generated and is not publication-safe without measured plasma diagnostics or `from_fusion_core_shot()` inputs.
 
 ### FMO Photosynthetic Benchmark
 

@@ -8,6 +8,7 @@
 """Tests for control/q_disruption_iter.py."""
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.control.q_disruption_iter import (
     DisruptionBenchmark,
@@ -41,46 +42,62 @@ def test_normalize_preserves_center():
 
 
 def test_generate_synthetic_shapes():
-    X, y = generate_synthetic_iter_data(200, disruption_fraction=0.3, rng=np.random.default_rng(0))
+    X, y = generate_synthetic_iter_data(
+        200, disruption_fraction=0.3, rng=np.random.default_rng(0), allow_synthetic=True
+    )
     assert X.shape == (200, 11)
     assert y.shape == (200,)
     assert set(np.unique(y)) == {0.0, 1.0}
 
 
 def test_generate_disruption_fraction():
-    X, y = generate_synthetic_iter_data(100, disruption_fraction=0.4, rng=np.random.default_rng(0))
+    X, y = generate_synthetic_iter_data(
+        100, disruption_fraction=0.4, rng=np.random.default_rng(0), allow_synthetic=True
+    )
     assert int(np.sum(y)) == 40
 
 
 def test_generate_normalized_range():
-    X, y = generate_synthetic_iter_data(500, rng=np.random.default_rng(0))
+    X, y = generate_synthetic_iter_data(500, rng=np.random.default_rng(0), allow_synthetic=True)
     assert np.all(X >= 0.0)
     assert np.all(X <= 1.0)
 
 
 def test_generate_deterministic():
-    X1, y1 = generate_synthetic_iter_data(50, rng=np.random.default_rng(42))
-    X2, y2 = generate_synthetic_iter_data(50, rng=np.random.default_rng(42))
+    X1, y1 = generate_synthetic_iter_data(50, rng=np.random.default_rng(42), allow_synthetic=True)
+    X2, y2 = generate_synthetic_iter_data(50, rng=np.random.default_rng(42), allow_synthetic=True)
     np.testing.assert_array_equal(X1, X2)
     np.testing.assert_array_equal(y1, y2)
 
 
+def test_generate_synthetic_requires_explicit_opt_in():
+    with pytest.raises(RuntimeError, match="allow_synthetic"):
+        generate_synthetic_iter_data(50, rng=np.random.default_rng(42))
+
+
 def test_benchmark_init():
-    bench = DisruptionBenchmark(n_train=20, n_test=10, seed=0)
+    bench = DisruptionBenchmark(n_train=20, n_test=10, seed=0, allow_synthetic=True)
     assert bench.X_train.shape == (20, 11)
     assert bench.X_test.shape == (10, 11)
 
 
+def test_benchmark_requires_explicit_synthetic_opt_in():
+    with pytest.raises(RuntimeError, match="allow_synthetic"):
+        DisruptionBenchmark(n_train=20, n_test=10, seed=0)
+
+
 def test_benchmark_run_returns_accuracy():
-    bench = DisruptionBenchmark(n_train=10, n_test=5, seed=0)
+    bench = DisruptionBenchmark(n_train=10, n_test=5, seed=0, allow_synthetic=True)
     result = bench.run(epochs=1, lr=0.01)
     assert "accuracy" in result
     assert 0.0 <= result["accuracy"] <= 1.0
     assert len(result["predictions"]) == 5
+    assert result["source_mode"] == "synthetic"
+    assert result["publication_safe"] is False
 
 
 def test_benchmark_classifier_predicts():
-    bench = DisruptionBenchmark(n_train=10, n_test=5, seed=0)
+    bench = DisruptionBenchmark(n_train=10, n_test=5, seed=0, allow_synthetic=True)
     pred = bench.classifier.predict(bench.X_test[0])
     assert 0.0 <= pred <= 1.0
 
@@ -100,10 +117,10 @@ def test_normalize_extreme_values():
 
 def test_benchmark_training_reduces_loss():
     """Training for more epochs should reduce or maintain loss."""
-    bench = DisruptionBenchmark(n_train=15, n_test=5, seed=42)
+    bench = DisruptionBenchmark(n_train=15, n_test=5, seed=42, allow_synthetic=True)
     r1 = bench.run(epochs=1, lr=0.1)
     # Re-init and train longer
-    bench2 = DisruptionBenchmark(n_train=15, n_test=5, seed=42)
+    bench2 = DisruptionBenchmark(n_train=15, n_test=5, seed=42, allow_synthetic=True)
     r2 = bench2.run(epochs=5, lr=0.1)
     # More epochs should not drastically worsen accuracy
     assert r2["accuracy"] >= r1["accuracy"] - 0.3
@@ -121,7 +138,7 @@ def test_pipeline_iter_to_disruption():
     import time
 
     t0 = time.perf_counter()
-    bench = DisruptionBenchmark(n_train=20, n_test=10, seed=42)
+    bench = DisruptionBenchmark(n_train=20, n_test=10, seed=42, allow_synthetic=True)
     result = bench.run(epochs=2, lr=0.1)
     dt = (time.perf_counter() - t0) * 1000
 
