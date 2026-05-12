@@ -30,6 +30,8 @@ The historical debt from 2026-04-17 — seven Dependabot squash merges
 merged without `Co-Authored-By` (`2a7d604`, `001d30b`, `8ce9324`,
 `0a9dfbd`, `a93874a`, `57b05cf`, `cb2b1fe`) — is recorded in
 `HISTORICAL_EXEMPT_SHAS` so the CI auditor does not re-report it.
+The same set also records any later immutable protected-branch merge
+that cannot be rewritten without violating branch protection.
 """
 
 from __future__ import annotations
@@ -83,6 +85,10 @@ HISTORICAL_EXEMPT_SHAS: frozenset[str] = frozenset(
         "a93874a",
         "57b05cf",
         "cb2b1fe",
+        # 2026-05-12: Dependabot coverage squash merge landed through
+        # protected branch UI without the required trailer; branch protection
+        # blocks retroactive repair by force-push.
+        "4bbcc87",
         # Pre-2026-04-17 commits whose subjects used banned words
         # ("comprehensive", "robust", "elite") before
         # `feedback_no_internal_quality_labels` + the anti-slop hook
