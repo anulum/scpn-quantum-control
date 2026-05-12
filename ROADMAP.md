@@ -112,6 +112,13 @@ is copied here.
   the non-production initial-guess path or the production synthesis gate.
   The phase API documents that seed angles are offline optimiser inputs,
   not compiled QSP phases.
+- [x] **Koopman Rust-kernel routing hardening.** Implemented
+  2026-05-12: `build_koopman_generator_rust()` now uses the optional
+  native `scpn_quantum_engine.koopman_generator` export when available,
+  exposes `require_rust=True` for benchmark/release gates that must
+  reject fallback execution, and keeps the NumPy generator as the
+  explicit fallback path. The Rust crate and `.pyi` contract now carry
+  the Koopman dense-generator export.
 - [x] **Integrated-information wrapper production route.** Implemented
   2026-05-12: `IntegratedInformationPhi` now routes explicit
   `coupling_matrix` and `natural_frequencies` inputs to the

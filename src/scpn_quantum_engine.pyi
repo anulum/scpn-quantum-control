@@ -203,6 +203,7 @@ def kuramoto_witness_candidate_features(
     dt: float,
     n_steps: int,
 ) -> tuple[_F64Array, _F64Array, _F64Array]: ...
+def koopman_generator(k: _F64Array, omega: _F64Array, theta_ref: _F64Array) -> _F64Array: ...
 def lanczos_b_coefficients(
     h_re: _F64Array,
     h_im: _F64Array,

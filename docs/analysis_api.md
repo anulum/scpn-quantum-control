@@ -621,6 +621,12 @@ Network topology metrics (clustering, betweenness, modularity) of the $K_{nm}$ m
 Koopman operator for the nonlinear Kuramoto dynamics — the BQP argument for quantum
 advantage.
 
+`build_koopman_generator_rust()` now routes to the optional
+`scpn_quantum_engine.koopman_generator` kernel when that export is present and
+falls back to the validated NumPy generator otherwise. Set `require_rust=True`
+when a benchmark or release gate must prove that the native kernel, not the
+fallback, served the dense generator.
+
 ### `hamiltonian_learning` — Recover $K_{nm}$ from Measurements
 
 Learn the coupling matrix from measurement data using compressed sensing.
