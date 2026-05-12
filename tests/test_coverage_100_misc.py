@@ -127,11 +127,16 @@ def test_quantum_costs_no_correlators():
 
 
 def test_quantum_outer_cycle_single_node():
-    """Cover line 61: classical_cost returns 1.0 when W has no off-diagonal."""
+    """Cover labelled surrogate path for a single-node classical cost."""
+    import pytest
+
     from scpn_quantum_control.ssgf.quantum_outer_cycle import classical_cost
 
     W = np.array([[1.0]])
-    cost = classical_cost(W)
+    with pytest.raises(ValueError, match="surrogate"):
+        classical_cost(W)
+
+    cost = classical_cost(W, allow_surrogate=True)
     assert cost == 1.0
 
 
