@@ -45,6 +45,8 @@ class DisruptionClassifierResult:
     predictions: np.ndarray
     labels: np.ndarray
     kernel_n_qubits: int
+    source_mode: str
+    publication_safe: bool
 
 
 def generate_synthetic_disruption_data(
@@ -52,6 +54,8 @@ def generate_synthetic_disruption_data(
     n_features: int = 5,
     disruption_fraction: float = 0.3,
     seed: int = 42,
+    *,
+    allow_synthetic: bool = False,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Generate synthetic tokamak disruption data.
 
@@ -64,6 +68,18 @@ def generate_synthetic_disruption_data(
 
     Labels: 0 = stable, 1 = disruption.
     """
+    if not allow_synthetic:
+        raise RuntimeError(
+            "Refusing generated disruption data without allow_synthetic=True. "
+            "Use measured plasma diagnostics for publication-safe claims."
+        )
+    if n_samples <= 0:
+        raise ValueError("n_samples must be positive.")
+    if n_features != 5:
+        raise ValueError("n_features must be 5 for the documented tokamak feature schema.")
+    if not 0.0 < disruption_fraction < 1.0:
+        raise ValueError("disruption_fraction must be strictly between 0 and 1.")
+
     rng = np.random.default_rng(seed)
     n_disrupt = int(n_samples * disruption_fraction)
     n_stable = n_samples - n_disrupt
@@ -133,9 +149,15 @@ def run_disruption_benchmark(
     n_test: int = 20,
     n_qubits: int = 4,
     seed: int = 42,
+    *,
+    allow_synthetic: bool = False,
 ) -> DisruptionClassifierResult:
-    """Full disruption classification benchmark on synthetic data."""
-    X, y = generate_synthetic_disruption_data(n_samples=n_train + n_test, seed=seed)
+    """Full disruption classification benchmark on explicitly generated data."""
+    X, y = generate_synthetic_disruption_data(
+        n_samples=n_train + n_test,
+        seed=seed,
+        allow_synthetic=allow_synthetic,
+    )
     X_train, y_train = X[:n_train], y[:n_train]
     X_test, y_test = X[n_train:], y[n_train:]
 
@@ -151,4 +173,6 @@ def run_disruption_benchmark(
         predictions=preds,
         labels=y_test,
         kernel_n_qubits=n_qubits,
+        source_mode="synthetic",
+        publication_safe=False,
     )

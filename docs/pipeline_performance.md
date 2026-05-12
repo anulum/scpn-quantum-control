@@ -805,9 +805,10 @@ K(x,x) = 1. Close inputs → high overlap (>0.95). Different Knm → different k
 
 | Operation | System | Time | Output |
 |-----------|--------|------|--------|
-| `run_disruption_benchmark(10+5)` | 3 qubits | 297 ms | accuracy=80% |
+| `run_disruption_benchmark(10+5, allow_synthetic=True)` | 3 qubits | 297 ms | accuracy=80%, source_mode=synthetic |
 
 Kernel Gram matrix symmetric + PSD. Binary predictions. Accuracy bounded [0, 1].
+This benchmark is generated-data only and is not publication-safe without measured plasma diagnostics.
 
 ### Quantum Disruption (ITER)
 

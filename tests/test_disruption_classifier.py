@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.applications.disruption_classifier import (
     DisruptionClassifierResult,
@@ -20,49 +21,62 @@ from scpn_quantum_control.applications.disruption_classifier import (
 
 
 class TestSyntheticData:
+    def test_synthetic_data_requires_explicit_opt_in(self):
+        with pytest.raises(RuntimeError, match="allow_synthetic"):
+            generate_synthetic_disruption_data(n_samples=20)
+
     def test_shape(self):
-        X, y = generate_synthetic_disruption_data(n_samples=20)
+        X, y = generate_synthetic_disruption_data(n_samples=20, allow_synthetic=True)
         assert X.shape == (20, 5)
         assert y.shape == (20,)
 
     def test_labels_binary(self):
-        _, y = generate_synthetic_disruption_data(n_samples=30)
+        _, y = generate_synthetic_disruption_data(n_samples=30, allow_synthetic=True)
         assert set(np.unique(y)).issubset({0, 1})
 
     def test_has_both_classes(self):
-        _, y = generate_synthetic_disruption_data(n_samples=30)
+        _, y = generate_synthetic_disruption_data(n_samples=30, allow_synthetic=True)
         assert 0 in y and 1 in y
 
 
 class TestTrainClassifier:
     def test_returns_weights(self):
-        X, y = generate_synthetic_disruption_data(n_samples=10)
+        X, y = generate_synthetic_disruption_data(n_samples=10, allow_synthetic=True)
         weights, K = train_disruption_classifier(X, y, n_qubits=3)
         assert len(weights) == 10
         assert K.shape == (10, 10)
 
 
 class TestRunBenchmark:
+    def test_benchmark_requires_explicit_synthetic_opt_in(self):
+        with pytest.raises(RuntimeError, match="allow_synthetic"):
+            run_disruption_benchmark(n_train=8, n_test=4, n_qubits=3)
+
     def test_returns_result(self):
-        result = run_disruption_benchmark(n_train=8, n_test=4, n_qubits=3)
+        result = run_disruption_benchmark(n_train=8, n_test=4, n_qubits=3, allow_synthetic=True)
         assert isinstance(result, DisruptionClassifierResult)
 
     def test_accuracy_bounded(self):
-        result = run_disruption_benchmark(n_train=8, n_test=4, n_qubits=3)
+        result = run_disruption_benchmark(n_train=8, n_test=4, n_qubits=3, allow_synthetic=True)
         assert 0 <= result.accuracy <= 1.0
 
     def test_predictions_shape(self):
-        result = run_disruption_benchmark(n_train=8, n_test=4, n_qubits=3)
+        result = run_disruption_benchmark(n_train=8, n_test=4, n_qubits=3, allow_synthetic=True)
         assert len(result.predictions) == 4
         assert len(result.labels) == 4
 
     def test_predictions_binary(self):
-        result = run_disruption_benchmark(n_train=8, n_test=4, n_qubits=3)
+        result = run_disruption_benchmark(n_train=8, n_test=4, n_qubits=3, allow_synthetic=True)
         assert set(np.unique(result.predictions)).issubset({0, 1})
+
+    def test_result_labels_synthetic_source_mode(self):
+        result = run_disruption_benchmark(n_train=8, n_test=4, n_qubits=3, allow_synthetic=True)
+        assert result.source_mode == "synthetic"
+        assert result.publication_safe is False
 
     def test_scpn_disruption(self):
         """Record disruption classifier benchmark."""
-        result = run_disruption_benchmark(n_train=15, n_test=10, n_qubits=3)
+        result = run_disruption_benchmark(n_train=15, n_test=10, n_qubits=3, allow_synthetic=True)
         print("\n  Disruption classifier (synthetic):")
         print(f"  Accuracy: {result.accuracy:.2%}")
         print(f"  Train/test: {result.n_train}/{result.n_test}")
@@ -77,12 +91,12 @@ class TestRunBenchmark:
 
 class TestClassifierPhysics:
     def test_kernel_matrix_symmetric(self):
-        X, y = generate_synthetic_disruption_data(n_samples=6)
+        X, y = generate_synthetic_disruption_data(n_samples=6, allow_synthetic=True)
         _, K = train_disruption_classifier(X, y, n_qubits=3)
         np.testing.assert_allclose(K, K.T, atol=1e-10)
 
     def test_kernel_matrix_psd(self):
-        X, y = generate_synthetic_disruption_data(n_samples=6)
+        X, y = generate_synthetic_disruption_data(n_samples=6, allow_synthetic=True)
         _, K = train_disruption_classifier(X, y, n_qubits=3)
         eigvals = np.linalg.eigvalsh(K)
         assert np.all(eigvals >= -1e-6)
@@ -101,7 +115,7 @@ class TestClassifierPipeline:
         import time
 
         t0 = time.perf_counter()
-        result = run_disruption_benchmark(n_train=10, n_test=5, n_qubits=3)
+        result = run_disruption_benchmark(n_train=10, n_test=5, n_qubits=3, allow_synthetic=True)
         dt = (time.perf_counter() - t0) * 1000
 
         assert 0 <= result.accuracy <= 1.0
