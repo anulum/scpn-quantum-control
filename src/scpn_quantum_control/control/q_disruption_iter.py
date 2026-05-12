@@ -123,7 +123,12 @@ def generate_synthetic_iter_data(
     return X, y
 
 
-def from_fusion_core_shot(shot_data: dict) -> tuple[np.ndarray, int, list[str]]:
+def from_fusion_core_shot(
+    shot_data: dict,
+    *,
+    allow_center_defaults: bool = False,
+    allow_density_proxy: bool = False,
+) -> tuple[np.ndarray, int, list[str]]:
     """Convert a fusion-core NPZ disruption shot to ITER feature vector.
 
     shot_data: dict loaded from scpn_fusion.io.tokamak_disruption_archive
@@ -132,10 +137,10 @@ def from_fusion_core_shot(shot_data: dict) -> tuple[np.ndarray, int, list[str]]:
 
     Returns (features_11, label, warnings) where features are time-averaged
     scalars normalized to [0, 1], label is 0 (safe) or 1 (disruption),
-    and warnings lists any features that defaulted to ITER center values.
+    and warnings lists any explicitly allowed centre defaults.
 
-    Note: ne_1e19 maps to the n_GW slot as a proxy. For accurate Greenwald
-    fraction, divide by n_GW = I_p / (pi * a²) externally.
+    ``ne_1e19`` maps to the n_GW slot only when ``allow_density_proxy`` is
+    true. For production Greenwald fraction input, provide ``n_GW`` directly.
     """
     spec = ITERFeatureSpec()
     centers = np.array([15.0, 3.0, 0.85, 0.85, 1.8, 30.0, 0.0001, 0.3, 350.0, 1.7, 0.0])
@@ -143,11 +148,27 @@ def from_fusion_core_shot(shot_data: dict) -> tuple[np.ndarray, int, list[str]]:
     warnings: list[str] = []
 
     mapped_indices: set[int] = set()
-    for key, idx in _FUSION_CORE_KEY_MAP.items():
+    key_map = dict(_FUSION_CORE_KEY_MAP)
+    if "n_GW" in shot_data:
+        key_map["n_GW"] = 3
+    elif "ne_1e19" in shot_data and not allow_density_proxy:
+        raise ValueError("ne_1e19 cannot be used as n_GW without allow_density_proxy=True")
+
+    for key, idx in key_map.items():
+        if key == "ne_1e19" and not allow_density_proxy:
+            continue
         if key in shot_data:
             arr = np.asarray(shot_data[key], dtype=np.float64)
             raw[idx] = float(np.mean(arr)) if arr.ndim > 0 else float(arr)
             mapped_indices.add(idx)
+
+    missing = [name for idx, name in enumerate(spec.names) if idx not in mapped_indices]
+    if missing and not allow_center_defaults:
+        missing_list = ", ".join(missing)
+        raise ValueError(
+            "missing required ITER features; pass allow_center_defaults=True "
+            f"only for labelled non-publication fallback values: {missing_list}"
+        )
 
     for idx, name in enumerate(spec.names):
         if idx not in mapped_indices:
