@@ -137,6 +137,13 @@ is copied here.
   unsupported `reward_function`, and non-positive `n_episodes`) at
   construction time. The wrapper contract is documented in the analysis
   and witness-discovery API pages.
+- [x] **RL pulse-optimiser interface configuration hardening.**
+  Implemented 2026-05-12: `RLPulseOptimizer` now rejects missing
+  runners, non-finite/out-of-range `target_sync_order`, and non-positive,
+  fractional, or boolean `episodes` before the intentionally gated
+  optimisation methods can be called. The language-tier policy records
+  that this remains a fail-fast interface pending a real objective,
+  benchmark, and replayable training trace.
 - [x] **PEC local multi-qubit coefficient decomposition.** Implemented
   2026-05-12: `pauli_twirl_decompose()` now returns tensor-product
   quasi-probability coefficients for `n_qubits >= 1`, preserving exact

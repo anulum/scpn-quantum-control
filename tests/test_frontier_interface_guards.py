@@ -93,6 +93,26 @@ def test_rl_pulse_optimizer_fails_until_implemented():
 
 
 @pytest.mark.parametrize(
+    ("kwargs", "match"),
+    [
+        ({"runner": None}, "runner"),
+        ({"target_sync_order": float("nan")}, "target_sync_order"),
+        ({"target_sync_order": -0.1}, "target_sync_order"),
+        ({"target_sync_order": 1.1}, "target_sync_order"),
+        ({"episodes": 0}, "episodes"),
+        ({"episodes": 1.5}, "episodes"),
+        ({"episodes": True}, "episodes"),
+    ],
+)
+def test_rl_pulse_optimizer_rejects_invalid_configuration(kwargs, match):
+    params = {"runner": object(), "target_sync_order": 0.5, "episodes": 1}
+    params.update(kwargs)
+
+    with pytest.raises(ValueError, match=match):
+        RLPulseOptimizer(**params)
+
+
+@pytest.mark.parametrize(
     "relative_path",
     [
         "scripts/frontier_campaign_2026/mock_injector.py",
