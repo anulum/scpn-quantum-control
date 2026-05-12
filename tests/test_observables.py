@@ -215,5 +215,13 @@ def test_logical_sync_witness_fidelity_proxy_is_explicitly_labelled():
     assert "passes" not in result
 
 
+@pytest.mark.parametrize("logical_fidelity", [float("nan"), float("inf"), -0.1, 1.1])
+def test_logical_sync_witness_fidelity_proxy_rejects_invalid_values(logical_fidelity):
+    logical = LogicalSyncWitness()
+
+    with pytest.raises(ValueError, match="logical_fidelity"):
+        logical(logical_fidelity=logical_fidelity, allow_fidelity_proxy=True)
+
+
 if __name__ == "__main__":
     test_all_observables_with_real_counts()

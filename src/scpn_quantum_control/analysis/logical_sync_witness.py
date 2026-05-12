@@ -45,7 +45,7 @@ class LogicalSyncWitness:
                     "evaluation. Set allow_fidelity_proxy=True only for the labelled "
                     "diagnostic fidelity proxy."
                 )
-            fidelity = float(kwargs["logical_fidelity"])
+            fidelity = _validate_logical_fidelity_proxy(kwargs["logical_fidelity"])
             return {
                 "logical_sync_available": 0.0,
                 "logical_fidelity_proxy": fidelity,
@@ -89,3 +89,10 @@ def _infer_spec(
             raise ValueError("probabilities length must be a power of two")
         return DLAProtectedSubspaceSpec(n_logical=n_qubits, code_distance=1, target_parity=0)
     raise ValueError("counts, probabilities, or logical_fidelity must be provided")
+
+
+def _validate_logical_fidelity_proxy(value: Any) -> float:
+    fidelity = float(value)
+    if not np.isfinite(fidelity) or fidelity < 0.0 or fidelity > 1.0:
+        raise ValueError("logical_fidelity must be a finite value in [0, 1].")
+    return fidelity

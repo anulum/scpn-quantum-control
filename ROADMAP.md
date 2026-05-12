@@ -125,6 +125,12 @@ is copied here.
   total normalisation, preventing malformed hardware/simulator payloads
   from being coerced into invalid probability mass. The DLA-protected
   subspace docs record the count contract.
+- [x] **Logical-sync fidelity proxy domain hardening.** Implemented
+  2026-05-12: `LogicalSyncWitness` now rejects non-finite and
+  out-of-range scalar fidelity diagnostics even on the explicit
+  `allow_fidelity_proxy=True` path. The reproducibility table records
+  that this remains a labelled finite unit-interval proxy, not a
+  production logical synchronisation witness.
 - [x] **RL witness-discovery wrapper contract hardening.**
   Implemented 2026-05-12: `RLDiscoveryAgent` now rejects unwired
   compatibility parameters (`runner`, unsupported `observables`,

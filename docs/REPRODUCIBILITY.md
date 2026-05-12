@@ -241,7 +241,7 @@ the phase-coherent regime (Kuramoto critical point ~K_c ≈ 2σ_ω/π).
 | `IntegratedInformationPhi` | ❌ NO | No production IIT/causal-state implementation is wired; entropy is available only as an explicitly labelled diagnostic |
 | `QuantumFisherInformation` | ✅ YES, when Hamiltonian inputs are supplied | Routes explicit coupling matrix and natural frequencies through the spectral QFI engine; the sync-order/DLA estimate is available only as an explicitly labelled diagnostic proxy |
 | `ThermodynamicWitness` | ✅ YES, when work protocol data are supplied | Requires explicit work samples or a calibrated work value in joules; refuses default/synthetic work |
-| `LogicalSyncWitness` | ✅ YES, when DLA-protected counts/probabilities are supplied | Routes counts or probabilities through the DLA-protected QEC witness; scalar fidelity is available only as an explicitly labelled diagnostic proxy |
+| `LogicalSyncWitness` | ✅ YES, when DLA-protected counts/probabilities are supplied | Routes counts or probabilities through the DLA-protected QEC witness; scalar fidelity is available only as an explicitly labelled finite unit-interval diagnostic proxy |
 
 > **Publication guidance:** Only ✅ observables are attributable to real QPU measurements.
 > ⚠️ PROXY observables must be labelled as model estimates and must not be reported under production observable keys.
