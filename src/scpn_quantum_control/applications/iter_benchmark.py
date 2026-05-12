@@ -85,6 +85,49 @@ class ITERBenchmarkResult:
     publication_safe: bool
 
 
+def _validated_square_matrix(
+    matrix: np.ndarray,
+    name: str,
+    *,
+    require_mhd_coupling: bool = False,
+) -> np.ndarray:
+    values = np.asarray(matrix, dtype=float)
+    if values.ndim != 2 or values.shape[0] != values.shape[1]:
+        raise ValueError(f"{name} must be a square 2-D matrix.")
+    if values.shape[0] < 2:
+        raise ValueError(f"{name} must contain at least two coupled modes.")
+    if not np.all(np.isfinite(values)):
+        raise ValueError(f"{name} must contain only finite values.")
+    if require_mhd_coupling:
+        if np.any(values < 0.0):
+            raise ValueError(f"{name} values must be non-negative.")
+        if not np.allclose(values, values.T, atol=1e-12):
+            raise ValueError(f"{name} must be symmetric.")
+        if not np.allclose(np.diag(values), 0.0, atol=1e-12):
+            raise ValueError(f"{name} diagonal must be zero.")
+    return values
+
+
+def _validated_frequency_vector(
+    frequencies: np.ndarray,
+    n_modes: int,
+    name: str,
+    matrix_name: str,
+) -> np.ndarray:
+    values = np.asarray(frequencies, dtype=float)
+    if values.ndim != 1 or values.shape != (n_modes,):
+        raise ValueError(f"{name} must match {matrix_name} mode count.")
+    if not np.all(np.isfinite(values)):
+        raise ValueError(f"{name} must contain only finite values.")
+    return values
+
+
+def _finite_correlation(value: float) -> float:
+    if np.isnan(value):
+        return 0.0
+    return float(value)
+
+
 def iter_coupling_matrix(
     *,
     allow_synthetic_reference: bool = False,
@@ -120,20 +163,33 @@ def iter_benchmark(
         source_mode = str(reference_source_mode).strip()
         if source_mode not in ALL_SOURCE_MODES:
             raise ValueError(f"reference_source_mode must be one of {sorted(ALL_SOURCE_MODES)}")
-        K_iter = np.asarray(iter_coupling, dtype=float)
-        omega_iter = np.asarray(iter_frequencies, dtype=float)
+        K_iter = _validated_square_matrix(
+            iter_coupling,
+            "iter_coupling",
+            require_mhd_coupling=True,
+        )
+        omega_iter = _validated_frequency_vector(
+            iter_frequencies,
+            K_iter.shape[0],
+            "iter_frequencies",
+            "iter_coupling",
+        )
     publication_safe = source_mode not in SYNTHETIC_SOURCE_MODES
 
-    K_scpn = np.asarray(K_scpn, dtype=float)
-    omega_scpn = np.asarray(omega_scpn, dtype=float)
-    if K_scpn.ndim != 2 or K_scpn.shape[0] != K_scpn.shape[1]:
-        raise ValueError("K_scpn must be a square matrix.")
-    if omega_scpn.ndim != 1 or omega_scpn.shape[0] < K_scpn.shape[0]:
-        raise ValueError("omega_scpn must be a vector covering K_scpn.")
-    if K_iter.ndim != 2 or K_iter.shape[0] != K_iter.shape[1]:
-        raise ValueError("iter_coupling must be a square matrix.")
-    if omega_iter.ndim != 1 or omega_iter.shape[0] != K_iter.shape[0]:
-        raise ValueError("iter_frequencies must be a vector matching iter_coupling.")
+    K_scpn = _validated_square_matrix(K_scpn, "K_scpn")
+    omega_scpn = _validated_frequency_vector(
+        omega_scpn,
+        K_scpn.shape[0],
+        "omega_scpn",
+        "K_scpn",
+    )
+    K_iter = _validated_square_matrix(K_iter, "iter_coupling", require_mhd_coupling=True)
+    omega_iter = _validated_frequency_vector(
+        omega_iter,
+        K_iter.shape[0],
+        "iter_frequencies",
+        "iter_coupling",
+    )
 
     n_iter = K_iter.shape[0]
     n_scpn = K_scpn.shape[0]
@@ -149,14 +205,12 @@ def iter_benchmark(
     s_flat = K_s[triu_idx]
 
     if len(i_flat) >= 3:
-        topo_corr = float(spearmanr(i_flat, s_flat).statistic)
+        topo_corr = _finite_correlation(float(spearmanr(i_flat, s_flat).statistic))
     else:
         topo_corr = 0.0
 
     if n >= 3:
-        freq_corr = float(np.corrcoef(omega_i, omega_s)[0, 1])
-        if np.isnan(freq_corr):
-            freq_corr = 0.0
+        freq_corr = _finite_correlation(float(np.corrcoef(omega_i, omega_s)[0, 1]))
     else:
         freq_corr = 0.0
 

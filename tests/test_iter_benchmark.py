@@ -132,3 +132,70 @@ class TestITERBenchmark:
         result = iter_benchmark(K, omega, allow_synthetic_reference=True)
         print(f"\n  {result.summary}")
         assert isinstance(result.topology_correlation, float)
+
+    def test_rejects_non_square_scpn_coupling(self):
+        K = np.ones((2, 3))
+        omega = np.ones(2)
+        with pytest.raises(ValueError, match="K_scpn must be a square"):
+            iter_benchmark(K, omega, allow_synthetic_reference=True)
+
+    def test_rejects_scpn_frequency_shape_mismatch(self):
+        K = build_knm_paper27(L=4)
+        omega = np.ones(3)
+        with pytest.raises(ValueError, match="omega_scpn must match"):
+            iter_benchmark(K, omega, allow_synthetic_reference=True)
+
+    def test_rejects_non_finite_scpn_coupling(self):
+        K = build_knm_paper27(L=4)
+        K[0, 1] = np.nan
+        omega = OMEGA_N_16[:4]
+        with pytest.raises(ValueError, match="K_scpn must contain only finite"):
+            iter_benchmark(K, omega, allow_synthetic_reference=True)
+
+    def test_rejects_too_small_comparison_system(self):
+        K = np.array([[0.0]])
+        omega = np.array([2.5])
+        with pytest.raises(ValueError, match="at least two coupled modes"):
+            iter_benchmark(K, omega, allow_synthetic_reference=True)
+
+    def test_rejects_iter_coupling_asymmetry(self):
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        iter_K = np.array(
+            [
+                [0.0, 0.8, 0.1],
+                [0.2, 0.0, 0.3],
+                [0.1, 0.3, 0.0],
+            ]
+        )
+        iter_omega = np.array([2.5, 4.0, 8.0])
+        with pytest.raises(ValueError, match="iter_coupling must be symmetric"):
+            iter_benchmark(K, omega, iter_coupling=iter_K, iter_frequencies=iter_omega)
+
+    def test_rejects_negative_iter_coupling(self):
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        iter_K = np.array(
+            [
+                [0.0, -0.1, 0.1],
+                [-0.1, 0.0, 0.3],
+                [0.1, 0.3, 0.0],
+            ]
+        )
+        iter_omega = np.array([2.5, 4.0, 8.0])
+        with pytest.raises(ValueError, match="iter_coupling values must be non-negative"):
+            iter_benchmark(K, omega, iter_coupling=iter_K, iter_frequencies=iter_omega)
+
+    def test_rejects_iter_coupling_nonzero_diagonal(self):
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        iter_K = np.array(
+            [
+                [1.0, 0.8, 0.1],
+                [0.8, 0.0, 0.3],
+                [0.1, 0.3, 0.0],
+            ]
+        )
+        iter_omega = np.array([2.5, 4.0, 8.0])
+        with pytest.raises(ValueError, match="iter_coupling diagonal must be zero"):
+            iter_benchmark(K, omega, iter_coupling=iter_K, iter_frequencies=iter_omega)
