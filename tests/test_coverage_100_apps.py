@@ -102,10 +102,18 @@ def test_josephson_unknown_topology():
     """Cover line 93: jja_coupling_matrix raises for unknown topology."""
     import pytest
 
-    from scpn_quantum_control.applications.josephson_array import jja_coupling_matrix
+    from scpn_quantum_control.applications.josephson_array import (
+        JosephsonArrayParameters,
+        jja_coupling_matrix,
+    )
 
     with pytest.raises(ValueError, match="Unknown topology"):
-        jja_coupling_matrix(4, topology="hexagonal")
+        jja_coupling_matrix(
+            4,
+            topology="hexagonal",
+            parameters=JosephsonArrayParameters.nominal_transmon(),
+            allow_illustrative_topology=True,
+        )
 
 
 # --- josephson_array.py line 116: np.sum(mask) < 3 path ---
@@ -113,11 +121,19 @@ def test_josephson_unknown_topology():
 
 def test_josephson_benchmark_small():
     """Cover line 116: topo_corr = 0.0 when < 3 nonzero pairs."""
-    from scpn_quantum_control.applications.josephson_array import josephson_benchmark
+    from scpn_quantum_control.applications.josephson_array import (
+        JosephsonArrayParameters,
+        josephson_benchmark,
+    )
 
     K = np.array([[0, 0.01], [0.01, 0]])
     omega = np.array([5.0, 6.0])
-    result = josephson_benchmark(K, omega)
+    result = josephson_benchmark(
+        K,
+        omega,
+        parameters=JosephsonArrayParameters.nominal_transmon(),
+        allow_illustrative_topology=True,
+    )
     assert result.topology_correlation == 0.0
 
 
@@ -126,11 +142,19 @@ def test_josephson_benchmark_small():
 
 def test_josephson_freq_corr_small():
     """Cover line 127: freq_corr = 0.0 when n < 3."""
-    from scpn_quantum_control.applications.josephson_array import josephson_benchmark
+    from scpn_quantum_control.applications.josephson_array import (
+        JosephsonArrayParameters,
+        josephson_benchmark,
+    )
 
     K = np.array([[0, 0.5], [0.5, 0]])
     omega = np.array([5.0, 6.0])
-    result = josephson_benchmark(K, omega)
+    result = josephson_benchmark(
+        K,
+        omega,
+        parameters=JosephsonArrayParameters.nominal_transmon(),
+        allow_illustrative_topology=True,
+    )
     assert result.frequency_correlation == 0.0
 
 

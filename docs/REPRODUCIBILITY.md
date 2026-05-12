@@ -238,9 +238,9 @@ the phase-coherent regime (Kuramoto critical point ~K_c ≈ 2σ_ω/π).
 |-------|--------------------------|-------------|
 | `SyncOrderParameter` | ✅ YES | Kuramoto order parameter from bitstring marginals |
 | `DLAParityWitness` | ✅ YES | Odd/even Hamming-weight parity asymmetry |
-| `IntegratedInformationPhi` | ✅ YES (proxy) | Normalised Shannon entropy; saturates ~1.0 at NISQ shot counts |
+| `IntegratedInformationPhi` | ❌ NO | No production IIT/causal-state implementation is wired; entropy is available only as an explicitly labelled diagnostic |
 | `QuantumFisherInformation` | ⚠️ PROXY | Analytic estimate from sync_order + dla_asymmetry |
-| `ThermodynamicWitness` | ⚠️ PROXY | Model estimate using `kwargs.get("work", 1.2)` |
+| `ThermodynamicWitness` | ✅ YES, when work protocol data are supplied | Requires explicit work samples or a calibrated work value in joules; refuses default/synthetic work |
 | `LogicalSyncWitness` | ⚠️ PROXY | Model estimate using `kwargs.get("logical_fidelity", 0.92)` |
 
 > **Publication guidance:** Only ✅ observables are attributable to real QPU measurements.
@@ -288,7 +288,7 @@ print(job.result())
 
 1. **Shot cap:** `min(shots, 4000)` — higher shot requests are silently capped.
 2. **N=160 skipped:** IBM Heron r2 has 156 qubits; T1 N=160 point is always skipped.
-3. **Phi saturation:** `IntegratedInformationPhi` returns ~0.9997–1.0000 for all runs (near-uniform bitstring distribution over 12–20 qubits at 4000 shots). Not a meaningful IIT measurement.
+3. **Integrated information:** `IntegratedInformationPhi` does not report Φ from output counts. Near-uniform entropy over 12–20 qubits at 4000 shots is available only as a labelled entropy diagnostic and is not a meaningful IIT measurement.
 4. **T2 skipped:** `scpneurocore.bridge.load_live_stream` not implemented; live SCNeuroCore loop test not run.
 5. **ZNE job_id:** When ZNE succeeds, `job_id` is set to `"zne_mitigated"` — individual scale-factor job IDs are managed internally by mitiq and not exposed in result JSON.
 6. **ZNE cost:** Each ZNE run submits 3 circuits (scale=1,2,3) plus 1 final run = 4× IBM job cost vs unmitigated. T4 ZNE = 80 × 4 = 320 IBM jobs.

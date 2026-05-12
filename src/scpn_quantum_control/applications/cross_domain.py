@@ -30,7 +30,7 @@ from ..bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from .eeg_benchmark import eeg_benchmark
 from .fmo_benchmark import fmo_benchmark
 from .iter_benchmark import iter_benchmark
-from .josephson_array import josephson_benchmark
+from .josephson_array import JosephsonArrayParameters, josephson_benchmark
 from .power_grid import power_grid_benchmark
 
 
@@ -74,9 +74,16 @@ def run_cross_domain_validation(
     results_topo.append(grid.topology_correlation)
     results_freq.append(grid.frequency_correlation)
 
-    # Josephson (5 oscillators, all-to-all)
-    jja = josephson_benchmark(K5, omega5, topology="all_to_all")
-    names.append("JJA (self-simulation)")
+    # Josephson illustrative comparison; measured hardware claims require
+    # calibration-sourced parameters and coupling edges.
+    jja = josephson_benchmark(
+        K5,
+        omega5,
+        topology="all_to_all",
+        parameters=JosephsonArrayParameters.nominal_transmon(),
+        allow_illustrative_topology=True,
+    )
+    names.append("JJA (illustrative self-simulation)")
     results_topo.append(jja.topology_correlation)
     results_freq.append(jja.frequency_correlation)
 

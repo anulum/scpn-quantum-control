@@ -166,15 +166,25 @@ def qsvt_resource_estimate(
     )
 
 
-def qsp_phase_angles(degree: int) -> np.ndarray:
-    """Compute QSP phase angles for cos(x) polynomial of given degree.
+def qsp_phase_angles(degree: int, *, allow_initial_guess: bool = False) -> np.ndarray:
+    """Return QSP phase angles for a cosine polynomial only when explicit.
 
-    Uses the Chebyshev approximation: cos(αt·x) ≈ Σ c_k T_k(x).
-    The phase angles are computed via the complementary polynomial method.
+    Production QSP phase synthesis requires a complementary-polynomial
+    optimisation/verification routine. That implementation is not wired here,
+    so the function fails by default rather than returning placeholder angles.
 
-    This is a simplified version using equally-spaced angles as a starting
-    point. Full optimisation (Haah 2018) requires iterative refinement.
+    Set ``allow_initial_guess=True`` only when a caller needs the historical
+    symmetric seed angles for an offline optimiser. Those angles are not valid
+    compiled QSP phases and must not be used for resource or hardware claims.
     """
+    if degree < 0:
+        raise ValueError(f"degree must be non-negative, got {degree}")
+    if not allow_initial_guess:
+        raise NotImplementedError(
+            "QSP phase synthesis is not implemented. Pass allow_initial_guess=True "
+            "only to obtain non-production seed angles for an external optimiser."
+        )
+
     # Symmetric phase angles for even polynomial (cosine)
     phases = np.zeros(degree + 1)
     for k in range(degree + 1):

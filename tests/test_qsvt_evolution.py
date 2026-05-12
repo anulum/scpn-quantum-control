@@ -130,12 +130,16 @@ class TestQSVTResourceEstimate:
 
 
 class TestQSPPhaseAngles:
-    def test_length(self):
-        phases = qsp_phase_angles(10)
+    def test_refuses_unoptimised_phase_claim(self):
+        with pytest.raises(NotImplementedError, match="QSP phase synthesis"):
+            qsp_phase_angles(10)
+
+    def test_initial_guess_length_when_explicitly_requested(self):
+        phases = qsp_phase_angles(10, allow_initial_guess=True)
         assert len(phases) == 11
 
-    def test_symmetric(self):
-        phases = qsp_phase_angles(8)
+    def test_initial_guess_symmetric_when_explicitly_requested(self):
+        phases = qsp_phase_angles(8, allow_initial_guess=True)
         assert phases[0] == pytest.approx(phases[-1])
 
 

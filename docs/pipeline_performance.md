@@ -1013,12 +1013,14 @@ underscore name, no private experiments. At least half accept shots parameter.
 
 | Operation | System | Time | Output |
 |-----------|--------|------|--------|
-| `run_cutting_simulation(n=16, max=8)` | 16 oscillators | 39.3 ms | 2 partitions, R=1.0 |
-| `run_cutting_simulation(n=24, max=8)` | 24 oscillators | ~53 ms | 3 partitions |
-| `run_cutting_simulation(n=32, max=8)` | 32 oscillators | ~60 ms | 4 partitions |
+| `run_cutting_simulation(n=16, max=8, allow_partition_energy_estimate=True)` | 16 oscillators | 39.3 ms | 2 partitions, R=1.0, energy scope `partition_local_sum` |
+| `run_cutting_simulation(n=24, max=8, allow_partition_energy_estimate=True)` | 24 oscillators | ~53 ms | 3 partitions, energy scope `partition_local_sum` |
+| `run_cutting_simulation(n=32, max=8, allow_partition_energy_estimate=True)` | 32 oscillators | ~60 ms | 4 partitions, energy scope `partition_local_sum` |
 
 Partitions: ceil(n/max_partition_size). R per partition bounded [0, 1].
-Combined R bounded [0, 1]. Energy estimate finite.
+Combined R bounded [0, 1]. For multi-partition runs, energy is a labelled
+partition-local diagnostic and the omitted cross-partition coupling L1 norm is
+reported in the result; full-system energy is not claimed.
 
 ---
 
