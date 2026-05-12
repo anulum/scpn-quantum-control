@@ -40,7 +40,7 @@ jobs:
           case "${{ github.event_name }}" in
             pull_request)
               if [ "${{ github.actor }}" = "dependabot[bot]" ] || \
-                 [ "${{ startsWith(github.event.pull_request.head.ref, 'dependabot/') }}" = "true" ]; then
+                 case "$GITHUB_HEAD_REF" in dependabot/*) true ;; *) false ;; esac; then
                 # Dependabot branch commits are temporary bot commits. The
                 # required trailer is enforced when maintainers squash-merge
                 # the PR into main, and the push/scheduled audits still check
