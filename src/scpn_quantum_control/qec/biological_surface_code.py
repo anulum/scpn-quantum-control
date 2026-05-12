@@ -34,6 +34,7 @@ class BiologicalSurfaceCode:
         self.n_nodes = K.shape[0]
 
         self.G = nx.Graph()
+        self.G.add_nodes_from(range(self.n_nodes))
 
         # Data qubits are the active edges (couplings)
         self.edges = []
@@ -93,17 +94,30 @@ class BiologicalMWPMDecoder:
         Z errors on edges flip the X stabilizers at their endpoint nodes.
         We match the excited nodes (defects) through the biological graph.
         """
-        defects = np.where(syndrome_x == 1)[0]
+        syndrome = np.asarray(syndrome_x)
+        if syndrome.ndim != 1 or syndrome.shape[0] != self.code.num_x_stabs:
+            raise ValueError(
+                "syndrome_x length must equal the number of X stabilizers "
+                f"({self.code.num_x_stabs})."
+            )
+        if not np.all((syndrome == 0) | (syndrome == 1)):
+            raise ValueError("syndrome_x must be a binary vector with entries 0 or 1.")
+
+        syndrome = syndrome.astype(np.int8, copy=False)
+        defects = np.where(syndrome == 1)[0]
         correction = np.zeros(self.code.num_data, dtype=np.int8)
 
         if len(defects) == 0:
             return correction
 
-        # If odd number of defects (should only happen with open boundaries),
-        # we drop one for simplicity in this implementation, though a true
-        # fault-tolerant code would map it to a rough boundary.
-        if len(defects) % 2 != 0:
-            defects = defects[:-1]
+        defect_set = set(int(node) for node in defects)
+        for component in nx.connected_components(self.G):
+            n_component_defects = len(defect_set.intersection(component))
+            if n_component_defects % 2 != 0:
+                raise ValueError(
+                    "syndrome_x has odd syndrome parity in a connected component; "
+                    "this graph decoder has no explicit rough-boundary model."
+                )
 
         matching_graph = nx.Graph()
         paths = {}

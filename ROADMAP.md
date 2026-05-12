@@ -136,6 +136,11 @@ is copied here.
   from the optimized hardware-efficient ansatz using the same local
   X/Y-expectation phase reconstruction as the Trotter path. VQE results
   no longer report an unmeasured `order_parameter=0.0` placeholder.
+- [x] **Biological MWPM syndrome-parity hardening.** Implemented
+  2026-05-12: `BiologicalMWPMDecoder.decode_z_errors()` now rejects
+  malformed syndromes and odd syndrome parity in any connected component
+  when no explicit rough-boundary model is present. The decoder no
+  longer drops an unmatched defect to force even cardinality.
 - [x] **Integrated-information wrapper production route.** Implemented
   2026-05-12: `IntegratedInformationPhi` now routes explicit
   `coupling_matrix` and `natural_frequencies` inputs to the

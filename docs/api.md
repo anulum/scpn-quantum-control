@@ -532,6 +532,11 @@ BiologicalMWPMDecoder(code)
     .decode_z_errors(syndrome_x) -> np.ndarray
 ```
 Minimum Weight Perfect Matching decoder using biological coupling strengths as distance metrics.
+`syndrome_x` must be a one-dimensional binary vector with length equal
+to the number of X stabilizers. Because this graph decoder does not
+model rough boundaries, every connected component must have even
+syndrome parity; odd component parity raises `ValueError` instead of
+silently discarding an unmatched defect.
 
 ### `control_qec.ControlQEC`
 
