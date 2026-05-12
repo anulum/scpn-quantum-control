@@ -26,7 +26,7 @@ def test_fmo_no_correlation_verdict():
     K = (K + K.T) / 2
     np.fill_diagonal(K, 0)
     omega = rng.uniform(10, 20, 7)
-    result = fmo_benchmark(K, omega)
+    result = fmo_benchmark(K, omega, allow_builtin_reference=True)
     assert hasattr(result, "summary")
 
 
@@ -40,7 +40,7 @@ def test_eeg_unknown_band():
     from scpn_quantum_control.applications.eeg_benchmark import eeg_coupling_matrix
 
     with pytest.raises(ValueError, match="Unknown EEG band"):
-        eeg_coupling_matrix(band="delta")
+        eeg_coupling_matrix(band="delta", allow_builtin_reference=True)
 
 
 # --- eeg_benchmark.py line 106: len(e_flat) < 3 path ---
@@ -52,7 +52,7 @@ def test_eeg_benchmark_small_scpn():
 
     K = np.array([[0, 0.1], [0.1, 0]])
     omega = np.array([10.0, 12.0])
-    result = eeg_benchmark(K, omega)
+    result = eeg_benchmark(K, omega, allow_builtin_reference=True)
     assert result.topology_correlation == 0.0
 
 
@@ -65,7 +65,7 @@ def test_eeg_benchmark_freq_corr_small():
 
     K = np.array([[0, 0.5], [0.5, 0]])
     omega = np.array([10.0, 12.0])
-    result = eeg_benchmark(K, omega)
+    result = eeg_benchmark(K, omega, allow_builtin_reference=True)
     assert result.frequency_correlation == 0.0
 
 
@@ -78,7 +78,7 @@ def test_iter_benchmark_small_scpn():
 
     K = np.array([[0, 0.1], [0.1, 0]])
     omega = np.array([1.0, 2.0])
-    result = iter_benchmark(K, omega)
+    result = iter_benchmark(K, omega, allow_synthetic_reference=True)
     assert result.topology_correlation == 0.0
 
 
@@ -91,7 +91,7 @@ def test_iter_benchmark_freq_corr_small():
 
     K = np.array([[0, 0.5], [0.5, 0]])
     omega = np.array([1.0, 2.0])
-    result = iter_benchmark(K, omega)
+    result = iter_benchmark(K, omega, allow_synthetic_reference=True)
     assert result.frequency_correlation == 0.0
 
 
@@ -102,10 +102,18 @@ def test_josephson_unknown_topology():
     """Cover line 93: jja_coupling_matrix raises for unknown topology."""
     import pytest
 
-    from scpn_quantum_control.applications.josephson_array import jja_coupling_matrix
+    from scpn_quantum_control.applications.josephson_array import (
+        JosephsonArrayParameters,
+        jja_coupling_matrix,
+    )
 
     with pytest.raises(ValueError, match="Unknown topology"):
-        jja_coupling_matrix(4, topology="hexagonal")
+        jja_coupling_matrix(
+            4,
+            topology="hexagonal",
+            parameters=JosephsonArrayParameters.nominal_transmon(),
+            allow_illustrative_topology=True,
+        )
 
 
 # --- josephson_array.py line 116: np.sum(mask) < 3 path ---
@@ -113,11 +121,19 @@ def test_josephson_unknown_topology():
 
 def test_josephson_benchmark_small():
     """Cover line 116: topo_corr = 0.0 when < 3 nonzero pairs."""
-    from scpn_quantum_control.applications.josephson_array import josephson_benchmark
+    from scpn_quantum_control.applications.josephson_array import (
+        JosephsonArrayParameters,
+        josephson_benchmark,
+    )
 
     K = np.array([[0, 0.01], [0.01, 0]])
     omega = np.array([5.0, 6.0])
-    result = josephson_benchmark(K, omega)
+    result = josephson_benchmark(
+        K,
+        omega,
+        parameters=JosephsonArrayParameters.nominal_transmon(),
+        allow_illustrative_topology=True,
+    )
     assert result.topology_correlation == 0.0
 
 
@@ -126,11 +142,19 @@ def test_josephson_benchmark_small():
 
 def test_josephson_freq_corr_small():
     """Cover line 127: freq_corr = 0.0 when n < 3."""
-    from scpn_quantum_control.applications.josephson_array import josephson_benchmark
+    from scpn_quantum_control.applications.josephson_array import (
+        JosephsonArrayParameters,
+        josephson_benchmark,
+    )
 
     K = np.array([[0, 0.5], [0.5, 0]])
     omega = np.array([5.0, 6.0])
-    result = josephson_benchmark(K, omega)
+    result = josephson_benchmark(
+        K,
+        omega,
+        parameters=JosephsonArrayParameters.nominal_transmon(),
+        allow_illustrative_topology=True,
+    )
     assert result.frequency_correlation == 0.0
 
 
@@ -146,7 +170,7 @@ def test_power_grid_unknown_grid():
     with pytest.raises(ValueError, match="Unknown grid"):
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]
-        power_grid_benchmark(K, omega, grid_name="IEEE-9bus")
+        power_grid_benchmark(K, omega, grid_name="IEEE-9bus", allow_builtin_reference=True)
 
 
 # --- power_grid.py line 126: len(g_flat) < 3 topo_corr ---
@@ -158,7 +182,7 @@ def test_power_grid_small_scpn():
 
     K = np.array([[0, 0.1], [0.1, 0]])
     omega = np.array([60.0, 60.0])
-    result = power_grid_benchmark(K, omega)
+    result = power_grid_benchmark(K, omega, allow_builtin_reference=True)
     assert result.topology_correlation == 0.0
 
 
@@ -171,5 +195,5 @@ def test_power_grid_freq_corr_small():
 
     K = np.array([[0, 0.5], [0.5, 0]])
     omega = np.array([60.0, 60.0])
-    result = power_grid_benchmark(K, omega)
+    result = power_grid_benchmark(K, omega, allow_builtin_reference=True)
     assert result.frequency_correlation == 0.0

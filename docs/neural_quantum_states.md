@@ -97,7 +97,7 @@ result = vmc_ground_state(
     n_hidden: int | None = None,  # hidden units (default: 2n)
     learning_rate: float = 0.01,  # gradient descent step
     n_iterations: int = 200,      # optimisation steps
-    n_samples: int = 500,         # ignored in exact mode
+    n_samples: None = None,       # sampling unsupported in this path
     seed: int | None = None,
 ) -> dict
 ```
@@ -110,11 +110,16 @@ result = vmc_ground_state(
     "energy_history": list[float],  # energy at each iteration
     "wavefunction": RBMWavefunction,  # trained RBM
     "n_params": int,                # total parameters
+    "sampling_mode": "exact_enumeration",
+    "n_samples_used": 2**n,
+    "gradient_method": "central_finite_difference",
 }
 ```
 
 **Note:** For $n > 12$, raises `ValueError` (exact summation is $O(2^n)$).
-MCMC sampling is not implemented — use NetKet for larger systems.
+Passing `n_samples` raises `ValueError`; this NumPy path is exact
+enumeration with central finite-difference gradients, not sampled VMC.
+Use NetKet for larger systems or MCMC sampling.
 
 ### Example
 

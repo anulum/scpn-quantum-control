@@ -36,29 +36,49 @@ class TestDMRG:
         self.omega = np.linspace(0.8, 1.2, self.n)
 
     def test_dmrg_returns_energy(self):
-        result = dmrg_ground_state(self.K, self.omega, bond_dim=16, max_sweeps=5)
+        result = dmrg_ground_state(
+            self.K, self.omega, bond_dim=16, max_sweeps=5, allow_long_range_truncation=True
+        )
         assert "energy" in result
         assert isinstance(result["energy"], float)
 
     def test_dmrg_energy_below_zero(self):
-        result = dmrg_ground_state(self.K, self.omega, bond_dim=16, max_sweeps=10)
+        result = dmrg_ground_state(
+            self.K, self.omega, bond_dim=16, max_sweeps=10, allow_long_range_truncation=True
+        )
         assert result["energy"] < 0, "Ground state energy should be negative"
 
     def test_dmrg_energy_reasonable(self):
         # MPS uses NN-only coupling (long-range dropped), so won't match full ED exactly.
         # Just verify energy is negative and finite.
-        result = dmrg_ground_state(self.K, self.omega, bond_dim=32, max_sweeps=20)
+        result = dmrg_ground_state(
+            self.K, self.omega, bond_dim=32, max_sweeps=20, allow_long_range_truncation=True
+        )
         assert result["energy"] < 0, "DMRG ground energy should be negative"
         assert result["energy"] > -20, "DMRG energy should be finite"
+        assert result["coupling_scope"] == "nearest_neighbour_truncated"
+        assert result["omitted_coupling_l1"] > 0.0
 
     def test_dmrg_bond_dims(self):
-        result = dmrg_ground_state(self.K, self.omega, bond_dim=16, max_sweeps=5)
+        result = dmrg_ground_state(
+            self.K, self.omega, bond_dim=16, max_sweeps=5, allow_long_range_truncation=True
+        )
         assert len(result["bond_dims"]) == self.n - 1
         assert all(d >= 1 for d in result["bond_dims"])
 
     def test_dmrg_output_keys(self):
-        result = dmrg_ground_state(self.K, self.omega, bond_dim=8, max_sweeps=3)
-        assert set(result.keys()) == {"energy", "mps", "converged", "bond_dims", "n_oscillators"}
+        result = dmrg_ground_state(
+            self.K, self.omega, bond_dim=8, max_sweeps=3, allow_long_range_truncation=True
+        )
+        assert set(result.keys()) == {
+            "energy",
+            "mps",
+            "converged",
+            "bond_dims",
+            "n_oscillators",
+            "coupling_scope",
+            "omitted_coupling_l1",
+        }
 
 
 class TestTEBD:
@@ -68,20 +88,35 @@ class TestTEBD:
         self.omega = np.linspace(0.8, 1.2, self.n)
 
     def test_tebd_returns_R(self):
-        result = tebd_evolution(self.K, self.omega, t_max=0.2, dt=0.05, bond_dim=16)
+        result = tebd_evolution(
+            self.K, self.omega, t_max=0.2, dt=0.05, bond_dim=16, allow_long_range_truncation=True
+        )
         assert "R" in result
         assert len(result["R"]) == 5  # 0.0, 0.05, 0.10, 0.15, 0.20
 
     def test_tebd_R_bounded(self):
-        result = tebd_evolution(self.K, self.omega, t_max=0.5, dt=0.1, bond_dim=16)
+        result = tebd_evolution(
+            self.K, self.omega, t_max=0.5, dt=0.1, bond_dim=16, allow_long_range_truncation=True
+        )
         assert all(0 <= r <= 1.01 for r in result["R"])
 
     def test_tebd_output_keys(self):
-        result = tebd_evolution(self.K, self.omega, t_max=0.1, dt=0.05, bond_dim=8)
-        assert set(result.keys()) == {"times", "R", "bond_dims_final", "mps_final"}
+        result = tebd_evolution(
+            self.K, self.omega, t_max=0.1, dt=0.05, bond_dim=8, allow_long_range_truncation=True
+        )
+        assert set(result.keys()) == {
+            "times",
+            "R",
+            "bond_dims_final",
+            "mps_final",
+            "coupling_scope",
+            "omitted_coupling_l1",
+        }
 
     def test_tebd_bond_dims(self):
-        result = tebd_evolution(self.K, self.omega, t_max=0.2, dt=0.05, bond_dim=16)
+        result = tebd_evolution(
+            self.K, self.omega, t_max=0.2, dt=0.05, bond_dim=16, allow_long_range_truncation=True
+        )
         assert len(result["bond_dims_final"]) == self.n - 1
 
 
@@ -96,15 +131,21 @@ class TestMPSPhysics:
         n = 4
         K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
         omega = np.linspace(0.8, 1.2, n)
-        r8 = dmrg_ground_state(K, omega, bond_dim=8, max_sweeps=10)
-        r32 = dmrg_ground_state(K, omega, bond_dim=32, max_sweeps=10)
+        r8 = dmrg_ground_state(
+            K, omega, bond_dim=8, max_sweeps=10, allow_long_range_truncation=True
+        )
+        r32 = dmrg_ground_state(
+            K, omega, bond_dim=32, max_sweeps=10, allow_long_range_truncation=True
+        )
         assert r32["energy"] <= r8["energy"] + 0.1  # generous tolerance
 
     def test_tebd_times_monotonic(self):
         n = 4
         K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
         omega = np.linspace(0.8, 1.2, n)
-        result = tebd_evolution(K, omega, t_max=0.2, dt=0.05, bond_dim=16)
+        result = tebd_evolution(
+            K, omega, t_max=0.2, dt=0.05, bond_dim=16, allow_long_range_truncation=True
+        )
         assert np.all(np.diff(result["times"]) > 0)
 
 
@@ -198,7 +239,9 @@ class TestMPSZeroCoupling:
         K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
         np.fill_diagonal(K, 0.0)
         omega = np.zeros(n)
-        result = tebd_evolution(K, omega, t_max=0.1, dt=0.05, bond_dim=8)
+        result = tebd_evolution(
+            K, omega, t_max=0.1, dt=0.05, bond_dim=8, allow_long_range_truncation=True
+        )
         assert "R" in result
         assert len(result["R"]) > 0
 
@@ -227,7 +270,9 @@ class TestMPSPipeline:
         omega = OMEGA_N_16[:4]
 
         t0 = time.perf_counter()
-        result = dmrg_ground_state(K, omega, bond_dim=16, max_sweeps=10)
+        result = dmrg_ground_state(
+            K, omega, bond_dim=16, max_sweeps=10, allow_long_range_truncation=True
+        )
         dt = (time.perf_counter() - t0) * 1000
 
         assert result["energy"] < 0
@@ -235,3 +280,19 @@ class TestMPSPipeline:
 
         print(f"\n  PIPELINE Knm→DMRG (4q, χ=16): {dt:.1f} ms")
         print(f"  E_0 = {result['energy']:.4f}, bond_dims = {result['bond_dims']}")
+
+
+def test_dmrg_rejects_implicit_long_range_truncation():
+    n = 4
+    K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
+    omega = np.linspace(0.8, 1.2, n)
+    with pytest.raises(ValueError, match="allow_long_range_truncation"):
+        dmrg_ground_state(K, omega, bond_dim=8, max_sweeps=1)
+
+
+def test_tebd_rejects_implicit_long_range_truncation():
+    n = 4
+    K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
+    omega = np.linspace(0.8, 1.2, n)
+    with pytest.raises(ValueError, match="allow_long_range_truncation"):
+        tebd_evolution(K, omega, t_max=0.1, dt=0.05, bond_dim=8)

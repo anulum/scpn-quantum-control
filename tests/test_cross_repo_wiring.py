@@ -183,7 +183,17 @@ class TestFusionCoreShot:
             "ne_1e19": np.array([0.8, 0.85, 0.9]),
             "is_disruption": 0,
         }
-        features, label, warnings = from_fusion_core_shot(shot)
+        with pytest.raises(ValueError, match="allow_density_proxy"):
+            from_fusion_core_shot(shot)
+
+        with pytest.raises(ValueError, match="missing required ITER features"):
+            from_fusion_core_shot(shot, allow_density_proxy=True)
+
+        features, label, warnings = from_fusion_core_shot(
+            shot,
+            allow_center_defaults=True,
+            allow_density_proxy=True,
+        )
         assert features.shape == (11,)
         assert label == 0
         assert np.all(features >= 0.0) and np.all(features <= 1.0)
@@ -197,14 +207,17 @@ class TestFusionCoreShot:
             "locked_mode_amp": np.array([0.008]),
             "is_disruption": 1,
         }
-        features, label, warnings = from_fusion_core_shot(shot)
+        features, label, warnings = from_fusion_core_shot(shot, allow_center_defaults=True)
         assert label == 1
         assert features.shape == (11,)
         assert len(warnings) == 7  # 7 of 11 defaulted (no ne_1e19)
 
     def test_from_fusion_core_shot_missing_keys(self):
         shot = {"is_disruption": 0}
-        features, label, warnings = from_fusion_core_shot(shot)
+        with pytest.raises(ValueError, match="missing required ITER features"):
+            from_fusion_core_shot(shot)
+
+        features, label, warnings = from_fusion_core_shot(shot, allow_center_defaults=True)
         assert features.shape == (11,)
         assert label == 0
         assert len(warnings) == 11  # all features defaulted

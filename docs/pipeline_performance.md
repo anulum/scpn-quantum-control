@@ -42,9 +42,13 @@ PYTHONDONTWRITEBYTECODE=1 python scripts/validate_s2_scaling_rows.py \
   data/s2_advantage_scaling/s2_scaling_rows_schema_fixture_2026-05-06.json
 ```
 
-The validator fails if required baselines are absent, row keys are missing,
-baseline labels are unknown, statuses are invalid, or successful rows omit
-wall-time measurements.
+The validator fails if required baselines are absent for any measured size, row
+keys are missing, baseline labels are unknown, statuses are invalid, successful
+rows omit non-negative wall-time and memory measurements, or skipped/failed rows
+omit explanatory notes. It also rejects duplicate `(n_qubits, baseline)` rows
+and malformed provenance payloads (`metric_payload`, `command`, `machine`,
+`dependencies`, `git_commit`, and `notes`). This prevents a partial or
+ambiguous matrix from being promoted as a complete preregistered comparison.
 
 A lightweight protocol-compliant rehearsal harness is available before the full
 S2 campaign:
@@ -239,6 +243,9 @@ couplings) — exact parity with Python `build_knm_paper27`.
 ### QuantumKuramotoSolver
 
 The core solver maps Kuramoto dynamics to Trotterised XY Hamiltonian evolution.
+Trajectory sampling uses explicit time boundaries rather than rescaled labels:
+for non-divisible horizons, the last evolution interval is shortened so the
+state reaches the reported final time exactly.
 
 | Operation | System | Time | Output |
 |-----------|--------|------|--------|
@@ -335,6 +342,14 @@ Command provenance:
 |-----------|--------|---------|---------|------|--------|
 | Run application plugin benchmark suite | EEG alpha PLV 8-channel, FEP 6-node workflow, ITER MHD 8-mode, IEEE 5-bus grid | `scipy.stats.spearmanr` + NumPy domain scorers; FEP path through `scpn_quantum_control.fep` | ASRock H510 Pro BTC+, i5-11600K, Ubuntu 24.04.4 | 117.635 ms | plugins=`eeg_alpha,friston_fep,plasma_iter_mhd,power_grid_ieee5`; datasets=`eeg_alpha_plv_8ch,friston_fep_6node,iter_mhd_8mode,ieee5bus_power_grid`; n=`8,6,8,5` |
 
+The plasma plugin routes the packaged `iter_mhd_8mode` artifact as a curated
+reference. The power-grid plugin routes the packaged `ieee5bus_power_grid`
+artifact as a curated reference. Direct `iter_benchmark()` calls require
+`allow_synthetic_reference=True` for the built-in synthetic reference, and those
+results are marked `publication_safe=False`; direct `power_grid_benchmark()`
+calls require `allow_builtin_reference=True` for the built-in IEEE 5-bus
+reference and return provenance metadata.
+
 Command provenance:
 
 ```bash
@@ -412,10 +427,12 @@ At default Heron r2 parameters (CZ error=0.005), noise degradation is minimal
 
 | Operation | System | Time | Output |
 |-----------|--------|------|--------|
-| `transpile_for_trapped_ion()` | 4 qubits | ~5 ms | All-to-all connectivity, no SWAPs |
+| `transpile_for_trapped_ion(allow_proxy_basis=True)` | 4 qubits | ~5 ms | All-to-all connectivity, no SWAPs |
 
-Kuramoto circuits transpile without SWAP gates (ion trap all-to-all).
-Unitarity preserved (Operator equivalence verified).
+Kuramoto circuits transpile without SWAP gates under the all-to-all
+representative model. The output circuit is metadata-labelled as a CX-basis
+proxy for native MS/RXX-style trapped-ion operations; unitarity preservation is
+verified by Operator equivalence.
 
 ### Circuit Depth Regression
 
@@ -805,28 +822,33 @@ K(x,x) = 1. Close inputs → high overlap (>0.95). Different Knm → different k
 
 | Operation | System | Time | Output |
 |-----------|--------|------|--------|
-| `run_disruption_benchmark(10+5)` | 3 qubits | 297 ms | accuracy=80% |
+| `run_disruption_benchmark(10+5, allow_synthetic=True)` | 3 qubits | 297 ms | accuracy=80%, source_mode=synthetic |
 
 Kernel Gram matrix symmetric + PSD. Binary predictions. Accuracy bounded [0, 1].
+This benchmark is generated-data only and is not publication-safe without measured plasma diagnostics.
 
 ### Quantum Disruption (ITER)
 
 | Operation | System | Time | Output |
 |-----------|--------|------|--------|
 | `predict(features)` | 5 qubits | 4.6 ms | risk=0.495 |
-| `DisruptionBenchmark(20+10, 2 epochs)` | 5 qubits | 11.9 s | accuracy=70% |
+| `DisruptionBenchmark(20+10, allow_synthetic=True, 2 epochs)` | 5 qubits | 11.9 s | accuracy=70%, source_mode=synthetic |
 
 Feature normalisation clamps to [0, 1]. Prediction deterministic for same params.
 Circuit depth > 0. Training updates parameters.
+The benchmark dataset is generated and is not publication-safe without measured plasma diagnostics or `from_fusion_core_shot()` inputs.
 
 ### FMO Photosynthetic Benchmark
 
 | Operation | System | Time | Output |
 |-----------|--------|------|--------|
-| `fmo_benchmark(K, omega)` | 7 sites | 1.4 ms | topology ρ=0.304 |
+| `fmo_benchmark(K, omega, allow_builtin_reference=True)` | 7 sites | 1.4 ms | topology ρ=0.304, source_mode=builtin_literature_reference |
 
 SCPN vs FMO topology correlation ρ=0.304 (weak positive). FMO self-comparison:
 ρ=1.0. FMO coupling: symmetric, non-negative, zero diagonal, 7×7.
+The packaged Adolphs-Renger reference requires explicit opt-in and is marked
+`publication_safe=False`; publication-safe FMO claims must pass measured
+`fmo_coupling` and `fmo_frequencies` arrays.
 
 ### Quantum Advantage Scaling — Exact-Simulation Crossover Scope
 
@@ -985,7 +1007,9 @@ p_h1 ∈ [0, 1]. TEE finite. |string_order| <= 1. beta_0 + beta_1 ≈ 1
 | `commutator_norm_bound` + `optimal_dt` | 4 qubits | <0.1 ms | gamma=5.344, dt*=0.004, n_steps=268 |
 
 Equal frequencies → gamma=0 (no Trotter error). Heterogeneous frequencies →
-larger gamma. Second-order bound < first-order. Optimal dt respects epsilon target.
+larger gamma. Second-order bounds use exact nested-commutator spectral norms
+for small systems and a Pauli coefficient-norm upper bound for larger systems.
+Optimal dt respects the epsilon target.
 
 ### Trotter Error Sweep
 
@@ -1013,12 +1037,14 @@ underscore name, no private experiments. At least half accept shots parameter.
 
 | Operation | System | Time | Output |
 |-----------|--------|------|--------|
-| `run_cutting_simulation(n=16, max=8)` | 16 oscillators | 39.3 ms | 2 partitions, R=1.0 |
-| `run_cutting_simulation(n=24, max=8)` | 24 oscillators | ~53 ms | 3 partitions |
-| `run_cutting_simulation(n=32, max=8)` | 32 oscillators | ~60 ms | 4 partitions |
+| `run_cutting_simulation(n=16, max=8, allow_partition_energy_estimate=True)` | 16 oscillators | 39.3 ms | 2 partitions, R=1.0, energy scope `partition_local_sum` |
+| `run_cutting_simulation(n=24, max=8, allow_partition_energy_estimate=True)` | 24 oscillators | ~53 ms | 3 partitions, energy scope `partition_local_sum` |
+| `run_cutting_simulation(n=32, max=8, allow_partition_energy_estimate=True)` | 32 oscillators | ~60 ms | 4 partitions, energy scope `partition_local_sum` |
 
 Partitions: ceil(n/max_partition_size). R per partition bounded [0, 1].
-Combined R bounded [0, 1]. Energy estimate finite.
+Combined R bounded [0, 1]. For multi-partition runs, energy is a labelled
+partition-local diagnostic and the omitted cross-partition coupling L1 norm is
+reported in the result; full-system energy is not claimed.
 
 ---
 
@@ -1093,9 +1119,18 @@ Re-run from `tests/test_rust_path_benchmarks.py` on 2026-04-17
 These are the only cross-language acceleration numbers we publish;
 they are measured, not estimated.
 
+The Koopman rows were measured on 2026-05-12 with CPython 3.12.3 on
+x86_64 from a release wheel built by
+`python -m maturin build --release --manifest-path scpn_quantum_engine/Cargo.toml --features extension-module --interpreter python`.
+Each row reports the median of seven Python and Rust calls after a
+forced `require_rust=True` parity check against the NumPy generator.
+
 | Function | Python | Rust | Speedup |
 |----------|-------:|-----:|--------:|
 | `build_knm` (16×16) | 0.1 ms | 0.01 ms | **18.4×** |
+| `koopman_generator` (n=4, dim=16) | 0.028014 ms | 0.012752 ms | **2.197×** |
+| `koopman_generator` (n=8, dim=64) | 0.172246 ms | 0.020980 ms | **8.210×** |
+| `koopman_generator` (n=16, dim=256) | 1.478324 ms | 0.083449 ms | **17.715×** |
 | `kuramoto_euler` (8 osc, 1 000 steps) | 2.3 ms | 0.25 ms | **9.3×** |
 | `correlation_matrix_xy` (n=3) | 0.7 ms | 0.04 ms | **19.5×** |
 | `lindblad_jump_ops_coo` (n=3) | 0.0 ms | 0.0 ms | **9.2×** |
@@ -1137,7 +1172,7 @@ Python loops only after a parity test and benchmark row are added.
 
 | Current Python surface | Evidence | Target backend | Acceptance gate |
 |------------------------|----------|----------------|-----------------|
-| `analysis/koopman.py::build_koopman_generator` | Existing `TODO(rust)` notes the O(n^3) coupling-correction loop for n > 16. | Rust kernel returning the dense generator plus labels, with NumPy fallback retained. | Parity on n=4/8/16 and a new Rust-vs-Python timing row. |
+| `analysis/koopman.py::build_koopman_generator` | Python builds the dense n²×n² Koopman generator and now has a native `scpn_quantum_engine.koopman_generator` route. | Rust kernel returning the dense generator, with Python reconstructing canonical labels and retaining the NumPy fallback. | Parity on n=4/8/16 and a new Rust-vs-Python timing row. |
 | `benchmarks/quantum_advantage.py::quantum_benchmark` | The benchmark constructs Qiskit circuits once, then repeatedly calls `Statevector.evolve` in a Python loop. | Vectorised simulator batch or Rust sparse statevector stepper once Qiskit semantics are matched. | Same final state/order-parameter tolerance for fixed K, omega, t_max, dt, and a provenance table row. |
 | `phase/mps_evolution.py::{dmrg_ground_state,tebd_evolution}` | Python drives per-sweep and per-step tensor operations around quimb. | Prefer quimb-native vectorised calls first; only move glue to Rust if profiling shows Python overhead after tensor contraction cost is removed. | Quimb parity test with long-range-coupling caveat preserved and a TEBD timing table. |
 | `hardware/async_runner.py::_submit_blocking` | The module is an I/O bridge and is explicitly exempt from the Rust-path rule; its hot path is repeated transpilation/submission orchestration, not numeric compute. | Keep in Python; batch or cache transpilation inputs before considering native code. | Hardware mock tests plus real-job provenance showing lower submission overhead without changing counts. |

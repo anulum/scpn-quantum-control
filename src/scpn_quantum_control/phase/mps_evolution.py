@@ -36,7 +36,38 @@ def is_quimb_available() -> bool:
     return _QUIMB_AVAILABLE
 
 
-def _build_mpo_hamiltonian(K: np.ndarray, omega: np.ndarray) -> Any:
+def _long_range_coupling_l1(K: np.ndarray, *, tol: float = 1e-15) -> float:
+    """Return upper-triangle L1 weight of couplings outside adjacent bonds."""
+    n = K.shape[0]
+    omitted = 0.0
+    for i in range(n):
+        for j in range(i + 2, n):
+            if abs(K[i, j]) > tol:
+                omitted += abs(float(K[i, j]))
+    return omitted
+
+
+def _nearest_neighbour_scope(
+    K: np.ndarray, allow_long_range_truncation: bool
+) -> tuple[str, float]:
+    """Validate or label the nearest-neighbour quimb Hamiltonian scope."""
+    omitted_l1 = _long_range_coupling_l1(K)
+    if omitted_l1 > 0.0 and not allow_long_range_truncation:
+        raise ValueError(
+            "MPS quimb SpinHam1D/TEBD path only represents nearest-neighbour couplings; "
+            "pass allow_long_range_truncation=True to explicitly run the truncated "
+            f"nearest-neighbour model (omitted long-range L1={omitted_l1:.6g})."
+        )
+    scope = "nearest_neighbour_truncated" if omitted_l1 > 0.0 else "nearest_neighbour"
+    return scope, omitted_l1
+
+
+def _build_mpo_hamiltonian(
+    K: np.ndarray,
+    omega: np.ndarray,
+    *,
+    allow_long_range_truncation: bool = False,
+) -> Any:
     """Build the XY Hamiltonian as a quimb SpinHam1D MPO.
 
     H = -Σ K_ij (X_iX_j + Y_iY_j) - Σ ω_i Z_i
@@ -44,6 +75,7 @@ def _build_mpo_hamiltonian(K: np.ndarray, omega: np.ndarray) -> Any:
     if not _QUIMB_AVAILABLE:
         raise ImportError("quimb not installed: pip install quimb")
 
+    _nearest_neighbour_scope(K, allow_long_range_truncation)
     n = K.shape[0]
     builder = qtn.SpinHam1D(S=1 / 2)
 
@@ -59,11 +91,6 @@ def _build_mpo_hamiltonian(K: np.ndarray, omega: np.ndarray) -> Any:
         builder[i, i + 1] += -K[i, i + 1], "X", "X"
         builder[i, i + 1] += -K[i, i + 1], "Y", "Y"
 
-    # Note: longer-range couplings K[i,j] with |i-j|>1 are dropped.
-    # For the exponential-decay K_nm, nearest-neighbour terms dominate.
-    # Full long-range MPO requires quimb.tensor.MatrixProductOperator
-    # construction which is more complex.
-
     return builder.build_mpo(n)
 
 
@@ -73,6 +100,7 @@ def dmrg_ground_state(
     bond_dim: int = 64,
     cutoff: float = 1e-10,
     max_sweeps: int = 20,
+    allow_long_range_truncation: bool = False,
 ) -> dict:
     """Find ground state via DMRG.
 
@@ -88,6 +116,10 @@ def dmrg_ground_state(
         SVD truncation cutoff.
     max_sweeps : int
         Maximum DMRG sweeps.
+    allow_long_range_truncation : bool
+        Explicitly allow the quimb SpinHam1D nearest-neighbour MPO to
+        omit non-adjacent K[i, j] couplings. Defaults to False so full
+        K_nm inputs cannot be truncated silently.
 
     Returns
     -------
@@ -97,7 +129,12 @@ def dmrg_ground_state(
         raise ImportError("quimb not installed: pip install quimb")
 
     n = K.shape[0]
-    H_mpo = _build_mpo_hamiltonian(K, omega)
+    coupling_scope, omitted_l1 = _nearest_neighbour_scope(K, allow_long_range_truncation)
+    H_mpo = _build_mpo_hamiltonian(
+        K,
+        omega,
+        allow_long_range_truncation=allow_long_range_truncation,
+    )
 
     dmrg = qtn.DMRG2(H_mpo, bond_dims=bond_dim, cutoffs=cutoff)
     converged = False
@@ -120,6 +157,8 @@ def dmrg_ground_state(
         "converged": converged,
         "bond_dims": bond_dims_out,
         "n_oscillators": n,
+        "coupling_scope": coupling_scope,
+        "omitted_coupling_l1": omitted_l1,
     }
 
 
@@ -131,6 +170,7 @@ def tebd_evolution(
     bond_dim: int = 64,
     cutoff: float = 1e-10,
     order: int = 2,
+    allow_long_range_truncation: bool = False,
 ) -> dict:
     """Time evolution via TEBD (Time-Evolving Block Decimation).
 
@@ -142,6 +182,10 @@ def tebd_evolution(
     bond_dim : maximum bond dimension
     cutoff : SVD truncation
     order : Trotter order (2 or 4)
+    allow_long_range_truncation : bool
+        Explicitly allow the nearest-neighbour TEBD local Hamiltonian to
+        omit non-adjacent K[i, j] couplings. Defaults to False so full
+        K_nm inputs cannot be truncated silently.
 
     Notes
     -----
@@ -157,6 +201,7 @@ def tebd_evolution(
         raise ImportError("quimb not installed: pip install quimb")
 
     n = K.shape[0]
+    coupling_scope, omitted_l1 = _nearest_neighbour_scope(K, allow_long_range_truncation)
 
     # Build nearest-neighbour Hamiltonian for TEBD
     builder = qtn.SpinHam1D(S=1 / 2)
@@ -204,6 +249,8 @@ def tebd_evolution(
         "R": R_history,
         "bond_dims_final": bond_dims,
         "mps_final": tebd.pt,
+        "coupling_scope": coupling_scope,
+        "omitted_coupling_l1": omitted_l1,
     }
 
 

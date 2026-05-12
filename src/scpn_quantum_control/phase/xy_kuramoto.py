@@ -176,9 +176,20 @@ class QuantumKuramotoSolver:
         if self._hamiltonian is None:
             self.build_hamiltonian()
 
-        n_steps = max(1, int(t_max / dt))
-        R_history = np.zeros(n_steps + 1)
-        times = np.linspace(0, t_max, n_steps + 1)
+        times_list = [0.0]
+        current_time = 0.0
+        tolerance = max(np.finfo(float).eps * max(1.0, abs(t_max), abs(dt)) * 16.0, 1e-15)
+        while current_time + dt < t_max - tolerance:
+            current_time += dt
+            times_list.append(current_time)
+        if t_max > times_list[-1] + tolerance:
+            times_list.append(float(t_max))
+        else:
+            times_list[-1] = float(t_max)
+
+        times = np.asarray(times_list, dtype=float)
+        step_sizes = np.diff(times)
+        R_history = np.zeros(times.shape[0])
 
         # Initial state: each qubit at angle ~ omega_i (Ry rotation)
         init_qc = QuantumCircuit(self.n)
@@ -189,8 +200,8 @@ class QuantumKuramotoSolver:
         sv = Statevector.from_instruction(init_qc)
         R_history[0], _ = self.measure_order_parameter(sv)
 
-        for step in range(1, n_steps + 1):
-            evo_qc = self.evolve(dt, trotter_per_step)
+        for step, step_dt in enumerate(step_sizes, start=1):
+            evo_qc = self.evolve(float(step_dt), trotter_per_step)
             sv = sv.evolve(evo_qc)
             R_history[step], _ = self.measure_order_parameter(sv)
 

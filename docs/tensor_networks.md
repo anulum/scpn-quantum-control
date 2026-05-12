@@ -59,8 +59,10 @@ to the MPS, truncating the bond dimension after each gate.
 ### Limitations
 
 - **Nearest-neighbour only:** quimb's `SpinHam1D` supports NN couplings.
-  Longer-range terms from the exponentially decaying $K_{nm}$ are dropped.
-  For the standard SCPN coupling matrix, NN terms dominate.
+  Direct DMRG/TEBD calls reject longer-range terms from $K_{nm}$ unless
+  `allow_long_range_truncation=True` is passed. Truncated runs report
+  `coupling_scope="nearest_neighbour_truncated"` and
+  `omitted_coupling_l1` so they cannot be mistaken for full-K simulations.
 - **Bond dimension:** Higher $\chi$ → more accurate but slower. Typical
   values: $\chi = 32$–128 for ground states, $\chi = 64$–256 for dynamics.
 - **Entanglement growth:** TEBD accuracy degrades at long times as
