@@ -26,7 +26,7 @@ class TestQDisruptionIter:
             generate_synthetic_iter_data,
         )
 
-        X, y = generate_synthetic_iter_data(n_samples=20, rng=None)
+        X, y = generate_synthetic_iter_data(n_samples=20, rng=None, allow_synthetic=True)
         assert X.shape[0] == 20
         assert y.shape[0] == 20
 
@@ -39,6 +39,7 @@ class TestQDisruptionIter:
         X, y = generate_synthetic_iter_data(
             n_samples=n_samples,
             rng=np.random.default_rng(42),
+            allow_synthetic=True,
         )
         assert X.shape[0] == n_samples
         assert y.shape[0] == n_samples
@@ -48,7 +49,9 @@ class TestQDisruptionIter:
             generate_synthetic_iter_data,
         )
 
-        _, y = generate_synthetic_iter_data(n_samples=100, rng=np.random.default_rng(42))
+        _, y = generate_synthetic_iter_data(
+            n_samples=100, rng=np.random.default_rng(42), allow_synthetic=True
+        )
         assert set(np.unique(y)).issubset({0, 1})
 
     def test_features_finite(self):
@@ -56,7 +59,9 @@ class TestQDisruptionIter:
             generate_synthetic_iter_data,
         )
 
-        X, _ = generate_synthetic_iter_data(n_samples=50, rng=np.random.default_rng(42))
+        X, _ = generate_synthetic_iter_data(
+            n_samples=50, rng=np.random.default_rng(42), allow_synthetic=True
+        )
         assert np.all(np.isfinite(X))
 
     def test_reproducible_with_rng(self):
@@ -64,8 +69,12 @@ class TestQDisruptionIter:
             generate_synthetic_iter_data,
         )
 
-        X1, y1 = generate_synthetic_iter_data(n_samples=20, rng=np.random.default_rng(42))
-        X2, y2 = generate_synthetic_iter_data(n_samples=20, rng=np.random.default_rng(42))
+        X1, y1 = generate_synthetic_iter_data(
+            n_samples=20, rng=np.random.default_rng(42), allow_synthetic=True
+        )
+        X2, y2 = generate_synthetic_iter_data(
+            n_samples=20, rng=np.random.default_rng(42), allow_synthetic=True
+        )
         np.testing.assert_array_equal(X1, X2)
         np.testing.assert_array_equal(y1, y2)
 

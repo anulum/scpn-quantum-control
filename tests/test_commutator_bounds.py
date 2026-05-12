@@ -16,6 +16,7 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 from scpn_quantum_control.phase.trotter_error import (
     commutator_norm_bound,
     frequency_heterogeneity,
+    nested_commutator_norm_bound,
     optimal_dt,
     trotter_error_bound,
     trotter_error_norm,
@@ -60,6 +61,31 @@ class TestCommutatorBounds:
         b1 = trotter_error_bound(K, omega, 0.5, 5, order=1)
         b2 = trotter_error_bound(K, omega, 0.5, 5, order=2)
         assert b2 < b1
+
+    def test_nested_commutator_bound_matches_exact_small_system(self):
+        from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
+
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        h_xy = knm_to_dense_matrix(K, np.zeros_like(omega))
+        h_z = knm_to_dense_matrix(np.zeros_like(K), omega)
+        comm = h_xy @ h_z - h_z @ h_xy
+        nested_xy = h_xy @ comm - comm @ h_xy
+        nested_z = h_z @ comm - comm @ h_z
+        expected = np.linalg.norm(nested_xy, 2) + np.linalg.norm(nested_z, 2)
+
+        actual = nested_commutator_norm_bound(K, omega, exact_qubit_limit=3)
+
+        assert actual == pytest.approx(expected, rel=1e-12, abs=1e-12)
+
+    def test_nested_commutator_bound_has_large_system_upper_bound(self):
+        K = build_knm_paper27(L=16)
+        omega = OMEGA_N_16
+
+        bound = nested_commutator_norm_bound(K, omega, exact_qubit_limit=3)
+
+        assert np.isfinite(bound)
+        assert bound > 0.0
 
     def test_optimal_dt_respects_epsilon(self):
         K = build_knm_paper27(L=4)

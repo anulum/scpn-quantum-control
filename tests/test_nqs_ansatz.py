@@ -111,7 +111,24 @@ class TestVMCGroundState:
         K = np.array([[0, 0.3], [0.3, 0]])
         omega = np.array([1.0, 1.1])
         result = vmc_ground_state(K, omega, n_iterations=5, seed=42)
-        assert set(result.keys()) == {"energy", "energy_history", "wavefunction", "n_params"}
+        assert set(result.keys()) == {
+            "energy",
+            "energy_history",
+            "wavefunction",
+            "n_params",
+            "sampling_mode",
+            "n_samples_used",
+            "gradient_method",
+        }
+        assert result["sampling_mode"] == "exact_enumeration"
+        assert result["n_samples_used"] == 2 ** len(omega)
+        assert result["gradient_method"] == "central_finite_difference"
+
+    def test_vmc_rejects_explicit_n_samples_in_exact_mode(self):
+        K = np.array([[0, 0.3], [0.3, 0]])
+        omega = np.array([1.0, 1.1])
+        with pytest.raises(ValueError, match="n_samples"):
+            vmc_ground_state(K, omega, n_iterations=1, n_samples=10, seed=42)
 
     def test_vmc_rejects_large_n(self):
         K = np.eye(14)

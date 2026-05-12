@@ -78,13 +78,13 @@ def vmc_ground_state(
     n_hidden: int | None = None,
     learning_rate: float = 0.01,
     n_iterations: int = 200,
-    n_samples: int = 500,
+    n_samples: int | None = None,
     seed: int | None = None,
 ) -> dict:
-    """Variational Monte Carlo ground state search with RBM ansatz.
+    """Exact-enumeration RBM ground-state search with finite-difference gradients.
 
     For small systems (n<=12), uses exact summation over all configurations.
-    For larger systems, would need MCMC sampling (not implemented here).
+    MCMC sampling is intentionally not implemented in this NumPy path.
 
     Parameters
     ----------
@@ -92,13 +92,21 @@ def vmc_ground_state(
     n_hidden : hidden units (default 2*n)
     learning_rate : gradient descent step
     n_iterations : optimisation steps
-    n_samples : ignored for exact mode (used for future MCMC)
+    n_samples : unsupported
+        Must be None. Passing a value raises instead of silently ignoring a
+        caller-requested sampling budget.
     seed : RNG seed
 
     Returns
     -------
     dict with keys: energy, energy_history, wavefunction, n_params
     """
+    if n_samples is not None:
+        raise ValueError(
+            "n_samples is not supported by the exact NumPy NQS path; "
+            "use n_samples=None or a dedicated MCMC/NetKet backend."
+        )
+
     n = K.shape[0]
     if n > 12:
         raise ValueError(
@@ -166,4 +174,7 @@ def vmc_ground_state(
         "energy_history": energy_history,
         "wavefunction": rbm,
         "n_params": rbm.n_params(),
+        "sampling_mode": "exact_enumeration",
+        "n_samples_used": 2**n,
+        "gradient_method": "central_finite_difference",
     }

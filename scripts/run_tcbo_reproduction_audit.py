@@ -217,6 +217,48 @@ def _run_coupled_trace(
     }
 
 
+def build_coupling_weighted_reconstruction_payload(
+    *,
+    n_layers: int,
+    seed: int,
+) -> dict[str, Any]:
+    """Run the local coupling-weighted simplicial-complex reconstruction."""
+
+    from scpn_quantum_control.analysis.tcbo_weighted_complex import (
+        tcbo_weighted_threshold_scan,
+    )
+    from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
+
+    rng = np.random.default_rng(seed)
+    K = np.asarray(build_knm_paper27(L=n_layers), dtype=float)
+    np.fill_diagonal(K, 0.0)
+    theta = rng.uniform(0.0, 2.0 * np.pi, size=n_layers)
+    thresholds = np.linspace(0.0, 1.0, 9)
+    scan = tcbo_weighted_threshold_scan(K, theta, thresholds=thresholds)
+
+    return {
+        "construction": "K_ij_abs_cos_phase_difference_flag_complex",
+        "n_layers": int(n_layers),
+        "seed": int(seed),
+        "target_p_h1": scan.target_p_h1,
+        "best_threshold": scan.best_threshold,
+        "best_p_h1": scan.best_p_h1,
+        "best_abs_error": scan.best_abs_error,
+        "promotes_target": scan.promotes_target,
+        "threshold_results": [
+            {
+                "threshold": result.threshold,
+                "beta_0": result.beta_0,
+                "beta_1": result.beta_1,
+                "p_h1": result.p_h1,
+                "n_edges": result.n_edges,
+                "n_triangles": result.n_triangles,
+            }
+            for result in scan.results
+        ],
+    }
+
+
 def build_audit_payload(
     *,
     codebase_path: Path,
@@ -252,6 +294,10 @@ def build_audit_payload(
         steps=steps,
         seed=seed,
     )
+    coupling_weighted_reconstruction = build_coupling_weighted_reconstruction_payload(
+        n_layers=n_layers,
+        seed=seed,
+    )
 
     return {
         "schema_version": 1,
@@ -279,6 +325,7 @@ def build_audit_payload(
             "seed": seed,
             "synthetic_observer_runs": synthetic_runs,
             "coupled_trace": coupled_run,
+            "coupling_weighted_reconstruction": coupling_weighted_reconstruction,
         },
         "decision": {
             "current_label": "open_empirical_theoretical_parameter",
@@ -288,13 +335,16 @@ def build_audit_payload(
             "reason": (
                 "The active TCBO observer executes delay-embedded Vietoris-Rips "
                 "persistence and treats tau_h1=0.72 as a default threshold. "
-                "The required coupling-weighted simplicial-complex construction "
-                "was not present in the executed observer path."
+                "The local reconstruction now provides the required "
+                "coupling-weighted simplicial-complex primitive, but it is not "
+                "the executed observer path and has not reproduced 0.72 with "
+                "uncertainty on a preregistered dataset."
             ),
             "next_gate": (
-                "Either implement/find the coupling-weighted simplicial-complex "
-                "observer and replay measured/simulated coupling magnitudes, or "
-                "relabel all TCBO uses as operating-threshold experiments."
+                "Replay the coupling-weighted simplicial-complex reconstruction "
+                "on preregistered measured or simulated coupling magnitudes with "
+                "uncertainty; otherwise keep all TCBO uses as operating-threshold "
+                "experiments."
             ),
         },
     }
@@ -324,8 +374,12 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Wrote TCBO audit: {args.output}")
     print(f"Decision: {payload['decision']['current_label']}")
     print(
-        "Coupling-weighted construction present: "
+        "Legacy observer coupling-weighted construction present: "
         f"{payload['source_classification']['uses_coupling_weighted_complex']}"
+    )
+    print(
+        "Reconstruction primitive recorded: "
+        f"{'coupling_weighted_reconstruction' in payload['execution']}"
     )
     return 0
 

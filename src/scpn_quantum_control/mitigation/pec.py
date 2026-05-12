@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Pec
-"""Probabilistic Error Cancellation for single-qubit depolarizing channels.
+"""Probabilistic Error Cancellation for local depolarizing channels.
 
 Temme et al., PRL 119, 180509 (2017).
 """
@@ -33,18 +33,22 @@ def pauli_twirl_decompose(gate_error_rate: float, n_qubits: int = 1) -> np.ndarr
     """Quasi-probability coefficients for depolarizing channel inverse.
 
     Single-qubit: q_I = 1 + 3p/(4-4p), q_{X,Y,Z} = -p/(4-4p).
+    Multi-qubit outputs are tensor products of the local inverse channel,
+    ordered lexicographically over the local {I, X, Y, Z} basis.
     Temme et al., PRL 119, 180509 (2017), Eq. 4.
     """
     if not 0.0 <= gate_error_rate < 1.0:
         raise ValueError(f"gate_error_rate must be in [0, 1), got {gate_error_rate}")
-    if n_qubits != 1:
-        raise NotImplementedError("Only single-qubit PEC implemented")
+    if n_qubits < 1:
+        raise ValueError(f"n_qubits must be a positive integer, got {n_qubits}")
 
     p = gate_error_rate
     denom = 4.0 - 4.0 * p
     q_i = 1.0 + 3.0 * p / denom
     q_xyz = -p / denom
     coeffs: np.ndarray = np.array([q_i, q_xyz, q_xyz, q_xyz])
+    for _ in range(1, n_qubits):
+        coeffs = np.kron(coeffs, np.array([q_i, q_xyz, q_xyz, q_xyz]))
     return coeffs
 
 

@@ -21,9 +21,9 @@ The reconstruction is exact for diagonal observables (Z-basis)
 and approximate for off-diagonal (XX, YY correlators across cuts).
 
 Limitation: 4^c overhead per cut. With all-to-all coupling at N=32,
-the inter-partition cut count is large — making full reconstruction
-infeasible. Instead, we compute partition-local observables exactly
-and cross-partition correlators via product-state approximation.
+the inter-partition cut count is large. This runner therefore refuses
+to label multi-partition energy as full-system energy unless the caller
+explicitly opts into a partition-local diagnostic.
 """
 
 from __future__ import annotations
@@ -50,6 +50,9 @@ class CuttingRunResult:
     combined_r_global: float  # weighted average
     partition_energies: list[float]
     total_energy_estimate: float
+    energy_scope: str
+    is_full_system_energy: bool
+    omitted_cross_partition_coupling_l1: float
     partition_sizes: list[int]
 
 
@@ -87,11 +90,14 @@ def run_cutting_simulation(
     t: float = 1.0,
     reps: int = 5,
     max_partition_size: int = 16,
+    allow_partition_energy_estimate: bool = False,
 ) -> CuttingRunResult:
     """Execute a partitioned Kuramoto-XY simulation.
 
     Partitions the system, runs each partition independently,
-    combines results via weighted R_global average.
+    combines phase observables via a circular mean. For multiple partitions,
+    the returned energy is only a partition-local diagnostic; call sites must
+    opt into that explicitly with ``allow_partition_energy_estimate=True``.
     """
     K_full = build_knm_paper27(L=n_oscillators, K_base=k_base)
     from ..bridge.knm_hamiltonian import OMEGA_N_16
@@ -99,6 +105,22 @@ def run_cutting_simulation(
     omega_full = np.tile(OMEGA_N_16, (n_oscillators // 16) + 1)[:n_oscillators]
 
     partition = optimal_partition(K_full, max_partition_size)
+    partition_labels = np.full(n_oscillators, -1, dtype=int)
+    for label, indices in enumerate(partition):
+        partition_labels[np.asarray(indices, dtype=int)] = label
+
+    omitted_cross_l1 = 0.0
+    for i in range(n_oscillators):
+        for j in range(i + 1, n_oscillators):
+            if partition_labels[i] != partition_labels[j]:
+                omitted_cross_l1 += abs(float(K_full[i, j]))
+
+    if len(partition) > 1 and omitted_cross_l1 > 0.0 and not allow_partition_energy_estimate:
+        raise ValueError(
+            "Multi-partition cutting omits cross-partition coupling energy. Pass "
+            "allow_partition_energy_estimate=True only when consuming the labelled "
+            "partition-local energy diagnostic."
+        )
 
     partition_energies: list[float] = []
     partition_rs: list[float] = []
@@ -121,8 +143,10 @@ def run_cutting_simulation(
     z = np.mean(np.exp(1j * combined_phases))
     combined_r = float(np.abs(z))
 
-    # Total energy: sum of partition energies (ignores cross-partition coupling)
+    # Labelled diagnostic: sum of partition energies, with omitted cross terms reported.
     total_energy = sum(partition_energies)
+    is_full_energy = len(partition) == 1 or omitted_cross_l1 == 0.0
+    energy_scope = "full_system" if is_full_energy else "partition_local_sum"
 
     return CuttingRunResult(
         n_oscillators=n_oscillators,
@@ -131,5 +155,8 @@ def run_cutting_simulation(
         combined_r_global=combined_r,
         partition_energies=partition_energies,
         total_energy_estimate=total_energy,
+        energy_scope=energy_scope,
+        is_full_system_energy=is_full_energy,
+        omitted_cross_partition_coupling_l1=omitted_cross_l1,
         partition_sizes=sizes,
     )

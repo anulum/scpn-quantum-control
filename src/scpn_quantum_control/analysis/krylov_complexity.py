@@ -72,10 +72,22 @@ def lanczos_coefficients(
     """Compute Lanczos coefficients b_n and Krylov basis.
 
     Uses the operator Lanczos algorithm on the Liouvillian L = [H, ·].
-    Rust fast path avoids Python per-step overhead for the commutator loop.
+    This basis-returning API uses the Python implementation unless the
+    accelerator exposes a full basis-returning kernel; coefficient-only
+    accelerator results must not be inflated into uncomputed basis vectors.
 
     Returns (b_coefficients, krylov_basis).
     """
+    return _lanczos_coefficients_python(H, O_init, max_steps=max_steps, tol=tol)
+
+
+def _lanczos_b_coefficients_fast(
+    H: np.ndarray,
+    O_init: np.ndarray,
+    max_steps: int,
+    tol: float,
+) -> np.ndarray:
+    """Return Lanczos coefficients using Rust when available."""
     try:
         import scpn_quantum_engine as _engine
 
@@ -91,13 +103,22 @@ def lanczos_coefficients(
             max_steps,
             tol,
         )
-        b_arr = np.array(b_vec)
-        # Rust path doesn't return basis — build placeholder list
-        dummy_basis = [np.empty(0)] * (len(b_arr) + 1)
-        return b_arr, dummy_basis
+        return np.asarray(b_vec, dtype=float)
     except (ImportError, AttributeError):
         pass
 
+    b_coeffs, _basis = _lanczos_coefficients_python(H, O_init, max_steps=max_steps, tol=tol)
+    return b_coeffs
+
+
+def _lanczos_coefficients_python(
+    H: np.ndarray,
+    O_init: np.ndarray,
+    *,
+    max_steps: int,
+    tol: float,
+) -> tuple[np.ndarray, list[np.ndarray]]:
+    """Compute Lanczos coefficients and the real Krylov basis in Python."""
     # Normalize initial operator
     norm_0 = np.sqrt(_operator_inner_product(O_init, O_init))
     if norm_0 < tol:
@@ -146,7 +167,7 @@ def krylov_complexity(
     in the Krylov basis, obtained by solving the tridiagonal system:
     i dφ_n/dt = b_{n+1} φ_{n+1} + b_n φ_{n-1}
     """
-    b_coeffs, basis = lanczos_coefficients(H, O_init, max_lanczos)
+    b_coeffs = _lanczos_b_coefficients_fast(H, O_init, max_lanczos, tol=1e-12)
     n_basis = len(b_coeffs) + 1  # basis has one more element than b_coeffs
 
     if n_basis < 2:

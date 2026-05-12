@@ -57,7 +57,7 @@ def test_trapped_ion_transpile_preserves_qubit_count(n: int) -> None:
         qc.ry(0.5, i)
     for i in range(n - 1):
         qc.cx(i, i + 1)
-    result = transpile_for_trapped_ion(qc)
+    result = transpile_for_trapped_ion(qc, allow_proxy_basis=True)
     assert result.num_qubits == n
 
 

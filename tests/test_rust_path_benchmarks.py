@@ -197,7 +197,73 @@ class TestKuramotoTrajectory:
 
 
 # ---------------------------------------------------------------------------
-# 5. build_xy_hamiltonian_dense — full matrix
+# 5. koopman_generator — dense Kuramoto observable lift
+# ---------------------------------------------------------------------------
+
+
+class TestKoopmanGenerator:
+    @pytest.mark.parametrize("n", [4, 8, 16])
+    def test_parity_with_python_generator(self, n):
+        from scpn_quantum_control.analysis import koopman
+        from scpn_quantum_control.analysis.koopman import (
+            build_koopman_generator,
+            build_koopman_generator_rust,
+        )
+
+        rng = np.random.default_rng(20260512 + n)
+        raw = rng.uniform(0.0, 0.4, size=(n, n))
+        K = (raw + raw.T) / 2.0
+        np.fill_diagonal(K, 0.0)
+        omega = rng.uniform(-0.5, 0.5, size=n)
+        theta_ref = rng.uniform(-0.3, 0.3, size=n)
+        koopman.optional_rust_engine = lambda: eng
+
+        python_L, python_labels = build_koopman_generator(
+            K, omega, theta_ref=theta_ref, max_oscillators=n
+        )
+        rust_L, rust_labels = build_koopman_generator_rust(
+            K,
+            omega,
+            theta_ref=theta_ref,
+            max_oscillators=n,
+            require_rust=True,
+        )
+
+        np.testing.assert_allclose(rust_L, python_L, atol=1e-12)
+        assert rust_labels == python_labels
+
+    def test_performance_vs_python(self):
+        from scpn_quantum_control.analysis import koopman
+        from scpn_quantum_control.analysis.koopman import (
+            build_koopman_generator,
+            build_koopman_generator_rust,
+        )
+
+        n = 16
+        rng = np.random.default_rng(20260528)
+        raw = rng.uniform(0.0, 0.4, size=(n, n))
+        K = (raw + raw.T) / 2.0
+        np.fill_diagonal(K, 0.0)
+        omega = rng.uniform(-0.5, 0.5, size=n)
+        theta_ref = rng.uniform(-0.3, 0.3, size=n)
+        koopman.optional_rust_engine = lambda: eng
+
+        _, dt_r = _timed(
+            build_koopman_generator_rust,
+            K,
+            omega,
+            theta_ref=theta_ref,
+            max_oscillators=n,
+            require_rust=True,
+        )
+        _, dt_p = _timed(build_koopman_generator, K, omega, theta_ref=theta_ref, max_oscillators=n)
+        _assert_benchmark_time(dt_r)
+        _assert_benchmark_time(dt_p)
+        _perf("koopman_generator (n=16, dim=256)", dt_r, dt_p)
+
+
+# ---------------------------------------------------------------------------
+# 6. build_xy_hamiltonian_dense — full matrix
 # ---------------------------------------------------------------------------
 
 
