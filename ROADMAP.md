@@ -125,6 +125,12 @@ is copied here.
   small systems and a rigorous Pauli coefficient-norm upper bound for
   larger systems, replacing the previous heuristic `gamma²/max(K)`
   estimate.
+- [x] **R-witness entanglement-depth claim hardening.** Implemented
+  2026-05-12: `detect_entanglement_from_R()` now reports only the
+  certified lower-bound depth from the R separability witness: `1` when
+  the separable bound is not violated and `2` when nonseparability is
+  certified. Stronger multipartite-depth claims are no longer inferred
+  from heuristic R thresholds.
 - [x] **Integrated-information wrapper production route.** Implemented
   2026-05-12: `IntegratedInformationPhi` now routes explicit
   `coupling_matrix` and `natural_frequencies` inputs to the

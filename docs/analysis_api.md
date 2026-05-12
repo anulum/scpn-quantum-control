@@ -105,6 +105,11 @@ from scpn_quantum_control.analysis.sync_entanglement_witness import (
 | `R_separable_bound_at_energy(K, omega, target_energy, n_samples, seed)` | Max $R$ over product states at given energy |
 | `r_witness_from_statevector(sv, K, omega)` | Full witness evaluation: $R$, separable bound, entanglement certified? |
 
+The returned `entanglement_depth` is a certified lower bound from this witness:
+`1` when the separable bound is not violated and `2` when entanglement is
+certified. The R witness alone does not certify stronger multipartite depth;
+that requires separate k-producibility bounds or a dedicated depth witness.
+
 ### `critical_concordance` — Multi-Probe $K_c$ Agreement
 
 Scans coupling strength and evaluates all probes simultaneously to verify they converge
