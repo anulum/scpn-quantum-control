@@ -225,7 +225,12 @@ class EEGApplicationPlugin(_PackagedDatasetPlugin):
     def benchmark_dataset(self, dataset_id: str | None = None) -> ApplicationPluginBenchmark:
         """Run the EEG topology benchmark."""
         artifact = self.load_dataset(dataset_id)
-        result = eeg_benchmark(artifact.K_nm, artifact.omega, band=str(artifact.metadata["band"]))
+        result = eeg_benchmark(
+            artifact.K_nm,
+            artifact.omega,
+            band=str(artifact.metadata["band"]),
+            allow_builtin_reference=True,
+        )
         return self._base_result(
             artifact,
             backend="scipy.stats.spearmanr+numpy",
@@ -235,7 +240,11 @@ class EEGApplicationPlugin(_PackagedDatasetPlugin):
                 "coupling_ratio": result.coupling_ratio,
             },
             summary=result.summary,
-            metadata={"channels": list(artifact.layer_assignments)},
+            metadata={
+                "channels": list(artifact.layer_assignments),
+                "reference_source_mode": result.source_mode,
+                "reference_publication_safe": result.publication_safe,
+            },
         )
 
 

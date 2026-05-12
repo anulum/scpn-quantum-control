@@ -12,6 +12,7 @@ from __future__ import annotations
 import warnings
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.applications.eeg_benchmark import (
     EEG_ALPHA_PLV,
@@ -38,8 +39,12 @@ class TestEEGData:
 
 
 class TestEEGCouplingMatrix:
+    def test_builtin_alpha_requires_explicit_opt_in(self):
+        with pytest.raises(RuntimeError, match="allow_builtin_reference"):
+            eeg_coupling_matrix("alpha")
+
     def test_alpha_shape(self):
-        K, omega = eeg_coupling_matrix("alpha")
+        K, omega = eeg_coupling_matrix("alpha", allow_builtin_reference=True)
         assert K.shape == (8, 8)
         assert omega.shape == (8,)
 
@@ -48,25 +53,25 @@ class TestEEGBenchmark:
     def test_returns_result(self):
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
-        result = eeg_benchmark(K, omega)
+        result = eeg_benchmark(K, omega, allow_builtin_reference=True)
         assert isinstance(result, EEGBenchmarkResult)
 
     def test_n_channels(self):
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
-        result = eeg_benchmark(K, omega)
+        result = eeg_benchmark(K, omega, allow_builtin_reference=True)
         assert result.n_channels == 8
 
     def test_correlation_bounded(self):
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
-        result = eeg_benchmark(K, omega)
+        result = eeg_benchmark(K, omega, allow_builtin_reference=True)
         assert -1 <= result.topology_correlation <= 1
 
     def test_fewer_oscillators(self):
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
-        result = eeg_benchmark(K, omega)
+        result = eeg_benchmark(K, omega, allow_builtin_reference=True)
         assert result.n_channels == 4
 
     def test_constant_frequency_vector_returns_zero_correlation(self):
@@ -74,7 +79,7 @@ class TestEEGBenchmark:
         omega = np.ones(4)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)
-            result = eeg_benchmark(K, omega)
+            result = eeg_benchmark(K, omega, allow_builtin_reference=True)
         assert result.frequency_correlation == 0.0
         assert result.n_channels == 4
         assert "freq r=0.000" in result.summary
@@ -82,13 +87,20 @@ class TestEEGBenchmark:
     def test_summary_string(self):
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
-        result = eeg_benchmark(K, omega)
+        result = eeg_benchmark(K, omega, allow_builtin_reference=True)
         assert "SCPN vs EEG" in result.summary
+
+    def test_result_labels_builtin_reference_source_mode(self):
+        K = build_knm_paper27(L=8)
+        omega = OMEGA_N_16[:8]
+        result = eeg_benchmark(K, omega, allow_builtin_reference=True)
+        assert result.source_mode == "builtin_literature_shape"
+        assert result.publication_safe is False
 
     def test_scpn_vs_eeg(self):
         """Record SCPN vs EEG — Gap 1 data."""
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
-        result = eeg_benchmark(K, omega)
+        result = eeg_benchmark(K, omega, allow_builtin_reference=True)
         print(f"\n  {result.summary}")
         assert isinstance(result.topology_correlation, float)

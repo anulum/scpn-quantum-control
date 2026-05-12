@@ -90,7 +90,7 @@ def run_cross_domain_validation(
     # EEG (8 oscillators)
     K8 = build_knm_paper27(L=8)
     omega8 = OMEGA_N_16[:8]
-    eeg = eeg_benchmark(K8, omega8)
+    eeg = eeg_benchmark(K8, omega8, allow_builtin_reference=True)
     names.append("EEG alpha (neuroscience)")
     results_topo.append(eeg.topology_correlation)
     results_freq.append(eeg.frequency_correlation)

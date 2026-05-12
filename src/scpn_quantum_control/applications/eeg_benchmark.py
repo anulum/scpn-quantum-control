@@ -73,10 +73,21 @@ class EEGBenchmarkResult:
     coupling_ratio: float
     eeg_band: str
     summary: str
+    source_mode: str
+    publication_safe: bool
 
 
-def eeg_coupling_matrix(band: str = "alpha") -> tuple[np.ndarray, np.ndarray]:
-    """Get synthetic EEG coupling matrix for given frequency band."""
+def eeg_coupling_matrix(
+    band: str = "alpha",
+    *,
+    allow_builtin_reference: bool = False,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Get the built-in EEG coupling reference for a frequency band."""
+    if not allow_builtin_reference:
+        raise RuntimeError(
+            "Refusing built-in EEG reference matrix without allow_builtin_reference=True. "
+            "Pass measured EEG PLV/coherence matrices to eeg_benchmark for publication-safe claims."
+        )
     if band == "alpha":
         return EEG_ALPHA_PLV.copy(), EEG_ALPHA_FREQ.copy()
     raise ValueError(f"Unknown EEG band: {band}. Available: alpha")
@@ -86,9 +97,31 @@ def eeg_benchmark(
     K_scpn: np.ndarray,
     omega_scpn: np.ndarray,
     band: str = "alpha",
+    *,
+    eeg_coupling: np.ndarray | None = None,
+    eeg_frequencies: np.ndarray | None = None,
+    allow_builtin_reference: bool = False,
 ) -> EEGBenchmarkResult:
     """Compare SCPN K_nm with EEG functional connectivity."""
-    K_eeg, omega_eeg = eeg_coupling_matrix(band)
+    if eeg_coupling is None or eeg_frequencies is None:
+        if eeg_coupling is not None or eeg_frequencies is not None:
+            raise ValueError("eeg_coupling and eeg_frequencies must be supplied together.")
+        K_eeg, omega_eeg = eeg_coupling_matrix(
+            band, allow_builtin_reference=allow_builtin_reference
+        )
+        source_mode = "builtin_literature_shape"
+        publication_safe = False
+    else:
+        K_eeg = np.asarray(eeg_coupling, dtype=float)
+        omega_eeg = np.asarray(eeg_frequencies, dtype=float)
+        source_mode = "measured"
+        publication_safe = True
+
+    if K_eeg.ndim != 2 or K_eeg.shape[0] != K_eeg.shape[1]:
+        raise ValueError("eeg_coupling must be a square matrix.")
+    if omega_eeg.ndim != 1 or omega_eeg.shape[0] != K_eeg.shape[0]:
+        raise ValueError("eeg_frequencies must be a vector matching eeg_coupling.")
+
     n_eeg = K_eeg.shape[0]
     n_scpn = K_scpn.shape[0]
     n = min(n_eeg, n_scpn)
@@ -130,4 +163,6 @@ def eeg_benchmark(
         coupling_ratio=ratio,
         eeg_band=band,
         summary=summary,
+        source_mode=source_mode,
+        publication_safe=publication_safe,
     )

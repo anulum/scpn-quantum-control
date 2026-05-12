@@ -40,7 +40,7 @@ def test_eeg_unknown_band():
     from scpn_quantum_control.applications.eeg_benchmark import eeg_coupling_matrix
 
     with pytest.raises(ValueError, match="Unknown EEG band"):
-        eeg_coupling_matrix(band="delta")
+        eeg_coupling_matrix(band="delta", allow_builtin_reference=True)
 
 
 # --- eeg_benchmark.py line 106: len(e_flat) < 3 path ---
@@ -52,7 +52,7 @@ def test_eeg_benchmark_small_scpn():
 
     K = np.array([[0, 0.1], [0.1, 0]])
     omega = np.array([10.0, 12.0])
-    result = eeg_benchmark(K, omega)
+    result = eeg_benchmark(K, omega, allow_builtin_reference=True)
     assert result.topology_correlation == 0.0
 
 
@@ -65,7 +65,7 @@ def test_eeg_benchmark_freq_corr_small():
 
     K = np.array([[0, 0.5], [0.5, 0]])
     omega = np.array([10.0, 12.0])
-    result = eeg_benchmark(K, omega)
+    result = eeg_benchmark(K, omega, allow_builtin_reference=True)
     assert result.frequency_correlation == 0.0
 
 
