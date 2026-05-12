@@ -158,6 +158,12 @@ is copied here.
   circuit used the nearest-neighbour truncation of the exponential
   coupling matrix, and the benchmark API no longer turns crossover
   estimates into a broad hardware-only dynamics claim.
+- [x] **Legacy preprint claim-boundary audit.** Implemented
+  2026-05-12: `docs/preprint.md` now frames ibm_fez material as
+  artifact-backed legacy hardware evidence, removes "first hardware
+  demonstration" and backend-general outperformance phrasing, and keeps
+  16-qubit/ansatz observations descriptive unless a later ledger review
+  promotes a specific raw-count claim.
 - [x] **NumPy NQS sampling-contract hardening.** Implemented
   2026-05-12: `vmc_ground_state()` now rejects explicit `n_samples`
   because the current NumPy RBM path performs exact enumeration with

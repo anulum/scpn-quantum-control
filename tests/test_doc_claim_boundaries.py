@@ -34,3 +34,23 @@ def test_benchmarks_api_does_not_overclaim_hardware_only_full_dynamics() -> None
     assert "only quantum hardware" not in text
     assert "full Kuramoto-XY dynamics" not in text
     assert "no broad quantum-advantage claim follows" in collapsed
+
+
+def test_legacy_preprint_marks_ibm_fez_scope_as_artifact_backed() -> None:
+    """The legacy preprint must not overpromote early ibm_fez material."""
+    text = _read("docs/preprint.md")
+    collapsed = " ".join(text.split())
+
+    assert "first quantum hardware demonstration" not in collapsed
+    assert "artifact-backed legacy hardware evidence" in collapsed
+    assert "not promoted as broad hardware validation" in collapsed
+
+
+def test_legacy_preprint_no_survival_or_outperformance_overclaims() -> None:
+    """Legacy hardware snapshots must stay descriptive and comparator-bounded."""
+    text = _read("docs/preprint.md")
+    collapsed = " ".join(text.split())
+
+    assert "demonstrating that the Kuramoto coupling structure survives" not in collapsed
+    assert "physics-informed circuit design outperforms" not in collapsed
+    assert "descriptive hardware snapshot" in collapsed
