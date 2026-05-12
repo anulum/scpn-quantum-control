@@ -29,9 +29,23 @@ class BiologicalSurfaceCode:
     """A Surface Code defined directly on a biological coupling graph."""
 
     def __init__(self, K: np.ndarray, threshold: float = 1e-5):
-        self.K = K
-        self.threshold = threshold
-        self.n_nodes = K.shape[0]
+        K_array = np.asarray(K, dtype=float)
+        if K_array.ndim != 2 or K_array.shape[0] != K_array.shape[1]:
+            raise ValueError("Coupling matrix K must be a square 2D matrix.")
+        if not np.all(np.isfinite(K_array)):
+            raise ValueError("Coupling matrix K must contain only finite values.")
+        if not np.allclose(K_array, K_array.T, rtol=1e-12, atol=1e-12):
+            raise ValueError("Coupling matrix K must be symmetric for an undirected graph code.")
+        if not np.allclose(np.diag(K_array), 0.0, rtol=0.0, atol=1e-12):
+            raise ValueError("Coupling matrix K must have a zero diagonal.")
+
+        threshold_value = float(threshold)
+        if not np.isfinite(threshold_value) or threshold_value < 0.0:
+            raise ValueError("threshold must be a finite non-negative value.")
+
+        self.K = K_array
+        self.threshold = threshold_value
+        self.n_nodes = K_array.shape[0]
 
         self.G = nx.Graph()
         self.G.add_nodes_from(range(self.n_nodes))
@@ -40,11 +54,11 @@ class BiologicalSurfaceCode:
         self.edges = []
         for i in range(self.n_nodes):
             for j in range(i + 1, self.n_nodes):
-                if abs(K[i, j]) >= threshold:
+                if abs(self.K[i, j]) >= self.threshold:
                     self.edges.append((i, j))
                     # Weight inversely proportional to coupling strength for MWPM
                     # Stronger biological coupling = shorter distance = preferred error path
-                    self.G.add_edge(i, j, weight=1.0 / (abs(K[i, j]) + 1e-5))
+                    self.G.add_edge(i, j, weight=1.0 / (abs(self.K[i, j]) + 1e-5))
 
         self.num_data = len(self.edges)
         self.edge_to_idx = {e: i for i, e in enumerate(self.edges)}

@@ -141,6 +141,12 @@ is copied here.
   malformed syndromes and odd syndrome parity in any connected component
   when no explicit rough-boundary model is present. The decoder no
   longer drops an unmatched defect to force even cardinality.
+- [x] **Biological surface-code K-matrix hardening.** Implemented
+  2026-05-12: `BiologicalSurfaceCode` now validates that `K` is a
+  finite square symmetric zero-diagonal coupling matrix and that
+  `threshold` is finite and non-negative before constructing the graph
+  code, preventing malformed matrices from reaching stabilizer or MWPM
+  logic.
 - [x] **Integrated-information wrapper production route.** Implemented
   2026-05-12: `IntegratedInformationPhi` now routes explicit
   `coupling_matrix` and `natural_frequencies` inputs to the

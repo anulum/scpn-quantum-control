@@ -199,3 +199,21 @@ def test_no_edges_raises():
     K = np.zeros((3, 3))
     with pytest.raises(ValueError, match="no edges"):
         BiologicalSurfaceCode(K)
+
+
+@pytest.mark.parametrize(
+    "K, match",
+    [
+        (np.ones(3), "square"),
+        (np.ones((2, 3)), "square"),
+        (np.array([[0.0, np.nan], [np.nan, 0.0]]), "finite"),
+        (np.array([[0.0, 1.0], [0.5, 0.0]]), "symmetric"),
+        (np.array([[0.2, 1.0], [1.0, 0.0]]), "zero diagonal"),
+        (np.array([[0.0, 1.0], [1.0, 0.0]]), "threshold"),
+    ],
+)
+def test_surface_code_rejects_malformed_coupling_matrix(K, match):
+    """Biological graph-code construction requires a valid undirected K matrix."""
+    threshold = float("nan") if match == "threshold" else 1e-5
+    with pytest.raises(ValueError, match=match):
+        BiologicalSurfaceCode(K, threshold=threshold)

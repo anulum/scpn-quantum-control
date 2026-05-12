@@ -524,6 +524,9 @@ BiologicalSurfaceCode(K, threshold=1e-5)
     .verify_css_commutation() -> bool
 ```
 Native topological error correction code mapped directly to the hierarchical SCPN coupling graph.
+`K` must be a finite square symmetric zero-diagonal coupling matrix.
+`threshold` must be finite and non-negative; edges with
+`abs(K[i, j]) >= threshold` are data qubits.
 
 ### `biological_surface_code.BiologicalMWPMDecoder`
 
