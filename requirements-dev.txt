@@ -14,7 +14,6 @@ hypothesis==6.152.4
 ruff==0.15.12
 mypy==1.20.1
 bandit==1.9.4
-semgrep==1.161.0
 pre-commit==4.5.1
 build==1.5.0
 types-defusedxml==0.7.0.20260504
@@ -32,3 +31,7 @@ pydantic-settings==2.14.0
 structlog==25.5.0
 qutip==5.2.3
 pip-audit==2.9.0
+mcp==1.27.1
+jsonschema==4.26.0
+tomli==2.4.1
+wrapt==2.1.2
