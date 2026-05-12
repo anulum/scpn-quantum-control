@@ -119,6 +119,12 @@ is copied here.
   routing to the spectral QFI engine. The analysis API documents the
   production contract and keeps counts-derived sync/DLA estimates
   labelled as opt-in proxy diagnostics.
+- [x] **DLA-protected witness count normalisation hardening.**
+  Implemented 2026-05-12: `evaluate_dla_protected_memory()` now
+  rejects fractional, boolean, and negative count values before shot
+  total normalisation, preventing malformed hardware/simulator payloads
+  from being coerced into invalid probability mass. The DLA-protected
+  subspace docs record the count contract.
 - [x] **PEC local multi-qubit coefficient decomposition.** Implemented
   2026-05-12: `pauli_twirl_decompose()` now returns tensor-product
   quasi-probability coefficients for `n_qubits >= 1`, preserving exact
