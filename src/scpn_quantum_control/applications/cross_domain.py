@@ -69,7 +69,7 @@ def run_cross_domain_validation(
     # Power grid (5 oscillators)
     K5 = build_knm_paper27(L=5)
     omega5 = OMEGA_N_16[:5]
-    grid = power_grid_benchmark(K5, omega5)
+    grid = power_grid_benchmark(K5, omega5, allow_builtin_reference=True)
     names.append("IEEE 5-bus (power grid)")
     results_topo.append(grid.topology_correlation)
     results_freq.append(grid.frequency_correlation)

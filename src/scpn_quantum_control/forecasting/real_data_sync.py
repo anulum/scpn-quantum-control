@@ -162,7 +162,7 @@ def load_ieee5bus_sync_forecast_case(
     """
     if disturbance_scale <= 0.0 or not np.isfinite(disturbance_scale):
         raise ValueError("disturbance_scale must be finite and positive")
-    coupling, omega = ieee_5bus_coupling_matrix()
+    coupling, omega = ieee_5bus_coupling_matrix(allow_builtin_reference=True)
     theta0 = np.asarray([0.0, 0.03, -0.025, 0.04, -0.015], dtype=np.float64)
     observed = _scipy_reference_trace(
         coupling,

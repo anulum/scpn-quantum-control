@@ -336,9 +336,12 @@ Command provenance:
 | Run application plugin benchmark suite | EEG alpha PLV 8-channel, FEP 6-node workflow, ITER MHD 8-mode, IEEE 5-bus grid | `scipy.stats.spearmanr` + NumPy domain scorers; FEP path through `scpn_quantum_control.fep` | ASRock H510 Pro BTC+, i5-11600K, Ubuntu 24.04.4 | 117.635 ms | plugins=`eeg_alpha,friston_fep,plasma_iter_mhd,power_grid_ieee5`; datasets=`eeg_alpha_plv_8ch,friston_fep_6node,iter_mhd_8mode,ieee5bus_power_grid`; n=`8,6,8,5` |
 
 The plasma plugin routes the packaged `iter_mhd_8mode` artifact as a curated
-reference. Direct `iter_benchmark()` calls require
+reference. The power-grid plugin routes the packaged `ieee5bus_power_grid`
+artifact as a curated reference. Direct `iter_benchmark()` calls require
 `allow_synthetic_reference=True` for the built-in synthetic reference, and those
-results are marked `publication_safe=False`.
+results are marked `publication_safe=False`; direct `power_grid_benchmark()`
+calls require `allow_builtin_reference=True` for the built-in IEEE 5-bus
+reference and return provenance metadata.
 
 Command provenance:
 

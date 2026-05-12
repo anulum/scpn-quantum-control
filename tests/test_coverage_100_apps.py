@@ -170,7 +170,7 @@ def test_power_grid_unknown_grid():
     with pytest.raises(ValueError, match="Unknown grid"):
         K = build_knm_paper27(L=5)
         omega = OMEGA_N_16[:5]
-        power_grid_benchmark(K, omega, grid_name="IEEE-9bus")
+        power_grid_benchmark(K, omega, grid_name="IEEE-9bus", allow_builtin_reference=True)
 
 
 # --- power_grid.py line 126: len(g_flat) < 3 topo_corr ---
@@ -182,7 +182,7 @@ def test_power_grid_small_scpn():
 
     K = np.array([[0, 0.1], [0.1, 0]])
     omega = np.array([60.0, 60.0])
-    result = power_grid_benchmark(K, omega)
+    result = power_grid_benchmark(K, omega, allow_builtin_reference=True)
     assert result.topology_correlation == 0.0
 
 
@@ -195,5 +195,5 @@ def test_power_grid_freq_corr_small():
 
     K = np.array([[0, 0.5], [0.5, 0]])
     omega = np.array([60.0, 60.0])
-    result = power_grid_benchmark(K, omega)
+    result = power_grid_benchmark(K, omega, allow_builtin_reference=True)
     assert result.frequency_correlation == 0.0

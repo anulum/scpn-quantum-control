@@ -295,7 +295,13 @@ class PowerGridApplicationPlugin(_PackagedDatasetPlugin):
     def benchmark_dataset(self, dataset_id: str | None = None) -> ApplicationPluginBenchmark:
         """Run the power-grid synchronisation benchmark."""
         artifact = self.load_dataset(dataset_id)
-        result = power_grid_benchmark(artifact.K_nm, artifact.omega)
+        result = power_grid_benchmark(
+            artifact.K_nm,
+            artifact.omega,
+            grid_coupling=artifact.K_nm,
+            grid_frequencies=artifact.omega,
+            reference_source_mode=artifact.source_mode,
+        )
         return self._base_result(
             artifact,
             backend="scipy.stats.spearmanr+numpy",
@@ -305,7 +311,11 @@ class PowerGridApplicationPlugin(_PackagedDatasetPlugin):
                 "coupling_ratio": result.coupling_ratio,
             },
             summary=result.summary,
-            metadata={"buses": list(artifact.layer_assignments)},
+            metadata={
+                "buses": list(artifact.layer_assignments),
+                "reference_source_mode": result.source_mode,
+                "reference_publication_safe": result.publication_safe,
+            },
         )
 
 
