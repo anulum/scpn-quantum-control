@@ -357,6 +357,16 @@ from scpn_quantum_control.analysis.qfi import (
 | `spectral_gap(H)` | $E_1 - E_0$ |
 | `precision_bounds(qfi_matrix)` | Cramér-Rao lower bounds $\delta\theta_i \geq 1/\sqrt{F_{ii}}$ |
 
+`QuantumFisherInformation` is the observable-wrapper adapter for production
+metrology calls. When `coupling_matrix` and `natural_frequencies` are supplied
+it routes to the spectral QFI engine and validates that the coupling matrix is
+square, symmetric, finite-valued, and dimension-compatible with the frequency
+vector. Optional `coupling_pairs` must be distinct in-range integer index pairs,
+and `n_measurements` must be a positive integer because it rescales the
+Cramér-Rao precision bound. Counts-derived sync/DLA estimates are exposed only
+through the explicit `allow_proxy_estimate=True` diagnostic path and are labelled
+as proxy values, never as production QFI.
+
 ### `magic_nonstabilizerness` — Stabilizer Rényi Entropy
 
 Magic $M_2 = -\log_2(\sum_P \langle P\rangle^4 / 2^N)$ peaks at $K_c$ — the critical

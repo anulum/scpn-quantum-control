@@ -112,6 +112,13 @@ is copied here.
   `compute_quantum_phi` Kuramoto-XY density-matrix engine with shape,
   symmetry, and finite-value validation. Counts-only entropy remains an
   opt-in `entropy_proxy` diagnostic and is never returned as `phi`.
+- [x] **QFI production-adapter input hardening.** Implemented
+  2026-05-12: `QuantumFisherInformation` now rejects non-finite
+  Hamiltonian inputs, non-integer measurement budgets, boolean shot
+  counts, and malformed/out-of-range/diagonal `coupling_pairs` before
+  routing to the spectral QFI engine. The analysis API documents the
+  production contract and keeps counts-derived sync/DLA estimates
+  labelled as opt-in proxy diagnostics.
 - [x] **PEC local multi-qubit coefficient decomposition.** Implemented
   2026-05-12: `pauli_twirl_decompose()` now returns tensor-product
   quasi-probability coefficients for `n_qubits >= 1`, preserving exact

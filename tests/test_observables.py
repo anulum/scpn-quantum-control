@@ -170,6 +170,32 @@ def test_quantum_fisher_information_routes_real_hamiltonian_inputs_to_qfi_engine
     assert result["n_measurements"] == 5000.0
 
 
+@pytest.mark.parametrize(
+    ("kwargs", "match"),
+    [
+        ({"coupling_matrix": [[0.0, np.nan], [np.nan, 0.0]]}, "finite"),
+        ({"natural_frequencies": [0.2, np.inf]}, "finite"),
+        ({"n_measurements": 1.5}, "positive integer"),
+        ({"n_measurements": True}, "positive integer"),
+        ({"coupling_pairs": [(0,)]}, "coupling_pairs"),
+        ({"coupling_pairs": [(0, 2)]}, "coupling_pairs"),
+        ({"coupling_pairs": [(1, 1)]}, "coupling_pairs"),
+    ],
+)
+def test_quantum_fisher_information_rejects_invalid_production_inputs(kwargs, match):
+    qfi = QuantumFisherInformation()
+    base_kwargs = {
+        "coupling_matrix": np.array([[0.0, 1.0], [1.0, 0.0]]),
+        "natural_frequencies": np.array([0.2, -0.2]),
+        "coupling_pairs": [(0, 1)],
+        "n_measurements": 5000,
+    }
+    base_kwargs.update(kwargs)
+
+    with pytest.raises(ValueError, match=match):
+        qfi(**base_kwargs)
+
+
 def test_logical_sync_witness_refuses_fidelity_only_proxy_by_default():
     logical = LogicalSyncWitness()
 

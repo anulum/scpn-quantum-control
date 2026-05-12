@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from numbers import Integral
 from typing import Any
 
 import numpy as np
@@ -90,14 +91,18 @@ class QuantumFisherInformation:
             raise ValueError(
                 "natural_frequencies must be a one-dimensional vector matching coupling_matrix."
             )
+        if not np.all(np.isfinite(K)) or not np.all(np.isfinite(omega)):
+            raise ValueError("coupling_matrix and natural_frequencies must contain finite values.")
         if not np.allclose(K, K.T, rtol=1e-10, atol=1e-12):
             raise ValueError("coupling_matrix must be symmetric.")
 
-        measurement_budget = int(n_measurements)
-        if measurement_budget <= 0:
-            raise ValueError("n_measurements must be a positive integer.")
+        measurement_budget = QuantumFisherInformation._validate_measurement_budget(n_measurements)
 
-        pairs = None if coupling_pairs is None else [tuple(pair) for pair in coupling_pairs]
+        pairs = (
+            None
+            if coupling_pairs is None
+            else QuantumFisherInformation._validate_coupling_pairs(coupling_pairs, K.shape[0])
+        )
         result = compute_qfi(K, omega, pairs=pairs)
         diagonal = np.diag(result.qfi_matrix)
         finite_single_shot_bounds = result.precision_bounds[np.isfinite(result.precision_bounds)]
@@ -121,3 +126,50 @@ class QuantumFisherInformation:
             "n_measurements": float(measurement_budget),
             "is_quantum_fisher_information": 1.0,
         }
+
+    @staticmethod
+    def _validate_measurement_budget(n_measurements: Any) -> int:
+        if isinstance(n_measurements, bool) or not isinstance(n_measurements, Integral):
+            raise ValueError("n_measurements must be a positive integer.")
+        measurement_budget = int(n_measurements)
+        if measurement_budget <= 0:
+            raise ValueError("n_measurements must be a positive integer.")
+        return measurement_budget
+
+    @staticmethod
+    def _validate_coupling_pairs(coupling_pairs: Any, n_qubits: int) -> list[tuple[int, int]]:
+        pairs: list[tuple[int, int]] = []
+        try:
+            iterator = iter(coupling_pairs)
+        except TypeError as exc:
+            raise ValueError(
+                "coupling_pairs must be an iterable of two distinct qubit indices."
+            ) from exc
+
+        for raw_pair in iterator:
+            try:
+                pair = tuple(raw_pair)
+            except TypeError as exc:
+                raise ValueError(
+                    "coupling_pairs must be an iterable of two distinct qubit indices."
+                ) from exc
+            if len(pair) != 2:
+                raise ValueError(
+                    "coupling_pairs must contain exactly two distinct qubit indices per pair."
+                )
+            i_raw, j_raw = pair
+            if (
+                isinstance(i_raw, bool)
+                or isinstance(j_raw, bool)
+                or not isinstance(i_raw, Integral)
+                or not isinstance(j_raw, Integral)
+            ):
+                raise ValueError("coupling_pairs indices must be integers.")
+            i = int(i_raw)
+            j = int(j_raw)
+            if i == j or i < 0 or j < 0 or i >= n_qubits or j >= n_qubits:
+                raise ValueError(
+                    "coupling_pairs indices must be distinct and within coupling_matrix bounds."
+                )
+            pairs.append((min(i, j), max(i, j)))
+        return pairs
