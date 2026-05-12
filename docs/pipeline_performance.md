@@ -45,8 +45,10 @@ PYTHONDONTWRITEBYTECODE=1 python scripts/validate_s2_scaling_rows.py \
 The validator fails if required baselines are absent for any measured size, row
 keys are missing, baseline labels are unknown, statuses are invalid, successful
 rows omit non-negative wall-time and memory measurements, or skipped/failed rows
-omit explanatory notes. This prevents a partial matrix from being promoted as a
-complete preregistered comparison.
+omit explanatory notes. It also rejects duplicate `(n_qubits, baseline)` rows
+and malformed provenance payloads (`metric_payload`, `command`, `machine`,
+`dependencies`, `git_commit`, and `notes`). This prevents a partial or
+ambiguous matrix from being promoted as a complete preregistered comparison.
 
 A lightweight protocol-compliant rehearsal harness is available before the full
 S2 campaign:

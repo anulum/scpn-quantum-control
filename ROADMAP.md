@@ -924,6 +924,11 @@ be executed until individually activated.
   baseline per observed size, rejects off-protocol sizes and protocol
   ids, requires finite non-negative timing plus memory for `ok` rows,
   and requires explanatory notes for skipped or failed rows.
+- [x] **S2 validator provenance hardening.** Implemented 2026-05-12:
+  duplicate `(n_qubits, baseline)` rows are rejected, and row-level
+  provenance payloads must use structured metric, command, machine,
+  dependency, git-commit, and notes fields before a scaling matrix can
+  pass validation.
 - [x] **S2 lite scaling harness.** Implemented 2026-05-06:
   `scripts/bench_s2_scaling_lite.py` emits protocol-compliant rows for
   small selected sizes, measures cheap classical ODE and dense exact

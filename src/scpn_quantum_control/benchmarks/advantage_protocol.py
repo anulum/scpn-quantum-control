@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from math import isfinite
 from typing import Any, Literal
@@ -132,6 +133,7 @@ def validate_scaling_rows(
     allowed_baselines = {baseline.label for baseline in protocol.baselines}
     observed_sizes: set[int] = set()
     present_required_by_size: set[tuple[int, str]] = set()
+    seen_size_baselines: set[tuple[int, str]] = set()
     for index, row in enumerate(rows):
         missing_keys = [key for key in required_keys if key not in row]
         baseline = row.get("baseline")
@@ -147,8 +149,35 @@ def validate_scaling_rows(
             observed_sizes.add(n_qubits)
         if baseline not in allowed_baselines:
             invalid.append(f"row {index}: unknown baseline {baseline!r}")
+        if isinstance(n_qubits, int) and isinstance(baseline, str):
+            size_baseline = (n_qubits, baseline)
+            if size_baseline in seen_size_baselines:
+                invalid.append(
+                    f"row {index}: duplicate row for n={n_qubits} baseline={baseline!r}"
+                )
+            seen_size_baselines.add(size_baseline)
         if status not in {"ok", "skipped", "failed"}:
             invalid.append(f"row {index}: invalid status {status!r}")
+        if not isinstance(row.get("metric_payload"), Mapping):
+            invalid.append(f"row {index}: metric_payload must be a mapping")
+        command = row.get("command")
+        command_is_string = isinstance(command, str) and bool(command)
+        command_is_sequence = (
+            isinstance(command, Sequence)
+            and not isinstance(command, str | bytes)
+            and len(command) > 0
+            and all(isinstance(item, str) and item for item in command)
+        )
+        if not command_is_string and not command_is_sequence:
+            invalid.append(f"row {index}: command must be a non-empty string or sequence")
+        if not isinstance(row.get("machine"), str) or not row.get("machine"):
+            invalid.append(f"row {index}: machine must be a non-empty string")
+        if not isinstance(row.get("dependencies"), Mapping):
+            invalid.append(f"row {index}: dependencies must be a mapping")
+        if not isinstance(row.get("git_commit"), str) or not row.get("git_commit"):
+            invalid.append(f"row {index}: git_commit must be a non-empty string")
+        if not isinstance(row.get("notes"), list):
+            invalid.append(f"row {index}: notes must be a list")
         if status in {"skipped", "failed"} and not row.get("notes"):
             invalid.append(f"row {index}: {status} row requires notes")
         if status == "ok":
