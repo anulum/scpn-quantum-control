@@ -374,14 +374,22 @@ from scpn_quantum_control.analysis.magic_nonstabilizerness import (
 
 ### `quantum_phi` — Integrated Information (IIT)
 
-Tononi's Φ (integrated information) from the quantum density matrix.
+Quantum integrated information from the Kuramoto-XY ground-state density
+matrix. `compute_quantum_phi(K, omega)` computes the minimum mutual information
+over bipartitions and reports the minimum-information partition.
 
 ```python
 from scpn_quantum_control.analysis.quantum_phi import (
-    compute_phi,
+    compute_quantum_phi,
     PhiResult,
 )
 ```
+
+`IntegratedInformationPhi` is the dashboard-facing wrapper. When supplied with
+`coupling_matrix` and `natural_frequencies`, it routes to `compute_quantum_phi`
+and returns `phi`, `phi_max`, entropy, and partition metadata. Counts-only
+entropy remains available only via `allow_entropy_proxy=True` and is labelled
+`entropy_proxy`, never `phi`.
 
 ### `shadow_tomography` — Classical Shadow Estimation
 

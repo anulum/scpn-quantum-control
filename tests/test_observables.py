@@ -3,6 +3,7 @@
 # Commercial license available
 # © Concepts & Code 2020–2026 Miroslav Šotek. All rights reserved.
 
+import numpy as np
 import pytest
 
 from scpn_quantum_control.analysis.dla_parity_witness import DLAParityWitness
@@ -89,6 +90,43 @@ def test_integrated_information_entropy_proxy_is_explicitly_labelled():
     assert result["entropy_proxy"] > 0.0
     assert result["is_integrated_information"] == 0.0
     assert "phi" not in result
+
+
+def test_integrated_information_routes_real_hamiltonian_inputs_to_quantum_phi_engine():
+    witness = IntegratedInformationPhi()
+    coupling_matrix = np.array(
+        [
+            [0.0, 0.4, 0.2],
+            [0.4, 0.0, 0.3],
+            [0.2, 0.3, 0.0],
+        ],
+        dtype=float,
+    )
+    natural_frequencies = np.array([0.1, 0.2, 0.3], dtype=float)
+
+    result = witness(
+        coupling_matrix=coupling_matrix,
+        natural_frequencies=natural_frequencies,
+    )
+
+    assert result["phi_available"] == 1.0
+    assert result["is_integrated_information"] == 1.0
+    assert result["phi"] >= 0.0
+    assert result["phi_max"] >= result["phi"]
+    assert result["n_qubits"] == 3.0
+    assert result["n_bipartitions"] > 0.0
+    assert "entropy_proxy" not in result
+
+
+def test_integrated_information_rejects_partial_or_invalid_hamiltonian_inputs():
+    witness = IntegratedInformationPhi()
+
+    with pytest.raises(ValueError, match="coupling_matrix and natural_frequencies"):
+        witness(coupling_matrix=np.eye(2))
+    with pytest.raises(ValueError, match="square"):
+        witness(coupling_matrix=np.ones((2, 3)), natural_frequencies=np.ones(2))
+    with pytest.raises(ValueError, match="finite"):
+        witness(coupling_matrix=np.eye(2), natural_frequencies=np.array([0.0, np.nan]))
 
 
 def test_quantum_fisher_information_refuses_proxy_by_default():

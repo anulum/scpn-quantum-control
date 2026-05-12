@@ -106,6 +106,12 @@ is copied here.
   `K_nm/omega` inputs plus invalid simulation-time and error-budget
   parameters before any Hamiltonian construction or resource claim is
   produced. The phase API documents the validation contract.
+- [x] **Integrated-information wrapper production route.** Implemented
+  2026-05-12: `IntegratedInformationPhi` now routes explicit
+  `coupling_matrix` and `natural_frequencies` inputs to the
+  `compute_quantum_phi` Kuramoto-XY density-matrix engine with shape,
+  symmetry, and finite-value validation. Counts-only entropy remains an
+  opt-in `entropy_proxy` diagnostic and is never returned as `phi`.
 - [x] **Behavioural-test audit automation.** Implemented 2026-05-06:
   `tools/audit_test_behaviour.py` inventories test modules for
   assertion-bearing tests, exception contracts, parametrisation, and
