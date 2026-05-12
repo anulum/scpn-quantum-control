@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.applications.eeg_classification import (
     EEGVQEResult,
@@ -97,3 +98,51 @@ class TestEEGClassification:
         res = eeg_plv_to_vqe(plv, omega, reps=1, threshold=0.2)
         assert res.n_channels == 4
         assert res.statevector.shape == (16,)
+
+    def test_rejects_non_square_plv_matrix(self):
+        plv = np.ones((2, 3))
+        omega = np.ones(2) * 10.0
+        with pytest.raises(ValueError, match="plv_matrix must be a square"):
+            eeg_plv_to_vqe(plv, omega)
+
+    def test_rejects_non_symmetric_plv_matrix(self):
+        plv = np.array([[0.0, 0.8], [0.2, 0.0]])
+        omega = np.ones(2) * 10.0
+        with pytest.raises(ValueError, match="plv_matrix must be symmetric"):
+            eeg_plv_to_vqe(plv, omega)
+
+    def test_rejects_plv_outside_unit_interval(self):
+        plv = np.array([[0.0, 1.2], [1.2, 0.0]])
+        omega = np.ones(2) * 10.0
+        with pytest.raises(ValueError, match="PLV values must be in"):
+            eeg_plv_to_vqe(plv, omega)
+
+    def test_rejects_frequency_shape_mismatch(self):
+        plv = np.array([[0.0, 0.5], [0.5, 0.0]])
+        omega = np.ones(3) * 10.0
+        with pytest.raises(ValueError, match="natural_frequencies must match"):
+            eeg_plv_to_vqe(plv, omega)
+
+    def test_rejects_invalid_repetitions(self):
+        plv = np.array([[0.0, 0.5], [0.5, 0.0]])
+        omega = np.ones(2) * 10.0
+        with pytest.raises(ValueError, match="reps must be positive"):
+            eeg_plv_to_vqe(plv, omega, reps=0)
+
+    def test_rejects_threshold_outside_plv_range(self):
+        plv = np.array([[0.0, 0.5], [0.5, 0.0]])
+        omega = np.ones(2) * 10.0
+        with pytest.raises(ValueError, match="threshold must be in"):
+            eeg_plv_to_vqe(plv, omega, threshold=-0.1)
+
+    def test_kernel_rejects_empty_states(self):
+        with pytest.raises(ValueError, match="state_a must contain at least one amplitude"):
+            eeg_quantum_kernel(np.array([]), np.array([1.0]))
+
+    def test_kernel_rejects_mismatched_state_shapes(self):
+        with pytest.raises(ValueError, match="same shape"):
+            eeg_quantum_kernel(np.array([1.0, 0.0]), np.array([1.0]))
+
+    def test_kernel_rejects_zero_norm_state(self):
+        with pytest.raises(ValueError, match="non-zero norm"):
+            eeg_quantum_kernel(np.array([0.0, 0.0]), np.array([1.0, 0.0]))

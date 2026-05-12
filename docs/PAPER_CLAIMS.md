@@ -8,6 +8,15 @@
 
 # Paper Claims: Quantum Simulation of Kuramoto Phase Dynamics on NISQ Hardware
 
+## Legacy claim triage
+
+This file is a legacy planning and triage note, not a submission-ready claim
+source. Use the current manuscripts, hardware ledger, raw-count artefacts, and
+claim-boundary documents for coauthor review and publication wording. Items
+below preserve the historical claim-development trail and should be treated as
+candidate or downgraded language unless a current manuscript and committed
+analysis artefact promote the specific statement.
+
 ## Target Venue
 
 Physical Review Research, Quantum Science and Technology, or npj Quantum Information.
@@ -23,11 +32,12 @@ raw-count observation of the DLA parity asymmetry"
 We implement quantum simulation of Kuramoto-type coupled oscillators on
 IBM's Heron r2 processor (ibm_fez and ibm_kingston, 156 qubits) by mapping
 the Kuramoto model to the XY spin Hamiltonian and evolving via Lie-Trotter
-decomposition. **Six principal results** emerge: (1) a simulator-optimised,
-hardware-verified VQE ansatz whose entanglement topology mirrors the
-coupling graph achieves 0.05% ground-state energy error on 4 qubits,
-outperforming generic ansatze (TwoLocal, EfficientSU2) on the same
-Hamiltonian; (2) a 12-point decoherence scaling curve from depth 5 to 770
+decomposition. **Six historical candidate results** were tracked: (1) a
+simulator-optimised, final-parameter hardware-checked VQE ansatz whose
+entanglement topology mirrors the coupling graph achieved 0.05% ground-state
+energy error on 4 qubits in the retained artefact and compared favourably with
+the listed generic ansatz baselines for that small instance; (2) a 12-point
+decoherence scaling curve from depth 5 to 770
 identifies three distinct regimes with a coherence wall at depth 250-400;
 (3) a 16-oscillator snapshot shows outlier resilience — L12 (weakest
 coupling) collapses to near-zero coherence while L3 (strongest) maintains
@@ -39,8 +49,8 @@ Ising-encoded action space; **(6) a raw-count hardware observation of the
 dynamical Lie algebra parity asymmetry of $H_{XY}$**: across 342 circuits
 on ibm_kingston (April 2026 Phase 1) at $n = 4$ with up to 21 reps per
 point and Welch's two-sample t-test, the odd ("feedback") $\mathfrak{su}$
-sub-block of the DLA is on average $(10.8 \pm 1.1)\,\%$ more robust to
-decoherence than the even ("projection") sub-block for Trotter depths
+sub-block of the DLA shows lower measured leakage than the even
+("projection") sub-block for Trotter depths
 $\ge 4$, with strongest signal $+17.48\,\%$ at depth 6 and Fisher's
 combined $p \ll 10^{-16}$. The observed magnitude is consistent with the
 4.5–9.6 % apriori prediction of the noiseless classical simulator. All
@@ -75,11 +85,10 @@ Raw data: `data/phase1_dla_parity/phase*_*.json` (4 files, 342 circuits)
 | Energy | -6.2998 | -6.3028 | -6.3030 |
 | Error | 0.05% | 0.004% | -- |
 
-**Novelty**: The ansatz places CZ gates only between qubit pairs (i,j) where
-K[i,j] > threshold, matching the physical coupling topology. Generic ansatze
-(e.g. TwoLocal with linear entanglement) require more parameters and deeper
-circuits for the same accuracy, because they waste gates on physically
-disconnected pairs.
+**Boundary**: The ansatz places CZ gates only between qubit pairs (i,j) where
+K[i,j] > threshold, matching the physical coupling topology. The retained
+artefact compares it against the listed generic ansatz baselines for this small
+Hamiltonian; it is not a backend-general or architecture-general VQE claim.
 
 **Context**: Kandala et al. (Nature 2017) reported ~1.5% error on 6-qubit
 H2/LiH VQE. Peruzzo et al. (Nature Comms 2014) reported 2% on HeH+. Our 0.05%
@@ -120,7 +129,7 @@ R). The regime boundaries are specific to Heron r2 (Feb 2026 calibration) and
 useful for planning future experiments.
 
 **Key data points**:
-- Noise baseline: depth 5, R=0.8054, error 0.1% (proves readout is clean)
+- Noise baseline: depth 5, R=0.8054, error 0.1% in the retained artefact
 - Coherence wall entry: depth ~250, error ~20%
 - Deep decoherence: depth 770, R=0.332, error 46%
 
@@ -166,7 +175,8 @@ chip, not coupling topology.
 However, the **outlier structure** is physically meaningful:
 - L12 (weakest Knm row sum = 1.42) has near-zero coherence (|<X>|=0.02)
 - L3 (strongest Knm row sum = 2.93) maintains high coherence (|<X>|=0.55)
-- The extremes follow coupling, even if the middle layers don't
+- The extremes are qualitatively consistent with coupling rank, while the
+  full correlation is not significant
 
 **Novelty**: 16-oscillator snapshot preserves per-layer structure at extremes
 despite 46% global error. The outlier analysis (L12 collapse, L3 resilience)

@@ -49,11 +49,34 @@ class QuantumEVSResult:
     enhancement_factor: float  # ||quantum|| / ||classical||
 
 
+def _validated_features(features: np.ndarray) -> np.ndarray:
+    """Return a finite non-empty 1-D EVS feature vector."""
+    feature_array = np.asarray(features, dtype=float)
+    if feature_array.ndim != 1:
+        raise ValueError("features must be a 1-D feature vector.")
+    if feature_array.size == 0:
+        raise ValueError("features must contain at least one feature.")
+    if not np.all(np.isfinite(feature_array)):
+        raise ValueError("features must contain only finite values.")
+    return feature_array
+
+
+def _validated_n_osc(n_osc: int) -> int:
+    """Return a supported oscillator count for this EVS path."""
+    if not isinstance(n_osc, int):
+        raise TypeError("n_osc must be an integer.")
+    if n_osc < 1 or n_osc > len(OMEGA_N_16):
+        raise ValueError(f"n_osc must be between 1 and {len(OMEGA_N_16)}.")
+    return n_osc
+
+
 def _evs_to_coupling(features: np.ndarray, n_osc: int) -> np.ndarray:
     """Map EVS feature vector to coupling modulation.
 
     Features modulate the base K_nm: stronger features → stronger coupling.
     """
+    features = _validated_features(features)
+    n_osc = _validated_n_osc(n_osc)
     K_base = build_knm_paper27(L=n_osc)
     n_features = len(features)
 
@@ -85,6 +108,15 @@ def quantum_evs_enhance(
         dt: evolution time
         trotter_reps: Trotter repetitions
     """
+    features = _validated_features(features)
+    n_osc = _validated_n_osc(n_osc)
+    if not np.isfinite(dt) or dt <= 0.0:
+        raise ValueError("dt must be finite and positive.")
+    if not isinstance(trotter_reps, int):
+        raise TypeError("trotter_reps must be an integer.")
+    if trotter_reps <= 0:
+        raise ValueError("trotter_reps must be positive.")
+
     from qiskit import QuantumCircuit
     from qiskit.circuit.library import PauliEvolutionGate
     from qiskit.quantum_info import SparsePauliOp, Statevector

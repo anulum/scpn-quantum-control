@@ -224,6 +224,26 @@ parallel enumeration at 5-50x speedup.
 
 ---
 
+## PennyLane Adapter (`pennylane_adapter.py`)
+
+`PennyLaneRunner` exposes the same Kuramoto-XY Hamiltonian through any
+PennyLane-compatible device. `run_trotter()` evaluates the energy after
+Trotterized time evolution and reconstructs the Kuramoto order parameter
+from local transverse expectations:
+
+```
+theta_i = atan2(<Y_i>, <X_i>)
+R = |mean_i exp(i theta_i)|
+```
+
+`run_vqe()` uses the optimized hardware-efficient ansatz for both the
+energy objective and the post-optimization observable pass. The returned
+`order_parameter` is therefore measured from the final ansatz via the
+same X/Y phase reconstruction; it is not a sentinel, simulator-only
+statevector value, or unmeasured placeholder.
+
+---
+
 ## Experiments (`experiments.py`)
 
 Pre-defined experiment configurations for systematic QPU characterisation.
@@ -307,12 +327,14 @@ Requires: `pip install cirq-core`
 ```python
 from scpn_quantum_control.hardware import transpile_for_trapped_ion, trapped_ion_noise_model
 
-ion_circuit = transpile_for_trapped_ion(circuit, n_qubits=4)
+ion_circuit = transpile_for_trapped_ion(circuit, allow_proxy_basis=True)
 model = trapped_ion_noise_model()
 ```
 
-Target: IonQ Forte / Quantinuum H-series. Native gate set: MS (Molmer-Sorensen),
-Rz, Ry.
+Representative target: all-to-all QCCD-style trapped-ion devices. The helper
+emits a CX-basis proxy for MS/RXX-style entangling operations, records that
+proxy in circuit metadata, and is not a vendor-native IonQ or Quantinuum
+compiler path.
 
 ### GPU Acceleration (`gpu_accel.py`)
 

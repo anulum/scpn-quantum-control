@@ -24,7 +24,8 @@ the same small Kuramoto-XY observable?
 
 Supported after successful execution and analysis:
 
-- logical-error-rate comparison for a specified toy code/circuit family;
+- logical-error-rate comparison for a specified distance-3 offline
+  code/circuit family;
 - decoder-ablation evidence for a physics-aware feature;
 - negative result showing that the QEC overhead dominates for current NISQ
   circuits.
@@ -90,7 +91,7 @@ Default no-QPU readiness scope:
 
 | Field | Value |
 |-------|-------|
-| Codes | repetition code or smallest available surface-code toy instance |
+| Codes | repetition code or smallest available distance-3 surface-code offline instance |
 | Families | DLA parity pair; optional FIM sector-survival pair |
 | Noise models | ideal, depolarizing, amplitude damping/readout-biased model where available |
 | Decoders | baseline majority/MWPM where applicable, physics-aware variant |

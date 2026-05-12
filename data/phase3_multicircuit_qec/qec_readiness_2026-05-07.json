@@ -14,7 +14,7 @@
       "quantum advantage"
     ],
     "supported": [
-      "offline toy-code logical failure comparison",
+      "distance-3 surface-code offline logical-failure comparison",
       "decoder ablation against a K-matrix-weighted feature",
       "encoded/unencoded circuit-resource comparison",
       "promotion or rejection before live backend submission"
@@ -406,7 +406,7 @@
       "trials": 3200
     }
   ],
-  "decoder_rows_sha256": "28fecbae908618d7c41c89b7362b13d7f2448e71771226a0e947272338bf2af8",
+  "decoder_rows_sha256": "78f4004f8bcb9347e2fda546c0d3a1e036e3d9742d1873a6bce84a22210aff5d",
   "distance": 3,
   "generated_at_utc": "2026-05-07T00:49:50+00:00",
   "hardware_submission": false,
@@ -499,7 +499,7 @@
   "readiness_decision": "blocked_physics_aware_decoder_did_not_beat_baselines",
   "ready_for_optional_hardware": false,
   "resource_gate_passed": true,
-  "resource_rows_sha256": "8befe6e914d66024c54ea7943a863fefc4b924bbe20dc101f927494c8ed60d9b",
+  "resource_rows_sha256": "435b0c3c76d95de58a168d092c7a62a8d9c55fbfa8cc18c69fa73075de482997",
   "schema": "scpn_phase3_multicircuit_qec_readiness_v1",
   "seeds": [
     0,

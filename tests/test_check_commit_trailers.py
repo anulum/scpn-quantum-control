@@ -96,3 +96,7 @@ def test_message_violations_allow_banned_words_in_body_by_default():
 def test_commit_trailer_checker_help_returns_zero(capsys):
     assert _check_commit_trailers.main(["check_commit_trailers.py", "--help"]) == 0
     assert "Verify commit-message hygiene" in capsys.readouterr().out
+
+
+def test_ci_audit_default_range_starts_at_clean_public_tag():
+    assert _check_commit_trailers.DEFAULT_AUDIT_RANGE == "v0.9.6..HEAD"

@@ -10,13 +10,15 @@
 
 `scpn_quantum_control.phase.gpu_batch_vqe`
 
-Parallel evaluation of multiple VQE parameter sets using GPU (PyTorch)
-or CPU (numpy). Useful for landscape scanning, hyperparameter search,
-or initialisation strategies.
+Parallel evaluation of multiple VQE parameter sets using CPU NumPy or an
+explicit PyTorch/CUDA request. Useful for landscape scanning, hyperparameter
+search, or initialisation strategies.
 
-**Caveat:** This evaluates a simple Ry-layer ansatz for demonstration.
-For production VQE with hardware-efficient ansätze, use Qiskit's `VQE`
-class or PennyLane.
+**Caveat:** The built-in scan evaluates a product Ry-layer diagnostic ansatz
+with random parameters. It is a statevector expectation landscape scanner, not
+a gradient-optimised production VQE and not hardware execution. For production
+VQE with hardware-efficient ansätze, use Qiskit's `VQE` class, PennyLane, or a
+domain-specific ansatz passed through the lower-level energy evaluators.
 
 **Requires:** `pip install torch` for GPU acceleration.
 
@@ -34,8 +36,10 @@ per parameter set. With $B$ parameter sets:
 | CPU sequential | $B \times T_\text{single}$ |
 | GPU batched | $T_\text{single} + \text{overhead}$ (amortised across $B$) |
 
-The GPU advantage grows with batch size. For $B \geq 100$ and $n \geq 6$,
-GPU batching typically provides 5–20× speedup over sequential CPU.
+The GPU advantage depends on batch size, qubit count, transfer overhead, and
+CUDA device throughput. `batch_vqe_scan(..., use_gpu=True)` requires PyTorch
+and an available CUDA device; it raises instead of silently falling back to the
+NumPy path.
 
 ### Ry-Layer Ansatz
 
@@ -43,9 +47,9 @@ The built-in ansatz applies $R_y(\theta_i)$ to each qubit:
 
 $$|\psi(\theta)\rangle = \prod_i R_y(\theta_i) |0\rangle^{\otimes n}$$
 
-This is a minimal ansatz — sufficient for landscape scanning but not
-for accurate ground state preparation. The `ansatz_fn` parameter allows
-custom ansätze.
+This product-state ansatz is sufficient for diagnostic landscape scanning but
+does not express entangled ground states. The lower-level `batch_energy_numpy`
+and `batch_energy_torch` functions accept custom ansätze.
 
 ---
 
@@ -82,7 +86,8 @@ energies = batch_energy_torch(
 ) -> np.ndarray  # (batch,)
 ```
 
-GPU-accelerated batch evaluation via PyTorch.
+PyTorch-backed batch evaluation. Passing `device="cuda"` requires an available
+CUDA runtime; `device="cpu"` is valid for torch parity checks.
 
 ### `batch_vqe_scan`
 
@@ -105,6 +110,11 @@ result = batch_vqe_scan(
     "params": np.ndarray,         # (n_samples, n_params) all parameter sets
     "best_energy": float,          # minimum energy found
     "best_params": np.ndarray,    # parameters that achieved best energy
+    "n_samples": int,
+    "backend": str,               # "numpy" or "torch_cuda"
+    "ansatz_family": str,         # "product_ry_layers"
+    "optimizer": str,             # "random_parameter_scan"
+    "hardware_claim": str,        # "none_statevector_expectation_scan"
 }
 ```
 
@@ -142,10 +152,10 @@ import torch
 
 if torch.cuda.is_available():
     result_gpu = batch_vqe_scan(K, omega, n_samples=1000,
-                                 use_gpu=True, seed=42)
+                                use_gpu=True, seed=42)
     print(f"GPU best energy: {result_gpu['best_energy']:.6f}")
 else:
-    print("No CUDA GPU available — using CPU")
+    print("No CUDA GPU available; call without use_gpu=True for the NumPy path")
 ```
 
 ### Custom Ansatz

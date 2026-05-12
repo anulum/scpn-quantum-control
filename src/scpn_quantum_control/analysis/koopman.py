@@ -40,6 +40,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from ..accel.rust_import import optional_rust_engine
+
 # Upper bound on n_oscillators for routines that allocate the full n²×n²
 # Koopman generator. At n=32 the dense generator is 1024×1024 (8 MB) and
 # `eigvals` returns in ~1 s on commodity hardware. Larger sizes may be
@@ -75,6 +77,17 @@ def _validate_inputs(
             f"the dense Koopman generator is n² × n² = {n * n}² entries. "
             f"Pass max_oscillators={n} explicitly to confirm the allocation."
         )
+
+
+def _observable_labels(n: int) -> list[str]:
+    labels = [f"θ_{i}" for i in range(n)]
+    for i in range(n):
+        for j in range(i + 1, n):
+            labels.append(f"cos({j}-{i})")
+    for i in range(n):
+        for j in range(i + 1, n):
+            labels.append(f"sin({j}-{i})")
+    return labels
 
 
 @dataclass
@@ -127,20 +140,12 @@ def build_koopman_generator(
     n_pairs = n * (n - 1) // 2
     dim = n + 2 * n_pairs
     L = np.zeros((dim, dim))
-    labels: list[str] = []
-
-    # Label ordering: θ_0..θ_{n-1}, cos_{01}..cos_{(n-2)(n-1)}, sin_{01}..
-    for i in range(n):
-        labels.append(f"θ_{i}")
+    labels = _observable_labels(n)
 
     pair_idx: list[tuple[int, int]] = []
     for i in range(n):
         for j in range(i + 1, n):
-            labels.append(f"cos({j}-{i})")
             pair_idx.append((i, j))
-    for i in range(n):
-        for j in range(i + 1, n):
-            labels.append(f"sin({j}-{i})")
 
     # dθ_i/dt = ω_i + Σ_j K_ij × sin_observable(j,i)
     # The sine observables are at indices n + n_pairs + k
@@ -193,12 +198,46 @@ def build_koopman_generator_rust(
     omega: np.ndarray,
     theta_ref: np.ndarray | None = None,
     max_oscillators: int = MAX_OSCILLATORS_DEFAULT,
+    *,
+    require_rust: bool = False,
 ) -> tuple[np.ndarray, list[str]]:
-    """Rust-accelerated Koopman generator (falls back to Python).
+    """Rust-preferred Koopman generator with explicit Python fallback.
 
-    TODO(rust): implement koopman_generator in scpn_quantum_engine
-    for n>16 where the O(n³) coupling correction loop matters.
+    When the optional ``scpn_quantum_engine.koopman_generator`` export is
+    available, this function routes through it and reconstructs the canonical
+    Python observable labels. If the native extension or export is unavailable,
+    the function falls back to :func:`build_koopman_generator` unless
+    ``require_rust=True`` is set.
     """
+    _validate_inputs(K, omega, theta_ref, max_oscillators)
+    n = K.shape[0]
+    theta = np.zeros(n) if theta_ref is None else theta_ref
+    labels = _observable_labels(n)
+
+    engine = optional_rust_engine()
+    rust_builder = None if engine is None else getattr(engine, "koopman_generator", None)
+    if callable(rust_builder):
+        generator = np.asarray(
+            rust_builder(
+                np.ascontiguousarray(K, dtype=np.float64),
+                np.ascontiguousarray(omega, dtype=np.float64),
+                np.ascontiguousarray(theta, dtype=np.float64),
+            ),
+            dtype=np.float64,
+        )
+        expected_shape = (n * n, n * n)
+        if generator.shape != expected_shape:
+            raise ValueError(
+                "scpn_quantum_engine.koopman_generator returned shape "
+                f"{generator.shape}; expected {expected_shape}"
+            )
+        if not np.all(np.isfinite(generator)):
+            raise ValueError("scpn_quantum_engine.koopman_generator returned non-finite entries")
+        return generator, labels
+
+    if require_rust:
+        raise ImportError("scpn_quantum_engine.koopman_generator is unavailable")
+
     return build_koopman_generator(K, omega, theta_ref, max_oscillators)
 
 

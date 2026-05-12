@@ -105,6 +105,45 @@ def commutator_norm_bound(K: np.ndarray, omega: np.ndarray) -> float:
     return 4.0 * total
 
 
+def nested_commutator_norm_bound(
+    K: np.ndarray,
+    omega: np.ndarray,
+    *,
+    exact_qubit_limit: int = 8,
+) -> float:
+    """Bound the second-order Suzuki nested-commutator contribution.
+
+    The second-order product-formula bound depends on
+    ``||[H_XY,[H_XY,H_Z]]|| + ||[H_Z,[H_XY,H_Z]]||``. For small systems this
+    function computes that quantity exactly with the spectral norm. For larger
+    systems it returns the rigorous submultiplicative upper bound
+    ``2 (||H_XY|| + ||H_Z||) ||[H_XY,H_Z]||`` using Pauli coefficient-norm
+    bounds, avoiding unsafe dense ``2^n`` allocation.
+    """
+    K_arr = np.asarray(K, dtype=np.float64)
+    omega_arr = np.asarray(omega, dtype=np.float64)
+    _validate_k_omega(K_arr, omega_arr)
+    n = omega_arr.shape[0]
+    if exact_qubit_limit < 0:
+        raise ValueError("exact_qubit_limit must be non-negative")
+
+    if n <= exact_qubit_limit:
+        h_xy = knm_to_dense_matrix(K_arr, np.zeros_like(omega_arr))
+        h_z = knm_to_dense_matrix(np.zeros_like(K_arr), omega_arr)
+        comm = h_xy @ h_z - h_z @ h_xy
+        nested_xy = h_xy @ comm - comm @ h_xy
+        nested_z = h_z @ comm - comm @ h_z
+        return float(np.linalg.norm(nested_xy, 2) + np.linalg.norm(nested_z, 2))
+
+    gamma = commutator_norm_bound(K_arr, omega_arr)
+    h_xy_norm_bound = 0.0
+    for i in range(n):
+        for j in range(i + 1, n):
+            h_xy_norm_bound += 2.0 * abs(K_arr[i, j])
+    h_z_norm_bound = float(np.sum(np.abs(omega_arr)))
+    return 2.0 * (h_xy_norm_bound + h_z_norm_bound) * gamma
+
+
 def trotter_error_bound(
     K: np.ndarray,
     omega: np.ndarray,
@@ -119,7 +158,6 @@ def trotter_error_bound(
 
     For second-order (Suzuki-Trotter, order=2):
         error ≤ (t³/12r²) × ||[H_XY, [H_XY, H_Z]]|| + ||[H_Z, [H_XY, H_Z]]||
-        (approximated as commutator_norm² / ||[H_XY, H_Z]|| for simplicity)
 
     Returns the upper bound on ||U_exact - U_trotter||.
     """
@@ -127,10 +165,7 @@ def trotter_error_bound(
     if order == 1:
         return (t * t / (2.0 * reps)) * gamma
     if order == 2:
-        # Second-order bound: O(t³/r²) with nested commutator
-        # Approximate nested commutator norm as gamma² / max(K) for typical cases
-        max_k = float(np.max(np.abs(K)))
-        gamma_nested = gamma * gamma / max(max_k, 1e-10)
+        gamma_nested = nested_commutator_norm_bound(K, omega)
         return (t**3 / (12.0 * reps * reps)) * gamma_nested
     raise ValueError(f"order must be 1 or 2, got {order}")
 
@@ -151,8 +186,7 @@ def optimal_dt(
         # error = (t²/2r) × gamma ≤ epsilon → r ≥ t² × gamma / (2 × epsilon)
         r = max(1, int(np.ceil(t_total * t_total * gamma / (2.0 * epsilon))))
     elif order == 2:
-        max_k = float(np.max(np.abs(K)))
-        gamma_nested = gamma * gamma / max(max_k, 1e-10)
+        gamma_nested = nested_commutator_norm_bound(K, omega)
         r = max(1, int(np.ceil(np.sqrt(t_total**3 * gamma_nested / (12.0 * epsilon)))))
     else:
         raise ValueError(f"order must be 1 or 2, got {order}")
@@ -185,3 +219,14 @@ def frequency_heterogeneity(omega: np.ndarray) -> float:
             total += abs(omega[j] - omega[i])
             count += 1
     return total / max(count, 1)
+
+
+def _validate_k_omega(K: np.ndarray, omega: np.ndarray) -> None:
+    if K.ndim != 2 or K.shape[0] != K.shape[1]:
+        raise ValueError(f"K must be a square 2-D matrix, got shape {K.shape}")
+    if omega.ndim != 1 or omega.shape[0] != K.shape[0]:
+        raise ValueError(f"omega must be 1-D with length {K.shape[0]}, got shape {omega.shape}")
+    if not np.all(np.isfinite(K)):
+        raise ValueError("K contains non-finite entries")
+    if not np.all(np.isfinite(omega)):
+        raise ValueError("omega contains non-finite entries")

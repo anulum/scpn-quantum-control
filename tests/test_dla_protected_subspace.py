@@ -121,6 +121,21 @@ def test_counts_witness_uses_reversed_qiskit_bit_order_for_block_layout():
     assert result.sync_weight == pytest.approx(1.0)
 
 
+@pytest.mark.parametrize(
+    "counts",
+    [
+        {"000000": 1.5, "111111": 2},
+        {"000000": True, "111111": 2},
+        {"000000": -1, "111111": 2},
+    ],
+)
+def test_counts_witness_rejects_non_integral_or_negative_shots(counts):
+    spec = DLAProtectedSubspaceSpec(n_logical=2, code_distance=3, target_parity=0)
+
+    with pytest.raises(ValueError, match="counts"):
+        evaluate_dla_protected_memory(counts=counts, spec=spec)
+
+
 def test_legacy_logical_sync_witness_returns_concrete_metrics():
     spec = DLAProtectedSubspaceSpec(n_logical=2, code_distance=3, target_parity=0)
     report = LogicalSyncWitness(spec)(

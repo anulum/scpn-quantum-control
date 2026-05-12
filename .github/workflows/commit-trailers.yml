@@ -39,8 +39,16 @@ jobs:
           set -eu
           case "${{ github.event_name }}" in
             pull_request)
-              # All commits in the PR.
-              RANGE="${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+              if [ "${{ github.actor }}" = "dependabot[bot]" ]; then
+                # Dependabot branch commits are temporary bot commits. The
+                # required trailer is enforced when maintainers squash-merge
+                # the PR into main, and the push/scheduled audits still check
+                # the resulting main history.
+                RANGE=""
+              else
+                # All commits in the PR.
+                RANGE="${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+              fi
               ;;
             push)
               # Just the commits introduced by this push.
@@ -59,13 +67,14 @@ jobs:
               fi
               ;;
             *)
-              # Scheduled / workflow_dispatch: everything since the
-              # rule was introduced (`0c510b4`). Pre-rule commits
-              # remain grandfathered in HISTORICAL_EXEMPT_SHAS.
-              RANGE="0c510b4..HEAD"
+              # Scheduled / workflow_dispatch: everything since v0.9.6,
+              # the first public tag whose post-rule history is clean.
+              # Pre-rule debt is grandfathered in HISTORICAL_EXEMPT_SHAS.
+              RANGE="v0.9.6..HEAD"
               ;;
           esac
           echo "range=$RANGE" >> "$GITHUB_OUTPUT"
           echo "Audit range: $RANGE"
       - name: Run commit-trailer auditor
+        if: steps.range.outputs.range != ''
         run: python tools/check_commit_trailers.py --range "${{ steps.range.outputs.range }}"

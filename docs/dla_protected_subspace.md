@@ -94,7 +94,10 @@ print(result.failure_reasons)
 
 The witness accepts either a dense probability vector or measurement counts.
 Count bitstrings use the usual Qiskit display order; the module reverses the
-string before mapping into the contiguous block layout.
+string before mapping into the contiguous block layout. Counts must be
+non-negative integer shot counts; fractional or boolean values are rejected
+before normalisation so the witness cannot silently rescale malformed hardware
+or simulator payloads.
 
 Failure criteria are configurable on the spec:
 

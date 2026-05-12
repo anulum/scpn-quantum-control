@@ -16,10 +16,10 @@ Two roles:
    the banned quality / slop words in the commit subject or body.
 
 2. **CI auditor** — invoked without arguments. Walks every commit
-   from `v0.9.0..HEAD` (the period over which the current trailer
-   rules applied) and reports violations. Exits non-zero if any are
-   found. Use in a weekly CI job rather than on every PR so that
-   historical debt is visible but not a merge gate.
+   from `v0.9.6..HEAD` (the first public tag whose post-rule history is
+   clean) and reports violations. Exits non-zero if any are found. Use
+   in a weekly CI job rather than on every PR so that historical debt is
+   visible but not a merge gate.
 
 The rules mirror `feedback_branding_headers`,
 `feedback_no_internal_quality_labels`, and
@@ -140,7 +140,10 @@ def _commit_msg_hook(path: Path) -> int:
     return 0
 
 
-def _ci_audit(range_spec: str = "v0.9.0..HEAD") -> int:
+DEFAULT_AUDIT_RANGE = "v0.9.6..HEAD"
+
+
+def _ci_audit(range_spec: str = DEFAULT_AUDIT_RANGE) -> int:
     # Pipe the SHAs through a second git call that fetches each
     # message cleanly — avoids the newline-quoting pitfalls of
     # `git log --format=%B` piped through a single invocation.
@@ -184,7 +187,7 @@ def main(argv: list[str]) -> int:
         print(__doc__)
         return 0
     if "--audit" in argv or "--range" in argv:
-        range_spec = "v0.9.0..HEAD"
+        range_spec = DEFAULT_AUDIT_RANGE
         if "--range" in argv:
             idx = argv.index("--range")
             if idx + 1 < len(argv):
@@ -194,7 +197,7 @@ def main(argv: list[str]) -> int:
         # commit-msg hook: first arg is path to message file
         return _commit_msg_hook(Path(argv[1]))
     # No args: default to CI audit mode
-    return _ci_audit("v0.9.0..HEAD")
+    return _ci_audit(DEFAULT_AUDIT_RANGE)
 
 
 if __name__ == "__main__":

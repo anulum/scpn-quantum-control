@@ -79,5 +79,10 @@ Hamiltonian path uses nearest-neighbour terms, matching the existing MPS module
 contract. Use it to document whether a tensor-network baseline is available and
 what bond dimensions the run reached.
 
+The wrapper explicitly enables nearest-neighbour truncation for this
+diagnostic path and records `coupling_scope` plus `omitted_coupling_l1`
+in metadata. Direct calls to `tebd_evolution` reject non-adjacent
+couplings unless `allow_long_range_truncation=True` is passed.
+
 The function returns `available=False` with `unavailable_reason="quimb missing"`
 when the `[tensor]` extra is absent.

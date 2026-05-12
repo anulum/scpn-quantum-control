@@ -72,14 +72,17 @@ Each claim has four fields:
 - **Claim.** The SCPN coupling matrix $K_{nm}$ (exponential-decay,
   all-to-all, with anchor overrides from Paper 27) correlates
   strongly with the effective coupling topology of at least two
-  physical systems (photosynthesis FMO, Josephson junction arrays,
-  EEG alpha-band, ITER MHD modes, IEEE power grid).
+  measured physical systems (photosynthesis FMO, EEG alpha-band,
+  ITER MHD modes, IEEE power grid). Josephson junction arrays remain
+  an illustrative comparison until calibration-sourced parameters and
+  coupling edges are supplied.
 - **Domain.** Systems with a natural distance-dependent coupling on
   a complete graph.
 - **Falsifier.** Spearman $\rho < 0.5$ on every listed system.
-- **Evidence.** Josephson array $\rho = 0.990$, EEG alpha
-  $\rho = 0.916$, IEEE 5-bus $\rho = 0.881$, ITER MHD $\rho = 0.944$,
-  FMO $\rho = 0.304$. See
+- **Evidence.** EEG alpha $\rho = 0.916$, IEEE 5-bus $\rho = 0.881$,
+  ITER MHD $\rho = 0.944$, FMO $\rho = 0.304$. Josephson array
+  comparisons must be labelled illustrative unless backed by measured
+  calibration parameters and coupling edges. See
   [`GAP_CLOSURE_STATUS.md`](https://github.com/anulum/scpn-quantum-control/blob/main/GAP_CLOSURE_STATUS.md).
 
 ## C4 — Rust acceleration factors
