@@ -146,3 +146,70 @@ class TestPowerGridBenchmark:
         result = power_grid_benchmark(K, omega, allow_builtin_reference=True)
         print(f"\n  {result.summary}")
         assert isinstance(result.topology_correlation, float)
+
+    def test_rejects_non_square_scpn_coupling(self):
+        K = np.ones((2, 3))
+        omega = np.ones(2)
+        with pytest.raises(ValueError, match="K_scpn must be a square"):
+            power_grid_benchmark(K, omega, allow_builtin_reference=True)
+
+    def test_rejects_scpn_frequency_shape_mismatch(self):
+        K = build_knm_paper27(L=4)
+        omega = np.ones(3)
+        with pytest.raises(ValueError, match="omega_scpn must match"):
+            power_grid_benchmark(K, omega, allow_builtin_reference=True)
+
+    def test_rejects_non_finite_scpn_coupling(self):
+        K = build_knm_paper27(L=4)
+        K[0, 1] = np.nan
+        omega = OMEGA_N_16[:4]
+        with pytest.raises(ValueError, match="K_scpn must contain only finite"):
+            power_grid_benchmark(K, omega, allow_builtin_reference=True)
+
+    def test_rejects_too_small_comparison_system(self):
+        K = np.array([[0.0]])
+        omega = np.array([0.0])
+        with pytest.raises(ValueError, match="at least two coupled grid nodes"):
+            power_grid_benchmark(K, omega, allow_builtin_reference=True)
+
+    def test_rejects_grid_coupling_asymmetry(self):
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        grid_K = np.array(
+            [
+                [0.0, 0.8, 0.1],
+                [0.2, 0.0, 0.3],
+                [0.1, 0.3, 0.0],
+            ]
+        )
+        grid_omega = np.array([0.0, 0.02, -0.01])
+        with pytest.raises(ValueError, match="grid_coupling must be symmetric"):
+            power_grid_benchmark(K, omega, grid_coupling=grid_K, grid_frequencies=grid_omega)
+
+    def test_rejects_negative_grid_coupling(self):
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        grid_K = np.array(
+            [
+                [0.0, -0.1, 0.1],
+                [-0.1, 0.0, 0.3],
+                [0.1, 0.3, 0.0],
+            ]
+        )
+        grid_omega = np.array([0.0, 0.02, -0.01])
+        with pytest.raises(ValueError, match="grid_coupling values must be non-negative"):
+            power_grid_benchmark(K, omega, grid_coupling=grid_K, grid_frequencies=grid_omega)
+
+    def test_rejects_grid_coupling_nonzero_diagonal(self):
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        grid_K = np.array(
+            [
+                [1.0, 0.8, 0.1],
+                [0.8, 0.0, 0.3],
+                [0.1, 0.3, 0.0],
+            ]
+        )
+        grid_omega = np.array([0.0, 0.02, -0.01])
+        with pytest.raises(ValueError, match="grid_coupling diagonal must be zero"):
+            power_grid_benchmark(K, omega, grid_coupling=grid_K, grid_frequencies=grid_omega)

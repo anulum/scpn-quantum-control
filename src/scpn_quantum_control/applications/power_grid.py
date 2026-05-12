@@ -78,6 +78,49 @@ class PowerGridBenchmarkResult:
     publication_safe: bool
 
 
+def _validated_square_matrix(
+    matrix: np.ndarray,
+    name: str,
+    *,
+    require_grid_coupling: bool = False,
+) -> np.ndarray:
+    values = np.asarray(matrix, dtype=float)
+    if values.ndim != 2 or values.shape[0] != values.shape[1]:
+        raise ValueError(f"{name} must be a square 2-D matrix.")
+    if values.shape[0] < 2:
+        raise ValueError(f"{name} must contain at least two coupled grid nodes.")
+    if not np.all(np.isfinite(values)):
+        raise ValueError(f"{name} must contain only finite values.")
+    if require_grid_coupling:
+        if np.any(values < 0.0):
+            raise ValueError(f"{name} values must be non-negative.")
+        if not np.allclose(values, values.T, atol=1e-12):
+            raise ValueError(f"{name} must be symmetric.")
+        if not np.allclose(np.diag(values), 0.0, atol=1e-12):
+            raise ValueError(f"{name} diagonal must be zero.")
+    return values
+
+
+def _validated_frequency_vector(
+    frequencies: np.ndarray,
+    n_nodes: int,
+    name: str,
+    matrix_name: str,
+) -> np.ndarray:
+    values = np.asarray(frequencies, dtype=float)
+    if values.ndim != 1 or values.shape != (n_nodes,):
+        raise ValueError(f"{name} must match {matrix_name} node count.")
+    if not np.all(np.isfinite(values)):
+        raise ValueError(f"{name} must contain only finite values.")
+    return values
+
+
+def _finite_correlation(value: float) -> float:
+    if np.isnan(value):
+        return 0.0
+    return float(value)
+
+
 def ieee_5bus_coupling_matrix(
     *,
     allow_builtin_reference: bool = False,
@@ -140,20 +183,37 @@ def power_grid_benchmark(
         source_mode = str(reference_source_mode).strip()
         if source_mode not in ALL_SOURCE_MODES:
             raise ValueError(f"reference_source_mode must be one of {sorted(ALL_SOURCE_MODES)}")
-        K_grid = np.asarray(grid_coupling, dtype=float)
-        omega_grid = np.asarray(grid_frequencies, dtype=float)
+        K_grid = _validated_square_matrix(
+            grid_coupling,
+            "grid_coupling",
+            require_grid_coupling=True,
+        )
+        omega_grid = _validated_frequency_vector(
+            grid_frequencies,
+            K_grid.shape[0],
+            "grid_frequencies",
+            "grid_coupling",
+        )
     publication_safe = source_mode not in SYNTHETIC_SOURCE_MODES
 
-    K_scpn = np.asarray(K_scpn, dtype=float)
-    omega_scpn = np.asarray(omega_scpn, dtype=float)
-    if K_scpn.ndim != 2 or K_scpn.shape[0] != K_scpn.shape[1]:
-        raise ValueError("K_scpn must be a square matrix.")
-    if omega_scpn.ndim != 1 or omega_scpn.shape[0] < K_scpn.shape[0]:
-        raise ValueError("omega_scpn must be a vector covering K_scpn.")
-    if K_grid.ndim != 2 or K_grid.shape[0] != K_grid.shape[1]:
-        raise ValueError("grid_coupling must be a square matrix.")
-    if omega_grid.ndim != 1 or omega_grid.shape[0] != K_grid.shape[0]:
-        raise ValueError("grid_frequencies must be a vector matching grid_coupling.")
+    K_scpn = _validated_square_matrix(K_scpn, "K_scpn")
+    omega_scpn = _validated_frequency_vector(
+        omega_scpn,
+        K_scpn.shape[0],
+        "omega_scpn",
+        "K_scpn",
+    )
+    K_grid = _validated_square_matrix(
+        K_grid,
+        "grid_coupling",
+        require_grid_coupling=True,
+    )
+    omega_grid = _validated_frequency_vector(
+        omega_grid,
+        K_grid.shape[0],
+        "grid_frequencies",
+        "grid_coupling",
+    )
 
     n_grid = K_grid.shape[0]
     n_scpn = K_scpn.shape[0]
@@ -172,7 +232,7 @@ def power_grid_benchmark(
     if len(g_flat) < 3:
         topo_corr = 0.0
     else:
-        topo_corr = float(spearmanr(g_flat, s_flat).statistic)
+        topo_corr = _finite_correlation(float(spearmanr(g_flat, s_flat).statistic))
 
     # Coupling ratio
     g_mean = float(np.mean(g_flat[g_flat > 0])) if np.any(g_flat > 0) else 0.0
@@ -181,9 +241,7 @@ def power_grid_benchmark(
 
     # Frequency correlation
     if n >= 3:
-        freq_corr = float(np.corrcoef(omega_g, omega_s)[0, 1])
-        if np.isnan(freq_corr):
-            freq_corr = 0.0
+        freq_corr = _finite_correlation(float(np.corrcoef(omega_g, omega_s)[0, 1]))
     else:
         freq_corr = 0.0
 
