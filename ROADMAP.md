@@ -153,6 +153,11 @@ is copied here.
   bonds. Callers that intentionally run the truncated tensor-network
   diagnostic must pass `allow_long_range_truncation=True`; returned
   metadata records `coupling_scope` and `omitted_coupling_l1`.
+- [x] **Paper claim-boundary audit after hardening.** Implemented
+  2026-05-12: the Phase 1 DLA short paper now states that the IBM
+  circuit used the nearest-neighbour truncation of the exponential
+  coupling matrix, and the benchmark API no longer turns crossover
+  estimates into a broad hardware-only dynamics claim.
 - [x] **Integrated-information wrapper production route.** Implemented
   2026-05-12: `IntegratedInformationPhi` now routes explicit
   `coupling_matrix` and `natural_frequencies` inputs to the
