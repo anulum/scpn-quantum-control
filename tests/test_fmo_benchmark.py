@@ -127,6 +127,72 @@ class TestFMOBenchmark:
         assert "SCPN vs FMO" in result.summary
         assert "topology" in result.summary
 
+    def test_rejects_non_square_scpn_coupling(self):
+        K = np.ones((2, 3))
+        omega = np.ones(2)
+        with pytest.raises(ValueError, match="K_scpn must be a square"):
+            fmo_benchmark(K, omega, allow_builtin_reference=True)
+
+    def test_rejects_scpn_frequency_shape_mismatch(self):
+        K = build_knm_paper27(L=4)
+        omega = np.ones(3)
+        with pytest.raises(ValueError, match="omega_scpn must match"):
+            fmo_benchmark(K, omega, allow_builtin_reference=True)
+
+    def test_rejects_non_finite_scpn_coupling(self):
+        K = build_knm_paper27(L=4)
+        K[0, 1] = np.nan
+        omega = OMEGA_N_16[:4]
+        with pytest.raises(ValueError, match="K_scpn must contain only finite"):
+            fmo_benchmark(K, omega, allow_builtin_reference=True)
+
+    def test_rejects_too_small_comparison_system(self):
+        K = np.array([[0.0]])
+        omega = np.array([1.0])
+        with pytest.raises(ValueError, match="at least two coupled sites"):
+            fmo_benchmark(K, omega, allow_builtin_reference=True)
+
+    def test_rejects_fmo_coupling_asymmetry(self):
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        fmo_K = np.array(
+            [
+                [0.0, 0.8, 0.1],
+                [0.2, 0.0, 0.3],
+                [0.1, 0.3, 0.0],
+            ]
+        )
+        fmo_omega = np.array([1.0, 2.0, 3.0])
+        with pytest.raises(ValueError, match="fmo_coupling must be symmetric"):
+            fmo_benchmark(K, omega, fmo_coupling=fmo_K, fmo_frequencies=fmo_omega)
+
+    def test_rejects_fmo_coupling_nonzero_diagonal(self):
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        fmo_K = np.array(
+            [
+                [1.0, 0.8, 0.1],
+                [0.8, 0.0, 0.3],
+                [0.1, 0.3, 0.0],
+            ]
+        )
+        fmo_omega = np.array([1.0, 2.0, 3.0])
+        with pytest.raises(ValueError, match="fmo_coupling diagonal must be zero"):
+            fmo_benchmark(K, omega, fmo_coupling=fmo_K, fmo_frequencies=fmo_omega)
+
+    def test_rejects_fmo_frequency_shape_mismatch(self):
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        fmo_K = np.array(
+            [
+                [0.0, 0.8, 0.1],
+                [0.8, 0.0, 0.3],
+                [0.1, 0.3, 0.0],
+            ]
+        )
+        with pytest.raises(ValueError, match="fmo_frequencies must match"):
+            fmo_benchmark(K, omega, fmo_coupling=fmo_K, fmo_frequencies=np.ones(2))
+
 
 # ---------------------------------------------------------------------------
 # FMO physics: biological coupling structure
