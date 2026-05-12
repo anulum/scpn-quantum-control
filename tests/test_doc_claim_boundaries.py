@@ -54,3 +54,51 @@ def test_legacy_preprint_no_survival_or_outperformance_overclaims() -> None:
     assert "demonstrating that the Kuramoto coupling structure survives" not in collapsed
     assert "physics-informed circuit design outperforms" not in collapsed
     assert "descriptive hardware snapshot" in collapsed
+
+
+def test_overview_paper_has_bounded_hardware_novelty_and_noise_language() -> None:
+    """The overview manuscript must avoid broad hardware-novelty overclaims."""
+    text = _read("paper/main.tex")
+    collapsed = " ".join(text.split())
+
+    assert "no prior hardware demonstration" not in collapsed
+    assert "Superconducting qubits are native simulators of this physics" not in collapsed
+    assert "has sufficient coherence for Kuramoto-XY simulation" not in collapsed
+    assert "non-ergodic protection strengthens with size" not in collapsed
+    assert "legacy artefact-backed campaign" in collapsed
+    assert "not a broad quantum-advantage claim" in collapsed
+
+
+def test_fim_manuscript_preserves_negative_hardware_boundary() -> None:
+    """The FIM manuscript should stay bounded to exact structure plus negative IBM evidence."""
+    text = _read("paper/scpn_fim_hamiltonian.tex")
+    collapsed = " ".join(text.split())
+
+    assert "backend/circuit-specific negative hardware result" in collapsed
+    assert (
+        "No hardware coherence improvement, quantum advantage, or universal protection claim is made"
+        in collapsed
+    )
+    assert "not a hardware robustness claim" in collapsed
+
+
+def test_legacy_preprint_dtc_caption_is_not_hardware_first_claim() -> None:
+    """Figure captions must not preserve stronger claims than the abstract."""
+    text = _read("docs/preprint.md")
+    collapsed = " ".join(text.split())
+
+    assert "first such measurement" not in collapsed
+    assert "not a promoted hardware DTC measurement" in collapsed
+
+
+def test_public_claim_inventory_is_marked_as_legacy_triage() -> None:
+    """The older claim inventory must not read as a submission-ready paper source."""
+    text = _read("docs/PAPER_CLAIMS.md")
+    collapsed = " ".join(text.split())
+
+    assert "Legacy claim triage" in collapsed
+    assert "not a submission-ready claim source" in collapsed
+    assert "outperforming generic ansatze" not in collapsed
+    assert "proves readout is clean" not in collapsed
+    assert "The extremes follow coupling" not in collapsed
+    assert "more robust to decoherence" not in collapsed

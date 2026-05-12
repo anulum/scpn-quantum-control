@@ -164,6 +164,14 @@ is copied here.
   demonstration" and backend-general outperformance phrasing, and keeps
   16-qubit/ansatz observations descriptive unless a later ledger review
   promotes a specific raw-count claim.
+- [x] **Coauthor meeting claim-readiness pass.** Implemented
+  2026-05-12 for the 2026-05-13 15:00 Europe/Zurich Teams meeting:
+  `paper/main.tex`, `docs/preprint.md`, and `docs/PAPER_CLAIMS.md`
+  now avoid first-hardware, hardware-DTC, backend-general coherence,
+  generic-outperformance, and clean-readout overclaims. The FIM
+  manuscript boundary remains regression-tested as a backend/circuit-
+  specific negative hardware result, and an internal meeting brief was
+  added at `docs/internal/coauthor_meeting_readiness_2026-05-13.md`.
 - [x] **NumPy NQS sampling-contract hardening.** Implemented
   2026-05-12: `vmc_ground_state()` now rejects explicit `n_samples`
   because the current NumPy RBM path performs exact enumeration with

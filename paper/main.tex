@@ -65,8 +65,9 @@ Hamiltonian~\cite{Pikovsky2001}:
 %
 where the $XX + YY$ flip-flop interaction preserves the in-plane ($S^1$)
 dynamics while introducing entanglement and quantum tunnelling between
-phase configurations. Superconducting qubits are native simulators of
-this physics: each qubit is an oscillator on the Bloch sphere.
+phase configurations. Superconducting-qubit circuits provide a digital
+testbed for this spin-model dynamics: each qubit supplies a controllable
+two-level oscillator degree of freedom on the Bloch sphere.
 
 Prior quantum simulation of the XY model uses homogeneous frequencies
 ($\omega_i = \omega$ for all $i$), preserving translational invariance
@@ -74,10 +75,10 @@ and the well-characterised BKT universality
 class~\cite{Berezinskii1972,Kosterlitz1973}. Theoretical quantum
 Kuramoto models with heterogeneous frequencies
 exist~\cite{Pikovsky2001,Acebron2005}, and quantum synchronisation
-measures have been proposed~\cite{Ameri2015,Galve2013,Ma2020,Giorgi2013},
-but to our knowledge no prior hardware demonstration studies the quantum
-synchronisation transition with heterogeneous frequencies on a
-superconducting processor.
+measures have been proposed~\cite{Ameri2015,Galve2013,Ma2020,Giorgi2013}.
+The present work contributes a bounded superconducting-processor workflow
+for this heterogeneous-frequency setting, with simulator and hardware
+claims separated by artefact provenance.
 
 We study the heterogeneous case using a 16-oscillator coupling matrix
 $K_{nm} = K_{\mathrm{base}} \cdot \exp(-\alpha|n-m|)$ with
@@ -325,8 +326,8 @@ frequencies protect the coupling topology from thermal scrambling.
 \begin{figure}[t]
 \includegraphics[width=\columnwidth]{../figures/publication/fig15_mbl_level_spacing.pdf}
 \caption{\label{fig:mbl}%
-Level-spacing ratio $\bar{r}$ vs.\ coupling. At $n = 8$ the system
-never reaches GOE --- non-ergodic protection strengthens with size.}
+Level-spacing ratio $\bar{r}$ vs.\ coupling. At $n = 8$ the finite-size
+diagnostic remains below the GOE reference across the tested grid.}
 \end{figure}
 
 %% ====================================================================
@@ -347,9 +348,9 @@ simulation: heterogeneous frequencies suppress thermalisation trends and
 coincide with a stable subharmonic response without requiring deep MBL.
 
 \textbf{Noise budget.}
-The 5.5\% QBER and 94\% state preparation fidelity establish that
-Heron~r2 has sufficient coherence for Kuramoto-XY simulation at
-$n \leq 8$. The 16-qubit experiment is viable but noise-limited
+The 5.5\% QBER and 94\% state preparation fidelity in the retained
+legacy rows indicate usable shallow-circuit performance for the tested
+Kuramoto--XY circuits. The 16-qubit row remains explicitly noise-limited
 (depth $\leq 50$ CX gates).
 
 \textbf{Limitations.}

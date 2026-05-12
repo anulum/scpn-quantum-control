@@ -166,9 +166,9 @@ $t^* = 0.28$ (K=4) vs $t^* = 1.17$ (K=1) at $n=8$.*
 ![Floquet DTC](figures/publication/fig9_floquet_dtc_n3456.png)
 
 *Figure 9. Subharmonic ratio $P(\Omega/2)/P(\Omega)$ and mean $R$ vs
-drive amplitude $\delta$ for $n=3, 4, 6$. All 15 amplitudes show DTC
-signatures above threshold. **Heterogeneous frequencies do not destroy
-the discrete time crystal** — first such measurement.*
+drive amplitude $\delta$ for $n=3, 4, 6$. All 15 amplitudes show finite-size
+simulator DTC signatures above threshold. This is not a promoted hardware DTC
+measurement.*
 
 ### 3.5 Finite-Size Scaling
 
@@ -348,11 +348,11 @@ to protect the subharmonic response.
 
 ### Hardware Noise Budget
 
-The 5.5% QBER and 94% state preparation fidelity establish that Heron r2
-has sufficient coherence for Kuramoto-XY simulation at $n \leq 8$. The
-16-qubit experiment is viable but noise-limited (depth $\leq$ 50 CX gates).
-ZNE provides marginal improvement ($<2\%$), suggesting that the dominant
-noise source is coherent (gate errors) rather than incoherent (T1/T2 decay).
+The 5.5% QBER and 94% state preparation fidelity in the retained legacy rows
+indicate usable shallow-circuit performance for the tested Kuramoto-XY
+circuits. The 16-qubit experiment remains noise-limited (depth $\leq$ 50 CX
+gates). ZNE provides marginal improvement ($<2\%$), so the noise-budget
+discussion remains descriptive rather than a backend-general coherence claim.
 
 ### Limitations
 
