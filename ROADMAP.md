@@ -685,6 +685,13 @@ explicit QPU-time estimate before submission.
   execution is not promoted because the physics-aware decoder did not
   beat the standard decoder and its own feature-disabled ablation under
   the preregistered logical metric.
+- [x] **Multi-circuit QEC offline-boundary terminology hardening.**
+  Implemented 2026-05-12:
+  the readiness generator and committed artefacts now identify the
+  encoded comparator as `distance3_surface_code_offline` and describe
+  the supported claim as a distance-3 surface-code offline
+  logical-failure comparison, avoiding imprecise informal language while
+  preserving the no-hardware and no-fault-tolerance boundary.
 - [ ] **Multi-circuit QEC demonstration hardware execution.** Blocked
   until a revised QEC/decoder candidate passes offline logical metrics
   against unencoded, standard-decoder, and ablation baselines, then

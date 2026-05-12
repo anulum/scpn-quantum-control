@@ -60,6 +60,7 @@ MAX_OPTIONAL_QPU_MINUTES = 15.0
 MAX_ENCODED_DEPTH = 1200
 MIN_RETAINED_FRACTION = 0.70
 MIN_LOGICAL_GAIN = 0.01
+ENCODED_QEC_METHOD = "distance3_surface_code_offline"
 
 
 @dataclass(frozen=True)
@@ -252,7 +253,7 @@ def resource_rows(cases: Sequence[CaseSpec]) -> list[dict[str, object]]:
         encoded = SurfaceCodeUPDE(spec.n_qubits, code_distance=DISTANCE).build_step_circuit(T_STEP)
         for method, circuit in (
             ("unencoded_physical", unencoded),
-            ("encoded_surface_code_toy", encoded),
+            (ENCODED_QEC_METHOD, encoded),
         ):
             transpiled = transpile(
                 circuit,
@@ -380,12 +381,12 @@ def build_summary(
     max_encoded_depth = max(
         int(str(row["transpiled_depth"]))
         for key, row in resource_by_label.items()
-        if key[1] == "encoded_surface_code_toy"
+        if key[1] == ENCODED_QEC_METHOD
     )
     max_encoded_qubits = max(
         int(str(row["raw_qubits"]))
         for key, row in resource_by_label.items()
-        if key[1] == "encoded_surface_code_toy"
+        if key[1] == ENCODED_QEC_METHOD
     )
     optional_circuits = len(default_cases()) * 3 * 6
     resource_gate = (
@@ -420,7 +421,7 @@ def build_summary(
         "ready_for_optional_hardware": decision == "ready_for_optional_hardware_preregistration",
         "claim_boundary": {
             "supported": [
-                "offline toy-code logical failure comparison",
+                "distance-3 surface-code offline logical-failure comparison",
                 "decoder ablation against a K-matrix-weighted feature",
                 "encoded/unencoded circuit-resource comparison",
                 "promotion or rejection before live backend submission",
@@ -514,9 +515,9 @@ def _manifest(
             "",
             "## Boundary",
             "",
-            "This readiness package is an offline toy-code logical-metric gate. It is",
-            "not hardware evidence, not a fault-tolerance claim, and does not",
-            "authorise QPU submission.",
+            "This readiness package is an offline distance-3 surface-code",
+            "logical-metric gate. It is not hardware evidence, not a",
+            "fault-tolerance claim, and does not authorise QPU submission.",
             "",
         ]
     )

@@ -33,6 +33,6 @@ Date: 2026-05-07
 
 ## Boundary
 
-This readiness package is an offline toy-code logical-metric gate. It is
-not hardware evidence, not a fault-tolerance claim, and does not
-authorise QPU submission.
+This readiness package is an offline distance-3 surface-code
+logical-metric gate. It is not hardware evidence, not a
+fault-tolerance claim, and does not authorise QPU submission.
