@@ -26,6 +26,7 @@ from qiskit.synthesis import LieTrotter, SuzukiTrotter
 
 from ..accel.rust_import import optional_rust_engine
 from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+from ..dense_budget import require_dense_allocation
 
 
 @dataclass(frozen=True)
@@ -161,8 +162,21 @@ class QuantumKuramotoSolver:
         psi = float(np.angle(z_complex))
         return R, psi
 
-    def run(self, t_max: float, dt: float, trotter_per_step: int | None = None) -> dict:
-        """Time-stepped evolution returning R(t) and per-qubit expectations."""
+    def run(
+        self,
+        t_max: float,
+        dt: float,
+        trotter_per_step: int | None = None,
+        *,
+        max_statevector_gib: float | None = None,
+    ) -> dict:
+        """Time-stepped evolution returning R(t) and per-qubit expectations.
+
+        This local simulator path stores an exact dense statevector. Use
+        ``max_statevector_gib`` to fail closed before Qiskit allocates that
+        vector; hardware or tensor-network paths should be used for larger
+        systems.
+        """
         if not np.isfinite(t_max) or t_max < 0.0:
             raise ValueError(f"t_max must be finite and non-negative, got {t_max}")
         if not np.isfinite(dt) or dt <= 0.0:
@@ -173,6 +187,12 @@ class QuantumKuramotoSolver:
             raise ValueError(
                 f"trotter_per_step must be a positive integer, got {trotter_per_step}"
             )
+        require_dense_allocation(
+            self.n,
+            rank=1,
+            max_gib=max_statevector_gib,
+            label="Kuramoto statevector trajectory",
+        )
         if self._hamiltonian is None:
             self.build_hamiltonian()
 

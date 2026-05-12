@@ -23,6 +23,7 @@ from scpn_quantum_control.analysis.otoc import (
     compute_otoc,
 )
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 class TestPauliMatrix:
@@ -111,6 +112,13 @@ class TestComputeOTOC:
         print(f"  Scrambling time: {result.scrambling_time}")
         assert isinstance(result.otoc_values[0], float)
 
+    def test_rejects_dense_workspace_budget_before_hamiltonian_build(self):
+        K = build_knm_paper27(L=4)
+        omega = OMEGA_N_16[:4]
+
+        with pytest.raises(DenseAllocationError, match="OTOC exact dense workspace"):
+            compute_otoc(K, omega, times=np.array([0.0]), max_dense_gib=1e-12)
+
 
 class TestOTOCClassInterface:
     def test_compute_delegates_to_function(self):
@@ -118,7 +126,15 @@ class TestOTOCClassInterface:
         omega = OMEGA_N_16[:2]
         times = np.array([0.0, 0.2])
 
-        otoc = OTOC(K, omega, w_qubit=0, v_qubit=1, w_pauli="X", v_pauli="Z")
+        otoc = OTOC(
+            K,
+            omega,
+            w_qubit=0,
+            v_qubit=1,
+            w_pauli="X",
+            v_pauli="Z",
+            max_dense_gib=1.0,
+        )
         result = otoc.compute(times=times)
 
         assert isinstance(result, OTOCResult)

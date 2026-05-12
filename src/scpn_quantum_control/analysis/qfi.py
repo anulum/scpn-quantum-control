@@ -31,6 +31,7 @@ import numpy as np
 from qiskit.quantum_info import SparsePauliOp
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
+from ..dense_budget import require_dense_allocation
 
 
 @dataclass
@@ -57,6 +58,8 @@ def compute_qfi(
     K: np.ndarray,
     omega: np.ndarray,
     pairs: list[tuple[int, int]] | None = None,
+    *,
+    max_dense_gib: float | None = None,
 ) -> QFIResult:
     """Compute the Quantum Fisher Information matrix for coupling parameters.
 
@@ -65,18 +68,28 @@ def compute_qfi(
     pairs: which coupling pairs to compute QFI for (default: all nonzero K_ij)
 
     Returns QFIResult with the QFI matrix, coupling pairs, and precision bounds.
+    This exact spectral implementation is dense and small-system only;
+    ``max_dense_gib`` fails closed before Hamiltonian, eigensolver, or
+    derivative-operator allocations exceed the active budget.
     """
     n = len(omega)
+    if pairs is None:
+        pairs = [(i, j) for i in range(n) for j in range(i + 1, n) if abs(K[i, j]) > 1e-10]
+
+    require_dense_allocation(
+        n,
+        rank=2,
+        object_count=max(2, 2 + len(pairs)),
+        max_gib=max_dense_gib,
+        label="QFI dense eigensolver and derivative workspace",
+    )
     knm_to_hamiltonian(K, omega)
-    H_mat = knm_to_dense_matrix(K, omega)
+    H_mat = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
 
     eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
     E0 = eigenvalues[0]
     psi0 = eigenvectors[:, 0]
     gap = float(eigenvalues[1] - eigenvalues[0])
-
-    if pairs is None:
-        pairs = [(i, j) for i in range(n) for j in range(i + 1, n) if abs(K[i, j]) > 1e-10]
 
     n_pairs = len(pairs)
     qfi = np.zeros((n_pairs, n_pairs))
@@ -129,7 +142,12 @@ def compute_qfi(
     )
 
 
-def qfi_gap_tradeoff(K: np.ndarray, omega: np.ndarray) -> dict:
+def qfi_gap_tradeoff(
+    K: np.ndarray,
+    omega: np.ndarray,
+    *,
+    max_dense_gib: float | None = None,
+) -> dict:
     """Analyze the QFI-gap tradeoff for the coupling topology.
 
     Large spectral gap → robust identity but imprecise estimation.
@@ -137,7 +155,7 @@ def qfi_gap_tradeoff(K: np.ndarray, omega: np.ndarray) -> dict:
 
     Returns dict with gap, max QFI, min precision bound, and tradeoff ratio.
     """
-    result = compute_qfi(K, omega)
+    result = compute_qfi(K, omega, max_dense_gib=max_dense_gib)
     max_qfi = float(np.max(np.diag(result.qfi_matrix)))
     finite_bounds = result.precision_bounds[np.isfinite(result.precision_bounds)]
     min_precision = float(np.min(finite_bounds)) if len(finite_bounds) > 0 else float("inf")

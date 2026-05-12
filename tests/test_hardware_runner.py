@@ -10,13 +10,14 @@
 import numpy as np
 import pytest
 
+from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.hardware.classical import (
     classical_brute_mpc,
     classical_exact_diag,
     classical_exact_evolution,
     classical_kuramoto_reference,
 )
-from scpn_quantum_control.hardware.runner import JobResult
+from scpn_quantum_control.hardware.runner import HardwareRunner, JobResult
 
 
 def test_connect_simulator(sim_runner):
@@ -84,11 +85,60 @@ def test_log_job_creates_jobs_json(sim_runner):
 
 def test_retrieve_job_requires_connect():
     """retrieve_job raises RuntimeError without hardware service."""
-    from scpn_quantum_control.hardware.runner import HardwareRunner
-
     runner = HardwareRunner(use_simulator=True)
     with pytest.raises(RuntimeError, match="call connect"):
         runner.retrieve_job("fake_id")
+
+
+def test_run_sampler_simulator_rejects_dense_budget_before_backend_run(tmp_path):
+    from qiskit import QuantumCircuit
+
+    class FakePassManager:
+        def run(self, circuit):
+            return circuit
+
+    class BackendMustNotRun:
+        name = "fake_statevector_backend"
+
+        def run(self, *_args, **_kwargs):
+            raise AssertionError("backend.run must not execute after budget rejection")
+
+    runner = HardwareRunner(
+        use_simulator=True,
+        max_dense_gib=1e-12,
+        results_dir=str(tmp_path / "results"),
+    )
+    runner._pm = FakePassManager()
+    runner._backend = BackendMustNotRun()
+
+    qc = QuantumCircuit(4)
+    qc.h(0)
+    qc.measure_all()
+
+    with pytest.raises(DenseAllocationError, match="local statevector simulator"):
+        runner.run_sampler(qc, shots=8, name="budget_reject")
+
+
+def test_run_estimator_simulator_rejects_dense_budget_before_statevector(tmp_path):
+    from qiskit import QuantumCircuit
+    from qiskit.quantum_info import SparsePauliOp
+
+    runner = HardwareRunner(
+        use_simulator=True,
+        max_dense_gib=1e-12,
+        results_dir=str(tmp_path / "results"),
+    )
+    qc = QuantumCircuit(4)
+    qc.h(0)
+
+    with pytest.raises(DenseAllocationError, match="local statevector simulator"):
+        runner._run_estimator_simulator(
+            qc,
+            [SparsePauliOp.from_list([("ZIII", 1.0)])],
+            None,
+            "budget_reject",
+            runner.circuit_stats(qc),
+        )
 
 
 def test_circuit_stats(sim_runner):

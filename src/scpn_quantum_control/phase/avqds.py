@@ -39,6 +39,7 @@ from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 
 from ..bridge.knm_hamiltonian import knm_to_ansatz, knm_to_hamiltonian
+from ..dense_budget import require_dense_allocation
 
 
 @dataclass
@@ -54,20 +55,44 @@ class AVQDSResult:
     final_fidelity: float
 
 
+def _qubits_from_state_length(state_length: int) -> int:
+    """Infer qubit count from an exact statevector length."""
+    if state_length < 1 or state_length & (state_length - 1):
+        raise ValueError(f"statevector length must be a positive power of two, got {state_length}")
+    return state_length.bit_length() - 1
+
+
 def _mclachlan_matrices(
     ansatz: QuantumCircuit,
     params: np.ndarray,
     H_op,
     epsilon: float = 1e-4,
+    *,
+    max_dense_gib: float | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Compute McLachlan M matrix and V vector.
 
     M_ij = Re(<∂_i ψ|∂_j ψ>)
     V_i = -Im(<∂_i ψ|H|ψ>)
     """
+    ansatz_qubits = getattr(ansatz, "num_qubits", None)
+    if ansatz_qubits is not None:
+        require_dense_allocation(
+            int(ansatz_qubits),
+            rank=2,
+            max_gib=max_dense_gib,
+            label="AVQDS dense Hamiltonian",
+        )
     n_params = len(params)
     sv_0 = Statevector.from_instruction(ansatz.assign_parameters(params))
     psi_0 = sv_0.data
+    if ansatz_qubits is None:
+        require_dense_allocation(
+            _qubits_from_state_length(len(psi_0)),
+            rank=2,
+            max_gib=max_dense_gib,
+            label="AVQDS dense Hamiltonian",
+        )
 
     # Compute parameter derivatives via finite differences
     dpsi: np.ndarray = np.zeros((n_params, len(psi_0)), dtype=complex)
@@ -106,6 +131,8 @@ def avqds_simulate(
     n_steps: int = 20,
     ansatz_reps: int = 2,
     seed: int | None = None,
+    *,
+    max_dense_gib: float | None = None,
 ) -> AVQDSResult:
     """Run AVQDS simulation of the Kuramoto-XY dynamics.
 
@@ -116,9 +143,18 @@ def avqds_simulate(
         n_steps: number of variational time steps
         ansatz_reps: ansatz circuit repetitions
         seed: random seed for initial parameters
+        max_dense_gib: dense exact-simulation budget for Hamiltonian,
+            statevector, and propagator allocations
     """
     from ..hardware.gpu_accel import expm
 
+    n = K.shape[0]
+    require_dense_allocation(
+        n,
+        rank=2,
+        max_gib=max_dense_gib,
+        label="AVQDS dense Hamiltonian",
+    )
     H_op = knm_to_hamiltonian(K, omega)
     H_mat = H_op.to_matrix()
     if hasattr(H_mat, "toarray"):
@@ -148,7 +184,7 @@ def avqds_simulate(
             break
 
         # McLachlan step
-        M, V = _mclachlan_matrices(ansatz, params, H_op)
+        M, V = _mclachlan_matrices(ansatz, params, H_op, max_dense_gib=max_dense_gib)
 
         # Regularised solve: dθ = M^{-1} V × dt
         reg = 1e-6 * np.eye(n_params)

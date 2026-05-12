@@ -15,6 +15,7 @@ import pytest
 import scpn_quantum_control.analysis.qfi as qfi_mod
 from scpn_quantum_control.analysis.qfi import QFIResult, compute_qfi, qfi_gap_tradeoff
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 class TestQFI:
@@ -101,6 +102,13 @@ class TestQFI:
         assert tradeoff["max_qfi_diagonal"] > 0
         assert tradeoff["tradeoff_ratio"] > 0
 
+    def test_gap_tradeoff_propagates_dense_budget(self):
+        K = build_knm_paper27(L=4)
+        omega = OMEGA_N_16[:4]
+
+        with pytest.raises(DenseAllocationError, match="QFI dense eigensolver"):
+            qfi_gap_tradeoff(K, omega, max_dense_gib=1e-6)
+
     def test_qfi_result_precision_method(self):
         result = QFIResult(
             qfi_matrix=np.array([[4.0]]),
@@ -130,13 +138,26 @@ class TestQFI:
         assert len(result.coupling_pairs) == 2
         assert result.qfi_matrix.shape == (2, 2)
 
+    def test_rejects_dense_qfi_before_hamiltonian_allocation(self, monkeypatch):
+        K = build_knm_paper27(L=4)
+        omega = OMEGA_N_16[:4]
+
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(qfi_mod, "knm_to_dense_matrix", fail_if_dense_hamiltonian_is_requested)
+
+        with pytest.raises(DenseAllocationError, match="QFI dense eigensolver"):
+            compute_qfi(K, omega, max_dense_gib=1e-6)
+
     def test_degenerate_excited_level_is_skipped(self, monkeypatch):
         def fake_hamiltonian(K, omega):
             del K, omega
             return None
 
-        def fake_dense_matrix(K, omega):
+        def fake_dense_matrix(K, omega, **kwargs):
             del K, omega
+            assert kwargs == {"max_dense_gib": None}
             return np.diag([0.0, 0.0, 2.0, 3.0])
 
         monkeypatch.setattr(qfi_mod, "knm_to_hamiltonian", fake_hamiltonian)

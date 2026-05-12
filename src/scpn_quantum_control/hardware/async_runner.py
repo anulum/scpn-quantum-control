@@ -65,7 +65,8 @@ import time
 from dataclasses import dataclass, field
 from typing import Any
 
-from .runner import HardwareRunner, JobResult
+from ..dense_budget import DenseAllocationError
+from .runner import HardwareRunner, JobResult, _require_local_statevector_simulator
 
 
 def _get_logger(name: str) -> Any:
@@ -78,6 +79,13 @@ def _get_logger(name: str) -> Any:
 
 
 _log = _get_logger(__name__)
+
+
+def _guard_local_statevector_simulation(qc: Any, max_dense_gib: float | None) -> None:
+    """Budget guard for explicit local simulation of real Qiskit circuits."""
+    if not hasattr(qc, "num_qubits"):
+        return
+    _require_local_statevector_simulator(qc, max_dense_gib)
 
 
 @dataclass
@@ -237,6 +245,10 @@ class AsyncHardwareRunner:
                         self.runner_obj.runner_kwargs.get("allow_local_simulation", False),
                     )
                 )
+                max_dense_gib = self.kwargs.get(
+                    "max_dense_gib",
+                    self.runner_obj.runner_kwargs.get("max_dense_gib"),
+                )
                 enable_zne = bool(
                     self.kwargs.get(
                         "enable_zne",
@@ -358,6 +370,7 @@ class AsyncHardwareRunner:
                     elif allow_local_simulation:
                         from qiskit.primitives import StatevectorSampler
 
+                        _guard_local_statevector_simulation(qc, max_dense_gib)
                         sampler = StatevectorSampler()
                         job = sampler.run([qc], shots=shots)
                         self.job_id = "local_simulated"
@@ -369,6 +382,8 @@ class AsyncHardwareRunner:
                         status = "NO_IBM_TOKEN"
 
                 except Exception as e:
+                    if isinstance(e, DenseAllocationError):
+                        raise
                     if allow_local_simulation:
                         print(
                             f"IBM Submission Error: {e}. Using explicit local simulation.",
@@ -376,6 +391,7 @@ class AsyncHardwareRunner:
                         )
                         from qiskit.primitives import StatevectorSampler
 
+                        _guard_local_statevector_simulation(qc, max_dense_gib)
                         sampler = StatevectorSampler()
                         job = sampler.run([qc], shots=shots)
                         self.job_id = "local_simulated"

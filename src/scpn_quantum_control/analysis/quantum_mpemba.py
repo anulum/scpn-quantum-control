@@ -40,6 +40,7 @@ import numpy as np
 from scipy.linalg import expm
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
+from ..dense_budget import require_dense_allocation
 
 
 @dataclass
@@ -138,6 +139,8 @@ def mpemba_experiment(
     gamma: float = 0.1,
     t_max: float = 5.0,
     n_steps: int = 30,
+    *,
+    max_dense_gib: float | None = None,
 ) -> MpembaResult:
     """Run quantum Mpemba experiment for synchronization.
 
@@ -147,12 +150,22 @@ def mpemba_experiment(
 
     Both evolve under Lindblad(H(K_base), amplitude damping γ).
     Mpemba effect: "far" state reaches NESS faster than "near".
+    The method is intentionally dense and exact for small systems: it forms
+    full density matrices and a vectorised Lindblad superoperator of shape
+    ``(4**n, 4**n)``. ``max_dense_gib`` gates that rank-4 allocation before any
+    dense Hamiltonian is built.
     """
     n = len(omega)
+    require_dense_allocation(
+        n,
+        rank=4,
+        max_gib=max_dense_gib,
+        label="Lindblad superoperator",
+    )
     dim = 2**n
     K = K_base * K_topology
 
-    H_mat = knm_to_dense_matrix(K, omega)
+    H_mat = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
 
     # Steady state: evolve |0⟩ for long time under Lindblad
     L_super = _lindblad_superoperator(H_mat, gamma, n)
@@ -167,7 +180,7 @@ def mpemba_experiment(
 
     # Near initial state: ground state of H(K_base*0.8) — close to NESS
     K_near = (K_base * 0.8) * K_topology
-    H_near = knm_to_dense_matrix(K_near, omega)
+    H_near = knm_to_dense_matrix(K_near, omega, max_dense_gib=max_dense_gib)
     eigvals, eigvecs = np.linalg.eigh(H_near)
     psi_near = np.ascontiguousarray(eigvecs[:, 0])
     rho_near = np.outer(psi_near, psi_near.conj())

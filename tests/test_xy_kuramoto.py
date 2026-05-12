@@ -12,7 +12,9 @@ import sys
 import numpy as np
 import pytest
 
+import scpn_quantum_control.phase.xy_kuramoto as xy_mod
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.phase.xy_kuramoto import QuantumKuramotoSolver, TrotterEvolutionConfig
 
 SIZES = [2, 3, 4]
@@ -146,6 +148,23 @@ def test_run_returns_trajectory(solver):
     assert "R" in result
     assert "times" in result
     assert len(result["R"]) == len(result["times"])
+
+
+def test_run_rejects_statevector_before_qiskit_allocation(monkeypatch):
+    n = 4
+    K = build_knm_paper27(L=n)
+    omega = OMEGA_N_16[:n]
+    solver = QuantumKuramotoSolver(n, K, omega)
+
+    class FailIfStatevectorRequested:
+        @staticmethod
+        def from_instruction(*args, **kwargs):  # noqa: ARG004
+            raise AssertionError("Statevector allocation happened before budget gate")
+
+    monkeypatch.setattr(xy_mod, "Statevector", FailIfStatevectorRequested)
+
+    with pytest.raises(DenseAllocationError, match="Kuramoto statevector trajectory"):
+        solver.run(t_max=0.2, dt=0.1, max_statevector_gib=1e-9)
 
 
 def test_strong_coupling_increases_R():

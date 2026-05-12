@@ -41,6 +41,7 @@ from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 
 from ..bridge.knm_hamiltonian import knm_to_ansatz, knm_to_hamiltonian
+from ..dense_budget import require_dense_allocation
 from ..hardware.classical import classical_exact_diag
 
 
@@ -57,20 +58,44 @@ class VarQITEResult:
     optimal_params: np.ndarray
 
 
+def _qubits_from_state_length(state_length: int) -> int:
+    """Infer qubit count from an exact statevector length."""
+    if state_length < 1 or state_length & (state_length - 1):
+        raise ValueError(f"statevector length must be a positive power of two, got {state_length}")
+    return state_length.bit_length() - 1
+
+
 def _varqite_matrices(
     ansatz: QuantumCircuit,
     params: np.ndarray,
     H_op,
     epsilon: float = 1e-4,
+    *,
+    max_dense_gib: float | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Compute VarQITE A matrix and C vector.
 
     A_ij = Re(<∂_i ψ|∂_j ψ>)
     C_i = -Re(<∂_i ψ|(H - <H>)|ψ>)
     """
+    ansatz_qubits = getattr(ansatz, "num_qubits", None)
+    if ansatz_qubits is not None:
+        require_dense_allocation(
+            int(ansatz_qubits),
+            rank=2,
+            max_gib=max_dense_gib,
+            label="VarQITE dense Hamiltonian",
+        )
     n_params = len(params)
     sv_0 = Statevector.from_instruction(ansatz.assign_parameters(params))
     psi_0 = sv_0.data
+    if ansatz_qubits is None:
+        require_dense_allocation(
+            _qubits_from_state_length(len(psi_0)),
+            rank=2,
+            max_gib=max_dense_gib,
+            label="VarQITE dense Hamiltonian",
+        )
 
     H_mat = H_op.to_matrix()
     if hasattr(H_mat, "toarray"):
@@ -109,6 +134,8 @@ def varqite_ground_state(
     ansatz_reps: int = 2,
     convergence_threshold: float = 1e-5,
     seed: int | None = None,
+    *,
+    max_dense_gib: float | None = None,
 ) -> VarQITEResult:
     """Find ground state via VarQITE.
 
@@ -120,8 +147,16 @@ def varqite_ground_state(
         ansatz_reps: ansatz repetitions
         convergence_threshold: stop when |ΔE| < threshold
         seed: random seed
+        max_dense_gib: dense exact-simulation budget for Hamiltonian,
+            statevector, and finite-difference derivative arrays
     """
     n = K.shape[0]
+    require_dense_allocation(
+        n,
+        rank=2,
+        max_gib=max_dense_gib,
+        label="VarQITE dense Hamiltonian",
+    )
     H_op = knm_to_hamiltonian(K, omega)
     ansatz = knm_to_ansatz(K, reps=ansatz_reps)
     n_params = ansatz.num_parameters
@@ -142,7 +177,7 @@ def varqite_ground_state(
             converged = True
             break
 
-        A, C = _varqite_matrices(ansatz, params, H_op)
+        A, C = _varqite_matrices(ansatz, params, H_op, max_dense_gib=max_dense_gib)
         reg = 1e-6 * np.eye(n_params)
         dtheta = np.linalg.solve(A + reg, C) * dtau
         params = params + dtheta

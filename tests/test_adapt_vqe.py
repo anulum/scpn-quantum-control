@@ -13,9 +13,11 @@ import importlib
 from types import SimpleNamespace
 
 import numpy as np
+import pytest
 from qiskit import QuantumCircuit
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.hardware.classical import classical_exact_diag
 from scpn_quantum_control.phase.adapt_vqe import (
     ADAPTResult,
@@ -112,6 +114,21 @@ class TestAdaptVQE:
         result = adapt_vqe(K, omega, max_iterations=3, seed=42)
         for idx in result.selected_operators:
             assert 0 <= idx < len(pool)
+
+    def test_rejects_dense_budget_before_statevector_allocation(self, monkeypatch):
+        adapt_vqe_mod = importlib.import_module("scpn_quantum_control.phase.adapt_vqe")
+        K = build_knm_paper27(L=4)
+        omega = OMEGA_N_16[:4]
+
+        class FailIfStatevectorRequested:
+            @staticmethod
+            def from_instruction(*args, **kwargs):  # noqa: ARG004
+                raise AssertionError("Statevector allocation happened before budget gate")
+
+        monkeypatch.setattr(adapt_vqe_mod, "Statevector", FailIfStatevectorRequested)
+
+        with pytest.raises(DenseAllocationError, match="ADAPT-VQE statevector"):
+            adapt_vqe(K, omega, max_iterations=1, seed=42, max_dense_gib=1e-9)
 
 
 class TestAdaptVQECoverage:

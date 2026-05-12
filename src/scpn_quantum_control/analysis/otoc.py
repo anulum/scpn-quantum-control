@@ -42,6 +42,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
+from ..dense_budget import require_dense_allocation
 from ..hardware.gpu_accel import expm
 
 
@@ -68,6 +69,7 @@ class OTOC:
         v_qubit: int | None = None,
         w_pauli: str = "Z",
         v_pauli: str = "X",
+        max_dense_gib: float | None = None,
     ) -> None:
         self._K = K
         self._omega = omega
@@ -75,11 +77,18 @@ class OTOC:
         self._v_qubit = v_qubit
         self._w_pauli = w_pauli
         self._v_pauli = v_pauli
+        self._max_dense_gib = max_dense_gib
 
-    def compute(self, times: np.ndarray | None = None) -> OTOCResult:
+    def compute(
+        self,
+        times: np.ndarray | None = None,
+        *,
+        max_dense_gib: float | None = None,
+    ) -> OTOCResult:
         """Run OTOC computation and return an :class:`OTOCResult`."""
         if self._K is None or self._omega is None:
             raise ValueError("OTOC requires K and omega to be set at construction time.")
+        budget_gib = self._max_dense_gib if max_dense_gib is None else max_dense_gib
         return compute_otoc(
             self._K,
             self._omega,
@@ -88,6 +97,7 @@ class OTOC:
             v_qubit=self._v_qubit,
             w_pauli=self._w_pauli,
             v_pauli=self._v_pauli,
+            max_dense_gib=budget_gib,
         )
 
 
@@ -128,6 +138,7 @@ def compute_otoc(
     v_qubit: int | None = None,
     w_pauli: str = "Z",
     v_pauli: str = "X",
+    max_dense_gib: float | None = None,
 ) -> OTOCResult:
     """Compute OTOC F(t) for the Kuramoto-XY Hamiltonian.
 
@@ -149,7 +160,22 @@ def compute_otoc(
     if v_qubit is None:
         v_qubit = min(w_qubit + 1, n - 1)
 
-    H_mat = knm_to_dense_matrix(K, omega)
+    require_dense_allocation(
+        n,
+        rank=2,
+        object_count=6,
+        max_gib=max_dense_gib,
+        label="OTOC exact dense workspace",
+    )
+    require_dense_allocation(
+        n,
+        rank=1,
+        object_count=3,
+        max_gib=max_dense_gib,
+        label="OTOC exact state workspace",
+    )
+
+    H_mat = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
 
     W = _pauli_matrix(w_pauli, w_qubit, n)
     V = _pauli_matrix(v_pauli, v_qubit, n)

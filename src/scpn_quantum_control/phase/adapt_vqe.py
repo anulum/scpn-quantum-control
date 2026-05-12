@@ -38,6 +38,7 @@ from qiskit.quantum_info import SparsePauliOp, Statevector
 from scipy.optimize import minimize
 
 from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+from ..dense_budget import require_dense_allocation
 
 
 @dataclass
@@ -112,6 +113,8 @@ def adapt_vqe(
     gradient_threshold: float = 1e-3,
     maxiter_opt: int = 100,
     seed: int | None = None,
+    *,
+    max_dense_gib: float | None = None,
 ) -> ADAPTResult:
     """Run ADAPT-VQE for the Kuramoto-XY Hamiltonian.
 
@@ -122,8 +125,15 @@ def adapt_vqe(
         gradient_threshold: convergence criterion on gradient norm
         maxiter_opt: max optimizer iterations per ADAPT step
         seed: random seed for optimizer
+        max_dense_gib: dense exact-statevector budget for local simulation
     """
     n = K.shape[0]
+    require_dense_allocation(
+        n,
+        rank=1,
+        max_gib=max_dense_gib,
+        label="ADAPT-VQE statevector",
+    )
     H = knm_to_hamiltonian(K, omega)
     pool = _build_operator_pool(K, n)
 

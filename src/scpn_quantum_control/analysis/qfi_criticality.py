@@ -27,6 +27,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
+from ..dense_budget import require_dense_allocation
 
 
 @dataclass
@@ -44,14 +45,28 @@ class QFICriticalityResult:
 def qfi_single_coupling(
     K: np.ndarray,
     omega: np.ndarray,
+    *,
+    max_dense_gib: float | None = None,
 ) -> tuple[float, float, float]:
     """Compute max QFI diagonal, spectral gap, and QFI trace for given K.
 
     Returns (max_qfi_diag, gap, trace_qfi).
+    This exact spectral implementation is dense and small-system only;
+    ``max_dense_gib`` fails closed before Hamiltonian, eigensolver, or
+    derivative-operator allocations exceed the active budget.
     """
     n = len(omega)
+    pairs = [(i, j) for i in range(n) for j in range(i + 1, n) if abs(K[i, j]) > 1e-10]
+
+    require_dense_allocation(
+        n,
+        rank=2,
+        object_count=max(2, 2 + len(pairs)),
+        max_gib=max_dense_gib,
+        label="QFI dense eigensolver and derivative workspace",
+    )
     knm_to_hamiltonian(K, omega)
-    H_mat = knm_to_dense_matrix(K, omega)
+    H_mat = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
 
     eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
     E0 = eigenvalues[0]
@@ -61,7 +76,6 @@ def qfi_single_coupling(
     # Coupling pairs
     from qiskit.quantum_info import SparsePauliOp
 
-    pairs = [(i, j) for i in range(n) for j in range(i + 1, n) if abs(K[i, j]) > 1e-10]
     if not pairs:
         return 0.0, gap, 0.0
 
@@ -103,6 +117,8 @@ def qfi_vs_coupling(
     omega: np.ndarray,
     K_topology: np.ndarray,
     k_range: np.ndarray | None = None,
+    *,
+    max_dense_gib: float | None = None,
 ) -> QFICriticalityResult:
     """Scan QFI across coupling strength to find the metrological peak.
 
@@ -119,7 +135,10 @@ def qfi_vs_coupling(
 
     for idx, kb in enumerate(k_range):
         K = float(kb) * K_topology
-        mq, g, tq = qfi_single_coupling(K, omega)
+        if max_dense_gib is None:
+            mq, g, tq = qfi_single_coupling(K, omega)
+        else:
+            mq, g, tq = qfi_single_coupling(K, omega, max_dense_gib=max_dense_gib)
         max_qfi[idx] = mq
         gaps[idx] = g
         total_qfi[idx] = tq

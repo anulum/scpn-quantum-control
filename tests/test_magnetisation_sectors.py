@@ -12,15 +12,18 @@ from __future__ import annotations
 from math import comb
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.analysis.magnetisation_sectors import (
     basis_by_magnetisation,
+    build_sector_hamiltonian,
     eigh_by_magnetisation,
     largest_sector_dim,
     level_spacing_by_magnetisation,
     memory_estimate,
     sector_dimensions,
 )
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 def _system(n: int = 4):
@@ -124,11 +127,23 @@ class TestEighByMagnetisation:
         assert result["ground_sector"] is None
         assert result["n_sectors_computed"] == 0
 
+    def test_rejects_full_dense_budget_before_sector_projection(self):
+        K, omega = _system(4)
+
+        with pytest.raises(DenseAllocationError, match="magnetisation full dense Hamiltonian"):
+            eigh_by_magnetisation(K, omega, max_dense_gib=1e-12)
+
     def test_ground_sector_identified(self):
         K, omega = _system(4)
         result = eigh_by_magnetisation(K, omega)
         gs = result["ground_sector"]
         assert gs in result["results"]
+
+    def test_build_sector_rejects_dense_budget_before_full_hamiltonian(self):
+        K, omega = _system(4)
+
+        with pytest.raises(DenseAllocationError, match="magnetisation full dense Hamiltonian"):
+            build_sector_hamiltonian(K, omega, M=0, max_dense_gib=1e-12)
 
     def test_n6_all_eigenvalues(self):
         K, omega = _system(6)

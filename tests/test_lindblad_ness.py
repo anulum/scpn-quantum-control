@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.analysis.lindblad_ness import (
     NESSResult,
@@ -18,6 +19,7 @@ from scpn_quantum_control.analysis.lindblad_ness import (
     ness_vs_coupling,
 )
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 def _ring_topology(n: int) -> np.ndarray:
@@ -69,6 +71,23 @@ class TestComputeNESS:
         result = compute_ness(omega, T, K_base=1.5, gamma=0.2)
         assert isinstance(result, NESSResult)
 
+    def test_rejects_rank4_superoperator_before_allocation(self, monkeypatch):
+        """A low dense budget must stop the Lindblad rank-4 path before H builds."""
+        n = 4
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(
+            "scpn_quantum_control.analysis.lindblad_ness.knm_to_dense_matrix",
+            fail_if_dense_hamiltonian_is_requested,
+        )
+
+        with pytest.raises(DenseAllocationError, match="Lindblad superoperator"):
+            compute_ness(omega, T, K_base=1.5, gamma=0.2, max_dense_gib=1e-6)
+
 
 class TestNESSVsCoupling:
     def test_returns_scan(self):
@@ -95,6 +114,19 @@ class TestNESSVsCoupling:
         assert np.all(np.isfinite(result.R_ness))
         assert np.all(np.isfinite(result.R_ideal))
         assert np.all(np.isfinite(result.purity))
+
+    def test_scan_propagates_dense_budget_gate(self):
+        n = 4
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+        with pytest.raises(DenseAllocationError, match="Lindblad superoperator"):
+            ness_vs_coupling(
+                omega,
+                T,
+                k_range=np.array([1.0, 2.0]),
+                gamma=0.2,
+                max_dense_gib=1e-6,
+            )
 
 
 # ---------------------------------------------------------------------------

@@ -28,6 +28,8 @@ from qiskit import QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp
 from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 
+from ..dense_budget import require_dense_allocation
+
 if TYPE_CHECKING:
     from ..mitigation.zne import ZNEResult
 
@@ -44,6 +46,21 @@ def _get_structured_logger(name: str) -> Any:
 
 
 _slog = _get_structured_logger(__name__)
+
+
+def _require_local_statevector_simulator(
+    circuit: QuantumCircuit,
+    max_dense_gib: float | None,
+    *,
+    label: str = "local statevector simulator",
+) -> None:
+    """Guard local statevector simulator paths before exponential allocation."""
+    require_dense_allocation(
+        circuit.num_qubits,
+        rank=1,
+        max_gib=max_dense_gib,
+        label=label,
+    )
 
 
 def _extract_counts(pub_result: Any) -> dict:
@@ -147,6 +164,7 @@ class HardwareRunner:
         use_fractional_gates: bool = True,
         results_dir: str = "results",
         noise_model=None,
+        max_dense_gib: float | None = None,
     ):
         """Configure runner. Call connect() before submitting jobs.
 
@@ -174,6 +192,7 @@ class HardwareRunner:
             self.results_dir = Path(tempfile.gettempdir()) / "scpn_results"
             self.results_dir.mkdir(parents=True, exist_ok=True)
         self._noise_model = noise_model
+        self.max_dense_gib = max_dense_gib
 
         self._service: Any = None
         self._backend: Any = None
@@ -447,6 +466,7 @@ class HardwareRunner:
         results = []
         t0 = time.time()
         for i, qc in enumerate(isa_circuits):
+            _require_local_statevector_simulator(qc, self.max_dense_gib)
             tc = qk_transpile(qc, self._backend)
             job = self._backend.run(tc, shots=shots)
             counts = job.result().get_counts()
@@ -468,6 +488,7 @@ class HardwareRunner:
     ) -> JobResult:
         from qiskit.quantum_info import Statevector
 
+        _require_local_statevector_simulator(isa_circuit, self.max_dense_gib)
         t0 = time.time()
         if parameter_values is not None:
             all_evs = []

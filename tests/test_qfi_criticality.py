@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 import scpn_quantum_control.analysis.qfi_criticality as qfi_crit_mod
 from scpn_quantum_control.analysis.qfi_criticality import (
@@ -18,6 +19,7 @@ from scpn_quantum_control.analysis.qfi_criticality import (
     qfi_vs_coupling,
 )
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 def _ring_topology(n: int) -> np.ndarray:
@@ -77,13 +79,30 @@ class TestQFISingleCoupling:
         assert mq > 0
         assert gap > 0
 
+    def test_rejects_dense_qfi_before_hamiltonian_allocation(self, monkeypatch):
+        n = 4
+        T = _ring_topology(n)
+        K = 2.0 * T
+        omega = OMEGA_N_16[:n]
+
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(
+            qfi_crit_mod, "knm_to_dense_matrix", fail_if_dense_hamiltonian_is_requested
+        )
+
+        with pytest.raises(DenseAllocationError, match="QFI dense eigensolver"):
+            qfi_single_coupling(K, omega, max_dense_gib=1e-6)
+
     def test_degenerate_excited_level_is_skipped(self, monkeypatch):
         def fake_hamiltonian(K, omega):
             del K, omega
             return None
 
-        def fake_dense_matrix(K, omega):
+        def fake_dense_matrix(K, omega, **kwargs):
             del K, omega
+            assert kwargs == {"max_dense_gib": None}
             return np.diag([0.0, 0.0, 2.0, 3.0])
 
         monkeypatch.setattr(qfi_crit_mod, "knm_to_hamiltonian", fake_hamiltonian)
@@ -154,6 +173,14 @@ class TestQFIVsCoupling:
         assert len(result.k_values) == 20
         np.testing.assert_allclose(result.k_values[[0, -1]], [0.1, 3.0])
         assert calls == result.k_values.tolist()
+
+    def test_scan_propagates_dense_budget(self):
+        n = 4
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+
+        with pytest.raises(DenseAllocationError, match="QFI dense eigensolver"):
+            qfi_vs_coupling(omega, T, k_range=np.array([1.0, 2.0]), max_dense_gib=1e-6)
 
 
 # ---------------------------------------------------------------------------

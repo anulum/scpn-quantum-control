@@ -23,6 +23,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from scpn_quantum_control.dense_budget import DenseAllocationError
+
 # ---------------------------------------------------------------------------
 # qiskit_ibm_runtime stubs — install before the async_runner import
 # ---------------------------------------------------------------------------
@@ -637,6 +639,50 @@ class TestSubmitCircuitBatchProvenance:
         assert result["status"] == "DONE_LOCAL_SIMULATION"
         assert result["job_id"] == "local_simulated"
         assert result["observable_seen"] == 4.0
+
+    def test_submit_circuit_batch_local_simulation_rejects_dense_budget(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Explicit local simulation must fail before StatevectorSampler allocation."""
+
+        class _FakeCircuit:
+            num_clbits = 1
+            num_qubits = 4
+
+            def measure_all(self) -> None:
+                return None
+
+        class _FakeAnsatz:
+            def build_circuit(self) -> _FakeCircuit:
+                return _FakeCircuit()
+
+        class _StatevectorSamplerMustNotRun:
+            def run(self, *_args: Any, **_kwargs: Any) -> None:
+                raise AssertionError("StatevectorSampler must not execute after budget rejection")
+
+        qiskit_ibm = types.ModuleType("qiskit_ibm_runtime")
+        qiskit_ibm.QiskitRuntimeService = object  # type: ignore[attr-defined]
+        qiskit_ibm.SamplerV2 = object  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "qiskit_ibm_runtime", qiskit_ibm)
+
+        primitives = types.ModuleType("qiskit.primitives")
+        primitives.StatevectorSampler = _StatevectorSamplerMustNotRun  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "qiskit.primitives", primitives)
+        monkeypatch.delenv("SCPN_IBM_TOKEN", raising=False)
+
+        runner = ar.AsyncHardwareRunner(
+            backend="ibm_fez",
+            shots=4,
+            max_dense_gib=1e-12,
+        )
+        job = runner.submit_circuit_batch(
+            _FakeAnsatz(),
+            lambda **kwargs: {"observable_seen": float(sum(kwargs["counts"].values()))},
+            allow_local_simulation=True,
+        )
+
+        with pytest.raises(DenseAllocationError, match="local statevector simulator"):
+            asyncio.run(job.result())
 
     def test_submit_circuit_batch_backend_fallback_zne_skip_and_timeout(
         self, monkeypatch: pytest.MonkeyPatch

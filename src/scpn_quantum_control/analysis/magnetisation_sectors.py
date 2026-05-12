@@ -37,6 +37,12 @@ from math import comb
 import numpy as np
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
+from ..dense_budget import (
+    GIB,
+    DenseAllocationError,
+    dense_budget_bytes,
+    require_dense_allocation,
+)
 
 
 def _magnetisation(k: int, n: int) -> int:
@@ -107,10 +113,32 @@ def project_to_sector(
     return np.asarray(H_full[np.ix_(sector_indices, sector_indices)])
 
 
+def _require_sector_dense_workspace(
+    sector_dim: int,
+    *,
+    max_dense_gib: float | None,
+    label: str,
+    object_count: int = 2,
+) -> None:
+    """Guard dense sector blocks whose dimension is combinatorial, not 2**n."""
+    bytes_required = int(sector_dim * sector_dim * np.dtype(np.complex128).itemsize * object_count)
+    budget_bytes = dense_budget_bytes(max_dense_gib)
+    if bytes_required > budget_bytes:
+        raise DenseAllocationError(
+            f"{label} for sector_dim={sector_dim} requires "
+            f"{bytes_required / GIB:.2f} GiB for {object_count} dense sector matrices, "
+            f"above the active dense budget {budget_bytes / GIB:.2f} GiB. "
+            "Use sparse, sector, tensor-network, or explicit hardware execution "
+            "instead of dense allocation."
+        )
+
+
 def build_sector_hamiltonian(
     K: np.ndarray,
     omega: np.ndarray,
     M: int,
+    *,
+    max_dense_gib: float | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Build Hamiltonian projected onto magnetisation sector M.
 
@@ -141,7 +169,19 @@ def build_sector_hamiltonian(
         valid = sorted(sectors.keys())
         raise ValueError(f"M={M} not valid for n={n}. Valid values: {valid}")
     indices = sectors[M]
-    H_full = knm_to_dense_matrix(K, omega)
+    require_dense_allocation(
+        n,
+        rank=2,
+        object_count=2,
+        max_gib=max_dense_gib,
+        label="magnetisation full dense Hamiltonian",
+    )
+    H_full = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
+    _require_sector_dense_workspace(
+        len(indices),
+        max_dense_gib=max_dense_gib,
+        label="magnetisation sector dense Hamiltonian",
+    )
     return project_to_sector(H_full, indices), indices
 
 
@@ -149,6 +189,8 @@ def eigh_by_magnetisation(
     K: np.ndarray,
     omega: np.ndarray,
     sectors: list[int] | None = None,
+    *,
+    max_dense_gib: float | None = None,
 ) -> dict:
     """Diagonalise specified magnetisation sectors.
 
@@ -172,7 +214,14 @@ def eigh_by_magnetisation(
     if sectors is None:
         sectors = sorted(all_sectors.keys())
 
-    H_full = knm_to_dense_matrix(K, omega)
+    require_dense_allocation(
+        n,
+        rank=2,
+        object_count=2,
+        max_gib=max_dense_gib,
+        label="magnetisation full dense Hamiltonian",
+    )
+    H_full = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
     results: dict[int, dict] = {}
     all_eigvals: list[float] = []
 
@@ -180,6 +229,11 @@ def eigh_by_magnetisation(
         if m not in all_sectors:
             continue
         indices = all_sectors[m]
+        _require_sector_dense_workspace(
+            len(indices),
+            max_dense_gib=max_dense_gib,
+            label="magnetisation sector eigensolver workspace",
+        )
         H_sector = project_to_sector(H_full, indices)
         vals, vecs = np.linalg.eigh(H_sector)
         results[m] = {
@@ -220,6 +274,8 @@ def level_spacing_by_magnetisation(
     K: np.ndarray,
     omega: np.ndarray,
     M: int | None = None,
+    *,
+    max_dense_gib: float | None = None,
 ) -> dict:
     """Level-spacing ratio r̄ within a magnetisation sector.
 
@@ -235,7 +291,7 @@ def level_spacing_by_magnetisation(
     if M is None:
         M = 0 if n % 2 == 0 else 1
 
-    result = eigh_by_magnetisation(K, omega, sectors=[M])
+    result = eigh_by_magnetisation(K, omega, sectors=[M], max_dense_gib=max_dense_gib)
 
     if M not in result["results"]:
         return {"r_bar": float("nan"), "M": M, "dim": 0}

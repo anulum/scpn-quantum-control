@@ -25,6 +25,7 @@ from scipy.integrate import solve_ivp
 from scipy.sparse.linalg import expm_multiply
 
 from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_sparse_matrix
+from scpn_quantum_control.dense_budget import require_dense_allocation
 
 try:
     import scpn_quantum_engine as _engine  # pragma: no cover
@@ -37,25 +38,48 @@ except ImportError:
 class LindbladSyncEngine:
     """Solves the Lindblad master equation for open quantum system sync."""
 
-    def __init__(self, K: np.ndarray, omega: np.ndarray, gamma: float = 0.1):
+    def __init__(
+        self,
+        K: np.ndarray,
+        omega: np.ndarray,
+        gamma: float = 0.1,
+        *,
+        max_dense_gib: float | None = None,
+    ):
         self.n = len(omega)
         self.dim = 1 << self.n
         self.K = K
         self.omega = omega
         self.gamma = gamma
+        self.max_dense_gib = max_dense_gib
 
-        # Dense Hamiltonian for small-N density matrix path
-        if self.n <= 10:
-            self.H_dense: np.ndarray | None = knm_to_dense_matrix(K, omega)
-            self.L_ops_dense = self._build_jump_operators_dense()
-        else:
-            self.H_dense = None
-            self.L_ops_dense = []
+        # Dense density-matrix components are built lazily by the density path.
+        self.H_dense: np.ndarray | None = None
+        self.L_ops_dense: list[np.ndarray] = []
 
         # Sparse components for trajectory path
         self.H_sparse = knm_to_sparse_matrix(K, omega)
         self.L_ops_sparse = self._build_jump_operators_sparse()
         self.anti_hermitian_sum = self._build_anti_hermitian_sum()
+
+    def _active_jump_operator_count(self) -> int:
+        return int(np.count_nonzero(np.abs(self.K - np.diag(np.diag(self.K))) > 1e-5))
+
+    def _ensure_density_matrix_components(self, max_dense_gib: float | None = None) -> None:
+        if self.n > 10:
+            raise RuntimeError("Density matrix path only supported for N <= 10.")
+        if self.H_dense is not None:
+            return
+        budget_gib = self.max_dense_gib if max_dense_gib is None else max_dense_gib
+        require_dense_allocation(
+            self.n,
+            rank=2,
+            object_count=max(3, 3 + self._active_jump_operator_count()),
+            max_gib=budget_gib,
+            label="Lindblad density-matrix dense workspace",
+        )
+        self.H_dense = knm_to_dense_matrix(self.K, self.omega, max_dense_gib=budget_gib)
+        self.L_ops_dense = self._build_jump_operators_dense()
 
     def _build_jump_operators_dense(self) -> list[np.ndarray]:
         L_ops = []
@@ -126,7 +150,8 @@ class LindbladSyncEngine:
 
     def liouvillian(self, rho_flat: np.ndarray) -> np.ndarray:
         if self.H_dense is None:
-            raise RuntimeError("Density matrix path only supported for N <= 10.")
+            self._ensure_density_matrix_components()
+        assert self.H_dense is not None
         rho_mat = rho_flat.reshape((self.dim, self.dim))
         drho = -1j * (self.H_dense @ rho_mat - rho_mat @ self.H_dense)
         for L in self.L_ops_dense:
@@ -146,10 +171,17 @@ class LindbladSyncEngine:
         n_traj: int = 20,
         seed: int = 42,
         observables: list[SparsePauliOp] | None = None,
+        max_dense_gib: float | None = None,
     ) -> dict[str, Any]:
         """Evolve system using density matrix or quantum trajectories."""
         if method == "density_matrix":
-            return self._evolve_density_matrix(t_max, n_steps, initial_state, observables)
+            return self._evolve_density_matrix(
+                t_max,
+                n_steps,
+                initial_state,
+                observables,
+                max_dense_gib=max_dense_gib,
+            )
         elif method == "trajectory":
             return self._evolve_trajectories(
                 t_max, n_steps, n_traj, initial_state, seed, observables
@@ -163,7 +195,10 @@ class LindbladSyncEngine:
         n_steps: int,
         initial_rho: np.ndarray | None,
         observables: list[SparsePauliOp] | None,
+        *,
+        max_dense_gib: float | None,
     ) -> dict[str, Any]:
+        self._ensure_density_matrix_components(max_dense_gib)
         if initial_rho is None:
             rho0 = np.zeros((self.dim, self.dim), dtype=complex)
             rho0[0, 0] = 1.0

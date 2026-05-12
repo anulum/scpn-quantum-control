@@ -10,8 +10,11 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
+import scpn_quantum_control.phase.varqite as varqite_mod
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.phase.varqite import (
     VarQITEResult,
     varqite_ground_state,
@@ -79,6 +82,20 @@ class TestVarQITE:
         result = varqite_ground_state(K, omega, tau_total=0.5, n_steps=3, seed=42)
         assert len(result.optimal_params) > 0
         assert np.all(np.isfinite(result.optimal_params))
+
+    def test_rejects_dense_budget_before_statevector_allocation(self, monkeypatch):
+        K = build_knm_paper27(L=4)
+        omega = OMEGA_N_16[:4]
+
+        class FailIfStatevectorRequested:
+            @staticmethod
+            def from_instruction(*args, **kwargs):  # noqa: ARG004
+                raise AssertionError("Statevector allocation happened before budget gate")
+
+        monkeypatch.setattr(varqite_mod, "Statevector", FailIfStatevectorRequested)
+
+        with pytest.raises(DenseAllocationError, match="VarQITE dense Hamiltonian"):
+            varqite_ground_state(K, omega, tau_total=0.2, n_steps=2, seed=42, max_dense_gib=1e-9)
 
 
 # ---------------------------------------------------------------------------

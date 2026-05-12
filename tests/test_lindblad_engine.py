@@ -13,7 +13,9 @@ import importlib
 import sys
 
 import numpy as np
+import pytest
 
+from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.phase.lindblad_engine import LindbladSyncEngine
 
 
@@ -34,6 +36,7 @@ class TestLindbladSyncEngine:
         K = np.array([[0.0, 1.0, 0.0], [1.0, 0.0, 1.0], [0.0, 1.0, 0.0]])
         omega = np.array([1.0, 1.0, 1.0])
         engine = LindbladSyncEngine(K, omega)
+        engine.evolve(t_max=0.01, n_steps=1, method="density_matrix")
         # Should have 4 jump operators (0->1, 1->0, 1->2, 2->1)
         assert len(engine.L_ops_dense) == 4
 
@@ -111,7 +114,43 @@ class TestLindbladSyncEngine:
         omega = np.ones(3)
         engine = LindbladSyncEngine(K, omega, gamma=0.1)
         assert len(engine.L_ops_sparse) == 4
+        engine.evolve(t_max=0.01, n_steps=1, method="density_matrix")
         assert len(engine.L_ops_dense) == 4
+
+    def test_constructor_does_not_build_dense_density_path(self, monkeypatch):
+        """Trajectory-only users must not pay dense density-matrix allocation at construction."""
+        import scpn_quantum_control.phase.lindblad_engine as le_mod
+
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened during construction")
+
+        monkeypatch.setattr(le_mod, "knm_to_dense_matrix", fail_if_dense_hamiltonian_is_requested)
+        K = np.array([[0.0, 1.0], [1.0, 0.0]])
+        omega = np.array([1.0, 1.0])
+
+        engine = LindbladSyncEngine(K, omega, gamma=0.1, max_dense_gib=1e-12)
+
+        assert engine.H_dense is None
+        assert engine.L_ops_dense == []
+
+    def test_density_matrix_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+        import scpn_quantum_control.phase.lindblad_engine as le_mod
+
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(le_mod, "knm_to_dense_matrix", fail_if_dense_hamiltonian_is_requested)
+        K = np.array([[0.0, 1.0], [1.0, 0.0]])
+        omega = np.array([1.0, 1.0])
+        engine = LindbladSyncEngine(K, omega, gamma=0.1)
+
+        with pytest.raises(DenseAllocationError, match="Lindblad density-matrix dense workspace"):
+            engine.evolve(
+                t_max=0.1,
+                n_steps=1,
+                method="density_matrix",
+                max_dense_gib=1e-12,
+            )
 
     def test_trajectory_density_matrix_agreement(self):
         """Trajectory and density matrix methods should give similar final states."""

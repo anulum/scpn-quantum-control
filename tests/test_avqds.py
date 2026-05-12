@@ -12,7 +12,9 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+import scpn_quantum_control.phase.avqds as avqds_mod
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.phase.avqds import (
     AVQDSResult,
     avqds_simulate,
@@ -70,6 +72,23 @@ class TestAVQDS:
         omega = OMEGA_N_16[:2]
         result = avqds_simulate(K, omega, t_total=0.01, n_steps=2, seed=42)
         assert result.final_fidelity > 0.9
+
+    def test_rejects_dense_budget_before_hamiltonian_matrix_allocation(self, monkeypatch):
+        K = build_knm_paper27(L=4)
+        omega = OMEGA_N_16[:4]
+
+        class FailIfHamiltonianMatrixRequested:
+            def to_matrix(self):
+                raise AssertionError("Hamiltonian matrix allocation happened before budget gate")
+
+        monkeypatch.setattr(
+            avqds_mod,
+            "knm_to_hamiltonian",
+            lambda *args, **kwargs: FailIfHamiltonianMatrixRequested(),
+        )
+
+        with pytest.raises(DenseAllocationError, match="AVQDS dense Hamiltonian"):
+            avqds_simulate(K, omega, t_total=0.1, n_steps=2, seed=42, max_dense_gib=1e-9)
 
 
 def test_avqds_finite_energies():

@@ -36,6 +36,7 @@ class DenseAllocationEstimate:
     bytes_required: int
     budget_bytes: int
     label: str
+    object_count: int = 1
 
     @property
     def gib_required(self) -> float:
@@ -115,19 +116,24 @@ def estimate_dense_allocation(
     *,
     dtype: np.dtype | type | str = np.complex128,
     rank: int = 2,
+    object_count: int = 1,
     max_gib: float | None = None,
     label: str = "dense Hilbert-space object",
 ) -> DenseAllocationEstimate:
     """Estimate one dense Hilbert-space allocation against the active budget."""
+    if object_count < 1:
+        raise ValueError("object_count must be >= 1")
     dim = hilbert_dimension(n_qubits)
+    object_bytes = dense_object_bytes(n_qubits, dtype=dtype, rank=rank)
     return DenseAllocationEstimate(
         n_qubits=n_qubits,
         dimension=dim,
         shape=(dim,) * rank,
         dtype=np.dtype(dtype).name,
-        bytes_required=dense_object_bytes(n_qubits, dtype=dtype, rank=rank),
+        bytes_required=object_bytes * object_count,
         budget_bytes=dense_budget_bytes(max_gib),
         label=label,
+        object_count=object_count,
     )
 
 
@@ -136,6 +142,7 @@ def require_dense_allocation(
     *,
     dtype: np.dtype | type | str = np.complex128,
     rank: int = 2,
+    object_count: int = 1,
     max_gib: float | None = None,
     label: str = "dense Hilbert-space object",
 ) -> DenseAllocationEstimate:
@@ -144,13 +151,19 @@ def require_dense_allocation(
         n_qubits,
         dtype=dtype,
         rank=rank,
+        object_count=object_count,
         max_gib=max_gib,
         label=label,
     )
     if estimate.bytes_required > estimate.budget_bytes:
+        object_text = (
+            f"{estimate.object_count} objects of shape {estimate.shape}"
+            if estimate.object_count != 1
+            else f"shape {estimate.shape}"
+        )
         raise DenseAllocationError(
             f"{label} for n={estimate.n_qubits} requires "
-            f"{estimate.gib_required:.2f} GiB for shape {estimate.shape} "
+            f"{estimate.gib_required:.2f} GiB for {object_text} "
             f"({estimate.dtype}), above the active dense budget "
             f"{estimate.budget_gib:.2f} GiB. Use sparse, sector, tensor-network, "
             f"or explicit hardware execution instead of dense allocation."

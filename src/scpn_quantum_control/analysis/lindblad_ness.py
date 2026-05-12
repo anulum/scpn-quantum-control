@@ -28,6 +28,7 @@ import numpy as np
 from scipy.linalg import expm
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
+from ..dense_budget import require_dense_allocation
 from .quantum_mpemba import _R_from_density_matrix
 
 
@@ -99,14 +100,28 @@ def compute_ness(
     K_base: float,
     gamma: float = 0.1,
     t_relax: float = 50.0,
+    *,
+    max_dense_gib: float | None = None,
 ) -> NESSResult:
-    """Compute NESS at a single coupling strength."""
+    """Compute NESS at a single coupling strength.
+
+    The method is intentionally dense and exact for small systems: it forms a
+    full Hamiltonian, a full density matrix, and a vectorised Lindblad
+    superoperator of shape ``(4**n, 4**n)``. ``max_dense_gib`` gates that
+    rank-4 allocation before any dense Hilbert object is built.
+    """
     n = len(omega)
+    require_dense_allocation(
+        n,
+        rank=4,
+        max_gib=max_dense_gib,
+        label="Lindblad superoperator",
+    )
     dim = 2**n
     K = K_base * K_topology
 
     knm_to_hamiltonian(K, omega)
-    H_mat = knm_to_dense_matrix(K, omega)
+    H_mat = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
     L_super = _lindblad_superoperator(H_mat, gamma, n)
 
     # NESS: evolve |0⟩ for long time
@@ -141,6 +156,8 @@ def ness_vs_coupling(
     K_topology: np.ndarray,
     k_range: np.ndarray | None = None,
     gamma: float = 0.1,
+    *,
+    max_dense_gib: float | None = None,
 ) -> NESSScanResult:
     """Scan NESS across coupling strength."""
     if k_range is None:
@@ -153,7 +170,13 @@ def ness_vs_coupling(
     gap = np.zeros(n_k)
 
     for idx, kb in enumerate(k_range):
-        result = compute_ness(omega, K_topology, float(kb), gamma)
+        result = compute_ness(
+            omega,
+            K_topology,
+            float(kb),
+            gamma,
+            max_dense_gib=max_dense_gib,
+        )
         R_ness[idx] = result.R_ness
         R_ideal[idx] = result.R_ideal
         purity[idx] = result.purity

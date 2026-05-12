@@ -10,12 +10,14 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.analysis.quantum_mpemba import (
     MpembaResult,
     mpemba_experiment,
 )
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 def _ring_topology(n: int) -> np.ndarray:
@@ -93,6 +95,31 @@ class TestMpembaExperiment:
         result = mpemba_experiment(omega, T, K_base=1.5, gamma=0.2, t_max=2.0, n_steps=8)
         assert isinstance(result, MpembaResult)
         assert len(result.R_far) == 9
+
+    def test_rejects_rank4_superoperator_before_allocation(self, monkeypatch):
+        """A low dense budget must stop the Lindblad rank-4 path before H builds."""
+        n = 4
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(
+            "scpn_quantum_control.analysis.quantum_mpemba.knm_to_dense_matrix",
+            fail_if_dense_hamiltonian_is_requested,
+        )
+
+        with pytest.raises(DenseAllocationError, match="Lindblad superoperator"):
+            mpemba_experiment(
+                omega,
+                T,
+                K_base=1.5,
+                gamma=0.2,
+                t_max=1.0,
+                n_steps=5,
+                max_dense_gib=1e-6,
+            )
 
 
 def test_mpemba_result_fields():
