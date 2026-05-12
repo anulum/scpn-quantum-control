@@ -144,6 +144,12 @@ is copied here.
   optimisation methods can be called. The language-tier policy records
   that this remains a fail-fast interface pending a real objective,
   benchmark, and replayable training trace.
+- [x] **DLA tensor-network interface configuration hardening.**
+  Implemented 2026-05-12: `dla_truncated_tn()` now rejects non-square,
+  non-finite, or asymmetric `K_nm` inputs, invalid bond dimensions,
+  non-positive/non-finite DLA cutoffs, and unsupported observables before
+  reaching the intentionally gated tensor-network implementation path.
+  The language-tier policy records the validated fail-fast boundary.
 - [x] **PEC local multi-qubit coefficient decomposition.** Implemented
   2026-05-12: `pauli_twirl_decompose()` now returns tensor-product
   quasi-probability coefficients for `n_qubits >= 1`, preserving exact
