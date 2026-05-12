@@ -164,6 +164,18 @@ is copied here.
   central finite-difference gradients, not sampled VMC. Returned
   metadata labels `sampling_mode`, `n_samples_used`, and
   `gradient_method`.
+- [x] **Trapped-ion proxy-basis hardening.** Implemented 2026-05-12:
+  `transpile_for_trapped_ion()` now requires
+  `allow_proxy_basis=True` when multiqubit instructions need the CX
+  proxy for native MS/RXX-style trapped-ion gates. Returned circuit
+  metadata records the representative basis, all-to-all connectivity
+  model, and non-calibrated hardware-claim boundary.
+- [x] **GPU batch VQE backend-contract hardening.** Implemented
+  2026-05-12: `batch_vqe_scan()` no longer ignores `use_gpu=True`;
+  that request requires PyTorch plus CUDA or fails clearly. The default
+  NumPy path now reports backend, product-Ry diagnostic ansatz,
+  random-scan optimizer, and no-hardware-claim metadata while rejecting
+  invalid sample and parameter counts before execution.
 - [x] **Integrated-information wrapper production route.** Implemented
   2026-05-12: `IntegratedInformationPhi` now routes explicit
   `coupling_matrix` and `natural_frequencies` inputs to the

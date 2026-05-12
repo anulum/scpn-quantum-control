@@ -123,7 +123,17 @@ class TestBatchVQEScan:
     def test_output_keys(self):
         K, omega = _system(3)
         result = batch_vqe_scan(K, omega, n_samples=5, seed=42)
-        expected = {"energies", "params", "best_energy", "best_params", "n_samples"}
+        expected = {
+            "energies",
+            "params",
+            "best_energy",
+            "best_params",
+            "n_samples",
+            "backend",
+            "ansatz_family",
+            "optimizer",
+            "hardware_claim",
+        }
         assert set(result.keys()) == expected
 
     def test_energies_shape(self):
@@ -156,3 +166,26 @@ class TestBatchVQEScan:
         K, omega = _system(3)
         result = batch_vqe_scan(K, omega, n_samples=1, seed=42)
         assert len(result["energies"]) == 1
+
+    def test_default_scan_reports_diagnostic_contract(self):
+        K, omega = _system(3)
+        result = batch_vqe_scan(K, omega, n_samples=5, seed=42)
+        assert result["backend"] == "numpy"
+        assert result["ansatz_family"] == "product_ry_layers"
+        assert result["optimizer"] == "random_parameter_scan"
+        assert result["hardware_claim"] == "none_statevector_expectation_scan"
+
+    def test_gpu_request_is_not_silently_ignored_when_torch_missing(self, monkeypatch):
+        import sys
+
+        K, omega = _system(2)
+        monkeypatch.setitem(sys.modules, "torch", None)
+        with pytest.raises(ImportError, match="PyTorch not installed"):
+            batch_vqe_scan(K, omega, n_samples=2, seed=42, use_gpu=True)
+
+    def test_invalid_scan_sizes_are_rejected(self):
+        K, omega = _system(2)
+        with pytest.raises(ValueError, match="n_samples"):
+            batch_vqe_scan(K, omega, n_samples=0)
+        with pytest.raises(ValueError, match="n_params"):
+            batch_vqe_scan(K, omega, n_samples=2, n_params=0)

@@ -558,8 +558,9 @@ class MyRunner:
 
 ### `phase/gpu_batch_vqe.py` — Parallel VQE Parameter Scan
 
-Evaluate multiple VQE parameter sets in batch. CPU baseline with numpy,
-GPU path with PyTorch.
+Evaluate multiple VQE parameter sets in batch. CPU baseline with NumPy;
+`use_gpu=True` requests a PyTorch/CUDA execution path and raises if CUDA is
+not available rather than silently falling back.
 
 Inspired by TorchQuantum (MIT HAN Lab).
 
@@ -577,9 +578,13 @@ print(f"Scanned {result['n_samples']} parameter sets")
 |----------|---------|
 | `batch_energy_numpy(H, param_sets, ansatz_fn)` | energies array |
 | `batch_energy_torch(H, param_sets, ansatz_fn, device)` | energies array (GPU) |
-| `batch_vqe_scan(K, omega, n_samples, seed, use_gpu)` | `{energies, params, best_energy, best_params}` |
+| `batch_vqe_scan(K, omega, n_samples, seed, use_gpu)` | `{energies, params, best_energy, best_params, n_samples, backend, ansatz_family, optimizer, hardware_claim}` |
 
-**Tests:** 3 (batch energy, VQE scan, output keys)
+The built-in scan is a product-Ry random-parameter statevector expectation
+diagnostic, not a gradient-optimised or hardware-executed VQE.
+
+**Tests:** batch energy, VQE scan, output keys, backend contract, input
+validation.
 
 ---
 
