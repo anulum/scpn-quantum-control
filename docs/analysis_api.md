@@ -77,6 +77,12 @@ parameter, mean pairwise correlation, and final phases for candidate batches.
 The Python scorer then evaluates the existing witness objects, so the discovery
 loop stays connected to the hardware-measurable witness definitions.
 
+`RLDiscoveryAgent` is a compatibility wrapper around the same production search.
+It accepts only the wired objective: correlation and Fiedler observables with
+`reward_function="witness_score"`, positive `n_episodes`, and no external
+`runner`. Unsupported compatibility parameters fail at construction instead of
+being silently ignored.
+
 ### `sync_entanglement_witness` — R as Entanglement Witness
 
 The Kuramoto order parameter $R$ reinterpreted as an entanglement witness. For separable

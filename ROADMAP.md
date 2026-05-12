@@ -125,6 +125,12 @@ is copied here.
   total normalisation, preventing malformed hardware/simulator payloads
   from being coerced into invalid probability mass. The DLA-protected
   subspace docs record the count contract.
+- [x] **RL witness-discovery wrapper contract hardening.**
+  Implemented 2026-05-12: `RLDiscoveryAgent` now rejects unwired
+  compatibility parameters (`runner`, unsupported `observables`,
+  unsupported `reward_function`, and non-positive `n_episodes`) at
+  construction time. The wrapper contract is documented in the analysis
+  and witness-discovery API pages.
 - [x] **PEC local multi-qubit coefficient decomposition.** Implemented
   2026-05-12: `pauli_twirl_decompose()` now returns tensor-product
   quasi-probability coefficients for `n_qubits >= 1`, preserving exact
