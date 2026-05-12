@@ -190,6 +190,11 @@ class TestQSPPhaseAngles:
         with pytest.raises(NotImplementedError, match="QSP phase synthesis"):
             qsp_phase_angles(10)
 
+    @pytest.mark.parametrize("degree", [1.5, True, "4"])
+    def test_rejects_non_integer_degree(self, degree):
+        with pytest.raises(ValueError, match="degree"):
+            qsp_phase_angles(degree, allow_initial_guess=True)
+
     def test_initial_guess_length_when_explicitly_requested(self):
         phases = qsp_phase_angles(10, allow_initial_guess=True)
         assert len(phases) == 11

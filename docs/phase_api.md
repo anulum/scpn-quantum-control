@@ -294,6 +294,11 @@ block encoding of the Hamiltonian, which demands ancilla qubits and multi-contro
 gates that exceed current hardware capabilities. The estimates inform hardware roadmap
 planning.
 
+`qsp_phase_angles(degree, allow_initial_guess=True)` accepts only a
+non-negative integer `degree`. The returned values are symmetric seed angles for
+offline optimisation only; with `allow_initial_guess=False` the function raises
+until production QSP phase synthesis and verification are wired.
+
 ### `adiabatic_preparation` — Ground State via Adiabatic Path
 
 Linearly interpolates from a trivial Hamiltonian (all-Z field) to the full XY

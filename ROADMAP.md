@@ -106,6 +106,12 @@ is copied here.
   `K_nm/omega` inputs plus invalid simulation-time and error-budget
   parameters before any Hamiltonian construction or resource claim is
   produced. The phase API documents the validation contract.
+- [x] **QSP seed-angle degree validation.** Implemented 2026-05-12:
+  `qsp_phase_angles()` now rejects boolean, fractional, string, and
+  negative degrees with explicit `ValueError` messages before reaching
+  the non-production initial-guess path or the production synthesis gate.
+  The phase API documents that seed angles are offline optimiser inputs,
+  not compiled QSP phases.
 - [x] **Integrated-information wrapper production route.** Implemented
   2026-05-12: `IntegratedInformationPhi` now routes explicit
   `coupling_matrix` and `natural_frequencies` inputs to the

@@ -39,6 +39,8 @@ and phase angles; circuit compilation is deferred to hardware backends.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from operator import index
+from typing import Any
 
 import numpy as np
 
@@ -215,8 +217,7 @@ def qsp_phase_angles(degree: int, *, allow_initial_guess: bool = False) -> np.nd
     symmetric seed angles for an offline optimiser. Those angles are not valid
     compiled QSP phases and must not be used for resource or hardware claims.
     """
-    if degree < 0:
-        raise ValueError(f"degree must be non-negative, got {degree}")
+    degree_value = _validate_non_negative_integer(degree, "degree")
     if not allow_initial_guess:
         raise NotImplementedError(
             "QSP phase synthesis is not implemented. Pass allow_initial_guess=True "
@@ -224,11 +225,23 @@ def qsp_phase_angles(degree: int, *, allow_initial_guess: bool = False) -> np.nd
         )
 
     # Symmetric phase angles for even polynomial (cosine)
-    phases = np.zeros(degree + 1)
-    for k in range(degree + 1):
+    phases = np.zeros(degree_value + 1)
+    for k in range(degree_value + 1):
         phases[k] = np.pi / 4 * (-1) ** k
     # Correct first and last for QSP convention
     phases[0] = np.pi / 4
     phases[-1] = np.pi / 4
     result: np.ndarray = phases
     return result
+
+
+def _validate_non_negative_integer(value: Any, name: str) -> int:
+    if isinstance(value, bool):
+        raise ValueError(f"{name} must be a non-negative integer.")
+    try:
+        integer_value = index(value)
+    except TypeError as exc:
+        raise ValueError(f"{name} must be a non-negative integer.") from exc
+    if integer_value < 0:
+        raise ValueError(f"{name} must be non-negative, got {integer_value}")
+    return int(integer_value)
