@@ -119,6 +119,12 @@ is copied here.
   reject fallback execution, and keeps the NumPy generator as the
   explicit fallback path. The Rust crate and `.pyi` contract now carry
   the Koopman dense-generator export.
+- [x] **Second-order Trotter nested-commutator bound hardening.**
+  Implemented 2026-05-12: second-order `trotter_error_bound()` and
+  `optimal_dt()` now use an exact spectral-norm nested commutator for
+  small systems and a rigorous Pauli coefficient-norm upper bound for
+  larger systems, replacing the previous heuristic `gamma²/max(K)`
+  estimate.
 - [x] **Integrated-information wrapper production route.** Implemented
   2026-05-12: `IntegratedInformationPhi` now routes explicit
   `coupling_matrix` and `natural_frequencies` inputs to the

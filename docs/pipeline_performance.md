@@ -1005,7 +1005,9 @@ p_h1 ∈ [0, 1]. TEE finite. |string_order| <= 1. beta_0 + beta_1 ≈ 1
 | `commutator_norm_bound` + `optimal_dt` | 4 qubits | <0.1 ms | gamma=5.344, dt*=0.004, n_steps=268 |
 
 Equal frequencies → gamma=0 (no Trotter error). Heterogeneous frequencies →
-larger gamma. Second-order bound < first-order. Optimal dt respects epsilon target.
+larger gamma. Second-order bounds use exact nested-commutator spectral norms
+for small systems and a Pauli coefficient-norm upper bound for larger systems.
+Optimal dt respects the epsilon target.
 
 ### Trotter Error Sweep
 
