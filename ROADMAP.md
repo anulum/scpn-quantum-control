@@ -158,6 +158,12 @@ is copied here.
   circuit used the nearest-neighbour truncation of the exponential
   coupling matrix, and the benchmark API no longer turns crossover
   estimates into a broad hardware-only dynamics claim.
+- [x] **NumPy NQS sampling-contract hardening.** Implemented
+  2026-05-12: `vmc_ground_state()` now rejects explicit `n_samples`
+  because the current NumPy RBM path performs exact enumeration with
+  central finite-difference gradients, not sampled VMC. Returned
+  metadata labels `sampling_mode`, `n_samples_used`, and
+  `gradient_method`.
 - [x] **Integrated-information wrapper production route.** Implemented
   2026-05-12: `IntegratedInformationPhi` now routes explicit
   `coupling_matrix` and `natural_frequencies` inputs to the

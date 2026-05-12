@@ -291,7 +291,10 @@ Restricted Boltzmann Machine wavefunction for variational ground state search.
 $\log\psi(\sigma) = \sum_i a_i \sigma_i + \sum_j \log\cosh(\sum_i W_{ji}\sigma_i + b_j)$.
 
 Pure numpy, no JAX/torch. Exact mode for n ≤ 12 (all $2^n$ configurations).
-For production at larger scales, use NetKet.
+This path uses central finite-difference gradients and rejects `n_samples`
+instead of silently ignoring requested sampling budgets. Returned metadata
+records `sampling_mode`, `n_samples_used`, and `gradient_method`. For
+production at larger scales or sampled VMC, use NetKet.
 
 Based on Carleo & Troyer, Science 355, 602 (2017).
 
@@ -302,8 +305,9 @@ result = vmc_ground_state(K, omega, n_iterations=200, seed=42)
 print(f"VMC energy: {result['energy']:.4f}, params: {result['n_params']}")
 ```
 
-**Tests:** 10 (log_psi type, normalisation, n_params, reproducibility, VMC energy,
-convergence, output keys, large-n rejection)
+**Tests:** RBM amplitude invariants, normalisation, parameter counting,
+reproducibility, variational energy checks, output metadata, explicit
+`n_samples` rejection, and large-n rejection.
 
 ---
 
