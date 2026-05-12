@@ -61,7 +61,7 @@ def run_cross_domain_validation(
     # FMO (7 oscillators)
     K7 = build_knm_paper27(L=7)
     omega7 = OMEGA_N_16[:7]
-    fmo = fmo_benchmark(K7, omega7)
+    fmo = fmo_benchmark(K7, omega7, allow_builtin_reference=True)
     names.append("FMO (photosynthesis)")
     results_topo.append(fmo.topology_correlation)
     results_freq.append(fmo.frequency_correlation)

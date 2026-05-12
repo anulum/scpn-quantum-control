@@ -56,11 +56,20 @@ FMO_COUPLING = np.array(
 )
 
 
-def fmo_coupling_matrix() -> tuple[np.ndarray, np.ndarray]:
-    """Return the FMO coupling matrix and site energies.
+def fmo_coupling_matrix(
+    *,
+    allow_builtin_reference: bool = False,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Return the built-in FMO coupling matrix and site energies.
 
     Scaled to natural units: energies in rad/ps (divide cm⁻¹ by 5309).
     """
+    if not allow_builtin_reference:
+        raise RuntimeError(
+            "Refusing built-in FMO reference matrix without allow_builtin_reference=True. "
+            "Pass measured FMO coupling and frequency data to fmo_benchmark for "
+            "publication-safe claims."
+        )
     # Convert cm⁻¹ to rad/ps: 1 cm⁻¹ ≈ 0.0001884 rad/ps × 2π ≈ 0.001884 rad/ps
     cm_to_radps = 2.0 * np.pi * 2.998e10 * 1e-12  # 2π × c(cm/s) × 10⁻¹² s/ps
     omega = FMO_SITE_ENERGIES * cm_to_radps
@@ -79,11 +88,17 @@ class FMOBenchmarkResult:
     frequency_ratio: float
     n_oscillators: int
     summary: str
+    source_mode: str
+    publication_safe: bool
 
 
 def fmo_benchmark(
     K_scpn: np.ndarray,
     omega_scpn: np.ndarray,
+    *,
+    fmo_coupling: np.ndarray | None = None,
+    fmo_frequencies: np.ndarray | None = None,
+    allow_builtin_reference: bool = False,
 ) -> FMOBenchmarkResult:
     """Compare SCPN coupling structure (7-oscillator subset) against FMO.
 
@@ -93,9 +108,30 @@ def fmo_benchmark(
     3. Coupling ratio: mean(K_scpn) / mean(K_fmo)
     4. Frequency ratio: mean(ω_scpn) / mean(ω_fmo)
     """
-    K_fmo, omega_fmo = fmo_coupling_matrix()
+    if fmo_coupling is None or fmo_frequencies is None:
+        if fmo_coupling is not None or fmo_frequencies is not None:
+            raise ValueError("fmo_coupling and fmo_frequencies must be supplied together.")
+        K_fmo, omega_fmo = fmo_coupling_matrix(allow_builtin_reference=allow_builtin_reference)
+        source_mode = "builtin_literature_reference"
+        publication_safe = False
+    else:
+        K_fmo = np.asarray(fmo_coupling, dtype=float)
+        omega_fmo = np.asarray(fmo_frequencies, dtype=float)
+        source_mode = "measured"
+        publication_safe = True
 
-    n = min(len(omega_scpn), 7)
+    K_scpn = np.asarray(K_scpn, dtype=float)
+    omega_scpn = np.asarray(omega_scpn, dtype=float)
+    if K_scpn.ndim != 2 or K_scpn.shape[0] != K_scpn.shape[1]:
+        raise ValueError("K_scpn must be a square matrix.")
+    if omega_scpn.ndim != 1 or omega_scpn.shape[0] < K_scpn.shape[0]:
+        raise ValueError("omega_scpn must be a vector covering K_scpn.")
+    if K_fmo.ndim != 2 or K_fmo.shape[0] != K_fmo.shape[1]:
+        raise ValueError("fmo_coupling must be a square matrix.")
+    if omega_fmo.ndim != 1 or omega_fmo.shape[0] != K_fmo.shape[0]:
+        raise ValueError("fmo_frequencies must be a vector matching fmo_coupling.")
+
+    n = min(len(omega_scpn), K_scpn.shape[0], len(omega_fmo), K_fmo.shape[0], 7)
     K_s = K_scpn[:n, :n]
     omega_s = omega_scpn[:n]
     K_f = K_fmo[:n, :n]
@@ -143,4 +179,6 @@ def fmo_benchmark(
         frequency_ratio=freq_ratio,
         n_oscillators=n,
         summary=summary,
+        source_mode=source_mode,
+        publication_safe=publication_safe,
     )

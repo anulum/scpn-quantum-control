@@ -825,10 +825,13 @@ The benchmark dataset is generated and is not publication-safe without measured 
 
 | Operation | System | Time | Output |
 |-----------|--------|------|--------|
-| `fmo_benchmark(K, omega)` | 7 sites | 1.4 ms | topology ρ=0.304 |
+| `fmo_benchmark(K, omega, allow_builtin_reference=True)` | 7 sites | 1.4 ms | topology ρ=0.304, source_mode=builtin_literature_reference |
 
 SCPN vs FMO topology correlation ρ=0.304 (weak positive). FMO self-comparison:
 ρ=1.0. FMO coupling: symmetric, non-negative, zero diagonal, 7×7.
+The packaged Adolphs-Renger reference requires explicit opt-in and is marked
+`publication_safe=False`; publication-safe FMO claims must pass measured
+`fmo_coupling` and `fmo_frequencies` arrays.
 
 ### Quantum Advantage Scaling — Exact-Simulation Crossover Scope
 

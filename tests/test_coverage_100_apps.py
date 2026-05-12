@@ -26,7 +26,7 @@ def test_fmo_no_correlation_verdict():
     K = (K + K.T) / 2
     np.fill_diagonal(K, 0)
     omega = rng.uniform(10, 20, 7)
-    result = fmo_benchmark(K, omega)
+    result = fmo_benchmark(K, omega, allow_builtin_reference=True)
     assert hasattr(result, "summary")
 
 
