@@ -112,7 +112,7 @@ def symmetrised_edge_value_and_uncertainty(i: int, j: int) -> tuple[float, float
 
 
 def build_payload(*, command: list[str]) -> dict[str, Any]:
-    coupling_matrix, omega = ieee_5bus_coupling_matrix()
+    coupling_matrix, omega = ieee_5bus_coupling_matrix(allow_builtin_reference=True)
     couplings = []
     for i in range(coupling_matrix.shape[0]):
         for j in range(i + 1, coupling_matrix.shape[1]):
