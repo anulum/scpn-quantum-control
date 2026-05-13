@@ -10,11 +10,14 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
+from scpn_quantum_control.analysis import finite_size_scaling as fss_module
 from scpn_quantum_control.analysis.finite_size_scaling import (
     FSSResult,
     finite_size_scaling,
 )
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 class TestFiniteSizeScaling:
@@ -86,6 +89,46 @@ class TestFiniteSizeScaling:
     def test_gap_min_matches_k_c_count(self):
         result = finite_size_scaling(system_sizes=[2, 4], k_range=np.linspace(0.5, 4.0, 8))
         assert len(result.gap_min_values) == len(result.k_c_values)
+
+    def test_gap_scan_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+        omega = np.ones(4)
+        topology = np.eye(4)
+        k_range = np.array([1.0, 2.0])
+
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(
+            fss_module,
+            "knm_to_dense_matrix",
+            fail_if_dense_hamiltonian_is_requested,
+        )
+
+        with pytest.raises(DenseAllocationError, match="finite-size gap dense eigensolver"):
+            fss_module._find_kc_from_gap(
+                omega,
+                topology,
+                k_range,
+                max_dense_gib=1e-12,
+            )
+
+    def test_finite_size_scaling_propagates_dense_budget(self, monkeypatch):
+        seen_budgets = []
+
+        def fake_find_kc(omega, topology, k_range, *, max_dense_gib):  # noqa: ARG001
+            seen_budgets.append(max_dense_gib)
+            return 1.5, 0.25
+
+        monkeypatch.setattr(fss_module, "_find_kc_from_gap", fake_find_kc)
+
+        result = finite_size_scaling(
+            system_sizes=[2, 3, 4],
+            k_range=np.array([1.0, 2.0]),
+            max_dense_gib=0.25,
+        )
+
+        assert seen_budgets == [0.25, 0.25, 0.25]
+        assert result.k_c_values == [1.5, 1.5, 1.5]
 
 
 class TestFSSPipeline:

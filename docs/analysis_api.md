@@ -112,8 +112,9 @@ that requires separate k-producibility bounds or a dedicated depth witness.
 
 ### `critical_concordance` — Multi-Probe $K_c$ Agreement
 
-Scans coupling strength and evaluates all probes simultaneously to verify they converge
-on the same critical coupling.
+Runs a finite-size dense exact coupling scan and compares where the order
+parameter, QFI, spectral gap, and concurrence-graph probes localise the same
+coupling region.
 
 ```python
 from scpn_quantum_control.analysis.critical_concordance import (
@@ -122,9 +123,10 @@ from scpn_quantum_control.analysis.critical_concordance import (
 )
 ```
 
-`critical_concordance(K, omega, n_K=20, K_max=3.0)` returns `ConcordanceResult` with
-fields: `K_values`, `R_values`, `qfi_values`, `gap_values`, `fiedler_values`,
-`berry_connection`.
+`critical_concordance(omega, K_topology, k_range=None, concurrence_threshold=1e-4, *, max_dense_gib=None)` returns `ConcordanceResult` with
+fields: `k_values`, `R_values`, `qfi_values`, `gap_values`, `fiedler_values`,
+`n_entangled_pairs`, `k_c_from_gap`, `k_c_from_qfi`, `k_c_from_fiedler`,
+`k_c_from_R_deriv`, and `concordance_spread`.
 
 ---
 
@@ -161,9 +163,11 @@ from scpn_quantum_control.analysis.entanglement_percolation import (
 `PercolationScanResult` with: `K_values`, `R_values`, `fiedler_values`,
 `concurrence_matrices`, `percolation_K`.
 
-### `berry_phase` — Berry Phase and Fidelity Susceptibility
+### `berry_phase` — Berry Connection and Fidelity Susceptibility
 
-Gauge-invariant Berry phase and fidelity susceptibility peak at BKT transition.
+Finite-size dense exact scan of ground-state overlaps. On the one-dimensional
+open coupling path, the accumulated Berry connection is gauge-dependent; the
+fidelity and fidelity susceptibility are the gauge-invariant diagnostics.
 
 ```python
 from scpn_quantum_control.analysis.berry_phase import (
@@ -172,13 +176,15 @@ from scpn_quantum_control.analysis.berry_phase import (
 )
 ```
 
-`berry_phase_scan(K, omega, K_base_range=None, n_K=20, dK=0.01)` →
-`BerryPhaseResult` with: `K_values`, `berry_phases`,
-`fidelity_susceptibility`, `berry_connection`.
+`berry_phase_scan(omega, K_topology, k_range=None, *, max_dense_gib=None)` →
+`BerryPhaseResult` with: `k_values`, `berry_connection`, `berry_curvature`,
+`accumulated_phase`, `fidelity`, `fidelity_susceptibility`, `spectral_gap`,
+and `curvature_peak_k`.
 
-### `finite_size_scaling` — BKT Finite-Size Extraction
+### `finite_size_scaling` — Finite-Size Gap-Minimum Scaling
 
-Fits $K_c(N) = K_c(\infty) + a/(\ln N)^2$ to extract thermodynamic-limit $K_c$.
+Fits finite-size gap-minimum estimates to a BKT-motivated
+$K_c(N) = K_c(\infty) + a/(\ln N)^2$ ansatz and a power-law comparison model.
 
 ```python
 from scpn_quantum_control.analysis.finite_size_scaling import (
@@ -187,8 +193,9 @@ from scpn_quantum_control.analysis.finite_size_scaling import (
 )
 ```
 
-`finite_size_scaling(omega_full, K_base_fn, system_sizes=None, n_K=15)` → `FSSResult`
-with: `system_sizes`, `Kc_values`, `Kc_inf` (extrapolated), `fit_a`, `fit_residual`.
+`finite_size_scaling(system_sizes=None, k_range=None, *, max_dense_gib=None)` → `FSSResult`
+with: `system_sizes`, `k_c_values`, `gap_min_values`,
+`k_c_extrapolated_bkt`, and `k_c_extrapolated_power`.
 
 ### `adiabatic_preparation` — Adiabatic State Preparation
 

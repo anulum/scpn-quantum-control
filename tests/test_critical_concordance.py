@@ -10,12 +10,15 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
+from scpn_quantum_control.analysis import critical_concordance as concordance_module
 from scpn_quantum_control.analysis.critical_concordance import (
     ConcordanceResult,
     critical_concordance,
 )
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 def _ring_topology(n: int) -> np.ndarray:
@@ -96,6 +99,54 @@ class TestCriticalConcordance:
         result = critical_concordance(omega, T, k_range=np.linspace(0.3, 6.0, 10))
         # Gap should vary across the scan
         assert result.gap_values[0] != result.gap_values[-1]
+
+    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+        n = 4
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(
+            concordance_module,
+            "knm_to_dense_matrix",
+            fail_if_dense_hamiltonian_is_requested,
+        )
+
+        with pytest.raises(DenseAllocationError, match="critical concordance dense eigensolver"):
+            critical_concordance(
+                omega,
+                T,
+                k_range=np.array([1.0, 2.0]),
+                max_dense_gib=1e-12,
+            )
+
+    def test_propagates_dense_budget_to_qfi_probe(self, monkeypatch):
+        n = 2
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+        seen_budgets = []
+
+        def fake_qfi_single_coupling(K, omega_arg, *, max_dense_gib):  # noqa: ARG001
+            seen_budgets.append(max_dense_gib)
+            return 0.5, 0.25, 0.1
+
+        monkeypatch.setattr(
+            concordance_module,
+            "qfi_single_coupling",
+            fake_qfi_single_coupling,
+        )
+
+        result = critical_concordance(
+            omega,
+            T,
+            k_range=np.array([1.0, 2.0, 3.0]),
+            max_dense_gib=0.25,
+        )
+
+        assert seen_budgets == [0.25, 0.25, 0.25]
+        assert np.allclose(result.qfi_values, 0.5)
 
 
 def test_concordance_k_range_length():

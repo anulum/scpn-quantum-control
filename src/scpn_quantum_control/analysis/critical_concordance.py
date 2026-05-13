@@ -5,16 +5,18 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Critical Concordance
-"""Critical point concordance: multiple probes → same K_c.
+"""Finite-size critical-probe concordance for exact Kuramoto-XY scans.
 
-At the BKT synchronization critical point K_c:
-- Order parameter R jumps
-- QFI diverges (spectral gap closes)
+Near a finite-size transition proxy, several diagnostics can localise the same
+coupling region:
+- Order parameter R changes rapidly
+- QFI peaks as the spectral gap narrows
 - Entanglement graph percolates (Fiedler eigenvalue > 0)
-- Spectral gap reaches minimum
+- Spectral gap reaches a minimum
 
-If all probes agree on K_c, the critical point determination is
-robust and independent of the chosen observable.
+If these probes agree on K_c within a finite-size scan, the estimate is less
+dependent on a single observable. This is a concordance diagnostic, not a
+standalone thermodynamic-limit proof.
 
 This module runs a unified K-scan and extracts K_c from each probe,
 then computes concordance (agreement) metrics.
@@ -28,6 +30,7 @@ import numpy as np
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
+from ..dense_budget import require_dense_allocation
 from .entanglement_percolation import concurrence_map_exact, fiedler_eigenvalue
 from .qfi_criticality import qfi_single_coupling
 
@@ -71,16 +74,26 @@ def critical_concordance(
     K_topology: np.ndarray,
     k_range: np.ndarray | None = None,
     concurrence_threshold: float = 1e-4,
+    *,
+    max_dense_gib: float | None = None,
 ) -> ConcordanceResult:
     """Run all probes across K and extract K_c from each.
 
     K_topology: normalized coupling matrix (max=1), scaled by k_range values.
+    max_dense_gib: optional GiB budget for exact dense probe workspaces.
     """
     if k_range is None:
         k_range = np.linspace(0.5, 5.0, 15)
 
     n = len(omega)
     n_k = len(k_range)
+    require_dense_allocation(
+        n,
+        rank=2,
+        object_count=2,
+        max_gib=max_dense_gib,
+        label="critical concordance dense eigensolver workspace",
+    )
 
     R_vals = np.zeros(n_k)
     qfi_vals = np.zeros(n_k)
@@ -91,7 +104,7 @@ def critical_concordance(
     for idx, kb in enumerate(k_range):
         K = float(kb) * K_topology
         knm_to_hamiltonian(K, omega)
-        H_mat = knm_to_dense_matrix(K, omega)
+        H_mat = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
         eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
         psi0 = eigenvectors[:, 0]
 
@@ -99,7 +112,7 @@ def critical_concordance(
         R_vals[idx] = _R_from_ground_state(psi0, n)
 
         # QFI + gap
-        mq, gap, _tq = qfi_single_coupling(K, omega)
+        mq, gap, _tq = qfi_single_coupling(K, omega, max_dense_gib=max_dense_gib)
         qfi_vals[idx] = mq
         gap_vals[idx] = gap
 

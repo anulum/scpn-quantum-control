@@ -5,17 +5,18 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Berry Phase
-"""Berry phase of the ground state across the synchronization transition.
+"""Finite-size Berry diagnostics for exact Kuramoto-XY ground-state scans.
 
 The Berry (geometric) phase γ = -Im ∮ ⟨ψ(λ)|∂_λ ψ(λ)⟩ dλ measures
-the geometry of the ground state manifold in parameter space.
+the geometry of the ground-state manifold in parameter space. Along the
+one-dimensional open K scan used here, the accumulated connection is
+gauge-dependent; the fidelity and fidelity susceptibility are the primary
+gauge-invariant diagnostics.
 
-At a quantum phase transition, the Berry curvature develops a
-singularity because the ground state changes character rapidly.
-For BKT transitions specifically, the infinite-order nature
-(essential singularity in correlation length) should produce
-Berry curvature behaviour qualitatively different from power-law
-QPTs.
+Near a finite-size avoided crossing or transition proxy, the ground state can
+change character rapidly. This module reports exact dense finite-size
+diagnostics for that behaviour; it does not by itself prove an asymptotic BKT
+singularity or an exhaustive literature boundary.
 
 We compute:
 1. Berry connection A(K) = -Im⟨ψ(K)|∂_K ψ(K)⟩
@@ -25,8 +26,9 @@ We compute:
 4. Fidelity susceptibility χ_F = -2 ln|⟨ψ(K)|ψ(K+dK)⟩|/dK²
    (diverges at K_c, related to QFI)
 
-Prior art: Geometric phase + quantum sync (PRR 2023) — single oscillator.
-BKT + various probes. Never combined for heterogeneous-frequency XY.
+Prior art includes geometric-phase probes, fidelity susceptibility, and
+quantum-synchronisation diagnostics. This module applies those finite-size
+diagnostics to the Kuramoto-XY Hamiltonian implemented in this package.
 """
 
 from __future__ import annotations
@@ -36,6 +38,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
+from ..dense_budget import require_dense_allocation
 
 
 @dataclass
@@ -52,10 +55,23 @@ class BerryPhaseResult:
     curvature_peak_k: float | None  # K where |F| is maximum
 
 
-def _ground_state(K: np.ndarray, omega: np.ndarray) -> tuple[np.ndarray, float]:
+def _ground_state(
+    K: np.ndarray,
+    omega: np.ndarray,
+    *,
+    max_dense_gib: float | None = None,
+) -> tuple[np.ndarray, float]:
     """Return (ground state vector, spectral gap)."""
+    n = len(omega)
+    require_dense_allocation(
+        n,
+        rank=2,
+        object_count=2,
+        max_gib=max_dense_gib,
+        label="Berry phase dense eigensolver workspace",
+    )
     knm_to_hamiltonian(K, omega)
-    H_mat = knm_to_dense_matrix(K, omega)
+    H_mat = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
     eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
     psi0 = np.ascontiguousarray(eigenvectors[:, 0])
     gap = float(eigenvalues[1] - eigenvalues[0])
@@ -80,22 +96,33 @@ def berry_phase_scan(
     omega: np.ndarray,
     K_topology: np.ndarray,
     k_range: np.ndarray | None = None,
+    *,
+    max_dense_gib: float | None = None,
 ) -> BerryPhaseResult:
     """Compute Berry connection, curvature, and fidelity across K.
 
     K_topology: normalized coupling matrix (max=1), scaled by k_range values.
+    max_dense_gib: optional GiB budget for dense eigensolver and retained states.
     """
     if k_range is None:
         k_range = np.linspace(0.5, 5.0, 30)
 
+    n = len(omega)
     n_k = len(k_range)
+    require_dense_allocation(
+        n,
+        rank=1,
+        object_count=max(n_k, 1),
+        max_gib=max_dense_gib,
+        label="Berry phase retained ground-state workspace",
+    )
     gaps = np.zeros(n_k)
 
     # Compute all ground states
     states = []
     for idx, kb in enumerate(k_range):
         K = float(kb) * K_topology
-        psi, gap = _ground_state(K, omega)
+        psi, gap = _ground_state(K, omega, max_dense_gib=max_dense_gib)
         gaps[idx] = gap
         states.append(psi)
 

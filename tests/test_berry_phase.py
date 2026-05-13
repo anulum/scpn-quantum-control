@@ -10,12 +10,15 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
+from scpn_quantum_control.analysis import berry_phase as berry_module
 from scpn_quantum_control.analysis.berry_phase import (
     BerryPhaseResult,
     berry_phase_scan,
 )
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 def _ring_topology(n: int) -> np.ndarray:
@@ -182,6 +185,74 @@ class TestGroundState:
         assert psi.shape == (4,)
         assert gap > 0
         np.testing.assert_allclose(np.linalg.norm(psi), 1.0, atol=1e-10)
+
+    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+        from scpn_quantum_control.analysis.berry_phase import _ground_state
+
+        T = _ring_topology(4)
+        omega = OMEGA_N_16[:4]
+
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(
+            berry_module,
+            "knm_to_dense_matrix",
+            fail_if_dense_hamiltonian_is_requested,
+        )
+
+        with pytest.raises(DenseAllocationError, match="Berry phase dense eigensolver"):
+            _ground_state(T, omega, max_dense_gib=1e-12)
+
+
+class TestBerryPhaseBudget:
+    def test_scan_rejects_retained_state_budget_before_ground_state_calls(self, monkeypatch):
+        omega = np.ones(20)
+        topology = _ring_topology(20)
+
+        def fail_if_ground_state_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("ground-state solve happened before scan workspace budget")
+
+        monkeypatch.setattr(berry_module, "_ground_state", fail_if_ground_state_is_requested)
+
+        with pytest.raises(
+            DenseAllocationError,
+            match="Berry phase retained ground-state workspace",
+        ):
+            berry_phase_scan(
+                omega,
+                topology,
+                k_range=np.array([1.0, 2.0, 3.0]),
+                max_dense_gib=1e-6,
+            )
+
+    def test_scan_propagates_dense_budget_to_ground_state(self, monkeypatch):
+        omega = OMEGA_N_16[:2]
+        topology = _ring_topology(2)
+        seen_budgets = []
+
+        states = [
+            np.array([1.0, 0.0, 0.0, 0.0], dtype=np.complex128),
+            np.array([0.99, 0.1, 0.0, 0.0], dtype=np.complex128),
+            np.array([0.98, 0.2, 0.0, 0.0], dtype=np.complex128),
+        ]
+        states = [state / np.linalg.norm(state) for state in states]
+
+        def fake_ground_state(K, omega_arg, *, max_dense_gib):  # noqa: ARG001
+            seen_budgets.append(max_dense_gib)
+            return states[len(seen_budgets) - 1], 0.5
+
+        monkeypatch.setattr(berry_module, "_ground_state", fake_ground_state)
+
+        result = berry_phase_scan(
+            omega,
+            topology,
+            k_range=np.array([1.0, 1.5, 2.0]),
+            max_dense_gib=0.25,
+        )
+
+        assert seen_budgets == [0.25, 0.25, 0.25]
+        assert len(result.fidelity) == 2
 
 
 class TestFixGauge:
