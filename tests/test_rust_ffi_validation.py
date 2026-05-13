@@ -431,5 +431,49 @@ def test_hybrid_coupling_partition_selects_budgeted_tie_break_edge() -> None:
     np.testing.assert_array_equal(np.asarray(route_codes), np.array([1, 0, 0], dtype=np.int64))
 
 
+def test_state_order_param_sparse_rejects_non_contiguous_state_real_part() -> None:
+    psi_re = np.linspace(0.0, 1.0, 4, dtype=np.float64)[::2]
+    psi_im = np.ascontiguousarray(np.zeros(2, dtype=np.float64))
+
+    with pytest.raises(ValueError, match="psi_re must be a C-contiguous NumPy array"):
+        engine.state_order_param_sparse(psi_re, psi_im, 1)
+
+
+def test_all_xy_expectations_rejects_statevector_length_mismatch() -> None:
+    psi_re = np.ascontiguousarray(np.zeros(4, dtype=np.float64))
+    psi_im = np.ascontiguousarray(np.zeros(3, dtype=np.float64))
+
+    with pytest.raises(ValueError, match="psi_im length 3 != psi_re length 4"):
+        engine.all_xy_expectations(psi_re, psi_im, 2)
+
+
+def test_expectation_pauli_fast_rejects_invalid_pauli_selector() -> None:
+    psi_re = np.ascontiguousarray([1.0, 0.0], dtype=np.float64)
+    psi_im = np.ascontiguousarray([0.0, 0.0], dtype=np.float64)
+
+    with pytest.raises(
+        ValueError, match="pauli must be 0 \\(X\\), 1 \\(Y\\), or 2 \\(Z\\), got 3"
+    ):
+        engine.expectation_pauli_fast(psi_re, psi_im, 1, 0, 3)
+
+
+def test_expectation_pauli_fast_rejects_qubit_outside_state_register() -> None:
+    psi_re = np.ascontiguousarray([1.0, 0.0], dtype=np.float64)
+    psi_im = np.ascontiguousarray([0.0, 0.0], dtype=np.float64)
+
+    with pytest.raises(ValueError, match="qubit 1 exceeds n=1"):
+        engine.expectation_pauli_fast(psi_re, psi_im, 1, 1, 0)
+
+
+def test_expectation_pauli_fast_matches_y_positive_eigenstate() -> None:
+    scale = 1.0 / np.sqrt(2.0)
+    psi_re = np.ascontiguousarray([scale, 0.0], dtype=np.float64)
+    psi_im = np.ascontiguousarray([0.0, scale], dtype=np.float64)
+
+    y_expectation = engine.expectation_pauli_fast(psi_re, psi_im, 1, 0, 1)
+
+    assert y_expectation == pytest.approx(1.0)
+
+
 def r_values_error_pattern() -> str:
     return r"r_values must be a C-contiguous NumPy array"

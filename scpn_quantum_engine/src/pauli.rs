@@ -13,9 +13,51 @@
 //! instead of constructing dense 2^n × 2^n Pauli matrices.
 
 use numpy::{PyArray1, PyReadonlyArray1};
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
-use crate::validation::validate_n;
+use crate::validation::{validate_contiguous_slice, validate_finite, validate_n};
+
+fn expected_statevector_len(n: usize) -> PyResult<usize> {
+    1usize.checked_shl(n as u32).ok_or_else(|| {
+        PyValueError::new_err(format!(
+            "n={n} is too large for this platform's statevector length"
+        ))
+    })
+}
+
+fn validate_statevector_parts(re: &[f64], im: &[f64], n: usize) -> PyResult<()> {
+    if im.len() != re.len() {
+        return Err(PyValueError::new_err(format!(
+            "psi_im length {} != psi_re length {}",
+            im.len(),
+            re.len()
+        )));
+    }
+    let expected = expected_statevector_len(n)?;
+    if re.len() != expected {
+        return Err(PyValueError::new_err(format!(
+            "psi_re length {} != 2^{n} = {expected}",
+            re.len()
+        )));
+    }
+    validate_finite(re, "psi_re")?;
+    validate_finite(im, "psi_im")
+}
+
+fn validate_qubit_and_pauli(n: usize, qubit: usize, pauli: usize) -> PyResult<()> {
+    if qubit >= n {
+        return Err(PyValueError::new_err(format!(
+            "qubit {qubit} exceeds n={n}"
+        )));
+    }
+    if pauli > 2 {
+        return Err(PyValueError::new_err(format!(
+            "pauli must be 0 (X), 1 (Y), or 2 (Z), got {pauli}"
+        )));
+    }
+    Ok(())
+}
 
 /// Compute quantum order parameter R from a complex statevector using
 /// sparse bitwise Pauli application.
@@ -30,8 +72,9 @@ pub fn state_order_param_sparse(
     n_osc: usize,
 ) -> PyResult<f64> {
     validate_n(n_osc, "n_osc")?;
-    let re = psi_re.as_slice().unwrap();
-    let im = psi_im.as_slice().unwrap();
+    let re = validate_contiguous_slice(&psi_re, "psi_re")?;
+    let im = validate_contiguous_slice(&psi_im, "psi_im")?;
+    validate_statevector_parts(re, im, n_osc)?;
     Ok(state_order_param_inner(re, im, n_osc))
 }
 
@@ -76,12 +119,15 @@ pub fn state_order_param_inner(re: &[f64], im: &[f64], n_osc: usize) -> f64 {
 pub fn expectation_pauli_fast(
     psi_re: PyReadonlyArray1<'_, f64>,
     psi_im: PyReadonlyArray1<'_, f64>,
-    _n: usize,
+    n: usize,
     qubit: usize,
     pauli: usize,
 ) -> PyResult<f64> {
-    let re = psi_re.as_slice().unwrap();
-    let im = psi_im.as_slice().unwrap();
+    validate_n(n, "n")?;
+    let re = validate_contiguous_slice(&psi_re, "psi_re")?;
+    let im = validate_contiguous_slice(&psi_im, "psi_im")?;
+    validate_statevector_parts(re, im, n)?;
+    validate_qubit_and_pauli(n, qubit, pauli)?;
     let dim = re.len();
 
     let mask = 1usize << qubit;
@@ -135,8 +181,9 @@ pub fn all_xy_expectations<'py>(
     n_osc: usize,
 ) -> PyResult<(Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>)> {
     validate_n(n_osc, "n_osc")?;
-    let re = psi_re.as_slice().unwrap();
-    let im = psi_im.as_slice().unwrap();
+    let re = validate_contiguous_slice(&psi_re, "psi_re")?;
+    let im = validate_contiguous_slice(&psi_im, "psi_im")?;
+    validate_statevector_parts(re, im, n_osc)?;
     let dim = re.len();
 
     let mut exp_x = vec![0.0f64; n_osc];
@@ -160,10 +207,7 @@ pub fn all_xy_expectations<'py>(
         exp_y[q] = ey;
     }
 
-    Ok((
-        PyArray1::from_vec(py, exp_x),
-        PyArray1::from_vec(py, exp_y),
-    ))
+    Ok((PyArray1::from_vec(py, exp_x), PyArray1::from_vec(py, exp_y)))
 }
 
 #[cfg(test)]
@@ -228,7 +272,9 @@ mod tests {
             0 => {
                 let mut result = 0.0;
                 for k in 0..dim {
-                    if (k & mask) != 0 { continue; }
+                    if (k & mask) != 0 {
+                        continue;
+                    }
                     let f = k | mask;
                     result += 2.0 * (re[k] * re[f] + im[k] * im[f]);
                 }
@@ -237,7 +283,9 @@ mod tests {
             1 => {
                 let mut result = 0.0;
                 for k in 0..dim {
-                    if (k & mask) != 0 { continue; }
+                    if (k & mask) != 0 {
+                        continue;
+                    }
                     let f = k | mask;
                     result += 2.0 * (re[k] * im[f] - im[k] * re[f]);
                 }
