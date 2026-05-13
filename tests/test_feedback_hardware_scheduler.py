@@ -74,6 +74,8 @@ def test_approval_gated_scheduler_records_approved_submission() -> None:
     assert scheduler.spent_qpu_seconds == 1.5
     assert scheduler.submissions[0].approval_id == "approved-s1"
     assert scheduler.submissions[0].metadata["package_hash"] == hash_package_manifest(manifest)
+    assert scheduler.submissions[0].metadata["backend_descriptor"] == "qiskit_ibm"
+    assert scheduler.submissions[0].metadata["provider"] == "ibm_quantum"
 
 
 def test_approval_gated_scheduler_rejects_provider_and_hash_mismatch() -> None:
@@ -114,6 +116,57 @@ def test_approval_gated_scheduler_rejects_provider_and_hash_mismatch() -> None:
     with pytest.raises(PermissionError, match="package hash"):
         hash_mismatch.submit(FeedbackCommand(payload={}))
     assert provider_calls == []
+
+
+def test_approval_gated_scheduler_rejects_non_submit_descriptor() -> None:
+    manifest = _manifest()
+    approval = HardwareApprovalRecord(
+        approval_id="local-sim",
+        approver="Miroslav Sotek",
+        package_hash=hash_package_manifest(manifest),
+        max_qpu_seconds=4.0,
+        allowed_provider="qiskit_aer",
+        approved=True,
+    )
+    scheduler = ApprovalGatedFeedbackHardwareScheduler(
+        provider="qiskit_aer",
+        package_manifest=manifest,
+        approval=approval,
+        submitter=lambda command, package: FeedbackResult(qpu_seconds=0.0),
+    )
+
+    with pytest.raises(PermissionError, match="does not expose live submission"):
+        scheduler.submit(FeedbackCommand(payload={}, estimated_qpu_seconds=1.0))
+
+
+def test_approval_gated_scheduler_accepts_descriptor_name_or_provider() -> None:
+    manifest = _manifest()
+    descriptor_name_approval = HardwareApprovalRecord(
+        approval_id="approved-by-descriptor",
+        approver="Miroslav Sotek",
+        package_hash=hash_package_manifest(manifest),
+        max_qpu_seconds=4.0,
+        allowed_provider="qiskit_ibm",
+        approved=True,
+    )
+    provider_approval = HardwareApprovalRecord(
+        approval_id="approved-by-provider",
+        approver="Miroslav Sotek",
+        package_hash=hash_package_manifest(manifest),
+        max_qpu_seconds=4.0,
+        allowed_provider="ibm_quantum",
+        approved=True,
+    )
+
+    for approval in (descriptor_name_approval, provider_approval):
+        scheduler = ApprovalGatedFeedbackHardwareScheduler(
+            provider="qiskit_ibm",
+            package_manifest=manifest,
+            approval=approval,
+            submitter=lambda command, package: FeedbackResult(job_id="job-1", qpu_seconds=0.5),
+        )
+        result = scheduler.submit(FeedbackCommand(payload={}, estimated_qpu_seconds=0.5))
+        assert result.job_id == "job-1"
 
 
 def test_approval_gated_scheduler_enforces_estimated_and_reported_qpu_budget() -> None:

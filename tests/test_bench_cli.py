@@ -310,12 +310,21 @@ def test_run_harness_dispatches_repo_script_with_current_python(
 
     monkeypatch.setattr(bench_cli.subprocess, "run", fake_run)
 
-    rc = bench_cli._run_harness(bench_cli.Harness("unit", "scripts/unit.py", frozenset({"unit"})))
+    rc = bench_cli._run_harness(
+        bench_cli.Harness(
+            "unit",
+            "scripts/benchmark_rust_core_methods.py",
+            frozenset({"unit"}),
+        )
+    )
 
     assert rc == 0
     assert calls == [
         (
-            [bench_cli.PYTHON, str(bench_cli.REPO_ROOT / "scripts/unit.py")],
+            [
+                bench_cli.PYTHON,
+                str(bench_cli.REPO_ROOT / "scripts/benchmark_rust_core_methods.py"),
+            ],
             bench_cli.REPO_ROOT,
         )
     ]

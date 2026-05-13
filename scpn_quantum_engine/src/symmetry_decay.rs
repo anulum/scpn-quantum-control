@@ -14,10 +14,11 @@
 //! Ref: Oliva del Moral et al., arXiv:2603.13060 (2026)
 
 use numpy::{PyArray1, PyReadonlyArray1};
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use rayon::prelude::*;
 
-use crate::validation::validate_positive;
+use crate::validation::{validate_contiguous_slice, validate_finite, validate_positive};
 
 /// Batch GUESS extrapolation: mitigate N observables in parallel.
 ///
@@ -33,8 +34,16 @@ pub fn guess_extrapolate_batch<'py>(
     alpha: f64,
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     validate_positive(s_ideal.abs(), "|s_ideal|")?;
-    let targets = target_noisy.as_slice().unwrap();
-    let sym = symmetry_noisy.as_slice().unwrap();
+    if !alpha.is_finite() {
+        return Err(PyValueError::new_err(format!(
+            "alpha must be finite, got {alpha}"
+        )));
+    }
+    let targets = validate_contiguous_slice(&target_noisy, "target_noisy")?;
+    let sym = validate_contiguous_slice(&symmetry_noisy, "symmetry_noisy")?;
+    validate_finite(targets, "target_noisy")?;
+    validate_finite(sym, "symmetry_noisy")?;
+    validate_equal_len(targets.len(), sym.len(), "target_noisy", "symmetry_noisy")?;
 
     let mitigated: Vec<f64> = targets
         .par_iter()
@@ -64,10 +73,27 @@ pub fn fit_symmetry_decay(
     noise_scales: PyReadonlyArray1<'_, f64>,
 ) -> PyResult<(f64, f64)> {
     validate_positive(s_ideal.abs(), "|s_ideal|")?;
-    let vals = noisy_values.as_slice().unwrap();
-    let scales = noise_scales.as_slice().unwrap();
+    let vals = validate_contiguous_slice(&noisy_values, "noisy_values")?;
+    let scales = validate_contiguous_slice(&noise_scales, "noise_scales")?;
+    validate_finite(vals, "noisy_values")?;
+    validate_finite(scales, "noise_scales")?;
+    validate_equal_len(vals.len(), scales.len(), "noisy_values", "noise_scales")?;
+    if vals.len() < 2 {
+        return Err(PyValueError::new_err(
+            "noisy_values and noise_scales must contain at least 2 points",
+        ));
+    }
     let (alpha, residual) = fit_decay_inner(s_ideal, vals, scales);
     Ok((alpha, residual))
+}
+
+fn validate_equal_len(lhs: usize, rhs: usize, lhs_name: &str, rhs_name: &str) -> PyResult<()> {
+    if lhs != rhs {
+        return Err(PyValueError::new_err(format!(
+            "{lhs_name} length {lhs} != {rhs_name} length {rhs}"
+        )));
+    }
+    Ok(())
 }
 
 /// Pure Rust decay fitting.

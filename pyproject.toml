@@ -42,6 +42,7 @@ keywords = [
 dependencies = [
     "qiskit>=2.2,<3.0",
     "qiskit-aer>=0.15,<1.0",
+    "symengine>=0.14,<1.0",
     "numpy>=1.24,<3.0",
     "scipy>=1.10,<2.0",
     "networkx>=3.0,<4.0",
@@ -82,6 +83,9 @@ accelerated = ["scpn-quantum-control[gpu,jax]"]
 analog_kuramoto = "scpn_quantum_control.hardware.backends:analog_kuramoto_factory"
 hybrid_digital_analog = "scpn_quantum_control.hardware.backends:hybrid_digital_analog_factory"
 qiskit_ibm = "scpn_quantum_control.hardware.backends:qiskit_ibm_factory"
+qiskit_aer = "scpn_quantum_control.hardware.backends:qiskit_aer_factory"
+cirq = "scpn_quantum_control.hardware.backends:cirq_factory"
+braket = "scpn_quantum_control.hardware.backends:braket_factory"
 pennylane = "scpn_quantum_control.hardware.backends:pennylane_factory"
 
 [project.entry-points."scpn_quantum_control.application_plugins"]

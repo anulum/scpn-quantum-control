@@ -25,6 +25,15 @@ def test_connect_simulator(sim_runner):
     assert "aer" in sim_runner.backend_name.lower() or sim_runner.use_simulator
 
 
+def test_connect_simulator_exposes_non_submit_descriptor(sim_runner):
+    descriptor = sim_runner.backend_descriptor
+    assert descriptor.name == "qiskit_aer"
+    assert descriptor.provider == "local_qiskit_aer"
+    assert descriptor.can_simulate is True
+    assert descriptor.can_submit is False
+    assert descriptor.submit_requires_approval is False
+
+
 def test_transpile_simple_circuit(sim_runner):
     from qiskit import QuantumCircuit
 

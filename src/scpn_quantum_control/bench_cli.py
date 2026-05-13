@@ -18,6 +18,40 @@ from pathlib import Path
 
 
 @dataclass(frozen=True)
+class ExecutionSurfacePolicy:
+    """Execution policy for a fixed reproducibility harness."""
+
+    classification: str
+    network_allowed: bool
+    credential_allowed: bool
+    hardware_submission_allowed: bool
+    allowed_write_roots: tuple[str, ...]
+    subprocess_allowed: bool
+    ci_blocking: bool
+
+
+OFFLINE_HARNESS_POLICY = ExecutionSurfacePolicy(
+    classification="trusted_offline_executable",
+    network_allowed=False,
+    credential_allowed=False,
+    hardware_submission_allowed=False,
+    allowed_write_roots=(
+        "data/rust_vqe_methods",
+        "data/scpn_fim_hamiltonian",
+        "data/s1_feedback_loop",
+        "data/s2_scaling",
+        "data/s3_pulse_ansatz_design",
+        "data/s4_multi_hardware_control",
+        "data/s5_benchmark_harness",
+        "data/s6_quantum_kuramoto_split",
+        "docs",
+    ),
+    subprocess_allowed=True,
+    ci_blocking=True,
+)
+
+
+@dataclass(frozen=True)
 class Harness:
     """A reproducibility harness script and its execution policy."""
 
@@ -25,6 +59,7 @@ class Harness:
     script: str
     groups: frozenset[str]
     optional_flag: str | None = None
+    policy: ExecutionSurfacePolicy = OFFLINE_HARNESS_POLICY
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -350,11 +385,35 @@ def _selected_harnesses(
 
 
 def _run_harness(harness: Harness) -> int:
+    _validate_harness_policy(harness)
     script_path = REPO_ROOT / harness.script
     command = [PYTHON, str(script_path)]
     print(f"[scpn-bench] run {harness.label}: {' '.join(command)}", flush=True)
     completed = subprocess.run(command, cwd=REPO_ROOT, check=False)
     return completed.returncode
+
+
+def _validate_harness_policy(harness: Harness) -> None:
+    """Fail closed before launching a fixed benchmark harness."""
+    if harness.policy.classification != "trusted_offline_executable":
+        raise PermissionError(f"harness {harness.label!r} is not executable by scpn-bench")
+    if harness.policy.network_allowed:
+        raise PermissionError(f"harness {harness.label!r} allows network access")
+    if harness.policy.credential_allowed:
+        raise PermissionError(f"harness {harness.label!r} allows credential access")
+    if harness.policy.hardware_submission_allowed:
+        raise PermissionError(f"harness {harness.label!r} allows hardware submission")
+    if not harness.policy.subprocess_allowed:
+        raise PermissionError(f"harness {harness.label!r} disallows subprocess execution")
+    script_path = (REPO_ROOT / harness.script).resolve()
+    if not script_path.is_relative_to(REPO_ROOT):
+        raise ValueError(f"harness script must stay inside repository: {harness.script}")
+    if not script_path.exists():
+        raise FileNotFoundError(f"harness script does not exist: {harness.script}")
+    for root in harness.policy.allowed_write_roots:
+        root_path = (REPO_ROOT / root).resolve()
+        if not root_path.is_relative_to(REPO_ROOT):
+            raise ValueError(f"allowed write root must stay inside repository: {root}")
 
 
 def _print_diff_summary() -> int:

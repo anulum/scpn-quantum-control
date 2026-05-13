@@ -22,6 +22,7 @@ from typing import Any, Literal
 from qiskit import QuantumCircuit
 
 from ..control.realtime_feedback import RealtimeSyncFeedbackController
+from .backends import describe_backend
 from .job_dossier import HardwareJobDossier, build_s1_feedback_job_dossier
 
 FeedbackPlatformKind = Literal[
@@ -47,6 +48,10 @@ class FeedbackPlatformCapability:
     supports_cross_shot_batches: bool
     supports_native_xy: bool = False
     supports_native_global_feedback: bool = False
+    backend_descriptor_name: str = ""
+    provider: str = "manual"
+    can_submit: bool = False
+    submit_requires_approval: bool = True
     notes: str = ""
 
     def __post_init__(self) -> None:
@@ -155,6 +160,10 @@ class FeedbackSubmissionPackage:
                 {
                     "platform": decision.platform.name,
                     "kind": decision.platform.kind,
+                    "backend_descriptor": decision.platform.backend_descriptor_name,
+                    "provider": decision.platform.provider,
+                    "can_submit": decision.platform.can_submit,
+                    "submit_requires_approval": decision.platform.submit_requires_approval,
                     "status": decision.status,
                     "reasons": list(decision.reasons),
                     "payload": dict(decision.payload),
@@ -169,15 +178,21 @@ class FeedbackSubmissionPackage:
 
 def default_s1_platforms() -> tuple[FeedbackPlatformCapability, ...]:
     """Return conservative platform capability presets for S1 planning."""
+    ibm_descriptor = describe_backend("qiskit_ibm")
+    aer_descriptor = describe_backend("qiskit_aer")
     return (
         FeedbackPlatformCapability(
             name="IBM Heron dynamic-circuit backend",
             kind="ibm_dynamic_circuits",
-            max_qubits=100,
-            supports_mid_circuit_measurement=True,
+            max_qubits=ibm_descriptor.max_qubits or 100,
+            supports_mid_circuit_measurement=ibm_descriptor.supports_mid_circuit_measurement,
             supports_conditional_reset=True,
             supports_conditional_rotation=True,
-            supports_cross_shot_batches=True,
+            supports_cross_shot_batches=ibm_descriptor.supports_shots,
+            backend_descriptor_name=ibm_descriptor.name,
+            provider=ibm_descriptor.provider,
+            can_submit=ibm_descriptor.can_submit,
+            submit_requires_approval=ibm_descriptor.submit_requires_approval,
             notes="Gate-based dynamic-circuit candidate; requires live backend capability check.",
         ),
         FeedbackPlatformCapability(
@@ -215,11 +230,15 @@ def default_s1_platforms() -> tuple[FeedbackPlatformCapability, ...]:
         FeedbackPlatformCapability(
             name="Local statevector simulator",
             kind="simulator",
-            max_qubits=12,
+            max_qubits=min(aer_descriptor.max_qubits or 12, 12),
             supports_mid_circuit_measurement=True,
             supports_conditional_reset=True,
             supports_conditional_rotation=True,
-            supports_cross_shot_batches=True,
+            supports_cross_shot_batches=aer_descriptor.supports_shots,
+            backend_descriptor_name=aer_descriptor.name,
+            provider=aer_descriptor.provider,
+            can_submit=aer_descriptor.can_submit,
+            submit_requires_approval=aer_descriptor.submit_requires_approval,
             notes="No-QPU reference target for package validation and latency benchmarking.",
         ),
     )
@@ -346,6 +365,10 @@ def assess_platform_readiness(
 
     payload = {
         "kind": platform.kind,
+        "backend_descriptor": platform.backend_descriptor_name,
+        "provider": platform.provider,
+        "can_submit": platform.can_submit,
+        "submit_requires_approval": platform.submit_requires_approval,
         "n_qubits": circuit.n_qubits,
         "n_clbits": circuit.n_clbits,
         "depth": circuit.depth,

@@ -60,6 +60,27 @@ def test_s1_feedback_submission_package_marks_dynamic_backends_ready() -> None:
     assert "## Claim Boundary" in package.dossier.to_markdown()
 
 
+def test_default_s1_platforms_carry_backend_descriptor_policy() -> None:
+    package = build_s1_feedback_submission_package(_controller(), n_rounds=1)
+    decisions = {decision.platform.name: decision for decision in package.platform_readiness}
+
+    ibm = decisions["IBM Heron dynamic-circuit backend"]
+    local = decisions["Local statevector simulator"]
+
+    assert ibm.platform.backend_descriptor_name == "qiskit_ibm"
+    assert ibm.platform.provider == "ibm_quantum"
+    assert ibm.platform.can_submit is True
+    assert ibm.platform.submit_requires_approval is True
+    assert ibm.payload["backend_descriptor"] == "qiskit_ibm"
+    assert ibm.payload["submit_requires_approval"] is True
+
+    assert local.platform.backend_descriptor_name == "qiskit_aer"
+    assert local.platform.provider == "local_qiskit_aer"
+    assert local.platform.can_submit is False
+    assert local.platform.submit_requires_approval is False
+    assert local.payload["backend_descriptor"] == "qiskit_aer"
+
+
 def test_s1_feedback_submission_package_separates_analog_targets_for_review() -> None:
     package = build_s1_feedback_submission_package(_controller(), n_rounds=1)
     decisions = {decision.platform.name: decision for decision in package.platform_readiness}

@@ -280,6 +280,9 @@ class TestModuleSingleton:
     def test_built_in_backends_are_present(self) -> None:
         reg = be.get_registry()
         assert "qiskit_ibm" in reg.names()
+        assert "qiskit_aer" in reg.names()
+        assert "cirq" in reg.names()
+        assert "braket" in reg.names()
         assert "pennylane" in reg.names()
 
     def test_qiskit_ibm_backend_satisfies_protocol(self) -> None:
@@ -291,6 +294,61 @@ class TestModuleSingleton:
         b = be.get_backend("pennylane")
         assert b.name == "pennylane"
         assert isinstance(b.is_available(), bool)
+
+    @pytest.mark.parametrize(
+        ("name", "provider", "requires_approval"),
+        [
+            ("qiskit_ibm", "ibm_quantum", True),
+            ("qiskit_aer", "local_qiskit_aer", False),
+            ("cirq", "google_cirq", False),
+            ("braket", "aws_braket", True),
+            ("pennylane", "pennylane", False),
+        ],
+    )
+    def test_builtin_quantum_backend_descriptors(
+        self,
+        name: str,
+        provider: str,
+        requires_approval: bool,
+    ) -> None:
+        descriptor = be.describe_backend(name)
+        assert descriptor.name == name
+        assert descriptor.provider == provider
+        assert descriptor.submit_requires_approval is requires_approval
+        assert descriptor.available == be.get_backend(name).is_available()
+        assert isinstance(descriptor.capabilities, tuple)
+        assert "kuramoto_xy" in descriptor.workloads
+
+    def test_cloud_descriptors_never_mark_auto_submit_safe(self) -> None:
+        cloud = [be.describe_backend("qiskit_ibm"), be.describe_backend("braket")]
+        assert all(d.can_submit for d in cloud)
+        assert all(d.submit_requires_approval for d in cloud)
+
+    def test_local_simulator_descriptors_are_non_submit_paths(self) -> None:
+        local = [be.describe_backend("qiskit_aer"), be.describe_backend("cirq")]
+        assert all(d.can_simulate for d in local)
+        assert all(not d.can_submit for d in local)
+        assert all(not d.submit_requires_approval for d in local)
+
+    def test_list_quantum_backends_returns_sorted_descriptors(self) -> None:
+        descriptors = be.list_quantum_backends(auto_discover=False)
+        names = [d.name for d in descriptors]
+        assert names == sorted(names)
+        assert {"qiskit_ibm", "qiskit_aer", "cirq", "braket", "pennylane"} <= set(names)
+
+    def test_legacy_plugin_gets_conservative_descriptor(self) -> None:
+        name = "legacy_descriptor_test"
+        be.register_backend(name, _fake_factory)
+        try:
+            descriptor = be.describe_backend(name)
+            assert descriptor.name == name
+            assert descriptor.provider == "external"
+            assert descriptor.execution_mode == "unknown"
+            assert descriptor.capabilities == ()
+            assert descriptor.can_submit is False
+            assert descriptor.submit_requires_approval is True
+        finally:
+            be.unregister_backend(name)
 
     def test_list_backends_auto_discover_false(self) -> None:
         names = be.list_backends(auto_discover=False)

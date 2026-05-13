@@ -29,6 +29,7 @@ from qiskit.quantum_info import SparsePauliOp
 from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 
 from ..dense_budget import require_dense_allocation
+from .backends import QuantumBackendDescriptor, describe_backend
 
 if TYPE_CHECKING:
     from ..mitigation.zne import ZNEResult
@@ -198,6 +199,7 @@ class HardwareRunner:
         self._backend: Any = None
         self._pm: Any = None
         self._calls = 0
+        self._backend_descriptor: QuantumBackendDescriptor | None = None
 
     def connect(self) -> None:
         """Authenticate and select backend."""
@@ -225,6 +227,7 @@ class HardwareRunner:
 
         if self._backend is None:
             raise RuntimeError("call connect() first")
+        self._backend_descriptor = describe_backend("qiskit_ibm")
         self._pm = generate_preset_pass_manager(
             backend=self._backend,
             optimization_level=self.optimization_level,
@@ -234,6 +237,8 @@ class HardwareRunner:
             backend=self._backend.name,
             qubits=self._backend.num_qubits,
             mode="hardware",
+            provider=self._backend_descriptor.provider,
+            submit_requires_approval=self._backend_descriptor.submit_requires_approval,
         )
 
     def _connect_simulator(self) -> None:
@@ -262,6 +267,7 @@ class HardwareRunner:
                     reason=str(exc),
                     fallback=self._backend.name,
                 )
+        self._backend_descriptor = describe_backend("qiskit_aer")
         basis = ["ecr", "id", "rz", "sx", "x"]
         if self.use_fractional_gates:
             basis.extend(["rx", "rzz"])
@@ -275,6 +281,8 @@ class HardwareRunner:
             mode="simulator",
             simulator_kind=simulator_kind,
             noisy=self._noise_model is not None,
+            provider=self._backend_descriptor.provider,
+            can_submit=self._backend_descriptor.can_submit,
         )
 
     @property
@@ -288,6 +296,13 @@ class HardwareRunner:
         if self._backend is None:
             return "not_connected"
         return getattr(self._backend, "name", "aer_simulator")
+
+    @property
+    def backend_descriptor(self) -> QuantumBackendDescriptor:
+        """Provider-neutral descriptor for the connected execution route."""
+        if self._backend_descriptor is None:
+            raise RuntimeError("call connect() first")
+        return self._backend_descriptor
 
     def transpile(self, circuit: QuantumCircuit) -> QuantumCircuit:
         """Transpile circuit for target backend."""

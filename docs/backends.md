@@ -12,8 +12,11 @@ Two modules for runtime backend management:
 
 1. **Backend dispatch** (`backend_dispatch.py`) — switch between numpy,
    JAX, and PyTorch for array operations
-2. **Plugin registry** (`hardware/plugin_registry.py`) — register and
-   discover quantum hardware backends at runtime
+2. **Plugin registry** (`hardware/plugin_registry.py`) — legacy runner
+   registration for direct adapter construction
+3. **Provider-neutral backend registry** (`hardware/backends.py`) —
+   production routing descriptors for IBM Runtime, local Aer, Cirq,
+   Amazon Braket, PennyLane, analogue, and hybrid compiler paths
 
 ---
 
@@ -173,6 +176,74 @@ class MySimulator:
 runner = registry.get_runner("my_simulator", K, omega)
 result = runner.run_trotter(t=0.1, reps=5)
 ```
+
+---
+
+## Part 3: Provider-Neutral Quantum Backends
+
+`scpn_quantum_control.hardware.backends`
+
+The production registry exposes a single capability contract across the
+hardware and simulator surface. Registry lookup is deliberately
+non-authenticating and non-submitting: it imports at most the local SDK
+module needed for availability checks and never reads credentials, opens
+network sessions, or queues QPU jobs.
+
+### Built-In Production Descriptors
+
+| Backend | Provider | Execution mode | Submission policy |
+|---------|----------|----------------|-------------------|
+| `qiskit_ibm` | IBM Quantum | cloud QPU | approval required |
+| `qiskit_aer` | local Qiskit Aer | local simulator | no submission |
+| `cirq` | Google Cirq | local simulator/export | no submission |
+| `braket` | Amazon Braket | cloud QPU or managed simulator | approval required |
+| `pennylane` | PennyLane | adapter router | provider plugin decides |
+| `analog_kuramoto` | internal compiler | analogue programme compiler | no registry-time submission |
+| `hybrid_digital_analog` | internal compiler | hybrid compiler | no registry-time submission |
+
+Cloud descriptors advertise that a submission interface exists, but they
+also set `submit_requires_approval=True`. Production execution code must
+pass through the explicit hardware approval scheduler before any live IBM
+or AWS work is attempted.
+
+### Descriptor API
+
+```python
+from scpn_quantum_control.hardware import describe_backend, list_quantum_backends
+
+ibm = describe_backend("qiskit_ibm")
+assert ibm.provider == "ibm_quantum"
+assert ibm.can_submit is True
+assert ibm.submit_requires_approval is True
+
+local = describe_backend("qiskit_aer")
+assert local.can_simulate is True
+assert local.can_submit is False
+
+for descriptor in list_quantum_backends():
+    print(descriptor.name, descriptor.execution_mode, descriptor.available)
+```
+
+Every descriptor records:
+
+| Field | Meaning |
+|-------|---------|
+| `name` | registry key used by routing code |
+| `provider` | provider namespace, e.g. `ibm_quantum`, `local_qiskit_aer`, `aws_braket` |
+| `execution_mode` | local simulator, cloud QPU, managed simulator, or adapter router |
+| `sdk_package` | Python package expected for the route |
+| `adapter_module` | repository module that owns execution or export |
+| `available` | import-time availability, without credentials or network calls |
+| `can_simulate` / `can_submit` | whether the descriptor exposes simulation or live submission semantics |
+| `submit_requires_approval` | mandatory cloud-job approval flag |
+| `supports_*` | shot, statevector, mid-circuit, and pulse capability flags |
+| `capabilities` / `workloads` | stable machine-readable routing tags |
+
+Legacy third-party plugins that only implement `name` and
+`is_available()` are still accepted. `describe_backend()` gives them a
+conservative descriptor with `can_submit=False` and
+`submit_requires_approval=True` until they implement a real
+`descriptor()` method returning `QuantumBackendDescriptor`.
 
 ---
 

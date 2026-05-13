@@ -40,6 +40,10 @@ def _candidate_extension(entry: str) -> importlib.machinery.ModuleSpec | None:
     if Path(spec.origin).resolve() == Path(__file__).resolve():
         return None
     if not any(spec.origin.endswith(suffix) for suffix in importlib.machinery.EXTENSION_SUFFIXES):
+        package_dir = Path(entry, __name__)
+        for suffix in importlib.machinery.EXTENSION_SUFFIXES:
+            for candidate in package_dir.glob(f"{__name__}*{suffix}"):
+                return importlib.util.spec_from_file_location(__name__, candidate)
         return None
     return spec
 

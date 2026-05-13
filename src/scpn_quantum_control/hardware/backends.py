@@ -41,6 +41,7 @@ from __future__ import annotations
 import importlib.metadata
 import logging
 from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
 ENTRY_POINT_GROUP = "scpn_quantum_control.backends"
@@ -66,6 +67,35 @@ class BackendProtocol(Protocol):
 
 
 BackendFactory = Callable[[], BackendProtocol]
+
+
+@dataclass(frozen=True)
+class QuantumBackendDescriptor:
+    """Provider-neutral execution contract for a quantum backend.
+
+    Registry lookup must never authenticate, touch the network, or queue
+    paid work. This static descriptor gives routing code enough
+    information to distinguish local simulation from approval-gated cloud
+    submission before execution-specific adapters are invoked.
+    """
+
+    name: str
+    provider: str
+    execution_mode: str
+    sdk_package: str
+    adapter_module: str
+    available: bool
+    can_simulate: bool
+    can_submit: bool
+    submit_requires_approval: bool
+    supports_shots: bool
+    supports_statevector: bool
+    supports_mid_circuit_measurement: bool
+    supports_pulse: bool
+    max_qubits: int | None
+    capabilities: tuple[str, ...]
+    workloads: tuple[str, ...]
+    notes: tuple[str, ...] = ()
 
 
 class BackendRegistrationError(RuntimeError):
@@ -196,6 +226,45 @@ def get_backend(name: str) -> BackendProtocol:
     return _registry.get(name)
 
 
+def describe_backend(name: str) -> QuantumBackendDescriptor:
+    """Return the provider-neutral descriptor for ``name``.
+
+    Third-party backends that have not implemented ``descriptor()`` get a
+    conservative descriptor: no advertised submit/simulator capability
+    and explicit approval required before production routing.
+    """
+    backend = get_backend(name)
+    descriptor = getattr(backend, "descriptor", None)
+    if callable(descriptor):
+        value = descriptor()
+        if not isinstance(value, QuantumBackendDescriptor):
+            raise BackendRegistrationError(
+                f"Backend {name!r} descriptor returned {type(value).__name__}, "
+                "expected QuantumBackendDescriptor",
+            )
+        return value
+
+    return QuantumBackendDescriptor(
+        name=name,
+        provider="external",
+        execution_mode="unknown",
+        sdk_package="unknown",
+        adapter_module=type(backend).__module__,
+        available=backend.is_available(),
+        can_simulate=False,
+        can_submit=False,
+        submit_requires_approval=True,
+        supports_shots=False,
+        supports_statevector=False,
+        supports_mid_circuit_measurement=False,
+        supports_pulse=False,
+        max_qubits=None,
+        capabilities=(),
+        workloads=(),
+        notes=("Legacy backend: implement descriptor() before production routing.",),
+    )
+
+
 def discover_backends(*, force: bool = False) -> list[str]:
     """Convenience wrapper for :meth:`BackendRegistry.discover`."""
     return _registry.discover(force=force)
@@ -211,6 +280,13 @@ def list_backends(*, auto_discover: bool = True) -> list[str]:
     if auto_discover:
         discover_backends()
     return _registry.names()
+
+
+def list_quantum_backends(*, auto_discover: bool = True) -> list[QuantumBackendDescriptor]:
+    """Return sorted provider-neutral descriptors for every known backend."""
+    if auto_discover:
+        discover_backends()
+    return sorted((describe_backend(name) for name in _registry.names()), key=lambda d: d.name)
 
 
 # ---------------------------------------------------------------------------
@@ -237,6 +313,144 @@ class _QiskitIBMBackend:
             return False
         return True
 
+    def descriptor(self) -> QuantumBackendDescriptor:
+        """Return the non-submitting IBM Runtime capability descriptor."""
+        return QuantumBackendDescriptor(
+            name=self.name,
+            provider="ibm_quantum",
+            execution_mode="cloud_qpu",
+            sdk_package="qiskit-ibm-runtime",
+            adapter_module="scpn_quantum_control.hardware.runner",
+            available=self.is_available(),
+            can_simulate=False,
+            can_submit=True,
+            submit_requires_approval=True,
+            supports_shots=True,
+            supports_statevector=False,
+            supports_mid_circuit_measurement=True,
+            supports_pulse=False,
+            max_qubits=None,
+            capabilities=(
+                "runtime_sampler",
+                "runtime_estimator",
+                "dynamic_circuits",
+                "hardware_counts",
+            ),
+            workloads=("kuramoto_xy", "dla_parity", "fim_feedback", "qec_feedback"),
+            notes=(
+                "Descriptor does not authenticate or submit jobs.",
+                "Live submission remains gated by the hardware approval scheduler.",
+            ),
+        )
+
+
+class _QiskitAerBackend:
+    """Built-in backend for local Qiskit Aer simulation."""
+
+    name = "qiskit_aer"
+
+    def is_available(self) -> bool:
+        try:
+            import qiskit_aer  # noqa: F401
+        except Exception:
+            return False
+        return True
+
+    def descriptor(self) -> QuantumBackendDescriptor:
+        """Return the local Aer simulator capability descriptor."""
+        return QuantumBackendDescriptor(
+            name=self.name,
+            provider="local_qiskit_aer",
+            execution_mode="local_simulator",
+            sdk_package="qiskit-aer",
+            adapter_module="scpn_quantum_control.hardware.runner",
+            available=self.is_available(),
+            can_simulate=True,
+            can_submit=False,
+            submit_requires_approval=False,
+            supports_shots=True,
+            supports_statevector=True,
+            supports_mid_circuit_measurement=False,
+            supports_pulse=False,
+            max_qubits=None,
+            capabilities=("aer_sampler", "noise_model", "statevector"),
+            workloads=("kuramoto_xy", "dla_parity", "fim_feedback", "mitigation"),
+            notes=("Local simulator path; no cloud credentials or QPU submission.",),
+        )
+
+
+class _CirqBackend:
+    """Built-in backend for Cirq simulator/circuit export capability."""
+
+    name = "cirq"
+
+    def is_available(self) -> bool:
+        try:
+            from .cirq_adapter import is_cirq_available
+        except Exception:
+            return False
+        return is_cirq_available()
+
+    def descriptor(self) -> QuantumBackendDescriptor:
+        """Return the Cirq capability descriptor."""
+        return QuantumBackendDescriptor(
+            name=self.name,
+            provider="google_cirq",
+            execution_mode="local_simulator",
+            sdk_package="cirq-core",
+            adapter_module="scpn_quantum_control.hardware.cirq_adapter",
+            available=self.is_available(),
+            can_simulate=True,
+            can_submit=False,
+            submit_requires_approval=False,
+            supports_shots=True,
+            supports_statevector=True,
+            supports_mid_circuit_measurement=False,
+            supports_pulse=False,
+            max_qubits=None,
+            capabilities=("cirq_circuit", "cirq_simulator"),
+            workloads=("kuramoto_xy", "cross_platform_export"),
+            notes=("Current built-in Cirq path is local simulation/export.",),
+        )
+
+
+class _BraketBackend:
+    """Built-in capability descriptor for Amazon Braket integrations."""
+
+    name = "braket"
+
+    def is_available(self) -> bool:
+        try:
+            import braket.aws  # type: ignore[import-untyped,import-not-found]  # noqa: F401
+        except Exception:
+            return False
+        return True
+
+    def descriptor(self) -> QuantumBackendDescriptor:
+        """Return the Amazon Braket capability descriptor."""
+        return QuantumBackendDescriptor(
+            name=self.name,
+            provider="aws_braket",
+            execution_mode="cloud_qpu_or_managed_simulator",
+            sdk_package="amazon-braket-sdk",
+            adapter_module="scpn_quantum_control.hardware.pennylane_adapter",
+            available=self.is_available(),
+            can_simulate=True,
+            can_submit=True,
+            submit_requires_approval=True,
+            supports_shots=True,
+            supports_statevector=False,
+            supports_mid_circuit_measurement=False,
+            supports_pulse=False,
+            max_qubits=None,
+            capabilities=("braket_device", "managed_simulator", "qpu_submission"),
+            workloads=("kuramoto_xy", "cross_platform_hardware"),
+            notes=(
+                "Current repository route is through PennyLane Braket device strings.",
+                "Live AWS submission requires explicit approval and external credentials.",
+            ),
+        )
+
 
 class _PennyLaneBackend:
     """Built-in backend for the PennyLane adapter."""
@@ -248,10 +462,47 @@ class _PennyLaneBackend:
 
         return is_pennylane_available()
 
+    def descriptor(self) -> QuantumBackendDescriptor:
+        """Return the PennyLane multi-provider router descriptor."""
+        return QuantumBackendDescriptor(
+            name=self.name,
+            provider="pennylane",
+            execution_mode="adapter_router",
+            sdk_package="pennylane",
+            adapter_module="scpn_quantum_control.hardware.pennylane_adapter",
+            available=self.is_available(),
+            can_simulate=True,
+            can_submit=True,
+            submit_requires_approval=False,
+            supports_shots=True,
+            supports_statevector=False,
+            supports_mid_circuit_measurement=False,
+            supports_pulse=False,
+            max_qubits=None,
+            capabilities=("device_router", "autodiff", "vqe", "trotter"),
+            workloads=("kuramoto_xy", "differentiable_circuits", "cross_platform_hardware"),
+            notes=("Provider-specific PennyLane plugins may impose their own approval gates.",),
+        )
+
 
 def qiskit_ibm_factory() -> BackendProtocol:
     """Entry-point target for the IBM runtime backend."""
     return _QiskitIBMBackend()
+
+
+def qiskit_aer_factory() -> BackendProtocol:
+    """Entry-point target for the local Qiskit Aer backend."""
+    return _QiskitAerBackend()
+
+
+def cirq_factory() -> BackendProtocol:
+    """Entry-point target for the Cirq backend."""
+    return _CirqBackend()
+
+
+def braket_factory() -> BackendProtocol:
+    """Entry-point target for the Amazon Braket backend."""
+    return _BraketBackend()
 
 
 def pennylane_factory() -> BackendProtocol:
@@ -276,6 +527,9 @@ def hybrid_digital_analog_factory() -> BackendProtocol:
 # Pre-register the built-ins so the registry is useful even on a source
 # checkout where the entry points haven't been installed.
 _registry.register("qiskit_ibm", qiskit_ibm_factory)
+_registry.register("qiskit_aer", qiskit_aer_factory)
+_registry.register("cirq", cirq_factory)
+_registry.register("braket", braket_factory)
 _registry.register("pennylane", pennylane_factory)
 _registry.register("analog_kuramoto", analog_kuramoto_factory)
 _registry.register("hybrid_digital_analog", hybrid_digital_analog_factory)
@@ -287,13 +541,19 @@ __all__ = [
     "BackendProtocol",
     "BackendRegistrationError",
     "BackendRegistry",
+    "QuantumBackendDescriptor",
     "analog_kuramoto_factory",
+    "braket_factory",
+    "cirq_factory",
+    "describe_backend",
     "discover_backends",
     "get_backend",
     "get_registry",
     "hybrid_digital_analog_factory",
     "list_backends",
+    "list_quantum_backends",
     "pennylane_factory",
+    "qiskit_aer_factory",
     "qiskit_ibm_factory",
     "register_backend",
     "unregister_backend",

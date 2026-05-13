@@ -10,6 +10,7 @@
 # supply-chain scanners that evaluate requirements files directly.
 qiskit==2.4.1
 qiskit-aer==0.17.2
+symengine==0.14.1
 numpy==2.2.6
 scipy==1.15.3
 networkx==3.4.2

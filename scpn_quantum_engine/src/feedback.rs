@@ -12,7 +12,7 @@ use numpy::{PyArray1, PyReadonlyArray1};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
-use crate::validation::{validate_finite, validate_range};
+use crate::validation::{validate_contiguous_slice, validate_finite, validate_range};
 
 /// Convert measured order parameters into action codes, gains, and errors.
 ///
@@ -46,7 +46,7 @@ pub fn feedback_policy_batch<'py>(
         )));
     }
 
-    let r = r_values.as_slice().unwrap();
+    let r = validate_contiguous_slice(&r_values, "r_values")?;
     validate_finite(r, "r_values")?;
 
     let mut actions = Vec::with_capacity(r.len());

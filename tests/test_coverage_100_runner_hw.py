@@ -200,6 +200,10 @@ class TestHardwareConnect:
             runner.connect()
 
         assert runner._backend is mock_backend
+        assert runner.backend_descriptor.name == "qiskit_ibm"
+        assert runner.backend_descriptor.provider == "ibm_quantum"
+        assert runner.backend_descriptor.can_submit is True
+        assert runner.backend_descriptor.submit_requires_approval is True
 
     def test_connect_ibm_least_busy(self, tmp_results):
         mock_service = MagicMock()

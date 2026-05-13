@@ -21,6 +21,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from typing import Any
 
+from .backends import QuantumBackendDescriptor, describe_backend
 from .feedback_loop import FeedbackCommand, FeedbackResult
 
 ProviderSubmitter = Callable[[FeedbackCommand, Mapping[str, Any]], FeedbackResult]
@@ -82,6 +83,7 @@ class ApprovalGatedFeedbackHardwareScheduler:
         if not package_manifest:
             raise ValueError("package_manifest must be non-empty")
         self.provider = provider
+        self.backend_descriptor = _resolve_backend_descriptor(provider)
         self.package_manifest = dict(package_manifest)
         self.package_hash = hash_package_manifest(package_manifest)
         self.approval = approval
@@ -118,6 +120,12 @@ class ApprovalGatedFeedbackHardwareScheduler:
                 metadata={
                     "package_hash": self.package_hash,
                     "approval_notes": self.approval.notes,
+                    "backend_descriptor": (
+                        self.backend_descriptor.name if self.backend_descriptor else ""
+                    ),
+                    "provider": self.backend_descriptor.provider
+                    if self.backend_descriptor
+                    else self.provider,
                 },
             )
         )
@@ -126,7 +134,17 @@ class ApprovalGatedFeedbackHardwareScheduler:
     def _check_approval(self, command: FeedbackCommand) -> None:
         if not self.approval.approved:
             raise PermissionError("hardware scheduler requires approved=True")
-        if self.approval.allowed_provider != self.provider:
+        allowed_provider_names = {self.provider}
+        if self.backend_descriptor is not None:
+            allowed_provider_names.update(
+                {self.backend_descriptor.name, self.backend_descriptor.provider}
+            )
+            if not self.backend_descriptor.can_submit:
+                raise PermissionError(
+                    f"backend descriptor {self.backend_descriptor.name!r} "
+                    "does not expose live submission"
+                )
+        if self.approval.allowed_provider not in allowed_provider_names:
             raise PermissionError("approval provider does not match scheduler provider")
         if self.approval.package_hash != self.package_hash:
             raise PermissionError("approval package hash does not match manifest")
@@ -139,3 +157,17 @@ def hash_package_manifest(package_manifest: Mapping[str, Any]) -> str:
     """Return a stable SHA256 hash for a preregistered package manifest."""
     encoded = json.dumps(package_manifest, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+def _resolve_backend_descriptor(provider: str) -> QuantumBackendDescriptor | None:
+    """Return a backend descriptor for known provider aliases."""
+    aliases = {
+        "ibm_runtime": "qiskit_ibm",
+        "ibm_quantum": "qiskit_ibm",
+        "local_qiskit_aer": "qiskit_aer",
+    }
+    descriptor_name = aliases.get(provider, provider)
+    try:
+        return describe_backend(descriptor_name)
+    except KeyError:
+        return None

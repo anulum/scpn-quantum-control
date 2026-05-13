@@ -463,13 +463,20 @@ environment variable otherwise.
 
 ```python
 from scpn_quantum_control.hardware import (
-    get_backend, list_backends, register_backend, discover_backends,
+    describe_backend, get_backend, list_backends, list_quantum_backends,
+    register_backend, discover_backends,
 )
 
 list_backends()                         # ['qiskit_ibm', 'pennylane', ...]
 backend = get_backend("qiskit_ibm")     # BackendProtocol instance
 backend.name                            # 'qiskit_ibm'
 backend.is_available()                  # True iff installed + importable
+
+descriptor = describe_backend("qiskit_ibm")
+descriptor.provider                     # 'ibm_quantum'
+descriptor.can_submit                   # True
+descriptor.submit_requires_approval     # True
+list_quantum_backends()                 # sorted QuantumBackendDescriptor list
 
 # Third-party plugin — register via entry_points in pyproject.toml
 # [project.entry-points."scpn_quantum_control.backends"]

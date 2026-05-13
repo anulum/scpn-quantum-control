@@ -15,6 +15,7 @@
 //! Core functions return `Result<(), String>` for testability.
 //! PyO3 wrappers convert to `PyResult<()>` at call site via `map_err`.
 
+use numpy::{Element, PyReadonlyArray1};
 use pyo3::exceptions::PyValueError;
 use pyo3::PyResult;
 
@@ -61,11 +62,7 @@ pub fn check_n(n: usize, name: &str) -> Result<(), String> {
 /// Validate flat array length matches expected n*n.
 pub fn check_flat_square(arr: &[f64], n: usize, name: &str) -> Result<(), String> {
     if arr.len() != n * n {
-        return Err(format!(
-            "{name} length {} != {n}² = {}",
-            arr.len(),
-            n * n
-        ));
+        return Err(format!("{name} length {} != {n}² = {}", arr.len(), n * n));
     }
     Ok(())
 }
@@ -111,6 +108,13 @@ pub fn validate_flat_square(arr: &[f64], n: usize, name: &str) -> PyResult<()> {
 }
 pub fn validate_domain_range(start: usize, end: usize, n: usize, name: &str) -> PyResult<()> {
     to_pyresult(check_domain_range(start, end, n, name))
+}
+pub fn validate_contiguous_slice<'a, T: Element>(
+    arr: &'a PyReadonlyArray1<'_, T>,
+    name: &str,
+) -> PyResult<&'a [T]> {
+    arr.as_slice()
+        .map_err(|_| PyValueError::new_err(format!("{name} must be a C-contiguous NumPy array")))
 }
 
 #[cfg(test)]
