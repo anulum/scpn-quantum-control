@@ -5,10 +5,11 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Entanglement Percolation
-"""Entanglement percolation threshold vs synchronization K_c.
+"""Finite-size entanglement percolation diagnostics vs synchronisation proxies.
 
-Testable conjecture: does the entanglement graph percolate at the
-same coupling K_c where the Kuramoto order parameter R jumps?
+Testable finite-size question: does the entanglement graph percolate near the
+same coupling region where the Kuramoto order parameter R crosses a selected
+threshold?
 
 Method:
 1. For each K_base, build H(K), compute ground state exactly
@@ -17,10 +18,12 @@ Method:
 4. Check graph connectivity via Fiedler eigenvalue (lambda_2 > 0)
 5. K_perc = smallest K_base where entanglement graph is connected
 
-If K_perc ≈ K_c, synchronization onset = entanglement connectivity onset.
+If K_perc is close to the selected synchronisation proxy, the scan provides a
+finite-size concordance observation rather than a thermodynamic proof.
 
-Prior art: entanglement percolation (Comms Physics 2025, PRL 2025)
-and Kuramoto K_c are separate fields. Nobody has compared them.
+Prior art includes entanglement percolation and Kuramoto criticality as
+separate diagnostics. This module compares them for exact small-system
+Kuramoto-XY ground states.
 """
 
 from __future__ import annotations
@@ -31,6 +34,7 @@ import numpy as np
 from qiskit.quantum_info import DensityMatrix, Statevector, partial_trace
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
+from ..dense_budget import require_dense_allocation
 
 
 @dataclass
@@ -113,6 +117,8 @@ def percolation_scan(
     k_range: np.ndarray | None = None,
     concurrence_threshold: float = 1e-4,
     R_threshold: float = 0.5,
+    *,
+    max_dense_gib: float | None = None,
 ) -> PercolationScanResult:
     """Scan entanglement percolation and sync order parameter across K.
 
@@ -125,6 +131,13 @@ def percolation_scan(
 
     n = len(omega)
     n_k = len(k_range)
+    require_dense_allocation(
+        n,
+        rank=2,
+        object_count=2,
+        max_gib=max_dense_gib,
+        label="entanglement percolation dense eigensolver workspace",
+    )
     fiedler = np.zeros(n_k)
     max_conc = np.zeros(n_k)
     mean_conc = np.zeros(n_k)
@@ -137,7 +150,7 @@ def percolation_scan(
     for idx, kb in enumerate(k_range):
         K = float(kb) * K_topology
         knm_to_hamiltonian(K, omega)
-        H_mat = knm_to_dense_matrix(K, omega)
+        H_mat = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
         eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
         psi0 = eigenvectors[:, 0]
 

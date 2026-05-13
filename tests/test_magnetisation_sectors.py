@@ -14,6 +14,7 @@ from math import comb
 import numpy as np
 import pytest
 
+from scpn_quantum_control.analysis import magnetisation_sectors as magnetisation_module
 from scpn_quantum_control.analysis.magnetisation_sectors import (
     basis_by_magnetisation,
     build_sector_hamiltonian,
@@ -127,10 +128,19 @@ class TestEighByMagnetisation:
         assert result["ground_sector"] is None
         assert result["n_sectors_computed"] == 0
 
-    def test_rejects_full_dense_budget_before_sector_projection(self):
+    def test_rejects_sector_budget_before_sparse_hamiltonian(self, monkeypatch):
         K, omega = _system(4)
 
-        with pytest.raises(DenseAllocationError, match="magnetisation full dense Hamiltonian"):
+        def fail_if_sparse_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("sparse Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(
+            magnetisation_module,
+            "build_sparse_hamiltonian",
+            fail_if_sparse_hamiltonian_is_requested,
+        )
+
+        with pytest.raises(DenseAllocationError, match="magnetisation sector"):
             eigh_by_magnetisation(K, omega, max_dense_gib=1e-12)
 
     def test_ground_sector_identified(self):
@@ -139,11 +149,56 @@ class TestEighByMagnetisation:
         gs = result["ground_sector"]
         assert gs in result["results"]
 
-    def test_build_sector_rejects_dense_budget_before_full_hamiltonian(self):
+    def test_build_sector_rejects_budget_before_sparse_hamiltonian(self, monkeypatch):
         K, omega = _system(4)
 
-        with pytest.raises(DenseAllocationError, match="magnetisation full dense Hamiltonian"):
+        def fail_if_sparse_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("sparse Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(
+            magnetisation_module,
+            "build_sparse_hamiltonian",
+            fail_if_sparse_hamiltonian_is_requested,
+        )
+
+        with pytest.raises(DenseAllocationError, match="magnetisation sector"):
             build_sector_hamiltonian(K, omega, M=0, max_dense_gib=1e-12)
+
+    def test_sector_builder_does_not_use_full_dense_hamiltonian(self, monkeypatch):
+        K, omega = _system(4)
+
+        def fail_if_full_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("full dense Hamiltonian path was used")
+
+        monkeypatch.setattr(
+            magnetisation_module,
+            "knm_to_dense_matrix",
+            fail_if_full_dense_hamiltonian_is_requested,
+            raising=False,
+        )
+
+        H_sec, indices = build_sector_hamiltonian(K, omega, M=0)
+
+        assert H_sec.shape == (len(indices), len(indices))
+        np.testing.assert_allclose(H_sec, H_sec.conj().T, atol=1e-12)
+
+    def test_eigh_by_magnetisation_does_not_use_full_dense_hamiltonian(self, monkeypatch):
+        K, omega = _system(4)
+
+        def fail_if_full_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("full dense Hamiltonian path was used")
+
+        monkeypatch.setattr(
+            magnetisation_module,
+            "knm_to_dense_matrix",
+            fail_if_full_dense_hamiltonian_is_requested,
+            raising=False,
+        )
+
+        result = eigh_by_magnetisation(K, omega, sectors=[0])
+
+        assert result["n_sectors_computed"] == 1
+        assert 0 in result["results"]
 
     def test_n6_all_eigenvalues(self):
         K, omega = _system(6)

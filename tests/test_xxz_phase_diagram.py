@@ -10,7 +10,9 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
+from scpn_quantum_control.analysis import xxz_phase_diagram as xxz_module
 from scpn_quantum_control.analysis.xxz_phase_diagram import (
     AnisotropyScanResult,
     PhaseDiagramResult,
@@ -18,6 +20,7 @@ from scpn_quantum_control.analysis.xxz_phase_diagram import (
     scan_coupling_at_delta,
 )
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 def _ring(n: int) -> np.ndarray:
@@ -127,6 +130,72 @@ class TestScanGapProperties:
         result = scan_coupling_at_delta(omega, T, delta=1.0, k_range=np.linspace(0.5, 3.0, 4))
         assert result.delta == 1.0
         assert len(result.gaps) == 4
+
+    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+        T = _ring(4)
+        omega = OMEGA_N_16[:4]
+
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(
+            xxz_module,
+            "knm_to_dense_matrix",
+            fail_if_dense_hamiltonian_is_requested,
+        )
+
+        with pytest.raises(DenseAllocationError, match="XXZ dense eigensolver"):
+            xxz_module._ground_state_properties(T, omega, delta=0.5, max_dense_gib=1e-12)
+
+    def test_scan_propagates_dense_budget(self, monkeypatch):
+        T = _ring(2)
+        omega = OMEGA_N_16[:2]
+        seen_budgets = []
+
+        def fake_properties(K, omega_arg, delta, *, max_dense_gib):  # noqa: ARG001
+            seen_budgets.append(max_dense_gib)
+            return 0.5, 0.25, -1.0
+
+        monkeypatch.setattr(xxz_module, "_ground_state_properties", fake_properties)
+
+        result = scan_coupling_at_delta(
+            omega,
+            T,
+            delta=0.25,
+            k_range=np.array([1.0, 2.0, 3.0]),
+            max_dense_gib=0.25,
+        )
+
+        assert seen_budgets == [0.25, 0.25, 0.25]
+        assert np.allclose(result.gaps, 0.5)
+
+    def test_phase_diagram_propagates_dense_budget(self, monkeypatch):
+        T = _ring(2)
+        omega = OMEGA_N_16[:2]
+        seen_budgets = []
+
+        def fake_scan(omega_arg, topology_arg, delta, k_range, *, max_dense_gib):  # noqa: ARG001
+            seen_budgets.append(max_dense_gib)
+            return AnisotropyScanResult(
+                delta=delta,
+                k_values=np.asarray(k_range),
+                gaps=np.array([0.5, 0.25]),
+                R_values=np.array([0.1, 0.2]),
+                k_c_from_gap=2.0,
+            )
+
+        monkeypatch.setattr(xxz_module, "scan_coupling_at_delta", fake_scan)
+
+        result = anisotropy_phase_diagram(
+            omega,
+            T,
+            delta_range=np.array([0.0, 1.0]),
+            k_range=np.array([1.0, 2.0]),
+            max_dense_gib=0.25,
+        )
+
+        assert seen_budgets == [0.25, 0.25]
+        assert np.allclose(result.k_c_values, 2.0)
 
 
 # ---------------------------------------------------------------------------

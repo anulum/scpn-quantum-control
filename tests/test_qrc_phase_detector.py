@@ -10,7 +10,9 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
+from scpn_quantum_control.analysis import qrc_phase_detector as qrc_module
 from scpn_quantum_control.analysis.qrc_phase_detector import (
     QRCPhaseResult,
     classify,
@@ -19,6 +21,7 @@ from scpn_quantum_control.analysis.qrc_phase_detector import (
     train_linear_readout,
 )
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 def _ring_topology(n: int) -> np.ndarray:
@@ -59,6 +62,52 @@ class TestGenerateTrainingData:
         k_range = np.array([0.5, 5.0])
         X, _ = generate_training_data(omega, T, k_range, k_threshold=2.0)
         assert not np.allclose(X[0], X[1])
+
+    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+        n = 4
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(
+            qrc_module,
+            "knm_to_dense_matrix",
+            fail_if_dense_hamiltonian_is_requested,
+        )
+
+        with pytest.raises(DenseAllocationError, match="QRC dense eigensolver"):
+            qrc_module._pauli_features_from_hamiltonian(
+                T,
+                omega,
+                max_weight=2,
+                max_dense_gib=1e-12,
+            )
+
+    def test_training_data_propagates_dense_budget(self, monkeypatch):
+        n = 2
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+        seen_budgets = []
+
+        def fake_features(K, omega_arg, max_weight, *, max_dense_gib):  # noqa: ARG001
+            seen_budgets.append(max_dense_gib)
+            return np.array([1.0, 0.0])
+
+        monkeypatch.setattr(qrc_module, "_pauli_features_from_hamiltonian", fake_features)
+
+        X, y = generate_training_data(
+            omega,
+            T,
+            np.array([1.0, 2.0, 3.0]),
+            k_threshold=2.0,
+            max_dense_gib=0.25,
+        )
+
+        assert seen_budgets == [0.25, 0.25, 0.25]
+        assert X.shape == (3, 2)
+        np.testing.assert_array_equal(y, np.array([0.0, 1.0, 1.0]))
 
 
 class TestTrainLinearReadout:
@@ -126,6 +175,40 @@ class TestQRCPhaseDetection:
         result = qrc_phase_detection(omega, T, k_train, k_test, k_threshold=1.5)
         # Should get at least 50% (better than random)
         assert result.accuracy >= 0.5
+
+    def test_qrc_pipeline_propagates_dense_budget(self, monkeypatch):
+        n = 2
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+        seen_budgets = []
+
+        def fake_training_data(
+            omega_arg,
+            topology_arg,
+            k_range,
+            k_threshold,
+            max_weight,
+            *,
+            max_dense_gib,
+        ):  # noqa: ARG001
+            seen_budgets.append(max_dense_gib)
+            X = np.column_stack([np.asarray(k_range), np.ones(len(k_range))])
+            y = (np.asarray(k_range) >= k_threshold).astype(float)
+            return X, y
+
+        monkeypatch.setattr(qrc_module, "generate_training_data", fake_training_data)
+
+        result = qrc_phase_detection(
+            omega,
+            T,
+            k_train=np.array([1.0, 3.0]),
+            k_test=np.array([1.0, 3.0]),
+            k_threshold=2.0,
+            max_dense_gib=0.25,
+        )
+
+        assert seen_budgets == [0.25, 0.25]
+        assert isinstance(result, QRCPhaseResult)
 
 
 # ---------------------------------------------------------------------------

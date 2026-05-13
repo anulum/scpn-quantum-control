@@ -5,14 +5,15 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Xxz Phase Diagram
-"""XXZ anisotropy phase diagram: XY→Heisenberg crossover.
+"""Finite-size XXZ anisotropy diagnostics for the XY-to-Heisenberg crossover.
 
 Scans the anisotropy parameter Δ from 0 (XY model, standard
 Kuramoto mapping) to 1 (isotropic Heisenberg, full S² dynamics
 from Kouchekian-Teodorescu arXiv:2601.00113).
 
-At each Δ, sweeps coupling K to find the critical point K_c(Δ).
-The resulting K_c(Δ) curve is the anisotropy phase diagram.
+At each Δ, sweeps coupling K to find the finite-size gap-minimum proxy
+K_c(Δ). The resulting K_c(Δ) curve is an exact small-system diagnostic, not a
+standalone thermodynamic phase boundary.
 
 Known limits:
 - Δ = 0 (XY): BKT transition at K_c^XY
@@ -20,8 +21,9 @@ Known limits:
 - Δ > 1 (Ising-like): first-order transition possible
 - Δ < 0 (frustrated): possible spin liquid phases
 
-The crossover from BKT (Δ=0) to Heisenberg (Δ=1) in the Kuramoto
-context with heterogeneous frequencies is unstudied.
+The crossover from XY-like (Δ=0) to Heisenberg-like (Δ=1) dynamics in the
+Kuramoto context with heterogeneous frequencies is treated here as a bounded
+finite-size numerical probe.
 """
 
 from __future__ import annotations
@@ -31,6 +33,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
+from ..dense_budget import require_dense_allocation
 
 
 @dataclass
@@ -55,13 +58,25 @@ class PhaseDiagramResult:
 
 
 def _ground_state_properties(
-    K: np.ndarray, omega: np.ndarray, delta: float
+    K: np.ndarray,
+    omega: np.ndarray,
+    delta: float,
+    *,
+    max_dense_gib: float | None = None,
 ) -> tuple[float, float, float]:
     """Compute gap, R, and ground state energy for XXZ Hamiltonian.
 
     Returns (gap, R, E_gs).
     """
-    H_mat = knm_to_dense_matrix(K, omega, delta=delta)
+    n = len(omega)
+    require_dense_allocation(
+        n,
+        rank=2,
+        object_count=2,
+        max_gib=max_dense_gib,
+        label="XXZ dense eigensolver workspace",
+    )
+    H_mat = knm_to_dense_matrix(K, omega, delta=delta, max_dense_gib=max_dense_gib)
     eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
     gap = float(eigenvalues[1] - eigenvalues[0])
     psi0 = np.ascontiguousarray(eigenvectors[:, 0])
@@ -90,6 +105,8 @@ def scan_coupling_at_delta(
     K_topology: np.ndarray,
     delta: float,
     k_range: np.ndarray | None = None,
+    *,
+    max_dense_gib: float | None = None,
 ) -> AnisotropyScanResult:
     """Sweep K at fixed anisotropy Δ. Find K_c from gap minimum."""
     if k_range is None:
@@ -101,7 +118,12 @@ def scan_coupling_at_delta(
 
     for idx, kb in enumerate(k_range):
         K = float(kb) * K_topology
-        gap, R, _E = _ground_state_properties(K, omega, delta)
+        gap, R, _E = _ground_state_properties(
+            K,
+            omega,
+            delta,
+            max_dense_gib=max_dense_gib,
+        )
         gaps[idx] = gap
         R_vals[idx] = R
 
@@ -121,6 +143,8 @@ def anisotropy_phase_diagram(
     K_topology: np.ndarray,
     delta_range: np.ndarray | None = None,
     k_range: np.ndarray | None = None,
+    *,
+    max_dense_gib: float | None = None,
 ) -> PhaseDiagramResult:
     """Compute K_c(Δ) phase diagram.
 
@@ -136,7 +160,13 @@ def anisotropy_phase_diagram(
     gap_min_vals = np.zeros(len(delta_range))
 
     for idx, d in enumerate(delta_range):
-        scan = scan_coupling_at_delta(omega, K_topology, float(d), k_range)
+        scan = scan_coupling_at_delta(
+            omega,
+            K_topology,
+            float(d),
+            k_range,
+            max_dense_gib=max_dense_gib,
+        )
         scans.append(scan)
         k_c_vals[idx] = scan.k_c_from_gap
         gap_min_vals[idx] = float(np.min(scan.gaps))

@@ -5,23 +5,23 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Qrc Phase Detector
-"""Quantum reservoir computing as synchronization phase detector.
+"""Exact finite-size feature extraction for a QRC-style phase detector.
 
-The reservoir IS the Kuramoto-XY Hamiltonian: the dynamics that
-produce the phase transition also serve as the nonlinear map for
-phase classification. Self-probing architecture.
+The reservoir features are derived from the Kuramoto-XY Hamiltonian that
+defines the finite-size synchronisation scan. This module uses exact dense
+ground states as a deterministic feature map for small systems.
 
 Protocol:
-1. For each K_base, evolve |0⟩ under H(K) for time t
-2. Extract Pauli expectation features ⟨P_i⟩ from the evolved state
+1. For each K_base, compute the exact ground state of H(K)
+2. Extract Pauli expectation features ⟨P_i⟩ from that state
 3. Label: K > K_c → "synchronized" (1), K < K_c → "desynchronized" (0)
 4. Train a linear readout W on the reservoir features
 5. The classification accuracy measures how well the reservoir
    distinguishes the two phases
 
-Prior art: Kobayashi/Motome Nat Comms (2025) used QRP for QPTs
-in spin chains. Nobody has used the SAME Hamiltonian as both
-reservoir and the system being probed.
+Prior work uses quantum reservoir processing for phase-transition detection in
+spin chains. This implementation is a bounded exact reference feature map, not
+a scalable reservoir simulator.
 """
 
 from __future__ import annotations
@@ -32,6 +32,7 @@ import numpy as np
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
+from ..dense_budget import require_dense_allocation
 
 
 @dataclass
@@ -50,14 +51,23 @@ def _pauli_features_from_hamiltonian(
     K: np.ndarray,
     omega: np.ndarray,
     max_weight: int = 2,
+    *,
+    max_dense_gib: float | None = None,
 ) -> np.ndarray:
     """Extract Pauli expectation features from the ground state of H(K).
 
     Uses exact diagonalization (no circuit evolution needed for ground state).
     """
     n = len(omega)
+    require_dense_allocation(
+        n,
+        rank=2,
+        object_count=2,
+        max_gib=max_dense_gib,
+        label="QRC dense eigensolver workspace",
+    )
     knm_to_hamiltonian(K, omega)
-    H_mat = knm_to_dense_matrix(K, omega)
+    H_mat = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
     eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
     psi0 = np.ascontiguousarray(eigenvectors[:, 0])
     sv = Statevector(psi0)
@@ -86,6 +96,8 @@ def generate_training_data(
     k_range: np.ndarray,
     k_threshold: float,
     max_weight: int = 2,
+    *,
+    max_dense_gib: float | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Generate labeled feature matrix for QRC phase classification.
 
@@ -99,7 +111,12 @@ def generate_training_data(
 
     for kb in k_range:
         K = float(kb) * K_topology
-        feat = _pauli_features_from_hamiltonian(K, omega, max_weight)
+        feat = _pauli_features_from_hamiltonian(
+            K,
+            omega,
+            max_weight,
+            max_dense_gib=max_dense_gib,
+        )
         features_list.append(feat)
         labels.append(1.0 if kb >= k_threshold else 0.0)
 
@@ -137,13 +154,29 @@ def qrc_phase_detection(
     k_threshold: float,
     alpha: float = 0.1,
     max_weight: int = 2,
+    *,
+    max_dense_gib: float | None = None,
 ) -> QRCPhaseResult:
     """Full QRC pipeline: train on k_train, test on k_test.
 
     Returns accuracy and the trained readout weights.
     """
-    X_train, y_train = generate_training_data(omega, K_topology, k_train, k_threshold, max_weight)
-    X_test, y_test = generate_training_data(omega, K_topology, k_test, k_threshold, max_weight)
+    X_train, y_train = generate_training_data(
+        omega,
+        K_topology,
+        k_train,
+        k_threshold,
+        max_weight,
+        max_dense_gib=max_dense_gib,
+    )
+    X_test, y_test = generate_training_data(
+        omega,
+        K_topology,
+        k_test,
+        k_threshold,
+        max_weight,
+        max_dense_gib=max_dense_gib,
+    )
 
     W = train_linear_readout(X_train, y_train, alpha)
     y_pred = classify(X_test, W)

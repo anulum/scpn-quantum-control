@@ -147,10 +147,11 @@ from scpn_quantum_control.analysis.qfi_criticality import (
 `qfi_vs_coupling(K, omega, K_base_range=None, n_K=20)` → `QFICriticalityResult` with:
 `K_values`, `qfi_values`, `gap_values`, `peak_K` (coupling at max QFI).
 
-### `entanglement_percolation` — Sync Threshold as Percolation
+### `entanglement_percolation` — Finite-Size Entanglement Percolation
 
-Tests whether entanglement percolation (Fiedler $\lambda_2 > 0$ of the concurrence
-graph) coincides with synchronization $K_c$.
+Compares the concurrence-graph percolation point with a selected finite-size
+order-parameter threshold. This is a dense exact diagnostic, not a standalone
+thermodynamic-limit proof.
 
 ```python
 from scpn_quantum_control.analysis.entanglement_percolation import (
@@ -159,9 +160,10 @@ from scpn_quantum_control.analysis.entanglement_percolation import (
 )
 ```
 
-`percolation_scan(K, omega, K_base_range=None, n_K=20)` →
-`PercolationScanResult` with: `K_values`, `R_values`, `fiedler_values`,
-`concurrence_matrices`, `percolation_K`.
+`percolation_scan(omega, K_topology, k_range=None, concurrence_threshold=1e-4, R_threshold=0.5, *, max_dense_gib=None)` →
+`PercolationScanResult` with: `k_values`, `fiedler_values`,
+`max_concurrence`, `mean_concurrence`, `n_entangled_pairs`, `R_values`,
+`k_percolation`, and `k_sync`.
 
 ### `berry_phase` — Berry Connection and Fidelity Susceptibility
 
@@ -543,17 +545,18 @@ Full synchronization phase diagram in the coupling-temperature plane.
 
 ### `xxz_phase_diagram` — $K_c$ vs Anisotropy $\Delta$
 
-Phase boundary in the $(K, \Delta)$ plane from XY ($\Delta=0$) to Heisenberg ($\Delta=1$).
+Finite-size gap-minimum diagnostics in the $(K, \Delta)$ plane from XY-like
+($\Delta=0$) to Heisenberg-like ($\Delta=1$) Hamiltonians.
 
 ```python
 from scpn_quantum_control.analysis.xxz_phase_diagram import (
-    xxz_phase_scan,
-    XXZPhaseResult,
+    anisotropy_phase_diagram,
+    PhaseDiagramResult,
 )
 ```
 
-`xxz_phase_scan(K, omega, delta_range=None, K_base_range=None)` → `XXZPhaseResult`
-with: `delta_values`, `K_values`, `R_matrix`, `Kc_vs_delta`.
+`anisotropy_phase_diagram(omega, K_topology, delta_range=None, k_range=None, *, max_dense_gib=None)` → `PhaseDiagramResult`
+with: `delta_values`, `k_c_values`, `gap_min_values`, and `scans`.
 
 ---
 
@@ -594,20 +597,22 @@ with: `K_values`, `R_ness` (order parameter of NESS), `purity_ness`, `entropy_ne
 
 ## Reservoir Computing
 
-### `qrc_phase_detector` — Self-Probing QRC
+### `qrc_phase_detector` — Exact QRC-Style Feature Map
 
-The Kuramoto-XY system uses its own Pauli observables as features for a ridge
-regression classifier. The reservoir IS the system under study.
+The Kuramoto-XY Hamiltonian supplies exact dense ground-state Pauli features
+for a ridge-regression classifier. This is a deterministic small-system
+feature-map reference, not a scalable reservoir simulator.
 
 ```python
 from scpn_quantum_control.analysis.qrc_phase_detector import (
-    qrc_phase_scan,
-    QRCResult,
+    qrc_phase_detection,
+    QRCPhaseResult,
 )
 ```
 
-`qrc_phase_scan(K, omega, K_base_range=None, n_K=30, n_train_frac=0.7)` →
-`QRCResult` with: `K_values`, `predictions`, `accuracy`, `feature_importance`.
+`qrc_phase_detection(omega, K_topology, k_train, k_test, k_threshold, alpha=0.1, max_weight=2, *, max_dense_gib=None)` →
+`QRCPhaseResult` with: `accuracy`, `n_train`, `n_test`, `n_features`,
+`weights`, and `k_boundary_predicted`.
 
 ---
 

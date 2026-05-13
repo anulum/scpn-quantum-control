@@ -12,6 +12,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from scpn_quantum_control.analysis import entanglement_percolation as percolation_module
 from scpn_quantum_control.analysis.entanglement_percolation import (
     PercolationScanResult,
     concurrence_map_exact,
@@ -19,6 +20,7 @@ from scpn_quantum_control.analysis.entanglement_percolation import (
     percolation_scan,
 )
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 def _ring_topology(n: int) -> np.ndarray:
@@ -127,6 +129,50 @@ class TestPercolationScan:
         omega = OMEGA_N_16[:n]
         result = percolation_scan(omega, T, k_range=np.array([2.0, 5.0]))
         assert len(result.n_entangled_pairs) == 2
+
+    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+        n = 4
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(
+            percolation_module,
+            "knm_to_dense_matrix",
+            fail_if_dense_hamiltonian_is_requested,
+        )
+
+        with pytest.raises(DenseAllocationError, match="entanglement percolation dense"):
+            percolation_scan(
+                omega,
+                T,
+                k_range=np.array([1.0, 2.0]),
+                max_dense_gib=1e-12,
+            )
+
+    def test_scan_propagates_dense_budget_to_bridge(self, monkeypatch):
+        n = 2
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+        seen_budgets = []
+
+        def fake_dense_matrix(K, omega_arg, **kwargs):  # noqa: ARG001
+            seen_budgets.append(kwargs.get("max_dense_gib"))
+            return np.diag([0.0, 1.0, 2.0, 3.0]).astype(np.complex128)
+
+        monkeypatch.setattr(percolation_module, "knm_to_dense_matrix", fake_dense_matrix)
+
+        result = percolation_scan(
+            omega,
+            T,
+            k_range=np.array([1.0, 2.0, 3.0]),
+            max_dense_gib=0.25,
+        )
+
+        assert seen_budgets == [0.25, 0.25, 0.25]
+        assert len(result.k_values) == 3
 
 
 # ---------------------------------------------------------------------------

@@ -36,12 +36,11 @@ from math import comb
 
 import numpy as np
 
-from ..bridge.knm_hamiltonian import knm_to_dense_matrix
+from ..bridge.sparse_hamiltonian import build_sparse_hamiltonian
 from ..dense_budget import (
     GIB,
     DenseAllocationError,
     dense_budget_bytes,
-    require_dense_allocation,
 )
 
 
@@ -169,20 +168,14 @@ def build_sector_hamiltonian(
         valid = sorted(sectors.keys())
         raise ValueError(f"M={M} not valid for n={n}. Valid values: {valid}")
     indices = sectors[M]
-    require_dense_allocation(
-        n,
-        rank=2,
-        object_count=2,
-        max_gib=max_dense_gib,
-        label="magnetisation full dense Hamiltonian",
-    )
-    H_full = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
     _require_sector_dense_workspace(
         len(indices),
         max_dense_gib=max_dense_gib,
         label="magnetisation sector dense Hamiltonian",
     )
-    return project_to_sector(H_full, indices), indices
+    H_sparse = build_sparse_hamiltonian(K, omega)
+    H_sector = np.asarray(H_sparse[indices][:, indices].toarray())
+    return H_sector, indices
 
 
 def eigh_by_magnetisation(
@@ -214,16 +207,9 @@ def eigh_by_magnetisation(
     if sectors is None:
         sectors = sorted(all_sectors.keys())
 
-    require_dense_allocation(
-        n,
-        rank=2,
-        object_count=2,
-        max_gib=max_dense_gib,
-        label="magnetisation full dense Hamiltonian",
-    )
-    H_full = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
     results: dict[int, dict] = {}
     all_eigvals: list[float] = []
+    selected_indices: dict[int, np.ndarray] = {}
 
     for m in sectors:
         if m not in all_sectors:
@@ -234,7 +220,21 @@ def eigh_by_magnetisation(
             max_dense_gib=max_dense_gib,
             label="magnetisation sector eigensolver workspace",
         )
-        H_sector = project_to_sector(H_full, indices)
+        selected_indices[m] = indices
+
+    if not selected_indices:
+        return {
+            "results": results,
+            "eigvals_all": np.array([], dtype=float),
+            "ground_energy": float("nan"),
+            "ground_sector": None,
+            "n_sectors_computed": 0,
+        }
+
+    H_sparse = build_sparse_hamiltonian(K, omega)
+
+    for m, indices in selected_indices.items():
+        H_sector = np.asarray(H_sparse[indices][:, indices].toarray())
         vals, vecs = np.linalg.eigh(H_sector)
         results[m] = {
             "eigvals": vals,
