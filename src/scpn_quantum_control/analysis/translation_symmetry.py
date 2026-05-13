@@ -172,6 +172,10 @@ def eigh_with_translation(
     dict with: eigvals, dim, momentum, is_ti
     """
     n = K.shape[0]
+    if isinstance(momentum, bool) or not isinstance(momentum, int):
+        raise ValueError("momentum must be an integer in the range 0 <= momentum < n.")
+    if momentum < 0 or momentum >= n:
+        raise ValueError(f"momentum must satisfy 0 <= momentum < {n}; got {momentum}.")
 
     if not is_translation_invariant(K, omega):
         raise ValueError(

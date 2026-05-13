@@ -13,9 +13,11 @@ import numpy as np
 import pytest
 
 import scpn_quantum_control.analysis.spectral_form_factor as sff_mod
+from scpn_quantum_control.analysis.magnetisation_sectors import level_spacing_by_magnetisation
 from scpn_quantum_control.analysis.spectral_form_factor import (
     SFFResult,
     SFFScanResult,
+    _level_spacing_ratio,
     compute_sff,
     sff_vs_coupling,
 )
@@ -78,6 +80,44 @@ class TestComputeSFF:
         with pytest.raises(DenseAllocationError, match="SFF dense eigensolver"):
             compute_sff(K, omega, t_max=1.0, n_times=2, max_dense_gib=1e-5)
 
+    def test_default_level_spacing_uses_magnetisation_sector(self):
+        K = 2.0 * _ring(4)
+        omega = OMEGA_N_16[:4]
+
+        result = compute_sff(K, omega, t_max=1.0, n_times=4)
+        expected = level_spacing_by_magnetisation(K, omega, M=None)["r_bar"]
+
+        assert result.level_spacing_basis == "magnetisation"
+        assert result.level_spacing_sector == 0
+        assert result.level_spacing_sector_dim > 0
+        assert result.level_spacing_ratio == pytest.approx(expected)
+
+    def test_full_level_spacing_mode_preserves_full_spectrum_ratio(self):
+        K = 2.0 * _ring(4)
+        omega = OMEGA_N_16[:4]
+
+        result = compute_sff(K, omega, t_max=1.0, n_times=4, level_spacing_basis="full")
+
+        assert result.level_spacing_basis == "full"
+        assert result.level_spacing_sector is None
+        assert result.level_spacing_sector_dim == 16
+        assert result.level_spacing_ratio == pytest.approx(
+            result.full_spectrum_level_spacing_ratio
+        )
+
+    def test_full_and_sector_level_spacing_are_reported_separately(self):
+        K = 2.0 * _ring(4)
+        omega = OMEGA_N_16[:4]
+
+        result = compute_sff(K, omega, t_max=1.0, n_times=4)
+
+        assert result.full_spectrum_level_spacing_ratio == pytest.approx(
+            _level_spacing_ratio(np.linalg.eigvalsh(sff_mod.knm_to_dense_matrix(K, omega)))
+        )
+        assert result.level_spacing_ratio == pytest.approx(
+            level_spacing_by_magnetisation(K, omega)["r_bar"]
+        )
+
 
 class TestSFFVsCoupling:
     def test_returns_result(self):
@@ -100,6 +140,20 @@ class TestSFFVsCoupling:
         result = sff_vs_coupling(omega, T, k_range=np.array([1.0, 3.0]))
         assert np.all(np.isfinite(result.sff_dip_depth))
         assert np.all(result.sff_dip_depth >= 0)
+
+    def test_nan_sector_ratios_do_not_trigger_chaos_onset(self):
+        T = _ring(2)
+        omega = OMEGA_N_16[:2]
+
+        result = sff_vs_coupling(
+            omega,
+            T,
+            k_range=np.array([1.0, 2.0]),
+            level_spacing_basis="magnetisation",
+        )
+
+        assert np.all(np.isnan(result.level_spacing_ratios))
+        assert result.chaos_onset_K is None
 
 
 # ---------------------------------------------------------------------------

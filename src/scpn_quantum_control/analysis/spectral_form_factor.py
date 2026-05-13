@@ -31,11 +31,15 @@ distinguishes:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Literal
 
 import numpy as np
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 from ..dense_budget import require_dense_eigensolver_workspace
+from .magnetisation_sectors import level_spacing_by_magnetisation
+
+LevelSpacingBasis = Literal["magnetisation", "full"]
 
 
 @dataclass
@@ -47,6 +51,10 @@ class SFFResult:
     sff: np.ndarray  # K(t) = |Tr(e^{-iHt})|² / Z²
     level_spacing_ratio: float  # r̄ — chaos diagnostic
     spectral_gap: float
+    level_spacing_basis: str = "magnetisation"
+    level_spacing_sector: int | None = None
+    level_spacing_sector_dim: int = 0
+    full_spectrum_level_spacing_ratio: float = float("nan")
 
 
 @dataclass
@@ -73,15 +81,44 @@ def _level_spacing_ratio(eigenvalues: np.ndarray) -> float:
     return float(np.mean(ratios))
 
 
+def _sector_level_spacing_ratio(
+    K: np.ndarray,
+    omega: np.ndarray,
+    *,
+    basis: LevelSpacingBasis,
+    magnetisation: int | None = None,
+    full_eigenvalues: np.ndarray,
+    max_dense_gib: float | None = None,
+) -> tuple[float, int | None, int]:
+    if basis == "full":
+        return _level_spacing_ratio(full_eigenvalues), None, len(full_eigenvalues)
+    if basis == "magnetisation":
+        sector = level_spacing_by_magnetisation(
+            K,
+            omega,
+            M=magnetisation,
+            max_dense_gib=max_dense_gib,
+        )
+        return float(sector["r_bar"]), int(sector["M"]), int(sector["dim"])
+    raise ValueError("level_spacing_basis must be 'magnetisation' or 'full'.")
+
+
 def compute_sff(
     K: np.ndarray,
     omega: np.ndarray,
     t_max: float = 20.0,
     n_times: int = 200,
     *,
+    level_spacing_basis: LevelSpacingBasis = "magnetisation",
+    magnetisation: int | None = None,
     max_dense_gib: float | None = None,
 ) -> SFFResult:
-    """Compute the Spectral Form Factor K(t) from eigenvalues."""
+    """Compute the Spectral Form Factor K(t) from exact eigenvalues.
+
+    The SFF itself uses the full finite-size spectrum. The reported
+    level-spacing ratio defaults to a U(1) magnetisation sector because
+    mixing independent symmetry sectors biases chaos diagnostics.
+    """
     n = len(omega)
     require_dense_eigensolver_workspace(
         n,
@@ -94,7 +131,15 @@ def compute_sff(
 
     dim = len(eigenvalues)
     gap = float(eigenvalues[1] - eigenvalues[0])
-    r_bar = _level_spacing_ratio(eigenvalues)
+    full_r_bar = _level_spacing_ratio(eigenvalues)
+    r_bar, sector, sector_dim = _sector_level_spacing_ratio(
+        K,
+        omega,
+        basis=level_spacing_basis,
+        magnetisation=magnetisation,
+        full_eigenvalues=eigenvalues,
+        max_dense_gib=max_dense_gib,
+    )
 
     # SFF: K(t) = |Σ_n exp(-iE_n t)|² / d²
     times = np.linspace(0, t_max, n_times)
@@ -112,6 +157,10 @@ def compute_sff(
         sff=sff,
         level_spacing_ratio=r_bar,
         spectral_gap=gap,
+        level_spacing_basis=level_spacing_basis,
+        level_spacing_sector=sector,
+        level_spacing_sector_dim=sector_dim,
+        full_spectrum_level_spacing_ratio=full_r_bar,
     )
 
 
@@ -122,6 +171,8 @@ def sff_vs_coupling(
     t_max: float = 20.0,
     n_times: int = 100,
     *,
+    level_spacing_basis: LevelSpacingBasis = "magnetisation",
+    magnetisation: int | None = None,
     max_dense_gib: float | None = None,
 ) -> SFFScanResult:
     """Scan SFF diagnostics across coupling strength.
@@ -138,7 +189,15 @@ def sff_vs_coupling(
 
     for idx, kb in enumerate(k_range):
         K = float(kb) * K_topology
-        result = compute_sff(K, omega, t_max, n_times, max_dense_gib=max_dense_gib)
+        result = compute_sff(
+            K,
+            omega,
+            t_max,
+            n_times,
+            level_spacing_basis=level_spacing_basis,
+            magnetisation=magnetisation,
+            max_dense_gib=max_dense_gib,
+        )
         r_bars[idx] = result.level_spacing_ratio
         gaps[idx] = result.spectral_gap
         # Dip depth: minimum of K(t) for t > 0 relative to K(0)=1
@@ -152,7 +211,7 @@ def sff_vs_coupling(
     chaos_threshold = 0.458
     chaos_k = None
     for i, r in enumerate(r_bars):
-        if r > chaos_threshold:
+        if np.isfinite(r) and r > chaos_threshold:
             chaos_k = float(k_range[i])
             break
 

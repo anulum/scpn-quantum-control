@@ -36,7 +36,7 @@ from math import comb
 
 import numpy as np
 
-from ..bridge.sparse_hamiltonian import build_sparse_hamiltonian
+from ..bridge.sparse_hamiltonian import build_sparse_sector_hamiltonian
 from ..dense_budget import (
     GIB,
     DenseAllocationError,
@@ -75,7 +75,7 @@ def basis_by_magnetisation(n: int) -> dict[int, np.ndarray]:
             m_val: np.array(indices, dtype=np.intp)
             for m_val, indices in sorted(sectors_out.items())
         }
-    except (ImportError, Exception):
+    except (ImportError, AttributeError):
         pass
 
     sectors: dict[int, list[int]] = {}
@@ -173,8 +173,9 @@ def build_sector_hamiltonian(
         max_dense_gib=max_dense_gib,
         label="magnetisation sector dense Hamiltonian",
     )
-    H_sparse = build_sparse_hamiltonian(K, omega)
-    H_sector = np.asarray(H_sparse[indices][:, indices].toarray())
+    H_sparse, sector_indices = build_sparse_sector_hamiltonian(K, omega, M)
+    H_sector = np.asarray(H_sparse.toarray())
+    indices = sector_indices
     return H_sector, indices
 
 
@@ -231,10 +232,10 @@ def eigh_by_magnetisation(
             "n_sectors_computed": 0,
         }
 
-    H_sparse = build_sparse_hamiltonian(K, omega)
-
     for m, indices in selected_indices.items():
-        H_sector = np.asarray(H_sparse[indices][:, indices].toarray())
+        H_sparse, sector_indices = build_sparse_sector_hamiltonian(K, omega, m)
+        H_sector = np.asarray(H_sparse.toarray())
+        indices = sector_indices
         vals, vecs = np.linalg.eigh(H_sector)
         results[m] = {
             "eigvals": vals,

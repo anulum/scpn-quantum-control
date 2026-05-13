@@ -181,12 +181,12 @@ class TestEighWithTranslation:
         assert result["dim"] > 0
         assert all(np.isfinite(result["eigvals"]))
 
-    def test_invalid_momentum_returns_empty(self):
-        """Momentum value not in sectors dict → empty result."""
+    @pytest.mark.parametrize("momentum", [-1, 4, 99])
+    def test_invalid_momentum_raises(self, momentum):
+        """Momentum labels must be in the Brillouin-zone range."""
         K, omega = _circulant_system(4)
-        result = eigh_with_translation(K, omega, momentum=99)
-        assert result["dim"] == 0
-        assert len(result["eigvals"]) == 0
+        with pytest.raises(ValueError, match="momentum"):
+            eigh_with_translation(K, omega, momentum=momentum)
 
     def test_rejects_projection_budget_before_sparse_build(self, monkeypatch):
         """Impossible sector budgets fail before Hamiltonian construction."""
