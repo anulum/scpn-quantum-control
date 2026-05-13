@@ -290,12 +290,51 @@ class TestOrderParamVec:
 
     def test_python_fallback(self):
         """Force Python path and compare to Rust path."""
-        from unittest.mock import patch
-
         psi = np.array([0.5, 0.5, 0.5, 0.5], dtype=np.complex128)
         r_default = _order_param_vec(psi, 2)
 
-        with patch.dict("sys.modules", {"scpn_quantum_engine": None}):
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(tensor_jump_module, "optional_rust_engine", lambda: None)
             r_python = _order_param_vec(psi, 2)
 
         np.testing.assert_allclose(r_python, r_default, atol=1e-10)
+
+    def test_rust_fast_path_is_used_when_available(self, monkeypatch):
+        """A present Rust order-parameter kernel is used directly."""
+
+        class Engine:
+            @staticmethod
+            def order_param_from_statevector(real, imag, n):  # noqa: ARG004
+                return 0.375
+
+        monkeypatch.setattr(tensor_jump_module, "optional_rust_engine", lambda: Engine())
+
+        psi = np.array([0.5, 0.5, 0.5, 0.5], dtype=np.complex128)
+        assert _order_param_vec(psi, 2) == pytest.approx(0.375)
+
+    def test_rust_runtime_failure_is_not_silently_downgraded(self, monkeypatch):
+        """A present but failing Rust order-parameter kernel must be visible."""
+
+        class Engine:
+            @staticmethod
+            def order_param_from_statevector(real, imag, n):  # noqa: ARG004
+                raise RuntimeError("native accelerator failed")
+
+        monkeypatch.setattr(tensor_jump_module, "optional_rust_engine", lambda: Engine())
+
+        psi = np.array([0.5, 0.5, 0.5, 0.5], dtype=np.complex128)
+        with pytest.raises(RuntimeError, match="native accelerator failed"):
+            _order_param_vec(psi, 2)
+
+    def test_missing_rust_symbol_falls_back_to_python(self, monkeypatch):
+        """Older optional engines without this symbol keep the Python path."""
+
+        class Engine:
+            pass
+
+        psi = np.array([0.5, 0.5, 0.5, 0.5], dtype=np.complex128)
+        monkeypatch.setattr(tensor_jump_module, "optional_rust_engine", lambda: None)
+        expected = _order_param_vec(psi, 2)
+
+        monkeypatch.setattr(tensor_jump_module, "optional_rust_engine", lambda: Engine())
+        np.testing.assert_allclose(_order_param_vec(psi, 2), expected, atol=1e-10)
