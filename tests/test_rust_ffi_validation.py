@@ -215,5 +215,52 @@ def test_score_regions_batch_accepts_complete_graph_scores() -> None:
     np.testing.assert_allclose(np.asarray(composite), np.array([0.99]))
 
 
+def test_mc_xy_simulate_rejects_non_contiguous_couplings() -> None:
+    k_flat = np.linspace(0.0, 1.0, 32, dtype=np.float64)[::2]
+
+    with pytest.raises(ValueError, match="k_flat must be a C-contiguous NumPy array"):
+        engine.mc_xy_simulate(k_flat, 4, 0.1, 2, 2, 42)
+
+
+def test_mc_xy_simulate_rejects_wrong_coupling_shape() -> None:
+    k_flat = np.ascontiguousarray(np.zeros(15, dtype=np.float64))
+
+    with pytest.raises(ValueError, match="k_flat length 15 != 4² = 16"):
+        engine.mc_xy_simulate(k_flat, 4, 0.1, 2, 2, 42)
+
+
+def test_mc_xy_simulate_rejects_non_finite_coupling() -> None:
+    k_flat = np.ascontiguousarray(np.zeros((4, 4), dtype=np.float64).ravel())
+    k_flat[3] = np.inf
+
+    with pytest.raises(ValueError, match=r"k_flat\[3\] is not finite"):
+        engine.mc_xy_simulate(k_flat, 4, 0.1, 2, 2, 42)
+
+
+def test_mc_xy_simulate_rejects_negative_coupling() -> None:
+    k_flat = np.ascontiguousarray(np.zeros((4, 4), dtype=np.float64).ravel())
+    k_flat[1] = -0.2
+
+    with pytest.raises(ValueError, match=r"k_flat\[1\] must be non-negative"):
+        engine.mc_xy_simulate(k_flat, 4, 0.1, 2, 2, 42)
+
+
+def test_mc_xy_simulate_rejects_zero_measurements() -> None:
+    k_flat = np.ascontiguousarray(np.zeros((4, 4), dtype=np.float64).ravel())
+
+    with pytest.raises(ValueError, match="n_measure must be > 0"):
+        engine.mc_xy_simulate(k_flat, 4, 0.1, 2, 0, 42)
+
+
+def test_mc_xy_simulate_accepts_zero_coupling_reference() -> None:
+    k_flat = np.ascontiguousarray(np.zeros((4, 4), dtype=np.float64).ravel())
+
+    energy, order, helicity = engine.mc_xy_simulate(k_flat, 4, 0.1, 2, 3, 42)
+
+    assert energy == pytest.approx(0.0)
+    assert 0.0 <= order <= 1.0
+    assert helicity == pytest.approx(0.0)
+
+
 def r_values_error_pattern() -> str:
     return r"r_values must be a C-contiguous NumPy array"

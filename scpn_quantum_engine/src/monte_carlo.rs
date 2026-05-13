@@ -12,10 +12,13 @@
 //! Metropolis updates. Computes energy, order parameter, and helicity modulus
 //! (superfluid stiffness) averaged over measurement sweeps.
 
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use rand::prelude::*;
 
-use crate::validation::{validate_n, validate_positive};
+use crate::validation::{
+    validate_contiguous_slice, validate_finite, validate_flat_square, validate_n, validate_positive,
+};
 
 /// Monte Carlo XY model simulation on arbitrary coupling graph.
 ///
@@ -31,7 +34,17 @@ pub fn mc_xy_simulate(
 ) -> PyResult<(f64, f64, f64)> {
     validate_n(n, "n")?;
     validate_positive(temperature, "temperature")?;
-    let k_data = k_flat.as_slice().unwrap();
+    validate_n(n_measure, "n_measure")?;
+    let k_data = validate_contiguous_slice(&k_flat, "k_flat")?;
+    validate_flat_square(k_data, n, "k_flat")?;
+    validate_finite(k_data, "k_flat")?;
+    for (idx, &coupling) in k_data.iter().enumerate() {
+        if coupling < 0.0 {
+            return Err(PyValueError::new_err(format!(
+                "k_flat[{idx}] must be non-negative, got {coupling}"
+            )));
+        }
+    }
     let beta = if temperature > 1e-15 {
         1.0 / temperature
     } else {
