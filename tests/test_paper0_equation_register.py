@@ -93,11 +93,38 @@ def test_neurovascular_record_is_source_anchored() -> None:
     assert "neurovascular" in record.themes
 
 
+def test_glial_and_immune_records_are_source_anchored() -> None:
+    immune = get_paper0_equation_record("embodied.quantum_immune_interface")
+    glial = get_paper0_equation_record("embodied.glial_sigma_control")
+
+    assert immune.source_equation_ids == ("EQ0105",)
+    assert "H_{\\mathrm{int}}" in immune.canonical_latex
+    assert set(immune.variables) >= {"lambda", "Psi_s", "C_cyto", "sigma_x"}
+    assert "cytokine" in " ".join(immune.validation_targets)
+    assert "immune-interface" in immune.themes
+
+    assert glial.source_equation_ids == (
+        "EQ0106",
+        "EQ0107",
+        "EQ0108",
+        "EQ0109",
+        "EQ0110",
+        "EQ0111",
+        "EQ0112",
+    )
+    assert "\\dot{\\sigma}" in glial.canonical_latex
+    assert "\\dot{G}" in glial.canonical_latex
+    assert set(glial.variables) >= {"sigma", "G", "Ca_A", "kappa", "alpha", "beta"}
+    assert "gliotransmitter blockade" in " ".join(glial.validation_targets)
+    assert "glial-control" in glial.themes
+
+
 def test_iter_records_filters_by_theme_without_synthetic_entries() -> None:
     upde = list(iter_paper0_equation_records(theme="UPDE"))
     fim = list(iter_paper0_equation_records(theme="FIM"))
     macro = list(iter_paper0_equation_records(theme="macro-transition"))
     neurovascular = list(iter_paper0_equation_records(theme="neurovascular"))
+    glial = list(iter_paper0_equation_records(theme="glial-control"))
 
     assert {record.key for record in upde} >= {
         "upde.base_phase",
@@ -111,6 +138,9 @@ def test_iter_records_filters_by_theme_without_synthetic_entries() -> None:
     }
     assert {record.key for record in neurovascular} == {
         "embodied.neurovascular_phase_coupling",
+    }
+    assert {record.key for record in glial} == {
+        "embodied.glial_sigma_control",
     }
 
 

@@ -301,6 +301,99 @@ _RECORDS: tuple[Paper0EquationRecord, ...] = (
             "phase coupling",
         ),
     ),
+    Paper0EquationRecord(
+        key="embodied.quantum_immune_interface",
+        manuscript=_MANUSCRIPT,
+        source_equation_ids=("EQ0105",),
+        section_path=(
+            "Structural Overview (by Domain) > The Genesis of Life - "
+            "Abiogenesis as a Guided Phase Transition > The Slow Control Layer - "
+            "Glial and Immune Modulation > II. The Quantum-Immune Interface "
+            "(L1/L2/L5 Integration)"
+        ),
+        canonical_latex=(
+            "H_{\\mathrm{int}}=-\\lambda(\\Psi_s,C_{\\mathrm{cyto}})\\sum_i\\sigma_x^{(i)}"
+        ),
+        variables={
+            "H_int": "immune-state dependent interaction Hamiltonian term",
+            "lambda": "coupling amplitude as a function of substrate state and cytokines",
+            "Psi_s": "biological substrate field state used by the Paper 0 source",
+            "C_cyto": "systemic cytokine concentration or cytokine-state vector",
+            "sigma_x": "Pauli-X operator on the affected two-state quantum-biological mode",
+        },
+        assumptions=(
+            "finite-dimensional two-state subsystem representation",
+            "cytokine state enters only through declared coupling lambda",
+            "operator support and units are declared before numerical simulation",
+            "immune-interface claims remain mechanism-level until empirical data exist",
+        ),
+        validation_targets=(
+            "cytokine-dependent Hamiltonian parameter scan",
+            "zero lambda immune-decoupled null control",
+            "fixed cytokine-state sensitivity and sign-convention control",
+            "operator-norm boundedness and Hermiticity checks",
+        ),
+        themes=(
+            "embodied",
+            "immune-interface",
+            "abiogenesis",
+            "cellular",
+            "Hamiltonian",
+        ),
+    ),
+    Paper0EquationRecord(
+        key="embodied.glial_sigma_control",
+        manuscript=_MANUSCRIPT,
+        source_equation_ids=(
+            "EQ0106",
+            "EQ0107",
+            "EQ0108",
+            "EQ0109",
+            "EQ0110",
+            "EQ0111",
+            "EQ0112",
+        ),
+        section_path=(
+            "Structural Overview (by Domain) > The Genesis of Life - "
+            "Abiogenesis as a Guided Phase Transition > The Glial-Neuronal "
+            "Coupling Mechanism: Slow Control of Neuronal Criticality"
+        ),
+        canonical_latex=(
+            "\\dot{\\sigma}=-\\kappa\\left(\\sigma-(1+\\gamma G(t))\\right)+"
+            "\\eta(t),\\quad "
+            "\\dot{G}=\\alpha[Ca^{2+}]_A(t)-\\beta G(t)"
+        ),
+        variables={
+            "sigma": "average neuronal branching parameter",
+            "G": "local gliotransmitter concentration",
+            "Ca_A": "astrocyte intracellular calcium signal",
+            "kappa": "homeostatic relaxation rate of the neuronal criticality variable",
+            "gamma": "sensitivity of neuronal excitation-inhibition balance to G",
+            "alpha": "calcium-dependent gliotransmitter release rate",
+            "beta": "gliotransmitter clearance or degradation rate",
+            "eta": "stochastic fluctuation term in branching-parameter dynamics",
+        },
+        assumptions=(
+            "sigma is a coarse-grained finite branching observable",
+            "G is non-negative and cleared with positive beta",
+            "astrocyte calcium drive is externally measured or explicitly generated",
+            "timescale separation between fast neuronal avalanches and slow glial control",
+        ),
+        validation_targets=(
+            "sigma relaxation to one under baseline homeostasis",
+            "calcium-driven gliotransmitter response with positive alpha and beta",
+            "glial slow-control shift in sigma set-point under finite gamma",
+            "gliotransmitter blockade falsifier with attenuated sigma response",
+        ),
+        themes=(
+            "embodied",
+            "glial-control",
+            "abiogenesis",
+            "cellular",
+            "quasicriticality",
+            "slow control",
+        ),
+    ),
 )
 
 _RECORDS_BY_KEY = {record.key: record for record in _RECORDS}
