@@ -119,7 +119,7 @@ class TestCriticalConcordance:
                 omega,
                 T,
                 k_range=np.array([1.0, 2.0]),
-                max_dense_gib=1e-12,
+                max_dense_gib=1e-5,
             )
 
     def test_propagates_dense_budget_to_qfi_probe(self, monkeypatch):

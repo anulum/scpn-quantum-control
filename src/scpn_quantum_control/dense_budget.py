@@ -18,6 +18,7 @@ import numpy as np
 DEFAULT_DENSE_BUDGET_ENV: Final = "SCPN_MAX_DENSE_GIB"
 DEFAULT_DENSE_RAM_FRACTION: Final = 0.30
 DEFAULT_DENSE_BUDGET_CAP_GIB: Final = 8.0
+DEFAULT_DENSE_EIGENSOLVER_OBJECTS: Final = 4
 GIB: Final = 1024**3
 
 
@@ -169,3 +170,27 @@ def require_dense_allocation(
             f"or explicit hardware execution instead of dense allocation."
         )
     return estimate
+
+
+def require_dense_eigensolver_workspace(
+    n_qubits: int,
+    *,
+    dtype: np.dtype | type | str = np.complex128,
+    max_gib: float | None = None,
+    label: str = "dense eigensolver workspace",
+) -> DenseAllocationEstimate:
+    """Guard a dense Hermitian eigensolver call and retained eigenvectors.
+
+    LAPACK-style dense Hermitian solvers can retain both the input Hamiltonian
+    and eigenvector matrix while allocating additional reduction/work arrays.
+    Counting one or two dense matrices underestimates the real peak workspace,
+    so exact spectral probes use a shared conservative multiplier.
+    """
+    return require_dense_allocation(
+        n_qubits,
+        dtype=dtype,
+        rank=2,
+        object_count=DEFAULT_DENSE_EIGENSOLVER_OBJECTS,
+        max_gib=max_gib,
+        label=label,
+    )

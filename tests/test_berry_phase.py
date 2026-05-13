@@ -202,7 +202,7 @@ class TestGroundState:
         )
 
         with pytest.raises(DenseAllocationError, match="Berry phase dense eigensolver"):
-            _ground_state(T, omega, max_dense_gib=1e-12)
+            _ground_state(T, omega, max_dense_gib=1e-5)
 
 
 class TestBerryPhaseBudget:

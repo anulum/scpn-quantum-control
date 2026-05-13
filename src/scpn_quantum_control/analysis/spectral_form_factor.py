@@ -35,7 +35,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
-from ..dense_budget import require_dense_allocation
+from ..dense_budget import require_dense_eigensolver_workspace
 
 
 @dataclass
@@ -83,10 +83,8 @@ def compute_sff(
 ) -> SFFResult:
     """Compute the Spectral Form Factor K(t) from eigenvalues."""
     n = len(omega)
-    require_dense_allocation(
+    require_dense_eigensolver_workspace(
         n,
-        rank=2,
-        object_count=2,
         max_gib=max_dense_gib,
         label="SFF dense eigensolver",
     )

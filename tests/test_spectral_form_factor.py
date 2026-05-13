@@ -76,7 +76,7 @@ class TestComputeSFF:
         omega = OMEGA_N_16[:4]
 
         with pytest.raises(DenseAllocationError, match="SFF dense eigensolver"):
-            compute_sff(K, omega, t_max=1.0, n_times=2, max_dense_gib=1e-12)
+            compute_sff(K, omega, t_max=1.0, n_times=2, max_dense_gib=1e-5)
 
 
 class TestSFFVsCoupling:

@@ -38,7 +38,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
-from ..dense_budget import require_dense_allocation
+from ..dense_budget import require_dense_allocation, require_dense_eigensolver_workspace
 
 
 @dataclass
@@ -63,10 +63,8 @@ def _ground_state(
 ) -> tuple[np.ndarray, float]:
     """Return (ground state vector, spectral gap)."""
     n = len(omega)
-    require_dense_allocation(
+    require_dense_eigensolver_workspace(
         n,
-        rank=2,
-        object_count=2,
         max_gib=max_dense_gib,
         label="Berry phase dense eigensolver workspace",
     )

@@ -19,6 +19,7 @@ from scpn_quantum_control.dense_budget import (
     estimate_dense_allocation,
     hilbert_dimension,
     require_dense_allocation,
+    require_dense_eigensolver_workspace,
 )
 
 
@@ -72,3 +73,12 @@ def test_knm_dense_matrix_fails_closed_before_rust_or_qiskit_allocation() -> Non
 
     with pytest.raises(DenseAllocationError, match="sparse, sector, tensor-network"):
         knm_to_dense_matrix(K, omega, max_dense_gib=1.0)
+
+
+def test_dense_eigensolver_workspace_uses_conservative_multiplier() -> None:
+    with pytest.raises(DenseAllocationError, match="test dense eigensolver"):
+        require_dense_eigensolver_workspace(
+            4,
+            max_gib=1e-5,
+            label="test dense eigensolver",
+        )

@@ -31,7 +31,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from ..bridge.knm_hamiltonian import OMEGA_N_16, knm_to_dense_matrix
-from ..dense_budget import require_dense_allocation
+from ..dense_budget import require_dense_eigensolver_workspace
 
 
 @dataclass
@@ -57,10 +57,8 @@ def _find_kc_from_gap(
     Returns (k_c, min_gap).
     """
     n = len(omega)
-    require_dense_allocation(
+    require_dense_eigensolver_workspace(
         n,
-        rank=2,
-        object_count=2,
         max_gib=max_dense_gib,
         label="finite-size gap dense eigensolver workspace",
     )

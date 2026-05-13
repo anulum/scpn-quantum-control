@@ -109,7 +109,7 @@ class TestFiniteSizeScaling:
                 omega,
                 topology,
                 k_range,
-                max_dense_gib=1e-12,
+                max_dense_gib=1e-5,
             )
 
     def test_finite_size_scaling_propagates_dense_budget(self, monkeypatch):

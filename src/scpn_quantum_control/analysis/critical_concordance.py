@@ -30,7 +30,7 @@ import numpy as np
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
-from ..dense_budget import require_dense_allocation
+from ..dense_budget import require_dense_eigensolver_workspace
 from .entanglement_percolation import concurrence_map_exact, fiedler_eigenvalue
 from .qfi_criticality import qfi_single_coupling
 
@@ -87,10 +87,8 @@ def critical_concordance(
 
     n = len(omega)
     n_k = len(k_range)
-    require_dense_allocation(
+    require_dense_eigensolver_workspace(
         n,
-        rank=2,
-        object_count=2,
         max_gib=max_dense_gib,
         label="critical concordance dense eigensolver workspace",
     )
