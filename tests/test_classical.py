@@ -16,6 +16,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.hardware.classical import (
     bloch_vectors_from_json,
     classical_brute_mpc,
@@ -138,6 +140,15 @@ def test_exact_evolution_default_params(n):
     """Default K and omega from Paper 27."""
     result = classical_exact_evolution(n, t_max=0.2, dt=0.1)
     assert len(result["R"]) == 3
+
+
+def test_exact_evolution_dense_branch_propagates_dense_budget():
+    n = 4
+    K = build_knm_paper27(L=n)
+    omega = OMEGA_N_16[:n].copy()
+
+    with pytest.raises(DenseAllocationError, match="dense XY Hamiltonian"):
+        classical_exact_evolution(n, t_max=0.1, dt=0.1, K=K, omega=omega, max_dense_gib=1e-12)
 
 
 # --- classical_brute_mpc ---

@@ -64,6 +64,8 @@ def loschmidt_echo(
     K: np.ndarray,
     omega: np.ndarray,
     t: float = 0.5,
+    *,
+    max_dense_gib: float | None = None,
 ) -> float:
     """Loschmidt echo L(t) = |<ψ(0)|ψ(t)>|²."""
     n = K.shape[0]
@@ -71,7 +73,7 @@ def loschmidt_echo(
     psi_0 = np.ascontiguousarray(exact["ground_state"])
 
     knm_to_hamiltonian(K, omega)
-    H_raw = knm_to_dense_matrix(K, omega)
+    H_raw = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
     H_mat = H_raw.toarray() if hasattr(H_raw, "toarray") else np.array(H_raw)
 
     psi_t = _evolve_exact(psi_0, H_mat, t)
@@ -81,6 +83,8 @@ def loschmidt_echo(
 def energy_variance(
     K: np.ndarray,
     omega: np.ndarray,
+    *,
+    max_dense_gib: float | None = None,
 ) -> float:
     """Energy variance ΔE² = <H²> - <H>² for the ground state."""
     n = K.shape[0]
@@ -88,7 +92,7 @@ def energy_variance(
     psi = np.ascontiguousarray(exact["ground_state"])
 
     knm_to_hamiltonian(K, omega)
-    H_raw = knm_to_dense_matrix(K, omega)
+    H_raw = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
     H_mat = H_raw.toarray() if hasattr(H_raw, "toarray") else np.array(H_raw)
 
     e_mean = float(np.real(psi.conj() @ H_mat @ psi))

@@ -170,6 +170,8 @@ def classical_exact_evolution(
     dt: float,
     K: np.ndarray | None = None,
     omega: np.ndarray | None = None,
+    *,
+    max_dense_gib: float | None = None,
 ) -> dict:
     """Exact matrix exponential evolution of XY Hamiltonian.
 
@@ -203,7 +205,7 @@ def classical_exact_evolution(
             R_history[s] = _state_order_param_sparse(psi, n_osc)
     else:
         # Dense path: build U_dt once, reuse
-        H_mat = knm_to_dense_matrix(K, omega)
+        H_mat = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
         U_dt = expm(-1j * H_mat * dt)
         for s in range(1, n_steps + 1):
             psi = U_dt @ psi

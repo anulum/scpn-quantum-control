@@ -17,6 +17,7 @@ from scpn_quantum_control.applications.eeg_classification import (
     eeg_plv_to_vqe,
     eeg_quantum_kernel,
 )
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 class TestEEGClassification:
@@ -134,6 +135,13 @@ class TestEEGClassification:
         omega = np.ones(2) * 10.0
         with pytest.raises(ValueError, match="threshold must be in"):
             eeg_plv_to_vqe(plv, omega, threshold=-0.1)
+
+    def test_propagates_dense_budget(self):
+        plv = np.array([[0, 0.5], [0.5, 0]])
+        omega = np.array([10.0, 10.0])
+
+        with pytest.raises(DenseAllocationError, match="dense XY Hamiltonian"):
+            eeg_plv_to_vqe(plv, omega, max_dense_gib=1e-12)
 
     def test_kernel_rejects_empty_states(self):
         with pytest.raises(ValueError, match="state_a must contain at least one amplitude"):

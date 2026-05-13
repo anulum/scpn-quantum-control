@@ -148,6 +148,17 @@ def mcwf_trajectory(
     )
     rng = np.random.default_rng(seed)
 
+    # Zero physical horizon is a valid request for initial-condition diagnostics.
+    # Return the initial state without constructing a propagator or advancing time.
+    if t_max == 0.0:
+        psi = _initial_product_state(omega)
+        return {
+            "times": np.array([0.0]),
+            "R": np.array([_order_param_vec(psi, n)]),
+            "psi_final": psi,
+            "n_jumps": 0,
+        }
+
     H = knm_to_sparse_matrix(K, omega).astype(np.complex128)
     L_ops = _build_sparse_lindblad_ops(n, gamma_amp, gamma_deph)
     anti_hermitian = sparse.csr_matrix((dim, dim), dtype=np.complex128)
@@ -217,6 +228,11 @@ def mcwf_ensemble(
 
     Returns dict with keys: times, R_mean, R_std, R_trajectories, total_jumps
     """
+    if isinstance(n_trajectories, bool) or not isinstance(n_trajectories, int):
+        raise ValueError("n_trajectories must be a positive integer.")
+    if n_trajectories < 1:
+        raise ValueError("n_trajectories must be at least 1.")
+
     rng = np.random.default_rng(seed)
     seeds = rng.integers(0, 2**31, size=n_trajectories)
 

@@ -102,9 +102,13 @@ def compile_hamiltonian(problem: KuramotoProblem) -> SparsePauliOp:
     return knm_to_hamiltonian(problem.K_nm, problem.omega)
 
 
-def compile_dense_hamiltonian(problem: KuramotoProblem) -> np.ndarray:
+def compile_dense_hamiltonian(
+    problem: KuramotoProblem,
+    *,
+    max_dense_gib: float | None = None,
+) -> np.ndarray:
     """Compile a dense Hamiltonian, using the Rust engine when installed."""
-    return knm_to_dense_matrix(problem.K_nm, problem.omega)
+    return knm_to_dense_matrix(problem.K_nm, problem.omega, max_dense_gib=max_dense_gib)
 
 
 def compile_trotter_circuit(

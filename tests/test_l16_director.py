@@ -12,6 +12,7 @@ from __future__ import annotations
 import pytest
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.l16.quantum_director import (
     L16Result,
     compute_l16_lyapunov,
@@ -41,6 +42,14 @@ class TestLoschmidtEcho:
         le = loschmidt_echo(K, omega, t=0.5)
         assert le > 0.99
 
+    def test_propagates_dense_budget(self):
+        n = 4
+        K = build_knm_paper27(L=n)
+        omega = OMEGA_N_16[:n]
+
+        with pytest.raises(DenseAllocationError, match="dense XY Hamiltonian"):
+            loschmidt_echo(K, omega, t=0.5, max_dense_gib=1e-12)
+
 
 class TestEnergyVariance:
     def test_ground_state_near_zero(self):
@@ -55,6 +64,14 @@ class TestEnergyVariance:
         omega = OMEGA_N_16[:3]
         var = energy_variance(K, omega)
         assert var >= -1e-10
+
+    def test_propagates_dense_budget(self):
+        n = 4
+        K = build_knm_paper27(L=n)
+        omega = OMEGA_N_16[:n]
+
+        with pytest.raises(DenseAllocationError, match="dense XY Hamiltonian"):
+            energy_variance(K, omega, max_dense_gib=1e-12)
 
 
 class TestFidelitySusceptibility:

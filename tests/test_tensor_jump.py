@@ -122,6 +122,22 @@ class TestMCWFTrajectory:
         result = mcwf_trajectory(K, omega, gamma_amp=0.05, t_max=0.05, dt=0.05, seed=42)
         assert len(result["times"]) == 2
 
+    def test_zero_horizon_returns_initial_state_without_propagation(self, monkeypatch):
+        K, omega = _system(2)
+
+        def fail_propagation(*args, **kwargs):
+            raise AssertionError("zero-horizon MCWF must not propagate")
+
+        monkeypatch.setattr(tensor_jump_module, "expm_multiply", fail_propagation)
+
+        result = mcwf_trajectory(K, omega, gamma_amp=0.05, t_max=0.0, dt=0.1, seed=42)
+
+        assert result["times"].shape == (1,)
+        assert result["times"][0] == 0.0
+        assert result["R"].shape == (1,)
+        assert result["psi_final"].shape == (4,)
+        assert result["n_jumps"] == 0
+
     def test_zero_weight_selected_jump_falls_back_to_no_jump(self, monkeypatch):
         from scpn_quantum_control.phase import tensor_jump as module
 
@@ -246,6 +262,13 @@ class TestMCWFEnsemble:
                 seed=42,
                 max_dense_gib=1e-12,
             )
+
+    @pytest.mark.parametrize("n_trajectories", [0, -1])
+    def test_rejects_non_positive_trajectory_count(self, n_trajectories):
+        K, omega = _system(2)
+
+        with pytest.raises(ValueError, match="n_trajectories"):
+            mcwf_ensemble(K, omega, n_trajectories=n_trajectories)
 
 
 class TestOrderParamVec:

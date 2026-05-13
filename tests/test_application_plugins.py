@@ -31,6 +31,7 @@ from scpn_quantum_control.applications.app_plugins import (
     get_application_plugin,
     get_application_plugin_registry,
 )
+from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.kuramoto_core import compile_dense_hamiltonian
 
 
@@ -49,6 +50,14 @@ def test_packaged_application_artifacts_validate_and_compile() -> None:
         dense = compile_dense_hamiltonian(problem)
         assert dense.shape == (2**artifact.n_oscillators, 2**artifact.n_oscillators)
         assert np.all(np.isfinite(dense))
+
+
+def test_compile_dense_hamiltonian_propagates_dense_budget() -> None:
+    artifact = load_application_benchmark_artifact("ieee5bus_power_grid")
+    problem = artifact_to_kuramoto_problem(artifact)
+
+    with pytest.raises(DenseAllocationError, match="dense XY Hamiltonian"):
+        compile_dense_hamiltonian(problem, max_dense_gib=1e-12)
 
 
 def test_builtin_application_benchmark_suite_runs_all_domains() -> None:

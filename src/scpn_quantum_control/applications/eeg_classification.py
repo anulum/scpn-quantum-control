@@ -100,6 +100,8 @@ def eeg_plv_to_vqe(
     natural_frequencies: np.ndarray,
     reps: int = 2,
     threshold: float = 0.1,
+    *,
+    max_dense_gib: float | None = None,
 ) -> EEGVQEResult:
     """Map an EEG PLV matrix to a VQE ground state using a Structured Ansatz.
 
@@ -119,7 +121,7 @@ def eeg_plv_to_vqe(
     threshold = _validated_threshold(threshold)
 
     # Use fast Rust-accelerated dense matrix builder
-    knm_to_dense_matrix(plv_matrix, natural_frequencies)
+    knm_to_dense_matrix(plv_matrix, natural_frequencies, max_dense_gib=max_dense_gib)
 
     ansatz = build_structured_ansatz(plv_matrix, reps=reps, threshold=threshold)
     n_params = ansatz.num_parameters
