@@ -10,8 +10,11 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16
+from scpn_quantum_control.dense_budget import DenseAllocationError
+from scpn_quantum_control.phase import adiabatic_preparation as adiabatic_module
 from scpn_quantum_control.phase.adiabatic_preparation import (
     AdiabaticResult,
     adiabatic_ramp,
@@ -85,6 +88,25 @@ class TestAdiabaticRamp:
         assert isinstance(result, AdiabaticResult)
         assert np.all(np.isfinite(result.fidelity))
 
+    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+        T = _ring_topology(3)
+        omega = OMEGA_N_16[:3]
+
+        def fail_dense(*args, **kwargs):
+            raise AssertionError("dense Hamiltonian builder must not run after budget rejection")
+
+        monkeypatch.setattr(adiabatic_module, "knm_to_dense_matrix", fail_dense)
+
+        with pytest.raises(DenseAllocationError, match="adiabatic dense eigensolver"):
+            adiabatic_ramp(
+                omega,
+                T,
+                K_target=2.0,
+                T_total=5.0,
+                n_steps=15,
+                max_dense_gib=1e-12,
+            )
+
 
 class TestAdiabaticTimeScaling:
     def test_returns_dict(self):
@@ -108,6 +130,25 @@ class TestAdiabaticTimeScaling:
         )
         # Not guaranteed for all T, but large gap should show trend
         assert all(np.isfinite(f) for f in result["final_fidelity"])
+
+    def test_time_scaling_propagates_dense_budget(self, monkeypatch):
+        T = _ring_topology(3)
+        omega = OMEGA_N_16[:3]
+
+        def fail_dense(*args, **kwargs):
+            raise AssertionError("dense Hamiltonian builder must not run after budget rejection")
+
+        monkeypatch.setattr(adiabatic_module, "knm_to_dense_matrix", fail_dense)
+
+        with pytest.raises(DenseAllocationError, match="adiabatic dense eigensolver"):
+            adiabatic_time_scaling(
+                omega,
+                T,
+                K_target=2.0,
+                T_values=np.array([1.0, 2.0]),
+                n_steps_per_T=10,
+                max_dense_gib=1e-12,
+            )
 
 
 # ---------------------------------------------------------------------------

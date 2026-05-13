@@ -228,7 +228,7 @@ def auto_solve(
     if backend == "sector_ed":
         from ..analysis.symmetry_sectors import eigh_by_sector
 
-        result = eigh_by_sector(K, omega)
+        result = eigh_by_sector(K, omega, max_dense_gib=max_dense_gib)
         return {"backend_used": backend, "result": result, "recommendation": rec}
 
     if backend == "mps_dmrg":

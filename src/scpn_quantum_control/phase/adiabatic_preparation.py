@@ -13,16 +13,11 @@ slowly ramp K from 0 to K_target. Track:
 2. Spectral gap Δ(K) along the path
 3. Minimum gap → controls adiabatic speed limit
 
-At the BKT critical point K_c, the gap closes as
-Δ ~ exp(-b/√(K-K_c)), an essential singularity.
-This is qualitatively different from power-law gap closings
-at standard (2nd-order) QPTs:
-- 2nd order: Δ ~ |K-K_c|^(zν) → adiabatic time T ~ 1/Δ² ~ L^(2zν)
-- BKT: Δ ~ exp(-b/√(K-K_c)) → T ~ exp(2b/√(K-K_c))
-  → EXPONENTIALLY slow adiabatic preparation at K_c
-
-Nobody has studied adiabatic preparation fidelity specifically
-at BKT transitions with heterogeneous frequencies.
+In finite-size scans near a Berezinskii-Kosterlitz-Thouless transition,
+the spectral gap can become very small compared with conventional
+second-order critical paths. This module measures the finite-size
+instantaneous gap and fidelity along a chosen dense exact path; it does not
+prove an asymptotic BKT scaling law by itself.
 """
 
 from __future__ import annotations
@@ -33,6 +28,7 @@ import numpy as np
 from scipy.linalg import expm
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
+from ..dense_budget import require_dense_allocation
 
 
 @dataclass
@@ -54,17 +50,34 @@ def adiabatic_ramp(
     K_target: float,
     T_total: float = 10.0,
     n_steps: int = 50,
+    *,
+    max_dense_gib: float | None = None,
 ) -> AdiabaticResult:
     """Adiabatic preparation: ramp K from 0 to K_target over time T_total.
 
     Linear schedule: K(t) = K_target * t / T_total.
     """
+    n = len(omega)
+    require_dense_allocation(
+        n,
+        rank=2,
+        object_count=5,
+        max_gib=max_dense_gib,
+        label="adiabatic dense eigensolver/evolution workspace",
+    )
+    require_dense_allocation(
+        n,
+        rank=1,
+        object_count=3,
+        max_gib=max_dense_gib,
+        label="adiabatic dense state workspace",
+    )
     dt = T_total / n_steps
 
     # Initial state: ground state of H(K≈0) — product state
     # Use small K to avoid degeneracy at K=0
     K_init = 0.01 * K_topology
-    H_init = knm_to_dense_matrix(K_init, omega)
+    H_init = knm_to_dense_matrix(K_init, omega, max_dense_gib=max_dense_gib)
     eigvals_init, eigvecs_init = np.linalg.eigh(H_init)
     psi = np.ascontiguousarray(eigvecs_init[:, 0]).astype(complex)
 
@@ -81,7 +94,7 @@ def adiabatic_ramp(
         # Hamiltonian at midpoint
         K_mid = K_target * (times[step] + dt / 2) / T_total
         K_mat = K_mid * K_topology
-        H_mat = knm_to_dense_matrix(K_mat, omega)
+        H_mat = knm_to_dense_matrix(K_mat, omega, max_dense_gib=max_dense_gib)
 
         # Evolve: |ψ(t+dt)⟩ = exp(-iHdt)|ψ(t)⟩
         U = expm(-1j * H_mat * dt)
@@ -90,7 +103,7 @@ def adiabatic_ramp(
         # Current ground state and gap
         K_now = K_schedule[step + 1]
         K_now_mat = K_now * K_topology
-        H_now = knm_to_dense_matrix(K_now_mat, omega)
+        H_now = knm_to_dense_matrix(K_now_mat, omega, max_dense_gib=max_dense_gib)
         eigvals, eigvecs = np.linalg.eigh(H_now)
         psi_gs = eigvecs[:, 0]
         gaps[step + 1] = float(eigvals[1] - eigvals[0])
@@ -118,11 +131,14 @@ def adiabatic_time_scaling(
     K_target: float,
     T_values: np.ndarray | None = None,
     n_steps_per_T: int = 40,
+    *,
+    max_dense_gib: float | None = None,
 ) -> dict[str, list[float]]:
     """Scan adiabatic time vs final fidelity.
 
-    For BKT: fidelity should improve exponentially slowly with T
-    (compared to power-law for 2nd-order QPTs).
+    Near very small finite-size gaps, fidelity can improve slowly with total
+    ramp time. This scan reports the observed finite-size trend for the given
+    system and schedule; it is not an asymptotic BKT scaling proof.
     """
     if T_values is None:
         T_values = np.array([1.0, 2.0, 5.0, 10.0, 20.0])
@@ -134,7 +150,14 @@ def adiabatic_time_scaling(
     }
 
     for T in T_values:
-        ar = adiabatic_ramp(omega, K_topology, K_target, float(T), n_steps_per_T)
+        ar = adiabatic_ramp(
+            omega,
+            K_topology,
+            K_target,
+            float(T),
+            n_steps_per_T,
+            max_dense_gib=max_dense_gib,
+        )
         results["T_total"].append(float(T))
         results["final_fidelity"].append(ar.final_fidelity)
         results["min_gap"].append(ar.min_gap)

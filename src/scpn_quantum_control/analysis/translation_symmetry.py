@@ -27,8 +27,10 @@ Inspired by QuSpin (Weinberg & Bukov, SciPost 2017).
 from __future__ import annotations
 
 import numpy as np
+from scipy import sparse
 
-from ..bridge.knm_hamiltonian import knm_to_dense_matrix
+from ..bridge.sparse_hamiltonian import build_sparse_hamiltonian
+from ..dense_budget import GIB, DenseAllocationError, dense_budget_bytes
 
 
 def _cyclic_shift(k: int, n: int) -> int:
@@ -102,10 +104,57 @@ def momentum_sector_dimensions(n: int) -> dict[int, int]:
     return {m: len(reps) for m, reps in sectors.items()}
 
 
+def _require_momentum_sector_budget(
+    sector_dim: int,
+    *,
+    max_dense_gib: float | None,
+    object_count: int = 2,
+) -> None:
+    """Guard dense sector eigensolver workspace for a projected momentum block."""
+    if sector_dim < 1:
+        return
+    bytes_required = sector_dim * sector_dim * np.dtype(np.complex128).itemsize * object_count
+    budget = dense_budget_bytes(max_dense_gib)
+    if bytes_required > budget:
+        raise DenseAllocationError(
+            "translation momentum sector dense eigensolver workspace "
+            f"for dim={sector_dim} requires {bytes_required / GIB:.2f} GiB "
+            f"for {object_count} objects of shape ({sector_dim}, {sector_dim}) "
+            f"(complex128), above the active dense budget {budget / GIB:.2f} GiB. "
+            "Use a sparse or matrix-free eigensolver for this momentum sector."
+        )
+
+
+def _bloch_projector(n: int, reps: list[int], phase: complex) -> sparse.csr_matrix:
+    """Build a sparse row projector onto translation-momentum Bloch states."""
+    dim = 2**n
+    rows: list[int] = []
+    cols: list[int] = []
+    data: list[complex] = []
+
+    for row_idx, alpha in enumerate(reps):
+        orbit = []
+        state = alpha
+        for _ in range(n):
+            orbit.append(state)
+            state = _cyclic_shift(state, n)
+            if state == alpha:
+                break
+        norm = np.sqrt(len(orbit))
+        for r, basis_state in enumerate(orbit):
+            rows.append(row_idx)
+            cols.append(basis_state)
+            data.append(phase**r / norm)
+
+    return sparse.csr_matrix((data, (rows, cols)), shape=(len(reps), dim), dtype=np.complex128)
+
+
 def eigh_with_translation(
     K: np.ndarray,
     omega: np.ndarray,
     momentum: int = 0,
+    *,
+    max_dense_gib: float | None = None,
 ) -> dict:
     """Diagonalise in a specific momentum sector using Bloch's theorem.
 
@@ -116,6 +165,7 @@ def eigh_with_translation(
     ----------
     K, omega : coupling and frequencies (must be translation-invariant)
     momentum : momentum quantum number m ∈ {0, 1, ..., N-1}
+    max_dense_gib : optional GiB budget for the projected dense eigensolver
 
     Returns
     -------
@@ -129,35 +179,18 @@ def eigh_with_translation(
             "Translation symmetry requires homogeneous ω and circulant K."
         )
 
-    H_full = knm_to_dense_matrix(K, omega)
-    dim = 2**n
     phase = np.exp(2j * np.pi * momentum / n)
 
-    # Build projection matrix: rows are symmetrised basis states
     sectors = momentum_sectors(n)
     reps = sectors.get(momentum, [])
 
     if not reps:
         return {"eigvals": np.array([]), "dim": 0, "momentum": momentum, "is_ti": True}
 
-    # For each orbit representative, build the Bloch state
-    proj_rows = []
-    for alpha in reps:
-        orbit = []
-        state = alpha
-        for _ in range(n):
-            orbit.append(state)
-            state = _cyclic_shift(state, n)
-            if state == alpha:
-                break
-        L = len(orbit)
-        row = np.zeros(dim, dtype=np.complex128)
-        for r, s in enumerate(orbit):
-            row[s] = phase**r / np.sqrt(L)
-        proj_rows.append(row)
-
-    P = np.array(proj_rows)  # shape (dim_sector, dim_full)
-    H_sector = P @ H_full @ P.conj().T
+    _require_momentum_sector_budget(len(reps), max_dense_gib=max_dense_gib)
+    H_sparse = build_sparse_hamiltonian(K, omega)
+    P = _bloch_projector(n, reps, phase)
+    H_sector = (P @ H_sparse @ P.conj().T).toarray()
 
     # H_sector should be Hermitian
     H_sector = (H_sector + H_sector.conj().T) / 2

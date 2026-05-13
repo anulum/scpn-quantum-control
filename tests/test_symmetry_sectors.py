@@ -10,7 +10,9 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
+from scpn_quantum_control.analysis import symmetry_sectors as symmetry_module
 from scpn_quantum_control.analysis.symmetry_sectors import (
     basis_indices_by_parity,
     build_sector_hamiltonian,
@@ -18,6 +20,7 @@ from scpn_quantum_control.analysis.symmetry_sectors import (
     level_spacing_by_sector,
     memory_estimate_mb,
 )
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 class TestBasisPartition:
@@ -60,6 +63,34 @@ class TestProjection:
         H_even, _ = build_sector_hamiltonian(K, omega, parity=0)
         np.testing.assert_allclose(H_even, H_even.T, atol=1e-12)
 
+    def test_sector_builder_does_not_use_full_dense_hamiltonian(self, monkeypatch):
+        n = 4
+        K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
+        omega = np.linspace(0.8, 1.2, n)
+
+        def fail_dense(*args, **kwargs):
+            raise AssertionError("Z2 sector builder must not build full dense Hamiltonian")
+
+        monkeypatch.setattr(symmetry_module, "knm_to_dense_matrix", fail_dense, raising=False)
+
+        H_even, idx_even = build_sector_hamiltonian(K, omega, parity=0)
+
+        assert H_even.shape == (len(idx_even), len(idx_even))
+        np.testing.assert_allclose(H_even, H_even.T, atol=1e-12)
+
+    def test_sector_builder_rejects_dense_budget_before_sparse_build(self, monkeypatch):
+        n = 4
+        K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
+        omega = np.linspace(0.8, 1.2, n)
+
+        def fail_sparse(*args, **kwargs):
+            raise AssertionError("sparse Hamiltonian must not build after budget rejection")
+
+        monkeypatch.setattr(symmetry_module, "build_sparse_hamiltonian", fail_sparse)
+
+        with pytest.raises(DenseAllocationError, match="Z2 parity sector dense workspace"):
+            build_sector_hamiltonian(K, omega, parity=0, max_dense_gib=1e-12)
+
 
 class TestEighBySector:
     def setup_method(self):
@@ -99,6 +130,15 @@ class TestEighBySector:
         result = eigh_by_sector(self.K, self.omega)
         total = len(result["eigvals_even"]) + len(result["eigvals_odd"])
         assert total == 2**self.n
+
+    def test_eigh_by_sector_rejects_dense_budget_before_sparse_build(self, monkeypatch):
+        def fail_sparse(*args, **kwargs):
+            raise AssertionError("sparse Hamiltonian must not build after budget rejection")
+
+        monkeypatch.setattr(symmetry_module, "build_sparse_hamiltonian", fail_sparse)
+
+        with pytest.raises(DenseAllocationError, match="Z2 parity sector dense workspace"):
+            eigh_by_sector(self.K, self.omega, max_dense_gib=1e-12)
 
 
 class TestLevelSpacing:

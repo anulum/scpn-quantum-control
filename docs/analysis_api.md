@@ -192,8 +192,9 @@ with: `system_sizes`, `Kc_values`, `Kc_inf` (extrapolated), `fit_a`, `fit_residu
 
 ### `adiabatic_preparation` — Adiabatic State Preparation
 
-Adiabatic path from trivial initial state to the XY ground state. Computes
-gap along the path and estimates preparation time.
+Finite-size dense exact adiabatic path from a weak-coupling initial ground
+state to the target XY Hamiltonian. Computes instantaneous gap and fidelity
+along the selected schedule.
 
 ```python
 from scpn_quantum_control.phase.adiabatic_preparation import (
@@ -202,9 +203,9 @@ from scpn_quantum_control.phase.adiabatic_preparation import (
 )
 ```
 
-`adiabatic_ramp(K, omega, n_steps=50, s_range=(0.0, 1.0))` →
-`AdiabaticResult` with: `s_values`, `gaps`, `min_gap`, `ground_fidelity`,
-`R_values`, `estimated_adiabatic_time`.
+`adiabatic_ramp(omega, K_topology, K_target, T_total=10.0, n_steps=50, *, max_dense_gib=None)` →
+`AdiabaticResult` with: `times`, `K_schedule`, `fidelity`, `gap`,
+`final_fidelity`, `min_gap`, `min_gap_K`.
 
 ---
 

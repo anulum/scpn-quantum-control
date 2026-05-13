@@ -22,6 +22,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from scpn_quantum_control.analysis import translation_symmetry as translation_module
 from scpn_quantum_control.analysis.translation_symmetry import (
     _cyclic_shift,
     eigh_with_translation,
@@ -29,6 +30,7 @@ from scpn_quantum_control.analysis.translation_symmetry import (
     momentum_sector_dimensions,
     momentum_sectors,
 )
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 def _circulant_system(n: int = 4, coupling: float = 0.5):
@@ -185,3 +187,38 @@ class TestEighWithTranslation:
         result = eigh_with_translation(K, omega, momentum=99)
         assert result["dim"] == 0
         assert len(result["eigvals"]) == 0
+
+    def test_rejects_projection_budget_before_sparse_build(self, monkeypatch):
+        """Impossible sector budgets fail before Hamiltonian construction."""
+        K, omega = _circulant_system(4)
+
+        def fail_if_sparse_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("sparse Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(
+            translation_module,
+            "build_sparse_hamiltonian",
+            fail_if_sparse_hamiltonian_is_requested,
+        )
+
+        with pytest.raises(DenseAllocationError, match="translation momentum sector"):
+            eigh_with_translation(K, omega, momentum=0, max_dense_gib=1e-12)
+
+    def test_translation_solver_does_not_use_full_dense_hamiltonian(self, monkeypatch):
+        """Momentum projection must avoid the legacy full dense Hamiltonian path."""
+        K, omega = _circulant_system(4)
+
+        def fail_if_full_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("full dense Hamiltonian path was used")
+
+        monkeypatch.setattr(
+            translation_module,
+            "knm_to_dense_matrix",
+            fail_if_full_dense_hamiltonian_is_requested,
+            raising=False,
+        )
+
+        result = eigh_with_translation(K, omega, momentum=0)
+
+        assert result["dim"] > 0
+        assert np.all(np.isfinite(result["eigvals"]))

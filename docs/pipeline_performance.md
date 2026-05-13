@@ -382,8 +382,9 @@ python -c "import time, numpy as np; from scpn_quantum_control.hardware.analog_k
 |-----------|--------|------|--------|
 | `adiabatic_ramp(K_target=3.0, T=5.0, n_steps=15)` | 3 qubits | 54.4 ms | min_gap=0.0012 at K=2.80 |
 
-Fidelity degrades through the BKT transition where the gap closes. The gap
-minimum at K=2.80 confirms the transition location.
+This dense finite-size scan records the observed gap minimum and fidelity
+loss for the selected schedule. The reported K value is a finite-size gap
+minimum for this scan, not a standalone transition-location proof.
 
 ### Floquet-Kuramoto (Time Crystal)
 

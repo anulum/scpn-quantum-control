@@ -25,7 +25,8 @@ from __future__ import annotations
 
 import numpy as np
 
-from ..bridge.knm_hamiltonian import knm_to_dense_matrix
+from ..bridge.sparse_hamiltonian import build_sparse_hamiltonian
+from ..dense_budget import require_dense_allocation
 
 
 def _parity(k: int, n: int) -> int:
@@ -58,8 +59,27 @@ def project_hamiltonian(H: np.ndarray, sector_indices: np.ndarray) -> np.ndarray
     return np.asarray(H[np.ix_(sector_indices, sector_indices)])
 
 
+def _sector_dense_budget(
+    n: int,
+    *,
+    object_count: int,
+    max_dense_gib: float | None,
+) -> None:
+    require_dense_allocation(
+        max(n - 1, 1),
+        rank=2,
+        object_count=object_count,
+        max_gib=max_dense_gib,
+        label="Z2 parity sector dense workspace",
+    )
+
+
 def build_sector_hamiltonian(
-    K: np.ndarray, omega: np.ndarray, parity: int = 0
+    K: np.ndarray,
+    omega: np.ndarray,
+    parity: int = 0,
+    *,
+    max_dense_gib: float | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Build the XY Hamiltonian projected onto a parity sector.
 
@@ -80,15 +100,21 @@ def build_sector_hamiltonian(
         Mapping from sector index to full basis index.
     """
     n = K.shape[0]
+    _sector_dense_budget(n, object_count=1, max_dense_gib=max_dense_gib)
     even_idx, odd_idx = basis_indices_by_parity(n)
     sector_indices = even_idx if parity == 0 else odd_idx
 
-    H_full = knm_to_dense_matrix(K, omega)
-    H_sector = project_hamiltonian(H_full, sector_indices)
+    H_sparse = build_sparse_hamiltonian(K, omega)
+    H_sector = np.asarray(H_sparse[sector_indices][:, sector_indices].toarray())
     return H_sector, sector_indices
 
 
-def eigh_by_sector(K: np.ndarray, omega: np.ndarray) -> dict:
+def eigh_by_sector(
+    K: np.ndarray,
+    omega: np.ndarray,
+    *,
+    max_dense_gib: float | None = None,
+) -> dict:
     """Diagonalise both parity sectors separately.
 
     Returns dict with keys:
@@ -97,11 +123,12 @@ def eigh_by_sector(K: np.ndarray, omega: np.ndarray) -> dict:
         eigvals_all (sorted), ground_energy, ground_parity
     """
     n = K.shape[0]
+    _sector_dense_budget(n, object_count=4, max_dense_gib=max_dense_gib)
     even_idx, odd_idx = basis_indices_by_parity(n)
-    H_full = knm_to_dense_matrix(K, omega)
+    H_sparse = build_sparse_hamiltonian(K, omega)
 
-    H_even = project_hamiltonian(H_full, even_idx)
-    H_odd = project_hamiltonian(H_full, odd_idx)
+    H_even = np.asarray(H_sparse[even_idx][:, even_idx].toarray())
+    H_odd = np.asarray(H_sparse[odd_idx][:, odd_idx].toarray())
 
     vals_e, vecs_e = np.linalg.eigh(H_even)
     vals_o, vecs_o = np.linalg.eigh(H_odd)
@@ -124,14 +151,19 @@ def eigh_by_sector(K: np.ndarray, omega: np.ndarray) -> dict:
     }
 
 
-def level_spacing_by_sector(K: np.ndarray, omega: np.ndarray) -> dict:
+def level_spacing_by_sector(
+    K: np.ndarray,
+    omega: np.ndarray,
+    *,
+    max_dense_gib: float | None = None,
+) -> dict:
     """Level-spacing ratio r̄ computed within each parity sector.
 
     This avoids mixing even/odd spectra which would artificially
     give Poisson statistics (two independent spectra overlaid always
     look integrable).
     """
-    result = eigh_by_sector(K, omega)
+    result = eigh_by_sector(K, omega, max_dense_gib=max_dense_gib)
 
     def _r_bar(eigvals: np.ndarray) -> float:
         gaps = np.diff(eigvals)
