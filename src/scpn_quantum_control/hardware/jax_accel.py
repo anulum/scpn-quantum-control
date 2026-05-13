@@ -30,6 +30,7 @@ Usage::
 from __future__ import annotations
 
 import os as _os
+from typing import Any
 
 import numpy as np
 
@@ -37,18 +38,22 @@ from ..dense_budget import require_dense_allocation
 
 _JAX_AVAILABLE = False
 _JAX_GPU = False
-_jnp = None
+_jnp: Any | None = None
 
-if _os.environ.get("SCPN_JAX_DISABLE", "0") != "1":
+
+def _detect_jax_accelerator() -> tuple[bool, bool, Any | None]:
+    """Detect JAX without hiding present-but-broken runtimes."""
     try:
         import jax
         import jax.numpy as _jnp_module
+    except ImportError:
+        return False, False, None
 
-        _jnp = _jnp_module
-        _JAX_AVAILABLE = True
-        _JAX_GPU = any(d.platform == "gpu" for d in jax.devices())
-    except (ImportError, Exception):
-        pass
+    return True, any(d.platform == "gpu" for d in jax.devices()), _jnp_module
+
+
+if _os.environ.get("SCPN_JAX_DISABLE", "0") != "1":
+    _JAX_AVAILABLE, _JAX_GPU, _jnp = _detect_jax_accelerator()
 
 
 def is_jax_available() -> bool:
@@ -67,7 +72,7 @@ def jax_device_name() -> str:
     return "unavailable"
 
 
-def _build_xy_hamiltonian_jax(K: jax.Array, omega: jax.Array, n: int) -> jax.Array:
+def _build_xy_hamiltonian_jax(K, omega, n: int):
     """Build XY Hamiltonian on JAX device. Same bitwise flip-flop as Rust."""
     dim = 1 << n
     if _jnp is None:

@@ -23,23 +23,30 @@ Usage: import from here instead of numpy/scipy for GPU-eligible ops.
 from __future__ import annotations
 
 import os as _os
+from typing import Any
 
 import numpy as np
 
 _CUPY_AVAILABLE = False
-_cp = None
+_cp: Any | None = None
+
+
+def _detect_cupy_accelerator() -> tuple[bool, Any | None]:
+    """Detect CuPy without hiding present-but-broken CUDA runtimes."""
+    try:
+        import cupy as _cp_module  # type: ignore[import-untyped,import-not-found]
+    except ImportError:
+        return False, None
+
+    if _cp_module.cuda.runtime.getDeviceCount() > 0:
+        return True, _cp_module
+    return False, None
+
 
 # GPU disabled by default unless SCPN_GPU_ENABLE=1.
 # cupy import can hang on misconfigured CUDA — opt-in only.
 if _os.environ.get("SCPN_GPU_ENABLE", "0") == "1":
-    try:
-        import cupy as _cp_module  # type: ignore[import-untyped,import-not-found]
-
-        if _cp_module.cuda.runtime.getDeviceCount() > 0:
-            _cp = _cp_module
-            _CUPY_AVAILABLE = True
-    except (ImportError, Exception):
-        pass
+    _CUPY_AVAILABLE, _cp = _detect_cupy_accelerator()
 
 
 def is_gpu_available() -> bool:
