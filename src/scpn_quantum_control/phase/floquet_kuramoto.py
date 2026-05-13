@@ -30,6 +30,7 @@ from scipy.linalg import expm
 
 from ..accel.rust_import import optional_rust_engine
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
+from ..dense_budget import require_dense_allocation
 
 
 @dataclass
@@ -43,9 +44,14 @@ class FloquetResult:
     is_dtc_candidate: bool  # subharmonic_ratio > threshold
 
 
-def _build_H_matrix(K: np.ndarray, omega: np.ndarray) -> np.ndarray:
+def _build_H_matrix(
+    K: np.ndarray,
+    omega: np.ndarray,
+    *,
+    max_dense_gib: float | None = None,
+) -> np.ndarray:
     """Build dense Hamiltonian matrix."""
-    return knm_to_dense_matrix(K, omega)
+    return knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
 
 
 def _order_parameter(psi: np.ndarray, n: int) -> float:
@@ -80,6 +86,8 @@ def floquet_evolve(
     drive_frequency: float,
     n_periods: int = 10,
     steps_per_period: int = 20,
+    *,
+    max_dense_gib: float | None = None,
 ) -> FloquetResult:
     """Evolve under periodically driven Kuramoto-XY Hamiltonian.
 
@@ -95,6 +103,22 @@ def floquet_evolve(
         steps_per_period: time steps per period
     """
     n = len(omega)
+    require_dense_allocation(
+        n,
+        dtype=np.complex128,
+        rank=2,
+        object_count=5,
+        max_gib=max_dense_gib,
+        label="Floquet dense evolution workspace",
+    )
+    require_dense_allocation(
+        n,
+        dtype=np.complex128,
+        rank=1,
+        object_count=2,
+        max_gib=max_dense_gib,
+        label="Floquet dense state workspace",
+    )
     dim = 2**n
     T_drive = 2 * np.pi / drive_frequency
     dt = T_drive / steps_per_period
@@ -111,14 +135,18 @@ def floquet_evolve(
     drive_signal[0] = K_base * (1 + drive_amplitude)
 
     # Pre-build the frequency-only Hamiltonian (time-independent part)
-    H_freq = _build_H_matrix(np.zeros_like(K_topology), omega)
+    H_freq = _build_H_matrix(np.zeros_like(K_topology), omega, max_dense_gib=max_dense_gib)
 
     for step in range(n_steps):
         t = (step + 0.5) * dt  # midpoint
         K_t = K_base * (1 + drive_amplitude * np.cos(drive_frequency * t))
 
         # Full Hamiltonian at midpoint
-        H_coupling = _build_H_matrix(K_t * K_topology, np.zeros(n))
+        H_coupling = _build_H_matrix(
+            K_t * K_topology,
+            np.zeros(n),
+            max_dense_gib=max_dense_gib,
+        )
         H_total = H_coupling + H_freq
 
         # Propagate: |psi(t+dt)⟩ = exp(-iHdt)|psi(t)⟩
@@ -187,6 +215,8 @@ def scan_drive_amplitude(
     amplitudes: np.ndarray | None = None,
     n_periods: int = 8,
     steps_per_period: int = 16,
+    *,
+    max_dense_gib: float | None = None,
 ) -> dict[str, list[float]]:
     """Scan subharmonic ratio across drive amplitudes.
 
@@ -204,7 +234,14 @@ def scan_drive_amplitude(
 
     for amp in amplitudes:
         fr = floquet_evolve(
-            K_topology, omega, K_base, float(amp), drive_frequency, n_periods, steps_per_period
+            K_topology,
+            omega,
+            K_base,
+            float(amp),
+            drive_frequency,
+            n_periods,
+            steps_per_period,
+            max_dense_gib=max_dense_gib,
         )
         results["amplitude"].append(float(amp))
         results["subharmonic_ratio"].append(fr.subharmonic_ratio)

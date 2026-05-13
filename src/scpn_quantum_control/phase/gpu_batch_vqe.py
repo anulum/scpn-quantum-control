@@ -25,6 +25,8 @@ from typing import Any
 
 import numpy as np
 
+from ..dense_budget import require_dense_allocation
+
 
 def batch_energy_numpy(
     H: np.ndarray,
@@ -104,6 +106,8 @@ def batch_vqe_scan(
     n_params: int | None = None,
     seed: int = 42,
     use_gpu: bool = False,
+    *,
+    max_dense_gib: float | None = None,
 ) -> dict:
     """Scan VQE landscape by evaluating random parameter sets in batch.
 
@@ -120,8 +124,24 @@ def batch_vqe_scan(
         raise ValueError("n_samples must be >= 1")
 
     n = K.shape[0]
+    require_dense_allocation(
+        n,
+        dtype=np.complex128,
+        rank=2,
+        object_count=1,
+        max_gib=max_dense_gib,
+        label="batch VQE dense Hamiltonian workspace",
+    )
+    require_dense_allocation(
+        n,
+        dtype=np.complex128,
+        rank=1,
+        object_count=n_samples + 2,
+        max_gib=max_dense_gib,
+        label="batch VQE dense statevector workspace",
+    )
     dim = 2**n
-    H = knm_to_dense_matrix(K, omega)
+    H = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
 
     if n_params is None:
         n_params = n * 2  # 2 layers of Ry

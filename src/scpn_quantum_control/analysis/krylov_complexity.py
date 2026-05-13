@@ -38,6 +38,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
+from ..dense_budget import require_dense_allocation
 
 
 @dataclass
@@ -215,6 +216,8 @@ def krylov_vs_coupling(
     k_range: np.ndarray | None = None,
     t_max: float = 10.0,
     n_times: int = 50,
+    *,
+    max_dense_gib: float | None = None,
 ) -> dict[str, list[float]]:
     """Scan Krylov complexity diagnostics across coupling strength.
 
@@ -224,6 +227,14 @@ def krylov_vs_coupling(
         k_range = np.linspace(0.5, 5.0, 10)
 
     n = len(omega)
+    require_dense_allocation(
+        n,
+        dtype=np.complex128,
+        rank=2,
+        object_count=3,
+        max_gib=max_dense_gib,
+        label="Krylov dense probe workspace",
+    )
 
     # Probe operator: Z on first qubit
     Z0 = np.zeros((2**n, 2**n), dtype=complex)
@@ -241,7 +252,7 @@ def krylov_vs_coupling(
 
     for kb in k_range:
         K = float(kb) * K_topology
-        H = knm_to_dense_matrix(K, omega)
+        H = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
         kr = krylov_complexity(H, Z0, t_max, n_times)
         results["K_base"].append(float(kb))
         results["peak_complexity"].append(kr.peak_complexity)

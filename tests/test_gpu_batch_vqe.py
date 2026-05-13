@@ -22,6 +22,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.phase.gpu_batch_vqe import (
     batch_energy_numpy,
     batch_energy_torch,
@@ -120,6 +121,37 @@ class TestBatchEnergyTorch:
 
 
 class TestBatchVQEScan:
+    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+        import scpn_quantum_control.bridge.knm_hamiltonian as bridge_module
+
+        K, omega = _system(10)
+
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(
+            bridge_module, "knm_to_dense_matrix", fail_if_dense_hamiltonian_is_requested
+        )
+
+        with pytest.raises(DenseAllocationError, match="batch VQE dense"):
+            batch_vqe_scan(K, omega, n_samples=1, max_dense_gib=1e-12)
+
+    def test_passes_dense_budget_to_bridge(self, monkeypatch):
+        import scpn_quantum_control.bridge.knm_hamiltonian as bridge_module
+
+        K, omega = _system(2)
+        seen_budgets: list[float | None] = []
+
+        def fake_dense_matrix(K_arg, omega_arg, **kwargs):  # noqa: ARG001
+            seen_budgets.append(kwargs.get("max_dense_gib"))
+            return np.zeros((4, 4), dtype=complex)
+
+        monkeypatch.setattr(bridge_module, "knm_to_dense_matrix", fake_dense_matrix)
+
+        batch_vqe_scan(K, omega, n_samples=2, seed=42, max_dense_gib=0.25)
+
+        assert seen_budgets == [0.25]
+
     def test_output_keys(self):
         K, omega = _system(3)
         result = batch_vqe_scan(K, omega, n_samples=5, seed=42)

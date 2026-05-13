@@ -10,8 +10,11 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
+import scpn_quantum_control.phase.floquet_kuramoto as floquet_module
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16
+from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.phase.floquet_kuramoto import (
     FloquetResult,
     floquet_evolve,
@@ -28,6 +31,54 @@ def _ring_topology(n: int) -> np.ndarray:
 
 
 class TestFloquetEvolve:
+    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+        n = 10
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(
+            floquet_module, "knm_to_dense_matrix", fail_if_dense_hamiltonian_is_requested
+        )
+
+        with pytest.raises(DenseAllocationError, match="Floquet dense"):
+            floquet_evolve(
+                T,
+                omega,
+                K_base=1.0,
+                drive_amplitude=0.5,
+                drive_frequency=2.0,
+                n_periods=1,
+                steps_per_period=1,
+                max_dense_gib=1e-12,
+            )
+
+    def test_passes_dense_budget_to_bridge(self, monkeypatch):
+        T = _ring_topology(2)
+        omega = OMEGA_N_16[:2]
+        seen_budgets: list[float | None] = []
+
+        def fake_dense_matrix(K_arg, omega_arg, **kwargs):  # noqa: ARG001
+            seen_budgets.append(kwargs.get("max_dense_gib"))
+            return np.zeros((4, 4), dtype=complex)
+
+        monkeypatch.setattr(floquet_module, "knm_to_dense_matrix", fake_dense_matrix)
+
+        floquet_evolve(
+            T,
+            omega,
+            K_base=1.0,
+            drive_amplitude=0.5,
+            drive_frequency=2.0,
+            n_periods=1,
+            steps_per_period=2,
+            max_dense_gib=0.25,
+        )
+
+        assert seen_budgets == [0.25, 0.25, 0.25]
+
     def test_returns_result(self):
         n = 2
         T = _ring_topology(n)

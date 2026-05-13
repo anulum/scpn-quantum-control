@@ -118,10 +118,19 @@ matrix exponential.
 
 ```python
 from scpn_quantum_control.phase.trotter_error import (
-    trotter_fidelity,
-    optimal_trotter_steps,
+    optimal_dt,
+    trotter_error_bound,
+    trotter_error_norm,
+    trotter_error_sweep,
 )
 ```
+
+Dense exact comparison APIs accept `max_dense_gib`:
+`trotter_error_norm(K, omega, t, reps, *, max_dense_gib=None)` and
+`trotter_error_sweep(K, omega, t_values, reps_values, *, max_dense_gib=None)`.
+Second-order analytical bounds also forward the budget through
+`nested_commutator_norm_bound`, `trotter_error_bound`, and `optimal_dt` when
+the exact small-system nested commutator path is selected.
 
 ---
 
@@ -336,7 +345,7 @@ from scpn_quantum_control.phase.floquet_kuramoto import (
 )
 ```
 
-**`floquet_evolve(K_topology, omega, K_base, drive_amplitude, drive_frequency, n_periods=10, steps_per_period=20) → FloquetResult`**
+**`floquet_evolve(K_topology, omega, K_base, drive_amplitude, drive_frequency, n_periods=10, steps_per_period=20, *, max_dense_gib=None) → FloquetResult`**
 
 Evolves $|\psi(t)\rangle$ under $K(t) = K_{\mathrm{base}}(1 + \delta\cos(\Omega t))
 \cdot K_{\mathrm{topology}}$ using piecewise-constant Trotter steps within each driving
@@ -350,9 +359,10 @@ $\Omega/2$ divided by power at $\Omega$, computed via FFT).
 Order parameter R computed via `all_xy_expectations` (batch bitwise Pauli, 1 FFI call instead
 of 2n Qiskit SparsePauliOp evaluations).
 
-**`scan_drive_amplitude(K_topology, omega, K_base, drive_frequency, amplitudes=None, ...) → dict`**
+**`scan_drive_amplitude(K_topology, omega, K_base, drive_frequency, amplitudes=None, ..., max_dense_gib=None) → dict`**
 
-Scans drive amplitude $\delta$ to map the DTC phase boundary.
+Scans drive amplitude $\delta$ to map the DTC phase boundary. The dense budget
+is forwarded to every piecewise-constant Floquet Hamiltonian build.
 
 A discrete time crystal is a phase of matter that spontaneously breaks the discrete
 time-translation symmetry of its periodic drive. If the system is driven at frequency

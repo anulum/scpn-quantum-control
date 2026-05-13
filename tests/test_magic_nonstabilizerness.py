@@ -10,7 +10,9 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
+import scpn_quantum_control.analysis.magic_nonstabilizerness as magic_module
 from scpn_quantum_control.analysis.magic_nonstabilizerness import (
     MagicResult,
     MagicScanResult,
@@ -19,6 +21,7 @@ from scpn_quantum_control.analysis.magic_nonstabilizerness import (
     magic_vs_coupling,
 )
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 def _ring(n: int) -> np.ndarray:
@@ -30,6 +33,36 @@ def _ring(n: int) -> np.ndarray:
 
 
 class TestMagicAtCoupling:
+    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+        n = 10
+        T = _ring(n)
+        omega = OMEGA_N_16[:n]
+
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(
+            magic_module, "knm_to_dense_matrix", fail_if_dense_hamiltonian_is_requested
+        )
+
+        with pytest.raises(DenseAllocationError, match="magic dense"):
+            magic_at_coupling(omega, T, K_base=1.0, max_dense_gib=1e-12)
+
+    def test_passes_dense_budget_to_bridge(self, monkeypatch):
+        T = _ring(2)
+        omega = OMEGA_N_16[:2]
+        seen_budgets: list[float | None] = []
+
+        def fake_dense_matrix(K_arg, omega_arg, **kwargs):  # noqa: ARG001
+            seen_budgets.append(kwargs.get("max_dense_gib"))
+            return np.diag([0.0, 1.0, 2.0, 3.0]).astype(complex)
+
+        monkeypatch.setattr(magic_module, "knm_to_dense_matrix", fake_dense_matrix)
+
+        magic_at_coupling(omega, T, K_base=1.0, max_dense_gib=0.25)
+
+        assert seen_budgets == [0.25]
+
     def test_returns_result(self):
         T = _ring(2)
         omega = OMEGA_N_16[:2]
@@ -72,6 +105,21 @@ class TestMagicAtCoupling:
 
 
 class TestMagicVsCoupling:
+    def test_propagates_dense_budget_to_each_coupling(self, monkeypatch):
+        T = _ring(2)
+        omega = OMEGA_N_16[:2]
+        seen: list[float | None] = []
+
+        def fake_magic_at_coupling(omega_arg, K_topology_arg, K_base, *, max_dense_gib):  # noqa: ARG001
+            seen.append(max_dense_gib)
+            return MagicResult(K_base, 0.1, 1.0, 2)
+
+        monkeypatch.setattr(magic_module, "magic_at_coupling", fake_magic_at_coupling)
+
+        magic_vs_coupling(omega, T, k_range=np.array([0.5, 1.0, 1.5]), max_dense_gib=0.5)
+
+        assert seen == [0.5, 0.5, 0.5]
+
     def test_returns_scan(self):
         T = _ring(2)
         omega = OMEGA_N_16[:2]

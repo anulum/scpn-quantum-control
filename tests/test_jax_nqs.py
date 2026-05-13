@@ -17,6 +17,7 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 try:
     from scpn_quantum_control.phase.jax_nqs import (
@@ -125,6 +126,39 @@ class TestJaxRBMEnergy:
 @_SKIP
 class TestJaxVMCGroundState:
     """Tests for jax_vmc_ground_state."""
+
+    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+        import scpn_quantum_control.bridge.knm_hamiltonian as bridge_module
+
+        K = build_knm_paper27(L=10)
+        omega = OMEGA_N_16[:10]
+
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(
+            bridge_module, "knm_to_dense_matrix", fail_if_dense_hamiltonian_is_requested
+        )
+
+        with pytest.raises(DenseAllocationError, match="JAX NQS dense"):
+            jax_vmc_ground_state(K, omega, n_iterations=1, max_dense_gib=1e-12)
+
+    def test_passes_dense_budget_to_bridge(self, monkeypatch):
+        import scpn_quantum_control.bridge.knm_hamiltonian as bridge_module
+
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        seen_budgets: list[float | None] = []
+
+        def fake_dense_matrix(K_arg, omega_arg, **kwargs):  # noqa: ARG001
+            seen_budgets.append(kwargs.get("max_dense_gib"))
+            return np.zeros((4, 4), dtype=complex)
+
+        monkeypatch.setattr(bridge_module, "knm_to_dense_matrix", fake_dense_matrix)
+
+        jax_vmc_ground_state(K, omega, n_iterations=1, seed=42, max_dense_gib=0.25)
+
+        assert seen_budgets == [0.25]
 
     def test_returns_dict(self):
         K = build_knm_paper27(L=2)

@@ -26,6 +26,7 @@ import numpy as np
 from scipy.linalg import expm
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
+from ..dense_budget import require_dense_allocation
 
 
 def trotter_error_norm(
@@ -33,6 +34,8 @@ def trotter_error_norm(
     omega: np.ndarray,
     t: float,
     reps: int,
+    *,
+    max_dense_gib: float | None = None,
 ) -> float:
     """||U_exact - U_trotter||_F for a single (t, reps) pair.
 
@@ -42,8 +45,16 @@ def trotter_error_norm(
     if n > 10:
         raise ValueError(f"n={n} too large for exact unitary comparison (max 10)")
 
+    require_dense_allocation(
+        n,
+        dtype=np.complex128,
+        rank=2,
+        object_count=4,
+        max_gib=max_dense_gib,
+        label="Trotter dense unitary comparison workspace",
+    )
     H_op = knm_to_hamiltonian(K, omega)
-    H_mat = knm_to_dense_matrix(K, omega)
+    H_mat = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
 
     U_exact = expm(-1j * H_mat * t)
 
@@ -67,6 +78,8 @@ def trotter_error_sweep(
     omega: np.ndarray,
     t_values: list[float],
     reps_values: list[int],
+    *,
+    max_dense_gib: float | None = None,
 ) -> dict:
     """2D sweep of Trotter error over (t, reps) pairs.
 
@@ -76,7 +89,7 @@ def trotter_error_sweep(
     for t in t_values:
         row = []
         for reps in reps_values:
-            row.append(trotter_error_norm(K, omega, t, reps))
+            row.append(trotter_error_norm(K, omega, t, reps, max_dense_gib=max_dense_gib))
         errors.append(row)
 
     return {
@@ -110,6 +123,7 @@ def nested_commutator_norm_bound(
     omega: np.ndarray,
     *,
     exact_qubit_limit: int = 8,
+    max_dense_gib: float | None = None,
 ) -> float:
     """Bound the second-order Suzuki nested-commutator contribution.
 
@@ -128,8 +142,16 @@ def nested_commutator_norm_bound(
         raise ValueError("exact_qubit_limit must be non-negative")
 
     if n <= exact_qubit_limit:
-        h_xy = knm_to_dense_matrix(K_arr, np.zeros_like(omega_arr))
-        h_z = knm_to_dense_matrix(np.zeros_like(K_arr), omega_arr)
+        require_dense_allocation(
+            n,
+            dtype=np.complex128,
+            rank=2,
+            object_count=5,
+            max_gib=max_dense_gib,
+            label="Trotter nested dense commutator workspace",
+        )
+        h_xy = knm_to_dense_matrix(K_arr, np.zeros_like(omega_arr), max_dense_gib=max_dense_gib)
+        h_z = knm_to_dense_matrix(np.zeros_like(K_arr), omega_arr, max_dense_gib=max_dense_gib)
         comm = h_xy @ h_z - h_z @ h_xy
         nested_xy = h_xy @ comm - comm @ h_xy
         nested_z = h_z @ comm - comm @ h_z
@@ -150,6 +172,8 @@ def trotter_error_bound(
     t: float,
     reps: int,
     order: int = 1,
+    *,
+    max_dense_gib: float | None = None,
 ) -> float:
     """Analytical upper bound on Trotter error.
 
@@ -165,7 +189,7 @@ def trotter_error_bound(
     if order == 1:
         return (t * t / (2.0 * reps)) * gamma
     if order == 2:
-        gamma_nested = nested_commutator_norm_bound(K, omega)
+        gamma_nested = nested_commutator_norm_bound(K, omega, max_dense_gib=max_dense_gib)
         return (t**3 / (12.0 * reps * reps)) * gamma_nested
     raise ValueError(f"order must be 1 or 2, got {order}")
 
@@ -176,6 +200,8 @@ def optimal_dt(
     epsilon: float,
     t_total: float,
     order: int = 1,
+    *,
+    max_dense_gib: float | None = None,
 ) -> dict:
     """Compute optimal Trotter step size for target error epsilon.
 
@@ -186,13 +212,13 @@ def optimal_dt(
         # error = (t²/2r) × gamma ≤ epsilon → r ≥ t² × gamma / (2 × epsilon)
         r = max(1, int(np.ceil(t_total * t_total * gamma / (2.0 * epsilon))))
     elif order == 2:
-        gamma_nested = nested_commutator_norm_bound(K, omega)
+        gamma_nested = nested_commutator_norm_bound(K, omega, max_dense_gib=max_dense_gib)
         r = max(1, int(np.ceil(np.sqrt(t_total**3 * gamma_nested / (12.0 * epsilon)))))
     else:
         raise ValueError(f"order must be 1 or 2, got {order}")
 
     dt = t_total / r
-    bound = trotter_error_bound(K, omega, t_total, r, order)
+    bound = trotter_error_bound(K, omega, t_total, r, order, max_dense_gib=max_dense_gib)
 
     return {
         "dt": dt,

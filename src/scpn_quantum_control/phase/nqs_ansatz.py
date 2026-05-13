@@ -22,6 +22,7 @@ from __future__ import annotations
 import numpy as np
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
+from ..dense_budget import require_dense_allocation
 
 
 class RBMWavefunction:
@@ -80,6 +81,8 @@ def vmc_ground_state(
     n_iterations: int = 200,
     n_samples: int | None = None,
     seed: int | None = None,
+    *,
+    max_dense_gib: float | None = None,
 ) -> dict:
     """Exact-enumeration RBM ground-state search with finite-difference gradients.
 
@@ -113,7 +116,23 @@ def vmc_ground_state(
             f"Exact NQS only for n<=12 (got n={n}). MCMC sampling not yet implemented."
         )
 
-    H = knm_to_dense_matrix(K, omega)
+    require_dense_allocation(
+        n,
+        dtype=np.complex128,
+        rank=2,
+        object_count=1,
+        max_gib=max_dense_gib,
+        label="NQS dense Hamiltonian workspace",
+    )
+    require_dense_allocation(
+        n,
+        dtype=np.complex128,
+        rank=1,
+        object_count=4,
+        max_gib=max_dense_gib,
+        label="NQS dense exact-enumeration workspace",
+    )
+    H = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
     rbm = RBMWavefunction(n, n_hidden=n_hidden, seed=seed)
 
     energy_history = []

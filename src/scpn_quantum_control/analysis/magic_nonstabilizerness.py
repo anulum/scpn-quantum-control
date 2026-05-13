@@ -33,6 +33,7 @@ import numpy as np
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
+from ..dense_budget import require_dense_allocation
 
 
 @dataclass
@@ -85,12 +86,22 @@ def magic_at_coupling(
     omega: np.ndarray,
     K_topology: np.ndarray,
     K_base: float,
+    *,
+    max_dense_gib: float | None = None,
 ) -> MagicResult:
     """Compute SRE M_2 of ground state at given coupling."""
     n = len(omega)
     K = K_base * K_topology
+    require_dense_allocation(
+        n,
+        dtype=np.complex128,
+        rank=2,
+        object_count=3,
+        max_gib=max_dense_gib,
+        label="magic dense eigensolver workspace",
+    )
     knm_to_hamiltonian(K, omega)
-    H_mat = knm_to_dense_matrix(K, omega)
+    H_mat = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
     eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
     psi0 = eigenvectors[:, 0]
 
@@ -108,6 +119,8 @@ def magic_vs_coupling(
     omega: np.ndarray,
     K_topology: np.ndarray,
     k_range: np.ndarray | None = None,
+    *,
+    max_dense_gib: float | None = None,
 ) -> MagicScanResult:
     """Scan magic across coupling to find non-stabilizerness peak.
 
@@ -120,7 +133,12 @@ def magic_vs_coupling(
     sre = np.zeros(n_k)
 
     for idx, kb in enumerate(k_range):
-        result = magic_at_coupling(omega, K_topology, float(kb))
+        result = magic_at_coupling(
+            omega,
+            K_topology,
+            float(kb),
+            max_dense_gib=max_dense_gib,
+        )
         sre[idx] = result.sre_m2
 
     peak_idx = int(np.argmax(sre))

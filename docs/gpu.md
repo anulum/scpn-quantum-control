@@ -99,8 +99,13 @@ result = batch_vqe_scan(
     n_params: int | None = None,      # parameters per set (default: n)
     seed: int = 42,
     use_gpu: bool = False,            # use PyTorch GPU if available
+    max_dense_gib: float | None = None,
 ) -> dict
 ```
+
+`max_dense_gib` gates the dense Hamiltonian and batched statevector workspace
+before allocation; `use_gpu=True` remains an explicit CUDA request and is not
+silently downgraded to CPU.
 
 **Returns:**
 

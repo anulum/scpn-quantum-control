@@ -10,7 +10,9 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
+import scpn_quantum_control.analysis.krylov_complexity as krylov_module
 from scpn_quantum_control.analysis.krylov_complexity import (
     KrylovResult,
     krylov_complexity,
@@ -18,6 +20,7 @@ from scpn_quantum_control.analysis.krylov_complexity import (
     lanczos_coefficients,
 )
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, knm_to_hamiltonian
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 def _ring(n: int) -> np.ndarray:
@@ -95,6 +98,40 @@ class TestKrylovComplexity:
 
 
 class TestKrylovVsCoupling:
+    def test_rejects_dense_budget_before_probe_allocation(self, monkeypatch):
+        n = 10
+        T = _ring(n)
+        omega = OMEGA_N_16[:n]
+
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(
+            krylov_module, "knm_to_dense_matrix", fail_if_dense_hamiltonian_is_requested
+        )
+
+        with pytest.raises(DenseAllocationError, match="Krylov dense probe"):
+            krylov_vs_coupling(omega, T, k_range=np.array([1.0]), max_dense_gib=1e-12)
+
+    def test_passes_dense_budget_to_bridge(self, monkeypatch):
+        T = _ring(2)
+        omega = OMEGA_N_16[:2]
+        seen_budgets: list[float | None] = []
+
+        def fake_dense_matrix(K_arg, omega_arg, **kwargs):  # noqa: ARG001
+            seen_budgets.append(kwargs.get("max_dense_gib"))
+            return np.diag([0.0, 1.0, 2.0, 3.0]).astype(complex)
+
+        def fake_complexity(H, O_init, t_max=10.0, n_times=50, max_lanczos=50):  # noqa: ARG001
+            return KrylovResult(np.array([1.0]), np.array([0.0]), np.array([0.0]), 0.0, 1)
+
+        monkeypatch.setattr(krylov_module, "knm_to_dense_matrix", fake_dense_matrix)
+        monkeypatch.setattr(krylov_module, "krylov_complexity", fake_complexity)
+
+        krylov_vs_coupling(omega, T, k_range=np.array([1.0, 2.0]), max_dense_gib=0.25)
+
+        assert seen_budgets == [0.25, 0.25]
+
     def test_returns_dict(self):
         T = _ring(3)
         omega = OMEGA_N_16[:3]

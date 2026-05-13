@@ -10,7 +10,9 @@
 import numpy as np
 import pytest
 
+import scpn_quantum_control.phase.trotter_error as trotter_module
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.phase.trotter_error import trotter_error_norm, trotter_error_sweep
 
 
@@ -24,6 +26,37 @@ def test_error_at_t_zero(small_system):
     K, omega = small_system
     err = trotter_error_norm(K, omega, t=0.0, reps=1)
     assert err < 1e-10
+
+
+def test_error_norm_rejects_dense_budget_before_hamiltonian_allocation(monkeypatch):
+    K = build_knm_paper27(L=10)
+    omega = OMEGA_N_16[:10]
+
+    def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+        raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+    monkeypatch.setattr(
+        trotter_module, "knm_to_dense_matrix", fail_if_dense_hamiltonian_is_requested
+    )
+
+    with pytest.raises(DenseAllocationError, match="Trotter dense"):
+        trotter_error_norm(K, omega, t=0.1, reps=1, max_dense_gib=1e-12)
+
+
+def test_error_norm_passes_dense_budget_to_bridge(monkeypatch):
+    K = build_knm_paper27(L=2)
+    omega = OMEGA_N_16[:2]
+    seen_budgets: list[float | None] = []
+
+    def fake_dense_matrix(K_arg, omega_arg, **kwargs):  # noqa: ARG001
+        seen_budgets.append(kwargs.get("max_dense_gib"))
+        return np.zeros((4, 4), dtype=complex)
+
+    monkeypatch.setattr(trotter_module, "knm_to_dense_matrix", fake_dense_matrix)
+
+    trotter_error_norm(K, omega, t=0.1, reps=1, max_dense_gib=0.25)
+
+    assert seen_budgets == [0.25]
 
 
 def test_error_decreases_with_reps(small_system):
@@ -65,6 +98,21 @@ def test_sweep_returns_2d(small_system):
     assert len(result["errors"]) == 2
     assert len(result["errors"][0]) == 2
     assert all(e >= 0 for row in result["errors"] for e in row)
+
+
+def test_sweep_propagates_dense_budget(monkeypatch, small_system):
+    K, omega = small_system
+    seen: list[float | None] = []
+
+    def fake_error_norm(K_arg, omega_arg, t, reps, *, max_dense_gib=None):  # noqa: ARG001
+        seen.append(max_dense_gib)
+        return 0.0
+
+    monkeypatch.setattr(trotter_module, "trotter_error_norm", fake_error_norm)
+
+    trotter_error_sweep(K, omega, t_values=[0.05, 0.1], reps_values=[1, 2], max_dense_gib=0.5)
+
+    assert seen == [0.5, 0.5, 0.5, 0.5]
 
 
 def test_error_positive_at_nonzero_time(small_system):

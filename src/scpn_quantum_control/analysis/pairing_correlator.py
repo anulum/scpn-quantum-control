@@ -29,6 +29,7 @@ import numpy as np
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
+from ..dense_budget import require_dense_allocation
 
 
 @dataclass
@@ -71,11 +72,21 @@ def pairing_map(
     K_topology: np.ndarray,
     K_base: float,
     delta: float = 0.0,
+    *,
+    max_dense_gib: float | None = None,
 ) -> PairingResult:
     """Compute full pairing correlator matrix from XXZ ground state."""
     n = len(omega)
     K = K_base * K_topology
-    H_mat = knm_to_dense_matrix(K, omega, delta=delta)
+    require_dense_allocation(
+        n,
+        dtype=np.complex128,
+        rank=2,
+        object_count=3,
+        max_gib=max_dense_gib,
+        label="pairing dense eigensolver workspace",
+    )
+    H_mat = knm_to_dense_matrix(K, omega, delta=delta, max_dense_gib=max_dense_gib)
     eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
     psi0 = eigenvectors[:, 0]
 
@@ -112,6 +123,8 @@ def pairing_vs_anisotropy(
     K_topology: np.ndarray,
     K_base: float,
     delta_range: np.ndarray | None = None,
+    *,
+    max_dense_gib: float | None = None,
 ) -> dict[str, list[float]]:
     """Scan pairing strength across anisotropy Δ.
 
@@ -128,7 +141,13 @@ def pairing_vs_anisotropy(
     }
 
     for d in delta_range:
-        pr = pairing_map(omega, K_topology, K_base, float(d))
+        pr = pairing_map(
+            omega,
+            K_topology,
+            K_base,
+            float(d),
+            max_dense_gib=max_dense_gib,
+        )
         results["delta"].append(float(d))
         results["max_pairing"].append(pr.max_pairing)
         results["mean_pairing"].append(pr.mean_pairing)

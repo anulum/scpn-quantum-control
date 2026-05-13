@@ -259,13 +259,18 @@ spin-raising/lowering correlators. Strong pairing = synchronised phase.
 
 ```python
 from scpn_quantum_control.analysis.pairing_correlator import (
-    pairing_correlator_scan,
+    pairing_map,
+    pairing_vs_anisotropy,
     PairingResult,
 )
 ```
 
-`pairing_correlator_scan(K, omega, delta=0.0, K_base_range=None, n_K=15)` →
-`PairingResult` with: `K_values`, `mean_pairing`, `pairing_matrices`.
+`pairing_map(omega, K_topology, K_base, delta=0.0, *, max_dense_gib=None)` →
+`PairingResult` with the full pairing matrix, maximum/mean pairing, topology
+correlation, qubit count, anisotropy, and base coupling.
+
+`pairing_vs_anisotropy(omega, K_topology, K_base, delta_range=None, *, max_dense_gib=None)`
+forwards the dense budget to every XXZ ground-state solve in the scan.
 
 ---
 
@@ -346,14 +351,19 @@ Maximum at $K_c$.
 
 ```python
 from scpn_quantum_control.analysis.krylov_complexity import (
-    krylov_complexity_scan,
+    krylov_complexity,
+    krylov_vs_coupling,
     KrylovResult,
 )
 ```
 
-`krylov_complexity_scan(K, omega, operator=None, K_base_range=None, n_K=15, t_max=2.0)`
-→ `KrylovResult` with: `K_values`, `lanczos_b`, `complexity_values`,
-`peak_complexity_K`.
+`krylov_complexity(H, O_init, t_max=10.0, n_times=100, max_lanczos=50)` →
+`KrylovResult` with Lanczos coefficients, times, complexity values, peak
+complexity, and realised Krylov dimension.
+
+`krylov_vs_coupling(omega, K_topology, k_range=None, t_max=10.0, n_times=50, *, max_dense_gib=None)`
+builds the dense Hamiltonian/probe workspace under the caller's budget before
+scanning peak complexity against coupling.
 
 **Rust acceleration:** Lanczos b-coefficients computed via `lanczos_b_coefficients` (complex
 matrix commutator loop in Rust, 5-10× for dim ≤ 256). Hamiltonian via `build_xy_hamiltonian_dense`.
@@ -397,13 +407,18 @@ state is maximally non-classical.
 
 ```python
 from scpn_quantum_control.analysis.magic_nonstabilizerness import (
-    magic_scan,
+    magic_at_coupling,
+    magic_vs_coupling,
     MagicResult,
 )
 ```
 
-`magic_scan(K, omega, K_base_range=None, n_K=15)` → `MagicResult` with:
-`K_values`, `magic_values`, `peak_magic_K`.
+`magic_at_coupling(omega, K_topology, K_base, *, max_dense_gib=None)` computes
+the dense exact ground state and Stabilizer Renyi entropy at one coupling.
+
+`magic_vs_coupling(omega, K_topology, k_range=None, *, max_dense_gib=None)`
+forwards the dense eigensolver budget to every coupling point and returns a
+`MagicScanResult` with the scanned values and peak location.
 
 ### `quantum_phi` — Integrated Information (IIT)
 

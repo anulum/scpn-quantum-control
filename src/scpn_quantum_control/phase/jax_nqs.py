@@ -20,6 +20,8 @@ from typing import Any
 
 import numpy as np
 
+from ..dense_budget import require_dense_allocation
+
 try:
     import jax
     import jax.numpy as jnp
@@ -80,6 +82,8 @@ def jax_vmc_ground_state(
     learning_rate: float = 0.01,
     n_iterations: int = 200,
     seed: int = 42,
+    *,
+    max_dense_gib: float | None = None,
 ) -> dict:
     """VMC ground state search with JAX auto-differentiation.
 
@@ -95,7 +99,23 @@ def jax_vmc_ground_state(
         raise ValueError(f"Exact JAX NQS for n<=12 (got {n})")
 
     n_hid = n_hidden or 2 * n
-    H = jnp.array(knm_to_dense_matrix(K, omega), dtype=jnp.float32)
+    require_dense_allocation(
+        n,
+        dtype=np.complex128,
+        rank=2,
+        object_count=1,
+        max_gib=max_dense_gib,
+        label="JAX NQS dense Hamiltonian workspace",
+    )
+    require_dense_allocation(
+        n,
+        dtype=np.complex128,
+        rank=1,
+        object_count=4,
+        max_gib=max_dense_gib,
+        label="JAX NQS dense exact-enumeration workspace",
+    )
+    H = jnp.array(knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib), dtype=jnp.float32)
 
     key = jax.random.PRNGKey(seed)
     k1, k2, k3 = jax.random.split(key, 3)

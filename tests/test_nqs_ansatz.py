@@ -17,6 +17,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+import scpn_quantum_control.phase.nqs_ansatz as nqs_module
+from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.phase.nqs_ansatz import RBMWavefunction, vmc_ground_state
 
 
@@ -91,6 +93,35 @@ class TestRBMWavefunction:
 # =====================================================================
 class TestVMCGroundState:
     """Variational Monte Carlo optimisation tests."""
+
+    def test_vmc_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+        K = np.zeros((10, 10))
+        omega = np.linspace(0.8, 1.2, 10)
+
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(
+            nqs_module, "knm_to_dense_matrix", fail_if_dense_hamiltonian_is_requested
+        )
+
+        with pytest.raises(DenseAllocationError, match="NQS dense"):
+            vmc_ground_state(K, omega, n_iterations=1, max_dense_gib=1e-12)
+
+    def test_vmc_passes_dense_budget_to_bridge(self, monkeypatch):
+        K = np.array([[0, 0.3], [0.3, 0]])
+        omega = np.array([1.0, 1.1])
+        seen_budgets: list[float | None] = []
+
+        def fake_dense_matrix(K_arg, omega_arg, **kwargs):  # noqa: ARG001
+            seen_budgets.append(kwargs.get("max_dense_gib"))
+            return np.zeros((4, 4), dtype=complex)
+
+        monkeypatch.setattr(nqs_module, "knm_to_dense_matrix", fake_dense_matrix)
+
+        vmc_ground_state(K, omega, n_iterations=1, seed=42, max_dense_gib=0.25)
+
+        assert seen_budgets == [0.25]
 
     def test_vmc_returns_valid_result(self):
         K = np.array([[0, 0.5], [0.5, 0]])

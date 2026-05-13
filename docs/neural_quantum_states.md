@@ -99,8 +99,12 @@ result = vmc_ground_state(
     n_iterations: int = 200,      # optimisation steps
     n_samples: None = None,       # sampling unsupported in this path
     seed: int | None = None,
+    max_dense_gib: float | None = None,
 ) -> dict
 ```
+
+`max_dense_gib` gates the exact dense Hamiltonian and full-configuration
+statevector workspace before allocation.
 
 **Returns:**
 
@@ -190,8 +194,13 @@ result = jax_vmc_ground_state(
     learning_rate: float = 0.01,
     n_iterations: int = 200,
     seed: int = 42,
+    max_dense_gib: float | None = None,
 ) -> dict
 ```
+
+The JAX path uses the same exact-enumeration Hilbert-space boundary as the
+NumPy RBM path; `max_dense_gib` gates the dense Hamiltonian and configuration
+workspace before transferring arrays to JAX.
 
 **Returns:**
 
