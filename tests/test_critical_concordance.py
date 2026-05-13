@@ -122,20 +122,22 @@ class TestCriticalConcordance:
                 max_dense_gib=1e-5,
             )
 
-    def test_propagates_dense_budget_to_qfi_probe(self, monkeypatch):
+    def test_reuses_concordance_eigendecomposition_for_qfi(self, monkeypatch):
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
-        seen_budgets = []
+        original_dense = concordance_module.knm_to_dense_matrix
+        dense_calls = 0
 
-        def fake_qfi_single_coupling(K, omega_arg, *, max_dense_gib):  # noqa: ARG001
-            seen_budgets.append(max_dense_gib)
-            return 0.5, 0.25, 0.1
+        def counting_dense(*args, **kwargs):
+            nonlocal dense_calls
+            dense_calls += 1
+            return original_dense(*args, **kwargs)
 
         monkeypatch.setattr(
             concordance_module,
-            "qfi_single_coupling",
-            fake_qfi_single_coupling,
+            "knm_to_dense_matrix",
+            counting_dense,
         )
 
         result = critical_concordance(
@@ -145,8 +147,8 @@ class TestCriticalConcordance:
             max_dense_gib=0.25,
         )
 
-        assert seen_budgets == [0.25, 0.25, 0.25]
-        assert np.allclose(result.qfi_values, 0.5)
+        assert dense_calls == 3
+        assert np.all(np.isfinite(result.qfi_values))
 
 
 def test_concordance_k_range_length():

@@ -32,7 +32,7 @@ from qiskit.quantum_info import SparsePauliOp, Statevector
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 from ..dense_budget import require_dense_eigensolver_workspace
 from .entanglement_percolation import concurrence_map_exact, fiedler_eigenvalue
-from .qfi_criticality import qfi_single_coupling
+from .qfi_criticality import _qfi_from_eigendecomposition
 
 
 @dataclass
@@ -110,7 +110,7 @@ def critical_concordance(
         R_vals[idx] = _R_from_ground_state(psi0, n)
 
         # QFI + gap
-        mq, gap, _tq = qfi_single_coupling(K, omega, max_dense_gib=max_dense_gib)
+        mq, gap, _tq = _qfi_from_eigendecomposition(K, eigenvalues, eigenvectors)
         qfi_vals[idx] = mq
         gap_vals[idx] = gap
 

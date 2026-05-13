@@ -42,6 +42,55 @@ class QFICriticalityResult:
     peak_qfi: float  # max QFI value at peak
 
 
+def _qfi_from_eigendecomposition(
+    K: np.ndarray,
+    eigenvalues: np.ndarray,
+    eigenvectors: np.ndarray,
+) -> tuple[float, float, float]:
+    """Compute coupling-parameter QFI from an existing exact eigendecomposition."""
+    n = K.shape[0]
+    pairs = [(i, j) for i in range(n) for j in range(i + 1, n) if abs(K[i, j]) > 1e-10]
+
+    E0 = eigenvalues[0]
+    psi0 = eigenvectors[:, 0]
+    gap = float(eigenvalues[1] - E0)
+
+    from qiskit.quantum_info import SparsePauliOp
+
+    if not pairs:
+        return 0.0, gap, 0.0
+
+    V_mats = []
+    for i, j in pairs:
+        xx = ["I"] * n
+        xx[i] = "X"
+        xx[j] = "X"
+        yy = ["I"] * n
+        yy[i] = "Y"
+        yy[j] = "Y"
+        V = SparsePauliOp(
+            ["".join(reversed(xx)), "".join(reversed(yy))],
+            [-1.0, -1.0],
+        ).to_matrix()
+        V_mats.append(V)
+
+    qfi_diag = np.zeros(len(pairs))
+    dim = len(eigenvalues)
+
+    for a, V_mat in enumerate(V_mats):
+        V_psi0 = V_mat @ psi0
+        val = 0.0
+        for m in range(1, dim):
+            denom = (eigenvalues[m] - E0) ** 2
+            if denom < 1e-30:
+                continue
+            overlap = abs(eigenvectors[:, m].conj() @ V_psi0) ** 2
+            val += overlap / denom
+        qfi_diag[a] = 4.0 * val
+
+    return float(np.max(qfi_diag)), gap, float(np.sum(qfi_diag))
+
+
 def qfi_single_coupling(
     K: np.ndarray,
     omega: np.ndarray,
@@ -69,48 +118,7 @@ def qfi_single_coupling(
     H_mat = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
 
     eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
-    E0 = eigenvalues[0]
-    psi0 = eigenvectors[:, 0]
-    gap = float(eigenvalues[1] - E0)
-
-    # Coupling pairs
-    from qiskit.quantum_info import SparsePauliOp
-
-    if not pairs:
-        return 0.0, gap, 0.0
-
-    # Build dH/dK_ij operators
-    V_mats = []
-    for i, j in pairs:
-        xx = ["I"] * n
-        xx[i] = "X"
-        xx[j] = "X"
-        yy = ["I"] * n
-        yy[i] = "Y"
-        yy[j] = "Y"
-        V = SparsePauliOp(
-            ["".join(reversed(xx)), "".join(reversed(yy))],
-            [-1.0, -1.0],
-        ).to_matrix()
-        V_mats.append(V)
-
-    # QFI diagonal: F_aa = 4 * sum_{m!=0} |<m|V_a|0>|^2 / (Em - E0)^2
-    n_pairs = len(pairs)
-    qfi_diag = np.zeros(n_pairs)
-    dim = len(eigenvalues)
-
-    for a in range(n_pairs):
-        V_psi0 = V_mats[a] @ psi0
-        val = 0.0
-        for m in range(1, dim):
-            denom = (eigenvalues[m] - E0) ** 2
-            if denom < 1e-30:
-                continue
-            overlap = abs(eigenvectors[:, m].conj() @ V_psi0) ** 2
-            val += overlap / denom
-        qfi_diag[a] = 4.0 * val
-
-    return float(np.max(qfi_diag)), gap, float(np.sum(qfi_diag))
+    return _qfi_from_eigendecomposition(K, eigenvalues, eigenvectors)
 
 
 def qfi_vs_coupling(
