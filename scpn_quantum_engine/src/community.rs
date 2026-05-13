@@ -14,8 +14,11 @@
 //! Ref: Liu et al., arXiv:2601.19635 (2026) — DynQ
 
 use numpy::{PyArray1, PyReadonlyArray1};
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use rayon::prelude::*;
+
+use crate::validation::{validate_contiguous_slice, validate_finite, validate_n};
 
 /// Compute quality scores for multiple regions in parallel.
 ///
@@ -37,9 +40,12 @@ pub fn score_regions_batch<'py>(
     Bound<'py, PyArray1<f64>>,
     Bound<'py, PyArray1<f64>>,
 )> {
-    let errors = gate_errors_flat.as_slice().unwrap();
-    let offsets = region_offsets.as_slice().unwrap();
-    let qubits = region_qubits.as_slice().unwrap();
+    validate_n(n_qubits, "n_qubits")?;
+    let errors = validate_contiguous_slice(&gate_errors_flat, "gate_errors_flat")?;
+    let offsets = validate_contiguous_slice(&region_offsets, "region_offsets")?;
+    let qubits = validate_contiguous_slice(&region_qubits, "region_qubits")?;
+    validate_gate_errors(errors, n_qubits)?;
+    validate_region_encoding(offsets, qubits, n_qubits)?;
     let n_regions = offsets.len() / 2;
 
     let results: Vec<(f64, f64, f64)> = (0..n_regions)
@@ -88,23 +94,84 @@ pub fn score_regions_batch<'py>(
         })
         .collect();
 
-    let (conn, fid, comp): (Vec<f64>, Vec<f64>, Vec<f64>) = results
-        .into_iter()
-        .fold(
-            (Vec::new(), Vec::new(), Vec::new()),
-            |(mut c, mut f, mut q), (ci, fi, qi)| {
-                c.push(ci);
-                f.push(fi);
-                q.push(qi);
-                (c, f, q)
-            },
-        );
+    let (conn, fid, comp): (Vec<f64>, Vec<f64>, Vec<f64>) = results.into_iter().fold(
+        (Vec::new(), Vec::new(), Vec::new()),
+        |(mut c, mut f, mut q), (ci, fi, qi)| {
+            c.push(ci);
+            f.push(fi);
+            q.push(qi);
+            (c, f, q)
+        },
+    );
 
     Ok((
         PyArray1::from_vec(py, conn),
         PyArray1::from_vec(py, fid),
         PyArray1::from_vec(py, comp),
     ))
+}
+
+fn validate_gate_errors(errors: &[f64], n_qubits: usize) -> PyResult<()> {
+    validate_finite(errors, "gate_errors_flat")?;
+    let expected = n_qubits
+        .checked_mul(n_qubits)
+        .ok_or_else(|| PyValueError::new_err("n_qubits squared overflows usize"))?;
+    if errors.len() != expected {
+        return Err(PyValueError::new_err(format!(
+            "gate_errors_flat length {} != n_qubits² = {expected}",
+            errors.len()
+        )));
+    }
+    for (idx, &error) in errors.iter().enumerate() {
+        if !(0.0..=1.0).contains(&error) {
+            return Err(PyValueError::new_err(format!(
+                "gate_errors_flat[{idx}] must be in [0, 1], got {error}"
+            )));
+        }
+    }
+    Ok(())
+}
+
+fn validate_region_encoding(offsets: &[i64], qubits: &[i64], n_qubits: usize) -> PyResult<()> {
+    if offsets.len() % 2 != 0 {
+        return Err(PyValueError::new_err(format!(
+            "region_offsets length {} must be even",
+            offsets.len()
+        )));
+    }
+    for (region_idx, pair) in offsets.chunks_exact(2).enumerate() {
+        let start = pair[0];
+        let end = pair[1];
+        if start < 0 || end < 0 {
+            return Err(PyValueError::new_err(format!(
+                "region_offsets pair {region_idx} must be non-negative, got [{start}, {end}]"
+            )));
+        }
+        if start > end {
+            return Err(PyValueError::new_err(format!(
+                "region_offsets pair {region_idx} start {start} > end {end}"
+            )));
+        }
+        if end as usize > qubits.len() {
+            return Err(PyValueError::new_err(format!(
+                "region_offsets pair {region_idx} end {end} exceeds region_qubits length {}",
+                qubits.len()
+            )));
+        }
+    }
+    for (idx, &qubit) in qubits.iter().enumerate() {
+        if qubit < 0 {
+            return Err(PyValueError::new_err(format!(
+                "region_qubits[{idx}] must be non-negative, got {qubit}"
+            )));
+        }
+        if qubit as usize >= n_qubits {
+            return Err(PyValueError::new_err(format!(
+                "region_qubits[{idx}]={qubit} exceeds n_qubits={n_qubits}"
+            )));
+        }
+    }
+    Ok(())
 }
 
 #[cfg(test)]

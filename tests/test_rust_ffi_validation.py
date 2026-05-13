@@ -141,5 +141,79 @@ def test_concatenated_logical_rate_matches_two_level_reference() -> None:
     np.testing.assert_allclose(rates, np.array([first, second]))
 
 
+def test_score_regions_batch_rejects_non_contiguous_gate_errors() -> None:
+    gate_errors = np.linspace(0.0, 0.03, 32, dtype=np.float64)[::2]
+    offsets = np.ascontiguousarray([0, 4], dtype=np.int64)
+    qubits = np.ascontiguousarray([0, 1, 2, 3], dtype=np.int64)
+
+    with pytest.raises(ValueError, match="gate_errors_flat must be a C-contiguous NumPy array"):
+        engine.score_regions_batch(gate_errors, 4, offsets, qubits)
+
+
+def test_score_regions_batch_rejects_wrong_gate_error_shape() -> None:
+    gate_errors = np.ascontiguousarray(np.zeros(15, dtype=np.float64))
+    offsets = np.ascontiguousarray([0, 4], dtype=np.int64)
+    qubits = np.ascontiguousarray([0, 1, 2, 3], dtype=np.int64)
+
+    with pytest.raises(ValueError, match="gate_errors_flat length 15 != n_qubits² = 16"):
+        engine.score_regions_batch(gate_errors, 4, offsets, qubits)
+
+
+def test_score_regions_batch_rejects_invalid_gate_error_value() -> None:
+    gate_errors = np.ascontiguousarray(np.zeros((4, 4), dtype=np.float64).ravel())
+    gate_errors[1] = 1.2
+    offsets = np.ascontiguousarray([0, 4], dtype=np.int64)
+    qubits = np.ascontiguousarray([0, 1, 2, 3], dtype=np.int64)
+
+    with pytest.raises(ValueError, match=r"gate_errors_flat\[1\] must be in \[0, 1\]"):
+        engine.score_regions_batch(gate_errors, 4, offsets, qubits)
+
+
+def test_score_regions_batch_rejects_odd_region_offsets() -> None:
+    gate_errors = np.ascontiguousarray(np.zeros((4, 4), dtype=np.float64).ravel())
+    offsets = np.ascontiguousarray([0, 4, 4], dtype=np.int64)
+    qubits = np.ascontiguousarray([0, 1, 2, 3], dtype=np.int64)
+
+    with pytest.raises(ValueError, match="region_offsets length 3 must be even"):
+        engine.score_regions_batch(gate_errors, 4, offsets, qubits)
+
+
+def test_score_regions_batch_rejects_offset_beyond_qubit_buffer() -> None:
+    gate_errors = np.ascontiguousarray(np.zeros((4, 4), dtype=np.float64).ravel())
+    offsets = np.ascontiguousarray([0, 5], dtype=np.int64)
+    qubits = np.ascontiguousarray([0, 1, 2, 3], dtype=np.int64)
+
+    with pytest.raises(ValueError, match="end 5 exceeds region_qubits length 4"):
+        engine.score_regions_batch(gate_errors, 4, offsets, qubits)
+
+
+def test_score_regions_batch_rejects_out_of_range_qubit() -> None:
+    gate_errors = np.ascontiguousarray(np.zeros((4, 4), dtype=np.float64).ravel())
+    offsets = np.ascontiguousarray([0, 4], dtype=np.int64)
+    qubits = np.ascontiguousarray([0, 1, 2, 4], dtype=np.int64)
+
+    with pytest.raises(ValueError, match="region_qubits\\[3\\]=4 exceeds n_qubits=4"):
+        engine.score_regions_batch(gate_errors, 4, offsets, qubits)
+
+
+def test_score_regions_batch_accepts_complete_graph_scores() -> None:
+    n_qubits = 4
+    gate_errors = np.zeros((n_qubits, n_qubits), dtype=np.float64)
+    gate_errors[~np.eye(n_qubits, dtype=bool)] = 0.01
+    offsets = np.ascontiguousarray([0, 4], dtype=np.int64)
+    qubits = np.ascontiguousarray([0, 1, 2, 3], dtype=np.int64)
+
+    connectivity, fidelity, composite = engine.score_regions_batch(
+        np.ascontiguousarray(gate_errors.ravel()),
+        n_qubits,
+        offsets,
+        qubits,
+    )
+
+    np.testing.assert_allclose(np.asarray(connectivity), np.array([1.0]))
+    np.testing.assert_allclose(np.asarray(fidelity), np.array([0.99]))
+    np.testing.assert_allclose(np.asarray(composite), np.array([0.99]))
+
+
 def r_values_error_pattern() -> str:
     return r"r_values must be a C-contiguous NumPy array"
