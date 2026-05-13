@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 import scpn_quantum_control.analysis.loschmidt_echo as le
 from scpn_quantum_control.analysis.loschmidt_echo import (
@@ -18,6 +19,7 @@ from scpn_quantum_control.analysis.loschmidt_echo import (
     quench_scan,
 )
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 def _ring(n: int) -> np.ndarray:
@@ -80,6 +82,24 @@ class TestLoschmidtQuench:
         omega = OMEGA_N_16[:4]
         result = loschmidt_quench(omega, T, K_initial=1.0, K_final=3.0, n_times=50)
         assert len(result.loschmidt_amplitude) == 50
+
+    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(le, "knm_to_dense_matrix", fail_if_dense_hamiltonian_is_requested)
+        T = _ring(4)
+        omega = OMEGA_N_16[:4]
+
+        with pytest.raises(DenseAllocationError, match="Loschmidt exact dense workspace"):
+            loschmidt_quench(
+                omega,
+                T,
+                K_initial=1.0,
+                K_final=3.0,
+                n_times=4,
+                max_dense_gib=1e-12,
+            )
 
 
 class TestQuenchScan:
@@ -225,8 +245,9 @@ class TestRateFunctionCap:
         final_hamiltonian = np.diag([0.0, np.pi])
         calls = iter([initial_hamiltonian, final_hamiltonian])
 
-        def fake_dense_matrix(K, omega):
+        def fake_dense_matrix(K, omega, **kwargs):
             del K, omega
+            assert kwargs == {"max_dense_gib": None}
             return next(calls)
 
         monkeypatch.setattr(le, "knm_to_dense_matrix", fake_dense_matrix)

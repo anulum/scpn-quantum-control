@@ -14,6 +14,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
+from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.hardware import jax_accel as jax_mod
 
 
@@ -203,6 +204,28 @@ def test_entanglement_scan_jax(mock_jax, monkeypatch):
     assert "schmidt_gap" in result
     assert "spectral_gap" in result
     assert len(result["k_values"]) == 2
+
+
+def test_entanglement_scan_jax_rejects_dense_batch_budget(mock_jax, monkeypatch):
+    K_topo = np.eye(4)
+    omega = np.ones(4)
+    k_range = np.array([0.5, 1.0])
+
+    def fail_dense(*args, **kwargs):
+        raise AssertionError("dense builder must not run after JAX batch budget rejection")
+
+    monkeypatch.setattr(
+        "scpn_quantum_control.bridge.knm_hamiltonian.knm_to_dense_matrix",
+        fail_dense,
+    )
+
+    with pytest.raises(DenseAllocationError, match="JAX entanglement dense batch"):
+        jax_mod.entanglement_scan_jax(
+            K_topo,
+            omega,
+            k_range,
+            max_dense_gib=1e-12,
+        )
 
 
 # ---------------------------------------------------------------------------

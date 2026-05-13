@@ -10,7 +10,9 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
+import scpn_quantum_control.analysis.spectral_form_factor as sff_mod
 from scpn_quantum_control.analysis.spectral_form_factor import (
     SFFResult,
     SFFScanResult,
@@ -18,6 +20,7 @@ from scpn_quantum_control.analysis.spectral_form_factor import (
     sff_vs_coupling,
 )
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 def _ring(n: int) -> np.ndarray:
@@ -63,6 +66,17 @@ class TestComputeSFF:
         result = compute_sff(K, omega, t_max=5.0, n_times=30)
         assert result.spectral_gap > 0
         assert len(result.times) == 30
+
+    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(sff_mod, "knm_to_dense_matrix", fail_if_dense_hamiltonian_is_requested)
+        K = 2.0 * _ring(4)
+        omega = OMEGA_N_16[:4]
+
+        with pytest.raises(DenseAllocationError, match="SFF dense eigensolver"):
+            compute_sff(K, omega, t_max=1.0, n_times=2, max_dense_gib=1e-12)
 
 
 class TestSFFVsCoupling:

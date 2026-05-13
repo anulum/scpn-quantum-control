@@ -11,8 +11,11 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from scipy import sparse
 
+import scpn_quantum_control.phase.qsvt_evolution as qsvt_mod
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.phase.qsvt_evolution import (
     QSVTResourceEstimate,
     hamiltonian_1norm,
@@ -58,6 +61,36 @@ class TestHamiltonianSpectralNorm:
         spec = hamiltonian_spectral_norm(K, omega)
         alpha = hamiltonian_1norm(K, omega)
         assert spec <= alpha + 1e-10
+
+    def test_large_system_uses_sparse_matrix_without_dense_builder(self, monkeypatch):
+        """n >= 14 must not allocate a dense 2^n x 2^n matrix."""
+        K = np.zeros((14, 14))
+        omega = np.linspace(0.5, 1.5, 14)
+
+        def fail_dense(*args, **kwargs):
+            raise AssertionError("dense builder must not be called for sparse QSVT norm path")
+
+        monkeypatch.setattr(qsvt_mod, "knm_to_dense_matrix", fail_dense)
+        monkeypatch.setattr(
+            qsvt_mod,
+            "knm_to_sparse_matrix",
+            lambda *_args, **_kwargs: sparse.diags([-2.0, 3.0], format="csc"),
+        )
+
+        assert hamiltonian_spectral_norm(K, omega) == pytest.approx(3.0)
+
+    def test_rejects_dense_budget_before_small_dense_allocation(self, monkeypatch):
+        """Dense n < 14 branch must respect explicit memory budgets."""
+        K = build_knm_paper27(L=4)
+        omega = OMEGA_N_16[:4]
+
+        def fail_dense(*args, **kwargs):
+            raise AssertionError("dense builder must not run after budget rejection")
+
+        monkeypatch.setattr(qsvt_mod, "knm_to_dense_matrix", fail_dense)
+
+        with pytest.raises(DenseAllocationError, match="QSVT dense spectral norm"):
+            hamiltonian_spectral_norm(K, omega, max_dense_gib=1e-12)
 
 
 class TestQueryCounts:
@@ -183,6 +216,18 @@ class TestQSVTResourceEstimate:
 
         with pytest.raises(ValueError, match=match):
             qsvt_resource_estimate(K, omega, t=time, epsilon=epsilon)
+
+    def test_resource_estimate_propagates_dense_budget(self, monkeypatch):
+        K = build_knm_paper27(L=4)
+        omega = OMEGA_N_16[:4]
+
+        def fail_dense(*args, **kwargs):
+            raise AssertionError("dense builder must not run after budget rejection")
+
+        monkeypatch.setattr(qsvt_mod, "knm_to_dense_matrix", fail_dense)
+
+        with pytest.raises(DenseAllocationError, match="QSVT dense spectral norm"):
+            qsvt_resource_estimate(K, omega, max_dense_gib=1e-12)
 
 
 class TestQSPPhaseAngles:

@@ -22,6 +22,7 @@ from __future__ import annotations
 import numpy as np
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
+from ..dense_budget import require_dense_allocation
 
 
 def recommend_backend(
@@ -76,9 +77,9 @@ def recommend_backend(
         if has_quimb and n <= 64:
             return {
                 "backend": "tjm_mps",
-                "reason": "Open-system MPS (tensor jump method) for large n",
+                "reason": "Open-system MPS tensor-jump path is not yet executable",
                 "memory_mb": n * 64 * 16 / 1e6,  # rough MPS estimate
-                "feasible": True,
+                "feasible": False,
                 "note": "TJM not yet implemented — use lindblad_scipy for n<=12",
             }
         return {
@@ -162,6 +163,8 @@ def auto_solve(
     gamma_deph: float = 0.0,
     t_max: float = 1.0,
     dt: float = 0.1,
+    *,
+    max_dense_gib: float | None = None,
 ) -> dict:
     """Automatically select backend and run simulation.
 
@@ -189,12 +192,26 @@ def auto_solve(
     if backend == "lindblad_scipy" and want_open_system:
         from ..phase.lindblad import LindbladKuramotoSolver
 
-        solver = LindbladKuramotoSolver(n, K, omega, gamma_amp=gamma_amp, gamma_deph=gamma_deph)
-        result = solver.run(t_max=t_max, dt=dt)
+        solver = LindbladKuramotoSolver(
+            n,
+            K,
+            omega,
+            gamma_amp=gamma_amp,
+            gamma_deph=gamma_deph,
+            max_dense_gib=max_dense_gib,
+        )
+        result = solver.run(t_max=t_max, dt=dt, max_dense_gib=max_dense_gib)
         return {"backend_used": backend, "result": result, "recommendation": rec}
 
     if backend == "exact_diag":
-        H = knm_to_dense_matrix(K, omega)
+        require_dense_allocation(
+            n,
+            rank=2,
+            object_count=2,
+            max_gib=max_dense_gib,
+            label="auto_solve exact diagonalisation",
+        )
+        H = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
         eigvals, eigvecs = np.linalg.eigh(H)
         return {
             "backend_used": backend,
@@ -220,6 +237,14 @@ def auto_solve(
         result = dmrg_ground_state(K, omega, bond_dim=64, max_sweeps=20)
         return {"backend_used": backend, "result": result, "recommendation": rec}
 
+    if backend == "tjm_mps":
+        raise RuntimeError(
+            "auto_solve selected tjm_mps, but no executable MPS tensor-jump "
+            "backend is wired here. Use mcwf_ensemble for sparse exact "
+            "statevector trajectories, or select lindblad_scipy for supported "
+            "small open-system density-matrix evolution."
+        )
+
     if backend == "hardware":
         raise RuntimeError(
             "auto_solve is a local simulation helper and will not substitute a "
@@ -232,5 +257,5 @@ def auto_solve(
     from ..phase.xy_kuramoto import QuantumKuramotoSolver
 
     qk_solver = QuantumKuramotoSolver(n, K, omega)
-    result = qk_solver.run(t_max=t_max, dt=dt)
+    result = qk_solver.run(t_max=t_max, dt=dt, max_statevector_gib=max_dense_gib)
     return {"backend_used": "statevector", "result": result, "recommendation": rec}

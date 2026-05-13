@@ -7,16 +7,17 @@
 # SCPN Quantum Control — Tensor Jump Method for Open Systems
 """Monte Carlo Wave Function (MCWF) method for open Kuramoto-XY systems.
 
-The Tensor Jump Method (TJM) combines the MCWF approach with Matrix Product
-States (MPS) to simulate open quantum systems at scales beyond exact density
-matrix methods. For the Kuramoto-XY system:
+The trajectory solver uses sparse Hamiltonians, sparse jump operators, and
+state-vector propagation. It avoids the O(4^n) density-matrix bottleneck and
+the dense Hamiltonian allocations used by exact diagonalisation, but it is not
+a Matrix Product State implementation. Memory still scales as O(2^n) in the
+trajectory state vector.
+
+For the Kuramoto-XY system:
 
   1. Evolve |ψ⟩ under effective non-Hermitian Hamiltonian H_eff = H - iΣ L†L/2
   2. At each timestep, with probability dp = 1 - ⟨ψ|ψ⟩, apply a quantum jump
   3. Average over many trajectories to recover the density matrix ρ
-
-For MPS representation, each trajectory maintains a low-bond-dimension state,
-enabling simulation of n=32-100+ oscillators.
 
 Reference: Causer et al., Nature Comms (2025);
 Dalibard et al., PRL 68, 580 (1992).
@@ -25,10 +26,11 @@ Dalibard et al., PRL 68, 580 (1992).
 from __future__ import annotations
 
 import numpy as np
-from scipy.linalg import expm
+from scipy import sparse
+from scipy.sparse.linalg import expm_multiply
 
-from ..bridge.knm_hamiltonian import knm_to_dense_matrix
-from ..phase.lindblad import _sigma
+from ..bridge.knm_hamiltonian import knm_to_sparse_matrix
+from ..dense_budget import require_dense_allocation
 
 
 def _build_effective_hamiltonian(
@@ -42,6 +44,72 @@ def _build_effective_hamiltonian(
     return H_eff
 
 
+def _validate_mcwf_inputs(
+    K: np.ndarray,
+    omega: np.ndarray,
+    gamma_amp: float,
+    gamma_deph: float,
+    t_max: float,
+    dt: float,
+) -> tuple[np.ndarray, np.ndarray]:
+    K_arr = np.asarray(K, dtype=np.float64)
+    omega_arr = np.asarray(omega, dtype=np.float64)
+    if K_arr.ndim != 2 or K_arr.shape[0] != K_arr.shape[1]:
+        raise ValueError("K must be a square two-dimensional coupling matrix.")
+    if omega_arr.ndim != 1 or omega_arr.shape[0] != K_arr.shape[0]:
+        raise ValueError("omega must be a one-dimensional vector matching K.")
+    if not np.all(np.isfinite(K_arr)) or not np.all(np.isfinite(omega_arr)):
+        raise ValueError("K and omega must contain only finite values.")
+    if not np.isfinite(gamma_amp) or gamma_amp < 0:
+        raise ValueError("gamma_amp must be finite and non-negative.")
+    if not np.isfinite(gamma_deph) or gamma_deph < 0:
+        raise ValueError("gamma_deph must be finite and non-negative.")
+    if not np.isfinite(t_max) or t_max < 0:
+        raise ValueError("t_max must be finite and non-negative.")
+    if not np.isfinite(dt) or dt <= 0:
+        raise ValueError("dt must be finite and positive.")
+    return K_arr, omega_arr
+
+
+def _single_qubit_sparse(pauli: str, qubit: int, n: int) -> sparse.csr_matrix:
+    matrices = {
+        "X": sparse.csr_matrix(np.array([[0, 1], [1, 0]], dtype=np.complex128)),
+        "Y": sparse.csr_matrix(np.array([[0, -1j], [1j, 0]], dtype=np.complex128)),
+        "Z": sparse.csr_matrix(np.array([[1, 0], [0, -1]], dtype=np.complex128)),
+        "+": sparse.csr_matrix(np.array([[0, 1], [0, 0]], dtype=np.complex128)),
+        "-": sparse.csr_matrix(np.array([[0, 0], [1, 0]], dtype=np.complex128)),
+    }
+    op = sparse.identity(1, dtype=np.complex128, format="csr")
+    ident = sparse.identity(2, dtype=np.complex128, format="csr")
+    for i in range(n):
+        op = sparse.kron(op, matrices[pauli] if i == qubit else ident, format="csr")
+    return op
+
+
+def _build_sparse_lindblad_ops(
+    n: int,
+    gamma_amp: float,
+    gamma_deph: float,
+) -> list[sparse.csr_matrix]:
+    ops: list[sparse.csr_matrix] = []
+    for i in range(n):
+        if gamma_amp > 0:
+            ops.append(np.sqrt(gamma_amp) * _single_qubit_sparse("-", i, n))
+        if gamma_deph > 0:
+            ops.append(np.sqrt(gamma_deph / 2) * _single_qubit_sparse("Z", i, n))
+    return ops
+
+
+def _initial_product_state(omega: np.ndarray) -> np.ndarray:
+    psi = np.array([1.0 + 0.0j], dtype=np.complex128)
+    for omega_i in omega:
+        angle = float(omega_i) % (2 * np.pi)
+        c, s = np.cos(angle / 2), np.sin(angle / 2)
+        qubit_state = np.array([c, s], dtype=np.complex128)
+        psi = np.asarray(np.kron(psi, qubit_state), dtype=np.complex128)
+    return psi
+
+
 def mcwf_trajectory(
     K: np.ndarray,
     omega: np.ndarray,
@@ -50,6 +118,8 @@ def mcwf_trajectory(
     t_max: float = 1.0,
     dt: float = 0.05,
     seed: int | None = None,
+    *,
+    max_dense_gib: float | None = None,
 ) -> dict:
     """Run a single MCWF trajectory.
 
@@ -66,49 +136,43 @@ def mcwf_trajectory(
     -------
     dict with keys: times, R, psi_final, n_jumps
     """
+    K, omega = _validate_mcwf_inputs(K, omega, gamma_amp, gamma_deph, t_max, dt)
     n = K.shape[0]
     dim = 2**n
+    require_dense_allocation(
+        n,
+        rank=1,
+        object_count=4,
+        max_gib=max_dense_gib,
+        label="MCWF statevector workspace",
+    )
     rng = np.random.default_rng(seed)
 
-    H = knm_to_dense_matrix(K, omega)
-
-    # Build Lindblad operators
-    L_ops = []
-    for i in range(n):
-        if gamma_amp > 0:
-            L_ops.append(np.sqrt(gamma_amp) * _sigma("-", i, n))
-        if gamma_deph > 0:
-            L_ops.append(np.sqrt(gamma_deph / 2) * _sigma("Z", i, n))
-
-    H_eff = _build_effective_hamiltonian(H, L_ops)
+    H = knm_to_sparse_matrix(K, omega).astype(np.complex128)
+    L_ops = _build_sparse_lindblad_ops(n, gamma_amp, gamma_deph)
+    anti_hermitian = sparse.csr_matrix((dim, dim), dtype=np.complex128)
+    for L in L_ops:
+        anti_hermitian = anti_hermitian + (L.getH() @ L)
+    H_eff = H - 0.5j * anti_hermitian
 
     # Initial state: product of Ry-rotated qubits
-    psi = np.zeros(dim, dtype=np.complex128)
-    psi[0] = 1.0
-    U_init = np.eye(1, dtype=np.complex128)
-    for i in range(n):
-        angle = float(omega[i]) % (2 * np.pi)
-        c, s = np.cos(angle / 2), np.sin(angle / 2)
-        ry = np.array([[c, -s], [s, c]], dtype=np.complex128)
-        U_init = np.kron(U_init, ry)  # type: ignore[assignment]
-    psi = U_init @ psi
+    psi = _initial_product_state(omega)
 
     n_steps = max(1, int(t_max / dt))
     times = np.linspace(0, t_max, n_steps + 1)
     R_history = np.zeros(n_steps + 1)
     R_history[0] = _order_param_vec(psi, n)
 
-    # Non-Hermitian propagator for one step
-    U_eff = expm(-1j * H_eff * dt)
+    step_generator = -1j * H_eff * dt
 
     n_jumps = 0
     for step in range(1, n_steps + 1):
         # Evolve under H_eff
-        psi_new = U_eff @ psi
+        psi_new = expm_multiply(step_generator, psi)
         norm_sq = float(np.real(np.dot(psi_new.conj(), psi_new)))
 
         # Jump probability
-        dp = 1 - norm_sq
+        dp = float(np.clip(1 - norm_sq, 0.0, 1.0))
         r = rng.uniform()
 
         if r < dp and len(L_ops) > 0:
@@ -146,6 +210,8 @@ def mcwf_ensemble(
     dt: float = 0.05,
     n_trajectories: int = 50,
     seed: int | None = None,
+    *,
+    max_dense_gib: float | None = None,
 ) -> dict:
     """Run an ensemble of MCWF trajectories and average.
 
@@ -158,7 +224,16 @@ def mcwf_ensemble(
     total_jumps = 0
 
     for i in range(n_trajectories):
-        traj = mcwf_trajectory(K, omega, gamma_amp, gamma_deph, t_max, dt, seed=int(seeds[i]))
+        traj = mcwf_trajectory(
+            K,
+            omega,
+            gamma_amp,
+            gamma_deph,
+            t_max,
+            dt,
+            seed=int(seeds[i]),
+            max_dense_gib=max_dense_gib,
+        )
         all_R.append(traj["R"])
         total_jumps += traj["n_jumps"]
 

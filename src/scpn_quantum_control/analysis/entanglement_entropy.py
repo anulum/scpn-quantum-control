@@ -33,6 +33,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
+from ..dense_budget import require_dense_allocation
 
 
 @dataclass
@@ -96,18 +97,27 @@ def entanglement_at_coupling(
     omega: np.ndarray,
     K_topology: np.ndarray,
     K_base: float,
+    *,
+    max_dense_gib: float | None = None,
 ) -> EntanglementResult:
     """Compute entanglement entropy and Schmidt gap at given coupling.
 
     Uses half-chain bipartition (n_A = n//2).
     """
     n = len(omega)
+    require_dense_allocation(
+        n,
+        rank=2,
+        object_count=2,
+        max_gib=max_dense_gib,
+        label="entanglement dense eigensolver",
+    )
     n_A = n // 2
     if n_A == 0:
         n_A = 1
 
     K = K_base * K_topology
-    H_mat = knm_to_dense_matrix(K, omega)
+    H_mat = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
     eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
     psi0 = eigenvectors[:, 0]
     gap = float(eigenvalues[1] - eigenvalues[0])
@@ -127,6 +137,8 @@ def entanglement_vs_coupling(
     omega: np.ndarray,
     K_topology: np.ndarray,
     k_range: np.ndarray | None = None,
+    *,
+    max_dense_gib: float | None = None,
 ) -> EntanglementScanResult:
     """Scan entanglement entropy and Schmidt gap across coupling.
 
@@ -141,7 +153,12 @@ def entanglement_vs_coupling(
         from ..hardware.jax_accel import entanglement_scan_jax, is_jax_gpu_available
 
         if is_jax_gpu_available():
-            jax_result = entanglement_scan_jax(K_topology, omega, k_range)
+            jax_result = entanglement_scan_jax(
+                K_topology,
+                omega,
+                k_range,
+                max_dense_gib=max_dense_gib,
+            )
             entropy = jax_result["entropy"]
             schmidt_gap = jax_result["schmidt_gap"]
             spec_gap = jax_result["spectral_gap"]
@@ -164,7 +181,12 @@ def entanglement_vs_coupling(
     spec_gap = np.zeros(n_k)
 
     for idx, kb in enumerate(k_range):
-        result = entanglement_at_coupling(omega, K_topology, float(kb))
+        result = entanglement_at_coupling(
+            omega,
+            K_topology,
+            float(kb),
+            max_dense_gib=max_dense_gib,
+        )
         entropy[idx] = result.entropy
         schmidt_gap[idx] = result.schmidt_gap
         spec_gap[idx] = result.spectral_gap

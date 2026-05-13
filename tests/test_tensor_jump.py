@@ -21,10 +21,14 @@ Covers:
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
+from scpn_quantum_control.dense_budget import DenseAllocationError
+from scpn_quantum_control.phase import tensor_jump as tensor_jump_module
 from scpn_quantum_control.phase.tensor_jump import (
     _build_effective_hamiltonian,
     _order_param_vec,
+    _single_qubit_sparse,
     mcwf_ensemble,
     mcwf_trajectory,
 )
@@ -60,6 +64,18 @@ class TestBuildEffectiveHamiltonian:
         L_ops = [np.sqrt(0.05) * _sigma("-", i, 3) for i in range(3)]
         H_eff = _build_effective_hamiltonian(H, L_ops)
         assert H_eff.shape == (8, 8)
+
+
+class TestSparseJumpOperators:
+    @pytest.mark.parametrize("pauli", ["X", "Y", "Z", "+", "-"])
+    @pytest.mark.parametrize("qubit", [0, 1, 2])
+    def test_single_qubit_sparse_matches_dense_sigma(self, pauli, qubit):
+        from scpn_quantum_control.phase.lindblad import _sigma
+
+        dense = _sigma(pauli, qubit, 3)
+        sparse_matrix = _single_qubit_sparse(pauli, qubit, 3).toarray()
+
+        np.testing.assert_allclose(sparse_matrix, dense)
 
 
 class TestMCWFTrajectory:
@@ -114,9 +130,19 @@ class TestMCWFTrajectory:
                 return 0.0
 
         monkeypatch.setattr(module.np.random, "default_rng", lambda seed=None: FixedRng())
-        monkeypatch.setattr(module, "knm_to_dense_matrix", lambda K, omega: np.zeros((2, 2)))
-        monkeypatch.setattr(module, "_sigma", lambda op, i, n: np.zeros((2, 2)))
-        monkeypatch.setattr(module, "expm", lambda matrix: 0.5 * np.eye(2, dtype=np.complex128))
+        monkeypatch.setattr(
+            module,
+            "knm_to_sparse_matrix",
+            lambda K, omega: module.sparse.csr_matrix((2, 2), dtype=np.complex128),
+        )
+        monkeypatch.setattr(
+            module,
+            "_build_sparse_lindblad_ops",
+            lambda n, gamma_amp, gamma_deph: [
+                module.sparse.csr_matrix((2, 2), dtype=np.complex128)
+            ],
+        )
+        monkeypatch.setattr(module, "expm_multiply", lambda matrix, psi: 0.5 * psi)
 
         result = module.mcwf_trajectory(
             np.zeros((1, 1)),
@@ -130,6 +156,47 @@ class TestMCWFTrajectory:
 
         assert result["n_jumps"] == 0
         np.testing.assert_allclose(np.linalg.norm(result["psi_final"]), 1.0)
+
+    def test_trajectory_does_not_use_dense_hamiltonian_builder(self, monkeypatch):
+        """MCWF trajectory path must remain sparse/statevector, not dense-Hamiltonian."""
+        K, omega = _system(3)
+
+        def fail_dense(*args, **kwargs):
+            raise AssertionError("dense Hamiltonian builder must not be used by MCWF trajectory")
+
+        monkeypatch.setattr(tensor_jump_module, "knm_to_dense_matrix", fail_dense, raising=False)
+
+        result = mcwf_trajectory(K, omega, gamma_amp=0.05, t_max=0.1, dt=0.1, seed=42)
+
+        assert result["psi_final"].shape == (8,)
+        np.testing.assert_allclose(np.linalg.norm(result["psi_final"]), 1.0, atol=1e-8)
+
+    def test_rejects_statevector_budget_before_sparse_setup(self, monkeypatch):
+        K, omega = _system(3)
+
+        def fail_sparse(*args, **kwargs):
+            raise AssertionError("sparse Hamiltonian must not be built after budget rejection")
+
+        monkeypatch.setattr(tensor_jump_module, "knm_to_sparse_matrix", fail_sparse)
+
+        with pytest.raises(DenseAllocationError, match="MCWF statevector workspace"):
+            mcwf_trajectory(K, omega, gamma_amp=0.05, t_max=0.1, dt=0.1, max_dense_gib=1e-12)
+
+    @pytest.mark.parametrize(
+        ("K", "omega", "kwargs", "match"),
+        [
+            (np.ones((2, 3)), np.ones(2), {}, "square"),
+            (np.eye(3), np.ones(2), {}, "omega"),
+            (np.eye(2), np.array([1.0, np.nan]), {}, "finite"),
+            (np.eye(2), np.ones(2), {"gamma_amp": -0.1}, "gamma_amp"),
+            (np.eye(2), np.ones(2), {"gamma_deph": -0.1}, "gamma_deph"),
+            (np.eye(2), np.ones(2), {"t_max": -0.1}, "t_max"),
+            (np.eye(2), np.ones(2), {"dt": 0.0}, "dt"),
+        ],
+    )
+    def test_rejects_invalid_inputs(self, K, omega, kwargs, match):
+        with pytest.raises(ValueError, match=match):
+            mcwf_trajectory(K, omega, **kwargs)
 
 
 class TestMCWFEnsemble:
@@ -164,6 +231,21 @@ class TestMCWFEnsemble:
             K, omega, gamma_amp=0.1, t_max=0.5, dt=0.05, n_trajectories=10, seed=42
         )
         assert result["total_jumps"] >= 0
+
+    def test_ensemble_propagates_statevector_budget(self):
+        K, omega = _system(3)
+
+        with pytest.raises(DenseAllocationError, match="MCWF statevector workspace"):
+            mcwf_ensemble(
+                K,
+                omega,
+                gamma_amp=0.05,
+                t_max=0.1,
+                dt=0.1,
+                n_trajectories=2,
+                seed=42,
+                max_dense_gib=1e-12,
+            )
 
 
 class TestOrderParamVec:

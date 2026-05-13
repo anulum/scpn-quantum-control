@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 import scpn_quantum_control.analysis.quantum_speed_limit as qsl_mod
 from scpn_quantum_control.analysis.quantum_speed_limit import (
@@ -18,6 +19,7 @@ from scpn_quantum_control.analysis.quantum_speed_limit import (
     qsl_vs_coupling,
 )
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 class TestComputeQSL:
@@ -68,13 +70,25 @@ class TestComputeQSL:
         result = compute_qsl(K, omega, t_target=1.0)
         assert result.n_qubits == 2
 
+    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(qsl_mod, "knm_to_dense_matrix", fail_if_dense_hamiltonian_is_requested)
+        K = build_knm_paper27(L=4)
+        omega = OMEGA_N_16[:4]
+
+        with pytest.raises(DenseAllocationError, match="QSL dense evolution workspace"):
+            compute_qsl(K, omega, t_target=0.2, max_dense_gib=1e-12)
+
     def test_mt_arccos_branch_for_nonstationary_initial_state(self, monkeypatch):
         def fake_hamiltonian(K, omega):
             del K, omega
             return None
 
-        def fake_dense_matrix(K, omega):
+        def fake_dense_matrix(K, omega, **kwargs):
             del K, omega
+            assert kwargs == {"max_dense_gib": None}
             return np.array([[0.0, 1.0], [1.0, 0.0]])
 
         def fake_exact_diag(n, *, K, omega):

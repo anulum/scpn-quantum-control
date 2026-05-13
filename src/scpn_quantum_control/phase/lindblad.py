@@ -22,6 +22,7 @@ import numpy as np
 from scipy.integrate import solve_ivp
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
+from ..dense_budget import require_dense_allocation
 
 
 def _sigma(pauli: str, qubit: int, n: int) -> np.ndarray:
@@ -66,19 +67,38 @@ class LindbladKuramotoSolver:
         omega_natural: np.ndarray,
         gamma_amp: float = 0.0,
         gamma_deph: float = 0.0,
+        *,
+        max_dense_gib: float | None = None,
     ):
         self.n = n_oscillators
         self.K = np.asarray(K_coupling, dtype=np.float64)
         self.omega = np.asarray(omega_natural, dtype=np.float64)
         self.gamma_amp = gamma_amp
         self.gamma_deph = gamma_deph
+        self.max_dense_gib = max_dense_gib
         self.dim = 2**n_oscillators
         self._H: np.ndarray | None = None
         self._lindblad_ops: list[np.ndarray] = []
 
-    def build(self) -> None:
+    def _dense_object_count(self) -> int:
+        channel_count = 0
+        if self.gamma_amp > 0:
+            channel_count += self.n
+        if self.gamma_deph > 0:
+            channel_count += self.n
+        return max(4, 4 + channel_count)
+
+    def build(self, *, max_dense_gib: float | None = None) -> None:
         """Build Hamiltonian and Lindblad operators."""
-        self._H = knm_to_dense_matrix(self.K, self.omega)
+        budget_gib = self.max_dense_gib if max_dense_gib is None else max_dense_gib
+        require_dense_allocation(
+            self.n,
+            rank=2,
+            object_count=self._dense_object_count(),
+            max_gib=budget_gib,
+            label="Lindblad dense density workspace",
+        )
+        self._H = knm_to_dense_matrix(self.K, self.omega, max_dense_gib=budget_gib)
 
         self._lindblad_ops = []
         for i in range(self.n):
@@ -121,13 +141,16 @@ class LindbladKuramotoSolver:
         t_max: float,
         dt: float,
         method: str = "RK45",
+        *,
+        max_dense_gib: float | None = None,
     ) -> dict:
         """Time-evolve under Lindblad dynamics.
 
         Returns dict with keys: times, R, purity, rho_final.
         """
+        budget_gib = self.max_dense_gib if max_dense_gib is None else max_dense_gib
         if self._H is None:
-            self.build()
+            self.build(max_dense_gib=budget_gib)
 
         n_steps = max(1, int(t_max / dt))
         times = np.linspace(0, t_max, n_steps + 1)

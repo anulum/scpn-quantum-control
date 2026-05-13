@@ -44,7 +44,12 @@ from typing import Any
 
 import numpy as np
 
-from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import (
+    knm_to_dense_matrix,
+    knm_to_hamiltonian,
+    knm_to_sparse_matrix,
+)
+from ..dense_budget import require_dense_allocation
 
 
 @dataclass
@@ -105,27 +110,37 @@ def hamiltonian_1norm(K: np.ndarray, omega: np.ndarray) -> float:
     return float(np.sum(np.abs(H_op.coeffs)))
 
 
-def hamiltonian_spectral_norm(K: np.ndarray, omega: np.ndarray) -> float:
+def hamiltonian_spectral_norm(
+    K: np.ndarray,
+    omega: np.ndarray,
+    *,
+    max_dense_gib: float | None = None,
+) -> float:
     """Spectral norm ||H|| = max |eigenvalue|.
 
-    Uses sparse eigsh for n >= 14 to avoid memory issues.
+    Uses sparse eigsh for n >= 14 to avoid dense 2^n x 2^n allocation.
     """
-    from scipy.sparse import csc_matrix
     from scipy.sparse.linalg import eigsh
 
     K, omega = _validate_problem_inputs(K, omega)
     n = K.shape[0]
-    knm_to_hamiltonian(K, omega)
-    H_raw = knm_to_dense_matrix(K, omega)
 
     if n >= 14:
-        H_sparse = csc_matrix(H_raw) if not hasattr(H_raw, "tocsc") else H_raw.tocsc()
+        H_sparse = knm_to_sparse_matrix(K, omega)
         # Get largest and smallest eigenvalues
         eig_max = eigsh(H_sparse, k=1, which="LA", return_eigenvectors=False)
         eig_min = eigsh(H_sparse, k=1, which="SA", return_eigenvectors=False)
         return float(max(abs(eig_max[0]), abs(eig_min[0])))
 
-    H_mat = H_raw.toarray() if hasattr(H_raw, "toarray") else np.array(H_raw)
+    knm_to_hamiltonian(K, omega)
+    require_dense_allocation(
+        n,
+        rank=2,
+        object_count=2,
+        max_gib=max_dense_gib,
+        label="QSVT dense spectral norm",
+    )
+    H_mat = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
     eigenvalues = np.linalg.eigvalsh(H_mat)
     return float(np.max(np.abs(eigenvalues)))
 
@@ -165,6 +180,8 @@ def qsvt_resource_estimate(
     omega: np.ndarray,
     t: float = 1.0,
     epsilon: float = 0.01,
+    *,
+    max_dense_gib: float | None = None,
 ) -> QSVTResourceEstimate:
     """Full QSVT vs Trotter resource comparison.
 
@@ -178,7 +195,7 @@ def qsvt_resource_estimate(
     _, t, epsilon = _validate_resource_budget(1.0, t, epsilon)
     n = K.shape[0]
     alpha = hamiltonian_1norm(K, omega)
-    spec_norm = hamiltonian_spectral_norm(K, omega)
+    spec_norm = hamiltonian_spectral_norm(K, omega, max_dense_gib=max_dense_gib)
 
     q_qsvt = qsvt_query_count(alpha, t, epsilon)
     r_t1 = trotter1_step_count(alpha, t, epsilon)

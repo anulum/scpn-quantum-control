@@ -5,11 +5,12 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — JAX GPU Acceleration
-"""JAX-accelerated quantum analysis for large systems (n=16-25 qubits).
+"""JAX-accelerated exact dense quantum analysis.
 
-Provides vectorised coupling scans via jax.vmap — runs the full scan
-(Hamiltonian construction + eigendecomposition + analysis) as a single
-GPU kernel instead of a Python loop.
+Provides vectorised coupling scans via jax.vmap. These routines still use
+dense Hilbert-space Hamiltonians and exact eigensolvers; acceleration comes
+from XLA/GPU batching, not from sparse, tensor-network, or sector reduction.
+Callers must keep problem sizes within the active dense-allocation budget.
 
 Requires: pip install jax[cuda12] (Linux/WSL2) or jax[cpu] (fallback).
 CUDA GPU strongly recommended — XLA compilation saturates CPU.
@@ -31,6 +32,8 @@ from __future__ import annotations
 import os as _os
 
 import numpy as np
+
+from ..dense_budget import require_dense_allocation
 
 _JAX_AVAILABLE = False
 _JAX_GPU = False
@@ -99,6 +102,8 @@ def eigensolve_batch_jax(
     K_topo: np.ndarray,
     omega: np.ndarray,
     k_range: np.ndarray,
+    *,
+    max_dense_gib: float | None = None,
 ) -> dict:
     """Batch eigendecomposition across coupling values on GPU.
 
@@ -111,6 +116,14 @@ def eigensolve_batch_jax(
 
     jnp = _jnp
     n = len(omega)
+    require_dense_allocation(
+        n,
+        dtype=np.float64,
+        rank=2,
+        object_count=max(len(k_range), 1),
+        max_gib=max_dense_gib,
+        label="JAX eigensolve dense batch",
+    )
     K_topo_j = jnp.array(K_topo)
     omega_j = jnp.array(omega)
     k_range_j = jnp.array(k_range)
@@ -136,12 +149,14 @@ def entanglement_scan_jax(
     K_topo: np.ndarray,
     omega: np.ndarray,
     k_range: np.ndarray,
+    *,
+    max_dense_gib: float | None = None,
 ) -> dict:
     """Entanglement entropy + Schmidt gap scan on GPU via JAX.
 
-    Builds Hamiltonians in numpy/Rust (fast), transfers batch to GPU,
-    runs eigh + SVD on GPU via jax.vmap. Only beneficial for n >= 12
-    where eigh dominates over transfer overhead.
+    Builds dense Hamiltonians in numpy/Rust, transfers the batch to GPU,
+    then runs dense eigh + SVD via jax.vmap. This is an exact dense path,
+    not a sparse or tensor-network large-n solver.
     """
     if not _JAX_AVAILABLE or _jnp is None:
         raise RuntimeError("JAX not available")
@@ -154,6 +169,14 @@ def entanglement_scan_jax(
     dim_A = 1 << n_A
     dim_B = 1 << (n - n_A)
     dim = 1 << n
+    require_dense_allocation(
+        n,
+        dtype=np.float64,
+        rank=2,
+        object_count=max(2 * len(k_range), 1),
+        max_gib=max_dense_gib,
+        label="JAX entanglement dense batch",
+    )
 
     # Build all Hamiltonians in numpy/Rust (fast) then batch-transfer to GPU
     from ..bridge.knm_hamiltonian import knm_to_dense_matrix
@@ -161,7 +184,7 @@ def entanglement_scan_jax(
     H_batch = np.zeros((len(k_range), dim, dim))
     for idx, kb in enumerate(k_range):
         K = float(kb) * K_topo
-        H_batch[idx] = knm_to_dense_matrix(K, omega).real
+        H_batch[idx] = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib).real
 
     H_batch_j = jnp.array(H_batch)
 

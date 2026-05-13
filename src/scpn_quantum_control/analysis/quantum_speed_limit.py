@@ -46,6 +46,7 @@ import numpy as np
 from scipy.linalg import expm
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
+from ..dense_budget import require_dense_allocation
 from ..hardware.classical import classical_exact_diag
 
 
@@ -71,6 +72,8 @@ def compute_qsl(
     t_target: float = 2.0,
     dt: float = 0.01,
     R_threshold: float = 0.5,
+    *,
+    max_dense_gib: float | None = None,
 ) -> QSLResult:
     """Compute quantum speed limits for reaching synchronization.
 
@@ -78,8 +81,22 @@ def compute_qsl(
     Computes both Mandelstam-Tamm and Margolus-Levitin bounds.
     """
     n = K.shape[0]
+    require_dense_allocation(
+        n,
+        rank=2,
+        object_count=4,
+        max_gib=max_dense_gib,
+        label="QSL dense evolution workspace",
+    )
+    require_dense_allocation(
+        n,
+        rank=1,
+        object_count=3,
+        max_gib=max_dense_gib,
+        label="QSL dense state workspace",
+    )
     knm_to_hamiltonian(K, omega)
-    H_raw = knm_to_dense_matrix(K, omega)
+    H_raw = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
     H_mat = H_raw.toarray() if hasattr(H_raw, "toarray") else np.array(H_raw)
 
     # Initial state: |0...0⟩
@@ -155,6 +172,8 @@ def qsl_vs_coupling(
     n_K_values: int = 15,
     t_target: float = 5.0,
     R_threshold: float = 0.5,
+    *,
+    max_dense_gib: float | None = None,
 ) -> dict:
     """Scan QSL across coupling strengths to reveal BKT singularity.
 
@@ -176,7 +195,13 @@ def qsl_vs_coupling(
 
     for k_base in K_base_range:
         K_scaled = K * k_base
-        result = compute_qsl(K_scaled, omega, t_target, R_threshold=R_threshold)
+        result = compute_qsl(
+            K_scaled,
+            omega,
+            t_target,
+            R_threshold=R_threshold,
+            max_dense_gib=max_dense_gib,
+        )
         tau_MT_vals.append(result.tau_MT)
         tau_ML_vals.append(result.tau_ML)
         tau_actual_vals.append(result.tau_actual)

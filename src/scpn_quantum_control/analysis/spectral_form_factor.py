@@ -35,6 +35,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
+from ..dense_budget import require_dense_allocation
 
 
 @dataclass
@@ -77,10 +78,20 @@ def compute_sff(
     omega: np.ndarray,
     t_max: float = 20.0,
     n_times: int = 200,
+    *,
+    max_dense_gib: float | None = None,
 ) -> SFFResult:
     """Compute the Spectral Form Factor K(t) from eigenvalues."""
+    n = len(omega)
+    require_dense_allocation(
+        n,
+        rank=2,
+        object_count=2,
+        max_gib=max_dense_gib,
+        label="SFF dense eigensolver",
+    )
     knm_to_hamiltonian(K, omega)
-    H_mat = knm_to_dense_matrix(K, omega)
+    H_mat = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
     eigenvalues = np.linalg.eigvalsh(H_mat)
 
     dim = len(eigenvalues)
@@ -112,6 +123,8 @@ def sff_vs_coupling(
     k_range: np.ndarray | None = None,
     t_max: float = 20.0,
     n_times: int = 100,
+    *,
+    max_dense_gib: float | None = None,
 ) -> SFFScanResult:
     """Scan SFF diagnostics across coupling strength.
 
@@ -127,7 +140,7 @@ def sff_vs_coupling(
 
     for idx, kb in enumerate(k_range):
         K = float(kb) * K_topology
-        result = compute_sff(K, omega, t_max, n_times)
+        result = compute_sff(K, omega, t_max, n_times, max_dense_gib=max_dense_gib)
         r_bars[idx] = result.level_spacing_ratio
         gaps[idx] = result.spectral_gap
         # Dip depth: minimum of K(t) for t > 0 relative to K(0)=1

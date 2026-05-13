@@ -29,6 +29,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
+from ..dense_budget import require_dense_allocation
 
 
 @dataclass
@@ -51,6 +52,8 @@ def loschmidt_quench(
     K_final: float,
     t_max: float = 10.0,
     n_times: int = 200,
+    *,
+    max_dense_gib: float | None = None,
 ) -> LoschmidtResult:
     """Compute Loschmidt echo after quench K_initial → K_final.
 
@@ -58,16 +61,23 @@ def loschmidt_quench(
     where |n_f⟩, E_n^f are eigenstates of H(K_final).
     """
     n = len(omega)
+    require_dense_allocation(
+        n,
+        rank=2,
+        object_count=4,
+        max_gib=max_dense_gib,
+        label="Loschmidt exact dense workspace",
+    )
 
     # Initial ground state
     K_i = K_initial * K_topology
-    H_i = knm_to_dense_matrix(K_i, omega)
+    H_i = knm_to_dense_matrix(K_i, omega, max_dense_gib=max_dense_gib)
     eigvals_i, eigvecs_i = np.linalg.eigh(H_i)
     psi_i = eigvecs_i[:, 0]
 
     # Final Hamiltonian eigenbasis
     K_f = K_final * K_topology
-    H_f = knm_to_dense_matrix(K_f, omega)
+    H_f = knm_to_dense_matrix(K_f, omega, max_dense_gib=max_dense_gib)
     eigvals_f, eigvecs_f = np.linalg.eigh(H_f)
 
     # Overlaps |⟨n_f|ψ_i⟩|²
@@ -118,6 +128,8 @@ def quench_scan(
     K_final_range: np.ndarray | None = None,
     t_max: float = 10.0,
     n_times: int = 100,
+    *,
+    max_dense_gib: float | None = None,
 ) -> dict[str, list]:
     """Scan quenches from fixed K_i to varying K_f.
 
@@ -134,7 +146,15 @@ def quench_scan(
     }
 
     for kf in K_final_range:
-        lr = loschmidt_quench(omega, K_topology, K_initial, float(kf), t_max, n_times)
+        lr = loschmidt_quench(
+            omega,
+            K_topology,
+            K_initial,
+            float(kf),
+            t_max,
+            n_times,
+            max_dense_gib=max_dense_gib,
+        )
         results["K_final"].append(float(kf))
         results["n_cusps"].append(lr.n_cusps)
         results["max_rate"].append(float(np.max(lr.rate_function)))

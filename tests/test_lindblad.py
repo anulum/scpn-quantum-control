@@ -18,6 +18,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from scpn_quantum_control.dense_budget import DenseAllocationError
+from scpn_quantum_control.phase import lindblad as lindblad_module
 from scpn_quantum_control.phase.lindblad import LindbladKuramotoSolver, _sigma
 
 
@@ -143,6 +145,37 @@ class TestDensityMatrixInvariants:
         result = solver.run(t_max=2.0, dt=0.1)
         for p in result["purity"]:
             assert 1.0 / dim - 1e-6 <= p <= 1.0 + 1e-6, f"Purity {p} out of [1/{dim}, 1]"
+
+    def test_build_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+        def fail_dense(*args, **kwargs):
+            raise AssertionError("dense Hamiltonian builder must not run after budget rejection")
+
+        monkeypatch.setattr(lindblad_module, "knm_to_dense_matrix", fail_dense)
+        solver = LindbladKuramotoSolver(
+            self.n,
+            self.K,
+            self.omega,
+            gamma_amp=0.1,
+            max_dense_gib=1e-12,
+        )
+
+        with pytest.raises(DenseAllocationError, match="Lindblad dense density workspace"):
+            solver.build()
+
+    def test_run_forwards_explicit_dense_budget(self, monkeypatch):
+        def fail_dense(*args, **kwargs):
+            raise AssertionError("dense Hamiltonian builder must not run after budget rejection")
+
+        monkeypatch.setattr(lindblad_module, "knm_to_dense_matrix", fail_dense)
+        solver = LindbladKuramotoSolver(
+            self.n,
+            self.K,
+            self.omega,
+            gamma_amp=0.1,
+        )
+
+        with pytest.raises(DenseAllocationError, match="Lindblad dense density workspace"):
+            solver.run(t_max=0.1, dt=0.1, max_dense_gib=1e-12)
 
 
 # =====================================================================

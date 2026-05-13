@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.analysis.entanglement_entropy import (
     EntanglementResult,
@@ -18,6 +19,7 @@ from scpn_quantum_control.analysis.entanglement_entropy import (
     entanglement_vs_coupling,
 )
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 def _ring(n: int) -> np.ndarray:
@@ -68,6 +70,21 @@ class TestEntanglementAtCoupling:
         result = entanglement_at_coupling(omega, T, K_base=2.0)
         assert isinstance(result, EntanglementResult)
         assert result.spectral_gap > 0
+
+    def test_rejects_dense_budget_before_allocation(self, monkeypatch):
+        T = _ring(4)
+        omega = OMEGA_N_16[:4]
+
+        def fail_dense(*args, **kwargs):
+            raise AssertionError("dense builder must not run after budget rejection")
+
+        monkeypatch.setattr(
+            "scpn_quantum_control.analysis.entanglement_entropy.knm_to_dense_matrix",
+            fail_dense,
+        )
+
+        with pytest.raises(DenseAllocationError, match="entanglement dense eigensolver"):
+            entanglement_at_coupling(omega, T, K_base=2.0, max_dense_gib=1e-12)
 
 
 class TestEntanglementVsCoupling:
@@ -193,6 +210,48 @@ class TestScanEntanglementCoverage:
         assert len(result.k_values) == 5
         assert result.entropy_peak_K is not None
         assert result.schmidt_gap_min_K is not None
+
+    def test_jax_gpu_fast_path_receives_dense_budget(self):
+        """JAX fast path must receive the caller's explicit dense budget."""
+        from unittest.mock import patch
+
+        from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
+
+        K = build_knm_paper27(L=3)
+        omega = np.asarray(OMEGA_N_16[:3], dtype=np.float64)
+        k_range = np.linspace(1.0, 3.0, 5)
+
+        mock_result = {
+            "entropy": np.array([0.5, 0.8, 1.0, 0.9, 0.6]),
+            "schmidt_gap": np.array([0.3, 0.2, 0.05, 0.15, 0.25]),
+            "spectral_gap": np.array([0.5, 0.3, 0.1, 0.2, 0.4]),
+        }
+
+        def fake_scan(K_arg, omega_arg, k_arg, *, max_dense_gib):
+            assert K_arg is K
+            assert omega_arg is omega
+            assert k_arg is k_range
+            assert max_dense_gib == 0.25
+            return mock_result
+
+        with (
+            patch(
+                "scpn_quantum_control.hardware.jax_accel.entanglement_scan_jax",
+                side_effect=fake_scan,
+            ),
+            patch(
+                "scpn_quantum_control.hardware.jax_accel.is_jax_gpu_available",
+                return_value=True,
+            ),
+        ):
+            result = entanglement_vs_coupling(
+                omega,
+                K,
+                k_range=k_range,
+                max_dense_gib=0.25,
+            )
+
+        assert len(result.k_values) == 5
 
     def test_jax_gpu_runtime_error_fallback(self):
         """Cover lines 158-159: JAX GPU raises RuntimeError → fall back to NumPy."""

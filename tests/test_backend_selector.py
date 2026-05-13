@@ -21,6 +21,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from scpn_quantum_control.dense_budget import DenseAllocationError
+from scpn_quantum_control.phase import backend_selector as backend_selector_module
 from scpn_quantum_control.phase.backend_selector import auto_solve, recommend_backend
 
 
@@ -80,6 +82,8 @@ class TestRecommendBackend:
     def test_open_system_tjm(self):
         rec = recommend_backend(20, want_open_system=True, has_quimb=True)
         assert rec["backend"] == "tjm_mps"
+        assert rec["feasible"] is False
+        assert "not yet implemented" in rec["note"]
 
     def test_open_system_fallback(self):
         rec = recommend_backend(20, want_open_system=True, has_quimb=False)
@@ -133,6 +137,42 @@ class TestAutoSolve:
         result = auto_solve(K, omega, want_open_system=True, gamma_amp=0.05, t_max=0.3, dt=0.1)
         assert result["backend_used"] == "lindblad_scipy"
         assert "R" in result["result"]
+
+    def test_lindblad_open_receives_dense_budget(self):
+        from unittest.mock import patch
+
+        K, omega = _system(4)
+
+        class FakeLindbladSolver:
+            def __init__(self, n, K_arg, omega_arg, *, gamma_amp, gamma_deph, max_dense_gib):
+                assert n == 4
+                assert K_arg is K
+                assert omega_arg is omega
+                assert gamma_amp == 0.05
+                assert gamma_deph == 0.0
+                assert max_dense_gib == 0.25
+
+            def run(self, *, t_max, dt, max_dense_gib):
+                assert t_max == 0.3
+                assert dt == 0.1
+                assert max_dense_gib == 0.25
+                return {"R": np.array([0.0, 0.1])}
+
+        with patch(
+            "scpn_quantum_control.phase.lindblad.LindbladKuramotoSolver",
+            FakeLindbladSolver,
+        ):
+            result = auto_solve(
+                K,
+                omega,
+                want_open_system=True,
+                gamma_amp=0.05,
+                t_max=0.3,
+                dt=0.1,
+                max_dense_gib=0.25,
+            )
+
+        assert result["backend_used"] == "lindblad_scipy"
 
     def test_sector_ed(self):
         """Force sector_ed path via mock."""
@@ -241,6 +281,49 @@ class TestAutoSolve:
             pytest.raises(RuntimeError, match="will not substitute a statevector proxy"),
         ):
             auto_solve(K, omega, t_max=0.1, dt=0.1)
+
+    def test_tjm_mps_recommendation_does_not_fall_through_to_statevector(self):
+        """Open-system MPS recommendations must fail closed until executable."""
+        from unittest.mock import patch
+
+        K, omega = _system(4)
+        with (
+            patch(
+                "scpn_quantum_control.phase.backend_selector.recommend_backend",
+                return_value={
+                    "backend": "tjm_mps",
+                    "reason": "test",
+                    "memory_mb": 1,
+                    "feasible": True,
+                    "note": "not executable",
+                },
+            ),
+            pytest.raises(RuntimeError, match="tjm_mps"),
+        ):
+            auto_solve(K, omega, want_open_system=True, t_max=0.1, dt=0.1)
+
+    def test_exact_diag_propagates_dense_budget_before_builder(self, monkeypatch):
+        from unittest.mock import patch
+
+        K, omega = _system(4)
+
+        def fail_dense(*args, **kwargs):
+            raise AssertionError("dense builder must not run after budget rejection")
+
+        monkeypatch.setattr(backend_selector_module, "knm_to_dense_matrix", fail_dense)
+        with (
+            patch(
+                "scpn_quantum_control.phase.backend_selector.recommend_backend",
+                return_value={
+                    "backend": "exact_diag",
+                    "reason": "test",
+                    "memory_mb": 1,
+                    "feasible": True,
+                },
+            ),
+            pytest.raises(DenseAllocationError, match="auto_solve exact diagonalisation"),
+        ):
+            auto_solve(K, omega, max_dense_gib=1e-12)
 
     def test_quimb_import_exception(self):
         """Cover except branch when mps_evolution import fails."""
