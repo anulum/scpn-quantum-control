@@ -38,6 +38,7 @@ ALLOWED_FOUNDATION_IMPORTS = (
     "scpn_quantum_control.accel",
     "scpn_quantum_control.bridge.knm_hamiltonian",
     "scpn_quantum_control.bridge.sparse_hamiltonian",
+    "scpn_quantum_control.dense_budget",
     "scpn_quantum_control.hardware",
     "scpn_quantum_control.phase",
 )

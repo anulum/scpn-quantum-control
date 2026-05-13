@@ -81,7 +81,8 @@ def test_compare_all_initial_states_uses_each_state(monkeypatch):
 
     calls: list[str] = []
 
-    def fake_simulate(K, omega, state_type, t_max=2.0, n_steps=20):
+    def fake_simulate(K, omega, state_type, t_max=2.0, n_steps=20, **kwargs):
+        assert set(kwargs) <= {"max_dense_gib"}
         calls.append(state_type.value)
         return sync.SyncTrajectory(
             initial_state=state_type.value,

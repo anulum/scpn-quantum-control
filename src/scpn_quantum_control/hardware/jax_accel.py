@@ -166,8 +166,6 @@ def entanglement_scan_jax(
     if not _JAX_AVAILABLE or _jnp is None:
         raise RuntimeError("JAX not available")
 
-    import jax
-
     jnp = _jnp
     n = len(omega)
     n_A = n // 2 or 1
@@ -190,6 +188,8 @@ def entanglement_scan_jax(
     for idx, kb in enumerate(k_range):
         K = float(kb) * K_topo
         H_batch[idx] = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib).real
+
+    import jax
 
     H_batch_j = jnp.array(H_batch)
 
