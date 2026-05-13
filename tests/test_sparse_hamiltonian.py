@@ -25,6 +25,17 @@ def _system(n: int = 4):
     return K, omega
 
 
+def _asymmetric_system(n: int = 4):
+    """Learned couplings may be directed; XY Hamiltonians use the Hermitian part."""
+    K, omega = _system(n)
+    K = K.copy()
+    K[0, 1] += 0.17
+    K[1, 0] -= 0.11
+    K[0, 2] -= 0.09
+    K[2, 0] += 0.05
+    return K, omega
+
+
 class TestSparseConstruction:
     def test_shape(self):
         K, omega = _system(4)
@@ -53,6 +64,20 @@ class TestSparseConstruction:
         H_sparse = build_sparse_hamiltonian(K, omega).toarray()
         np.testing.assert_allclose(H_sparse, H_dense, atol=1e-12)
 
+    def test_asymmetric_coupling_matches_dense_canonicalisation(self):
+        from unittest.mock import patch
+
+        from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
+
+        K, omega = _asymmetric_system(4)
+        H_dense = knm_to_dense_matrix(K, omega)
+        with patch(
+            "scpn_quantum_control.bridge.sparse_hamiltonian._try_rust_sparse",
+            return_value=None,
+        ):
+            H_sparse = build_sparse_hamiltonian(K, omega).toarray()
+        np.testing.assert_allclose(H_sparse, H_dense, atol=1e-12)
+
     def test_nnz_reasonable(self):
         K, omega = _system(8)
         H = build_sparse_hamiltonian(K, omega)
@@ -70,6 +95,21 @@ class TestSparseSector:
         H_sparse, idx_sparse = build_sparse_sector_hamiltonian(K, omega, M=0)
         np.testing.assert_array_equal(idx_dense, idx_sparse)
         np.testing.assert_allclose(H_sparse.toarray(), H_dense, atol=1e-12)
+
+    def test_asymmetric_sector_matches_full_dense_canonicalisation(self):
+        from scpn_quantum_control.analysis.magnetisation_sectors import basis_by_magnetisation
+        from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
+
+        K, omega = _asymmetric_system(4)
+        H_dense = knm_to_dense_matrix(K, omega)
+        H_sparse, idx_sparse = build_sparse_sector_hamiltonian(K, omega, M=0)
+        idx_dense = basis_by_magnetisation(4)[0]
+        np.testing.assert_array_equal(idx_sparse, idx_dense)
+        np.testing.assert_allclose(
+            H_sparse.toarray(),
+            H_dense[np.ix_(idx_dense, idx_dense)],
+            atol=1e-12,
+        )
 
     def test_sector_smaller_than_full(self):
         K, omega = _system(6)

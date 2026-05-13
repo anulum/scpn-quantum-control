@@ -28,6 +28,30 @@ from scipy import sparse
 from scipy.sparse.linalg import eigsh
 
 
+def _canonical_xy_coupling(K: np.ndarray) -> np.ndarray:
+    """Return a validated XY coupling matrix with its Hermitian component.
+
+    Learned or imported coupling matrices can carry a directed residue. The
+    Kuramoto-XY Hamiltonian is Hermitian, so only the symmetric part enters the
+    pair interaction, matching ``knm_to_xxz_hamiltonian`` and dense builders.
+    """
+    K_arr = np.asarray(K, dtype=np.float64)
+    if K_arr.ndim != 2 or K_arr.shape[0] != K_arr.shape[1]:
+        raise ValueError("K must be a square coupling matrix")
+    return np.ascontiguousarray((K_arr + K_arr.T) / 2.0)
+
+
+def _canonical_xy_inputs(K: np.ndarray, omega: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Return validated XY Hamiltonian inputs with canonical coupling."""
+    K_arr = _canonical_xy_coupling(K)
+    omega_arr = np.asarray(omega, dtype=np.float64)
+    if omega_arr.ndim != 1 or omega_arr.shape[0] != K_arr.shape[0]:
+        raise ValueError(
+            f"omega must be a vector of length {K_arr.shape[0]}, got shape {omega_arr.shape}"
+        )
+    return K_arr, omega_arr
+
+
 def _try_rust_sparse(K: np.ndarray, omega: np.ndarray, n: int) -> sparse.csc_matrix | None:
     """Try Rust-accelerated sparse construction (80× faster)."""
     try:
@@ -63,6 +87,7 @@ def build_sparse_hamiltonian(
     scipy.sparse.csc_matrix
         Sparse Hamiltonian, shape (2^n, 2^n).
     """
+    K, omega = _canonical_xy_inputs(K, omega)
     n = K.shape[0]
     dim = 2**n
 
@@ -121,6 +146,7 @@ def build_sparse_sector_hamiltonian(
     """
     from ..analysis.magnetisation_sectors import basis_by_magnetisation
 
+    K, omega = _canonical_xy_inputs(K, omega)
     n = K.shape[0]
     sectors = basis_by_magnetisation(n)
     if M not in sectors:
@@ -230,6 +256,9 @@ def sparsity_stats(n: int, K: np.ndarray) -> dict:
 
     Returns dict with: dim, nnz_estimate, fill_pct, memory_sparse_mb, memory_dense_mb
     """
+    K = _canonical_xy_coupling(K)
+    if K.shape[0] != n:
+        raise ValueError(f"K has shape {K.shape}; expected ({n}, {n})")
     dim = 2**n
     n_couplings = sum(1 for i in range(n) for j in range(i + 1, n) if abs(K[i, j]) > 1e-15)
     # Each coupling contributes 2^n non-zeros (each basis state with bi≠bj)
