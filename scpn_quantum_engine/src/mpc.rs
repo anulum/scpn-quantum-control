@@ -17,7 +17,9 @@ use numpy::{PyArray1, PyReadonlyArray1};
 use pyo3::prelude::*;
 use rayon::prelude::*;
 
-use crate::validation::validate_n;
+use crate::validation::{
+    validate_contiguous_slice, validate_finite, validate_flat_square, validate_n,
+};
 
 /// Brute-force optimal binary MPC: enumerate all 2^horizon action sequences.
 /// Parallelised with rayon for horizon > 10.
@@ -28,7 +30,7 @@ pub fn brute_mpc<'py>(
     py: Python<'py>,
     b_flat: PyReadonlyArray1<'_, f64>,
     target: PyReadonlyArray1<'_, f64>,
-    _dim: usize,
+    dim: usize,
     horizon: usize,
 ) -> PyResult<(
     Bound<'py, PyArray1<i64>>,
@@ -36,16 +38,26 @@ pub fn brute_mpc<'py>(
     Bound<'py, PyArray1<f64>>,
     usize,
 )> {
+    validate_n(dim, "dim")?;
     validate_n(horizon, "horizon")?;
     if horizon > 25 {
         return Err(pyo3::exceptions::PyValueError::new_err(format!(
             "horizon={horizon} too large (max 25, would allocate 2^{horizon} entries)"
         )));
     }
-    let b_data = b_flat.as_slice().unwrap();
-    let t_data = target.as_slice().unwrap();
+    let b_data = validate_contiguous_slice(&b_flat, "b_flat")?;
+    let t_data = validate_contiguous_slice(&target, "target")?;
     validate_n(b_data.len(), "b_flat")?;
     validate_n(t_data.len(), "target")?;
+    validate_flat_square(b_data, dim, "b_flat")?;
+    if t_data.len() != dim {
+        return Err(pyo3::exceptions::PyValueError::new_err(format!(
+            "target length {} != dim {dim}",
+            t_data.len()
+        )));
+    }
+    validate_finite(b_data, "b_flat")?;
+    validate_finite(t_data, "target")?;
     let n_actions = 1usize << horizon;
 
     let b_norm: f64 = b_data.iter().map(|x| x * x).sum::<f64>().sqrt();

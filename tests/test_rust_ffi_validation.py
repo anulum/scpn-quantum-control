@@ -309,5 +309,49 @@ def test_hierarchical_prediction_error_matches_isolated_and_coupled_rows() -> No
     np.testing.assert_allclose(np.asarray(errors), np.array([0.5, 3.0]))
 
 
+def test_brute_mpc_rejects_non_contiguous_b_matrix() -> None:
+    b_flat = np.linspace(0.0, 1.0, 8, dtype=np.float64)[::2]
+    target = np.ascontiguousarray([1.0, 0.0], dtype=np.float64)
+
+    with pytest.raises(ValueError, match="b_flat must be a C-contiguous NumPy array"):
+        engine.brute_mpc(b_flat, target, 2, 2)
+
+
+def test_brute_mpc_rejects_wrong_b_matrix_shape() -> None:
+    b_flat = np.ascontiguousarray(np.zeros(5, dtype=np.float64))
+    target = np.ascontiguousarray([1.0, 0.0], dtype=np.float64)
+
+    with pytest.raises(ValueError, match="b_flat length 5 != 2² = 4"):
+        engine.brute_mpc(b_flat, target, 2, 2)
+
+
+def test_brute_mpc_rejects_wrong_target_length() -> None:
+    b_flat = np.ascontiguousarray(np.eye(2, dtype=np.float64).ravel())
+    target = np.ascontiguousarray([1.0, 0.0, 0.0], dtype=np.float64)
+
+    with pytest.raises(ValueError, match="target length 3 != dim 2"):
+        engine.brute_mpc(b_flat, target, 2, 2)
+
+
+def test_brute_mpc_rejects_non_finite_target() -> None:
+    b_flat = np.ascontiguousarray(np.eye(2, dtype=np.float64).ravel())
+    target = np.ascontiguousarray([1.0, np.nan], dtype=np.float64)
+
+    with pytest.raises(ValueError, match=r"target\[1\] is not finite"):
+        engine.brute_mpc(b_flat, target, 2, 2)
+
+
+def test_brute_mpc_matches_two_dimensional_reference() -> None:
+    b_flat = np.ascontiguousarray(np.eye(2, dtype=np.float64).ravel())
+    target = np.ascontiguousarray([0.8, 0.6], dtype=np.float64)
+
+    actions, cost, costs, n_evaluated = engine.brute_mpc(b_flat, target, 2, 3)
+
+    assert n_evaluated == 8
+    np.testing.assert_array_equal(np.asarray(actions), np.zeros(3, dtype=np.int64))
+    assert cost == pytest.approx(1.0 / 3.0)
+    assert np.asarray(costs).shape == (8,)
+
+
 def r_values_error_pattern() -> str:
     return r"r_values must be a C-contiguous NumPy array"
