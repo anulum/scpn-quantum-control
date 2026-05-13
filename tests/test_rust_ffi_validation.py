@@ -109,5 +109,37 @@ def test_fit_symmetry_decay_recovers_exact_exponential() -> None:
     assert residual < 1e-10
 
 
+def test_concatenated_logical_rate_rejects_non_contiguous_distances() -> None:
+    distances = np.arange(1, 8, dtype=np.int64)[::2]
+
+    with pytest.raises(ValueError, match="distances must be a C-contiguous NumPy array"):
+        engine.concatenated_logical_rate_rust(0.003, distances, 0.01, 0.1)
+
+
+def test_concatenated_logical_rate_rejects_non_positive_distances() -> None:
+    distances = np.ascontiguousarray([3, 0, 5], dtype=np.int64)
+
+    with pytest.raises(ValueError, match=r"distances\[1\] must be at least 1"):
+        engine.concatenated_logical_rate_rust(0.003, distances, 0.01, 0.1)
+
+
+def test_concatenated_logical_rate_accepts_d1_contract() -> None:
+    distances = np.ascontiguousarray([1], dtype=np.int64)
+
+    rates = engine.concatenated_logical_rate_rust(0.003, distances, 0.01, 0.1)
+
+    np.testing.assert_allclose(np.asarray(rates), np.array([0.03]))
+
+
+def test_concatenated_logical_rate_matches_two_level_reference() -> None:
+    distances = np.ascontiguousarray([3, 5], dtype=np.int64)
+
+    rates = np.asarray(engine.concatenated_logical_rate_rust(0.003, distances, 0.01, 0.1))
+
+    first = 0.1 * (0.003 / 0.01) ** 2
+    second = 0.1 * (first / 0.01) ** 3
+    np.testing.assert_allclose(rates, np.array([first, second]))
+
+
 def r_values_error_pattern() -> str:
     return r"r_values must be a C-contiguous NumPy array"

@@ -15,9 +15,12 @@
 //! syndrome flow analysis.
 
 use numpy::{PyArray1, PyReadonlyArray1, PyReadonlyArray2};
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
-use crate::validation::{validate_domain_range, validate_positive, validate_range};
+use crate::validation::{
+    validate_contiguous_slice, validate_domain_range, validate_positive, validate_range,
+};
 
 /// Surface code logical error rate at given distance and physical rate.
 /// p_L = A × (p_phys / p_th)^((d+1)/2)
@@ -51,9 +54,21 @@ pub fn concatenated_logical_rate_rust<'py>(
     validate_range(p_physical, 0.0, 1.0, "p_physical")?;
     validate_positive(p_threshold, "p_threshold")?;
     validate_positive(prefactor, "prefactor")?;
-    let dists = distances.as_slice().unwrap();
+    let dists = validate_contiguous_slice(&distances, "distances")?;
+    validate_code_distances(dists)?;
     let rates = concatenated_rates_inner(p_physical, dists, p_threshold, prefactor);
     Ok(PyArray1::from_vec(py, rates))
+}
+
+fn validate_code_distances(distances: &[i64]) -> PyResult<()> {
+    for (idx, &distance) in distances.iter().enumerate() {
+        if distance < 1 {
+            return Err(PyValueError::new_err(format!(
+                "distances[{idx}] must be at least 1, got {distance}"
+            )));
+        }
+    }
+    Ok(())
 }
 
 /// Pure Rust implementation (no PyO3).
@@ -102,11 +117,7 @@ pub fn knm_domain_coupling(
         }
     }
 
-    Ok(if count > 0 {
-        total / count as f64
-    } else {
-        0.0
-    })
+    Ok(if count > 0 { total / count as f64 } else { 0.0 })
 }
 
 #[cfg(test)]
@@ -156,7 +167,10 @@ mod tests {
     fn test_concatenated_double_exponential() {
         let rates = concatenated_rates_inner(0.0001, &[7, 7, 7], 0.01, 0.1);
         // Very low p → each level squares (approximately) the log
-        assert!(rates[2] < 1e-30, "three levels of d=7 at p=0.0001 → tiny rate");
+        assert!(
+            rates[2] < 1e-30,
+            "three levels of d=7 at p=0.0001 → tiny rate"
+        );
     }
 
     #[test]
