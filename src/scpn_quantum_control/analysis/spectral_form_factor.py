@@ -38,8 +38,9 @@ import numpy as np
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 from ..dense_budget import require_dense_eigensolver_workspace
 from .magnetisation_sectors import level_spacing_by_magnetisation
+from .symmetry_sectors import level_spacing_by_sector
 
-LevelSpacingBasis = Literal["magnetisation", "full"]
+LevelSpacingBasis = Literal["magnetisation", "parity", "full"]
 
 
 @dataclass
@@ -87,6 +88,7 @@ def _sector_level_spacing_ratio(
     *,
     basis: LevelSpacingBasis,
     magnetisation: int | None = None,
+    parity: int | None = None,
     full_eigenvalues: np.ndarray,
     max_dense_gib: float | None = None,
 ) -> tuple[float, int | None, int]:
@@ -100,7 +102,22 @@ def _sector_level_spacing_ratio(
             max_dense_gib=max_dense_gib,
         )
         return float(sector["r_bar"]), int(sector["M"]), int(sector["dim"])
-    raise ValueError("level_spacing_basis must be 'magnetisation' or 'full'.")
+    if basis == "parity":
+        if parity is not None and parity not in (0, 1):
+            raise ValueError("parity must be 0, 1, or None for ground-parity selection.")
+        sector = level_spacing_by_sector(
+            K,
+            omega,
+            max_dense_gib=max_dense_gib,
+        )
+        selected_parity = int(sector["ground_parity"] if parity is None else parity)
+        ratio_key = "r_bar_even" if selected_parity == 0 else "r_bar_odd"
+        return (
+            float(sector[ratio_key]),
+            selected_parity,
+            int(sector["dim_per_sector"]),
+        )
+    raise ValueError("level_spacing_basis must be 'magnetisation', 'parity', or 'full'.")
 
 
 def compute_sff(
@@ -111,6 +128,7 @@ def compute_sff(
     *,
     level_spacing_basis: LevelSpacingBasis = "magnetisation",
     magnetisation: int | None = None,
+    parity: int | None = None,
     max_dense_gib: float | None = None,
 ) -> SFFResult:
     """Compute the Spectral Form Factor K(t) from exact eigenvalues.
@@ -137,6 +155,7 @@ def compute_sff(
         omega,
         basis=level_spacing_basis,
         magnetisation=magnetisation,
+        parity=parity,
         full_eigenvalues=eigenvalues,
         max_dense_gib=max_dense_gib,
     )
@@ -173,6 +192,7 @@ def sff_vs_coupling(
     *,
     level_spacing_basis: LevelSpacingBasis = "magnetisation",
     magnetisation: int | None = None,
+    parity: int | None = None,
     max_dense_gib: float | None = None,
 ) -> SFFScanResult:
     """Scan SFF diagnostics across coupling strength.
@@ -196,6 +216,7 @@ def sff_vs_coupling(
             n_times,
             level_spacing_basis=level_spacing_basis,
             magnetisation=magnetisation,
+            parity=parity,
             max_dense_gib=max_dense_gib,
         )
         r_bars[idx] = result.level_spacing_ratio

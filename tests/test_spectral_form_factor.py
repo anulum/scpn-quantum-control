@@ -21,6 +21,7 @@ from scpn_quantum_control.analysis.spectral_form_factor import (
     compute_sff,
     sff_vs_coupling,
 )
+from scpn_quantum_control.analysis.symmetry_sectors import level_spacing_by_sector
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16
 from scpn_quantum_control.dense_budget import DenseAllocationError
 
@@ -118,6 +119,61 @@ class TestComputeSFF:
             level_spacing_by_magnetisation(K, omega)["r_bar"]
         )
 
+    def test_parity_level_spacing_mode_uses_ground_parity_by_default(self):
+        K = 2.0 * _ring(6)
+        omega = OMEGA_N_16[:6]
+        sector_stats = level_spacing_by_sector(K, omega)
+
+        result = compute_sff(K, omega, t_max=1.0, n_times=4, level_spacing_basis="parity")
+        ground_parity = sector_stats["ground_parity"]
+        expected_key = "r_bar_even" if ground_parity == 0 else "r_bar_odd"
+
+        assert result.level_spacing_basis == "parity"
+        assert result.level_spacing_sector == ground_parity
+        assert result.level_spacing_sector_dim == sector_stats["dim_per_sector"]
+        assert result.level_spacing_ratio == pytest.approx(sector_stats[expected_key])
+
+    def test_parity_level_spacing_mode_accepts_explicit_odd_sector(self):
+        K = 2.0 * _ring(6)
+        omega = OMEGA_N_16[:6]
+
+        result = compute_sff(
+            K,
+            omega,
+            t_max=1.0,
+            n_times=4,
+            level_spacing_basis="parity",
+            parity=1,
+        )
+
+        assert result.level_spacing_basis == "parity"
+        assert result.level_spacing_sector == 1
+        assert result.level_spacing_ratio == pytest.approx(
+            level_spacing_by_sector(K, omega)["r_bar_odd"]
+        )
+
+    def test_parity_mode_preserves_full_spectrum_reference(self):
+        K = 2.0 * _ring(4)
+        omega = OMEGA_N_16[:4]
+
+        result = compute_sff(K, omega, t_max=1.0, n_times=4, level_spacing_basis="parity")
+
+        assert result.full_spectrum_level_spacing_ratio == pytest.approx(
+            _level_spacing_ratio(np.linalg.eigvalsh(sff_mod.knm_to_dense_matrix(K, omega)))
+        )
+        assert result.level_spacing_ratio == pytest.approx(
+            level_spacing_by_sector(K, omega)[
+                "r_bar_even" if result.level_spacing_sector == 0 else "r_bar_odd"
+            ]
+        )
+
+    def test_invalid_level_spacing_basis_error_lists_available_modes(self):
+        K = 2.0 * _ring(4)
+        omega = OMEGA_N_16[:4]
+
+        with pytest.raises(ValueError, match="magnetisation.*parity.*full"):
+            compute_sff(K, omega, t_max=1.0, n_times=4, level_spacing_basis="bad")  # type: ignore[arg-type]
+
 
 class TestSFFVsCoupling:
     def test_returns_result(self):
@@ -154,6 +210,34 @@ class TestSFFVsCoupling:
 
         assert np.all(np.isnan(result.level_spacing_ratios))
         assert result.chaos_onset_K is None
+
+    def test_forwards_parity_level_spacing_mode_and_sector(self):
+        T = _ring(6)
+        omega = OMEGA_N_16[:6]
+        k_range = np.array([1.0, 2.0])
+
+        result = sff_vs_coupling(
+            omega,
+            T,
+            k_range=k_range,
+            t_max=1.0,
+            n_times=4,
+            level_spacing_basis="parity",
+            parity=1,
+        )
+
+        expected = [
+            compute_sff(
+                float(kb) * T,
+                omega,
+                t_max=1.0,
+                n_times=4,
+                level_spacing_basis="parity",
+                parity=1,
+            ).level_spacing_ratio
+            for kb in k_range
+        ]
+        np.testing.assert_allclose(result.level_spacing_ratios, expected)
 
 
 # ---------------------------------------------------------------------------
