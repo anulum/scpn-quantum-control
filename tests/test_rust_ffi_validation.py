@@ -262,5 +262,52 @@ def test_mc_xy_simulate_accepts_zero_coupling_reference() -> None:
     assert helicity == pytest.approx(0.0)
 
 
+def test_hierarchical_prediction_error_rejects_non_contiguous_observations() -> None:
+    observations = np.linspace(0.0, 1.0, 8, dtype=np.float64)[::2]
+    beliefs = np.ascontiguousarray(np.zeros(4, dtype=np.float64))
+    k = np.ascontiguousarray(np.eye(4, dtype=np.float64))
+
+    with pytest.raises(ValueError, match="observations must be a C-contiguous NumPy array"):
+        engine.hierarchical_prediction_error_rust(observations, beliefs, k)
+
+
+def test_hierarchical_prediction_error_rejects_length_mismatch() -> None:
+    observations = np.ascontiguousarray(np.zeros(4, dtype=np.float64))
+    beliefs = np.ascontiguousarray(np.zeros(3, dtype=np.float64))
+    k = np.ascontiguousarray(np.eye(4, dtype=np.float64))
+
+    with pytest.raises(ValueError, match="beliefs length 3 != observations length 4"):
+        engine.hierarchical_prediction_error_rust(observations, beliefs, k)
+
+
+def test_hierarchical_prediction_error_rejects_wrong_k_shape() -> None:
+    observations = np.ascontiguousarray(np.zeros(4, dtype=np.float64))
+    beliefs = np.ascontiguousarray(np.zeros(4, dtype=np.float64))
+    k = np.ascontiguousarray(np.zeros((4, 3), dtype=np.float64))
+
+    with pytest.raises(ValueError, match="k shape 4x3 != observations length 4 squared"):
+        engine.hierarchical_prediction_error_rust(observations, beliefs, k)
+
+
+def test_hierarchical_prediction_error_rejects_non_finite_belief() -> None:
+    observations = np.ascontiguousarray(np.zeros(4, dtype=np.float64))
+    beliefs = np.ascontiguousarray(np.zeros(4, dtype=np.float64))
+    beliefs[2] = np.nan
+    k = np.ascontiguousarray(np.eye(4, dtype=np.float64))
+
+    with pytest.raises(ValueError, match=r"beliefs\[2\] is not finite"):
+        engine.hierarchical_prediction_error_rust(observations, beliefs, k)
+
+
+def test_hierarchical_prediction_error_matches_isolated_and_coupled_rows() -> None:
+    observations = np.ascontiguousarray([1.0, 2.0], dtype=np.float64)
+    beliefs = np.ascontiguousarray([0.5, 1.0], dtype=np.float64)
+    k = np.ascontiguousarray([[0.0, 0.0], [2.0, 0.0]], dtype=np.float64)
+
+    errors = engine.hierarchical_prediction_error_rust(observations, beliefs, k)
+
+    np.testing.assert_allclose(np.asarray(errors), np.array([0.5, 3.0]))
+
+
 def r_values_error_pattern() -> str:
     return r"r_values must be a C-contiguous NumPy array"

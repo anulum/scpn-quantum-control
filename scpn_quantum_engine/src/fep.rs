@@ -20,7 +20,7 @@ use numpy::{PyArray1, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
-use crate::validation::validate_n;
+use crate::validation::{validate_contiguous_slice, validate_finite, validate_n};
 
 fn log_det_spd_with_ridge(
     matrix: &ndarray::ArrayView2<'_, f64>,
@@ -114,8 +114,25 @@ pub fn hierarchical_prediction_error_rust<'py>(
     let k_arr = k.as_array();
     let n = x.len();
     validate_n(n, "observations")?;
+    if mu.len() != n {
+        return Err(PyValueError::new_err(format!(
+            "beliefs length {} != observations length {n}",
+            mu.len()
+        )));
+    }
+    if k_arr.nrows() != n || k_arr.ncols() != n {
+        return Err(PyValueError::new_err(format!(
+            "k shape {}x{} != observations length {n} squared",
+            k_arr.nrows(),
+            k_arr.ncols()
+        )));
+    }
 
-    let errors = prediction_error_inner(x.as_slice().unwrap(), mu.as_slice().unwrap(), &k_arr, n);
+    let x_slice = validate_contiguous_slice(&observations, "observations")?;
+    let mu_slice = validate_contiguous_slice(&beliefs, "beliefs")?;
+    validate_finite(x_slice, "observations")?;
+    validate_finite(mu_slice, "beliefs")?;
+    let errors = prediction_error_inner(x_slice, mu_slice, &k_arr, n);
     Ok(PyArray1::from_owned_array(py, Array1::from_vec(errors)))
 }
 
