@@ -106,6 +106,16 @@ class TestRecommendBackend:
         rec = recommend_backend(22, ram_gb=128, has_quimb=False, has_gpu=False)
         assert rec["backend"] == "statevector"
 
+    @pytest.mark.parametrize("n", [0, -1, True])
+    def test_rejects_invalid_qubit_count(self, n):
+        with pytest.raises(ValueError, match="n"):
+            recommend_backend(n)
+
+    @pytest.mark.parametrize("ram_gb", [0.0, -1.0, np.nan, np.inf])
+    def test_rejects_invalid_ram_budget(self, ram_gb):
+        with pytest.raises(ValueError, match="ram_gb"):
+            recommend_backend(4, ram_gb=ram_gb)
+
 
 class TestAutoSolve:
     def test_exact_diag(self):

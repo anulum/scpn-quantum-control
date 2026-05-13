@@ -55,6 +55,12 @@ def recommend_backend(
     -------
     dict with keys: backend, reason, memory_mb, feasible
     """
+    if isinstance(n, bool) or not isinstance(n, int) or n < 1:
+        raise ValueError("n must be a positive integer qubit count.")
+    ram_gb = float(ram_gb)
+    if not np.isfinite(ram_gb) or ram_gb <= 0.0:
+        raise ValueError("ram_gb must be finite and positive.")
+
     dim = 2**n
     sector_dim = 2 ** (n - 1)
 
