@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for Adiabatic Preparation
-"""Tests for adiabatic state preparation at BKT."""
+"""Tests for finite-size adiabatic state preparation diagnostics."""
 
 from __future__ import annotations
 
@@ -47,11 +47,11 @@ class TestAdiabaticRamp:
         assert result.fidelity[0] > 0.99
 
     def test_slow_ramp_before_transition(self):
-        """Slow ramp to K below K_c should maintain fidelity (no gap closing)."""
+        """Slow ramp below the small-system gap minimum should maintain fidelity."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
-        # K_target=1.0 stays well below the gap minimum at K≈1.87
+        # K_target=1.0 stays below the finite-size gap minimum for this fixture.
         result = adiabatic_ramp(omega, T, K_target=1.0, T_total=30.0, n_steps=30)
         assert result.final_fidelity > 0.5
 
@@ -107,6 +107,25 @@ class TestAdiabaticRamp:
                 max_dense_gib=1e-12,
             )
 
+    @pytest.mark.parametrize(
+        ("omega", "topology", "kwargs", "match"),
+        [
+            (np.ones(1), np.zeros((1, 1)), {}, "at least 2"),
+            (np.ones(3), np.ones((2, 2)), {}, "K_topology"),
+            (np.ones(2), np.ones((2, 2)), {"K_target": np.nan}, "K_target"),
+            (np.ones(2), np.ones((2, 2)), {"T_total": 0.0}, "T_total"),
+            (np.ones(2), np.ones((2, 2)), {"T_total": np.inf}, "T_total"),
+            (np.ones(2), np.ones((2, 2)), {"n_steps": 0}, "n_steps"),
+            (np.array([1.0, np.nan]), np.ones((2, 2)), {}, "finite"),
+            (np.ones(2), np.array([[0.0, 1.0], [0.2, 0.0]]), {}, "symmetric"),
+        ],
+    )
+    def test_rejects_invalid_inputs(self, omega, topology, kwargs, match):
+        call_kwargs = {"K_target": 2.0, "T_total": 5.0, "n_steps": 10}
+        call_kwargs.update(kwargs)
+        with pytest.raises(ValueError, match=match):
+            adiabatic_ramp(omega, topology, **call_kwargs)
+
 
 class TestAdiabaticTimeScaling:
     def test_returns_dict(self):
@@ -121,7 +140,7 @@ class TestAdiabaticTimeScaling:
         assert len(result["T_total"]) == 2
 
     def test_fidelity_increases_with_time(self):
-        """Longer T should give better fidelity (adiabatic theorem)."""
+        """Longer ramps should keep finite values in this finite-size diagnostic."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -148,6 +167,28 @@ class TestAdiabaticTimeScaling:
                 T_values=np.array([1.0, 2.0]),
                 n_steps_per_T=10,
                 max_dense_gib=1e-12,
+            )
+
+    @pytest.mark.parametrize(
+        ("T_values", "n_steps_per_T", "match"),
+        [
+            (np.array([]), 10, "T_values"),
+            (np.array([1.0, np.nan]), 10, "T_values"),
+            (np.array([1.0, 0.0]), 10, "T_values"),
+            (np.array([1.0]), 0, "n_steps_per_T"),
+        ],
+    )
+    def test_time_scaling_rejects_invalid_inputs(self, T_values, n_steps_per_T, match):
+        T = _ring_topology(2)
+        omega = OMEGA_N_16[:2]
+
+        with pytest.raises(ValueError, match=match):
+            adiabatic_time_scaling(
+                omega,
+                T,
+                K_target=2.0,
+                T_values=T_values,
+                n_steps_per_T=n_steps_per_T,
             )
 
 

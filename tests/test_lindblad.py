@@ -177,6 +177,64 @@ class TestDensityMatrixInvariants:
         with pytest.raises(DenseAllocationError, match="Lindblad dense density workspace"):
             solver.run(t_max=0.1, dt=0.1, max_dense_gib=1e-12)
 
+    @pytest.mark.parametrize(
+        ("n", "K", "omega", "kwargs", "match"),
+        [
+            (0, np.zeros((0, 0)), np.zeros(0), {}, "n_oscillators"),
+            (2, np.ones((2, 3)), np.ones(2), {}, "K_coupling"),
+            (2, np.eye(2), np.ones(3), {}, "omega_natural"),
+            (2, np.array([[0.0, 1.0], [0.2, 0.0]]), np.ones(2), {}, "symmetric"),
+            (2, np.array([[0.0, np.nan], [np.nan, 0.0]]), np.ones(2), {}, "finite"),
+            (2, np.eye(2), np.array([1.0, np.inf]), {}, "finite"),
+            (2, np.eye(2), np.ones(2), {"gamma_amp": -0.1}, "gamma_amp"),
+            (2, np.eye(2), np.ones(2), {"gamma_deph": np.nan}, "gamma_deph"),
+        ],
+    )
+    def test_constructor_rejects_invalid_inputs(self, n, K, omega, kwargs, match):
+        with pytest.raises(ValueError, match=match):
+            LindbladKuramotoSolver(n, K, omega, **kwargs)
+
+    @pytest.mark.parametrize(
+        ("t_max", "dt", "match"),
+        [
+            (-0.1, 0.1, "t_max"),
+            (np.nan, 0.1, "t_max"),
+            (0.1, 0.0, "dt"),
+            (0.1, np.inf, "dt"),
+        ],
+    )
+    def test_run_rejects_invalid_time_grid(self, t_max, dt, match):
+        solver = LindbladKuramotoSolver(self.n, self.K, self.omega)
+        with pytest.raises(ValueError, match=match):
+            solver.run(t_max=t_max, dt=dt)
+
+    def test_zero_horizon_returns_initial_state_without_integrator(self, monkeypatch):
+        def fail_solve_ivp(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("zero-horizon Lindblad run must not call solve_ivp")
+
+        monkeypatch.setattr(lindblad_module, "solve_ivp", fail_solve_ivp)
+        solver = LindbladKuramotoSolver(self.n, self.K, self.omega, gamma_amp=0.1)
+
+        result = solver.run(t_max=0.0, dt=0.1)
+
+        assert result["times"].shape == (1,)
+        assert result["times"][0] == 0.0
+        assert result["R"].shape == (1,)
+        assert result["purity"].shape == (1,)
+        np.testing.assert_allclose(np.trace(result["rho_final"]), 1.0, atol=1e-12)
+
+    def test_run_raises_on_integrator_failure(self, monkeypatch):
+        class FailedSolution:
+            success = False
+            message = "integration failed"
+            y = np.empty((0, 0))
+
+        monkeypatch.setattr(lindblad_module, "solve_ivp", lambda *args, **kwargs: FailedSolution())
+        solver = LindbladKuramotoSolver(self.n, self.K, self.omega)
+
+        with pytest.raises(RuntimeError, match="integration failed"):
+            solver.run(t_max=0.1, dt=0.1)
+
 
 # =====================================================================
 # Unitary Evolution (Zero Dissipation)

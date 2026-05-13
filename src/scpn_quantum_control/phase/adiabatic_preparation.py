@@ -31,6 +31,55 @@ from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 from ..dense_budget import require_dense_allocation
 
 
+def _validate_adiabatic_inputs(
+    omega: np.ndarray,
+    K_topology: np.ndarray,
+    K_target: float,
+    T_total: float,
+    n_steps: int,
+) -> tuple[np.ndarray, np.ndarray, float, float, int]:
+    omega_arr = np.asarray(omega, dtype=np.float64)
+    K_arr = np.asarray(K_topology, dtype=np.float64)
+    if omega_arr.ndim != 1:
+        raise ValueError("omega must be a one-dimensional vector.")
+    n = omega_arr.shape[0]
+    if n < 2:
+        raise ValueError("adiabatic preparation requires at least 2 oscillators.")
+    if K_arr.ndim != 2 or K_arr.shape != (n, n):
+        raise ValueError(f"K_topology must have shape ({n}, {n}); got {K_arr.shape}.")
+    if not np.all(np.isfinite(omega_arr)) or not np.all(np.isfinite(K_arr)):
+        raise ValueError("omega and K_topology must contain only finite values.")
+    if not np.allclose(K_arr, K_arr.T, atol=1e-12, rtol=1e-12):
+        raise ValueError("K_topology must be symmetric for the Kuramoto-XY mapping.")
+
+    K_target_value = float(K_target)
+    T_total_value = float(T_total)
+    if not np.isfinite(K_target_value):
+        raise ValueError("K_target must be finite.")
+    if not np.isfinite(T_total_value) or T_total_value <= 0.0:
+        raise ValueError("T_total must be finite and positive.")
+    if isinstance(n_steps, bool) or not isinstance(n_steps, int) or n_steps < 1:
+        raise ValueError("n_steps must be a positive integer.")
+
+    K_arr = np.array(K_arr, dtype=np.float64, copy=True)
+    np.fill_diagonal(K_arr, 0.0)
+    return omega_arr.copy(), K_arr, K_target_value, T_total_value, n_steps
+
+
+def _validate_time_scaling_inputs(
+    T_values: np.ndarray,
+    n_steps_per_T: int,
+) -> tuple[np.ndarray, int]:
+    T_arr = np.asarray(T_values, dtype=np.float64)
+    if T_arr.ndim != 1 or T_arr.size == 0:
+        raise ValueError("T_values must be a non-empty one-dimensional array.")
+    if not np.all(np.isfinite(T_arr)) or np.any(T_arr <= 0.0):
+        raise ValueError("T_values must contain only finite positive values.")
+    if isinstance(n_steps_per_T, bool) or not isinstance(n_steps_per_T, int) or n_steps_per_T < 1:
+        raise ValueError("n_steps_per_T must be a positive integer.")
+    return T_arr, n_steps_per_T
+
+
 @dataclass
 class AdiabaticResult:
     """Adiabatic preparation result."""
@@ -57,6 +106,13 @@ def adiabatic_ramp(
 
     Linear schedule: K(t) = K_target * t / T_total.
     """
+    omega, K_topology, K_target, T_total, n_steps = _validate_adiabatic_inputs(
+        omega,
+        K_topology,
+        K_target,
+        T_total,
+        n_steps,
+    )
     n = len(omega)
     require_dense_allocation(
         n,
@@ -142,6 +198,7 @@ def adiabatic_time_scaling(
     """
     if T_values is None:
         T_values = np.array([1.0, 2.0, 5.0, 10.0, 20.0])
+    T_values, n_steps_per_T = _validate_time_scaling_inputs(T_values, n_steps_per_T)
 
     results: dict[str, list[float]] = {
         "T_total": [],

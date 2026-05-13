@@ -25,6 +25,53 @@ from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 from ..dense_budget import require_dense_allocation
 
 
+def _validate_lindblad_inputs(
+    n_oscillators: int,
+    K_coupling: np.ndarray,
+    omega_natural: np.ndarray,
+    gamma_amp: float,
+    gamma_deph: float,
+) -> tuple[int, np.ndarray, np.ndarray, float, float]:
+    if isinstance(n_oscillators, bool) or not isinstance(n_oscillators, int):
+        raise ValueError("n_oscillators must be a positive integer.")
+    if n_oscillators < 1:
+        raise ValueError("n_oscillators must be at least 1.")
+
+    K = np.asarray(K_coupling, dtype=np.float64)
+    omega = np.asarray(omega_natural, dtype=np.float64)
+    if K.ndim != 2 or K.shape != (n_oscillators, n_oscillators):
+        raise ValueError(
+            f"K_coupling must have shape ({n_oscillators}, {n_oscillators}); got {K.shape}."
+        )
+    if omega.ndim != 1 or omega.shape != (n_oscillators,):
+        raise ValueError(f"omega_natural must have shape ({n_oscillators},); got {omega.shape}.")
+    if not np.all(np.isfinite(K)) or not np.all(np.isfinite(omega)):
+        raise ValueError("K_coupling and omega_natural must contain only finite values.")
+    if not np.allclose(K, K.T, atol=1e-12, rtol=1e-12):
+        raise ValueError("K_coupling must be symmetric for the Kuramoto-XY mapping.")
+
+    gamma_amp_value = float(gamma_amp)
+    gamma_deph_value = float(gamma_deph)
+    if not np.isfinite(gamma_amp_value) or gamma_amp_value < 0.0:
+        raise ValueError("gamma_amp must be finite and non-negative.")
+    if not np.isfinite(gamma_deph_value) or gamma_deph_value < 0.0:
+        raise ValueError("gamma_deph must be finite and non-negative.")
+
+    K = np.array(K, dtype=np.float64, copy=True)
+    np.fill_diagonal(K, 0.0)
+    return n_oscillators, K, omega.copy(), gamma_amp_value, gamma_deph_value
+
+
+def _validate_time_grid(t_max: float, dt: float) -> tuple[float, float]:
+    t_max_value = float(t_max)
+    dt_value = float(dt)
+    if not np.isfinite(t_max_value) or t_max_value < 0.0:
+        raise ValueError("t_max must be finite and non-negative.")
+    if not np.isfinite(dt_value) or dt_value <= 0.0:
+        raise ValueError("dt must be finite and positive.")
+    return t_max_value, dt_value
+
+
 def _sigma(pauli: str, qubit: int, n: int) -> np.ndarray:
     """Single-qubit Pauli operator on qubit `qubit` of `n`-qubit system."""
     matrices = {
@@ -70,13 +117,15 @@ class LindbladKuramotoSolver:
         *,
         max_dense_gib: float | None = None,
     ):
-        self.n = n_oscillators
-        self.K = np.asarray(K_coupling, dtype=np.float64)
-        self.omega = np.asarray(omega_natural, dtype=np.float64)
-        self.gamma_amp = gamma_amp
-        self.gamma_deph = gamma_deph
+        self.n, self.K, self.omega, self.gamma_amp, self.gamma_deph = _validate_lindblad_inputs(
+            n_oscillators,
+            K_coupling,
+            omega_natural,
+            gamma_amp,
+            gamma_deph,
+        )
         self.max_dense_gib = max_dense_gib
-        self.dim = 2**n_oscillators
+        self.dim = 2**self.n
         self._H: np.ndarray | None = None
         self._lindblad_ops: list[np.ndarray] = []
 
@@ -136,6 +185,19 @@ class LindbladKuramotoSolver:
         """Tr(ρ²) — 1 for pure state, 1/dim for maximally mixed."""
         return float(np.trace(rho @ rho).real)
 
+    def _initial_density_matrix(self) -> np.ndarray:
+        """Initial product state density matrix used by the Lindblad solver."""
+        rho0 = np.zeros((self.dim, self.dim), dtype=np.complex128)
+        rho0[0, 0] = 1.0
+        U: np.ndarray = np.eye(1, dtype=np.complex128)
+        for i in range(self.n):
+            angle = float(self.omega[i]) % (2 * np.pi)
+            c, s = np.cos(angle / 2), np.sin(angle / 2)
+            ry = np.array([[c, -s], [s, c]], dtype=np.complex128)
+            U = np.kron(U, ry)  # type: ignore[assignment]
+        result: np.ndarray = U @ rho0 @ U.conj().T
+        return result
+
     def run(
         self,
         t_max: float,
@@ -148,6 +210,7 @@ class LindbladKuramotoSolver:
 
         Returns dict with keys: times, R, purity, rho_final.
         """
+        t_max, dt = _validate_time_grid(t_max, dt)
         budget_gib = self.max_dense_gib if max_dense_gib is None else max_dense_gib
         if self._H is None:
             self.build(max_dense_gib=budget_gib)
@@ -155,17 +218,14 @@ class LindbladKuramotoSolver:
         n_steps = max(1, int(t_max / dt))
         times = np.linspace(0, t_max, n_steps + 1)
 
-        # Initial state: each qubit at angle ~ omega_i
-        rho0 = np.zeros((self.dim, self.dim), dtype=np.complex128)
-        rho0[0, 0] = 1.0  # start from |00...0>
-        # Apply Ry rotations via unitary
-        U: np.ndarray = np.eye(1, dtype=np.complex128)
-        for i in range(self.n):
-            angle = float(self.omega[i]) % (2 * np.pi)
-            c, s = np.cos(angle / 2), np.sin(angle / 2)
-            ry = np.array([[c, -s], [s, c]], dtype=np.complex128)
-            U = np.kron(U, ry)  # type: ignore[assignment]
-        rho0 = U @ rho0 @ U.conj().T
+        rho0 = self._initial_density_matrix()
+        if t_max == 0.0:
+            return {
+                "times": np.array([0.0]),
+                "R": np.array([self.order_parameter(rho0)]),
+                "purity": np.array([self.purity(rho0)]),
+                "rho_final": rho0,
+            }
 
         sol = solve_ivp(
             self._rhs,
@@ -176,6 +236,8 @@ class LindbladKuramotoSolver:
             atol=1e-8,
             rtol=1e-6,
         )
+        if not sol.success:
+            raise RuntimeError(f"Lindblad integration failed: {sol.message}")
 
         R_history = np.zeros(len(times))
         purity_history = np.zeros(len(times))
