@@ -14,7 +14,9 @@ use pyo3::prelude::*;
 use std::cmp::Ordering;
 use std::f64::consts::PI;
 
-use crate::validation::{validate_finite, validate_flat_square, validate_n};
+use crate::validation::{
+    validate_contiguous_slice, validate_finite, validate_flat_square, validate_n,
+};
 
 /// Compile upper-triangular coupling terms for analog Kuramoto backends.
 ///
@@ -40,7 +42,7 @@ pub fn analog_coupling_terms<'py>(
     Bound<'py, PyArray1<f64>>,
 )> {
     validate_n(n, "n")?;
-    let k = k_flat.as_slice().unwrap();
+    let k = validate_contiguous_slice(&k_flat, "k_flat")?;
     validate_flat_square(k, n, "k_flat")?;
     validate_finite(k, "k_flat")?;
     if platform_code > 2 {
@@ -119,7 +121,7 @@ pub fn hybrid_coupling_partition<'py>(
     Bound<'py, PyArray1<i64>>,
 )> {
     validate_n(n, "n")?;
-    let k = k_flat.as_slice().unwrap();
+    let k = validate_contiguous_slice(&k_flat, "k_flat")?;
     validate_flat_square(k, n, "k_flat")?;
     validate_finite(k, "k_flat")?;
     if !analog_threshold.is_finite() || analog_threshold < 0.0 {

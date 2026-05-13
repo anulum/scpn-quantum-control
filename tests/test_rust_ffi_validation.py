@@ -353,5 +353,83 @@ def test_brute_mpc_matches_two_dimensional_reference() -> None:
     assert np.asarray(costs).shape == (8,)
 
 
+def test_analog_coupling_terms_rejects_non_contiguous_couplings() -> None:
+    k_flat = np.linspace(0.0, 1.0, 32, dtype=np.float64)[::2]
+
+    with pytest.raises(ValueError, match="k_flat must be a C-contiguous NumPy array"):
+        engine.analog_coupling_terms(k_flat, 4, 0, 1.0, 64.0, 1e-12)
+
+
+def test_analog_coupling_terms_rejects_wrong_coupling_shape() -> None:
+    k_flat = np.ascontiguousarray(np.zeros(15, dtype=np.float64))
+
+    with pytest.raises(ValueError, match="k_flat length 15 != 4² = 16"):
+        engine.analog_coupling_terms(k_flat, 4, 0, 1.0, 64.0, 1e-12)
+
+
+def test_analog_coupling_terms_preserves_signed_neutral_atom_edges() -> None:
+    k_matrix = np.ascontiguousarray(
+        [
+            [0.0, 0.5, -0.25],
+            [0.5, 0.0, 0.0],
+            [-0.25, 0.0, 0.0],
+        ],
+        dtype=np.float64,
+    )
+
+    rows, cols, strengths, phases, radii = engine.analog_coupling_terms(
+        np.ascontiguousarray(k_matrix.ravel()),
+        3,
+        0,
+        1.0,
+        64.0,
+        1e-12,
+    )
+
+    np.testing.assert_array_equal(np.asarray(rows), np.array([0, 0], dtype=np.int64))
+    np.testing.assert_array_equal(np.asarray(cols), np.array([1, 2], dtype=np.int64))
+    np.testing.assert_allclose(np.asarray(strengths), np.array([0.5, 0.25]))
+    np.testing.assert_allclose(np.asarray(phases), np.array([0.0, np.pi]))
+    np.testing.assert_allclose(np.asarray(radii), (64.0 / np.array([0.5, 0.25])) ** (1.0 / 6.0))
+
+
+def test_hybrid_coupling_partition_rejects_non_contiguous_couplings() -> None:
+    k_flat = np.linspace(0.0, 1.0, 32, dtype=np.float64)[::2]
+
+    with pytest.raises(ValueError, match="k_flat must be a C-contiguous NumPy array"):
+        engine.hybrid_coupling_partition(k_flat, 4, 1, 0.0, 1e-12)
+
+
+def test_hybrid_coupling_partition_selects_budgeted_tie_break_edge() -> None:
+    k_matrix = np.ascontiguousarray(
+        [
+            [0.0, 0.75, 0.75],
+            [0.75, 0.0, 0.5],
+            [0.75, 0.5, 0.0],
+        ],
+        dtype=np.float64,
+    )
+
+    analog, digital, rows, cols, route_codes = engine.hybrid_coupling_partition(
+        np.ascontiguousarray(k_matrix.ravel()),
+        3,
+        1,
+        0.0,
+        1e-12,
+    )
+
+    np.testing.assert_allclose(
+        np.asarray(analog).reshape(3, 3),
+        np.array([[0.0, 0.75, 0.0], [0.75, 0.0, 0.0], [0.0, 0.0, 0.0]]),
+    )
+    np.testing.assert_allclose(
+        np.asarray(digital).reshape(3, 3),
+        np.array([[0.0, 0.0, 0.75], [0.0, 0.0, 0.5], [0.75, 0.5, 0.0]]),
+    )
+    np.testing.assert_array_equal(np.asarray(rows), np.array([0, 0, 1], dtype=np.int64))
+    np.testing.assert_array_equal(np.asarray(cols), np.array([1, 2, 2], dtype=np.int64))
+    np.testing.assert_array_equal(np.asarray(route_codes), np.array([1, 0, 0], dtype=np.int64))
+
+
 def r_values_error_pattern() -> str:
     return r"r_values must be a C-contiguous NumPy array"
