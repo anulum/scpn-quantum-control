@@ -1,0 +1,161 @@
+{
+  "cancelled_layout_blocks": [
+    {
+      "job_id_sha256": "4cedc3030c81dda5170dd8522f4051524bbf076e6ca1f02d00fbabafcdbc78e9",
+      "layout": [
+        11,
+        6,
+        5,
+        10
+      ],
+      "path": "data/iqm_paper_replication/iqm_dla_layout_pinned_repeat_q11-6-5-10_2026-05-13_cancelled.json",
+      "status_after_cancel": "CANCELLED",
+      "status_before_cancel": "QUEUED",
+      "submitted_circuit": "iqm_dla_pinned_n4_d4_even",
+      "submitted_shots": 256,
+      "unsubmitted_circuits": 7
+    }
+  ],
+  "cancelled_submitted_circuits": 1,
+  "claim_boundary": "The current IQM layout campaign is controlled diagnostic evidence. Six completed pinned layouts and one earlier queued/cancelled third-layout attempt do not support manuscript claim upgrade; they motivate a larger scheduled credit-grant campaign with repeated layout statistics.",
+  "completed_blocks": 6,
+  "completed_circuits": 48,
+  "completed_layout_blocks": [
+    {
+      "analysis_path": "data/iqm_paper_replication/iqm_dla_layout_pinned_repeat_analysis_2026-05-13.json",
+      "combined_fisher_p": 0.24257860098271222,
+      "depth_asymmetries": {
+        "10": -0.09166666666666666,
+        "4": 0.2,
+        "6": -0.07258064516129033
+      },
+      "layout": [
+        9,
+        4,
+        3,
+        8
+      ],
+      "readout_parity_leakage": {
+        "0001": 0.0234375,
+        "0011": 0.04296875
+      },
+      "sign_matches_vs_ibm_phase2": "1/3",
+      "total_circuits": 8,
+      "total_shots": 2048
+    },
+    {
+      "analysis_path": "data/iqm_paper_replication/iqm_dla_layout_pinned_repeat_q13-8-9-14_analysis_2026-05-13.json",
+      "combined_fisher_p": 0.13880723871610728,
+      "depth_asymmetries": {
+        "10": 0.035398230088495575,
+        "4": -0.09401709401709402,
+        "6": -0.1925925925925926
+      },
+      "layout": [
+        13,
+        8,
+        9,
+        14
+      ],
+      "readout_parity_leakage": {
+        "0001": 0.07421875,
+        "0011": 0.03515625
+      },
+      "sign_matches_vs_ibm_phase2": "1/3",
+      "total_circuits": 8,
+      "total_shots": 2048
+    },
+    {
+      "analysis_path": "data/iqm_paper_replication/iqm_dla_layout_pinned_repeat_q11-6-5-10_analysis_2026-05-13.json",
+      "combined_fisher_p": 0.20828724166282825,
+      "depth_asymmetries": {
+        "10": -0.13636363636363635,
+        "4": -0.007246376811594203,
+        "6": 0.15702479338842976
+      },
+      "layout": [
+        11,
+        6,
+        5,
+        10
+      ],
+      "readout_parity_leakage": {
+        "0001": 0.109375,
+        "0011": 0.16796875
+      },
+      "sign_matches_vs_ibm_phase2": "1/3",
+      "total_circuits": 8,
+      "total_shots": 2048
+    },
+    {
+      "analysis_path": "data/iqm_paper_replication/iqm_dla_layout_pinned_repeat_q17-18-19-15_analysis_2026-05-13.json",
+      "combined_fisher_p": 0.04604214701914393,
+      "depth_asymmetries": {
+        "10": 0.09923664122137404,
+        "4": 0.045871559633027525,
+        "6": -0.21830985915492956
+      },
+      "layout": [
+        17,
+        18,
+        19,
+        15
+      ],
+      "readout_parity_leakage": {
+        "0001": 0.0625,
+        "0011": 0.10546875
+      },
+      "sign_matches_vs_ibm_phase2": "2/3",
+      "total_circuits": 8,
+      "total_shots": 2048
+    },
+    {
+      "analysis_path": "data/iqm_paper_replication/iqm_dla_layout_pinned_repeat_q0-1-4-3_analysis_2026-05-13.json",
+      "combined_fisher_p": 0.5724025641197881,
+      "depth_asymmetries": {
+        "10": -0.1171875,
+        "4": 0.05319148936170213,
+        "6": 0.058333333333333334
+      },
+      "layout": [
+        0,
+        1,
+        4,
+        3
+      ],
+      "readout_parity_leakage": {
+        "0001": 0.046875,
+        "0011": 0.06640625
+      },
+      "sign_matches_vs_ibm_phase2": "2/3",
+      "total_circuits": 8,
+      "total_shots": 2048
+    },
+    {
+      "analysis_path": "data/iqm_paper_replication/iqm_dla_layout_pinned_repeat_q2-7-12-13_analysis_2026-05-13.json",
+      "combined_fisher_p": 0.37290715792385926,
+      "depth_asymmetries": {
+        "10": 0.1836734693877551,
+        "4": 0.05333333333333334,
+        "6": 0.12345679012345678
+      },
+      "layout": [
+        2,
+        7,
+        12,
+        13
+      ],
+      "readout_parity_leakage": {
+        "0001": 0.03515625,
+        "0011": 0.0859375
+      },
+      "sign_matches_vs_ibm_phase2": "3/3",
+      "total_circuits": 8,
+      "total_shots": 2048
+    }
+  ],
+  "completed_shots": 12288,
+  "platform": "IQM Resonance Garnet",
+  "provider": "iqm",
+  "schema": "scpn_iqm_layout_campaign_summary_v1"
+}

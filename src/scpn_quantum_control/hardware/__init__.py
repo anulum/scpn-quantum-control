@@ -128,6 +128,13 @@ from .hybrid_digital_analog import (
     hybrid_digital_analog_factory,
     partition_kuramoto_couplings,
 )
+from .iqm_backend import (
+    IQMBackendConfig,
+    IQMQuantumBackend,
+    IQMRunResult,
+    iqm_factory,
+    is_iqm_available,
+)
 from .job_dossier import HardwareJobDossier, build_s1_feedback_job_dossier
 from .noise_model import heron_r2_noise_model
 from .qubit_mapper import (
@@ -204,6 +211,11 @@ __all__ = [
     "compile_hybrid_digital_analog",
     "hybrid_digital_analog_factory",
     "partition_kuramoto_couplings",
+    "IQMBackendConfig",
+    "IQMQuantumBackend",
+    "IQMRunResult",
+    "iqm_factory",
+    "is_iqm_available",
     "BackendProtocol",
     "BackendRegistrationError",
     "BackendRegistry",

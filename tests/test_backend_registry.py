@@ -284,6 +284,7 @@ class TestModuleSingleton:
         assert "cirq" in reg.names()
         assert "braket" in reg.names()
         assert "pennylane" in reg.names()
+        assert "iqm" in reg.names()
 
     def test_qiskit_ibm_backend_satisfies_protocol(self) -> None:
         b = be.get_backend("qiskit_ibm")
@@ -303,6 +304,7 @@ class TestModuleSingleton:
             ("cirq", "google_cirq", False),
             ("braket", "aws_braket", True),
             ("pennylane", "pennylane", False),
+            ("iqm", "iqm", True),
         ],
     )
     def test_builtin_quantum_backend_descriptors(
@@ -320,7 +322,11 @@ class TestModuleSingleton:
         assert "kuramoto_xy" in descriptor.workloads
 
     def test_cloud_descriptors_never_mark_auto_submit_safe(self) -> None:
-        cloud = [be.describe_backend("qiskit_ibm"), be.describe_backend("braket")]
+        cloud = [
+            be.describe_backend("qiskit_ibm"),
+            be.describe_backend("braket"),
+            be.describe_backend("iqm"),
+        ]
         assert all(d.can_submit for d in cloud)
         assert all(d.submit_requires_approval for d in cloud)
 
@@ -334,7 +340,7 @@ class TestModuleSingleton:
         descriptors = be.list_quantum_backends(auto_discover=False)
         names = [d.name for d in descriptors]
         assert names == sorted(names)
-        assert {"qiskit_ibm", "qiskit_aer", "cirq", "braket", "pennylane"} <= set(names)
+        assert {"qiskit_ibm", "qiskit_aer", "cirq", "braket", "pennylane", "iqm"} <= set(names)
 
     def test_legacy_plugin_gets_conservative_descriptor(self) -> None:
         name = "legacy_descriptor_test"

@@ -117,20 +117,29 @@ class TestKrylovVsCoupling:
         T = _ring(2)
         omega = OMEGA_N_16[:2]
         seen_budgets: list[float | None] = []
+        seen_max_lanczos: list[int] = []
 
         def fake_dense_matrix(K_arg, omega_arg, **kwargs):  # noqa: ARG001
             seen_budgets.append(kwargs.get("max_dense_gib"))
             return np.diag([0.0, 1.0, 2.0, 3.0]).astype(complex)
 
         def fake_complexity(H, O_init, t_max=10.0, n_times=50, max_lanczos=50):  # noqa: ARG001
+            seen_max_lanczos.append(max_lanczos)
             return KrylovResult(np.array([1.0]), np.array([0.0]), np.array([0.0]), 0.0, 1)
 
         monkeypatch.setattr(krylov_module, "knm_to_dense_matrix", fake_dense_matrix)
         monkeypatch.setattr(krylov_module, "krylov_complexity", fake_complexity)
 
-        krylov_vs_coupling(omega, T, k_range=np.array([1.0, 2.0]), max_dense_gib=0.25)
+        krylov_vs_coupling(
+            omega,
+            T,
+            k_range=np.array([1.0, 2.0]),
+            max_dense_gib=0.25,
+            max_lanczos=7,
+        )
 
         assert seen_budgets == [0.25, 0.25]
+        assert seen_max_lanczos == [7, 7]
 
     def test_returns_dict(self):
         T = _ring(3)

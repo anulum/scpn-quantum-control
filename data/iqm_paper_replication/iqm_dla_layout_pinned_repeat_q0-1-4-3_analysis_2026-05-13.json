@@ -1,0 +1,93 @@
+{
+  "claim_boundary": "Layout-pinned IQM repeat is controlled diagnostic hardware evidence. It is not sufficient for manuscript claim upgrade until repeated statistics, calibration treatment, and cross-layout consistency are established.",
+  "depth_summaries": [
+    {
+      "depth": 4,
+      "even_job_id_sha256": "6cddbb026399384ce562524edef8710c6f071c8d3f6e522c1886e9ba801729c7",
+      "even_transpiled_depth": 69,
+      "ibm_phase2_asymmetry_relative": 0.08651155941687519,
+      "iqm_asymmetry_relative": 0.05319148936170213,
+      "iqm_fisher_odds_ratio": 1.0867326195961513,
+      "iqm_fisher_p": 0.7153310911338409,
+      "iqm_leakage_difference": 0.01953125,
+      "iqm_leakage_even": 0.38671875,
+      "iqm_leakage_odd": 0.3671875,
+      "odd_job_id_sha256": "60f8374331f2aea20f441226803d779b7bc540246418b74764cddb0b27a43fb3",
+      "odd_transpiled_depth": 69,
+      "sign_matches_ibm_phase2": true,
+      "standard_error_difference": 0.04282632980286245,
+      "z_difference": 0.45605705858769524
+    },
+    {
+      "depth": 6,
+      "even_job_id_sha256": "2b83c1b5ef8bc0a611f4daf400e3dc19fd98694a1578733a380d169d4ae267cc",
+      "even_transpiled_depth": 99,
+      "ibm_phase2_asymmetry_relative": 0.04346860600677293,
+      "iqm_asymmetry_relative": 0.058333333333333334,
+      "iqm_fisher_odds_ratio": 1.1157622739018087,
+      "iqm_fisher_p": 0.5956998050415696,
+      "iqm_leakage_difference": 0.02734375,
+      "iqm_leakage_even": 0.49609375,
+      "iqm_leakage_odd": 0.46875,
+      "odd_job_id_sha256": "f31380d459986380a74f60ec8e64bc813e2239953f08bdf71b817589974fd5d7",
+      "odd_transpiled_depth": 99,
+      "sign_matches_ibm_phase2": true,
+      "standard_error_difference": 0.04415031934300815,
+      "z_difference": 0.619333006123098
+    },
+    {
+      "depth": 10,
+      "even_job_id_sha256": "2f2152900a1c8d69791fc3390608937a88bbe831cbd6df27889a72ed6b99ba51",
+      "even_transpiled_depth": 159,
+      "ibm_phase2_asymmetry_relative": 0.04467965123845058,
+      "iqm_asymmetry_relative": -0.1171875,
+      "iqm_fisher_odds_ratio": 0.7902097902097902,
+      "iqm_fisher_p": 0.21509617599890143,
+      "iqm_leakage_difference": -0.05859375,
+      "iqm_leakage_even": 0.44140625,
+      "iqm_leakage_odd": 0.5,
+      "odd_job_id_sha256": "a3069eacb7c5a4cce5d31914782fdbebb555e58eb3d4920f9d0a4276d9f73b9d",
+      "odd_transpiled_depth": 159,
+      "sign_matches_ibm_phase2": false,
+      "standard_error_difference": 0.044042183811949395,
+      "z_difference": -1.3304006506621617
+    }
+  ],
+  "fisher_chi2": 4.779396442439349,
+  "fisher_p": 0.5724025641197881,
+  "ibm_reference": "data/phase2_dla_parity/phase2_reduced_ag_summary_2026-05-05.json",
+  "n_depths_compared_to_ibm_phase2": 3,
+  "n_depths_iqm_p_below_0_05": 0,
+  "n_signs_matching_ibm_phase2": 2,
+  "provider": "iqm",
+  "readout_baselines": [
+    {
+      "circuit_name": "iqm_readout_pinned_even_0011",
+      "initial": "0011",
+      "initial_state_retention": 0.93359375,
+      "job_id_sha256": "3be8d09925c7464192005c1d93c63ac998fbe59d2ee8d241f255b05176723b19",
+      "parity_leakage": 0.06640625,
+      "sector": "even",
+      "shots": 256
+    },
+    {
+      "circuit_name": "iqm_readout_pinned_odd_0001",
+      "initial": "0001",
+      "initial_state_retention": 0.953125,
+      "job_id_sha256": "dd1cb9a829fe76e609bf5a3622b67b7d0f3ba3e5e0398740ac7b8bbbf3098aad",
+      "parity_leakage": 0.046875,
+      "sector": "odd",
+      "shots": 256
+    }
+  ],
+  "requested_initial_layout": [
+    0,
+    1,
+    4,
+    3
+  ],
+  "schema": "scpn_iqm_dla_layout_pinned_repeat_analysis_v1",
+  "source": "data/iqm_paper_replication/iqm_dla_layout_pinned_repeat_q0-1-4-3_2026-05-13_executed.json",
+  "total_circuits": 8,
+  "total_shots": 2048
+}

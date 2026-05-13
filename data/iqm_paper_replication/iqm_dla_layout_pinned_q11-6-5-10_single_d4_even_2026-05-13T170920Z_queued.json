@@ -1,0 +1,39 @@
+{
+  "claim_boundary": "Queued single-circuit IQM Garnet diagnostic job; not physics evidence until counts are retrieved and analysed.",
+  "job_id_sha256": "59785fbea1172a319c85a7825b155670c2a0caee5467011568a4956ba64b7c0e",
+  "provider": "iqm",
+  "quantum_computer": "garnet",
+  "record": {
+    "backend_name": "IQMBackend",
+    "circuit_name": "iqm_dla_pinned_n4_d4_even",
+    "kind": "dla_parity",
+    "meta": {
+      "depth": 4,
+      "experiment": "A_dla_parity_n4",
+      "initial": "0011",
+      "n_qubits": 4,
+      "paper_source": "phase1_dla_parity",
+      "sector": "even",
+      "t_step": 0.3
+    },
+    "requested_initial_layout": [
+      11,
+      6,
+      5,
+      10
+    ],
+    "shots": 256,
+    "status": "queued_for_later_retrieval",
+    "tier": "dla_parity_minimal_layout_pinned_repeat",
+    "transpiled_depth": 69,
+    "transpiled_ops": {
+      "cz": 48,
+      "measure": 4,
+      "r": 67
+    },
+    "transpiled_size": 119
+  },
+  "retrieved_at_utc": null,
+  "status_at_submit": "QUEUED",
+  "submitted_at_utc": "2026-05-13T17:09:19.862654+00:00"
+}

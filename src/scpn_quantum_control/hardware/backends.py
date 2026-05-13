@@ -510,6 +510,13 @@ def pennylane_factory() -> BackendProtocol:
     return _PennyLaneBackend()
 
 
+def iqm_factory() -> BackendProtocol:
+    """Entry-point target for the IQM Qiskit backend."""
+    from .iqm_backend import iqm_factory as _factory
+
+    return _factory()
+
+
 def analog_kuramoto_factory() -> BackendProtocol:
     """Entry-point target for the analog Kuramoto compiler backend."""
     from .analog_kuramoto import analog_kuramoto_factory as _factory
@@ -531,6 +538,7 @@ _registry.register("qiskit_aer", qiskit_aer_factory)
 _registry.register("cirq", cirq_factory)
 _registry.register("braket", braket_factory)
 _registry.register("pennylane", pennylane_factory)
+_registry.register("iqm", iqm_factory)
 _registry.register("analog_kuramoto", analog_kuramoto_factory)
 _registry.register("hybrid_digital_analog", hybrid_digital_analog_factory)
 
@@ -550,6 +558,7 @@ __all__ = [
     "get_backend",
     "get_registry",
     "hybrid_digital_analog_factory",
+    "iqm_factory",
     "list_backends",
     "list_quantum_backends",
     "pennylane_factory",

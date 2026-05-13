@@ -1,0 +1,23 @@
+{
+  "cancel_status": "cancelled",
+  "claim_boundary": "Only the first circuit of the q11-6-5-10 layout block was submitted. It remained queued until timeout and was cancelled before any remaining layout-block circuits were submitted.",
+  "job_id_sha256": "4cedc3030c81dda5170dd8522f4051524bbf076e6ca1f02d00fbabafcdbc78e9",
+  "platform": "IQM Resonance",
+  "provider": "iqm",
+  "quantum_computer": "garnet",
+  "requested_initial_layout": [
+    11,
+    6,
+    5,
+    10
+  ],
+  "schema": "scpn_iqm_dla_layout_pinned_repeat_cancelled_v1",
+  "status_after_cancel": "CANCELLED",
+  "status_before_cancel": "QUEUED",
+  "submitted_circuit": "iqm_dla_pinned_n4_d4_even",
+  "submitted_shots": 256,
+  "tier": "dla_parity_minimal_layout_pinned_repeat",
+  "timeout_s": 900,
+  "total_planned_circuits": 8,
+  "unsubmitted_circuits": 7
+}

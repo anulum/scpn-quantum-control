@@ -1,0 +1,100 @@
+{
+  "claim_boundary": "IQM minimal tier is suitable for cross-provider sanity evidence and protocol debugging, but has one 256-shot replicate per sector and is not sufficient to upgrade manuscript claims. The next IQM run should use fixed paired layouts or an explicit randomised layout block, not blind automatic layout, before paper-core replication or repeated statistics are interpreted.",
+  "depth_summaries": [
+    {
+      "depth": 4,
+      "ibm_phase2_asymmetry_relative": 0.08651155941687519,
+      "ibm_phase2_leakage_even": 0.1200927734375,
+      "ibm_phase2_leakage_odd": 0.11053059895833334,
+      "ibm_phase2_welch_p": 1.5608292151029505e-08,
+      "iqm_asymmetry_relative": -0.0859375,
+      "iqm_even_leakage_counts": 117,
+      "iqm_even_shots": 256,
+      "iqm_fisher_odds_ratio": 0.841726618705036,
+      "iqm_fisher_p": 0.37633628326539387,
+      "iqm_leakage_difference": -0.04296875,
+      "iqm_leakage_even": 0.45703125,
+      "iqm_leakage_even_ci95": {
+        "high": 0.5182393591075696,
+        "low": 0.3970936285540288
+      },
+      "iqm_leakage_odd": 0.5,
+      "iqm_leakage_odd_ci95": {
+        "high": 0.560794441410937,
+        "low": 0.43920555858906296
+      },
+      "iqm_odd_leakage_counts": 128,
+      "iqm_odd_shots": 256,
+      "sign_matches_ibm_phase2": false,
+      "standard_error_difference": 0.04411250205987162,
+      "z_difference": -0.9740719295786201
+    },
+    {
+      "depth": 6,
+      "ibm_phase2_asymmetry_relative": 0.04346860600677293,
+      "ibm_phase2_leakage_even": 0.15296223958333333,
+      "ibm_phase2_leakage_odd": 0.14659016927083332,
+      "ibm_phase2_welch_p": 0.00019352317840348054,
+      "iqm_asymmetry_relative": -0.08088235294117647,
+      "iqm_even_leakage_counts": 125,
+      "iqm_even_shots": 256,
+      "iqm_fisher_odds_ratio": 0.8419398293668613,
+      "iqm_fisher_p": 0.37668619842169937,
+      "iqm_leakage_difference": -0.04296875,
+      "iqm_leakage_even": 0.48828125,
+      "iqm_leakage_even_ci95": {
+        "high": 0.5492324866662899,
+        "low": 0.4276765099686914
+      },
+      "iqm_leakage_odd": 0.53125,
+      "iqm_leakage_odd_ci95": {
+        "high": 0.5914653494066143,
+        "low": 0.4701106595667687
+      },
+      "iqm_odd_leakage_counts": 136,
+      "iqm_odd_shots": 256,
+      "sign_matches_ibm_phase2": false,
+      "standard_error_difference": 0.04414491885745625,
+      "z_difference": -0.9733566424427216
+    },
+    {
+      "depth": 10,
+      "ibm_phase2_asymmetry_relative": 0.04467965123845058,
+      "ibm_phase2_leakage_even": 0.19598795572916666,
+      "ibm_phase2_leakage_odd": 0.18760579427083332,
+      "ibm_phase2_welch_p": 9.641423794121621e-07,
+      "iqm_asymmetry_relative": 0.13445378151260504,
+      "iqm_even_leakage_counts": 135,
+      "iqm_even_shots": 256,
+      "iqm_fisher_odds_ratio": 1.2844641989027015,
+      "iqm_fisher_p": 0.18483094178427706,
+      "iqm_leakage_difference": 0.0625,
+      "iqm_leakage_even": 0.52734375,
+      "iqm_leakage_even_ci95": {
+        "high": 0.5876443136015835,
+        "low": 0.4662346942501266
+      },
+      "iqm_leakage_odd": 0.46484375,
+      "iqm_leakage_odd_ci95": {
+        "high": 0.5260096981130833,
+        "low": 0.4047172917918608
+      },
+      "iqm_odd_leakage_counts": 119,
+      "iqm_odd_shots": 256,
+      "sign_matches_ibm_phase2": true,
+      "standard_error_difference": 0.04410642125789848,
+      "z_difference": 1.4170272313537031
+    }
+  ],
+  "fisher_chi2": 7.283857335760453,
+  "fisher_p": 0.2953921228083208,
+  "ibm_reference": "data/phase2_dla_parity/phase2_reduced_ag_summary_2026-05-05.json",
+  "iqm_input": "data/iqm_paper_replication/iqm_dla_parity_minimal_2026-05-13_sanitized.json",
+  "n_depths_compared_to_ibm_phase2": 3,
+  "n_depths_iqm_p_below_0_05": 0,
+  "n_depths_tested": 3,
+  "n_signs_matching_ibm_phase2": 1,
+  "provider": "iqm",
+  "schema": "scpn_iqm_dla_parity_minimal_analysis_v1",
+  "tier": "dla_parity_minimal"
+}

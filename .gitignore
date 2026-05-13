@@ -16,6 +16,7 @@ coverage.xml
 .coverage
 
 .venv/
+.venv-iqm/
 .venv-linux/
 .venv-rocm/
 .venv-cuda/

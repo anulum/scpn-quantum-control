@@ -39,6 +39,7 @@ refresh the provider status from the official console or documentation.
 | IBM Quantum | IBM superconducting QPUs including Eagle and Heron families. | Existing first-class path. | Query available backends per account; do not assume a named backend is always available. |
 | Amazon Braket | AQT, IonQ, IQM, QuEra, Rigetti, plus managed simulators. | High. | Single cloud surface for several modalities; useful for multi-provider routing. |
 | Azure Quantum | IonQ, Pasqal, Quantinuum, Rigetti, plus simulators and resource estimation. | High. | Good proposal surface because provider credits and target availability are documented by workspace/region. |
+| IQM Resonance / direct IQM server | IQM superconducting QPUs and Qiskit-on-IQM fake/facade backends. | High. | Direct European superconducting replication route for IBM-sensitive circuit witnesses. |
 | IonQ Quantum Cloud | IonQ direct access to simulators and trapped-ion QPUs. | High. | Direct route for Aria/Forte-family work and research-credit applications. |
 | Quantinuum Systems / Nexus | Quantinuum hardware, emulators, syntax checkers. | High. | Strong fit for mid-circuit measurement, all-to-all trapped-ion circuits, and hardware-credit accounting. |
 | Pasqal Cloud | Neutral-atom QPU and emulators. | Medium-high. | Strong fit for analog oscillator-network experiments and Rydberg geometry. |
@@ -215,11 +216,30 @@ Readiness requirement:
 - emulator preflight
 - measured observable mapping into the common result artifact
 
-### Rigetti and IQM
+### IQM
+
+Use for superconducting diversity beyond IBM while keeping the Qiskit
+circuit path close to the existing Kuramoto-XY, DLA parity, and FIM
+workflows. The built-in `iqm` adapter uses Qiskit-on-IQM and is
+approval-gated for remote execution. Local IQM fake backends are suitable
+for syntax and topology preflight, but they are not hardware evidence.
+
+Readiness requirement:
+
+- `iqm-client[qiskit]` installed in an isolated runner environment such as
+  `.venv-iqm`; current IQM client releases pin Qiskit below the main
+  IBM/Qiskit environment used by this repository
+- fake/facade backend preflight for the selected circuit family
+- explicit IQM server URL and quantum-computer name for remote runs
+- topology/native-gate translation recorded in the artefact ledger
+- calibration snapshot or provider metadata captured where available
+- micro-probe counts before any full witness campaign
+
+### Rigetti
 
 Use for superconducting diversity beyond IBM, especially when routing,
-native-gate sets, low-latency hybrid workflows, or European access are
-strategically important.
+native-gate sets, low-latency hybrid workflows, or access through Braket
+is strategically important.
 
 Readiness requirement:
 
@@ -285,6 +305,9 @@ sources:
   <https://www.ionq.com/quantum-cloud>
 - Quantinuum Systems documentation:
   <https://docs.quantinuum.com/h-series/>
+- IQM Qiskit integration and fake backends:
+  <https://docs.iqm.tech/iqm-client/user_guide_qiskit.html>,
+  <https://docs.iqm.tech/iqm-client/api/iqm.qiskit_iqm.fake_backends.html>
 - Pasqal Cloud documentation:
   <https://docs.pasqal.com/cloud/>
 - D-Wave Leap:

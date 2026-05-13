@@ -1,0 +1,67 @@
+{
+  "claim_boundary": "Single-circuit IQM Garnet count retrieval for one DLA even-sector depth-4 circuit; useful as queue/retrieval and leakage diagnostic only, not an even-vs-odd DLA asymmetry result.",
+  "job_id_sha256": "59785fbea1172a319c85a7825b155670c2a0caee5467011568a4956ba64b7c0e",
+  "provider": "iqm",
+  "quantum_computer": "garnet",
+  "record": {
+    "backend_name": "IQMBackend",
+    "circuit_name": "iqm_dla_pinned_n4_d4_even",
+    "counts_summary": {
+      "counts": {
+        "0000": 4,
+        "0001": 12,
+        "0010": 4,
+        "0011": 2,
+        "0100": 11,
+        "0101": 12,
+        "0110": 7,
+        "0111": 14,
+        "1000": 14,
+        "1001": 19,
+        "1010": 22,
+        "1011": 29,
+        "1100": 31,
+        "1101": 33,
+        "1110": 20,
+        "1111": 22
+      },
+      "expected_parity": 0,
+      "in_sector_counts": 119,
+      "initial_state_retention": 0.12109375,
+      "leakage_counts": 137,
+      "parity_leakage": 0.53515625,
+      "sector_survival_fraction": 0.46484375,
+      "total_shots": 256
+    },
+    "kind": "dla_parity",
+    "meta": {
+      "depth": 4,
+      "experiment": "A_dla_parity_n4",
+      "initial": "0011",
+      "n_qubits": 4,
+      "paper_source": "phase1_dla_parity",
+      "sector": "even",
+      "t_step": 0.3
+    },
+    "requested_initial_layout": [
+      11,
+      6,
+      5,
+      10
+    ],
+    "shots": 256,
+    "status": "retrieved",
+    "tier": "dla_parity_minimal_layout_pinned_repeat",
+    "transpiled_depth": 69,
+    "transpiled_ops": {
+      "cz": 48,
+      "measure": 4,
+      "r": 67
+    },
+    "transpiled_size": 119
+  },
+  "retrieved_at_utc": "2026-05-13T17:19:30.986158+00:00",
+  "status_at_retrieval": "DONE",
+  "status_at_submit": "QUEUED",
+  "submitted_at_utc": "2026-05-13T17:09:19.862654+00:00"
+}

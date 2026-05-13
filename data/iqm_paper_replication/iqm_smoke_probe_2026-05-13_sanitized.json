@@ -1,0 +1,28 @@
+{
+  "backend_name": "IQMBackend",
+  "circuit_name": "iqm_smoke_bell_128shots",
+  "claim_boundary": "Smoke/account probe only; not a DLA/FIM paper claim replication by itself.",
+  "counts": {
+    "00": 57,
+    "01": 4,
+    "10": 2,
+    "11": 65
+  },
+  "job_id_sha256": "fb78b4649ca7c1be93552413c8d712e588b775f6ef579ab2404cb71a1118284e",
+  "platform": "IQM Resonance",
+  "provider": "iqm",
+  "quantum_computer": "garnet",
+  "schema": "scpn_iqm_smoke_probe_v1",
+  "server_url": "https://resonance.iqm.tech/",
+  "shots": 128,
+  "tier": "smoke_account_probe",
+  "timestamp_utc": "2026-05-13T14:50:22.683623+00:00",
+  "transpiled_depth": 4,
+  "transpiled_ops": {
+    "cz": 1,
+    "measure": 2,
+    "r": 3
+  },
+  "transpiled_size": 6,
+  "wall_time_s": 6.30063796043396
+}

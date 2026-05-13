@@ -1,0 +1,63 @@
+{
+  "claim_boundary": "Partial calibration-time repeat over d4/d6 plus a readout control. It is useful for drift diagnostics only and is not a complete layout block or manuscript claim upgrade.",
+  "depth_summaries": [
+    {
+      "depth": 4,
+      "even_job_id_sha256": "310f3cce9b003a0affaa51cc0988078ef37e43ed890981421b84fb33fe75db3a",
+      "ibm_phase2_asymmetry_relative": 0.08651155941687519,
+      "iqm_asymmetry_relative": 0.0759493670886076,
+      "iqm_fisher_odds_ratio": 1.1137019764601377,
+      "iqm_fisher_p": 0.6358686710993857,
+      "iqm_leakage_difference": 0.0234375,
+      "iqm_leakage_even": 0.33203125,
+      "iqm_leakage_odd": 0.30859375,
+      "odd_job_id_sha256": "cc5c3788960fa02da6b516b1e60c7cd4e4cfb84036623a0db91f5a8cd18a1b07",
+      "sign_matches_ibm_phase2": true,
+      "standard_error_difference": 0.041228694615577995,
+      "z_difference": 0.5684754324272079
+    },
+    {
+      "depth": 6,
+      "even_job_id_sha256": "50e08a8892fb246098885bc02a30a05009f81c7f43916734bffc7d7f29e5349d",
+      "ibm_phase2_asymmetry_relative": 0.04346860600677293,
+      "iqm_asymmetry_relative": 0.11494252873563218,
+      "iqm_fisher_odds_ratio": 1.1850647003542254,
+      "iqm_fisher_p": 0.40716273198718184,
+      "iqm_leakage_difference": 0.0390625,
+      "iqm_leakage_even": 0.37890625,
+      "iqm_leakage_odd": 0.33984375,
+      "odd_job_id_sha256": "28706ad69ae5d182053b381005af56a989fda493a0429a6393b204e253615eb3",
+      "sign_matches_ibm_phase2": true,
+      "standard_error_difference": 0.0423751050559573,
+      "z_difference": 0.9218266231651124
+    }
+  ],
+  "fisher_chi2": 2.702611139011183,
+  "fisher_p": 0.6087577740674095,
+  "ibm_reference": "data/phase2_dla_parity/phase2_reduced_ag_summary_2026-05-05.json",
+  "label": "calibration_repeat_20260513T1735Z",
+  "n_depths_compared_to_ibm_phase2": 2,
+  "n_signs_matching_ibm_phase2": 2,
+  "provider": "iqm",
+  "readout_baselines": [
+    {
+      "circuit_name": "iqm_readout_pinned_even_0011",
+      "initial": "0011",
+      "initial_state_retention": 0.875,
+      "job_id_sha256": "57b390215c686acb032fc99051f642ee33cf1512ef15eed65e040dd5e2406367",
+      "parity_leakage": 0.1171875,
+      "sector": "even",
+      "shots": 256
+    }
+  ],
+  "requested_initial_layout": [
+    2,
+    7,
+    12,
+    13
+  ],
+  "schema": "scpn_iqm_partial_layout_repeat_analysis_v1",
+  "source": "data/iqm_paper_replication/iqm_partial_layout_repeat_calibration_repeat_20260513T1735Z_q2-7-12-13_executed.json",
+  "total_circuits": 5,
+  "total_shots": 1280
+}

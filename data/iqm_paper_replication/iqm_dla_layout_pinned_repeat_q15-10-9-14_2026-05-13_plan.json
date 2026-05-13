@@ -1,0 +1,256 @@
+{
+  "claim_boundary": "Layout-pinned repeated minimal tier controls the first IQM run's automatic-layout confound, but still requires analysis before manuscript claims are upgraded.",
+  "execute": false,
+  "fake_backend": "garnet",
+  "platform": "IQM fake garnet",
+  "provider": "iqm",
+  "quantum_computer": null,
+  "records": [
+    {
+      "backend_name": "IQMFakeGarnetBackend",
+      "circuit_name": "iqm_dla_pinned_n4_d4_even",
+      "kind": "dla_parity",
+      "meta": {
+        "depth": 4,
+        "experiment": "A_dla_parity_n4",
+        "initial": "0011",
+        "n_qubits": 4,
+        "paper_source": "phase1_dla_parity",
+        "sector": "even",
+        "t_step": 0.3
+      },
+      "requested_initial_layout": [
+        15,
+        10,
+        9,
+        14
+      ],
+      "shots": 256,
+      "status": "planned",
+      "tier": "dla_parity_minimal_layout_pinned_repeat",
+      "transpiled_depth": 69,
+      "transpiled_ops": {
+        "cz": 48,
+        "measure": 4,
+        "r": 67
+      },
+      "transpiled_size": 119
+    },
+    {
+      "backend_name": "IQMFakeGarnetBackend",
+      "circuit_name": "iqm_dla_pinned_n4_d4_odd",
+      "kind": "dla_parity",
+      "meta": {
+        "depth": 4,
+        "experiment": "A_dla_parity_n4",
+        "initial": "0001",
+        "n_qubits": 4,
+        "paper_source": "phase1_dla_parity",
+        "sector": "odd",
+        "t_step": 0.3
+      },
+      "requested_initial_layout": [
+        15,
+        10,
+        9,
+        14
+      ],
+      "shots": 256,
+      "status": "planned",
+      "tier": "dla_parity_minimal_layout_pinned_repeat",
+      "transpiled_depth": 69,
+      "transpiled_ops": {
+        "cz": 48,
+        "measure": 4,
+        "r": 66
+      },
+      "transpiled_size": 118
+    },
+    {
+      "backend_name": "IQMFakeGarnetBackend",
+      "circuit_name": "iqm_dla_pinned_n4_d6_even",
+      "kind": "dla_parity",
+      "meta": {
+        "depth": 6,
+        "experiment": "A_dla_parity_n4",
+        "initial": "0011",
+        "n_qubits": 4,
+        "paper_source": "phase1_dla_parity",
+        "sector": "even",
+        "t_step": 0.3
+      },
+      "requested_initial_layout": [
+        15,
+        10,
+        9,
+        14
+      ],
+      "shots": 256,
+      "status": "planned",
+      "tier": "dla_parity_minimal_layout_pinned_repeat",
+      "transpiled_depth": 99,
+      "transpiled_ops": {
+        "cz": 72,
+        "measure": 4,
+        "r": 99
+      },
+      "transpiled_size": 175
+    },
+    {
+      "backend_name": "IQMFakeGarnetBackend",
+      "circuit_name": "iqm_dla_pinned_n4_d6_odd",
+      "kind": "dla_parity",
+      "meta": {
+        "depth": 6,
+        "experiment": "A_dla_parity_n4",
+        "initial": "0001",
+        "n_qubits": 4,
+        "paper_source": "phase1_dla_parity",
+        "sector": "odd",
+        "t_step": 0.3
+      },
+      "requested_initial_layout": [
+        15,
+        10,
+        9,
+        14
+      ],
+      "shots": 256,
+      "status": "planned",
+      "tier": "dla_parity_minimal_layout_pinned_repeat",
+      "transpiled_depth": 99,
+      "transpiled_ops": {
+        "cz": 72,
+        "measure": 4,
+        "r": 98
+      },
+      "transpiled_size": 174
+    },
+    {
+      "backend_name": "IQMFakeGarnetBackend",
+      "circuit_name": "iqm_dla_pinned_n4_d10_even",
+      "kind": "dla_parity",
+      "meta": {
+        "depth": 10,
+        "experiment": "A_dla_parity_n4",
+        "initial": "0011",
+        "n_qubits": 4,
+        "paper_source": "phase1_dla_parity",
+        "sector": "even",
+        "t_step": 0.3
+      },
+      "requested_initial_layout": [
+        15,
+        10,
+        9,
+        14
+      ],
+      "shots": 256,
+      "status": "planned",
+      "tier": "dla_parity_minimal_layout_pinned_repeat",
+      "transpiled_depth": 159,
+      "transpiled_ops": {
+        "cz": 120,
+        "measure": 4,
+        "r": 163
+      },
+      "transpiled_size": 287
+    },
+    {
+      "backend_name": "IQMFakeGarnetBackend",
+      "circuit_name": "iqm_dla_pinned_n4_d10_odd",
+      "kind": "dla_parity",
+      "meta": {
+        "depth": 10,
+        "experiment": "A_dla_parity_n4",
+        "initial": "0001",
+        "n_qubits": 4,
+        "paper_source": "phase1_dla_parity",
+        "sector": "odd",
+        "t_step": 0.3
+      },
+      "requested_initial_layout": [
+        15,
+        10,
+        9,
+        14
+      ],
+      "shots": 256,
+      "status": "planned",
+      "tier": "dla_parity_minimal_layout_pinned_repeat",
+      "transpiled_depth": 159,
+      "transpiled_ops": {
+        "cz": 120,
+        "measure": 4,
+        "r": 162
+      },
+      "transpiled_size": 286
+    },
+    {
+      "backend_name": "IQMFakeGarnetBackend",
+      "circuit_name": "iqm_readout_pinned_even_0011",
+      "kind": "readout_baseline",
+      "meta": {
+        "experiment": "C_readout_baseline",
+        "initial": "0011",
+        "n_qubits": 4,
+        "paper_source": "phase1_dla_parity",
+        "sector": "even"
+      },
+      "requested_initial_layout": [
+        15,
+        10,
+        9,
+        14
+      ],
+      "shots": 256,
+      "status": "planned",
+      "tier": "dla_readout_layout_pinned_baseline",
+      "transpiled_depth": 2,
+      "transpiled_ops": {
+        "measure": 4,
+        "r": 2
+      },
+      "transpiled_size": 6
+    },
+    {
+      "backend_name": "IQMFakeGarnetBackend",
+      "circuit_name": "iqm_readout_pinned_odd_0001",
+      "kind": "readout_baseline",
+      "meta": {
+        "experiment": "C_readout_baseline",
+        "initial": "0001",
+        "n_qubits": 4,
+        "paper_source": "phase1_dla_parity",
+        "sector": "odd"
+      },
+      "requested_initial_layout": [
+        15,
+        10,
+        9,
+        14
+      ],
+      "shots": 256,
+      "status": "planned",
+      "tier": "dla_readout_layout_pinned_baseline",
+      "transpiled_depth": 2,
+      "transpiled_ops": {
+        "measure": 4,
+        "r": 1
+      },
+      "transpiled_size": 5
+    }
+  ],
+  "requested_initial_layout": [
+    15,
+    10,
+    9,
+    14
+  ],
+  "schema": "scpn_iqm_dla_layout_pinned_repeat_v1_plan",
+  "tier": "dla_parity_minimal_layout_pinned_repeat",
+  "timestamp_utc": "2026-05-13T15:21:43.043609+00:00",
+  "total_circuits": 8,
+  "total_shots": 2048,
+  "total_wall_time_s": 0.11763119697570801
+}

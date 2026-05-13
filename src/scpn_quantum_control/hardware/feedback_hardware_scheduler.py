@@ -164,6 +164,7 @@ def _resolve_backend_descriptor(provider: str) -> QuantumBackendDescriptor | Non
     aliases = {
         "ibm_runtime": "qiskit_ibm",
         "ibm_quantum": "qiskit_ibm",
+        "iqm_resonance": "iqm",
         "local_qiskit_aer": "qiskit_aer",
     }
     descriptor_name = aliases.get(provider, provider)

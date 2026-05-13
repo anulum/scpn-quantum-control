@@ -88,6 +88,7 @@ qiskit_aer = "scpn_quantum_control.hardware.backends:qiskit_aer_factory"
 cirq = "scpn_quantum_control.hardware.backends:cirq_factory"
 braket = "scpn_quantum_control.hardware.backends:braket_factory"
 pennylane = "scpn_quantum_control.hardware.backends:pennylane_factory"
+iqm = "scpn_quantum_control.hardware.backends:iqm_factory"
 
 [project.entry-points."scpn_quantum_control.application_plugins"]
 eeg_alpha = "scpn_quantum_control.applications.app_plugins:eeg_application_plugin_factory"

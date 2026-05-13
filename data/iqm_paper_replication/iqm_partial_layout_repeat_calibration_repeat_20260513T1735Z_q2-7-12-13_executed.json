@@ -1,0 +1,300 @@
+{
+  "claim_boundary": "Partial layout repeat is calibration-time diagnostic evidence only. It is not a replacement for a complete repeated layout block.",
+  "execute": true,
+  "fake_backend": null,
+  "label": "calibration_repeat_20260513T1735Z",
+  "platform": "IQM Resonance",
+  "provider": "iqm",
+  "quantum_computer": "garnet",
+  "records": [
+    {
+      "backend_name": "IQMBackend",
+      "circuit_name": "iqm_dla_pinned_n4_d4_even",
+      "counts": {
+        "0000": 10,
+        "0001": 1,
+        "0010": 15,
+        "0011": 1,
+        "0100": 7,
+        "0101": 5,
+        "0110": 16,
+        "0111": 4,
+        "1000": 20,
+        "1001": 6,
+        "1010": 50,
+        "1011": 7,
+        "1100": 79,
+        "1101": 8,
+        "1110": 23,
+        "1111": 4
+      },
+      "expected_parity": 0,
+      "in_sector_counts": 171,
+      "initial_state_retention": 0.30859375,
+      "job_id_sha256": "310f3cce9b003a0affaa51cc0988078ef37e43ed890981421b84fb33fe75db3a",
+      "kind": "dla_parity",
+      "leakage_counts": 85,
+      "meta": {
+        "depth": 4,
+        "experiment": "A_dla_parity_n4",
+        "initial": "0011",
+        "n_qubits": 4,
+        "paper_source": "phase1_dla_parity",
+        "sector": "even",
+        "t_step": 0.3
+      },
+      "parity_leakage": 0.33203125,
+      "requested_initial_layout": [
+        2,
+        7,
+        12,
+        13
+      ],
+      "sector_survival_fraction": 0.66796875,
+      "shots": 256,
+      "status": "completed",
+      "tier": "dla_parity_minimal_layout_pinned_repeat",
+      "total_shots": 256,
+      "transpiled_depth": 69,
+      "transpiled_ops": {
+        "cz": 48,
+        "measure": 4,
+        "r": 67
+      },
+      "transpiled_size": 119,
+      "wall_time_s": 2.620737075805664
+    },
+    {
+      "backend_name": "IQMBackend",
+      "circuit_name": "iqm_dla_pinned_n4_d4_odd",
+      "counts": {
+        "0000": 29,
+        "0001": 4,
+        "0010": 17,
+        "0011": 3,
+        "0100": 83,
+        "0101": 5,
+        "0110": 14,
+        "0111": 1,
+        "1000": 67,
+        "1001": 2,
+        "1010": 9,
+        "1011": 1,
+        "1100": 14,
+        "1101": 1,
+        "1110": 3,
+        "1111": 3
+      },
+      "expected_parity": 1,
+      "in_sector_counts": 177,
+      "initial_state_retention": 0.26171875,
+      "job_id_sha256": "cc5c3788960fa02da6b516b1e60c7cd4e4cfb84036623a0db91f5a8cd18a1b07",
+      "kind": "dla_parity",
+      "leakage_counts": 79,
+      "meta": {
+        "depth": 4,
+        "experiment": "A_dla_parity_n4",
+        "initial": "0001",
+        "n_qubits": 4,
+        "paper_source": "phase1_dla_parity",
+        "sector": "odd",
+        "t_step": 0.3
+      },
+      "parity_leakage": 0.30859375,
+      "requested_initial_layout": [
+        2,
+        7,
+        12,
+        13
+      ],
+      "sector_survival_fraction": 0.69140625,
+      "shots": 256,
+      "status": "completed",
+      "tier": "dla_parity_minimal_layout_pinned_repeat",
+      "total_shots": 256,
+      "transpiled_depth": 69,
+      "transpiled_ops": {
+        "cz": 48,
+        "measure": 4,
+        "r": 66
+      },
+      "transpiled_size": 118,
+      "wall_time_s": 2.6381094455718994
+    },
+    {
+      "backend_name": "IQMBackend",
+      "circuit_name": "iqm_dla_pinned_n4_d6_even",
+      "counts": {
+        "0000": 13,
+        "0001": 6,
+        "0010": 11,
+        "0011": 2,
+        "0100": 27,
+        "0101": 13,
+        "0110": 33,
+        "0111": 9,
+        "1000": 15,
+        "1001": 13,
+        "1010": 42,
+        "1011": 7,
+        "1100": 42,
+        "1101": 11,
+        "1110": 11,
+        "1111": 1
+      },
+      "expected_parity": 0,
+      "in_sector_counts": 159,
+      "initial_state_retention": 0.1640625,
+      "job_id_sha256": "50e08a8892fb246098885bc02a30a05009f81c7f43916734bffc7d7f29e5349d",
+      "kind": "dla_parity",
+      "leakage_counts": 97,
+      "meta": {
+        "depth": 6,
+        "experiment": "A_dla_parity_n4",
+        "initial": "0011",
+        "n_qubits": 4,
+        "paper_source": "phase1_dla_parity",
+        "sector": "even",
+        "t_step": 0.3
+      },
+      "parity_leakage": 0.37890625,
+      "requested_initial_layout": [
+        2,
+        7,
+        12,
+        13
+      ],
+      "sector_survival_fraction": 0.62109375,
+      "shots": 256,
+      "status": "completed",
+      "tier": "dla_parity_minimal_layout_pinned_repeat",
+      "total_shots": 256,
+      "transpiled_depth": 99,
+      "transpiled_ops": {
+        "cz": 72,
+        "measure": 4,
+        "r": 99
+      },
+      "transpiled_size": 175,
+      "wall_time_s": 2.290879726409912
+    },
+    {
+      "backend_name": "IQMBackend",
+      "circuit_name": "iqm_dla_pinned_n4_d6_odd",
+      "counts": {
+        "0000": 28,
+        "0001": 7,
+        "0010": 37,
+        "0011": 9,
+        "0100": 42,
+        "0101": 6,
+        "0110": 16,
+        "0111": 5,
+        "1000": 69,
+        "1001": 2,
+        "1010": 16,
+        "1011": 2,
+        "1100": 10,
+        "1101": 3,
+        "1110": 4
+      },
+      "expected_parity": 1,
+      "in_sector_counts": 169,
+      "initial_state_retention": 0.26953125,
+      "job_id_sha256": "28706ad69ae5d182053b381005af56a989fda493a0429a6393b204e253615eb3",
+      "kind": "dla_parity",
+      "leakage_counts": 87,
+      "meta": {
+        "depth": 6,
+        "experiment": "A_dla_parity_n4",
+        "initial": "0001",
+        "n_qubits": 4,
+        "paper_source": "phase1_dla_parity",
+        "sector": "odd",
+        "t_step": 0.3
+      },
+      "parity_leakage": 0.33984375,
+      "requested_initial_layout": [
+        2,
+        7,
+        12,
+        13
+      ],
+      "sector_survival_fraction": 0.66015625,
+      "shots": 256,
+      "status": "completed",
+      "tier": "dla_parity_minimal_layout_pinned_repeat",
+      "total_shots": 256,
+      "transpiled_depth": 99,
+      "transpiled_ops": {
+        "cz": 72,
+        "measure": 4,
+        "r": 98
+      },
+      "transpiled_size": 174,
+      "wall_time_s": 2.5831398963928223
+    },
+    {
+      "backend_name": "IQMBackend",
+      "circuit_name": "iqm_readout_pinned_even_0011",
+      "counts": {
+        "0000": 1,
+        "0100": 11,
+        "1000": 19,
+        "1010": 1,
+        "1100": 224
+      },
+      "expected_parity": 0,
+      "in_sector_counts": 226,
+      "initial_state_retention": 0.875,
+      "job_id_sha256": "57b390215c686acb032fc99051f642ee33cf1512ef15eed65e040dd5e2406367",
+      "kind": "readout_baseline",
+      "leakage_counts": 30,
+      "meta": {
+        "experiment": "C_readout_baseline",
+        "initial": "0011",
+        "n_qubits": 4,
+        "paper_source": "phase1_dla_parity",
+        "sector": "even"
+      },
+      "parity_leakage": 0.1171875,
+      "requested_initial_layout": [
+        2,
+        7,
+        12,
+        13
+      ],
+      "sector_survival_fraction": 0.8828125,
+      "shots": 256,
+      "status": "completed",
+      "tier": "dla_readout_layout_pinned_baseline",
+      "total_shots": 256,
+      "transpiled_depth": 2,
+      "transpiled_ops": {
+        "measure": 4,
+        "r": 2
+      },
+      "transpiled_size": 6,
+      "wall_time_s": 2.313547134399414
+    }
+  ],
+  "requested_initial_layout": [
+    2,
+    7,
+    12,
+    13
+  ],
+  "schema": "scpn_iqm_dla_layout_pinned_repeat_v1_sanitized",
+  "selected_circuits": [
+    "iqm_dla_pinned_n4_d4_even",
+    "iqm_dla_pinned_n4_d4_odd",
+    "iqm_dla_pinned_n4_d6_even",
+    "iqm_dla_pinned_n4_d6_odd",
+    "iqm_readout_pinned_even_0011"
+  ],
+  "tier": "dla_parity_partial_layout_repeat",
+  "timestamp_utc": "2026-05-13T17:40:29.067495+00:00",
+  "total_circuits": 5,
+  "total_shots": 1280,
+  "total_wall_time_s": 12.518468856811523
+}

@@ -216,6 +216,7 @@ def krylov_vs_coupling(
     k_range: np.ndarray | None = None,
     t_max: float = 10.0,
     n_times: int = 50,
+    max_lanczos: int = 50,
     *,
     max_dense_gib: float | None = None,
 ) -> dict[str, list[float]]:
@@ -253,7 +254,7 @@ def krylov_vs_coupling(
     for kb in k_range:
         K = float(kb) * K_topology
         H = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
-        kr = krylov_complexity(H, Z0, t_max, n_times)
+        kr = krylov_complexity(H, Z0, t_max, n_times, max_lanczos=max_lanczos)
         results["K_base"].append(float(kb))
         results["peak_complexity"].append(kr.peak_complexity)
         results["n_lanczos"].append(float(kr.n_lanczos))
