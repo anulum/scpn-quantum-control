@@ -10,7 +10,9 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
+import scpn_quantum_control.analysis.sync_entanglement_witness as witness_module
 from scpn_quantum_control.analysis.sync_entanglement_witness import (
     EntanglementWitnessResult,
     R_entanglement_scan,
@@ -20,11 +22,55 @@ from scpn_quantum_control.analysis.sync_entanglement_witness import (
     detect_entanglement_from_R,
 )
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 class TestRSeparableBound:
     def test_unconstrained_is_one(self):
         assert R_separable_bound(4) == 1.0
+
+    def test_energy_bound_rejects_budget_before_hamiltonian_allocation(self, monkeypatch):
+        K = build_knm_paper27(L=12)
+        omega = OMEGA_N_16[:12]
+
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(
+            witness_module,
+            "knm_to_dense_matrix",
+            fail_if_dense_hamiltonian_is_requested,
+        )
+
+        with pytest.raises(DenseAllocationError, match="separable-bound dense"):
+            R_separable_bound_at_energy(
+                K,
+                omega,
+                target_energy=0.0,
+                n_samples=1,
+                max_dense_gib=1e-12,
+            )
+
+    def test_energy_bound_passes_dense_budget_to_bridge(self, monkeypatch):
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        seen_budgets: list[float | None] = []
+
+        def fake_dense_matrix(K_arg, omega_arg, **kwargs):  # noqa: ARG001
+            seen_budgets.append(kwargs.get("max_dense_gib"))
+            return np.zeros((4, 4), dtype=complex)
+
+        monkeypatch.setattr(witness_module, "knm_to_dense_matrix", fake_dense_matrix)
+
+        R_separable_bound_at_energy(
+            K,
+            omega,
+            target_energy=100.0,
+            n_samples=3,
+            max_dense_gib=0.25,
+        )
+
+        assert seen_budgets == [0.25]
 
     def test_energy_constrained_less_than_one(self):
         K = build_knm_paper27(L=3)
@@ -60,6 +106,29 @@ class TestRFromStatevector:
 
 
 class TestDetectEntanglement:
+    def test_propagates_dense_budget_to_separable_bound(self, monkeypatch):
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        seen_budgets: list[float | None] = []
+
+        def fake_exact_diag(n, K=None, omega=None, **kwargs):  # noqa: ARG001
+            return {
+                "ground_state": np.array([1.0, 0.0, 0.0, 0.0], dtype=complex),
+                "ground_energy": -1.0,
+            }
+
+        def fake_bound(K_arg, omega_arg, target_energy, n_samples, seed, *, max_dense_gib):
+            seen_budgets.append(max_dense_gib)
+            return 0.5
+
+        monkeypatch.setattr(witness_module, "classical_exact_diag", fake_exact_diag)
+        monkeypatch.setattr(witness_module, "R_separable_bound_at_energy", fake_bound)
+
+        result = detect_entanglement_from_R(K, omega, n_samples=10, max_dense_gib=0.25)
+
+        assert result.is_entangled
+        assert seen_budgets == [0.25]
+
     def test_returns_result(self):
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
@@ -90,6 +159,35 @@ class TestDetectEntanglement:
 
 
 class TestREntanglementScan:
+    def test_scan_propagates_dense_budget_to_separable_bound(self, monkeypatch):
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        seen_budgets: list[float | None] = []
+
+        def fake_exact_diag(n, K=None, omega=None, **kwargs):  # noqa: ARG001
+            return {
+                "ground_state": np.array([1.0, 0.0, 0.0, 0.0], dtype=complex),
+                "ground_energy": -1.0,
+            }
+
+        def fake_bound(K_arg, omega_arg, target_energy, n_samples, seed, *, max_dense_gib):
+            seen_budgets.append(max_dense_gib)
+            return 0.5
+
+        monkeypatch.setattr(witness_module, "classical_exact_diag", fake_exact_diag)
+        monkeypatch.setattr(witness_module, "R_separable_bound_at_energy", fake_bound)
+
+        scan = R_entanglement_scan(
+            K,
+            omega,
+            K_base_range=np.array([0.1, 0.2]),
+            n_samples=10,
+            max_dense_gib=0.25,
+        )
+
+        assert len(scan["R_gap"]) == 2
+        assert seen_budgets == [0.25, 0.25]
+
     def test_returns_lists(self):
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]

@@ -36,6 +36,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
+from ..dense_budget import require_dense_allocation
 
 
 @dataclass
@@ -131,6 +132,8 @@ def enaqt_scan(
     gamma_range: np.ndarray | None = None,
     t_evolve: float = 1.0,
     n_steps: int = 50,
+    *,
+    max_dense_gib: float | None = None,
 ) -> ENAQTResult:
     """Scan dephasing rate to find ENAQT optimum.
 
@@ -140,13 +143,23 @@ def enaqt_scan(
         gamma_range: dephasing rates to scan
         t_evolve: evolution time
         n_steps: Lindblad time steps
+        max_dense_gib: optional GiB budget for the dense Hamiltonian,
+            density matrix, and Lindblad work buffers.
     """
     n = K.shape[0]
     if gamma_range is None:
         gamma_range = np.logspace(-3, 1, 20)
 
+    require_dense_allocation(
+        n,
+        dtype=np.complex128,
+        rank=2,
+        object_count=5,
+        max_gib=max_dense_gib,
+        label="ENAQT dense density workspace",
+    )
     knm_to_hamiltonian(K, omega)
-    H_raw = knm_to_dense_matrix(K, omega)
+    H_raw = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
     H_mat = H_raw.toarray() if hasattr(H_raw, "toarray") else np.array(H_raw)
 
     dim = 2**n

@@ -37,6 +37,7 @@ from qiskit import QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
+from ..dense_budget import require_dense_allocation
 
 
 class InitialState(Enum):
@@ -103,26 +104,44 @@ def simulate_sync_trajectory(
     state_type: InitialState,
     t_max: float = 2.0,
     n_steps: int = 20,
+    *,
+    max_dense_gib: float | None = None,
 ) -> SyncTrajectory:
     """Evolve under H_XY from a given initial state and measure R(t).
 
     Uses exact matrix exponential (no Trotter error).
     """
     n = K.shape[0]
+    require_dense_allocation(
+        n,
+        dtype=np.complex128,
+        rank=2,
+        object_count=3,
+        max_gib=max_dense_gib,
+        label="entanglement-enhanced dense evolution workspace",
+    )
+    require_dense_allocation(
+        n,
+        dtype=np.complex128,
+        rank=1,
+        object_count=3,
+        max_gib=max_dense_gib,
+        label="entanglement-enhanced dense state workspace",
+    )
     knm_to_hamiltonian(K, omega)
-    H_mat = knm_to_dense_matrix(K, omega)
+    H_mat = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
 
     init_qc = prepare_initial_state(n, state_type, omega)
     psi = np.array(Statevector.from_instruction(init_qc))
 
     times = np.linspace(0, t_max, n_steps + 1)
     dt = t_max / n_steps
+    U_dt = _matrix_exp(-1j * H_mat * dt)
     R_values = []
 
     for step in range(n_steps + 1):
         if step > 0:
-            U = _matrix_exp(-1j * H_mat * dt)
-            psi = U @ psi
+            psi = U_dt @ psi
 
         R = _state_order_parameter(psi, n)
         R_values.append(R)
@@ -172,11 +191,20 @@ def compare_all_initial_states(
     omega: np.ndarray,
     t_max: float = 2.0,
     n_steps: int = 20,
+    *,
+    max_dense_gib: float | None = None,
 ) -> dict[str, SyncTrajectory]:
     """Run synchronization dynamics for all four initial state types."""
     results = {}
     for state_type in InitialState:
-        results[state_type.value] = simulate_sync_trajectory(K, omega, state_type, t_max, n_steps)
+        results[state_type.value] = simulate_sync_trajectory(
+            K,
+            omega,
+            state_type,
+            t_max,
+            n_steps,
+            max_dense_gib=max_dense_gib,
+        )
     return results
 
 

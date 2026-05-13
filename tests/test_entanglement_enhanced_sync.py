@@ -9,8 +9,11 @@
 
 from __future__ import annotations
 
+import numpy as np
+import pytest
 from qiskit.quantum_info import Statevector
 
+import scpn_quantum_control.analysis.entanglement_enhanced_sync as sync_module
 from scpn_quantum_control.analysis.entanglement_enhanced_sync import (
     InitialState,
     SyncTrajectory,
@@ -20,6 +23,7 @@ from scpn_quantum_control.analysis.entanglement_enhanced_sync import (
     simulate_sync_trajectory,
 )
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 class TestPrepareInitialState:
@@ -77,6 +81,51 @@ class TestPrepareInitialState:
 
 
 class TestSimulateSyncTrajectory:
+    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+        K = build_knm_paper27(L=12)
+        omega = OMEGA_N_16[:12]
+
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(
+            sync_module,
+            "knm_to_dense_matrix",
+            fail_if_dense_hamiltonian_is_requested,
+        )
+
+        with pytest.raises(DenseAllocationError, match="entanglement-enhanced dense"):
+            simulate_sync_trajectory(
+                K,
+                omega,
+                InitialState.PRODUCT,
+                t_max=0.1,
+                n_steps=1,
+                max_dense_gib=1e-12,
+            )
+
+    def test_passes_dense_budget_to_bridge(self, monkeypatch):
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        seen_budgets: list[float | None] = []
+
+        def fake_dense_matrix(K_arg, omega_arg, **kwargs):  # noqa: ARG001
+            seen_budgets.append(kwargs.get("max_dense_gib"))
+            return np.zeros((4, 4), dtype=complex)
+
+        monkeypatch.setattr(sync_module, "knm_to_dense_matrix", fake_dense_matrix)
+
+        simulate_sync_trajectory(
+            K,
+            omega,
+            InitialState.PRODUCT,
+            t_max=0.1,
+            n_steps=1,
+            max_dense_gib=0.25,
+        )
+
+        assert seen_budgets == [0.25]
+
     def test_returns_trajectory(self):
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
@@ -107,6 +156,29 @@ class TestSimulateSyncTrajectory:
 
 
 class TestCompareAllStates:
+    def test_propagates_dense_budget_to_each_initial_state(self, monkeypatch):
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        seen: list[tuple[str, float | None]] = []
+
+        def fake_trajectory(
+            K_arg,  # noqa: ARG001
+            omega_arg,  # noqa: ARG001
+            state_type,
+            t_max=2.0,  # noqa: ARG001
+            n_steps=20,  # noqa: ARG001
+            *,
+            max_dense_gib=None,
+        ):
+            seen.append((state_type.value, max_dense_gib))
+            return SyncTrajectory(state_type.value, [0.0], [1.0], 1.0, 2)
+
+        monkeypatch.setattr(sync_module, "simulate_sync_trajectory", fake_trajectory)
+
+        compare_all_initial_states(K, omega, t_max=0.5, n_steps=2, max_dense_gib=0.5)
+
+        assert seen == [(state.value, 0.5) for state in InitialState]
+
     def test_returns_four_trajectories(self):
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]

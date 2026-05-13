@@ -10,15 +10,61 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
+import scpn_quantum_control.analysis.enaqt as enaqt_module
 from scpn_quantum_control.analysis.enaqt import (
     ENAQTResult,
     enaqt_scan,
 )
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 class TestENAQT:
+    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+        K = build_knm_paper27(L=10)
+        omega = OMEGA_N_16[:10]
+
+        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+            raise AssertionError("dense Hamiltonian allocation happened before budget gate")
+
+        monkeypatch.setattr(
+            enaqt_module,
+            "knm_to_dense_matrix",
+            fail_if_dense_hamiltonian_is_requested,
+        )
+
+        with pytest.raises(DenseAllocationError, match="ENAQT dense density"):
+            enaqt_scan(
+                K,
+                omega,
+                gamma_range=np.array([0.1]),
+                n_steps=1,
+                max_dense_gib=1e-12,
+            )
+
+    def test_passes_dense_budget_to_bridge(self, monkeypatch):
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        seen_budgets: list[float | None] = []
+
+        def fake_dense_matrix(K_arg, omega_arg, **kwargs):  # noqa: ARG001
+            seen_budgets.append(kwargs.get("max_dense_gib"))
+            return np.zeros((4, 4), dtype=complex)
+
+        monkeypatch.setattr(enaqt_module, "knm_to_dense_matrix", fake_dense_matrix)
+
+        enaqt_scan(
+            K,
+            omega,
+            gamma_range=np.array([0.1]),
+            n_steps=1,
+            max_dense_gib=0.25,
+        )
+
+        assert seen_budgets == [0.25]
+
     def test_returns_result(self):
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]

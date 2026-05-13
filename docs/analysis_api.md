@@ -90,20 +90,22 @@ states, $R \leq R_{\mathrm{sep}}$. Exceeding the separable bound certifies entan
 
 ```python
 from scpn_quantum_control.analysis.sync_entanglement_witness import (
+    EntanglementWitnessResult,
+    R_entanglement_scan,
     R_from_statevector,
     R_separable_bound,
     R_separable_bound_at_energy,
-    r_witness_from_statevector,
-    SyncEntanglementResult,
+    detect_entanglement_from_R,
 )
 ```
 
 | Function | Description |
 |----------|-------------|
-| `R_from_statevector(sv)` | Compute $R = \|(1/N)\sum_i(\langle X_i\rangle + i\langle Y_i\rangle)\|$ |
+| `R_from_statevector(psi, n_qubits)` | Compute $R = \|(1/N)\sum_i(\langle X_i\rangle + i\langle Y_i\rangle)\|$ |
 | `R_separable_bound(n_qubits)` | Maximum $R$ achievable by any separable state (= 1.0) |
-| `R_separable_bound_at_energy(K, omega, target_energy, n_samples, seed)` | Max $R$ over product states at given energy |
-| `r_witness_from_statevector(sv, K, omega)` | Full witness evaluation: $R$, separable bound, entanglement certified? |
+| `R_separable_bound_at_energy(K, omega, target_energy, n_samples=1000, seed=42, *, max_dense_gib=None)` | Dense exact max $R$ over sampled product states at fixed energy |
+| `detect_entanglement_from_R(K, omega, n_samples=2000, seed=42, *, max_dense_gib=None)` | Ground-state witness evaluation with dense exact small-system guard |
+| `R_entanglement_scan(K, omega, K_base_range=None, n_K_values=15, n_samples=500, seed=42, *, max_dense_gib=None)` | Coupling scan of $R_\mathrm{ground}$ and the energy-constrained separable bound |
 
 The returned `entanglement_depth` is a certified lower bound from this witness:
 `1` when the separable bound is not violated and `2` when entanglement is
@@ -665,3 +667,21 @@ from scpn_quantum_control.analysis.hamiltonian_self_consistency import (
 
 Noise-enhanced transport optimisation — the Goldilocks zone where decoherence
 *improves* energy transfer (relevant to FMO photosynthetic complex benchmarks).
+
+`enaqt_scan(K, omega, gamma_range=None, t_evolve=1.0, n_steps=50, *, max_dense_gib=None)`
+returns `ENAQTResult` with the optimal dephasing rate, coherent endpoint,
+large-noise endpoint, and enhancement ratio. The implementation is a dense
+small-system Lindblad diagnostic; `max_dense_gib` gates the Hamiltonian,
+density matrix, and work buffers before allocation.
+
+### `entanglement_enhanced_sync` — Entangled Initial-State Synchronization
+
+`simulate_sync_trajectory(K, omega, state_type, t_max=2.0, n_steps=20, *, max_dense_gib=None)`
+evolves product, Bell-pair, GHZ, or W initial states under the dense exact
+Kuramoto-XY Hamiltonian and records the order-parameter trajectory. The dense
+matrix exponential and statevector workspaces are budgeted before Hamiltonian
+construction.
+
+`compare_all_initial_states(K, omega, t_max=2.0, n_steps=20, *, max_dense_gib=None)`
+forwards the same dense budget to every initial-state trajectory before
+`entanglement_advantage(...)` compares final $R$ and convergence speed.

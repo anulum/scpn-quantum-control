@@ -56,6 +56,8 @@ import numpy as np
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
+from ..dense_budget import require_dense_allocation
+from ..hardware.classical import classical_exact_diag
 
 
 @dataclass
@@ -93,6 +95,8 @@ def R_separable_bound_at_energy(
     target_energy: float,
     n_samples: int = 1000,
     seed: int = 42,
+    *,
+    max_dense_gib: float | None = None,
 ) -> float:
     """Compute max R over product states with energy ≤ target_energy.
 
@@ -101,8 +105,24 @@ def R_separable_bound_at_energy(
     Computed via random sampling of product state parameters.
     """
     n = K.shape[0]
+    require_dense_allocation(
+        n,
+        dtype=np.complex128,
+        rank=2,
+        object_count=2,
+        max_gib=max_dense_gib,
+        label="separable-bound dense energy workspace",
+    )
+    require_dense_allocation(
+        n,
+        dtype=np.complex128,
+        rank=1,
+        object_count=2,
+        max_gib=max_dense_gib,
+        label="separable-bound dense product-state workspace",
+    )
     knm_to_hamiltonian(K, omega)
-    H_mat = knm_to_dense_matrix(K, omega)
+    H_mat = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
 
     rng = np.random.default_rng(seed)
     best_R = 0.0
@@ -155,21 +175,37 @@ def detect_entanglement_from_R(
     omega: np.ndarray,
     n_samples: int = 2000,
     seed: int = 42,
+    *,
+    max_dense_gib: float | None = None,
 ) -> EntanglementWitnessResult:
     """Test whether the ground state R exceeds the separable bound.
 
     If R_ground > R_sep_max(E_ground), the ground state is entangled
     and R witnesses this entanglement.
     """
-    from ..hardware.classical import classical_exact_diag
-
     n = K.shape[0]
+    if n < 14:
+        require_dense_allocation(
+            n,
+            dtype=np.complex128,
+            rank=2,
+            object_count=2,
+            max_gib=max_dense_gib,
+            label="R-witness dense eigensolver workspace",
+        )
     exact = classical_exact_diag(n, K=K, omega=omega)
     psi = exact["ground_state"]
     E_ground = exact["ground_energy"]
 
     R_ground = R_from_statevector(psi, n)
-    R_sep = R_separable_bound_at_energy(K, omega, E_ground, n_samples, seed)
+    R_sep = R_separable_bound_at_energy(
+        K,
+        omega,
+        E_ground,
+        n_samples,
+        seed,
+        max_dense_gib=max_dense_gib,
+    )
 
     is_entangled = R_ground > R_sep + 1e-10
     depth = _certified_entanglement_depth(is_entangled)
@@ -202,15 +238,24 @@ def R_entanglement_scan(
     n_K_values: int = 15,
     n_samples: int = 500,
     seed: int = 42,
+    *,
+    max_dense_gib: float | None = None,
 ) -> dict:
     """Scan R and separable bound vs coupling strength.
 
     At each K_base, compute R_ground and R_sep_max(E_ground).
     The gap R_ground - R_sep_max quantifies entanglement.
     """
-    from ..hardware.classical import classical_exact_diag
-
     n = K.shape[0]
+    if n < 14:
+        require_dense_allocation(
+            n,
+            dtype=np.complex128,
+            rank=2,
+            object_count=2,
+            max_gib=max_dense_gib,
+            label="R-witness scan dense eigensolver workspace",
+        )
     if K_base_range is None:
         K_base_range = np.linspace(0.01, 2.0, n_K_values)
 
@@ -226,7 +271,14 @@ def R_entanglement_scan(
         E = exact["ground_energy"]
 
         R_ground = R_from_statevector(psi, n)
-        R_sep = R_separable_bound_at_energy(K_scaled, omega, E, n_samples, seed)
+        R_sep = R_separable_bound_at_energy(
+            K_scaled,
+            omega,
+            E,
+            n_samples,
+            seed,
+            max_dense_gib=max_dense_gib,
+        )
 
         R_ground_vals.append(R_ground)
         R_sep_vals.append(R_sep)
