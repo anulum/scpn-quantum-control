@@ -13,7 +13,13 @@
 
 use ndarray::Array2;
 use numpy::{PyArray2, PyReadonlyArray1, PyReadonlyArray2};
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
+
+fn validate_contiguous_slice<'a>(values: &'a [f64], name: &str) -> PyResult<&'a [f64]> {
+    validate_finite_slice(values, name)?;
+    Ok(values)
+}
 
 fn validate_finite_slice(values: &[f64], name: &str) -> PyResult<()> {
     if values.iter().any(|value| !value.is_finite()) {
@@ -59,16 +65,20 @@ pub fn koopman_generator<'py>(
             theta_arr.len()
         )));
     }
-    validate_finite_slice(k_arr.as_slice().unwrap(), "k")?;
-    validate_finite_slice(omega_arr.as_slice().unwrap(), "omega")?;
-    validate_finite_slice(theta_arr.as_slice().unwrap(), "theta_ref")?;
+    let k_slice = k_arr
+        .as_slice()
+        .ok_or_else(|| PyValueError::new_err("k must be a C-contiguous NumPy array"))?;
+    let omega_slice = omega_arr
+        .as_slice()
+        .ok_or_else(|| PyValueError::new_err("omega must be a C-contiguous NumPy array"))?;
+    let theta_slice = theta_arr
+        .as_slice()
+        .ok_or_else(|| PyValueError::new_err("theta_ref must be a C-contiguous NumPy array"))?;
+    let k_slice = validate_contiguous_slice(k_slice, "k")?;
+    let omega_slice = validate_contiguous_slice(omega_slice, "omega")?;
+    let theta_slice = validate_contiguous_slice(theta_slice, "theta_ref")?;
 
-    let generator = koopman_generator_inner(
-        k_arr.as_slice().unwrap(),
-        omega_arr.as_slice().unwrap(),
-        theta_arr.as_slice().unwrap(),
-        n,
-    );
+    let generator = koopman_generator_inner(k_slice, omega_slice, theta_slice, n);
     Ok(PyArray2::from_owned_array(py, generator))
 }
 

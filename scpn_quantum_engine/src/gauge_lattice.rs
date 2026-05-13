@@ -16,9 +16,72 @@
 //! Ref: Creutz, "Quarks, Gluons and Lattices" (1983)
 
 use numpy::{PyArray1, PyReadonlyArray1, PyReadonlyArray2};
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
-use crate::validation::validate_positive;
+use crate::validation::{
+    validate_contiguous_slice, validate_finite, validate_n, validate_positive,
+};
+
+fn validate_gauge_scalar(value: f64, name: &str) -> PyResult<()> {
+    if !value.is_finite() {
+        return Err(PyValueError::new_err(format!(
+            "{name} must be finite, got {value}"
+        )));
+    }
+    Ok(())
+}
+
+fn validate_triangle_inputs<'a>(
+    links: &'a PyReadonlyArray1<'_, f64>,
+    triangles: &'a PyReadonlyArray1<'_, i64>,
+    triangle_signs: &'a PyReadonlyArray1<'_, f64>,
+    n_triangles: usize,
+    force_edges: Option<usize>,
+) -> PyResult<(&'a [f64], &'a [i64], &'a [f64])> {
+    let a = validate_contiguous_slice(links, "links")?;
+    let tri = validate_contiguous_slice(triangles, "triangles")?;
+    let signs = validate_contiguous_slice(triangle_signs, "triangle_signs")?;
+    validate_finite(a, "links")?;
+    validate_finite(signs, "triangle_signs")?;
+    let expected = n_triangles
+        .checked_mul(3)
+        .ok_or_else(|| PyValueError::new_err("n_triangles*3 overflows usize"))?;
+    if tri.len() < expected {
+        return Err(PyValueError::new_err(format!(
+            "triangles length {} < 3*n_triangles = {expected}",
+            tri.len()
+        )));
+    }
+    if signs.len() < expected {
+        return Err(PyValueError::new_err(format!(
+            "triangle_signs length {} < 3*n_triangles = {expected}",
+            signs.len()
+        )));
+    }
+    for (idx, &edge) in tri.iter().take(expected).enumerate() {
+        if edge < 0 {
+            return Err(PyValueError::new_err(format!(
+                "triangles[{idx}]={edge} must be non-negative"
+            )));
+        }
+        let edge_idx = edge as usize;
+        if edge_idx >= a.len() {
+            return Err(PyValueError::new_err(format!(
+                "triangles[{idx}]={edge_idx} exceeds links length {}",
+                a.len()
+            )));
+        }
+        if let Some(n_edges) = force_edges {
+            if edge_idx >= n_edges {
+                return Err(PyValueError::new_err(format!(
+                    "triangles[{idx}]={edge_idx} exceeds n_edges {n_edges}"
+                )));
+            }
+        }
+    }
+    Ok((a, tri, signs))
+}
 
 /// Compute total plaquette action and mean plaquette for triangle plaquettes.
 ///
@@ -40,9 +103,8 @@ pub fn plaquette_action_batch(
     beta: f64,
 ) -> PyResult<(f64, f64)> {
     validate_positive(beta, "beta")?;
-    let a = links.as_slice().unwrap();
-    let tri = triangles.as_slice().unwrap();
-    let signs = triangle_signs.as_slice().unwrap();
+    let (a, tri, signs) =
+        validate_triangle_inputs(&links, &triangles, &triangle_signs, n_triangles, None)?;
 
     let mut total = 0.0f64;
 
@@ -81,10 +143,14 @@ pub fn gauge_force_batch<'py>(
     beta: f64,
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     validate_positive(beta, "beta")?;
-    crate::validation::validate_n(n_edges, "n_edges")?;
-    let a = links.as_slice().unwrap();
-    let tri = triangles.as_slice().unwrap();
-    let signs = triangle_signs.as_slice().unwrap();
+    validate_n(n_edges, "n_edges")?;
+    let (a, tri, signs) = validate_triangle_inputs(
+        &links,
+        &triangles,
+        &triangle_signs,
+        n_triangles,
+        Some(n_edges),
+    )?;
 
     let mut force = vec![0.0f64; n_edges];
 
@@ -121,11 +187,51 @@ pub fn gauge_covariant_kinetic_rust(
     edges: PyReadonlyArray2<'_, i64>,
     g_coupling: f64,
 ) -> PyResult<f64> {
-    let pr = phi_re.as_slice().unwrap();
-    let pi = phi_im.as_slice().unwrap();
-    let a = links.as_slice().unwrap();
+    validate_gauge_scalar(g_coupling, "g_coupling")?;
+    let pr = validate_contiguous_slice(&phi_re, "phi_re")?;
+    let pi = validate_contiguous_slice(&phi_im, "phi_im")?;
+    let a = validate_contiguous_slice(&links, "links")?;
+    validate_finite(pr, "phi_re")?;
+    validate_finite(pi, "phi_im")?;
+    validate_finite(a, "links")?;
+    if pi.len() != pr.len() {
+        return Err(PyValueError::new_err(format!(
+            "phi_im length {} != phi_re length {}",
+            pi.len(),
+            pr.len()
+        )));
+    }
     let e = edges.as_array();
+    if e.ndim() != 2 || e.ncols() != 2 {
+        return Err(PyValueError::new_err(format!(
+            "edges must have shape (n_edges, 2), got {:?}",
+            e.shape()
+        )));
+    }
     let n_edges = e.nrows();
+    if a.len() != n_edges {
+        return Err(PyValueError::new_err(format!(
+            "links length {} != edges rows {n_edges}",
+            a.len()
+        )));
+    }
+    for idx in 0..n_edges {
+        for col in 0..2 {
+            let vertex = e[[idx, col]];
+            if vertex < 0 {
+                return Err(PyValueError::new_err(format!(
+                    "edges[{idx},{col}]={vertex} must be non-negative"
+                )));
+            }
+            if vertex as usize >= pr.len() {
+                return Err(PyValueError::new_err(format!(
+                    "edges[{idx},{col}]={} exceeds phi length {}",
+                    vertex,
+                    pr.len()
+                )));
+            }
+        }
+    }
 
     let mut total = 0.0f64;
 
@@ -143,8 +249,8 @@ pub fn gauge_covariant_kinetic_rust(
 
         // φ_i* × U_ij × φ_j = (pr_i − i×pi_i)(cos+i×sin)(pr_j + i×pi_j)
         // Re part = pr_i(cos×pr_j − sin×pi_j) + pi_i(sin×pr_j + cos×pi_j)
-        let hopping_re = pr[i] * (cos_ga * pr[j] - sin_ga * pi[j])
-            + pi[i] * (sin_ga * pr[j] + cos_ga * pi[j]);
+        let hopping_re =
+            pr[i] * (cos_ga * pr[j] - sin_ga * pi[j]) + pi[i] * (sin_ga * pr[j] + cos_ga * pi[j]);
 
         total += rho_i + rho_j - 2.0 * hopping_re;
     }
@@ -160,9 +266,8 @@ pub fn topological_charge_rust(
     triangle_signs: PyReadonlyArray1<'_, f64>,
     n_triangles: usize,
 ) -> PyResult<f64> {
-    let a = links.as_slice().unwrap();
-    let tri = triangles.as_slice().unwrap();
-    let signs = triangle_signs.as_slice().unwrap();
+    let (a, tri, signs) =
+        validate_triangle_inputs(&links, &triangles, &triangle_signs, n_triangles, None)?;
     let pi = std::f64::consts::PI;
     let two_pi = 2.0 * pi;
 
@@ -186,8 +291,6 @@ pub fn topological_charge_rust(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn test_plaquette_zero_links() {
         // All links = 0 → cos(0) = 1 for every plaquette
@@ -234,7 +337,11 @@ mod tests {
 
     // Pure Rust helpers for testing
     fn plaquette_action_batch_inner(
-        links: &[f64], tri: &[i64], signs: &[f64], n_tri: usize, beta: f64,
+        links: &[f64],
+        tri: &[i64],
+        signs: &[f64],
+        n_tri: usize,
+        beta: f64,
     ) -> (f64, f64) {
         let mut total = 0.0f64;
         for t in 0..n_tri {
@@ -249,9 +356,7 @@ mod tests {
         (mean, -beta * total)
     }
 
-    fn topological_charge_inner(
-        links: &[f64], tri: &[i64], signs: &[f64], n_tri: usize,
-    ) -> f64 {
+    fn topological_charge_inner(links: &[f64], tri: &[i64], signs: &[f64], n_tri: usize) -> f64 {
         let pi = std::f64::consts::PI;
         let two_pi = 2.0 * pi;
         let mut q = 0.0;
@@ -268,13 +373,20 @@ mod tests {
     }
 
     fn gauge_force_inner(
-        links: &[f64], tri: &[i64], signs: &[f64], n_tri: usize, n_edges: usize, beta: f64,
+        links: &[f64],
+        tri: &[i64],
+        signs: &[f64],
+        n_tri: usize,
+        n_edges: usize,
+        beta: f64,
     ) -> Vec<f64> {
         let mut force = vec![0.0f64; n_edges];
         for t in 0..n_tri {
             let base = t * 3;
             let mut phase = 0.0;
-            for k in 0..3 { phase += signs[base + k] * links[tri[base + k] as usize]; }
+            for k in 0..3 {
+                phase += signs[base + k] * links[tri[base + k] as usize];
+            }
             let s = phase.sin();
             for k in 0..3 {
                 force[tri[base + k] as usize] += beta * signs[base + k] * s;
@@ -283,9 +395,7 @@ mod tests {
         force
     }
 
-    fn kinetic_inner(
-        pr: &[f64], pi: &[f64], links: &[f64], edges: &[[usize; 2]], g: f64,
-    ) -> f64 {
+    fn kinetic_inner(pr: &[f64], pi: &[f64], links: &[f64], edges: &[[usize; 2]], g: f64) -> f64 {
         let mut total = 0.0;
         for (idx, &[i, j]) in edges.iter().enumerate() {
             let rho_i = pr[i] * pr[i] + pi[i] * pi[i];

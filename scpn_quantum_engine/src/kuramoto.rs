@@ -16,9 +16,10 @@
 
 use ndarray::{Array1, Array2};
 use numpy::{PyArray1, PyArray2, PyReadonlyArray1, PyReadonlyArray2};
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
-use crate::validation::validate_positive;
+use crate::validation::{validate_contiguous_slice, validate_positive};
 
 /// Classical Kuramoto ODE step (vectorised, no Python overhead).
 /// θ' = ω + K @ sin(��_outer − θ_inner)
@@ -33,19 +34,23 @@ pub fn kuramoto_euler<'py>(
     n_steps: usize,
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     validate_positive(dt, "dt")?;
-    let mut theta = theta0.as_array().to_owned();
-    let omega = omega.as_array();
-    let k = k.as_array();
-    let n = theta.len();
+    let theta0_slice = validate_phase_vector(&theta0, "theta0")?;
+    let omega_slice = validate_phase_vector(&omega, "omega")?;
+    let n = theta0_slice.len();
+    let k_flat = validate_square_matrix(&k, n, "k")?;
+    if omega_slice.len() != n {
+        return Err(PyValueError::new_err(format!(
+            "omega must have length {n}, got {}",
+            omega_slice.len()
+        )));
+    }
+    let mut theta = Array1::from_vec(theta0_slice.to_vec());
 
     for _ in 0..n_steps {
-        let mut dtheta = Array1::<f64>::zeros(n);
-        for i in 0..n {
-            dtheta[i] = omega[i];
-            for j in 0..n {
-                dtheta[i] += k[[i, j]] * (theta[j] - theta[i]).sin();
-            }
-        }
+        let theta_slice = theta
+            .as_slice()
+            .ok_or_else(|| PyValueError::new_err("theta buffer is not contiguous"))?;
+        let dtheta = phase_step_pairwise(theta_slice, omega_slice, &k_flat, n);
         for i in 0..n {
             theta[i] += dt * dtheta[i];
         }
@@ -57,9 +62,9 @@ pub fn kuramoto_euler<'py>(
 /// Compute Kuramoto order parameter R from phase array.
 /// R = (1/N) |Σ_i exp(i × θ_i)|
 #[pyfunction]
-pub fn order_parameter(theta: PyReadonlyArray1<'_, f64>) -> f64 {
-    let theta = theta.as_array();
-    order_parameter_inner(theta.as_slice().unwrap())
+pub fn order_parameter(theta: PyReadonlyArray1<'_, f64>) -> PyResult<f64> {
+    let theta = validate_phase_vector(&theta, "theta")?;
+    Ok(order_parameter_inner(theta))
 }
 
 /// Pure Rust order parameter (no PyO3).
@@ -73,20 +78,6 @@ pub fn order_parameter_inner(theta: &[f64]) -> f64 {
     (re * re + im * im).sqrt() / n
 }
 
-fn validate_kuramoto_shapes(n: usize, omega_len: usize, k_shape: &[usize]) -> PyResult<()> {
-    if omega_len != n {
-        return Err(pyo3::exceptions::PyValueError::new_err(format!(
-            "omega must have length {n}, got {omega_len}"
-        )));
-    }
-    if k_shape != [n, n] {
-        return Err(pyo3::exceptions::PyValueError::new_err(format!(
-            "k must have shape ({n}, {n}), got {k_shape:?}"
-        )));
-    }
-    Ok(())
-}
-
 fn validate_finite_slice(values: &[f64], name: &str) -> PyResult<()> {
     if values.iter().any(|value| !value.is_finite()) {
         return Err(pyo3::exceptions::PyValueError::new_err(format!(
@@ -94,6 +85,75 @@ fn validate_finite_slice(values: &[f64], name: &str) -> PyResult<()> {
         )));
     }
     Ok(())
+}
+
+fn validate_phase_vector<'a>(
+    values: &'a PyReadonlyArray1<'_, f64>,
+    name: &str,
+) -> PyResult<&'a [f64]> {
+    let slice = validate_contiguous_slice(values, name)?;
+    validate_finite_slice(slice, name)?;
+    Ok(slice)
+}
+
+fn validate_square_matrix(
+    matrix: &PyReadonlyArray2<'_, f64>,
+    n: usize,
+    name: &str,
+) -> PyResult<Vec<f64>> {
+    let arr = matrix.as_array();
+    if arr.shape() != [n, n] {
+        return Err(PyValueError::new_err(format!(
+            "{name} must have shape ({n}, {n}), got {:?}",
+            arr.shape()
+        )));
+    }
+    let slice = arr.as_slice().ok_or_else(|| {
+        PyValueError::new_err(format!("{name} must be a C-contiguous NumPy array"))
+    })?;
+    validate_finite_slice(slice, name)?;
+    Ok(slice.to_vec())
+}
+
+fn validate_rect_f64_matrix(
+    matrix: &PyReadonlyArray2<'_, f64>,
+    ncols: usize,
+    name: &str,
+) -> PyResult<(Vec<f64>, usize)> {
+    let arr = matrix.as_array();
+    if arr.ndim() != 2 || arr.shape()[1] != ncols {
+        return Err(PyValueError::new_err(format!(
+            "{name} must have shape (n_candidates, {ncols})"
+        )));
+    }
+    let slice = arr.as_slice().ok_or_else(|| {
+        PyValueError::new_err(format!("{name} must be a C-contiguous NumPy array"))
+    })?;
+    validate_finite_slice(slice, name)?;
+    Ok((slice.to_vec(), arr.shape()[0]))
+}
+
+fn validate_hyperedges(
+    hyperedges: &PyReadonlyArray2<'_, i64>,
+    n: usize,
+) -> PyResult<(Vec<i64>, usize)> {
+    let edge_arr = hyperedges.as_array();
+    if edge_arr.ndim() != 2 || edge_arr.shape()[1] != 3 {
+        return Err(PyValueError::new_err(
+            "hyperedges must have shape (n_edges, 3)",
+        ));
+    }
+    let edge_slice = edge_arr
+        .as_slice()
+        .ok_or_else(|| PyValueError::new_err("hyperedges must be a C-contiguous NumPy array"))?;
+    for &index in edge_slice {
+        if index < 0 || index as usize >= n {
+            return Err(PyValueError::new_err(format!(
+                "hyperedge index {index} is outside [0, {n})"
+            )));
+        }
+    }
+    Ok((edge_slice.to_vec(), edge_arr.shape()[0]))
 }
 
 fn phase_step_pairwise(theta: &[f64], omega: &[f64], k_flat: &[f64], n: usize) -> Vec<f64> {
@@ -135,58 +195,48 @@ pub fn higher_order_kuramoto_trajectory<'py>(
     n_steps: usize,
 ) -> PyResult<(Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>)> {
     validate_positive(dt, "dt")?;
-    let mut theta = theta0.as_array().to_owned();
-    let n = theta.len();
-    let omega_arr = omega.as_array();
-    let k_arr = k.as_array();
-    validate_kuramoto_shapes(n, omega_arr.len(), k_arr.shape())?;
-    validate_finite_slice(theta.as_slice().unwrap(), "theta0")?;
-    validate_finite_slice(omega_arr.as_slice().unwrap(), "omega")?;
-    validate_finite_slice(k_arr.as_slice().unwrap(), "k")?;
-
-    let edge_arr = hyperedges.as_array();
-    let weights = hyper_weights.as_array();
-    if edge_arr.ndim() != 2 || edge_arr.shape()[1] != 3 {
-        return Err(pyo3::exceptions::PyValueError::new_err(
-            "hyperedges must have shape (n_edges, 3)",
-        ));
-    }
-    if weights.len() != edge_arr.shape()[0] {
-        return Err(pyo3::exceptions::PyValueError::new_err(format!(
-            "hyper_weights must have length {}, got {}",
-            edge_arr.shape()[0],
-            weights.len()
+    let theta0_slice = validate_phase_vector(&theta0, "theta0")?;
+    let omega_slice = validate_phase_vector(&omega, "omega")?;
+    let n = theta0_slice.len();
+    if omega_slice.len() != n {
+        return Err(PyValueError::new_err(format!(
+            "omega must have length {n}, got {}",
+            omega_slice.len()
         )));
     }
-    validate_finite_slice(weights.as_slice().unwrap(), "hyper_weights")?;
-    for edge in edge_arr.rows() {
-        for &index in edge.iter() {
-            if index < 0 || index as usize >= n {
-                return Err(pyo3::exceptions::PyValueError::new_err(format!(
-                    "hyperedge index {index} is outside [0, {n})"
-                )));
-            }
-        }
+    let k_flat = validate_square_matrix(&k, n, "k")?;
+    let (edge_slice, n_edges) = validate_hyperedges(&hyperedges, n)?;
+    let weight_slice = validate_phase_vector(&hyper_weights, "hyper_weights")?;
+    if weight_slice.len() != n_edges {
+        return Err(PyValueError::new_err(format!(
+            "hyper_weights must have length {n_edges}, got {}",
+            weight_slice.len()
+        )));
     }
-
-    let k_flat = k_arr.as_slice().unwrap();
-    let omega_slice = omega_arr.as_slice().unwrap();
-    let edge_slice = edge_arr.as_slice().unwrap();
-    let weight_slice = weights.as_slice().unwrap();
+    let mut theta = Array1::from_vec(theta0_slice.to_vec());
     let mut times = Array1::<f64>::zeros(n_steps + 1);
     let mut r_values = Array1::<f64>::zeros(n_steps + 1);
-    fill_time_and_r(&mut times, &mut r_values, 0, dt, theta.as_slice().unwrap());
+    fill_time_and_r(
+        &mut times,
+        &mut r_values,
+        0,
+        dt,
+        theta
+            .as_slice()
+            .ok_or_else(|| PyValueError::new_err("theta buffer is not contiguous"))?,
+    );
 
     for step in 0..n_steps {
-        let theta_slice = theta.as_slice().unwrap();
-        let mut dtheta = phase_step_pairwise(theta_slice, omega_slice, k_flat, n);
-        for edge_index in 0..weight_slice.len() {
+        let theta_slice = theta
+            .as_slice()
+            .ok_or_else(|| PyValueError::new_err("theta buffer is not contiguous"))?;
+        let mut dtheta = phase_step_pairwise(theta_slice, omega_slice, &k_flat, n);
+        for (edge_index, weight) in weight_slice.iter().enumerate() {
             let base = 3 * edge_index;
             let i = edge_slice[base] as usize;
             let j = edge_slice[base + 1] as usize;
             let l = edge_slice[base + 2] as usize;
-            dtheta[i] += weight_slice[edge_index]
-                * (theta_slice[j] + theta_slice[l] - 2.0 * theta_slice[i]).sin();
+            dtheta[i] += *weight * (theta_slice[j] + theta_slice[l] - 2.0 * theta_slice[i]).sin();
         }
         for i in 0..n {
             theta[i] += dt * dtheta[i];
@@ -196,7 +246,9 @@ pub fn higher_order_kuramoto_trajectory<'py>(
             &mut r_values,
             step + 1,
             dt,
-            theta.as_slice().unwrap(),
+            theta
+                .as_slice()
+                .ok_or_else(|| PyValueError::new_err("theta buffer is not contiguous"))?,
         );
     }
 
@@ -245,24 +297,26 @@ pub fn monitored_kuramoto_trajectory<'py>(
         ));
     }
 
-    let mut theta = theta0.as_array().to_owned();
-    let n = theta.len();
-    let omega_arr = omega.as_array();
-    let k_arr = k.as_array();
-    validate_kuramoto_shapes(n, omega_arr.len(), k_arr.shape())?;
-    validate_finite_slice(theta.as_slice().unwrap(), "theta0")?;
-    validate_finite_slice(omega_arr.as_slice().unwrap(), "omega")?;
-    validate_finite_slice(k_arr.as_slice().unwrap(), "k")?;
-
-    let k_flat = k_arr.as_slice().unwrap();
-    let omega_slice = omega_arr.as_slice().unwrap();
+    let theta0_slice = validate_phase_vector(&theta0, "theta0")?;
+    let omega_slice = validate_phase_vector(&omega, "omega")?;
+    let n = theta0_slice.len();
+    if omega_slice.len() != n {
+        return Err(PyValueError::new_err(format!(
+            "omega must have length {n}, got {}",
+            omega_slice.len()
+        )));
+    }
+    let k_flat = validate_square_matrix(&k, n, "k")?;
+    let mut theta = Array1::from_vec(theta0_slice.to_vec());
     let mut times = Array1::<f64>::zeros(n_steps + 1);
     let mut r_values = Array1::<f64>::zeros(n_steps + 1);
     let mut readouts = Array1::<f64>::zeros(n_steps + 1);
     let mut feedback = Array1::<f64>::zeros(n_steps + 1);
 
     for step in 0..=n_steps {
-        let theta_slice = theta.as_slice().unwrap();
+        let theta_slice = theta
+            .as_slice()
+            .ok_or_else(|| PyValueError::new_err("theta buffer is not contiguous"))?;
         let r = order_parameter_inner(theta_slice);
         let readout = (1.0 - measurement_strength) * r + measurement_strength * target_r;
         times[step] = step as f64 * dt;
@@ -278,7 +332,7 @@ pub fn monitored_kuramoto_trajectory<'py>(
             im += phase.sin();
         }
         let mean_phase = im.atan2(re);
-        let mut dtheta = phase_step_pairwise(theta_slice, omega_slice, k_flat, n);
+        let mut dtheta = phase_step_pairwise(theta_slice, omega_slice, &k_flat, n);
         for i in 0..n {
             dtheta[i] += feedback[step] * (mean_phase - theta_slice[i]).sin();
         }
@@ -316,23 +370,24 @@ pub fn pt_symmetric_kuramoto_trajectory<'py>(
     Bound<'py, PyArray1<f64>>,
 )> {
     validate_positive(dt, "dt")?;
-    let theta_arr = theta0.as_array();
-    let n = theta_arr.len();
-    let omega_arr = omega.as_array();
-    let k_arr = k.as_array();
-    let gain_arr = gain_loss.as_array();
-    validate_kuramoto_shapes(n, omega_arr.len(), k_arr.shape())?;
-    if gain_arr.len() != n {
-        return Err(pyo3::exceptions::PyValueError::new_err(format!(
-            "gain_loss must have length {n}, got {}",
-            gain_arr.len()
+    let theta_slice = validate_phase_vector(&theta0, "theta0")?;
+    let omega_slice = validate_phase_vector(&omega, "omega")?;
+    let gain_slice = validate_phase_vector(&gain_loss, "gain_loss")?;
+    let n = theta_slice.len();
+    if omega_slice.len() != n {
+        return Err(PyValueError::new_err(format!(
+            "omega must have length {n}, got {}",
+            omega_slice.len()
         )));
     }
-    validate_finite_slice(theta_arr.as_slice().unwrap(), "theta0")?;
-    validate_finite_slice(omega_arr.as_slice().unwrap(), "omega")?;
-    validate_finite_slice(k_arr.as_slice().unwrap(), "k")?;
-    validate_finite_slice(gain_arr.as_slice().unwrap(), "gain_loss")?;
-    let gain_sum: f64 = gain_arr.iter().sum();
+    if gain_slice.len() != n {
+        return Err(PyValueError::new_err(format!(
+            "gain_loss must have length {n}, got {}",
+            gain_slice.len()
+        )));
+    }
+    let k_flat = validate_square_matrix(&k, n, "k")?;
+    let gain_sum: f64 = gain_slice.iter().sum();
     if gain_sum.abs() > 1e-10 {
         return Err(pyo3::exceptions::PyValueError::new_err(
             "gain_loss must sum to zero for balanced PT symmetry",
@@ -341,14 +396,11 @@ pub fn pt_symmetric_kuramoto_trajectory<'py>(
 
     let mut re = Vec::with_capacity(n);
     let mut im = Vec::with_capacity(n);
-    for &phase in theta_arr.iter() {
+    for &phase in theta_slice {
         re.push(phase.cos());
         im.push(phase.sin());
     }
-    let k_flat = k_arr.as_slice().unwrap();
-    let omega_slice = omega_arr.as_slice().unwrap();
-    let gain_slice = gain_arr.as_slice().unwrap();
-    let mut theta = theta_arr.to_owned();
+    let mut theta = Array1::from_vec(theta_slice.to_vec());
     let mut times = Array1::<f64>::zeros(n_steps + 1);
     let mut r_values = Array1::<f64>::zeros(n_steps + 1);
     let mut pt_norm = Array1::<f64>::zeros(n_steps + 1);
@@ -375,7 +427,10 @@ pub fn pt_symmetric_kuramoto_trajectory<'py>(
         if step == n_steps {
             break;
         }
-        let dtheta = phase_step_pairwise(theta.as_slice().unwrap(), omega_slice, k_flat, n);
+        let theta_now = theta
+            .as_slice()
+            .ok_or_else(|| PyValueError::new_err("theta buffer is not contiguous"))?;
+        let dtheta = phase_step_pairwise(theta_now, omega_slice, &k_flat, n);
         for i in 0..n {
             let z_re = re[i];
             let z_im = im[i];
@@ -428,39 +483,35 @@ pub fn kuramoto_witness_candidate_features<'py>(
     Bound<'py, PyArray2<f64>>,
 )> {
     validate_positive(dt, "dt")?;
-    let theta0_arr = theta0.as_array();
-    let omega_arr = omega.as_array();
-    let k_arr = k.as_array();
-    let cand_arr = candidates.as_array();
-    let n = theta0_arr.len();
-    validate_kuramoto_shapes(n, omega_arr.len(), k_arr.shape())?;
-    if cand_arr.ndim() != 2 || cand_arr.shape()[1] != 3 {
-        return Err(pyo3::exceptions::PyValueError::new_err(
-            "candidates must have shape (n_candidates, 3)",
-        ));
+    let theta0_slice = validate_phase_vector(&theta0, "theta0")?;
+    let omega_slice = validate_phase_vector(&omega, "omega")?;
+    let n = theta0_slice.len();
+    if omega_slice.len() != n {
+        return Err(PyValueError::new_err(format!(
+            "omega must have length {n}, got {}",
+            omega_slice.len()
+        )));
     }
-    validate_finite_slice(theta0_arr.as_slice().unwrap(), "theta0")?;
-    validate_finite_slice(omega_arr.as_slice().unwrap(), "omega")?;
-    validate_finite_slice(k_arr.as_slice().unwrap(), "k")?;
-    validate_finite_slice(cand_arr.as_slice().unwrap(), "candidates")?;
-
-    let n_candidates = cand_arr.shape()[0];
+    let k_flat = validate_square_matrix(&k, n, "k")?;
+    let (cand_slice, n_candidates) = validate_rect_f64_matrix(&candidates, 3, "candidates")?;
     let mut final_r = Array1::<f64>::zeros(n_candidates);
     let mut mean_corr = Array1::<f64>::zeros(n_candidates);
     let mut final_theta = Array2::<f64>::zeros((n_candidates, n));
-    let omega_slice = omega_arr.as_slice().unwrap();
-    let k_flat = k_arr.as_slice().unwrap();
 
-    for (candidate_index, candidate) in cand_arr.rows().into_iter().enumerate() {
-        let coupling_scale = candidate[0];
-        let omega_scale = candidate[1];
-        let phase_bias = candidate[2];
+    for candidate_index in 0..n_candidates {
+        let base = 3 * candidate_index;
+        let coupling_scale = cand_slice[base];
+        let omega_scale = cand_slice[base + 1];
+        let phase_bias = cand_slice[base + 2];
         if coupling_scale < 0.0 || omega_scale < 0.0 {
             return Err(pyo3::exceptions::PyValueError::new_err(
                 "candidate coupling_scale and omega_scale must be non-negative",
             ));
         }
-        let mut theta: Vec<f64> = theta0_arr.iter().map(|value| value + phase_bias).collect();
+        let mut theta: Vec<f64> = theta0_slice
+            .iter()
+            .map(|value| value + phase_bias)
+            .collect();
         let omega_scaled: Vec<f64> = omega_slice
             .iter()
             .map(|value| value * omega_scale)
@@ -510,31 +561,43 @@ pub fn kuramoto_trajectory<'py>(
     n_steps: usize,
 ) -> PyResult<(Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>)> {
     validate_positive(dt, "dt")?;
-    let mut theta = theta0.as_array().to_owned();
-    let omega_arr = omega.as_array();
-    let k_arr = k.as_array();
-    let n = theta.len();
+    let theta0_slice = validate_phase_vector(&theta0, "theta0")?;
+    let omega_slice = validate_phase_vector(&omega, "omega")?;
+    let n = theta0_slice.len();
+    if omega_slice.len() != n {
+        return Err(PyValueError::new_err(format!(
+            "omega must have length {n}, got {}",
+            omega_slice.len()
+        )));
+    }
+    let k_flat = validate_square_matrix(&k, n, "k")?;
+    let mut theta = Array1::from_vec(theta0_slice.to_vec());
 
     let mut times = Array1::<f64>::zeros(n_steps + 1);
     let mut r_values = Array1::<f64>::zeros(n_steps + 1);
 
     // Initial R
-    r_values[0] = order_parameter_inner(theta.as_slice().unwrap());
+    r_values[0] = order_parameter_inner(
+        theta
+            .as_slice()
+            .ok_or_else(|| PyValueError::new_err("theta buffer is not contiguous"))?,
+    );
 
     for step in 0..n_steps {
-        let mut dtheta = Array1::<f64>::zeros(n);
-        for i in 0..n {
-            dtheta[i] = omega_arr[i];
-            for j in 0..n {
-                dtheta[i] += k_arr[[i, j]] * (theta[j] - theta[i]).sin();
-            }
-        }
+        let theta_slice = theta
+            .as_slice()
+            .ok_or_else(|| PyValueError::new_err("theta buffer is not contiguous"))?;
+        let dtheta = phase_step_pairwise(theta_slice, omega_slice, &k_flat, n);
         for i in 0..n {
             theta[i] += dt * dtheta[i];
         }
 
         times[step + 1] = (step + 1) as f64 * dt;
-        r_values[step + 1] = order_parameter_inner(theta.as_slice().unwrap());
+        r_values[step + 1] = order_parameter_inner(
+            theta
+                .as_slice()
+                .ok_or_else(|| PyValueError::new_err("theta buffer is not contiguous"))?,
+        );
     }
 
     Ok((

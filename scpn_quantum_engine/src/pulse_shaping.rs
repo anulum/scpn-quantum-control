@@ -18,10 +18,36 @@
 //! Ref: Ventura Meinersen et al., arXiv:2504.08031 (2025)
 
 use numpy::{PyArray1, PyReadonlyArray1};
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use rayon::prelude::*;
 
-use crate::validation::{validate_n, validate_positive};
+use crate::validation::{
+    validate_contiguous_slice, validate_finite, validate_n, validate_positive,
+};
+
+fn validate_finite_scalar(value: f64, name: &str) -> PyResult<()> {
+    if !value.is_finite() {
+        return Err(PyValueError::new_err(format!(
+            "{name} must be finite, got {value}"
+        )));
+    }
+    Ok(())
+}
+
+fn validate_non_negative_scalar(value: f64, name: &str) -> PyResult<()> {
+    if !value.is_finite() || value < 0.0 {
+        return Err(PyValueError::new_err(format!(
+            "{name} must be finite and non-negative, got {value}"
+        )));
+    }
+    Ok(())
+}
+
+#[inline]
+fn rho_idx(row: usize, col: usize) -> usize {
+    row * 3 + col
+}
 
 /// Gauss hypergeometric function ₂F₁(a, b; c; z) via series expansion.
 ///
@@ -68,9 +94,12 @@ pub fn hypergeometric_envelope_batch<'py>(
     gamma_width: f64,
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     validate_positive(gamma_width, "gamma_width")?;
+    validate_finite_scalar(alpha, "alpha")?;
+    validate_finite_scalar(beta, "beta")?;
     validate_n(times.len()?, "times")?;
 
-    let t = times.as_slice().unwrap();
+    let t = validate_contiguous_slice(&times, "times")?;
+    validate_finite(t, "times")?;
     let c = (alpha + beta + 1.0) / 2.0;
 
     let envelope: Vec<f64> = t
@@ -104,7 +133,8 @@ pub fn ici_mixing_angle_batch<'py>(
     validate_positive(t_total, "t_total")?;
     validate_positive(theta_jump, "theta_jump")?;
 
-    let t = times.as_slice().unwrap();
+    let t = validate_contiguous_slice(&times, "times")?;
+    validate_finite(t, "times")?;
     let t1 = 0.05 * t_total;
     let t2 = 0.95 * t_total;
     let half_pi = std::f64::consts::FRAC_PI_2;
@@ -145,10 +175,13 @@ pub fn ici_three_level_evolution_batch<'py>(
     omega_s: PyReadonlyArray1<'_, f64>,
     gamma: f64,
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
-    crate::validation::validate_positive(gamma + 1.0, "gamma + 1")?; // gamma >= 0
-    let t = times.as_slice().unwrap();
-    let op = omega_p.as_slice().unwrap();
-    let os = omega_s.as_slice().unwrap();
+    validate_non_negative_scalar(gamma, "gamma")?;
+    let t = validate_contiguous_slice(&times, "times")?;
+    let op = validate_contiguous_slice(&omega_p, "omega_p")?;
+    let os = validate_contiguous_slice(&omega_s, "omega_s")?;
+    validate_finite(t, "times")?;
+    validate_finite(op, "omega_p")?;
+    validate_finite(os, "omega_s")?;
     let n_t = t.len();
     if n_t < 2 {
         return Err(pyo3::exceptions::PyValueError::new_err(
@@ -193,12 +226,12 @@ pub fn ici_three_level_evolution_batch<'py>(
         // H[1] = [p, 0, s]   so (H*rho)[1][j] = p * rho[0][j] + s * rho[2][j]
         // H[2] = [0, s, 0]   so (H*rho)[2][j] = s * rho[1][j]
         for j in 0..3 {
-            let hr0 = p * rho_re[1 * 3 + j];
-            let hi0 = p * rho_im[1 * 3 + j];
-            let hr1 = p * rho_re[0 * 3 + j] + s * rho_re[2 * 3 + j];
-            let hi1 = p * rho_im[0 * 3 + j] + s * rho_im[2 * 3 + j];
-            let hr2 = s * rho_re[1 * 3 + j];
-            let hi2 = s * rho_im[1 * 3 + j];
+            let hr0 = p * rho_re[rho_idx(1, j)];
+            let hi0 = p * rho_im[rho_idx(1, j)];
+            let hr1 = p * rho_re[rho_idx(0, j)] + s * rho_re[rho_idx(2, j)];
+            let hi1 = p * rho_im[rho_idx(0, j)] + s * rho_im[rho_idx(2, j)];
+            let hr2 = s * rho_re[rho_idx(1, j)];
+            let hi2 = s * rho_im[rho_idx(1, j)];
 
             // rho*H: (rho*H)[i][j] = sum_k rho[i][k] * H[k][j]
             // H[k][0]: H[0][0]=0, H[1][0]=p, H[2][0]=0  => column 0 = [0, p, 0]
@@ -217,42 +250,42 @@ pub fn ici_three_level_evolution_batch<'py>(
             // I computed (H*rho)[0][j], [1][j], [2][j] above. Good.
             // Now need (rho*H)[0][j], [1][j], [2][j] for same j.
             let rh0 = match j {
-                0 => p * rho_re[0 * 3 + 1],
-                1 => p * rho_re[0 * 3 + 0] + s * rho_re[0 * 3 + 2],
-                _ => s * rho_re[0 * 3 + 1],
+                0 => p * rho_re[rho_idx(0, 1)],
+                1 => p * rho_re[rho_idx(0, 0)] + s * rho_re[rho_idx(0, 2)],
+                _ => s * rho_re[rho_idx(0, 1)],
             };
             let ri0 = match j {
-                0 => p * rho_im[0 * 3 + 1],
-                1 => p * rho_im[0 * 3 + 0] + s * rho_im[0 * 3 + 2],
-                _ => s * rho_im[0 * 3 + 1],
+                0 => p * rho_im[rho_idx(0, 1)],
+                1 => p * rho_im[rho_idx(0, 0)] + s * rho_im[rho_idx(0, 2)],
+                _ => s * rho_im[rho_idx(0, 1)],
             };
             let rh1 = match j {
-                0 => p * rho_re[1 * 3 + 1],
-                1 => p * rho_re[1 * 3 + 0] + s * rho_re[1 * 3 + 2],
-                _ => s * rho_re[1 * 3 + 1],
+                0 => p * rho_re[rho_idx(1, 1)],
+                1 => p * rho_re[rho_idx(1, 0)] + s * rho_re[rho_idx(1, 2)],
+                _ => s * rho_re[rho_idx(1, 1)],
             };
             let ri1 = match j {
-                0 => p * rho_im[1 * 3 + 1],
-                1 => p * rho_im[1 * 3 + 0] + s * rho_im[1 * 3 + 2],
-                _ => s * rho_im[1 * 3 + 1],
+                0 => p * rho_im[rho_idx(1, 1)],
+                1 => p * rho_im[rho_idx(1, 0)] + s * rho_im[rho_idx(1, 2)],
+                _ => s * rho_im[rho_idx(1, 1)],
             };
             let rh2 = match j {
-                0 => p * rho_re[2 * 3 + 1],
-                1 => p * rho_re[2 * 3 + 0] + s * rho_re[2 * 3 + 2],
-                _ => s * rho_re[2 * 3 + 1],
+                0 => p * rho_re[rho_idx(2, 1)],
+                1 => p * rho_re[rho_idx(2, 0)] + s * rho_re[rho_idx(2, 2)],
+                _ => s * rho_re[rho_idx(2, 1)],
             };
             let ri2 = match j {
-                0 => p * rho_im[2 * 3 + 1],
-                1 => p * rho_im[2 * 3 + 0] + s * rho_im[2 * 3 + 2],
-                _ => s * rho_im[2 * 3 + 1],
+                0 => p * rho_im[rho_idx(2, 1)],
+                1 => p * rho_im[rho_idx(2, 0)] + s * rho_im[rho_idx(2, 2)],
+                _ => s * rho_im[rho_idx(2, 1)],
             };
 
-            comm_re[0 * 3 + j] = hr0 - rh0;
-            comm_im[0 * 3 + j] = hi0 - ri0;
-            comm_re[1 * 3 + j] = hr1 - rh1;
-            comm_im[1 * 3 + j] = hi1 - ri1;
-            comm_re[2 * 3 + j] = hr2 - rh2;
-            comm_im[2 * 3 + j] = hi2 - ri2;
+            comm_re[rho_idx(0, j)] = hr0 - rh0;
+            comm_im[rho_idx(0, j)] = hi0 - ri0;
+            comm_re[rho_idx(1, j)] = hr1 - rh1;
+            comm_im[rho_idx(1, j)] = hi1 - ri1;
+            comm_re[rho_idx(2, j)] = hr2 - rh2;
+            comm_im[rho_idx(2, j)] = hi2 - ri2;
         }
 
         // drho = -i * commutator:  multiplying by -i flips real/imag and
@@ -268,19 +301,19 @@ pub fn ici_three_level_evolution_batch<'py>(
         // Lindblad decay from |e>: rho[1][1] population transfers to rho[0][0]
         // plus off-diagonal dephasing at rate gamma/2.
         if gamma > 0.0 {
-            let pop_e = rho_re[1 * 3 + 1]; // real, diagonal
-            drho_re[0 * 3 + 0] += gamma * pop_e;
-            drho_re[1 * 3 + 1] -= gamma * pop_e;
+            let pop_e = rho_re[rho_idx(1, 1)]; // real, diagonal
+            drho_re[rho_idx(0, 0)] += gamma * pop_e;
+            drho_re[rho_idx(1, 1)] -= gamma * pop_e;
 
             // Off-diagonal dephasing: rows/cols involving |e>
-            drho_re[0 * 3 + 1] -= 0.5 * gamma * rho_re[0 * 3 + 1];
-            drho_im[0 * 3 + 1] -= 0.5 * gamma * rho_im[0 * 3 + 1];
-            drho_re[1 * 3 + 0] -= 0.5 * gamma * rho_re[1 * 3 + 0];
-            drho_im[1 * 3 + 0] -= 0.5 * gamma * rho_im[1 * 3 + 0];
-            drho_re[1 * 3 + 2] -= 0.5 * gamma * rho_re[1 * 3 + 2];
-            drho_im[1 * 3 + 2] -= 0.5 * gamma * rho_im[1 * 3 + 2];
-            drho_re[2 * 3 + 1] -= 0.5 * gamma * rho_re[2 * 3 + 1];
-            drho_im[2 * 3 + 1] -= 0.5 * gamma * rho_im[2 * 3 + 1];
+            drho_re[rho_idx(0, 1)] -= 0.5 * gamma * rho_re[rho_idx(0, 1)];
+            drho_im[rho_idx(0, 1)] -= 0.5 * gamma * rho_im[rho_idx(0, 1)];
+            drho_re[rho_idx(1, 0)] -= 0.5 * gamma * rho_re[rho_idx(1, 0)];
+            drho_im[rho_idx(1, 0)] -= 0.5 * gamma * rho_im[rho_idx(1, 0)];
+            drho_re[rho_idx(1, 2)] -= 0.5 * gamma * rho_re[rho_idx(1, 2)];
+            drho_im[rho_idx(1, 2)] -= 0.5 * gamma * rho_im[rho_idx(1, 2)];
+            drho_re[rho_idx(2, 1)] -= 0.5 * gamma * rho_re[rho_idx(2, 1)];
+            drho_im[rho_idx(2, 1)] -= 0.5 * gamma * rho_im[rho_idx(2, 1)];
         }
 
         // Forward Euler step

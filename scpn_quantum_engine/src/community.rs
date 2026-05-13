@@ -188,10 +188,6 @@ mod tests {
                 }
             }
         }
-        // Single region: all 4 qubits
-        let offsets = vec![0i64, 4];
-        let qubits = vec![0i64, 1, 2, 3];
-
         // Manual check: 6 edges, max 6, connectivity=1.0, fidelity=0.99
         let nr = 4;
         let max_edges = nr * (nr - 1) / 2; // 6

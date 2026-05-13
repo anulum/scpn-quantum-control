@@ -19,6 +19,23 @@ use ndarray::Array2;
 use pyo3::prelude::*;
 
 use crate::complex_utils::{c64, cmat_from_flat, hs_inner_real, C64};
+use crate::validation::{validate_contiguous_slice, validate_finite, validate_flat_square};
+
+fn validate_complex_matrix_parts<'a>(
+    re: &'a numpy::PyReadonlyArray1<'_, f64>,
+    im: &'a numpy::PyReadonlyArray1<'_, f64>,
+    dim: usize,
+    re_name: &str,
+    im_name: &str,
+) -> PyResult<(&'a [f64], &'a [f64])> {
+    let re_slice = validate_contiguous_slice(re, re_name)?;
+    let im_slice = validate_contiguous_slice(im, im_name)?;
+    validate_flat_square(re_slice, dim, re_name)?;
+    validate_flat_square(im_slice, dim, im_name)?;
+    validate_finite(re_slice, re_name)?;
+    validate_finite(im_slice, im_name)?;
+    Ok((re_slice, im_slice))
+}
 
 /// Operator Lanczos: b-coefficients for Liouvillian L=[H,·] on d×d matrices.
 ///
@@ -37,8 +54,12 @@ pub fn lanczos_b_coefficients(
     crate::validation::validate_n(dim, "dim")?;
     crate::validation::validate_n(max_steps, "max_steps")?;
     crate::validation::validate_positive(tol, "tol")?;
-    let h = cmat_from_flat(h_re.as_slice().unwrap(), h_im.as_slice().unwrap(), dim);
-    let o_init = cmat_from_flat(o_re.as_slice().unwrap(), o_im.as_slice().unwrap(), dim);
+    let (h_re_slice, h_im_slice) =
+        validate_complex_matrix_parts(&h_re, &h_im, dim, "h_re", "h_im")?;
+    let (o_re_slice, o_im_slice) =
+        validate_complex_matrix_parts(&o_re, &o_im, dim, "o_re", "o_im")?;
+    let h = cmat_from_flat(h_re_slice, h_im_slice, dim);
+    let o_init = cmat_from_flat(o_re_slice, o_im_slice, dim);
 
     Ok(lanczos_b_inner(&h, &o_init, max_steps, tol))
 }

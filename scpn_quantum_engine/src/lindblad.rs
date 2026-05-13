@@ -13,9 +13,31 @@
 //! Output is COO sparse format for scipy.sparse construction.
 
 use numpy::{PyArray1, PyReadonlyArray1};
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
-use crate::validation::validate_n;
+use crate::validation::{
+    validate_contiguous_slice, validate_finite, validate_flat_square, validate_n,
+};
+
+fn validate_lindblad_couplings<'a>(
+    k_flat: &'a PyReadonlyArray1<'_, f64>,
+    n: usize,
+) -> PyResult<&'a [f64]> {
+    let k = validate_contiguous_slice(k_flat, "k_flat")?;
+    validate_flat_square(k, n, "k_flat")?;
+    validate_finite(k, "k_flat")?;
+    Ok(k)
+}
+
+fn validate_threshold(threshold: f64) -> PyResult<()> {
+    if !threshold.is_finite() || threshold < 0.0 {
+        return Err(PyValueError::new_err(format!(
+            "threshold must be finite and non-negative, got {threshold}"
+        )));
+    }
+    Ok(())
+}
 
 /// Lindblad jump operator COO data + anti-Hermitian diagonal.
 ///
@@ -36,13 +58,13 @@ pub fn lindblad_jump_ops_coo<'py>(
     usize,
 )> {
     validate_n(n, "n")?;
+    validate_threshold(threshold)?;
     if n > 20 {
         return Err(pyo3::exceptions::PyValueError::new_err(format!(
             "n={n} too large for jump operators (max 20)"
         )));
     }
-    crate::validation::validate_flat_square(k_flat.as_slice().unwrap(), n, "k_flat")?;
-    let k = k_flat.as_slice().unwrap();
+    let k = validate_lindblad_couplings(&k_flat, n)?;
     let dim = 1usize << n;
 
     let mut rows: Vec<i64> = Vec::new();
@@ -87,7 +109,8 @@ pub fn lindblad_anti_hermitian_diag<'py>(
     threshold: f64,
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     validate_n(n, "n")?;
-    let k = k_flat.as_slice().unwrap();
+    validate_threshold(threshold)?;
+    let k = validate_lindblad_couplings(&k_flat, n)?;
     let dim = 1usize << n;
     let mut diag = vec![0.0f64; dim];
 
@@ -148,7 +171,10 @@ mod tests {
         }
 
         assert!(diag[0].abs() < 1e-12, "|00⟩ has no active channels");
-        assert!(diag[3].abs() < 1e-12, "|11⟩ has no active channels (both excited)");
+        assert!(
+            diag[3].abs() < 1e-12,
+            "|11⟩ has no active channels (both excited)"
+        );
         assert!(diag[1] > 0.0, "|01⟩ has active channel");
         assert!(diag[2] > 0.0, "|10⟩ has active channel");
     }

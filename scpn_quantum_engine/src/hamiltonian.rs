@@ -14,9 +14,22 @@
 //! the Hamiltonian directly from bit patterns without Qiskit SparsePauliOp.
 
 use numpy::{PyArray1, PyReadonlyArray1};
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
-use crate::validation::{validate_finite, validate_flat_square, validate_n};
+use crate::validation::{
+    validate_contiguous_slice, validate_finite, validate_flat_square, validate_n,
+};
+
+fn validate_frequency_vector(omega: &[f64], n: usize) -> PyResult<()> {
+    if omega.len() != n {
+        return Err(PyValueError::new_err(format!(
+            "omega length {} != n {n}",
+            omega.len()
+        )));
+    }
+    validate_finite(omega, "omega")
+}
 
 /// Build dense XY Hamiltonian directly from K coupling and ω frequencies.
 ///
@@ -30,11 +43,11 @@ pub fn build_xy_hamiltonian_dense<'py>(
     n: usize,
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     validate_n(n, "n")?;
-    let k = k_flat.as_slice().unwrap();
-    let w = omega.as_slice().unwrap();
+    let k = validate_contiguous_slice(&k_flat, "k_flat")?;
+    let w = validate_contiguous_slice(&omega, "omega")?;
     validate_flat_square(k, n, "k_flat")?;
     validate_finite(k, "k_flat")?;
-    validate_finite(w, "omega")?;
+    validate_frequency_vector(w, n)?;
     let dim = 1usize << n;
     let mut h = vec![0.0f64; dim * dim];
 
@@ -84,9 +97,11 @@ pub fn build_sparse_xy_hamiltonian<'py>(
     Bound<'py, PyArray1<f64>>,
 )> {
     validate_n(n, "n")?;
-    let k = k_flat.as_slice().unwrap();
-    let om = omega.as_slice().unwrap();
+    let k = validate_contiguous_slice(&k_flat, "k_flat")?;
+    let om = validate_contiguous_slice(&omega, "omega")?;
     validate_flat_square(k, n, "k_flat")?;
+    validate_finite(k, "k_flat")?;
+    validate_frequency_vector(om, n)?;
     let dim = 1usize << n;
 
     let mut rows: Vec<i64> = Vec::new();
@@ -206,7 +221,10 @@ mod tests {
 
         // |01⟩ = index 1 (bit0=1, bit1=0), |10⟩ = index 2 (bit0=0, bit1=1)
         assert!((h[1 * dim + 2] - (-2.0)).abs() < 1e-12, "flip-flop element");
-        assert!((h[2 * dim + 1] - (-2.0)).abs() < 1e-12, "symmetric flip-flop");
+        assert!(
+            (h[2 * dim + 1] - (-2.0)).abs() < 1e-12,
+            "symmetric flip-flop"
+        );
         // |00⟩↔|11⟩ should be zero (same spin → no flip-flop)
         assert!(h[0 * dim + 3].abs() < 1e-12, "no flip for same spin");
     }

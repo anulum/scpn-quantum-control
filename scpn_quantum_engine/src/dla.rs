@@ -22,7 +22,9 @@ use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use rayon::prelude::*;
 
-use crate::validation::{validate_n, validate_positive};
+use crate::validation::{
+    validate_contiguous_slice, validate_finite, validate_n, validate_positive,
+};
 
 /// DLA: compute dynamical Lie algebra dimension via commutator closure.
 ///
@@ -46,9 +48,13 @@ pub fn dla_dimension(
     validate_n(max_dimension, "max_dimension")?;
     validate_positive(tol, "tol")?;
 
-    let data = generators_flat.as_slice().unwrap();
-    let mat_size = dim * dim;
-    let expected_len = n_generators * mat_size;
+    let data = validate_contiguous_slice(&generators_flat, "generators_flat")?;
+    let mat_size = dim
+        .checked_mul(dim)
+        .ok_or_else(|| PyValueError::new_err("dim² overflows usize"))?;
+    let expected_len = n_generators
+        .checked_mul(mat_size)
+        .ok_or_else(|| PyValueError::new_err("n_generators*dim² overflows usize"))?;
     if data.len() < expected_len {
         return Err(pyo3::exceptions::PyValueError::new_err(format!(
             "generators_flat too short: {} < {} (n_generators={} × dim²={})",
@@ -58,6 +64,7 @@ pub fn dla_dimension(
             mat_size
         )));
     }
+    validate_finite(&data[..expected_len], "generators_flat")?;
 
     Ok(dla_dimension_inner(
         data,
@@ -104,7 +111,7 @@ pub fn dla_protected_memory_metrics(
 ) -> PyResult<(f64, f64, f64, f64, f64)> {
     let total_qubits = validate_memory_shape(n_logical, code_distance, target_parity)?;
     let dim = 1usize << total_qubits;
-    let probs = probabilities.as_slice().unwrap();
+    let probs = validate_contiguous_slice(&probabilities, "probabilities")?;
     if probs.len() != dim {
         return Err(PyValueError::new_err(format!(
             "probabilities length must be 2^(n_logical*code_distance) = {dim}, got {}",

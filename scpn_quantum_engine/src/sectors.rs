@@ -15,13 +15,27 @@
 
 use ndarray::Array2;
 use numpy::{PyArray1, PyArray2, PyReadonlyArray1};
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use rayon::prelude::*;
 
-use crate::validation::validate_n;
+use crate::validation::{validate_contiguous_slice, validate_finite, validate_n};
 
 fn validate_statevec(len: usize, n: usize, name: &str) -> PyResult<()> {
     crate::validation::to_pyresult(crate::validation::check_statevec_len(len, n, name))
+}
+
+fn validate_statevector_pair(re: &[f64], im: &[f64], n: usize) -> PyResult<()> {
+    validate_statevec(re.len(), n, "psi_re")?;
+    if im.len() != re.len() {
+        return Err(PyValueError::new_err(format!(
+            "psi_im length {} != psi_re length {}",
+            im.len(),
+            re.len()
+        )));
+    }
+    validate_finite(re, "psi_re")?;
+    validate_finite(im, "psi_im")
 }
 
 /// Magnetisation labels: result[k] = M of basis state |k⟩.
@@ -56,9 +70,9 @@ pub fn order_param_from_statevector(
     n: usize,
 ) -> PyResult<f64> {
     validate_n(n, "n")?;
-    let re = psi_re.as_slice().unwrap();
-    let im = psi_im.as_slice().unwrap();
-    validate_statevec(re.len(), n, "psi_re")?;
+    let re = validate_contiguous_slice(&psi_re, "psi_re")?;
+    let im = validate_contiguous_slice(&psi_im, "psi_im")?;
+    validate_statevector_pair(re, im, n)?;
     let dim = 1usize << n;
 
     let mut z_re = 0.0f64;
@@ -95,9 +109,9 @@ pub fn correlation_matrix_xy<'py>(
     n_osc: usize,
 ) -> PyResult<Bound<'py, PyArray2<f64>>> {
     validate_n(n_osc, "n_osc")?;
-    let re = psi_re.as_slice().unwrap();
-    let im = psi_im.as_slice().unwrap();
-    validate_statevec(re.len(), n_osc, "psi_re")?;
+    let re = validate_contiguous_slice(&psi_re, "psi_re")?;
+    let im = validate_contiguous_slice(&psi_im, "psi_im")?;
+    validate_statevector_pair(re, im, n_osc)?;
     let dim = 1usize << n_osc;
 
     let pairs: Vec<(usize, usize)> = (0..n_osc)
@@ -145,7 +159,7 @@ pub fn parity_filter_mask<'py>(
             "expected_parity must be 0 or 1, got {expected_parity}"
         )));
     }
-    let bs = bitstrings.as_slice().unwrap();
+    let bs = validate_contiguous_slice(&bitstrings, "bitstrings")?;
     let mask: Vec<bool> = bs
         .par_iter()
         .map(|&val| (val.count_ones() as u8 % 2) == expected_parity)
