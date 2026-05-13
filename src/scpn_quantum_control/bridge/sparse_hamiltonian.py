@@ -56,14 +56,19 @@ def _try_rust_sparse(K: np.ndarray, omega: np.ndarray, n: int) -> sparse.csc_mat
     """Try Rust-accelerated sparse construction (80× faster)."""
     try:
         import scpn_quantum_engine as eng
-
-        rows, cols, vals = eng.build_sparse_xy_hamiltonian(K.ravel(), omega, n)
-        return sparse.csc_matrix(
-            (np.array(vals), (np.array(rows), np.array(cols))),
-            shape=(2**n, 2**n),
-        )
-    except (ImportError, Exception):
+    except ImportError:
         return None
+
+    try:
+        build_sparse_xy_hamiltonian = eng.build_sparse_xy_hamiltonian
+    except AttributeError:
+        return None
+
+    rows, cols, vals = build_sparse_xy_hamiltonian(K.ravel(), omega, n)
+    return sparse.csc_matrix(
+        (np.array(vals), (np.array(rows), np.array(cols))),
+        shape=(2**n, 2**n),
+    )
 
 
 def build_sparse_hamiltonian(

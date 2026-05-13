@@ -208,18 +208,34 @@ class TestPythonFallback:
             H = build_sparse_hamiltonian(K, omega)
             assert H.nnz < 2**n * 2**n
 
-    def test_rust_exception_falls_back(self):
-        """_try_rust_sparse returns None on exception."""
+    def test_missing_rust_symbol_falls_back(self):
+        """_try_rust_sparse returns None when the optional symbol is absent."""
         # Mock scpn_quantum_engine to raise inside
         from unittest.mock import MagicMock, patch
 
         from scpn_quantum_control.bridge.sparse_hamiltonian import _try_rust_sparse
 
         mock_eng = MagicMock()
-        mock_eng.build_sparse_xy_hamiltonian.side_effect = RuntimeError("test")
+        del mock_eng.build_sparse_xy_hamiltonian
         with patch.dict("sys.modules", {"scpn_quantum_engine": mock_eng}):
             result = _try_rust_sparse(np.eye(2), np.ones(2), 2)
             assert result is None
+
+    def test_rust_runtime_failure_is_not_silently_downgraded(self):
+        """A present but failing Rust sparse builder must not be hidden."""
+        from unittest.mock import MagicMock, patch
+
+        import pytest
+
+        from scpn_quantum_control.bridge.sparse_hamiltonian import _try_rust_sparse
+
+        mock_eng = MagicMock()
+        mock_eng.build_sparse_xy_hamiltonian.side_effect = RuntimeError("accelerator failed")
+        with (
+            patch.dict("sys.modules", {"scpn_quantum_engine": mock_eng}),
+            pytest.raises(RuntimeError, match="accelerator failed"),
+        ):
+            _try_rust_sparse(np.eye(2), np.ones(2), 2)
 
 
 class TestSectorErrors:
