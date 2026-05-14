@@ -211,6 +211,13 @@ from .free_energy_validation import (
     free_energy_terms,
     validate_variational_free_energy_fixture,
 )
+from .front_matter_context_validation import (
+    FrontMatterContextConfig,
+    FrontMatterContextFixtureResult,
+    classify_toc_context,
+    collection_books,
+    validate_front_matter_context_fixture,
+)
 from .gaian_safety_validation import (
     GaianSafetyConfig,
     GaianSafetyFixtureResult,
@@ -641,6 +648,8 @@ __all__ = [
     "FreeEnergyConfig",
     "FreeEnergyTerms",
     "FreeEnergyValidationResult",
+    "FrontMatterContextConfig",
+    "FrontMatterContextFixtureResult",
     "GaianSafetyConfig",
     "GaianSafetyFixtureResult",
     "GlialSigmaControlConfig",
@@ -792,10 +801,12 @@ __all__ = [
     "classify_operator_layer",
     "classify_criticality",
     "classify_nths_phase",
+    "classify_toc_context",
     "coherence_time_fs",
     "ciss_effective_field_t",
     "ciss_spin_filter_hamiltonian",
     "collective_predictability_gain",
+    "collection_books",
     "complex_state",
     "complex_stuart_landau_derivative",
     "consilium_pareto_support_score",
@@ -969,6 +980,7 @@ __all__ = [
     "validate_entanglement_correlation_boundary_fixture",
     "validate_fine_tuning_pes_fixture",
     "validate_fragmentation_spin_glass_risk_fixture",
+    "validate_front_matter_context_fixture",
     "validate_functorial_mapping",
     "validate_gaian_safety_fixture",
     "validate_glial_sigma_control_fixture",

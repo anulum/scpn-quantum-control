@@ -208,6 +208,10 @@ DEFAULT_OPENING_FOUNDATION_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_opening_foundation_validation_specs_2026-05-13.json"
 )
+DEFAULT_FRONT_MATTER_CONTEXT_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_front_matter_context_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -1124,6 +1128,24 @@ def load_opening_foundation_validation_spec(
     raise KeyError(f"opening foundation spec {key!r} not found in {path}")
 
 
+def load_front_matter_context_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted front matter context validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_FRONT_MATTER_CONTEXT_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"front matter context spec bundle not found: {path}") from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"front matter context spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_CATEGORY_GRAMMAR_SPEC_BUNDLE",
     "DEFAULT_COLLECTIVE_NICHE_CONSTRUCTION_SPEC_BUNDLE",
@@ -1142,6 +1164,7 @@ __all__ = [
     "DEFAULT_ETHICAL_GAUGE_SPEC_BUNDLE",
     "DEFAULT_FINE_TUNING_PES_SPEC_BUNDLE",
     "DEFAULT_FREE_ENERGY_SPEC_BUNDLE",
+    "DEFAULT_FRONT_MATTER_CONTEXT_SPEC_BUNDLE",
     "DEFAULT_GAIAN_SAFETY_SPEC_BUNDLE",
     "DEFAULT_GLIAL_SLOW_CONTROL_SPEC_BUNDLE",
     "DEFAULT_GLIAL_CONTROL_SPEC_BUNDLE",
@@ -1188,6 +1211,7 @@ __all__ = [
     "load_ethical_gauge_validation_spec",
     "load_fine_tuning_pes_validation_spec",
     "load_free_energy_validation_spec",
+    "load_front_matter_context_validation_spec",
     "load_gaian_safety_validation_spec",
     "load_glial_slow_control_validation_spec",
     "load_glial_control_validation_spec",
