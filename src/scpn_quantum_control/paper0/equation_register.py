@@ -394,6 +394,120 @@ _RECORDS: tuple[Paper0EquationRecord, ...] = (
             "slow control",
         ),
     ),
+    Paper0EquationRecord(
+        key="computational.cyclic_operator_boundary",
+        manuscript=_MANUSCRIPT,
+        source_equation_ids=("EQ0115",),
+        section_path=(
+            "Structural Overview (by Domain) > Computational Unifier. > "
+            "1. The Cyclic Operator and Reversibility"
+        ),
+        canonical_latex=(
+            "O_{\\mathrm{MMC}}|\\Psi_{\\mathrm{Source}}(t)\\rangle="
+            "|\\Psi_{\\mathrm{Source}}(t+T_{\\mathrm{MMC}})\\rangle"
+        ),
+        variables={
+            "O_MMC": "Meta Metatron Cycle evolution operator",
+            "Psi_Source": "source-field state vector",
+            "t": "time parameter",
+            "T_MMC": "cycle period",
+        },
+        assumptions=(
+            "finite or explicitly regularised state space",
+            "periodic boundary condition declared before simulation",
+            "unitarity and periodicity are testable operator properties",
+            "retrocausal interpretation remains boundary-only without external evidence",
+        ),
+        validation_targets=(
+            "boundary-only periodicity and unitarity check",
+            "cycle-closure residual for O_MMC over one declared period",
+            "identity-period and non-unitary operator null controls",
+        ),
+        themes=(
+            "computational-unifier",
+            "temporal-boundary",
+            "cyclic operator",
+            "boundary-only",
+        ),
+    ),
+    Paper0EquationRecord(
+        key="computational.tsvf_abl_boundary",
+        manuscript=_MANUSCRIPT,
+        source_equation_ids=("EQ0116",),
+        section_path=(
+            "Structural Overview (by Domain) > Computational Unifier. > "
+            "3. Retrocausality via the Two-State Vector Formalism (TSVF)"
+        ),
+        canonical_latex=(
+            "P(A=a|t)=\\frac{|\\langle\\phi(t)|P_a|\\psi(t)\\rangle|^2}"
+            "{\\sum_j|\\langle\\phi(t)|P_j|\\psi(t)\\rangle|^2}"
+        ),
+        variables={
+            "psi": "forward-evolving pre-selected state",
+            "phi": "backward-evolving post-selected state",
+            "P_a": "projector for intermediate outcome a",
+            "P_j": "complete projective measurement family",
+        },
+        assumptions=(
+            "normalisable pre- and post-selected states",
+            "projectors form a complete orthogonal resolution of identity",
+            "non-zero ABL denominator",
+            "retrocausal interpretation remains boundary-only without external evidence",
+        ),
+        validation_targets=(
+            "ABL probability normalisation check",
+            "Born-rule reduction under trivial post-selection",
+            "zero-denominator and non-projector rejection controls",
+            "boundary-only interpretation label",
+        ),
+        themes=(
+            "computational-unifier",
+            "temporal-boundary",
+            "TSVF",
+            "ABL",
+            "boundary-only",
+        ),
+    ),
+    Paper0EquationRecord(
+        key="computational.info_thermodynamics",
+        manuscript=_MANUSCRIPT,
+        source_equation_ids=("EQ0117", "EQ0118"),
+        section_path=(
+            "Structural Overview (by Domain) > Computational Unifier. > "
+            "II. The Thermodynamics of Consciousness: Negentropy and Information"
+        ),
+        canonical_latex=(
+            "\\frac{dS_{\\mathrm{Total}}}{dt}=\\frac{dS_{\\mathrm{Thermo}}}{dt}+"
+            "\\frac{dS_{\\mathrm{Info}}}{dt}\\ge 0,\\quad "
+            "N_{\\Psi}=-\\frac{dS_{\\mathrm{Thermo}}}{dt}\\propto I(\\Psi;B)"
+        ),
+        variables={
+            "S_total": "total entropy budget",
+            "S_thermo": "thermodynamic entropy contribution",
+            "S_info": "information-processing entropy contribution",
+            "N_Psi": "negentropy injection rate attributed to the modelled field channel",
+            "I_Psi_B": "mutual information between Psi channel and biological substrate",
+        },
+        assumptions=(
+            "entropy rates are measured on a shared time base",
+            "local entropy reduction is paired with explicit information-processing cost",
+            "mutual information estimator and units are declared",
+            "GSL claims require non-negative total entropy-rate evidence",
+        ),
+        validation_targets=(
+            "GSL entropy-rate budget check",
+            "mutual information versus negentropy proportionality scan",
+            "Landauer cost lower-bound control",
+            "independent-channel zero-mutual-information null control",
+        ),
+        themes=(
+            "computational-unifier",
+            "information-thermodynamics",
+            "entropy",
+            "mutual information",
+            "GSL",
+        ),
+    ),
 )
 
 _RECORDS_BY_KEY = {record.key: record for record in _RECORDS}

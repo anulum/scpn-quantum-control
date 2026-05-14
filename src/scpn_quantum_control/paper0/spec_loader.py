@@ -30,6 +30,10 @@ DEFAULT_GLIAL_CONTROL_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_glial_control_validation_specs_2026-05-13.json"
 )
+DEFAULT_INFORMATION_THERMODYNAMICS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_information_thermodynamics_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -106,12 +110,34 @@ def load_glial_control_validation_spec(
     raise KeyError(f"glial-control validation spec {key!r} not found in {path}")
 
 
+def load_information_thermodynamics_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted information-thermodynamics validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_INFORMATION_THERMODYNAMICS_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(
+            f"information-thermodynamics validation spec bundle not found: {path}"
+        ) from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"information-thermodynamics validation spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_GLIAL_CONTROL_SPEC_BUNDLE",
+    "DEFAULT_INFORMATION_THERMODYNAMICS_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
     "DEFAULT_NEUROVASCULAR_SPEC_BUNDLE",
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "load_glial_control_validation_spec",
+    "load_information_thermodynamics_validation_spec",
     "load_macro_transition_validation_spec",
     "load_neurovascular_validation_spec",
     "load_upde_validation_spec",

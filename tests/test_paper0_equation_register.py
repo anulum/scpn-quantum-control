@@ -119,12 +119,43 @@ def test_glial_and_immune_records_are_source_anchored() -> None:
     assert "glial-control" in glial.themes
 
 
+def test_computational_unifier_records_are_source_anchored() -> None:
+    cyclic = get_paper0_equation_record("computational.cyclic_operator_boundary")
+    tsvf = get_paper0_equation_record("computational.tsvf_abl_boundary")
+    record = get_paper0_equation_record("computational.info_thermodynamics")
+
+    assert cyclic.source_equation_ids == ("EQ0115",)
+    assert "O_{\\mathrm{MMC}}" in cyclic.canonical_latex
+    assert "boundary-only" in " ".join(cyclic.validation_targets)
+    assert "temporal-boundary" in cyclic.themes
+
+    assert tsvf.source_equation_ids == ("EQ0116",)
+    assert "P(A=a|t)" in tsvf.canonical_latex
+    assert "normalisation" in " ".join(tsvf.validation_targets)
+    assert "temporal-boundary" in tsvf.themes
+
+    assert record.source_equation_ids == ("EQ0117", "EQ0118")
+    assert "\\frac{dS_{\\mathrm{Total}}}{dt}" in record.canonical_latex
+    assert "I(\\Psi;B)" in record.canonical_latex
+    assert set(record.variables) >= {
+        "S_total",
+        "S_thermo",
+        "S_info",
+        "N_Psi",
+        "I_Psi_B",
+    }
+    assert "Landauer" in " ".join(record.validation_targets)
+    assert "information-thermodynamics" in record.themes
+
+
 def test_iter_records_filters_by_theme_without_synthetic_entries() -> None:
     upde = list(iter_paper0_equation_records(theme="UPDE"))
     fim = list(iter_paper0_equation_records(theme="FIM"))
     macro = list(iter_paper0_equation_records(theme="macro-transition"))
     neurovascular = list(iter_paper0_equation_records(theme="neurovascular"))
     glial = list(iter_paper0_equation_records(theme="glial-control"))
+    info_thermo = list(iter_paper0_equation_records(theme="information-thermodynamics"))
+    temporal_boundary = list(iter_paper0_equation_records(theme="temporal-boundary"))
 
     assert {record.key for record in upde} >= {
         "upde.base_phase",
@@ -141,6 +172,13 @@ def test_iter_records_filters_by_theme_without_synthetic_entries() -> None:
     }
     assert {record.key for record in glial} == {
         "embodied.glial_sigma_control",
+    }
+    assert {record.key for record in info_thermo} == {
+        "computational.info_thermodynamics",
+    }
+    assert {record.key for record in temporal_boundary} == {
+        "computational.cyclic_operator_boundary",
+        "computational.tsvf_abl_boundary",
     }
 
 
