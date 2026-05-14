@@ -148,6 +148,10 @@ DEFAULT_COLLECTIVE_NICHE_CONSTRUCTION_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_collective_niche_construction_validation_specs_2026-05-13.json"
 )
+DEFAULT_CISS_BIOELECTRIC_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_ciss_bioelectric_validation_specs_2026-05-13.json"
+)
 DEFAULT_RAG_QEC_STACK_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_rag_qec_stack_validation_specs_2026-05-13.json"
@@ -792,6 +796,24 @@ def load_collective_niche_construction_validation_spec(
     raise KeyError(f"collective niche construction spec {key!r} not found in {path}")
 
 
+def load_ciss_bioelectric_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted CISS-bioelectric validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_CISS_BIOELECTRIC_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"CISS-bioelectric spec bundle not found: {path}") from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"CISS-bioelectric spec {key!r} not found in {path}")
+
+
 def load_rag_qec_stack_validation_spec(
     key: str,
     *,
@@ -812,6 +834,7 @@ def load_rag_qec_stack_validation_spec(
 
 __all__ = [
     "DEFAULT_COLLECTIVE_NICHE_CONSTRUCTION_SPEC_BUNDLE",
+    "DEFAULT_CISS_BIOELECTRIC_SPEC_BUNDLE",
     "DEFAULT_ADVANCED_MECHANISMS_SPEC_BUNDLE",
     "DEFAULT_ACEF_ALIGNMENT_SPEC_BUNDLE",
     "DEFAULT_ANOMALOUS_BOUNDARY_SPEC_BUNDLE",
@@ -847,6 +870,7 @@ __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_VALIDATION_STRATEGY_SPEC_BUNDLE",
     "load_collective_niche_construction_validation_spec",
+    "load_ciss_bioelectric_validation_spec",
     "load_advanced_mechanisms_validation_spec",
     "load_acef_alignment_validation_spec",
     "load_anomalous_boundary_validation_spec",
