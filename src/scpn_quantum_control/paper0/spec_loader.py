@@ -46,6 +46,10 @@ DEFAULT_FREE_ENERGY_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_free_energy_validation_specs_2026-05-13.json"
 )
+DEFAULT_HPC_UPDE_BRIDGE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_hpc_upde_bridge_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -198,11 +202,32 @@ def load_free_energy_validation_spec(
     raise KeyError(f"free-energy validation spec {key!r} not found in {path}")
 
 
+def load_hpc_upde_bridge_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted HPC/UPDE bridge validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_HPC_UPDE_BRIDGE_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(
+            f"HPC/UPDE bridge validation spec bundle not found: {path}"
+        ) from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"HPC/UPDE bridge validation spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_COMPUTATIONAL_THRESHOLD_SPEC_BUNDLE",
     "DEFAULT_ETHICAL_GAUGE_SPEC_BUNDLE",
     "DEFAULT_FREE_ENERGY_SPEC_BUNDLE",
     "DEFAULT_GLIAL_CONTROL_SPEC_BUNDLE",
+    "DEFAULT_HPC_UPDE_BRIDGE_SPEC_BUNDLE",
     "DEFAULT_INFORMATION_THERMODYNAMICS_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
     "DEFAULT_NEUROVASCULAR_SPEC_BUNDLE",
@@ -211,6 +236,7 @@ __all__ = [
     "load_ethical_gauge_validation_spec",
     "load_free_energy_validation_spec",
     "load_glial_control_validation_spec",
+    "load_hpc_upde_bridge_validation_spec",
     "load_information_thermodynamics_validation_spec",
     "load_macro_transition_validation_spec",
     "load_neurovascular_validation_spec",
