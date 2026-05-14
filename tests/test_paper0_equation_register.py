@@ -123,6 +123,9 @@ def test_computational_unifier_records_are_source_anchored() -> None:
     cyclic = get_paper0_equation_record("computational.cyclic_operator_boundary")
     tsvf = get_paper0_equation_record("computational.tsvf_abl_boundary")
     record = get_paper0_equation_record("computational.info_thermodynamics")
+    iit_or = get_paper0_equation_record("computational.iit_or_threshold")
+    noether = get_paper0_equation_record("computational.coherence_noether_current")
+    iet = get_paper0_equation_record("computational.information_energy_transduction")
 
     assert cyclic.source_equation_ids == ("EQ0115",)
     assert "O_{\\mathrm{MMC}}" in cyclic.canonical_latex
@@ -147,6 +150,21 @@ def test_computational_unifier_records_are_source_anchored() -> None:
     assert "Landauer" in " ".join(record.validation_targets)
     assert "information-thermodynamics" in record.themes
 
+    assert iit_or.source_equation_ids == ("EQ0119",)
+    assert "E_{\\Phi}" in iit_or.canonical_latex
+    assert "threshold crossing" in " ".join(iit_or.validation_targets)
+    assert "classifier-boundary" in iit_or.themes
+
+    assert noether.source_equation_ids == ("EQ0120",)
+    assert "J_{\\Psi}^{\\mu}" in noether.canonical_latex
+    assert "\\partial_{\\mu}J_{\\Psi}^{\\mu}=0" in noether.canonical_latex
+    assert "Noether" in noether.themes
+
+    assert iet.source_equation_ids == ("EQ0121", "EQ0122")
+    assert "\\nabla^2\\sqrt{\\rho}" in iet.canonical_latex
+    assert "constant-density zero-potential" in " ".join(iet.validation_targets)
+    assert "quantum-potential" in iet.themes
+
 
 def test_iter_records_filters_by_theme_without_synthetic_entries() -> None:
     upde = list(iter_paper0_equation_records(theme="UPDE"))
@@ -156,6 +174,8 @@ def test_iter_records_filters_by_theme_without_synthetic_entries() -> None:
     glial = list(iter_paper0_equation_records(theme="glial-control"))
     info_thermo = list(iter_paper0_equation_records(theme="information-thermodynamics"))
     temporal_boundary = list(iter_paper0_equation_records(theme="temporal-boundary"))
+    noether = list(iter_paper0_equation_records(theme="Noether"))
+    quantum_potential = list(iter_paper0_equation_records(theme="quantum-potential"))
 
     assert {record.key for record in upde} >= {
         "upde.base_phase",
@@ -179,6 +199,12 @@ def test_iter_records_filters_by_theme_without_synthetic_entries() -> None:
     assert {record.key for record in temporal_boundary} == {
         "computational.cyclic_operator_boundary",
         "computational.tsvf_abl_boundary",
+    }
+    assert {record.key for record in noether} == {
+        "computational.coherence_noether_current",
+    }
+    assert {record.key for record in quantum_potential} == {
+        "computational.information_energy_transduction",
     }
 
 

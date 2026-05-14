@@ -508,6 +508,116 @@ _RECORDS: tuple[Paper0EquationRecord, ...] = (
             "GSL",
         ),
     ),
+    Paper0EquationRecord(
+        key="computational.iit_or_threshold",
+        manuscript=_MANUSCRIPT,
+        source_equation_ids=("EQ0119",),
+        section_path=(
+            "Structural Overview (by Domain) > Computational Unifier. > "
+            "1. The Threshold of Consciousness (IIT-OR)"
+        ),
+        canonical_latex="E_{\\Phi}=\\alpha_{\\Phi}\\Phi",
+        variables={
+            "E_Phi": "informational self-energy proxy assigned to a candidate state split",
+            "alpha_Phi": "declared proportionality constant carrying the required units",
+            "Phi": "integrated-information observable or estimator",
+            "Phi_crit": "critical integrated-information threshold used for event labelling",
+        },
+        assumptions=(
+            "Phi estimator, units, and coarse graining are declared before thresholding",
+            "alpha_Phi is calibrated or explicitly scanned rather than inferred post hoc",
+            "threshold labels are classifier outputs, not empirical collapse evidence",
+            "OR interpretation remains a falsifiable boundary hypothesis",
+        ),
+        validation_targets=(
+            "linear E_Phi versus Phi proportionality check with positive alpha_Phi",
+            "threshold crossing classifier with pre-registered Phi_crit",
+            "label-shuffle and alpha-zero null controls",
+            "dimension and estimator-sensitivity scan",
+        ),
+        themes=(
+            "computational-unifier",
+            "IIT",
+            "OR",
+            "threshold",
+            "classifier-boundary",
+        ),
+    ),
+    Paper0EquationRecord(
+        key="computational.coherence_noether_current",
+        manuscript=_MANUSCRIPT,
+        source_equation_ids=("EQ0120",),
+        section_path=(
+            "Structural Overview (by Domain) > Computational Unifier. > "
+            "X. Symmetry, Conservation Laws, and the Coherence Current"
+        ),
+        canonical_latex=(
+            "J_{\\Psi}^{\\mu}=i\\left(\\Psi^{*}\\partial^{\\mu}\\Psi-"
+            "\\Psi\\partial^{\\mu}\\Psi^{*}\\right),\\quad "
+            "\\partial_{\\mu}J_{\\Psi}^{\\mu}=0"
+        ),
+        variables={
+            "J_Psi_mu": "Noether coherence-current four-vector",
+            "Psi": "complex scalar field or finite lattice field",
+            "partial_mu": "declared derivative operator on the chosen spacetime grid",
+            "alpha": "global U(1) phase transformation parameter",
+        },
+        assumptions=(
+            "field boundary conditions are declared before computing divergence",
+            "derivative discretisation and metric signature are explicit",
+            "current conservation is tested on equations of motion, not arbitrary fields",
+            "gauge or global U(1) status is labelled before interpretation",
+        ),
+        validation_targets=(
+            "global phase invariance of the finite action density",
+            "discrete divergence residual for conserved-current trajectories",
+            "boundary-flux accounting under non-periodic boundaries",
+            "phase-broken and random-field null controls",
+        ),
+        themes=(
+            "computational-unifier",
+            "Noether",
+            "coherence-current",
+            "U1-symmetry",
+            "conservation-law",
+        ),
+    ),
+    Paper0EquationRecord(
+        key="computational.information_energy_transduction",
+        manuscript=_MANUSCRIPT,
+        source_equation_ids=("EQ0121", "EQ0122"),
+        section_path=(
+            "Structural Overview (by Domain) > Computational Unifier. > "
+            "XIV. The Physics of Information-Energy Transduction (IET)"
+        ),
+        canonical_latex=("Q=-\\frac{\\hbar^2}{2m}\\frac{\\nabla^2\\sqrt{\\rho}}{\\sqrt{\\rho}}"),
+        variables={
+            "Q": "Bohm quantum-potential energy density proxy",
+            "hbar": "reduced Planck constant in the chosen unit system",
+            "m": "effective mass parameter",
+            "rho": "positive probability or density field",
+            "nabla2": "declared Laplacian operator",
+        },
+        assumptions=(
+            "rho is strictly positive or regularised before division",
+            "grid spacing and boundary conditions are declared",
+            "Q is interpreted as a quantum-potential diagnostic, not direct energy output",
+            "singular-density points are rejected or handled by a stated regulariser",
+        ),
+        validation_targets=(
+            "constant-density zero-potential null control",
+            "Gaussian-density analytic quantum-potential residual",
+            "grid-refinement convergence of the Laplacian term",
+            "non-positive rho rejection control",
+        ),
+        themes=(
+            "computational-unifier",
+            "IET",
+            "quantum-potential",
+            "Bohm",
+            "density-field",
+        ),
+    ),
 )
 
 _RECORDS_BY_KEY = {record.key: record for record in _RECORDS}
