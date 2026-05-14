@@ -148,6 +148,10 @@ DEFAULT_COLLECTIVE_NICHE_CONSTRUCTION_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_collective_niche_construction_validation_specs_2026-05-13.json"
 )
+DEFAULT_RAG_QEC_STACK_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_rag_qec_stack_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -788,6 +792,24 @@ def load_collective_niche_construction_validation_spec(
     raise KeyError(f"collective niche construction spec {key!r} not found in {path}")
 
 
+def load_rag_qec_stack_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted RAG QEC-stack validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_RAG_QEC_STACK_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"RAG QEC-stack spec bundle not found: {path}") from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"RAG QEC-stack spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_COLLECTIVE_NICHE_CONSTRUCTION_SPEC_BUNDLE",
     "DEFAULT_ADVANCED_MECHANISMS_SPEC_BUNDLE",
@@ -815,6 +837,7 @@ __all__ = [
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
     "DEFAULT_NEUROVASCULAR_SPEC_BUNDLE",
     "DEFAULT_PATHOLOGY_CRITICALITY_SPEC_BUNDLE",
+    "DEFAULT_RAG_QEC_STACK_SPEC_BUNDLE",
     "DEFAULT_SEED_FUNCTION_SPEC_BUNDLE",
     "DEFAULT_STUART_LANDAU_PRECISION_SPEC_BUNDLE",
     "DEFAULT_STDP_SOC_SPEC_BUNDLE",
@@ -849,6 +872,7 @@ __all__ = [
     "load_macro_transition_validation_spec",
     "load_neurovascular_validation_spec",
     "load_pathology_criticality_validation_spec",
+    "load_rag_qec_stack_validation_spec",
     "load_seed_function_validation_spec",
     "load_stuart_landau_precision_validation_spec",
     "load_stdp_soc_validation_spec",
