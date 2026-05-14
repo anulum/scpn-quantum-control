@@ -64,6 +64,13 @@ from .category_grammar_validation import (
     validate_category_grammar_fixture,
     validate_functorial_mapping,
 )
+from .chapter_roadmap_context_validation import (
+    ChapterRoadmapContextConfig,
+    ChapterRoadmapContextFixtureResult,
+    chapter_roadmap_entries,
+    classify_chapter_roadmap_context,
+    validate_chapter_roadmap_context_fixture,
+)
 from .ciss_bioelectric_validation import (
     CISSBioelectricConfig,
     CISSBioelectricFixtureResult,
@@ -602,6 +609,8 @@ __all__ = [
     "CausalEntropicForceValidationResult",
     "CategoryGrammarConfig",
     "CategoryGrammarFixtureResult",
+    "ChapterRoadmapContextConfig",
+    "ChapterRoadmapContextFixtureResult",
     "ChannelConstraint",
     "CascadingFailurePercolationValidationResult",
     "CISSBioelectricConfig",
@@ -793,6 +802,7 @@ __all__ = [
     "causal_entropy",
     "causal_entropy_force",
     "causal_path_entropy",
+    "chapter_roadmap_entries",
     "circular_mean_phase",
     "civilisation_choice_label",
     "class_goldstone_density_pressure",
@@ -800,6 +810,7 @@ __all__ = [
     "classify_three_channel_outcome",
     "classify_operator_layer",
     "classify_criticality",
+    "classify_chapter_roadmap_context",
     "classify_nths_phase",
     "classify_toc_context",
     "coherence_time_fs",
@@ -963,6 +974,7 @@ __all__ = [
     "validate_criticality_deviation_classifier_fixture",
     "validate_causal_entropic_force_fixture",
     "validate_category_grammar_fixture",
+    "validate_chapter_roadmap_context_fixture",
     "validate_ciss_bioelectric_fixture",
     "validate_coherence_noether_current_fixture",
     "validate_collective_niche_construction_fixture",

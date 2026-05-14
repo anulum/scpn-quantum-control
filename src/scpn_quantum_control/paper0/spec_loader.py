@@ -212,6 +212,10 @@ DEFAULT_FRONT_MATTER_CONTEXT_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_front_matter_context_validation_specs_2026-05-13.json"
 )
+DEFAULT_CHAPTER_ROADMAP_CONTEXT_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_chapter_roadmap_context_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -1146,8 +1150,27 @@ def load_front_matter_context_validation_spec(
     raise KeyError(f"front matter context spec {key!r} not found in {path}")
 
 
+def load_chapter_roadmap_context_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted chapter roadmap context validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_CHAPTER_ROADMAP_CONTEXT_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"chapter roadmap context spec bundle not found: {path}") from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"chapter roadmap context spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_CATEGORY_GRAMMAR_SPEC_BUNDLE",
+    "DEFAULT_CHAPTER_ROADMAP_CONTEXT_SPEC_BUNDLE",
     "DEFAULT_COLLECTIVE_NICHE_CONSTRUCTION_SPEC_BUNDLE",
     "DEFAULT_CISS_BIOELECTRIC_SPEC_BUNDLE",
     "DEFAULT_ADVANCED_MECHANISMS_SPEC_BUNDLE",
@@ -1198,6 +1221,7 @@ __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_VALIDATION_STRATEGY_SPEC_BUNDLE",
     "load_collective_niche_construction_validation_spec",
+    "load_chapter_roadmap_context_validation_spec",
     "load_ciss_bioelectric_validation_spec",
     "load_advanced_mechanisms_validation_spec",
     "load_acef_alignment_validation_spec",
