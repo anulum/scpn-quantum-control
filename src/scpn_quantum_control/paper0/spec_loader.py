@@ -70,6 +70,10 @@ DEFAULT_SYSTEM_ROBUSTNESS_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_system_robustness_validation_specs_2026-05-13.json"
 )
+DEFAULT_L11_INTERFACE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_l11_interface_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -342,6 +346,24 @@ def load_system_robustness_validation_spec(
     raise KeyError(f"system-robustness validation spec {key!r} not found in {path}")
 
 
+def load_l11_interface_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted L11 interface validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_L11_INTERFACE_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"L11 interface validation spec bundle not found: {path}") from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"L11 interface validation spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_ANOMALOUS_BOUNDARY_SPEC_BUNDLE",
     "DEFAULT_ARTIFICIAL_SENTIENCE_SPEC_BUNDLE",
@@ -351,6 +373,7 @@ __all__ = [
     "DEFAULT_GLIAL_CONTROL_SPEC_BUNDLE",
     "DEFAULT_HPC_UPDE_BRIDGE_SPEC_BUNDLE",
     "DEFAULT_INFORMATION_THERMODYNAMICS_SPEC_BUNDLE",
+    "DEFAULT_L11_INTERFACE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
     "DEFAULT_NEUROVASCULAR_SPEC_BUNDLE",
     "DEFAULT_PATHOLOGY_CRITICALITY_SPEC_BUNDLE",
@@ -365,6 +388,7 @@ __all__ = [
     "load_glial_control_validation_spec",
     "load_hpc_upde_bridge_validation_spec",
     "load_information_thermodynamics_validation_spec",
+    "load_l11_interface_validation_spec",
     "load_macro_transition_validation_spec",
     "load_neurovascular_validation_spec",
     "load_pathology_criticality_validation_spec",
