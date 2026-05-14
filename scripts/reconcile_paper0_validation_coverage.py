@@ -137,7 +137,9 @@ def reconcile_promoted_coverage(repo_root: Path = REPO_ROOT) -> CoverageReconcil
         "promoted_end": promoted_end,
         "promoted_record_count": promoted_record_count,
         "promoted_coverage_match": not gaps and not overlaps and promoted_record_count == 918,
+        "promoted_surface_integrity": not overlaps and not missing_surfaces,
         "gap_count": len(gaps),
+        "gaps": [list(item) for item in gaps],
         "overlap_count": len(overlaps),
         "missing_surface_count": len(missing_surfaces),
         "unpromoted_prefix_count": unpromoted_prefix_count,
@@ -216,7 +218,7 @@ def main() -> int:
     result = reconcile_promoted_coverage(REPO_ROOT)
     write_outputs(result, output_dir=args.output_dir, date_tag=args.date_tag)
     print(json.dumps(result.summary, indent=2, sort_keys=True))
-    return 0 if result.summary["promoted_coverage_match"] and not result.missing_surfaces else 1
+    return 0 if result.summary["promoted_surface_integrity"] else 1
 
 
 def _coverage_gaps_and_overlaps(

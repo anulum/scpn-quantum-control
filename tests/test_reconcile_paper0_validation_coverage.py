@@ -20,13 +20,14 @@ from scripts.reconcile_paper0_validation_coverage import (
 )
 
 
-def test_discover_promoted_slices_are_contiguous_over_promoted_tail() -> None:
+def test_discover_promoted_slices_cover_opening_and_promoted_tail() -> None:
     slices = discover_promoted_slices(REPO_ROOT)
 
-    assert len(slices) == 36
-    assert slices[0].source_start == "P0R06212"
+    assert len(slices) == 37
+    assert slices[0].source_start == "P0R00001"
+    assert slices[0].source_end == "P0R00017"
     assert slices[-1].source_end == "P0R07129"
-    assert sum(item.source_record_count for item in slices) == 918
+    assert sum(item.source_record_count for item in slices) == 935
     assert all(item.has_runtime_module for item in slices)
     assert all(item.has_runner for item in slices)
     assert all(item.has_builder_tests for item in slices)
@@ -34,19 +35,21 @@ def test_discover_promoted_slices_are_contiguous_over_promoted_tail() -> None:
     assert all(item.has_runner_tests for item in slices)
 
 
-def test_reconcile_promoted_coverage_matches_canonical_ledger_tail() -> None:
+def test_reconcile_promoted_coverage_reports_remaining_middle_gap() -> None:
     result = reconcile_promoted_coverage(REPO_ROOT)
 
     assert result.summary["ledger_record_count"] == 7129
-    assert result.summary["promoted_start"] == "P0R06212"
+    assert result.summary["promoted_start"] == "P0R00001"
     assert result.summary["promoted_end"] == "P0R07129"
-    assert result.summary["promoted_record_count"] == 918
-    assert result.summary["promoted_coverage_match"] is True
-    assert result.summary["gap_count"] == 0
+    assert result.summary["promoted_record_count"] == 935
+    assert result.summary["promoted_coverage_match"] is False
+    assert result.summary["promoted_surface_integrity"] is True
+    assert result.summary["gap_count"] == 1
+    assert result.summary["gaps"] == [["P0R00018", "P0R06211"]]
     assert result.summary["overlap_count"] == 0
     assert result.summary["missing_surface_count"] == 0
-    assert result.summary["unpromoted_prefix_count"] == 6211
-    assert result.summary["unpromoted_prefix_span"] == ["P0R00001", "P0R06211"]
+    assert result.summary["unpromoted_prefix_count"] == 0
+    assert result.summary["unpromoted_prefix_span"] == []
 
 
 def test_write_reconciliation_outputs(tmp_path: Path) -> None:
@@ -57,7 +60,8 @@ def test_write_reconciliation_outputs(tmp_path: Path) -> None:
     payload = json.loads(outputs["json"].read_text(encoding="utf-8"))
     report = outputs["report"].read_text(encoding="utf-8")
 
-    assert payload["summary"]["promoted_coverage_match"] is True
+    assert payload["summary"]["promoted_coverage_match"] is False
+    assert payload["summary"]["promoted_surface_integrity"] is True
     assert payload["summary"]["missing_surface_count"] == 0
     assert "Paper 0 Validation Coverage Reconciliation" in report
-    assert "P0R06212 - P0R07129" in report
+    assert "P0R00001 - P0R07129" in report

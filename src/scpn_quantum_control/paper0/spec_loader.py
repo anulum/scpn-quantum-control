@@ -204,6 +204,10 @@ DEFAULT_THREE_CHANNEL_COUPLING_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_three_channel_coupling_validation_specs_2026-05-13.json"
 )
+DEFAULT_OPENING_FOUNDATION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_opening_foundation_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -1102,6 +1106,24 @@ def load_three_channel_coupling_validation_spec(
     raise KeyError(f"three-channel coupling spec {key!r} not found in {path}")
 
 
+def load_opening_foundation_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted opening foundation validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_OPENING_FOUNDATION_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"opening foundation spec bundle not found: {path}") from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"opening foundation spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_CATEGORY_GRAMMAR_SPEC_BUNDLE",
     "DEFAULT_COLLECTIVE_NICHE_CONSTRUCTION_SPEC_BUNDLE",
@@ -1129,6 +1151,7 @@ __all__ = [
     "DEFAULT_HPC_UPDE_DERIVATION_SPEC_BUNDLE",
     "DEFAULT_L11_NTHS_COMPUTATIONAL_SPEC_BUNDLE",
     "DEFAULT_NV_QUANTUM_SENSING_SPEC_BUNDLE",
+    "DEFAULT_OPENING_FOUNDATION_SPEC_BUNDLE",
     "DEFAULT_TWO_TIMESCALE_QUASICRITICAL_SPEC_BUNDLE",
     "DEFAULT_INFORMATION_THERMODYNAMICS_SPEC_BUNDLE",
     "DEFAULT_L5_ACTIVE_INFERENCE_MATH_SPEC_BUNDLE",
@@ -1177,6 +1200,7 @@ __all__ = [
     "load_cosmological_eos_validation_spec",
     "load_cosmological_predictions_validation_spec",
     "load_nv_quantum_sensing_validation_spec",
+    "load_opening_foundation_validation_spec",
     "load_two_timescale_quasicritical_validation_spec",
     "load_information_thermodynamics_validation_spec",
     "load_l5_active_inference_math_validation_spec",
