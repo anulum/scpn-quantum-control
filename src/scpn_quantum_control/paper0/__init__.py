@@ -125,6 +125,13 @@ from .ethical_imperative_validation import (
     validate_ethical_imperative_fixture,
     validate_governance_beyond_borders_fixture,
 )
+from .fine_tuning_pes_validation import (
+    FineTuningPESConfig,
+    FineTuningPESFixtureResult,
+    pes_selection_probability,
+    protocol_catalogue_completeness,
+    validate_fine_tuning_pes_fixture,
+)
 from .free_energy_validation import (
     FreeEnergyConfig,
     FreeEnergyTerms,
@@ -386,6 +393,8 @@ __all__ = [
     "EntanglementCorrelationBoundaryValidationResult",
     "FieldCouplingConfig",
     "FieldValidationResult",
+    "FineTuningPESConfig",
+    "FineTuningPESFixtureResult",
     "FragmentationSpinGlassRiskValidationResult",
     "FreeEnergyConfig",
     "FreeEnergyTerms",
@@ -539,10 +548,12 @@ __all__ = [
     "negative_cosine_potential",
     "paper0_upde_records",
     "pathology_index",
+    "pes_selection_probability",
     "phase_locking_value",
     "phase_prediction_error_terms",
     "polar_stuart_landau_rates",
     "precision_weighted_phase_terms",
+    "protocol_catalogue_completeness",
     "psi_dm_candidate_label",
     "quadratic_free_energy",
     "quantum_potential",
@@ -577,6 +588,7 @@ __all__ = [
     "validate_ethical_renormalisation_fixture",
     "validate_ethical_yang_mills_action_fixture",
     "validate_entanglement_correlation_boundary_fixture",
+    "validate_fine_tuning_pes_fixture",
     "validate_fragmentation_spin_glass_risk_fixture",
     "validate_gaian_safety_fixture",
     "validate_glial_sigma_control_fixture",
