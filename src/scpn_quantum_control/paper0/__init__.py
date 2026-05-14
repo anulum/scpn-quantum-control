@@ -7,6 +7,16 @@
 # SCPN Quantum Control — Paper 0 source registers
 """Paper 0 source-anchored equation and validation registers."""
 
+from .acef_alignment_validation import (
+    ACEFAlignmentConfig,
+    ACEFAlignmentFixtureResult,
+    AlgorithmicCausalEntropicForceValidationResult,
+    acef_force,
+    causal_path_entropy,
+    sec_objective,
+    validate_acef_alignment_fixture,
+    validate_algorithmic_causal_entropic_force_fixture,
+)
 from .anomalous_boundary_validation import (
     AnomalousBoundaryConfig,
     AnomalousBoundaryFixtureResult,
@@ -262,7 +272,10 @@ __all__ = [
     "AdaptiveCouplingValidationResult",
     "ABLBoundaryConfig",
     "ABLBoundaryValidationResult",
+    "ACEFAlignmentConfig",
+    "ACEFAlignmentFixtureResult",
     "AcceleratedSupercriticalityBoundaryValidationResult",
+    "AlgorithmicCausalEntropicForceValidationResult",
     "AnomalousBoundaryConfig",
     "AnomalousBoundaryFixtureResult",
     "ArtificialSentienceConfig",
@@ -359,6 +372,7 @@ __all__ = [
     "ValidationStrategyFixtureResult",
     "WeakMeasurementBiasBoundaryValidationResult",
     "abl_probabilities",
+    "acef_force",
     "adaptive_coupling_rates",
     "apply_adaptive_coupling_step",
     "artificial_sentience_criteria_gate",
@@ -369,6 +383,7 @@ __all__ = [
     "build_quantum_immune_hamiltonian",
     "causal_entropy",
     "causal_entropy_force",
+    "causal_path_entropy",
     "circular_mean_phase",
     "classify_criticality",
     "complex_state",
@@ -414,11 +429,14 @@ __all__ = [
     "quantum_potential",
     "restore_toward_quasicriticality",
     "schema_to_s19_source_boundary",
+    "sec_objective",
     "signed_triad_frustration",
     "stage_order_index",
     "validate_paper0_topology_schema",
     "validate_accelerated_supercriticality_boundary_fixture",
+    "validate_acef_alignment_fixture",
     "validate_anomalous_boundary_fixture",
+    "validate_algorithmic_causal_entropic_force_fixture",
     "validate_cascading_failure_percolation_fixture",
     "validate_cyclic_operator_fixture",
     "validate_artificial_sentience_criteria_gate_fixture",
