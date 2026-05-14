@@ -388,6 +388,13 @@ from .nv_quantum_sensing_validation import (
     fit_decoherence_regression,
     validate_nv_quantum_sensing_fixture,
 )
+from .objective_cover_context_validation import (
+    ObjectiveCoverContextConfig,
+    ObjectiveCoverContextFixtureResult,
+    classify_objective_cover_context,
+    objective_cover_targets,
+    validate_objective_cover_context_fixture,
+)
 from .opening_foundation_validation import (
     OpeningFoundationConfig,
     OpeningFoundationFixtureResult,
@@ -711,6 +718,8 @@ __all__ = [
     "NTHSPhaseTestValidationResult",
     "NVQuantumSensingConfig",
     "NVQuantumSensingFixtureResult",
+    "ObjectiveCoverContextConfig",
+    "ObjectiveCoverContextFixtureResult",
     "OpeningFoundationConfig",
     "OpeningFoundationFixtureResult",
     "OrderParameterSummary",
@@ -812,6 +821,7 @@ __all__ = [
     "classify_criticality",
     "classify_chapter_roadmap_context",
     "classify_nths_phase",
+    "classify_objective_cover_context",
     "classify_toc_context",
     "coherence_time_fs",
     "ciss_effective_field_t",
@@ -914,6 +924,7 @@ __all__ = [
     "order_parameter_summary",
     "operator_catalogue",
     "observational_w0_consistency",
+    "objective_cover_targets",
     "paper0_upde_records",
     "pathology_index",
     "persistence_lifetimes",
@@ -1014,6 +1025,7 @@ __all__ = [
     "validate_l11_nths_computational_fixture",
     "validate_nths_phase_test_fixture",
     "validate_nv_quantum_sensing_fixture",
+    "validate_objective_cover_context_fixture",
     "validate_operator_locations",
     "validate_opening_foundation_fixture",
     "validate_pathology_criticality_fixture",
