@@ -58,6 +58,10 @@ DEFAULT_PATHOLOGY_CRITICALITY_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_pathology_criticality_validation_specs_2026-05-13.json"
 )
+DEFAULT_ARTIFICIAL_SENTIENCE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_artificial_sentience_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -270,7 +274,28 @@ def load_pathology_criticality_validation_spec(
     raise KeyError(f"pathology/criticality validation spec {key!r} not found in {path}")
 
 
+def load_artificial_sentience_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted artificial-sentience validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_ARTIFICIAL_SENTIENCE_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(
+            f"artificial-sentience validation spec bundle not found: {path}"
+        ) from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"artificial-sentience validation spec {key!r} not found in {path}")
+
+
 __all__ = [
+    "DEFAULT_ARTIFICIAL_SENTIENCE_SPEC_BUNDLE",
     "DEFAULT_COMPUTATIONAL_THRESHOLD_SPEC_BUNDLE",
     "DEFAULT_ETHICAL_GAUGE_SPEC_BUNDLE",
     "DEFAULT_FREE_ENERGY_SPEC_BUNDLE",
@@ -282,6 +307,7 @@ __all__ = [
     "DEFAULT_PATHOLOGY_CRITICALITY_SPEC_BUNDLE",
     "DEFAULT_STUART_LANDAU_PRECISION_SPEC_BUNDLE",
     "DEFAULT_UPDE_SPEC_BUNDLE",
+    "load_artificial_sentience_validation_spec",
     "load_computational_threshold_validation_spec",
     "load_ethical_gauge_validation_spec",
     "load_free_energy_validation_spec",
