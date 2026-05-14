@@ -55,6 +55,13 @@ from .ethical_gauge_validation import (
     validate_ethical_connection_boundary_fixture,
     validate_ethical_yang_mills_action_fixture,
 )
+from .free_energy_validation import (
+    FreeEnergyConfig,
+    FreeEnergyTerms,
+    FreeEnergyValidationResult,
+    free_energy_terms,
+    validate_variational_free_energy_fixture,
+)
 from .glial_control_validation import (
     GlialSigmaControlConfig,
     GlialSigmaTrajectory,
@@ -137,6 +144,9 @@ __all__ = [
     "EthicalYangMillsActionValidationResult",
     "FieldCouplingConfig",
     "FieldValidationResult",
+    "FreeEnergyConfig",
+    "FreeEnergyTerms",
+    "FreeEnergyValidationResult",
     "GlialSigmaControlConfig",
     "GlialSigmaTrajectory",
     "GlialSigmaValidationResult",
@@ -178,6 +188,7 @@ __all__ = [
     "field_coupling_term",
     "finite_difference_negative_gradient",
     "finite_difference_quadratic_gradient",
+    "free_energy_terms",
     "get_paper0_equation_record",
     "iit_threshold_energy",
     "interlayer_coupling_terms",
@@ -204,6 +215,7 @@ __all__ = [
     "validate_information_energy_transduction_fixture",
     "validate_quantum_immune_interface_fixture",
     "validate_tsvf_abl_fixture",
+    "validate_variational_free_energy_fixture",
     "validate_upde_adaptive_coupling_fixture",
     "validate_upde_base_phase_fixture",
     "validate_upde_field_fixture",

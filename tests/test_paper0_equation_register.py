@@ -188,6 +188,16 @@ def test_ethical_gauge_records_are_source_anchored() -> None:
     assert "CEF" in cef.themes
 
 
+def test_free_energy_records_are_source_anchored() -> None:
+    fep = get_paper0_equation_record("computational.variational_free_energy")
+
+    assert fep.source_equation_ids == ("EQ0130", "EQ0131")
+    assert "D_{KL}" in fep.canonical_latex
+    assert "\\mathbb{E}_{q}" in fep.canonical_latex
+    assert "complexity plus accuracy" in " ".join(fep.validation_targets)
+    assert "free-energy-principle" in fep.themes
+
+
 def test_iter_records_filters_by_theme_without_synthetic_entries() -> None:
     upde = list(iter_paper0_equation_records(theme="UPDE"))
     fim = list(iter_paper0_equation_records(theme="FIM"))
@@ -200,6 +210,7 @@ def test_iter_records_filters_by_theme_without_synthetic_entries() -> None:
     quantum_potential = list(iter_paper0_equation_records(theme="quantum-potential"))
     ethical_connection = list(iter_paper0_equation_records(theme="ethical-connection"))
     cef = list(iter_paper0_equation_records(theme="CEF"))
+    fep = list(iter_paper0_equation_records(theme="free-energy-principle"))
 
     assert {record.key for record in upde} >= {
         "upde.base_phase",
@@ -235,6 +246,9 @@ def test_iter_records_filters_by_theme_without_synthetic_entries() -> None:
     }
     assert {record.key for record in cef} == {
         "computational.causal_entropic_force",
+    }
+    assert {record.key for record in fep} == {
+        "computational.variational_free_energy",
     }
 
 

@@ -742,6 +742,47 @@ _RECORDS: tuple[Paper0EquationRecord, ...] = (
             "force-field-boundary",
         ),
     ),
+    Paper0EquationRecord(
+        key="computational.variational_free_energy",
+        manuscript=_MANUSCRIPT,
+        source_equation_ids=("EQ0130", "EQ0131"),
+        section_path=(
+            "Structural Overview (by Domain) > Computational Unifier. > "
+            "I. The Free Energy Principle: The Imperative to Minimise Surprise"
+        ),
+        canonical_latex=(
+            "F = D_{KL}\\left[q(\\theta|\\mu)\\,\\|\\,p(\\theta|y)\\right]"
+            "+\\mathbb{E}_{q}\\left[-\\log p(y|\\theta)\\right]"
+        ),
+        variables={
+            "F": "variational free-energy proxy",
+            "q_theta_mu": "recognition density over causes under internal state mu",
+            "p_theta_y": "posterior density over causes after observing sensory data y",
+            "p_y_theta": "generative likelihood of sensory data under causes theta",
+            "theta": "latent causes",
+            "mu": "internal or variational state parameters",
+            "y": "sensory observations",
+        },
+        assumptions=(
+            "q and p are normalised probability densities on the same support",
+            "absolute continuity holds before evaluating D_KL",
+            "likelihood values are strictly positive or explicitly regularised",
+            "complexity and accuracy terms are reported separately before interpretation",
+        ),
+        validation_targets=(
+            "complexity plus accuracy decomposition equals total F",
+            "D_KL non-negativity and zero-identical-density control",
+            "surprise upper-bound check against negative log evidence",
+            "support-mismatch and zero-likelihood rejection controls",
+        ),
+        themes=(
+            "computational-unifier",
+            "free-energy-principle",
+            "variational-free-energy",
+            "predictive-coding",
+            "Bayesian-inference",
+        ),
+    ),
 )
 
 _RECORDS_BY_KEY = {record.key: record for record in _RECORDS}
