@@ -97,6 +97,10 @@ DEFAULT_COSMOLOGICAL_IMPLICATIONS_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_cosmological_implications_validation_specs_2026-05-13.json"
 )
+DEFAULT_DARK_SECTOR_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_dark_sector_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -497,12 +501,31 @@ def load_cosmological_implications_validation_spec(
     raise KeyError(f"Cosmological implications spec {key!r} not found in {path}")
 
 
+def load_dark_sector_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted dark-sector validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_DARK_SECTOR_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"Dark-sector spec bundle not found: {path}") from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"Dark-sector spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_ACEF_ALIGNMENT_SPEC_BUNDLE",
     "DEFAULT_ANOMALOUS_BOUNDARY_SPEC_BUNDLE",
     "DEFAULT_ARTIFICIAL_SENTIENCE_SPEC_BUNDLE",
     "DEFAULT_COMPUTATIONAL_THRESHOLD_SPEC_BUNDLE",
     "DEFAULT_COSMOLOGICAL_IMPLICATIONS_SPEC_BUNDLE",
+    "DEFAULT_DARK_SECTOR_SPEC_BUNDLE",
     "DEFAULT_ETHICAL_IMPERATIVE_SPEC_BUNDLE",
     "DEFAULT_ETHICAL_GAUGE_SPEC_BUNDLE",
     "DEFAULT_FREE_ENERGY_SPEC_BUNDLE",
@@ -524,6 +547,7 @@ __all__ = [
     "load_artificial_sentience_validation_spec",
     "load_computational_threshold_validation_spec",
     "load_cosmological_implications_validation_spec",
+    "load_dark_sector_validation_spec",
     "load_ethical_imperative_validation_spec",
     "load_ethical_gauge_validation_spec",
     "load_free_energy_validation_spec",
