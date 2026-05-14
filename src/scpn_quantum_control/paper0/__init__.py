@@ -231,6 +231,17 @@ from .upde_validation import (
     validate_upde_interlayer_fixture,
     validate_upde_natural_gradient_fixture,
 )
+from .validation_strategy import (
+    REQUIRED_DOMAINS,
+    STAGE_ORDER,
+    ValidationDomainTarget,
+    ValidationStrategyConfig,
+    ValidationStrategyFixtureResult,
+    stage_order_index,
+    validate_stage_order,
+    validate_validation_strategy_fixture,
+    validation_domain_coverage,
+)
 
 __all__ = [
     "AdaptiveCouplingConfig",
@@ -311,7 +322,9 @@ __all__ = [
     "Paper0TopologyValidationError",
     "QuantumImmuneInterfaceConfig",
     "QuantumImmuneValidationResult",
+    "REQUIRED_DOMAINS",
     "SalienceRadialPrecisionControlValidationResult",
+    "STAGE_ORDER",
     "StuartLandauPolarRates",
     "StuartLandauPrecisionConfig",
     "StuartLandauPrecisionFixtureResult",
@@ -325,6 +338,9 @@ __all__ = [
     "UpdeGradientBridgeConfig",
     "UpdeGradientBridgeTerms",
     "UpdeGradientBridgeValidationResult",
+    "ValidationDomainTarget",
+    "ValidationStrategyConfig",
+    "ValidationStrategyFixtureResult",
     "WeakMeasurementBiasBoundaryValidationResult",
     "abl_probabilities",
     "adaptive_coupling_rates",
@@ -379,6 +395,7 @@ __all__ = [
     "quantum_potential",
     "restore_toward_quasicriticality",
     "schema_to_s19_source_boundary",
+    "stage_order_index",
     "validate_paper0_topology_schema",
     "validate_accelerated_supercriticality_boundary_fixture",
     "validate_anomalous_boundary_fixture",
@@ -425,6 +442,9 @@ __all__ = [
     "validate_upde_interlayer_fixture",
     "validate_upde_natural_gradient_fixture",
     "validate_upde_phase_prediction_error_fixture",
+    "validate_stage_order",
+    "validate_validation_strategy_fixture",
+    "validation_domain_coverage",
     "xy_potential",
     "xy_potential_gradient",
 ]

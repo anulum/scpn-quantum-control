@@ -74,6 +74,9 @@ DEFAULT_L11_INTERFACE_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_l11_interface_validation_specs_2026-05-13.json"
 )
+DEFAULT_VALIDATION_STRATEGY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/paper0_validation_strategy_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -364,6 +367,24 @@ def load_l11_interface_validation_spec(
     raise KeyError(f"L11 interface validation spec {key!r} not found in {path}")
 
 
+def load_validation_strategy_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted validation-strategy spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_VALIDATION_STRATEGY_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"validation-strategy spec bundle not found: {path}") from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"validation-strategy spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_ANOMALOUS_BOUNDARY_SPEC_BUNDLE",
     "DEFAULT_ARTIFICIAL_SENTIENCE_SPEC_BUNDLE",
@@ -380,6 +401,7 @@ __all__ = [
     "DEFAULT_STUART_LANDAU_PRECISION_SPEC_BUNDLE",
     "DEFAULT_SYSTEM_ROBUSTNESS_SPEC_BUNDLE",
     "DEFAULT_UPDE_SPEC_BUNDLE",
+    "DEFAULT_VALIDATION_STRATEGY_SPEC_BUNDLE",
     "load_anomalous_boundary_validation_spec",
     "load_artificial_sentience_validation_spec",
     "load_computational_threshold_validation_spec",
@@ -395,4 +417,5 @@ __all__ = [
     "load_stuart_landau_precision_validation_spec",
     "load_system_robustness_validation_spec",
     "load_upde_validation_spec",
+    "load_validation_strategy_spec",
 ]
