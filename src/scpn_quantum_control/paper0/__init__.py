@@ -242,6 +242,14 @@ from .seed_function_validation import (
     validate_seed_function_fixture,
 )
 from .spec_loader import load_glial_control_validation_spec
+from .stdp_soc_validation import (
+    STDPSOCConfig,
+    STDPSOCFixtureResult,
+    avalanche_power_law_density,
+    branching_parameter_relaxation_derivative,
+    stdp_weight_update,
+    validate_stdp_soc_fixture,
+)
 from .stuart_landau_precision_validation import (
     PrecisionWeightedPhaseTerms,
     SalienceRadialPrecisionControlValidationResult,
@@ -464,6 +472,8 @@ __all__ = [
     "SeedFunctionFixtureResult",
     "SeedPayload",
     "SpinTorsionBridgeValidationResult",
+    "STDPSOCConfig",
+    "STDPSOCFixtureResult",
     "STAGE_ORDER",
     "StuartLandauPolarRates",
     "StuartLandauPrecisionConfig",
@@ -492,8 +502,10 @@ __all__ = [
     "adaptive_coupling_rates",
     "apply_adaptive_coupling_step",
     "artificial_sentience_criteria_gate",
+    "avalanche_power_law_density",
     "bell_chsh_value",
     "bounded_weak_measurement_bias",
+    "branching_parameter_relaxation_derivative",
     "build_paper0_topology_schema",
     "build_cyclic_operator",
     "build_quantum_immune_hamiltonian",
@@ -579,6 +591,7 @@ __all__ = [
     "signed_triad_frustration",
     "spin_torsion_bridge",
     "stage_order_index",
+    "stdp_weight_update",
     "symmetry_restoration_score",
     "theory_positioning_score",
     "validate_advanced_mechanisms_fixture",
@@ -625,6 +638,7 @@ __all__ = [
     "validate_information_energy_transduction_fixture",
     "validate_quantum_immune_interface_fixture",
     "validate_seed_function_fixture",
+    "validate_stdp_soc_fixture",
     "validate_stuart_landau_precision_fixture",
     "validate_stuart_landau_precision_upgrade_fixture",
     "validate_stuart_landau_precision_weighted_dynamics_fixture",
