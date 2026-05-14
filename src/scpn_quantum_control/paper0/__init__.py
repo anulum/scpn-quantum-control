@@ -217,6 +217,14 @@ from .pathology_criticality_validation import (
     validate_pathology_criticality_fixture,
     validate_therapeutic_restoration_targets_fixture,
 )
+from .seed_function_validation import (
+    SeedFunctionConfig,
+    SeedFunctionFixtureResult,
+    SeedPayload,
+    compute_teleological_seed,
+    mu_squared_seed,
+    validate_seed_function_fixture,
+)
 from .spec_loader import load_glial_control_validation_spec
 from .stuart_landau_precision_validation import (
     PrecisionWeightedPhaseTerms,
@@ -432,6 +440,9 @@ __all__ = [
     "QuantumImmuneValidationResult",
     "REQUIRED_DOMAINS",
     "SalienceRadialPrecisionControlValidationResult",
+    "SeedFunctionConfig",
+    "SeedFunctionFixtureResult",
+    "SeedPayload",
     "SpinTorsionBridgeValidationResult",
     "STAGE_ORDER",
     "StuartLandauPolarRates",
@@ -476,6 +487,7 @@ __all__ = [
     "complex_state",
     "complex_stuart_landau_derivative",
     "compute_phase_metrics",
+    "compute_teleological_seed",
     "conformal_boundary_violation_score",
     "conformal_geometry_score",
     "conformal_invariant_torsion_score",
@@ -519,6 +531,7 @@ __all__ = [
     "legal_conformal_rescaling_score",
     "massless_limit_scores",
     "mmc_information_preservation_score",
+    "mu_squared_seed",
     "load_upde_validation_spec",
     "load_glial_control_validation_spec",
     "ms_qec_success_probability",
@@ -583,6 +596,7 @@ __all__ = [
     "validate_information_thermodynamics_fixture",
     "validate_information_energy_transduction_fixture",
     "validate_quantum_immune_interface_fixture",
+    "validate_seed_function_fixture",
     "validate_stuart_landau_precision_fixture",
     "validate_stuart_landau_precision_upgrade_fixture",
     "validate_stuart_landau_precision_weighted_dynamics_fixture",
