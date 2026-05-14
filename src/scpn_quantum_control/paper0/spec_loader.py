@@ -105,6 +105,10 @@ DEFAULT_SYMMETRY_RESTORATION_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_symmetry_restoration_validation_specs_2026-05-13.json"
 )
+DEFAULT_T0_SEEDING_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_t0_seeding_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -541,6 +545,24 @@ def load_symmetry_restoration_validation_spec(
     raise KeyError(f"Symmetry-restoration spec {key!r} not found in {path}")
 
 
+def load_t0_seeding_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted t0-seeding validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_T0_SEEDING_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"t0-seeding spec bundle not found: {path}") from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"t0-seeding spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_ACEF_ALIGNMENT_SPEC_BUNDLE",
     "DEFAULT_ANOMALOUS_BOUNDARY_SPEC_BUNDLE",
@@ -562,6 +584,7 @@ __all__ = [
     "DEFAULT_PATHOLOGY_CRITICALITY_SPEC_BUNDLE",
     "DEFAULT_STUART_LANDAU_PRECISION_SPEC_BUNDLE",
     "DEFAULT_SYMMETRY_RESTORATION_SPEC_BUNDLE",
+    "DEFAULT_T0_SEEDING_SPEC_BUNDLE",
     "DEFAULT_SYSTEM_ROBUSTNESS_SPEC_BUNDLE",
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_VALIDATION_STRATEGY_SPEC_BUNDLE",
@@ -585,6 +608,7 @@ __all__ = [
     "load_pathology_criticality_validation_spec",
     "load_stuart_landau_precision_validation_spec",
     "load_symmetry_restoration_validation_spec",
+    "load_t0_seeding_validation_spec",
     "load_system_robustness_validation_spec",
     "load_upde_validation_spec",
     "load_validation_strategy_spec",
