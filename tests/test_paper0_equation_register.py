@@ -166,6 +166,28 @@ def test_computational_unifier_records_are_source_anchored() -> None:
     assert "quantum-potential" in iet.themes
 
 
+def test_ethical_gauge_records_are_source_anchored() -> None:
+    action = get_paper0_equation_record("computational.ethical_yang_mills_action")
+    boundary = get_paper0_equation_record("computational.ethical_connection_boundary")
+    cef = get_paper0_equation_record("computational.causal_entropic_force")
+
+    assert action.source_equation_ids == ("EQ0123", "EQ0124")
+    assert "\\mathrm{Tr}(F\\wedge\\star F)" in action.canonical_latex
+    assert "\\delta S_{\\mathrm{Ethical}}=0" in action.canonical_latex
+    assert "gauge-action-boundary" in action.themes
+
+    assert boundary.source_equation_ids == ("EQ0125", "EQ0126", "EQ0127")
+    assert "D^{\\dagger}F=J_{\\mathrm{CEF}}" in boundary.canonical_latex
+    assert "\\Phi_{\\partial M}" in boundary.canonical_latex
+    assert "boundary-flux" in " ".join(boundary.validation_targets)
+    assert "ethical-connection" in boundary.themes
+
+    assert cef.source_equation_ids == ("EQ0128",)
+    assert "F_{\\mathrm{Causal}}" in cef.canonical_latex
+    assert "causal entropy" in " ".join(cef.validation_targets)
+    assert "CEF" in cef.themes
+
+
 def test_iter_records_filters_by_theme_without_synthetic_entries() -> None:
     upde = list(iter_paper0_equation_records(theme="UPDE"))
     fim = list(iter_paper0_equation_records(theme="FIM"))
@@ -176,6 +198,8 @@ def test_iter_records_filters_by_theme_without_synthetic_entries() -> None:
     temporal_boundary = list(iter_paper0_equation_records(theme="temporal-boundary"))
     noether = list(iter_paper0_equation_records(theme="Noether"))
     quantum_potential = list(iter_paper0_equation_records(theme="quantum-potential"))
+    ethical_connection = list(iter_paper0_equation_records(theme="ethical-connection"))
+    cef = list(iter_paper0_equation_records(theme="CEF"))
 
     assert {record.key for record in upde} >= {
         "upde.base_phase",
@@ -205,6 +229,12 @@ def test_iter_records_filters_by_theme_without_synthetic_entries() -> None:
     }
     assert {record.key for record in quantum_potential} == {
         "computational.information_energy_transduction",
+    }
+    assert {record.key for record in ethical_connection} == {
+        "computational.ethical_connection_boundary",
+    }
+    assert {record.key for record in cef} == {
+        "computational.causal_entropic_force",
     }
 
 

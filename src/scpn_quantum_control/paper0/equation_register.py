@@ -618,6 +618,130 @@ _RECORDS: tuple[Paper0EquationRecord, ...] = (
             "density-field",
         ),
     ),
+    Paper0EquationRecord(
+        key="computational.ethical_yang_mills_action",
+        manuscript=_MANUSCRIPT,
+        source_equation_ids=("EQ0123", "EQ0124"),
+        section_path=(
+            "Structural Overview (by Domain) > Computational Unifier. > "
+            "The Physics of Teleology and the Origin of Ethics"
+        ),
+        canonical_latex=(
+            "\\mathcal{L}_{\\mathrm{Ethical}}=\\lambda_E\\,"
+            "\\mathrm{Tr}(F\\wedge\\star F),\\quad "
+            "S_{\\mathrm{Ethical}}=\\int \\mathcal{L}_{\\mathrm{Ethical}}"
+            "(\\mathrm{SCPN}(t))\\,dt,\\quad "
+            "\\delta S_{\\mathrm{Ethical}}=0"
+        ),
+        variables={
+            "L_Ethical": "ethical Yang-Mills-style action density proxy",
+            "lambda_E": "declared proportionality or unit-conversion constant",
+            "F": "curvature two-form or finite curvature tensor",
+            "star": "Hodge dual under the declared metric and orientation",
+            "S_Ethical": "integrated finite action functional",
+        },
+        assumptions=(
+            "connection, curvature, metric, orientation, and integration domain are declared",
+            "lambda_E is calibrated or explicitly scanned before comparison",
+            "stationarity is a mathematical boundary condition, not empirical moral evidence",
+            "finite discretisation and gauge representation are recorded with the result",
+        ),
+        validation_targets=(
+            "finite Yang-Mills action non-negativity under positive metric",
+            "gauge-action-boundary invariance under admissible gauge transforms",
+            "stationary-action finite-difference residual around declared extrema",
+            "wrong-sign metric and non-curvature tensor rejection controls",
+        ),
+        themes=(
+            "computational-unifier",
+            "ethical-gauge",
+            "Yang-Mills",
+            "least-action",
+            "gauge-action-boundary",
+        ),
+    ),
+    Paper0EquationRecord(
+        key="computational.ethical_connection_boundary",
+        manuscript=_MANUSCRIPT,
+        source_equation_ids=("EQ0125", "EQ0126", "EQ0127"),
+        section_path=(
+            "Structural Overview (by Domain) > Computational Unifier. > "
+            "III. Euler-Lagrange for the Ethical Connection"
+        ),
+        canonical_latex=(
+            "D^{\\dagger}F=J_{\\mathrm{CEF}},\\quad "
+            "J_{\\mathrm{CEF}}\\propto\\nabla_X S_C(X,\\tau),\\quad "
+            "\\delta S_{\\mathrm{Ethical}}\\big|_{\\partial M}="
+            "\\int_{\\partial M}\\mathrm{Tr}(\\delta A\\wedge\\star F),\\quad "
+            "\\frac{d\\mathcal{C}_{\\mathrm{L10}}}{dt}\\le "
+            "-\\kappa_{\\mathrm{Eth}}\\Phi_{\\partial M}+\\xi(t)"
+        ),
+        variables={
+            "D_dagger": "adjoint covariant derivative under the declared connection",
+            "J_CEF": "causal-entropic source current",
+            "S_C": "future causal-pathway entropy functional",
+            "delta_A": "variation of the connection at the boundary",
+            "Phi_boundary": "boundary flux integral of the dual curvature",
+            "C_L10": "boundary rendering-complexity observable",
+            "kappa_Eth": "non-negative complexity-flux coupling",
+            "xi": "declared stochastic or residual forcing term",
+        },
+        assumptions=(
+            "boundary orientation and flux convention are explicit",
+            "CEF source current is computed from a declared entropy functional",
+            "complexity inequality uses measured or simulated C_L10 on a shared time grid",
+            "stochastic residual xi is bounded or separately estimated",
+        ),
+        validation_targets=(
+            "Euler-Lagrange residual for D_dagger F minus J_CEF",
+            "boundary-flux term consistency under orientation reversal",
+            "complexity-flux inequality margin under non-negative kappa_Eth",
+            "zero-flux, wrong-sign-kappa, and shuffled-boundary null controls",
+        ),
+        themes=(
+            "computational-unifier",
+            "ethical-connection",
+            "Euler-Lagrange",
+            "boundary-flux",
+            "complexity-flux",
+        ),
+    ),
+    Paper0EquationRecord(
+        key="computational.causal_entropic_force",
+        manuscript=_MANUSCRIPT,
+        source_equation_ids=("EQ0128",),
+        section_path=(
+            "Structural Overview (by Domain) > Computational Unifier. > "
+            "IV. Ethics as Causal Entropic Forces (CEF)"
+        ),
+        canonical_latex="F_{\\mathrm{Causal}}=T_C\\nabla_X S_C(X,\\tau)",
+        variables={
+            "F_Causal": "causal-entropic force vector field",
+            "T_C": "causal temperature or force-scale parameter",
+            "S_C": "future causal-pathway entropy functional",
+            "X": "configuration-space coordinate",
+            "tau": "future horizon used for causal-pathway counting",
+        },
+        assumptions=(
+            "configuration coordinates and metric are declared",
+            "S_C estimator and future horizon tau are fixed before gradient evaluation",
+            "T_C is non-negative and carries the declared force units",
+            "CEF interpretation remains a force-field proxy until empirical coupling evidence exists",
+        ),
+        validation_targets=(
+            "causal entropy gradient finite-difference agreement",
+            "force direction increases S_C for positive T_C under small steps",
+            "zero-temperature and flat-entropy null controls",
+            "coordinate-rescaling sensitivity and unit audit",
+        ),
+        themes=(
+            "computational-unifier",
+            "CEF",
+            "causal-entropic-force",
+            "entropy-gradient",
+            "force-field-boundary",
+        ),
+    ),
 )
 
 _RECORDS_BY_KEY = {record.key: record for record in _RECORDS}
