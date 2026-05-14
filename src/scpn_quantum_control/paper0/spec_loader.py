@@ -124,6 +124,10 @@ DEFAULT_ADVANCED_MECHANISMS_SPEC_BUNDLE = (
 DEFAULT_STDP_SOC_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/paper0_stdp_soc_validation_specs_2026-05-13.json"
 )
+DEFAULT_GLIAL_SLOW_CONTROL_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_glial_slow_control_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -650,6 +654,24 @@ def load_stdp_soc_validation_spec(
     raise KeyError(f"STDP/SOC spec {key!r} not found in {path}")
 
 
+def load_glial_slow_control_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted glial slow-control validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_GLIAL_SLOW_CONTROL_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"Glial slow-control spec bundle not found: {path}") from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"Glial slow-control spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_ADVANCED_MECHANISMS_SPEC_BUNDLE",
     "DEFAULT_ACEF_ALIGNMENT_SPEC_BUNDLE",
@@ -663,6 +685,7 @@ __all__ = [
     "DEFAULT_FINE_TUNING_PES_SPEC_BUNDLE",
     "DEFAULT_FREE_ENERGY_SPEC_BUNDLE",
     "DEFAULT_GAIAN_SAFETY_SPEC_BUNDLE",
+    "DEFAULT_GLIAL_SLOW_CONTROL_SPEC_BUNDLE",
     "DEFAULT_GLIAL_CONTROL_SPEC_BUNDLE",
     "DEFAULT_GRAND_SYNTHESIS_SPEC_BUNDLE",
     "DEFAULT_HPC_UPDE_BRIDGE_SPEC_BUNDLE",
@@ -691,6 +714,7 @@ __all__ = [
     "load_fine_tuning_pes_validation_spec",
     "load_free_energy_validation_spec",
     "load_gaian_safety_validation_spec",
+    "load_glial_slow_control_validation_spec",
     "load_glial_control_validation_spec",
     "load_grand_synthesis_validation_spec",
     "load_hpc_upde_bridge_validation_spec",
