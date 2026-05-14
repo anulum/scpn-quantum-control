@@ -1,0 +1,63 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved.
+# (c) Code 2020-2026 Miroslav Sotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control -- Paper 0 validation coverage reconciliation tests
+"""Tests for Paper 0 promoted validation coverage reconciliation."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from scripts.reconcile_paper0_validation_coverage import (
+    REPO_ROOT,
+    discover_promoted_slices,
+    reconcile_promoted_coverage,
+    write_outputs,
+)
+
+
+def test_discover_promoted_slices_are_contiguous_over_promoted_tail() -> None:
+    slices = discover_promoted_slices(REPO_ROOT)
+
+    assert len(slices) == 36
+    assert slices[0].source_start == "P0R06212"
+    assert slices[-1].source_end == "P0R07129"
+    assert sum(item.source_record_count for item in slices) == 918
+    assert all(item.has_runtime_module for item in slices)
+    assert all(item.has_runner for item in slices)
+    assert all(item.has_builder_tests for item in slices)
+    assert all(item.has_runtime_tests for item in slices)
+    assert all(item.has_runner_tests for item in slices)
+
+
+def test_reconcile_promoted_coverage_matches_canonical_ledger_tail() -> None:
+    result = reconcile_promoted_coverage(REPO_ROOT)
+
+    assert result.summary["ledger_record_count"] == 7129
+    assert result.summary["promoted_start"] == "P0R06212"
+    assert result.summary["promoted_end"] == "P0R07129"
+    assert result.summary["promoted_record_count"] == 918
+    assert result.summary["promoted_coverage_match"] is True
+    assert result.summary["gap_count"] == 0
+    assert result.summary["overlap_count"] == 0
+    assert result.summary["missing_surface_count"] == 0
+    assert result.summary["unpromoted_prefix_count"] == 6211
+    assert result.summary["unpromoted_prefix_span"] == ["P0R00001", "P0R06211"]
+
+
+def test_write_reconciliation_outputs(tmp_path: Path) -> None:
+    result = reconcile_promoted_coverage(REPO_ROOT)
+
+    outputs = write_outputs(result, output_dir=tmp_path, date_tag="2099-01-02")
+
+    payload = json.loads(outputs["json"].read_text(encoding="utf-8"))
+    report = outputs["report"].read_text(encoding="utf-8")
+
+    assert payload["summary"]["promoted_coverage_match"] is True
+    assert payload["summary"]["missing_surface_count"] == 0
+    assert "Paper 0 Validation Coverage Reconciliation" in report
+    assert "P0R06212 - P0R07129" in report
