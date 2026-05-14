@@ -180,6 +180,10 @@ DEFAULT_CATEGORY_GRAMMAR_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_category_grammar_validation_specs_2026-05-13.json"
 )
+DEFAULT_HAMILTONIAN_INDEX_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_hamiltonian_index_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -966,6 +970,24 @@ def load_category_grammar_validation_spec(
     raise KeyError(f"category grammar spec {key!r} not found in {path}")
 
 
+def load_hamiltonian_index_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted Hamiltonian index validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_HAMILTONIAN_INDEX_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"Hamiltonian index spec bundle not found: {path}") from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"Hamiltonian index spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_CATEGORY_GRAMMAR_SPEC_BUNDLE",
     "DEFAULT_COLLECTIVE_NICHE_CONSTRUCTION_SPEC_BUNDLE",
@@ -985,6 +1007,7 @@ __all__ = [
     "DEFAULT_GLIAL_SLOW_CONTROL_SPEC_BUNDLE",
     "DEFAULT_GLIAL_CONTROL_SPEC_BUNDLE",
     "DEFAULT_GRAND_SYNTHESIS_SPEC_BUNDLE",
+    "DEFAULT_HAMILTONIAN_INDEX_SPEC_BUNDLE",
     "DEFAULT_HPC_UPDE_BRIDGE_SPEC_BUNDLE",
     "DEFAULT_HPC_UPDE_DERIVATION_SPEC_BUNDLE",
     "DEFAULT_L11_NTHS_COMPUTATIONAL_SPEC_BUNDLE",
@@ -1030,6 +1053,7 @@ __all__ = [
     "load_hpc_upde_derivation_validation_spec",
     "load_l11_nths_computational_validation_spec",
     "load_category_grammar_validation_spec",
+    "load_hamiltonian_index_validation_spec",
     "load_nv_quantum_sensing_validation_spec",
     "load_two_timescale_quasicritical_validation_spec",
     "load_information_thermodynamics_validation_spec",
