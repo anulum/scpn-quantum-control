@@ -132,6 +132,10 @@ DEFAULT_L5_ACTIVE_INFERENCE_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_l5_active_inference_validation_specs_2026-05-13.json"
 )
+DEFAULT_L5_ACTIVE_INFERENCE_MATH_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_l5_active_inference_math_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -694,6 +698,26 @@ def load_l5_active_inference_validation_spec(
     raise KeyError(f"Layer 5 Active Inference spec {key!r} not found in {path}")
 
 
+def load_l5_active_inference_math_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted Layer 5 Active Inference math validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_L5_ACTIVE_INFERENCE_MATH_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(
+            f"Layer 5 Active Inference math spec bundle not found: {path}"
+        ) from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"Layer 5 Active Inference math spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_ADVANCED_MECHANISMS_SPEC_BUNDLE",
     "DEFAULT_ACEF_ALIGNMENT_SPEC_BUNDLE",
@@ -712,6 +736,7 @@ __all__ = [
     "DEFAULT_GRAND_SYNTHESIS_SPEC_BUNDLE",
     "DEFAULT_HPC_UPDE_BRIDGE_SPEC_BUNDLE",
     "DEFAULT_INFORMATION_THERMODYNAMICS_SPEC_BUNDLE",
+    "DEFAULT_L5_ACTIVE_INFERENCE_MATH_SPEC_BUNDLE",
     "DEFAULT_L5_ACTIVE_INFERENCE_SPEC_BUNDLE",
     "DEFAULT_L11_INTERFACE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -742,6 +767,7 @@ __all__ = [
     "load_grand_synthesis_validation_spec",
     "load_hpc_upde_bridge_validation_spec",
     "load_information_thermodynamics_validation_spec",
+    "load_l5_active_inference_math_validation_spec",
     "load_l5_active_inference_validation_spec",
     "load_l11_interface_validation_spec",
     "load_macro_transition_validation_spec",
