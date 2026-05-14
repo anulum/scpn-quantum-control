@@ -196,6 +196,10 @@ DEFAULT_COMPUTATIONAL_VERIFICATION_TOOLS_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_computational_verification_tools_validation_specs_2026-05-13.json"
 )
+DEFAULT_TERMINAL_BOUNDARY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_terminal_boundary_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -1058,6 +1062,24 @@ def load_computational_verification_tools_validation_spec(
     raise KeyError(f"computational verification tools spec {key!r} not found in {path}")
 
 
+def load_terminal_boundary_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted terminal boundary validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_TERMINAL_BOUNDARY_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"terminal boundary spec bundle not found: {path}") from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"terminal boundary spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_CATEGORY_GRAMMAR_SPEC_BUNDLE",
     "DEFAULT_COLLECTIVE_NICHE_CONSTRUCTION_SPEC_BUNDLE",
@@ -1103,6 +1125,7 @@ __all__ = [
     "DEFAULT_SYMMETRY_RESTORATION_SPEC_BUNDLE",
     "DEFAULT_T0_SEEDING_SPEC_BUNDLE",
     "DEFAULT_SYSTEM_ROBUSTNESS_SPEC_BUNDLE",
+    "DEFAULT_TERMINAL_BOUNDARY_SPEC_BUNDLE",
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_VALIDATION_STRATEGY_SPEC_BUNDLE",
     "load_collective_niche_construction_validation_spec",
@@ -1149,6 +1172,7 @@ __all__ = [
     "load_symmetry_restoration_validation_spec",
     "load_t0_seeding_validation_spec",
     "load_system_robustness_validation_spec",
+    "load_terminal_boundary_validation_spec",
     "load_upde_validation_spec",
     "load_validation_strategy_spec",
 ]
