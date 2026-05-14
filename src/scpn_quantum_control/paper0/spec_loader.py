@@ -144,6 +144,10 @@ DEFAULT_L5_TDA_NEUROPHENOMENOLOGY_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_l5_tda_neurophenomenology_validation_specs_2026-05-13.json"
 )
+DEFAULT_COLLECTIVE_NICHE_CONSTRUCTION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_collective_niche_construction_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -764,7 +768,28 @@ def load_l5_tda_neurophenomenology_validation_spec(
     raise KeyError(f"Layer 5 TDA/neurophenomenology spec {key!r} not found in {path}")
 
 
+def load_collective_niche_construction_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted collective niche construction validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_COLLECTIVE_NICHE_CONSTRUCTION_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(
+            f"collective niche construction spec bundle not found: {path}"
+        ) from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"collective niche construction spec {key!r} not found in {path}")
+
+
 __all__ = [
+    "DEFAULT_COLLECTIVE_NICHE_CONSTRUCTION_SPEC_BUNDLE",
     "DEFAULT_ADVANCED_MECHANISMS_SPEC_BUNDLE",
     "DEFAULT_ACEF_ALIGNMENT_SPEC_BUNDLE",
     "DEFAULT_ANOMALOUS_BOUNDARY_SPEC_BUNDLE",
@@ -798,6 +823,7 @@ __all__ = [
     "DEFAULT_SYSTEM_ROBUSTNESS_SPEC_BUNDLE",
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_VALIDATION_STRATEGY_SPEC_BUNDLE",
+    "load_collective_niche_construction_validation_spec",
     "load_advanced_mechanisms_validation_spec",
     "load_acef_alignment_validation_spec",
     "load_anomalous_boundary_validation_spec",
