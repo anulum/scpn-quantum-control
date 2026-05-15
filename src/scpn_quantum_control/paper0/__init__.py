@@ -382,6 +382,13 @@ from .gaian_safety_validation import (
     validate_gaian_safety_fixture,
     validate_governance_risk_safeguard_fixture,
 )
+from .gauge_principle_derivation_validation import (
+    GaugePrincipleDerivationConfig,
+    GaugePrincipleDerivationFixtureResult,
+    classify_gauge_principle_derivation_component,
+    gauge_principle_derivation_labels,
+    validate_gauge_principle_derivation_fixture,
+)
 from .glial_control_validation import (
     GlialSigmaControlConfig,
     GlialSigmaTrajectory,
@@ -925,6 +932,8 @@ __all__ = [
     "FrontMatterContextFixtureResult",
     "GaianSafetyConfig",
     "GaianSafetyFixtureResult",
+    "GaugePrincipleDerivationConfig",
+    "GaugePrincipleDerivationFixtureResult",
     "GlialSigmaControlConfig",
     "GlialSigmaTrajectory",
     "GlialSigmaValidationResult",
@@ -1122,6 +1131,7 @@ __all__ = [
     "classify_viability_pillar",
     "classify_scientific_inference_step",
     "classify_disagreement_move",
+    "classify_gauge_principle_derivation_component",
     "classify_meta_framework_integration",
     "classify_not_boundary",
     "classify_toc_context",
@@ -1189,6 +1199,7 @@ __all__ = [
     "frustration_index",
     "gauge_transduction_score",
     "gaian_stability_index",
+    "gauge_principle_derivation_labels",
     "geometric_qualia_score",
     "glial_feedback_stability_score",
     "geometric_coupling_score",
@@ -1415,6 +1426,7 @@ __all__ = [
     "validate_front_matter_context_fixture",
     "validate_functorial_mapping",
     "validate_gaian_safety_fixture",
+    "validate_gauge_principle_derivation_fixture",
     "validate_glial_sigma_control_fixture",
     "validate_glial_slow_control_fixture",
     "validate_grand_synthesis_fixture",
