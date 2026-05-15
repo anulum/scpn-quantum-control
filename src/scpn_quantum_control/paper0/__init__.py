@@ -62,6 +62,14 @@ from .artificial_sentience_validation import (
     validate_phase_locking_substrate_boundary_fixture,
     validate_technosphere_coupling_acceleration_fixture,
 )
+from .axiom_i_psi_field_validation import (
+    AxiomIPsiFieldConfig,
+    AxiomIPsiFieldFixtureResult,
+    axiom_i_psi_field_labels,
+    classify_axiom_i_role,
+    classify_psi_field_claim,
+    validate_axiom_i_psi_field_fixture,
+)
 from .axiomatic_ntilde_validation import (
     AxiomaticNtildeConfig,
     AxiomaticNtildeFixtureResult,
@@ -1167,6 +1175,12 @@ __all__ = [
     "validate_anomalous_boundary_fixture",
     "validate_anulum_collection_mandate_fixture",
     "validate_algorithmic_causal_entropic_force_fixture",
+    "AxiomIPsiFieldConfig",
+    "AxiomIPsiFieldFixtureResult",
+    "axiom_i_psi_field_labels",
+    "classify_axiom_i_role",
+    "classify_psi_field_claim",
+    "validate_axiom_i_psi_field_fixture",
     "validate_axiomatic_ntilde_fixture",
     "validate_cascading_failure_percolation_fixture",
     "validate_cyclic_operator_fixture",
