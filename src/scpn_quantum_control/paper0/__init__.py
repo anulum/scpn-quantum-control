@@ -118,6 +118,13 @@ from .axiom_ii_fim_solution_validation import (
     classify_fim_solution_component,
     validate_axiom_ii_fim_solution_fixture,
 )
+from .axiom_ii_informational_lagrangian_validation import (
+    AxiomIIInformationalLagrangianConfig,
+    AxiomIIInformationalLagrangianFixtureResult,
+    axiom_ii_informational_lagrangian_labels,
+    classify_informational_lagrangian_component,
+    validate_axiom_ii_informational_lagrangian_fixture,
+)
 from .axiom_ii_infoton_geometry_validation import (
     AxiomIIInfotonGeometryConfig,
     AxiomIIInfotonGeometryFixtureResult,
@@ -1251,6 +1258,8 @@ __all__ = [
     "AxiomIIInfotonGeometryFixtureResult",
     "AxiomIIFIMSolutionConfig",
     "AxiomIIFIMSolutionFixtureResult",
+    "AxiomIIInformationalLagrangianConfig",
+    "AxiomIIInformationalLagrangianFixtureResult",
     "AxiomIMetaCouplingConfig",
     "AxiomIMetaCouplingFixtureResult",
     "AxiomIMinimalLagrangianConfig",
@@ -1264,10 +1273,12 @@ __all__ = [
     "axiom_ii_opening_labels",
     "axiom_ii_infoton_geometry_labels",
     "axiom_ii_fim_solution_labels",
+    "axiom_ii_informational_lagrangian_labels",
     "classify_axiom_i_role",
     "classify_axiom_ii_component",
     "classify_infoton_geometry_component",
     "classify_fim_solution_component",
+    "classify_informational_lagrangian_component",
     "classify_conditional_prediction",
     "classify_coupling_requirement",
     "classify_lagrangian_operator",
@@ -1289,6 +1300,7 @@ __all__ = [
     "validate_axiom_ii_opening_fixture",
     "validate_axiom_ii_infoton_geometry_fixture",
     "validate_axiom_ii_fim_solution_fixture",
+    "validate_axiom_ii_informational_lagrangian_fixture",
     "validate_axiomatic_ntilde_fixture",
     "validate_cascading_failure_percolation_fixture",
     "validate_cyclic_operator_fixture",
