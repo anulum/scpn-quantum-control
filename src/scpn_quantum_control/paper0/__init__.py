@@ -179,6 +179,13 @@ from .category_grammar_validation import (
     validate_category_grammar_fixture,
     validate_functorial_mapping,
 )
+from .category_universal_grammar_validation import (
+    CategoryUniversalGrammarConfig,
+    CategoryUniversalGrammarFixtureResult,
+    category_universal_grammar_labels,
+    classify_category_universal_grammar_component,
+    validate_category_universal_grammar_fixture,
+)
 from .chapter_roadmap_context_validation import (
     ChapterRoadmapContextConfig,
     ChapterRoadmapContextFixtureResult,
@@ -848,6 +855,8 @@ __all__ = [
     "CausalEntropicForceValidationResult",
     "CategoryGrammarConfig",
     "CategoryGrammarFixtureResult",
+    "CategoryUniversalGrammarConfig",
+    "CategoryUniversalGrammarFixtureResult",
     "ChapterRoadmapContextConfig",
     "ChapterRoadmapContextFixtureResult",
     "ChannelConstraint",
@@ -1086,6 +1095,7 @@ __all__ = [
     "classify_operator_layer",
     "classify_criticality",
     "classify_chapter_roadmap_context",
+    "classify_category_universal_grammar_component",
     "classify_nths_phase",
     "classify_objective_cover_context",
     "classify_positioning_preface_context",
@@ -1276,6 +1286,7 @@ __all__ = [
     "terminology_bridge_labels",
     "tripartite_ontology_labels",
     "meta_framework_psi_coupling_labels",
+    "category_universal_grammar_labels",
     "terminal_set_f0",
     "theory_positioning_score",
     "triple_network_precision_score",
@@ -1368,6 +1379,7 @@ __all__ = [
     "validate_criticality_deviation_classifier_fixture",
     "validate_causal_entropic_force_fixture",
     "validate_category_grammar_fixture",
+    "validate_category_universal_grammar_fixture",
     "validate_chapter_roadmap_context_fixture",
     "validate_ciss_bioelectric_fixture",
     "validate_coherence_noether_current_fixture",

@@ -336,6 +336,10 @@ DEFAULT_META_FRAMEWORK_PSI_COUPLING_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_meta_framework_psi_coupling_validation_specs_2026-05-13.json"
 )
+DEFAULT_CATEGORY_UNIVERSAL_GRAMMAR_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_category_universal_grammar_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -1868,9 +1872,30 @@ def load_meta_framework_psi_coupling_validation_spec(
     raise KeyError(f"Meta-framework/Psi-coupling spec {key!r} not found in {path}")
 
 
+def load_category_universal_grammar_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted category/universal-grammar validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_CATEGORY_UNIVERSAL_GRAMMAR_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(
+            f"Category/universal-grammar spec bundle not found: {path}"
+        ) from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"Category/universal-grammar spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_ANULUM_COLLECTION_MANDATE_SPEC_BUNDLE",
     "DEFAULT_CATEGORY_GRAMMAR_SPEC_BUNDLE",
+    "DEFAULT_CATEGORY_UNIVERSAL_GRAMMAR_SPEC_BUNDLE",
     "DEFAULT_CHAPTER_ROADMAP_CONTEXT_SPEC_BUNDLE",
     "DEFAULT_COLLECTIVE_NICHE_CONSTRUCTION_SPEC_BUNDLE",
     "DEFAULT_CISS_BIOELECTRIC_SPEC_BUNDLE",
@@ -1992,6 +2017,7 @@ __all__ = [
     "load_hpc_upde_derivation_validation_spec",
     "load_l11_nths_computational_validation_spec",
     "load_category_grammar_validation_spec",
+    "load_category_universal_grammar_validation_spec",
     "load_hamiltonian_index_validation_spec",
     "load_cosmological_eos_validation_spec",
     "load_cosmological_predictions_validation_spec",
