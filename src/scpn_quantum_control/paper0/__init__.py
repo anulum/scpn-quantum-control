@@ -541,6 +541,13 @@ from .logos_recursive_closure_validation import (
     recursive_closure_labels,
     validate_logos_recursive_closure_fixture,
 )
+from .master_lagrangian_intro_validation import (
+    MasterLagrangianIntroConfig,
+    MasterLagrangianIntroFixtureResult,
+    classify_master_lagrangian_intro_component,
+    master_lagrangian_intro_labels,
+    validate_master_lagrangian_intro_fixture,
+)
 from .meta_framework_psi_coupling_validation import (
     MetaFrameworkPsiCouplingConfig,
     MetaFrameworkPsiCouplingFixtureResult,
@@ -857,6 +864,8 @@ __all__ = [
     "CategoryGrammarFixtureResult",
     "CategoryUniversalGrammarConfig",
     "CategoryUniversalGrammarFixtureResult",
+    "MasterLagrangianIntroConfig",
+    "MasterLagrangianIntroFixtureResult",
     "ChapterRoadmapContextConfig",
     "ChapterRoadmapContextFixtureResult",
     "ChannelConstraint",
@@ -1103,6 +1112,7 @@ __all__ = [
     "classify_hpc_application",
     "classify_layer_domain",
     "classify_mainstream_anchor",
+    "classify_master_lagrangian_intro_component",
     "classify_meta_framework_psi_coupling_component",
     "classify_physical_postulate_component",
     "classify_pela_boundary",
@@ -1287,6 +1297,7 @@ __all__ = [
     "tripartite_ontology_labels",
     "meta_framework_psi_coupling_labels",
     "category_universal_grammar_labels",
+    "master_lagrangian_intro_labels",
     "terminal_set_f0",
     "theory_positioning_score",
     "triple_network_precision_score",
@@ -1422,6 +1433,7 @@ __all__ = [
     "validate_l11_interface_fixture",
     "validate_l11_nths_computational_fixture",
     "validate_logos_recursive_closure_fixture",
+    "validate_master_lagrangian_intro_fixture",
     "validate_meta_framework_psi_coupling_fixture",
     "validate_layer_monograph_suite_fixture",
     "validate_nths_phase_test_fixture",

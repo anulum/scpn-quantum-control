@@ -340,6 +340,10 @@ DEFAULT_CATEGORY_UNIVERSAL_GRAMMAR_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_category_universal_grammar_validation_specs_2026-05-13.json"
 )
+DEFAULT_MASTER_LAGRANGIAN_INTRO_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_master_lagrangian_intro_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -1892,6 +1896,24 @@ def load_category_universal_grammar_validation_spec(
     raise KeyError(f"Category/universal-grammar spec {key!r} not found in {path}")
 
 
+def load_master_lagrangian_intro_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted master-Lagrangian-intro validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_MASTER_LAGRANGIAN_INTRO_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"Master-Lagrangian-intro spec bundle not found: {path}") from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"Master-Lagrangian-intro spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_ANULUM_COLLECTION_MANDATE_SPEC_BUNDLE",
     "DEFAULT_CATEGORY_GRAMMAR_SPEC_BUNDLE",
@@ -1956,6 +1978,7 @@ __all__ = [
     "DEFAULT_LAYER_MONOGRAPH_SUITE_SPEC_BUNDLE",
     "DEFAULT_LOGOS_RECURSIVE_CLOSURE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
+    "DEFAULT_MASTER_LAGRANGIAN_INTRO_SPEC_BUNDLE",
     "DEFAULT_META_FRAMEWORK_PSI_COUPLING_SPEC_BUNDLE",
     "DEFAULT_NEUROVASCULAR_SPEC_BUNDLE",
     "DEFAULT_PATHOLOGY_CRITICALITY_SPEC_BUNDLE",
@@ -2038,6 +2061,7 @@ __all__ = [
     "load_layer_monograph_suite_validation_spec",
     "load_logos_recursive_closure_validation_spec",
     "load_macro_transition_validation_spec",
+    "load_master_lagrangian_intro_validation_spec",
     "load_meta_framework_psi_coupling_validation_spec",
     "load_neurovascular_validation_spec",
     "load_pathology_criticality_validation_spec",
