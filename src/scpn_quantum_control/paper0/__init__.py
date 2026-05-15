@@ -146,6 +146,13 @@ from .axiom_iii_ntilde_invariance_law_validation import (
     classify_ntilde_invariance_law_component,
     validate_axiom_iii_ntilde_invariance_law_fixture,
 )
+from .axiom_iii_sec_ntilde_equivalence_validation import (
+    AxiomIIISECNtildeEquivalenceConfig,
+    AxiomIIISECNtildeEquivalenceFixtureResult,
+    axiom_iii_sec_ntilde_equivalence_labels,
+    classify_sec_ntilde_equivalence_component,
+    validate_axiom_iii_sec_ntilde_equivalence_fixture,
+)
 from .axiom_iii_teleological_optimisation_validation import (
     AxiomIIITeleologicalOptimisationConfig,
     AxiomIIITeleologicalOptimisationFixtureResult,
@@ -1278,6 +1285,8 @@ __all__ = [
     "AxiomIIITeleologicalOptimisationFixtureResult",
     "AxiomIIINtildeInvarianceLawConfig",
     "AxiomIIINtildeInvarianceLawFixtureResult",
+    "AxiomIIISECNtildeEquivalenceConfig",
+    "AxiomIIISECNtildeEquivalenceFixtureResult",
     "AxiomIMetaCouplingConfig",
     "AxiomIMetaCouplingFixtureResult",
     "AxiomIMinimalLagrangianConfig",
@@ -1294,6 +1303,7 @@ __all__ = [
     "axiom_ii_informational_lagrangian_labels",
     "axiom_iii_teleological_optimisation_labels",
     "axiom_iii_ntilde_invariance_law_labels",
+    "axiom_iii_sec_ntilde_equivalence_labels",
     "classify_axiom_i_role",
     "classify_axiom_ii_component",
     "classify_infoton_geometry_component",
@@ -1301,6 +1311,7 @@ __all__ = [
     "classify_informational_lagrangian_component",
     "classify_teleological_optimisation_component",
     "classify_ntilde_invariance_law_component",
+    "classify_sec_ntilde_equivalence_component",
     "classify_conditional_prediction",
     "classify_coupling_requirement",
     "classify_lagrangian_operator",
@@ -1325,6 +1336,7 @@ __all__ = [
     "validate_axiom_ii_informational_lagrangian_fixture",
     "validate_axiom_iii_teleological_optimisation_fixture",
     "validate_axiom_iii_ntilde_invariance_law_fixture",
+    "validate_axiom_iii_sec_ntilde_equivalence_fixture",
     "validate_axiomatic_ntilde_fixture",
     "validate_cascading_failure_percolation_fixture",
     "validate_cyclic_operator_fixture",

@@ -324,6 +324,10 @@ DEFAULT_AXIOM_III_NTILDE_INVARIANCE_LAW_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_axiom_iii_ntilde_invariance_law_validation_specs_2026-05-13.json"
 )
+DEFAULT_AXIOM_III_SEC_NTILDE_EQUIVALENCE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_axiom_iii_sec_ntilde_equivalence_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -1796,6 +1800,28 @@ def load_axiom_iii_ntilde_invariance_law_validation_spec(
     raise KeyError(f"Axiom III Ntilde-invariance-law spec {key!r} not found in {path}")
 
 
+def load_axiom_iii_sec_ntilde_equivalence_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted Axiom III SEC-Ntilde-equivalence validation spec by key."""
+    path = spec_bundle_path or project_data_path(
+        DEFAULT_AXIOM_III_SEC_NTILDE_EQUIVALENCE_SPEC_BUNDLE
+    )
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(
+            f"Axiom III SEC-Ntilde-equivalence spec bundle not found: {path}"
+        ) from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"Axiom III SEC-Ntilde-equivalence spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_ANULUM_COLLECTION_MANDATE_SPEC_BUNDLE",
     "DEFAULT_CATEGORY_GRAMMAR_SPEC_BUNDLE",
@@ -1818,6 +1844,7 @@ __all__ = [
     "DEFAULT_AXIOM_II_INFORMATIONAL_LAGRANGIAN_SPEC_BUNDLE",
     "DEFAULT_AXIOM_III_TELEOLOGICAL_OPTIMISATION_SPEC_BUNDLE",
     "DEFAULT_AXIOM_III_NTILDE_INVARIANCE_LAW_SPEC_BUNDLE",
+    "DEFAULT_AXIOM_III_SEC_NTILDE_EQUIVALENCE_SPEC_BUNDLE",
     "DEFAULT_AXIOMATIC_NTILDE_SPEC_BUNDLE",
     "DEFAULT_COMPUTATIONAL_THRESHOLD_SPEC_BUNDLE",
     "DEFAULT_COMPUTATIONAL_VERIFICATION_TOOLS_SPEC_BUNDLE",
@@ -1895,6 +1922,7 @@ __all__ = [
     "load_axiom_ii_informational_lagrangian_validation_spec",
     "load_axiom_iii_teleological_optimisation_validation_spec",
     "load_axiom_iii_ntilde_invariance_law_validation_spec",
+    "load_axiom_iii_sec_ntilde_equivalence_validation_spec",
     "load_axiomatic_ntilde_validation_spec",
     "load_computational_threshold_validation_spec",
     "load_computational_verification_tools_validation_spec",
