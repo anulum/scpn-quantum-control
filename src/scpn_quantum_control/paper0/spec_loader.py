@@ -252,6 +252,10 @@ DEFAULT_LAYER_MONOGRAPH_SUITE_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_layer_monograph_suite_validation_specs_2026-05-13.json"
 )
+DEFAULT_FOUNDATIONAL_VIABILITY_POSTULATE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_foundational_viability_postulate_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -1372,6 +1376,28 @@ def load_layer_monograph_suite_validation_spec(
     raise KeyError(f"layer monograph suite spec {key!r} not found in {path}")
 
 
+def load_foundational_viability_postulate_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted foundational viability postulate validation spec by key."""
+    path = spec_bundle_path or project_data_path(
+        DEFAULT_FOUNDATIONAL_VIABILITY_POSTULATE_SPEC_BUNDLE
+    )
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(
+            f"foundational viability postulate spec bundle not found: {path}"
+        ) from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"foundational viability postulate spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_ANULUM_COLLECTION_MANDATE_SPEC_BUNDLE",
     "DEFAULT_CATEGORY_GRAMMAR_SPEC_BUNDLE",
@@ -1392,6 +1418,7 @@ __all__ = [
     "DEFAULT_ETHICAL_GAUGE_SPEC_BUNDLE",
     "DEFAULT_FINE_TUNING_PES_SPEC_BUNDLE",
     "DEFAULT_FOREWORD_COUPLING_SPEC_BUNDLE",
+    "DEFAULT_FOUNDATIONAL_VIABILITY_POSTULATE_SPEC_BUNDLE",
     "DEFAULT_FREE_ENERGY_SPEC_BUNDLE",
     "DEFAULT_FRONT_MATTER_CONTEXT_SPEC_BUNDLE",
     "DEFAULT_GAIAN_SAFETY_SPEC_BUNDLE",
@@ -1449,6 +1476,7 @@ __all__ = [
     "load_ethical_gauge_validation_spec",
     "load_fine_tuning_pes_validation_spec",
     "load_foreword_coupling_validation_spec",
+    "load_foundational_viability_postulate_validation_spec",
     "load_free_energy_validation_spec",
     "load_front_matter_context_validation_spec",
     "load_gaian_safety_validation_spec",
