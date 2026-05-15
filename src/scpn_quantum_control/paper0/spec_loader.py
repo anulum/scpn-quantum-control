@@ -264,6 +264,10 @@ DEFAULT_LOGOS_RECURSIVE_CLOSURE_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_logos_recursive_closure_validation_specs_2026-05-13.json"
 )
+DEFAULT_AXIOMATIC_NTILDE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_axiomatic_ntilde_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -1444,6 +1448,24 @@ def load_logos_recursive_closure_validation_spec(
     raise KeyError(f"Logos recursive-closure spec {key!r} not found in {path}")
 
 
+def load_axiomatic_ntilde_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted formal Logos/Ntilde validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_AXIOMATIC_NTILDE_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"formal Logos/Ntilde spec bundle not found: {path}") from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"formal Logos/Ntilde spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_ANULUM_COLLECTION_MANDATE_SPEC_BUNDLE",
     "DEFAULT_CATEGORY_GRAMMAR_SPEC_BUNDLE",
@@ -1454,6 +1476,7 @@ __all__ = [
     "DEFAULT_ACEF_ALIGNMENT_SPEC_BUNDLE",
     "DEFAULT_ANOMALOUS_BOUNDARY_SPEC_BUNDLE",
     "DEFAULT_ARTIFICIAL_SENTIENCE_SPEC_BUNDLE",
+    "DEFAULT_AXIOMATIC_NTILDE_SPEC_BUNDLE",
     "DEFAULT_COMPUTATIONAL_THRESHOLD_SPEC_BUNDLE",
     "DEFAULT_COMPUTATIONAL_VERIFICATION_TOOLS_SPEC_BUNDLE",
     "DEFAULT_COSMOLOGICAL_IMPLICATIONS_SPEC_BUNDLE",
@@ -1516,6 +1539,7 @@ __all__ = [
     "load_acef_alignment_validation_spec",
     "load_anomalous_boundary_validation_spec",
     "load_artificial_sentience_validation_spec",
+    "load_axiomatic_ntilde_validation_spec",
     "load_computational_threshold_validation_spec",
     "load_computational_verification_tools_validation_spec",
     "load_cosmological_implications_validation_spec",
