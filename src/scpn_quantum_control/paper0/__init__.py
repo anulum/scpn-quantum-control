@@ -111,6 +111,13 @@ from .axiom_i_su_n_qualia_validation import (
     linear_confinement_potential,
     validate_axiom_i_su_n_qualia_fixture,
 )
+from .axiom_ii_infoton_geometry_validation import (
+    AxiomIIInfotonGeometryConfig,
+    AxiomIIInfotonGeometryFixtureResult,
+    axiom_ii_infoton_geometry_labels,
+    classify_infoton_geometry_component,
+    validate_axiom_ii_infoton_geometry_fixture,
+)
 from .axiom_ii_opening_validation import (
     AxiomIIOpeningConfig,
     AxiomIIOpeningFixtureResult,
@@ -1233,6 +1240,8 @@ __all__ = [
     "AxiomIFamilyPredictionsFixtureResult",
     "AxiomIIOpeningConfig",
     "AxiomIIOpeningFixtureResult",
+    "AxiomIIInfotonGeometryConfig",
+    "AxiomIIInfotonGeometryFixtureResult",
     "AxiomIMetaCouplingConfig",
     "AxiomIMetaCouplingFixtureResult",
     "AxiomIMinimalLagrangianConfig",
@@ -1244,8 +1253,10 @@ __all__ = [
     "axiom_i_psi_field_labels",
     "axiom_i_su_n_qualia_labels",
     "axiom_ii_opening_labels",
+    "axiom_ii_infoton_geometry_labels",
     "classify_axiom_i_role",
     "classify_axiom_ii_component",
+    "classify_infoton_geometry_component",
     "classify_conditional_prediction",
     "classify_coupling_requirement",
     "classify_lagrangian_operator",
@@ -1265,6 +1276,7 @@ __all__ = [
     "validate_axiom_i_psi_field_fixture",
     "validate_axiom_i_su_n_qualia_fixture",
     "validate_axiom_ii_opening_fixture",
+    "validate_axiom_ii_infoton_geometry_fixture",
     "validate_axiomatic_ntilde_fixture",
     "validate_cascading_failure_percolation_fixture",
     "validate_cyclic_operator_fixture",
