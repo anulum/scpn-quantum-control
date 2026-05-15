@@ -23,7 +23,7 @@ from scripts.reconcile_paper0_validation_coverage import (
 def test_discover_promoted_slices_cover_opening_and_promoted_tail() -> None:
     slices = discover_promoted_slices(REPO_ROOT)
 
-    assert len(slices) == 43
+    assert len(slices) == 44
     assert slices[0].source_start == "P0R00001"
     assert slices[0].source_end == "P0R00017"
     assert slices[1].source_start == "P0R00018"
@@ -38,8 +38,10 @@ def test_discover_promoted_slices_cover_opening_and_promoted_tail() -> None:
     assert slices[5].source_end == "P0R00306"
     assert slices[6].source_start == "P0R00307"
     assert slices[6].source_end == "P0R00332"
+    assert slices[7].source_start == "P0R00333"
+    assert slices[7].source_end == "P0R00357"
     assert slices[-1].source_end == "P0R07129"
-    assert sum(item.source_record_count for item in slices) == 1250
+    assert sum(item.source_record_count for item in slices) == 1275
     assert all(item.has_runtime_module for item in slices)
     assert all(item.has_runner for item in slices)
     assert all(item.has_builder_tests for item in slices)
@@ -53,11 +55,11 @@ def test_reconcile_promoted_coverage_reports_remaining_middle_gap() -> None:
     assert result.summary["ledger_record_count"] == 7129
     assert result.summary["promoted_start"] == "P0R00001"
     assert result.summary["promoted_end"] == "P0R07129"
-    assert result.summary["promoted_record_count"] == 1250
+    assert result.summary["promoted_record_count"] == 1275
     assert result.summary["promoted_coverage_match"] is False
     assert result.summary["promoted_surface_integrity"] is True
     assert result.summary["gap_count"] == 1
-    assert result.summary["gaps"] == [["P0R00333", "P0R06211"]]
+    assert result.summary["gaps"] == [["P0R00358", "P0R06211"]]
     assert result.summary["overlap_count"] == 0
     assert result.summary["missing_surface_count"] == 0
     assert result.summary["unpromoted_prefix_count"] == 0
