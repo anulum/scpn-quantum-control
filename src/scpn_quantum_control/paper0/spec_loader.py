@@ -240,6 +240,10 @@ DEFAULT_STATUS_METHOD_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_status_method_validation_specs_2026-05-13.json"
 )
+DEFAULT_STATUS_METHOD_CONTINUATION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_status_method_continuation_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -1302,6 +1306,26 @@ def load_status_method_validation_spec(
     raise KeyError(f"Status and Method spec {key!r} not found in {path}")
 
 
+def load_status_method_continuation_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted Status and Method continuation validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_STATUS_METHOD_CONTINUATION_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(
+            f"Status and Method continuation spec bundle not found: {path}"
+        ) from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"Status and Method continuation spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_CATEGORY_GRAMMAR_SPEC_BUNDLE",
     "DEFAULT_CHAPTER_ROADMAP_CONTEXT_SPEC_BUNDLE",
@@ -1350,6 +1374,7 @@ __all__ = [
     "DEFAULT_PATHOLOGY_CRITICALITY_SPEC_BUNDLE",
     "DEFAULT_RAG_QEC_STACK_SPEC_BUNDLE",
     "DEFAULT_SEED_FUNCTION_SPEC_BUNDLE",
+    "DEFAULT_STATUS_METHOD_CONTINUATION_SPEC_BUNDLE",
     "DEFAULT_STATUS_METHOD_SPEC_BUNDLE",
     "DEFAULT_STUART_LANDAU_PRECISION_SPEC_BUNDLE",
     "DEFAULT_STDP_SOC_SPEC_BUNDLE",
@@ -1407,6 +1432,7 @@ __all__ = [
     "load_pathology_criticality_validation_spec",
     "load_rag_qec_stack_validation_spec",
     "load_seed_function_validation_spec",
+    "load_status_method_continuation_validation_spec",
     "load_status_method_validation_spec",
     "load_stuart_landau_precision_validation_spec",
     "load_stdp_soc_validation_spec",

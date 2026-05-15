@@ -471,6 +471,14 @@ from .seed_function_validation import (
     validate_seed_function_fixture,
 )
 from .spec_loader import load_glial_control_validation_spec
+from .status_method_continuation_validation import (
+    StatusMethodContinuationConfig,
+    StatusMethodContinuationFixtureResult,
+    classify_disagreement_move,
+    classify_not_boundary,
+    operational_commitment_labels,
+    validate_status_method_continuation_fixture,
+)
 from .status_method_validation import (
     MethodologyCommitment,
     StatusMethodConfig,
@@ -812,6 +820,8 @@ __all__ = [
     "STDPSOCFixtureResult",
     "STAGE_ORDER",
     "StatusMethodConfig",
+    "StatusMethodContinuationConfig",
+    "StatusMethodContinuationFixtureResult",
     "StatusMethodFixtureResult",
     "StuartLandauPolarRates",
     "StuartLandauPrecisionConfig",
@@ -884,6 +894,8 @@ __all__ = [
     "classify_hpc_application",
     "classify_visionary_active_inference_role",
     "classify_scientific_inference_step",
+    "classify_disagreement_move",
+    "classify_not_boundary",
     "classify_toc_context",
     "coherence_time_fs",
     "ciss_effective_field_t",
@@ -990,6 +1002,7 @@ __all__ = [
     "nonlinear_radical_pair_yield_modulation",
     "order_parameter_summary",
     "operator_catalogue",
+    "operational_commitment_labels",
     "observational_w0_consistency",
     "objective_cover_targets",
     "paper0_upde_records",
@@ -1113,6 +1126,7 @@ __all__ = [
     "validate_rag_qec_stack_fixture",
     "validate_seed_function_fixture",
     "validate_status_method_fixture",
+    "validate_status_method_continuation_fixture",
     "validate_stdp_soc_fixture",
     "validate_stuart_landau_precision_fixture",
     "validate_stuart_landau_precision_upgrade_fixture",
