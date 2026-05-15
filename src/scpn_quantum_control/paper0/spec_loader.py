@@ -348,6 +348,10 @@ DEFAULT_GAUGE_PRINCIPLE_DERIVATION_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_gauge_principle_derivation_validation_specs_2026-05-13.json"
 )
+DEFAULT_LORENTZ_EFT_RESOLUTION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_lorentz_eft_resolution_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -1938,6 +1942,24 @@ def load_gauge_principle_derivation_validation_spec(
     raise KeyError(f"Gauge-principle-derivation spec {key!r} not found in {path}")
 
 
+def load_lorentz_eft_resolution_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted Lorentz/EFT-resolution validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_LORENTZ_EFT_RESOLUTION_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"Lorentz/EFT-resolution spec bundle not found: {path}") from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"Lorentz/EFT-resolution spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_ANULUM_COLLECTION_MANDATE_SPEC_BUNDLE",
     "DEFAULT_CATEGORY_GRAMMAR_SPEC_BUNDLE",
@@ -1979,6 +2001,7 @@ __all__ = [
     "DEFAULT_FRONT_MATTER_CONTEXT_SPEC_BUNDLE",
     "DEFAULT_GAIAN_SAFETY_SPEC_BUNDLE",
     "DEFAULT_GAUGE_PRINCIPLE_DERIVATION_SPEC_BUNDLE",
+    "DEFAULT_LORENTZ_EFT_RESOLUTION_SPEC_BUNDLE",
     "DEFAULT_GLIAL_SLOW_CONTROL_SPEC_BUNDLE",
     "DEFAULT_GLIAL_CONTROL_SPEC_BUNDLE",
     "DEFAULT_GRAND_SYNTHESIS_SPEC_BUNDLE",
@@ -2059,6 +2082,7 @@ __all__ = [
     "load_front_matter_context_validation_spec",
     "load_gaian_safety_validation_spec",
     "load_gauge_principle_derivation_validation_spec",
+    "load_lorentz_eft_resolution_validation_spec",
     "load_glial_slow_control_validation_spec",
     "load_glial_control_validation_spec",
     "load_grand_synthesis_validation_spec",

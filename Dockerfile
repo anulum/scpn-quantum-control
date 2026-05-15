@@ -18,11 +18,16 @@ COPY pyproject.toml requirements.txt requirements-dev.txt requirements-ci-py312-
 COPY src/ src/
 
 ENV PYTHONPATH=/app/src:/app
+ENV XDG_CACHE_HOME=/home/sqc/.cache
+ENV XDG_CONFIG_HOME=/home/sqc/.config
+ENV MPLCONFIGDIR=/home/sqc/.config/matplotlib
 
 RUN pip install --no-cache-dir --require-hashes -r requirements-ci-py312-linux.txt
 
 COPY tests/ tests/
 COPY tools/ tools/
+COPY docs/ docs/
+COPY paper/ paper/
 COPY examples/ examples/
 COPY notebooks/ notebooks/
 COPY results/ results/
@@ -34,10 +39,13 @@ COPY data/ data/
 COPY figures/ figures/
 COPY scripts/ scripts/
 
+RUN mkdir -p /home/sqc/.cache/pytest /home/sqc/.config/matplotlib \
+    && chown -R sqc:sqc /home/sqc/.cache /home/sqc/.config
+
 USER sqc
 
 HEALTHCHECK --interval=60s --timeout=10s --start-period=10s --retries=3 \
     CMD python -c "import scpn_quantum_control; print('OK')"
 
-# Skip DLA (27 min/test) and hardware runner (needs IBM creds) by default
-CMD ["pytest", "tests/", "-v", "--tb=short", "--ignore=tests/test_dynamical_lie_algebra.py", "--ignore=tests/test_hardware_runner.py"]
+# Skip slow, hardware, private-corpus, and machine-dependent performance tests by default.
+CMD ["pytest", "tests/", "-v", "--tb=short", "-o", "cache_dir=/home/sqc/.cache/pytest", "-m", "not slow and not hardware and not internal_corpus and not performance"]

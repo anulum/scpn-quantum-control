@@ -22,6 +22,8 @@ from scpn_quantum_control.hardware.classical import (
     classical_exact_evolution,
 )
 
+REFERENCE_EVOLUTION_MAX_DENSE_GIB = 0.5
+
 # ---------------------------------------------------------------------------
 # Exact evolution R values — dense path (n < 13)
 # ---------------------------------------------------------------------------
@@ -44,7 +46,12 @@ class TestEvolutionRegression:
     )
     def test_evolution_R_dt01(self, n, expected_R):
         """R at t=dt=0.1 (single step) must match reference to 10 digits."""
-        result = classical_exact_evolution(n, t_max=0.1, dt=0.1)
+        result = classical_exact_evolution(
+            n,
+            t_max=0.1,
+            dt=0.1,
+            max_dense_gib=REFERENCE_EVOLUTION_MAX_DENSE_GIB,
+        )
         assert result["R"][-1] == pytest.approx(expected_R, abs=1e-10)
 
     @pytest.mark.parametrize(
@@ -60,9 +67,19 @@ class TestEvolutionRegression:
     def test_evolution_R_dt01_multi_step(self, n, expected_R):
         """Multi-step evolution with same total time should give same final R."""
         # dt=0.1, t_max=0.1 -> 1 step
-        result_1 = classical_exact_evolution(n, t_max=0.1, dt=0.1)
+        result_1 = classical_exact_evolution(
+            n,
+            t_max=0.1,
+            dt=0.1,
+            max_dense_gib=REFERENCE_EVOLUTION_MAX_DENSE_GIB,
+        )
         # dt=0.05, t_max=0.1 -> 2 steps (U_dt different but total unitary same)
-        result_2 = classical_exact_evolution(n, t_max=0.1, dt=0.05)
+        result_2 = classical_exact_evolution(
+            n,
+            t_max=0.1,
+            dt=0.05,
+            max_dense_gib=REFERENCE_EVOLUTION_MAX_DENSE_GIB,
+        )
         # Both should give same final R since exp(-iH*0.1) = exp(-iH*0.05)^2
         np.testing.assert_allclose(result_1["R"][-1], result_2["R"][-1], atol=1e-10)
 
@@ -215,7 +232,12 @@ class TestRustParity:
         theta_rust = np.array(eng.kuramoto_euler(theta0, omega, K, 0.01, 10))
         R_rust = eng.order_parameter(theta_rust)
 
-        result = classical_exact_evolution(n, t_max=0.1, dt=0.1)
+        result = classical_exact_evolution(
+            n,
+            t_max=0.1,
+            dt=0.1,
+            max_dense_gib=REFERENCE_EVOLUTION_MAX_DENSE_GIB,
+        )
         R_exact = result["R"][-1]
 
         # Both should show non-trivial dynamics

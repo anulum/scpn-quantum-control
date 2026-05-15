@@ -335,9 +335,9 @@ class TestExpectationPauliFast:
         psi_re = np.zeros(2**n, dtype=np.float64)
         psi_re[0] = 1.0
         psi_im = np.zeros(2**n, dtype=np.float64)
-        # Pauli: 1=X, 2=Y, 3=Z
+        # Pauli: 0=X, 1=Y, 2=Z
         for q in range(n):
-            z = eng.expectation_pauli_fast(psi_re, psi_im, n, q, 3)
+            z = eng.expectation_pauli_fast(psi_re, psi_im, n, q, 2)
             np.testing.assert_allclose(z, 1.0, atol=1e-14)
 
     def test_x_on_ground_state_zero(self):
@@ -346,7 +346,7 @@ class TestExpectationPauliFast:
         psi_re[0] = 1.0
         psi_im = np.zeros(2**n, dtype=np.float64)
         for q in range(n):
-            x = eng.expectation_pauli_fast(psi_re, psi_im, n, q, 1)
+            x = eng.expectation_pauli_fast(psi_re, psi_im, n, q, 0)
             np.testing.assert_allclose(x, 0.0, atol=1e-14)
 
     def test_performance(self):
@@ -358,7 +358,7 @@ class TestExpectationPauliFast:
         psi_re = np.ascontiguousarray(psi.real, dtype=np.float64)
         psi_im = np.ascontiguousarray(psi.imag, dtype=np.float64)
 
-        _, dt = _timed(eng.expectation_pauli_fast, psi_re, psi_im, n, 0, 3)
+        _, dt = _timed(eng.expectation_pauli_fast, psi_re, psi_im, n, 0, 2)
         _assert_benchmark_time(dt)
         _perf(f"expectation_pauli_fast ({n}q, Z)", dt)
 

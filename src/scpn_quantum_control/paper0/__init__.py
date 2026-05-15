@@ -548,6 +548,13 @@ from .logos_recursive_closure_validation import (
     recursive_closure_labels,
     validate_logos_recursive_closure_fixture,
 )
+from .lorentz_eft_resolution_validation import (
+    LorentzEFTResolutionConfig,
+    LorentzEFTResolutionFixtureResult,
+    classify_lorentz_eft_resolution_component,
+    lorentz_eft_resolution_labels,
+    validate_lorentz_eft_resolution_fixture,
+)
 from .master_lagrangian_intro_validation import (
     MasterLagrangianIntroConfig,
     MasterLagrangianIntroFixtureResult,
@@ -953,6 +960,8 @@ __all__ = [
     "HPCUPDEDerivationFixtureResult",
     "HybridCollectiveCouplingValidationResult",
     "InformationThermodynamicsConfig",
+    "LorentzEFTResolutionConfig",
+    "LorentzEFTResolutionFixtureResult",
     "InformationThermodynamicsValidationResult",
     "IITThresholdConfig",
     "IITThresholdValidationResult",
@@ -1132,6 +1141,7 @@ __all__ = [
     "classify_scientific_inference_step",
     "classify_disagreement_move",
     "classify_gauge_principle_derivation_component",
+    "classify_lorentz_eft_resolution_component",
     "classify_meta_framework_integration",
     "classify_not_boundary",
     "classify_toc_context",
@@ -1200,6 +1210,7 @@ __all__ = [
     "gauge_transduction_score",
     "gaian_stability_index",
     "gauge_principle_derivation_labels",
+    "lorentz_eft_resolution_labels",
     "geometric_qualia_score",
     "glial_feedback_stability_score",
     "geometric_coupling_score",
@@ -1427,6 +1438,7 @@ __all__ = [
     "validate_functorial_mapping",
     "validate_gaian_safety_fixture",
     "validate_gauge_principle_derivation_fixture",
+    "validate_lorentz_eft_resolution_fixture",
     "validate_glial_sigma_control_fixture",
     "validate_glial_slow_control_fixture",
     "validate_grand_synthesis_fixture",

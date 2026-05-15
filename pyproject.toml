@@ -111,10 +111,12 @@ packages = ["src/scpn_quantum_control"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-m 'not slow and not hardware'"
+addopts = "-m 'not slow and not hardware and not internal_corpus and not performance'"
 markers = [
     "slow: marks tests as slow (run with '-m slow')",
     "hardware: requires IBM Quantum credentials",
+    "internal_corpus: requires ignored internal manuscript extraction artefacts",
+    "performance: wall-clock performance gate for controlled benchmark runs",
 ]
 xfail_strict = true
 filterwarnings = [

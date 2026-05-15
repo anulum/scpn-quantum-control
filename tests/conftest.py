@@ -23,6 +23,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from _internal_corpus_markers import is_performance_gate, requires_internal_paper0_corpus
 from hypothesis import strategies as st
 
 from scpn_quantum_control.bridge.knm_hamiltonian import (
@@ -40,6 +41,26 @@ from scpn_quantum_control.hardware.runner import HardwareRunner
 
 def pytest_configure(config):
     config.addinivalue_line("markers", "slow: marks tests as slow")
+    config.addinivalue_line(
+        "markers",
+        "internal_corpus: requires ignored internal manuscript extraction artefacts",
+    )
+    config.addinivalue_line(
+        "markers",
+        "performance: wall-clock performance gate for controlled benchmark runs",
+    )
+
+
+def pytest_collection_modifyitems(items):
+    """Mark tests that require ignored local manuscript extraction artefacts."""
+    internal_marker = pytest.mark.internal_corpus
+    performance_marker = pytest.mark.performance
+    for item in items:
+        item_path = Path(str(item.fspath))
+        if requires_internal_paper0_corpus(item_path):
+            item.add_marker(internal_marker)
+        if is_performance_gate(item_path):
+            item.add_marker(performance_marker)
 
 
 # ---------------------------------------------------------------------------
