@@ -256,6 +256,10 @@ DEFAULT_FOUNDATIONAL_VIABILITY_POSTULATE_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_foundational_viability_postulate_validation_specs_2026-05-13.json"
 )
+DEFAULT_U1_FIM_MULTISCALE_DYNAMICS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_u1_fim_multiscale_dynamics_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -1398,6 +1402,26 @@ def load_foundational_viability_postulate_validation_spec(
     raise KeyError(f"foundational viability postulate spec {key!r} not found in {path}")
 
 
+def load_u1_fim_multiscale_dynamics_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted U(1)/FIM multiscale-dynamics validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_U1_FIM_MULTISCALE_DYNAMICS_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(
+            f"U(1)/FIM multiscale-dynamics spec bundle not found: {path}"
+        ) from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"U(1)/FIM multiscale-dynamics spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_ANULUM_COLLECTION_MANDATE_SPEC_BUNDLE",
     "DEFAULT_CATEGORY_GRAMMAR_SPEC_BUNDLE",
@@ -1458,6 +1482,7 @@ __all__ = [
     "DEFAULT_SYSTEM_ROBUSTNESS_SPEC_BUNDLE",
     "DEFAULT_TERMINAL_BOUNDARY_SPEC_BUNDLE",
     "DEFAULT_THREE_CHANNEL_COUPLING_SPEC_BUNDLE",
+    "DEFAULT_U1_FIM_MULTISCALE_DYNAMICS_SPEC_BUNDLE",
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_VALIDATION_STRATEGY_SPEC_BUNDLE",
     "load_anulum_collection_mandate_validation_spec",
@@ -1519,6 +1544,7 @@ __all__ = [
     "load_system_robustness_validation_spec",
     "load_terminal_boundary_validation_spec",
     "load_three_channel_coupling_validation_spec",
+    "load_u1_fim_multiscale_dynamics_validation_spec",
     "load_upde_validation_spec",
     "load_validation_strategy_spec",
 ]

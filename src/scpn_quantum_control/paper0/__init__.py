@@ -620,6 +620,14 @@ from .two_timescale_quasicritical_validation import (
     slow_explorer_gain,
     validate_two_timescale_quasicritical_fixture,
 )
+from .u1_fim_multiscale_dynamics_validation import (
+    U1FIMMultiscaleDynamicsConfig,
+    U1FIMMultiscaleDynamicsFixtureResult,
+    classify_upde_component,
+    classify_validation_boundary,
+    covariant_derivative_formula,
+    validate_u1_fim_multiscale_dynamics_fixture,
+)
 from .upde_validation import (
     AdaptiveCouplingConfig,
     AdaptiveCouplingRates,
@@ -874,6 +882,8 @@ __all__ = [
     "TechnosphereCouplingAccelerationValidationResult",
     "TwoTimescaleQuasicriticalConfig",
     "TwoTimescaleQuasicriticalFixtureResult",
+    "U1FIMMultiscaleDynamicsConfig",
+    "U1FIMMultiscaleDynamicsFixtureResult",
     "UpdeGradientBridgeConfig",
     "UpdeGradientBridgeTerms",
     "UpdeGradientBridgeValidationResult",
@@ -933,6 +943,8 @@ __all__ = [
     "classify_meta_framework_integration",
     "classify_not_boundary",
     "classify_toc_context",
+    "classify_upde_component",
+    "classify_validation_boundary",
     "coherence_time_fs",
     "ciss_effective_field_t",
     "ciss_spin_filter_hamiltonian",
@@ -954,6 +966,7 @@ __all__ = [
     "cross_prediction_tension",
     "coupling_factors",
     "coupling_ratios",
+    "covariant_derivative_formula",
     "cytokine_modulated_lambda",
     "dark_energy_context_score",
     "decoherence_excess",
@@ -1181,6 +1194,7 @@ __all__ = [
     "validate_t0_seeding_fixture",
     "validate_therapeutic_restoration_targets_fixture",
     "validate_two_timescale_quasicritical_fixture",
+    "validate_u1_fim_multiscale_dynamics_fixture",
     "validate_tsvf_abl_fixture",
     "validate_tsvf_precognition_boundary_fixture",
     "validate_technosphere_coupling_acceleration_fixture",
