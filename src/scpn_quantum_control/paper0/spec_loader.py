@@ -228,6 +228,10 @@ DEFAULT_FOREWORD_COUPLING_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_foreword_coupling_validation_specs_2026-05-13.json"
 )
+DEFAULT_PREFACE_I_RIGOUR_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_preface_i_rigour_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -1236,6 +1240,24 @@ def load_foreword_coupling_validation_spec(
     raise KeyError(f"Foreword coupling spec {key!r} not found in {path}")
 
 
+def load_preface_i_rigour_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted Preface I rigour validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_PREFACE_I_RIGOUR_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"Preface I rigour spec bundle not found: {path}") from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"Preface I rigour spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_CATEGORY_GRAMMAR_SPEC_BUNDLE",
     "DEFAULT_CHAPTER_ROADMAP_CONTEXT_SPEC_BUNDLE",
@@ -1269,6 +1291,7 @@ __all__ = [
     "DEFAULT_OBJECTIVE_COVER_CONTEXT_SPEC_BUNDLE",
     "DEFAULT_OPENING_FOUNDATION_SPEC_BUNDLE",
     "DEFAULT_POSITIONING_PREFACE_CONTEXT_SPEC_BUNDLE",
+    "DEFAULT_PREFACE_I_RIGOUR_SPEC_BUNDLE",
     "DEFAULT_TWO_TIMESCALE_QUASICRITICAL_SPEC_BUNDLE",
     "DEFAULT_INFORMATION_THERMODYNAMICS_SPEC_BUNDLE",
     "DEFAULT_L5_ACTIVE_INFERENCE_MATH_SPEC_BUNDLE",
@@ -1323,6 +1346,7 @@ __all__ = [
     "load_objective_cover_context_validation_spec",
     "load_opening_foundation_validation_spec",
     "load_positioning_preface_context_validation_spec",
+    "load_preface_i_rigour_validation_spec",
     "load_two_timescale_quasicritical_validation_spec",
     "load_information_thermodynamics_validation_spec",
     "load_l5_active_inference_math_validation_spec",
