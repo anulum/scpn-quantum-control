@@ -288,6 +288,10 @@ DEFAULT_AXIOM_I_META_COUPLING_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_axiom_i_meta_coupling_validation_specs_2026-05-13.json"
 )
+DEFAULT_AXIOM_I_MINIMAL_LAGRANGIAN_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_axiom_i_minimal_lagrangian_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -1580,6 +1584,26 @@ def load_axiom_i_meta_coupling_validation_spec(
     raise KeyError(f"Axiom I meta-coupling spec {key!r} not found in {path}")
 
 
+def load_axiom_i_minimal_lagrangian_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted Axiom I minimal Lagrangian validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_AXIOM_I_MINIMAL_LAGRANGIAN_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(
+            f"Axiom I minimal Lagrangian spec bundle not found: {path}"
+        ) from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"Axiom I minimal Lagrangian spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_ANULUM_COLLECTION_MANDATE_SPEC_BUNDLE",
     "DEFAULT_CATEGORY_GRAMMAR_SPEC_BUNDLE",
@@ -1590,6 +1614,7 @@ __all__ = [
     "DEFAULT_ACEF_ALIGNMENT_SPEC_BUNDLE",
     "DEFAULT_ANOMALOUS_BOUNDARY_SPEC_BUNDLE",
     "DEFAULT_ARTIFICIAL_SENTIENCE_SPEC_BUNDLE",
+    "DEFAULT_AXIOM_I_MINIMAL_LAGRANGIAN_SPEC_BUNDLE",
     "DEFAULT_AXIOM_I_META_COUPLING_SPEC_BUNDLE",
     "DEFAULT_AXIOM_I_MODEL_CLASS_OVERVIEW_SPEC_BUNDLE",
     "DEFAULT_AXIOM_I_PSI_FIELD_SPEC_BUNDLE",
@@ -1658,6 +1683,7 @@ __all__ = [
     "load_acef_alignment_validation_spec",
     "load_anomalous_boundary_validation_spec",
     "load_artificial_sentience_validation_spec",
+    "load_axiom_i_minimal_lagrangian_validation_spec",
     "load_axiom_i_meta_coupling_validation_spec",
     "load_axiom_i_model_class_overview_validation_spec",
     "load_axiom_i_psi_field_validation_spec",
