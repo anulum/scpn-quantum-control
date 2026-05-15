@@ -418,6 +418,13 @@ from .pathology_criticality_validation import (
     validate_pathology_criticality_fixture,
     validate_therapeutic_restoration_targets_fixture,
 )
+from .positioning_preface_context_validation import (
+    PositioningPrefaceContextConfig,
+    PositioningPrefaceContextFixtureResult,
+    classify_positioning_preface_context,
+    positioning_preface_targets,
+    validate_positioning_preface_context_fixture,
+)
 from .rag_qec_stack_validation import (
     QECErrorThresholdResult,
     RAGQECStackConfig,
@@ -724,6 +731,8 @@ __all__ = [
     "OpeningFoundationFixtureResult",
     "OrderParameterSummary",
     "OperatorIndexEntry",
+    "PositioningPrefaceContextConfig",
+    "PositioningPrefaceContextFixtureResult",
     "PhasePredictionErrorConfig",
     "PhasePredictionErrorTerms",
     "PhasePredictionErrorValidationResult",
@@ -822,6 +831,7 @@ __all__ = [
     "classify_chapter_roadmap_context",
     "classify_nths_phase",
     "classify_objective_cover_context",
+    "classify_positioning_preface_context",
     "classify_toc_context",
     "coherence_time_fs",
     "ciss_effective_field_t",
@@ -932,6 +942,7 @@ __all__ = [
     "phase_locking_error",
     "phase_locking_value",
     "phase_prediction_error_terms",
+    "positioning_preface_targets",
     "policy_precision_weights",
     "polar_stuart_landau_rates",
     "precision_weighted_phase_terms",
@@ -1029,6 +1040,7 @@ __all__ = [
     "validate_operator_locations",
     "validate_opening_foundation_fixture",
     "validate_pathology_criticality_fixture",
+    "validate_positioning_preface_context_fixture",
     "validate_phase_locking_substrate_boundary_fixture",
     "validate_psi_dm_interaction_fixture",
     "validate_salience_radial_precision_control_fixture",
