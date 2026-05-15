@@ -534,6 +534,13 @@ from .logos_recursive_closure_validation import (
     recursive_closure_labels,
     validate_logos_recursive_closure_fixture,
 )
+from .meta_framework_psi_coupling_validation import (
+    MetaFrameworkPsiCouplingConfig,
+    MetaFrameworkPsiCouplingFixtureResult,
+    classify_meta_framework_psi_coupling_component,
+    meta_framework_psi_coupling_labels,
+    validate_meta_framework_psi_coupling_fixture,
+)
 from .nv_quantum_sensing_validation import (
     DecoherenceRegressionFit,
     NVQuantumSensingConfig,
@@ -937,6 +944,8 @@ __all__ = [
     "L5TDANeurophenomenologyFixtureResult",
     "L5TripleNetworkConfig",
     "L5TripleNetworkFixtureResult",
+    "MetaFrameworkPsiCouplingConfig",
+    "MetaFrameworkPsiCouplingFixtureResult",
     "L11InterfaceConfig",
     "L11InterfaceFixtureResult",
     "L11NTHSComputationalConfig",
@@ -1084,6 +1093,7 @@ __all__ = [
     "classify_hpc_application",
     "classify_layer_domain",
     "classify_mainstream_anchor",
+    "classify_meta_framework_psi_coupling_component",
     "classify_physical_postulate_component",
     "classify_pela_boundary",
     "classify_tripartite_ontology_component",
@@ -1265,6 +1275,7 @@ __all__ = [
     "terminal_catalogue",
     "terminology_bridge_labels",
     "tripartite_ontology_labels",
+    "meta_framework_psi_coupling_labels",
     "terminal_set_f0",
     "theory_positioning_score",
     "triple_network_precision_score",
@@ -1399,6 +1410,7 @@ __all__ = [
     "validate_l11_interface_fixture",
     "validate_l11_nths_computational_fixture",
     "validate_logos_recursive_closure_fixture",
+    "validate_meta_framework_psi_coupling_fixture",
     "validate_layer_monograph_suite_fixture",
     "validate_nths_phase_test_fixture",
     "validate_nv_quantum_sensing_fixture",
