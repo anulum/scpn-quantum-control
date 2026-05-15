@@ -268,6 +268,10 @@ DEFAULT_AXIOMATIC_NTILDE_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_axiomatic_ntilde_validation_specs_2026-05-13.json"
 )
+DEFAULT_TERMINOLOGY_BRIDGE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_terminology_bridge_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -1466,6 +1470,24 @@ def load_axiomatic_ntilde_validation_spec(
     raise KeyError(f"formal Logos/Ntilde spec {key!r} not found in {path}")
 
 
+def load_terminology_bridge_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted terminology-bridge validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_TERMINOLOGY_BRIDGE_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"terminology-bridge spec bundle not found: {path}") from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"terminology-bridge spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_ANULUM_COLLECTION_MANDATE_SPEC_BUNDLE",
     "DEFAULT_CATEGORY_GRAMMAR_SPEC_BUNDLE",
@@ -1527,6 +1549,7 @@ __all__ = [
     "DEFAULT_T0_SEEDING_SPEC_BUNDLE",
     "DEFAULT_SYSTEM_ROBUSTNESS_SPEC_BUNDLE",
     "DEFAULT_TERMINAL_BOUNDARY_SPEC_BUNDLE",
+    "DEFAULT_TERMINOLOGY_BRIDGE_SPEC_BUNDLE",
     "DEFAULT_THREE_CHANNEL_COUPLING_SPEC_BUNDLE",
     "DEFAULT_U1_FIM_MULTISCALE_DYNAMICS_SPEC_BUNDLE",
     "DEFAULT_UPDE_SPEC_BUNDLE",
@@ -1591,6 +1614,7 @@ __all__ = [
     "load_t0_seeding_validation_spec",
     "load_system_robustness_validation_spec",
     "load_terminal_boundary_validation_spec",
+    "load_terminology_bridge_validation_spec",
     "load_three_channel_coupling_validation_spec",
     "load_u1_fim_multiscale_dynamics_validation_spec",
     "load_upde_validation_spec",
