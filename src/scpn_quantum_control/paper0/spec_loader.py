@@ -328,6 +328,10 @@ DEFAULT_AXIOM_III_SEC_NTILDE_EQUIVALENCE_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_axiom_iii_sec_ntilde_equivalence_validation_specs_2026-05-13.json"
 )
+DEFAULT_TRIPARTITE_ONTOLOGY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_tripartite_ontology_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -1822,6 +1826,24 @@ def load_axiom_iii_sec_ntilde_equivalence_validation_spec(
     raise KeyError(f"Axiom III SEC-Ntilde-equivalence spec {key!r} not found in {path}")
 
 
+def load_tripartite_ontology_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted tripartite-ontology validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_TRIPARTITE_ONTOLOGY_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"Tripartite ontology spec bundle not found: {path}") from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"Tripartite ontology spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_ANULUM_COLLECTION_MANDATE_SPEC_BUNDLE",
     "DEFAULT_CATEGORY_GRAMMAR_SPEC_BUNDLE",
@@ -1899,6 +1921,7 @@ __all__ = [
     "DEFAULT_TERMINAL_BOUNDARY_SPEC_BUNDLE",
     "DEFAULT_TERMINOLOGY_BRIDGE_SPEC_BUNDLE",
     "DEFAULT_THREE_CHANNEL_COUPLING_SPEC_BUNDLE",
+    "DEFAULT_TRIPARTITE_ONTOLOGY_SPEC_BUNDLE",
     "DEFAULT_U1_FIM_MULTISCALE_DYNAMICS_SPEC_BUNDLE",
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_VALIDATION_STRATEGY_SPEC_BUNDLE",
@@ -1978,6 +2001,7 @@ __all__ = [
     "load_terminal_boundary_validation_spec",
     "load_terminology_bridge_validation_spec",
     "load_three_channel_coupling_validation_spec",
+    "load_tripartite_ontology_validation_spec",
     "load_u1_fim_multiscale_dynamics_validation_spec",
     "load_upde_validation_spec",
     "load_validation_strategy_spec",

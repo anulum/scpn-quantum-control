@@ -742,6 +742,13 @@ from .topology_schema import (
     schema_to_s19_source_boundary,
     validate_paper0_topology_schema,
 )
+from .tripartite_ontology_validation import (
+    TripartiteOntologyConfig,
+    TripartiteOntologyFixtureResult,
+    classify_tripartite_ontology_component,
+    tripartite_ontology_labels,
+    validate_tripartite_ontology_fixture,
+)
 from .two_timescale_quasicritical_validation import (
     TwoTimescaleQuasicriticalConfig,
     TwoTimescaleQuasicriticalFixtureResult,
@@ -1014,6 +1021,8 @@ __all__ = [
     "TerminalDefinition",
     "TerminologyBridgeConfig",
     "TerminologyBridgeFixtureResult",
+    "TripartiteOntologyConfig",
+    "TripartiteOntologyFixtureResult",
     "ThreeChannelCouplingConfig",
     "ThreeChannelCouplingFixtureResult",
     "TSVFBoundaryValidationResult",
@@ -1077,6 +1086,7 @@ __all__ = [
     "classify_mainstream_anchor",
     "classify_physical_postulate_component",
     "classify_pela_boundary",
+    "classify_tripartite_ontology_component",
     "classify_visionary_active_inference_role",
     "classify_validation_suite_paper",
     "classify_viability_pillar",
@@ -1254,6 +1264,7 @@ __all__ = [
     "symmetry_restoration_score",
     "terminal_catalogue",
     "terminology_bridge_labels",
+    "tripartite_ontology_labels",
     "terminal_set_f0",
     "theory_positioning_score",
     "triple_network_precision_score",
@@ -1417,6 +1428,7 @@ __all__ = [
     "validate_system_robustness_fixture",
     "validate_terminal_boundary_fixture",
     "validate_terminology_bridge_fixture",
+    "validate_tripartite_ontology_fixture",
     "validate_three_channel_coupling_fixture",
     "validate_spin_torsion_bridge_fixture",
     "validate_t0_seeding_fixture",
