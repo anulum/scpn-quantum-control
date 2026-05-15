@@ -411,6 +411,14 @@ from .layer_monograph_suite_validation import (
     layer_publication_catalogue,
     validate_layer_monograph_suite_fixture,
 )
+from .logos_recursive_closure_validation import (
+    LogosRecursiveClosureConfig,
+    LogosRecursiveClosureFixtureResult,
+    classify_axiom_status,
+    classify_hint_axiom_role,
+    recursive_closure_labels,
+    validate_logos_recursive_closure_fixture,
+)
 from .nv_quantum_sensing_validation import (
     DecoherenceRegressionFit,
     NVQuantumSensingConfig,
@@ -799,6 +807,8 @@ __all__ = [
     "L11InterfaceFixtureResult",
     "L11NTHSComputationalConfig",
     "L11NTHSComputationalFixtureResult",
+    "LogosRecursiveClosureConfig",
+    "LogosRecursiveClosureFixtureResult",
     "LayerMonographSuiteConfig",
     "LayerMonographSuiteFixtureResult",
     "LatticeHMCActionResult",
@@ -943,6 +953,8 @@ __all__ = [
     "classify_meta_framework_integration",
     "classify_not_boundary",
     "classify_toc_context",
+    "classify_axiom_status",
+    "classify_hint_axiom_role",
     "classify_upde_component",
     "classify_validation_boundary",
     "coherence_time_fs",
@@ -1083,6 +1095,7 @@ __all__ = [
     "quadratic_free_energy",
     "quantum_potential",
     "radical_pair_hamiltonian",
+    "recursive_closure_labels",
     "restore_toward_quasicriticality",
     "safety_protocol_score",
     "scalar_field_density_pressure",
@@ -1161,6 +1174,7 @@ __all__ = [
     "validate_l5_triple_network_fixture",
     "validate_l11_interface_fixture",
     "validate_l11_nths_computational_fixture",
+    "validate_logos_recursive_closure_fixture",
     "validate_layer_monograph_suite_fixture",
     "validate_nths_phase_test_fixture",
     "validate_nv_quantum_sensing_fixture",

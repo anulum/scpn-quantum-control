@@ -260,6 +260,10 @@ DEFAULT_U1_FIM_MULTISCALE_DYNAMICS_SPEC_BUNDLE = (
     "docs/internal/paper0_foundational_extraction/"
     "paper0_u1_fim_multiscale_dynamics_validation_specs_2026-05-13.json"
 )
+DEFAULT_LOGOS_RECURSIVE_CLOSURE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_logos_recursive_closure_validation_specs_2026-05-13.json"
+)
 
 
 def load_upde_validation_spec(
@@ -1422,6 +1426,24 @@ def load_u1_fim_multiscale_dynamics_validation_spec(
     raise KeyError(f"U(1)/FIM multiscale-dynamics spec {key!r} not found in {path}")
 
 
+def load_logos_recursive_closure_validation_spec(
+    key: str,
+    *,
+    spec_bundle_path: Path | None = None,
+) -> dict[str, Any]:
+    """Load a promoted Logos recursive-closure validation spec by key."""
+    path = spec_bundle_path or project_data_path(DEFAULT_LOGOS_RECURSIVE_CLOSURE_SPEC_BUNDLE)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"Logos recursive-closure spec bundle not found: {path}") from exc
+
+    for spec in payload.get("specs", []):
+        if spec.get("key") == key:
+            return dict(spec)
+    raise KeyError(f"Logos recursive-closure spec {key!r} not found in {path}")
+
+
 __all__ = [
     "DEFAULT_ANULUM_COLLECTION_MANDATE_SPEC_BUNDLE",
     "DEFAULT_CATEGORY_GRAMMAR_SPEC_BUNDLE",
@@ -1468,6 +1490,7 @@ __all__ = [
     "DEFAULT_L5_TRIPLE_NETWORK_SPEC_BUNDLE",
     "DEFAULT_L11_INTERFACE_SPEC_BUNDLE",
     "DEFAULT_LAYER_MONOGRAPH_SUITE_SPEC_BUNDLE",
+    "DEFAULT_LOGOS_RECURSIVE_CLOSURE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
     "DEFAULT_NEUROVASCULAR_SPEC_BUNDLE",
     "DEFAULT_PATHOLOGY_CRITICALITY_SPEC_BUNDLE",
@@ -1530,6 +1553,7 @@ __all__ = [
     "load_l5_triple_network_validation_spec",
     "load_l11_interface_validation_spec",
     "load_layer_monograph_suite_validation_spec",
+    "load_logos_recursive_closure_validation_spec",
     "load_macro_transition_validation_spec",
     "load_neurovascular_validation_spec",
     "load_pathology_criticality_validation_spec",
