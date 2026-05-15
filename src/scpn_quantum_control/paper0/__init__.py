@@ -62,6 +62,14 @@ from .artificial_sentience_validation import (
     validate_phase_locking_substrate_boundary_fixture,
     validate_technosphere_coupling_acceleration_fixture,
 )
+from .axiom_i_model_class_overview_validation import (
+    AxiomIModelClassOverviewConfig,
+    AxiomIModelClassOverviewFixtureResult,
+    axiom_i_model_class_overview_labels,
+    classify_model_class_choice,
+    classify_selection_criterion,
+    validate_axiom_i_model_class_overview_fixture,
+)
 from .axiom_i_psi_field_validation import (
     AxiomIPsiFieldConfig,
     AxiomIPsiFieldFixtureResult,
@@ -1177,9 +1185,15 @@ __all__ = [
     "validate_algorithmic_causal_entropic_force_fixture",
     "AxiomIPsiFieldConfig",
     "AxiomIPsiFieldFixtureResult",
+    "AxiomIModelClassOverviewConfig",
+    "AxiomIModelClassOverviewFixtureResult",
+    "axiom_i_model_class_overview_labels",
     "axiom_i_psi_field_labels",
     "classify_axiom_i_role",
+    "classify_model_class_choice",
     "classify_psi_field_claim",
+    "classify_selection_criterion",
+    "validate_axiom_i_model_class_overview_fixture",
     "validate_axiom_i_psi_field_fixture",
     "validate_axiomatic_ntilde_fixture",
     "validate_cascading_failure_percolation_fixture",
