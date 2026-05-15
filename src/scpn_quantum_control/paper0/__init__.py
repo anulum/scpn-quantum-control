@@ -62,6 +62,14 @@ from .artificial_sentience_validation import (
     validate_phase_locking_substrate_boundary_fixture,
     validate_technosphere_coupling_acceleration_fixture,
 )
+from .axiom_i_meta_coupling_validation import (
+    AxiomIMetaCouplingConfig,
+    AxiomIMetaCouplingFixtureResult,
+    axiom_i_meta_coupling_labels,
+    classify_coupling_requirement,
+    classify_predictive_hardware_role,
+    validate_axiom_i_meta_coupling_fixture,
+)
 from .axiom_i_model_class_overview_validation import (
     AxiomIModelClassOverviewConfig,
     AxiomIModelClassOverviewFixtureResult,
@@ -1187,12 +1195,18 @@ __all__ = [
     "AxiomIPsiFieldFixtureResult",
     "AxiomIModelClassOverviewConfig",
     "AxiomIModelClassOverviewFixtureResult",
+    "AxiomIMetaCouplingConfig",
+    "AxiomIMetaCouplingFixtureResult",
+    "axiom_i_meta_coupling_labels",
     "axiom_i_model_class_overview_labels",
     "axiom_i_psi_field_labels",
     "classify_axiom_i_role",
+    "classify_coupling_requirement",
     "classify_model_class_choice",
+    "classify_predictive_hardware_role",
     "classify_psi_field_claim",
     "classify_selection_criterion",
+    "validate_axiom_i_meta_coupling_fixture",
     "validate_axiom_i_model_class_overview_fixture",
     "validate_axiom_i_psi_field_fixture",
     "validate_axiomatic_ntilde_fixture",
