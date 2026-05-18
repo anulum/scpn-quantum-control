@@ -239,6 +239,13 @@ from .biological_qec_l1_4_validation import (
     classify_biological_qec_l1_4_component,
     validate_biological_qec_l1_4_fixture,
 )
+from .biophysics_quantum_biology_validation import (
+    BiophysicsQuantumBiologyConfig,
+    BiophysicsQuantumBiologyFixtureResult,
+    biophysics_quantum_biology_labels,
+    classify_biophysics_quantum_biology_component,
+    validate_biophysics_quantum_biology_fixture,
+)
 from .case_study_the_layer_3_genomic_morphogenetic_transduction_pathway_validation import (
     CaseStudyTheLayer3GenomicMorphogeneticTransductionPathwayConfig,
     CaseStudyTheLayer3GenomicMorphogeneticTransductionPathwayFixtureResult,
@@ -410,6 +417,13 @@ from .cosmological_predictions_validation import (
     prediction_catalogue,
     priority_ranking,
     validate_cosmological_predictions_fixture,
+)
+from .cosmology_physics_extensions_validation import (
+    CosmologyPhysicsExtensionsConfig,
+    CosmologyPhysicsExtensionsFixtureResult,
+    classify_cosmology_physics_extensions_component,
+    cosmology_physics_extensions_labels,
+    validate_cosmology_physics_extensions_fixture,
 )
 from .creating_and_protecting_a_coherent_sigma_validation import (
     CreatingAndProtectingACoherentSigmaConfig,
@@ -1739,6 +1753,13 @@ from .qualia_as_the_geometry_of_belief_validation import (
     classify_qualia_as_the_geometry_of_belief_component,
     qualia_as_the_geometry_of_belief_labels,
     validate_qualia_as_the_geometry_of_belief_fixture,
+)
+from .quantum_biophysical_foundations_validation import (
+    QuantumBiophysicalFoundationsConfig,
+    QuantumBiophysicalFoundationsFixtureResult,
+    classify_quantum_biophysical_foundations_component,
+    quantum_biophysical_foundations_labels,
+    validate_quantum_biophysical_foundations_fixture,
 )
 from .quantum_enzymology_of_the_immune_response_validation import (
     QuantumEnzymologyOfTheImmuneResponseConfig,
@@ -3073,6 +3094,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_quantum_biophysical_foundations_fixture",
+    "quantum_biophysical_foundations_labels",
+    "classify_quantum_biophysical_foundations_component",
+    "QuantumBiophysicalFoundationsFixtureResult",
+    "QuantumBiophysicalFoundationsConfig",
+    "validate_cosmology_physics_extensions_fixture",
+    "cosmology_physics_extensions_labels",
+    "classify_cosmology_physics_extensions_component",
+    "CosmologyPhysicsExtensionsFixtureResult",
+    "CosmologyPhysicsExtensionsConfig",
+    "validate_biophysics_quantum_biology_fixture",
+    "biophysics_quantum_biology_labels",
+    "classify_biophysics_quantum_biology_component",
+    "BiophysicsQuantumBiologyFixtureResult",
+    "BiophysicsQuantumBiologyConfig",
     "validate_section_2_impedance_matching_fixture",
     "section_2_impedance_matching_labels",
     "classify_section_2_impedance_matching_component",

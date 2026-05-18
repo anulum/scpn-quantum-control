@@ -7297,6 +7297,54 @@ def load_section_2_impedance_matching_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_BIOPHYSICS_QUANTUM_BIOLOGY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_biophysics_quantum_biology_validation_specs_2026-05-17.json"
+)
+
+
+def load_biophysics_quantum_biology_validation_spec(
+    spec_bundle: str | Path = DEFAULT_BIOPHYSICS_QUANTUM_BIOLOGY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 biophysics quantum biology validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_COSMOLOGY_PHYSICS_EXTENSIONS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_cosmology_physics_extensions_validation_specs_2026-05-17.json"
+)
+
+
+def load_cosmology_physics_extensions_validation_spec(
+    spec_bundle: str | Path = DEFAULT_COSMOLOGY_PHYSICS_EXTENSIONS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 cosmology physics extensions validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_QUANTUM_BIOPHYSICAL_FOUNDATIONS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_quantum_biophysical_foundations_validation_specs_2026-05-17.json"
+)
+
+
+def load_quantum_biophysical_foundations_validation_spec(
+    spec_bundle: str | Path = DEFAULT_QUANTUM_BIOPHYSICAL_FOUNDATIONS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 quantum biophysical foundations validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -8104,4 +8152,10 @@ __all__ = [
     "load_domain_interfaces_and_renormalisation_validation_spec",
     "DEFAULT_SECTION_2_IMPEDANCE_MATCHING_SPEC_BUNDLE",
     "load_section_2_impedance_matching_validation_spec",
+    "DEFAULT_BIOPHYSICS_QUANTUM_BIOLOGY_SPEC_BUNDLE",
+    "load_biophysics_quantum_biology_validation_spec",
+    "DEFAULT_COSMOLOGY_PHYSICS_EXTENSIONS_SPEC_BUNDLE",
+    "load_cosmology_physics_extensions_validation_spec",
+    "DEFAULT_QUANTUM_BIOPHYSICAL_FOUNDATIONS_SPEC_BUNDLE",
+    "load_quantum_biophysical_foundations_validation_spec",
 ]
