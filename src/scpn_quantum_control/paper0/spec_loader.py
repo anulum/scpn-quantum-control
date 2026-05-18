@@ -4956,6 +4956,55 @@ def load_the_universe_s_path_of_least_resistance_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_THE_PHYSICAL_BASIS_OF_THE_ETHICAL_FUNCTIONAL_CAUSAL_ENTROPY_AND_COMPUTAB_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_physical_basis_of_the_ethical_functional_causal_entropy_and_computab_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_physical_basis_of_the_ethical_functional_causal_entropy_and_computab_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_PHYSICAL_BASIS_OF_THE_ETHICAL_FUNCTIONAL_CAUSAL_ENTROPY_AND_COMPUTAB_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the physical basis of the ethical functional causal entropy and computab validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_PREDICTIVE_CODING_INTEGRATION_P0R04123_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_predictive_coding_integration_p0r04123_validation_specs_2026-05-17.json"
+)
+
+
+def load_predictive_coding_integration_p0r04123_validation_spec(
+    spec_bundle: str | Path = DEFAULT_PREDICTIVE_CODING_INTEGRATION_P0R04123_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 predictive coding integration p0r04123 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_CONSILIUM_L15_AS_THE_TARGET_SETTER_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_consilium_l15_as_the_target_setter_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_consilium_l15_as_the_target_setter_validation_spec(
+    spec_bundle: str | Path = DEFAULT_THE_CONSILIUM_L15_AS_THE_TARGET_SETTER_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the consilium l15 as the target setter validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -5481,4 +5530,10 @@ __all__ = [
     "load_paper0_slice_p0r04089_validation_spec",
     "DEFAULT_THE_UNIVERSE_S_PATH_OF_LEAST_RESISTANCE_SPEC_BUNDLE",
     "load_the_universe_s_path_of_least_resistance_validation_spec",
+    "DEFAULT_THE_PHYSICAL_BASIS_OF_THE_ETHICAL_FUNCTIONAL_CAUSAL_ENTROPY_AND_COMPUTAB_SPEC_BUNDLE",
+    "load_the_physical_basis_of_the_ethical_functional_causal_entropy_and_computab_validation_spec",
+    "DEFAULT_PREDICTIVE_CODING_INTEGRATION_P0R04123_SPEC_BUNDLE",
+    "load_predictive_coding_integration_p0r04123_validation_spec",
+    "DEFAULT_THE_CONSILIUM_L15_AS_THE_TARGET_SETTER_SPEC_BUNDLE",
+    "load_the_consilium_l15_as_the_target_setter_validation_spec",
 ]
