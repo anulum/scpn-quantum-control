@@ -1582,6 +1582,20 @@ from .section_1_the_lipid_bilayer_and_lipid_rafts_validation import (
     section_1_the_lipid_bilayer_and_lipid_rafts_labels,
     validate_section_1_the_lipid_bilayer_and_lipid_rafts_fixture,
 )
+from .section_1_the_lipid_landscape_and_criticality_validation import (
+    Section1TheLipidLandscapeAndCriticalityConfig,
+    Section1TheLipidLandscapeAndCriticalityFixtureResult,
+    classify_section_1_the_lipid_landscape_and_criticality_component,
+    section_1_the_lipid_landscape_and_criticality_labels,
+    validate_section_1_the_lipid_landscape_and_criticality_fixture,
+)
+from .section_1_the_presynaptic_terminal_the_quantum_lever_validation import (
+    Section1ThePresynapticTerminalTheQuantumLeverConfig,
+    Section1ThePresynapticTerminalTheQuantumLeverFixtureResult,
+    classify_section_1_the_presynaptic_terminal_the_quantum_lever_component,
+    section_1_the_presynaptic_terminal_the_quantum_lever_labels,
+    validate_section_1_the_presynaptic_terminal_the_quantum_lever_fixture,
+)
 from .section_2_1_the_state_space_and_path_space_validation import (
     Section21TheStateSpaceAndPathSpaceConfig,
     Section21TheStateSpaceAndPathSpaceFixtureResult,
@@ -1819,6 +1833,13 @@ from .section_4_5_the_strange_loop_of_closure_meta_layer_16_and_the_anulum_valid
     classify_section_4_5_the_strange_loop_of_closure_meta_layer_16_and_the_anulum_component,
     section_4_5_the_strange_loop_of_closure_meta_layer_16_and_the_anulum_labels,
     validate_section_4_5_the_strange_loop_of_closure_meta_layer_16_and_the_anulum_fixture,
+)
+from .section_4_interfaces_membranes_glia_stresses_and_shape_control_validation import (
+    Section4InterfacesMembranesGliaStressesAndShapeControlConfig,
+    Section4InterfacesMembranesGliaStressesAndShapeControlFixtureResult,
+    classify_section_4_interfaces_membranes_glia_stresses_and_shape_control_component,
+    section_4_interfaces_membranes_glia_stresses_and_shape_control_labels,
+    validate_section_4_interfaces_membranes_glia_stresses_and_shape_control_fixture,
 )
 from .section_4_justification_for_a_teleological_least_action_principle_validation import (
     Section4JustificationForATeleologicalLeastActionPrincipleConfig,
@@ -2485,6 +2506,21 @@ from .vii_pathology_the_disordered_brain_validation import (
 )
 
 __all__ = [
+    "validate_section_4_interfaces_membranes_glia_stresses_and_shape_control_fixture",
+    "section_4_interfaces_membranes_glia_stresses_and_shape_control_labels",
+    "classify_section_4_interfaces_membranes_glia_stresses_and_shape_control_component",
+    "Section4InterfacesMembranesGliaStressesAndShapeControlFixtureResult",
+    "Section4InterfacesMembranesGliaStressesAndShapeControlConfig",
+    "validate_section_1_the_lipid_landscape_and_criticality_fixture",
+    "section_1_the_lipid_landscape_and_criticality_labels",
+    "classify_section_1_the_lipid_landscape_and_criticality_component",
+    "Section1TheLipidLandscapeAndCriticalityFixtureResult",
+    "Section1TheLipidLandscapeAndCriticalityConfig",
+    "validate_section_1_the_presynaptic_terminal_the_quantum_lever_fixture",
+    "section_1_the_presynaptic_terminal_the_quantum_lever_labels",
+    "classify_section_1_the_presynaptic_terminal_the_quantum_lever_component",
+    "Section1ThePresynapticTerminalTheQuantumLeverFixtureResult",
+    "Section1ThePresynapticTerminalTheQuantumLeverConfig",
     "validate_section_1_the_cytoskeleton_the_l1_quantum_scaffold_fixture",
     "section_1_the_cytoskeleton_the_l1_quantum_scaffold_labels",
     "classify_section_1_the_cytoskeleton_the_l1_quantum_scaffold_component",

@@ -5906,6 +5906,56 @@ def load_section_1_the_cytoskeleton_the_l1_quantum_scaffold_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_1_THE_PRESYNAPTIC_TERMINAL_THE_QUANTUM_LEVER_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_1_the_presynaptic_terminal_the_quantum_lever_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_1_the_presynaptic_terminal_the_quantum_lever_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_1_THE_PRESYNAPTIC_TERMINAL_THE_QUANTUM_LEVER_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 1 the presynaptic terminal the quantum lever validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_1_THE_LIPID_LANDSCAPE_AND_CRITICALITY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_1_the_lipid_landscape_and_criticality_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_1_the_lipid_landscape_and_criticality_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SECTION_1_THE_LIPID_LANDSCAPE_AND_CRITICALITY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 1 the lipid landscape and criticality validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_4_INTERFACES_MEMBRANES_GLIA_STRESSES_AND_SHAPE_CONTROL_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_4_interfaces_membranes_glia_stresses_and_shape_control_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_4_interfaces_membranes_glia_stresses_and_shape_control_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_4_INTERFACES_MEMBRANES_GLIA_STRESSES_AND_SHAPE_CONTROL_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 4 interfaces membranes glia stresses and shape control validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -6545,4 +6595,10 @@ __all__ = [
     "load_section_1_the_lipid_bilayer_and_lipid_rafts_validation_spec",
     "DEFAULT_SECTION_1_THE_CYTOSKELETON_THE_L1_QUANTUM_SCAFFOLD_SPEC_BUNDLE",
     "load_section_1_the_cytoskeleton_the_l1_quantum_scaffold_validation_spec",
+    "DEFAULT_SECTION_1_THE_PRESYNAPTIC_TERMINAL_THE_QUANTUM_LEVER_SPEC_BUNDLE",
+    "load_section_1_the_presynaptic_terminal_the_quantum_lever_validation_spec",
+    "DEFAULT_SECTION_1_THE_LIPID_LANDSCAPE_AND_CRITICALITY_SPEC_BUNDLE",
+    "load_section_1_the_lipid_landscape_and_criticality_validation_spec",
+    "DEFAULT_SECTION_4_INTERFACES_MEMBRANES_GLIA_STRESSES_AND_SHAPE_CONTROL_SPEC_BUNDLE",
+    "load_section_4_interfaces_membranes_glia_stresses_and_shape_control_validation_spec",
 ]
