@@ -40,7 +40,59 @@ def test_claim_boundary_report_forbids_advantage_from_lite_rows() -> None:
 
     assert report["validation"]["valid"] is True
     assert report["advantage_claim"] is False
+    assert report["ibm_readiness"]["decision"] == "blocked_no_qpu_advantage_spend"
+    assert report["ibm_readiness"]["ready_for_meaningful_ibm_advantage_run"] is False
+    assert report["ibm_readiness"]["hardware_ok_rows"] == 0
     assert any(
         "Do not claim broad quantum advantage" in item for item in report["forbidden_claims"]
     )
+    assert any("IBM time" in item for item in report["forbidden_claims"])
     assert any("MPS/TN" in item for item in report["remaining_blockers"])
+
+
+def test_ibm_readiness_requires_full_required_matrix_and_hardware_row() -> None:
+    protocol = default_s2_scaling_protocol()
+    rows = []
+    for size in protocol.sizes:
+        for baseline in protocol.required_baselines:
+            row = {key: None for key in protocol.output_schema["row_keys"]}
+            row["protocol_id"] = protocol.protocol_id
+            row["n_qubits"] = size
+            row["baseline"] = baseline
+            row["status"] = "ok"
+            row["wall_time_ms"] = 1.0
+            row["memory_bytes"] = 1024
+            row["metric_payload"] = {}
+            row["command"] = "test"
+            row["machine"] = "test"
+            row["dependencies"] = {}
+            row["git_commit"] = "test"
+            row["notes"] = []
+            rows.append(row)
+    hardware = {key: None for key in protocol.output_schema["row_keys"]}
+    hardware["protocol_id"] = protocol.protocol_id
+    hardware["n_qubits"] = 4
+    hardware["baseline"] = "qpu_hardware"
+    hardware["status"] = "ok"
+    hardware["wall_time_ms"] = 1.0
+    hardware["memory_bytes"] = 0
+    hardware["metric_payload"] = {
+        "job_ids": ["ibm-run-fixture"],
+        "raw_counts_path": "data/raw.json",
+    }
+    hardware["command"] = "test"
+    hardware["machine"] = "ibm-fixture"
+    hardware["dependencies"] = {}
+    hardware["git_commit"] = "test"
+    hardware["notes"] = ["fixture preregistered hardware row"]
+    rows.append(hardware)
+
+    report = build_claim_boundary_report(rows)
+
+    assert report["validation"]["valid"] is True
+    assert (
+        report["ibm_readiness"]["decision"] == "ready_for_preregistered_ibm_advantage_comparison"
+    )
+    assert report["ibm_readiness"]["ready_for_meaningful_ibm_advantage_run"] is True
+    assert report["ibm_readiness"]["required_matrix"]["full_required_matrix_ok"] is True
+    assert report["ibm_readiness"]["hardware_ok_rows"] == 1

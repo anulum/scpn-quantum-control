@@ -89,6 +89,22 @@ campaign exist. Missing hardware must degrade the work to a classical
 scaling/spoofability study. It must not be represented as a hardware quantum
 advantage result.
 
+## IBM Advantage-Run Readiness Gate
+
+The S2 claim-boundary report now emits a machine-readable `ibm_readiness`
+decision. A meaningful IBM advantage run remains blocked unless all conditions
+below hold:
+
+- row validation passes;
+- every required classical and simulator baseline is `ok` for every protocol
+  size;
+- at least one `qpu_hardware` row is present with preregistered raw-count
+  provenance.
+
+Lite rows, skipped rows, partial no-QPU campaign slices, and hardware-free
+readiness documents can support workflow maturity, resource planning, and
+spoofability analysis. They do not justify IBM spend for an advantage claim.
+
 ## Next S2 Step
 
 The next non-QPU step is to add full-grid execution controls around the measured

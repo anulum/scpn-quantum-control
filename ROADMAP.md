@@ -1113,6 +1113,13 @@ be executed until individually activated.
   them, and emits JSON/Markdown reports listing allowed claims,
   forbidden claims, remaining blockers, validation state, hardware
   submission status, and advantage-claim status.
+- [x] **S2 IBM advantage-readiness hard gate.** Implemented 2026-05-18:
+  the S2 claim-boundary report now emits `ibm_readiness`, which blocks
+  meaningful IBM advantage spend unless row validation passes, every
+  required classical/simulator baseline is `ok` at every protocol size,
+  and at least one preregistered `qpu_hardware` row with raw-count
+  provenance is present. Lite rows and partial no-QPU campaign slices
+  remain useful science but cannot justify IBM advantage claims.
 - [x] **S2 scaling readiness index.** Implemented 2026-05-06:
   `docs/s2_scaling_readiness_index_2026-05-06.md` summarises the S2
   lite baseline rows, canonical command, artefacts, allowed claims,

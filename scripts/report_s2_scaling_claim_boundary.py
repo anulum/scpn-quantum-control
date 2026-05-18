@@ -55,6 +55,88 @@ def _rows_from_payload(payload: Any) -> list[dict[str, Any]]:
     raise ValueError("rows payload must be a list or contain a rows list")
 
 
+def _required_matrix_status(
+    rows: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    protocol = default_s2_scaling_protocol()
+    required = set(protocol.required_baselines)
+    observed_required: dict[int, dict[str, str]] = {}
+    skipped_or_failed: list[str] = []
+    for row in rows:
+        baseline = row.get("baseline")
+        n_qubits = row.get("n_qubits")
+        status = row.get("status")
+        if baseline not in required or not isinstance(n_qubits, int):
+            continue
+        label = str(baseline)
+        status_text = str(status)
+        observed_required.setdefault(n_qubits, {})[label] = status_text
+        if status_text in {"skipped", "failed"}:
+            skipped_or_failed.append(f"n={n_qubits}:{label}:{status_text}")
+
+    missing = [
+        f"n={size}:{baseline}"
+        for size in protocol.sizes
+        for baseline in protocol.required_baselines
+        if observed_required.get(size, {}).get(baseline) != "ok"
+    ]
+    return {
+        "protocol_sizes": list(protocol.sizes),
+        "required_baselines": list(protocol.required_baselines),
+        "ok_required_rows": sum(
+            1
+            for by_baseline in observed_required.values()
+            for baseline, status in by_baseline.items()
+            if baseline in required and status == "ok"
+        ),
+        "required_rows_expected": len(protocol.sizes) * len(protocol.required_baselines),
+        "missing_or_not_ok_required": missing,
+        "skipped_or_failed_required": skipped_or_failed,
+        "full_required_matrix_ok": not missing and not skipped_or_failed,
+    }
+
+
+def _ibm_readiness_decision(
+    *,
+    rows: Sequence[Mapping[str, Any]],
+    validation_valid: bool,
+) -> dict[str, Any]:
+    required_matrix = _required_matrix_status(rows)
+    hardware_ok_rows = [
+        row for row in rows if row.get("baseline") == "qpu_hardware" and row.get("status") == "ok"
+    ]
+    ready = bool(
+        validation_valid and required_matrix["full_required_matrix_ok"] and hardware_ok_rows
+    )
+    blockers: list[str] = []
+    if not validation_valid:
+        blockers.append("row validation must pass")
+    if not required_matrix["full_required_matrix_ok"]:
+        blockers.append(
+            "all required classical/simulator baselines must be ok at every protocol size"
+        )
+    if not hardware_ok_rows:
+        blockers.append(
+            "at least one preregistered qpu_hardware row with raw-count provenance is required"
+        )
+
+    return {
+        "ready_for_meaningful_ibm_advantage_run": ready,
+        "decision": "ready_for_preregistered_ibm_advantage_comparison"
+        if ready
+        else "blocked_no_qpu_advantage_spend",
+        "requires_new_ibm_spend": bool(ready),
+        "hardware_ok_rows": len(hardware_ok_rows),
+        "required_matrix": required_matrix,
+        "blockers": blockers,
+        "next_no_qpu_step": (
+            "complete missing or skipped required rows across the full protocol grid before proposing IBM spend"
+            if not ready
+            else "draft a narrow preregistered IBM manifest for the exact observable and sizes present"
+        ),
+    }
+
+
 def build_claim_boundary_report(rows: list[dict[str, Any]]) -> dict[str, Any]:
     """Build a claim-boundary report for validated S2 rows."""
     protocol = default_s2_scaling_protocol()
@@ -90,6 +172,13 @@ def build_claim_boundary_report(rows: list[dict[str, Any]]) -> dict[str, Any]:
         allowed.append("Report hardware rows only for the exact preregistered sizes present.")
     if has_mps_ok:
         allowed.append("Discuss MPS/TN spoofability only for measured MPS/TN rows.")
+    ibm_readiness = _ibm_readiness_decision(
+        rows=rows,
+        validation_valid=validation.valid,
+    )
+    if not ibm_readiness["ready_for_meaningful_ibm_advantage_run"]:
+        forbidden.append("Do not spend IBM time for S2 advantage until ibm_readiness is ready.")
+        blockers.extend(ibm_readiness["blockers"])
     return {
         "date": DATE,
         "protocol_id": protocol.protocol_id,
@@ -101,6 +190,7 @@ def build_claim_boundary_report(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "protocol_claim_boundary": protocol.claim_boundary,
         "hardware_submission": False,
         "advantage_claim": False,
+        "ibm_readiness": ibm_readiness,
     }
 
 
@@ -120,6 +210,12 @@ def _markdown(report: Mapping[str, Any]) -> str:
         "",
         "## Remaining Blockers",
         *[f"- {item}" for item in report["remaining_blockers"]],
+        "",
+        "## IBM Readiness",
+        f"Decision: `{report['ibm_readiness']['decision']}`",
+        f"Ready for meaningful IBM advantage run: `{report['ibm_readiness']['ready_for_meaningful_ibm_advantage_run']}`",
+        f"Hardware ok rows: `{report['ibm_readiness']['hardware_ok_rows']}`",
+        *[f"- {item}" for item in report["ibm_readiness"]["blockers"]],
         "",
         "## Protocol Claim Boundary",
         str(report["protocol_claim_boundary"]),
