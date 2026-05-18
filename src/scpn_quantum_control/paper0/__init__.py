@@ -1603,6 +1603,13 @@ from .section_1_ion_gradients_the_electrochemical_battery_validation import (
     section_1_ion_gradients_the_electrochemical_battery_labels,
     validate_section_1_ion_gradients_the_electrochemical_battery_fixture,
 )
+from .section_1_psychedelics_the_expanded_manifold_validation import (
+    Section1PsychedelicsTheExpandedManifoldConfig,
+    Section1PsychedelicsTheExpandedManifoldFixtureResult,
+    classify_section_1_psychedelics_the_expanded_manifold_component,
+    section_1_psychedelics_the_expanded_manifold_labels,
+    validate_section_1_psychedelics_the_expanded_manifold_fixture,
+)
 from .section_1_the_bioelectric_code_in_neurogenesis_and_regeneration_validation import (
     Section1TheBioelectricCodeInNeurogenesisAndRegenerationConfig,
     Section1TheBioelectricCodeInNeurogenesisAndRegenerationFixtureResult,
@@ -1883,6 +1890,13 @@ from .section_3_sequential_symmetry_breaking_ssb_validation import (
     section_3_sequential_symmetry_breaking_ssb_labels,
     validate_section_3_sequential_symmetry_breaking_ssb_fixture,
 )
+from .section_3_sleep_and_dreaming_the_optimisation_cycle_validation import (
+    Section3SleepAndDreamingTheOptimisationCycleConfig,
+    Section3SleepAndDreamingTheOptimisationCycleFixtureResult,
+    classify_section_3_sleep_and_dreaming_the_optimisation_cycle_component,
+    section_3_sleep_and_dreaming_the_optimisation_cycle_labels,
+    validate_section_3_sleep_and_dreaming_the_optimisation_cycle_fixture,
+)
 from .section_3_structural_geometry_and_morphogenesis_l3_validation import (
     Section3StructuralGeometryAndMorphogenesisL3Config,
     Section3StructuralGeometryAndMorphogenesisL3FixtureResult,
@@ -1917,6 +1931,13 @@ from .section_3_the_geometric_and_dynamic_determinants_of_future_possibility_val
     classify_section_3_the_geometric_and_dynamic_determinants_of_future_possibility_component,
     section_3_the_geometric_and_dynamic_determinants_of_future_possibility_labels,
     validate_section_3_the_geometric_and_dynamic_determinants_of_future_possibility_fixture,
+)
+from .section_3_the_holographic_interface_l9_validation import (
+    Section3TheHolographicInterfaceL9Config,
+    Section3TheHolographicInterfaceL9FixtureResult,
+    classify_section_3_the_holographic_interface_l9_component,
+    section_3_the_holographic_interface_l9_labels,
+    validate_section_3_the_holographic_interface_l9_fixture,
 )
 from .section_3_the_quasicritical_brain_validation import (
     Section3TheQuasicriticalBrainConfig,
@@ -2674,6 +2695,21 @@ from .vii_pathology_the_disordered_brain_validation import (
 )
 
 __all__ = [
+    "validate_section_1_psychedelics_the_expanded_manifold_fixture",
+    "section_1_psychedelics_the_expanded_manifold_labels",
+    "classify_section_1_psychedelics_the_expanded_manifold_component",
+    "Section1PsychedelicsTheExpandedManifoldFixtureResult",
+    "Section1PsychedelicsTheExpandedManifoldConfig",
+    "validate_section_3_sleep_and_dreaming_the_optimisation_cycle_fixture",
+    "section_3_sleep_and_dreaming_the_optimisation_cycle_labels",
+    "classify_section_3_sleep_and_dreaming_the_optimisation_cycle_component",
+    "Section3SleepAndDreamingTheOptimisationCycleFixtureResult",
+    "Section3SleepAndDreamingTheOptimisationCycleConfig",
+    "validate_section_3_the_holographic_interface_l9_fixture",
+    "section_3_the_holographic_interface_l9_labels",
+    "classify_section_3_the_holographic_interface_l9_component",
+    "Section3TheHolographicInterfaceL9FixtureResult",
+    "Section3TheHolographicInterfaceL9Config",
     "validate_iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9_fixture",
     "iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9_labels",
     "classify_iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9_component",

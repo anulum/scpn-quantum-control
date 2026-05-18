@@ -6354,6 +6354,55 @@ def load_iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9_validatio
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_3_THE_HOLOGRAPHIC_INTERFACE_L9_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_3_the_holographic_interface_l9_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_3_the_holographic_interface_l9_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SECTION_3_THE_HOLOGRAPHIC_INTERFACE_L9_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 3 the holographic interface l9 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_3_SLEEP_AND_DREAMING_THE_OPTIMISATION_CYCLE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_3_sleep_and_dreaming_the_optimisation_cycle_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_3_sleep_and_dreaming_the_optimisation_cycle_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_3_SLEEP_AND_DREAMING_THE_OPTIMISATION_CYCLE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 3 sleep and dreaming the optimisation cycle validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_1_PSYCHEDELICS_THE_EXPANDED_MANIFOLD_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_1_psychedelics_the_expanded_manifold_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_1_psychedelics_the_expanded_manifold_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SECTION_1_PSYCHEDELICS_THE_EXPANDED_MANIFOLD_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 1 psychedelics the expanded manifold validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -7047,4 +7096,10 @@ __all__ = [
     "load_section_2_specialised_sensory_systems_validation_spec",
     "DEFAULT_IV_LEARNING_MEMORY_AND_PLASTICITY_THE_ADAPTIVE_SCAFFOLD_L1_L9_SPEC_BUNDLE",
     "load_iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9_validation_spec",
+    "DEFAULT_SECTION_3_THE_HOLOGRAPHIC_INTERFACE_L9_SPEC_BUNDLE",
+    "load_section_3_the_holographic_interface_l9_validation_spec",
+    "DEFAULT_SECTION_3_SLEEP_AND_DREAMING_THE_OPTIMISATION_CYCLE_SPEC_BUNDLE",
+    "load_section_3_sleep_and_dreaming_the_optimisation_cycle_validation_spec",
+    "DEFAULT_SECTION_1_PSYCHEDELICS_THE_EXPANDED_MANIFOLD_SPEC_BUNDLE",
+    "load_section_1_psychedelics_the_expanded_manifold_validation_spec",
 ]
