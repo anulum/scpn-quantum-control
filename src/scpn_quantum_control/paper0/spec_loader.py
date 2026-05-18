@@ -5153,6 +5153,54 @@ def load_the_pseudoscalar_coupling_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_PAPER0_SLICE_P0R04310_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_paper0_slice_p0r04310_validation_specs_2026-05-17.json"
+)
+
+
+def load_paper0_slice_p0r04310_validation_spec(
+    spec_bundle: str | Path = DEFAULT_PAPER0_SLICE_P0R04310_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 paper0 slice p0r04310 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_PAPER0_SLICE_P0R04322_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_paper0_slice_p0r04322_validation_specs_2026-05-17.json"
+)
+
+
+def load_paper0_slice_p0r04322_validation_spec(
+    spec_bundle: str | Path = DEFAULT_PAPER0_SLICE_P0R04322_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 paper0 slice p0r04322 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_PAPER0_SLICE_P0R04330_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_paper0_slice_p0r04330_validation_specs_2026-05-17.json"
+)
+
+
+def load_paper0_slice_p0r04330_validation_spec(
+    spec_bundle: str | Path = DEFAULT_PAPER0_SLICE_P0R04330_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 paper0 slice p0r04330 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -5702,4 +5750,10 @@ __all__ = [
     "load_explicit_identification_of_terms_validation_spec",
     "DEFAULT_THE_PSEUDOSCALAR_COUPLING_SPEC_BUNDLE",
     "load_the_pseudoscalar_coupling_validation_spec",
+    "DEFAULT_PAPER0_SLICE_P0R04310_SPEC_BUNDLE",
+    "load_paper0_slice_p0r04310_validation_spec",
+    "DEFAULT_PAPER0_SLICE_P0R04322_SPEC_BUNDLE",
+    "load_paper0_slice_p0r04322_validation_spec",
+    "DEFAULT_PAPER0_SLICE_P0R04330_SPEC_BUNDLE",
+    "load_paper0_slice_p0r04330_validation_spec",
 ]
