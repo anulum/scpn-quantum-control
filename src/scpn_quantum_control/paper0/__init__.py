@@ -1010,6 +1010,13 @@ from .meta_framework_integrations_p0r03664_validation import (
     meta_framework_integrations_p0r03664_labels,
     validate_meta_framework_integrations_p0r03664_fixture,
 )
+from .meta_framework_integrations_p0r03945_validation import (
+    MetaFrameworkIntegrationsP0r03945Config,
+    MetaFrameworkIntegrationsP0r03945FixtureResult,
+    classify_meta_framework_integrations_p0r03945_component,
+    meta_framework_integrations_p0r03945_labels,
+    validate_meta_framework_integrations_p0r03945_fixture,
+)
 from .meta_framework_integrations_validation import (
     MetaFrameworkIntegrationsConfig,
     MetaFrameworkIntegrationsFixtureResult,
@@ -1442,6 +1449,13 @@ from .section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy_
     section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy_labels,
     validate_section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy_fixture,
 )
+from .section_4_4_the_cosmic_compass_the_ethical_functional_and_the_consilium_validation import (
+    Section44TheCosmicCompassTheEthicalFunctionalAndTheConsiliumConfig,
+    Section44TheCosmicCompassTheEthicalFunctionalAndTheConsiliumFixtureResult,
+    classify_section_4_4_the_cosmic_compass_the_ethical_functional_and_the_consilium_component,
+    section_4_4_the_cosmic_compass_the_ethical_functional_and_the_consilium_labels,
+    validate_section_4_4_the_cosmic_compass_the_ethical_functional_and_the_consilium_fixture,
+)
 from .section_4_justification_for_a_teleological_least_action_principle_validation import (
     Section4JustificationForATeleologicalLeastActionPrincipleConfig,
     Section4JustificationForATeleologicalLeastActionPrincipleFixtureResult,
@@ -1455,6 +1469,13 @@ from .section_4_the_formal_equivalence_of_sec_and_sc_validation import (
     classify_section_4_the_formal_equivalence_of_sec_and_sc_component,
     section_4_the_formal_equivalence_of_sec_and_sc_labels,
     validate_section_4_the_formal_equivalence_of_sec_and_sc_fixture,
+)
+from .section_5_1_the_modified_path_integral_with_cef_weighting_validation import (
+    Section51TheModifiedPathIntegralWithCefWeightingConfig,
+    Section51TheModifiedPathIntegralWithCefWeightingFixtureResult,
+    classify_section_5_1_the_modified_path_integral_with_cef_weighting_component,
+    section_5_1_the_modified_path_integral_with_cef_weighting_labels,
+    validate_section_5_1_the_modified_path_integral_with_cef_weighting_fixture,
 )
 from .section_5_physical_implications_biasing_the_path_integral_of_reality_validation import (
     Section5PhysicalImplicationsBiasingThePathIntegralOfRealityConfig,
@@ -2002,6 +2023,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_meta_framework_integrations_p0r03945_fixture",
+    "meta_framework_integrations_p0r03945_labels",
+    "classify_meta_framework_integrations_p0r03945_component",
+    "MetaFrameworkIntegrationsP0r03945FixtureResult",
+    "MetaFrameworkIntegrationsP0r03945Config",
+    "validate_section_4_4_the_cosmic_compass_the_ethical_functional_and_the_consilium_fixture",
+    "section_4_4_the_cosmic_compass_the_ethical_functional_and_the_consilium_labels",
+    "classify_section_4_4_the_cosmic_compass_the_ethical_functional_and_the_consilium_component",
+    "Section44TheCosmicCompassTheEthicalFunctionalAndTheConsiliumFixtureResult",
+    "Section44TheCosmicCompassTheEthicalFunctionalAndTheConsiliumConfig",
+    "validate_section_5_1_the_modified_path_integral_with_cef_weighting_fixture",
+    "section_5_1_the_modified_path_integral_with_cef_weighting_labels",
+    "classify_section_5_1_the_modified_path_integral_with_cef_weighting_component",
+    "Section51TheModifiedPathIntegralWithCefWeightingFixtureResult",
+    "Section51TheModifiedPathIntegralWithCefWeightingConfig",
     "validate_section_5_physical_implications_biasing_the_path_integral_of_reality_fixture",
     "section_5_physical_implications_biasing_the_path_integral_of_reality_labels",
     "classify_section_5_physical_implications_biasing_the_path_integral_of_reality_component",

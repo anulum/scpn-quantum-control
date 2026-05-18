@@ -4760,6 +4760,56 @@ def load_section_5_physical_implications_biasing_the_path_integral_of_reality_va
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_5_1_THE_MODIFIED_PATH_INTEGRAL_WITH_CEF_WEIGHTING_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_5_1_the_modified_path_integral_with_cef_weighting_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_5_1_the_modified_path_integral_with_cef_weighting_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_5_1_THE_MODIFIED_PATH_INTEGRAL_WITH_CEF_WEIGHTING_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 5 1 the modified path integral with cef weighting validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_4_4_THE_COSMIC_COMPASS_THE_ETHICAL_FUNCTIONAL_AND_THE_CONSILIUM_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_4_4_the_cosmic_compass_the_ethical_functional_and_the_consilium_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_4_4_the_cosmic_compass_the_ethical_functional_and_the_consilium_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_4_4_THE_COSMIC_COMPASS_THE_ETHICAL_FUNCTIONAL_AND_THE_CONSILIUM_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 4 4 the cosmic compass the ethical functional and the consilium validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03945_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_meta_framework_integrations_p0r03945_validation_specs_2026-05-17.json"
+)
+
+
+def load_meta_framework_integrations_p0r03945_validation_spec(
+    spec_bundle: str | Path = DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03945_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 meta framework integrations p0r03945 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -5261,4 +5311,10 @@ __all__ = [
     "load_section_4_2_the_proof_of_equivalence_and_the_emergence_of_pela_validation_spec",
     "DEFAULT_SECTION_5_PHYSICAL_IMPLICATIONS_BIASING_THE_PATH_INTEGRAL_OF_REALITY_SPEC_BUNDLE",
     "load_section_5_physical_implications_biasing_the_path_integral_of_reality_validation_spec",
+    "DEFAULT_SECTION_5_1_THE_MODIFIED_PATH_INTEGRAL_WITH_CEF_WEIGHTING_SPEC_BUNDLE",
+    "load_section_5_1_the_modified_path_integral_with_cef_weighting_validation_spec",
+    "DEFAULT_SECTION_4_4_THE_COSMIC_COMPASS_THE_ETHICAL_FUNCTIONAL_AND_THE_CONSILIUM_SPEC_BUNDLE",
+    "load_section_4_4_the_cosmic_compass_the_ethical_functional_and_the_consilium_validation_spec",
+    "DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03945_SPEC_BUNDLE",
+    "load_meta_framework_integrations_p0r03945_validation_spec",
 ]
