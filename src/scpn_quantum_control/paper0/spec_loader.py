@@ -7633,6 +7633,55 @@ def load_collective_cultural_and_evolutionary_dynamics_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_MATHEMATICS_OF_DYNAMICAL_SYSTEMS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_mathematics_of_dynamical_systems_validation_specs_2026-05-17.json"
+)
+
+
+def load_mathematics_of_dynamical_systems_validation_spec(
+    spec_bundle: str | Path = DEFAULT_MATHEMATICS_OF_DYNAMICAL_SYSTEMS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 mathematics of dynamical systems validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_MATHEMATICAL_FOUNDATIONS_OF_NETWORKS_SYNCHRONISATION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_mathematical_foundations_of_networks_synchronisation_validation_specs_2026-05-17.json"
+)
+
+
+def load_mathematical_foundations_of_networks_synchronisation_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_MATHEMATICAL_FOUNDATIONS_OF_NETWORKS_SYNCHRONISATION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 mathematical foundations of networks synchronisation validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SYSTEMS_CYBERNETICS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_systems_cybernetics_validation_specs_2026-05-17.json"
+)
+
+
+def load_systems_cybernetics_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SYSTEMS_CYBERNETICS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 systems cybernetics validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -8482,4 +8531,10 @@ __all__ = [
     "load_network_complexity_science_validation_spec",
     "DEFAULT_COLLECTIVE_CULTURAL_AND_EVOLUTIONARY_DYNAMICS_SPEC_BUNDLE",
     "load_collective_cultural_and_evolutionary_dynamics_validation_spec",
+    "DEFAULT_MATHEMATICS_OF_DYNAMICAL_SYSTEMS_SPEC_BUNDLE",
+    "load_mathematics_of_dynamical_systems_validation_spec",
+    "DEFAULT_MATHEMATICAL_FOUNDATIONS_OF_NETWORKS_SYNCHRONISATION_SPEC_BUNDLE",
+    "load_mathematical_foundations_of_networks_synchronisation_validation_spec",
+    "DEFAULT_SYSTEMS_CYBERNETICS_SPEC_BUNDLE",
+    "load_systems_cybernetics_validation_spec",
 ]
