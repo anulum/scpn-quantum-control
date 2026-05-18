@@ -4310,6 +4310,55 @@ def load_geometric_interpretation_the_consciousness_manifold_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_INTEGRATION_WITH_INTEGRATED_INFORMATION_THEORY_IIT_4_0_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_integration_with_integrated_information_theory_iit_4_0_validation_specs_2026-05-17.json"
+)
+
+
+def load_integration_with_integrated_information_theory_iit_4_0_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_INTEGRATION_WITH_INTEGRATED_INFORMATION_THEORY_IIT_4_0_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 integration with integrated information theory iit 4 0 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03530_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_meta_framework_integrations_p0r03530_validation_specs_2026-05-17.json"
+)
+
+
+def load_meta_framework_integrations_p0r03530_validation_spec(
+    spec_bundle: str | Path = DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03530_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 meta framework integrations p0r03530 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_MAXIMIZING_AS_THE_GOAL_OF_COUPLING_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_maximizing_as_the_goal_of_coupling_validation_specs_2026-05-17.json"
+)
+
+
+def load_maximizing_as_the_goal_of_coupling_validation_spec(
+    spec_bundle: str | Path = DEFAULT_MAXIMIZING_AS_THE_GOAL_OF_COUPLING_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 maximizing as the goal of coupling validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -4757,4 +4806,10 @@ __all__ = [
     "load_as_a_coupling_affinity_validation_spec",
     "DEFAULT_GEOMETRIC_INTERPRETATION_THE_CONSCIOUSNESS_MANIFOLD_SPEC_BUNDLE",
     "load_geometric_interpretation_the_consciousness_manifold_validation_spec",
+    "DEFAULT_INTEGRATION_WITH_INTEGRATED_INFORMATION_THEORY_IIT_4_0_SPEC_BUNDLE",
+    "load_integration_with_integrated_information_theory_iit_4_0_validation_spec",
+    "DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03530_SPEC_BUNDLE",
+    "load_meta_framework_integrations_p0r03530_validation_spec",
+    "DEFAULT_MAXIMIZING_AS_THE_GOAL_OF_COUPLING_SPEC_BUNDLE",
+    "load_maximizing_as_the_goal_of_coupling_validation_spec",
 ]

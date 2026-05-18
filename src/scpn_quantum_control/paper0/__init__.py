@@ -685,6 +685,13 @@ from .information_geometric_lift_of_upde_validation import (
     information_geometric_lift_of_upde_labels,
     validate_information_geometric_lift_of_upde_fixture,
 )
+from .integration_with_integrated_information_theory_iit_4_0_validation import (
+    IntegrationWithIntegratedInformationTheoryIit40Config,
+    IntegrationWithIntegratedInformationTheoryIit40FixtureResult,
+    classify_integration_with_integrated_information_theory_iit_4_0_component,
+    integration_with_integrated_information_theory_iit_4_0_labels,
+    validate_integration_with_integrated_information_theory_iit_4_0_fixture,
+)
 from .intrinsic_dynamics_il_validation import (
     IntrinsicDynamicsIlConfig,
     IntrinsicDynamicsIlFixtureResult,
@@ -842,6 +849,13 @@ from .mathematical_bridge_validation import (
     mathematical_bridge_labels,
     validate_mathematical_bridge_fixture,
 )
+from .maximizing_as_the_goal_of_coupling_validation import (
+    MaximizingAsTheGoalOfCouplingConfig,
+    MaximizingAsTheGoalOfCouplingFixtureResult,
+    classify_maximizing_as_the_goal_of_coupling_component,
+    maximizing_as_the_goal_of_coupling_labels,
+    validate_maximizing_as_the_goal_of_coupling_fixture,
+)
 from .mechanism_2_quantum_stochastic_resonance_qsr_p0r03368_validation import (
     Mechanism2QuantumStochasticResonanceQsrP0r03368Config,
     Mechanism2QuantumStochasticResonanceQsrP0r03368FixtureResult,
@@ -974,6 +988,13 @@ from .meta_framework_integrations_p0r03492_validation import (
     classify_meta_framework_integrations_p0r03492_component,
     meta_framework_integrations_p0r03492_labels,
     validate_meta_framework_integrations_p0r03492_fixture,
+)
+from .meta_framework_integrations_p0r03530_validation import (
+    MetaFrameworkIntegrationsP0r03530Config,
+    MetaFrameworkIntegrationsP0r03530FixtureResult,
+    classify_meta_framework_integrations_p0r03530_component,
+    meta_framework_integrations_p0r03530_labels,
+    validate_meta_framework_integrations_p0r03530_fixture,
 )
 from .meta_framework_integrations_validation import (
     MetaFrameworkIntegrationsConfig,
@@ -1813,6 +1834,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_maximizing_as_the_goal_of_coupling_fixture",
+    "maximizing_as_the_goal_of_coupling_labels",
+    "classify_maximizing_as_the_goal_of_coupling_component",
+    "MaximizingAsTheGoalOfCouplingFixtureResult",
+    "MaximizingAsTheGoalOfCouplingConfig",
+    "validate_meta_framework_integrations_p0r03530_fixture",
+    "meta_framework_integrations_p0r03530_labels",
+    "classify_meta_framework_integrations_p0r03530_component",
+    "MetaFrameworkIntegrationsP0r03530FixtureResult",
+    "MetaFrameworkIntegrationsP0r03530Config",
+    "validate_integration_with_integrated_information_theory_iit_4_0_fixture",
+    "integration_with_integrated_information_theory_iit_4_0_labels",
+    "classify_integration_with_integrated_information_theory_iit_4_0_component",
+    "IntegrationWithIntegratedInformationTheoryIit40FixtureResult",
+    "IntegrationWithIntegratedInformationTheoryIit40Config",
     "validate_geometric_interpretation_the_consciousness_manifold_fixture",
     "geometric_interpretation_the_consciousness_manifold_labels",
     "classify_geometric_interpretation_the_consciousness_manifold_component",
