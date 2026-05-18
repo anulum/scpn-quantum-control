@@ -734,6 +734,13 @@ from .ii_the_binding_problem_the_gauge_field_of_consciousness_validation import 
     ii_the_binding_problem_the_gauge_field_of_consciousness_labels,
     validate_ii_the_binding_problem_the_gauge_field_of_consciousness_fixture,
 )
+from .ii_the_chronobiological_architecture_temporal_synchronisation_l4_l8_validation import (
+    IiTheChronobiologicalArchitectureTemporalSynchronisationL4L8Config,
+    IiTheChronobiologicalArchitectureTemporalSynchronisationL4L8FixtureResult,
+    classify_ii_the_chronobiological_architecture_temporal_synchronisation_l4_l8_component,
+    ii_the_chronobiological_architecture_temporal_synchronisation_l4_l8_labels,
+    validate_ii_the_chronobiological_architecture_temporal_synchronisation_l4_l8_fixture,
+)
 from .ii_the_discrete_continuous_interface_hhds_validation import (
     IiTheDiscreteContinuousInterfaceHhdsConfig,
     IiTheDiscreteContinuousInterfaceHhdsFixtureResult,
@@ -1722,6 +1729,13 @@ from .section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_validat
     section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_labels,
     validate_section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_fixture,
 )
+from .section_2_embodied_predictive_coding_interoceptive_inference_validation import (
+    Section2EmbodiedPredictiveCodingInteroceptiveInferenceConfig,
+    Section2EmbodiedPredictiveCodingInteroceptiveInferenceFixtureResult,
+    classify_section_2_embodied_predictive_coding_interoceptive_inference_component,
+    section_2_embodied_predictive_coding_interoceptive_inference_labels,
+    validate_section_2_embodied_predictive_coding_interoceptive_inference_fixture,
+)
 from .section_2_hpc_as_geometric_flow_validation import (
     Section2HpcAsGeometricFlowConfig,
     Section2HpcAsGeometricFlowFixtureResult,
@@ -2243,6 +2257,13 @@ from .the_dynamic_visualisation_the_scpn_torus_validation import (
     the_dynamic_visualisation_the_scpn_torus_labels,
     validate_the_dynamic_visualisation_the_scpn_torus_fixture,
 )
+from .the_dynamics_and_evolution_of_the_embodied_scpn_validation import (
+    TheDynamicsAndEvolutionOfTheEmbodiedScpnConfig,
+    TheDynamicsAndEvolutionOfTheEmbodiedScpnFixtureResult,
+    classify_the_dynamics_and_evolution_of_the_embodied_scpn_component,
+    the_dynamics_and_evolution_of_the_embodied_scpn_labels,
+    validate_the_dynamics_and_evolution_of_the_embodied_scpn_fixture,
+)
 from .the_genesis_of_the_hierarchy_sequential_symmetry_breaking_ssb_validation import (
     TheGenesisOfTheHierarchySequentialSymmetryBreakingSsbConfig,
     TheGenesisOfTheHierarchySequentialSymmetryBreakingSsbFixtureResult,
@@ -2632,6 +2653,21 @@ from .vii_pathology_the_disordered_brain_validation import (
 )
 
 __all__ = [
+    "validate_ii_the_chronobiological_architecture_temporal_synchronisation_l4_l8_fixture",
+    "ii_the_chronobiological_architecture_temporal_synchronisation_l4_l8_labels",
+    "classify_ii_the_chronobiological_architecture_temporal_synchronisation_l4_l8_component",
+    "IiTheChronobiologicalArchitectureTemporalSynchronisationL4L8FixtureResult",
+    "IiTheChronobiologicalArchitectureTemporalSynchronisationL4L8Config",
+    "validate_section_2_embodied_predictive_coding_interoceptive_inference_fixture",
+    "section_2_embodied_predictive_coding_interoceptive_inference_labels",
+    "classify_section_2_embodied_predictive_coding_interoceptive_inference_component",
+    "Section2EmbodiedPredictiveCodingInteroceptiveInferenceFixtureResult",
+    "Section2EmbodiedPredictiveCodingInteroceptiveInferenceConfig",
+    "validate_the_dynamics_and_evolution_of_the_embodied_scpn_fixture",
+    "the_dynamics_and_evolution_of_the_embodied_scpn_labels",
+    "classify_the_dynamics_and_evolution_of_the_embodied_scpn_component",
+    "TheDynamicsAndEvolutionOfTheEmbodiedScpnFixtureResult",
+    "TheDynamicsAndEvolutionOfTheEmbodiedScpnConfig",
     "validate_v_the_integrated_body_matrix_fascia_and_tensegrity_fixture",
     "v_the_integrated_body_matrix_fascia_and_tensegrity_labels",
     "classify_v_the_integrated_body_matrix_fascia_and_tensegrity_component",

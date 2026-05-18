@@ -6255,6 +6255,56 @@ def load_v_the_integrated_body_matrix_fascia_and_tensegrity_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_THE_DYNAMICS_AND_EVOLUTION_OF_THE_EMBODIED_SCPN_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_dynamics_and_evolution_of_the_embodied_scpn_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_dynamics_and_evolution_of_the_embodied_scpn_validation_spec(
+    spec_bundle: str | Path = DEFAULT_THE_DYNAMICS_AND_EVOLUTION_OF_THE_EMBODIED_SCPN_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the dynamics and evolution of the embodied scpn validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_2_EMBODIED_PREDICTIVE_CODING_INTEROCEPTIVE_INFERENCE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_embodied_predictive_coding_interoceptive_inference_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_embodied_predictive_coding_interoceptive_inference_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_2_EMBODIED_PREDICTIVE_CODING_INTEROCEPTIVE_INFERENCE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 embodied predictive coding interoceptive inference validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_II_THE_CHRONOBIOLOGICAL_ARCHITECTURE_TEMPORAL_SYNCHRONISATION_L4_L8_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_ii_the_chronobiological_architecture_temporal_synchronisation_l4_l8_validation_specs_2026-05-17.json"
+)
+
+
+def load_ii_the_chronobiological_architecture_temporal_synchronisation_l4_l8_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_II_THE_CHRONOBIOLOGICAL_ARCHITECTURE_TEMPORAL_SYNCHRONISATION_L4_L8_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 ii the chronobiological architecture temporal synchronisation l4 l8 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -6936,4 +6986,10 @@ __all__ = [
     "load_section_2_the_endocrine_system_and_hpa_axis_stress_response_validation_spec",
     "DEFAULT_V_THE_INTEGRATED_BODY_MATRIX_FASCIA_AND_TENSEGRITY_SPEC_BUNDLE",
     "load_v_the_integrated_body_matrix_fascia_and_tensegrity_validation_spec",
+    "DEFAULT_THE_DYNAMICS_AND_EVOLUTION_OF_THE_EMBODIED_SCPN_SPEC_BUNDLE",
+    "load_the_dynamics_and_evolution_of_the_embodied_scpn_validation_spec",
+    "DEFAULT_SECTION_2_EMBODIED_PREDICTIVE_CODING_INTEROCEPTIVE_INFERENCE_SPEC_BUNDLE",
+    "load_section_2_embodied_predictive_coding_interoceptive_inference_validation_spec",
+    "DEFAULT_II_THE_CHRONOBIOLOGICAL_ARCHITECTURE_TEMPORAL_SYNCHRONISATION_L4_L8_SPEC_BUNDLE",
+    "load_ii_the_chronobiological_architecture_temporal_synchronisation_l4_l8_validation_spec",
 ]
