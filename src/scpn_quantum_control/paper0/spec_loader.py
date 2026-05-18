@@ -5552,6 +5552,57 @@ def load_vii_pathology_the_disordered_brain_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_I_EXAMINATION_OF_THE_DEEP_ARCHITECTURE_OF_THE_QUANTUM_BIOLOGICAL_INTERFA_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_i_examination_of_the_deep_architecture_of_the_quantum_biological_interfa_validation_specs_2026-05-17.json"
+)
+
+
+def load_i_examination_of_the_deep_architecture_of_the_quantum_biological_interfa_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_I_EXAMINATION_OF_THE_DEEP_ARCHITECTURE_OF_THE_QUANTUM_BIOLOGICAL_INTERFA_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 i examination of the deep architecture of the quantum biological interfa validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_COHERENT_MILIEU_CSF_AND_THE_GLYMPHATIC_SYSTEM_AS_THE_BRAIN_S_ENTROPY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_coherent_milieu_csf_and_the_glymphatic_system_as_the_brain_s_entropy_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_coherent_milieu_csf_and_the_glymphatic_system_as_the_brain_s_entropy_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_COHERENT_MILIEU_CSF_AND_THE_GLYMPHATIC_SYSTEM_AS_THE_BRAIN_S_ENTROPY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the coherent milieu csf and the glymphatic system as the brain s entropy validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_II_EXAMINATION_OF_THE_ARCHITECTURE_OF_STRUCTURE_AND_PLASTICITY_DOMAIN_I_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_validation_specs_2026-05-17.json"
+)
+
+
+def load_ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_II_EXAMINATION_OF_THE_ARCHITECTURE_OF_STRUCTURE_AND_PLASTICITY_DOMAIN_I_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 ii examination of the architecture of structure and plasticity domain i validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -6149,4 +6200,10 @@ __all__ = [
     "load_section_4_the_geometry_of_thought_the_consciousness_manifold_m_validation_spec",
     "DEFAULT_VII_PATHOLOGY_THE_DISORDERED_BRAIN_SPEC_BUNDLE",
     "load_vii_pathology_the_disordered_brain_validation_spec",
+    "DEFAULT_I_EXAMINATION_OF_THE_DEEP_ARCHITECTURE_OF_THE_QUANTUM_BIOLOGICAL_INTERFA_SPEC_BUNDLE",
+    "load_i_examination_of_the_deep_architecture_of_the_quantum_biological_interfa_validation_spec",
+    "DEFAULT_THE_COHERENT_MILIEU_CSF_AND_THE_GLYMPHATIC_SYSTEM_AS_THE_BRAIN_S_ENTROPY_SPEC_BUNDLE",
+    "load_the_coherent_milieu_csf_and_the_glymphatic_system_as_the_brain_s_entropy_validation_spec",
+    "DEFAULT_II_EXAMINATION_OF_THE_ARCHITECTURE_OF_STRUCTURE_AND_PLASTICITY_DOMAIN_I_SPEC_BUNDLE",
+    "load_ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_validation_spec",
 ]

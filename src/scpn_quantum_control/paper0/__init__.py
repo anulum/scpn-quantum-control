@@ -671,6 +671,13 @@ from .hpc_upde_derivation_validation import (
     upde_core_derivative,
     validate_hpc_upde_derivation_fixture,
 )
+from .i_examination_of_the_deep_architecture_of_the_quantum_biological_interfa_validation import (
+    IExaminationOfTheDeepArchitectureOfTheQuantumBiologicalInterfaConfig,
+    IExaminationOfTheDeepArchitectureOfTheQuantumBiologicalInterfaFixtureResult,
+    classify_i_examination_of_the_deep_architecture_of_the_quantum_biological_interfa_component,
+    i_examination_of_the_deep_architecture_of_the_quantum_biological_interfa_labels,
+    validate_i_examination_of_the_deep_architecture_of_the_quantum_biological_interfa_fixture,
+)
 from .i_introduction_the_brain_as_a_multi_scale_resonant_transducer_validation import (
     IIntroductionTheBrainAsAMultiScaleResonantTransducerConfig,
     IIntroductionTheBrainAsAMultiScaleResonantTransducerFixtureResult,
@@ -691,6 +698,13 @@ from .i_the_unifying_computational_principle_hierarchical_predictive_coding_hp_v
     classify_i_the_unifying_computational_principle_hierarchical_predictive_coding_hp_component,
     i_the_unifying_computational_principle_hierarchical_predictive_coding_hp_labels,
     validate_i_the_unifying_computational_principle_hierarchical_predictive_coding_hp_fixture,
+)
+from .ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_validation import (
+    IiExaminationOfTheArchitectureOfStructureAndPlasticityDomainIConfig,
+    IiExaminationOfTheArchitectureOfStructureAndPlasticityDomainIFixtureResult,
+    classify_ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_component,
+    ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_labels,
+    validate_ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_fixture,
 )
 from .ii_the_binding_problem_the_gauge_field_of_consciousness_validation import (
     IiTheBindingProblemTheGaugeFieldOfConsciousnessConfig,
@@ -1935,6 +1949,13 @@ from .the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai_v
     the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai_labels,
     validate_the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai_fixture,
 )
+from .the_coherent_milieu_csf_and_the_glymphatic_system_as_the_brain_s_entropy_validation import (
+    TheCoherentMilieuCsfAndTheGlymphaticSystemAsTheBrainSEntropyConfig,
+    TheCoherentMilieuCsfAndTheGlymphaticSystemAsTheBrainSEntropyFixtureResult,
+    classify_the_coherent_milieu_csf_and_the_glymphatic_system_as_the_brain_s_entropy_component,
+    the_coherent_milieu_csf_and_the_glymphatic_system_as_the_brain_s_entropy_labels,
+    validate_the_coherent_milieu_csf_and_the_glymphatic_system_as_the_brain_s_entropy_fixture,
+)
 from .the_consilium_l15_as_the_target_setter_validation import (
     TheConsiliumL15AsTheTargetSetterConfig,
     TheConsiliumL15AsTheTargetSetterFixtureResult,
@@ -2338,6 +2359,21 @@ from .vii_pathology_the_disordered_brain_validation import (
 )
 
 __all__ = [
+    "validate_ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_fixture",
+    "ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_labels",
+    "classify_ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_component",
+    "IiExaminationOfTheArchitectureOfStructureAndPlasticityDomainIFixtureResult",
+    "IiExaminationOfTheArchitectureOfStructureAndPlasticityDomainIConfig",
+    "validate_the_coherent_milieu_csf_and_the_glymphatic_system_as_the_brain_s_entropy_fixture",
+    "the_coherent_milieu_csf_and_the_glymphatic_system_as_the_brain_s_entropy_labels",
+    "classify_the_coherent_milieu_csf_and_the_glymphatic_system_as_the_brain_s_entropy_component",
+    "TheCoherentMilieuCsfAndTheGlymphaticSystemAsTheBrainSEntropyFixtureResult",
+    "TheCoherentMilieuCsfAndTheGlymphaticSystemAsTheBrainSEntropyConfig",
+    "validate_i_examination_of_the_deep_architecture_of_the_quantum_biological_interfa_fixture",
+    "i_examination_of_the_deep_architecture_of_the_quantum_biological_interfa_labels",
+    "classify_i_examination_of_the_deep_architecture_of_the_quantum_biological_interfa_component",
+    "IExaminationOfTheDeepArchitectureOfTheQuantumBiologicalInterfaFixtureResult",
+    "IExaminationOfTheDeepArchitectureOfTheQuantumBiologicalInterfaConfig",
     "validate_vii_pathology_the_disordered_brain_fixture",
     "vii_pathology_the_disordered_brain_labels",
     "classify_vii_pathology_the_disordered_brain_component",
