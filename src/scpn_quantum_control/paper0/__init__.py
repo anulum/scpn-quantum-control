@@ -1631,6 +1631,13 @@ from .section_1_the_lipid_landscape_and_criticality_validation import (
     section_1_the_lipid_landscape_and_criticality_labels,
     validate_section_1_the_lipid_landscape_and_criticality_fixture,
 )
+from .section_1_the_mechanism_of_nvc_validation import (
+    Section1TheMechanismOfNvcConfig,
+    Section1TheMechanismOfNvcFixtureResult,
+    classify_section_1_the_mechanism_of_nvc_component,
+    section_1_the_mechanism_of_nvc_labels,
+    validate_section_1_the_mechanism_of_nvc_fixture,
+)
 from .section_1_the_presynaptic_terminal_the_quantum_lever_validation import (
     Section1ThePresynapticTerminalTheQuantumLeverConfig,
     Section1ThePresynapticTerminalTheQuantumLeverFixtureResult,
@@ -1743,6 +1750,13 @@ from .section_2_the_geometry_of_synchronisation_upde_manifolds_validation import
     section_2_the_geometry_of_synchronisation_upde_manifolds_labels,
     validate_section_2_the_geometry_of_synchronisation_upde_manifolds_fixture,
 )
+from .section_2_the_gut_brain_axis_gba_and_the_microbiome_the_deep_milieu_validation import (
+    Section2TheGutBrainAxisGbaAndTheMicrobiomeTheDeepMilieuConfig,
+    Section2TheGutBrainAxisGbaAndTheMicrobiomeTheDeepMilieuFixtureResult,
+    classify_section_2_the_gut_brain_axis_gba_and_the_microbiome_the_deep_milieu_component,
+    section_2_the_gut_brain_axis_gba_and_the_microbiome_the_deep_milieu_labels,
+    validate_section_2_the_gut_brain_axis_gba_and_the_microbiome_the_deep_milieu_fixture,
+)
 from .section_2_the_projective_boundary_l10_emergent_spacetime_and_topological_censors_validation import (
     Section2TheProjectiveBoundaryL10EmergentSpacetimeAndTopologicalCensorsConfig,
     Section2TheProjectiveBoundaryL10EmergentSpacetimeAndTopologicalCensorsFixtureResult,
@@ -1805,6 +1819,13 @@ from .section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_valida
     classify_section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_component,
     section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_labels,
     validate_section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_fixture,
+)
+from .section_3_pathology_vascular_dysfunction_validation import (
+    Section3PathologyVascularDysfunctionConfig,
+    Section3PathologyVascularDysfunctionFixtureResult,
+    classify_section_3_pathology_vascular_dysfunction_component,
+    section_3_pathology_vascular_dysfunction_labels,
+    validate_section_3_pathology_vascular_dysfunction_fixture,
 )
 from .section_3_sequential_symmetry_breaking_ssb_validation import (
     Section3SequentialSymmetryBreakingSsbConfig,
@@ -2590,6 +2611,21 @@ from .vii_pathology_the_disordered_brain_validation import (
 )
 
 __all__ = [
+    "validate_section_2_the_gut_brain_axis_gba_and_the_microbiome_the_deep_milieu_fixture",
+    "section_2_the_gut_brain_axis_gba_and_the_microbiome_the_deep_milieu_labels",
+    "classify_section_2_the_gut_brain_axis_gba_and_the_microbiome_the_deep_milieu_component",
+    "Section2TheGutBrainAxisGbaAndTheMicrobiomeTheDeepMilieuFixtureResult",
+    "Section2TheGutBrainAxisGbaAndTheMicrobiomeTheDeepMilieuConfig",
+    "validate_section_3_pathology_vascular_dysfunction_fixture",
+    "section_3_pathology_vascular_dysfunction_labels",
+    "classify_section_3_pathology_vascular_dysfunction_component",
+    "Section3PathologyVascularDysfunctionFixtureResult",
+    "Section3PathologyVascularDysfunctionConfig",
+    "validate_section_1_the_mechanism_of_nvc_fixture",
+    "section_1_the_mechanism_of_nvc_labels",
+    "classify_section_1_the_mechanism_of_nvc_component",
+    "Section1TheMechanismOfNvcFixtureResult",
+    "Section1TheMechanismOfNvcConfig",
     "validate_section_3_the_csf_and_glymphatic_system_the_entropy_sink_l1_l4_fixture",
     "section_3_the_csf_and_glymphatic_system_the_entropy_sink_l1_l4_labels",
     "classify_section_3_the_csf_and_glymphatic_system_the_entropy_sink_l1_l4_component",

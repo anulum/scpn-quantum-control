@@ -6156,6 +6156,55 @@ def load_section_3_the_csf_and_glymphatic_system_the_entropy_sink_l1_l4_validati
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_1_THE_MECHANISM_OF_NVC_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_1_the_mechanism_of_nvc_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_1_the_mechanism_of_nvc_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SECTION_1_THE_MECHANISM_OF_NVC_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 1 the mechanism of nvc validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_3_PATHOLOGY_VASCULAR_DYSFUNCTION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_3_pathology_vascular_dysfunction_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_3_pathology_vascular_dysfunction_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SECTION_3_PATHOLOGY_VASCULAR_DYSFUNCTION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 3 pathology vascular dysfunction validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_2_THE_GUT_BRAIN_AXIS_GBA_AND_THE_MICROBIOME_THE_DEEP_MILIEU_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_the_gut_brain_axis_gba_and_the_microbiome_the_deep_milieu_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_the_gut_brain_axis_gba_and_the_microbiome_the_deep_milieu_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_2_THE_GUT_BRAIN_AXIS_GBA_AND_THE_MICROBIOME_THE_DEEP_MILIEU_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 the gut brain axis gba and the microbiome the deep milieu validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -6825,4 +6874,10 @@ __all__ = [
     "load_i_the_brain_s_protective_scaffold_and_fluid_dynamics_validation_spec",
     "DEFAULT_SECTION_3_THE_CSF_AND_GLYMPHATIC_SYSTEM_THE_ENTROPY_SINK_L1_L4_SPEC_BUNDLE",
     "load_section_3_the_csf_and_glymphatic_system_the_entropy_sink_l1_l4_validation_spec",
+    "DEFAULT_SECTION_1_THE_MECHANISM_OF_NVC_SPEC_BUNDLE",
+    "load_section_1_the_mechanism_of_nvc_validation_spec",
+    "DEFAULT_SECTION_3_PATHOLOGY_VASCULAR_DYSFUNCTION_SPEC_BUNDLE",
+    "load_section_3_pathology_vascular_dysfunction_validation_spec",
+    "DEFAULT_SECTION_2_THE_GUT_BRAIN_AXIS_GBA_AND_THE_MICROBIOME_THE_DEEP_MILIEU_SPEC_BUNDLE",
+    "load_section_2_the_gut_brain_axis_gba_and_the_microbiome_the_deep_milieu_validation_spec",
 ]
