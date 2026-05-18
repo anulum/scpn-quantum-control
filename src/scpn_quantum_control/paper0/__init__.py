@@ -1323,6 +1323,13 @@ from .section_2_the_central_void_the_source_validation import (
     section_2_the_central_void_the_source_labels,
     validate_section_2_the_central_void_the_source_fixture,
 )
+from .section_3_1_noether_s_theorem_on_the_qualia_fiber_validation import (
+    Section31NoetherSTheoremOnTheQualiaFiberConfig,
+    Section31NoetherSTheoremOnTheQualiaFiberFixtureResult,
+    classify_section_3_1_noether_s_theorem_on_the_qualia_fiber_component,
+    section_3_1_noether_s_theorem_on_the_qualia_fiber_labels,
+    validate_section_3_1_noether_s_theorem_on_the_qualia_fiber_fixture,
+)
 from .section_3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde_validation import (
     Section32TheDynamicSpineTheUnifiedPhaseDynamicsEquationUpdeConfig,
     Section32TheDynamicSpineTheUnifiedPhaseDynamicsEquationUpdeFixtureResult,
@@ -1357,6 +1364,20 @@ from .section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis_validatio
     classify_section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis_component,
     section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis_labels,
     validate_section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis_fixture,
+)
+from .section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy_validation import (
+    Section43TheOriginOfPurposeCausalEntropicForcesNegativeEntropyConfig,
+    Section43TheOriginOfPurposeCausalEntropicForcesNegativeEntropyFixtureResult,
+    classify_section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy_component,
+    section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy_labels,
+    validate_section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy_fixture,
+)
+from .section_4_justification_for_a_teleological_least_action_principle_validation import (
+    Section4JustificationForATeleologicalLeastActionPrincipleConfig,
+    Section4JustificationForATeleologicalLeastActionPrincipleFixtureResult,
+    classify_section_4_justification_for_a_teleological_least_action_principle_component,
+    section_4_justification_for_a_teleological_least_action_principle_labels,
+    validate_section_4_justification_for_a_teleological_least_action_principle_fixture,
 )
 from .section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_p0r02810_validation import (
     Section15LayerSummaryTable32TheDynamicSpineTheUnifiedPhaseDynamicsP0r02810Config,
@@ -1876,6 +1897,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy_fixture",
+    "section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy_labels",
+    "classify_section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy_component",
+    "Section43TheOriginOfPurposeCausalEntropicForcesNegativeEntropyFixtureResult",
+    "Section43TheOriginOfPurposeCausalEntropicForcesNegativeEntropyConfig",
+    "validate_section_4_justification_for_a_teleological_least_action_principle_fixture",
+    "section_4_justification_for_a_teleological_least_action_principle_labels",
+    "classify_section_4_justification_for_a_teleological_least_action_principle_component",
+    "Section4JustificationForATeleologicalLeastActionPrincipleFixtureResult",
+    "Section4JustificationForATeleologicalLeastActionPrincipleConfig",
+    "validate_section_3_1_noether_s_theorem_on_the_qualia_fiber_fixture",
+    "section_3_1_noether_s_theorem_on_the_qualia_fiber_labels",
+    "classify_section_3_1_noether_s_theorem_on_the_qualia_fiber_component",
+    "Section31NoetherSTheoremOnTheQualiaFiberFixtureResult",
+    "Section31NoetherSTheoremOnTheQualiaFiberConfig",
     "validate_section_2_3_the_ethical_lagrangian_as_the_yang_mills_action_fixture",
     "section_2_3_the_ethical_lagrangian_as_the_yang_mills_action_labels",
     "classify_section_2_3_the_ethical_lagrangian_as_the_yang_mills_action_component",

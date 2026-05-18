@@ -4459,6 +4459,57 @@ def load_section_2_3_the_ethical_lagrangian_as_the_yang_mills_action_validation_
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_3_1_NOETHER_S_THEOREM_ON_THE_QUALIA_FIBER_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_3_1_noether_s_theorem_on_the_qualia_fiber_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_3_1_noether_s_theorem_on_the_qualia_fiber_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_3_1_NOETHER_S_THEOREM_ON_THE_QUALIA_FIBER_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 3 1 noether s theorem on the qualia fiber validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_4_JUSTIFICATION_FOR_A_TELEOLOGICAL_LEAST_ACTION_PRINCIPLE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_4_justification_for_a_teleological_least_action_principle_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_4_justification_for_a_teleological_least_action_principle_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_4_JUSTIFICATION_FOR_A_TELEOLOGICAL_LEAST_ACTION_PRINCIPLE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 4 justification for a teleological least action principle validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_4_3_THE_ORIGIN_OF_PURPOSE_CAUSAL_ENTROPIC_FORCES_NEGATIVE_ENTROPY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_4_3_THE_ORIGIN_OF_PURPOSE_CAUSAL_ENTROPIC_FORCES_NEGATIVE_ENTROPY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 4 3 the origin of purpose causal entropic forces negative entropy validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -4924,4 +4975,10 @@ __all__ = [
     "load_section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_validation_spec",
     "DEFAULT_SECTION_2_3_THE_ETHICAL_LAGRANGIAN_AS_THE_YANG_MILLS_ACTION_SPEC_BUNDLE",
     "load_section_2_3_the_ethical_lagrangian_as_the_yang_mills_action_validation_spec",
+    "DEFAULT_SECTION_3_1_NOETHER_S_THEOREM_ON_THE_QUALIA_FIBER_SPEC_BUNDLE",
+    "load_section_3_1_noether_s_theorem_on_the_qualia_fiber_validation_spec",
+    "DEFAULT_SECTION_4_JUSTIFICATION_FOR_A_TELEOLOGICAL_LEAST_ACTION_PRINCIPLE_SPEC_BUNDLE",
+    "load_section_4_justification_for_a_teleological_least_action_principle_validation_spec",
+    "DEFAULT_SECTION_4_3_THE_ORIGIN_OF_PURPOSE_CAUSAL_ENTROPIC_FORCES_NEGATIVE_ENTROPY_SPEC_BUNDLE",
+    "load_section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy_validation_spec",
 ]
