@@ -671,6 +671,13 @@ from .hpc_upde_derivation_validation import (
     upde_core_derivative,
     validate_hpc_upde_derivation_fixture,
 )
+from .i_introduction_the_brain_as_a_multi_scale_resonant_transducer_validation import (
+    IIntroductionTheBrainAsAMultiScaleResonantTransducerConfig,
+    IIntroductionTheBrainAsAMultiScaleResonantTransducerFixtureResult,
+    classify_i_introduction_the_brain_as_a_multi_scale_resonant_transducer_component,
+    i_introduction_the_brain_as_a_multi_scale_resonant_transducer_labels,
+    validate_i_introduction_the_brain_as_a_multi_scale_resonant_transducer_fixture,
+)
 from .i_the_ontological_origin_of_ethics_gauge_theory_derivation_validation import (
     ITheOntologicalOriginOfEthicsGaugeTheoryDerivationConfig,
     ITheOntologicalOriginOfEthicsGaugeTheoryDerivationFixtureResult,
@@ -726,6 +733,13 @@ from .iii_the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec_val
     classify_iii_the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec_component,
     iii_the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec_labels,
     validate_iii_the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec_fixture,
+)
+from .iii_the_developmental_and_plasticity_landscape_l3_validation import (
+    IiiTheDevelopmentalAndPlasticityLandscapeL3Config,
+    IiiTheDevelopmentalAndPlasticityLandscapeL3FixtureResult,
+    classify_iii_the_developmental_and_plasticity_landscape_l3_component,
+    iii_the_developmental_and_plasticity_landscape_l3_labels,
+    validate_iii_the_developmental_and_plasticity_landscape_l3_fixture,
 )
 from .information_geometric_lift_of_upde_validation import (
     InformationGeometricLiftOfUpdeConfig,
@@ -1547,6 +1561,13 @@ from .section_2_the_strange_loop_l5_the_geometry_of_self_reference_validation im
     section_2_the_strange_loop_l5_the_geometry_of_self_reference_labels,
     validate_section_2_the_strange_loop_l5_the_geometry_of_self_reference_fixture,
 )
+from .section_2_the_synaptic_junction_and_downward_causation_l2_validation import (
+    Section2TheSynapticJunctionAndDownwardCausationL2Config,
+    Section2TheSynapticJunctionAndDownwardCausationL2FixtureResult,
+    classify_section_2_the_synaptic_junction_and_downward_causation_l2_component,
+    section_2_the_synaptic_junction_and_downward_causation_l2_labels,
+    validate_section_2_the_synaptic_junction_and_downward_causation_l2_fixture,
+)
 from .section_3_1_complexity_k_and_the_cardinality_of_the_state_space_validation import (
     Section31ComplexityKAndTheCardinalityOfTheStateSpaceConfig,
     Section31ComplexityKAndTheCardinalityOfTheStateSpaceFixtureResult,
@@ -2275,6 +2296,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_iii_the_developmental_and_plasticity_landscape_l3_fixture",
+    "iii_the_developmental_and_plasticity_landscape_l3_labels",
+    "classify_iii_the_developmental_and_plasticity_landscape_l3_component",
+    "IiiTheDevelopmentalAndPlasticityLandscapeL3FixtureResult",
+    "IiiTheDevelopmentalAndPlasticityLandscapeL3Config",
+    "validate_section_2_the_synaptic_junction_and_downward_causation_l2_fixture",
+    "section_2_the_synaptic_junction_and_downward_causation_l2_labels",
+    "classify_section_2_the_synaptic_junction_and_downward_causation_l2_component",
+    "Section2TheSynapticJunctionAndDownwardCausationL2FixtureResult",
+    "Section2TheSynapticJunctionAndDownwardCausationL2Config",
+    "validate_i_introduction_the_brain_as_a_multi_scale_resonant_transducer_fixture",
+    "i_introduction_the_brain_as_a_multi_scale_resonant_transducer_labels",
+    "classify_i_introduction_the_brain_as_a_multi_scale_resonant_transducer_component",
+    "IIntroductionTheBrainAsAMultiScaleResonantTransducerFixtureResult",
+    "IIntroductionTheBrainAsAMultiScaleResonantTransducerConfig",
     "validate_section_2_the_projective_boundary_l10_emergent_spacetime_and_topological_censors_fixture",
     "section_2_the_projective_boundary_l10_emergent_spacetime_and_topological_censors_labels",
     "classify_section_2_the_projective_boundary_l10_emergent_spacetime_and_topological_censors_component",
