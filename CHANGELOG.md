@@ -11,6 +11,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - 2026-04-30 — Added the 109-subject EEGMMIDB baseline eyes-closed PLV artifact and an eyes-closed-minus-eyes-open comparison artifact.
 
 ### Changed
+- 2026-05-18 — Closed generated Paper 0 builder documentation 10-batch 11 for the next CLI-entrypoint burn-down block.
+- 2026-05-18 — Closed generated Paper 0 builder documentation 10-batch 12 for the next CLI-entrypoint burn-down block.
+- 2026-05-18 — Closed generated Paper 0 builder documentation 10-batch 13 for the next CLI-entrypoint burn-down block.
+- 2026-05-18 — Closed generated Paper 0 builder documentation 10-batch 14 for the next CLI-entrypoint burn-down block.
+- 2026-05-18 — Closed generated Paper 0 builder documentation 10-batch 15 for the next CLI-entrypoint burn-down block.
 - 2026-05-18 — Closed generated Paper 0 builder documentation 10-batch 6 for the next CLI-entrypoint burn-down block.
 - 2026-05-18 — Closed generated Paper 0 builder documentation 10-batch 7 for the next CLI-entrypoint burn-down block.
 - 2026-05-18 — Closed generated Paper 0 builder documentation 10-batch 8 for the next CLI-entrypoint burn-down block.
