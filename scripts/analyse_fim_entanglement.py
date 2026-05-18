@@ -16,6 +16,7 @@ import hashlib
 import json
 import platform
 from pathlib import Path
+from typing import cast
 
 import numpy as np
 
@@ -59,6 +60,14 @@ def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
 
 
 def generate(n_values: list[int], lambdas: list[float], eigenstates: int) -> dict[str, object]:
+    """Generate exact low-energy bipartition entropy summaries.
+
+    The calculation uses the committed Paper-27 coupling builder and the FIM
+    feedback Hamiltonian path, then diagonalises each requested small system
+    exactly. The returned payload is an artefact bundle for reproducibility and
+    manuscript support; its claim boundary is restricted to exact small-system
+    diagnostics.
+    """
     rows: list[dict[str, object]] = []
     aggregate_rows: list[dict[str, object]] = []
     for n_qubits in n_values:
@@ -115,6 +124,7 @@ def generate(n_values: list[int], lambdas: list[float], eigenstates: int) -> dic
 
 
 def main() -> int:
+    """Run the FIM entanglement artefact generator from the command line."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--n-values", default="4,6,8")
     parser.add_argument("--lambdas", default="0,0.25,0.5,1,2,4,8")
@@ -131,8 +141,8 @@ def main() -> int:
     rows_csv = ns.output_dir / f"fim_entanglement_rows_{DATE}.csv"
     aggregate_csv = ns.output_dir / f"fim_entanglement_aggregate_{DATE}.csv"
     json_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
-    _write_csv(rows_csv, list(summary["rows"]))
-    _write_csv(aggregate_csv, list(summary["aggregate_rows"]))
+    _write_csv(rows_csv, list(cast(list[dict[str, object]], summary["rows"])))
+    _write_csv(aggregate_csv, list(cast(list[dict[str, object]], summary["aggregate_rows"])))
     print(f"wrote_json={json_path}")
     print(f"wrote_rows_csv={rows_csv}")
     print(f"wrote_aggregate_csv={aggregate_csv}")

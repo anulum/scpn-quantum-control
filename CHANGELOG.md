@@ -11,6 +11,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - 2026-04-30 — Added the 109-subject EEGMMIDB baseline eyes-closed PLV artifact and an eyes-closed-minus-eyes-open comparison artifact.
 
 ### Changed
+- 2026-05-18 — Closed the first documentation-surface audit slice for FIM analysis scripts with public docstrings and typed CLI output handling.
 - 2026-05-18 — Refreshed README and documentation index status surfaces to report `0` remaining Paper 0 work orders under the explicit source-bounded, non-hardware claim boundary.
 - 2026-04-29 — Added documented classical baseline surfaces for SciPy ODE, optional QuTiP Lindblad, and optional MPS TEBD runs.
 - 2026-04-29 — Re-routed API documentation so stable facades are the first-path entry point and low-level module references sit under advanced navigation.

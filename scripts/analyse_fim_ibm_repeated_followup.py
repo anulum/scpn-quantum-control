@@ -18,7 +18,7 @@ import math
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from statistics import mean, stdev
-from typing import Any
+from typing import Any, cast
 
 from scipy.stats import combine_pvalues, ttest_ind
 
@@ -39,6 +39,8 @@ PUBLISHED_SHA256 = "6e4df78f1c679cd29b9c503bf1fecf39be76e707b1e6c4df99bbcc87b8e5
 
 @dataclass(frozen=True)
 class RowMetric:
+    """Per-circuit metric row for the repeated SCPN/FIM hardware follow-up."""
+
     circuit_index: int
     protocol_arm: str
     lambda_fim: float | None
@@ -62,6 +64,8 @@ class RowMetric:
 
 @dataclass(frozen=True)
 class Comparison:
+    """Welch comparison between lambda-zero and lambda-four replicates."""
+
     initial_bitstring: str
     magnetisation: int
     popcount: int
@@ -215,7 +219,7 @@ def _row_metric(row: dict[str, Any], readout: dict[str, dict[str, float]]) -> Ro
 
 
 def _observable(row: RowMetric, name: str) -> float | None:
-    return getattr(row, name)
+    return cast(float | None, getattr(row, name))
 
 
 def _comparison(
@@ -363,6 +367,7 @@ def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
 
 
 def main() -> int:
+    """Analyse repeated follow-up raw counts and write summary artefacts."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT)
     parser.add_argument("--verify-integrity", action="store_true")

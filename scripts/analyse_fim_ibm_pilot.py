@@ -44,6 +44,8 @@ PUBLISHED_SHA256 = "be284b9b2f71dfecd978703d979a8893e79b35dcc4537d7a372b83ba4830
 
 @dataclass(frozen=True)
 class RowMetric:
+    """Per-circuit descriptive metrics for the single-shot-condition pilot."""
+
     circuit_index: int
     protocol_arm: str
     n_qubits: int
@@ -67,6 +69,8 @@ class RowMetric:
 
 @dataclass(frozen=True)
 class LambdaTrend:
+    """Pairwise lambda comparison for one pilot state/depth condition."""
+
     initial_bitstring: str
     magnetisation: int
     popcount: int
@@ -370,6 +374,7 @@ def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
 
 
 def main() -> int:
+    """Analyse the pilot raw-count artefact and write descriptive outputs."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT)
     parser.add_argument("--verify-integrity", action="store_true")
