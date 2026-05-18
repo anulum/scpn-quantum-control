@@ -11,6 +11,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - 2026-04-30 — Added the 109-subject EEGMMIDB baseline eyes-closed PLV artifact and an eyes-closed-minus-eyes-open comparison artifact.
 
 ### Changed
+- 2026-05-18 — Closed generated Paper 0 builder documentation 10-batch 6 for the next CLI-entrypoint burn-down block.
+- 2026-05-18 — Closed generated Paper 0 builder documentation 10-batch 7 for the next CLI-entrypoint burn-down block.
+- 2026-05-18 — Closed generated Paper 0 builder documentation 10-batch 8 for the next CLI-entrypoint burn-down block.
+- 2026-05-18 — Closed generated Paper 0 builder documentation 10-batch 9 for the next CLI-entrypoint burn-down block.
+- 2026-05-18 — Closed generated Paper 0 builder documentation 10-batch 10 for the next CLI-entrypoint burn-down block.
 - 2026-05-18 — Closed the fifth 10-script Paper 0 generated-builder documentation batch across domain overview, renormalisation, cybernetic closure, ecology, ethics, and experimental-design CLIs.
 - 2026-05-18 — Closed the fourth 10-script Paper 0 generated-builder documentation batch across universal-parameter, core-assumption, cosmology, coherent-sigma, data-fusion, infoton, interaction, Lagrangian, and domain-layer CLIs.
 - 2026-05-18 — Closed the third 10-script Paper 0 generated-builder documentation batch across grammar, citation, clinical, cultural, complexity, component, AI-alignment, and consciousness CLIs.
