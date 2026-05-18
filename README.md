@@ -30,7 +30,7 @@
 > falsification artefacts. APIs may evolve as this work progresses.
 
 **Version:** 0.9.6
-**Status:** Kuramoto-XY compiler + hardware runners + analysis stack | 37 Rust functions | 47 notebooks | 21 examples | 97%+ coverage | IBM Heron r2 evidence ledgered
+**Status:** Kuramoto-XY compiler + hardware runners + analysis stack | 49 exported Rust `#[pyfunction]` bindings | 98 tracked notebooks | 22 example files | 97%+ coverage | IBM Heron r2 evidence ledgered
 
 ---
 
@@ -133,12 +133,11 @@ The package provides:
    frequencies omega compile directly into executable Qiskit circuits for IBM
    hardware. Rust-accelerated Hamiltonian construction (5,401× faster than Qiskit).
 
-2. **35 research modules** probing the synchronisation phase
+2. **Tracked research module families** probing the synchronisation phase
    transition — synchronisation witnesses, OTOC scrambling, Krylov complexity,
-   persistent homology, DLA parity theorem, and more. ~4 are novel constructions
-   (witness formalism, Knm ansatz, FIM sector protection); ~8 are first
-   applications of existing tools to Kuramoto-XY; the rest are standard
-   many-body diagnostics applied to this system.
+   persistent homology, DLA parity theorem, Paper 0 source-accounting fixtures,
+   and more. Novel constructions and first applications are documented in the
+   research-gems and API pages; exact file counts use the package table below.
 
 3. **Hardware evidence with claim classes** — legacy `ibm_fez` baseline rows,
    promoted `ibm_kingston` DLA parity datasets, and the SCPN/FIM negative
@@ -191,11 +190,11 @@ information scrambles*, and *whether the system thermalises*.
 
 | Metric | Value |
 |--------|-------|
-| Rust engine functions | **37** (5,401× faster Hamiltonian construction; 1,665× faster ICI three-level evolution; 44× faster (α,β)-hypergeometric envelope) |
-| Research modules | **35** (≈ 5 novel constructions, ≈ 10 first-application, including GUESS symmetry-decay ZNE and DynQ topology-agnostic placement) |
-| Python modules | **201** + Rust crate (3,983 lines, 21 source files) |
+| Rust engine bindings | **49** exported `#[pyfunction]` bindings in the tracked Rust crate; low-level helper `fn` definitions are an implementation detail. |
+| Source package surface | **697** tracked Python source files under `src/scpn_quantum_control`, excluding package initialisers; **470** of these are generated Paper 0 source-accounting validation modules. |
+| Research module families | Analysis, phase, hardware, bridge, mitigation, QEC, applications, forecasting, and Paper 0 validation families; exact current counts are listed in the package map below. |
 | Publication figures | **17** (simulation + hardware, including the Phase 1 DLA parity panels and exact-simulation crossover) |
-| Test suite | CI-gated suite with 97%+ coverage |
+| Test suite | CI-gated suite with 97%+ coverage; current tracked test-function count is **9,139** by `tests/test_*.py` collection. |
 | Reproducibility CLI | `scpn-bench reproduce-methods`, `scpn-bench fim-all`, and `scpn-bench all` regenerate committed methods/FIM artefacts without IBM submission |
 
 ### Exact-Simulation Wall-Time (Not broad quantum-advantage claim)
@@ -315,38 +314,45 @@ noise-dominated (> 400).*
 
 ## Package Map
 
+Counts below are tracked Python source files under `src/scpn_quantum_control`,
+excluding package initialisers. Generated Paper 0 files are kept visible because
+they are part of the shipped source-accounting API, but they are not external
+scientific validation evidence.
+
 ```mermaid
 graph TD
     subgraph Foundation
-        bridge["bridge/ (11)\nK_nm → Hamiltonian\ncross-repo adapters"]
+        bridge["bridge/ (13)\nK_nm → Hamiltonian\ncross-repo adapters"]
+        paper0["paper0/ (470)\nsource-accounting validation\nregister fixtures"]
     end
 
     subgraph "Core Physics"
-        phase["phase/ (14)\nTrotter, VQE, ADAPT-VQE\nVarQITE, Floquet DTC"]
-        analysis["analysis/ (41)\nWitnesses, QFI, PH\nOTOC, Krylov, magic"]
+        phase["phase/ (28)\nTrotter, VQE, ADAPT-VQE\nVarQITE, Floquet DTC"]
+        analysis["analysis/ (57)\nWitnesses, QFI, PH\nOTOC, Krylov, magic"]
     end
 
     subgraph "Applications"
-        control["control/ (5)\nQAOA-MPC, VQLS-GS\nPetri nets, ITER"]
-        qsnn["qsnn/ (5)\nQuantum spiking\nneural networks"]
-        apps["applications/ (10)\nFMO, power grid\nJosephson, EEG, ITER"]
+        control["control/ (9)\nQAOA-MPC, VQLS-GS\nPetri nets, ITER"]
+        qsnn["qsnn/ (6)\nQuantum spiking\nneural networks"]
+        apps["applications/ (13)\nFMO, power grid\nJosephson, EEG, ITER"]
     end
 
     subgraph "Hardware & QEC"
-        hw["hardware/ (9)\nIBM runner, trapped-ion\nGPU offload, cutting"]
-        mit["mitigation/ (4)\nZNE, PEC, DD\nZ₂ post-selection"]
-        qec["qec/ (4)\nToric code, surface code\nrep code, error budget"]
+        hw["hardware/ (37)\nIBM runner, backends\nGPU offload, cutting"]
+        mit["mitigation/ (9)\nZNE, PEC, DD\nZ2 post-selection"]
+        qec["qec/ (9)\nToric code, surface code\nrep code, error budget"]
     end
 
     subgraph "Field Theory"
         gauge["gauge/ (5)\nWilson loops, vortices\nCFT, universality"]
-        crypto["crypto/ (4)\nBB84, Bell tests\ntopology-auth QKD"]
+        crypto["crypto/ (6)\nBB84, Bell tests\ntopology-auth QKD"]
     end
 
     bridge --> phase
     bridge --> analysis
     bridge --> control
     bridge --> qsnn
+    paper0 --> bridge
     phase --> analysis
     phase --> apps
     hw --> phase
@@ -361,26 +367,30 @@ graph TD
 
 | Subpackage | Modules | Purpose |
 |------------|:-------:|---------|
-| `analysis` | 45 | Synchronisation probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
+| `paper0` | 470 | Source-accounting validation modules and fixtures for processed Paper 0 records |
+| `analysis` | 57 | Synchronisation probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
+| `hardware` | 37 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
 | `phase` | 28 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
-| `hardware` | 27 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
+| `applications` | 13 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS |
 | `bridge` | 13 | K_nm → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
-| `applications` | 12 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS |
-| `mitigation` | 9 | ZNE, PEC, dynamical decoupling, Z₂ parity, CPDR, symmetry verification, GUESS, compound |
-| `qec` | 8 | Toric code, repetition code UPDE, surface code, biological surface code, error budget, multi-scale, syndrome flow |
-| `control` | 8 | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, ITER disruption, topological optimiser |
-| `identity` | 7 | VQE attractor, coherence budget, entanglement witness, fingerprint |
-| `qsnn` | 7 | Quantum spiking neural networks (LIF, STDP, synapses, dynamic coupling, training) |
-| `crypto` | 7 | BB84, Bell tests, topology-authenticated QKD, key hierarchy |
-| `gauge` | 6 | U(1) Wilson loops, vortex detection, CFT, universality, confinement |
-| `ssgf` | 5 | SSGF quantum integration |
-| `benchmarks` | 5 | Classical vs quantum scaling, MPS baseline, GPU baseline, AppQSim |
-| `psi_field` | 5 | U(1) compact lattice gauge: lattice, infoton, observables, SCPN mapping |
+| `control` | 9 | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, ITER disruption, topological optimiser |
+| `mitigation` | 9 | ZNE, PEC, dynamical decoupling, Z2 parity, CPDR, symmetry verification, GUESS, compound |
+| `qec` | 9 | Toric code, repetition code UPDE, surface code, biological surface code, error budget, multi-scale, syndrome flow |
+| `benchmarks` | 7 | Classical vs quantum scaling, MPS baseline, GPU baseline, AppQSim |
+| `crypto` | 6 | BB84, Bell tests, topology-authenticated QKD, key hierarchy |
+| `identity` | 6 | VQE attractor, coherence budget, entanglement witness, fingerprint |
+| `qsnn` | 6 | Quantum spiking neural networks (LIF, STDP, synapses, dynamic coupling, training) |
+| `gauge` | 5 | U(1) Wilson loops, vortex detection, CFT, universality, confinement |
+| `psi_field` | 4 | U(1) compact lattice gauge: lattice, infoton, observables, SCPN mapping |
+| `ssgf` | 4 | SSGF quantum integration |
 | `accel` | 3 | Multi-language dispatcher + Julia tier (Rust → Julia → Python fallback chain) |
-| `fep` | 3 | Friston Free Energy Principle: variational free energy, predictive coding |
-| `tcbo` | 2 | TCBO quantum observer |
-| `pgbo` | 2 | PGBO quantum bridge |
-| `l16` | 2 | Layer 16 quantum director |
+| `dla_parity` | 4 | DLA parity helpers and campaign analysis support |
+| `fep` | 2 | Friston Free Energy Principle: variational free energy, predictive coding |
+| `forecasting` | 1 | Held-out synchronisation forecasting over hardware traces and source-backed topology replays |
+| `benchmark_harness` | 1 | Reproducible benchmark harness entry point |
+| `tcbo` | 1 | TCBO quantum observer |
+| `pgbo` | 1 | PGBO quantum bridge |
+| `l16` | 1 | Layer 16 quantum director |
 
 ## Quick Start
 
@@ -509,24 +519,25 @@ All run on local AerSimulator. No IBM credentials needed.
 
 ```
 scpn_quantum_control/
-├── analysis/       45 modules — synchronization probes
+├── paper0/        470 modules — source-accounting validation register
+├── analysis/       57 modules — synchronisation probes
+├── hardware/       37 modules — IBM runner, backends, GPU, cutting, provenance
 ├── phase/          28 modules — time evolution + variational + Lindblad
-├── hardware/       24 modules — IBM runner, trapped-ion, GPU, cutting, fast sparse
 ├── bridge/         13 modules — K_nm → quantum objects + cross-repo
-├── applications/   12 modules — physical system benchmarks
-├── control/         7 modules — QAOA-MPC, VQLS-GS, Petri, ITER, topological
-├── mitigation/      7 modules — ZNE, PEC, DD, Z₂, CPDR, symmetry
+├── applications/   13 modules — physical system benchmarks
+├── control/         9 modules — QAOA-MPC, VQLS-GS, Petri, ITER, topological
+├── mitigation/      9 modules — ZNE, PEC, DD, Z2, CPDR, symmetry
+├── qec/             9 modules — error correction + biological surface code
+├── benchmarks/      7 modules — performance baselines
 ├── identity/        6 modules — identity continuity analysis
 ├── qsnn/            6 modules — quantum spiking neural networks
 ├── crypto/          6 modules — QKD, Bell tests, key hierarchy
 ├── gauge/           5 modules — U(1) gauge theory probes
-├── qec/             5 modules — error correction + biological surface code
 ├── ssgf/            4 modules — SSGF quantum integration
-├── benchmarks/      4 modules — performance baselines
 ├── tcbo/            1 module  — TCBO quantum observer
 ├── pgbo/            1 module  — PGBO quantum bridge
 ├── l16/             1 module  — Layer 16 quantum director
-└── scpn_quantum_engine/  Rust crate (PyO3 0.25, 37 functions)
+└── scpn_quantum_engine/  Rust crate (PyO3 0.25, 49 exported #[pyfunction] bindings)
 ```
 
 ## Dependencies
@@ -581,7 +592,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Application Benchmark Plugins](docs/application_benchmarks.md) — EEG, plasma, power-grid, and FEP datasets through QPU artifacts
 - [Classical Baselines](docs/classical_baselines.md) — SciPy ODE, QuTiP Lindblad, and MPS TEBD provenance surfaces
 - [Hardware Guide](docs/hardware_guide.md) — IBM Quantum setup
-- [Notebooks](docs/notebooks.md) — 13 interactive notebooks
+- [Notebooks](docs/notebooks.md) — 98 tracked notebooks (47 core + 51 Colab)
 - [Bridges](docs/bridges_api.md) — cross-repo integrations
 - [Language Policy](docs/language_policy.md) — Rust / Julia / Go / Mojo accel chain
 - [Pipeline Performance](docs/pipeline_performance.md) — every module's measured wall-time + multi-language benchmarks

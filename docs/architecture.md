@@ -33,12 +33,13 @@ preparation and `bridge/` for Hamiltonian access.
 ```mermaid
 graph TD
     bridge["bridge/ (13)\nK_nm → quantum objects"]
+    paper0["paper0/ (470)\nSource-accounting validation"]
     phase["phase/ (28)\nTime evolution"]
-    analysis["analysis/ (45)\nSync probes"]
+    analysis["analysis/ (57)\nSync probes"]
     control["control/ (8)\nQuantum control"]
     qsnn["qsnn/ (7)\nQuantum SNN"]
     identity["identity/ (7)\nIdentity analysis"]
-    hardware["hardware/ (27)\nBackends + registry + async + provenance"]
+    hardware["hardware/ (37)\nBackends + registry + async + provenance"]
     mitigation["mitigation/ (9)\nError mitigation"]
     qec["qec/ (8)\nError correction"]
     gauge["gauge/ (6)\nGauge theory"]
@@ -55,6 +56,7 @@ graph TD
 
     bridge --> phase
     bridge --> analysis
+    paper0 --> bridge
     bridge --> control
     bridge --> qsnn
     bridge --> identity

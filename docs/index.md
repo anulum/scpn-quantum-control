@@ -81,9 +81,10 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 
 | Subpackage | Modules | Purpose |
 |------------|:-------:|---------|
-| `analysis` | 46 | Synchronisation probes: witnesses, witness discovery, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
-| `phase` | 29 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad, Kuramoto variants |
-| `hardware` | 27 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
+| `paper0` | 470 | Source-accounting validation modules and fixtures for processed Paper 0 records |
+| `analysis` | 57 | Synchronisation probes: witnesses, witness discovery, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
+| `hardware` | 37 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
+| `phase` | 28 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad, Kuramoto variants |
 | `bridge` | 13 | $K_{nm}$ → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
 | `applications` | 14 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS, application benchmark plugins |
 | `mitigation` | 9 | ZNE, PEC, dynamical decoupling, Z₂ parity, CPDR, symmetry verification, GUESS, compound |
@@ -163,7 +164,7 @@ for name, w in results.items():
 - [Hardware Guide](hardware_guide.md) — IBM Quantum setup
 - [Bridges](bridges_api.md) — cross-repo integrations
 - [Tutorials](tutorials.md) — 4-level learning path, 14 tutorials
-- [Notebooks](notebooks.md) — 98 notebooks (13 core + 34 FIM investigation)
+- [Notebooks](notebooks.md) — 98 tracked notebooks (47 core + 51 Colab)
 - [Language Policy](language_policy.md) — Rust / Julia / Go / Mojo accel-chain rules
 - [Pipeline Performance](pipeline_performance.md) — measured wall-times + multi-language benchmarks
 - [Methods Benchmark Dashboard](methods_benchmark_dashboard.md) — one-command artefact regeneration and paper-supporting benchmark provenance
