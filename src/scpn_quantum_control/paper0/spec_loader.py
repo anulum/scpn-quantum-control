@@ -3524,6 +3524,54 @@ def load_psis_field_coupling_integration_p0r02950_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_TWO_TIMESCALE_STRUCTURE_DEFINITIONS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_two_timescale_structure_definitions_validation_specs_2026-05-17.json"
+)
+
+
+def load_two_timescale_structure_definitions_validation_spec(
+    spec_bundle: str | Path = DEFAULT_TWO_TIMESCALE_STRUCTURE_DEFINITIONS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 two timescale structure definitions validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_BIBO_STABILITY_STATEMENT_AND_PROOF_OBLIGATION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_bibo_stability_statement_and_proof_obligation_validation_specs_2026-05-17.json"
+)
+
+
+def load_bibo_stability_statement_and_proof_obligation_validation_spec(
+    spec_bundle: str | Path = DEFAULT_BIBO_STABILITY_STATEMENT_AND_PROOF_OBLIGATION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 bibo stability statement and proof obligation validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_TORUS_SURFACE_FLOW_LYAPUNOV_STYLE_CERTIFICATE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_torus_surface_flow_lyapunov_style_certificate_validation_specs_2026-05-17.json"
+)
+
+
+def load_torus_surface_flow_lyapunov_style_certificate_validation_spec(
+    spec_bundle: str | Path = DEFAULT_TORUS_SURFACE_FLOW_LYAPUNOV_STYLE_CERTIFICATE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 torus surface flow lyapunov style certificate validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -3875,4 +3923,10 @@ __all__ = [
     "load_meta_framework_integrations_p0r02941_validation_spec",
     "DEFAULT_PSIS_FIELD_COUPLING_INTEGRATION_P0R02950_SPEC_BUNDLE",
     "load_psis_field_coupling_integration_p0r02950_validation_spec",
+    "DEFAULT_TWO_TIMESCALE_STRUCTURE_DEFINITIONS_SPEC_BUNDLE",
+    "load_two_timescale_structure_definitions_validation_spec",
+    "DEFAULT_BIBO_STABILITY_STATEMENT_AND_PROOF_OBLIGATION_SPEC_BUNDLE",
+    "load_bibo_stability_statement_and_proof_obligation_validation_spec",
+    "DEFAULT_TORUS_SURFACE_FLOW_LYAPUNOV_STYLE_CERTIFICATE_SPEC_BUNDLE",
+    "load_torus_surface_flow_lyapunov_style_certificate_validation_spec",
 ]
