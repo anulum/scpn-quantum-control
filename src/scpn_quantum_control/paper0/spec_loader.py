@@ -7585,6 +7585,54 @@ def load_mathematics_geometry_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_AI_NOOSPHERE_TECH_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_ai_noosphere_tech_validation_specs_2026-05-17.json"
+)
+
+
+def load_ai_noosphere_tech_validation_spec(
+    spec_bundle: str | Path = DEFAULT_AI_NOOSPHERE_TECH_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 ai noosphere tech validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_NETWORK_COMPLEXITY_SCIENCE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_network_complexity_science_validation_specs_2026-05-17.json"
+)
+
+
+def load_network_complexity_science_validation_spec(
+    spec_bundle: str | Path = DEFAULT_NETWORK_COMPLEXITY_SCIENCE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 network complexity science validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_COLLECTIVE_CULTURAL_AND_EVOLUTIONARY_DYNAMICS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_collective_cultural_and_evolutionary_dynamics_validation_specs_2026-05-17.json"
+)
+
+
+def load_collective_cultural_and_evolutionary_dynamics_validation_spec(
+    spec_bundle: str | Path = DEFAULT_COLLECTIVE_CULTURAL_AND_EVOLUTIONARY_DYNAMICS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 collective cultural and evolutionary dynamics validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -8428,4 +8476,10 @@ __all__ = [
     "load_philosophy_consciousness_validation_spec",
     "DEFAULT_MATHEMATICS_GEOMETRY_SPEC_BUNDLE",
     "load_mathematics_geometry_validation_spec",
+    "DEFAULT_AI_NOOSPHERE_TECH_SPEC_BUNDLE",
+    "load_ai_noosphere_tech_validation_spec",
+    "DEFAULT_NETWORK_COMPLEXITY_SCIENCE_SPEC_BUNDLE",
+    "load_network_complexity_science_validation_spec",
+    "DEFAULT_COLLECTIVE_CULTURAL_AND_EVOLUTIONARY_DYNAMICS_SPEC_BUNDLE",
+    "load_collective_cultural_and_evolutionary_dynamics_validation_spec",
 ]

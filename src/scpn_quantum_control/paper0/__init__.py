@@ -47,6 +47,13 @@ from .advanced_neurobiological_implementation_of_the_scpn_validation import (
     classify_advanced_neurobiological_implementation_of_the_scpn_component,
     validate_advanced_neurobiological_implementation_of_the_scpn_fixture,
 )
+from .ai_noosphere_tech_validation import (
+    AiNoosphereTechConfig,
+    AiNoosphereTechFixtureResult,
+    ai_noosphere_tech_labels,
+    classify_ai_noosphere_tech_component,
+    validate_ai_noosphere_tech_fixture,
+)
 from .anomalous_boundary_validation import (
     AnomalousBoundaryConfig,
     AnomalousBoundaryFixtureResult,
@@ -316,6 +323,13 @@ from .clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica_v
     classify_clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica_component,
     clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica_labels,
     validate_clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica_fixture,
+)
+from .collective_cultural_and_evolutionary_dynamics_validation import (
+    CollectiveCulturalAndEvolutionaryDynamicsConfig,
+    CollectiveCulturalAndEvolutionaryDynamicsFixtureResult,
+    classify_collective_cultural_and_evolutionary_dynamics_component,
+    collective_cultural_and_evolutionary_dynamics_labels,
+    validate_collective_cultural_and_evolutionary_dynamics_fixture,
 )
 from .collective_cultural_layers_validation import (
     CollectiveCulturalLayersConfig,
@@ -1443,6 +1457,13 @@ from .multi_scale_quantum_error_correction_ms_qec_validation import (
     classify_multi_scale_quantum_error_correction_ms_qec_component,
     multi_scale_quantum_error_correction_ms_qec_labels,
     validate_multi_scale_quantum_error_correction_ms_qec_fixture,
+)
+from .network_complexity_science_validation import (
+    NetworkComplexityScienceConfig,
+    NetworkComplexityScienceFixtureResult,
+    classify_network_complexity_science_component,
+    network_complexity_science_labels,
+    validate_network_complexity_science_fixture,
 )
 from .neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi_validation import (
     NeuroendocrineRegulationAndTheHypothalamicPituitaryAdrenalHpaAxiConfig,
@@ -3199,6 +3220,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_collective_cultural_and_evolutionary_dynamics_fixture",
+    "collective_cultural_and_evolutionary_dynamics_labels",
+    "classify_collective_cultural_and_evolutionary_dynamics_component",
+    "CollectiveCulturalAndEvolutionaryDynamicsFixtureResult",
+    "CollectiveCulturalAndEvolutionaryDynamicsConfig",
+    "validate_network_complexity_science_fixture",
+    "network_complexity_science_labels",
+    "classify_network_complexity_science_component",
+    "NetworkComplexityScienceFixtureResult",
+    "NetworkComplexityScienceConfig",
+    "validate_ai_noosphere_tech_fixture",
+    "ai_noosphere_tech_labels",
+    "classify_ai_noosphere_tech_component",
+    "AiNoosphereTechFixtureResult",
+    "AiNoosphereTechConfig",
     "validate_mathematics_geometry_fixture",
     "mathematics_geometry_labels",
     "classify_mathematics_geometry_component",
