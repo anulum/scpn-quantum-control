@@ -11,6 +11,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - 2026-04-30 — Added the 109-subject EEGMMIDB baseline eyes-closed PLV artifact and an eyes-closed-minus-eyes-open comparison artifact.
 
 ### Changed
+- 2026-05-18 — Closed the fourth 10-script Paper 0 generated-builder documentation batch across universal-parameter, core-assumption, cosmology, coherent-sigma, data-fusion, infoton, interaction, Lagrangian, and domain-layer CLIs.
 - 2026-05-18 — Closed the third 10-script Paper 0 generated-builder documentation batch across grammar, citation, clinical, cultural, complexity, component, AI-alignment, and consciousness CLIs.
 - 2026-05-18 — Closed the second 10-script Paper 0 generated-builder documentation batch across Axiom III, n-tilde, stability, biology, and case-study CLIs.
 - 2026-05-18 — Closed the first 10-script Paper 0 Axiom spec-builder documentation-surface batch across Axiom I, II, and III generated CLIs.
