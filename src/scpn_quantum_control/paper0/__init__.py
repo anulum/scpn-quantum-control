@@ -1241,6 +1241,13 @@ from .meta_framework_integrations_p0r04273_validation import (
     meta_framework_integrations_p0r04273_labels,
     validate_meta_framework_integrations_p0r04273_fixture,
 )
+from .meta_framework_integrations_p0r05143_validation import (
+    MetaFrameworkIntegrationsP0r05143Config,
+    MetaFrameworkIntegrationsP0r05143FixtureResult,
+    classify_meta_framework_integrations_p0r05143_component,
+    meta_framework_integrations_p0r05143_labels,
+    validate_meta_framework_integrations_p0r05143_fixture,
+)
 from .meta_framework_integrations_validation import (
     MetaFrameworkIntegrationsConfig,
     MetaFrameworkIntegrationsFixtureResult,
@@ -1462,6 +1469,20 @@ from .predicted_particles_infoton_psi_higgs_validation import (
     classify_predicted_particles_infoton_psi_higgs_component,
     predicted_particles_infoton_psi_higgs_labels,
     validate_predicted_particles_infoton_psi_higgs_fixture,
+)
+from .prediction_i_nv_mea_tests_the_informational_coupling_linformational_validation import (
+    PredictionINvMeaTestsTheInformationalCouplingLinformationalConfig,
+    PredictionINvMeaTestsTheInformationalCouplingLinformationalFixtureResult,
+    classify_prediction_i_nv_mea_tests_the_informational_coupling_linformational_component,
+    prediction_i_nv_mea_tests_the_informational_coupling_linformational_labels,
+    validate_prediction_i_nv_mea_tests_the_informational_coupling_linformational_fixture,
+)
+from .prediction_iii_topos_theoretic_cognitive_hesitation_the_omega_state_validation import (
+    PredictionIiiToposTheoreticCognitiveHesitationTheOmegaStateConfig,
+    PredictionIiiToposTheoreticCognitiveHesitationTheOmegaStateFixtureResult,
+    classify_prediction_iii_topos_theoretic_cognitive_hesitation_the_omega_state_component,
+    prediction_iii_topos_theoretic_cognitive_hesitation_the_omega_state_labels,
+    validate_prediction_iii_topos_theoretic_cognitive_hesitation_the_omega_state_fixture,
 )
 from .predictive_coding_integration_p0r02839_validation import (
     PredictiveCodingIntegrationP0r02839Config,
@@ -2758,6 +2779,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_prediction_i_nv_mea_tests_the_informational_coupling_linformational_fixture",
+    "prediction_i_nv_mea_tests_the_informational_coupling_linformational_labels",
+    "classify_prediction_i_nv_mea_tests_the_informational_coupling_linformational_component",
+    "PredictionINvMeaTestsTheInformationalCouplingLinformationalFixtureResult",
+    "PredictionINvMeaTestsTheInformationalCouplingLinformationalConfig",
+    "validate_meta_framework_integrations_p0r05143_fixture",
+    "meta_framework_integrations_p0r05143_labels",
+    "classify_meta_framework_integrations_p0r05143_component",
+    "MetaFrameworkIntegrationsP0r05143FixtureResult",
+    "MetaFrameworkIntegrationsP0r05143Config",
+    "validate_prediction_iii_topos_theoretic_cognitive_hesitation_the_omega_state_fixture",
+    "prediction_iii_topos_theoretic_cognitive_hesitation_the_omega_state_labels",
+    "classify_prediction_iii_topos_theoretic_cognitive_hesitation_the_omega_state_component",
+    "PredictionIiiToposTheoreticCognitiveHesitationTheOmegaStateFixtureResult",
+    "PredictionIiiToposTheoreticCognitiveHesitationTheOmegaStateConfig",
     "validate_mechanisms_of_criticality_and_control_layers_1_4_fixture",
     "mechanisms_of_criticality_and_control_layers_1_4_labels",
     "classify_mechanisms_of_criticality_and_control_layers_1_4_component",

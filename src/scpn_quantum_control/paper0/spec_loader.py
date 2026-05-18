@@ -6553,6 +6553,56 @@ def load_mechanisms_of_criticality_and_control_layers_1_4_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_PREDICTION_III_TOPOS_THEORETIC_COGNITIVE_HESITATION_THE_OMEGA_STATE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_prediction_iii_topos_theoretic_cognitive_hesitation_the_omega_state_validation_specs_2026-05-17.json"
+)
+
+
+def load_prediction_iii_topos_theoretic_cognitive_hesitation_the_omega_state_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_PREDICTION_III_TOPOS_THEORETIC_COGNITIVE_HESITATION_THE_OMEGA_STATE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 prediction iii topos theoretic cognitive hesitation the omega state validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R05143_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_meta_framework_integrations_p0r05143_validation_specs_2026-05-17.json"
+)
+
+
+def load_meta_framework_integrations_p0r05143_validation_spec(
+    spec_bundle: str | Path = DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R05143_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 meta framework integrations p0r05143 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_PREDICTION_I_NV_MEA_TESTS_THE_INFORMATIONAL_COUPLING_LINFORMATIONAL_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_prediction_i_nv_mea_tests_the_informational_coupling_linformational_validation_specs_2026-05-17.json"
+)
+
+
+def load_prediction_i_nv_mea_tests_the_informational_coupling_linformational_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_PREDICTION_I_NV_MEA_TESTS_THE_INFORMATIONAL_COUPLING_LINFORMATIONAL_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 prediction i nv mea tests the informational coupling linformational validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -7270,4 +7320,10 @@ __all__ = [
     "load_section_1_propofol_gaba_a_potentiation_validation_spec",
     "DEFAULT_MECHANISMS_OF_CRITICALITY_AND_CONTROL_LAYERS_1_4_SPEC_BUNDLE",
     "load_mechanisms_of_criticality_and_control_layers_1_4_validation_spec",
+    "DEFAULT_PREDICTION_III_TOPOS_THEORETIC_COGNITIVE_HESITATION_THE_OMEGA_STATE_SPEC_BUNDLE",
+    "load_prediction_iii_topos_theoretic_cognitive_hesitation_the_omega_state_validation_spec",
+    "DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R05143_SPEC_BUNDLE",
+    "load_meta_framework_integrations_p0r05143_validation_spec",
+    "DEFAULT_PREDICTION_I_NV_MEA_TESTS_THE_INFORMATIONAL_COUPLING_LINFORMATIONAL_SPEC_BUNDLE",
+    "load_prediction_i_nv_mea_tests_the_informational_coupling_linformational_validation_spec",
 ]
