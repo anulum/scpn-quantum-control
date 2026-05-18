@@ -1463,6 +1463,13 @@ from .scpn_iit_correspondence_validation import (
     scpn_iit_correspondence_labels,
     validate_scpn_iit_correspondence_fixture,
 )
+from .section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks_validation import (
+    Section1TheExistentialHolographL9HyperbolicGeometryAndTensorNetworksConfig,
+    Section1TheExistentialHolographL9HyperbolicGeometryAndTensorNetworksFixtureResult,
+    classify_section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks_component,
+    section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks_labels,
+    validate_section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks_fixture,
+)
 from .section_2_1_the_state_space_and_path_space_validation import (
     Section21TheStateSpaceAndPathSpaceConfig,
     Section21TheStateSpaceAndPathSpaceFixtureResult,
@@ -1525,6 +1532,20 @@ from .section_2_the_geometry_of_synchronisation_upde_manifolds_validation import
     classify_section_2_the_geometry_of_synchronisation_upde_manifolds_component,
     section_2_the_geometry_of_synchronisation_upde_manifolds_labels,
     validate_section_2_the_geometry_of_synchronisation_upde_manifolds_fixture,
+)
+from .section_2_the_projective_boundary_l10_emergent_spacetime_and_topological_censors_validation import (
+    Section2TheProjectiveBoundaryL10EmergentSpacetimeAndTopologicalCensorsConfig,
+    Section2TheProjectiveBoundaryL10EmergentSpacetimeAndTopologicalCensorsFixtureResult,
+    classify_section_2_the_projective_boundary_l10_emergent_spacetime_and_topological_censors_component,
+    section_2_the_projective_boundary_l10_emergent_spacetime_and_topological_censors_labels,
+    validate_section_2_the_projective_boundary_l10_emergent_spacetime_and_topological_censors_fixture,
+)
+from .section_2_the_strange_loop_l5_the_geometry_of_self_reference_validation import (
+    Section2TheStrangeLoopL5TheGeometryOfSelfReferenceConfig,
+    Section2TheStrangeLoopL5TheGeometryOfSelfReferenceFixtureResult,
+    classify_section_2_the_strange_loop_l5_the_geometry_of_self_reference_component,
+    section_2_the_strange_loop_l5_the_geometry_of_self_reference_labels,
+    validate_section_2_the_strange_loop_l5_the_geometry_of_self_reference_fixture,
 )
 from .section_3_1_complexity_k_and_the_cardinality_of_the_state_space_validation import (
     Section31ComplexityKAndTheCardinalityOfTheStateSpaceConfig,
@@ -2254,6 +2275,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_section_2_the_projective_boundary_l10_emergent_spacetime_and_topological_censors_fixture",
+    "section_2_the_projective_boundary_l10_emergent_spacetime_and_topological_censors_labels",
+    "classify_section_2_the_projective_boundary_l10_emergent_spacetime_and_topological_censors_component",
+    "Section2TheProjectiveBoundaryL10EmergentSpacetimeAndTopologicalCensorsFixtureResult",
+    "Section2TheProjectiveBoundaryL10EmergentSpacetimeAndTopologicalCensorsConfig",
+    "validate_section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks_fixture",
+    "section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks_labels",
+    "classify_section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks_component",
+    "Section1TheExistentialHolographL9HyperbolicGeometryAndTensorNetworksFixtureResult",
+    "Section1TheExistentialHolographL9HyperbolicGeometryAndTensorNetworksConfig",
+    "validate_section_2_the_strange_loop_l5_the_geometry_of_self_reference_fixture",
+    "section_2_the_strange_loop_l5_the_geometry_of_self_reference_labels",
+    "classify_section_2_the_strange_loop_l5_the_geometry_of_self_reference_component",
+    "Section2TheStrangeLoopL5TheGeometryOfSelfReferenceFixtureResult",
+    "Section2TheStrangeLoopL5TheGeometryOfSelfReferenceConfig",
     "validate_section_2_the_geometry_of_synchronisation_upde_manifolds_fixture",
     "section_2_the_geometry_of_synchronisation_upde_manifolds_labels",
     "classify_section_2_the_geometry_of_synchronisation_upde_manifolds_component",

@@ -5350,6 +5350,57 @@ def load_section_2_the_geometry_of_synchronisation_upde_manifolds_validation_spe
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_2_THE_STRANGE_LOOP_L5_THE_GEOMETRY_OF_SELF_REFERENCE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_the_strange_loop_l5_the_geometry_of_self_reference_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_the_strange_loop_l5_the_geometry_of_self_reference_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_2_THE_STRANGE_LOOP_L5_THE_GEOMETRY_OF_SELF_REFERENCE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 the strange loop l5 the geometry of self reference validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_1_THE_EXISTENTIAL_HOLOGRAPH_L9_HYPERBOLIC_GEOMETRY_AND_TENSOR_NETWORKS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_1_THE_EXISTENTIAL_HOLOGRAPH_L9_HYPERBOLIC_GEOMETRY_AND_TENSOR_NETWORKS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 1 the existential holograph l9 hyperbolic geometry and tensor networks validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_2_THE_PROJECTIVE_BOUNDARY_L10_EMERGENT_SPACETIME_AND_TOPOLOGICAL_CENSORS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_the_projective_boundary_l10_emergent_spacetime_and_topological_censors_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_the_projective_boundary_l10_emergent_spacetime_and_topological_censors_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_2_THE_PROJECTIVE_BOUNDARY_L10_EMERGENT_SPACETIME_AND_TOPOLOGICAL_CENSORS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 the projective boundary l10 emergent spacetime and topological censors validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -5923,4 +5974,10 @@ __all__ = [
     "load_mechanism_and_bidirectional_causality_validation_spec",
     "DEFAULT_SECTION_2_THE_GEOMETRY_OF_SYNCHRONISATION_UPDE_MANIFOLDS_SPEC_BUNDLE",
     "load_section_2_the_geometry_of_synchronisation_upde_manifolds_validation_spec",
+    "DEFAULT_SECTION_2_THE_STRANGE_LOOP_L5_THE_GEOMETRY_OF_SELF_REFERENCE_SPEC_BUNDLE",
+    "load_section_2_the_strange_loop_l5_the_geometry_of_self_reference_validation_spec",
+    "DEFAULT_SECTION_1_THE_EXISTENTIAL_HOLOGRAPH_L9_HYPERBOLIC_GEOMETRY_AND_TENSOR_NETWORKS_SPEC_BUNDLE",
+    "load_section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks_validation_spec",
+    "DEFAULT_SECTION_2_THE_PROJECTIVE_BOUNDARY_L10_EMERGENT_SPACETIME_AND_TOPOLOGICAL_CENSORS_SPEC_BUNDLE",
+    "load_section_2_the_projective_boundary_l10_emergent_spacetime_and_topological_censors_validation_spec",
 ]
