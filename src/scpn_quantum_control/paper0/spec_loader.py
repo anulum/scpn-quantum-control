@@ -8027,6 +8027,56 @@ def load_ix_the_participatory_universe_observation_as_construction_validation_sp
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_XI_THE_MATHEMATICS_OF_HIERARCHY_AND_SCALE_INVARIANCE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_xi_the_mathematics_of_hierarchy_and_scale_invariance_validation_specs_2026-05-17.json"
+)
+
+
+def load_xi_the_mathematics_of_hierarchy_and_scale_invariance_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_XI_THE_MATHEMATICS_OF_HIERARCHY_AND_SCALE_INVARIANCE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 xi the mathematics of hierarchy and scale invariance validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_XIII_THE_CONSTRUCTIVE_ROLE_OF_NOISE_MSR_AND_NIS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_xiii_the_constructive_role_of_noise_msr_and_nis_validation_specs_2026-05-17.json"
+)
+
+
+def load_xiii_the_constructive_role_of_noise_msr_and_nis_validation_spec(
+    spec_bundle: str | Path = DEFAULT_XIII_THE_CONSTRUCTIVE_ROLE_OF_NOISE_MSR_AND_NIS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 xiii the constructive role of noise msr and nis validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_PHYSICS_OF_TELEOLOGY_AND_THE_ORIGIN_OF_ETHICS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_physics_of_teleology_and_the_origin_of_ethics_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_physics_of_teleology_and_the_origin_of_ethics_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_PHYSICS_OF_TELEOLOGY_AND_THE_ORIGIN_OF_ETHICS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the physics of teleology and the origin of ethics validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -8924,4 +8974,10 @@ __all__ = [
     "load_vi_the_unified_geometric_principle_ugp_validation_spec",
     "DEFAULT_IX_THE_PARTICIPATORY_UNIVERSE_OBSERVATION_AS_CONSTRUCTION_SPEC_BUNDLE",
     "load_ix_the_participatory_universe_observation_as_construction_validation_spec",
+    "DEFAULT_XI_THE_MATHEMATICS_OF_HIERARCHY_AND_SCALE_INVARIANCE_SPEC_BUNDLE",
+    "load_xi_the_mathematics_of_hierarchy_and_scale_invariance_validation_spec",
+    "DEFAULT_XIII_THE_CONSTRUCTIVE_ROLE_OF_NOISE_MSR_AND_NIS_SPEC_BUNDLE",
+    "load_xiii_the_constructive_role_of_noise_msr_and_nis_validation_spec",
+    "DEFAULT_THE_PHYSICS_OF_TELEOLOGY_AND_THE_ORIGIN_OF_ETHICS_SPEC_BUNDLE",
+    "load_the_physics_of_teleology_and_the_origin_of_ethics_validation_spec",
 ]

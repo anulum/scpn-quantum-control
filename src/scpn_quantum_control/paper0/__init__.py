@@ -3041,6 +3041,13 @@ from .the_physics_of_teleology_a_derivation_of_the_ethical_functional_validation
     the_physics_of_teleology_a_derivation_of_the_ethical_functional_labels,
     validate_the_physics_of_teleology_a_derivation_of_the_ethical_functional_fixture,
 )
+from .the_physics_of_teleology_and_the_origin_of_ethics_validation import (
+    ThePhysicsOfTeleologyAndTheOriginOfEthicsConfig,
+    ThePhysicsOfTeleologyAndTheOriginOfEthicsFixtureResult,
+    classify_the_physics_of_teleology_and_the_origin_of_ethics_component,
+    the_physics_of_teleology_and_the_origin_of_ethics_labels,
+    validate_the_physics_of_teleology_and_the_origin_of_ethics_fixture,
+)
 from .the_pseudoscalar_coupling_validation import (
     ThePseudoscalarCouplingConfig,
     ThePseudoscalarCouplingFixtureResult,
@@ -3386,8 +3393,37 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
     validate_viii_the_evolutionary_trajectory_of_the_brain_body_system_fixture,
     viii_the_evolutionary_trajectory_of_the_brain_body_system_labels,
 )
+from .xi_the_mathematics_of_hierarchy_and_scale_invariance_validation import (
+    XiTheMathematicsOfHierarchyAndScaleInvarianceConfig,
+    XiTheMathematicsOfHierarchyAndScaleInvarianceFixtureResult,
+    classify_xi_the_mathematics_of_hierarchy_and_scale_invariance_component,
+    validate_xi_the_mathematics_of_hierarchy_and_scale_invariance_fixture,
+    xi_the_mathematics_of_hierarchy_and_scale_invariance_labels,
+)
+from .xiii_the_constructive_role_of_noise_msr_and_nis_validation import (
+    XiiiTheConstructiveRoleOfNoiseMsrAndNisConfig,
+    XiiiTheConstructiveRoleOfNoiseMsrAndNisFixtureResult,
+    classify_xiii_the_constructive_role_of_noise_msr_and_nis_component,
+    validate_xiii_the_constructive_role_of_noise_msr_and_nis_fixture,
+    xiii_the_constructive_role_of_noise_msr_and_nis_labels,
+)
 
 __all__ = [
+    "validate_the_physics_of_teleology_and_the_origin_of_ethics_fixture",
+    "the_physics_of_teleology_and_the_origin_of_ethics_labels",
+    "classify_the_physics_of_teleology_and_the_origin_of_ethics_component",
+    "ThePhysicsOfTeleologyAndTheOriginOfEthicsFixtureResult",
+    "ThePhysicsOfTeleologyAndTheOriginOfEthicsConfig",
+    "validate_xiii_the_constructive_role_of_noise_msr_and_nis_fixture",
+    "xiii_the_constructive_role_of_noise_msr_and_nis_labels",
+    "classify_xiii_the_constructive_role_of_noise_msr_and_nis_component",
+    "XiiiTheConstructiveRoleOfNoiseMsrAndNisFixtureResult",
+    "XiiiTheConstructiveRoleOfNoiseMsrAndNisConfig",
+    "validate_xi_the_mathematics_of_hierarchy_and_scale_invariance_fixture",
+    "xi_the_mathematics_of_hierarchy_and_scale_invariance_labels",
+    "classify_xi_the_mathematics_of_hierarchy_and_scale_invariance_component",
+    "XiTheMathematicsOfHierarchyAndScaleInvarianceFixtureResult",
+    "XiTheMathematicsOfHierarchyAndScaleInvarianceConfig",
     "validate_ix_the_participatory_universe_observation_as_construction_fixture",
     "ix_the_participatory_universe_observation_as_construction_labels",
     "classify_ix_the_participatory_universe_observation_as_construction_component",
