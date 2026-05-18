@@ -870,6 +870,13 @@ from .meta_framework_integrations_p0r03025_validation import (
     meta_framework_integrations_p0r03025_labels,
     validate_meta_framework_integrations_p0r03025_fixture,
 )
+from .meta_framework_integrations_p0r03139_validation import (
+    MetaFrameworkIntegrationsP0r03139Config,
+    MetaFrameworkIntegrationsP0r03139FixtureResult,
+    classify_meta_framework_integrations_p0r03139_component,
+    meta_framework_integrations_p0r03139_labels,
+    validate_meta_framework_integrations_p0r03139_fixture,
+)
 from .meta_framework_integrations_validation import (
     MetaFrameworkIntegrationsConfig,
     MetaFrameworkIntegrationsFixtureResult,
@@ -1176,6 +1183,13 @@ from .section_3_memory_capacity_bekenstein_hawking_bound_validation import (
     section_3_memory_capacity_bekenstein_hawking_bound_labels,
     validate_section_3_memory_capacity_bekenstein_hawking_bound_fixture,
 )
+from .section_4_1_the_cosmic_algorithm_hpc_active_inference_validation import (
+    Section41TheCosmicAlgorithmHpcActiveInferenceConfig,
+    Section41TheCosmicAlgorithmHpcActiveInferenceFixtureResult,
+    classify_section_4_1_the_cosmic_algorithm_hpc_active_inference_component,
+    section_4_1_the_cosmic_algorithm_hpc_active_inference_labels,
+    validate_section_4_1_the_cosmic_algorithm_hpc_active_inference_fixture,
+)
 from .section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_p0r02810_validation import (
     Section15LayerSummaryTable32TheDynamicSpineTheUnifiedPhaseDynamicsP0r02810Config,
     Section15LayerSummaryTable32TheDynamicSpineTheUnifiedPhaseDynamicsP0r02810FixtureResult,
@@ -1403,6 +1417,13 @@ from .the_mechanism_of_influence_validation import (
     the_mechanism_of_influence_labels,
     validate_the_mechanism_of_influence_fixture,
 )
+from .the_mechanism_of_interaction_validation import (
+    TheMechanismOfInteractionConfig,
+    TheMechanismOfInteractionFixtureResult,
+    classify_the_mechanism_of_interaction_component,
+    the_mechanism_of_interaction_labels,
+    validate_the_mechanism_of_interaction_fixture,
+)
 from .the_psis_field_as_the_target_setter_validation import (
     ThePsisFieldAsTheTargetSetterConfig,
     ThePsisFieldAsTheTargetSetterFixtureResult,
@@ -1582,6 +1603,21 @@ from .validation_strategy import (
 )
 
 __all__ = [
+    "validate_section_4_1_the_cosmic_algorithm_hpc_active_inference_fixture",
+    "section_4_1_the_cosmic_algorithm_hpc_active_inference_labels",
+    "classify_section_4_1_the_cosmic_algorithm_hpc_active_inference_component",
+    "Section41TheCosmicAlgorithmHpcActiveInferenceFixtureResult",
+    "Section41TheCosmicAlgorithmHpcActiveInferenceConfig",
+    "validate_the_mechanism_of_interaction_fixture",
+    "the_mechanism_of_interaction_labels",
+    "classify_the_mechanism_of_interaction_component",
+    "TheMechanismOfInteractionFixtureResult",
+    "TheMechanismOfInteractionConfig",
+    "validate_meta_framework_integrations_p0r03139_fixture",
+    "meta_framework_integrations_p0r03139_labels",
+    "classify_meta_framework_integrations_p0r03139_component",
+    "MetaFrameworkIntegrationsP0r03139FixtureResult",
+    "MetaFrameworkIntegrationsP0r03139Config",
     "validate_the_stabiliser_transfer_lemma_a_quantitative_bridge_from_memory_to_bound_fixture",
     "the_stabiliser_transfer_lemma_a_quantitative_bridge_from_memory_to_bound_labels",
     "classify_the_stabiliser_transfer_lemma_a_quantitative_bridge_from_memory_to_bound_component",

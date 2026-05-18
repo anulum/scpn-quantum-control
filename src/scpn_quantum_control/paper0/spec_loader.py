@@ -3768,6 +3768,55 @@ def load_the_stabiliser_transfer_lemma_a_quantitative_bridge_from_memory_to_boun
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03139_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_meta_framework_integrations_p0r03139_validation_specs_2026-05-17.json"
+)
+
+
+def load_meta_framework_integrations_p0r03139_validation_spec(
+    spec_bundle: str | Path = DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03139_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 meta framework integrations p0r03139 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_MECHANISM_OF_INTERACTION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_mechanism_of_interaction_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_mechanism_of_interaction_validation_spec(
+    spec_bundle: str | Path = DEFAULT_THE_MECHANISM_OF_INTERACTION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the mechanism of interaction validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_4_1_THE_COSMIC_ALGORITHM_HPC_ACTIVE_INFERENCE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_4_1_the_cosmic_algorithm_hpc_active_inference_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_4_1_the_cosmic_algorithm_hpc_active_inference_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_4_1_THE_COSMIC_ALGORITHM_HPC_ACTIVE_INFERENCE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 4 1 the cosmic algorithm hpc active inference validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -4149,4 +4198,10 @@ __all__ = [
     "load_the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance_validation_spec",
     "DEFAULT_THE_STABILISER_TRANSFER_LEMMA_A_QUANTITATIVE_BRIDGE_FROM_MEMORY_TO_BOUND_SPEC_BUNDLE",
     "load_the_stabiliser_transfer_lemma_a_quantitative_bridge_from_memory_to_bound_validation_spec",
+    "DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03139_SPEC_BUNDLE",
+    "load_meta_framework_integrations_p0r03139_validation_spec",
+    "DEFAULT_THE_MECHANISM_OF_INTERACTION_SPEC_BUNDLE",
+    "load_the_mechanism_of_interaction_validation_spec",
+    "DEFAULT_SECTION_4_1_THE_COSMIC_ALGORITHM_HPC_ACTIVE_INFERENCE_SPEC_BUNDLE",
+    "load_section_4_1_the_cosmic_algorithm_hpc_active_inference_validation_spec",
 ]
