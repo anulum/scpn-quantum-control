@@ -86,7 +86,14 @@ def test_deterministic_phase_stream_is_reproducible():
 
 
 def test_coupling_weighted_reconstruction_payload_records_threshold_scan():
-    payload = build_coupling_weighted_reconstruction_payload(n_layers=4, seed=7)
+    payload = build_coupling_weighted_reconstruction_payload(
+        n_layers=4,
+        seed=7,
+        replay_count=8,
+        confidence_level=0.95,
+        promotion_tolerance=0.02,
+        preregistered_dataset_id=None,
+    )
 
     assert payload["construction"] == "K_ij_abs_cos_phase_difference_flag_complex"
     assert payload["n_layers"] == 4
@@ -94,3 +101,7 @@ def test_coupling_weighted_reconstruction_payload_records_threshold_scan():
     assert payload["promotes_target"] is False
     assert len(payload["threshold_results"]) > 1
     assert {"threshold", "beta_1", "p_h1"}.issubset(payload["threshold_results"][0])
+    assert payload["uncertainty_replay"]["replay_count"] == 8
+    assert payload["uncertainty_replay"]["confidence_level"] == 0.95
+    assert payload["uncertainty_replay"]["preregistered_dataset_id"] is None
+    assert payload["uncertainty_replay"]["promotes_target"] is False

@@ -17,6 +17,7 @@ from scpn_quantum_control.analysis.tcbo_weighted_complex import (
     coupling_weighted_edge_matrix,
     tcbo_weighted_complex,
     tcbo_weighted_threshold_scan,
+    tcbo_weighted_uncertainty_replay,
 )
 
 
@@ -145,6 +146,42 @@ def test_threshold_scan_only_promotes_with_explicit_tolerance() -> None:
     assert scan.promotes_target is True
 
 
+def test_uncertainty_replay_requires_preregistration_for_promotion() -> None:
+    K = np.array(
+        [
+            [0.0, 1.0, 0.0, 1.0],
+            [1.0, 0.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0, 1.0],
+            [1.0, 0.0, 1.0, 0.0],
+        ]
+    )
+
+    unregistered = tcbo_weighted_uncertainty_replay(
+        K,
+        n_replays=8,
+        seed=17,
+        thresholds=np.array([0.0]),
+        target_p_h1=1.0 / 3.0,
+        promotion_tolerance=0.0,
+    )
+    registered = tcbo_weighted_uncertainty_replay(
+        K,
+        n_replays=8,
+        seed=17,
+        thresholds=np.array([0.0]),
+        target_p_h1=1.0 / 3.0,
+        promotion_tolerance=0.0,
+        preregistered_dataset_id="tcbo-square-cycle-fixture-v1",
+    )
+
+    assert unregistered.uncertainty_crosses_target is True
+    assert unregistered.promotes_target is False
+    assert registered.promotes_target is True
+    assert registered.p_h1_ci_low == pytest.approx(1.0 / 3.0)
+    assert registered.p_h1_ci_high == pytest.approx(1.0 / 3.0)
+    assert len(registered.p_h1_samples) == 8
+
+
 def test_rejects_non_symmetric_coupling_matrix() -> None:
     K = np.array([[0.0, 1.0], [0.5, 0.0]])
     theta = np.zeros(2)
@@ -192,3 +229,22 @@ def test_threshold_scan_rejects_invalid_scan_contract(kwargs, match) -> None:
 
     with pytest.raises(ValueError, match=match):
         tcbo_weighted_threshold_scan(K, theta, **kwargs)
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "match"),
+    [
+        ({"n_replays": 0}, "n_replays"),
+        ({"n_replays": True}, "n_replays"),
+        ({"seed": False}, "seed"),
+        ({"confidence_level": 1.0}, "confidence_level"),
+        ({"confidence_level": np.nan}, "confidence_level"),
+        ({"promotion_tolerance": -0.01}, "promotion_tolerance"),
+        ({"preregistered_dataset_id": "   "}, "preregistered_dataset_id"),
+    ],
+)
+def test_uncertainty_replay_rejects_invalid_contract(kwargs, match) -> None:
+    K = np.array([[0.0, 1.0], [1.0, 0.0]])
+
+    with pytest.raises(ValueError, match=match):
+        tcbo_weighted_uncertainty_replay(K, **kwargs)

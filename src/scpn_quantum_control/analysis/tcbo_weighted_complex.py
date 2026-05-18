@@ -52,6 +52,28 @@ class TCBOWeightedThresholdScan:
     promotes_target: bool
 
 
+@dataclass(frozen=True)
+class TCBOWeightedReplayUncertainty:
+    """Replay uncertainty summary for a preregistered TCBO reconstruction."""
+
+    replay_count: int
+    seed: int
+    target_p_h1: float
+    confidence_level: float
+    p_h1_mean: float
+    p_h1_std: float
+    p_h1_ci_low: float
+    p_h1_ci_high: float
+    best_abs_error_mean: float
+    best_abs_error_max: float
+    best_threshold_mean: float
+    uncertainty_crosses_target: bool
+    preregistered_dataset_id: str | None
+    promotes_target: bool
+    p_h1_samples: tuple[float, ...]
+    best_threshold_samples: tuple[float, ...]
+
+
 def _validated_coupling_matrix(K: np.ndarray) -> np.ndarray:
     coupling = np.asarray(K, dtype=float)
     if coupling.ndim != 2 or coupling.shape[0] != coupling.shape[1]:
@@ -80,6 +102,18 @@ def _validated_threshold(threshold: float) -> float:
     value = float(threshold)
     if not np.isfinite(value) or not 0.0 <= value <= 1.0:
         raise ValueError("threshold must be in [0, 1].")
+    return value
+
+
+def _validated_positive_int(value: int, *, name: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        raise ValueError(f"{name} must be a positive integer.")
+    return value
+
+
+def _validated_seed(value: int) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError("seed must be an integer.")
     return value
 
 
@@ -259,4 +293,96 @@ def tcbo_weighted_threshold_scan(
         best_p_h1=best.p_h1,
         best_abs_error=float(errors[best_idx]),
         promotes_target=bool(promotes),
+    )
+
+
+def tcbo_weighted_uncertainty_replay(
+    K: np.ndarray,
+    *,
+    n_replays: int = 128,
+    seed: int = 1701,
+    thresholds: np.ndarray | None = None,
+    target_p_h1: float = 0.72,
+    confidence_level: float = 0.95,
+    promotion_tolerance: float = 0.02,
+    preregistered_dataset_id: str | None = None,
+) -> TCBOWeightedReplayUncertainty:
+    """Replay TCBO threshold scans over phase draws and report uncertainty.
+
+    This helper is the no-QPU promotion gate for the reconstructed TCBO
+    coupling-weighted complex. It does not promote ``p_h1 = 0.72`` from a single
+    threshold scan. Promotion requires an explicit preregistered dataset
+    identifier, a confidence interval crossing the target, and a mean absolute
+    error no larger than the stated tolerance.
+    """
+    coupling = _validated_coupling_matrix(K)
+    replay_count = _validated_positive_int(n_replays, name="n_replays")
+    replay_seed = _validated_seed(seed)
+
+    target = float(target_p_h1)
+    if not np.isfinite(target) or not 0.0 <= target <= 1.0:
+        raise ValueError("target_p_h1 must be in [0, 1].")
+
+    confidence = float(confidence_level)
+    if not np.isfinite(confidence) or not 0.0 < confidence < 1.0:
+        raise ValueError("confidence_level must be in (0, 1).")
+
+    tolerance = float(promotion_tolerance)
+    if not np.isfinite(tolerance) or tolerance < 0.0:
+        raise ValueError("promotion_tolerance must be finite and non-negative.")
+
+    if preregistered_dataset_id is not None:
+        preregistered_dataset_id = preregistered_dataset_id.strip()
+        if not preregistered_dataset_id:
+            raise ValueError("preregistered_dataset_id must be non-empty when provided.")
+
+    rng = np.random.default_rng(replay_seed)
+    p_h1_samples: list[float] = []
+    best_threshold_samples: list[float] = []
+    best_abs_errors: list[float] = []
+
+    for _ in range(replay_count):
+        theta = np.asarray(
+            rng.uniform(0.0, 2.0 * np.pi, size=coupling.shape[0]),
+            dtype=float,
+        )
+        scan = tcbo_weighted_threshold_scan(
+            coupling,
+            theta,
+            thresholds=thresholds,
+            target_p_h1=target,
+            promotion_tolerance=tolerance,
+        )
+        p_h1_samples.append(scan.best_p_h1)
+        best_threshold_samples.append(scan.best_threshold)
+        best_abs_errors.append(scan.best_abs_error)
+
+    p_h1_array = np.asarray(p_h1_samples, dtype=float)
+    threshold_array = np.asarray(best_threshold_samples, dtype=float)
+    error_array = np.asarray(best_abs_errors, dtype=float)
+    alpha = 1.0 - confidence
+    ci_low, ci_high = np.quantile(p_h1_array, [alpha / 2.0, 1.0 - alpha / 2.0])
+    crosses = bool(ci_low <= target <= ci_high)
+    mean_abs_error = float(np.mean(error_array))
+    promotes = bool(
+        preregistered_dataset_id is not None and crosses and mean_abs_error <= tolerance
+    )
+
+    return TCBOWeightedReplayUncertainty(
+        replay_count=replay_count,
+        seed=replay_seed,
+        target_p_h1=target,
+        confidence_level=confidence,
+        p_h1_mean=float(np.mean(p_h1_array)),
+        p_h1_std=float(np.std(p_h1_array, ddof=1)) if replay_count > 1 else 0.0,
+        p_h1_ci_low=float(ci_low),
+        p_h1_ci_high=float(ci_high),
+        best_abs_error_mean=mean_abs_error,
+        best_abs_error_max=float(np.max(error_array)),
+        best_threshold_mean=float(np.mean(threshold_array)),
+        uncertainty_crosses_target=crosses,
+        preregistered_dataset_id=preregistered_dataset_id,
+        promotes_target=promotes,
+        p_h1_samples=tuple(float(value) for value in p_h1_samples),
+        best_threshold_samples=tuple(float(value) for value in best_threshold_samples),
     )

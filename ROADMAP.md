@@ -100,6 +100,14 @@ is copied here.
   against the `0.72` target. The audit runner records this reconstruction
   separately from the legacy delay-embedded observer path; the claim
   remains unpromoted pending preregistered replay with uncertainty.
+- [x] **TCBO `p_h1` replay-uncertainty gate.** Implemented 2026-05-18:
+  `tcbo_weighted_uncertainty_replay()` now turns the remaining TCBO
+  promotion gate into an executable no-QPU replay contract. It samples
+  phase draws over a preregistered coupling matrix, reports confidence
+  intervals and threshold/error distributions, and refuses promotion unless
+  a named preregistered dataset crosses the `0.72` target within the
+  declared tolerance. `scripts/run_tcbo_reproduction_audit.py` exposes the
+  replay count, confidence level, promotion tolerance, and dataset-id gate.
 - [x] **QSVT resource-estimator input hardening.** Implemented
   2026-05-12: the QSVT resource estimator and query-count helpers now
   reject non-square, dimension-mismatched, asymmetric, or non-finite

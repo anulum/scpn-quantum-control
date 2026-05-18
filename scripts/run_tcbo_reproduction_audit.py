@@ -221,11 +221,16 @@ def build_coupling_weighted_reconstruction_payload(
     *,
     n_layers: int,
     seed: int,
+    replay_count: int,
+    confidence_level: float,
+    promotion_tolerance: float,
+    preregistered_dataset_id: str | None,
 ) -> dict[str, Any]:
     """Run the local coupling-weighted simplicial-complex reconstruction."""
 
     from scpn_quantum_control.analysis.tcbo_weighted_complex import (
         tcbo_weighted_threshold_scan,
+        tcbo_weighted_uncertainty_replay,
     )
     from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 
@@ -235,6 +240,15 @@ def build_coupling_weighted_reconstruction_payload(
     theta = rng.uniform(0.0, 2.0 * np.pi, size=n_layers)
     thresholds = np.linspace(0.0, 1.0, 9)
     scan = tcbo_weighted_threshold_scan(K, theta, thresholds=thresholds)
+    uncertainty = tcbo_weighted_uncertainty_replay(
+        K,
+        n_replays=replay_count,
+        seed=seed,
+        thresholds=thresholds,
+        confidence_level=confidence_level,
+        promotion_tolerance=promotion_tolerance,
+        preregistered_dataset_id=preregistered_dataset_id,
+    )
 
     return {
         "construction": "K_ij_abs_cos_phase_difference_flag_complex",
@@ -256,6 +270,22 @@ def build_coupling_weighted_reconstruction_payload(
             }
             for result in scan.results
         ],
+        "uncertainty_replay": {
+            "replay_count": uncertainty.replay_count,
+            "seed": uncertainty.seed,
+            "target_p_h1": uncertainty.target_p_h1,
+            "confidence_level": uncertainty.confidence_level,
+            "p_h1_mean": uncertainty.p_h1_mean,
+            "p_h1_std": uncertainty.p_h1_std,
+            "p_h1_ci_low": uncertainty.p_h1_ci_low,
+            "p_h1_ci_high": uncertainty.p_h1_ci_high,
+            "best_abs_error_mean": uncertainty.best_abs_error_mean,
+            "best_abs_error_max": uncertainty.best_abs_error_max,
+            "best_threshold_mean": uncertainty.best_threshold_mean,
+            "uncertainty_crosses_target": uncertainty.uncertainty_crosses_target,
+            "preregistered_dataset_id": uncertainty.preregistered_dataset_id,
+            "promotes_target": uncertainty.promotes_target,
+        },
     }
 
 
@@ -265,6 +295,10 @@ def build_audit_payload(
     n_layers: int,
     steps: int,
     seed: int,
+    replay_count: int,
+    confidence_level: float,
+    promotion_tolerance: float,
+    preregistered_dataset_id: str | None,
     command: list[str] | None = None,
 ) -> dict[str, Any]:
     """Execute the local TCBO code path and return a serialisable audit payload."""
@@ -297,6 +331,10 @@ def build_audit_payload(
     coupling_weighted_reconstruction = build_coupling_weighted_reconstruction_payload(
         n_layers=n_layers,
         seed=seed,
+        replay_count=replay_count,
+        confidence_level=confidence_level,
+        promotion_tolerance=promotion_tolerance,
+        preregistered_dataset_id=preregistered_dataset_id,
     )
 
     return {
@@ -323,6 +361,10 @@ def build_audit_payload(
             "n_layers": n_layers,
             "steps": steps,
             "seed": seed,
+            "replay_count": replay_count,
+            "confidence_level": confidence_level,
+            "promotion_tolerance": promotion_tolerance,
+            "preregistered_dataset_id": preregistered_dataset_id,
             "synthetic_observer_runs": synthetic_runs,
             "coupled_trace": coupled_run,
             "coupling_weighted_reconstruction": coupling_weighted_reconstruction,
@@ -338,7 +380,7 @@ def build_audit_payload(
                 "The local reconstruction now provides the required "
                 "coupling-weighted simplicial-complex primitive, but it is not "
                 "the executed observer path and has not reproduced 0.72 with "
-                "uncertainty on a preregistered dataset."
+                "uncertainty on an explicitly preregistered dataset."
             ),
             "next_gate": (
                 "Replay the coupling-weighted simplicial-complex reconstruction "
@@ -357,6 +399,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--n-layers", type=int, default=16)
     parser.add_argument("--steps", type=int, default=120)
     parser.add_argument("--seed", type=int, default=1701)
+    parser.add_argument("--replay-count", type=int, default=128)
+    parser.add_argument("--confidence-level", type=float, default=0.95)
+    parser.add_argument("--promotion-tolerance", type=float, default=0.02)
+    parser.add_argument("--preregistered-dataset-id", default="")
     return parser.parse_args(argv)
 
 
@@ -367,6 +413,10 @@ def main(argv: list[str] | None = None) -> int:
         n_layers=int(args.n_layers),
         steps=int(args.steps),
         seed=int(args.seed),
+        replay_count=int(args.replay_count),
+        confidence_level=float(args.confidence_level),
+        promotion_tolerance=float(args.promotion_tolerance),
+        preregistered_dataset_id=args.preregistered_dataset_id or None,
         command=[Path(sys.executable).name, *sys.argv],
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
