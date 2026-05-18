@@ -7876,6 +7876,57 @@ def load_section_1_the_generalised_second_law_gsl_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_THE_PSI_FIELD_AS_A_NEGENTROPY_SOURCE_AND_THE_LANDAUER_COST_OF_COHERENCE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_PSI_FIELD_AS_A_NEGENTROPY_SOURCE_AND_THE_LANDAUER_COST_OF_COHERENCE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the psi field as a negentropy source and the landauer cost of coherence validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_RESOLVING_THE_ERASURE_PARADOX_LOSSY_COMPRESSION_AND_THE_HEAT_SINK_BOUNDA_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_resolving_the_erasure_paradox_lossy_compression_and_the_heat_sink_bounda_validation_specs_2026-05-17.json"
+)
+
+
+def load_resolving_the_erasure_paradox_lossy_compression_and_the_heat_sink_bounda_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_RESOLVING_THE_ERASURE_PARADOX_LOSSY_COMPRESSION_AND_THE_HEAT_SINK_BOUNDA_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 resolving the erasure paradox lossy compression and the heat sink bounda validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_III_THE_SCPN_MEASUREMENT_POSTULATE_IIT_OR_AND_QZE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_iii_the_scpn_measurement_postulate_iit_or_and_qze_validation_specs_2026-05-17.json"
+)
+
+
+def load_iii_the_scpn_measurement_postulate_iit_or_and_qze_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_III_THE_SCPN_MEASUREMENT_POSTULATE_IIT_OR_AND_QZE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 iii the scpn measurement postulate iit or and qze validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -8755,4 +8806,10 @@ __all__ = [
     "load_section_3_retrocausality_via_the_two_state_vector_formalism_tsvf_validation_spec",
     "DEFAULT_SECTION_1_THE_GENERALISED_SECOND_LAW_GSL_SPEC_BUNDLE",
     "load_section_1_the_generalised_second_law_gsl_validation_spec",
+    "DEFAULT_THE_PSI_FIELD_AS_A_NEGENTROPY_SOURCE_AND_THE_LANDAUER_COST_OF_COHERENCE_SPEC_BUNDLE",
+    "load_the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence_validation_spec",
+    "DEFAULT_RESOLVING_THE_ERASURE_PARADOX_LOSSY_COMPRESSION_AND_THE_HEAT_SINK_BOUNDA_SPEC_BUNDLE",
+    "load_resolving_the_erasure_paradox_lossy_compression_and_the_heat_sink_bounda_validation_spec",
+    "DEFAULT_III_THE_SCPN_MEASUREMENT_POSTULATE_IIT_OR_AND_QZE_SPEC_BUNDLE",
+    "load_iii_the_scpn_measurement_postulate_iit_or_and_qze_validation_spec",
 ]

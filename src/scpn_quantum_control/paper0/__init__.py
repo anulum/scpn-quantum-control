@@ -1007,6 +1007,13 @@ from .iii_the_extracellular_milieu_ecm_and_pnns_l3_l4_validation import (
     iii_the_extracellular_milieu_ecm_and_pnns_l3_l4_labels,
     validate_iii_the_extracellular_milieu_ecm_and_pnns_l3_l4_fixture,
 )
+from .iii_the_scpn_measurement_postulate_iit_or_and_qze_validation import (
+    IiiTheScpnMeasurementPostulateIitOrAndQzeConfig,
+    IiiTheScpnMeasurementPostulateIitOrAndQzeFixtureResult,
+    classify_iii_the_scpn_measurement_postulate_iit_or_and_qze_component,
+    iii_the_scpn_measurement_postulate_iit_or_and_qze_labels,
+    validate_iii_the_scpn_measurement_postulate_iit_or_and_qze_fixture,
+)
 from .information_geometric_lift_of_upde_validation import (
     InformationGeometricLiftOfUpdeConfig,
     InformationGeometricLiftOfUpdeFixtureResult,
@@ -1980,6 +1987,13 @@ from .resolving_the_epigenetic_time_scale_disconnect_conformational_spin_locki_v
     classify_resolving_the_epigenetic_time_scale_disconnect_conformational_spin_locki_component,
     resolving_the_epigenetic_time_scale_disconnect_conformational_spin_locki_labels,
     validate_resolving_the_epigenetic_time_scale_disconnect_conformational_spin_locki_fixture,
+)
+from .resolving_the_erasure_paradox_lossy_compression_and_the_heat_sink_bounda_validation import (
+    ResolvingTheErasureParadoxLossyCompressionAndTheHeatSinkBoundaConfig,
+    ResolvingTheErasureParadoxLossyCompressionAndTheHeatSinkBoundaFixtureResult,
+    classify_resolving_the_erasure_paradox_lossy_compression_and_the_heat_sink_bounda_component,
+    resolving_the_erasure_paradox_lossy_compression_and_the_heat_sink_bounda_labels,
+    validate_resolving_the_erasure_paradox_lossy_compression_and_the_heat_sink_bounda_fixture,
 )
 from .resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state_validation import (
     ResolvingTheObservabilityParadoxL16AsAPomdpAndTheBeliefStateConfig,
@@ -3006,6 +3020,13 @@ from .the_pseudoscalar_coupling_validation import (
     the_pseudoscalar_coupling_labels,
     validate_the_pseudoscalar_coupling_fixture,
 )
+from .the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence_validation import (
+    ThePsiFieldAsANegentropySourceAndTheLandauerCostOfCoherenceConfig,
+    ThePsiFieldAsANegentropySourceAndTheLandauerCostOfCoherenceFixtureResult,
+    classify_the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence_component,
+    the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence_labels,
+    validate_the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence_fixture,
+)
 from .the_psis_field_as_the_target_setter_validation import (
     ThePsisFieldAsTheTargetSetterConfig,
     ThePsisFieldAsTheTargetSetterFixtureResult,
@@ -3325,6 +3346,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_iii_the_scpn_measurement_postulate_iit_or_and_qze_fixture",
+    "iii_the_scpn_measurement_postulate_iit_or_and_qze_labels",
+    "classify_iii_the_scpn_measurement_postulate_iit_or_and_qze_component",
+    "IiiTheScpnMeasurementPostulateIitOrAndQzeFixtureResult",
+    "IiiTheScpnMeasurementPostulateIitOrAndQzeConfig",
+    "validate_resolving_the_erasure_paradox_lossy_compression_and_the_heat_sink_bounda_fixture",
+    "resolving_the_erasure_paradox_lossy_compression_and_the_heat_sink_bounda_labels",
+    "classify_resolving_the_erasure_paradox_lossy_compression_and_the_heat_sink_bounda_component",
+    "ResolvingTheErasureParadoxLossyCompressionAndTheHeatSinkBoundaFixtureResult",
+    "ResolvingTheErasureParadoxLossyCompressionAndTheHeatSinkBoundaConfig",
+    "validate_the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence_fixture",
+    "the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence_labels",
+    "classify_the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence_component",
+    "ThePsiFieldAsANegentropySourceAndTheLandauerCostOfCoherenceFixtureResult",
+    "ThePsiFieldAsANegentropySourceAndTheLandauerCostOfCoherenceConfig",
     "validate_section_1_the_generalised_second_law_gsl_fixture",
     "section_1_the_generalised_second_law_gsl_labels",
     "classify_section_1_the_generalised_second_law_gsl_component",
