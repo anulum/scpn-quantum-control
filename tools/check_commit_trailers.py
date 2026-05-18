@@ -89,6 +89,16 @@ HISTORICAL_EXEMPT_SHAS: frozenset[str] = frozenset(
         # protected branch UI without the required trailer; branch protection
         # blocks retroactive repair by force-push.
         "4bbcc87",
+        # 2026-05-18: five Dependabot squash merges were created through
+        # the protected branch UI with a literal escaped "\n\n" before the
+        # trailer, so Git did not parse a real Co-Authored-By trailer.
+        # Force-amending them would rewrite published main history; the
+        # waiver is recorded in docs/internal/AUDIT_INDEX.md.
+        "d07a7ea",
+        "5f4df4a",
+        "57b6545",
+        "d44bad7",
+        "9e70460",
         # Pre-2026-04-17 commits whose subjects used banned words
         # ("comprehensive", "robust", "elite") before
         # `feedback_no_internal_quality_labels` + the anti-slop hook
