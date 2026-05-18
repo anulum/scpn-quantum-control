@@ -14,9 +14,22 @@ on:
   push:
     branches: [main]
     paths:
+      - ".dockerignore"
+      - ".github/workflows/docker.yml"
       - "Dockerfile"
       - "pyproject.toml"
+      - "requirements*.txt"
       - "src/**"
+      - "tests/**"
+      - "tools/**"
+      - "scripts/**"
+      - "docs/**"
+      - "paper/**"
+      - "examples/**"
+      - "notebooks/**"
+      - "results/**"
+      - "data/**"
+      - "figures/**"
   workflow_dispatch:
 
 jobs:
