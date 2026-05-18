@@ -4559,6 +4559,56 @@ def load_integration_of_cef_into_the_path_integral_formalism_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_THE_UNIVERSE_S_BUILT_IN_MORAL_COMPASS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_universe_s_built_in_moral_compass_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_universe_s_built_in_moral_compass_validation_spec(
+    spec_bundle: str | Path = DEFAULT_THE_UNIVERSE_S_BUILT_IN_MORAL_COMPASS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the universe s built in moral compass validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_PHYSICAL_EQUIVALENCE_OF_SUSTAINABLE_ETHICAL_COHERENCE_AND_CAUSAL_PAT_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_PHYSICAL_EQUIVALENCE_OF_SUSTAINABLE_ETHICAL_COHERENCE_AND_CAUSAL_PAT_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the physical equivalence of sustainable ethical coherence and causal pat validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_2_A_PATH_INTEGRAL_FORMULATION_OF_CAUSAL_PATH_ENTROPY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_a_path_integral_formulation_of_causal_path_entropy_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_a_path_integral_formulation_of_causal_path_entropy_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_2_A_PATH_INTEGRAL_FORMULATION_OF_CAUSAL_PATH_ENTROPY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 a path integral formulation of causal path entropy validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -5036,4 +5086,10 @@ __all__ = [
     "load_the_path_integral_is_the_sum_of_all_h_int_events_validation_spec",
     "DEFAULT_INTEGRATION_OF_CEF_INTO_THE_PATH_INTEGRAL_FORMALISM_SPEC_BUNDLE",
     "load_integration_of_cef_into_the_path_integral_formalism_validation_spec",
+    "DEFAULT_THE_UNIVERSE_S_BUILT_IN_MORAL_COMPASS_SPEC_BUNDLE",
+    "load_the_universe_s_built_in_moral_compass_validation_spec",
+    "DEFAULT_THE_PHYSICAL_EQUIVALENCE_OF_SUSTAINABLE_ETHICAL_COHERENCE_AND_CAUSAL_PAT_SPEC_BUNDLE",
+    "load_the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat_validation_spec",
+    "DEFAULT_SECTION_2_A_PATH_INTEGRAL_FORMULATION_OF_CAUSAL_PATH_ENTROPY_SPEC_BUNDLE",
+    "load_section_2_a_path_integral_formulation_of_causal_path_entropy_validation_spec",
 ]

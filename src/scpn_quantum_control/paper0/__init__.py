@@ -1316,6 +1316,13 @@ from .section_2_7_the_fisher_info_metric_the_geometry_of_interaction_validation 
     section_2_7_the_fisher_info_metric_the_geometry_of_interaction_labels,
     validate_section_2_7_the_fisher_info_metric_the_geometry_of_interaction_fixture,
 )
+from .section_2_a_path_integral_formulation_of_causal_path_entropy_validation import (
+    Section2APathIntegralFormulationOfCausalPathEntropyConfig,
+    Section2APathIntegralFormulationOfCausalPathEntropyFixtureResult,
+    classify_section_2_a_path_integral_formulation_of_causal_path_entropy_component,
+    section_2_a_path_integral_formulation_of_causal_path_entropy_labels,
+    validate_section_2_a_path_integral_formulation_of_causal_path_entropy_fixture,
+)
 from .section_2_compression_and_meaning_information_geometry_validation import (
     Section2CompressionAndMeaningInformationGeometryConfig,
     Section2CompressionAndMeaningInformationGeometryFixtureResult,
@@ -1676,6 +1683,13 @@ from .the_path_integral_is_the_sum_of_all_h_int_events_validation import (
     the_path_integral_is_the_sum_of_all_h_int_events_labels,
     validate_the_path_integral_is_the_sum_of_all_h_int_events_fixture,
 )
+from .the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat_validation import (
+    ThePhysicalEquivalenceOfSustainableEthicalCoherenceAndCausalPatConfig,
+    ThePhysicalEquivalenceOfSustainableEthicalCoherenceAndCausalPatFixtureResult,
+    classify_the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat_component,
+    the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat_labels,
+    validate_the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat_fixture,
+)
 from .the_physical_mechanism_of_downward_causation_amplification_of_intent_validation import (
     ThePhysicalMechanismOfDownwardCausationAmplificationOfIntentConfig,
     ThePhysicalMechanismOfDownwardCausationAmplificationOfIntentFixtureResult,
@@ -1773,6 +1787,13 @@ from .the_ultimate_feedback_loop_validation import (
     classify_the_ultimate_feedback_loop_component,
     the_ultimate_feedback_loop_labels,
     validate_the_ultimate_feedback_loop_fixture,
+)
+from .the_universe_s_built_in_moral_compass_validation import (
+    TheUniverseSBuiltInMoralCompassConfig,
+    TheUniverseSBuiltInMoralCompassFixtureResult,
+    classify_the_universe_s_built_in_moral_compass_component,
+    the_universe_s_built_in_moral_compass_labels,
+    validate_the_universe_s_built_in_moral_compass_fixture,
 )
 from .three_channel_coupling_validation import (
     ChannelConstraint,
@@ -1918,6 +1939,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_section_2_a_path_integral_formulation_of_causal_path_entropy_fixture",
+    "section_2_a_path_integral_formulation_of_causal_path_entropy_labels",
+    "classify_section_2_a_path_integral_formulation_of_causal_path_entropy_component",
+    "Section2APathIntegralFormulationOfCausalPathEntropyFixtureResult",
+    "Section2APathIntegralFormulationOfCausalPathEntropyConfig",
+    "validate_the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat_fixture",
+    "the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat_labels",
+    "classify_the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat_component",
+    "ThePhysicalEquivalenceOfSustainableEthicalCoherenceAndCausalPatFixtureResult",
+    "ThePhysicalEquivalenceOfSustainableEthicalCoherenceAndCausalPatConfig",
+    "validate_the_universe_s_built_in_moral_compass_fixture",
+    "the_universe_s_built_in_moral_compass_labels",
+    "classify_the_universe_s_built_in_moral_compass_component",
+    "TheUniverseSBuiltInMoralCompassFixtureResult",
+    "TheUniverseSBuiltInMoralCompassConfig",
     "validate_integration_of_cef_into_the_path_integral_formalism_fixture",
     "integration_of_cef_into_the_path_integral_formalism_labels",
     "classify_integration_of_cef_into_the_path_integral_formalism_component",
