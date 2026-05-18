@@ -853,6 +853,13 @@ from .iv_sub_synaptic_and_axonal_architecture_l1_l3_validation import (
     iv_sub_synaptic_and_axonal_architecture_l1_l3_labels,
     validate_iv_sub_synaptic_and_axonal_architecture_l1_l3_fixture,
 )
+from .iv_the_neuro_immuno_endocrine_nie_super_system_validation import (
+    IvTheNeuroImmunoEndocrineNieSuperSystemConfig,
+    IvTheNeuroImmunoEndocrineNieSuperSystemFixtureResult,
+    classify_iv_the_neuro_immuno_endocrine_nie_super_system_component,
+    iv_the_neuro_immuno_endocrine_nie_super_system_labels,
+    validate_iv_the_neuro_immuno_endocrine_nie_super_system_fixture,
+)
 from .l5_active_inference_math_validation import (
     ExpectedFreeEnergyScores,
     L5ActiveInferenceMathConfig,
@@ -1736,6 +1743,13 @@ from .section_2_the_central_void_the_source_validation import (
     section_2_the_central_void_the_source_labels,
     validate_section_2_the_central_void_the_source_fixture,
 )
+from .section_2_the_endocrine_system_and_hpa_axis_stress_response_validation import (
+    Section2TheEndocrineSystemAndHpaAxisStressResponseConfig,
+    Section2TheEndocrineSystemAndHpaAxisStressResponseFixtureResult,
+    classify_section_2_the_endocrine_system_and_hpa_axis_stress_response_component,
+    section_2_the_endocrine_system_and_hpa_axis_stress_response_labels,
+    validate_section_2_the_endocrine_system_and_hpa_axis_stress_response_fixture,
+)
 from .section_2_the_geometry_of_functional_dynamics_l4_validation import (
     Section2TheGeometryOfFunctionalDynamicsL4Config,
     Section2TheGeometryOfFunctionalDynamicsL4FixtureResult,
@@ -2563,6 +2577,13 @@ from .upde_validation import (
     validate_upde_interlayer_fixture,
     validate_upde_natural_gradient_fixture,
 )
+from .v_the_integrated_body_matrix_fascia_and_tensegrity_validation import (
+    VTheIntegratedBodyMatrixFasciaAndTensegrityConfig,
+    VTheIntegratedBodyMatrixFasciaAndTensegrityFixtureResult,
+    classify_v_the_integrated_body_matrix_fascia_and_tensegrity_component,
+    v_the_integrated_body_matrix_fascia_and_tensegrity_labels,
+    validate_v_the_integrated_body_matrix_fascia_and_tensegrity_fixture,
+)
 from .v_the_interface_problem_synthesis_mind_body_field_validation import (
     VTheInterfaceProblemSynthesisMindBodyFieldConfig,
     VTheInterfaceProblemSynthesisMindBodyFieldFixtureResult,
@@ -2611,6 +2632,21 @@ from .vii_pathology_the_disordered_brain_validation import (
 )
 
 __all__ = [
+    "validate_v_the_integrated_body_matrix_fascia_and_tensegrity_fixture",
+    "v_the_integrated_body_matrix_fascia_and_tensegrity_labels",
+    "classify_v_the_integrated_body_matrix_fascia_and_tensegrity_component",
+    "VTheIntegratedBodyMatrixFasciaAndTensegrityFixtureResult",
+    "VTheIntegratedBodyMatrixFasciaAndTensegrityConfig",
+    "validate_section_2_the_endocrine_system_and_hpa_axis_stress_response_fixture",
+    "section_2_the_endocrine_system_and_hpa_axis_stress_response_labels",
+    "classify_section_2_the_endocrine_system_and_hpa_axis_stress_response_component",
+    "Section2TheEndocrineSystemAndHpaAxisStressResponseFixtureResult",
+    "Section2TheEndocrineSystemAndHpaAxisStressResponseConfig",
+    "validate_iv_the_neuro_immuno_endocrine_nie_super_system_fixture",
+    "iv_the_neuro_immuno_endocrine_nie_super_system_labels",
+    "classify_iv_the_neuro_immuno_endocrine_nie_super_system_component",
+    "IvTheNeuroImmunoEndocrineNieSuperSystemFixtureResult",
+    "IvTheNeuroImmunoEndocrineNieSuperSystemConfig",
     "validate_section_2_the_gut_brain_axis_gba_and_the_microbiome_the_deep_milieu_fixture",
     "section_2_the_gut_brain_axis_gba_and_the_microbiome_the_deep_milieu_labels",
     "classify_section_2_the_gut_brain_axis_gba_and_the_microbiome_the_deep_milieu_component",

@@ -6205,6 +6205,56 @@ def load_section_2_the_gut_brain_axis_gba_and_the_microbiome_the_deep_milieu_val
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_IV_THE_NEURO_IMMUNO_ENDOCRINE_NIE_SUPER_SYSTEM_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_iv_the_neuro_immuno_endocrine_nie_super_system_validation_specs_2026-05-17.json"
+)
+
+
+def load_iv_the_neuro_immuno_endocrine_nie_super_system_validation_spec(
+    spec_bundle: str | Path = DEFAULT_IV_THE_NEURO_IMMUNO_ENDOCRINE_NIE_SUPER_SYSTEM_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 iv the neuro immuno endocrine nie super system validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_2_THE_ENDOCRINE_SYSTEM_AND_HPA_AXIS_STRESS_RESPONSE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_the_endocrine_system_and_hpa_axis_stress_response_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_the_endocrine_system_and_hpa_axis_stress_response_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_2_THE_ENDOCRINE_SYSTEM_AND_HPA_AXIS_STRESS_RESPONSE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 the endocrine system and hpa axis stress response validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_V_THE_INTEGRATED_BODY_MATRIX_FASCIA_AND_TENSEGRITY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_v_the_integrated_body_matrix_fascia_and_tensegrity_validation_specs_2026-05-17.json"
+)
+
+
+def load_v_the_integrated_body_matrix_fascia_and_tensegrity_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_V_THE_INTEGRATED_BODY_MATRIX_FASCIA_AND_TENSEGRITY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 v the integrated body matrix fascia and tensegrity validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -6880,4 +6930,10 @@ __all__ = [
     "load_section_3_pathology_vascular_dysfunction_validation_spec",
     "DEFAULT_SECTION_2_THE_GUT_BRAIN_AXIS_GBA_AND_THE_MICROBIOME_THE_DEEP_MILIEU_SPEC_BUNDLE",
     "load_section_2_the_gut_brain_axis_gba_and_the_microbiome_the_deep_milieu_validation_spec",
+    "DEFAULT_IV_THE_NEURO_IMMUNO_ENDOCRINE_NIE_SUPER_SYSTEM_SPEC_BUNDLE",
+    "load_iv_the_neuro_immuno_endocrine_nie_super_system_validation_spec",
+    "DEFAULT_SECTION_2_THE_ENDOCRINE_SYSTEM_AND_HPA_AXIS_STRESS_RESPONSE_SPEC_BUNDLE",
+    "load_section_2_the_endocrine_system_and_hpa_axis_stress_response_validation_spec",
+    "DEFAULT_V_THE_INTEGRATED_BODY_MATRIX_FASCIA_AND_TENSEGRITY_SPEC_BUNDLE",
+    "load_v_the_integrated_body_matrix_fascia_and_tensegrity_validation_spec",
 ]
