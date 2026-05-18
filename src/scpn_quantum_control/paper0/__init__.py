@@ -1176,6 +1176,13 @@ from .section_2_7_the_fisher_info_metric_the_geometry_of_interaction_validation 
     section_2_7_the_fisher_info_metric_the_geometry_of_interaction_labels,
     validate_section_2_7_the_fisher_info_metric_the_geometry_of_interaction_fixture,
 )
+from .section_2_compression_and_meaning_information_geometry_validation import (
+    Section2CompressionAndMeaningInformationGeometryConfig,
+    Section2CompressionAndMeaningInformationGeometryFixtureResult,
+    classify_section_2_compression_and_meaning_information_geometry_component,
+    section_2_compression_and_meaning_information_geometry_labels,
+    validate_section_2_compression_and_meaning_information_geometry_fixture,
+)
 from .section_2_the_central_void_the_source_validation import (
     Section2TheCentralVoidTheSourceConfig,
     Section2TheCentralVoidTheSourceFixtureResult,
@@ -1611,6 +1618,13 @@ from .upde_validation import (
     validate_upde_interlayer_fixture,
     validate_upde_natural_gradient_fixture,
 )
+from .v_the_interface_problem_synthesis_mind_body_field_validation import (
+    VTheInterfaceProblemSynthesisMindBodyFieldConfig,
+    VTheInterfaceProblemSynthesisMindBodyFieldFixtureResult,
+    classify_v_the_interface_problem_synthesis_mind_body_field_component,
+    v_the_interface_problem_synthesis_mind_body_field_labels,
+    validate_v_the_interface_problem_synthesis_mind_body_field_fixture,
+)
 from .validation_strategy import (
     REQUIRED_DOMAINS,
     STAGE_ORDER,
@@ -1622,8 +1636,30 @@ from .validation_strategy import (
     validate_validation_strategy_fixture,
     validation_domain_coverage,
 )
+from .vii_field_generation_and_upward_causality_topological_defects_validation import (
+    ViiFieldGenerationAndUpwardCausalityTopologicalDefectsConfig,
+    ViiFieldGenerationAndUpwardCausalityTopologicalDefectsFixtureResult,
+    classify_vii_field_generation_and_upward_causality_topological_defects_component,
+    validate_vii_field_generation_and_upward_causality_topological_defects_fixture,
+    vii_field_generation_and_upward_causality_topological_defects_labels,
+)
 
 __all__ = [
+    "validate_vii_field_generation_and_upward_causality_topological_defects_fixture",
+    "vii_field_generation_and_upward_causality_topological_defects_labels",
+    "classify_vii_field_generation_and_upward_causality_topological_defects_component",
+    "ViiFieldGenerationAndUpwardCausalityTopologicalDefectsFixtureResult",
+    "ViiFieldGenerationAndUpwardCausalityTopologicalDefectsConfig",
+    "validate_v_the_interface_problem_synthesis_mind_body_field_fixture",
+    "v_the_interface_problem_synthesis_mind_body_field_labels",
+    "classify_v_the_interface_problem_synthesis_mind_body_field_component",
+    "VTheInterfaceProblemSynthesisMindBodyFieldFixtureResult",
+    "VTheInterfaceProblemSynthesisMindBodyFieldConfig",
+    "validate_section_2_compression_and_meaning_information_geometry_fixture",
+    "section_2_compression_and_meaning_information_geometry_labels",
+    "classify_section_2_compression_and_meaning_information_geometry_component",
+    "Section2CompressionAndMeaningInformationGeometryFixtureResult",
+    "Section2CompressionAndMeaningInformationGeometryConfig",
     "validate_section_3_unified_experience_the_wilson_loop_fixture",
     "section_3_unified_experience_the_wilson_loop_labels",
     "classify_section_3_unified_experience_the_wilson_loop_component",

@@ -3867,6 +3867,57 @@ def load_section_3_unified_experience_the_wilson_loop_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_2_COMPRESSION_AND_MEANING_INFORMATION_GEOMETRY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_compression_and_meaning_information_geometry_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_compression_and_meaning_information_geometry_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_2_COMPRESSION_AND_MEANING_INFORMATION_GEOMETRY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 compression and meaning information geometry validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_V_THE_INTERFACE_PROBLEM_SYNTHESIS_MIND_BODY_FIELD_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_v_the_interface_problem_synthesis_mind_body_field_validation_specs_2026-05-17.json"
+)
+
+
+def load_v_the_interface_problem_synthesis_mind_body_field_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_V_THE_INTERFACE_PROBLEM_SYNTHESIS_MIND_BODY_FIELD_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 v the interface problem synthesis mind body field validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_VII_FIELD_GENERATION_AND_UPWARD_CAUSALITY_TOPOLOGICAL_DEFECTS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_vii_field_generation_and_upward_causality_topological_defects_validation_specs_2026-05-17.json"
+)
+
+
+def load_vii_field_generation_and_upward_causality_topological_defects_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_VII_FIELD_GENERATION_AND_UPWARD_CAUSALITY_TOPOLOGICAL_DEFECTS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 vii field generation and upward causality topological defects validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -4260,4 +4311,10 @@ __all__ = [
     "load_ii_the_binding_problem_the_gauge_field_of_consciousness_validation_spec",
     "DEFAULT_SECTION_3_UNIFIED_EXPERIENCE_THE_WILSON_LOOP_SPEC_BUNDLE",
     "load_section_3_unified_experience_the_wilson_loop_validation_spec",
+    "DEFAULT_SECTION_2_COMPRESSION_AND_MEANING_INFORMATION_GEOMETRY_SPEC_BUNDLE",
+    "load_section_2_compression_and_meaning_information_geometry_validation_spec",
+    "DEFAULT_V_THE_INTERFACE_PROBLEM_SYNTHESIS_MIND_BODY_FIELD_SPEC_BUNDLE",
+    "load_v_the_interface_problem_synthesis_mind_body_field_validation_spec",
+    "DEFAULT_VII_FIELD_GENERATION_AND_UPWARD_CAUSALITY_TOPOLOGICAL_DEFECTS_SPEC_BUNDLE",
+    "load_vii_field_generation_and_upward_causality_topological_defects_validation_spec",
 ]
