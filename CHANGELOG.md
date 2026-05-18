@@ -5,6 +5,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-05-18 — Added aggregate behavioural-quality thresholds to the test audit helper so release coverage closure can require assertion and exception-contract density, not only line execution.
 - 2026-05-18 — Added a K_nm measured-system promotion hard gate that keeps physical validation open unless units, uncertainty, full pairwise coverage, tolerance, spectral response, and null-model requirements all pass.
 - 2026-05-18 — Added an S2 IBM advantage-readiness hard gate to the claim-boundary report so partial or hardware-free scaling rows cannot justify new IBM spend.
 - 2026-05-18 — Added a TCBO `p_h1` replay-uncertainty gate so the reconstructed coupling-weighted complex can report confidence intervals and refuse claim promotion without a named preregistered dataset.

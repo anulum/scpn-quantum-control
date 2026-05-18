@@ -42,6 +42,23 @@ Current inventory:
 The audit therefore no longer reports test modules whose local tests lack a
 behavioural contract signal.
 
+## Production Gate Extension
+
+As of 2026-05-18, the audit helper also emits an aggregate
+`quality_gate` object and can fail on explicit behavioural-density thresholds:
+
+```bash
+./.venv-linux/bin/python tools/audit_test_behaviour.py \
+  --min-assertion-density 1.0 \
+  --min-raises-contract-density 0.05 \
+  --fail-on-quality-gate
+```
+
+The density gate is intentionally separate from line coverage. It measures
+whether tests carry local behavioural constraints, not whether a line was
+executed. Release closure can therefore require both a coverage threshold and a
+behavioural-quality threshold without treating superficial execution as proof.
+
 ## Closure Basis
 
 The closure follows the earlier targeted hardening passes recorded in the

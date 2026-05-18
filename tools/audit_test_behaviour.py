@@ -81,6 +81,39 @@ class TestModuleAudit:
         )
 
 
+@dataclass(frozen=True)
+class BehaviourQualityGate:
+    """Aggregate behavioural-quality gate for a test audit run."""
+
+    total_modules: int
+    total_tests: int
+    total_assertions: int
+    total_raises_contracts: int
+    smoke_only_tests: int
+    assertion_density: float
+    raises_contract_density: float
+    min_assertion_density: float
+    min_raises_contract_density: float
+    valid: bool
+    blockers: tuple[str, ...]
+
+    def to_dict(self) -> dict[str, object]:
+        """Serialise the quality gate."""
+        return {
+            "total_modules": self.total_modules,
+            "total_tests": self.total_tests,
+            "total_assertions": self.total_assertions,
+            "total_raises_contracts": self.total_raises_contracts,
+            "smoke_only_tests": self.smoke_only_tests,
+            "assertion_density": self.assertion_density,
+            "raises_contract_density": self.raises_contract_density,
+            "min_assertion_density": self.min_assertion_density,
+            "min_raises_contract_density": self.min_raises_contract_density,
+            "valid": self.valid,
+            "blockers": list(self.blockers),
+        }
+
+
 def _call_name(node: ast.AST) -> str:
     """Return the final dotted name component for a call expression."""
     if isinstance(node, ast.Name):
@@ -175,23 +208,84 @@ def audits_to_json(audits: Sequence[TestModuleAudit]) -> str:
     return json.dumps([_module_to_dict(item) for item in audits], indent=2, sort_keys=True)
 
 
-def format_audits(audits: Iterable[TestModuleAudit]) -> str:
+def evaluate_quality_gate(
+    audits: Sequence[TestModuleAudit],
+    *,
+    min_assertion_density: float = 0.0,
+    min_raises_contract_density: float = 0.0,
+) -> BehaviourQualityGate:
+    """Evaluate aggregate behavioural quality thresholds."""
+    if min_assertion_density < 0.0:
+        raise ValueError("min_assertion_density must be non-negative.")
+    if min_raises_contract_density < 0.0:
+        raise ValueError("min_raises_contract_density must be non-negative.")
+
+    total_tests = sum(item.test_count for item in audits)
+    total_assertions = sum(item.assertion_count for item in audits)
+    total_raises = sum(item.raises_contract_count for item in audits)
+    smoke_only = sum(len(item.smoke_only_tests) for item in audits)
+    assertion_density = total_assertions / total_tests if total_tests else 0.0
+    raises_density = total_raises / total_tests if total_tests else 0.0
+    blockers: list[str] = []
+    if smoke_only:
+        blockers.append(f"{smoke_only} tests lack a local behavioural contract")
+    if assertion_density < min_assertion_density:
+        blockers.append(
+            f"assertion density {assertion_density:.6f} below minimum {min_assertion_density:.6f}"
+        )
+    if raises_density < min_raises_contract_density:
+        blockers.append(
+            f"raises-contract density {raises_density:.6f} below minimum "
+            f"{min_raises_contract_density:.6f}"
+        )
+    return BehaviourQualityGate(
+        total_modules=len(audits),
+        total_tests=total_tests,
+        total_assertions=total_assertions,
+        total_raises_contracts=total_raises,
+        smoke_only_tests=smoke_only,
+        assertion_density=assertion_density,
+        raises_contract_density=raises_density,
+        min_assertion_density=min_assertion_density,
+        min_raises_contract_density=min_raises_contract_density,
+        valid=not blockers,
+        blockers=tuple(blockers),
+    )
+
+
+def format_audits(
+    audits: Iterable[TestModuleAudit],
+    *,
+    quality_gate: BehaviourQualityGate | None = None,
+) -> str:
     """Render a compact behavioural-test audit summary."""
     modules = tuple(audits)
     total_tests = sum(item.test_count for item in modules)
     total_assertions = sum(item.assertion_count for item in modules)
+    total_raises = sum(item.raises_contract_count for item in modules)
     smoke_modules = [item for item in modules if item.smoke_only_tests]
     lines = [
         "Behavioural test audit summary:",
         f"- modules: {len(modules)}",
         f"- tests: {total_tests}",
         f"- assertions: {total_assertions}",
+        f"- raises_contracts: {total_raises}",
         f"- modules_with_smoke_only_tests: {len(smoke_modules)}",
     ]
     for module in smoke_modules[:20]:
         lines.append(f"- {module.path}: {', '.join(module.smoke_only_tests)}")
     if len(smoke_modules) > 20:
         lines.append(f"- additional_modules_with_smoke_only_tests: {len(smoke_modules) - 20}")
+    if quality_gate is not None:
+        lines.extend(
+            [
+                f"- quality_gate_valid: {quality_gate.valid}",
+                f"- assertion_density: {quality_gate.assertion_density:.6f}",
+                f"- raises_contract_density: {quality_gate.raises_contract_density:.6f}",
+            ]
+        )
+        for blocker in quality_gate.blockers:
+            lines.append(f"- quality_gate_blocker: {blocker}")
     return "\n".join(lines)
 
 
@@ -210,12 +304,48 @@ def main(argv: Sequence[str] | None = None) -> int:
         action="store_true",
         help="Return non-zero when any test has no local behavioural contract.",
     )
+    parser.add_argument(
+        "--min-assertion-density",
+        type=float,
+        default=0.0,
+        help="Minimum explicit assertion-helper density per discovered test.",
+    )
+    parser.add_argument(
+        "--min-raises-contract-density",
+        type=float,
+        default=0.0,
+        help="Minimum pytest.raises contract density per discovered test.",
+    )
+    parser.add_argument(
+        "--fail-on-quality-gate",
+        action="store_true",
+        help="Return non-zero when aggregate behavioural-quality thresholds fail.",
+    )
     args = parser.parse_args(argv)
 
     audits = audit_test_tree(args.tests_root)
-    print(audits_to_json(audits) if args.json else format_audits(audits))
+    quality_gate = evaluate_quality_gate(
+        audits,
+        min_assertion_density=args.min_assertion_density,
+        min_raises_contract_density=args.min_raises_contract_density,
+    )
+    if args.json:
+        print(
+            json.dumps(
+                {
+                    "modules": [_module_to_dict(item) for item in audits],
+                    "quality_gate": quality_gate.to_dict(),
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+    else:
+        print(format_audits(audits, quality_gate=quality_gate))
     has_smoke_only = any(item.smoke_only_tests for item in audits)
-    return 1 if args.fail_on_smoke_only and has_smoke_only else 0
+    if args.fail_on_smoke_only and has_smoke_only:
+        return 1
+    return 1 if args.fail_on_quality_gate and not quality_gate.valid else 0
 
 
 if __name__ == "__main__":

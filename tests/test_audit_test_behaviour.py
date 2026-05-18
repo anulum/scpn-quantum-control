@@ -33,6 +33,7 @@ _audit_test_behaviour = _load_tool_module(
 audit_test_module = _audit_test_behaviour.audit_test_module
 audit_test_tree = _audit_test_behaviour.audit_test_tree
 audits_to_json = _audit_test_behaviour.audits_to_json
+evaluate_quality_gate = _audit_test_behaviour.evaluate_quality_gate
 format_audits = _audit_test_behaviour.format_audits
 main = _audit_test_behaviour.main
 
@@ -86,12 +87,47 @@ def test_behaviour_tree_json_and_summary_are_deterministic(tmp_path: Path):
 
     audits = audit_test_tree(tests_root)
     json_text = audits_to_json(audits)
-    summary = format_audits(audits)
+    gate = evaluate_quality_gate(audits, min_assertion_density=1.0)
+    summary = format_audits(audits, quality_gate=gate)
 
     assert len(audits) == 1
     assert '"path"' in json_text
     assert "Behavioural test audit summary:" in summary
     assert "modules_with_smoke_only_tests: 0" in summary
+    assert "quality_gate_valid: True" in summary
+    assert gate.valid is True
+
+
+def test_behaviour_quality_gate_blocks_low_contract_density(tmp_path: Path):
+    tests_root = tmp_path / "tests"
+    tests_root.mkdir()
+    (tests_root / "test_mixed.py").write_text(
+        "\n".join(
+            [
+                "import pytest",
+                "",
+                "def test_assertion():",
+                "    assert 1 == 1",
+                "",
+                "def test_exception():",
+                "    with pytest.raises(ValueError):",
+                "        raise ValueError('bad')",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    gate = evaluate_quality_gate(
+        audit_test_tree(tests_root),
+        min_assertion_density=1.0,
+        min_raises_contract_density=1.0,
+    )
+
+    assert gate.valid is False
+    assert gate.assertion_density == 0.5
+    assert gate.raises_contract_density == 0.5
+    assert any("assertion density" in blocker for blocker in gate.blockers)
+    assert any("raises-contract density" in blocker for blocker in gate.blockers)
 
 
 def test_behaviour_cli_fail_on_smoke_only_uses_exit_status(tmp_path: Path, capsys):
@@ -107,3 +143,28 @@ def test_behaviour_cli_fail_on_smoke_only_uses_exit_status(tmp_path: Path, capsy
 
     assert exit_code == 1
     assert "test_smoke_only" in output
+
+
+def test_behaviour_cli_quality_gate_json_and_exit_status(tmp_path: Path, capsys):
+    tests_root = tmp_path / "tests"
+    tests_root.mkdir()
+    (tests_root / "test_contract.py").write_text(
+        "def test_contract():\n    assert 1 == 1\n",
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "--tests-root",
+            str(tests_root),
+            "--json",
+            "--min-assertion-density",
+            "2.0",
+            "--fail-on-quality-gate",
+        ]
+    )
+    output = capsys.readouterr().out
+
+    assert exit_code == 1
+    assert '"quality_gate"' in output
+    assert '"valid": false' in output
