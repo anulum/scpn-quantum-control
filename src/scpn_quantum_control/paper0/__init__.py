@@ -821,6 +821,13 @@ from .master_lagrangian_intro_validation import (
     master_lagrangian_intro_labels,
     validate_master_lagrangian_intro_fixture,
 )
+from .mechanism_2_quantum_stochastic_resonance_qsr_p0r03368_validation import (
+    Mechanism2QuantumStochasticResonanceQsrP0r03368Config,
+    Mechanism2QuantumStochasticResonanceQsrP0r03368FixtureResult,
+    classify_mechanism_2_quantum_stochastic_resonance_qsr_p0r03368_component,
+    mechanism_2_quantum_stochastic_resonance_qsr_p0r03368_labels,
+    validate_mechanism_2_quantum_stochastic_resonance_qsr_p0r03368_fixture,
+)
 from .mechanism_2_quantum_stochastic_resonance_qsr_validation import (
     Mechanism2QuantumStochasticResonanceQsrConfig,
     Mechanism2QuantumStochasticResonanceQsrFixtureResult,
@@ -1260,6 +1267,13 @@ from .section_4_1_the_cosmic_algorithm_hpc_active_inference_validation import (
     section_4_1_the_cosmic_algorithm_hpc_active_inference_labels,
     validate_section_4_1_the_cosmic_algorithm_hpc_active_inference_fixture,
 )
+from .section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis_validation import (
+    Section42TheShapeOfFeelingTheGeometricQualiaHypothesisConfig,
+    Section42TheShapeOfFeelingTheGeometricQualiaHypothesisFixtureResult,
+    classify_section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis_component,
+    section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis_labels,
+    validate_section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis_fixture,
+)
 from .section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_p0r02810_validation import (
     Section15LayerSummaryTable32TheDynamicSpineTheUnifiedPhaseDynamicsP0r02810Config,
     Section15LayerSummaryTable32TheDynamicSpineTheUnifiedPhaseDynamicsP0r02810FixtureResult,
@@ -1522,6 +1536,13 @@ from .the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance_vali
     the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance_labels,
     validate_the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance_fixture,
 )
+from .the_quantum_to_classical_transition_amplification_of_intent_p0r03360_validation import (
+    TheQuantumToClassicalTransitionAmplificationOfIntentP0r03360Config,
+    TheQuantumToClassicalTransitionAmplificationOfIntentP0r03360FixtureResult,
+    classify_the_quantum_to_classical_transition_amplification_of_intent_p0r03360_component,
+    the_quantum_to_classical_transition_amplification_of_intent_p0r03360_labels,
+    validate_the_quantum_to_classical_transition_amplification_of_intent_p0r03360_fixture,
+)
 from .the_quantum_to_classical_transition_amplification_of_intent_validation import (
     TheQuantumToClassicalTransitionAmplificationOfIntentConfig,
     TheQuantumToClassicalTransitionAmplificationOfIntentFixtureResult,
@@ -1708,6 +1729,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis_fixture",
+    "section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis_labels",
+    "classify_section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis_component",
+    "Section42TheShapeOfFeelingTheGeometricQualiaHypothesisFixtureResult",
+    "Section42TheShapeOfFeelingTheGeometricQualiaHypothesisConfig",
+    "validate_mechanism_2_quantum_stochastic_resonance_qsr_p0r03368_fixture",
+    "mechanism_2_quantum_stochastic_resonance_qsr_p0r03368_labels",
+    "classify_mechanism_2_quantum_stochastic_resonance_qsr_p0r03368_component",
+    "Mechanism2QuantumStochasticResonanceQsrP0r03368FixtureResult",
+    "Mechanism2QuantumStochasticResonanceQsrP0r03368Config",
+    "validate_the_quantum_to_classical_transition_amplification_of_intent_p0r03360_fixture",
+    "the_quantum_to_classical_transition_amplification_of_intent_p0r03360_labels",
+    "classify_the_quantum_to_classical_transition_amplification_of_intent_p0r03360_component",
+    "TheQuantumToClassicalTransitionAmplificationOfIntentP0r03360FixtureResult",
+    "TheQuantumToClassicalTransitionAmplificationOfIntentP0r03360Config",
     "validate_mechanism_2_quantum_stochastic_resonance_qsr_fixture",
     "mechanism_2_quantum_stochastic_resonance_qsr_labels",
     "classify_mechanism_2_quantum_stochastic_resonance_qsr_component",

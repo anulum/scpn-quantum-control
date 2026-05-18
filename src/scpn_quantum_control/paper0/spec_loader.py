@@ -4064,6 +4064,57 @@ def load_mechanism_2_quantum_stochastic_resonance_qsr_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_THE_QUANTUM_TO_CLASSICAL_TRANSITION_AMPLIFICATION_OF_INTENT_P0R03360_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_quantum_to_classical_transition_amplification_of_intent_p0r03360_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_quantum_to_classical_transition_amplification_of_intent_p0r03360_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_QUANTUM_TO_CLASSICAL_TRANSITION_AMPLIFICATION_OF_INTENT_P0R03360_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the quantum to classical transition amplification of intent p0r03360 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_MECHANISM_2_QUANTUM_STOCHASTIC_RESONANCE_QSR_P0R03368_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_mechanism_2_quantum_stochastic_resonance_qsr_p0r03368_validation_specs_2026-05-17.json"
+)
+
+
+def load_mechanism_2_quantum_stochastic_resonance_qsr_p0r03368_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_MECHANISM_2_QUANTUM_STOCHASTIC_RESONANCE_QSR_P0R03368_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 mechanism 2 quantum stochastic resonance qsr p0r03368 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_4_2_THE_SHAPE_OF_FEELING_THE_GEOMETRIC_QUALIA_HYPOTHESIS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_4_2_THE_SHAPE_OF_FEELING_THE_GEOMETRIC_QUALIA_HYPOTHESIS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 4 2 the shape of feeling the geometric qualia hypothesis validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -4481,4 +4532,10 @@ __all__ = [
     "load_the_quantum_to_classical_transition_amplification_of_intent_validation_spec",
     "DEFAULT_MECHANISM_2_QUANTUM_STOCHASTIC_RESONANCE_QSR_SPEC_BUNDLE",
     "load_mechanism_2_quantum_stochastic_resonance_qsr_validation_spec",
+    "DEFAULT_THE_QUANTUM_TO_CLASSICAL_TRANSITION_AMPLIFICATION_OF_INTENT_P0R03360_SPEC_BUNDLE",
+    "load_the_quantum_to_classical_transition_amplification_of_intent_p0r03360_validation_spec",
+    "DEFAULT_MECHANISM_2_QUANTUM_STOCHASTIC_RESONANCE_QSR_P0R03368_SPEC_BUNDLE",
+    "load_mechanism_2_quantum_stochastic_resonance_qsr_p0r03368_validation_spec",
+    "DEFAULT_SECTION_4_2_THE_SHAPE_OF_FEELING_THE_GEOMETRIC_QUALIA_HYPOTHESIS_SPEC_BUNDLE",
+    "load_section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis_validation_spec",
 ]
