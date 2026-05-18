@@ -909,6 +909,13 @@ from .paper0_slice_p0r02249_validation import (
     paper0_slice_p0r02249_labels,
     validate_paper0_slice_p0r02249_fixture,
 )
+from .paper0_slice_p0r02923_validation import (
+    Paper0SliceP0r02923Config,
+    Paper0SliceP0r02923FixtureResult,
+    classify_paper0_slice_p0r02923_component,
+    paper0_slice_p0r02923_labels,
+    validate_paper0_slice_p0r02923_fixture,
+)
 from .paper0_slice_validation import (
     Paper0SliceConfig,
     Paper0SliceFixtureResult,
@@ -1312,6 +1319,13 @@ from .the_mechanism_of_influence_validation import (
     the_mechanism_of_influence_labels,
     validate_the_mechanism_of_influence_fixture,
 )
+from .the_psis_field_as_the_target_setter_validation import (
+    ThePsisFieldAsTheTargetSetterConfig,
+    ThePsisFieldAsTheTargetSetterFixtureResult,
+    classify_the_psis_field_as_the_target_setter_component,
+    the_psis_field_as_the_target_setter_labels,
+    validate_the_psis_field_as_the_target_setter_fixture,
+)
 from .the_self_as_a_soliton_emergence_of_localised_consciousness_layer_5_validation import (
     TheSelfAsASolitonEmergenceOfLocalisedConsciousnessLayer5Config,
     TheSelfAsASolitonEmergenceOfLocalisedConsciousnessLayer5FixtureResult,
@@ -1332,6 +1346,13 @@ from .the_susceptible_substrate_validation import (
     classify_the_susceptible_substrate_component,
     the_susceptible_substrate_labels,
     validate_the_susceptible_substrate_fixture,
+)
+from .the_two_timescale_controller_stability_and_exploration_validation import (
+    TheTwoTimescaleControllerStabilityAndExplorationConfig,
+    TheTwoTimescaleControllerStabilityAndExplorationFixtureResult,
+    classify_the_two_timescale_controller_stability_and_exploration_component,
+    the_two_timescale_controller_stability_and_exploration_labels,
+    validate_the_two_timescale_controller_stability_and_exploration_fixture,
 )
 from .three_channel_coupling_validation import (
     ChannelConstraint,
@@ -1435,6 +1456,21 @@ from .validation_strategy import (
 )
 
 __all__ = [
+    "validate_paper0_slice_p0r02923_fixture",
+    "paper0_slice_p0r02923_labels",
+    "classify_paper0_slice_p0r02923_component",
+    "Paper0SliceP0r02923FixtureResult",
+    "Paper0SliceP0r02923Config",
+    "validate_the_two_timescale_controller_stability_and_exploration_fixture",
+    "the_two_timescale_controller_stability_and_exploration_labels",
+    "classify_the_two_timescale_controller_stability_and_exploration_component",
+    "TheTwoTimescaleControllerStabilityAndExplorationFixtureResult",
+    "TheTwoTimescaleControllerStabilityAndExplorationConfig",
+    "validate_the_psis_field_as_the_target_setter_fixture",
+    "the_psis_field_as_the_target_setter_labels",
+    "classify_the_psis_field_as_the_target_setter_component",
+    "ThePsisFieldAsTheTargetSetterFixtureResult",
+    "ThePsisFieldAsTheTargetSetterConfig",
     "validate_meta_framework_integrations_p0r02894_fixture",
     "meta_framework_integrations_p0r02894_labels",
     "classify_meta_framework_integrations_p0r02894_component",
