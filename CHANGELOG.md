@@ -40,6 +40,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - 2026-04-30 — Added the 109-subject EEGMMIDB baseline eyes-closed PLV artifact and an eyes-closed-minus-eyes-open comparison artifact.
 
 ### Changed
+- 2026-05-18 — Marked the Paper 0 promotion planner tests as
+  `internal_corpus` because they require ignored source-ledger artefacts, and
+  expanded the Docker workflow path filters to cover every copied test/input
+  surface.
 - 2026-05-18 — Documented the remaining documentation-surface TODO after Paper 0 generated-builder batch 25 so production work can resume from a tracked continuation point.
 - 2026-05-18 — Closed generated Paper 0 builder documentation 10-batch 21 for the next CLI-entrypoint burn-down block.
 - 2026-05-18 — Closed generated Paper 0 builder documentation 10-batch 22 for the next CLI-entrypoint burn-down block.
