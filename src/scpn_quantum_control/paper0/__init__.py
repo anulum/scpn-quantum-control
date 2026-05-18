@@ -190,6 +190,13 @@ from .bibo_stability_statement_and_proof_obligation_validation import (
     classify_bibo_stability_statement_and_proof_obligation_component,
     validate_bibo_stability_statement_and_proof_obligation_fixture,
 )
+from .biological_qec_l1_4_validation import (
+    BiologicalQecL14Config,
+    BiologicalQecL14FixtureResult,
+    biological_qec_l1_4_labels,
+    classify_biological_qec_l1_4_component,
+    validate_biological_qec_l1_4_fixture,
+)
 from .case_study_the_layer_3_genomic_morphogenetic_transduction_pathway_validation import (
     CaseStudyTheLayer3GenomicMorphogeneticTransductionPathwayConfig,
     CaseStudyTheLayer3GenomicMorphogeneticTransductionPathwayFixtureResult,
@@ -340,6 +347,13 @@ from .cosmological_predictions_validation import (
     prediction_catalogue,
     priority_ranking,
     validate_cosmological_predictions_fixture,
+)
+from .creating_and_protecting_a_coherent_sigma_validation import (
+    CreatingAndProtectingACoherentSigmaConfig,
+    CreatingAndProtectingACoherentSigmaFixtureResult,
+    classify_creating_and_protecting_a_coherent_sigma_component,
+    creating_and_protecting_a_coherent_sigma_labels,
+    validate_creating_and_protecting_a_coherent_sigma_fixture,
 )
 from .dark_sector_validation import (
     DarkSectorConfig,
@@ -848,6 +862,13 @@ from .meta_framework_integrations_p0r02941_validation import (
     classify_meta_framework_integrations_p0r02941_component,
     meta_framework_integrations_p0r02941_labels,
     validate_meta_framework_integrations_p0r02941_fixture,
+)
+from .meta_framework_integrations_p0r03025_validation import (
+    MetaFrameworkIntegrationsP0r03025Config,
+    MetaFrameworkIntegrationsP0r03025FixtureResult,
+    classify_meta_framework_integrations_p0r03025_component,
+    meta_framework_integrations_p0r03025_labels,
+    validate_meta_framework_integrations_p0r03025_fixture,
 )
 from .meta_framework_integrations_validation import (
     MetaFrameworkIntegrationsConfig,
@@ -1519,6 +1540,21 @@ from .validation_strategy import (
 )
 
 __all__ = [
+    "validate_biological_qec_l1_4_fixture",
+    "biological_qec_l1_4_labels",
+    "classify_biological_qec_l1_4_component",
+    "BiologicalQecL14FixtureResult",
+    "BiologicalQecL14Config",
+    "validate_creating_and_protecting_a_coherent_sigma_fixture",
+    "creating_and_protecting_a_coherent_sigma_labels",
+    "classify_creating_and_protecting_a_coherent_sigma_component",
+    "CreatingAndProtectingACoherentSigmaFixtureResult",
+    "CreatingAndProtectingACoherentSigmaConfig",
+    "validate_meta_framework_integrations_p0r03025_fixture",
+    "meta_framework_integrations_p0r03025_labels",
+    "classify_meta_framework_integrations_p0r03025_component",
+    "MetaFrameworkIntegrationsP0r03025FixtureResult",
+    "MetaFrameworkIntegrationsP0r03025Config",
     "validate_multi_scale_quantum_error_correction_ms_qec_fixture",
     "multi_scale_quantum_error_correction_ms_qec_labels",
     "classify_multi_scale_quantum_error_correction_ms_qec_component",

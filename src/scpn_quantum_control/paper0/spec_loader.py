@@ -3621,6 +3621,54 @@ def load_multi_scale_quantum_error_correction_ms_qec_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03025_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_meta_framework_integrations_p0r03025_validation_specs_2026-05-17.json"
+)
+
+
+def load_meta_framework_integrations_p0r03025_validation_spec(
+    spec_bundle: str | Path = DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03025_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 meta framework integrations p0r03025 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_CREATING_AND_PROTECTING_A_COHERENT_SIGMA_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_creating_and_protecting_a_coherent_sigma_validation_specs_2026-05-17.json"
+)
+
+
+def load_creating_and_protecting_a_coherent_sigma_validation_spec(
+    spec_bundle: str | Path = DEFAULT_CREATING_AND_PROTECTING_A_COHERENT_SIGMA_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 creating and protecting a coherent sigma validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_BIOLOGICAL_QEC_L1_4_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_biological_qec_l1_4_validation_specs_2026-05-17.json"
+)
+
+
+def load_biological_qec_l1_4_validation_spec(
+    spec_bundle: str | Path = DEFAULT_BIOLOGICAL_QEC_L1_4_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 biological qec l1 4 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -3984,4 +4032,10 @@ __all__ = [
     "load_bibo_stability_and_lyapunov_certificate_validation_spec",
     "DEFAULT_MULTI_SCALE_QUANTUM_ERROR_CORRECTION_MS_QEC_SPEC_BUNDLE",
     "load_multi_scale_quantum_error_correction_ms_qec_validation_spec",
+    "DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03025_SPEC_BUNDLE",
+    "load_meta_framework_integrations_p0r03025_validation_spec",
+    "DEFAULT_CREATING_AND_PROTECTING_A_COHERENT_SIGMA_SPEC_BUNDLE",
+    "load_creating_and_protecting_a_coherent_sigma_validation_spec",
+    "DEFAULT_BIOLOGICAL_QEC_L1_4_SPEC_BUNDLE",
+    "load_biological_qec_l1_4_validation_spec",
 ]
