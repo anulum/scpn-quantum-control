@@ -699,6 +699,13 @@ from .ii_the_discrete_continuous_interface_hhds_validation import (
     ii_the_discrete_continuous_interface_hhds_labels,
     validate_ii_the_discrete_continuous_interface_hhds_fixture,
 )
+from .ii_the_genesis_of_geometry_the_source_and_the_logos_domain_v_validation import (
+    IiTheGenesisOfGeometryTheSourceAndTheLogosDomainVConfig,
+    IiTheGenesisOfGeometryTheSourceAndTheLogosDomainVFixtureResult,
+    classify_ii_the_genesis_of_geometry_the_source_and_the_logos_domain_v_component,
+    ii_the_genesis_of_geometry_the_source_and_the_logos_domain_v_labels,
+    validate_ii_the_genesis_of_geometry_the_source_and_the_logos_domain_v_fixture,
+)
 from .ii_the_principle_of_ethical_least_action_pela_validation import (
     IiThePrincipleOfEthicalLeastActionPelaConfig,
     IiThePrincipleOfEthicalLeastActionPelaFixtureResult,
@@ -1540,6 +1547,13 @@ from .section_3_memory_capacity_bekenstein_hawking_bound_validation import (
     section_3_memory_capacity_bekenstein_hawking_bound_labels,
     validate_section_3_memory_capacity_bekenstein_hawking_bound_fixture,
 )
+from .section_3_sequential_symmetry_breaking_ssb_validation import (
+    Section3SequentialSymmetryBreakingSsbConfig,
+    Section3SequentialSymmetryBreakingSsbFixtureResult,
+    classify_section_3_sequential_symmetry_breaking_ssb_component,
+    section_3_sequential_symmetry_breaking_ssb_labels,
+    validate_section_3_sequential_symmetry_breaking_ssb_fixture,
+)
 from .section_3_the_geometric_and_dynamic_determinants_of_future_possibility_validation import (
     Section3TheGeometricAndDynamicDeterminantsOfFuturePossibilityConfig,
     Section3TheGeometricAndDynamicDeterminantsOfFuturePossibilityFixtureResult,
@@ -1623,6 +1637,13 @@ from .section_5_1_the_modified_path_integral_with_cef_weighting_validation impor
     classify_section_5_1_the_modified_path_integral_with_cef_weighting_component,
     section_5_1_the_modified_path_integral_with_cef_weighting_labels,
     validate_section_5_1_the_modified_path_integral_with_cef_weighting_fixture,
+)
+from .section_5_2_embodied_scpn_cellular_neural_systemic_implementation_validation import (
+    Section52EmbodiedScpnCellularNeuralSystemicImplementationConfig,
+    Section52EmbodiedScpnCellularNeuralSystemicImplementationFixtureResult,
+    classify_section_5_2_embodied_scpn_cellular_neural_systemic_implementation_component,
+    section_5_2_embodied_scpn_cellular_neural_systemic_implementation_labels,
+    validate_section_5_2_embodied_scpn_cellular_neural_systemic_implementation_fixture,
 )
 from .section_5_physical_implications_biasing_the_path_integral_of_reality_validation import (
     Section5PhysicalImplicationsBiasingThePathIntegralOfRealityConfig,
@@ -2212,6 +2233,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_section_3_sequential_symmetry_breaking_ssb_fixture",
+    "section_3_sequential_symmetry_breaking_ssb_labels",
+    "classify_section_3_sequential_symmetry_breaking_ssb_component",
+    "Section3SequentialSymmetryBreakingSsbFixtureResult",
+    "Section3SequentialSymmetryBreakingSsbConfig",
+    "validate_ii_the_genesis_of_geometry_the_source_and_the_logos_domain_v_fixture",
+    "ii_the_genesis_of_geometry_the_source_and_the_logos_domain_v_labels",
+    "classify_ii_the_genesis_of_geometry_the_source_and_the_logos_domain_v_component",
+    "IiTheGenesisOfGeometryTheSourceAndTheLogosDomainVFixtureResult",
+    "IiTheGenesisOfGeometryTheSourceAndTheLogosDomainVConfig",
+    "validate_section_5_2_embodied_scpn_cellular_neural_systemic_implementation_fixture",
+    "section_5_2_embodied_scpn_cellular_neural_systemic_implementation_labels",
+    "classify_section_5_2_embodied_scpn_cellular_neural_systemic_implementation_component",
+    "Section52EmbodiedScpnCellularNeuralSystemicImplementationFixtureResult",
+    "Section52EmbodiedScpnCellularNeuralSystemicImplementationConfig",
     "validate_the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai_fixture",
     "the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai_labels",
     "classify_the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai_component",

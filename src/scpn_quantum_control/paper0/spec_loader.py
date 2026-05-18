@@ -5250,6 +5250,56 @@ def load_the_bridge_between_mind_and_matter_how_consciousness_influences_the_bra
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_5_2_EMBODIED_SCPN_CELLULAR_NEURAL_SYSTEMIC_IMPLEMENTATION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_5_2_embodied_scpn_cellular_neural_systemic_implementation_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_5_2_embodied_scpn_cellular_neural_systemic_implementation_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_5_2_EMBODIED_SCPN_CELLULAR_NEURAL_SYSTEMIC_IMPLEMENTATION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 5 2 embodied scpn cellular neural systemic implementation validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_II_THE_GENESIS_OF_GEOMETRY_THE_SOURCE_AND_THE_LOGOS_DOMAIN_V_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_ii_the_genesis_of_geometry_the_source_and_the_logos_domain_v_validation_specs_2026-05-17.json"
+)
+
+
+def load_ii_the_genesis_of_geometry_the_source_and_the_logos_domain_v_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_II_THE_GENESIS_OF_GEOMETRY_THE_SOURCE_AND_THE_LOGOS_DOMAIN_V_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 ii the genesis of geometry the source and the logos domain v validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_3_SEQUENTIAL_SYMMETRY_BREAKING_SSB_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_3_sequential_symmetry_breaking_ssb_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_3_sequential_symmetry_breaking_ssb_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SECTION_3_SEQUENTIAL_SYMMETRY_BREAKING_SSB_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 3 sequential symmetry breaking ssb validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -5811,4 +5861,10 @@ __all__ = [
     "load_axion_photon_mixing_with_the_plasma_term_validation_spec",
     "DEFAULT_THE_BRIDGE_BETWEEN_MIND_AND_MATTER_HOW_CONSCIOUSNESS_INFLUENCES_THE_BRAI_SPEC_BUNDLE",
     "load_the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai_validation_spec",
+    "DEFAULT_SECTION_5_2_EMBODIED_SCPN_CELLULAR_NEURAL_SYSTEMIC_IMPLEMENTATION_SPEC_BUNDLE",
+    "load_section_5_2_embodied_scpn_cellular_neural_systemic_implementation_validation_spec",
+    "DEFAULT_II_THE_GENESIS_OF_GEOMETRY_THE_SOURCE_AND_THE_LOGOS_DOMAIN_V_SPEC_BUNDLE",
+    "load_ii_the_genesis_of_geometry_the_source_and_the_logos_domain_v_validation_spec",
+    "DEFAULT_SECTION_3_SEQUENTIAL_SYMMETRY_BREAKING_SSB_SPEC_BUNDLE",
+    "load_section_3_sequential_symmetry_breaking_ssb_validation_spec",
 ]
