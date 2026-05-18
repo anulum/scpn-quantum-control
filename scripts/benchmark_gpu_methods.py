@@ -58,9 +58,12 @@ except ImportError:
         dtype=np.float64,
     )
 
-    def build_knm_paper27(n: int, k_base: float = 0.45, k_alpha: float = 0.3) -> np.ndarray:
+    def build_knm_paper27(L: int = 16, K_base: float = 0.45, K_alpha: float = 0.3) -> np.ndarray:
+        """Build the local fallback Paper-27 K_nm coupling matrix."""
+
+        n = L
         idx = np.arange(n)
-        matrix = k_base * np.exp(-k_alpha * np.abs(idx[:, None] - idx[None, :]))
+        matrix = K_base * np.exp(-K_alpha * np.abs(idx[:, None] - idx[None, :]))
         np.fill_diagonal(matrix, 0.0)
         anchors = {(0, 1): 0.302, (1, 2): 0.201, (2, 3): 0.252, (3, 4): 0.154}
         for (row, column), value in anchors.items():
@@ -72,7 +75,13 @@ except ImportError:
             matrix[4, 6] = matrix[6, 4] = max(matrix[4, 6], 0.15)
         return matrix
 
-    def knm_to_dense_matrix(k_matrix: np.ndarray, omega: np.ndarray) -> np.ndarray:
+    def knm_to_dense_matrix(
+        K: np.ndarray, omega: np.ndarray, delta: float = 0.0, *, max_dense_gib: float | None = None
+    ) -> np.ndarray:
+        """Build the local fallback dense Hamiltonian matrix."""
+
+        del delta, max_dense_gib
+        k_matrix = K
         n = int(k_matrix.shape[0])
         dim = 2**n
         hamiltonian = np.zeros((dim, dim), dtype=np.complex64)
@@ -121,12 +130,12 @@ def _normalised_states(rng: np.random.Generator, batch: int, dim: int) -> np.nda
     imag = rng.normal(size=(batch, dim)).astype(np.float32)
     states = real + 1j * imag
     norms = np.linalg.norm(states, axis=1, keepdims=True)
-    return (states / norms).astype(np.complex64)
+    return np.asarray((states / norms).astype(np.complex64))
 
 
 def _numpy_expectation(states: np.ndarray, hamiltonian: np.ndarray) -> np.ndarray:
     h_states = states @ hamiltonian.T
-    return np.einsum("bi,bi->b", states.conj(), h_states).real
+    return np.asarray(np.einsum("bi,bi->b", states.conj(), h_states).real)
 
 
 def _time_numpy(
@@ -311,6 +320,8 @@ def _parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Run the GPU-methods benchmark CLI."""
+
     ns = _parse_args()
     ns.output_dir.mkdir(parents=True, exist_ok=True)
     rows: list[dict[str, Any]] = []

@@ -136,11 +136,11 @@ def _aggregate(rows: list[dict[str, object]]) -> list[dict[str, object]]:
     out: list[dict[str, object]] = []
     for (ansatz, n_qubits, lambda_fim, reps), group in sorted(grouped.items()):
         errors = [
-            float(row["relative_error_pct"])
+            float(str(row["relative_error_pct"]))
             for row in group
             if row["relative_error_pct"] is not None
         ]
-        energies = [float(row["energy"]) for row in group]
+        energies = [float(str(row["energy"])) for row in group]
         out.append(
             {
                 "ansatz": ansatz,
@@ -161,6 +161,8 @@ def _aggregate(rows: list[dict[str, object]]) -> list[dict[str, object]]:
 def generate(
     n_values: list[int], lambdas: list[float], seeds: list[int], reps: int, maxiter: int
 ) -> dict[str, object]:
+    """Generate FIM-regularised VQE benchmark rows and aggregate summaries."""
+
     rows: list[dict[str, object]] = []
     for n_qubits in n_values:
         for lambda_fim in lambdas:
@@ -188,6 +190,8 @@ def generate(
 
 
 def main() -> int:
+    """Run the FIM VQE ground-state benchmark CLI."""
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--n-values", default="4")
     parser.add_argument("--lambdas", default="0,1,4")
@@ -207,8 +211,12 @@ def main() -> int:
     rows_csv = ns.output_dir / f"fim_vqe_ground_state_rows_{DATE}.csv"
     aggregate_csv = ns.output_dir / f"fim_vqe_ground_state_aggregate_{DATE}.csv"
     json_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
-    _write_csv(rows_csv, list(summary["rows"]))
-    _write_csv(aggregate_csv, list(summary["aggregate"]))
+    rows_payload = summary["rows"]
+    aggregate_payload = summary["aggregate"]
+    if not isinstance(rows_payload, list) or not isinstance(aggregate_payload, list):
+        raise TypeError("generated benchmark payload must contain row lists")
+    _write_csv(rows_csv, rows_payload)
+    _write_csv(aggregate_csv, aggregate_payload)
     print(f"wrote_json={json_path}")
     print(f"wrote_rows_csv={rows_csv}")
     print(f"wrote_aggregate_csv={aggregate_csv}")

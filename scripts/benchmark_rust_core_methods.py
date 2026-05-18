@@ -88,13 +88,33 @@ def _rust_knm(n: int) -> np.ndarray:
     return np.asarray(engine.build_knm(n, 0.45, 0.3), dtype=np.float64).reshape(n, n)
 
 
+def _call_python_knm(n: int) -> Callable[[], np.ndarray]:
+    """Return a typed zero-argument Python K_nm benchmark callable."""
+
+    return lambda: _python_knm(n)
+
+
+def _call_rust_knm(n: int) -> Callable[[], np.ndarray]:
+    """Return a typed zero-argument Rust K_nm benchmark callable."""
+
+    return lambda: _rust_knm(n)
+
+
+def _call_dense_hamiltonian(k: np.ndarray, omega: np.ndarray) -> Callable[[], np.ndarray]:
+    """Return a typed zero-argument dense-Hamiltonian benchmark callable."""
+
+    return lambda: knm_to_dense_matrix(k, omega)
+
+
 def benchmark_knm() -> list[dict[str, object]]:
+    """Benchmark Python and Rust K_nm construction paths."""
+
     rows = []
     for n in [4, 8, 16, 32, 64]:
         repeats = 1000 if n <= 32 else 300
-        py_stats = _time_call(lambda n=n: _python_knm(n), repeats)
+        py_stats = _time_call(_call_python_knm(n), repeats)
         rust_available = _maybe_rust_knm(n) is not None
-        rust_stats = _time_call(lambda n=n: _rust_knm(n), repeats) if rust_available else None
+        rust_stats = _time_call(_call_rust_knm(n), repeats) if rust_available else None
         parity = bool(
             np.allclose(
                 _python_knm(n),
@@ -122,13 +142,15 @@ def benchmark_knm() -> list[dict[str, object]]:
 
 
 def benchmark_dense_hamiltonian() -> list[dict[str, object]]:
+    """Benchmark dense Hamiltonian construction and Hermiticity checks."""
+
     rows = []
     rng = np.random.default_rng(20260505)
     for n in [3, 4, 6, 8]:
         repeats = 50 if n <= 6 else 10
         k = build_knm_paper27(n)
         omega = rng.normal(0.0, 0.5, n)
-        stats = _time_call(lambda k=k, omega=omega: knm_to_dense_matrix(k, omega), repeats)
+        stats = _time_call(_call_dense_hamiltonian(k, omega), repeats)
         h = knm_to_dense_matrix(k, omega)
         hermitian_error = float(np.max(np.abs(h - h.conj().T)))
         rows.append(
@@ -144,6 +166,8 @@ def benchmark_dense_hamiltonian() -> list[dict[str, object]]:
 
 
 def main() -> int:
+    """Run the Rust-core benchmark CLI."""
+
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     rows = benchmark_knm() + benchmark_dense_hamiltonian()
     summary = {

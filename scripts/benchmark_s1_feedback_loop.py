@@ -125,6 +125,8 @@ def _benchmark_case(n: int, *, repeats: int, steps: int, shots: int) -> dict[str
 
 
 def main() -> int:
+    """Run the no-QPU S1 feedback-loop scheduler benchmark CLI."""
+
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     rows = [
         _benchmark_case(2, repeats=9, steps=4, shots=32),
