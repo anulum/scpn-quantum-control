@@ -7002,6 +7002,56 @@ def load_the_thermodynamic_limit_of_control_the_allostatic_bound_validation_spec
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_THE_ELECTRODYNAMIC_INTERFACE_OF_CONSCIOUSNESS_CEMI_AND_IIIEF_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_electrodynamic_interface_of_consciousness_cemi_and_iiief_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_electrodynamic_interface_of_consciousness_cemi_and_iiief_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_ELECTRODYNAMIC_INTERFACE_OF_CONSCIOUSNESS_CEMI_AND_IIIEF_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the electrodynamic interface of consciousness cemi and iiief validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SLOW_CONTROL_LAYER_NEUROENDOCRINE_INTEGRATION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_slow_control_layer_neuroendocrine_integration_validation_specs_2026-05-17.json"
+)
+
+
+def load_slow_control_layer_neuroendocrine_integration_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SLOW_CONTROL_LAYER_NEUROENDOCRINE_INTEGRATION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 slow control layer neuroendocrine integration validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_NEUROENDOCRINE_REGULATION_AND_THE_HYPOTHALAMIC_PITUITARY_ADRENAL_HPA_AXI_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi_validation_specs_2026-05-17.json"
+)
+
+
+def load_neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_NEUROENDOCRINE_REGULATION_AND_THE_HYPOTHALAMIC_PITUITARY_ADRENAL_HPA_AXI_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 neuroendocrine regulation and the hypothalamic pituitary adrenal hpa axi validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -7773,4 +7823,10 @@ __all__ = [
     "load_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_p0r05390_validation_spec",
     "DEFAULT_THE_THERMODYNAMIC_LIMIT_OF_CONTROL_THE_ALLOSTATIC_BOUND_SPEC_BUNDLE",
     "load_the_thermodynamic_limit_of_control_the_allostatic_bound_validation_spec",
+    "DEFAULT_THE_ELECTRODYNAMIC_INTERFACE_OF_CONSCIOUSNESS_CEMI_AND_IIIEF_SPEC_BUNDLE",
+    "load_the_electrodynamic_interface_of_consciousness_cemi_and_iiief_validation_spec",
+    "DEFAULT_SLOW_CONTROL_LAYER_NEUROENDOCRINE_INTEGRATION_SPEC_BUNDLE",
+    "load_slow_control_layer_neuroendocrine_integration_validation_spec",
+    "DEFAULT_NEUROENDOCRINE_REGULATION_AND_THE_HYPOTHALAMIC_PITUITARY_ADRENAL_HPA_AXI_SPEC_BUNDLE",
+    "load_neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi_validation_spec",
 ]
