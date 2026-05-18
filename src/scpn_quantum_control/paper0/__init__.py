@@ -678,6 +678,13 @@ from .ii_the_discrete_continuous_interface_hhds_validation import (
     ii_the_discrete_continuous_interface_hhds_labels,
     validate_ii_the_discrete_continuous_interface_hhds_fixture,
 )
+from .ii_the_principle_of_ethical_least_action_pela_validation import (
+    IiThePrincipleOfEthicalLeastActionPelaConfig,
+    IiThePrincipleOfEthicalLeastActionPelaFixtureResult,
+    classify_ii_the_principle_of_ethical_least_action_pela_component,
+    ii_the_principle_of_ethical_least_action_pela_labels,
+    validate_ii_the_principle_of_ethical_least_action_pela_fixture,
+)
 from .ii_the_universal_dynamic_regime_quasicriticality_validation import (
     IiTheUniversalDynamicRegimeQuasicriticalityConfig,
     IiTheUniversalDynamicRegimeQuasicriticalityFixtureResult,
@@ -1073,6 +1080,13 @@ from .non_abelian_qualia_field_validation import (
     non_abelian_qualia_field_labels,
     validate_non_abelian_qualia_field_fixture,
 )
+from .notes_on_correspondence_non_obligatory_analogues_validation import (
+    NotesOnCorrespondenceNonObligatoryAnaloguesConfig,
+    NotesOnCorrespondenceNonObligatoryAnaloguesFixtureResult,
+    classify_notes_on_correspondence_non_obligatory_analogues_component,
+    notes_on_correspondence_non_obligatory_analogues_labels,
+    validate_notes_on_correspondence_non_obligatory_analogues_fixture,
+)
 from .nv_quantum_sensing_validation import (
     DecoherenceRegressionFit,
     NVQuantumSensingConfig,
@@ -1235,6 +1249,13 @@ from .preface_ii_visionary_validation import (
     normalise_visionary_interaction_formula,
     validate_preface_ii_visionary_fixture,
     visionary_operator_catalogue,
+)
+from .principle_teleology_as_optimisation_validation import (
+    PrincipleTeleologyAsOptimisationConfig,
+    PrincipleTeleologyAsOptimisationFixtureResult,
+    classify_principle_teleology_as_optimisation_component,
+    principle_teleology_as_optimisation_labels,
+    validate_principle_teleology_as_optimisation_fixture,
 )
 from .psi_higgs_lhc_phenomenology_validation import (
     PsiHiggsLHCPhenomenologyConfig,
@@ -2044,6 +2065,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_ii_the_principle_of_ethical_least_action_pela_fixture",
+    "ii_the_principle_of_ethical_least_action_pela_labels",
+    "classify_ii_the_principle_of_ethical_least_action_pela_component",
+    "IiThePrincipleOfEthicalLeastActionPelaFixtureResult",
+    "IiThePrincipleOfEthicalLeastActionPelaConfig",
+    "validate_notes_on_correspondence_non_obligatory_analogues_fixture",
+    "notes_on_correspondence_non_obligatory_analogues_labels",
+    "classify_notes_on_correspondence_non_obligatory_analogues_component",
+    "NotesOnCorrespondenceNonObligatoryAnaloguesFixtureResult",
+    "NotesOnCorrespondenceNonObligatoryAnaloguesConfig",
+    "validate_principle_teleology_as_optimisation_fixture",
+    "principle_teleology_as_optimisation_labels",
+    "classify_principle_teleology_as_optimisation_component",
+    "PrincipleTeleologyAsOptimisationFixtureResult",
+    "PrincipleTeleologyAsOptimisationConfig",
     "validate_l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r_fixture",
     "l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r_labels",
     "classify_l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r_component",

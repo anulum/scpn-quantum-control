@@ -4860,6 +4860,54 @@ def load_l15_reformulation_the_sec_objective_functional_decision_theoretic_form_
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_PRINCIPLE_TELEOLOGY_AS_OPTIMISATION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_principle_teleology_as_optimisation_validation_specs_2026-05-17.json"
+)
+
+
+def load_principle_teleology_as_optimisation_validation_spec(
+    spec_bundle: str | Path = DEFAULT_PRINCIPLE_TELEOLOGY_AS_OPTIMISATION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 principle teleology as optimisation validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_NOTES_ON_CORRESPONDENCE_NON_OBLIGATORY_ANALOGUES_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_notes_on_correspondence_non_obligatory_analogues_validation_specs_2026-05-17.json"
+)
+
+
+def load_notes_on_correspondence_non_obligatory_analogues_validation_spec(
+    spec_bundle: str | Path = DEFAULT_NOTES_ON_CORRESPONDENCE_NON_OBLIGATORY_ANALOGUES_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 notes on correspondence non obligatory analogues validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_II_THE_PRINCIPLE_OF_ETHICAL_LEAST_ACTION_PELA_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_ii_the_principle_of_ethical_least_action_pela_validation_specs_2026-05-17.json"
+)
+
+
+def load_ii_the_principle_of_ethical_least_action_pela_validation_spec(
+    spec_bundle: str | Path = DEFAULT_II_THE_PRINCIPLE_OF_ETHICAL_LEAST_ACTION_PELA_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 ii the principle of ethical least action pela validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -5373,4 +5421,10 @@ __all__ = [
     "load_i_the_ontological_origin_of_ethics_gauge_theory_derivation_validation_spec",
     "DEFAULT_L15_REFORMULATION_THE_SEC_OBJECTIVE_FUNCTIONAL_DECISION_THEORETIC_FORM_R_SPEC_BUNDLE",
     "load_l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r_validation_spec",
+    "DEFAULT_PRINCIPLE_TELEOLOGY_AS_OPTIMISATION_SPEC_BUNDLE",
+    "load_principle_teleology_as_optimisation_validation_spec",
+    "DEFAULT_NOTES_ON_CORRESPONDENCE_NON_OBLIGATORY_ANALOGUES_SPEC_BUNDLE",
+    "load_notes_on_correspondence_non_obligatory_analogues_validation_spec",
+    "DEFAULT_II_THE_PRINCIPLE_OF_ETHICAL_LEAST_ACTION_PELA_SPEC_BUNDLE",
+    "load_ii_the_principle_of_ethical_least_action_pela_validation_spec",
 ]
