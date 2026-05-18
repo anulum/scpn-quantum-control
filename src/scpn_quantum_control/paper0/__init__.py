@@ -582,6 +582,13 @@ from .grand_synthesis_validation import (
     validate_grand_synthesis_fixture,
     validate_nths_phase_test_fixture,
 )
+from .h_int_as_the_selection_operator_validation import (
+    HIntAsTheSelectionOperatorConfig,
+    HIntAsTheSelectionOperatorFixtureResult,
+    classify_h_int_as_the_selection_operator_component,
+    h_int_as_the_selection_operator_labels,
+    validate_h_int_as_the_selection_operator_fixture,
+)
 from .hamiltonian_index_validation import (
     HamiltonianIndexConfig,
     HamiltonianIndexFixtureResult,
@@ -813,6 +820,13 @@ from .master_lagrangian_intro_validation import (
     classify_master_lagrangian_intro_component,
     master_lagrangian_intro_labels,
     validate_master_lagrangian_intro_fixture,
+)
+from .mechanism_2_quantum_stochastic_resonance_qsr_validation import (
+    Mechanism2QuantumStochasticResonanceQsrConfig,
+    Mechanism2QuantumStochasticResonanceQsrFixtureResult,
+    classify_mechanism_2_quantum_stochastic_resonance_qsr_component,
+    mechanism_2_quantum_stochastic_resonance_qsr_labels,
+    validate_mechanism_2_quantum_stochastic_resonance_qsr_fixture,
 )
 from .meta_framework_integrations_p0r01803_validation import (
     MetaFrameworkIntegrationsP0r01803Config,
@@ -1508,6 +1522,13 @@ from .the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance_vali
     the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance_labels,
     validate_the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance_fixture,
 )
+from .the_quantum_to_classical_transition_amplification_of_intent_validation import (
+    TheQuantumToClassicalTransitionAmplificationOfIntentConfig,
+    TheQuantumToClassicalTransitionAmplificationOfIntentFixtureResult,
+    classify_the_quantum_to_classical_transition_amplification_of_intent_component,
+    the_quantum_to_classical_transition_amplification_of_intent_labels,
+    validate_the_quantum_to_classical_transition_amplification_of_intent_fixture,
+)
 from .the_self_as_a_soliton_emergence_of_localised_consciousness_layer_5_validation import (
     TheSelfAsASolitonEmergenceOfLocalisedConsciousnessLayer5Config,
     TheSelfAsASolitonEmergenceOfLocalisedConsciousnessLayer5FixtureResult,
@@ -1687,6 +1708,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_mechanism_2_quantum_stochastic_resonance_qsr_fixture",
+    "mechanism_2_quantum_stochastic_resonance_qsr_labels",
+    "classify_mechanism_2_quantum_stochastic_resonance_qsr_component",
+    "Mechanism2QuantumStochasticResonanceQsrFixtureResult",
+    "Mechanism2QuantumStochasticResonanceQsrConfig",
+    "validate_the_quantum_to_classical_transition_amplification_of_intent_fixture",
+    "the_quantum_to_classical_transition_amplification_of_intent_labels",
+    "classify_the_quantum_to_classical_transition_amplification_of_intent_component",
+    "TheQuantumToClassicalTransitionAmplificationOfIntentFixtureResult",
+    "TheQuantumToClassicalTransitionAmplificationOfIntentConfig",
+    "validate_h_int_as_the_selection_operator_fixture",
+    "h_int_as_the_selection_operator_labels",
+    "classify_h_int_as_the_selection_operator_component",
+    "HIntAsTheSelectionOperatorFixtureResult",
+    "HIntAsTheSelectionOperatorConfig",
     "validate_meta_framework_integrations_p0r03315_fixture",
     "meta_framework_integrations_p0r03315_labels",
     "classify_meta_framework_integrations_p0r03315_component",

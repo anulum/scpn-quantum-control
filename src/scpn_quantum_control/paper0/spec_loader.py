@@ -4015,6 +4015,55 @@ def load_meta_framework_integrations_p0r03315_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_H_INT_AS_THE_SELECTION_OPERATOR_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_h_int_as_the_selection_operator_validation_specs_2026-05-17.json"
+)
+
+
+def load_h_int_as_the_selection_operator_validation_spec(
+    spec_bundle: str | Path = DEFAULT_H_INT_AS_THE_SELECTION_OPERATOR_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 h int as the selection operator validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_QUANTUM_TO_CLASSICAL_TRANSITION_AMPLIFICATION_OF_INTENT_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_quantum_to_classical_transition_amplification_of_intent_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_quantum_to_classical_transition_amplification_of_intent_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_QUANTUM_TO_CLASSICAL_TRANSITION_AMPLIFICATION_OF_INTENT_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the quantum to classical transition amplification of intent validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_MECHANISM_2_QUANTUM_STOCHASTIC_RESONANCE_QSR_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_mechanism_2_quantum_stochastic_resonance_qsr_validation_specs_2026-05-17.json"
+)
+
+
+def load_mechanism_2_quantum_stochastic_resonance_qsr_validation_spec(
+    spec_bundle: str | Path = DEFAULT_MECHANISM_2_QUANTUM_STOCHASTIC_RESONANCE_QSR_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 mechanism 2 quantum stochastic resonance qsr validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -4426,4 +4475,10 @@ __all__ = [
     "load_the_physical_mechanism_of_downward_causation_amplification_of_intent_validation_spec",
     "DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03315_SPEC_BUNDLE",
     "load_meta_framework_integrations_p0r03315_validation_spec",
+    "DEFAULT_H_INT_AS_THE_SELECTION_OPERATOR_SPEC_BUNDLE",
+    "load_h_int_as_the_selection_operator_validation_spec",
+    "DEFAULT_THE_QUANTUM_TO_CLASSICAL_TRANSITION_AMPLIFICATION_OF_INTENT_SPEC_BUNDLE",
+    "load_the_quantum_to_classical_transition_amplification_of_intent_validation_spec",
+    "DEFAULT_MECHANISM_2_QUANTUM_STOCHASTIC_RESONANCE_QSR_SPEC_BUNDLE",
+    "load_mechanism_2_quantum_stochastic_resonance_qsr_validation_spec",
 ]
