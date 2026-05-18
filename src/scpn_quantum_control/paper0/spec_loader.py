@@ -3572,6 +3572,55 @@ def load_torus_surface_flow_lyapunov_style_certificate_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_QUASICRITICALITY_WITH_MS_QEC_TWO_TIMESCALE_CONTROL_AND_STABILITY_CERTIFI_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_quasicriticality_with_ms_qec_two_timescale_control_and_stability_certifi_validation_specs_2026-05-17.json"
+)
+
+
+def load_quasicriticality_with_ms_qec_two_timescale_control_and_stability_certifi_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_QUASICRITICALITY_WITH_MS_QEC_TWO_TIMESCALE_CONTROL_AND_STABILITY_CERTIFI_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 quasicriticality with ms qec two timescale control and stability certifi validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_BIBO_STABILITY_AND_LYAPUNOV_CERTIFICATE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_bibo_stability_and_lyapunov_certificate_validation_specs_2026-05-17.json"
+)
+
+
+def load_bibo_stability_and_lyapunov_certificate_validation_spec(
+    spec_bundle: str | Path = DEFAULT_BIBO_STABILITY_AND_LYAPUNOV_CERTIFICATE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 bibo stability and lyapunov certificate validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_MULTI_SCALE_QUANTUM_ERROR_CORRECTION_MS_QEC_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_multi_scale_quantum_error_correction_ms_qec_validation_specs_2026-05-17.json"
+)
+
+
+def load_multi_scale_quantum_error_correction_ms_qec_validation_spec(
+    spec_bundle: str | Path = DEFAULT_MULTI_SCALE_QUANTUM_ERROR_CORRECTION_MS_QEC_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 multi scale quantum error correction ms qec validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -3929,4 +3978,10 @@ __all__ = [
     "load_bibo_stability_statement_and_proof_obligation_validation_spec",
     "DEFAULT_TORUS_SURFACE_FLOW_LYAPUNOV_STYLE_CERTIFICATE_SPEC_BUNDLE",
     "load_torus_surface_flow_lyapunov_style_certificate_validation_spec",
+    "DEFAULT_QUASICRITICALITY_WITH_MS_QEC_TWO_TIMESCALE_CONTROL_AND_STABILITY_CERTIFI_SPEC_BUNDLE",
+    "load_quasicriticality_with_ms_qec_two_timescale_control_and_stability_certifi_validation_spec",
+    "DEFAULT_BIBO_STABILITY_AND_LYAPUNOV_CERTIFICATE_SPEC_BUNDLE",
+    "load_bibo_stability_and_lyapunov_certificate_validation_spec",
+    "DEFAULT_MULTI_SCALE_QUANTUM_ERROR_CORRECTION_MS_QEC_SPEC_BUNDLE",
+    "load_multi_scale_quantum_error_correction_ms_qec_validation_spec",
 ]
