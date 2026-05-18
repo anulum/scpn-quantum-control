@@ -4810,6 +4810,56 @@ def load_meta_framework_integrations_p0r03945_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_A_CASCADE_OF_DIRECTED_COUPLINGS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_a_cascade_of_directed_couplings_validation_specs_2026-05-17.json"
+)
+
+
+def load_a_cascade_of_directed_couplings_validation_spec(
+    spec_bundle: str | Path = DEFAULT_A_CASCADE_OF_DIRECTED_COUPLINGS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 a cascade of directed couplings validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_I_THE_ONTOLOGICAL_ORIGIN_OF_ETHICS_GAUGE_THEORY_DERIVATION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_i_the_ontological_origin_of_ethics_gauge_theory_derivation_validation_specs_2026-05-17.json"
+)
+
+
+def load_i_the_ontological_origin_of_ethics_gauge_theory_derivation_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_I_THE_ONTOLOGICAL_ORIGIN_OF_ETHICS_GAUGE_THEORY_DERIVATION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 i the ontological origin of ethics gauge theory derivation validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_L15_REFORMULATION_THE_SEC_OBJECTIVE_FUNCTIONAL_DECISION_THEORETIC_FORM_R_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r_validation_specs_2026-05-17.json"
+)
+
+
+def load_l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_L15_REFORMULATION_THE_SEC_OBJECTIVE_FUNCTIONAL_DECISION_THEORETIC_FORM_R_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 l15 reformulation the sec objective functional decision theoretic form r validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -5317,4 +5367,10 @@ __all__ = [
     "load_section_4_4_the_cosmic_compass_the_ethical_functional_and_the_consilium_validation_spec",
     "DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03945_SPEC_BUNDLE",
     "load_meta_framework_integrations_p0r03945_validation_spec",
+    "DEFAULT_A_CASCADE_OF_DIRECTED_COUPLINGS_SPEC_BUNDLE",
+    "load_a_cascade_of_directed_couplings_validation_spec",
+    "DEFAULT_I_THE_ONTOLOGICAL_ORIGIN_OF_ETHICS_GAUGE_THEORY_DERIVATION_SPEC_BUNDLE",
+    "load_i_the_ontological_origin_of_ethics_gauge_theory_derivation_validation_spec",
+    "DEFAULT_L15_REFORMULATION_THE_SEC_OBJECTIVE_FUNCTIONAL_DECISION_THEORETIC_FORM_R_SPEC_BUNDLE",
+    "load_l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r_validation_spec",
 ]

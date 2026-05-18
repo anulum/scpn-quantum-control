@@ -7,6 +7,13 @@
 # SCPN Quantum Control — Paper 0 source registers
 """Paper 0 source-anchored equation and validation registers."""
 
+from .a_cascade_of_directed_couplings_validation import (
+    ACascadeOfDirectedCouplingsConfig,
+    ACascadeOfDirectedCouplingsFixtureResult,
+    a_cascade_of_directed_couplings_labels,
+    classify_a_cascade_of_directed_couplings_component,
+    validate_a_cascade_of_directed_couplings_fixture,
+)
 from .a_map_of_reality_validation import (
     AMapOfRealityConfig,
     AMapOfRealityFixtureResult,
@@ -643,6 +650,13 @@ from .hpc_upde_derivation_validation import (
     upde_core_derivative,
     validate_hpc_upde_derivation_fixture,
 )
+from .i_the_ontological_origin_of_ethics_gauge_theory_derivation_validation import (
+    ITheOntologicalOriginOfEthicsGaugeTheoryDerivationConfig,
+    ITheOntologicalOriginOfEthicsGaugeTheoryDerivationFixtureResult,
+    classify_i_the_ontological_origin_of_ethics_gauge_theory_derivation_component,
+    i_the_ontological_origin_of_ethics_gauge_theory_derivation_labels,
+    validate_i_the_ontological_origin_of_ethics_gauge_theory_derivation_fixture,
+)
 from .i_the_unifying_computational_principle_hierarchical_predictive_coding_hp_validation import (
     ITheUnifyingComputationalPrincipleHierarchicalPredictiveCodingHpConfig,
     ITheUnifyingComputationalPrincipleHierarchicalPredictiveCodingHpFixtureResult,
@@ -776,6 +790,13 @@ from .l11_nths_computational_validation import (
     noosphere_hamiltonian,
     order_parameter_summary,
     validate_l11_nths_computational_fixture,
+)
+from .l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r_validation import (
+    L15ReformulationTheSecObjectiveFunctionalDecisionTheoreticFormRConfig,
+    L15ReformulationTheSecObjectiveFunctionalDecisionTheoreticFormRFixtureResult,
+    classify_l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r_component,
+    l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r_labels,
+    validate_l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r_fixture,
 )
 from .layer_9_existential_holograph_defining_a_stable_sigma_validation import (
     Layer9ExistentialHolographDefiningAStableSigmaConfig,
@@ -2023,6 +2044,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r_fixture",
+    "l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r_labels",
+    "classify_l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r_component",
+    "L15ReformulationTheSecObjectiveFunctionalDecisionTheoreticFormRFixtureResult",
+    "L15ReformulationTheSecObjectiveFunctionalDecisionTheoreticFormRConfig",
+    "validate_i_the_ontological_origin_of_ethics_gauge_theory_derivation_fixture",
+    "i_the_ontological_origin_of_ethics_gauge_theory_derivation_labels",
+    "classify_i_the_ontological_origin_of_ethics_gauge_theory_derivation_component",
+    "ITheOntologicalOriginOfEthicsGaugeTheoryDerivationFixtureResult",
+    "ITheOntologicalOriginOfEthicsGaugeTheoryDerivationConfig",
+    "validate_a_cascade_of_directed_couplings_fixture",
+    "a_cascade_of_directed_couplings_labels",
+    "classify_a_cascade_of_directed_couplings_component",
+    "ACascadeOfDirectedCouplingsFixtureResult",
+    "ACascadeOfDirectedCouplingsConfig",
     "validate_meta_framework_integrations_p0r03945_fixture",
     "meta_framework_integrations_p0r03945_labels",
     "classify_meta_framework_integrations_p0r03945_component",
