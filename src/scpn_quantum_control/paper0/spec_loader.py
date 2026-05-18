@@ -7345,6 +7345,54 @@ def load_quantum_biophysical_foundations_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_QUANTUM_FOUNDATIONS_COLLAPSE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_quantum_foundations_collapse_validation_specs_2026-05-17.json"
+)
+
+
+def load_quantum_foundations_collapse_validation_spec(
+    spec_bundle: str | Path = DEFAULT_QUANTUM_FOUNDATIONS_COLLAPSE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 quantum foundations collapse validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_QUANTUM_GRAVITATION_EDGE_CASES_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_quantum_gravitation_edge_cases_validation_specs_2026-05-17.json"
+)
+
+
+def load_quantum_gravitation_edge_cases_validation_spec(
+    spec_bundle: str | Path = DEFAULT_QUANTUM_GRAVITATION_EDGE_CASES_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 quantum gravitation edge cases validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SYSTEMS_NEUROSCIENCE_COMPLEXITY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_systems_neuroscience_complexity_validation_specs_2026-05-17.json"
+)
+
+
+def load_systems_neuroscience_complexity_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SYSTEMS_NEUROSCIENCE_COMPLEXITY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 systems neuroscience complexity validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -8158,4 +8206,10 @@ __all__ = [
     "load_cosmology_physics_extensions_validation_spec",
     "DEFAULT_QUANTUM_BIOPHYSICAL_FOUNDATIONS_SPEC_BUNDLE",
     "load_quantum_biophysical_foundations_validation_spec",
+    "DEFAULT_QUANTUM_FOUNDATIONS_COLLAPSE_SPEC_BUNDLE",
+    "load_quantum_foundations_collapse_validation_spec",
+    "DEFAULT_QUANTUM_GRAVITATION_EDGE_CASES_SPEC_BUNDLE",
+    "load_quantum_gravitation_edge_cases_validation_spec",
+    "DEFAULT_SYSTEMS_NEUROSCIENCE_COMPLEXITY_SPEC_BUNDLE",
+    "load_systems_neuroscience_complexity_validation_spec",
 ]

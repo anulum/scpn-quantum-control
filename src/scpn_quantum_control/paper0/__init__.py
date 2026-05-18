@@ -1768,6 +1768,20 @@ from .quantum_enzymology_of_the_immune_response_validation import (
     quantum_enzymology_of_the_immune_response_labels,
     validate_quantum_enzymology_of_the_immune_response_fixture,
 )
+from .quantum_foundations_collapse_validation import (
+    QuantumFoundationsCollapseConfig,
+    QuantumFoundationsCollapseFixtureResult,
+    classify_quantum_foundations_collapse_component,
+    quantum_foundations_collapse_labels,
+    validate_quantum_foundations_collapse_fixture,
+)
+from .quantum_gravitation_edge_cases_validation import (
+    QuantumGravitationEdgeCasesConfig,
+    QuantumGravitationEdgeCasesFixtureResult,
+    classify_quantum_gravitation_edge_cases_component,
+    quantum_gravitation_edge_cases_labels,
+    validate_quantum_gravitation_edge_cases_fixture,
+)
 from .quasicriticality_and_self_organisation_validation import (
     QuasicriticalityAndSelfOrganisationConfig,
     QuasicriticalityAndSelfOrganisationFixtureResult,
@@ -2493,6 +2507,13 @@ from .system_robustness_validation import (
     validate_decoherence_attack_ms_qec_boundary_fixture,
     validate_system_robustness_fixture,
 )
+from .systems_neuroscience_complexity_validation import (
+    SystemsNeuroscienceComplexityConfig,
+    SystemsNeuroscienceComplexityFixtureResult,
+    classify_systems_neuroscience_complexity_component,
+    systems_neuroscience_complexity_labels,
+    validate_systems_neuroscience_complexity_fixture,
+)
 from .t0_seeding_validation import (
     SpinTorsionBridgeValidationResult,
     T0SeedingConfig,
@@ -3094,6 +3115,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_systems_neuroscience_complexity_fixture",
+    "systems_neuroscience_complexity_labels",
+    "classify_systems_neuroscience_complexity_component",
+    "SystemsNeuroscienceComplexityFixtureResult",
+    "SystemsNeuroscienceComplexityConfig",
+    "validate_quantum_gravitation_edge_cases_fixture",
+    "quantum_gravitation_edge_cases_labels",
+    "classify_quantum_gravitation_edge_cases_component",
+    "QuantumGravitationEdgeCasesFixtureResult",
+    "QuantumGravitationEdgeCasesConfig",
+    "validate_quantum_foundations_collapse_fixture",
+    "quantum_foundations_collapse_labels",
+    "classify_quantum_foundations_collapse_component",
+    "QuantumFoundationsCollapseFixtureResult",
+    "QuantumFoundationsCollapseConfig",
     "validate_quantum_biophysical_foundations_fixture",
     "quantum_biophysical_foundations_labels",
     "classify_quantum_biophysical_foundations_component",
