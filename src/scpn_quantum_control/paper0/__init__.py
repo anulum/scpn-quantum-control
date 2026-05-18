@@ -535,6 +535,13 @@ from .domain_vi_overview_cybernetic_closure_meta_layer_16_validation import (
     domain_vi_overview_cybernetic_closure_meta_layer_16_labels,
     validate_domain_vi_overview_cybernetic_closure_meta_layer_16_fixture,
 )
+from .ecology_gaia_extensions_validation import (
+    EcologyGaiaExtensionsConfig,
+    EcologyGaiaExtensionsFixtureResult,
+    classify_ecology_gaia_extensions_component,
+    ecology_gaia_extensions_labels,
+    validate_ecology_gaia_extensions_fixture,
+)
 from .equation_register import (
     Paper0EquationRecord,
     get_paper0_equation_record,
@@ -1114,6 +1121,13 @@ from .lhc_search_strategy_roadmap_validation import (
     lhc_search_strategy_roadmap_labels,
     validate_lhc_search_strategy_roadmap_fixture,
 )
+from .linguistics_symbolism_vibrana_layer_7_validation import (
+    LinguisticsSymbolismVibranaLayer7Config,
+    LinguisticsSymbolismVibranaLayer7FixtureResult,
+    classify_linguistics_symbolism_vibrana_layer_7_component,
+    linguistics_symbolism_vibrana_layer_7_labels,
+    validate_linguistics_symbolism_vibrana_layer_7_fixture,
+)
 from .localised_validation import (
     LocalisedConfig,
     LocalisedFixtureResult,
@@ -1422,6 +1436,13 @@ from .non_abelian_qualia_field_validation import (
     classify_non_abelian_qualia_field_component,
     non_abelian_qualia_field_labels,
     validate_non_abelian_qualia_field_fixture,
+)
+from .nonlinear_dynamics_criticality_validation import (
+    NonlinearDynamicsCriticalityConfig,
+    NonlinearDynamicsCriticalityFixtureResult,
+    classify_nonlinear_dynamics_criticality_component,
+    nonlinear_dynamics_criticality_labels,
+    validate_nonlinear_dynamics_criticality_fixture,
 )
 from .notes_on_correspondence_non_obligatory_analogues_validation import (
     NotesOnCorrespondenceNonObligatoryAnaloguesConfig,
@@ -3136,6 +3157,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_ecology_gaia_extensions_fixture",
+    "ecology_gaia_extensions_labels",
+    "classify_ecology_gaia_extensions_component",
+    "EcologyGaiaExtensionsFixtureResult",
+    "EcologyGaiaExtensionsConfig",
+    "validate_linguistics_symbolism_vibrana_layer_7_fixture",
+    "linguistics_symbolism_vibrana_layer_7_labels",
+    "classify_linguistics_symbolism_vibrana_layer_7_component",
+    "LinguisticsSymbolismVibranaLayer7FixtureResult",
+    "LinguisticsSymbolismVibranaLayer7Config",
+    "validate_nonlinear_dynamics_criticality_fixture",
+    "nonlinear_dynamics_criticality_labels",
+    "classify_nonlinear_dynamics_criticality_component",
+    "NonlinearDynamicsCriticalityFixtureResult",
+    "NonlinearDynamicsCriticalityConfig",
     "validate_thermodynamics_entropy_fixture",
     "thermodynamics_entropy_labels",
     "classify_thermodynamics_entropy_component",
