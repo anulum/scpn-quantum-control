@@ -1526,6 +1526,13 @@ from .section_2_compression_and_meaning_information_geometry_validation import (
     section_2_compression_and_meaning_information_geometry_labels,
     validate_section_2_compression_and_meaning_information_geometry_fixture,
 )
+from .section_2_cross_frequency_coupling_cfc_and_hierarchical_processing_validation import (
+    Section2CrossFrequencyCouplingCfcAndHierarchicalProcessingConfig,
+    Section2CrossFrequencyCouplingCfcAndHierarchicalProcessingFixtureResult,
+    classify_section_2_cross_frequency_coupling_cfc_and_hierarchical_processing_component,
+    section_2_cross_frequency_coupling_cfc_and_hierarchical_processing_labels,
+    validate_section_2_cross_frequency_coupling_cfc_and_hierarchical_processing_fixture,
+)
 from .section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_validation import (
     Section2DerivationOfTheEthicalLagrangianFromGaugeSymmetryConfig,
     Section2DerivationOfTheEthicalLagrangianFromGaugeSymmetryFixtureResult,
@@ -1624,6 +1631,13 @@ from .section_3_the_geometric_and_dynamic_determinants_of_future_possibility_val
     section_3_the_geometric_and_dynamic_determinants_of_future_possibility_labels,
     validate_section_3_the_geometric_and_dynamic_determinants_of_future_possibility_fixture,
 )
+from .section_3_the_quasicritical_brain_validation import (
+    Section3TheQuasicriticalBrainConfig,
+    Section3TheQuasicriticalBrainFixtureResult,
+    classify_section_3_the_quasicritical_brain_component,
+    section_3_the_quasicritical_brain_labels,
+    validate_section_3_the_quasicritical_brain_fixture,
+)
 from .section_3_unified_experience_the_wilson_loop_validation import (
     Section3UnifiedExperienceTheWilsonLoopConfig,
     Section3UnifiedExperienceTheWilsonLoopFixtureResult,
@@ -1714,6 +1728,13 @@ from .section_5_physical_implications_biasing_the_path_integral_of_reality_valid
     classify_section_5_physical_implications_biasing_the_path_integral_of_reality_component,
     section_5_physical_implications_biasing_the_path_integral_of_reality_labels,
     validate_section_5_physical_implications_biasing_the_path_integral_of_reality_fixture,
+)
+from .section_6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical_predicti_validation import (
+    Section6TheFrequencyHierarchyThetaGammaCouplingAndHierarchicalPredictiConfig,
+    Section6TheFrequencyHierarchyThetaGammaCouplingAndHierarchicalPredictiFixtureResult,
+    classify_section_6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical_predicti_component,
+    section_6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical_predicti_labels,
+    validate_section_6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical_predicti_fixture,
 )
 from .section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_p0r02810_validation import (
     Section15LayerSummaryTable32TheDynamicSpineTheUnifiedPhaseDynamicsP0r02810Config,
@@ -2296,6 +2317,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_section_6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical_predicti_fixture",
+    "section_6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical_predicti_labels",
+    "classify_section_6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical_predicti_component",
+    "Section6TheFrequencyHierarchyThetaGammaCouplingAndHierarchicalPredictiFixtureResult",
+    "Section6TheFrequencyHierarchyThetaGammaCouplingAndHierarchicalPredictiConfig",
+    "validate_section_3_the_quasicritical_brain_fixture",
+    "section_3_the_quasicritical_brain_labels",
+    "classify_section_3_the_quasicritical_brain_component",
+    "Section3TheQuasicriticalBrainFixtureResult",
+    "Section3TheQuasicriticalBrainConfig",
+    "validate_section_2_cross_frequency_coupling_cfc_and_hierarchical_processing_fixture",
+    "section_2_cross_frequency_coupling_cfc_and_hierarchical_processing_labels",
+    "classify_section_2_cross_frequency_coupling_cfc_and_hierarchical_processing_component",
+    "Section2CrossFrequencyCouplingCfcAndHierarchicalProcessingFixtureResult",
+    "Section2CrossFrequencyCouplingCfcAndHierarchicalProcessingConfig",
     "validate_iii_the_developmental_and_plasticity_landscape_l3_fixture",
     "iii_the_developmental_and_plasticity_landscape_l3_labels",
     "classify_iii_the_developmental_and_plasticity_landscape_l3_component",

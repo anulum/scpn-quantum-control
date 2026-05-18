@@ -5452,6 +5452,56 @@ def load_iii_the_developmental_and_plasticity_landscape_l3_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_2_CROSS_FREQUENCY_COUPLING_CFC_AND_HIERARCHICAL_PROCESSING_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_cross_frequency_coupling_cfc_and_hierarchical_processing_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_cross_frequency_coupling_cfc_and_hierarchical_processing_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_2_CROSS_FREQUENCY_COUPLING_CFC_AND_HIERARCHICAL_PROCESSING_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 cross frequency coupling cfc and hierarchical processing validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_3_THE_QUASICRITICAL_BRAIN_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_3_the_quasicritical_brain_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_3_the_quasicritical_brain_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SECTION_3_THE_QUASICRITICAL_BRAIN_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 3 the quasicritical brain validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_6_THE_FREQUENCY_HIERARCHY_THETA_GAMMA_COUPLING_AND_HIERARCHICAL_PREDICTI_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical_predicti_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical_predicti_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_6_THE_FREQUENCY_HIERARCHY_THETA_GAMMA_COUPLING_AND_HIERARCHICAL_PREDICTI_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 6 the frequency hierarchy theta gamma coupling and hierarchical predicti validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -6037,4 +6087,10 @@ __all__ = [
     "load_section_2_the_synaptic_junction_and_downward_causation_l2_validation_spec",
     "DEFAULT_III_THE_DEVELOPMENTAL_AND_PLASTICITY_LANDSCAPE_L3_SPEC_BUNDLE",
     "load_iii_the_developmental_and_plasticity_landscape_l3_validation_spec",
+    "DEFAULT_SECTION_2_CROSS_FREQUENCY_COUPLING_CFC_AND_HIERARCHICAL_PROCESSING_SPEC_BUNDLE",
+    "load_section_2_cross_frequency_coupling_cfc_and_hierarchical_processing_validation_spec",
+    "DEFAULT_SECTION_3_THE_QUASICRITICAL_BRAIN_SPEC_BUNDLE",
+    "load_section_3_the_quasicritical_brain_validation_spec",
+    "DEFAULT_SECTION_6_THE_FREQUENCY_HIERARCHY_THETA_GAMMA_COUPLING_AND_HIERARCHICAL_PREDICTI_SPEC_BUNDLE",
+    "load_section_6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical_predicti_validation_spec",
 ]
