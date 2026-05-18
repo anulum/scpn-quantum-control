@@ -502,6 +502,13 @@ from .explicit_identification_of_terms_validation import (
     explicit_identification_of_terms_labels,
     validate_explicit_identification_of_terms_fixture,
 )
+from .falsification_condition_validation import (
+    FalsificationConditionConfig,
+    FalsificationConditionFixtureResult,
+    classify_falsification_condition_component,
+    falsification_condition_labels,
+    validate_falsification_condition_fixture,
+)
 from .field_coupling_cfield_validation import (
     FieldCouplingCfieldConfig,
     FieldCouplingCfieldFixtureResult,
@@ -531,6 +538,13 @@ from .foreword_coupling_validation import (
     interaction_hamiltonian,
     sigma_layer_catalogue,
     validate_foreword_coupling_fixture,
+)
+from .formalising_the_nths_within_a_multi_agent_active_inference_framework_validation import (
+    FormalisingTheNthsWithinAMultiAgentActiveInferenceFrameworkConfig,
+    FormalisingTheNthsWithinAMultiAgentActiveInferenceFrameworkFixtureResult,
+    classify_formalising_the_nths_within_a_multi_agent_active_inference_framework_component,
+    formalising_the_nths_within_a_multi_agent_active_inference_framework_labels,
+    validate_formalising_the_nths_within_a_multi_agent_active_inference_framework_fixture,
 )
 from .formalism_of_the_homeostatic_quasicritical_controller_validation import (
     FormalismOfTheHomeostaticQuasicriticalControllerConfig,
@@ -2220,6 +2234,13 @@ from .sigma_is_the_q_ball_soliton_validation import (
     sigma_is_the_q_ball_soliton_labels,
     validate_sigma_is_the_q_ball_soliton_fixture,
 )
+from .simulation_architecture_and_implementation_validation import (
+    SimulationArchitectureAndImplementationConfig,
+    SimulationArchitectureAndImplementationFixtureResult,
+    classify_simulation_architecture_and_implementation_component,
+    simulation_architecture_and_implementation_labels,
+    validate_simulation_architecture_and_implementation_fixture,
+)
 from .spec_loader import load_glial_control_validation_spec
 from .ssb_hierarchy_genesis_validation import (
     SSBHierarchyGenesisConfig,
@@ -2821,6 +2842,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_simulation_architecture_and_implementation_fixture",
+    "simulation_architecture_and_implementation_labels",
+    "classify_simulation_architecture_and_implementation_component",
+    "SimulationArchitectureAndImplementationFixtureResult",
+    "SimulationArchitectureAndImplementationConfig",
+    "validate_formalising_the_nths_within_a_multi_agent_active_inference_framework_fixture",
+    "formalising_the_nths_within_a_multi_agent_active_inference_framework_labels",
+    "classify_formalising_the_nths_within_a_multi_agent_active_inference_framework_component",
+    "FormalisingTheNthsWithinAMultiAgentActiveInferenceFrameworkFixtureResult",
+    "FormalisingTheNthsWithinAMultiAgentActiveInferenceFrameworkConfig",
+    "validate_falsification_condition_fixture",
+    "falsification_condition_labels",
+    "classify_falsification_condition_component",
+    "FalsificationConditionFixtureResult",
+    "FalsificationConditionConfig",
     "validate_proposed_experimental_protocol_correlating_qrng_statistical_deviations_w_fixture",
     "proposed_experimental_protocol_correlating_qrng_statistical_deviations_w_labels",
     "classify_proposed_experimental_protocol_correlating_qrng_statistical_deviations_w_component",

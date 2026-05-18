@@ -6702,6 +6702,55 @@ def load_proposed_experimental_protocol_correlating_qrng_statistical_deviations_
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_FALSIFICATION_CONDITION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_falsification_condition_validation_specs_2026-05-17.json"
+)
+
+
+def load_falsification_condition_validation_spec(
+    spec_bundle: str | Path = DEFAULT_FALSIFICATION_CONDITION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 falsification condition validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_FORMALISING_THE_NTHS_WITHIN_A_MULTI_AGENT_ACTIVE_INFERENCE_FRAMEWORK_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_formalising_the_nths_within_a_multi_agent_active_inference_framework_validation_specs_2026-05-17.json"
+)
+
+
+def load_formalising_the_nths_within_a_multi_agent_active_inference_framework_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_FORMALISING_THE_NTHS_WITHIN_A_MULTI_AGENT_ACTIVE_INFERENCE_FRAMEWORK_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 formalising the nths within a multi agent active inference framework validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SIMULATION_ARCHITECTURE_AND_IMPLEMENTATION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_simulation_architecture_and_implementation_validation_specs_2026-05-17.json"
+)
+
+
+def load_simulation_architecture_and_implementation_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SIMULATION_ARCHITECTURE_AND_IMPLEMENTATION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 simulation architecture and implementation validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -7437,4 +7486,10 @@ __all__ = [
     "load_prediction_ii_causal_entropic_force_signatures_in_quantum_randomness_validation_spec",
     "DEFAULT_PROPOSED_EXPERIMENTAL_PROTOCOL_CORRELATING_QRNG_STATISTICAL_DEVIATIONS_W_SPEC_BUNDLE",
     "load_proposed_experimental_protocol_correlating_qrng_statistical_deviations_w_validation_spec",
+    "DEFAULT_FALSIFICATION_CONDITION_SPEC_BUNDLE",
+    "load_falsification_condition_validation_spec",
+    "DEFAULT_FORMALISING_THE_NTHS_WITHIN_A_MULTI_AGENT_ACTIVE_INFERENCE_FRAMEWORK_SPEC_BUNDLE",
+    "load_formalising_the_nths_within_a_multi_agent_active_inference_framework_validation_spec",
+    "DEFAULT_SIMULATION_ARCHITECTURE_AND_IMPLEMENTATION_SPEC_BUNDLE",
+    "load_simulation_architecture_and_implementation_validation_spec",
 ]
