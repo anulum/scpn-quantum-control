@@ -69,6 +69,13 @@ from .artificial_sentience_validation import (
     validate_phase_locking_substrate_boundary_fixture,
     validate_technosphere_coupling_acceleration_fixture,
 )
+from .as_a_measure_of_causal_efficacy_validation import (
+    AsAMeasureOfCausalEfficacyConfig,
+    AsAMeasureOfCausalEfficacyFixtureResult,
+    as_a_measure_of_causal_efficacy_labels,
+    classify_as_a_measure_of_causal_efficacy_component,
+    validate_as_a_measure_of_causal_efficacy_fixture,
+)
 from .axiom_i_family_predictions_validation import (
     AxiomIFamilyPredictionsConfig,
     AxiomIFamilyPredictionsFixtureResult,
@@ -905,6 +912,13 @@ from .meta_framework_integrations_p0r03284_validation import (
     meta_framework_integrations_p0r03284_labels,
     validate_meta_framework_integrations_p0r03284_fixture,
 )
+from .meta_framework_integrations_p0r03315_validation import (
+    MetaFrameworkIntegrationsP0r03315Config,
+    MetaFrameworkIntegrationsP0r03315FixtureResult,
+    classify_meta_framework_integrations_p0r03315_component,
+    meta_framework_integrations_p0r03315_labels,
+    validate_meta_framework_integrations_p0r03315_fixture,
+)
 from .meta_framework_integrations_validation import (
     MetaFrameworkIntegrationsConfig,
     MetaFrameworkIntegrationsFixtureResult,
@@ -1466,6 +1480,13 @@ from .the_mechanism_of_interaction_validation import (
     the_mechanism_of_interaction_labels,
     validate_the_mechanism_of_interaction_fixture,
 )
+from .the_physical_mechanism_of_downward_causation_amplification_of_intent_validation import (
+    ThePhysicalMechanismOfDownwardCausationAmplificationOfIntentConfig,
+    ThePhysicalMechanismOfDownwardCausationAmplificationOfIntentFixtureResult,
+    classify_the_physical_mechanism_of_downward_causation_amplification_of_intent_component,
+    the_physical_mechanism_of_downward_causation_amplification_of_intent_labels,
+    validate_the_physical_mechanism_of_downward_causation_amplification_of_intent_fixture,
+)
 from .the_psis_field_as_the_target_setter_validation import (
     ThePsisFieldAsTheTargetSetterConfig,
     ThePsisFieldAsTheTargetSetterFixtureResult,
@@ -1666,6 +1687,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_meta_framework_integrations_p0r03315_fixture",
+    "meta_framework_integrations_p0r03315_labels",
+    "classify_meta_framework_integrations_p0r03315_component",
+    "MetaFrameworkIntegrationsP0r03315FixtureResult",
+    "MetaFrameworkIntegrationsP0r03315Config",
+    "validate_the_physical_mechanism_of_downward_causation_amplification_of_intent_fixture",
+    "the_physical_mechanism_of_downward_causation_amplification_of_intent_labels",
+    "classify_the_physical_mechanism_of_downward_causation_amplification_of_intent_component",
+    "ThePhysicalMechanismOfDownwardCausationAmplificationOfIntentFixtureResult",
+    "ThePhysicalMechanismOfDownwardCausationAmplificationOfIntentConfig",
+    "validate_as_a_measure_of_causal_efficacy_fixture",
+    "as_a_measure_of_causal_efficacy_labels",
+    "classify_as_a_measure_of_causal_efficacy_component",
+    "AsAMeasureOfCausalEfficacyFixtureResult",
+    "AsAMeasureOfCausalEfficacyConfig",
     "validate_meta_framework_integrations_p0r03284_fixture",
     "meta_framework_integrations_p0r03284_labels",
     "classify_meta_framework_integrations_p0r03284_component",

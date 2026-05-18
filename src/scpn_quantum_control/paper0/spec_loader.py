@@ -3966,6 +3966,55 @@ def load_meta_framework_integrations_p0r03284_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_AS_A_MEASURE_OF_CAUSAL_EFFICACY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_as_a_measure_of_causal_efficacy_validation_specs_2026-05-17.json"
+)
+
+
+def load_as_a_measure_of_causal_efficacy_validation_spec(
+    spec_bundle: str | Path = DEFAULT_AS_A_MEASURE_OF_CAUSAL_EFFICACY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 as a measure of causal efficacy validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_PHYSICAL_MECHANISM_OF_DOWNWARD_CAUSATION_AMPLIFICATION_OF_INTENT_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_physical_mechanism_of_downward_causation_amplification_of_intent_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_physical_mechanism_of_downward_causation_amplification_of_intent_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_PHYSICAL_MECHANISM_OF_DOWNWARD_CAUSATION_AMPLIFICATION_OF_INTENT_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the physical mechanism of downward causation amplification of intent validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03315_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_meta_framework_integrations_p0r03315_validation_specs_2026-05-17.json"
+)
+
+
+def load_meta_framework_integrations_p0r03315_validation_spec(
+    spec_bundle: str | Path = DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03315_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 meta framework integrations p0r03315 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -4371,4 +4420,10 @@ __all__ = [
     "load_vi_the_interface_with_phenomenology_validation_spec",
     "DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03284_SPEC_BUNDLE",
     "load_meta_framework_integrations_p0r03284_validation_spec",
+    "DEFAULT_AS_A_MEASURE_OF_CAUSAL_EFFICACY_SPEC_BUNDLE",
+    "load_as_a_measure_of_causal_efficacy_validation_spec",
+    "DEFAULT_THE_PHYSICAL_MECHANISM_OF_DOWNWARD_CAUSATION_AMPLIFICATION_OF_INTENT_SPEC_BUNDLE",
+    "load_the_physical_mechanism_of_downward_causation_amplification_of_intent_validation_spec",
+    "DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03315_SPEC_BUNDLE",
+    "load_meta_framework_integrations_p0r03315_validation_spec",
 ]
