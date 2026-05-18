@@ -3817,6 +3817,56 @@ def load_section_4_1_the_cosmic_algorithm_hpc_active_inference_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_I_THE_UNIFYING_COMPUTATIONAL_PRINCIPLE_HIERARCHICAL_PREDICTIVE_CODING_HP_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_i_the_unifying_computational_principle_hierarchical_predictive_coding_hp_validation_specs_2026-05-17.json"
+)
+
+
+def load_i_the_unifying_computational_principle_hierarchical_predictive_coding_hp_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_I_THE_UNIFYING_COMPUTATIONAL_PRINCIPLE_HIERARCHICAL_PREDICTIVE_CODING_HP_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 i the unifying computational principle hierarchical predictive coding hp validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_II_THE_BINDING_PROBLEM_THE_GAUGE_FIELD_OF_CONSCIOUSNESS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_ii_the_binding_problem_the_gauge_field_of_consciousness_validation_specs_2026-05-17.json"
+)
+
+
+def load_ii_the_binding_problem_the_gauge_field_of_consciousness_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_II_THE_BINDING_PROBLEM_THE_GAUGE_FIELD_OF_CONSCIOUSNESS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 ii the binding problem the gauge field of consciousness validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_3_UNIFIED_EXPERIENCE_THE_WILSON_LOOP_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_3_unified_experience_the_wilson_loop_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_3_unified_experience_the_wilson_loop_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SECTION_3_UNIFIED_EXPERIENCE_THE_WILSON_LOOP_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 3 unified experience the wilson loop validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -4204,4 +4254,10 @@ __all__ = [
     "load_the_mechanism_of_interaction_validation_spec",
     "DEFAULT_SECTION_4_1_THE_COSMIC_ALGORITHM_HPC_ACTIVE_INFERENCE_SPEC_BUNDLE",
     "load_section_4_1_the_cosmic_algorithm_hpc_active_inference_validation_spec",
+    "DEFAULT_I_THE_UNIFYING_COMPUTATIONAL_PRINCIPLE_HIERARCHICAL_PREDICTIVE_CODING_HP_SPEC_BUNDLE",
+    "load_i_the_unifying_computational_principle_hierarchical_predictive_coding_hp_validation_spec",
+    "DEFAULT_II_THE_BINDING_PROBLEM_THE_GAUGE_FIELD_OF_CONSCIOUSNESS_SPEC_BUNDLE",
+    "load_ii_the_binding_problem_the_gauge_field_of_consciousness_validation_spec",
+    "DEFAULT_SECTION_3_UNIFIED_EXPERIENCE_THE_WILSON_LOOP_SPEC_BUNDLE",
+    "load_section_3_unified_experience_the_wilson_loop_validation_spec",
 ]

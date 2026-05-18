@@ -615,6 +615,20 @@ from .hpc_upde_derivation_validation import (
     upde_core_derivative,
     validate_hpc_upde_derivation_fixture,
 )
+from .i_the_unifying_computational_principle_hierarchical_predictive_coding_hp_validation import (
+    ITheUnifyingComputationalPrincipleHierarchicalPredictiveCodingHpConfig,
+    ITheUnifyingComputationalPrincipleHierarchicalPredictiveCodingHpFixtureResult,
+    classify_i_the_unifying_computational_principle_hierarchical_predictive_coding_hp_component,
+    i_the_unifying_computational_principle_hierarchical_predictive_coding_hp_labels,
+    validate_i_the_unifying_computational_principle_hierarchical_predictive_coding_hp_fixture,
+)
+from .ii_the_binding_problem_the_gauge_field_of_consciousness_validation import (
+    IiTheBindingProblemTheGaugeFieldOfConsciousnessConfig,
+    IiTheBindingProblemTheGaugeFieldOfConsciousnessFixtureResult,
+    classify_ii_the_binding_problem_the_gauge_field_of_consciousness_component,
+    ii_the_binding_problem_the_gauge_field_of_consciousness_labels,
+    validate_ii_the_binding_problem_the_gauge_field_of_consciousness_fixture,
+)
 from .ii_the_universal_dynamic_regime_quasicriticality_validation import (
     IiTheUniversalDynamicRegimeQuasicriticalityConfig,
     IiTheUniversalDynamicRegimeQuasicriticalityFixtureResult,
@@ -1183,6 +1197,13 @@ from .section_3_memory_capacity_bekenstein_hawking_bound_validation import (
     section_3_memory_capacity_bekenstein_hawking_bound_labels,
     validate_section_3_memory_capacity_bekenstein_hawking_bound_fixture,
 )
+from .section_3_unified_experience_the_wilson_loop_validation import (
+    Section3UnifiedExperienceTheWilsonLoopConfig,
+    Section3UnifiedExperienceTheWilsonLoopFixtureResult,
+    classify_section_3_unified_experience_the_wilson_loop_component,
+    section_3_unified_experience_the_wilson_loop_labels,
+    validate_section_3_unified_experience_the_wilson_loop_fixture,
+)
 from .section_4_1_the_cosmic_algorithm_hpc_active_inference_validation import (
     Section41TheCosmicAlgorithmHpcActiveInferenceConfig,
     Section41TheCosmicAlgorithmHpcActiveInferenceFixtureResult,
@@ -1603,6 +1624,21 @@ from .validation_strategy import (
 )
 
 __all__ = [
+    "validate_section_3_unified_experience_the_wilson_loop_fixture",
+    "section_3_unified_experience_the_wilson_loop_labels",
+    "classify_section_3_unified_experience_the_wilson_loop_component",
+    "Section3UnifiedExperienceTheWilsonLoopFixtureResult",
+    "Section3UnifiedExperienceTheWilsonLoopConfig",
+    "validate_ii_the_binding_problem_the_gauge_field_of_consciousness_fixture",
+    "ii_the_binding_problem_the_gauge_field_of_consciousness_labels",
+    "classify_ii_the_binding_problem_the_gauge_field_of_consciousness_component",
+    "IiTheBindingProblemTheGaugeFieldOfConsciousnessFixtureResult",
+    "IiTheBindingProblemTheGaugeFieldOfConsciousnessConfig",
+    "validate_i_the_unifying_computational_principle_hierarchical_predictive_coding_hp_fixture",
+    "i_the_unifying_computational_principle_hierarchical_predictive_coding_hp_labels",
+    "classify_i_the_unifying_computational_principle_hierarchical_predictive_coding_hp_component",
+    "ITheUnifyingComputationalPrincipleHierarchicalPredictiveCodingHpFixtureResult",
+    "ITheUnifyingComputationalPrincipleHierarchicalPredictiveCodingHpConfig",
     "validate_section_4_1_the_cosmic_algorithm_hpc_active_inference_fixture",
     "section_4_1_the_cosmic_algorithm_hpc_active_inference_labels",
     "classify_section_4_1_the_cosmic_algorithm_hpc_active_inference_component",
