@@ -282,6 +282,13 @@ from .ciss_bioelectric_validation import (
     radical_pair_hamiltonian,
     validate_ciss_bioelectric_fixture,
 )
+from .clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica_validation import (
+    ClinicalScenarioAnalysisTraumaticBrainInjuryTbiAndPharmacologicaConfig,
+    ClinicalScenarioAnalysisTraumaticBrainInjuryTbiAndPharmacologicaFixtureResult,
+    classify_clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica_component,
+    clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica_labels,
+    validate_clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica_fixture,
+)
 from .collective_niche_construction_validation import (
     CollectiveNicheConstructionConfig,
     CollectiveNicheConstructionFixtureResult,
@@ -1757,6 +1764,13 @@ from .section_2_hpc_as_geometric_flow_validation import (
     section_2_hpc_as_geometric_flow_labels,
     validate_section_2_hpc_as_geometric_flow_fixture,
 )
+from .section_2_l2_l3_disruption_excitotoxicity_and_structural_failure_validation import (
+    Section2L2L3DisruptionExcitotoxicityAndStructuralFailureConfig,
+    Section2L2L3DisruptionExcitotoxicityAndStructuralFailureFixtureResult,
+    classify_section_2_l2_l3_disruption_excitotoxicity_and_structural_failure_component,
+    section_2_l2_l3_disruption_excitotoxicity_and_structural_failure_labels,
+    validate_section_2_l2_l3_disruption_excitotoxicity_and_structural_failure_fixture,
+)
 from .section_2_molecular_geometry_and_the_psi_field_interface_l2_l3_validation import (
     Section2MolecularGeometryAndThePsiFieldInterfaceL2L3Config,
     Section2MolecularGeometryAndThePsiFieldInterfaceL2L3FixtureResult,
@@ -2693,8 +2707,30 @@ from .vii_pathology_the_disordered_brain_validation import (
     validate_vii_pathology_the_disordered_brain_fixture,
     vii_pathology_the_disordered_brain_labels,
 )
+from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation import (
+    ViiiTheEvolutionaryTrajectoryOfTheBrainBodySystemConfig,
+    ViiiTheEvolutionaryTrajectoryOfTheBrainBodySystemFixtureResult,
+    classify_viii_the_evolutionary_trajectory_of_the_brain_body_system_component,
+    validate_viii_the_evolutionary_trajectory_of_the_brain_body_system_fixture,
+    viii_the_evolutionary_trajectory_of_the_brain_body_system_labels,
+)
 
 __all__ = [
+    "validate_section_2_l2_l3_disruption_excitotoxicity_and_structural_failure_fixture",
+    "section_2_l2_l3_disruption_excitotoxicity_and_structural_failure_labels",
+    "classify_section_2_l2_l3_disruption_excitotoxicity_and_structural_failure_component",
+    "Section2L2L3DisruptionExcitotoxicityAndStructuralFailureFixtureResult",
+    "Section2L2L3DisruptionExcitotoxicityAndStructuralFailureConfig",
+    "validate_clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica_fixture",
+    "clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica_labels",
+    "classify_clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica_component",
+    "ClinicalScenarioAnalysisTraumaticBrainInjuryTbiAndPharmacologicaFixtureResult",
+    "ClinicalScenarioAnalysisTraumaticBrainInjuryTbiAndPharmacologicaConfig",
+    "validate_viii_the_evolutionary_trajectory_of_the_brain_body_system_fixture",
+    "viii_the_evolutionary_trajectory_of_the_brain_body_system_labels",
+    "classify_viii_the_evolutionary_trajectory_of_the_brain_body_system_component",
+    "ViiiTheEvolutionaryTrajectoryOfTheBrainBodySystemFixtureResult",
+    "ViiiTheEvolutionaryTrajectoryOfTheBrainBodySystemConfig",
     "validate_section_1_psychedelics_the_expanded_manifold_fixture",
     "section_1_psychedelics_the_expanded_manifold_labels",
     "classify_section_1_psychedelics_the_expanded_manifold_component",

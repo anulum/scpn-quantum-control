@@ -6403,6 +6403,57 @@ def load_section_1_psychedelics_the_expanded_manifold_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_VIII_THE_EVOLUTIONARY_TRAJECTORY_OF_THE_BRAIN_BODY_SYSTEM_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_viii_the_evolutionary_trajectory_of_the_brain_body_system_validation_specs_2026-05-17.json"
+)
+
+
+def load_viii_the_evolutionary_trajectory_of_the_brain_body_system_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_VIII_THE_EVOLUTIONARY_TRAJECTORY_OF_THE_BRAIN_BODY_SYSTEM_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 viii the evolutionary trajectory of the brain body system validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_CLINICAL_SCENARIO_ANALYSIS_TRAUMATIC_BRAIN_INJURY_TBI_AND_PHARMACOLOGICA_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica_validation_specs_2026-05-17.json"
+)
+
+
+def load_clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_CLINICAL_SCENARIO_ANALYSIS_TRAUMATIC_BRAIN_INJURY_TBI_AND_PHARMACOLOGICA_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 clinical scenario analysis traumatic brain injury tbi and pharmacologica validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_2_L2_L3_DISRUPTION_EXCITOTOXICITY_AND_STRUCTURAL_FAILURE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_l2_l3_disruption_excitotoxicity_and_structural_failure_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_l2_l3_disruption_excitotoxicity_and_structural_failure_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_2_L2_L3_DISRUPTION_EXCITOTOXICITY_AND_STRUCTURAL_FAILURE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 l2 l3 disruption excitotoxicity and structural failure validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -7102,4 +7153,10 @@ __all__ = [
     "load_section_3_sleep_and_dreaming_the_optimisation_cycle_validation_spec",
     "DEFAULT_SECTION_1_PSYCHEDELICS_THE_EXPANDED_MANIFOLD_SPEC_BUNDLE",
     "load_section_1_psychedelics_the_expanded_manifold_validation_spec",
+    "DEFAULT_VIII_THE_EVOLUTIONARY_TRAJECTORY_OF_THE_BRAIN_BODY_SYSTEM_SPEC_BUNDLE",
+    "load_viii_the_evolutionary_trajectory_of_the_brain_body_system_validation_spec",
+    "DEFAULT_CLINICAL_SCENARIO_ANALYSIS_TRAUMATIC_BRAIN_INJURY_TBI_AND_PHARMACOLOGICA_SPEC_BUNDLE",
+    "load_clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica_validation_spec",
+    "DEFAULT_SECTION_2_L2_L3_DISRUPTION_EXCITOTOXICITY_AND_STRUCTURAL_FAILURE_SPEC_BUNDLE",
+    "load_section_2_l2_l3_disruption_excitotoxicity_and_structural_failure_validation_spec",
 ]
