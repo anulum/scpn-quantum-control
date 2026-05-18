@@ -1206,6 +1206,13 @@ from .mathematical_bridge_validation import (
     mathematical_bridge_labels,
     validate_mathematical_bridge_fixture,
 )
+from .mathematics_geometry_validation import (
+    MathematicsGeometryConfig,
+    MathematicsGeometryFixtureResult,
+    classify_mathematics_geometry_component,
+    mathematics_geometry_labels,
+    validate_mathematics_geometry_fixture,
+)
 from .maximizing_as_the_goal_of_coupling_validation import (
     MaximizingAsTheGoalOfCouplingConfig,
     MaximizingAsTheGoalOfCouplingFixtureResult,
@@ -1631,12 +1638,26 @@ from .phenomenological_lagrangian_validation import (
     phenomenological_lagrangian_labels,
     validate_phenomenological_lagrangian_fixture,
 )
+from .philosophy_consciousness_validation import (
+    PhilosophyConsciousnessConfig,
+    PhilosophyConsciousnessFixtureResult,
+    classify_philosophy_consciousness_component,
+    philosophy_consciousness_labels,
+    validate_philosophy_consciousness_fixture,
+)
 from .philosophy_ethics_anchors_validation import (
     PhilosophyEthicsAnchorsConfig,
     PhilosophyEthicsAnchorsFixtureResult,
     classify_philosophy_ethics_anchors_component,
     philosophy_ethics_anchors_labels,
     validate_philosophy_ethics_anchors_fixture,
+)
+from .philosophy_of_information_mind_validation import (
+    PhilosophyOfInformationMindConfig,
+    PhilosophyOfInformationMindFixtureResult,
+    classify_philosophy_of_information_mind_component,
+    philosophy_of_information_mind_labels,
+    validate_philosophy_of_information_mind_fixture,
 )
 from .positioning_preface_context_validation import (
     PositioningPrefaceContextConfig,
@@ -3178,6 +3199,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_mathematics_geometry_fixture",
+    "mathematics_geometry_labels",
+    "classify_mathematics_geometry_component",
+    "MathematicsGeometryFixtureResult",
+    "MathematicsGeometryConfig",
+    "validate_philosophy_consciousness_fixture",
+    "philosophy_consciousness_labels",
+    "classify_philosophy_consciousness_component",
+    "PhilosophyConsciousnessFixtureResult",
+    "PhilosophyConsciousnessConfig",
+    "validate_philosophy_of_information_mind_fixture",
+    "philosophy_of_information_mind_labels",
+    "classify_philosophy_of_information_mind_component",
+    "PhilosophyOfInformationMindFixtureResult",
+    "PhilosophyOfInformationMindConfig",
     "validate_philosophy_ethics_anchors_fixture",
     "philosophy_ethics_anchors_labels",
     "classify_philosophy_ethics_anchors_component",
