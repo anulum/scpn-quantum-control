@@ -1,0 +1,46 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved.
+# (c) Code 2020-2026 Miroslav Sotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control -- Paper 0 I. The Unified Mathematical Description (The Dynamic Fiber Bundle) runner tests
+"""Tests for the Paper 0 I. The Unified Mathematical Description (The Dynamic Fiber Bundle) fixture runner."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from scripts.run_paper0_i_the_unified_mathematical_description_the_dynamic_fiber_bundle_fixture import (
+    render_report,
+    write_outputs,
+)
+
+
+def test_run_i_the_unified_mathematical_description_the_dynamic_fiber_bundle_fixture_writes_json_and_report(
+    tmp_path: Path,
+) -> None:
+    outputs = write_outputs(
+        output_path=tmp_path / "fixture.json", report_path=tmp_path / "fixture.md"
+    )
+    payload = json.loads(outputs["json"].read_text(encoding="utf-8"))
+    report = outputs["report"].read_text(encoding="utf-8")
+    assert payload["source_ledger_span"] == ["P0R06115", "P0R06122"]
+    assert payload["source_record_count"] == 8
+    assert payload["component_count"] == 3
+    assert payload["next_source_boundary"] == "P0R06123"
+    assert (
+        payload["claim_boundary"]
+        == "source-bounded i the unified mathematical description the dynamic fiber bundle source-accounting bridge; not validation evidence"
+    )
+    assert (
+        "Paper 0 "
+        + "I. The Unified Mathematical Description (The Dynamic Fiber Bundle)"
+        + " Fixture"
+        in report
+    )
+    assert (
+        "source_i_the_unified_mathematical_description_the_dynamic_fiber_bundle_only_no_experiment"
+        in render_report(payload)
+    )

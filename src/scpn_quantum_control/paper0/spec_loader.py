@@ -8077,6 +8077,55 @@ def load_the_physics_of_teleology_and_the_origin_of_ethics_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_III_EULER_LAGRANGE_FOR_THE_ETHICAL_CONNECTION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_iii_euler_lagrange_for_the_ethical_connection_validation_specs_2026-05-17.json"
+)
+
+
+def load_iii_euler_lagrange_for_the_ethical_connection_validation_spec(
+    spec_bundle: str | Path = DEFAULT_III_EULER_LAGRANGE_FOR_THE_ETHICAL_CONNECTION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 iii euler lagrange for the ethical connection validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_IV_ETHICS_AS_CAUSAL_ENTROPIC_FORCES_CEF_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_iv_ethics_as_causal_entropic_forces_cef_validation_specs_2026-05-17.json"
+)
+
+
+def load_iv_ethics_as_causal_entropic_forces_cef_validation_spec(
+    spec_bundle: str | Path = DEFAULT_IV_ETHICS_AS_CAUSAL_ENTROPIC_FORCES_CEF_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 iv ethics as causal entropic forces cef validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_I_THE_UNIFIED_MATHEMATICAL_DESCRIPTION_THE_DYNAMIC_FIBER_BUNDLE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_i_the_unified_mathematical_description_the_dynamic_fiber_bundle_validation_specs_2026-05-17.json"
+)
+
+
+def load_i_the_unified_mathematical_description_the_dynamic_fiber_bundle_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_I_THE_UNIFIED_MATHEMATICAL_DESCRIPTION_THE_DYNAMIC_FIBER_BUNDLE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 i the unified mathematical description the dynamic fiber bundle validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -8980,4 +9029,10 @@ __all__ = [
     "load_xiii_the_constructive_role_of_noise_msr_and_nis_validation_spec",
     "DEFAULT_THE_PHYSICS_OF_TELEOLOGY_AND_THE_ORIGIN_OF_ETHICS_SPEC_BUNDLE",
     "load_the_physics_of_teleology_and_the_origin_of_ethics_validation_spec",
+    "DEFAULT_III_EULER_LAGRANGE_FOR_THE_ETHICAL_CONNECTION_SPEC_BUNDLE",
+    "load_iii_euler_lagrange_for_the_ethical_connection_validation_spec",
+    "DEFAULT_IV_ETHICS_AS_CAUSAL_ENTROPIC_FORCES_CEF_SPEC_BUNDLE",
+    "load_iv_ethics_as_causal_entropic_forces_cef_validation_spec",
+    "DEFAULT_I_THE_UNIFIED_MATHEMATICAL_DESCRIPTION_THE_DYNAMIC_FIBER_BUNDLE_SPEC_BUNDLE",
+    "load_i_the_unified_mathematical_description_the_dynamic_fiber_bundle_validation_spec",
 ]

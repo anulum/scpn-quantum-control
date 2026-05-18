@@ -895,6 +895,13 @@ from .i_the_ontological_origin_of_ethics_gauge_theory_derivation_validation impo
     i_the_ontological_origin_of_ethics_gauge_theory_derivation_labels,
     validate_i_the_ontological_origin_of_ethics_gauge_theory_derivation_fixture,
 )
+from .i_the_unified_mathematical_description_the_dynamic_fiber_bundle_validation import (
+    ITheUnifiedMathematicalDescriptionTheDynamicFiberBundleConfig,
+    ITheUnifiedMathematicalDescriptionTheDynamicFiberBundleFixtureResult,
+    classify_i_the_unified_mathematical_description_the_dynamic_fiber_bundle_component,
+    i_the_unified_mathematical_description_the_dynamic_fiber_bundle_labels,
+    validate_i_the_unified_mathematical_description_the_dynamic_fiber_bundle_fixture,
+)
 from .i_the_unifying_computational_principle_hierarchical_predictive_coding_hp_validation import (
     ITheUnifyingComputationalPrincipleHierarchicalPredictiveCodingHpConfig,
     ITheUnifyingComputationalPrincipleHierarchicalPredictiveCodingHpFixtureResult,
@@ -978,6 +985,13 @@ from .ii_the_universal_dynamic_regime_quasicriticality_validation import (
     classify_ii_the_universal_dynamic_regime_quasicriticality_component,
     ii_the_universal_dynamic_regime_quasicriticality_labels,
     validate_ii_the_universal_dynamic_regime_quasicriticality_fixture,
+)
+from .iii_euler_lagrange_for_the_ethical_connection_validation import (
+    IiiEulerLagrangeForTheEthicalConnectionConfig,
+    IiiEulerLagrangeForTheEthicalConnectionFixtureResult,
+    classify_iii_euler_lagrange_for_the_ethical_connection_component,
+    iii_euler_lagrange_for_the_ethical_connection_labels,
+    validate_iii_euler_lagrange_for_the_ethical_connection_fixture,
 )
 from .iii_the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec_validation import (
     IiiTheCoherenceBackboneMultiScaleQuantumErrorCorrectionMsQecConfig,
@@ -1069,6 +1083,13 @@ from .introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_validation 
     classify_introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_component,
     introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_labels,
     validate_introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_fixture,
+)
+from .iv_ethics_as_causal_entropic_forces_cef_validation import (
+    IvEthicsAsCausalEntropicForcesCefConfig,
+    IvEthicsAsCausalEntropicForcesCefFixtureResult,
+    classify_iv_ethics_as_causal_entropic_forces_cef_component,
+    iv_ethics_as_causal_entropic_forces_cef_labels,
+    validate_iv_ethics_as_causal_entropic_forces_cef_fixture,
 )
 from .iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9_validation import (
     IvLearningMemoryAndPlasticityTheAdaptiveScaffoldL1L9Config,
@@ -3409,6 +3430,21 @@ from .xiii_the_constructive_role_of_noise_msr_and_nis_validation import (
 )
 
 __all__ = [
+    "validate_i_the_unified_mathematical_description_the_dynamic_fiber_bundle_fixture",
+    "i_the_unified_mathematical_description_the_dynamic_fiber_bundle_labels",
+    "classify_i_the_unified_mathematical_description_the_dynamic_fiber_bundle_component",
+    "ITheUnifiedMathematicalDescriptionTheDynamicFiberBundleFixtureResult",
+    "ITheUnifiedMathematicalDescriptionTheDynamicFiberBundleConfig",
+    "validate_iv_ethics_as_causal_entropic_forces_cef_fixture",
+    "iv_ethics_as_causal_entropic_forces_cef_labels",
+    "classify_iv_ethics_as_causal_entropic_forces_cef_component",
+    "IvEthicsAsCausalEntropicForcesCefFixtureResult",
+    "IvEthicsAsCausalEntropicForcesCefConfig",
+    "validate_iii_euler_lagrange_for_the_ethical_connection_fixture",
+    "iii_euler_lagrange_for_the_ethical_connection_labels",
+    "classify_iii_euler_lagrange_for_the_ethical_connection_component",
+    "IiiEulerLagrangeForTheEthicalConnectionFixtureResult",
+    "IiiEulerLagrangeForTheEthicalConnectionConfig",
     "validate_the_physics_of_teleology_and_the_origin_of_ethics_fixture",
     "the_physics_of_teleology_and_the_origin_of_ethics_labels",
     "classify_the_physics_of_teleology_and_the_origin_of_ethics_component",
