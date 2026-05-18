@@ -142,6 +142,8 @@ def write_markdown(path: Path, summary: dict[str, Any]) -> None:
 
 
 def main() -> int:
+    """Write the aggregate IQM layout-campaign summary artefacts."""
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     args = parser.parse_args()

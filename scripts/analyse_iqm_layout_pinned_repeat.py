@@ -28,6 +28,8 @@ DEFAULT_OUTPUT_DIR = REPO_ROOT / "data" / "iqm_paper_replication"
 
 @dataclass(frozen=True)
 class LayoutDepthSummary:
+    """Per-depth leakage and sign-comparison row for one pinned IQM layout."""
+
     depth: int
     iqm_leakage_even: float
     iqm_leakage_odd: float
@@ -192,6 +194,8 @@ def write_markdown(path: Path, summary: dict[str, Any]) -> None:
 
 
 def main() -> int:
+    """Run one layout-pinned IQM repeat analysis from the command line."""
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("input", type=Path)
     parser.add_argument("--ibm-input", type=Path, default=DEFAULT_IBM_INPUT)

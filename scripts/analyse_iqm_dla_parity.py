@@ -34,12 +34,16 @@ DEFAULT_OUTPUT_DIR = REPO_ROOT / "data" / "iqm_paper_replication"
 
 @dataclass(frozen=True)
 class WilsonInterval:
+    """Closed 95 percent Wilson confidence interval for a binomial leakage rate."""
+
     low: float
     high: float
 
 
 @dataclass(frozen=True)
 class IQMDepthComparison:
+    """Per-depth IQM leakage comparison against the IBM Phase 2 reference."""
+
     depth: int
     iqm_leakage_even: float
     iqm_leakage_odd: float
@@ -188,9 +192,9 @@ def analyse(
         )
 
     fisher_chi2, fisher_p = combine_pvalues(p_values, method="fisher")
-    sign_matches = [row.sign_matches_ibm_phase2 for row in depth_rows]
-    matched = sum(match is True for match in sign_matches)
-    compared = sum(match is not None for match in sign_matches)
+    sign_match_rows = [row.sign_matches_ibm_phase2 for row in depth_rows]
+    matched = sum(match is True for match in sign_match_rows)
+    compared = sum(match is not None for match in sign_match_rows)
 
     return {
         "schema": "scpn_iqm_dla_parity_minimal_analysis_v1",
@@ -256,6 +260,8 @@ def _write_markdown(path: Path, summary: dict[str, Any]) -> None:
 
 
 def main() -> int:
+    """Run the IQM minimal DLA/parity analysis CLI."""
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--iqm-input", type=Path, default=DEFAULT_IQM_INPUT)
     parser.add_argument("--ibm-input", type=Path, default=DEFAULT_IBM_INPUT)
