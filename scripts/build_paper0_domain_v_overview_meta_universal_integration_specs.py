@@ -392,6 +392,8 @@ def write_outputs(
 
 
 def main() -> None:
+    """Build Paper 0 Domain V meta-universal overview specs."""
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--ledger", type=Path, default=DEFAULT_LEDGER_PATH)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_EXTRACTION_DIR)
