@@ -629,6 +629,13 @@ from .ii_the_binding_problem_the_gauge_field_of_consciousness_validation import 
     ii_the_binding_problem_the_gauge_field_of_consciousness_labels,
     validate_ii_the_binding_problem_the_gauge_field_of_consciousness_fixture,
 )
+from .ii_the_discrete_continuous_interface_hhds_validation import (
+    IiTheDiscreteContinuousInterfaceHhdsConfig,
+    IiTheDiscreteContinuousInterfaceHhdsFixtureResult,
+    classify_ii_the_discrete_continuous_interface_hhds_component,
+    ii_the_discrete_continuous_interface_hhds_labels,
+    validate_ii_the_discrete_continuous_interface_hhds_fixture,
+)
 from .ii_the_universal_dynamic_regime_quasicriticality_validation import (
     IiTheUniversalDynamicRegimeQuasicriticalityConfig,
     IiTheUniversalDynamicRegimeQuasicriticalityFixtureResult,
@@ -890,6 +897,13 @@ from .meta_framework_integrations_p0r03139_validation import (
     classify_meta_framework_integrations_p0r03139_component,
     meta_framework_integrations_p0r03139_labels,
     validate_meta_framework_integrations_p0r03139_fixture,
+)
+from .meta_framework_integrations_p0r03284_validation import (
+    MetaFrameworkIntegrationsP0r03284Config,
+    MetaFrameworkIntegrationsP0r03284FixtureResult,
+    classify_meta_framework_integrations_p0r03284_component,
+    meta_framework_integrations_p0r03284_labels,
+    validate_meta_framework_integrations_p0r03284_fixture,
 )
 from .meta_framework_integrations_validation import (
     MetaFrameworkIntegrationsConfig,
@@ -1636,6 +1650,13 @@ from .validation_strategy import (
     validate_validation_strategy_fixture,
     validation_domain_coverage,
 )
+from .vi_the_interface_with_phenomenology_validation import (
+    ViTheInterfaceWithPhenomenologyConfig,
+    ViTheInterfaceWithPhenomenologyFixtureResult,
+    classify_vi_the_interface_with_phenomenology_component,
+    validate_vi_the_interface_with_phenomenology_fixture,
+    vi_the_interface_with_phenomenology_labels,
+)
 from .vii_field_generation_and_upward_causality_topological_defects_validation import (
     ViiFieldGenerationAndUpwardCausalityTopologicalDefectsConfig,
     ViiFieldGenerationAndUpwardCausalityTopologicalDefectsFixtureResult,
@@ -1645,6 +1666,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_meta_framework_integrations_p0r03284_fixture",
+    "meta_framework_integrations_p0r03284_labels",
+    "classify_meta_framework_integrations_p0r03284_component",
+    "MetaFrameworkIntegrationsP0r03284FixtureResult",
+    "MetaFrameworkIntegrationsP0r03284Config",
+    "validate_vi_the_interface_with_phenomenology_fixture",
+    "vi_the_interface_with_phenomenology_labels",
+    "classify_vi_the_interface_with_phenomenology_component",
+    "ViTheInterfaceWithPhenomenologyFixtureResult",
+    "ViTheInterfaceWithPhenomenologyConfig",
+    "validate_ii_the_discrete_continuous_interface_hhds_fixture",
+    "ii_the_discrete_continuous_interface_hhds_labels",
+    "classify_ii_the_discrete_continuous_interface_hhds_component",
+    "IiTheDiscreteContinuousInterfaceHhdsFixtureResult",
+    "IiTheDiscreteContinuousInterfaceHhdsConfig",
     "validate_vii_field_generation_and_upward_causality_topological_defects_fixture",
     "vii_field_generation_and_upward_causality_topological_defects_labels",
     "classify_vii_field_generation_and_upward_causality_topological_defects_component",

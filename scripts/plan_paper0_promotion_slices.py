@@ -22,7 +22,7 @@ DEFAULT_EXTRACTION_DIR = REPO_ROOT / "docs" / "internal" / "paper0_foundational_
 DEFAULT_LEDGER_PATH = DEFAULT_EXTRACTION_DIR / "paper0_canonical_review_ledger_2026-05-13.jsonl"
 DEFAULT_OUTPUT_PATH = DEFAULT_EXTRACTION_DIR / "paper0_promotion_work_orders_2026-05-17.json"
 DEFAULT_REPORT_PATH = DEFAULT_EXTRACTION_DIR / "paper0_promotion_work_orders_2026-05-17.md"
-MAX_DEFAULT_RECORDS = 96
+MAX_DEFAULT_RECORDS = 64
 MIN_HEADER_CLOSURE_RECORDS = 8
 
 
@@ -154,11 +154,24 @@ def write_outputs(
         "title": "Paper 0 Promotion Work Orders",
         "claim_boundary": "planning only; not scientific validation evidence",
         "work_order_count": len(work_orders),
-        "work_orders": [asdict(item) for item in work_orders],
+        "work_orders": [_work_order_payload(item) for item in work_orders],
     }
     output_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     report_path.write_text(render_report(work_orders), encoding="utf-8")
     return {"json": output_path, "report": report_path}
+
+
+def _work_order_payload(item: PromotionWorkOrder) -> dict[str, Any]:
+    """Return a stable JSON payload for one work order.
+
+    ``source_record_count`` is the canonical field consumed by the promotion
+    automation. ``record_count`` is a read-only compatibility alias for status
+    tooling so queue summaries cannot silently report zero remaining records
+    when they use the shorter field name.
+    """
+    payload = asdict(item)
+    payload["record_count"] = item.source_record_count
+    return payload
 
 
 def main() -> int:

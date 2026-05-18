@@ -18,11 +18,12 @@ from scripts.plan_paper0_promotion_slices import plan_work_orders, render_report
 
 
 def test_plan_work_orders_starts_at_current_reconciliation_gap() -> None:
-    work_orders = plan_work_orders(max_records=64, max_orders=2)
+    work_orders = plan_work_orders(max_orders=2)
 
     assert len(work_orders) == 2
-    assert work_orders[0].source_start == "P0R03260"
+    assert work_orders[0].source_start == "P0R03295"
     assert work_orders[0].source_record_count >= 8
+    assert work_orders[0].source_record_count <= 64
     assert work_orders[0].source_end < work_orders[1].source_start
     assert (
         work_orders[0].claim_boundary
@@ -52,6 +53,11 @@ def test_write_work_order_outputs(tmp_path: Path) -> None:
 
     assert payload["claim_boundary"] == "planning only; not scientific validation evidence"
     assert payload["work_order_count"] == 1
-    assert payload["work_orders"][0]["source_start"] == "P0R03260"
+    assert payload["work_orders"][0]["source_start"] == "P0R03295"
+    assert (
+        payload["work_orders"][0]["record_count"]
+        == payload["work_orders"][0]["source_record_count"]
+    )
+    assert payload["work_orders"][0]["record_count"] > 0
     assert "Paper 0 Promotion Work Orders" in report
     assert "Required surfaces" in render_report(work_orders)

@@ -3918,6 +3918,54 @@ def load_vii_field_generation_and_upward_causality_topological_defects_validatio
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_II_THE_DISCRETE_CONTINUOUS_INTERFACE_HHDS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_ii_the_discrete_continuous_interface_hhds_validation_specs_2026-05-17.json"
+)
+
+
+def load_ii_the_discrete_continuous_interface_hhds_validation_spec(
+    spec_bundle: str | Path = DEFAULT_II_THE_DISCRETE_CONTINUOUS_INTERFACE_HHDS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 ii the discrete continuous interface hhds validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_VI_THE_INTERFACE_WITH_PHENOMENOLOGY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_vi_the_interface_with_phenomenology_validation_specs_2026-05-17.json"
+)
+
+
+def load_vi_the_interface_with_phenomenology_validation_spec(
+    spec_bundle: str | Path = DEFAULT_VI_THE_INTERFACE_WITH_PHENOMENOLOGY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 vi the interface with phenomenology validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03284_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_meta_framework_integrations_p0r03284_validation_specs_2026-05-17.json"
+)
+
+
+def load_meta_framework_integrations_p0r03284_validation_spec(
+    spec_bundle: str | Path = DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03284_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 meta framework integrations p0r03284 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -4317,4 +4365,10 @@ __all__ = [
     "load_v_the_interface_problem_synthesis_mind_body_field_validation_spec",
     "DEFAULT_VII_FIELD_GENERATION_AND_UPWARD_CAUSALITY_TOPOLOGICAL_DEFECTS_SPEC_BUNDLE",
     "load_vii_field_generation_and_upward_causality_topological_defects_validation_spec",
+    "DEFAULT_II_THE_DISCRETE_CONTINUOUS_INTERFACE_HHDS_SPEC_BUNDLE",
+    "load_ii_the_discrete_continuous_interface_hhds_validation_spec",
+    "DEFAULT_VI_THE_INTERFACE_WITH_PHENOMENOLOGY_SPEC_BUNDLE",
+    "load_vi_the_interface_with_phenomenology_validation_spec",
+    "DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03284_SPEC_BUNDLE",
+    "load_meta_framework_integrations_p0r03284_validation_spec",
 ]
