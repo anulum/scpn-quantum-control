@@ -7682,6 +7682,54 @@ def load_systems_cybernetics_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_COMPUTATIONAL_AI_ALIGNMENT_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_computational_ai_alignment_validation_specs_2026-05-17.json"
+)
+
+
+def load_computational_ai_alignment_validation_spec(
+    spec_bundle: str | Path = DEFAULT_COMPUTATIONAL_AI_ALIGNMENT_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 computational ai alignment validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_CONSCIOUSNESS_STUDIES_COGNITIVE_MODELS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_consciousness_studies_cognitive_models_validation_specs_2026-05-17.json"
+)
+
+
+def load_consciousness_studies_cognitive_models_validation_spec(
+    spec_bundle: str | Path = DEFAULT_CONSCIOUSNESS_STUDIES_COGNITIVE_MODELS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 consciousness studies cognitive models validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_TECHNO_SOCIAL_SYSTEMS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_techno_social_systems_validation_specs_2026-05-17.json"
+)
+
+
+def load_techno_social_systems_validation_spec(
+    spec_bundle: str | Path = DEFAULT_TECHNO_SOCIAL_SYSTEMS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 techno social systems validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -8537,4 +8585,10 @@ __all__ = [
     "load_mathematical_foundations_of_networks_synchronisation_validation_spec",
     "DEFAULT_SYSTEMS_CYBERNETICS_SPEC_BUNDLE",
     "load_systems_cybernetics_validation_spec",
+    "DEFAULT_COMPUTATIONAL_AI_ALIGNMENT_SPEC_BUNDLE",
+    "load_computational_ai_alignment_validation_spec",
+    "DEFAULT_CONSCIOUSNESS_STUDIES_COGNITIVE_MODELS_SPEC_BUNDLE",
+    "load_consciousness_studies_cognitive_models_validation_spec",
+    "DEFAULT_TECHNO_SOCIAL_SYSTEMS_SPEC_BUNDLE",
+    "load_techno_social_systems_validation_spec",
 ]

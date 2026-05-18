@@ -354,6 +354,13 @@ from .components_validation import (
     components_labels,
     validate_components_fixture,
 )
+from .computational_ai_alignment_validation import (
+    ComputationalAiAlignmentConfig,
+    ComputationalAiAlignmentFixtureResult,
+    classify_computational_ai_alignment_component,
+    computational_ai_alignment_labels,
+    validate_computational_ai_alignment_fixture,
+)
 from .computational_threshold_validation import (
     CoherenceCurrentConfig,
     CoherenceCurrentValidationResult,
@@ -395,6 +402,13 @@ from .computational_verification_tools_validation import (
     lattice_mass_targets,
     validate_computational_verification_tools_fixture,
     washout_regime,
+)
+from .consciousness_studies_cognitive_models_validation import (
+    ConsciousnessStudiesCognitiveModelsConfig,
+    ConsciousnessStudiesCognitiveModelsFixtureResult,
+    classify_consciousness_studies_cognitive_models_component,
+    consciousness_studies_cognitive_models_labels,
+    validate_consciousness_studies_cognitive_models_fixture,
 )
 from .control_over_universal_parameters_validation import (
     ControlOverUniversalParametersConfig,
@@ -2652,6 +2666,13 @@ from .table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer_v
     table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer_labels,
     validate_table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer_fixture,
 )
+from .techno_social_systems_validation import (
+    TechnoSocialSystemsConfig,
+    TechnoSocialSystemsFixtureResult,
+    classify_techno_social_systems_component,
+    techno_social_systems_labels,
+    validate_techno_social_systems_fixture,
+)
 from .terminal_boundary_validation import (
     EBSBinding,
     EnhancedBoundarySet,
@@ -3241,6 +3262,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_techno_social_systems_fixture",
+    "techno_social_systems_labels",
+    "classify_techno_social_systems_component",
+    "TechnoSocialSystemsFixtureResult",
+    "TechnoSocialSystemsConfig",
+    "validate_consciousness_studies_cognitive_models_fixture",
+    "consciousness_studies_cognitive_models_labels",
+    "classify_consciousness_studies_cognitive_models_component",
+    "ConsciousnessStudiesCognitiveModelsFixtureResult",
+    "ConsciousnessStudiesCognitiveModelsConfig",
+    "validate_computational_ai_alignment_fixture",
+    "computational_ai_alignment_labels",
+    "classify_computational_ai_alignment_component",
+    "ComputationalAiAlignmentFixtureResult",
+    "ComputationalAiAlignmentConfig",
     "validate_systems_cybernetics_fixture",
     "systems_cybernetics_labels",
     "classify_systems_cybernetics_component",
