@@ -6106,6 +6106,56 @@ def load_section_2_the_geometry_of_functional_dynamics_l4_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_2_HPC_AS_GEOMETRIC_FLOW_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_hpc_as_geometric_flow_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_hpc_as_geometric_flow_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SECTION_2_HPC_AS_GEOMETRIC_FLOW_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 hpc as geometric flow validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_I_THE_BRAIN_S_PROTECTIVE_SCAFFOLD_AND_FLUID_DYNAMICS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_i_the_brain_s_protective_scaffold_and_fluid_dynamics_validation_specs_2026-05-17.json"
+)
+
+
+def load_i_the_brain_s_protective_scaffold_and_fluid_dynamics_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_I_THE_BRAIN_S_PROTECTIVE_SCAFFOLD_AND_FLUID_DYNAMICS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 i the brain s protective scaffold and fluid dynamics validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_3_THE_CSF_AND_GLYMPHATIC_SYSTEM_THE_ENTROPY_SINK_L1_L4_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_3_the_csf_and_glymphatic_system_the_entropy_sink_l1_l4_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_3_the_csf_and_glymphatic_system_the_entropy_sink_l1_l4_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_3_THE_CSF_AND_GLYMPHATIC_SYSTEM_THE_ENTROPY_SINK_L1_L4_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 3 the csf and glymphatic system the entropy sink l1 l4 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -6769,4 +6819,10 @@ __all__ = [
     "load_section_2_cytoarchitecture_and_the_canonical_microcircuit_l4_validation_spec",
     "DEFAULT_SECTION_2_THE_GEOMETRY_OF_FUNCTIONAL_DYNAMICS_L4_SPEC_BUNDLE",
     "load_section_2_the_geometry_of_functional_dynamics_l4_validation_spec",
+    "DEFAULT_SECTION_2_HPC_AS_GEOMETRIC_FLOW_SPEC_BUNDLE",
+    "load_section_2_hpc_as_geometric_flow_validation_spec",
+    "DEFAULT_I_THE_BRAIN_S_PROTECTIVE_SCAFFOLD_AND_FLUID_DYNAMICS_SPEC_BUNDLE",
+    "load_i_the_brain_s_protective_scaffold_and_fluid_dynamics_validation_spec",
+    "DEFAULT_SECTION_3_THE_CSF_AND_GLYMPHATIC_SYSTEM_THE_ENTROPY_SINK_L1_L4_SPEC_BUNDLE",
+    "load_section_3_the_csf_and_glymphatic_system_the_entropy_sink_l1_l4_validation_spec",
 ]

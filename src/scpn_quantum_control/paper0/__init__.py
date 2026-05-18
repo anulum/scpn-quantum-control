@@ -692,6 +692,13 @@ from .i_introduction_the_brain_as_a_multi_scale_resonant_transducer_validation i
     i_introduction_the_brain_as_a_multi_scale_resonant_transducer_labels,
     validate_i_introduction_the_brain_as_a_multi_scale_resonant_transducer_fixture,
 )
+from .i_the_brain_s_protective_scaffold_and_fluid_dynamics_validation import (
+    ITheBrainSProtectiveScaffoldAndFluidDynamicsConfig,
+    ITheBrainSProtectiveScaffoldAndFluidDynamicsFixtureResult,
+    classify_i_the_brain_s_protective_scaffold_and_fluid_dynamics_component,
+    i_the_brain_s_protective_scaffold_and_fluid_dynamics_labels,
+    validate_i_the_brain_s_protective_scaffold_and_fluid_dynamics_fixture,
+)
 from .i_the_ontological_origin_of_ethics_gauge_theory_derivation_validation import (
     ITheOntologicalOriginOfEthicsGaugeTheoryDerivationConfig,
     ITheOntologicalOriginOfEthicsGaugeTheoryDerivationFixtureResult,
@@ -1701,6 +1708,13 @@ from .section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_validat
     section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_labels,
     validate_section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_fixture,
 )
+from .section_2_hpc_as_geometric_flow_validation import (
+    Section2HpcAsGeometricFlowConfig,
+    Section2HpcAsGeometricFlowFixtureResult,
+    classify_section_2_hpc_as_geometric_flow_component,
+    section_2_hpc_as_geometric_flow_labels,
+    validate_section_2_hpc_as_geometric_flow_fixture,
+)
 from .section_2_molecular_geometry_and_the_psi_field_interface_l2_l3_validation import (
     Section2MolecularGeometryAndThePsiFieldInterfaceL2L3Config,
     Section2MolecularGeometryAndThePsiFieldInterfaceL2L3FixtureResult,
@@ -1805,6 +1819,13 @@ from .section_3_structural_geometry_and_morphogenesis_l3_validation import (
     classify_section_3_structural_geometry_and_morphogenesis_l3_component,
     section_3_structural_geometry_and_morphogenesis_l3_labels,
     validate_section_3_structural_geometry_and_morphogenesis_l3_fixture,
+)
+from .section_3_the_csf_and_glymphatic_system_the_entropy_sink_l1_l4_validation import (
+    Section3TheCsfAndGlymphaticSystemTheEntropySinkL1L4Config,
+    Section3TheCsfAndGlymphaticSystemTheEntropySinkL1L4FixtureResult,
+    classify_section_3_the_csf_and_glymphatic_system_the_entropy_sink_l1_l4_component,
+    section_3_the_csf_and_glymphatic_system_the_entropy_sink_l1_l4_labels,
+    validate_section_3_the_csf_and_glymphatic_system_the_entropy_sink_l1_l4_fixture,
 )
 from .section_3_the_detailed_geometry_of_qualia_the_consciousness_manifold_m_validation import (
     Section3TheDetailedGeometryOfQualiaTheConsciousnessManifoldMConfig,
@@ -2569,6 +2590,21 @@ from .vii_pathology_the_disordered_brain_validation import (
 )
 
 __all__ = [
+    "validate_section_3_the_csf_and_glymphatic_system_the_entropy_sink_l1_l4_fixture",
+    "section_3_the_csf_and_glymphatic_system_the_entropy_sink_l1_l4_labels",
+    "classify_section_3_the_csf_and_glymphatic_system_the_entropy_sink_l1_l4_component",
+    "Section3TheCsfAndGlymphaticSystemTheEntropySinkL1L4FixtureResult",
+    "Section3TheCsfAndGlymphaticSystemTheEntropySinkL1L4Config",
+    "validate_i_the_brain_s_protective_scaffold_and_fluid_dynamics_fixture",
+    "i_the_brain_s_protective_scaffold_and_fluid_dynamics_labels",
+    "classify_i_the_brain_s_protective_scaffold_and_fluid_dynamics_component",
+    "ITheBrainSProtectiveScaffoldAndFluidDynamicsFixtureResult",
+    "ITheBrainSProtectiveScaffoldAndFluidDynamicsConfig",
+    "validate_section_2_hpc_as_geometric_flow_fixture",
+    "section_2_hpc_as_geometric_flow_labels",
+    "classify_section_2_hpc_as_geometric_flow_component",
+    "Section2HpcAsGeometricFlowFixtureResult",
+    "Section2HpcAsGeometricFlowConfig",
     "validate_section_2_the_geometry_of_functional_dynamics_l4_fixture",
     "section_2_the_geometry_of_functional_dynamics_l4_labels",
     "classify_section_2_the_geometry_of_functional_dynamics_l4_component",
