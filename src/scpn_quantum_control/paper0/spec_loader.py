@@ -390,6 +390,101 @@ DEFAULT_FINAL_LINT_SM_INTERFACE_SPEC_BUNDLE = (
 )
 
 
+def _load_paper0_spec_by_key(
+    spec_key: str,
+    *,
+    spec_bundle_path: str | Path,
+    unknown_label: str,
+) -> dict[str, Any]:
+    """Load one promoted Paper 0 validation spec from a bundle by key."""
+    path = Path(spec_bundle_path)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    payload = cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+    for spec in payload["specs"]:
+        if spec["key"] == spec_key:
+            return cast(dict[str, Any], spec)
+    raise KeyError(f"unknown Paper 0 {unknown_label} spec: {spec_key}")
+
+
+def load_operational_pullback_protocol_validation_spec(
+    spec_key: str,
+    *,
+    spec_bundle_path: str | Path = DEFAULT_OPERATIONAL_PULLBACK_PROTOCOL_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load a promoted Paper 0 operational-pullback protocol validation spec by key."""
+    return _load_paper0_spec_by_key(
+        spec_key,
+        spec_bundle_path=spec_bundle_path,
+        unknown_label="operational-pullback protocol",
+    )
+
+
+def load_ssb_psi_field_validation_spec(
+    spec_key: str,
+    *,
+    spec_bundle_path: str | Path = DEFAULT_SSB_PSI_FIELD_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load a promoted Paper 0 SSB Psi-field validation spec by key."""
+    return _load_paper0_spec_by_key(
+        spec_key,
+        spec_bundle_path=spec_bundle_path,
+        unknown_label="SSB Psi-field",
+    )
+
+
+def load_phenomenological_lagrangian_validation_spec(
+    spec_key: str,
+    *,
+    spec_bundle_path: str | Path = DEFAULT_PHENOMENOLOGICAL_LAGRANGIAN_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load a promoted Paper 0 phenomenological-lagrangian validation spec by key."""
+    return _load_paper0_spec_by_key(
+        spec_key,
+        spec_bundle_path=spec_bundle_path,
+        unknown_label="phenomenological-lagrangian",
+    )
+
+
+def load_derived_interaction_opening_validation_spec(
+    spec_key: str,
+    *,
+    spec_bundle_path: str | Path = DEFAULT_DERIVED_INTERACTION_OPENING_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load a promoted Paper 0 derived-interaction opening validation spec by key."""
+    return _load_paper0_spec_by_key(
+        spec_key,
+        spec_bundle_path=spec_bundle_path,
+        unknown_label="derived-interaction opening",
+    )
+
+
+def load_derived_lagrangian_detail_validation_spec(
+    spec_key: str,
+    *,
+    spec_bundle_path: str | Path = DEFAULT_DERIVED_LAGRANGIAN_DETAIL_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load a promoted Paper 0 derived-lagrangian detail validation spec by key."""
+    return _load_paper0_spec_by_key(
+        spec_key,
+        spec_bundle_path=spec_bundle_path,
+        unknown_label="derived-lagrangian detail",
+    )
+
+
+def load_final_lint_sm_interface_validation_spec(
+    spec_key: str,
+    *,
+    spec_bundle_path: str | Path = DEFAULT_FINAL_LINT_SM_INTERFACE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load a promoted Paper 0 final L_int/SM-interface validation spec by key."""
+    return _load_paper0_spec_by_key(
+        spec_key,
+        spec_bundle_path=spec_bundle_path,
+        unknown_label="final L_int/SM-interface",
+    )
+
+
 def load_upde_validation_spec(
     key: str,
     *,
@@ -2975,6 +3070,314 @@ def load_ii_the_universal_dynamic_regime_quasicriticality_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_III_THE_COHERENCE_BACKBONE_MULTI_SCALE_QUANTUM_ERROR_CORRECTION_MS_QEC_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_iii_the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec_validation_specs_2026-05-17.json"
+)
+
+
+def load_iii_the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_III_THE_COHERENCE_BACKBONE_MULTI_SCALE_QUANTUM_ERROR_CORRECTION_MS_QEC_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 iii the coherence backbone multi scale quantum error correction ms qec validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_DYNAMIC_VISUALISATION_THE_SCPN_TORUS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_dynamic_visualisation_the_scpn_torus_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_dynamic_visualisation_the_scpn_torus_validation_spec(
+    spec_bundle: str | Path = DEFAULT_THE_DYNAMIC_VISUALISATION_THE_SCPN_TORUS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the dynamic visualisation the scpn torus validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R02542_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_meta_framework_integrations_p0r02542_validation_specs_2026-05-17.json"
+)
+
+
+def load_meta_framework_integrations_p0r02542_validation_spec(
+    spec_bundle: str | Path = DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R02542_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 meta framework integrations p0r02542 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_LOCUS_OF_THE_INTERACTION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_locus_of_the_interaction_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_locus_of_the_interaction_validation_spec(
+    spec_bundle: str | Path = DEFAULT_THE_LOCUS_OF_THE_INTERACTION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the locus of the interaction validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_2_THE_CENTRAL_VOID_THE_SOURCE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_the_central_void_the_source_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_the_central_void_the_source_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SECTION_2_THE_CENTRAL_VOID_THE_SOURCE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 the central void the source validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_3_2_THE_DYNAMIC_SPINE_THE_UNIFIED_PHASE_DYNAMICS_EQUATION_UPDE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_3_2_THE_DYNAMIC_SPINE_THE_UNIFIED_PHASE_DYNAMICS_EQUATION_UPDE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 3 2 the dynamic spine the unified phase dynamics equation upde validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R02600_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_meta_framework_integrations_p0r02600_validation_specs_2026-05-17.json"
+)
+
+
+def load_meta_framework_integrations_p0r02600_validation_spec(
+    spec_bundle: str | Path = DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R02600_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 meta framework integrations p0r02600 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_PSIS_FIELD_COUPLING_INTEGRATION_P0R02608_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_psis_field_coupling_integration_p0r02608_validation_specs_2026-05-17.json"
+)
+
+
+def load_psis_field_coupling_integration_p0r02608_validation_spec(
+    spec_bundle: str | Path = DEFAULT_PSIS_FIELD_COUPLING_INTEGRATION_P0R02608_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 psis field coupling integration p0r02608 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_MECHANISM_OF_INFLUENCE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_mechanism_of_influence_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_mechanism_of_influence_validation_spec(
+    spec_bundle: str | Path = DEFAULT_THE_MECHANISM_OF_INFLUENCE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the mechanism of influence validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_INTRINSIC_DYNAMICS_IL_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_intrinsic_dynamics_il_validation_specs_2026-05-17.json"
+)
+
+
+def load_intrinsic_dynamics_il_validation_spec(
+    spec_bundle: str | Path = DEFAULT_INTRINSIC_DYNAMICS_IL_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 intrinsic dynamics il validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_FIELD_COUPLING_CFIELD_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_field_coupling_cfield_validation_specs_2026-05-17.json"
+)
+
+
+def load_field_coupling_cfield_validation_spec(
+    spec_bundle: str | Path = DEFAULT_FIELD_COUPLING_CFIELD_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 field coupling cfield validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_INFORMATION_GEOMETRIC_LIFT_OF_UPDE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_information_geometric_lift_of_upde_validation_specs_2026-05-17.json"
+)
+
+
+def load_information_geometric_lift_of_upde_validation_spec(
+    spec_bundle: str | Path = DEFAULT_INFORMATION_GEOMETRIC_LIFT_OF_UPDE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 information geometric lift of upde validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_HIERARCHICAL_IMPEDANCE_RESCALING_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_hierarchical_impedance_rescaling_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_hierarchical_impedance_rescaling_validation_spec(
+    spec_bundle: str | Path = DEFAULT_THE_HIERARCHICAL_IMPEDANCE_RESCALING_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the hierarchical impedance rescaling validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_ONE_SPINE_MANY_COUPLINGS_UPDE_SCOPE_CONSTRAINT_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_one_spine_many_couplings_upde_scope_constraint_validation_specs_2026-05-17.json"
+)
+
+
+def load_one_spine_many_couplings_upde_scope_constraint_validation_spec(
+    spec_bundle: str | Path = DEFAULT_ONE_SPINE_MANY_COUPLINGS_UPDE_SCOPE_CONSTRAINT_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 one spine many couplings upde scope constraint validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_15_LAYER_SUMMARY_TABLE_3_2_THE_DYNAMIC_SPINE_THE_UNIFIED_PHASE_DYNAMICS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_15_LAYER_SUMMARY_TABLE_3_2_THE_DYNAMIC_SPINE_THE_UNIFIED_PHASE_DYNAMICS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 15 layer summary table 3 2 the dynamic spine the unified phase dynamics validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_15_LAYER_SUMMARY_TABLE_3_2_THE_DYNAMIC_SPINE_THE_UNIFIED_PHASE_DYNAMICS_P0R02810_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_p0r02810_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_p0r02810_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_15_LAYER_SUMMARY_TABLE_3_2_THE_DYNAMIC_SPINE_THE_UNIFIED_PHASE_DYNAMICS_P0R02810_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 15 layer summary table 3 2 the dynamic spine the unified phase dynamics p0r02810 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_QUASICRITICALITY_AND_SELF_ORGANISATION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_quasicriticality_and_self_organisation_validation_specs_2026-05-17.json"
+)
+
+
+def load_quasicriticality_and_self_organisation_validation_spec(
+    spec_bundle: str | Path = DEFAULT_QUASICRITICALITY_AND_SELF_ORGANISATION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 quasicriticality and self organisation validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_PREDICTIVE_CODING_INTEGRATION_P0R02839_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_predictive_coding_integration_p0r02839_validation_specs_2026-05-17.json"
+)
+
+
+def load_predictive_coding_integration_p0r02839_validation_spec(
+    spec_bundle: str | Path = DEFAULT_PREDICTIVE_CODING_INTEGRATION_P0R02839_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 predictive coding integration p0r02839 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_SUSCEPTIBLE_SUBSTRATE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_susceptible_substrate_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_susceptible_substrate_validation_spec(
+    spec_bundle: str | Path = DEFAULT_THE_SUSCEPTIBLE_SUBSTRATE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the susceptible substrate validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -3070,6 +3473,12 @@ __all__ = [
     "DEFAULT_DERIVED_INTERACTION_OPENING_SPEC_BUNDLE",
     "DEFAULT_DERIVED_LAGRANGIAN_DETAIL_SPEC_BUNDLE",
     "DEFAULT_FINAL_LINT_SM_INTERFACE_SPEC_BUNDLE",
+    "load_operational_pullback_protocol_validation_spec",
+    "load_ssb_psi_field_validation_spec",
+    "load_phenomenological_lagrangian_validation_spec",
+    "load_derived_interaction_opening_validation_spec",
+    "load_derived_lagrangian_detail_validation_spec",
+    "load_final_lint_sm_interface_validation_spec",
     "load_upde_validation_spec",
     "load_macro_transition_validation_spec",
     "load_neurovascular_validation_spec",
@@ -3264,4 +3673,42 @@ __all__ = [
     "load_overarching_dynamic_principles_and_the_mathematical_spine_validation_spec",
     "DEFAULT_II_THE_UNIVERSAL_DYNAMIC_REGIME_QUASICRITICALITY_SPEC_BUNDLE",
     "load_ii_the_universal_dynamic_regime_quasicriticality_validation_spec",
+    "DEFAULT_III_THE_COHERENCE_BACKBONE_MULTI_SCALE_QUANTUM_ERROR_CORRECTION_MS_QEC_SPEC_BUNDLE",
+    "load_iii_the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec_validation_spec",
+    "DEFAULT_THE_DYNAMIC_VISUALISATION_THE_SCPN_TORUS_SPEC_BUNDLE",
+    "load_the_dynamic_visualisation_the_scpn_torus_validation_spec",
+    "DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R02542_SPEC_BUNDLE",
+    "load_meta_framework_integrations_p0r02542_validation_spec",
+    "DEFAULT_THE_LOCUS_OF_THE_INTERACTION_SPEC_BUNDLE",
+    "load_the_locus_of_the_interaction_validation_spec",
+    "DEFAULT_SECTION_2_THE_CENTRAL_VOID_THE_SOURCE_SPEC_BUNDLE",
+    "load_section_2_the_central_void_the_source_validation_spec",
+    "DEFAULT_SECTION_3_2_THE_DYNAMIC_SPINE_THE_UNIFIED_PHASE_DYNAMICS_EQUATION_UPDE_SPEC_BUNDLE",
+    "load_section_3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde_validation_spec",
+    "DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R02600_SPEC_BUNDLE",
+    "load_meta_framework_integrations_p0r02600_validation_spec",
+    "DEFAULT_PSIS_FIELD_COUPLING_INTEGRATION_P0R02608_SPEC_BUNDLE",
+    "load_psis_field_coupling_integration_p0r02608_validation_spec",
+    "DEFAULT_THE_MECHANISM_OF_INFLUENCE_SPEC_BUNDLE",
+    "load_the_mechanism_of_influence_validation_spec",
+    "DEFAULT_INTRINSIC_DYNAMICS_IL_SPEC_BUNDLE",
+    "load_intrinsic_dynamics_il_validation_spec",
+    "DEFAULT_FIELD_COUPLING_CFIELD_SPEC_BUNDLE",
+    "load_field_coupling_cfield_validation_spec",
+    "DEFAULT_INFORMATION_GEOMETRIC_LIFT_OF_UPDE_SPEC_BUNDLE",
+    "load_information_geometric_lift_of_upde_validation_spec",
+    "DEFAULT_THE_HIERARCHICAL_IMPEDANCE_RESCALING_SPEC_BUNDLE",
+    "load_the_hierarchical_impedance_rescaling_validation_spec",
+    "DEFAULT_ONE_SPINE_MANY_COUPLINGS_UPDE_SCOPE_CONSTRAINT_SPEC_BUNDLE",
+    "load_one_spine_many_couplings_upde_scope_constraint_validation_spec",
+    "DEFAULT_SECTION_15_LAYER_SUMMARY_TABLE_3_2_THE_DYNAMIC_SPINE_THE_UNIFIED_PHASE_DYNAMICS_SPEC_BUNDLE",
+    "load_section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_validation_spec",
+    "DEFAULT_SECTION_15_LAYER_SUMMARY_TABLE_3_2_THE_DYNAMIC_SPINE_THE_UNIFIED_PHASE_DYNAMICS_P0R02810_SPEC_BUNDLE",
+    "load_section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_p0r02810_validation_spec",
+    "DEFAULT_QUASICRITICALITY_AND_SELF_ORGANISATION_SPEC_BUNDLE",
+    "load_quasicriticality_and_self_organisation_validation_spec",
+    "DEFAULT_PREDICTIVE_CODING_INTEGRATION_P0R02839_SPEC_BUNDLE",
+    "load_predictive_coding_integration_p0r02839_validation_spec",
+    "DEFAULT_THE_SUSCEPTIBLE_SUBSTRATE_SPEC_BUNDLE",
+    "load_the_susceptible_substrate_validation_spec",
 ]

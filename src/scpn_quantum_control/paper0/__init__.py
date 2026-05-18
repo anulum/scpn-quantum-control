@@ -418,6 +418,13 @@ from .experimental_signatures_search_strategies_validation import (
     experimental_signatures_search_strategies_labels,
     validate_experimental_signatures_search_strategies_fixture,
 )
+from .field_coupling_cfield_validation import (
+    FieldCouplingCfieldConfig,
+    FieldCouplingCfieldFixtureResult,
+    classify_field_coupling_cfield_component,
+    field_coupling_cfield_labels,
+    validate_field_coupling_cfield_fixture,
+)
 from .final_lint_sm_interface_validation import (
     FinalLIntSMInterfaceConfig,
     FinalLIntSMInterfaceFixtureResult,
@@ -572,6 +579,27 @@ from .ii_the_universal_dynamic_regime_quasicriticality_validation import (
     classify_ii_the_universal_dynamic_regime_quasicriticality_component,
     ii_the_universal_dynamic_regime_quasicriticality_labels,
     validate_ii_the_universal_dynamic_regime_quasicriticality_fixture,
+)
+from .iii_the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec_validation import (
+    IiiTheCoherenceBackboneMultiScaleQuantumErrorCorrectionMsQecConfig,
+    IiiTheCoherenceBackboneMultiScaleQuantumErrorCorrectionMsQecFixtureResult,
+    classify_iii_the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec_component,
+    iii_the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec_labels,
+    validate_iii_the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec_fixture,
+)
+from .information_geometric_lift_of_upde_validation import (
+    InformationGeometricLiftOfUpdeConfig,
+    InformationGeometricLiftOfUpdeFixtureResult,
+    classify_information_geometric_lift_of_upde_component,
+    information_geometric_lift_of_upde_labels,
+    validate_information_geometric_lift_of_upde_fixture,
+)
+from .intrinsic_dynamics_il_validation import (
+    IntrinsicDynamicsIlConfig,
+    IntrinsicDynamicsIlFixtureResult,
+    classify_intrinsic_dynamics_il_component,
+    intrinsic_dynamics_il_labels,
+    validate_intrinsic_dynamics_il_fixture,
 )
 from .l5_active_inference_math_validation import (
     ExpectedFreeEnergyScores,
@@ -765,6 +793,20 @@ from .meta_framework_integrations_p0r02485_validation import (
     meta_framework_integrations_p0r02485_labels,
     validate_meta_framework_integrations_p0r02485_fixture,
 )
+from .meta_framework_integrations_p0r02542_validation import (
+    MetaFrameworkIntegrationsP0r02542Config,
+    MetaFrameworkIntegrationsP0r02542FixtureResult,
+    classify_meta_framework_integrations_p0r02542_component,
+    meta_framework_integrations_p0r02542_labels,
+    validate_meta_framework_integrations_p0r02542_fixture,
+)
+from .meta_framework_integrations_p0r02600_validation import (
+    MetaFrameworkIntegrationsP0r02600Config,
+    MetaFrameworkIntegrationsP0r02600FixtureResult,
+    classify_meta_framework_integrations_p0r02600_component,
+    meta_framework_integrations_p0r02600_labels,
+    validate_meta_framework_integrations_p0r02600_fixture,
+)
 from .meta_framework_integrations_validation import (
     MetaFrameworkIntegrationsConfig,
     MetaFrameworkIntegrationsFixtureResult,
@@ -809,6 +851,13 @@ from .objective_cover_context_validation import (
     classify_objective_cover_context,
     objective_cover_targets,
     validate_objective_cover_context_fixture,
+)
+from .one_spine_many_couplings_upde_scope_constraint_validation import (
+    OneSpineManyCouplingsUpdeScopeConstraintConfig,
+    OneSpineManyCouplingsUpdeScopeConstraintFixtureResult,
+    classify_one_spine_many_couplings_upde_scope_constraint_component,
+    one_spine_many_couplings_upde_scope_constraint_labels,
+    validate_one_spine_many_couplings_upde_scope_constraint_fixture,
 )
 from .opening_foundation_validation import (
     OpeningFoundationConfig,
@@ -896,6 +945,13 @@ from .predicted_particles_infoton_psi_higgs_validation import (
     predicted_particles_infoton_psi_higgs_labels,
     validate_predicted_particles_infoton_psi_higgs_fixture,
 )
+from .predictive_coding_integration_p0r02839_validation import (
+    PredictiveCodingIntegrationP0r02839Config,
+    PredictiveCodingIntegrationP0r02839FixtureResult,
+    classify_predictive_coding_integration_p0r02839_component,
+    predictive_coding_integration_p0r02839_labels,
+    validate_predictive_coding_integration_p0r02839_fixture,
+)
 from .predictive_coding_integration_validation import (
     PredictiveCodingIntegrationConfig,
     PredictiveCodingIntegrationFixtureResult,
@@ -942,12 +998,26 @@ from .psis_field_coupling_integration_p0r02494_validation import (
     psis_field_coupling_integration_p0r02494_labels,
     validate_psis_field_coupling_integration_p0r02494_fixture,
 )
+from .psis_field_coupling_integration_p0r02608_validation import (
+    PsisFieldCouplingIntegrationP0r02608Config,
+    PsisFieldCouplingIntegrationP0r02608FixtureResult,
+    classify_psis_field_coupling_integration_p0r02608_component,
+    psis_field_coupling_integration_p0r02608_labels,
+    validate_psis_field_coupling_integration_p0r02608_fixture,
+)
 from .psis_field_coupling_integration_validation import (
     PsisFieldCouplingIntegrationConfig,
     PsisFieldCouplingIntegrationFixtureResult,
     classify_psis_field_coupling_integration_component,
     psis_field_coupling_integration_labels,
     validate_psis_field_coupling_integration_fixture,
+)
+from .quasicriticality_and_self_organisation_validation import (
+    QuasicriticalityAndSelfOrganisationConfig,
+    QuasicriticalityAndSelfOrganisationFixtureResult,
+    classify_quasicriticality_and_self_organisation_component,
+    quasicriticality_and_self_organisation_labels,
+    validate_quasicriticality_and_self_organisation_fixture,
 )
 from .rag_qec_stack_validation import (
     QECErrorThresholdResult,
@@ -980,12 +1050,40 @@ from .section_2_7_the_fisher_info_metric_the_geometry_of_interaction_validation 
     section_2_7_the_fisher_info_metric_the_geometry_of_interaction_labels,
     validate_section_2_7_the_fisher_info_metric_the_geometry_of_interaction_fixture,
 )
+from .section_2_the_central_void_the_source_validation import (
+    Section2TheCentralVoidTheSourceConfig,
+    Section2TheCentralVoidTheSourceFixtureResult,
+    classify_section_2_the_central_void_the_source_component,
+    section_2_the_central_void_the_source_labels,
+    validate_section_2_the_central_void_the_source_fixture,
+)
+from .section_3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde_validation import (
+    Section32TheDynamicSpineTheUnifiedPhaseDynamicsEquationUpdeConfig,
+    Section32TheDynamicSpineTheUnifiedPhaseDynamicsEquationUpdeFixtureResult,
+    classify_section_3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde_component,
+    section_3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde_labels,
+    validate_section_3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde_fixture,
+)
 from .section_3_memory_capacity_bekenstein_hawking_bound_validation import (
     Section3MemoryCapacityBekensteinHawkingBoundConfig,
     Section3MemoryCapacityBekensteinHawkingBoundFixtureResult,
     classify_section_3_memory_capacity_bekenstein_hawking_bound_component,
     section_3_memory_capacity_bekenstein_hawking_bound_labels,
     validate_section_3_memory_capacity_bekenstein_hawking_bound_fixture,
+)
+from .section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_p0r02810_validation import (
+    Section15LayerSummaryTable32TheDynamicSpineTheUnifiedPhaseDynamicsP0r02810Config,
+    Section15LayerSummaryTable32TheDynamicSpineTheUnifiedPhaseDynamicsP0r02810FixtureResult,
+    classify_section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_p0r02810_component,
+    section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_p0r02810_labels,
+    validate_section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_p0r02810_fixture,
+)
+from .section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_validation import (
+    Section15LayerSummaryTable32TheDynamicSpineTheUnifiedPhaseDynamicsConfig,
+    Section15LayerSummaryTable32TheDynamicSpineTheUnifiedPhaseDynamicsFixtureResult,
+    classify_section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_component,
+    section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_labels,
+    validate_section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_fixture,
 )
 from .section_15_layer_summary_table_validation import (
     Section15LayerSummaryTableConfig,
@@ -1144,12 +1242,26 @@ from .the_definition_of_the_self_the_triadic_solution_validation import (
     the_definition_of_the_self_the_triadic_solution_labels,
     validate_the_definition_of_the_self_the_triadic_solution_fixture,
 )
+from .the_dynamic_visualisation_the_scpn_torus_validation import (
+    TheDynamicVisualisationTheScpnTorusConfig,
+    TheDynamicVisualisationTheScpnTorusFixtureResult,
+    classify_the_dynamic_visualisation_the_scpn_torus_component,
+    the_dynamic_visualisation_the_scpn_torus_labels,
+    validate_the_dynamic_visualisation_the_scpn_torus_fixture,
+)
 from .the_genesis_of_the_hierarchy_sequential_symmetry_breaking_ssb_validation import (
     TheGenesisOfTheHierarchySequentialSymmetryBreakingSsbConfig,
     TheGenesisOfTheHierarchySequentialSymmetryBreakingSsbFixtureResult,
     classify_the_genesis_of_the_hierarchy_sequential_symmetry_breaking_ssb_component,
     the_genesis_of_the_hierarchy_sequential_symmetry_breaking_ssb_labels,
     validate_the_genesis_of_the_hierarchy_sequential_symmetry_breaking_ssb_fixture,
+)
+from .the_hierarchical_impedance_rescaling_validation import (
+    TheHierarchicalImpedanceRescalingConfig,
+    TheHierarchicalImpedanceRescalingFixtureResult,
+    classify_the_hierarchical_impedance_rescaling_component,
+    the_hierarchical_impedance_rescaling_labels,
+    validate_the_hierarchical_impedance_rescaling_fixture,
 )
 from .the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential_validation import (
     TheIntrinsicDynamicsOfTheΨFieldAndTheStabilisingPotentialConfig,
@@ -1158,12 +1270,26 @@ from .the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential_vali
     the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential_labels,
     validate_the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential_fixture,
 )
+from .the_locus_of_the_interaction_validation import (
+    TheLocusOfTheInteractionConfig,
+    TheLocusOfTheInteractionFixtureResult,
+    classify_the_locus_of_the_interaction_component,
+    the_locus_of_the_interaction_labels,
+    validate_the_locus_of_the_interaction_fixture,
+)
 from .the_master_diagram_a_mandala_of_consciousness_validation import (
     TheMasterDiagramAMandalaOfConsciousnessConfig,
     TheMasterDiagramAMandalaOfConsciousnessFixtureResult,
     classify_the_master_diagram_a_mandala_of_consciousness_component,
     the_master_diagram_a_mandala_of_consciousness_labels,
     validate_the_master_diagram_a_mandala_of_consciousness_fixture,
+)
+from .the_mechanism_of_influence_validation import (
+    TheMechanismOfInfluenceConfig,
+    TheMechanismOfInfluenceFixtureResult,
+    classify_the_mechanism_of_influence_component,
+    the_mechanism_of_influence_labels,
+    validate_the_mechanism_of_influence_fixture,
 )
 from .the_self_as_a_soliton_emergence_of_localised_consciousness_layer_5_validation import (
     TheSelfAsASolitonEmergenceOfLocalisedConsciousnessLayer5Config,
@@ -1178,6 +1304,13 @@ from .the_sentient_consciousness_projection_network_scpn_validation import (
     classify_the_sentient_consciousness_projection_network_scpn_component,
     the_sentient_consciousness_projection_network_scpn_labels,
     validate_the_sentient_consciousness_projection_network_scpn_fixture,
+)
+from .the_susceptible_substrate_validation import (
+    TheSusceptibleSubstrateConfig,
+    TheSusceptibleSubstrateFixtureResult,
+    classify_the_susceptible_substrate_component,
+    the_susceptible_substrate_labels,
+    validate_the_susceptible_substrate_fixture,
 )
 from .three_channel_coupling_validation import (
     ChannelConstraint,
@@ -1281,6 +1414,101 @@ from .validation_strategy import (
 )
 
 __all__ = [
+    "validate_the_susceptible_substrate_fixture",
+    "the_susceptible_substrate_labels",
+    "classify_the_susceptible_substrate_component",
+    "TheSusceptibleSubstrateFixtureResult",
+    "TheSusceptibleSubstrateConfig",
+    "validate_predictive_coding_integration_p0r02839_fixture",
+    "predictive_coding_integration_p0r02839_labels",
+    "classify_predictive_coding_integration_p0r02839_component",
+    "PredictiveCodingIntegrationP0r02839FixtureResult",
+    "PredictiveCodingIntegrationP0r02839Config",
+    "validate_quasicriticality_and_self_organisation_fixture",
+    "quasicriticality_and_self_organisation_labels",
+    "classify_quasicriticality_and_self_organisation_component",
+    "QuasicriticalityAndSelfOrganisationFixtureResult",
+    "QuasicriticalityAndSelfOrganisationConfig",
+    "validate_section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_p0r02810_fixture",
+    "section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_p0r02810_labels",
+    "classify_section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_p0r02810_component",
+    "Section15LayerSummaryTable32TheDynamicSpineTheUnifiedPhaseDynamicsP0r02810FixtureResult",
+    "Section15LayerSummaryTable32TheDynamicSpineTheUnifiedPhaseDynamicsP0r02810Config",
+    "validate_section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_fixture",
+    "section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_labels",
+    "classify_section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_component",
+    "Section15LayerSummaryTable32TheDynamicSpineTheUnifiedPhaseDynamicsFixtureResult",
+    "Section15LayerSummaryTable32TheDynamicSpineTheUnifiedPhaseDynamicsConfig",
+    "validate_one_spine_many_couplings_upde_scope_constraint_fixture",
+    "one_spine_many_couplings_upde_scope_constraint_labels",
+    "classify_one_spine_many_couplings_upde_scope_constraint_component",
+    "OneSpineManyCouplingsUpdeScopeConstraintFixtureResult",
+    "OneSpineManyCouplingsUpdeScopeConstraintConfig",
+    "validate_the_hierarchical_impedance_rescaling_fixture",
+    "the_hierarchical_impedance_rescaling_labels",
+    "classify_the_hierarchical_impedance_rescaling_component",
+    "TheHierarchicalImpedanceRescalingFixtureResult",
+    "TheHierarchicalImpedanceRescalingConfig",
+    "validate_information_geometric_lift_of_upde_fixture",
+    "information_geometric_lift_of_upde_labels",
+    "classify_information_geometric_lift_of_upde_component",
+    "InformationGeometricLiftOfUpdeFixtureResult",
+    "InformationGeometricLiftOfUpdeConfig",
+    "validate_field_coupling_cfield_fixture",
+    "field_coupling_cfield_labels",
+    "classify_field_coupling_cfield_component",
+    "FieldCouplingCfieldFixtureResult",
+    "FieldCouplingCfieldConfig",
+    "validate_intrinsic_dynamics_il_fixture",
+    "intrinsic_dynamics_il_labels",
+    "classify_intrinsic_dynamics_il_component",
+    "IntrinsicDynamicsIlFixtureResult",
+    "IntrinsicDynamicsIlConfig",
+    "validate_the_mechanism_of_influence_fixture",
+    "the_mechanism_of_influence_labels",
+    "classify_the_mechanism_of_influence_component",
+    "TheMechanismOfInfluenceFixtureResult",
+    "TheMechanismOfInfluenceConfig",
+    "validate_psis_field_coupling_integration_p0r02608_fixture",
+    "psis_field_coupling_integration_p0r02608_labels",
+    "classify_psis_field_coupling_integration_p0r02608_component",
+    "PsisFieldCouplingIntegrationP0r02608FixtureResult",
+    "PsisFieldCouplingIntegrationP0r02608Config",
+    "validate_meta_framework_integrations_p0r02600_fixture",
+    "meta_framework_integrations_p0r02600_labels",
+    "classify_meta_framework_integrations_p0r02600_component",
+    "MetaFrameworkIntegrationsP0r02600FixtureResult",
+    "MetaFrameworkIntegrationsP0r02600Config",
+    "validate_section_3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde_fixture",
+    "section_3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde_labels",
+    "classify_section_3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde_component",
+    "Section32TheDynamicSpineTheUnifiedPhaseDynamicsEquationUpdeFixtureResult",
+    "Section32TheDynamicSpineTheUnifiedPhaseDynamicsEquationUpdeConfig",
+    "validate_section_2_the_central_void_the_source_fixture",
+    "section_2_the_central_void_the_source_labels",
+    "classify_section_2_the_central_void_the_source_component",
+    "Section2TheCentralVoidTheSourceFixtureResult",
+    "Section2TheCentralVoidTheSourceConfig",
+    "validate_the_locus_of_the_interaction_fixture",
+    "the_locus_of_the_interaction_labels",
+    "classify_the_locus_of_the_interaction_component",
+    "TheLocusOfTheInteractionFixtureResult",
+    "TheLocusOfTheInteractionConfig",
+    "validate_meta_framework_integrations_p0r02542_fixture",
+    "meta_framework_integrations_p0r02542_labels",
+    "classify_meta_framework_integrations_p0r02542_component",
+    "MetaFrameworkIntegrationsP0r02542FixtureResult",
+    "MetaFrameworkIntegrationsP0r02542Config",
+    "validate_the_dynamic_visualisation_the_scpn_torus_fixture",
+    "the_dynamic_visualisation_the_scpn_torus_labels",
+    "classify_the_dynamic_visualisation_the_scpn_torus_component",
+    "TheDynamicVisualisationTheScpnTorusFixtureResult",
+    "TheDynamicVisualisationTheScpnTorusConfig",
+    "validate_iii_the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec_fixture",
+    "iii_the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec_labels",
+    "classify_iii_the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec_component",
+    "IiiTheCoherenceBackboneMultiScaleQuantumErrorCorrectionMsQecFixtureResult",
+    "IiiTheCoherenceBackboneMultiScaleQuantumErrorCorrectionMsQecConfig",
     "AMapOfRealityConfig",
     "AMapOfRealityFixtureResult",
     "a_map_of_reality_labels",
