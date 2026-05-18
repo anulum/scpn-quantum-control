@@ -230,9 +230,19 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         frozenset({"stable-core-contract-gate"}),
     ),
     Harness(
+        "stable-core-preflight-gate",
+        "scripts/run_stable_core_preflight_gate.py",
+        frozenset({"stable-core-preflight-gate"}),
+    ),
+    Harness(
         "stable-core-release-gate",
         "scripts/run_stable_core_release_gate.py",
         frozenset({"stable-core-release-gate"}),
+    ),
+    Harness(
+        "paper0-lane-registry-gate",
+        "scripts/run_paper0_lane_registry_gate.py",
+        frozenset({"paper0-lane-registry-gate"}),
     ),
 )
 
@@ -299,11 +309,29 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
     )
     _add_run_options(stable_core_contract_gate, default_group="stable-core-contract-gate")
 
+    stable_core_preflight_gate = subparsers.add_parser(
+        "stable-core-preflight-gate",
+        help="Run and check stable-core preflight gate fixtures.",
+    )
+    _add_run_options(
+        stable_core_preflight_gate,
+        default_group="stable-core-preflight-gate",
+    )
+
     stable_core_release_gate = subparsers.add_parser(
         "stable-core-release-gate",
         help="Run and check the stable-core release gate fixture set.",
     )
     _add_run_options(stable_core_release_gate, default_group="stable-core-release-gate")
+
+    paper0_lane_registry_gate = subparsers.add_parser(
+        "paper0-lane-registry-gate",
+        help="Run and check the Paper 0 lane registry gate.",
+    )
+    _add_run_options(
+        paper0_lane_registry_gate,
+        default_group="paper0-lane-registry-gate",
+    )
 
     s1 = subparsers.add_parser(
         "s1-feedback",
@@ -491,7 +519,11 @@ def _selected_harnesses(
 
 
 def _run_harness(harness: Harness) -> int:
-    _validate_harness_policy(harness)
+    try:
+        _validate_harness_policy(harness)
+    except FileNotFoundError as exc:
+        print(f"[scpn-bench] missing harness script: {exc}", file=sys.stderr)
+        return 2
     script_path = REPO_ROOT / harness.script
     command = [PYTHON, str(script_path)]
     print(f"[scpn-bench] run {harness.label}: {' '.join(command)}", flush=True)

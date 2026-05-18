@@ -92,11 +92,26 @@ scpn-bench stable-core-release-gate
 ```
 
 This command is the preferred no-QPU entry point when stable-core documentation,
-API surfaces, or release notes touch stable-core claims. It runs both component
-gates as a single bundle:
+API surfaces, or release notes touch stable-core claims. It runs component gates
+as a single bundle:
 
 - `scpn-bench stable-core-capability-gate`
 - `scpn-bench stable-core-contract-gate`
+- `scpn-bench stable-core-preflight-gate`
+
+## Stable-core preflight gate
+
+The offline preflight surface for stable-core release preparation is:
+
+```bash
+scpn-bench stable-core-preflight-gate
+```
+
+The gate is a no-QPU check for stable-core fixture inputs before public API or
+documentation changes are merged. Use it when either contract or capability
+fixture inputs change.
+
+Targeted preflight files include `docs/stable_core_preflight_fixtures.md`.
 
 Component commands remain available for focused checks when only one contract or
 capability path changes.

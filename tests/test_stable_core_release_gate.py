@@ -14,19 +14,21 @@ import sys
 from scripts.run_stable_core_release_gate import (
     CAPABILITY_GATE_SCRIPT,
     CONTRACT_GATE_SCRIPT,
+    PREFLIGHT_GATE_SCRIPT,
     build_stable_core_release_gate_commands,
     main,
 )
 
 
 def test_gate_helper_builds_commands_in_stable_order() -> None:
-    """The release gate should run the capability gate before contract gate."""
+    """The release gate should run capability, contract, then preflight gates."""
 
     commands = build_stable_core_release_gate_commands()
 
     assert commands == (
         (sys.executable, str(CAPABILITY_GATE_SCRIPT)),
         (sys.executable, str(CONTRACT_GATE_SCRIPT)),
+        (sys.executable, str(PREFLIGHT_GATE_SCRIPT)),
     )
 
 

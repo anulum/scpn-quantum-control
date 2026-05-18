@@ -81,8 +81,8 @@ is copied here.
   behaviour alongside planner fixtures.
 - [x] **Stable-core release/repro gate.** Use
   `scpn-bench stable-core-release-gate` before release notes, API changes, or
-  public stable-core documentation changes. The bundle runs both stable-core
-  contract and stable-core capability checks in one no-QPU command.
+  public stable-core documentation changes. The bundle runs stable-core
+  contract, stable-core capability, and preflight checks in one no-QPU command.
 - [ ] **Stable-core contract gate component.** Use
   `scpn-bench stable-core-contract-gate` to verify only contract fixtures
   (`Problem`, `Backend`, `Experiment`, `Result`, and Kuramoto adaptor mapping)
@@ -90,6 +90,9 @@ is copied here.
 - [ ] **Stable-core capability gate component.** Use
   `scpn-bench stable-core-capability-gate` to verify only capability artifacts
   when stable-core surface edits are capability-only.
+- [ ] **Stable-core preflight gate component.** Use
+  `scpn-bench stable-core-preflight-gate` to validate stable-core preflight
+  fixtures before touching stable-core API text, docs, or release-facing claims.
 - [ ] **Symmetry- and sector-aware mitigation compiler.** Generalise
   GUESS/DLA parity into a bounded auto-detected mitigation-planning API once
   result packs and benchmark baselines are stable.
@@ -108,10 +111,12 @@ is copied here.
   definitive source of truth, and records the methodology-paper
   acceptance gates, experimental tiers, candidate lanes, and immediate
   implementation queue.
-- [ ] **Paper 0 lane registry generator.** Build a reproducible command
-  that reads Paper 0 claim candidates, validation specs, fixture
-  reports, and promotion gates, then emits a public artefact index with
-  lane, evidence class, blocker, and next promotion gate.
+- [x] **Paper 0 lane registry generator.** Implemented 2026-05-19:
+  `scpn-bench paper0-lane-registry-gate` regenerates and compares a
+  public source-bounded lane artefact with lane, evidence class,
+  blocker, related spec path, and hardware-boundary fields. The
+  registry remains a programme-planning artefact, not external
+  validation evidence or hardware readiness.
 - [ ] **Methodology-paper outline.** Add a tracked paper outline for
   source-bounded SCPN experimental translation. Every section must name
   reproducible artefacts and keep fixture preservation separate from

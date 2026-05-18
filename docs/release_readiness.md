@@ -40,8 +40,23 @@ The bundle is a no-QPU reproducibility command that composes:
 
 - `scpn-bench stable-core-capability-gate`
 - `scpn-bench stable-core-contract-gate`
+- `scpn-bench stable-core-preflight-gate`
 
 Use component gates only for targeted component-only verification.
+
+## Paper 0 lane registry gate
+
+For release notes, API docs, or pathway text that touch Paper 0 downstream
+lanes, run:
+
+```bash
+scpn-bench paper0-lane-registry-gate
+```
+
+This is a no-QPU reproducibility gate. It confirms that the public Paper 0 lane
+registry and its JSON companion are regenerated from repository artefacts. It
+does not establish external validation, measured-system evidence, or hardware
+readiness for any Paper 0 lane.
 
 ## Coverage and test-quality closure boundary
 
@@ -73,6 +88,12 @@ shape, adaptor boundaries, or contract-facing text, add:
 
 ```bash
 scpn-bench stable-core-contract-gate
+```
+
+For tags that change stable-core preflight fixture expectations, add:
+
+```bash
+scpn-bench stable-core-preflight-gate
 ```
 
 ## Scientific gap closure boundary
@@ -136,6 +157,7 @@ This preferred gate is no-QPU and reproducible. It is composed of:
 
 - `scpn-bench stable-core-capability-gate`
 - `scpn-bench stable-core-contract-gate`
+- `scpn-bench stable-core-preflight-gate`
 
 Use these component gates for isolated changes to only one stable-core surface.
 
@@ -172,6 +194,8 @@ Before tagging:
    benchmark registry rows, generated benchmark artefacts, or benchmark claims.
 3. Run `scpn-bench stable-core-release-gate` if the release touches stable-core
    contracts, contract fixtures, capability claims, or stable-core API text.
+4. Run `scpn-bench stable-core-preflight-gate` if the release changes stable-core
+   preflight fixtures or preflight-facing API/docs text.
 5. Run `scpn-bench symmetry-sector-mitigation-gate` if the release touches
    symmetry-sector mitigation planning, planner fixtures, or mitigation claims.
 6. If the release cites promoted hardware evidence, generate the hardware

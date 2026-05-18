@@ -168,6 +168,14 @@ from .stable_core import (
     stable_core_capability_payload,
     write_stable_core_capability_artifacts,
 )
+from .stable_core_preflight import (
+    StableCorePreflightResult,
+    run_stable_core_preflight,
+    stable_core_backend_dependencies,
+    stable_core_preflight_fixtures_json,
+    stable_core_preflight_fixtures_markdown,
+    stable_core_preflight_fixtures_payload,
+)
 
 __version__ = "0.9.6"
 
@@ -192,6 +200,12 @@ __all__ = [
     "pulser_surrogate_backend",
     "stable_core_capability_payload",
     "stable_core_capability_markdown",
+    "StableCorePreflightResult",
+    "stable_core_backend_dependencies",
+    "stable_core_preflight_fixtures_json",
+    "stable_core_preflight_fixtures_markdown",
+    "stable_core_preflight_fixtures_payload",
+    "run_stable_core_preflight",
     "write_stable_core_capability_artifacts",
     "problem_from_kuramoto",
     "problem_to_kuramoto",

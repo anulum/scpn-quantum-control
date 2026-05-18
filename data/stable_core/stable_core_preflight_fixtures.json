@@ -1,0 +1,102 @@
+{
+  "claim_boundary": "Preflight fixtures are offline and do not prove runtime execution, hardware registration, or external dependency readiness. They only lock shape checks for deterministic guard branches.",
+  "fixtures": [
+    {
+      "backend": {
+        "backend_id": "classical-reference",
+        "capabilities": [
+          "order_parameter",
+          "parity",
+          "fim",
+          "control"
+        ],
+        "hardware_submission_allowed": false,
+        "kind": "classical_reference"
+      },
+      "blockers": [],
+      "fixture_id": "eligible_classical_reference",
+      "metadata": {
+        "scenario": "eligible classical/reference"
+      },
+      "objective": "order_parameter",
+      "primitives": [
+        "dependency_probe",
+        "capability_guard",
+        "preregistration_guard",
+        "eligible"
+      ],
+      "status": "eligible"
+    },
+    {
+      "backend": {
+        "backend_id": "qiskit-runtime",
+        "capabilities": [
+          "order_parameter",
+          "parity",
+          "mitigation_replay"
+        ],
+        "hardware_submission_allowed": false,
+        "kind": "qiskit"
+      },
+      "blockers": [
+        "missing dependency: qiskit-runtime provider package"
+      ],
+      "fixture_id": "blocked_missing_dependency",
+      "metadata": {
+        "scenario": "blocked missing dependency"
+      },
+      "objective": "order_parameter",
+      "primitives": [],
+      "status": "blocked"
+    },
+    {
+      "backend": {
+        "backend_id": "qiskit-runtime-live",
+        "capabilities": [
+          "order_parameter",
+          "parity",
+          "mitigation_replay"
+        ],
+        "hardware_submission_allowed": true,
+        "kind": "qiskit"
+      },
+      "blockers": [
+        "hardware preregistration required for live submission",
+        "hardware boundary blocks run-path in stable fixture mode"
+      ],
+      "fixture_id": "blocked_hardware_preregistration_or_boundary",
+      "metadata": {
+        "scenario": "blocked hardware preregistration or boundary"
+      },
+      "objective": "order_parameter",
+      "primitives": [],
+      "status": "blocked"
+    },
+    {
+      "backend": {
+        "backend_id": "qutip-dynamics",
+        "capabilities": [
+          "order_parameter",
+          "hamiltonian_dynamics",
+          "lindblad"
+        ],
+        "hardware_submission_allowed": false,
+        "kind": "qutip"
+      },
+      "blockers": [
+        "backend qutip-dynamics does not declare control capability"
+      ],
+      "fixture_id": "blocked_missing_capability",
+      "metadata": {
+        "required_capability": "control",
+        "scenario": "blocked missing capability"
+      },
+      "objective": "control_cost",
+      "primitives": [],
+      "status": "blocked"
+    }
+  ],
+  "hardware_submission": false,
+  "schema": "stable_core_preflight_fixtures_v1",
+  "spdx_license_identifier": "AGPL-3.0-or-later"
+}

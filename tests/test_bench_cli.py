@@ -254,6 +254,18 @@ def test_stable_core_contract_gate_selection_is_harness() -> None:
     ]
 
 
+def test_stable_core_preflight_gate_selection_is_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("stable-core-preflight-gate", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "stable-core-preflight-gate",
+            "scripts/run_stable_core_preflight_gate.py",
+            frozenset({"stable-core-preflight-gate"}),
+        )
+    ]
+
+
 def test_stable_core_release_gate_selection_is_harness() -> None:
     harnesses = bench_cli._selected_harnesses("stable-core-release-gate", include_gpu=False)
 
@@ -262,6 +274,18 @@ def test_stable_core_release_gate_selection_is_harness() -> None:
             "stable-core-release-gate",
             "scripts/run_stable_core_release_gate.py",
             frozenset({"stable-core-release-gate"}),
+        )
+    ]
+
+
+def test_paper0_lane_registry_gate_selection_is_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("paper0-lane-registry-gate", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "paper0-lane-registry-gate",
+            "scripts/run_paper0_lane_registry_gate.py",
+            frozenset({"paper0-lane-registry-gate"}),
         )
     ]
 
@@ -347,6 +371,18 @@ def test_stable_core_contract_gate_dry_run_selects_gate_harness(
     assert "scripts/run_stable_core_contract_gate.py" in captured.out
 
 
+def test_stable_core_preflight_gate_dry_run_selects_gate_harness(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    rc = bench_cli.run(["stable-core-preflight-gate", "--dry-run"])
+
+    captured = capsys.readouterr()
+    assert rc == 0
+    assert "selected harnesses" in captured.out
+    assert "stable-core-preflight-gate" in captured.out
+    assert "scripts/run_stable_core_preflight_gate.py" in captured.out
+
+
 def test_stable_core_release_gate_dry_run_selects_gate_harness(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
@@ -357,6 +393,18 @@ def test_stable_core_release_gate_dry_run_selects_gate_harness(
     assert "selected harnesses" in captured.out
     assert "stable-core-release-gate" in captured.out
     assert "scripts/run_stable_core_release_gate.py" in captured.out
+
+
+def test_paper0_lane_registry_gate_dry_run_selects_gate_harness(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    rc = bench_cli.run(["paper0-lane-registry-gate", "--dry-run"])
+
+    captured = capsys.readouterr()
+    assert rc == 0
+    assert "selected harnesses" in captured.out
+    assert "paper0-lane-registry-gate" in captured.out
+    assert "scripts/run_paper0_lane_registry_gate.py" in captured.out
 
 
 def test_diff_summary_returns_two_when_artifacts_changed(

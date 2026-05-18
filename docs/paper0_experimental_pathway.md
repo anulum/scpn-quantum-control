@@ -90,8 +90,10 @@ Acceptance gates for the methodology paper:
 The next production slices should make the programme executable rather than
 only narrative:
 
-1. Generate a Paper 0 lane registry from claim candidates, promotion gates, and
-   validation-spec artefacts.
+1. Maintain the generated Paper 0 lane registry with
+   `scpn-bench paper0-lane-registry-gate`. The registry is the public
+   source-bounded index of lane ids, evidence class, blockers, related spec
+   artefacts, and hardware/QPU boundaries.
 2. Publish a methodology-paper outline that references only reproducible
    artefacts and explicitly separates source accounting from validation.
 3. Add an artefact-index command that lists each Paper 0 lane, evidence class,
@@ -108,3 +110,17 @@ ledger, extraction discipline, and experimental agenda. The immediate value is
 not a stronger scientific claim. The value is a controlled method for deciding
 which SCPN claims can become experiments, what evidence would promote them, and
 which claims remain blocked.
+
+## Generated lane registry
+
+The generated registry lives at `docs/paper0_lane_registry.md` with its
+machine-readable companion at `data/paper0_lane_registry.json`. Regenerate and
+compare both artefacts with:
+
+```bash
+scpn-bench paper0-lane-registry-gate
+```
+
+Passing the gate means the source-bounded lane index is reproducible. It does
+not promote any Paper 0 lane to external validation, measured-system evidence,
+or hardware/QPU readiness.

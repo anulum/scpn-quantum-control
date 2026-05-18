@@ -17,6 +17,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CAPABILITY_GATE_SCRIPT = Path("scripts") / "run_stable_core_capability_gate.py"
 CONTRACT_GATE_SCRIPT = Path("scripts") / "run_stable_core_contract_gate.py"
+PREFLIGHT_GATE_SCRIPT = Path("scripts") / "run_stable_core_preflight_gate.py"
 
 
 def build_stable_core_release_gate_commands() -> tuple[tuple[str, ...], ...]:
@@ -25,6 +26,7 @@ def build_stable_core_release_gate_commands() -> tuple[tuple[str, ...], ...]:
     return (
         (sys.executable, str(CAPABILITY_GATE_SCRIPT)),
         (sys.executable, str(CONTRACT_GATE_SCRIPT)),
+        (sys.executable, str(PREFLIGHT_GATE_SCRIPT)),
     )
 
 
