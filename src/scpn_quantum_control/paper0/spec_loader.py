@@ -3669,6 +3669,54 @@ def load_biological_qec_l1_4_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_THE_QEC_IMPERATIVE_AND_THE_ROLE_OF_THE_PSI_FIELD_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_qec_imperative_and_the_role_of_the_psi_field_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_qec_imperative_and_the_role_of_the_psi_field_validation_spec(
+    spec_bundle: str | Path = DEFAULT_THE_QEC_IMPERATIVE_AND_THE_ROLE_OF_THE_PSI_FIELD_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the qec imperative and the role of the psi field validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_PREDICTIVE_CODING_INTEGRATION_P0R03059_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_predictive_coding_integration_p0r03059_validation_specs_2026-05-17.json"
+)
+
+
+def load_predictive_coding_integration_p0r03059_validation_spec(
+    spec_bundle: str | Path = DEFAULT_PREDICTIVE_CODING_INTEGRATION_P0R03059_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 predictive coding integration p0r03059 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_ULTIMATE_FEEDBACK_LOOP_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_ultimate_feedback_loop_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_ultimate_feedback_loop_validation_spec(
+    spec_bundle: str | Path = DEFAULT_THE_ULTIMATE_FEEDBACK_LOOP_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the ultimate feedback loop validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -4038,4 +4086,10 @@ __all__ = [
     "load_creating_and_protecting_a_coherent_sigma_validation_spec",
     "DEFAULT_BIOLOGICAL_QEC_L1_4_SPEC_BUNDLE",
     "load_biological_qec_l1_4_validation_spec",
+    "DEFAULT_THE_QEC_IMPERATIVE_AND_THE_ROLE_OF_THE_PSI_FIELD_SPEC_BUNDLE",
+    "load_the_qec_imperative_and_the_role_of_the_psi_field_validation_spec",
+    "DEFAULT_PREDICTIVE_CODING_INTEGRATION_P0R03059_SPEC_BUNDLE",
+    "load_predictive_coding_integration_p0r03059_validation_spec",
+    "DEFAULT_THE_ULTIMATE_FEEDBACK_LOOP_SPEC_BUNDLE",
+    "load_the_ultimate_feedback_loop_validation_spec",
 ]

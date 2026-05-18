@@ -1036,6 +1036,13 @@ from .predictive_coding_integration_p0r02839_validation import (
     predictive_coding_integration_p0r02839_labels,
     validate_predictive_coding_integration_p0r02839_fixture,
 )
+from .predictive_coding_integration_p0r03059_validation import (
+    PredictiveCodingIntegrationP0r03059Config,
+    PredictiveCodingIntegrationP0r03059FixtureResult,
+    classify_predictive_coding_integration_p0r03059_component,
+    predictive_coding_integration_p0r03059_labels,
+    validate_predictive_coding_integration_p0r03059_fixture,
+)
 from .predictive_coding_integration_validation import (
     PredictiveCodingIntegrationConfig,
     PredictiveCodingIntegrationFixtureResult,
@@ -1396,6 +1403,13 @@ from .the_psis_field_as_the_target_setter_validation import (
     the_psis_field_as_the_target_setter_labels,
     validate_the_psis_field_as_the_target_setter_fixture,
 )
+from .the_qec_imperative_and_the_role_of_the_psi_field_validation import (
+    TheQecImperativeAndTheRoleOfThePsiFieldConfig,
+    TheQecImperativeAndTheRoleOfThePsiFieldFixtureResult,
+    classify_the_qec_imperative_and_the_role_of_the_psi_field_component,
+    the_qec_imperative_and_the_role_of_the_psi_field_labels,
+    validate_the_qec_imperative_and_the_role_of_the_psi_field_fixture,
+)
 from .the_self_as_a_soliton_emergence_of_localised_consciousness_layer_5_validation import (
     TheSelfAsASolitonEmergenceOfLocalisedConsciousnessLayer5Config,
     TheSelfAsASolitonEmergenceOfLocalisedConsciousnessLayer5FixtureResult,
@@ -1423,6 +1437,13 @@ from .the_two_timescale_controller_stability_and_exploration_validation import (
     classify_the_two_timescale_controller_stability_and_exploration_component,
     the_two_timescale_controller_stability_and_exploration_labels,
     validate_the_two_timescale_controller_stability_and_exploration_fixture,
+)
+from .the_ultimate_feedback_loop_validation import (
+    TheUltimateFeedbackLoopConfig,
+    TheUltimateFeedbackLoopFixtureResult,
+    classify_the_ultimate_feedback_loop_component,
+    the_ultimate_feedback_loop_labels,
+    validate_the_ultimate_feedback_loop_fixture,
 )
 from .three_channel_coupling_validation import (
     ChannelConstraint,
@@ -1540,6 +1561,21 @@ from .validation_strategy import (
 )
 
 __all__ = [
+    "validate_the_ultimate_feedback_loop_fixture",
+    "the_ultimate_feedback_loop_labels",
+    "classify_the_ultimate_feedback_loop_component",
+    "TheUltimateFeedbackLoopFixtureResult",
+    "TheUltimateFeedbackLoopConfig",
+    "validate_predictive_coding_integration_p0r03059_fixture",
+    "predictive_coding_integration_p0r03059_labels",
+    "classify_predictive_coding_integration_p0r03059_component",
+    "PredictiveCodingIntegrationP0r03059FixtureResult",
+    "PredictiveCodingIntegrationP0r03059Config",
+    "validate_the_qec_imperative_and_the_role_of_the_psi_field_fixture",
+    "the_qec_imperative_and_the_role_of_the_psi_field_labels",
+    "classify_the_qec_imperative_and_the_role_of_the_psi_field_component",
+    "TheQecImperativeAndTheRoleOfThePsiFieldFixtureResult",
+    "TheQecImperativeAndTheRoleOfThePsiFieldConfig",
     "validate_biological_qec_l1_4_fixture",
     "biological_qec_l1_4_labels",
     "classify_biological_qec_l1_4_component",
