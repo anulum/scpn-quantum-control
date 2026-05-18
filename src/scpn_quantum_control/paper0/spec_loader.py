@@ -3476,6 +3476,54 @@ def load_paper0_slice_p0r02923_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_PAPER0_SLICE_P0R02931_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_paper0_slice_p0r02931_validation_specs_2026-05-17.json"
+)
+
+
+def load_paper0_slice_p0r02931_validation_spec(
+    spec_bundle: str | Path = DEFAULT_PAPER0_SLICE_P0R02931_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 paper0 slice p0r02931 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R02941_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_meta_framework_integrations_p0r02941_validation_specs_2026-05-17.json"
+)
+
+
+def load_meta_framework_integrations_p0r02941_validation_spec(
+    spec_bundle: str | Path = DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R02941_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 meta framework integrations p0r02941 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_PSIS_FIELD_COUPLING_INTEGRATION_P0R02950_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_psis_field_coupling_integration_p0r02950_validation_specs_2026-05-17.json"
+)
+
+
+def load_psis_field_coupling_integration_p0r02950_validation_spec(
+    spec_bundle: str | Path = DEFAULT_PSIS_FIELD_COUPLING_INTEGRATION_P0R02950_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 psis field coupling integration p0r02950 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -3821,4 +3869,10 @@ __all__ = [
     "load_the_two_timescale_controller_stability_and_exploration_validation_spec",
     "DEFAULT_PAPER0_SLICE_P0R02923_SPEC_BUNDLE",
     "load_paper0_slice_p0r02923_validation_spec",
+    "DEFAULT_PAPER0_SLICE_P0R02931_SPEC_BUNDLE",
+    "load_paper0_slice_p0r02931_validation_spec",
+    "DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R02941_SPEC_BUNDLE",
+    "load_meta_framework_integrations_p0r02941_validation_spec",
+    "DEFAULT_PSIS_FIELD_COUPLING_INTEGRATION_P0R02950_SPEC_BUNDLE",
+    "load_psis_field_coupling_integration_p0r02950_validation_spec",
 ]
