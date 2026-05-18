@@ -44,6 +44,8 @@ OFFLINE_HARNESS_POLICY = ExecutionSurfacePolicy(
         "data/s4_multi_hardware_control",
         "data/s5_benchmark_harness",
         "data/s6_quantum_kuramoto_split",
+        "data/synchronisation_benchmarks",
+        "data/symmetry_sector_mitigation",
         "docs",
     ),
     subprocess_allowed=True,
@@ -186,6 +188,31 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         "scripts/export_quantum_kuramoto_api_contract.py",
         frozenset({"s6-contract"}),
     ),
+    Harness(
+        "sync-benchmark-registry",
+        "scripts/export_synchronisation_benchmark_registry.py",
+        frozenset({"sync-registry"}),
+    ),
+    Harness(
+        "sync-benchmark-run",
+        "scripts/run_synchronisation_benchmark.py",
+        frozenset({"sync-run"}),
+    ),
+    Harness(
+        "sync-benchmark-compare",
+        "scripts/compare_synchronisation_benchmark.py",
+        frozenset({"sync-compare"}),
+    ),
+    Harness(
+        "sync-benchmark-gate",
+        "scripts/run_synchronisation_benchmark_gate.py",
+        frozenset({"sync-gate"}),
+    ),
+    Harness(
+        "symmetry-sector-mitigation-gate",
+        "scripts/run_symmetry_sector_mitigation_gate.py",
+        frozenset({"symmetry-sector-gate"}),
+    ),
 )
 
 ARTEFACT_PATHS = (
@@ -197,6 +224,8 @@ ARTEFACT_PATHS = (
     "data/s4_multi_hardware_control",
     "data/s5_benchmark_harness",
     "data/s6_quantum_kuramoto_split",
+    "data/synchronisation_benchmarks",
+    "data/symmetry_sector_mitigation",
 )
 
 
@@ -324,6 +353,36 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate the S6 quantum-kuramoto API-contract artefacts.",
     )
     _add_run_options(s6_contract, default_group="s6-contract")
+
+    sync_registry = subparsers.add_parser(
+        "sync-benchmark-registry",
+        help="Regenerate the standardised synchronisation benchmark registry.",
+    )
+    _add_run_options(sync_registry, default_group="sync-registry")
+
+    sync_run = subparsers.add_parser(
+        "sync-benchmark-run",
+        help="Regenerate no-QPU synchronisation benchmark reference rows.",
+    )
+    _add_run_options(sync_run, default_group="sync-run")
+
+    sync_compare = subparsers.add_parser(
+        "sync-benchmark-compare",
+        help="Compare regenerated synchronisation benchmark rows against committed rows.",
+    )
+    _add_run_options(sync_compare, default_group="sync-compare")
+
+    sync_gate = subparsers.add_parser(
+        "sync-benchmark-gate",
+        help="Regenerate all synchronisation benchmark artefacts and compare them.",
+    )
+    _add_run_options(sync_gate, default_group="sync-gate")
+
+    symmetry_sector_gate = subparsers.add_parser(
+        "symmetry-sector-mitigation-gate",
+        help="Regenerate and compare symmetry-sector mitigation planner fixtures.",
+    )
+    _add_run_options(symmetry_sector_gate, default_group="symmetry-sector-gate")
 
     return parser.parse_args(argv)
 

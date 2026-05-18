@@ -1,0 +1,216 @@
+{
+  "schema_version": 1,
+  "repository": "anulum/scpn-quantum-control",
+  "generated_from_head": "current tracked checkout at manifest creation",
+  "claim_boundary": "Result packs preserve and replay committed hardware artefacts; they do not broaden claim scope beyond the hardware status ledger.",
+  "packs": [
+    {
+      "id": "phase1_dla_parity_ibm_kingston_2026_04",
+      "title": "Phase 1 DLA parity raw-count observation on ibm_kingston",
+      "status": "promoted_raw_count_evidence",
+      "backend": "ibm_kingston",
+      "hardware_family": "IBM Heron r2",
+      "executed_utc": "2026-04-10",
+      "required_job_ids": [
+        "ibm-run-ecf490aec9c2405b",
+        "ibm-run-b9141dcd7f32c9d8",
+        "ibm-run-15d0c46dff8797b3",
+        "ibm-run-dd41a90491e86f89",
+        "ibm-run-763b5f0212c5d3d2"
+      ],
+      "reproduce_command": "python scripts/analyse_phase1_dla_parity.py",
+      "claim_scope": "Supports the n=4 Phase 1 DLA parity asymmetry observation from committed raw counts and the published analysis table.",
+      "non_claims": [
+        "broad quantum advantage",
+        "monotone scaling validation",
+        "GUESS mitigation validation",
+        "multi-device replication"
+      ],
+      "artifacts": [
+        {
+          "path": "data/phase1_dla_parity/phase1_bench_2026-04-10T183728Z.json",
+          "role": "raw_counts",
+          "sha256": "dbf4e1878deedc0400b6b645d1d276ca0a18d3c2b18248429aab605c983a18e7",
+          "bytes": 45413
+        },
+        {
+          "path": "data/phase1_dla_parity/phase1_5_reinforce_2026-04-10T184909Z.json",
+          "role": "raw_counts",
+          "sha256": "cb07cf43c2144d60879628e9f782bec9d171150711d0998904bce8d0fe8f498d",
+          "bytes": 88263
+        },
+        {
+          "path": "data/phase1_dla_parity/phase2_exhaust_2026-04-10T185634Z.json",
+          "role": "raw_counts",
+          "sha256": "43f2ff09f8929e772f544ed71e4d5498471dace6d68c2e0b32e675bb5b28a752",
+          "bytes": 167645
+        },
+        {
+          "path": "data/phase1_dla_parity/phase2_5_final_burn_2026-04-10T190136Z.json",
+          "role": "raw_counts",
+          "sha256": "69dfff29666e900f238574437933c71fb1e8ac3b380e94518412a741e44eb038",
+          "bytes": 87873
+        },
+        {
+          "path": "figures/phase1/phase1_dla_parity_summary.json",
+          "role": "reproduced_summary",
+          "sha256": "cbbce49dcf80b5e691220c229f201b79b5b43399eb9548cc9738e3715f5970f9",
+          "bytes": 5801
+        }
+      ]
+    },
+    {
+      "id": "phase2_dla_parity_ag_ibm_kingston_2026_05_05",
+      "title": "Phase 2 reduced A+G DLA parity replication on ibm_kingston",
+      "status": "promoted_raw_count_evidence",
+      "backend": "ibm_kingston",
+      "hardware_family": "IBM Heron r2",
+      "executed_utc": "2026-05-05T12:13:57Z",
+      "required_job_ids": [
+        "ibm-run-7da8644af35021fb",
+        "ibm-run-6f9990bba1d90a12"
+      ],
+      "reproduce_command": "python scripts/analyse_phase2_dla_parity.py --verify-integrity",
+      "claim_scope": "Supports the reduced n=4 A+G replication and readout-control claim only.",
+      "non_claims": [
+        "broad quantum advantage",
+        "n=6-12 scaling validation",
+        "GUESS mitigation validation",
+        "frontier promotion"
+      ],
+      "artifacts": [
+        {
+          "path": "data/phase2_dla_parity/phase2_reduced_ag_2026-05-05T121357Z.json",
+          "role": "raw_counts",
+          "sha256": "8f1db016de49dd36d33c8d462bd64a7c3cbda44cca5557314ab97a4f6cd6c6b9",
+          "bytes": 589381
+        },
+        {
+          "path": "data/phase2_dla_parity/phase2_reduced_ag_summary_2026-05-05.json",
+          "role": "reproduced_summary",
+          "sha256": "a9d2fdeb333efdd701c3a7e722002e518fdedd8b2c76be330056706cbde3c980",
+          "bytes": 5347
+        }
+      ]
+    },
+    {
+      "id": "phase2_scaling_bc_ibm_kingston_2026_05_05",
+      "title": "Phase 2 B-C mixed scaling run on ibm_kingston",
+      "status": "promoted_mixed_raw_count_evidence",
+      "backend": "ibm_kingston",
+      "hardware_family": "IBM Heron r2",
+      "executed_utc": "2026-05-05T12:47:22Z",
+      "required_job_ids": [
+        "ibm-run-1f46ebd0da8912ff"
+      ],
+      "reproduce_command": "python scripts/analyse_phase2_scaling_bc.py data/phase2_scaling_bc/phase2_scaling_bc_2026-05-05T124722Z.json --sha256 f9718c3789329dbaa96a1667f8a581e3d1774632b961a1760c044138ccab6550",
+      "claim_scope": "Supports mixed B-C scaling evidence and explicitly falsifies a simple monotone scaling story.",
+      "non_claims": [
+        "monotone scaling validation",
+        "broad quantum advantage",
+        "GUESS mitigation validation",
+        "frontier promotion"
+      ],
+      "artifacts": [
+        {
+          "path": "data/phase2_scaling_bc/phase2_scaling_bc_2026-05-05T124722Z.json",
+          "role": "raw_counts",
+          "sha256": "06d879f64ccd48cadafdc73d56085132e575cdc8e868fad9d04ef3739907628a",
+          "bytes": 944830
+        },
+        {
+          "path": "data/phase2_scaling_bc/phase2_scaling_bc_summary_2026-05-05.json",
+          "role": "reproduced_summary",
+          "sha256": "82d3c52f1c41fbdb0381219eee9aca3f7effe8397a495cfd738d36ef0ae955f2",
+          "bytes": 3462
+        }
+      ]
+    },
+    {
+      "id": "phase2_popcount_control_ibm_kingston_2026_05_05",
+      "title": "Phase 2 excitation-count control on ibm_kingston",
+      "status": "promoted_control_raw_count_evidence",
+      "backend": "ibm_kingston",
+      "hardware_family": "IBM Heron r2",
+      "executed_utc": "2026-05-05T13:53:18Z",
+      "required_job_ids": [
+        "ibm-run-7d468e2b1e44b406",
+        "ibm-run-b3424c38cfe03c86"
+      ],
+      "reproduce_command": "python scripts/analyse_phase2_popcount_control.py --verify-integrity",
+      "claim_scope": "Tests the excitation-count confound in the DLA parity leakage experiment.",
+      "non_claims": [
+        "broad quantum advantage",
+        "monotone scaling validation",
+        "GUESS mitigation validation",
+        "multi-device replication"
+      ],
+      "artifacts": [
+        {
+          "path": "data/phase2_popcount_control/phase2_popcount_control_2026-05-05T135318Z.json",
+          "role": "raw_counts",
+          "sha256": "ff3e0554cd2245665534591a73898fe3bab47b2a9e44a988d4de9360da3c6925",
+          "bytes": 399642
+        },
+        {
+          "path": "data/phase2_popcount_control/phase2_popcount_control_summary_2026-05-05.json",
+          "role": "reproduced_summary",
+          "sha256": "8d58536519c9a410fa3a35b03642d94377f752f83338ed28c5e4a0dcc00b2b95",
+          "bytes": 20130
+        }
+      ]
+    },
+    {
+      "id": "scpn_fim_negative_ibm_kingston_2026_05_05",
+      "title": "SCPN/FIM ibm_kingston pilot and repeated follow-up negative result",
+      "status": "promoted_negative_result",
+      "backend": "ibm_kingston",
+      "hardware_family": "IBM Heron r2",
+      "executed_utc": "2026-05-05",
+      "required_job_ids": [
+        "ibm-run-4c0bd60c3fc2c532",
+        "ibm-run-cf4835290f607387"
+      ],
+      "reproduce_command": "python scripts/analyse_fim_ibm_pilot.py && python scripts/analyse_fim_ibm_repeated_followup.py && python scripts/analyse_fim_readout_matrix_mitigation.py",
+      "claim_scope": "Supports the negative result for simple digital lambda=4 FIM hardware protection on the tested circuit family.",
+      "non_claims": [
+        "hardware coherence protection in general",
+        "biological FIM validation",
+        "therapeutic or clinical claim",
+        "broad quantum advantage"
+      ],
+      "artifacts": [
+        {
+          "path": "data/scpn_fim_hamiltonian/fim_ibm_pilot_raw_counts_2026-05-05_ibm-run-4c0bd60c3fc2c532.json",
+          "role": "raw_counts",
+          "sha256": "109d23a2ac984b82ac96734d973fe4fd039f13e4348d8556bea548cecb89d82c",
+          "bytes": 90433
+        },
+        {
+          "path": "data/scpn_fim_hamiltonian/fim_ibm_pilot_analysis_2026-05-05_ibm-run-4c0bd60c3fc2c532.json",
+          "role": "reproduced_analysis",
+          "sha256": "69df107be28459e0911245fff8cd5b4aa45bf6dd1f20e2f8abeebe74092e8578",
+          "bytes": 58701
+        },
+        {
+          "path": "data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_raw_counts_2026-05-05_ibm-run-cf4835290f607387.json",
+          "role": "raw_counts",
+          "sha256": "13948b12223dbc64f659cb26de393bd9894dba37c2a3787ce15d3b6aad4089d2",
+          "bytes": 268339
+        },
+        {
+          "path": "data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_analysis_2026-05-05_ibm-run-cf4835290f607387.json",
+          "role": "reproduced_analysis",
+          "sha256": "abf41e74c1f3ffbd6e44a1217415c9717b4171465713f15bd5f3a54e6a0b37e0",
+          "bytes": 146390
+        },
+        {
+          "path": "data/scpn_fim_hamiltonian/fim_readout_matrix_mitigation_summary_2026-05-05_ibm-run-cf4835290f607387.json",
+          "role": "mitigation_summary",
+          "sha256": "2cdeb58da864f89dd27278052a7ef238443cdac0de625410065ce8134621f517",
+          "bytes": 140915
+        }
+      ]
+    }
+  ]
+}

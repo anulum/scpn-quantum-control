@@ -36,6 +36,11 @@ from .symmetry_decay import (
     learn_symmetry_decay,
     xy_magnetisation_ideal,
 )
+from .symmetry_sector_compiler import (
+    SymmetrySectorPlan,
+    SymmetrySectorProblem,
+    plan_symmetry_sector_mitigation,
+)
 from .symmetry_verification import (
     SymmetryVerificationResult,
     bitstring_parity,
@@ -70,6 +75,8 @@ __all__ = [
     "cpdr_mitigate",
     "cpdr_full_pipeline",
     "generate_training_circuits",
+    "SymmetrySectorPlan",
+    "SymmetrySectorProblem",
     "SymmetryVerificationResult",
     "bitstring_parity",
     "initial_state_parity",
@@ -77,6 +84,7 @@ __all__ = [
     "parity_verified_expectation",
     "parity_verified_R",
     "symmetry_expand",
+    "plan_symmetry_sector_mitigation",
     "is_mitiq_available",
     "zne_mitigated_expectation",
     "ddd_mitigated_expectation",

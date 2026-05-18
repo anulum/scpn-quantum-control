@@ -40,6 +40,15 @@ REQUIRED_RELEASE_ARTIFACTS: tuple[str, ...] = (
     "data/s2_advantage_scaling/s2_scaling_protocol_2026-05-06.json",
     "data/s2_advantage_scaling/s2_slice_progress_report_2026-05-07.json",
     "data/s2_advantage_scaling/s2_scaling_claim_boundary_2026-05-06.json",
+    "data/hardware_result_packs/manifest.json",
+    "docs/hardware_result_packs.md",
+    "docs/hardware_result_pack_release_checklist.md",
+    "data/synchronisation_benchmarks/synchronisation_benchmark_registry.json",
+    "data/synchronisation_benchmarks/kuramoto_ring_n4_linear_omega_reference_rows.json",
+    "data/synchronisation_benchmarks/kuramoto_chain_n8_decay_omega_reference_rows.json",
+    "docs/synchronisation_benchmark_suite.md",
+    "docs/synchronisation_benchmark_kuramoto_ring_n4.md",
+    "docs/synchronisation_benchmark_kuramoto_chain_n8.md",
 )
 
 
@@ -107,6 +116,141 @@ def check_required_artifacts(project_root: Path) -> ReleaseCheck:
         valid=not missing,
         details={"required": list(REQUIRED_RELEASE_ARTIFACTS), "missing": list(missing)},
         blockers=tuple(f"missing required release artefact: {path}" for path in missing),
+    )
+
+
+def _sha256(path: Path) -> str:
+    """Return the SHA-256 hex digest for a file."""
+
+    import hashlib
+
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def check_hardware_result_pack_evidence(
+    project_root: Path, evidence_path: Path | None
+) -> ReleaseCheck:
+    """Check optional hardware result-pack evidence packet for release claims."""
+
+    if evidence_path is None:
+        return ReleaseCheck(
+            name="hardware_result_pack_evidence",
+            valid=True,
+            details={
+                "evidence_path": None,
+                "hardware_evidence_cited": None,
+                "requirement": "Provide --hardware-result-pack-evidence when release surfaces cite promoted IBM hardware evidence.",
+            },
+        )
+    if not evidence_path.exists():
+        return ReleaseCheck(
+            name="hardware_result_pack_evidence",
+            valid=False,
+            details={"evidence_path": evidence_path.as_posix()},
+            blockers=(f"hardware result-pack evidence packet missing: {evidence_path}",),
+        )
+
+    packet = json.loads(evidence_path.read_text(encoding="utf-8"))
+    blockers: list[str] = []
+    if packet.get("schema_version") != 1:
+        blockers.append("hardware result-pack evidence schema_version must be 1")
+    cited = packet.get("hardware_evidence_cited")
+    if not isinstance(cited, bool):
+        blockers.append("hardware_evidence_cited must be boolean")
+    if cited is False:
+        if not packet.get("reason"):
+            blockers.append("non-citing hardware evidence packet must include reason")
+        return ReleaseCheck(
+            name="hardware_result_pack_evidence",
+            valid=not blockers,
+            details={
+                "evidence_path": evidence_path.as_posix(),
+                "hardware_evidence_cited": False,
+                "reason": packet.get("reason"),
+            },
+            blockers=tuple(blockers),
+        )
+
+    verifier_rel = packet.get("verifier_summary_path")
+    export_rel = packet.get("export_summary_path")
+    reproduction_logs = packet.get("reproduction_logs")
+    if not isinstance(verifier_rel, str):
+        blockers.append("verifier_summary_path is required when hardware evidence is cited")
+    if not isinstance(export_rel, str):
+        blockers.append("export_summary_path is required when hardware evidence is cited")
+    if not isinstance(reproduction_logs, list) or not reproduction_logs:
+        blockers.append("reproduction_logs must contain at least one log entry")
+
+    verifier_summary: dict[str, Any] = {}
+    export_summary: dict[str, Any] = {}
+    if isinstance(verifier_rel, str):
+        verifier_path = project_root / verifier_rel
+        if not verifier_path.exists():
+            blockers.append(f"verifier summary missing: {verifier_rel}")
+        else:
+            verifier_summary = json.loads(verifier_path.read_text(encoding="utf-8"))
+            if int(verifier_summary.get("pack_count", 0)) <= 0:
+                blockers.append("verifier summary must report at least one pack")
+    if isinstance(export_rel, str):
+        export_path = project_root / export_rel
+        if not export_path.exists():
+            blockers.append(f"export summary missing: {export_rel}")
+        else:
+            export_summary = json.loads(export_path.read_text(encoding="utf-8"))
+            if not export_summary.get("exports"):
+                blockers.append("export summary must include exports")
+
+    cited_pack_ids: set[str] = set()
+    if isinstance(reproduction_logs, list):
+        for index, item in enumerate(reproduction_logs):
+            if not isinstance(item, dict):
+                blockers.append(f"reproduction_logs[{index}] must be an object")
+                continue
+            pack_id = item.get("pack_id")
+            command = item.get("command")
+            log_rel = item.get("log_path")
+            digest = item.get("sha256")
+            if not isinstance(pack_id, str) or not pack_id:
+                blockers.append(f"reproduction_logs[{index}].pack_id is required")
+            else:
+                cited_pack_ids.add(pack_id)
+            if not isinstance(command, str) or not command:
+                blockers.append(f"reproduction_logs[{index}].command is required")
+            if not isinstance(log_rel, str):
+                blockers.append(f"reproduction_logs[{index}].log_path is required")
+                continue
+            log_path = project_root / log_rel
+            if not log_path.exists():
+                blockers.append(f"reproduction log missing: {log_rel}")
+                continue
+            if not isinstance(digest, str) or _sha256(log_path) != digest:
+                blockers.append(f"reproduction log digest mismatch: {log_rel}")
+
+    export_pack_ids = {
+        str(item.get("id")) for item in export_summary.get("exports", []) if isinstance(item, dict)
+    }
+    missing_exports = sorted(cited_pack_ids - export_pack_ids)
+    if missing_exports:
+        blockers.append(f"cited packs missing export digests: {missing_exports}")
+
+    return ReleaseCheck(
+        name="hardware_result_pack_evidence",
+        valid=not blockers,
+        details={
+            "evidence_path": evidence_path.as_posix(),
+            "hardware_evidence_cited": cited,
+            "cited_pack_ids": sorted(cited_pack_ids),
+            "verifier_pack_count": verifier_summary.get("pack_count"),
+            "export_count": len(export_summary.get("exports", [])) if export_summary else 0,
+            "reproduction_log_count": len(reproduction_logs)
+            if isinstance(reproduction_logs, list)
+            else 0,
+        },
+        blockers=tuple(blockers),
     )
 
 
@@ -208,6 +352,7 @@ def audit_release_readiness(
     fail_on_file_gap: bool,
     min_assertion_density: float,
     min_raises_contract_density: float,
+    hardware_result_pack_evidence: Path | None = None,
 ) -> dict[str, Any]:
     """Run all release-readiness checks and return a deterministic payload."""
     project_root = project_root.resolve()
@@ -232,6 +377,7 @@ def audit_release_readiness(
             min_assertion_density=min_assertion_density,
             min_raises_contract_density=min_raises_contract_density,
         ),
+        check_hardware_result_pack_evidence(project_root, hardware_result_pack_evidence),
     )
     blockers = tuple(blocker for check in checks for blocker in check.blockers)
     return {
@@ -280,6 +426,12 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Return non-zero when release readiness is blocked.",
     )
+    parser.add_argument(
+        "--hardware-result-pack-evidence",
+        type=Path,
+        default=None,
+        help="Optional hardware result-pack evidence packet required for promoted hardware claims.",
+    )
     args = parser.parse_args(argv)
     payload = audit_release_readiness(
         project_root=args.project_root,
@@ -290,6 +442,7 @@ def main(argv: list[str] | None = None) -> int:
         fail_on_file_gap=args.fail_on_file_gap,
         min_assertion_density=args.min_assertion_density,
         min_raises_contract_density=args.min_raises_contract_density,
+        hardware_result_pack_evidence=args.hardware_result_pack_evidence,
     )
     print(
         json.dumps(payload, indent=2, sort_keys=True)

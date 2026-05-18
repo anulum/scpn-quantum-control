@@ -1,0 +1,138 @@
+{
+  "claim_boundary": "The registry defines benchmark contracts and replay rows. It does not create new hardware evidence or quantum-advantage claims.",
+  "implemented_or_replay_count": 3,
+  "include_planned": true,
+  "instances": [
+    {
+      "acceptance_gate": "classical and exact references must report schema-compatible observable rows before simulator or hardware rows are accepted",
+      "benchmark_id": "kuramoto_ring_n4_linear_omega",
+      "claim_boundary": "Reference smoke instance for compiler and observable consistency; not a hardware-performance or advantage claim.",
+      "coupling_model": "nearest-neighbour ring, uniform K=0.45",
+      "dataset_path": null,
+      "evidence_class": "analytic_reference",
+      "family": "kuramoto_xy_reference",
+      "frequency_model": "linear omega grid from 0.8 to 1.2",
+      "n_oscillators": 4,
+      "optional_backends": [
+        "qiskit_statevector",
+        "qutip",
+        "hardware_replay"
+      ],
+      "reference_observables": [
+        "order_parameter",
+        "energy",
+        "parity_leakage"
+      ],
+      "replay_command": null,
+      "required_backends": [
+        "classical_ode",
+        "exact_diagonalisation"
+      ],
+      "title": "Four-node Kuramoto-XY ring with linear frequency gradient"
+    },
+    {
+      "acceptance_gate": "exact or tensor-network reference must include runtime, dependency, and tolerance provenance before release promotion",
+      "benchmark_id": "kuramoto_chain_n8_decay_omega",
+      "claim_boundary": "Simulator/reference benchmark for scaling behaviour; not a broad quantum-advantage claim.",
+      "coupling_model": "exponential distance decay K_ij = 0.45 exp(-0.3 |i-j|)",
+      "dataset_path": null,
+      "evidence_class": "simulator_reference",
+      "family": "kuramoto_xy_reference",
+      "frequency_model": "linear omega grid from 0.8 to 1.2",
+      "n_oscillators": 8,
+      "optional_backends": [
+        "qiskit_statevector",
+        "mps_tebd",
+        "gpu_exact"
+      ],
+      "reference_observables": [
+        "order_parameter",
+        "schmidt_gap",
+        "otoc_proxy"
+      ],
+      "replay_command": null,
+      "required_backends": [
+        "classical_ode",
+        "exact_diagonalisation"
+      ],
+      "title": "Eight-node decaying-chain Kuramoto-XY benchmark"
+    },
+    {
+      "acceptance_gate": "raw-count replay must pass integrity checks and preserve the hardware status ledger claim boundary",
+      "benchmark_id": "phase1_dla_parity_n4_ibm_kingston",
+      "claim_boundary": "Replays committed raw counts only; does not submit QPU jobs or promote broader scaling, mitigation, or advantage claims.",
+      "coupling_model": "Phase 1 DLA parity committed K matrix",
+      "dataset_path": "data/phase1_dla_parity/*.json",
+      "evidence_class": "hardware_replay",
+      "family": "hardware_replay",
+      "frequency_model": "Phase 1 DLA parity committed frequency settings",
+      "n_oscillators": 4,
+      "optional_backends": [
+        "qiskit_statevector"
+      ],
+      "reference_observables": [
+        "parity_leakage",
+        "relative_asymmetry",
+        "fisher_p"
+      ],
+      "replay_command": "scpn-bench s5-benchmark-suite",
+      "required_backends": [
+        "hardware_replay",
+        "classical_parity_reference"
+      ],
+      "title": "Phase 1 n=4 DLA parity hardware replay benchmark"
+    },
+    {
+      "acceptance_gate": "dataset schema, finite-size tolerances, and null controls must be committed before implementation status changes from planned",
+      "benchmark_id": "bkt_finite_size_grid_planned",
+      "claim_boundary": "Visible roadmap row only; not an available benchmark result.",
+      "coupling_model": "planned finite-size XY/Kuramoto coupling grid",
+      "dataset_path": null,
+      "evidence_class": "planned",
+      "family": "phase_transition_reference",
+      "frequency_model": "planned controlled disorder grid",
+      "n_oscillators": 16,
+      "optional_backends": [
+        "qiskit_statevector",
+        "hardware_replay"
+      ],
+      "reference_observables": [
+        "critical_coupling",
+        "binder_proxy",
+        "finite_size_slope"
+      ],
+      "replay_command": null,
+      "required_backends": [
+        "classical_xy",
+        "exact_or_tensor_reference"
+      ],
+      "title": "Finite-size BKT transition grid"
+    }
+  ],
+  "planned_count": 1,
+  "result_schema": {
+    "hardware_rule": "hardware_submission must be false unless a preregistered manifest, QPU budget, raw-count target path, and explicit approval are recorded",
+    "observable_row_fields": [
+      "name",
+      "value",
+      "uncertainty",
+      "units",
+      "tolerance",
+      "passed"
+    ],
+    "required_fields": [
+      "benchmark_id",
+      "backend",
+      "backend_version",
+      "command",
+      "commit",
+      "dependency_lock",
+      "hardware_submission",
+      "wall_time_s",
+      "observables",
+      "claim_boundary"
+    ],
+    "schema": "synchronisation_benchmark_result_v1"
+  },
+  "schema": "synchronisation_benchmark_registry_v1"
+}

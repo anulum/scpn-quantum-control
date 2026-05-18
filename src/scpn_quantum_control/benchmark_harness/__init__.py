@@ -23,6 +23,24 @@ from scpn_quantum_control.benchmark_harness.registry import (
     benchmark_registry_payload,
     list_benchmark_families,
 )
+from scpn_quantum_control.benchmark_harness.synchronisation import (
+    RESULT_SCHEMA,
+    SynchronisationBenchmarkInstance,
+    list_synchronisation_benchmarks,
+    synchronisation_benchmark_registry_payload,
+)
+from scpn_quantum_control.benchmark_harness.synchronisation_compare import (
+    ObservableComparison,
+    compare_default_artifacts,
+    compare_files,
+    compare_payloads,
+)
+from scpn_quantum_control.benchmark_harness.synchronisation_runner import (
+    BenchmarkResultRow,
+    ObservableRow,
+    run_kuramoto_chain_n8_decay_omega,
+    run_kuramoto_ring_n4_linear_omega,
+)
 from scpn_quantum_control.dla_parity import (
     ClassicalLeakageReference,
     DlaParityDataset,
@@ -88,11 +106,23 @@ __all__ = [
     "ReproductionResult",
     "ReproductionTolerance",
     "BenchmarkFamily",
+    "BenchmarkResultRow",
+    "RESULT_SCHEMA",
+    "ObservableComparison",
+    "ObservableRow",
+    "SynchronisationBenchmarkInstance",
     "available_baselines",
     "benchmark_registry_payload",
+    "compare_default_artifacts",
+    "compare_files",
+    "compare_payloads",
     "compute_classical_leakage_reference",
     "list_benchmark_families",
+    "list_synchronisation_benchmarks",
     "load_phase1_dataset",
     "reproduce_phase1_statistics",
+    "run_kuramoto_chain_n8_decay_omega",
+    "run_kuramoto_ring_n4_linear_omega",
     "run_phase1_benchmark",
+    "synchronisation_benchmark_registry_payload",
 ]

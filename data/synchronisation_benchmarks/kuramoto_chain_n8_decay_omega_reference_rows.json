@@ -1,0 +1,83 @@
+{
+  "benchmark_id": "kuramoto_chain_n8_decay_omega",
+  "claim_boundary": "This artefact establishes n=8 decaying-chain reference rows for the standardised synchronisation benchmark suite. It does not submit QPU jobs or claim quantum advantage.",
+  "hardware_submission": false,
+  "python_executable": "/home/anulum/.local/bin/python",
+  "result_schema": {
+    "hardware_rule": "hardware_submission must be false unless a preregistered manifest, QPU budget, raw-count target path, and explicit approval are recorded",
+    "observable_row_fields": [
+      "name",
+      "value",
+      "uncertainty",
+      "units",
+      "tolerance",
+      "passed"
+    ],
+    "required_fields": [
+      "benchmark_id",
+      "backend",
+      "backend_version",
+      "command",
+      "commit",
+      "dependency_lock",
+      "hardware_submission",
+      "wall_time_s",
+      "observables",
+      "claim_boundary"
+    ],
+    "schema": "synchronisation_benchmark_result_v1"
+  },
+  "rows": [
+    {
+      "backend": "classical_ode_scipy_dop853",
+      "backend_version": "python-3.12.3",
+      "benchmark_id": "kuramoto_chain_n8_decay_omega",
+      "claim_boundary": "No-QPU classical reference row; not a hardware or advantage claim.",
+      "command": "scpn-bench sync-benchmark-run --benchmark-id kuramoto_chain_n8_decay_omega",
+      "commit": "096e5fc18f1381521f4555098e3e30f6d77a9f16",
+      "dependency_lock": "python=3.12.3; numpy=2.4.4; scipy=installed",
+      "hardware_submission": false,
+      "observables": [
+        {
+          "name": "order_parameter_t1",
+          "passed": true,
+          "tolerance": 1e-09,
+          "uncertainty": 0.0,
+          "units": "dimensionless",
+          "value": 0.36410108604649044
+        }
+      ],
+      "wall_time_s": 0.0
+    },
+    {
+      "backend": "dense_exact_xy_numpy_scipy",
+      "backend_version": "python-3.12.3",
+      "benchmark_id": "kuramoto_chain_n8_decay_omega",
+      "claim_boundary": "No-QPU dense exact reference row; not a hardware or advantage claim.",
+      "command": "scpn-bench sync-benchmark-run --benchmark-id kuramoto_chain_n8_decay_omega",
+      "commit": "096e5fc18f1381521f4555098e3e30f6d77a9f16",
+      "dependency_lock": "python=3.12.3; numpy=2.4.4; scipy=installed",
+      "hardware_submission": false,
+      "observables": [
+        {
+          "name": "state_norm_t1",
+          "passed": true,
+          "tolerance": 1e-10,
+          "uncertainty": 0.0,
+          "units": "dimensionless",
+          "value": 0.9999999999999987
+        },
+        {
+          "name": "energy_expectation_t1",
+          "passed": true,
+          "tolerance": 1e-10,
+          "uncertainty": 0.0,
+          "units": "dimensionless_hamiltonian_units",
+          "value": -5.777400236773237
+        }
+      ],
+      "wall_time_s": 0.0
+    }
+  ],
+  "schema": "synchronisation_benchmark_run_v1"
+}

@@ -273,3 +273,126 @@ def test_release_readiness_cli_exit_status(tmp_path: Path, capsys):
 
     assert exit_code == 1
     assert "ready_for_tag: False" in output
+
+
+def _file_sha256(path: Path) -> str:
+    import hashlib
+
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _write_hardware_evidence_packet(root: Path) -> Path:
+    import json
+
+    releases = root / "docs" / "internal" / "releases"
+    releases.mkdir(parents=True)
+    verifier = releases / "verify.json"
+    verifier.write_text(
+        json.dumps({"pack_count": 1, "packs": [{"id": "pack_a"}]}) + "\n",
+        encoding="utf-8",
+    )
+    export = releases / "export.json"
+    export.write_text(
+        json.dumps({"exports": [{"id": "pack_a", "sha256": "abc", "bytes": 123}]}) + "\n",
+        encoding="utf-8",
+    )
+    log = releases / "pack_a.log"
+    log.write_text("reproduced pack_a\n", encoding="utf-8")
+    packet = releases / "packet.json"
+    packet.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "hardware_evidence_cited": True,
+                "verifier_summary_path": "docs/internal/releases/verify.json",
+                "export_summary_path": "docs/internal/releases/export.json",
+                "reproduction_logs": [
+                    {
+                        "pack_id": "pack_a",
+                        "command": "python scripts/reproduce_pack_a.py",
+                        "log_path": "docs/internal/releases/pack_a.log",
+                        "sha256": _file_sha256(log),
+                    }
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return packet
+
+
+def test_release_readiness_accepts_hardware_evidence_packet(tmp_path: Path):
+    _write_version_carriers(tmp_path)
+    _write_release_artifacts(tmp_path)
+    coverage_xml = _write_coverage_xml(tmp_path)
+    _write_behavioural_test(tmp_path)
+    packet = _write_hardware_evidence_packet(tmp_path)
+
+    payload = audit_release_readiness(
+        project_root=tmp_path,
+        coverage_xml=coverage_xml,
+        min_file_percent=95.0,
+        min_aggregate_percent=95.0,
+        justified_exclusions=None,
+        fail_on_file_gap=False,
+        min_assertion_density=0.5,
+        min_raises_contract_density=0.5,
+        hardware_result_pack_evidence=packet,
+    )
+
+    hardware_check = next(
+        check for check in payload["checks"] if check["name"] == "hardware_result_pack_evidence"
+    )
+    assert payload["ready_for_tag"] is True
+    assert hardware_check["details"]["cited_pack_ids"] == ["pack_a"]
+
+
+def test_release_readiness_blocks_hardware_log_digest_mismatch(tmp_path: Path):
+    import json
+
+    _write_version_carriers(tmp_path)
+    _write_release_artifacts(tmp_path)
+    coverage_xml = _write_coverage_xml(tmp_path)
+    _write_behavioural_test(tmp_path)
+    packet = _write_hardware_evidence_packet(tmp_path)
+    payload = json.loads(packet.read_text(encoding="utf-8"))
+    payload["reproduction_logs"][0]["sha256"] = "0" * 64
+    packet.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = audit_release_readiness(
+        project_root=tmp_path,
+        coverage_xml=coverage_xml,
+        min_file_percent=95.0,
+        min_aggregate_percent=95.0,
+        justified_exclusions=None,
+        fail_on_file_gap=False,
+        min_assertion_density=0.5,
+        min_raises_contract_density=0.5,
+        hardware_result_pack_evidence=packet,
+    )
+
+    assert result["ready_for_tag"] is False
+    assert any("reproduction log digest mismatch" in blocker for blocker in result["blockers"])
+
+
+def test_release_readiness_requires_synchronisation_benchmark_artifacts() -> None:
+    """Release artefact gate includes synchronisation benchmark surfaces."""
+
+    required = set(_audit_release_readiness.REQUIRED_RELEASE_ARTIFACTS)
+
+    assert "data/synchronisation_benchmarks/synchronisation_benchmark_registry.json" in required
+    assert (
+        "data/synchronisation_benchmarks/kuramoto_ring_n4_linear_omega_reference_rows.json"
+        in required
+    )
+    assert (
+        "data/synchronisation_benchmarks/kuramoto_chain_n8_decay_omega_reference_rows.json"
+        in required
+    )
+    assert "docs/synchronisation_benchmark_suite.md" in required

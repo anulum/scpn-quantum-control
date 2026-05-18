@@ -112,8 +112,15 @@ nav:
       - "DLA-parity Validation": dla_parity.md
       - "Classical Irreproducibility": classical_irreproducibility.md
       - Hardware Status Ledger: hardware_status_ledger.md
+      - Hardware Result Packs: hardware_result_packs.md
+      - Hardware Result-Pack Release Checklist: hardware_result_pack_release_checklist.md
       - Results Gallery: results.md
       - Methods Benchmark Dashboard: methods_benchmark_dashboard.md
+      - Synchronisation Benchmark Suite: synchronisation_benchmark_suite.md
+      - Symmetry-Sector Mitigation Compiler: symmetry_sector_mitigation_compiler.md
+      - Symmetry-Sector Mitigation Fixtures: symmetry_sector_mitigation_fixtures.md
+      - Kuramoto Ring n=4 Benchmark: synchronisation_benchmark_kuramoto_ring_n4.md
+      - Kuramoto Chain n=8 Benchmark: synchronisation_benchmark_kuramoto_chain_n8.md
   - Hardware:
       - IBM Guide: hardware_guide.md
       - Experiment Roadmap: EXPERIMENT_ROADMAP.md

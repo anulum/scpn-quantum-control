@@ -7,6 +7,74 @@ selection. Older planning files under `.coordination/` and
 `docs/internal/` are retained as historical context only unless an item
 is copied here.
 
+### Current platform programme: reproducible evidence and benchmark infrastructure
+
+- [x] **Platform opportunity prioritisation.** Recorded 2026-05-18 in
+  `docs/internal/platform_opportunity_prioritisation_2026-05-18.md`: first
+  result packs, then benchmark suite, then symmetry/sector-aware mitigation
+  compiler, then Kuramoto/XY DSL, then differentiable control co-design.
+- [x] **Hardware result-pack manifest and offline verifier.** Implemented
+  2026-05-18: `data/hardware_result_packs/manifest.json` binds promoted
+  IBM raw-count datasets, summaries, job IDs, SHA-256 digests, byte sizes,
+  reproduction commands, claim scopes, and non-claims;
+  `scripts/verify_hardware_result_packs.py` and the installable
+  `scpn-verify-hardware-packs` entry point verify the manifest offline with
+  explicit source-root handling and regression coverage.
+- [x] **Hardware result-pack release export.** Implemented 2026-05-18:
+  `scpn-verify-hardware-packs --export-dir ...` writes deterministic per-pack
+  `tar.gz` archives after verification, supports `--pack-id` filtering, and
+  reports archive byte sizes plus SHA-256 digests for release notes.
+- [x] **Hardware result-pack release checklist.** Implemented 2026-05-18:
+  `docs/hardware_result_pack_release_checklist.md` defines the evidence
+  packet for verifier output, export digests, and reproduction logs before
+  any tag or paper-facing update cites promoted hardware evidence.
+- [x] **Hardware result-pack evidence-packet generator.** Implemented
+  2026-05-18: `scpn-generate-hardware-pack-evidence` verifies selected
+  packs, writes deterministic exports, runs reproduction commands, records
+  logs, computes log digests, and writes the release-audit evidence packet.
+- [x] **Standardised synchronisation benchmark suite registry.** Implemented
+  2026-05-18: `scpn-bench sync-benchmark-registry` exports canonical
+  Kuramoto/XY benchmark instances and a stable result schema for classical,
+  exact, simulator, tensor-network, GPU, and hardware-replay rows.
+- [x] **Standardised synchronisation benchmark runner.** Implemented
+  2026-05-18: `scpn-bench sync-benchmark-run` exports schema-compatible
+  no-QPU reference rows for `kuramoto_ring_n4_linear_omega` using a SciPy
+  classical ODE row and dense exact XY row.
+- [x] **Synchronisation benchmark tolerance gate.** Implemented 2026-05-18:
+  `scpn-bench sync-benchmark-compare` validates schema stability, no-QPU
+  status, observable presence, unexpected rows, and per-observable tolerances
+  for regenerated synchronisation benchmark artefacts.
+- [x] **Second synchronisation benchmark instance runner.** Implemented
+  2026-05-18: `scpn-bench sync-benchmark-run --benchmark-id
+  kuramoto_chain_n8_decay_omega` exports no-QPU SciPy ODE and dense exact XY
+  reference rows for the n=8 decaying-chain instance.
+- [x] **Synchronisation benchmark comparator multi-instance gate.** Implemented
+  2026-05-18: `scpn-bench sync-benchmark-compare` now checks every committed
+  synchronisation benchmark artefact by default, while retaining focused
+  `--expected/--actual` comparisons for debugging.
+- [x] **Synchronisation benchmark regeneration gate.** Implemented
+  2026-05-18: `scpn-bench sync-benchmark-gate` regenerates the registry,
+  regenerates all committed synchronisation reference rows, and runs the
+  multi-instance comparator as one no-QPU release gate.
+- [x] **Synchronisation benchmark release integration.** Implemented
+  2026-05-18: `docs/release_readiness.md` requires `scpn-bench
+  sync-benchmark-gate` for benchmark-touching releases, and
+  `tools/audit_release_readiness.py` treats the synchronisation benchmark
+  registry, reference-row artefacts, and public benchmark pages as required
+  release artefacts.
+- [x] **Symmetry- and sector-aware mitigation compiler scoping.** Implemented
+  2026-05-18: `SymmetrySectorProblem`, `SymmetrySectorPlan`, and
+  `plan_symmetry_sector_mitigation()` define a fail-closed planning contract
+  for parity postselection, symmetry expansion, and GUESS eligibility before
+  execution-path integration.
+- [x] **Symmetry-sector mitigation fixture gate.** Implemented 2026-05-18:
+  `scpn-bench symmetry-sector-mitigation-gate` regenerates and compares
+  committed planner fixtures for eligible, missing-counts, missing-GUESS, and
+  nonsymmetric-coupling cases before any execution-path integration.
+- [ ] **Symmetry- and sector-aware mitigation compiler.** Generalise
+  GUESS/DLA parity into a bounded auto-detected mitigation-planning API once
+  result packs and benchmark baselines are stable.
+
 ### Current strategic programme: Paper 0 downstream experimental pathway
 
 - [x] **Paper 0 source-ingestion completion.** Completed 2026-05-18:

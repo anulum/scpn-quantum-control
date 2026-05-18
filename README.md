@@ -59,6 +59,8 @@ Direct entry points:
 
 - [Hardware Status Ledger](docs/hardware_status_ledger.md)
   — claim classes, campaign evidence paths, and publication hygiene rules
+- [Hardware Result Packs](docs/hardware_result_packs.md)
+  — offline manifest and integrity verifier for promoted IBM raw-count datasets
 - [Physics-First Kuramoto-XY](docs/physics_first_kuramoto_xy.md)
   — start from arbitrary oscillator networks before SCPN-specific layers
 - [Stable Facades API](docs/stable_facades_api.md)

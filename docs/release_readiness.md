@@ -64,12 +64,76 @@ This means the release can be tagged when software gates pass. It does not mean
 that source ingestion, simulator output, or partial benchmark rows have become
 external scientific validation.
 
+
+## Synchronisation benchmark release gate
+
+Before any tag that touches benchmark code, benchmark registry rows, generated
+benchmark artefacts, or paper-facing benchmark claims, run:
+
+```bash
+scpn-bench sync-benchmark-gate
+```
+
+The gate regenerates the standardised synchronisation benchmark registry,
+regenerates all committed no-QPU reference rows, and then runs the
+multi-instance comparator. It is a no-QPU release gate: it must not submit IBM
+or other hardware jobs, and it must not promote quantum-advantage or hardware
+performance claims.
+
+The release audit now treats the synchronisation benchmark registry, n=4/n=8
+reference rows, and public benchmark pages as required release artefacts.
+
+## Symmetry-sector mitigation release gate
+
+Before any tag that touches symmetry-sector mitigation planning, planner
+fixtures, or mitigation-eligibility claims, run:
+
+```bash
+scpn-bench symmetry-sector-mitigation-gate
+```
+
+The gate regenerates the committed planner-fixture JSON and public fixture
+summary, then compares the regenerated planner output against the committed
+artefact. The gate is offline, does not submit hardware jobs, and only locks the
+planner eligibility/blocker contract.
+
+## Hardware result-pack release gate
+
+Any tag, paper-facing update, website update, or release note that cites
+promoted IBM hardware evidence must attach a hardware result-pack evidence
+packet. The packet records three facts that must stay together:
+
+1. verifier output from `scpn-verify-hardware-packs --json`;
+2. deterministic export digests from `scpn-verify-hardware-packs --export-dir ... --json`;
+3. reproduction logs for every cited pack's count-to-statistic command.
+
+The packet schema and checklist are defined in
+[`hardware_result_pack_release_checklist.md`](hardware_result_pack_release_checklist.md).
+The release audit accepts the packet through:
+
+```bash
+./.venv-linux/bin/python tools/audit_release_readiness.py \
+  --fail-on-blocker \
+  --hardware-result-pack-evidence docs/internal/releases/<packet>.json
+```
+
+If a release does not cite promoted hardware evidence, record that decision in
+the release notes. Do not cite raw-count hardware claims from README, website,
+papers, or release notes without the evidence packet.
+
 ## Tagging procedure
 
 Before tagging:
 
 1. Generate a fresh coverage XML report with the release test command.
-2. Run `tools/audit_release_readiness.py --fail-on-blocker`.
-3. Run the scoped docs build and version-consistency checks.
-4. Commit with the required trailer after staged-diff audit.
-5. Push the commit and wait for CI before creating a release tag.
+2. Run `scpn-bench sync-benchmark-gate` if the release touches benchmark code,
+   benchmark registry rows, generated benchmark artefacts, or benchmark claims.
+3. Run `scpn-bench symmetry-sector-mitigation-gate` if the release touches
+   symmetry-sector mitigation planning, planner fixtures, or mitigation claims.
+4. If the release cites promoted hardware evidence, generate the hardware
+   result-pack evidence packet and pass it to the release audit.
+5. Run `tools/audit_release_readiness.py --fail-on-blocker` with the hardware
+   result-pack evidence argument when applicable.
+6. Run the scoped docs build and version-consistency checks.
+7. Commit with the required trailer after staged-diff audit.
+8. Push the commit and wait for CI before creating a release tag.

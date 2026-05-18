@@ -8,6 +8,13 @@
 
 # Hardware Status Ledger
 
+Result-pack integrity layer: promoted IBM raw-count datasets are now indexed in
+[`hardware_result_packs.md`](hardware_result_packs.md), with the canonical
+manifest at `data/hardware_result_packs/manifest.json` and an offline verifier
+at `scripts/verify_hardware_result_packs.py`. The result-pack layer preserves
+artefact integrity and claim boundaries; it does not broaden any claim in this
+ledger.
+
 This page is the public index for hardware and simulator evidence. Summary pages
 may quote selected results, but every quoted campaign should point back here or
 to a campaign-specific artefact with backend, date, mitigation state, job count,

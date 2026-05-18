@@ -1,0 +1,261 @@
+{
+  "claim_boundary": "Planner fixtures prove deterministic eligibility/blocker outputs. They do not mutate circuits, submit hardware jobs, or prove hardware improvement.",
+  "fixtures": [
+    {
+      "fixture_id": "eligible_counts_guess",
+      "plan": {
+        "benchmark_gates": [
+          "scpn-bench sync-benchmark-gate",
+          "hardware result-pack verifier for any raw-count replay claim",
+          "focused mitigation regression tests before circuit-path integration"
+        ],
+        "blockers": [],
+        "claim_boundary": "Planner output is an eligibility contract only. It does not mutate circuits, submit hardware jobs, prove improved hardware performance, or broaden DLA/GUESS claims without benchmark and raw-count evidence.",
+        "expected_parity": 0,
+        "primitives": [
+          "parity_postselection",
+          "symmetry_expansion",
+          "guess_symmetry_decay"
+        ],
+        "required_evidence": [
+          "validated symmetric XY coupling matrix",
+          "finite omega vector",
+          "computational-basis initial state",
+          "raw counts for every mitigated circuit",
+          "noise-scaled symmetry observable table for GUESS"
+        ],
+        "status": "eligible"
+      },
+      "problem": {
+        "coupling_matrix": [
+          [
+            0.0,
+            0.45,
+            0.0,
+            0.45
+          ],
+          [
+            0.45,
+            0.0,
+            0.45,
+            0.0
+          ],
+          [
+            0.0,
+            0.45,
+            0.0,
+            0.45
+          ],
+          [
+            0.45,
+            0.0,
+            0.45,
+            0.0
+          ]
+        ],
+        "has_noise_scaled_symmetry_observables": true,
+        "has_raw_counts": true,
+        "initial_state": "0011",
+        "measurement_basis": "counts",
+        "n_qubits": 4,
+        "omega": [
+          0.8,
+          0.9333333333,
+          1.0666666667,
+          1.2
+        ]
+      }
+    },
+    {
+      "fixture_id": "blocked_missing_counts",
+      "plan": {
+        "benchmark_gates": [
+          "scpn-bench sync-benchmark-gate",
+          "hardware result-pack verifier for any raw-count replay claim",
+          "focused mitigation regression tests before circuit-path integration"
+        ],
+        "blockers": [
+          "raw measurement counts are required before mitigation planning"
+        ],
+        "claim_boundary": "Planner output is an eligibility contract only. It does not mutate circuits, submit hardware jobs, prove improved hardware performance, or broaden DLA/GUESS claims without benchmark and raw-count evidence.",
+        "expected_parity": null,
+        "primitives": [],
+        "required_evidence": [
+          "validated symmetric XY coupling matrix",
+          "finite omega vector",
+          "computational-basis initial state",
+          "raw counts for every mitigated circuit",
+          "noise-scaled symmetry observable table for GUESS"
+        ],
+        "status": "blocked"
+      },
+      "problem": {
+        "coupling_matrix": [
+          [
+            0.0,
+            0.45,
+            0.0,
+            0.45
+          ],
+          [
+            0.45,
+            0.0,
+            0.45,
+            0.0
+          ],
+          [
+            0.0,
+            0.45,
+            0.0,
+            0.45
+          ],
+          [
+            0.45,
+            0.0,
+            0.45,
+            0.0
+          ]
+        ],
+        "has_noise_scaled_symmetry_observables": true,
+        "has_raw_counts": false,
+        "initial_state": "0011",
+        "measurement_basis": "counts",
+        "n_qubits": 4,
+        "omega": [
+          0.8,
+          0.9333333333,
+          1.0666666667,
+          1.2
+        ]
+      }
+    },
+    {
+      "fixture_id": "blocked_missing_guess_observables",
+      "plan": {
+        "benchmark_gates": [
+          "scpn-bench sync-benchmark-gate",
+          "hardware result-pack verifier for any raw-count replay claim",
+          "focused mitigation regression tests before circuit-path integration"
+        ],
+        "blockers": [
+          "GUESS requires noise-scaled symmetry observables"
+        ],
+        "claim_boundary": "Planner output is an eligibility contract only. It does not mutate circuits, submit hardware jobs, prove improved hardware performance, or broaden DLA/GUESS claims without benchmark and raw-count evidence.",
+        "expected_parity": 0,
+        "primitives": [],
+        "required_evidence": [
+          "validated symmetric XY coupling matrix",
+          "finite omega vector",
+          "computational-basis initial state",
+          "raw counts for every mitigated circuit",
+          "noise-scaled symmetry observable table for GUESS"
+        ],
+        "status": "blocked"
+      },
+      "problem": {
+        "coupling_matrix": [
+          [
+            0.0,
+            0.45,
+            0.0,
+            0.45
+          ],
+          [
+            0.45,
+            0.0,
+            0.45,
+            0.0
+          ],
+          [
+            0.0,
+            0.45,
+            0.0,
+            0.45
+          ],
+          [
+            0.45,
+            0.0,
+            0.45,
+            0.0
+          ]
+        ],
+        "has_noise_scaled_symmetry_observables": false,
+        "has_raw_counts": true,
+        "initial_state": "0011",
+        "measurement_basis": "counts",
+        "n_qubits": 4,
+        "omega": [
+          0.8,
+          0.9333333333,
+          1.0666666667,
+          1.2
+        ]
+      }
+    },
+    {
+      "fixture_id": "blocked_nonsymmetric_coupling",
+      "plan": {
+        "benchmark_gates": [
+          "scpn-bench sync-benchmark-gate",
+          "hardware result-pack verifier for any raw-count replay claim",
+          "focused mitigation regression tests before circuit-path integration"
+        ],
+        "blockers": [
+          "coupling_matrix must be symmetric for XY parity-sector planning"
+        ],
+        "claim_boundary": "Planner output is an eligibility contract only. It does not mutate circuits, submit hardware jobs, prove improved hardware performance, or broaden DLA/GUESS claims without benchmark and raw-count evidence.",
+        "expected_parity": null,
+        "primitives": [],
+        "required_evidence": [
+          "validated symmetric XY coupling matrix",
+          "finite omega vector",
+          "computational-basis initial state",
+          "raw counts for every mitigated circuit",
+          "noise-scaled symmetry observable table for GUESS"
+        ],
+        "status": "blocked"
+      },
+      "problem": {
+        "coupling_matrix": [
+          [
+            0.0,
+            0.45,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.45,
+            0.0
+          ],
+          [
+            0.0,
+            0.45,
+            0.0,
+            0.45
+          ],
+          [
+            0.45,
+            0.0,
+            0.45,
+            0.0
+          ]
+        ],
+        "has_noise_scaled_symmetry_observables": true,
+        "has_raw_counts": true,
+        "initial_state": "0011",
+        "measurement_basis": "counts",
+        "n_qubits": 4,
+        "omega": [
+          0.8,
+          0.9333333333,
+          1.0666666667,
+          1.2
+        ]
+      }
+    }
+  ],
+  "hardware_submission": false,
+  "schema": "symmetry_sector_mitigation_fixture_v1"
+}

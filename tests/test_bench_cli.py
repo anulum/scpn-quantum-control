@@ -414,3 +414,58 @@ def test_run_no_diff_skips_diff_summary(monkeypatch: pytest.MonkeyPatch):
 
     assert bench_cli.run(["reproduce-methods", "--no-diff"]) == 0
     assert diff_called is False
+
+
+def test_sync_benchmark_registry_harness_is_registered() -> None:
+    """The synchronisation benchmark registry is exposed through scpn-bench."""
+
+    from scpn_quantum_control.bench_cli import _selected_harnesses
+
+    harnesses = _selected_harnesses("sync-registry", include_gpu=False)
+
+    assert [harness.label for harness in harnesses] == ["sync-benchmark-registry"]
+    assert harnesses[0].script == "scripts/export_synchronisation_benchmark_registry.py"
+
+
+def test_sync_benchmark_run_harness_is_registered() -> None:
+    """The first synchronisation benchmark runner is exposed through scpn-bench."""
+
+    from scpn_quantum_control.bench_cli import _selected_harnesses
+
+    harnesses = _selected_harnesses("sync-run", include_gpu=False)
+
+    assert [harness.label for harness in harnesses] == ["sync-benchmark-run"]
+    assert harnesses[0].script == "scripts/run_synchronisation_benchmark.py"
+
+
+def test_sync_benchmark_compare_harness_is_registered() -> None:
+    """The synchronisation benchmark comparator is exposed through scpn-bench."""
+
+    from scpn_quantum_control.bench_cli import _selected_harnesses
+
+    harnesses = _selected_harnesses("sync-compare", include_gpu=False)
+
+    assert [harness.label for harness in harnesses] == ["sync-benchmark-compare"]
+    assert harnesses[0].script == "scripts/compare_synchronisation_benchmark.py"
+
+
+def test_sync_benchmark_gate_harness_is_registered() -> None:
+    """The full synchronisation benchmark gate is exposed through scpn-bench."""
+
+    from scpn_quantum_control.bench_cli import _selected_harnesses
+
+    harnesses = _selected_harnesses("sync-gate", include_gpu=False)
+
+    assert [harness.label for harness in harnesses] == ["sync-benchmark-gate"]
+    assert harnesses[0].script == "scripts/run_synchronisation_benchmark_gate.py"
+
+
+def test_symmetry_sector_mitigation_gate_harness_is_registered() -> None:
+    """The symmetry-sector fixture gate is exposed through scpn-bench."""
+
+    from scpn_quantum_control.bench_cli import _selected_harnesses
+
+    harnesses = _selected_harnesses("symmetry-sector-gate", include_gpu=False)
+
+    assert [harness.label for harness in harnesses] == ["symmetry-sector-mitigation-gate"]
+    assert harnesses[0].script == "scripts/run_symmetry_sector_mitigation_gate.py"

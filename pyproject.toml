@@ -53,6 +53,8 @@ dependencies = [
 
 [project.scripts]
 scpn-bench = "scpn_quantum_control.bench_cli:main"
+scpn-verify-hardware-packs = "scpn_quantum_control.hardware_result_packs:main"
+scpn-generate-hardware-pack-evidence = "scpn_quantum_control.hardware_result_pack_evidence:main"
 
 [project.optional-dependencies]
 viz = ["matplotlib>=3.5,<4.0"]
