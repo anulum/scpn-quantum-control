@@ -5,7 +5,18 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Paper 0 source registers
-"""Paper 0 source-anchored equation and validation registers."""
+"""Generated Paper 0 source-validation register.
+
+The package exports source-accounting helpers generated from the canonical
+Paper 0 ledger. Each validation module is bounded by a ledger span, exposes the
+generated configuration/result types for that span, and validates that fixture
+artefacts preserve their recorded source metadata.
+
+This package is intentionally a register, not a scientific-evidence promotion
+layer. Passing helpers confirm source ingestion, spec consistency, fixture
+shape, component labels, and claim-boundary preservation; they do not establish
+external experimental validation or hardware evidence for Paper 0 claims.
+"""
 
 from .a_cascade_of_directed_couplings_validation import (
     ACascadeOfDirectedCouplingsConfig,

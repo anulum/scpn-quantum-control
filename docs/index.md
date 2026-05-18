@@ -19,13 +19,14 @@ Quantum simulation of coupled Kuramoto oscillator networks on IBM superconductin
 hardware, with a hardware evidence ledger separating theory, simulator,
 unmitigated hardware, mitigated hardware, and noise-limited claims.
 
-## Status Snapshot — 2026-04-29
+## Status Snapshot — 2026-05-18
 
 | Area | Public status |
 |---|---|
 | Package line | Version `0.9.6`, Python `>=3.10`, Qiskit `>=2.2,<3.0`. |
 | Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, order-parameter measurements, and Kuramoto variant trajectories. |
-| Hardware evidence | Promoted raw-count campaign: April 2026 `ibm_kingston` Phase 1 DLA parity. Legacy `ibm_fez` rows require artifact-level citation. |
+| Hardware evidence | Promoted raw-count campaigns: `ibm_kingston` DLA parity Phase 1, selected Phase 2 A+G/B-C/popcount controls, and the SCPN/FIM negative/falsification result for the tested digital circuit family. Legacy `ibm_fez` rows require artefact-level citation. |
+| Paper 0 source-validation register | Fully promoted through the source-accounting register from `P0R00001` through `P0R06211`; the planner reports `0` remaining work orders and `0` remaining records. This is source-bounded ingestion and fixture preservation, not external validation evidence. |
 | Claim source | [Hardware Status Ledger](hardware_status_ledger.md). |
 
 ## What this package does
@@ -50,6 +51,11 @@ This package provides three things:
    Paper 27 of the Sentient-Consciousness Projection Network framework, where
    synchronization is the mechanism by which consciousness emerges across 16
    ontological layers.
+
+4. **The Paper 0 source-validation register** as a source-accounting layer —
+   generated validation modules, spec loaders, fixtures, and tests preserve
+   ledger-bounded Paper 0 claims under an explicit non-hardware, non-external
+   validation boundary.
 
 Think of it as a quantum microscope for synchronization. Classical Kuramoto tells you
 *when* oscillators lock in step. This package tells you *what the quantum state looks
@@ -140,6 +146,7 @@ for name, w in results.items():
 - [Stable Facades API](stable_facades_api.md) — mkdocstrings reference for first-path public facades
 - [Physics-First Kuramoto-XY](physics_first_kuramoto_xy.md) — start from arbitrary oscillator networks before SCPN-specific layers
 - [API Overview](api.md) — stable facade route first, advanced module references second
+- [Paper 0 Validation Register](paper0_validation_register.md) — completed Paper 0 source-accounting register and generated API contract
 - [Research Gems](research_gems.md) — **33 analysis modules with theory and API**
 - [Equations](equations.md) — every equation in the codebase
 - [Architecture](architecture.md) — dependency graph + 20 subpackages

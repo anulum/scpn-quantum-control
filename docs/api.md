@@ -20,6 +20,7 @@ and researchers who need direct subsystem access.
 | --- | --- | --- |
 | Stable facade | [Stable Facades API](stable_facades_api.md) | Building notebooks, tutorials, cross-repository integrations, or user-facing workflows. |
 | Workflow guide | [Kuramoto Core Facade](kuramoto_core_facade.md) | Compiling arbitrary `K_nm`/`omega` problems without depending on low-level module layout. |
+| Source-validation register | [Paper 0 Validation Register](paper0_validation_register.md) | Inspecting generated Paper 0 source-accounting specs, fixtures, and validation modules under their explicit claim boundary. |
 | Runtime contract | [QPU Data Artifact](qpu_data_artifact.md), [Pipeline Runtime Contract](pipeline_runtime_contract.md) | Exchanging persisted QPU results or compute-unit metadata. |
 | Advanced module reference | This page and [Auto-Generated Module Index](autodoc.md) | Auditing, extending, or debugging subsystem internals. |
 
@@ -39,6 +40,20 @@ Validate an arbitrary symmetric Kuramoto coupling problem, attach serialisable
 metadata, and compile the common Hamiltonian/circuit objects used by simulator,
 witness, and hardware workflows. See [Kuramoto Core Facade](kuramoto_core_facade.md)
 for the workflow page.
+
+### `paper0`
+
+```python
+from scpn_quantum_control.paper0 import validate_upde_fixture
+from scpn_quantum_control.paper0.spec_loader import load_upde_validation_spec
+```
+
+The `paper0` package exposes the completed source-accounting register for Paper
+0. Generated validation modules preserve ledger-bounded source spans, component
+labels, fixture summaries, spec bundles, and claim boundaries. These modules are
+documentation and regression infrastructure for source ingestion; they do not
+convert Paper 0 source statements into measured hardware evidence or external
+scientific validation. See [Paper 0 Validation Register](paper0_validation_register.md).
 
 ## Advanced Module Reference
 

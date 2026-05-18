@@ -5,10 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-05-18 — Added public Paper 0 source-validation register documentation and API routing after completing source-accounting ingestion through `P0R06211`.
 - 2026-04-30 — Added an IEEE 5-bus measured power-grid coupling artifact and audit support for measured-system topology, magnitude, spectral, critical-response, and null-model diagnostics.
 - 2026-04-30 — Added the 109-subject EEGMMIDB baseline eyes-closed PLV artifact and an eyes-closed-minus-eyes-open comparison artifact.
 
 ### Changed
+- 2026-05-18 — Refreshed README and documentation index status surfaces to report `0` remaining Paper 0 work orders under the explicit source-bounded, non-hardware claim boundary.
 - 2026-04-29 — Added documented classical baseline surfaces for SciPy ODE, optional QuTiP Lindblad, and optional MPS TEBD runs.
 - 2026-04-29 — Re-routed API documentation so stable facades are the first-path entry point and low-level module references sit under advanced navigation.
 - 2026-04-29 — Added a mkdocstrings stable facades API page for first-path public facades.

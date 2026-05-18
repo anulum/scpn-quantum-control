@@ -64,6 +64,7 @@ nav:
       - Kuramoto Core Facade: kuramoto_core_facade.md
       - Core Package Boundary: core_package_boundary.md
       - API Overview: api.md
+      - Paper 0 Validation Register: paper0_validation_register.md
       - Runtime Contracts:
           - QPU Data Artifact: qpu_data_artifact.md
           - Pipeline Runtime Contract: pipeline_runtime_contract.md

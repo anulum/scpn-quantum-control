@@ -34,13 +34,14 @@
 
 ---
 
-## Status Snapshot — 2026-05-06
+## Status Snapshot — 2026-05-18
 
 | Area | Public status |
 |---|---|
 | Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, and order-parameter measurements. |
 | Hardware evidence | `ibm_fez` baseline rows are legacy artefact-backed observations; `ibm_kingston` Phase 1, Phase 2 A+G, Phase 2 B-C, and popcount DLA datasets are promoted with raw-count artefacts. The SCPN/FIM `ibm_kingston` result is promoted as a negative/falsification result for the tested digital circuit family. |
 | Simulator and methods evidence | BKT, OTOC, Floquet, MBL, FIM, VQE, GPU, tensor-network, and classical comparison claims stay marked as simulator/classical/methods unless a hardware artefact is named. Generated benchmark artefacts are indexed from the benchmark dashboard and reproducibility CLI. |
+| Paper 0 source-validation register | Paper 0 is fully promoted through the source-accounting register: the planner reports `0` remaining work orders and `0` remaining source records after `P0R00001`-`P0R06211`. The generated register contains 466 validation modules with colocated specs, fixtures, loaders, and tests; this is source-bounded ingestion, not external validation evidence. |
 | Licence boundary | The possible lightweight core split is documented, but all in-repository code remains AGPL/commercial unless a future release changes metadata and SPDX headers. |
 
 For claim classes, raw-artefact pointers, and promotion rules, see the
@@ -62,6 +63,9 @@ Direct entry points:
   — start from arbitrary oscillator networks before SCPN-specific layers
 - [Stable Facades API](docs/stable_facades_api.md)
   — mkdocstrings reference for first-path public facades
+- [Paper 0 Validation Register](docs/paper0_validation_register.md)
+  — source-accounting register status, claim boundary, and generated API
+  contract for Paper 0 ingestion
 - [Phase 1 Results](https://anulum.li/scpn-quantum-control/phase1-results.html)
   — raw-count reproduction of the DLA parity asymmetry on
   ibm_kingston, April 2026, with full Welch table and interactive
@@ -140,6 +144,13 @@ The package provides:
    promoted `ibm_kingston` DLA parity datasets, and the SCPN/FIM negative
    hardware result are separated from simulator-only, frontier, queued-job, and
    aggregate-only outputs.
+
+4. **Paper 0 source-validation register** — source-bounded Paper 0 ingestion is
+   complete across `P0R00001`-`P0R06211`. The register is exposed under
+   `scpn_quantum_control.paper0` with generated validation modules, spec
+   loaders, fixture runners, and focused tests. It records what the source
+   ledger says and what generated fixtures preserve; it does not promote those
+   source statements into measured hardware or external scientific validation.
 
 Think of it as a **quantum microscope for synchronisation**: classical Kuramoto
 tells you *when* oscillators lock in step; this package tells you *what the
