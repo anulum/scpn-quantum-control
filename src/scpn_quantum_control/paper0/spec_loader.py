@@ -4908,6 +4908,54 @@ def load_ii_the_principle_of_ethical_least_action_pela_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_PAPER0_SLICE_P0R04075_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_paper0_slice_p0r04075_validation_specs_2026-05-17.json"
+)
+
+
+def load_paper0_slice_p0r04075_validation_spec(
+    spec_bundle: str | Path = DEFAULT_PAPER0_SLICE_P0R04075_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 paper0 slice p0r04075 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_PAPER0_SLICE_P0R04089_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_paper0_slice_p0r04089_validation_specs_2026-05-17.json"
+)
+
+
+def load_paper0_slice_p0r04089_validation_spec(
+    spec_bundle: str | Path = DEFAULT_PAPER0_SLICE_P0R04089_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 paper0 slice p0r04089 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_UNIVERSE_S_PATH_OF_LEAST_RESISTANCE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_universe_s_path_of_least_resistance_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_universe_s_path_of_least_resistance_validation_spec(
+    spec_bundle: str | Path = DEFAULT_THE_UNIVERSE_S_PATH_OF_LEAST_RESISTANCE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the universe s path of least resistance validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -5427,4 +5475,10 @@ __all__ = [
     "load_notes_on_correspondence_non_obligatory_analogues_validation_spec",
     "DEFAULT_II_THE_PRINCIPLE_OF_ETHICAL_LEAST_ACTION_PELA_SPEC_BUNDLE",
     "load_ii_the_principle_of_ethical_least_action_pela_validation_spec",
+    "DEFAULT_PAPER0_SLICE_P0R04075_SPEC_BUNDLE",
+    "load_paper0_slice_p0r04075_validation_spec",
+    "DEFAULT_PAPER0_SLICE_P0R04089_SPEC_BUNDLE",
+    "load_paper0_slice_p0r04089_validation_spec",
+    "DEFAULT_THE_UNIVERSE_S_PATH_OF_LEAST_RESISTANCE_SPEC_BUNDLE",
+    "load_the_universe_s_path_of_least_resistance_validation_spec",
 ]

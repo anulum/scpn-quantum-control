@@ -1154,6 +1154,20 @@ from .paper0_slice_p0r02931_validation import (
     paper0_slice_p0r02931_labels,
     validate_paper0_slice_p0r02931_fixture,
 )
+from .paper0_slice_p0r04075_validation import (
+    Paper0SliceP0r04075Config,
+    Paper0SliceP0r04075FixtureResult,
+    classify_paper0_slice_p0r04075_component,
+    paper0_slice_p0r04075_labels,
+    validate_paper0_slice_p0r04075_fixture,
+)
+from .paper0_slice_p0r04089_validation import (
+    Paper0SliceP0r04089Config,
+    Paper0SliceP0r04089FixtureResult,
+    classify_paper0_slice_p0r04089_component,
+    paper0_slice_p0r04089_labels,
+    validate_paper0_slice_p0r04089_fixture,
+)
 from .paper0_slice_validation import (
     Paper0SliceConfig,
     Paper0SliceFixtureResult,
@@ -1921,6 +1935,13 @@ from .the_universe_s_built_in_moral_compass_validation import (
     the_universe_s_built_in_moral_compass_labels,
     validate_the_universe_s_built_in_moral_compass_fixture,
 )
+from .the_universe_s_path_of_least_resistance_validation import (
+    TheUniverseSPathOfLeastResistanceConfig,
+    TheUniverseSPathOfLeastResistanceFixtureResult,
+    classify_the_universe_s_path_of_least_resistance_component,
+    the_universe_s_path_of_least_resistance_labels,
+    validate_the_universe_s_path_of_least_resistance_fixture,
+)
 from .three_channel_coupling_validation import (
     ChannelConstraint,
     ThreeChannelCouplingConfig,
@@ -2065,6 +2086,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_the_universe_s_path_of_least_resistance_fixture",
+    "the_universe_s_path_of_least_resistance_labels",
+    "classify_the_universe_s_path_of_least_resistance_component",
+    "TheUniverseSPathOfLeastResistanceFixtureResult",
+    "TheUniverseSPathOfLeastResistanceConfig",
+    "validate_paper0_slice_p0r04089_fixture",
+    "paper0_slice_p0r04089_labels",
+    "classify_paper0_slice_p0r04089_component",
+    "Paper0SliceP0r04089FixtureResult",
+    "Paper0SliceP0r04089Config",
+    "validate_paper0_slice_p0r04075_fixture",
+    "paper0_slice_p0r04075_labels",
+    "classify_paper0_slice_p0r04075_component",
+    "Paper0SliceP0r04075FixtureResult",
+    "Paper0SliceP0r04075Config",
     "validate_ii_the_principle_of_ethical_least_action_pela_fixture",
     "ii_the_principle_of_ethical_least_action_pela_labels",
     "classify_ii_the_principle_of_ethical_least_action_pela_component",
