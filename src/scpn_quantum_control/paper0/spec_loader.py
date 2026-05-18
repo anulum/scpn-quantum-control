@@ -7489,6 +7489,54 @@ def load_ecology_gaia_extensions_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_ETHICS_PHILOSOPHY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_ethics_philosophy_validation_specs_2026-05-17.json"
+)
+
+
+def load_ethics_philosophy_validation_spec(
+    spec_bundle: str | Path = DEFAULT_ETHICS_PHILOSOPHY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 ethics philosophy validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_ETHICS_TELEOLOGY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_ethics_teleology_validation_specs_2026-05-17.json"
+)
+
+
+def load_ethics_teleology_validation_spec(
+    spec_bundle: str | Path = DEFAULT_ETHICS_TELEOLOGY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 ethics teleology validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_PHILOSOPHY_ETHICS_ANCHORS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_philosophy_ethics_anchors_validation_specs_2026-05-17.json"
+)
+
+
+def load_philosophy_ethics_anchors_validation_spec(
+    spec_bundle: str | Path = DEFAULT_PHILOSOPHY_ETHICS_ANCHORS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 philosophy ethics anchors validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -8320,4 +8368,10 @@ __all__ = [
     "load_linguistics_symbolism_vibrana_layer_7_validation_spec",
     "DEFAULT_ECOLOGY_GAIA_EXTENSIONS_SPEC_BUNDLE",
     "load_ecology_gaia_extensions_validation_spec",
+    "DEFAULT_ETHICS_PHILOSOPHY_SPEC_BUNDLE",
+    "load_ethics_philosophy_validation_spec",
+    "DEFAULT_ETHICS_TELEOLOGY_SPEC_BUNDLE",
+    "load_ethics_teleology_validation_spec",
+    "DEFAULT_PHILOSOPHY_ETHICS_ANCHORS_SPEC_BUNDLE",
+    "load_philosophy_ethics_anchors_validation_spec",
 ]

@@ -572,6 +572,20 @@ from .ethical_imperative_validation import (
     validate_ethical_imperative_fixture,
     validate_governance_beyond_borders_fixture,
 )
+from .ethics_philosophy_validation import (
+    EthicsPhilosophyConfig,
+    EthicsPhilosophyFixtureResult,
+    classify_ethics_philosophy_component,
+    ethics_philosophy_labels,
+    validate_ethics_philosophy_fixture,
+)
+from .ethics_teleology_validation import (
+    EthicsTeleologyConfig,
+    EthicsTeleologyFixtureResult,
+    classify_ethics_teleology_component,
+    ethics_teleology_labels,
+    validate_ethics_teleology_fixture,
+)
 from .experimental_design_coherence_vs_engagement_optimisation_validation import (
     ExperimentalDesignCoherenceVsEngagementOptimisationConfig,
     ExperimentalDesignCoherenceVsEngagementOptimisationFixtureResult,
@@ -1616,6 +1630,13 @@ from .phenomenological_lagrangian_validation import (
     classify_phenomenological_lagrangian_component,
     phenomenological_lagrangian_labels,
     validate_phenomenological_lagrangian_fixture,
+)
+from .philosophy_ethics_anchors_validation import (
+    PhilosophyEthicsAnchorsConfig,
+    PhilosophyEthicsAnchorsFixtureResult,
+    classify_philosophy_ethics_anchors_component,
+    philosophy_ethics_anchors_labels,
+    validate_philosophy_ethics_anchors_fixture,
 )
 from .positioning_preface_context_validation import (
     PositioningPrefaceContextConfig,
@@ -3157,6 +3178,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_philosophy_ethics_anchors_fixture",
+    "philosophy_ethics_anchors_labels",
+    "classify_philosophy_ethics_anchors_component",
+    "PhilosophyEthicsAnchorsFixtureResult",
+    "PhilosophyEthicsAnchorsConfig",
+    "validate_ethics_teleology_fixture",
+    "ethics_teleology_labels",
+    "classify_ethics_teleology_component",
+    "EthicsTeleologyFixtureResult",
+    "EthicsTeleologyConfig",
+    "validate_ethics_philosophy_fixture",
+    "ethics_philosophy_labels",
+    "classify_ethics_philosophy_component",
+    "EthicsPhilosophyFixtureResult",
+    "EthicsPhilosophyConfig",
     "validate_ecology_gaia_extensions_fixture",
     "ecology_gaia_extensions_labels",
     "classify_ecology_gaia_extensions_component",
