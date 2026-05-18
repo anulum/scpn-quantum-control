@@ -63,6 +63,8 @@ def _make_ansatz(name: str, n: int, reps: int):
 
 
 def main() -> int:
+    """Run the ansatz-construction benchmark CLI."""
+
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     rows = []
     for n in [3, 4, 6, 8]:

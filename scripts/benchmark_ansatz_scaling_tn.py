@@ -200,12 +200,12 @@ def _load_best_vqe_reference_rows(path: Path) -> dict[int, dict[str, object]]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     best_by_n: dict[int, dict[str, object]] = {}
     for row in payload.get("aggregate", []):
-        n_qubits = int(row["n_qubits"])
+        n_qubits = int(str(row["n_qubits"]))
         current = best_by_n.get(n_qubits)
         current_error = float("inf")
         if current is not None:
-            current_error = float(current["median_relative_error_pct"])
-        candidate_error = float(row["median_relative_error_pct"])
+            current_error = float(str(current["median_relative_error_pct"]))
+        candidate_error = float(str(row["median_relative_error_pct"]))
         if candidate_error < current_error:
             best_by_n[n_qubits] = row
     return best_by_n
@@ -229,8 +229,8 @@ def reference_comparison_rows(
             row for row in tn_rows if row["n_qubits"] == n_qubits and row["status"] == "ok"
         ]
         if ok_tn_rows:
-            tn_reference = max(ok_tn_rows, key=lambda row: int(row["max_bond"]))
-            discarded_weight = float(tn_reference["worst_cut_discarded_weight"])
+            tn_reference = max(ok_tn_rows, key=lambda row: int(str(row["max_bond"])))
+            discarded_weight = float(str(tn_reference["worst_cut_discarded_weight"]))
             retained_weight = float(max(0.0, 1.0 - discarded_weight))
             tn_status = "ok"
         else:
@@ -287,6 +287,8 @@ def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
 
 
 def main() -> int:
+    """Run the ansatz/tensor-network scaling benchmark CLI."""
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--n-values", default="4,6,8,10,12")
     parser.add_argument("--reps-values", default="1,2")

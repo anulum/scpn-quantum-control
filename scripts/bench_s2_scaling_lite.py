@@ -304,6 +304,8 @@ def build_rows(
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """Run the lite S2 scaling benchmark row generator CLI."""
+
     args = _parse_args(argv)
     sizes = tuple(int(item.strip()) for item in args.sizes.split(",") if item.strip())
     rows = build_rows(

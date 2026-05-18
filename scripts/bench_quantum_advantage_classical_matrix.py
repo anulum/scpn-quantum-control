@@ -5,6 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Quantum-advantage guardrail matrix for classical / Rust / GPU baselines
+"""Benchmark classical, Rust, sparse, and GPU baselines for advantage guardrails."""
 
 from __future__ import annotations
 
@@ -39,6 +40,8 @@ DEFAULT_OUTPUT = REPO_ROOT / "results" / "classical_rust_gpu_matrix_2026-05-03.j
 
 @dataclass(frozen=True)
 class BenchmarkRow:
+    """One benchmark row for a selected Hilbert-space size."""
+
     n_qubits: int
     dim: int
     classical_ode_ms: float | None
@@ -49,6 +52,8 @@ class BenchmarkRow:
     notes: list[str]
 
     def as_dict(self) -> dict[str, Any]:
+        """Serialise the benchmark row for JSON output."""
+
         return {
             "n_qubits": self.n_qubits,
             "dim": self.dim,
@@ -171,10 +176,10 @@ def _bench_row(
 ) -> BenchmarkRow:
     if n <= len(OMEGA_N_16):
         K = build_knm_paper27(L=n)
-        omega = OMEGA_N_16[:n].copy()
+        omega: np.ndarray = np.asarray(OMEGA_N_16[:n], dtype=float).copy()
     else:
         K = build_knm_paper27(L=n)
-        omega = np.linspace(0.1, 1.0, n)
+        omega = np.asarray(np.linspace(0.1, 1.0, n), dtype=float)
 
     theta0 = np.asarray(omega % (2 * np.pi), dtype=float)
     dim = int(2**n)
@@ -285,6 +290,8 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Run the classical/Rust/GPU guardrail benchmark CLI."""
+
     args = _parse_args(argv)
     sizes = [int(token.strip()) for token in args.sizes.split(",") if token.strip()]
     if any(n < 2 for n in sizes):

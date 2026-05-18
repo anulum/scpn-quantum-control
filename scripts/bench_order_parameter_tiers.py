@@ -124,6 +124,8 @@ def _cpu_info() -> dict:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Run the order-parameter tier benchmark CLI."""
+
     args = _parse_args(argv or sys.argv[1:])
     sizes = [int(s) for s in args.sizes.split(",") if s.strip()]
 
