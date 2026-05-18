@@ -5005,6 +5005,57 @@ def load_the_consilium_l15_as_the_target_setter_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_THE_INFORMATION_GEOMETRIC_COARSE_GRAINING_LEMMA_CONSTRUCTING_THE_MACROST_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_information_geometric_coarse_graining_lemma_constructing_the_macrost_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_information_geometric_coarse_graining_lemma_constructing_the_macrost_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_INFORMATION_GEOMETRIC_COARSE_GRAINING_LEMMA_CONSTRUCTING_THE_MACROST_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the information geometric coarse graining lemma constructing the macrost validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_DATA_FUSION_AND_MANIFOLD_ALIGNMENT_CONSTRUCTING_THE_UNIFIED_STATE_SPACE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_data_fusion_and_manifold_alignment_constructing_the_unified_state_space_validation_specs_2026-05-17.json"
+)
+
+
+def load_data_fusion_and_manifold_alignment_constructing_the_unified_state_space_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_DATA_FUSION_AND_MANIFOLD_ALIGNMENT_CONSTRUCTING_THE_UNIFIED_STATE_SPACE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 data fusion and manifold alignment constructing the unified state space validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_4_5_THE_STRANGE_LOOP_OF_CLOSURE_META_LAYER_16_AND_THE_ANULUM_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_4_5_the_strange_loop_of_closure_meta_layer_16_and_the_anulum_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_4_5_the_strange_loop_of_closure_meta_layer_16_and_the_anulum_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_4_5_THE_STRANGE_LOOP_OF_CLOSURE_META_LAYER_16_AND_THE_ANULUM_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 4 5 the strange loop of closure meta layer 16 and the anulum validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -5536,4 +5587,10 @@ __all__ = [
     "load_predictive_coding_integration_p0r04123_validation_spec",
     "DEFAULT_THE_CONSILIUM_L15_AS_THE_TARGET_SETTER_SPEC_BUNDLE",
     "load_the_consilium_l15_as_the_target_setter_validation_spec",
+    "DEFAULT_THE_INFORMATION_GEOMETRIC_COARSE_GRAINING_LEMMA_CONSTRUCTING_THE_MACROST_SPEC_BUNDLE",
+    "load_the_information_geometric_coarse_graining_lemma_constructing_the_macrost_validation_spec",
+    "DEFAULT_DATA_FUSION_AND_MANIFOLD_ALIGNMENT_CONSTRUCTING_THE_UNIFIED_STATE_SPACE_SPEC_BUNDLE",
+    "load_data_fusion_and_manifold_alignment_constructing_the_unified_state_space_validation_spec",
+    "DEFAULT_SECTION_4_5_THE_STRANGE_LOOP_OF_CLOSURE_META_LAYER_16_AND_THE_ANULUM_SPEC_BUNDLE",
+    "load_section_4_5_the_strange_loop_of_closure_meta_layer_16_and_the_anulum_validation_spec",
 ]
