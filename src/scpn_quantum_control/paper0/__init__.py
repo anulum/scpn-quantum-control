@@ -472,12 +472,26 @@ from .domain_iii_overview_memory_and_projection_control_validation import (
     domain_iii_overview_memory_and_projection_control_labels,
     validate_domain_iii_overview_memory_and_projection_control_fixture,
 )
+from .domain_v_meta_universal_integration_layers_13_15_validation import (
+    DomainVMetaUniversalIntegrationLayers1315Config,
+    DomainVMetaUniversalIntegrationLayers1315FixtureResult,
+    classify_domain_v_meta_universal_integration_layers_13_15_component,
+    domain_v_meta_universal_integration_layers_13_15_labels,
+    validate_domain_v_meta_universal_integration_layers_13_15_fixture,
+)
 from .domain_v_overview_meta_universal_integration_validation import (
     DomainVOverviewMetaUniversalIntegrationConfig,
     DomainVOverviewMetaUniversalIntegrationFixtureResult,
     classify_domain_v_overview_meta_universal_integration_component,
     domain_v_overview_meta_universal_integration_labels,
     validate_domain_v_overview_meta_universal_integration_fixture,
+)
+from .domain_vi_cybernetic_closure_meta_layer_16_validation import (
+    DomainViCyberneticClosureMetaLayer16Config,
+    DomainViCyberneticClosureMetaLayer16FixtureResult,
+    classify_domain_vi_cybernetic_closure_meta_layer_16_component,
+    domain_vi_cybernetic_closure_meta_layer_16_labels,
+    validate_domain_vi_cybernetic_closure_meta_layer_16_fixture,
 )
 from .domain_vi_overview_cybernetic_closure_meta_layer_16_validation import (
     DomainViOverviewCyberneticClosureMetaLayer16Config,
@@ -1757,6 +1771,13 @@ from .resolving_the_epigenetic_time_scale_disconnect_conformational_spin_locki_v
     resolving_the_epigenetic_time_scale_disconnect_conformational_spin_locki_labels,
     validate_resolving_the_epigenetic_time_scale_disconnect_conformational_spin_locki_fixture,
 )
+from .resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state_validation import (
+    ResolvingTheObservabilityParadoxL16AsAPomdpAndTheBeliefStateConfig,
+    ResolvingTheObservabilityParadoxL16AsAPomdpAndTheBeliefStateFixtureResult,
+    classify_resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state_component,
+    resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state_labels,
+    validate_resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state_fixture,
+)
 from .resolving_the_probability_desert_superradiant_amplification_and_bec_stim_validation import (
     ResolvingTheProbabilityDesertSuperradiantAmplificationAndBecStimConfig,
     ResolvingTheProbabilityDesertSuperradiantAmplificationAndBecStimFixtureResult,
@@ -3031,6 +3052,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state_fixture",
+    "resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state_labels",
+    "classify_resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state_component",
+    "ResolvingTheObservabilityParadoxL16AsAPomdpAndTheBeliefStateFixtureResult",
+    "ResolvingTheObservabilityParadoxL16AsAPomdpAndTheBeliefStateConfig",
+    "validate_domain_vi_cybernetic_closure_meta_layer_16_fixture",
+    "domain_vi_cybernetic_closure_meta_layer_16_labels",
+    "classify_domain_vi_cybernetic_closure_meta_layer_16_component",
+    "DomainViCyberneticClosureMetaLayer16FixtureResult",
+    "DomainViCyberneticClosureMetaLayer16Config",
+    "validate_domain_v_meta_universal_integration_layers_13_15_fixture",
+    "domain_v_meta_universal_integration_layers_13_15_labels",
+    "classify_domain_v_meta_universal_integration_layers_13_15_component",
+    "DomainVMetaUniversalIntegrationLayers1315FixtureResult",
+    "DomainVMetaUniversalIntegrationLayers1315Config",
     "validate_citations_fixture",
     "citations_labels",
     "classify_citations_component",

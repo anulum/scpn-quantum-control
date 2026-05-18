@@ -7200,6 +7200,55 @@ def load_citations_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_DOMAIN_V_META_UNIVERSAL_INTEGRATION_LAYERS_13_15_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_domain_v_meta_universal_integration_layers_13_15_validation_specs_2026-05-17.json"
+)
+
+
+def load_domain_v_meta_universal_integration_layers_13_15_validation_spec(
+    spec_bundle: str | Path = DEFAULT_DOMAIN_V_META_UNIVERSAL_INTEGRATION_LAYERS_13_15_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 domain v meta universal integration layers 13 15 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_DOMAIN_VI_CYBERNETIC_CLOSURE_META_LAYER_16_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_domain_vi_cybernetic_closure_meta_layer_16_validation_specs_2026-05-17.json"
+)
+
+
+def load_domain_vi_cybernetic_closure_meta_layer_16_validation_spec(
+    spec_bundle: str | Path = DEFAULT_DOMAIN_VI_CYBERNETIC_CLOSURE_META_LAYER_16_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 domain vi cybernetic closure meta layer 16 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_RESOLVING_THE_OBSERVABILITY_PARADOX_L16_AS_A_POMDP_AND_THE_BELIEF_STATE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state_validation_specs_2026-05-17.json"
+)
+
+
+def load_resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_RESOLVING_THE_OBSERVABILITY_PARADOX_L16_AS_A_POMDP_AND_THE_BELIEF_STATE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 resolving the observability paradox l16 as a pomdp and the belief state validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -7995,4 +8044,10 @@ __all__ = [
     "load_domain_iii_iv_memory_control_and_collective_coherence_layers_9_12_validation_spec",
     "DEFAULT_CITATIONS_SPEC_BUNDLE",
     "load_citations_validation_spec",
+    "DEFAULT_DOMAIN_V_META_UNIVERSAL_INTEGRATION_LAYERS_13_15_SPEC_BUNDLE",
+    "load_domain_v_meta_universal_integration_layers_13_15_validation_spec",
+    "DEFAULT_DOMAIN_VI_CYBERNETIC_CLOSURE_META_LAYER_16_SPEC_BUNDLE",
+    "load_domain_vi_cybernetic_closure_meta_layer_16_validation_spec",
+    "DEFAULT_RESOLVING_THE_OBSERVABILITY_PARADOX_L16_AS_A_POMDP_AND_THE_BELIEF_STATE_SPEC_BUNDLE",
+    "load_resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state_validation_spec",
 ]
