@@ -1302,6 +1302,20 @@ from .scpn_iit_correspondence_validation import (
     scpn_iit_correspondence_labels,
     validate_scpn_iit_correspondence_fixture,
 )
+from .section_2_1_the_state_space_and_path_space_validation import (
+    Section21TheStateSpaceAndPathSpaceConfig,
+    Section21TheStateSpaceAndPathSpaceFixtureResult,
+    classify_section_2_1_the_state_space_and_path_space_component,
+    section_2_1_the_state_space_and_path_space_labels,
+    validate_section_2_1_the_state_space_and_path_space_fixture,
+)
+from .section_2_3_formal_definition_of_causal_path_entropy_sc_validation import (
+    Section23FormalDefinitionOfCausalPathEntropyScConfig,
+    Section23FormalDefinitionOfCausalPathEntropyScFixtureResult,
+    classify_section_2_3_formal_definition_of_causal_path_entropy_sc_component,
+    section_2_3_formal_definition_of_causal_path_entropy_sc_labels,
+    validate_section_2_3_formal_definition_of_causal_path_entropy_sc_fixture,
+)
 from .section_2_3_the_ethical_lagrangian_as_the_yang_mills_action_validation import (
     Section23TheEthicalLagrangianAsTheYangMillsActionConfig,
     Section23TheEthicalLagrangianAsTheYangMillsActionFixtureResult,
@@ -1364,6 +1378,13 @@ from .section_3_memory_capacity_bekenstein_hawking_bound_validation import (
     classify_section_3_memory_capacity_bekenstein_hawking_bound_component,
     section_3_memory_capacity_bekenstein_hawking_bound_labels,
     validate_section_3_memory_capacity_bekenstein_hawking_bound_fixture,
+)
+from .section_3_the_geometric_and_dynamic_determinants_of_future_possibility_validation import (
+    Section3TheGeometricAndDynamicDeterminantsOfFuturePossibilityConfig,
+    Section3TheGeometricAndDynamicDeterminantsOfFuturePossibilityFixtureResult,
+    classify_section_3_the_geometric_and_dynamic_determinants_of_future_possibility_component,
+    section_3_the_geometric_and_dynamic_determinants_of_future_possibility_labels,
+    validate_section_3_the_geometric_and_dynamic_determinants_of_future_possibility_fixture,
 )
 from .section_3_unified_experience_the_wilson_loop_validation import (
     Section3UnifiedExperienceTheWilsonLoopConfig,
@@ -1939,6 +1960,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_section_3_the_geometric_and_dynamic_determinants_of_future_possibility_fixture",
+    "section_3_the_geometric_and_dynamic_determinants_of_future_possibility_labels",
+    "classify_section_3_the_geometric_and_dynamic_determinants_of_future_possibility_component",
+    "Section3TheGeometricAndDynamicDeterminantsOfFuturePossibilityFixtureResult",
+    "Section3TheGeometricAndDynamicDeterminantsOfFuturePossibilityConfig",
+    "validate_section_2_3_formal_definition_of_causal_path_entropy_sc_fixture",
+    "section_2_3_formal_definition_of_causal_path_entropy_sc_labels",
+    "classify_section_2_3_formal_definition_of_causal_path_entropy_sc_component",
+    "Section23FormalDefinitionOfCausalPathEntropyScFixtureResult",
+    "Section23FormalDefinitionOfCausalPathEntropyScConfig",
+    "validate_section_2_1_the_state_space_and_path_space_fixture",
+    "section_2_1_the_state_space_and_path_space_labels",
+    "classify_section_2_1_the_state_space_and_path_space_component",
+    "Section21TheStateSpaceAndPathSpaceFixtureResult",
+    "Section21TheStateSpaceAndPathSpaceConfig",
     "validate_section_2_a_path_integral_formulation_of_causal_path_entropy_fixture",
     "section_2_a_path_integral_formulation_of_causal_path_entropy_labels",
     "classify_section_2_a_path_integral_formulation_of_causal_path_entropy_component",

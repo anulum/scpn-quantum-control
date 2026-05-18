@@ -4609,6 +4609,56 @@ def load_section_2_a_path_integral_formulation_of_causal_path_entropy_validation
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_2_1_THE_STATE_SPACE_AND_PATH_SPACE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_1_the_state_space_and_path_space_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_1_the_state_space_and_path_space_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SECTION_2_1_THE_STATE_SPACE_AND_PATH_SPACE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 1 the state space and path space validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_2_3_FORMAL_DEFINITION_OF_CAUSAL_PATH_ENTROPY_SC_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_3_formal_definition_of_causal_path_entropy_sc_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_3_formal_definition_of_causal_path_entropy_sc_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_2_3_FORMAL_DEFINITION_OF_CAUSAL_PATH_ENTROPY_SC_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 3 formal definition of causal path entropy sc validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_3_THE_GEOMETRIC_AND_DYNAMIC_DETERMINANTS_OF_FUTURE_POSSIBILITY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_3_the_geometric_and_dynamic_determinants_of_future_possibility_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_3_the_geometric_and_dynamic_determinants_of_future_possibility_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_3_THE_GEOMETRIC_AND_DYNAMIC_DETERMINANTS_OF_FUTURE_POSSIBILITY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 3 the geometric and dynamic determinants of future possibility validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -5092,4 +5142,10 @@ __all__ = [
     "load_the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat_validation_spec",
     "DEFAULT_SECTION_2_A_PATH_INTEGRAL_FORMULATION_OF_CAUSAL_PATH_ENTROPY_SPEC_BUNDLE",
     "load_section_2_a_path_integral_formulation_of_causal_path_entropy_validation_spec",
+    "DEFAULT_SECTION_2_1_THE_STATE_SPACE_AND_PATH_SPACE_SPEC_BUNDLE",
+    "load_section_2_1_the_state_space_and_path_space_validation_spec",
+    "DEFAULT_SECTION_2_3_FORMAL_DEFINITION_OF_CAUSAL_PATH_ENTROPY_SC_SPEC_BUNDLE",
+    "load_section_2_3_formal_definition_of_causal_path_entropy_sc_validation_spec",
+    "DEFAULT_SECTION_3_THE_GEOMETRIC_AND_DYNAMIC_DETERMINANTS_OF_FUTURE_POSSIBILITY_SPEC_BUNDLE",
+    "load_section_3_the_geometric_and_dynamic_determinants_of_future_possibility_validation_spec",
 ]
