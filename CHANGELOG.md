@@ -5,6 +5,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-05-18 — Added S2 benchmark-matrix readiness ingestion to the
+  quantum-advantage gap audit so IBM advantage runs stay blocked until the
+  full protocol grid, hardware rows, and claim-boundary gates are satisfied.
 - 2026-05-18 — Added an IEEE 14-bus measured-system control candidate
   for K_nm physical validation with voltage-weighted admittance,
   all-pairs uncertainty accounting, and explicit non-promotional blockers.

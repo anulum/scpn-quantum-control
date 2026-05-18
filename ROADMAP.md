@@ -1137,6 +1137,11 @@ be executed until individually activated.
   and at least one preregistered `qpu_hardware` row with raw-count
   provenance is present. Lite rows and partial no-QPU campaign slices
   remain useful science but cannot justify IBM advantage claims.
+- [x] **S2 benchmark-matrix audit ingestion.** Implemented 2026-05-18:
+  `scripts/run_quantum_advantage_gap_audit.py` now reads the committed S2
+  protocol, progress, and claim-boundary artifacts, reports missing size
+  grid entries and remaining blockers, and refuses IBM advantage readiness
+  while the no-QPU matrix, hardware rows, or claim gates remain incomplete.
 - [x] **S2 scaling readiness index.** Implemented 2026-05-06:
   `docs/s2_scaling_readiness_index_2026-05-06.md` summarises the S2
   lite baseline rows, canonical command, artefacts, allowed claims,
