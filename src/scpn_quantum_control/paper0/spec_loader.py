@@ -6504,6 +6504,55 @@ def load_section_2_l4_impact_dampening_dynamics_and_shifting_criticality_validat
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_IV_THE_INTEGRATED_SCENARIO_PHARMACOLOGICAL_MODULATION_OF_THE_TRAUMATISED_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_iv_the_integrated_scenario_pharmacological_modulation_of_the_traumatised_validation_specs_2026-05-17.json"
+)
+
+
+def load_iv_the_integrated_scenario_pharmacological_modulation_of_the_traumatised_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_IV_THE_INTEGRATED_SCENARIO_PHARMACOLOGICAL_MODULATION_OF_THE_TRAUMATISED_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 iv the integrated scenario pharmacological modulation of the traumatised validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_1_PROPOFOL_GABA_A_POTENTIATION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_1_propofol_gaba_a_potentiation_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_1_propofol_gaba_a_potentiation_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SECTION_1_PROPOFOL_GABA_A_POTENTIATION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 1 propofol gaba a potentiation validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_MECHANISMS_OF_CRITICALITY_AND_CONTROL_LAYERS_1_4_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_mechanisms_of_criticality_and_control_layers_1_4_validation_specs_2026-05-17.json"
+)
+
+
+def load_mechanisms_of_criticality_and_control_layers_1_4_validation_spec(
+    spec_bundle: str | Path = DEFAULT_MECHANISMS_OF_CRITICALITY_AND_CONTROL_LAYERS_1_4_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 mechanisms of criticality and control layers 1 4 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -7215,4 +7264,10 @@ __all__ = [
     "load_ii_the_physics_of_pain_within_the_scpn_validation_spec",
     "DEFAULT_SECTION_2_L4_IMPACT_DAMPENING_DYNAMICS_AND_SHIFTING_CRITICALITY_SPEC_BUNDLE",
     "load_section_2_l4_impact_dampening_dynamics_and_shifting_criticality_validation_spec",
+    "DEFAULT_IV_THE_INTEGRATED_SCENARIO_PHARMACOLOGICAL_MODULATION_OF_THE_TRAUMATISED_SPEC_BUNDLE",
+    "load_iv_the_integrated_scenario_pharmacological_modulation_of_the_traumatised_validation_spec",
+    "DEFAULT_SECTION_1_PROPOFOL_GABA_A_POTENTIATION_SPEC_BUNDLE",
+    "load_section_1_propofol_gaba_a_potentiation_validation_spec",
+    "DEFAULT_MECHANISMS_OF_CRITICALITY_AND_CONTROL_LAYERS_1_4_SPEC_BUNDLE",
+    "load_mechanisms_of_criticality_and_control_layers_1_4_validation_spec",
 ]
