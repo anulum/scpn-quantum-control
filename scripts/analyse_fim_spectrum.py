@@ -17,6 +17,7 @@ import json
 import platform
 from dataclasses import asdict
 from pathlib import Path
+from typing import cast
 
 import numpy as np
 
@@ -61,6 +62,12 @@ def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
 
 
 def generate(n_values: list[int], lambdas: list[float]) -> dict[str, object]:
+    """Generate exact spectrum and magnetisation-sector summary artefacts.
+
+    The output captures small-system eigenvalue summaries for the XY Hamiltonian
+    with FIM feedback. It is a reproducibility and manuscript-support artefact,
+    not a hardware-evidence or quantum-advantage result.
+    """
     spectrum_rows: list[dict[str, object]] = []
     sector_rows: list[dict[str, object]] = []
     for n_qubits in n_values:
@@ -98,6 +105,7 @@ def generate(n_values: list[int], lambdas: list[float]) -> dict[str, object]:
 
 
 def main() -> int:
+    """Run the spectrum artefact generator from the command line."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--n-values", default="4,6,8")
     parser.add_argument("--lambdas", default="0,0.25,0.5,1,2,4,8")
@@ -113,8 +121,8 @@ def main() -> int:
     spectrum_csv = ns.output_dir / f"fim_spectrum_summary_{DATE}.csv"
     sector_csv = ns.output_dir / f"fim_sector_spectrum_summary_{DATE}.csv"
     json_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
-    _write_csv(spectrum_csv, list(summary["spectrum_rows"]))
-    _write_csv(sector_csv, list(summary["sector_rows"]))
+    _write_csv(spectrum_csv, list(cast(list[dict[str, object]], summary["spectrum_rows"])))
+    _write_csv(sector_csv, list(cast(list[dict[str, object]], summary["sector_rows"])))
     print(f"wrote_json={json_path}")
     print(f"wrote_spectrum_csv={spectrum_csv}")
     print(f"wrote_sector_csv={sector_csv}")

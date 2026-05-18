@@ -16,6 +16,7 @@ import hashlib
 import json
 import platform
 from pathlib import Path
+from typing import cast
 
 import numpy as np
 
@@ -60,6 +61,13 @@ def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
 
 
 def generate(n_values: list[int], lambdas: list[float], tolerance: float) -> dict[str, object]:
+    """Generate exact adjacent-gap-ratio rows for full and sector spectra.
+
+    The artefact is intentionally limited to small dense Hamiltonians and
+    magnetisation-sector blocks. It supports spectral-structure inspection for
+    the FIM feedback term, not hardware robustness or many-body-localisation
+    claims.
+    """
     rows: list[dict[str, object]] = []
     for n_qubits in n_values:
         k_matrix = build_knm_paper27(n_qubits)
@@ -108,6 +116,7 @@ def generate(n_values: list[int], lambdas: list[float], tolerance: float) -> dic
 
 
 def main() -> int:
+    """Run the level-spacing artefact generator from the command line."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--n-values", default="4,6,8")
     parser.add_argument("--lambdas", default="0,0.25,0.5,1,2,4,8")
@@ -123,7 +132,7 @@ def main() -> int:
     json_path = ns.output_dir / f"fim_level_spacing_summary_{DATE}.json"
     csv_path = ns.output_dir / f"fim_level_spacing_summary_{DATE}.csv"
     json_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
-    _write_csv(csv_path, list(summary["rows"]))
+    _write_csv(csv_path, list(cast(list[dict[str, object]], summary["rows"])))
     print(f"wrote_json={json_path}")
     print(f"wrote_csv={csv_path}")
     print(f"sha256_json={_sha256(json_path)}")

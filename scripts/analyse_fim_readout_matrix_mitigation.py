@@ -357,6 +357,7 @@ def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
 
 
 def main() -> int:
+    """Apply full-basis readout mitigation to the repeated follow-up artefact."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT)
     parser.add_argument("--verify-integrity", action="store_true")

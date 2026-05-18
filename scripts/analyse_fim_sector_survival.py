@@ -16,6 +16,7 @@ import hashlib
 import json
 import platform
 from pathlib import Path
+from typing import cast
 
 from scpn_quantum_control.analysis.fim_hamiltonian import (
     add_fim_feedback,
@@ -59,6 +60,13 @@ def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
 
 
 def generate(n_values: list[int], lambdas: list[float]) -> dict[str, object]:
+    """Generate ideal-unitary sector-conservation summaries.
+
+    The generated rows quantify commutators and off-sector block norms for the
+    exact dense Hamiltonian. The claim boundary is deliberately conservative:
+    ideal Hamiltonian sector conservation cannot explain measured hardware
+    leakage without a separate noise, layout, preparation, or readout model.
+    """
     summary_rows: list[dict[str, object]] = []
     sector_rows: list[dict[str, object]] = []
     for n_qubits in n_values:
@@ -72,7 +80,9 @@ def generate(n_values: list[int], lambdas: list[float]) -> dict[str, object]:
             comm_m = commutator_frobenius_norm_with_diagonal(hamiltonian, magnetisation)
             comm_m2 = commutator_frobenius_norm_with_diagonal(hamiltonian, magnetisation_squared)
             rows = sector_coupling_rows(hamiltonian, lambda_fim)
-            max_off_sector = max(float(row["off_sector_frobenius_norm"]) for row in rows)
+            max_off_sector = max(
+                float(cast(float, row["off_sector_frobenius_norm"])) for row in rows
+            )
             summary_rows.append(
                 {
                     "n_qubits": n_qubits,
@@ -104,6 +114,7 @@ def generate(n_values: list[int], lambdas: list[float]) -> dict[str, object]:
 
 
 def main() -> int:
+    """Run the sector-survival artefact generator from the command line."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--n-values", default="4,6,8")
     parser.add_argument("--lambdas", default="0,0.25,0.5,1,2,4,8")
@@ -119,8 +130,8 @@ def main() -> int:
     summary_csv = ns.output_dir / f"fim_sector_survival_summary_{DATE}.csv"
     sector_csv = ns.output_dir / f"fim_sector_survival_rows_{DATE}.csv"
     json_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
-    _write_csv(summary_csv, list(summary["summary_rows"]))
-    _write_csv(sector_csv, list(summary["sector_rows"]))
+    _write_csv(summary_csv, list(cast(list[dict[str, object]], summary["summary_rows"])))
+    _write_csv(sector_csv, list(cast(list[dict[str, object]], summary["sector_rows"])))
     print(f"wrote_json={json_path}")
     print(f"wrote_summary_csv={summary_csv}")
     print(f"wrote_sector_csv={sector_csv}")
