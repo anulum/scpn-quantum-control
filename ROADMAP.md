@@ -117,6 +117,14 @@ is copied here.
   within tolerance, and node-label plus edge-value null-model wins. IBM
   remains unnecessary unless the claim is explicitly redefined as a
   backend calibration/coupling-map claim.
+- [x] **K_nm measured-system candidate expansion.** Implemented
+  2026-05-18: the power-grid measured-coupling builder now emits an IEEE
+  14-bus voltage-weighted admittance candidate with branch reactance,
+  voltage, all-pairs uncertainty accounting, and explicit non-promotional
+  limitations. The physical validation gap remains open because public
+  case14 does not provide measured per-bus inertia constants for all load
+  buses and the hard promotion gate must still pass before any claim is
+  strengthened.
 - [x] **QSVT resource-estimator input hardening.** Implemented
   2026-05-12: the QSVT resource estimator and query-count helpers now
   reject non-square, dimension-mismatched, asymmetric, or non-finite

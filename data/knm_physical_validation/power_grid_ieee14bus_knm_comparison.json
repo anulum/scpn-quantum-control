@@ -1,0 +1,1987 @@
+{
+  "audit": "knm_physical_validation",
+  "candidate_system_scan": {
+    "available": true,
+    "best_topology_candidate": {
+      "domain": "eeg",
+      "magnitude_status": "does_not_close_exact_magnitude_gap",
+      "pearson_offdiag": 0.8988924843789916,
+      "source_name": "eeg_alpha_plv_8ch",
+      "spearman_offdiag": 0.9160024102955289
+    },
+    "candidate_dir": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/public_application_benchmarks",
+    "status": "topology_candidates_scanned",
+    "systems": [
+      {
+        "artifact_path": "data/public_application_benchmarks/eeg_alpha_plv_8ch.json",
+        "decision": {
+          "claim_scope": "topology_candidate_not_magnitude_validation",
+          "closes_physical_magnitude_gap": false,
+          "has_uncertainty_model": false,
+          "normalisation_locked": false,
+          "status": "does_not_close_exact_magnitude_gap"
+        },
+        "domain": "eeg",
+        "magnitude": {
+          "best_scale_through_origin": {
+            "max_abs_error": 0.20221800536539147,
+            "relative_rmse_vs_mean_abs_observed": 0.24504253570708834,
+            "rmse": 0.07578815568654947,
+            "scale": 1.6564807516545028
+          },
+          "direct_max_abs_error": 0.36663180069322693,
+          "direct_relative_rmse_vs_mean_abs_observed": 0.5036598818347996,
+          "direct_rmse": 0.15577480631033444
+        },
+        "n_layers": 8,
+        "normalisation": "phase-locking values already scaled to [0, 1]",
+        "public_reference": "Stam et al., Clinical Neurophysiology 118, 2317 (2007); Breakspear, Nature Neuroscience 20, 340 (2017)",
+        "source_mode": "curated",
+        "source_name": "eeg_alpha_plv_8ch",
+        "topology": {
+          "pearson_offdiag": 0.8988924843789916,
+          "spearman_offdiag": 0.9160024102955289
+        }
+      },
+      {
+        "artifact_path": "data/public_application_benchmarks/friston_fep_6node.json",
+        "decision": {
+          "claim_scope": "topology_candidate_not_magnitude_validation",
+          "closes_physical_magnitude_gap": false,
+          "has_uncertainty_model": false,
+          "normalisation_locked": false,
+          "status": "does_not_close_exact_magnitude_gap"
+        },
+        "domain": "fep",
+        "magnitude": {
+          "best_scale_through_origin": {
+            "max_abs_error": 0.17051324003041068,
+            "relative_rmse_vs_mean_abs_observed": 0.7317421667411121,
+            "rmse": 0.11463960612277423,
+            "scale": 0.8312966665459893
+          },
+          "direct_max_abs_error": 0.18295634688326962,
+          "direct_relative_rmse_vs_mean_abs_observed": 0.7688926551936908,
+          "direct_rmse": 0.1204598493136782
+        },
+        "n_layers": 6,
+        "normalisation": "precision graph weights scaled to unitless positive Kuramoto couplings",
+        "public_reference": "Friston, Nature Reviews Neuroscience 11, 127 (2010); Buckley et al., Entropy 19, 318 (2017)",
+        "source_mode": "curated",
+        "source_name": "friston_fep_6node",
+        "topology": {
+          "pearson_offdiag": 0.7594093449430114,
+          "spearman_offdiag": 0.7627500771613848
+        }
+      },
+      {
+        "artifact_path": "data/public_application_benchmarks/ieee5bus_power_grid.json",
+        "decision": {
+          "claim_scope": "topology_candidate_not_magnitude_validation",
+          "closes_physical_magnitude_gap": false,
+          "has_uncertainty_model": false,
+          "normalisation_locked": false,
+          "status": "does_not_close_exact_magnitude_gap"
+        },
+        "domain": "power-grid",
+        "magnitude": {
+          "best_scale_through_origin": {
+            "max_abs_error": 0.0019173651836042434,
+            "relative_rmse_vs_mean_abs_observed": 1.063045232640642,
+            "rmse": 0.0008942627767795679,
+            "scale": 0.003925287384365812
+          },
+          "direct_max_abs_error": 0.3007466118513167,
+          "direct_relative_rmse_vs_mean_abs_observed": 261.33567850609813,
+          "direct_rmse": 0.21984273326912887
+        },
+        "n_layers": 5,
+        "normalisation": "per-unit susceptance converted to Kuramoto coupling by V_i V_j B_ij / (2 H_i omega_0)",
+        "public_reference": "IEEE PES public test feeder / Stagg-El-Abiad 5-bus benchmark constants",
+        "source_mode": "curated",
+        "source_name": "ieee5bus_power_grid",
+        "topology": {
+          "pearson_offdiag": 0.2261436078106145,
+          "spearman_offdiag": 0.1903943276465977
+        }
+      },
+      {
+        "artifact_path": "data/public_application_benchmarks/iter_mhd_8mode.json",
+        "decision": {
+          "claim_scope": "topology_candidate_not_magnitude_validation",
+          "closes_physical_magnitude_gap": false,
+          "has_uncertainty_model": false,
+          "normalisation_locked": false,
+          "status": "does_not_close_exact_magnitude_gap"
+        },
+        "domain": "plasma",
+        "magnitude": {
+          "best_scale_through_origin": {
+            "max_abs_error": 0.6757406145836871,
+            "relative_rmse_vs_mean_abs_observed": 1.2975134235619956,
+            "rmse": 0.2057485571648307,
+            "scale": 0.6791750465786973
+          },
+          "direct_max_abs_error": 0.6170436531167305,
+          "direct_relative_rmse_vs_mean_abs_observed": 1.3636226289782483,
+          "direct_rmse": 0.21623158830940792
+        },
+        "n_layers": 8,
+        "normalisation": "magnetic mode-coupling weights scaled to [0, 1]",
+        "public_reference": "La Haye, Physics of Plasmas 13, 055501 (2006)",
+        "source_mode": "curated",
+        "source_name": "iter_mhd_8mode",
+        "topology": {
+          "pearson_offdiag": -0.07297375846291161,
+          "spearman_offdiag": -0.021908500712398457
+        }
+      }
+    ]
+  },
+  "command": [
+    "python",
+    "scripts/run_knm_physical_validation_audit.py",
+    "--measured",
+    "data/knm_physical_validation/measured_couplings_power_grid_ieee14bus.json",
+    "--n-layers",
+    "14",
+    "--output",
+    "data/knm_physical_validation/power_grid_ieee14bus_knm_comparison.json"
+  ],
+  "created_date": "2026-04-30",
+  "decision": {
+    "current_label": "open_requires_measured_system_coupling_magnitudes",
+    "ibm_rationale": "No IBM job is required for this gate unless K_nm is redefined as a QPU-device coupling-map claim. The current gap asks for measured system coupling magnitudes, not additional shot data.",
+    "next_gate": "Promote one candidate only after a locked measured-system normalisation and per-edge uncertainty model are committed, or provide data/knm_physical_validation/measured_couplings.json with system name, units, normalisation, uncertainty, and source per edge.",
+    "physical_validation_closed": false,
+    "requires_ibm_hardware": false
+  },
+  "implementation_parity": {
+    "anchors": [
+      {
+        "absolute_error": 0.0,
+        "actual": 0.302,
+        "edge_1_indexed": [
+          1,
+          2
+        ],
+        "expected": 0.302
+      },
+      {
+        "absolute_error": 0.0,
+        "actual": 0.201,
+        "edge_1_indexed": [
+          2,
+          3
+        ],
+        "expected": 0.201
+      },
+      {
+        "absolute_error": 0.0,
+        "actual": 0.252,
+        "edge_1_indexed": [
+          3,
+          4
+        ],
+        "expected": 0.252
+      },
+      {
+        "absolute_error": 0.0,
+        "actual": 0.154,
+        "edge_1_indexed": [
+          4,
+          5
+        ],
+        "expected": 0.154
+      }
+    ],
+    "cross_boosts": [
+      {
+        "absolute_error": 0.09696523624231188,
+        "actual": 0.24696523624231187,
+        "edge_1_indexed": [
+          5,
+          7
+        ],
+        "expected": 0.15
+      }
+    ],
+    "python_stats": {
+      "diagonal_max": 0.45,
+      "diagonal_min": 0.45,
+      "offdiag_max": 0.333368199306773,
+      "offdiag_mean": 0.13950045472679315,
+      "offdiag_min": 0.009108860150611976,
+      "offdiag_nonzero": 182,
+      "shape": [
+        14,
+        14
+      ],
+      "symmetric": true
+    },
+    "rust": {
+      "available": true,
+      "max_abs_diff_edge_vs_python": {
+        "absolute_diff": 2.7755575615628914e-17,
+        "edge_1_indexed": [
+          1,
+          5
+        ],
+        "left": 0.13553739536049098,
+        "right": 0.13553739536049095
+      },
+      "max_abs_diff_vs_python": 2.7755575615628914e-17,
+      "offdiag_max_abs_diff_edge_vs_python": {
+        "absolute_diff": 2.7755575615628914e-17,
+        "edge_1_indexed": [
+          1,
+          5
+        ],
+        "left": 0.13553739536049098,
+        "right": 0.13553739536049095
+      },
+      "offdiag_max_abs_diff_vs_python": 2.7755575615628914e-17,
+      "stats": {
+        "diagonal_max": 0.45,
+        "diagonal_min": 0.45,
+        "offdiag_max": 0.333368199306773,
+        "offdiag_mean": 0.13950045472679315,
+        "offdiag_min": 0.009108860150611976,
+        "offdiag_nonzero": 182,
+        "shape": [
+          14,
+          14
+        ],
+        "symmetric": true
+      }
+    },
+    "sibling_scpn_codebase": {
+      "authority": "disabled_outdated_context",
+      "available": false,
+      "error": "disabled: SCPN-CODEBASE is archived/outdated and not an audit authority"
+    }
+  },
+  "measured_system_comparison": {
+    "available": true,
+    "magnitude": {
+      "best_scale_through_origin": {
+        "max_abs_error": 22.75048994554485,
+        "relative_rmse_vs_mean_abs_observed": 2.2755419405451733,
+        "rmse": 3.759166996200264,
+        "scale": 12.545508268866977
+      },
+      "direct_relative_rmse_vs_mean_abs_measured": 2.5719467932522897,
+      "direct_rmse": 4.248824127961696
+    },
+    "matched_edges": 91,
+    "max_absolute_error": 24.528498218950364,
+    "normalisation": "K_ij = V_i V_j / X_ij for public case14 branches; absent branches are zero. This is a network-admittance candidate, not an inertia-normalised swing-equation candidate, because measured per-bus inertias are not supplied for every bus.",
+    "normalisation_locked": true,
+    "null_models": {
+      "available": true,
+      "beats_null_gate": true,
+      "edge_value_gate": true,
+      "edge_value_permutation": {
+        "description": "Seeded permutations of measured upper-triangle edge values; preserves measured value distribution.",
+        "pearson": {
+          "beats_95pct_null": true,
+          "empirical_p": 0.000488162069807176,
+          "n_null": 4096,
+          "null_max": 0.3623099930474849,
+          "null_mean": 6.307805008422252e-05,
+          "null_median": -0.006100819553088556,
+          "null_min": -0.29725963675702816,
+          "null_std": 0.10681950346900851,
+          "observed": 0.34689312067715755
+        },
+        "rmse": {
+          "beats_95pct_null": true,
+          "empirical_p": 0.000488162069807176,
+          "n_null": 4096,
+          "null_max": 4.30896857039982,
+          "null_mean": 4.281300976069803,
+          "null_median": 4.281887745693138,
+          "null_min": 4.247374221353204,
+          "null_std": 0.009970943371893476,
+          "observed": 4.248824127961696
+        },
+        "spearman": {
+          "beats_95pct_null": true,
+          "empirical_p": 0.000244081034903588,
+          "n_null": 4096,
+          "null_max": 0.34313359999321996,
+          "null_mean": 1.6280257239152532e-05,
+          "null_median": 0.0007892569534989618,
+          "null_min": -0.35858758229949333,
+          "null_std": 0.1067853124117845,
+          "observed": 0.4061858478028153
+        }
+      },
+      "edge_value_samples": 4096,
+      "gate_rule": "Promotion requires topology and magnitude diagnostics to beat preregistered nulls and still pass per-edge uncertainty checks.",
+      "node_label_gate": true,
+      "node_label_permutation": {
+        "description": "Measured-system node relabellings; exhaustive for small systems and seeded sampled permutations for larger systems. Preserves measured graph weights and degree sequence.",
+        "pearson": {
+          "beats_95pct_null": true,
+          "empirical_p": 0.00122040517451794,
+          "n_null": 4096,
+          "null_max": 0.4222713786536491,
+          "null_mean": -0.0018125423065988681,
+          "null_median": -0.005535295353916506,
+          "null_min": -0.310919871085427,
+          "null_std": 0.10553028123388697,
+          "observed": 0.34689312067715755
+        },
+        "rmse": {
+          "beats_95pct_null": true,
+          "empirical_p": 0.00122040517451794,
+          "n_null": 4096,
+          "null_max": 4.310234936888289,
+          "null_mean": 4.281476279383957,
+          "null_median": 4.281834979343832,
+          "null_min": 4.241730336139566,
+          "null_std": 0.009850468849735604,
+          "observed": 4.248824127961696
+        },
+        "spearman": {
+          "beats_95pct_null": true,
+          "empirical_p": 0.000244081034903588,
+          "n_null": 4096,
+          "null_max": 0.40283012593059603,
+          "null_mean": -0.00022641172842789953,
+          "null_median": -0.005000467131958457,
+          "null_min": -0.3530131101104448,
+          "null_std": 0.10502826747912163,
+          "observed": 0.4061858478028153
+        }
+      },
+      "node_label_samples": 4096,
+      "node_label_sampling_mode": "seeded_permutation_sample",
+      "seed": 20260430
+    },
+    "rows": [
+      {
+        "absolute_error": 18.418635457157343,
+        "canonical": 0.302,
+        "edge_1_indexed": [
+          1,
+          2
+        ],
+        "measured": 18.720635457157343,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.12579138782101118,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.24696523624231187,
+        "canonical": 0.24696523624231187,
+        "edge_1_indexed": [
+          1,
+          3
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.18295634688326962,
+        "canonical": 0.18295634688326962,
+        "edge_1_indexed": [
+          1,
+          4
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 4.712023580249266,
+        "canonical": 0.13553739536049095,
+        "edge_1_indexed": [
+          1,
+          5
+        ],
+        "measured": 4.847560975609757,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.032977538354806206,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.10040857206679342,
+        "canonical": 0.10040857206679342,
+        "edge_1_indexed": [
+          1,
+          6
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.07438449969971396,
+        "canonical": 0.07438449969971396,
+        "edge_1_indexed": [
+          1,
+          7
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.05510539271384186,
+        "canonical": 0.05510539271384186,
+        "edge_1_indexed": [
+          1,
+          8
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.040823078980235634,
+        "canonical": 0.040823078980235634,
+        "edge_1_indexed": [
+          1,
+          9
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.030242480732887402,
+        "canonical": 0.030242480732887402,
+        "edge_1_indexed": [
+          1,
+          10
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.022404180765538774,
+        "canonical": 0.022404180765538774,
+        "edge_1_indexed": [
+          1,
+          11
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.016597425330558004,
+        "canonical": 0.016597425330558004,
+        "edge_1_indexed": [
+          1,
+          12
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.012295675101281656,
+        "canonical": 0.012295675101281656,
+        "edge_1_indexed": [
+          1,
+          13
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.009108860150611976,
+        "canonical": 0.009108860150611976,
+        "edge_1_indexed": [
+          1,
+          14
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 5.130363337879476,
+        "canonical": 0.201,
+        "edge_1_indexed": [
+          2,
+          3
+        ],
+        "measured": 5.331363337879476,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.036705686581844255,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 5.792366660309411,
+        "canonical": 0.24696523624231187,
+        "edge_1_indexed": [
+          2,
+          4
+        ],
+        "measured": 6.039331896551723,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.04139055926164939,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 5.947133370162969,
+        "canonical": 0.18295634688326962,
+        "edge_1_indexed": [
+          2,
+          5
+        ],
+        "measured": 6.130089717046238,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.04199147036881844,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.13553739536049095,
+        "canonical": 0.13553739536049095,
+        "edge_1_indexed": [
+          2,
+          6
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.10040857206679342,
+        "canonical": 0.10040857206679342,
+        "edge_1_indexed": [
+          2,
+          7
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.07438449969971396,
+        "canonical": 0.07438449969971396,
+        "edge_1_indexed": [
+          2,
+          8
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.05510539271384186,
+        "canonical": 0.05510539271384186,
+        "edge_1_indexed": [
+          2,
+          9
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.040823078980235634,
+        "canonical": 0.040823078980235634,
+        "edge_1_indexed": [
+          2,
+          10
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.030242480732887402,
+        "canonical": 0.030242480732887402,
+        "edge_1_indexed": [
+          2,
+          11
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.022404180765538774,
+        "canonical": 0.022404180765538774,
+        "edge_1_indexed": [
+          2,
+          12
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.016597425330558004,
+        "canonical": 0.016597425330558004,
+        "edge_1_indexed": [
+          2,
+          13
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.012295675101281656,
+        "canonical": 0.012295675101281656,
+        "edge_1_indexed": [
+          2,
+          14
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 5.765599251593287,
+        "canonical": 0.252,
+        "edge_1_indexed": [
+          3,
+          4
+        ],
+        "measured": 6.017599251593286,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.041944290263318654,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.24696523624231187,
+        "canonical": 0.24696523624231187,
+        "edge_1_indexed": [
+          3,
+          5
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.18295634688326962,
+        "canonical": 0.18295634688326962,
+        "edge_1_indexed": [
+          3,
+          6
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.13553739536049095,
+        "canonical": 0.13553739536049095,
+        "edge_1_indexed": [
+          3,
+          7
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.10040857206679342,
+        "canonical": 0.10040857206679342,
+        "edge_1_indexed": [
+          3,
+          8
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.07438449969971396,
+        "canonical": 0.07438449969971396,
+        "edge_1_indexed": [
+          3,
+          9
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.05510539271384186,
+        "canonical": 0.05510539271384186,
+        "edge_1_indexed": [
+          3,
+          10
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.040823078980235634,
+        "canonical": 0.040823078980235634,
+        "edge_1_indexed": [
+          3,
+          11
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.030242480732887402,
+        "canonical": 0.030242480732887402,
+        "edge_1_indexed": [
+          3,
+          12
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.022404180765538774,
+        "canonical": 0.022404180765538774,
+        "edge_1_indexed": [
+          3,
+          13
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.016597425330558004,
+        "canonical": 0.016597425330558004,
+        "edge_1_indexed": [
+          3,
+          14
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 24.528498218950364,
+        "canonical": 0.154,
+        "edge_1_indexed": [
+          4,
+          5
+        ],
+        "measured": 24.682498218950364,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.1712184942659617,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.24696523624231187,
+        "canonical": 0.24696523624231187,
+        "edge_1_indexed": [
+          4,
+          6
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 4.991957578135858,
+        "canonical": 0.18295634688326962,
+        "edge_1_indexed": [
+          4,
+          7
+        ],
+        "measured": 5.174913925019127,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.03519061814337974,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.13553739536049095,
+        "canonical": 0.13553739536049095,
+        "edge_1_indexed": [
+          4,
+          8
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 1.8343319795531856,
+        "canonical": 0.10040857206679342,
+        "edge_1_indexed": [
+          4,
+          9
+        ],
+        "measured": 1.934740551619979,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.013192501419127216,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.07438449969971396,
+        "canonical": 0.07438449969971396,
+        "edge_1_indexed": [
+          4,
+          10
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.05510539271384186,
+        "canonical": 0.05510539271384186,
+        "edge_1_indexed": [
+          4,
+          11
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.040823078980235634,
+        "canonical": 0.040823078980235634,
+        "edge_1_indexed": [
+          4,
+          12
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.030242480732887402,
+        "canonical": 0.030242480732887402,
+        "edge_1_indexed": [
+          4,
+          13
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.022404180765538774,
+        "canonical": 0.022404180765538774,
+        "edge_1_indexed": [
+          4,
+          14
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 3.997240482543874,
+        "canonical": 0.333368199306773,
+        "edge_1_indexed": [
+          5,
+          6
+        ],
+        "measured": 4.330608681850647,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.029328671656700556,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.24696523624231187,
+        "canonical": 0.24696523624231187,
+        "edge_1_indexed": [
+          5,
+          7
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.18295634688326962,
+        "canonical": 0.18295634688326962,
+        "edge_1_indexed": [
+          5,
+          8
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.13553739536049095,
+        "canonical": 0.13553739536049095,
+        "edge_1_indexed": [
+          5,
+          9
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.10040857206679342,
+        "canonical": 0.10040857206679342,
+        "edge_1_indexed": [
+          5,
+          10
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.07438449969971396,
+        "canonical": 0.07438449969971396,
+        "edge_1_indexed": [
+          5,
+          11
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.05510539271384186,
+        "canonical": 0.05510539271384186,
+        "edge_1_indexed": [
+          5,
+          12
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.040823078980235634,
+        "canonical": 0.040823078980235634,
+        "edge_1_indexed": [
+          5,
+          13
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.030242480732887402,
+        "canonical": 0.030242480732887402,
+        "edge_1_indexed": [
+          5,
+          14
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.333368199306773,
+        "canonical": 0.333368199306773,
+        "edge_1_indexed": [
+          6,
+          7
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.24696523624231187,
+        "canonical": 0.24696523624231187,
+        "edge_1_indexed": [
+          6,
+          8
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.18295634688326962,
+        "canonical": 0.18295634688326962,
+        "edge_1_indexed": [
+          6,
+          9
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.13553739536049095,
+        "canonical": 0.13553739536049095,
+        "edge_1_indexed": [
+          6,
+          10
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 5.585815661216262,
+        "canonical": 0.10040857206679342,
+        "edge_1_indexed": [
+          6,
+          11
+        ],
+        "measured": 5.686224233283056,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.03780932537638066,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 4.3384609715484785,
+        "canonical": 0.07438449969971396,
+        "edge_1_indexed": [
+          6,
+          12
+        ],
+        "measured": 4.412845471248192,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.02937034956164777,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 8.56929009358385,
+        "canonical": 0.05510539271384186,
+        "edge_1_indexed": [
+          6,
+          13
+        ],
+        "measured": 8.624395486297692,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.057540411850372834,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.040823078980235634,
+        "canonical": 0.040823078980235634,
+        "edge_1_indexed": [
+          6,
+          14
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 6.238190131661152,
+        "canonical": 0.333368199306773,
+        "edge_1_indexed": [
+          7,
+          8
+        ],
+        "measured": 6.571558330967925,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.043197183654197446,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 9.947308011644244,
+        "canonical": 0.24696523624231187,
+        "edge_1_indexed": [
+          7,
+          9
+        ],
+        "measured": 10.194273247886557,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.06807076023912013,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.18295634688326962,
+        "canonical": 0.18295634688326962,
+        "edge_1_indexed": [
+          7,
+          10
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.13553739536049095,
+        "canonical": 0.13553739536049095,
+        "edge_1_indexed": [
+          7,
+          11
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.10040857206679342,
+        "canonical": 0.10040857206679342,
+        "edge_1_indexed": [
+          7,
+          12
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.07438449969971396,
+        "canonical": 0.07438449969971396,
+        "edge_1_indexed": [
+          7,
+          13
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.05510539271384186,
+        "canonical": 0.05510539271384186,
+        "edge_1_indexed": [
+          7,
+          14
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.333368199306773,
+        "canonical": 0.333368199306773,
+        "edge_1_indexed": [
+          8,
+          9
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.24696523624231187,
+        "canonical": 0.24696523624231187,
+        "edge_1_indexed": [
+          8,
+          10
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.18295634688326962,
+        "canonical": 0.18295634688326962,
+        "edge_1_indexed": [
+          8,
+          11
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.13553739536049095,
+        "canonical": 0.13553739536049095,
+        "edge_1_indexed": [
+          8,
+          12
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.10040857206679342,
+        "canonical": 0.10040857206679342,
+        "edge_1_indexed": [
+          8,
+          13
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.07438449969971396,
+        "canonical": 0.07438449969971396,
+        "edge_1_indexed": [
+          8,
+          14
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 12.801022333237604,
+        "canonical": 0.333368199306773,
+        "edge_1_indexed": [
+          9,
+          10
+        ],
+        "measured": 13.134390532544378,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0881618980208978,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.24696523624231187,
+        "canonical": 0.24696523624231187,
+        "edge_1_indexed": [
+          9,
+          11
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.18295634688326962,
+        "canonical": 0.18295634688326962,
+        "edge_1_indexed": [
+          9,
+          12
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.13553739536049095,
+        "canonical": 0.13553739536049095,
+        "edge_1_indexed": [
+          9,
+          13
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 3.9458078640601397,
+        "canonical": 0.10040857206679342,
+        "edge_1_indexed": [
+          9,
+          14
+        ],
+        "measured": 4.046216436126933,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0273566927886814,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 5.450497058151445,
+        "canonical": 0.333368199306773,
+        "edge_1_indexed": [
+          10,
+          11
+        ],
+        "measured": 5.783865257458218,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.03880351835399205,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.24696523624231187,
+        "canonical": 0.24696523624231187,
+        "edge_1_indexed": [
+          10,
+          12
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.18295634688326962,
+        "canonical": 0.18295634688326962,
+        "edge_1_indexed": [
+          10,
+          13
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.13553739536049095,
+        "canonical": 0.13553739536049095,
+        "edge_1_indexed": [
+          10,
+          14
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.333368199306773,
+        "canonical": 0.333368199306773,
+        "edge_1_indexed": [
+          11,
+          12
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.24696523624231187,
+        "canonical": 0.24696523624231187,
+        "edge_1_indexed": [
+          11,
+          13
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.18295634688326962,
+        "canonical": 0.18295634688326962,
+        "edge_1_indexed": [
+          11,
+          14
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 5.208707045840315,
+        "canonical": 0.333368199306773,
+        "edge_1_indexed": [
+          12,
+          13
+        ],
+        "measured": 5.542075245147088,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.03723419779056772,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.24696523624231187,
+        "canonical": 0.24696523624231187,
+        "edge_1_indexed": [
+          12,
+          14
+        ],
+        "measured": 0.0,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.0,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 2.7923142327373625,
+        "canonical": 0.333368199306773,
+        "edge_1_indexed": [
+          13,
+          14
+        ],
+        "measured": 3.1256824320441354,
+        "source": "IEEE 14-bus MATPOWER case14 public benchmark constants",
+        "uncertainty": 0.021192191205336133,
+        "within_uncertainty": false
+      }
+    ],
+    "signal_processing": {
+      "branch_reactance_per_unit": [
+        [
+          1.0,
+          2.0,
+          0.05917
+        ],
+        [
+          1.0,
+          5.0,
+          0.22304
+        ],
+        [
+          2.0,
+          3.0,
+          0.19797
+        ],
+        [
+          2.0,
+          4.0,
+          0.17632
+        ],
+        [
+          2.0,
+          5.0,
+          0.17388
+        ],
+        [
+          3.0,
+          4.0,
+          0.17103
+        ],
+        [
+          4.0,
+          5.0,
+          0.04211
+        ],
+        [
+          4.0,
+          7.0,
+          0.20912
+        ],
+        [
+          4.0,
+          9.0,
+          0.55618
+        ],
+        [
+          5.0,
+          6.0,
+          0.25202
+        ],
+        [
+          6.0,
+          11.0,
+          0.1989
+        ],
+        [
+          6.0,
+          12.0,
+          0.25581
+        ],
+        [
+          6.0,
+          13.0,
+          0.13027
+        ],
+        [
+          7.0,
+          8.0,
+          0.17615
+        ],
+        [
+          7.0,
+          9.0,
+          0.11001
+        ],
+        [
+          9.0,
+          10.0,
+          0.0845
+        ],
+        [
+          9.0,
+          14.0,
+          0.27038
+        ],
+        [
+          10.0,
+          11.0,
+          0.19207
+        ],
+        [
+          12.0,
+          13.0,
+          0.19988
+        ],
+        [
+          13.0,
+          14.0,
+          0.34802
+        ]
+      ],
+      "conversion": "public branch reactance and voltage magnitudes to symmetric admittance coupling",
+      "converted_coupling_matrix": [
+        [
+          0.0,
+          18.720635457157343,
+          0.0,
+          0.0,
+          4.847560975609757,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          18.720635457157343,
+          0.0,
+          5.331363337879476,
+          6.039331896551723,
+          6.130089717046238,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          5.331363337879476,
+          0.0,
+          6.017599251593286,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          6.039331896551723,
+          6.017599251593286,
+          0.0,
+          24.682498218950364,
+          0.0,
+          5.174913925019127,
+          0.0,
+          1.934740551619979,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          4.847560975609757,
+          6.130089717046238,
+          0.0,
+          24.682498218950364,
+          0.0,
+          4.330608681850647,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          4.330608681850647,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          5.686224233283056,
+          4.412845471248192,
+          8.624395486297692,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          5.174913925019127,
+          0.0,
+          0.0,
+          0.0,
+          6.571558330967925,
+          10.194273247886557,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          6.571558330967925,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.934740551619979,
+          0.0,
+          0.0,
+          10.194273247886557,
+          0.0,
+          0.0,
+          13.134390532544378,
+          0.0,
+          0.0,
+          0.0,
+          4.046216436126933
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          13.134390532544378,
+          0.0,
+          5.783865257458218,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          5.686224233283056,
+          0.0,
+          0.0,
+          0.0,
+          5.783865257458218,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          4.412845471248192,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          5.542075245147088,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          8.624395486297692,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          5.542075245147088,
+          0.0,
+          3.1256824320441354
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          4.046216436126933,
+          0.0,
+          0.0,
+          0.0,
+          3.1256824320441354,
+          0.0
+        ]
+      ],
+      "nodes": [
+        "bus_1",
+        "bus_2",
+        "bus_3",
+        "bus_4",
+        "bus_5",
+        "bus_6",
+        "bus_7",
+        "bus_8",
+        "bus_9",
+        "bus_10",
+        "bus_11",
+        "bus_12",
+        "bus_13",
+        "bus_14"
+      ],
+      "omega_hz_deviation": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "voltage_per_unit": [
+        1.06,
+        1.045,
+        1.01,
+        1.019,
+        1.02,
+        1.07,
+        1.062,
+        1.09,
+        1.056,
+        1.051,
+        1.057,
+        1.055,
+        1.05,
+        1.036
+      ]
+    },
+    "source_dataset": {
+      "known_limitations": [
+        "no measured per-bus inertia constants for all load buses",
+        "network-admittance control candidate only"
+      ],
+      "name": "IEEE 14-bus MATPOWER case14 benchmark constants",
+      "raw_units": {
+        "branch_reactance": "per_unit_on_100_MVA_base",
+        "frequency_deviation": "hertz_from_nominal",
+        "voltage": "per_unit"
+      },
+      "rounding_half_widths": {
+        "reactance_per_unit": 5e-06,
+        "voltage_per_unit": 0.005
+      },
+      "source_mode": "curated_public_benchmark_constants",
+      "source_reference": "MATPOWER case14 / IEEE 14-bus public benchmark data"
+    },
+    "spectral": {
+      "available": true,
+      "critical_coupling_response": {
+        "canonical_adjacency_spectral_radius": 1.8867077615330574,
+        "canonical_threshold_proxy": 0.5300237908532496,
+        "measured_adjacency_spectral_radius": 32.66925465651319,
+        "measured_threshold_proxy": 0.03060981986011219,
+        "model": "dimensionless Kuramoto threshold proxy; for fixed oscillator distribution, critical coupling is proportional to 1 / adjacency spectral radius",
+        "relative_difference": 0.9422482152907976,
+        "threshold_proxy_ratio_measured_over_canonical": 0.0577517847092024
+      },
+      "graph_spectrum": {
+        "canonical": [
+          -0.40168621753663836,
+          -0.3807969862379634,
+          -0.3738162485927649,
+          -0.3608557889866293,
+          -0.34060565710086566,
+          -0.31592794038472405,
+          -0.27808831492969727,
+          -0.22085323004570884,
+          -0.18428555082826917,
+          -0.16332189192678903,
+          -0.009684887883602326,
+          0.28728880824452807,
+          0.8559261446760664,
+          1.8867077615330574
+        ],
+        "max_abs_error": 30.782546894980133,
+        "measured": [
+          -26.9245215469048,
+          -19.403127530474144,
+          -18.253628450056226,
+          -10.318078953713638,
+          -6.229756622871162,
+          -4.906234922780719,
+          -0.9281320027280894,
+          0.4728800870761811,
+          2.5885691241593713,
+          6.092955740959726,
+          12.68712632765047,
+          13.897991669720335,
+          18.554702423449516,
+          32.66925465651319
+        ],
+        "pearson": 0.8320098089394112,
+        "rmse": 15.106532470989201
+      },
+      "laplacian_spectrum": {
+        "canonical": [
+          3.2649373650222903e-16,
+          0.7302901493609293,
+          1.325388775027675,
+          1.5984364374852664,
+          1.6818019135411109,
+          1.8079131009642146,
+          1.9314990285986375,
+          1.9752466627257061,
+          2.129305542797241,
+          2.267186853178851,
+          2.379446009577869,
+          2.465126349604675,
+          2.526739335287573,
+          2.5707026021265937
+        ],
+        "max_abs_error": 65.30140067129925,
+        "measured": [
+          -1.1018792839461148e-15,
+          2.352862295834719,
+          3.2033809280781904,
+          5.986377130534403,
+          6.88989133838145,
+          12.826859486164047,
+          13.09851469814248,
+          18.08312053737585,
+          20.78910077829094,
+          25.18981175637123,
+          31.000754019186115,
+          42.71811272087091,
+          50.650848409908065,
+          67.87210327342584
+        ],
+        "pearson": 0.7748220104524643,
+        "rmse": 27.322727995433734
+      }
+    },
+    "status": "open",
+    "system": "IEEE 14-bus power-grid voltage-weighted admittance coupling matrix",
+    "topology": {
+      "pearson": 0.34689312067715755,
+      "spearman": 0.4061858478028153
+    },
+    "unit": "per_unit_voltage_weighted_susceptance"
+  },
+  "measured_system_promotion_readiness": {
+    "beats_null_gate": true,
+    "blockers": [
+      "canonical K_nm values must fall within per-edge uncertainty",
+      "direct relative RMSE must be within preregistered tolerance",
+      "spectral and critical-response diagnostics must be within tolerance"
+    ],
+    "critical_response_relative_difference": 0.9422482152907976,
+    "decision": "blocked_measured_system_promotion_gate",
+    "full_pairwise_matrix": true,
+    "has_uncertainty": true,
+    "magnitude_relative_rmse": 2.5719467932522897,
+    "matched_edges": 91,
+    "normalisation_locked": true,
+    "promotion_tolerance": 0.05,
+    "ready": false,
+    "required_edges": 91,
+    "within_uncertainty": false
+  },
+  "parameters": {
+    "alpha": 0.3,
+    "anchor_source_label": "Paper 27 Table 2 constants in code",
+    "cross_boost_source_label": "Paper 27 S4.3 constants in code",
+    "k_base": 0.45,
+    "n_layers": 14
+  },
+  "provenance": {
+    "candidate_dir": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/public_application_benchmarks",
+    "git_commit": "8e720d1702339e373a648ce29f7f40f0f7dd7a88",
+    "machine": "x86_64",
+    "measured_path": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/knm_physical_validation/measured_couplings_power_grid_ieee14bus.json",
+    "numpy": "2.2.6",
+    "platform": "Linux-6.17.0-23-generic-x86_64-with-glibc2.39",
+    "processor": "x86_64",
+    "python": "3.12.3 (main, Mar  3 2026, 12:15:18) [GCC 13.3.0]",
+    "repo_root": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL",
+    "scpn_codebase": null
+  },
+  "schema_version": 3
+}

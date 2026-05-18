@@ -36,6 +36,8 @@ DEFAULT_MEASURED = REPO_ROOT / "data" / "knm_physical_validation" / "measured_co
 DEFAULT_CANDIDATE_DIR = REPO_ROOT / "data" / "public_application_benchmarks"
 NULL_MODEL_SEED = 20260430
 EDGE_VALUE_NULL_SAMPLES = 4096
+NODE_LABEL_NULL_EXHAUSTIVE_MAX_N = 8
+NODE_LABEL_NULL_SAMPLES = 4096
 DEFAULT_PROMOTION_TOLERANCE = 0.05
 
 ANCHORS_1_INDEXED = {
@@ -293,17 +295,27 @@ def _null_model_diagnostics(rows: list[dict[str, Any]]) -> dict[str, Any]:
     observed_spearman = _finite_metric(_spearman_corr(canonical, measured))
     observed_rmse = _rmse(canonical, measured)
 
+    rng = np.random.default_rng(NULL_MODEL_SEED)
+    n_nodes = measured_matrix.shape[0]
+    if n_nodes <= NODE_LABEL_NULL_EXHAUSTIVE_MAX_N:
+        node_orders = list(permutations(range(n_nodes)))
+        node_sampling_mode = "exhaustive"
+    else:
+        node_orders = [
+            tuple(rng.permutation(n_nodes).tolist()) for _ in range(NODE_LABEL_NULL_SAMPLES)
+        ]
+        node_sampling_mode = "seeded_permutation_sample"
+
     node_pearson = []
     node_spearman = []
     node_rmse = []
-    for order in permutations(range(measured_matrix.shape[0])):
+    for order in node_orders:
         permuted = measured_matrix[np.ix_(order, order)]
         permuted_values = _upper_triangle_values(permuted)
         node_pearson.append(_finite_metric(_pearson_corr(canonical, permuted_values)))
         node_spearman.append(_finite_metric(_spearman_corr(canonical, permuted_values)))
         node_rmse.append(_rmse(canonical, permuted_values))
 
-    rng = np.random.default_rng(NULL_MODEL_SEED)
     value_pearson = []
     value_spearman = []
     value_rmse = []
@@ -342,8 +354,14 @@ def _null_model_diagnostics(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "available": True,
         "seed": NULL_MODEL_SEED,
         "edge_value_samples": EDGE_VALUE_NULL_SAMPLES,
+        "node_label_sampling_mode": node_sampling_mode,
+        "node_label_samples": len(node_orders),
         "node_label_permutation": {
-            "description": "All measured-system node relabellings; preserves measured graph weights and degree sequence.",
+            "description": (
+                "Measured-system node relabellings; exhaustive for small systems and "
+                "seeded sampled permutations for larger systems. Preserves measured "
+                "graph weights and degree sequence."
+            ),
             "pearson": _null_summary(
                 np.asarray(node_pearson, dtype=np.float64),
                 observed=observed_pearson,

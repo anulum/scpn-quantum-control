@@ -183,3 +183,38 @@ or edge-value permutation null gates, and the spectral/critical-response
 diagnostics do not rescue the match. Physical validation remains open until a
 measured-system candidate with units, uncertainty, and preregistered null models
 passes the promotion criteria.
+
+## Measured-System Control Expansion — 2026-05-18
+
+The physical-unit candidate set now also includes the IEEE 14-bus public
+benchmark as a voltage-weighted branch-admittance control. The artefact records
+the public branch reactances, solved voltage magnitudes, derived
+`K_ij = V_i V_j / X_ij` matrix, and propagated input-rounding uncertainty for
+all 91 pairwise bus edges.
+
+| Metric | Value | Source |
+|---|---:|---|
+| Matched pairwise bus edges | `91` | `data/knm_physical_validation/measured_couplings_power_grid_ieee14bus.json` |
+| Non-zero public branch edges | `20` | `data/knm_physical_validation/measured_couplings_power_grid_ieee14bus.json` |
+| Spearman topology correlation vs fourteen-layer K_nm | `0.406186` | `data/knm_physical_validation/power_grid_ieee14bus_knm_comparison.json` |
+| Pearson topology correlation vs fourteen-layer K_nm | `0.346893` | `data/knm_physical_validation/power_grid_ieee14bus_knm_comparison.json` |
+| Direct RMSE | `4.248824` | `data/knm_physical_validation/power_grid_ieee14bus_knm_comparison.json` |
+| Direct relative RMSE versus mean absolute measured coupling | `2.571947` | `data/knm_physical_validation/power_grid_ieee14bus_knm_comparison.json` |
+| Best scale through origin | `12.545508` | `data/knm_physical_validation/power_grid_ieee14bus_knm_comparison.json` |
+| Scaled RMSE | `3.759167` | `data/knm_physical_validation/power_grid_ieee14bus_knm_comparison.json` |
+| Maximum direct absolute error | `24.528498` | `data/knm_physical_validation/power_grid_ieee14bus_knm_comparison.json` |
+| Weighted adjacency spectrum Pearson | `0.832010` | `data/knm_physical_validation/power_grid_ieee14bus_knm_comparison.json` |
+| Weighted adjacency spectrum RMSE | `15.106532` | `data/knm_physical_validation/power_grid_ieee14bus_knm_comparison.json` |
+| Weighted Laplacian spectrum Pearson | `0.774822` | `data/knm_physical_validation/power_grid_ieee14bus_knm_comparison.json` |
+| Weighted Laplacian spectrum RMSE | `27.322728` | `data/knm_physical_validation/power_grid_ieee14bus_knm_comparison.json` |
+| Critical-response relative difference | `0.942248` | `data/knm_physical_validation/power_grid_ieee14bus_knm_comparison.json` |
+| Node-label null mode | seeded sampled permutations (`4096`) | `data/knm_physical_validation/power_grid_ieee14bus_knm_comparison.json` |
+| Node-label null Spearman empirical p | `0.000244` | `data/knm_physical_validation/power_grid_ieee14bus_knm_comparison.json` |
+| Edge-value null Spearman empirical p | `0.000244` | `data/knm_physical_validation/power_grid_ieee14bus_knm_comparison.json` |
+
+Decision: this expands the measured-system candidate inventory, but it does not
+close physical K_nm validation. Public case14 supplies branch reactances and
+voltage magnitudes, not measured per-bus inertia constants for every load bus,
+so the artefact is a non-promotional control candidate unless a future gate
+adds the missing dynamic-system measurements and passes the null-model,
+uncertainty, magnitude, and critical-response checks.

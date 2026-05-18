@@ -63,6 +63,95 @@ IEEE_5BUS_VOLTAGE = np.array([1.06, 1.04, 1.02, 1.03, 1.01])
 # Frequency deviations (Hz) from nominal — small deviations
 IEEE_5BUS_FREQ_DEV = np.array([0.0, 0.02, -0.01, 0.015, -0.005])
 
+# IEEE 14-bus branch reactances and voltage magnitudes from the standard
+# MATPOWER case14 / IEEE 14-bus benchmark. This is a network-admittance
+# candidate, not a dynamic swing-equation validation dataset: the public case
+# supplies branch reactances and solved voltage magnitudes, but no measured
+# per-bus inertia constants for all load buses.
+IEEE_14BUS_BRANCH_REACTANCE = np.array(
+    [
+        [1, 2, 0.05917],
+        [1, 5, 0.22304],
+        [2, 3, 0.19797],
+        [2, 4, 0.17632],
+        [2, 5, 0.17388],
+        [3, 4, 0.17103],
+        [4, 5, 0.04211],
+        [4, 7, 0.20912],
+        [4, 9, 0.55618],
+        [5, 6, 0.25202],
+        [6, 11, 0.19890],
+        [6, 12, 0.25581],
+        [6, 13, 0.13027],
+        [7, 8, 0.17615],
+        [7, 9, 0.11001],
+        [9, 10, 0.08450],
+        [9, 14, 0.27038],
+        [10, 11, 0.19207],
+        [12, 13, 0.19988],
+        [13, 14, 0.34802],
+    ],
+    dtype=float,
+)
+
+IEEE_14BUS_VOLTAGE = np.array(
+    [
+        1.060,
+        1.045,
+        1.010,
+        1.019,
+        1.020,
+        1.070,
+        1.062,
+        1.090,
+        1.056,
+        1.051,
+        1.057,
+        1.055,
+        1.050,
+        1.036,
+    ],
+    dtype=float,
+)
+
+IEEE_14BUS_FREQ_DEV = np.zeros(14, dtype=float)
+
+
+def ieee_14bus_susceptance_matrix() -> np.ndarray:
+    """Build the symmetric branch-susceptance matrix for IEEE 14-bus case14."""
+    matrix = np.zeros((14, 14), dtype=float)
+    for from_bus, to_bus, reactance in IEEE_14BUS_BRANCH_REACTANCE:
+        if reactance <= 0.0:
+            raise ValueError("IEEE 14-bus branch reactance must be positive.")
+        i = int(from_bus) - 1
+        j = int(to_bus) - 1
+        susceptance = 1.0 / float(reactance)
+        matrix[i, j] = susceptance
+        matrix[j, i] = susceptance
+    return matrix
+
+
+def ieee_14bus_admittance_coupling_matrix(
+    *,
+    allow_builtin_reference: bool = False,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Build a voltage-weighted IEEE 14-bus admittance coupling matrix.
+
+    The matrix uses K_ij = V_i * V_j / X_ij for branches in the public case14
+    network. It is a physical-unit topology/control candidate for the measured
+    K_nm gate, not a complete swing-equation dataset, because public case14
+    does not provide measured inertia for every bus.
+    """
+    if not allow_builtin_reference:
+        raise RuntimeError(
+            "Refusing built-in IEEE 14-bus reference without allow_builtin_reference=True. "
+            "Pass curated grid_coupling and grid_frequencies to power_grid_benchmark "
+            "for explicit provenance."
+        )
+    susceptance = ieee_14bus_susceptance_matrix()
+    voltage_outer = np.outer(IEEE_14BUS_VOLTAGE, IEEE_14BUS_VOLTAGE)
+    return voltage_outer * susceptance, IEEE_14BUS_FREQ_DEV.copy()
+
 
 @dataclass
 class PowerGridBenchmarkResult:

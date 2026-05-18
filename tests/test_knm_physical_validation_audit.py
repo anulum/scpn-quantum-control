@@ -18,6 +18,7 @@ import numpy as np
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_PATH = REPO_ROOT / "scripts" / "run_knm_physical_validation_audit.py"
+BUILD_POWER_GRID_PATH = REPO_ROOT / "scripts" / "build_power_grid_measured_couplings.py"
 
 
 def _load_script_module():
@@ -40,6 +41,18 @@ load_measured_couplings = audit_module.load_measured_couplings
 measured_system_promotion_readiness = audit_module.measured_system_promotion_readiness
 null_model_diagnostics = audit_module._null_model_diagnostics
 spectral_diagnostics = audit_module._spectral_diagnostics
+
+
+def _load_power_grid_builder():
+    spec = importlib.util.spec_from_file_location(
+        "_build_power_grid_measured_couplings",
+        BUILD_POWER_GRID_PATH,
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
 
 
 def test_compare_measured_couplings_marks_missing_dataset_open():
@@ -126,6 +139,7 @@ def test_compare_measured_couplings_reports_null_model_diagnostics():
 
     assert result["status"] == "validated_with_measured_dataset"
     assert result["null_models"]["available"] is True
+    assert result["null_models"]["node_label_sampling_mode"] == "exhaustive"
     assert result["null_models"]["node_label_permutation"]["spearman"]["n_null"] == 6
     assert result["null_models"]["edge_value_permutation"]["spearman"]["n_null"] == 4096
     assert result["null_models"]["gate_rule"]
@@ -245,3 +259,33 @@ def test_build_audit_payload_records_candidate_scan_without_closing_gap(tmp_path
     assert (
         payload["decision"]["current_label"] == "open_requires_measured_system_coupling_magnitudes"
     )
+
+
+def test_ieee14_power_grid_payload_is_non_promotional_physical_unit_candidate():
+    builder = _load_power_grid_builder()
+    payload = builder.build_ieee14_payload(
+        command=["python", "scripts/build_power_grid_measured_couplings.py", "--case", "ieee14"]
+    )
+
+    assert (
+        payload["system"] == "IEEE 14-bus power-grid voltage-weighted admittance coupling matrix"
+    )
+    assert payload["normalisation_locked"] is True
+    assert len(payload["couplings"]) == 91
+    assert sum(1 for item in payload["couplings"] if item["raw_reactance_per_unit"]) == 20
+    assert payload["source_dataset"]["known_limitations"] == [
+        "no measured per-bus inertia constants for all load buses",
+        "network-admittance control candidate only",
+    ]
+
+    canonical = np.asarray(audit_module.build_knm_paper27(L=14, K_base=0.45, K_alpha=0.3))
+    comparison = compare_measured_couplings(canonical, payload)
+    readiness = measured_system_promotion_readiness(comparison, n_layers=14)
+
+    assert comparison["available"] is True
+    assert comparison["matched_edges"] == 91
+    assert comparison["status"] == "open"
+    assert comparison["null_models"]["node_label_sampling_mode"] == "seeded_permutation_sample"
+    assert comparison["null_models"]["node_label_permutation"]["spearman"]["n_null"] == 4096
+    assert readiness["ready"] is False
+    assert "canonical K_nm values must fall within per-edge uncertainty" in readiness["blockers"]

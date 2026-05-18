@@ -5,6 +5,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-05-18 — Added an IEEE 14-bus measured-system control candidate
+  for K_nm physical validation with voltage-weighted admittance,
+  all-pairs uncertainty accounting, and explicit non-promotional blockers.
 - 2026-05-18 — Added justified file-level exclusions to the coverage-gap audit
   helper so release gating can distinguish explicit accepted gaps from
   unreviewed missing or below-threshold files.
