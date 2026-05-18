@@ -4709,6 +4709,57 @@ def load_section_4_the_formal_equivalence_of_sec_and_sc_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_4_1_THE_COMPOSITE_FUNCTIONAL_FOR_CAUSAL_PATH_ENTROPY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_4_1_the_composite_functional_for_causal_path_entropy_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_4_1_the_composite_functional_for_causal_path_entropy_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_4_1_THE_COMPOSITE_FUNCTIONAL_FOR_CAUSAL_PATH_ENTROPY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 4 1 the composite functional for causal path entropy validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_4_2_THE_PROOF_OF_EQUIVALENCE_AND_THE_EMERGENCE_OF_PELA_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_4_2_the_proof_of_equivalence_and_the_emergence_of_pela_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_4_2_the_proof_of_equivalence_and_the_emergence_of_pela_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_4_2_THE_PROOF_OF_EQUIVALENCE_AND_THE_EMERGENCE_OF_PELA_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 4 2 the proof of equivalence and the emergence of pela validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_5_PHYSICAL_IMPLICATIONS_BIASING_THE_PATH_INTEGRAL_OF_REALITY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_5_physical_implications_biasing_the_path_integral_of_reality_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_5_physical_implications_biasing_the_path_integral_of_reality_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_5_PHYSICAL_IMPLICATIONS_BIASING_THE_PATH_INTEGRAL_OF_REALITY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 5 physical implications biasing the path integral of reality validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -5204,4 +5255,10 @@ __all__ = [
     "load_section_3_2_coherence_c_and_the_accessibility_of_trajectories_validation_spec",
     "DEFAULT_SECTION_4_THE_FORMAL_EQUIVALENCE_OF_SEC_AND_SC_SPEC_BUNDLE",
     "load_section_4_the_formal_equivalence_of_sec_and_sc_validation_spec",
+    "DEFAULT_SECTION_4_1_THE_COMPOSITE_FUNCTIONAL_FOR_CAUSAL_PATH_ENTROPY_SPEC_BUNDLE",
+    "load_section_4_1_the_composite_functional_for_causal_path_entropy_validation_spec",
+    "DEFAULT_SECTION_4_2_THE_PROOF_OF_EQUIVALENCE_AND_THE_EMERGENCE_OF_PELA_SPEC_BUNDLE",
+    "load_section_4_2_the_proof_of_equivalence_and_the_emergence_of_pela_validation_spec",
+    "DEFAULT_SECTION_5_PHYSICAL_IMPLICATIONS_BIASING_THE_PATH_INTEGRAL_OF_REALITY_SPEC_BUNDLE",
+    "load_section_5_physical_implications_biasing_the_path_integral_of_reality_validation_spec",
 ]

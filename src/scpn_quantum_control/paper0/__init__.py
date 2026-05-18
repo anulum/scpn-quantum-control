@@ -1407,12 +1407,26 @@ from .section_3_unified_experience_the_wilson_loop_validation import (
     section_3_unified_experience_the_wilson_loop_labels,
     validate_section_3_unified_experience_the_wilson_loop_fixture,
 )
+from .section_4_1_the_composite_functional_for_causal_path_entropy_validation import (
+    Section41TheCompositeFunctionalForCausalPathEntropyConfig,
+    Section41TheCompositeFunctionalForCausalPathEntropyFixtureResult,
+    classify_section_4_1_the_composite_functional_for_causal_path_entropy_component,
+    section_4_1_the_composite_functional_for_causal_path_entropy_labels,
+    validate_section_4_1_the_composite_functional_for_causal_path_entropy_fixture,
+)
 from .section_4_1_the_cosmic_algorithm_hpc_active_inference_validation import (
     Section41TheCosmicAlgorithmHpcActiveInferenceConfig,
     Section41TheCosmicAlgorithmHpcActiveInferenceFixtureResult,
     classify_section_4_1_the_cosmic_algorithm_hpc_active_inference_component,
     section_4_1_the_cosmic_algorithm_hpc_active_inference_labels,
     validate_section_4_1_the_cosmic_algorithm_hpc_active_inference_fixture,
+)
+from .section_4_2_the_proof_of_equivalence_and_the_emergence_of_pela_validation import (
+    Section42TheProofOfEquivalenceAndTheEmergenceOfPelaConfig,
+    Section42TheProofOfEquivalenceAndTheEmergenceOfPelaFixtureResult,
+    classify_section_4_2_the_proof_of_equivalence_and_the_emergence_of_pela_component,
+    section_4_2_the_proof_of_equivalence_and_the_emergence_of_pela_labels,
+    validate_section_4_2_the_proof_of_equivalence_and_the_emergence_of_pela_fixture,
 )
 from .section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis_validation import (
     Section42TheShapeOfFeelingTheGeometricQualiaHypothesisConfig,
@@ -1441,6 +1455,13 @@ from .section_4_the_formal_equivalence_of_sec_and_sc_validation import (
     classify_section_4_the_formal_equivalence_of_sec_and_sc_component,
     section_4_the_formal_equivalence_of_sec_and_sc_labels,
     validate_section_4_the_formal_equivalence_of_sec_and_sc_fixture,
+)
+from .section_5_physical_implications_biasing_the_path_integral_of_reality_validation import (
+    Section5PhysicalImplicationsBiasingThePathIntegralOfRealityConfig,
+    Section5PhysicalImplicationsBiasingThePathIntegralOfRealityFixtureResult,
+    classify_section_5_physical_implications_biasing_the_path_integral_of_reality_component,
+    section_5_physical_implications_biasing_the_path_integral_of_reality_labels,
+    validate_section_5_physical_implications_biasing_the_path_integral_of_reality_fixture,
 )
 from .section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_p0r02810_validation import (
     Section15LayerSummaryTable32TheDynamicSpineTheUnifiedPhaseDynamicsP0r02810Config,
@@ -1981,6 +2002,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_section_5_physical_implications_biasing_the_path_integral_of_reality_fixture",
+    "section_5_physical_implications_biasing_the_path_integral_of_reality_labels",
+    "classify_section_5_physical_implications_biasing_the_path_integral_of_reality_component",
+    "Section5PhysicalImplicationsBiasingThePathIntegralOfRealityFixtureResult",
+    "Section5PhysicalImplicationsBiasingThePathIntegralOfRealityConfig",
+    "validate_section_4_2_the_proof_of_equivalence_and_the_emergence_of_pela_fixture",
+    "section_4_2_the_proof_of_equivalence_and_the_emergence_of_pela_labels",
+    "classify_section_4_2_the_proof_of_equivalence_and_the_emergence_of_pela_component",
+    "Section42TheProofOfEquivalenceAndTheEmergenceOfPelaFixtureResult",
+    "Section42TheProofOfEquivalenceAndTheEmergenceOfPelaConfig",
+    "validate_section_4_1_the_composite_functional_for_causal_path_entropy_fixture",
+    "section_4_1_the_composite_functional_for_causal_path_entropy_labels",
+    "classify_section_4_1_the_composite_functional_for_causal_path_entropy_component",
+    "Section41TheCompositeFunctionalForCausalPathEntropyFixtureResult",
+    "Section41TheCompositeFunctionalForCausalPathEntropyConfig",
     "validate_section_4_the_formal_equivalence_of_sec_and_sc_fixture",
     "section_4_the_formal_equivalence_of_sec_and_sc_labels",
     "classify_section_4_the_formal_equivalence_of_sec_and_sc_component",
