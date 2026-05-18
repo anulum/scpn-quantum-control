@@ -82,7 +82,10 @@ class Component:
 
 def load_json(path: Path) -> dict[str, Any]:
     """Load a JSON object."""
-    return json.loads(path.read_text(encoding="utf-8"))
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError(f"expected JSON object in {path}")
+    return payload
 
 
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -1170,6 +1173,8 @@ def append_coordination(
 
 
 def main() -> None:
+    """Run one Paper 0 promotion automation slice from the command line."""
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--work-orders", type=Path, default=DEFAULT_WORK_ORDERS)
     parser.add_argument("--ledger", type=Path, default=DEFAULT_LEDGER_PATH)

@@ -218,6 +218,8 @@ def build_summary(paths: tuple[Path, ...]) -> dict[str, Any]:
 
 
 def main() -> int:
+    """Run the readout-mitigation eligibility audit CLI."""
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     ns = parser.parse_args()

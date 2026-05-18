@@ -230,6 +230,8 @@ def _write_text(path: Path, text: str) -> str:
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse the quantum-Kuramoto split audit CLI arguments."""
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out-dir", type=Path, default=OUT_DIR)
     parser.add_argument("--doc-path", type=Path, default=DOC_PATH)
@@ -237,6 +239,8 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Run the quantum-Kuramoto split audit and write public artefacts."""
+
     args = parse_args()
     payload = build_split_audit()
     json_path = args.out_dir / f"quantum_kuramoto_split_audit_{DATE}.json"

@@ -11,6 +11,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - 2026-04-30 — Added the 109-subject EEGMMIDB baseline eyes-closed PLV artifact and an eyes-closed-minus-eyes-open comparison artifact.
 
 ### Changed
+- 2026-05-18 — Closed the audit and Paper 0 automation documentation-surface slice for split audit, readout-mitigation eligibility, and promotion automation CLIs.
 - 2026-05-18 — Closed the Phase 3 GUESS/state-layout and S1 feedback documentation-surface slice.
 - 2026-05-18 — Closed the Phase 2 popcount, readout-mitigation, and B-C scaling documentation-surface slice.
 - 2026-05-18 — Closed the Phase 1/Phase 2 DLA parity documentation-surface slice for parity statistics, raw-count reproduction, and GUESS-readiness calibration scripts.
