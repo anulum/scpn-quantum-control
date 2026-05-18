@@ -7150,6 +7150,56 @@ def load_macro_scale_homeostasis_gaian_synchrony_and_niche_construction_validati
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_DOMAIN_II_ORGANISMAL_AND_PLANETARY_INTEGRATION_LAYERS_5_8_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_domain_ii_organismal_and_planetary_integration_layers_5_8_validation_specs_2026-05-17.json"
+)
+
+
+def load_domain_ii_organismal_and_planetary_integration_layers_5_8_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_DOMAIN_II_ORGANISMAL_AND_PLANETARY_INTEGRATION_LAYERS_5_8_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 domain ii organismal and planetary integration layers 5 8 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_DOMAIN_III_IV_MEMORY_CONTROL_AND_COLLECTIVE_COHERENCE_LAYERS_9_12_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_domain_iii_iv_memory_control_and_collective_coherence_layers_9_12_validation_specs_2026-05-17.json"
+)
+
+
+def load_domain_iii_iv_memory_control_and_collective_coherence_layers_9_12_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_DOMAIN_III_IV_MEMORY_CONTROL_AND_COLLECTIVE_COHERENCE_LAYERS_9_12_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 domain iii iv memory control and collective coherence layers 9 12 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_CITATIONS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_citations_validation_specs_2026-05-17.json"
+)
+
+
+def load_citations_validation_spec(
+    spec_bundle: str | Path = DEFAULT_CITATIONS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 citations validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -7939,4 +7989,10 @@ __all__ = [
     "load_application_to_immune_enzymes_validation_spec",
     "DEFAULT_MACRO_SCALE_HOMEOSTASIS_GAIAN_SYNCHRONY_AND_NICHE_CONSTRUCTION_SPEC_BUNDLE",
     "load_macro_scale_homeostasis_gaian_synchrony_and_niche_construction_validation_spec",
+    "DEFAULT_DOMAIN_II_ORGANISMAL_AND_PLANETARY_INTEGRATION_LAYERS_5_8_SPEC_BUNDLE",
+    "load_domain_ii_organismal_and_planetary_integration_layers_5_8_validation_spec",
+    "DEFAULT_DOMAIN_III_IV_MEMORY_CONTROL_AND_COLLECTIVE_COHERENCE_LAYERS_9_12_SPEC_BUNDLE",
+    "load_domain_iii_iv_memory_control_and_collective_coherence_layers_9_12_validation_spec",
+    "DEFAULT_CITATIONS_SPEC_BUNDLE",
+    "load_citations_validation_spec",
 ]

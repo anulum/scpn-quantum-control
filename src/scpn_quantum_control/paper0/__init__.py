@@ -289,6 +289,13 @@ from .ciss_bioelectric_validation import (
     radical_pair_hamiltonian,
     validate_ciss_bioelectric_fixture,
 )
+from .citations_validation import (
+    CitationsConfig,
+    CitationsFixtureResult,
+    citations_labels,
+    classify_citations_component,
+    validate_citations_fixture,
+)
 from .clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica_validation import (
     ClinicalScenarioAnalysisTraumaticBrainInjuryTbiAndPharmacologicaConfig,
     ClinicalScenarioAnalysisTraumaticBrainInjuryTbiAndPharmacologicaFixtureResult,
@@ -443,6 +450,20 @@ from .derived_lagrangian_detail_validation import (
     classify_derived_lagrangian_detail_component,
     derived_lagrangian_detail_labels,
     validate_derived_lagrangian_detail_fixture,
+)
+from .domain_ii_organismal_and_planetary_integration_layers_5_8_validation import (
+    DomainIiOrganismalAndPlanetaryIntegrationLayers58Config,
+    DomainIiOrganismalAndPlanetaryIntegrationLayers58FixtureResult,
+    classify_domain_ii_organismal_and_planetary_integration_layers_5_8_component,
+    domain_ii_organismal_and_planetary_integration_layers_5_8_labels,
+    validate_domain_ii_organismal_and_planetary_integration_layers_5_8_fixture,
+)
+from .domain_iii_iv_memory_control_and_collective_coherence_layers_9_12_validation import (
+    DomainIiiIvMemoryControlAndCollectiveCoherenceLayers912Config,
+    DomainIiiIvMemoryControlAndCollectiveCoherenceLayers912FixtureResult,
+    classify_domain_iii_iv_memory_control_and_collective_coherence_layers_9_12_component,
+    domain_iii_iv_memory_control_and_collective_coherence_layers_9_12_labels,
+    validate_domain_iii_iv_memory_control_and_collective_coherence_layers_9_12_fixture,
 )
 from .domain_iii_overview_memory_and_projection_control_validation import (
     DomainIiiOverviewMemoryAndProjectionControlConfig,
@@ -3010,6 +3031,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_citations_fixture",
+    "citations_labels",
+    "classify_citations_component",
+    "CitationsFixtureResult",
+    "CitationsConfig",
+    "validate_domain_iii_iv_memory_control_and_collective_coherence_layers_9_12_fixture",
+    "domain_iii_iv_memory_control_and_collective_coherence_layers_9_12_labels",
+    "classify_domain_iii_iv_memory_control_and_collective_coherence_layers_9_12_component",
+    "DomainIiiIvMemoryControlAndCollectiveCoherenceLayers912FixtureResult",
+    "DomainIiiIvMemoryControlAndCollectiveCoherenceLayers912Config",
+    "validate_domain_ii_organismal_and_planetary_integration_layers_5_8_fixture",
+    "domain_ii_organismal_and_planetary_integration_layers_5_8_labels",
+    "classify_domain_ii_organismal_and_planetary_integration_layers_5_8_component",
+    "DomainIiOrganismalAndPlanetaryIntegrationLayers58FixtureResult",
+    "DomainIiOrganismalAndPlanetaryIntegrationLayers58Config",
     "validate_macro_scale_homeostasis_gaian_synchrony_and_niche_construction_fixture",
     "macro_scale_homeostasis_gaian_synchrony_and_niche_construction_labels",
     "classify_macro_scale_homeostasis_gaian_synchrony_and_niche_construction_component",
