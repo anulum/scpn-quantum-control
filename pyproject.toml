@@ -265,6 +265,12 @@ omit = [
     # fallthrough path; the Julia-side wrapper is exercised locally
     # via the [julia] extra.
     "*/scpn_quantum_control/accel/julia/*",
+    # Paper 0 source-validation modules are generated source-accounting
+    # artefacts. Register reconciliation and generated-loader tests cover
+    # their production contract; per-file line coverage is tracked through
+    # the explicit release exclusions document instead of inflating the
+    # hand-maintained source denominator.
+    "*/scpn_quantum_control/paper0/*",
 ]
 
 [tool.coverage.report]

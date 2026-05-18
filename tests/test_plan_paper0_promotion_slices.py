@@ -16,6 +16,8 @@ import pytest
 
 from scripts.plan_paper0_promotion_slices import plan_work_orders, render_report, write_outputs
 
+pytestmark = pytest.mark.internal_corpus
+
 
 def test_plan_work_orders_starts_at_current_reconciliation_gap() -> None:
     work_orders = plan_work_orders(max_orders=2)

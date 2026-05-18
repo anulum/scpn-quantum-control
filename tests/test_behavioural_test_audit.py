@@ -156,5 +156,5 @@ def test_behaviour_audit_cli_json_and_smoke_gate(tmp_path: Path, capsys: object)
     (tmp_path / "test_a.py").write_text("def test_a():\n    pass\n", encoding="utf-8")
 
     assert main(["--tests-root", str(tmp_path), "--json"]) == 0
-    assert json.loads(capsys.readouterr().out)[0]["smoke_only_tests"] == ["test_a"]
+    assert json.loads(capsys.readouterr().out)["modules"][0]["smoke_only_tests"] == ["test_a"]
     assert main(["--tests-root", str(tmp_path), "--fail-on-smoke-only"]) == 1

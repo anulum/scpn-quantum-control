@@ -180,6 +180,28 @@ def test_coverage_gap_audit_accepts_justified_file_exclusions(tmp_path: Path):
     assert "files_justified_exclusions: 2" in summary
 
 
+def test_coverage_gap_audit_accepts_justified_glob_exclusions(tmp_path: Path):
+    project_root = tmp_path / "repo"
+    source_root = project_root / "src" / "scpn_quantum_control" / "paper0"
+    source_root.mkdir(parents=True)
+    (source_root / "generated_validation.py").write_text("x = 1\n", encoding="utf-8")
+
+    audits = audit_coverage_gaps(
+        project_root=project_root,
+        source_root=project_root / "src" / "scpn_quantum_control",
+        coverage_xml=project_root / "missing-coverage.xml",
+        min_file_percent=95.0,
+        justified_exclusions={
+            "src/scpn_quantum_control/paper0/*_validation.py": (
+                "generated source-validation module covered by register reconciliation"
+            )
+        },
+    )
+
+    assert audits[0].status == "justified_exclusion"
+    assert audits[0].is_gap is False
+
+
 def test_load_justified_exclusions_requires_reason(tmp_path: Path):
     path = tmp_path / "exclusions.json"
     path.write_text('{"exclusions": [{"path": "src/pkg.py", "reason": "  "}]}', encoding="utf-8")
@@ -190,3 +212,13 @@ def test_load_justified_exclusions_requires_reason(tmp_path: Path):
         assert "reason" in str(exc)
     else:
         raise AssertionError("Expected empty exclusion reason to fail")
+
+
+def test_load_justified_exclusions_accepts_path_glob(tmp_path: Path):
+    path = tmp_path / "exclusions.json"
+    path.write_text(
+        '{"exclusions": [{"path_glob": "src/pkg/generated_*.py", "reason": "generated"}]}',
+        encoding="utf-8",
+    )
+
+    assert load_justified_exclusions(path) == {"src/pkg/generated_*.py": "generated"}
