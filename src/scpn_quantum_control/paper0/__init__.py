@@ -940,6 +940,13 @@ from .meta_framework_integrations_p0r03315_validation import (
     meta_framework_integrations_p0r03315_labels,
     validate_meta_framework_integrations_p0r03315_fixture,
 )
+from .meta_framework_integrations_p0r03400_validation import (
+    MetaFrameworkIntegrationsP0r03400Config,
+    MetaFrameworkIntegrationsP0r03400FixtureResult,
+    classify_meta_framework_integrations_p0r03400_component,
+    meta_framework_integrations_p0r03400_labels,
+    validate_meta_framework_integrations_p0r03400_fixture,
+)
 from .meta_framework_integrations_validation import (
     MetaFrameworkIntegrationsConfig,
     MetaFrameworkIntegrationsFixtureResult,
@@ -1431,6 +1438,13 @@ from .terminology_bridge_validation import (
     terminology_bridge_labels,
     validate_terminology_bridge_fixture,
 )
+from .the_binding_integral_is_h_int_validation import (
+    TheBindingIntegralIsHIntConfig,
+    TheBindingIntegralIsHIntFixtureResult,
+    classify_the_binding_integral_is_h_int_component,
+    the_binding_integral_is_h_int_labels,
+    validate_the_binding_integral_is_h_int_fixture,
+)
 from .the_biological_syndrome_measurement_and_recovery_protocol_validation import (
     TheBiologicalSyndromeMeasurementAndRecoveryProtocolConfig,
     TheBiologicalSyndromeMeasurementAndRecoveryProtocolFixtureResult,
@@ -1465,6 +1479,13 @@ from .the_genesis_of_the_hierarchy_sequential_symmetry_breaking_ssb_validation i
     classify_the_genesis_of_the_hierarchy_sequential_symmetry_breaking_ssb_component,
     the_genesis_of_the_hierarchy_sequential_symmetry_breaking_ssb_labels,
     validate_the_genesis_of_the_hierarchy_sequential_symmetry_breaking_ssb_fixture,
+)
+from .the_hard_problem_a_mathematical_resolution_validation import (
+    TheHardProblemAMathematicalResolutionConfig,
+    TheHardProblemAMathematicalResolutionFixtureResult,
+    classify_the_hard_problem_a_mathematical_resolution_component,
+    the_hard_problem_a_mathematical_resolution_labels,
+    validate_the_hard_problem_a_mathematical_resolution_fixture,
 )
 from .the_hierarchical_impedance_rescaling_validation import (
     TheHierarchicalImpedanceRescalingConfig,
@@ -1729,6 +1750,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_the_hard_problem_a_mathematical_resolution_fixture",
+    "the_hard_problem_a_mathematical_resolution_labels",
+    "classify_the_hard_problem_a_mathematical_resolution_component",
+    "TheHardProblemAMathematicalResolutionFixtureResult",
+    "TheHardProblemAMathematicalResolutionConfig",
+    "validate_the_binding_integral_is_h_int_fixture",
+    "the_binding_integral_is_h_int_labels",
+    "classify_the_binding_integral_is_h_int_component",
+    "TheBindingIntegralIsHIntFixtureResult",
+    "TheBindingIntegralIsHIntConfig",
+    "validate_meta_framework_integrations_p0r03400_fixture",
+    "meta_framework_integrations_p0r03400_labels",
+    "classify_meta_framework_integrations_p0r03400_component",
+    "MetaFrameworkIntegrationsP0r03400FixtureResult",
+    "MetaFrameworkIntegrationsP0r03400Config",
     "validate_section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis_fixture",
     "section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis_labels",
     "classify_section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis_component",
