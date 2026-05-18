@@ -1297,6 +1297,13 @@ from .notes_on_correspondence_non_obligatory_analogues_validation import (
     notes_on_correspondence_non_obligatory_analogues_labels,
     validate_notes_on_correspondence_non_obligatory_analogues_fixture,
 )
+from .novel_falsifiable_predictions_from_first_principles_validation import (
+    NovelFalsifiablePredictionsFromFirstPrinciplesConfig,
+    NovelFalsifiablePredictionsFromFirstPrinciplesFixtureResult,
+    classify_novel_falsifiable_predictions_from_first_principles_component,
+    novel_falsifiable_predictions_from_first_principles_labels,
+    validate_novel_falsifiable_predictions_from_first_principles_fixture,
+)
 from .nv_quantum_sensing_validation import (
     DecoherenceRegressionFit,
     NVQuantumSensingConfig,
@@ -1470,6 +1477,13 @@ from .predicted_particles_infoton_psi_higgs_validation import (
     predicted_particles_infoton_psi_higgs_labels,
     validate_predicted_particles_infoton_psi_higgs_fixture,
 )
+from .predicted_signature_validation import (
+    PredictedSignatureConfig,
+    PredictedSignatureFixtureResult,
+    classify_predicted_signature_component,
+    predicted_signature_labels,
+    validate_predicted_signature_fixture,
+)
 from .prediction_i_nv_mea_tests_the_informational_coupling_linformational_validation import (
     PredictionINvMeaTestsTheInformationalCouplingLinformationalConfig,
     PredictionINvMeaTestsTheInformationalCouplingLinformationalFixtureResult,
@@ -1536,6 +1550,13 @@ from .principle_teleology_as_optimisation_validation import (
     classify_principle_teleology_as_optimisation_component,
     principle_teleology_as_optimisation_labels,
     validate_principle_teleology_as_optimisation_fixture,
+)
+from .proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul_validation import (
+    ProposedExperimentalProtocolNvCenterQuantumSensingOfNeuronalCulConfig,
+    ProposedExperimentalProtocolNvCenterQuantumSensingOfNeuronalCulFixtureResult,
+    classify_proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul_component,
+    proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul_labels,
+    validate_proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul_fixture,
 )
 from .psi_higgs_lhc_phenomenology_validation import (
     PsiHiggsLHCPhenomenologyConfig,
@@ -2779,6 +2800,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul_fixture",
+    "proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul_labels",
+    "classify_proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul_component",
+    "ProposedExperimentalProtocolNvCenterQuantumSensingOfNeuronalCulFixtureResult",
+    "ProposedExperimentalProtocolNvCenterQuantumSensingOfNeuronalCulConfig",
+    "validate_predicted_signature_fixture",
+    "predicted_signature_labels",
+    "classify_predicted_signature_component",
+    "PredictedSignatureFixtureResult",
+    "PredictedSignatureConfig",
+    "validate_novel_falsifiable_predictions_from_first_principles_fixture",
+    "novel_falsifiable_predictions_from_first_principles_labels",
+    "classify_novel_falsifiable_predictions_from_first_principles_component",
+    "NovelFalsifiablePredictionsFromFirstPrinciplesFixtureResult",
+    "NovelFalsifiablePredictionsFromFirstPrinciplesConfig",
     "validate_prediction_i_nv_mea_tests_the_informational_coupling_linformational_fixture",
     "prediction_i_nv_mea_tests_the_informational_coupling_linformational_labels",
     "classify_prediction_i_nv_mea_tests_the_informational_coupling_linformational_component",

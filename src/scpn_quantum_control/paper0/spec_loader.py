@@ -6603,6 +6603,56 @@ def load_prediction_i_nv_mea_tests_the_informational_coupling_linformational_val
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_NOVEL_FALSIFIABLE_PREDICTIONS_FROM_FIRST_PRINCIPLES_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_novel_falsifiable_predictions_from_first_principles_validation_specs_2026-05-17.json"
+)
+
+
+def load_novel_falsifiable_predictions_from_first_principles_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_NOVEL_FALSIFIABLE_PREDICTIONS_FROM_FIRST_PRINCIPLES_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 novel falsifiable predictions from first principles validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_PREDICTED_SIGNATURE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_predicted_signature_validation_specs_2026-05-17.json"
+)
+
+
+def load_predicted_signature_validation_spec(
+    spec_bundle: str | Path = DEFAULT_PREDICTED_SIGNATURE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 predicted signature validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_PROPOSED_EXPERIMENTAL_PROTOCOL_NV_CENTER_QUANTUM_SENSING_OF_NEURONAL_CUL_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul_validation_specs_2026-05-17.json"
+)
+
+
+def load_proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_PROPOSED_EXPERIMENTAL_PROTOCOL_NV_CENTER_QUANTUM_SENSING_OF_NEURONAL_CUL_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 proposed experimental protocol nv center quantum sensing of neuronal cul validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -7326,4 +7376,10 @@ __all__ = [
     "load_meta_framework_integrations_p0r05143_validation_spec",
     "DEFAULT_PREDICTION_I_NV_MEA_TESTS_THE_INFORMATIONAL_COUPLING_LINFORMATIONAL_SPEC_BUNDLE",
     "load_prediction_i_nv_mea_tests_the_informational_coupling_linformational_validation_spec",
+    "DEFAULT_NOVEL_FALSIFIABLE_PREDICTIONS_FROM_FIRST_PRINCIPLES_SPEC_BUNDLE",
+    "load_novel_falsifiable_predictions_from_first_principles_validation_spec",
+    "DEFAULT_PREDICTED_SIGNATURE_SPEC_BUNDLE",
+    "load_predicted_signature_validation_spec",
+    "DEFAULT_PROPOSED_EXPERIMENTAL_PROTOCOL_NV_CENTER_QUANTUM_SENSING_OF_NEURONAL_CUL_SPEC_BUNDLE",
+    "load_proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul_validation_spec",
 ]
