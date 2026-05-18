@@ -5956,6 +5956,55 @@ def load_section_4_interfaces_membranes_glia_stresses_and_shape_control_validati
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_II_THE_MOLECULAR_MACHINERY_OF_SIGNALLING_ION_CHANNELS_AND_RECEPTORS_L1_L_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_ii_the_molecular_machinery_of_signalling_ion_channels_and_receptors_l1_l_validation_specs_2026-05-17.json"
+)
+
+
+def load_ii_the_molecular_machinery_of_signalling_ion_channels_and_receptors_l1_l_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_II_THE_MOLECULAR_MACHINERY_OF_SIGNALLING_ION_CHANNELS_AND_RECEPTORS_L1_L_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 ii the molecular machinery of signalling ion channels and receptors l1 l validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_III_THE_EXTRACELLULAR_MILIEU_ECM_AND_PNNS_L3_L4_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_iii_the_extracellular_milieu_ecm_and_pnns_l3_l4_validation_specs_2026-05-17.json"
+)
+
+
+def load_iii_the_extracellular_milieu_ecm_and_pnns_l3_l4_validation_spec(
+    spec_bundle: str | Path = DEFAULT_III_THE_EXTRACELLULAR_MILIEU_ECM_AND_PNNS_L3_L4_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 iii the extracellular milieu ecm and pnns l3 l4 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_IV_SUB_SYNAPTIC_AND_AXONAL_ARCHITECTURE_L1_L3_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_iv_sub_synaptic_and_axonal_architecture_l1_l3_validation_specs_2026-05-17.json"
+)
+
+
+def load_iv_sub_synaptic_and_axonal_architecture_l1_l3_validation_spec(
+    spec_bundle: str | Path = DEFAULT_IV_SUB_SYNAPTIC_AND_AXONAL_ARCHITECTURE_L1_L3_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 iv sub synaptic and axonal architecture l1 l3 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -6601,4 +6650,10 @@ __all__ = [
     "load_section_1_the_lipid_landscape_and_criticality_validation_spec",
     "DEFAULT_SECTION_4_INTERFACES_MEMBRANES_GLIA_STRESSES_AND_SHAPE_CONTROL_SPEC_BUNDLE",
     "load_section_4_interfaces_membranes_glia_stresses_and_shape_control_validation_spec",
+    "DEFAULT_II_THE_MOLECULAR_MACHINERY_OF_SIGNALLING_ION_CHANNELS_AND_RECEPTORS_L1_L_SPEC_BUNDLE",
+    "load_ii_the_molecular_machinery_of_signalling_ion_channels_and_receptors_l1_l_validation_spec",
+    "DEFAULT_III_THE_EXTRACELLULAR_MILIEU_ECM_AND_PNNS_L3_L4_SPEC_BUNDLE",
+    "load_iii_the_extracellular_milieu_ecm_and_pnns_l3_l4_validation_spec",
+    "DEFAULT_IV_SUB_SYNAPTIC_AND_AXONAL_ARCHITECTURE_L1_L3_SPEC_BUNDLE",
+    "load_iv_sub_synaptic_and_axonal_architecture_l1_l3_validation_spec",
 ]

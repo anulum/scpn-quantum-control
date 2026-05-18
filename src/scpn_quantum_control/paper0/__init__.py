@@ -734,6 +734,13 @@ from .ii_the_genesis_of_geometry_the_source_and_the_logos_domain_v_validation im
     ii_the_genesis_of_geometry_the_source_and_the_logos_domain_v_labels,
     validate_ii_the_genesis_of_geometry_the_source_and_the_logos_domain_v_fixture,
 )
+from .ii_the_molecular_machinery_of_signalling_ion_channels_and_receptors_l1_l_validation import (
+    IiTheMolecularMachineryOfSignallingIonChannelsAndReceptorsL1LConfig,
+    IiTheMolecularMachineryOfSignallingIonChannelsAndReceptorsL1LFixtureResult,
+    classify_ii_the_molecular_machinery_of_signalling_ion_channels_and_receptors_l1_l_component,
+    ii_the_molecular_machinery_of_signalling_ion_channels_and_receptors_l1_l_labels,
+    validate_ii_the_molecular_machinery_of_signalling_ion_channels_and_receptors_l1_l_fixture,
+)
 from .ii_the_principle_of_ethical_least_action_pela_validation import (
     IiThePrincipleOfEthicalLeastActionPelaConfig,
     IiThePrincipleOfEthicalLeastActionPelaFixtureResult,
@@ -768,6 +775,13 @@ from .iii_the_dynamics_of_the_coherent_brain_domain_i_l4_validation import (
     classify_iii_the_dynamics_of_the_coherent_brain_domain_i_l4_component,
     iii_the_dynamics_of_the_coherent_brain_domain_i_l4_labels,
     validate_iii_the_dynamics_of_the_coherent_brain_domain_i_l4_fixture,
+)
+from .iii_the_extracellular_milieu_ecm_and_pnns_l3_l4_validation import (
+    IiiTheExtracellularMilieuEcmAndPnnsL3L4Config,
+    IiiTheExtracellularMilieuEcmAndPnnsL3L4FixtureResult,
+    classify_iii_the_extracellular_milieu_ecm_and_pnns_l3_l4_component,
+    iii_the_extracellular_milieu_ecm_and_pnns_l3_l4_labels,
+    validate_iii_the_extracellular_milieu_ecm_and_pnns_l3_l4_fixture,
 )
 from .information_geometric_lift_of_upde_validation import (
     InformationGeometricLiftOfUpdeConfig,
@@ -817,6 +831,13 @@ from .introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_validation 
     classify_introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_component,
     introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_labels,
     validate_introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_fixture,
+)
+from .iv_sub_synaptic_and_axonal_architecture_l1_l3_validation import (
+    IvSubSynapticAndAxonalArchitectureL1L3Config,
+    IvSubSynapticAndAxonalArchitectureL1L3FixtureResult,
+    classify_iv_sub_synaptic_and_axonal_architecture_l1_l3_component,
+    iv_sub_synaptic_and_axonal_architecture_l1_l3_labels,
+    validate_iv_sub_synaptic_and_axonal_architecture_l1_l3_fixture,
 )
 from .l5_active_inference_math_validation import (
     ExpectedFreeEnergyScores,
@@ -2506,6 +2527,21 @@ from .vii_pathology_the_disordered_brain_validation import (
 )
 
 __all__ = [
+    "validate_iv_sub_synaptic_and_axonal_architecture_l1_l3_fixture",
+    "iv_sub_synaptic_and_axonal_architecture_l1_l3_labels",
+    "classify_iv_sub_synaptic_and_axonal_architecture_l1_l3_component",
+    "IvSubSynapticAndAxonalArchitectureL1L3FixtureResult",
+    "IvSubSynapticAndAxonalArchitectureL1L3Config",
+    "validate_iii_the_extracellular_milieu_ecm_and_pnns_l3_l4_fixture",
+    "iii_the_extracellular_milieu_ecm_and_pnns_l3_l4_labels",
+    "classify_iii_the_extracellular_milieu_ecm_and_pnns_l3_l4_component",
+    "IiiTheExtracellularMilieuEcmAndPnnsL3L4FixtureResult",
+    "IiiTheExtracellularMilieuEcmAndPnnsL3L4Config",
+    "validate_ii_the_molecular_machinery_of_signalling_ion_channels_and_receptors_l1_l_fixture",
+    "ii_the_molecular_machinery_of_signalling_ion_channels_and_receptors_l1_l_labels",
+    "classify_ii_the_molecular_machinery_of_signalling_ion_channels_and_receptors_l1_l_component",
+    "IiTheMolecularMachineryOfSignallingIonChannelsAndReceptorsL1LFixtureResult",
+    "IiTheMolecularMachineryOfSignallingIonChannelsAndReceptorsL1LConfig",
     "validate_section_4_interfaces_membranes_glia_stresses_and_shape_control_fixture",
     "section_4_interfaces_membranes_glia_stresses_and_shape_control_labels",
     "classify_section_4_interfaces_membranes_glia_stresses_and_shape_control_component",
