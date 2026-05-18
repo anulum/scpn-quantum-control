@@ -36,6 +36,7 @@ DEFAULT_MEASURED = REPO_ROOT / "data" / "knm_physical_validation" / "measured_co
 DEFAULT_CANDIDATE_DIR = REPO_ROOT / "data" / "public_application_benchmarks"
 NULL_MODEL_SEED = 20260430
 EDGE_VALUE_NULL_SAMPLES = 4096
+DEFAULT_PROMOTION_TOLERANCE = 0.05
 
 ANCHORS_1_INDEXED = {
     (1, 2): 0.302,
@@ -312,6 +313,31 @@ def _null_model_diagnostics(rows: list[dict[str, Any]]) -> dict[str, Any]:
         value_spearman.append(_finite_metric(_spearman_corr(canonical, permuted_values)))
         value_rmse.append(_rmse(canonical, permuted_values))
 
+    node_label_gate = bool(
+        _null_summary(
+            np.asarray(node_spearman, dtype=np.float64),
+            observed=observed_spearman,
+            alternative="greater_equal",
+        )["beats_95pct_null"]
+        and _null_summary(
+            np.asarray(node_rmse, dtype=np.float64),
+            observed=observed_rmse,
+            alternative="less_equal",
+        )["beats_95pct_null"]
+    )
+    edge_value_gate = bool(
+        _null_summary(
+            np.asarray(value_spearman, dtype=np.float64),
+            observed=observed_spearman,
+            alternative="greater_equal",
+        )["beats_95pct_null"]
+        and _null_summary(
+            np.asarray(value_rmse, dtype=np.float64),
+            observed=observed_rmse,
+            alternative="less_equal",
+        )["beats_95pct_null"]
+    )
+
     return {
         "available": True,
         "seed": NULL_MODEL_SEED,
@@ -352,7 +378,9 @@ def _null_model_diagnostics(rows: list[dict[str, Any]]) -> dict[str, Any]:
                 alternative="less_equal",
             ),
         },
-        "beats_null_gate": False,
+        "beats_null_gate": bool(node_label_gate and edge_value_gate),
+        "node_label_gate": node_label_gate,
+        "edge_value_gate": edge_value_gate,
         "gate_rule": (
             "Promotion requires topology and magnitude diagnostics to beat preregistered "
             "nulls and still pass per-edge uncertainty checks."
@@ -613,6 +641,83 @@ def compare_measured_couplings(K: np.ndarray, measured: dict[str, Any] | None) -
     }
 
 
+def measured_system_promotion_readiness(
+    comparison: dict[str, Any],
+    *,
+    n_layers: int,
+    promotion_tolerance: float = DEFAULT_PROMOTION_TOLERANCE,
+) -> dict[str, Any]:
+    """Return the strict promotion-readiness gate for measured K_nm candidates."""
+
+    required_edges = n_layers * (n_layers - 1) // 2
+    if not comparison.get("available"):
+        return {
+            "ready": False,
+            "decision": "blocked_missing_measured_dataset",
+            "required_edges": required_edges,
+            "blockers": ["measured coupling dataset is missing"],
+        }
+
+    rows = comparison.get("rows", [])
+    within_uncertainty = bool(rows) and all(row.get("within_uncertainty") is True for row in rows)
+    full_pairwise_matrix = int(comparison.get("matched_edges", 0)) >= required_edges
+    normalisation_locked = bool(comparison.get("normalisation_locked", False))
+    has_uncertainty = bool(rows) and all(row.get("uncertainty") is not None for row in rows)
+    nulls = comparison.get("null_models", {})
+    spectral = comparison.get("spectral", {})
+    magnitude = comparison.get("magnitude", {})
+    critical = spectral.get("critical_coupling_response", {}) if isinstance(spectral, dict) else {}
+    relative_rmse = float(magnitude.get("direct_relative_rmse_vs_mean_abs_measured", np.inf))
+    critical_relative = critical.get("relative_difference")
+    spectral_available = (
+        bool(spectral.get("available", False)) if isinstance(spectral, dict) else False
+    )
+    critical_ok = (
+        critical_relative is not None
+        and np.isfinite(float(critical_relative))
+        and float(critical_relative) <= promotion_tolerance
+    )
+    magnitude_ok = bool(np.isfinite(relative_rmse) and relative_rmse <= promotion_tolerance)
+    null_gate = bool(nulls.get("beats_null_gate", False)) if isinstance(nulls, dict) else False
+
+    blockers: list[str] = []
+    if not normalisation_locked:
+        blockers.append("normalisation must be locked to a named physical-unit conversion")
+    if not has_uncertainty:
+        blockers.append("every measured edge must include uncertainty")
+    if not full_pairwise_matrix:
+        blockers.append("full pairwise measured matrix is required")
+    if not within_uncertainty:
+        blockers.append("canonical K_nm values must fall within per-edge uncertainty")
+    if not magnitude_ok:
+        blockers.append("direct relative RMSE must be within preregistered tolerance")
+    if not spectral_available or not critical_ok:
+        blockers.append("spectral and critical-response diagnostics must be within tolerance")
+    if not null_gate:
+        blockers.append("candidate must beat node-label and edge-value null models")
+
+    ready = not blockers
+    return {
+        "ready": ready,
+        "decision": (
+            "ready_to_close_measured_system_gap"
+            if ready
+            else "blocked_measured_system_promotion_gate"
+        ),
+        "promotion_tolerance": promotion_tolerance,
+        "required_edges": required_edges,
+        "matched_edges": int(comparison.get("matched_edges", 0)),
+        "normalisation_locked": normalisation_locked,
+        "has_uncertainty": has_uncertainty,
+        "full_pairwise_matrix": full_pairwise_matrix,
+        "within_uncertainty": within_uncertainty,
+        "magnitude_relative_rmse": relative_rmse,
+        "critical_response_relative_difference": critical_relative,
+        "beats_null_gate": null_gate,
+        "blockers": blockers,
+    }
+
+
 def _load_rust_knm(n_layers: int, k_base: float, alpha: float) -> dict[str, Any]:
     try:
         engine = importlib.import_module("scpn_quantum_engine")
@@ -727,11 +832,15 @@ def build_audit_payload(
         }
 
     measured_comparison = compare_measured_couplings(python_k, measured)
+    promotion_readiness = measured_system_promotion_readiness(
+        measured_comparison,
+        n_layers=n_layers,
+    )
     candidate_scan = evaluate_candidate_systems(candidate_dir, k_base=k_base, alpha=alpha)
-    closed = measured_comparison["status"] == "validated_with_measured_dataset"
+    closed = bool(promotion_readiness["ready"])
 
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "audit": "knm_physical_validation",
         "created_date": "2026-04-30",
         "command": command or sys.argv,
@@ -756,6 +865,7 @@ def build_audit_payload(
         },
         "implementation_parity": _jsonable(parity),
         "measured_system_comparison": _jsonable(measured_comparison),
+        "measured_system_promotion_readiness": _jsonable(promotion_readiness),
         "candidate_system_scan": _jsonable(candidate_scan),
         "decision": {
             "current_label": (

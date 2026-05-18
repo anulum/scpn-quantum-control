@@ -37,6 +37,7 @@ build_audit_payload = audit_module.build_audit_payload
 compare_measured_couplings = audit_module.compare_measured_couplings
 evaluate_candidate_systems = audit_module.evaluate_candidate_systems
 load_measured_couplings = audit_module.load_measured_couplings
+measured_system_promotion_readiness = audit_module.measured_system_promotion_readiness
 null_model_diagnostics = audit_module._null_model_diagnostics
 spectral_diagnostics = audit_module._spectral_diagnostics
 
@@ -63,6 +64,26 @@ def test_compare_measured_couplings_validates_with_uncertainty():
     assert result["available"] is True
     assert result["status"] == "validated_with_measured_dataset"
     assert result["matched_edges"] == 1
+
+
+def test_measured_system_promotion_readiness_blocks_without_null_gate():
+    K = np.array([[0.0, 0.302], [0.302, 0.0]])
+    measured = {
+        "system": "unit-test",
+        "unit": "dimensionless",
+        "normalisation": "already normalised",
+        "normalisation_locked": True,
+        "couplings": [{"i": 1, "j": 2, "value": 0.302, "uncertainty": 0.0}],
+    }
+
+    comparison = compare_measured_couplings(K, measured)
+    readiness = measured_system_promotion_readiness(comparison, n_layers=2)
+
+    assert readiness["ready"] is False
+    assert readiness["decision"] == "blocked_measured_system_promotion_gate"
+    assert readiness["normalisation_locked"] is True
+    assert readiness["full_pairwise_matrix"] is True
+    assert "candidate must beat node-label and edge-value null models" in readiness["blockers"]
 
 
 def test_compare_measured_couplings_requires_locked_normalisation():
@@ -214,12 +235,13 @@ def test_build_audit_payload_records_candidate_scan_without_closing_gap(tmp_path
         command=["python", "scripts/run_knm_physical_validation_audit.py"],
     )
 
-    assert payload["schema_version"] == 2
+    assert payload["schema_version"] == 3
     assert payload["candidate_system_scan"]["status"] == "missing_candidate_artifacts"
     assert payload["implementation_parity"]["sibling_scpn_codebase"]["authority"] == (
         "disabled_outdated_context"
     )
     assert payload["decision"]["physical_validation_closed"] is False
+    assert payload["measured_system_promotion_readiness"]["ready"] is False
     assert (
         payload["decision"]["current_label"] == "open_requires_measured_system_coupling_magnitudes"
     )

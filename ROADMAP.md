@@ -108,6 +108,15 @@ is copied here.
   a named preregistered dataset crosses the `0.72` target within the
   declared tolerance. `scripts/run_tcbo_reproduction_audit.py` exposes the
   replay count, confidence level, promotion tolerance, and dataset-id gate.
+- [x] **K_nm measured-system promotion hard gate.** Implemented
+  2026-05-18: `scripts/run_knm_physical_validation_audit.py` now emits a
+  `measured_system_promotion_readiness` decision that blocks physical
+  validation closure unless the candidate has locked physical-unit
+  normalisation, per-edge uncertainty, a full pairwise matrix, per-edge
+  agreement within uncertainty, magnitude and critical-response errors
+  within tolerance, and node-label plus edge-value null-model wins. IBM
+  remains unnecessary unless the claim is explicitly redefined as a
+  backend calibration/coupling-map claim.
 - [x] **QSVT resource-estimator input hardening.** Implemented
   2026-05-12: the QSVT resource estimator and query-count helpers now
   reject non-square, dimension-mismatched, asymmetric, or non-finite
