@@ -5805,6 +5805,57 @@ def load_section_3_the_dynamic_connectome_and_functional_connectivity_validation
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_3_THE_DETAILED_GEOMETRY_OF_QUALIA_THE_CONSCIOUSNESS_MANIFOLD_M_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_3_the_detailed_geometry_of_qualia_the_consciousness_manifold_m_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_3_the_detailed_geometry_of_qualia_the_consciousness_manifold_m_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_3_THE_DETAILED_GEOMETRY_OF_QUALIA_THE_CONSCIOUSNESS_MANIFOLD_M_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 3 the detailed geometry of qualia the consciousness manifold m validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_VI_CLINICAL_IMPLICATIONS_PATHOLOGY_AND_THERAPEUTICS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_vi_clinical_implications_pathology_and_therapeutics_validation_specs_2026-05-17.json"
+)
+
+
+def load_vi_clinical_implications_pathology_and_therapeutics_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_VI_CLINICAL_IMPLICATIONS_PATHOLOGY_AND_THERAPEUTICS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 vi clinical implications pathology and therapeutics validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_2_DENDRITIC_SPINES_THE_LOCI_OF_PLASTICITY_AND_IET_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_dendritic_spines_the_loci_of_plasticity_and_iet_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_dendritic_spines_the_loci_of_plasticity_and_iet_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_2_DENDRITIC_SPINES_THE_LOCI_OF_PLASTICITY_AND_IET_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 dendritic spines the loci of plasticity and iet validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -6432,4 +6483,10 @@ __all__ = [
     "load_iii_the_dynamics_of_the_coherent_brain_domain_i_l4_validation_spec",
     "DEFAULT_SECTION_3_THE_DYNAMIC_CONNECTOME_AND_FUNCTIONAL_CONNECTIVITY_SPEC_BUNDLE",
     "load_section_3_the_dynamic_connectome_and_functional_connectivity_validation_spec",
+    "DEFAULT_SECTION_3_THE_DETAILED_GEOMETRY_OF_QUALIA_THE_CONSCIOUSNESS_MANIFOLD_M_SPEC_BUNDLE",
+    "load_section_3_the_detailed_geometry_of_qualia_the_consciousness_manifold_m_validation_spec",
+    "DEFAULT_VI_CLINICAL_IMPLICATIONS_PATHOLOGY_AND_THERAPEUTICS_SPEC_BUNDLE",
+    "load_vi_clinical_implications_pathology_and_therapeutics_validation_spec",
+    "DEFAULT_SECTION_2_DENDRITIC_SPINES_THE_LOCI_OF_PLASTICITY_AND_IET_SPEC_BUNDLE",
+    "load_section_2_dendritic_spines_the_loci_of_plasticity_and_iet_validation_spec",
 ]

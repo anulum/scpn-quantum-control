@@ -1610,6 +1610,13 @@ from .section_2_cross_frequency_coupling_cfc_and_hierarchical_processing_validat
     section_2_cross_frequency_coupling_cfc_and_hierarchical_processing_labels,
     validate_section_2_cross_frequency_coupling_cfc_and_hierarchical_processing_fixture,
 )
+from .section_2_dendritic_spines_the_loci_of_plasticity_and_iet_validation import (
+    Section2DendriticSpinesTheLociOfPlasticityAndIetConfig,
+    Section2DendriticSpinesTheLociOfPlasticityAndIetFixtureResult,
+    classify_section_2_dendritic_spines_the_loci_of_plasticity_and_iet_component,
+    section_2_dendritic_spines_the_loci_of_plasticity_and_iet_labels,
+    validate_section_2_dendritic_spines_the_loci_of_plasticity_and_iet_fixture,
+)
 from .section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_validation import (
     Section2DerivationOfTheEthicalLagrangianFromGaugeSymmetryConfig,
     Section2DerivationOfTheEthicalLagrangianFromGaugeSymmetryFixtureResult,
@@ -1707,6 +1714,13 @@ from .section_3_structural_geometry_and_morphogenesis_l3_validation import (
     classify_section_3_structural_geometry_and_morphogenesis_l3_component,
     section_3_structural_geometry_and_morphogenesis_l3_labels,
     validate_section_3_structural_geometry_and_morphogenesis_l3_fixture,
+)
+from .section_3_the_detailed_geometry_of_qualia_the_consciousness_manifold_m_validation import (
+    Section3TheDetailedGeometryOfQualiaTheConsciousnessManifoldMConfig,
+    Section3TheDetailedGeometryOfQualiaTheConsciousnessManifoldMFixtureResult,
+    classify_section_3_the_detailed_geometry_of_qualia_the_consciousness_manifold_m_component,
+    section_3_the_detailed_geometry_of_qualia_the_consciousness_manifold_m_labels,
+    validate_section_3_the_detailed_geometry_of_qualia_the_consciousness_manifold_m_fixture,
 )
 from .section_3_the_dynamic_connectome_and_functional_connectivity_validation import (
     Section3TheDynamicConnectomeAndFunctionalConnectivityConfig,
@@ -2420,6 +2434,13 @@ from .validation_strategy import (
     validate_validation_strategy_fixture,
     validation_domain_coverage,
 )
+from .vi_clinical_implications_pathology_and_therapeutics_validation import (
+    ViClinicalImplicationsPathologyAndTherapeuticsConfig,
+    ViClinicalImplicationsPathologyAndTherapeuticsFixtureResult,
+    classify_vi_clinical_implications_pathology_and_therapeutics_component,
+    validate_vi_clinical_implications_pathology_and_therapeutics_fixture,
+    vi_clinical_implications_pathology_and_therapeutics_labels,
+)
 from .vi_the_interface_with_phenomenology_validation import (
     ViTheInterfaceWithPhenomenologyConfig,
     ViTheInterfaceWithPhenomenologyFixtureResult,
@@ -2443,6 +2464,21 @@ from .vii_pathology_the_disordered_brain_validation import (
 )
 
 __all__ = [
+    "validate_section_2_dendritic_spines_the_loci_of_plasticity_and_iet_fixture",
+    "section_2_dendritic_spines_the_loci_of_plasticity_and_iet_labels",
+    "classify_section_2_dendritic_spines_the_loci_of_plasticity_and_iet_component",
+    "Section2DendriticSpinesTheLociOfPlasticityAndIetFixtureResult",
+    "Section2DendriticSpinesTheLociOfPlasticityAndIetConfig",
+    "validate_vi_clinical_implications_pathology_and_therapeutics_fixture",
+    "vi_clinical_implications_pathology_and_therapeutics_labels",
+    "classify_vi_clinical_implications_pathology_and_therapeutics_component",
+    "ViClinicalImplicationsPathologyAndTherapeuticsFixtureResult",
+    "ViClinicalImplicationsPathologyAndTherapeuticsConfig",
+    "validate_section_3_the_detailed_geometry_of_qualia_the_consciousness_manifold_m_fixture",
+    "section_3_the_detailed_geometry_of_qualia_the_consciousness_manifold_m_labels",
+    "classify_section_3_the_detailed_geometry_of_qualia_the_consciousness_manifold_m_component",
+    "Section3TheDetailedGeometryOfQualiaTheConsciousnessManifoldMFixtureResult",
+    "Section3TheDetailedGeometryOfQualiaTheConsciousnessManifoldMConfig",
     "validate_section_3_the_dynamic_connectome_and_functional_connectivity_fixture",
     "section_3_the_dynamic_connectome_and_functional_connectivity_labels",
     "classify_section_3_the_dynamic_connectome_and_functional_connectivity_component",
