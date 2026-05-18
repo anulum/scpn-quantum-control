@@ -30,11 +30,17 @@ class CoverageFileAudit:
     valid_lines: int | None
     missing_lines: int | None
     status: str
+    justification: str | None = None
 
     @property
     def line_percent(self) -> float | None:
         """Return line coverage as a percentage."""
         return None if self.line_rate is None else self.line_rate * 100.0
+
+    @property
+    def is_gap(self) -> bool:
+        """Return True when this row must fail release gating."""
+        return self.status in {"missing_from_report", "below_threshold"}
 
 
 def _source_files(source_root: Path) -> tuple[Path, ...]:
@@ -91,16 +97,19 @@ def audit_coverage_gaps(
     source_root: Path,
     coverage_xml: Path,
     min_file_percent: float,
+    justified_exclusions: dict[str, str] | None = None,
 ) -> tuple[CoverageFileAudit, ...]:
     """Audit package source files against a coverage.py XML report."""
     project_root = project_root.resolve()
     source_root = source_root.resolve()
     entries = _class_entries(coverage_xml, project_root)
+    exclusions = justified_exclusions or {}
     audits: list[CoverageFileAudit] = []
     for source_path in _source_files(source_root):
         rel_path = source_path.relative_to(project_root).as_posix()
         item = entries.get(rel_path)
         if item is None:
+            justification = exclusions.get(rel_path)
             audits.append(
                 CoverageFileAudit(
                     path=rel_path,
@@ -108,13 +117,17 @@ def audit_coverage_gaps(
                     covered_lines=None,
                     valid_lines=None,
                     missing_lines=None,
-                    status="missing_from_report",
+                    status="justified_exclusion" if justification else "missing_from_report",
+                    justification=justification,
                 )
             )
             continue
         line_rate = float(item.attrib.get("line-rate", "0"))
         covered, valid = _line_counts(item)
         status = "below_threshold" if line_rate * 100.0 < min_file_percent else "ok"
+        justification = exclusions.get(rel_path)
+        if status == "below_threshold" and justification:
+            status = "justified_exclusion"
         audits.append(
             CoverageFileAudit(
                 path=rel_path,
@@ -123,9 +136,36 @@ def audit_coverage_gaps(
                 valid_lines=valid,
                 missing_lines=valid - covered,
                 status=status,
+                justification=justification,
             )
         )
     return tuple(audits)
+
+
+def load_justified_exclusions(path: Path | None) -> dict[str, str]:
+    """Load file-level justified coverage exclusions from JSON."""
+    if path is None:
+        return {}
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if isinstance(payload, dict) and isinstance(payload.get("exclusions"), list):
+        entries = payload["exclusions"]
+    elif isinstance(payload, list):
+        entries = payload
+    else:
+        raise ValueError("justified exclusions must be a list or contain an 'exclusions' list")
+
+    exclusions: dict[str, str] = {}
+    for index, item in enumerate(entries):
+        if not isinstance(item, dict):
+            raise ValueError(f"exclusion {index} must be an object")
+        path_value = item.get("path")
+        reason = item.get("reason")
+        if not isinstance(path_value, str) or not path_value:
+            raise ValueError(f"exclusion {index} requires non-empty path")
+        if not isinstance(reason, str) or not reason.strip():
+            raise ValueError(f"exclusion {index} requires non-empty reason")
+        exclusions[path_value] = reason.strip()
+    return exclusions
 
 
 def _audit_to_dict(audit: CoverageFileAudit) -> dict[str, object]:
@@ -137,6 +177,7 @@ def _audit_to_dict(audit: CoverageFileAudit) -> dict[str, object]:
         "valid_lines": audit.valid_lines,
         "missing_lines": audit.missing_lines,
         "status": audit.status,
+        "justification": audit.justification,
     }
 
 
@@ -150,6 +191,7 @@ def format_audits(audits: Iterable[CoverageFileAudit]) -> str:
     rows = tuple(audits)
     missing = [item for item in rows if item.status == "missing_from_report"]
     low = [item for item in rows if item.status == "below_threshold"]
+    justified = [item for item in rows if item.status == "justified_exclusion"]
     ok = [item for item in rows if item.status == "ok"]
     measured = [item for item in rows if item.valid_lines is not None]
     covered_lines = sum(item.covered_lines or 0 for item in measured)
@@ -161,6 +203,7 @@ def format_audits(audits: Iterable[CoverageFileAudit]) -> str:
         f"- files_ok: {len(ok)}",
         f"- files_below_threshold: {len(low)}",
         f"- files_missing_from_report: {len(missing)}",
+        f"- files_justified_exclusions: {len(justified)}",
     ]
     if aggregate is not None:
         lines.append(f"- aggregate_line_percent_in_report: {aggregate:.2f}")
@@ -175,10 +218,14 @@ def format_audits(audits: Iterable[CoverageFileAudit]) -> str:
         lines.append(f"- below_threshold: {item.path} ({percent:.2f}%)")
     for item in missing[:20]:
         lines.append(f"- missing_from_report: {item.path}")
+    for item in justified[:20]:
+        lines.append(f"- justified_exclusion: {item.path} ({item.justification})")
     if len(low) > 20:
         lines.append(f"- additional_below_threshold_files: {len(low) - 20}")
     if len(missing) > 20:
         lines.append(f"- additional_missing_files: {len(missing) - 20}")
+    if len(justified) > 20:
+        lines.append(f"- additional_justified_exclusions: {len(justified) - 20}")
     return "\n".join(lines)
 
 
@@ -205,6 +252,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         default=95.0,
         help="Per-file line-coverage threshold for release triage.",
     )
+    parser.add_argument(
+        "--justified-exclusions",
+        type=Path,
+        default=None,
+        help="JSON file listing source paths with explicit coverage-gap justifications.",
+    )
     parser.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
     parser.add_argument(
         "--fail-on-gap",
@@ -218,9 +271,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         source_root=args.source_root,
         coverage_xml=args.coverage_xml,
         min_file_percent=args.min_file_percent,
+        justified_exclusions=load_justified_exclusions(args.justified_exclusions),
     )
     print(audits_to_json(audits) if args.json else format_audits(audits))
-    has_gap = any(item.status != "ok" for item in audits)
+    has_gap = any(item.is_gap for item in audits)
     return 1 if args.fail_on_gap and has_gap else 0
 
 

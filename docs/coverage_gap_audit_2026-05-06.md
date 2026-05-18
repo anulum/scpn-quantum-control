@@ -47,6 +47,37 @@ The release-gating form is:
 ./.venv-linux/bin/python tools/audit_coverage_gaps.py --fail-on-gap
 ```
 
+## Justified Exclusions Gate
+
+Release gating stays strict by default: missing files and files below the
+configured line-rate threshold fail `--fail-on-gap`. If a file has an
+accepted, reviewed reason to remain outside the executable coverage surface,
+record it in an explicit exclusions file instead of relying on an implicit
+omission.
+
+```json
+{
+  "exclusions": [
+    {
+      "path": "src/scpn_quantum_control/example.py",
+      "reason": "Hardware-only path covered by integration gate with external device access."
+    }
+  ]
+}
+```
+
+Run the gate with the exclusions file:
+
+```bash
+./.venv-linux/bin/python tools/audit_coverage_gaps.py \
+  --fail-on-gap \
+  --justified-exclusions coverage_justified_exclusions.json
+```
+
+Every exclusion requires a non-empty `path` and `reason`. Justified exclusions
+remain visible in the text summary and JSON output as `justified_exclusion`;
+they are accepted review decisions, not silently omitted coverage gaps.
+
 ## Intended Coverage Workflow
 
 Generate a fresh XML report first:
