@@ -821,6 +821,13 @@ from .master_lagrangian_intro_validation import (
     master_lagrangian_intro_labels,
     validate_master_lagrangian_intro_fixture,
 )
+from .mathematical_bridge_validation import (
+    MathematicalBridgeConfig,
+    MathematicalBridgeFixtureResult,
+    classify_mathematical_bridge_component,
+    mathematical_bridge_labels,
+    validate_mathematical_bridge_fixture,
+)
 from .mechanism_2_quantum_stochastic_resonance_qsr_p0r03368_validation import (
     Mechanism2QuantumStochasticResonanceQsrP0r03368Config,
     Mechanism2QuantumStochasticResonanceQsrP0r03368FixtureResult,
@@ -1445,6 +1452,13 @@ from .the_binding_integral_is_h_int_validation import (
     the_binding_integral_is_h_int_labels,
     validate_the_binding_integral_is_h_int_fixture,
 )
+from .the_binding_problem_solution_validation import (
+    TheBindingProblemSolutionConfig,
+    TheBindingProblemSolutionFixtureResult,
+    classify_the_binding_problem_solution_component,
+    the_binding_problem_solution_labels,
+    validate_the_binding_problem_solution_fixture,
+)
 from .the_biological_syndrome_measurement_and_recovery_protocol_validation import (
     TheBiologicalSyndromeMeasurementAndRecoveryProtocolConfig,
     TheBiologicalSyndromeMeasurementAndRecoveryProtocolFixtureResult,
@@ -1493,6 +1507,13 @@ from .the_hierarchical_impedance_rescaling_validation import (
     classify_the_hierarchical_impedance_rescaling_component,
     the_hierarchical_impedance_rescaling_labels,
     validate_the_hierarchical_impedance_rescaling_fixture,
+)
+from .the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold_validation import (
+    TheHypothesisQualiaAsTheGeometryOfTheConsciousnessManifoldConfig,
+    TheHypothesisQualiaAsTheGeometryOfTheConsciousnessManifoldFixtureResult,
+    classify_the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold_component,
+    the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold_labels,
+    validate_the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold_fixture,
 )
 from .the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential_validation import (
     TheIntrinsicDynamicsOfTheΨFieldAndTheStabilisingPotentialConfig,
@@ -1750,6 +1771,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold_fixture",
+    "the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold_labels",
+    "classify_the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold_component",
+    "TheHypothesisQualiaAsTheGeometryOfTheConsciousnessManifoldFixtureResult",
+    "TheHypothesisQualiaAsTheGeometryOfTheConsciousnessManifoldConfig",
+    "validate_the_binding_problem_solution_fixture",
+    "the_binding_problem_solution_labels",
+    "classify_the_binding_problem_solution_component",
+    "TheBindingProblemSolutionFixtureResult",
+    "TheBindingProblemSolutionConfig",
+    "validate_mathematical_bridge_fixture",
+    "mathematical_bridge_labels",
+    "classify_mathematical_bridge_component",
+    "MathematicalBridgeFixtureResult",
+    "MathematicalBridgeConfig",
     "validate_the_hard_problem_a_mathematical_resolution_fixture",
     "the_hard_problem_a_mathematical_resolution_labels",
     "classify_the_hard_problem_a_mathematical_resolution_component",

@@ -4163,6 +4163,55 @@ def load_the_hard_problem_a_mathematical_resolution_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_MATHEMATICAL_BRIDGE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_mathematical_bridge_validation_specs_2026-05-17.json"
+)
+
+
+def load_mathematical_bridge_validation_spec(
+    spec_bundle: str | Path = DEFAULT_MATHEMATICAL_BRIDGE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 mathematical bridge validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_BINDING_PROBLEM_SOLUTION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_binding_problem_solution_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_binding_problem_solution_validation_spec(
+    spec_bundle: str | Path = DEFAULT_THE_BINDING_PROBLEM_SOLUTION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the binding problem solution validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_HYPOTHESIS_QUALIA_AS_THE_GEOMETRY_OF_THE_CONSCIOUSNESS_MANIFOLD_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_HYPOTHESIS_QUALIA_AS_THE_GEOMETRY_OF_THE_CONSCIOUSNESS_MANIFOLD_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the hypothesis qualia as the geometry of the consciousness manifold validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -4592,4 +4641,10 @@ __all__ = [
     "load_the_binding_integral_is_h_int_validation_spec",
     "DEFAULT_THE_HARD_PROBLEM_A_MATHEMATICAL_RESOLUTION_SPEC_BUNDLE",
     "load_the_hard_problem_a_mathematical_resolution_validation_spec",
+    "DEFAULT_MATHEMATICAL_BRIDGE_SPEC_BUNDLE",
+    "load_mathematical_bridge_validation_spec",
+    "DEFAULT_THE_BINDING_PROBLEM_SOLUTION_SPEC_BUNDLE",
+    "load_the_binding_problem_solution_validation_spec",
+    "DEFAULT_THE_HYPOTHESIS_QUALIA_AS_THE_GEOMETRY_OF_THE_CONSCIOUSNESS_MANIFOLD_SPEC_BUNDLE",
+    "load_the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold_validation_spec",
 ]
