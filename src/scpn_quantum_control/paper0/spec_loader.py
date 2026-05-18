@@ -5856,6 +5856,56 @@ def load_section_2_dendritic_spines_the_loci_of_plasticity_and_iet_validation_sp
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_1_ION_GRADIENTS_THE_ELECTROCHEMICAL_BATTERY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_1_ion_gradients_the_electrochemical_battery_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_1_ion_gradients_the_electrochemical_battery_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_1_ION_GRADIENTS_THE_ELECTROCHEMICAL_BATTERY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 1 ion gradients the electrochemical battery validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_1_THE_LIPID_BILAYER_AND_LIPID_RAFTS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_1_the_lipid_bilayer_and_lipid_rafts_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_1_the_lipid_bilayer_and_lipid_rafts_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SECTION_1_THE_LIPID_BILAYER_AND_LIPID_RAFTS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 1 the lipid bilayer and lipid rafts validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_1_THE_CYTOSKELETON_THE_L1_QUANTUM_SCAFFOLD_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_1_the_cytoskeleton_the_l1_quantum_scaffold_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_1_the_cytoskeleton_the_l1_quantum_scaffold_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_1_THE_CYTOSKELETON_THE_L1_QUANTUM_SCAFFOLD_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 1 the cytoskeleton the l1 quantum scaffold validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -6489,4 +6539,10 @@ __all__ = [
     "load_vi_clinical_implications_pathology_and_therapeutics_validation_spec",
     "DEFAULT_SECTION_2_DENDRITIC_SPINES_THE_LOCI_OF_PLASTICITY_AND_IET_SPEC_BUNDLE",
     "load_section_2_dendritic_spines_the_loci_of_plasticity_and_iet_validation_spec",
+    "DEFAULT_SECTION_1_ION_GRADIENTS_THE_ELECTROCHEMICAL_BATTERY_SPEC_BUNDLE",
+    "load_section_1_ion_gradients_the_electrochemical_battery_validation_spec",
+    "DEFAULT_SECTION_1_THE_LIPID_BILAYER_AND_LIPID_RAFTS_SPEC_BUNDLE",
+    "load_section_1_the_lipid_bilayer_and_lipid_rafts_validation_spec",
+    "DEFAULT_SECTION_1_THE_CYTOSKELETON_THE_L1_QUANTUM_SCAFFOLD_SPEC_BUNDLE",
+    "load_section_1_the_cytoskeleton_the_l1_quantum_scaffold_validation_spec",
 ]

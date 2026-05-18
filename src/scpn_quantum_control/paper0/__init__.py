@@ -1540,12 +1540,26 @@ from .scpn_iit_correspondence_validation import (
     scpn_iit_correspondence_labels,
     validate_scpn_iit_correspondence_fixture,
 )
+from .section_1_ion_gradients_the_electrochemical_battery_validation import (
+    Section1IonGradientsTheElectrochemicalBatteryConfig,
+    Section1IonGradientsTheElectrochemicalBatteryFixtureResult,
+    classify_section_1_ion_gradients_the_electrochemical_battery_component,
+    section_1_ion_gradients_the_electrochemical_battery_labels,
+    validate_section_1_ion_gradients_the_electrochemical_battery_fixture,
+)
 from .section_1_the_bioelectric_code_in_neurogenesis_and_regeneration_validation import (
     Section1TheBioelectricCodeInNeurogenesisAndRegenerationConfig,
     Section1TheBioelectricCodeInNeurogenesisAndRegenerationFixtureResult,
     classify_section_1_the_bioelectric_code_in_neurogenesis_and_regeneration_component,
     section_1_the_bioelectric_code_in_neurogenesis_and_regeneration_labels,
     validate_section_1_the_bioelectric_code_in_neurogenesis_and_regeneration_fixture,
+)
+from .section_1_the_cytoskeleton_the_l1_quantum_scaffold_validation import (
+    Section1TheCytoskeletonTheL1QuantumScaffoldConfig,
+    Section1TheCytoskeletonTheL1QuantumScaffoldFixtureResult,
+    classify_section_1_the_cytoskeleton_the_l1_quantum_scaffold_component,
+    section_1_the_cytoskeleton_the_l1_quantum_scaffold_labels,
+    validate_section_1_the_cytoskeleton_the_l1_quantum_scaffold_fixture,
 )
 from .section_1_the_emergence_of_the_self_ssb_and_the_strange_loop_validation import (
     Section1TheEmergenceOfTheSelfSsbAndTheStrangeLoopConfig,
@@ -1560,6 +1574,13 @@ from .section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_netw
     classify_section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks_component,
     section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks_labels,
     validate_section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks_fixture,
+)
+from .section_1_the_lipid_bilayer_and_lipid_rafts_validation import (
+    Section1TheLipidBilayerAndLipidRaftsConfig,
+    Section1TheLipidBilayerAndLipidRaftsFixtureResult,
+    classify_section_1_the_lipid_bilayer_and_lipid_rafts_component,
+    section_1_the_lipid_bilayer_and_lipid_rafts_labels,
+    validate_section_1_the_lipid_bilayer_and_lipid_rafts_fixture,
 )
 from .section_2_1_the_state_space_and_path_space_validation import (
     Section21TheStateSpaceAndPathSpaceConfig,
@@ -2464,6 +2485,21 @@ from .vii_pathology_the_disordered_brain_validation import (
 )
 
 __all__ = [
+    "validate_section_1_the_cytoskeleton_the_l1_quantum_scaffold_fixture",
+    "section_1_the_cytoskeleton_the_l1_quantum_scaffold_labels",
+    "classify_section_1_the_cytoskeleton_the_l1_quantum_scaffold_component",
+    "Section1TheCytoskeletonTheL1QuantumScaffoldFixtureResult",
+    "Section1TheCytoskeletonTheL1QuantumScaffoldConfig",
+    "validate_section_1_the_lipid_bilayer_and_lipid_rafts_fixture",
+    "section_1_the_lipid_bilayer_and_lipid_rafts_labels",
+    "classify_section_1_the_lipid_bilayer_and_lipid_rafts_component",
+    "Section1TheLipidBilayerAndLipidRaftsFixtureResult",
+    "Section1TheLipidBilayerAndLipidRaftsConfig",
+    "validate_section_1_ion_gradients_the_electrochemical_battery_fixture",
+    "section_1_ion_gradients_the_electrochemical_battery_labels",
+    "classify_section_1_ion_gradients_the_electrochemical_battery_component",
+    "Section1IonGradientsTheElectrochemicalBatteryFixtureResult",
+    "Section1IonGradientsTheElectrochemicalBatteryConfig",
     "validate_section_2_dendritic_spines_the_loci_of_plasticity_and_iet_fixture",
     "section_2_dendritic_spines_the_loci_of_plasticity_and_iet_labels",
     "classify_section_2_dendritic_spines_the_loci_of_plasticity_and_iet_component",
