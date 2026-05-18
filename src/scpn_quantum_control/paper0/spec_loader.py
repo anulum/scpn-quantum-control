@@ -5754,6 +5754,57 @@ def load_section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_val
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_1_THE_BIOELECTRIC_CODE_IN_NEUROGENESIS_AND_REGENERATION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_1_the_bioelectric_code_in_neurogenesis_and_regeneration_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_1_the_bioelectric_code_in_neurogenesis_and_regeneration_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_1_THE_BIOELECTRIC_CODE_IN_NEUROGENESIS_AND_REGENERATION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 1 the bioelectric code in neurogenesis and regeneration validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_III_THE_DYNAMICS_OF_THE_COHERENT_BRAIN_DOMAIN_I_L4_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_iii_the_dynamics_of_the_coherent_brain_domain_i_l4_validation_specs_2026-05-17.json"
+)
+
+
+def load_iii_the_dynamics_of_the_coherent_brain_domain_i_l4_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_III_THE_DYNAMICS_OF_THE_COHERENT_BRAIN_DOMAIN_I_L4_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 iii the dynamics of the coherent brain domain i l4 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_3_THE_DYNAMIC_CONNECTOME_AND_FUNCTIONAL_CONNECTIVITY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_3_the_dynamic_connectome_and_functional_connectivity_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_3_the_dynamic_connectome_and_functional_connectivity_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_3_THE_DYNAMIC_CONNECTOME_AND_FUNCTIONAL_CONNECTIVITY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 3 the dynamic connectome and functional connectivity validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -6375,4 +6426,10 @@ __all__ = [
     "load_advanced_neurobiological_implementation_of_the_scpn_validation_spec",
     "DEFAULT_SECTION_3_NEUROTRANSMITTERS_AS_TUNERS_OF_THE_PSI_FIELD_INTERFACE_L2_SPEC_BUNDLE",
     "load_section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_validation_spec",
+    "DEFAULT_SECTION_1_THE_BIOELECTRIC_CODE_IN_NEUROGENESIS_AND_REGENERATION_SPEC_BUNDLE",
+    "load_section_1_the_bioelectric_code_in_neurogenesis_and_regeneration_validation_spec",
+    "DEFAULT_III_THE_DYNAMICS_OF_THE_COHERENT_BRAIN_DOMAIN_I_L4_SPEC_BUNDLE",
+    "load_iii_the_dynamics_of_the_coherent_brain_domain_i_l4_validation_spec",
+    "DEFAULT_SECTION_3_THE_DYNAMIC_CONNECTOME_AND_FUNCTIONAL_CONNECTIVITY_SPEC_BUNDLE",
+    "load_section_3_the_dynamic_connectome_and_functional_connectivity_validation_spec",
 ]

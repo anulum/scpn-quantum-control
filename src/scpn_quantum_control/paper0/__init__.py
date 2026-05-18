@@ -762,6 +762,13 @@ from .iii_the_developmental_and_plasticity_landscape_l3_validation import (
     iii_the_developmental_and_plasticity_landscape_l3_labels,
     validate_iii_the_developmental_and_plasticity_landscape_l3_fixture,
 )
+from .iii_the_dynamics_of_the_coherent_brain_domain_i_l4_validation import (
+    IiiTheDynamicsOfTheCoherentBrainDomainIL4Config,
+    IiiTheDynamicsOfTheCoherentBrainDomainIL4FixtureResult,
+    classify_iii_the_dynamics_of_the_coherent_brain_domain_i_l4_component,
+    iii_the_dynamics_of_the_coherent_brain_domain_i_l4_labels,
+    validate_iii_the_dynamics_of_the_coherent_brain_domain_i_l4_fixture,
+)
 from .information_geometric_lift_of_upde_validation import (
     InformationGeometricLiftOfUpdeConfig,
     InformationGeometricLiftOfUpdeFixtureResult,
@@ -1533,6 +1540,13 @@ from .scpn_iit_correspondence_validation import (
     scpn_iit_correspondence_labels,
     validate_scpn_iit_correspondence_fixture,
 )
+from .section_1_the_bioelectric_code_in_neurogenesis_and_regeneration_validation import (
+    Section1TheBioelectricCodeInNeurogenesisAndRegenerationConfig,
+    Section1TheBioelectricCodeInNeurogenesisAndRegenerationFixtureResult,
+    classify_section_1_the_bioelectric_code_in_neurogenesis_and_regeneration_component,
+    section_1_the_bioelectric_code_in_neurogenesis_and_regeneration_labels,
+    validate_section_1_the_bioelectric_code_in_neurogenesis_and_regeneration_fixture,
+)
 from .section_1_the_emergence_of_the_self_ssb_and_the_strange_loop_validation import (
     Section1TheEmergenceOfTheSelfSsbAndTheStrangeLoopConfig,
     Section1TheEmergenceOfTheSelfSsbAndTheStrangeLoopFixtureResult,
@@ -1693,6 +1707,13 @@ from .section_3_structural_geometry_and_morphogenesis_l3_validation import (
     classify_section_3_structural_geometry_and_morphogenesis_l3_component,
     section_3_structural_geometry_and_morphogenesis_l3_labels,
     validate_section_3_structural_geometry_and_morphogenesis_l3_fixture,
+)
+from .section_3_the_dynamic_connectome_and_functional_connectivity_validation import (
+    Section3TheDynamicConnectomeAndFunctionalConnectivityConfig,
+    Section3TheDynamicConnectomeAndFunctionalConnectivityFixtureResult,
+    classify_section_3_the_dynamic_connectome_and_functional_connectivity_component,
+    section_3_the_dynamic_connectome_and_functional_connectivity_labels,
+    validate_section_3_the_dynamic_connectome_and_functional_connectivity_fixture,
 )
 from .section_3_the_geometric_and_dynamic_determinants_of_future_possibility_validation import (
     Section3TheGeometricAndDynamicDeterminantsOfFuturePossibilityConfig,
@@ -2422,6 +2443,21 @@ from .vii_pathology_the_disordered_brain_validation import (
 )
 
 __all__ = [
+    "validate_section_3_the_dynamic_connectome_and_functional_connectivity_fixture",
+    "section_3_the_dynamic_connectome_and_functional_connectivity_labels",
+    "classify_section_3_the_dynamic_connectome_and_functional_connectivity_component",
+    "Section3TheDynamicConnectomeAndFunctionalConnectivityFixtureResult",
+    "Section3TheDynamicConnectomeAndFunctionalConnectivityConfig",
+    "validate_iii_the_dynamics_of_the_coherent_brain_domain_i_l4_fixture",
+    "iii_the_dynamics_of_the_coherent_brain_domain_i_l4_labels",
+    "classify_iii_the_dynamics_of_the_coherent_brain_domain_i_l4_component",
+    "IiiTheDynamicsOfTheCoherentBrainDomainIL4FixtureResult",
+    "IiiTheDynamicsOfTheCoherentBrainDomainIL4Config",
+    "validate_section_1_the_bioelectric_code_in_neurogenesis_and_regeneration_fixture",
+    "section_1_the_bioelectric_code_in_neurogenesis_and_regeneration_labels",
+    "classify_section_1_the_bioelectric_code_in_neurogenesis_and_regeneration_component",
+    "Section1TheBioelectricCodeInNeurogenesisAndRegenerationFixtureResult",
+    "Section1TheBioelectricCodeInNeurogenesisAndRegenerationConfig",
     "validate_section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_fixture",
     "section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_labels",
     "classify_section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_component",
