@@ -916,6 +916,13 @@ from .ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_va
     ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_labels,
     validate_ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_fixture,
 )
+from .ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm_validation import (
+    IiHierarchicalPredictiveCodingTheScpnSComputationalAlgorithmConfig,
+    IiHierarchicalPredictiveCodingTheScpnSComputationalAlgorithmFixtureResult,
+    classify_ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm_component,
+    ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm_labels,
+    validate_ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm_fixture,
+)
 from .ii_micro_scale_geometry_the_quantum_and_molecular_scaffold_l1_l3_validation import (
     IiMicroScaleGeometryTheQuantumAndMolecularScaffoldL1L3Config,
     IiMicroScaleGeometryTheQuantumAndMolecularScaffoldL1L3FixtureResult,
@@ -2023,6 +2030,13 @@ from .resolution_of_the_observability_paradox_b_hjb_validation import (
     resolution_of_the_observability_paradox_b_hjb_labels,
     validate_resolution_of_the_observability_paradox_b_hjb_fixture,
 )
+from .resolving_the_amplitude_friction_the_stuart_landau_upgrade_for_precision_validation import (
+    ResolvingTheAmplitudeFrictionTheStuartLandauUpgradeForPrecisionConfig,
+    ResolvingTheAmplitudeFrictionTheStuartLandauUpgradeForPrecisionFixtureResult,
+    classify_resolving_the_amplitude_friction_the_stuart_landau_upgrade_for_precision_component,
+    resolving_the_amplitude_friction_the_stuart_landau_upgrade_for_precision_labels,
+    validate_resolving_the_amplitude_friction_the_stuart_landau_upgrade_for_precision_fixture,
+)
 from .resolving_the_epigenetic_time_scale_disconnect_conformational_spin_locki_validation import (
     ResolvingTheEpigeneticTimeScaleDisconnectConformationalSpinLockiConfig,
     ResolvingTheEpigeneticTimeScaleDisconnectConformationalSpinLockiFixtureResult,
@@ -2999,6 +3013,13 @@ from .the_master_diagram_a_mandala_of_consciousness_validation import (
     the_master_diagram_a_mandala_of_consciousness_labels,
     validate_the_master_diagram_a_mandala_of_consciousness_fixture,
 )
+from .the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation_validation import (
+    TheMathematicalBridgeDerivingTheUpdeFromFreeEnergyMinimisationConfig,
+    TheMathematicalBridgeDerivingTheUpdeFromFreeEnergyMinimisationFixtureResult,
+    classify_the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation_component,
+    the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation_labels,
+    validate_the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation_fixture,
+)
 from .the_mechanism_of_influence_validation import (
     TheMechanismOfInfluenceConfig,
     TheMechanismOfInfluenceFixtureResult,
@@ -3451,6 +3472,21 @@ from .xiii_the_constructive_role_of_noise_msr_and_nis_validation import (
 )
 
 __all__ = [
+    "validate_resolving_the_amplitude_friction_the_stuart_landau_upgrade_for_precision_fixture",
+    "resolving_the_amplitude_friction_the_stuart_landau_upgrade_for_precision_labels",
+    "classify_resolving_the_amplitude_friction_the_stuart_landau_upgrade_for_precision_component",
+    "ResolvingTheAmplitudeFrictionTheStuartLandauUpgradeForPrecisionFixtureResult",
+    "ResolvingTheAmplitudeFrictionTheStuartLandauUpgradeForPrecisionConfig",
+    "validate_the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation_fixture",
+    "the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation_labels",
+    "classify_the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation_component",
+    "TheMathematicalBridgeDerivingTheUpdeFromFreeEnergyMinimisationFixtureResult",
+    "TheMathematicalBridgeDerivingTheUpdeFromFreeEnergyMinimisationConfig",
+    "validate_ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm_fixture",
+    "ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm_labels",
+    "classify_ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm_component",
+    "IiHierarchicalPredictiveCodingTheScpnSComputationalAlgorithmFixtureResult",
+    "IiHierarchicalPredictiveCodingTheScpnSComputationalAlgorithmConfig",
     "validate_the_unifying_computational_principle_hierarchical_predictive_coding_hpc_fixture",
     "the_unifying_computational_principle_hierarchical_predictive_coding_hpc_labels",
     "classify_the_unifying_computational_principle_hierarchical_predictive_coding_hpc_component",

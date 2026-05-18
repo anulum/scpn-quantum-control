@@ -8176,6 +8176,57 @@ def load_the_unifying_computational_principle_hierarchical_predictive_coding_hpc
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_II_HIERARCHICAL_PREDICTIVE_CODING_THE_SCPN_S_COMPUTATIONAL_ALGORITHM_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm_validation_specs_2026-05-17.json"
+)
+
+
+def load_ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_II_HIERARCHICAL_PREDICTIVE_CODING_THE_SCPN_S_COMPUTATIONAL_ALGORITHM_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 ii hierarchical predictive coding the scpn s computational algorithm validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_MATHEMATICAL_BRIDGE_DERIVING_THE_UPDE_FROM_FREE_ENERGY_MINIMISATION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_MATHEMATICAL_BRIDGE_DERIVING_THE_UPDE_FROM_FREE_ENERGY_MINIMISATION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the mathematical bridge deriving the upde from free energy minimisation validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_RESOLVING_THE_AMPLITUDE_FRICTION_THE_STUART_LANDAU_UPGRADE_FOR_PRECISION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_resolving_the_amplitude_friction_the_stuart_landau_upgrade_for_precision_validation_specs_2026-05-17.json"
+)
+
+
+def load_resolving_the_amplitude_friction_the_stuart_landau_upgrade_for_precision_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_RESOLVING_THE_AMPLITUDE_FRICTION_THE_STUART_LANDAU_UPGRADE_FOR_PRECISION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 resolving the amplitude friction the stuart landau upgrade for precision validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -9091,4 +9142,10 @@ __all__ = [
     "load_viii_the_synthesis_of_subjectivity_the_triadic_solution_validation_spec",
     "DEFAULT_THE_UNIFYING_COMPUTATIONAL_PRINCIPLE_HIERARCHICAL_PREDICTIVE_CODING_HPC_SPEC_BUNDLE",
     "load_the_unifying_computational_principle_hierarchical_predictive_coding_hpc_validation_spec",
+    "DEFAULT_II_HIERARCHICAL_PREDICTIVE_CODING_THE_SCPN_S_COMPUTATIONAL_ALGORITHM_SPEC_BUNDLE",
+    "load_ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm_validation_spec",
+    "DEFAULT_THE_MATHEMATICAL_BRIDGE_DERIVING_THE_UPDE_FROM_FREE_ENERGY_MINIMISATION_SPEC_BUNDLE",
+    "load_the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation_validation_spec",
+    "DEFAULT_RESOLVING_THE_AMPLITUDE_FRICTION_THE_STUART_LANDAU_UPGRADE_FOR_PRECISION_SPEC_BUNDLE",
+    "load_resolving_the_amplitude_friction_the_stuart_landau_upgrade_for_precision_validation_spec",
 ]
