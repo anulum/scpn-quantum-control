@@ -2212,6 +2212,13 @@ from .section_6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical_pr
     section_6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical_predicti_labels,
     validate_section_6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical_predicti_fixture,
 )
+from .section_9_concluding_assessment_and_future_directions_validation import (
+    Section9ConcludingAssessmentAndFutureDirectionsConfig,
+    Section9ConcludingAssessmentAndFutureDirectionsFixtureResult,
+    classify_section_9_concluding_assessment_and_future_directions_component,
+    section_9_concluding_assessment_and_future_directions_labels,
+    validate_section_9_concluding_assessment_and_future_directions_fixture,
+)
 from .section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_p0r02810_validation import (
     Section15LayerSummaryTable32TheDynamicSpineTheUnifiedPhaseDynamicsP0r02810Config,
     Section15LayerSummaryTable32TheDynamicSpineTheUnifiedPhaseDynamicsP0r02810FixtureResult,
@@ -2383,6 +2390,13 @@ from .terminology_bridge_validation import (
     terminology_bridge_labels,
     validate_terminology_bridge_fixture,
 )
+from .the_aqueous_substrate_the_role_of_interfacial_water_and_coherence_domain_validation import (
+    TheAqueousSubstrateTheRoleOfInterfacialWaterAndCoherenceDomainConfig,
+    TheAqueousSubstrateTheRoleOfInterfacialWaterAndCoherenceDomainFixtureResult,
+    classify_the_aqueous_substrate_the_role_of_interfacial_water_and_coherence_domain_component,
+    the_aqueous_substrate_the_role_of_interfacial_water_and_coherence_domain_labels,
+    validate_the_aqueous_substrate_the_role_of_interfacial_water_and_coherence_domain_fixture,
+)
 from .the_binding_integral_is_h_int_validation import (
     TheBindingIntegralIsHIntConfig,
     TheBindingIntegralIsHIntFixtureResult,
@@ -2466,6 +2480,13 @@ from .the_dynamics_and_evolution_of_the_embodied_scpn_validation import (
     classify_the_dynamics_and_evolution_of_the_embodied_scpn_component,
     the_dynamics_and_evolution_of_the_embodied_scpn_labels,
     validate_the_dynamics_and_evolution_of_the_embodied_scpn_fixture,
+)
+from .the_foundation_of_the_biological_substrate_validation import (
+    TheFoundationOfTheBiologicalSubstrateConfig,
+    TheFoundationOfTheBiologicalSubstrateFixtureResult,
+    classify_the_foundation_of_the_biological_substrate_component,
+    the_foundation_of_the_biological_substrate_labels,
+    validate_the_foundation_of_the_biological_substrate_fixture,
 )
 from .the_genesis_of_the_hierarchy_sequential_symmetry_breaking_ssb_validation import (
     TheGenesisOfTheHierarchySequentialSymmetryBreakingSsbConfig,
@@ -2863,6 +2884,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_the_foundation_of_the_biological_substrate_fixture",
+    "the_foundation_of_the_biological_substrate_labels",
+    "classify_the_foundation_of_the_biological_substrate_component",
+    "TheFoundationOfTheBiologicalSubstrateFixtureResult",
+    "TheFoundationOfTheBiologicalSubstrateConfig",
+    "validate_the_aqueous_substrate_the_role_of_interfacial_water_and_coherence_domain_fixture",
+    "the_aqueous_substrate_the_role_of_interfacial_water_and_coherence_domain_labels",
+    "classify_the_aqueous_substrate_the_role_of_interfacial_water_and_coherence_domain_component",
+    "TheAqueousSubstrateTheRoleOfInterfacialWaterAndCoherenceDomainFixtureResult",
+    "TheAqueousSubstrateTheRoleOfInterfacialWaterAndCoherenceDomainConfig",
+    "validate_section_9_concluding_assessment_and_future_directions_fixture",
+    "section_9_concluding_assessment_and_future_directions_labels",
+    "classify_section_9_concluding_assessment_and_future_directions_component",
+    "Section9ConcludingAssessmentAndFutureDirectionsFixtureResult",
+    "Section9ConcludingAssessmentAndFutureDirectionsConfig",
     "validate_table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer_fixture",
     "table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer_labels",
     "classify_table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer_component",
