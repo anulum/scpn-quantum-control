@@ -5654,6 +5654,56 @@ def load_introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5_val
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_THE_CENTRAL_HUBS_OF_BINDING_ORCHESTRATING_UNITY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_central_hubs_of_binding_orchestrating_unity_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_central_hubs_of_binding_orchestrating_unity_validation_spec(
+    spec_bundle: str | Path = DEFAULT_THE_CENTRAL_HUBS_OF_BINDING_ORCHESTRATING_UNITY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the central hubs of binding orchestrating unity validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_NEURO_VISCERAL_AXIS_HEART_BRAIN_GUT_THE_SYMPHONY_OF_THE_SELF_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_neuro_visceral_axis_heart_brain_gut_the_symphony_of_the_self_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_neuro_visceral_axis_heart_brain_gut_the_symphony_of_the_self_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_NEURO_VISCERAL_AXIS_HEART_BRAIN_GUT_THE_SYMPHONY_OF_THE_SELF_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the neuro visceral axis heart brain gut the symphony of the self validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_INTRODUCTION_TO_THE_CLINICAL_IMPLICATIONS_THE_DISORDERED_BRAIN_AS_A_DISO_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_introduction_to_the_clinical_implications_the_disordered_brain_as_a_diso_validation_specs_2026-05-17.json"
+)
+
+
+def load_introduction_to_the_clinical_implications_the_disordered_brain_as_a_diso_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_INTRODUCTION_TO_THE_CLINICAL_IMPLICATIONS_THE_DISORDERED_BRAIN_AS_A_DISO_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 introduction to the clinical implications the disordered brain as a diso validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -6263,4 +6313,10 @@ __all__ = [
     "load_metastability_and_chimaera_states_the_nuance_of_quasicriticality_validation_spec",
     "DEFAULT_INTRODUCTION_TO_THE_ARCHITECTURE_OF_THE_CONSCIOUS_SELF_DOMAIN_II_L5_SPEC_BUNDLE",
     "load_introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5_validation_spec",
+    "DEFAULT_THE_CENTRAL_HUBS_OF_BINDING_ORCHESTRATING_UNITY_SPEC_BUNDLE",
+    "load_the_central_hubs_of_binding_orchestrating_unity_validation_spec",
+    "DEFAULT_THE_NEURO_VISCERAL_AXIS_HEART_BRAIN_GUT_THE_SYMPHONY_OF_THE_SELF_SPEC_BUNDLE",
+    "load_the_neuro_visceral_axis_heart_brain_gut_the_symphony_of_the_self_validation_spec",
+    "DEFAULT_INTRODUCTION_TO_THE_CLINICAL_IMPLICATIONS_THE_DISORDERED_BRAIN_AS_A_DISO_SPEC_BUNDLE",
+    "load_introduction_to_the_clinical_implications_the_disordered_brain_as_a_diso_validation_spec",
 ]
