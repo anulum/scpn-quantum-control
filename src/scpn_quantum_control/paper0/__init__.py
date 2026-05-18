@@ -488,6 +488,13 @@ from .ethical_imperative_validation import (
     validate_ethical_imperative_fixture,
     validate_governance_beyond_borders_fixture,
 )
+from .experimental_design_coherence_vs_engagement_optimisation_validation import (
+    ExperimentalDesignCoherenceVsEngagementOptimisationConfig,
+    ExperimentalDesignCoherenceVsEngagementOptimisationFixtureResult,
+    classify_experimental_design_coherence_vs_engagement_optimisation_component,
+    experimental_design_coherence_vs_engagement_optimisation_labels,
+    validate_experimental_design_coherence_vs_engagement_optimisation_fixture,
+)
 from .experimental_signatures_search_strategies_validation import (
     ExperimentalSignaturesSearchStrategiesConfig,
     ExperimentalSignaturesSearchStrategiesFixtureResult,
@@ -1498,6 +1505,13 @@ from .predicted_signature_validation import (
     predicted_signature_labels,
     validate_predicted_signature_fixture,
 )
+from .predicted_signatures_and_analysis_protocol_validation import (
+    PredictedSignaturesAndAnalysisProtocolConfig,
+    PredictedSignaturesAndAnalysisProtocolFixtureResult,
+    classify_predicted_signatures_and_analysis_protocol_component,
+    predicted_signatures_and_analysis_protocol_labels,
+    validate_predicted_signatures_and_analysis_protocol_fixture,
+)
 from .prediction_i_nv_mea_tests_the_informational_coupling_linformational_validation import (
     PredictionINvMeaTestsTheInformationalCouplingLinformationalConfig,
     PredictionINvMeaTestsTheInformationalCouplingLinformationalFixtureResult,
@@ -2344,6 +2358,13 @@ from .t0_seeding_validation import (
     validate_spin_torsion_bridge_fixture,
     validate_t0_seeding_fixture,
 )
+from .table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer_validation import (
+    Table1PredictedNthsPhaseCharacteristicsInMultiAgentActiveInferConfig,
+    Table1PredictedNthsPhaseCharacteristicsInMultiAgentActiveInferFixtureResult,
+    classify_table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer_component,
+    table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer_labels,
+    validate_table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer_fixture,
+)
 from .terminal_boundary_validation import (
     EBSBinding,
     EnhancedBoundarySet,
@@ -2842,6 +2863,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer_fixture",
+    "table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer_labels",
+    "classify_table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer_component",
+    "Table1PredictedNthsPhaseCharacteristicsInMultiAgentActiveInferFixtureResult",
+    "Table1PredictedNthsPhaseCharacteristicsInMultiAgentActiveInferConfig",
+    "validate_predicted_signatures_and_analysis_protocol_fixture",
+    "predicted_signatures_and_analysis_protocol_labels",
+    "classify_predicted_signatures_and_analysis_protocol_component",
+    "PredictedSignaturesAndAnalysisProtocolFixtureResult",
+    "PredictedSignaturesAndAnalysisProtocolConfig",
+    "validate_experimental_design_coherence_vs_engagement_optimisation_fixture",
+    "experimental_design_coherence_vs_engagement_optimisation_labels",
+    "classify_experimental_design_coherence_vs_engagement_optimisation_component",
+    "ExperimentalDesignCoherenceVsEngagementOptimisationFixtureResult",
+    "ExperimentalDesignCoherenceVsEngagementOptimisationConfig",
     "validate_simulation_architecture_and_implementation_fixture",
     "simulation_architecture_and_implementation_labels",
     "classify_simulation_architecture_and_implementation_component",

@@ -6751,6 +6751,56 @@ def load_simulation_architecture_and_implementation_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_EXPERIMENTAL_DESIGN_COHERENCE_VS_ENGAGEMENT_OPTIMISATION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_experimental_design_coherence_vs_engagement_optimisation_validation_specs_2026-05-17.json"
+)
+
+
+def load_experimental_design_coherence_vs_engagement_optimisation_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_EXPERIMENTAL_DESIGN_COHERENCE_VS_ENGAGEMENT_OPTIMISATION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 experimental design coherence vs engagement optimisation validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_PREDICTED_SIGNATURES_AND_ANALYSIS_PROTOCOL_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_predicted_signatures_and_analysis_protocol_validation_specs_2026-05-17.json"
+)
+
+
+def load_predicted_signatures_and_analysis_protocol_validation_spec(
+    spec_bundle: str | Path = DEFAULT_PREDICTED_SIGNATURES_AND_ANALYSIS_PROTOCOL_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 predicted signatures and analysis protocol validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_TABLE_1_PREDICTED_NTHS_PHASE_CHARACTERISTICS_IN_MULTI_AGENT_ACTIVE_INFER_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer_validation_specs_2026-05-17.json"
+)
+
+
+def load_table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_TABLE_1_PREDICTED_NTHS_PHASE_CHARACTERISTICS_IN_MULTI_AGENT_ACTIVE_INFER_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 table 1 predicted nths phase characteristics in multi agent active infer validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -7492,4 +7542,10 @@ __all__ = [
     "load_formalising_the_nths_within_a_multi_agent_active_inference_framework_validation_spec",
     "DEFAULT_SIMULATION_ARCHITECTURE_AND_IMPLEMENTATION_SPEC_BUNDLE",
     "load_simulation_architecture_and_implementation_validation_spec",
+    "DEFAULT_EXPERIMENTAL_DESIGN_COHERENCE_VS_ENGAGEMENT_OPTIMISATION_SPEC_BUNDLE",
+    "load_experimental_design_coherence_vs_engagement_optimisation_validation_spec",
+    "DEFAULT_PREDICTED_SIGNATURES_AND_ANALYSIS_PROTOCOL_SPEC_BUNDLE",
+    "load_predicted_signatures_and_analysis_protocol_validation_spec",
+    "DEFAULT_TABLE_1_PREDICTED_NTHS_PHASE_CHARACTERISTICS_IN_MULTI_AGENT_ACTIVE_INFER_SPEC_BUNDLE",
+    "load_table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer_validation_spec",
 ]
