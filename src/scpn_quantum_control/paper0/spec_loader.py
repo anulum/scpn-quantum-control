@@ -7978,6 +7978,55 @@ def load_topological_invariants_bk_determine_the_structure_and_richness_of_the_q
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_2_GUIDED_VARIATION_NON_RANDOM_MUTATION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_guided_variation_non_random_mutation_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_guided_variation_non_random_mutation_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SECTION_2_GUIDED_VARIATION_NON_RANDOM_MUTATION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 guided variation non random mutation validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_VI_THE_UNIFIED_GEOMETRIC_PRINCIPLE_UGP_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_vi_the_unified_geometric_principle_ugp_validation_specs_2026-05-17.json"
+)
+
+
+def load_vi_the_unified_geometric_principle_ugp_validation_spec(
+    spec_bundle: str | Path = DEFAULT_VI_THE_UNIFIED_GEOMETRIC_PRINCIPLE_UGP_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 vi the unified geometric principle ugp validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_IX_THE_PARTICIPATORY_UNIVERSE_OBSERVATION_AS_CONSTRUCTION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_ix_the_participatory_universe_observation_as_construction_validation_specs_2026-05-17.json"
+)
+
+
+def load_ix_the_participatory_universe_observation_as_construction_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_IX_THE_PARTICIPATORY_UNIVERSE_OBSERVATION_AS_CONSTRUCTION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 ix the participatory universe observation as construction validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -8869,4 +8918,10 @@ __all__ = [
     "load_iv_the_generation_of_subjective_experience_geometric_qualia_validation_spec",
     "DEFAULT_TOPOLOGICAL_INVARIANTS_BK_DETERMINE_THE_STRUCTURE_AND_RICHNESS_OF_THE_QU_SPEC_BUNDLE",
     "load_topological_invariants_bk_determine_the_structure_and_richness_of_the_qu_validation_spec",
+    "DEFAULT_SECTION_2_GUIDED_VARIATION_NON_RANDOM_MUTATION_SPEC_BUNDLE",
+    "load_section_2_guided_variation_non_random_mutation_validation_spec",
+    "DEFAULT_VI_THE_UNIFIED_GEOMETRIC_PRINCIPLE_UGP_SPEC_BUNDLE",
+    "load_vi_the_unified_geometric_principle_ugp_validation_spec",
+    "DEFAULT_IX_THE_PARTICIPATORY_UNIVERSE_OBSERVATION_AS_CONSTRUCTION_SPEC_BUNDLE",
+    "load_ix_the_participatory_universe_observation_as_construction_validation_spec",
 ]

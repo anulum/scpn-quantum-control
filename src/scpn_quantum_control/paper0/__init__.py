@@ -1105,6 +1105,13 @@ from .iv_the_neuro_immuno_endocrine_nie_super_system_validation import (
     iv_the_neuro_immuno_endocrine_nie_super_system_labels,
     validate_iv_the_neuro_immuno_endocrine_nie_super_system_fixture,
 )
+from .ix_the_participatory_universe_observation_as_construction_validation import (
+    IxTheParticipatoryUniverseObservationAsConstructionConfig,
+    IxTheParticipatoryUniverseObservationAsConstructionFixtureResult,
+    classify_ix_the_participatory_universe_observation_as_construction_component,
+    ix_the_participatory_universe_observation_as_construction_labels,
+    validate_ix_the_participatory_universe_observation_as_construction_fixture,
+)
 from .l5_active_inference_math_validation import (
     ExpectedFreeEnergyScores,
     L5ActiveInferenceMathConfig,
@@ -2204,6 +2211,13 @@ from .section_2_embodied_predictive_coding_interoceptive_inference_validation im
     classify_section_2_embodied_predictive_coding_interoceptive_inference_component,
     section_2_embodied_predictive_coding_interoceptive_inference_labels,
     validate_section_2_embodied_predictive_coding_interoceptive_inference_fixture,
+)
+from .section_2_guided_variation_non_random_mutation_validation import (
+    Section2GuidedVariationNonRandomMutationConfig,
+    Section2GuidedVariationNonRandomMutationFixtureResult,
+    classify_section_2_guided_variation_non_random_mutation_component,
+    section_2_guided_variation_non_random_mutation_labels,
+    validate_section_2_guided_variation_non_random_mutation_fixture,
 )
 from .section_2_hpc_as_geometric_flow_validation import (
     Section2HpcAsGeometricFlowConfig,
@@ -3344,6 +3358,13 @@ from .vi_the_interface_with_phenomenology_validation import (
     validate_vi_the_interface_with_phenomenology_fixture,
     vi_the_interface_with_phenomenology_labels,
 )
+from .vi_the_unified_geometric_principle_ugp_validation import (
+    ViTheUnifiedGeometricPrincipleUgpConfig,
+    ViTheUnifiedGeometricPrincipleUgpFixtureResult,
+    classify_vi_the_unified_geometric_principle_ugp_component,
+    validate_vi_the_unified_geometric_principle_ugp_fixture,
+    vi_the_unified_geometric_principle_ugp_labels,
+)
 from .vii_field_generation_and_upward_causality_topological_defects_validation import (
     ViiFieldGenerationAndUpwardCausalityTopologicalDefectsConfig,
     ViiFieldGenerationAndUpwardCausalityTopologicalDefectsFixtureResult,
@@ -3367,6 +3388,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_ix_the_participatory_universe_observation_as_construction_fixture",
+    "ix_the_participatory_universe_observation_as_construction_labels",
+    "classify_ix_the_participatory_universe_observation_as_construction_component",
+    "IxTheParticipatoryUniverseObservationAsConstructionFixtureResult",
+    "IxTheParticipatoryUniverseObservationAsConstructionConfig",
+    "validate_vi_the_unified_geometric_principle_ugp_fixture",
+    "vi_the_unified_geometric_principle_ugp_labels",
+    "classify_vi_the_unified_geometric_principle_ugp_component",
+    "ViTheUnifiedGeometricPrincipleUgpFixtureResult",
+    "ViTheUnifiedGeometricPrincipleUgpConfig",
+    "validate_section_2_guided_variation_non_random_mutation_fixture",
+    "section_2_guided_variation_non_random_mutation_labels",
+    "classify_section_2_guided_variation_non_random_mutation_component",
+    "Section2GuidedVariationNonRandomMutationFixtureResult",
+    "Section2GuidedVariationNonRandomMutationConfig",
     "validate_topological_invariants_bk_determine_the_structure_and_richness_of_the_qu_fixture",
     "topological_invariants_bk_determine_the_structure_and_richness_of_the_qu_labels",
     "classify_topological_invariants_bk_determine_the_structure_and_richness_of_the_qu_component",
