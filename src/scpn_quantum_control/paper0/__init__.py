@@ -933,6 +933,13 @@ from .mechanism_2_quantum_stochastic_resonance_qsr_validation import (
     mechanism_2_quantum_stochastic_resonance_qsr_labels,
     validate_mechanism_2_quantum_stochastic_resonance_qsr_fixture,
 )
+from .mechanism_and_bidirectional_causality_validation import (
+    MechanismAndBidirectionalCausalityConfig,
+    MechanismAndBidirectionalCausalityFixtureResult,
+    classify_mechanism_and_bidirectional_causality_component,
+    mechanism_and_bidirectional_causality_labels,
+    validate_mechanism_and_bidirectional_causality_fixture,
+)
 from .meta_framework_integrations_p0r01803_validation import (
     MetaFrameworkIntegrationsP0r01803Config,
     MetaFrameworkIntegrationsP0r01803FixtureResult,
@@ -1512,6 +1519,13 @@ from .section_2_the_central_void_the_source_validation import (
     section_2_the_central_void_the_source_labels,
     validate_section_2_the_central_void_the_source_fixture,
 )
+from .section_2_the_geometry_of_synchronisation_upde_manifolds_validation import (
+    Section2TheGeometryOfSynchronisationUpdeManifoldsConfig,
+    Section2TheGeometryOfSynchronisationUpdeManifoldsFixtureResult,
+    classify_section_2_the_geometry_of_synchronisation_upde_manifolds_component,
+    section_2_the_geometry_of_synchronisation_upde_manifolds_labels,
+    validate_section_2_the_geometry_of_synchronisation_upde_manifolds_fixture,
+)
 from .section_3_1_complexity_k_and_the_cardinality_of_the_state_space_validation import (
     Section31ComplexityKAndTheCardinalityOfTheStateSpaceConfig,
     Section31ComplexityKAndTheCardinalityOfTheStateSpaceFixtureResult,
@@ -1553,6 +1567,13 @@ from .section_3_sequential_symmetry_breaking_ssb_validation import (
     classify_section_3_sequential_symmetry_breaking_ssb_component,
     section_3_sequential_symmetry_breaking_ssb_labels,
     validate_section_3_sequential_symmetry_breaking_ssb_fixture,
+)
+from .section_3_structural_geometry_and_morphogenesis_l3_validation import (
+    Section3StructuralGeometryAndMorphogenesisL3Config,
+    Section3StructuralGeometryAndMorphogenesisL3FixtureResult,
+    classify_section_3_structural_geometry_and_morphogenesis_l3_component,
+    section_3_structural_geometry_and_morphogenesis_l3_labels,
+    validate_section_3_structural_geometry_and_morphogenesis_l3_fixture,
 )
 from .section_3_the_geometric_and_dynamic_determinants_of_future_possibility_validation import (
     Section3TheGeometricAndDynamicDeterminantsOfFuturePossibilityConfig,
@@ -2233,6 +2254,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_section_2_the_geometry_of_synchronisation_upde_manifolds_fixture",
+    "section_2_the_geometry_of_synchronisation_upde_manifolds_labels",
+    "classify_section_2_the_geometry_of_synchronisation_upde_manifolds_component",
+    "Section2TheGeometryOfSynchronisationUpdeManifoldsFixtureResult",
+    "Section2TheGeometryOfSynchronisationUpdeManifoldsConfig",
+    "validate_mechanism_and_bidirectional_causality_fixture",
+    "mechanism_and_bidirectional_causality_labels",
+    "classify_mechanism_and_bidirectional_causality_component",
+    "MechanismAndBidirectionalCausalityFixtureResult",
+    "MechanismAndBidirectionalCausalityConfig",
+    "validate_section_3_structural_geometry_and_morphogenesis_l3_fixture",
+    "section_3_structural_geometry_and_morphogenesis_l3_labels",
+    "classify_section_3_structural_geometry_and_morphogenesis_l3_component",
+    "Section3StructuralGeometryAndMorphogenesisL3FixtureResult",
+    "Section3StructuralGeometryAndMorphogenesisL3Config",
     "validate_section_3_sequential_symmetry_breaking_ssb_fixture",
     "section_3_sequential_symmetry_breaking_ssb_labels",
     "classify_section_3_sequential_symmetry_breaking_ssb_component",

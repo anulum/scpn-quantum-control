@@ -5300,6 +5300,56 @@ def load_section_3_sequential_symmetry_breaking_ssb_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_3_STRUCTURAL_GEOMETRY_AND_MORPHOGENESIS_L3_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_3_structural_geometry_and_morphogenesis_l3_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_3_structural_geometry_and_morphogenesis_l3_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_3_STRUCTURAL_GEOMETRY_AND_MORPHOGENESIS_L3_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 3 structural geometry and morphogenesis l3 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_MECHANISM_AND_BIDIRECTIONAL_CAUSALITY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_mechanism_and_bidirectional_causality_validation_specs_2026-05-17.json"
+)
+
+
+def load_mechanism_and_bidirectional_causality_validation_spec(
+    spec_bundle: str | Path = DEFAULT_MECHANISM_AND_BIDIRECTIONAL_CAUSALITY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 mechanism and bidirectional causality validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_2_THE_GEOMETRY_OF_SYNCHRONISATION_UPDE_MANIFOLDS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_the_geometry_of_synchronisation_upde_manifolds_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_the_geometry_of_synchronisation_upde_manifolds_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_2_THE_GEOMETRY_OF_SYNCHRONISATION_UPDE_MANIFOLDS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 the geometry of synchronisation upde manifolds validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -5867,4 +5917,10 @@ __all__ = [
     "load_ii_the_genesis_of_geometry_the_source_and_the_logos_domain_v_validation_spec",
     "DEFAULT_SECTION_3_SEQUENTIAL_SYMMETRY_BREAKING_SSB_SPEC_BUNDLE",
     "load_section_3_sequential_symmetry_breaking_ssb_validation_spec",
+    "DEFAULT_SECTION_3_STRUCTURAL_GEOMETRY_AND_MORPHOGENESIS_L3_SPEC_BUNDLE",
+    "load_section_3_structural_geometry_and_morphogenesis_l3_validation_spec",
+    "DEFAULT_MECHANISM_AND_BIDIRECTIONAL_CAUSALITY_SPEC_BUNDLE",
+    "load_mechanism_and_bidirectional_causality_validation_spec",
+    "DEFAULT_SECTION_2_THE_GEOMETRY_OF_SYNCHRONISATION_UPDE_MANIFOLDS_SPEC_BUNDLE",
+    "load_section_2_the_geometry_of_synchronisation_upde_manifolds_validation_spec",
 ]
