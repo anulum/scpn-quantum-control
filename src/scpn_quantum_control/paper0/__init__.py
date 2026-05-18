@@ -197,6 +197,13 @@ from .axiomatic_ntilde_validation import (
     ntilde_ratio,
     validate_axiomatic_ntilde_fixture,
 )
+from .axion_photon_mixing_with_the_plasma_term_validation import (
+    AxionPhotonMixingWithThePlasmaTermConfig,
+    AxionPhotonMixingWithThePlasmaTermFixtureResult,
+    axion_photon_mixing_with_the_plasma_term_labels,
+    classify_axion_photon_mixing_with_the_plasma_term_component,
+    validate_axion_photon_mixing_with_the_plasma_term_fixture,
+)
 from .bibo_stability_and_lyapunov_certificate_validation import (
     BiboStabilityAndLyapunovCertificateConfig,
     BiboStabilityAndLyapunovCertificateFixtureResult,
@@ -1224,6 +1231,13 @@ from .paper0_slice_p0r04330_validation import (
     paper0_slice_p0r04330_labels,
     validate_paper0_slice_p0r04330_fixture,
 )
+from .paper0_slice_p0r04338_validation import (
+    Paper0SliceP0r04338Config,
+    Paper0SliceP0r04338FixtureResult,
+    classify_paper0_slice_p0r04338_component,
+    paper0_slice_p0r04338_labels,
+    validate_paper0_slice_p0r04338_fixture,
+)
 from .paper0_slice_validation import (
     Paper0SliceConfig,
     Paper0SliceFixtureResult,
@@ -1795,6 +1809,13 @@ from .the_biological_syndrome_measurement_and_recovery_protocol_validation impor
     the_biological_syndrome_measurement_and_recovery_protocol_labels,
     validate_the_biological_syndrome_measurement_and_recovery_protocol_fixture,
 )
+from .the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai_validation import (
+    TheBridgeBetweenMindAndMatterHowConsciousnessInfluencesTheBraiConfig,
+    TheBridgeBetweenMindAndMatterHowConsciousnessInfluencesTheBraiFixtureResult,
+    classify_the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai_component,
+    the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai_labels,
+    validate_the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai_fixture,
+)
 from .the_consilium_l15_as_the_target_setter_validation import (
     TheConsiliumL15AsTheTargetSetterConfig,
     TheConsiliumL15AsTheTargetSetterFixtureResult,
@@ -2191,6 +2212,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai_fixture",
+    "the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai_labels",
+    "classify_the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai_component",
+    "TheBridgeBetweenMindAndMatterHowConsciousnessInfluencesTheBraiFixtureResult",
+    "TheBridgeBetweenMindAndMatterHowConsciousnessInfluencesTheBraiConfig",
+    "validate_axion_photon_mixing_with_the_plasma_term_fixture",
+    "axion_photon_mixing_with_the_plasma_term_labels",
+    "classify_axion_photon_mixing_with_the_plasma_term_component",
+    "AxionPhotonMixingWithThePlasmaTermFixtureResult",
+    "AxionPhotonMixingWithThePlasmaTermConfig",
+    "validate_paper0_slice_p0r04338_fixture",
+    "paper0_slice_p0r04338_labels",
+    "classify_paper0_slice_p0r04338_component",
+    "Paper0SliceP0r04338FixtureResult",
+    "Paper0SliceP0r04338Config",
     "validate_paper0_slice_p0r04330_fixture",
     "paper0_slice_p0r04330_labels",
     "classify_paper0_slice_p0r04330_component",

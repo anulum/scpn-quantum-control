@@ -5201,6 +5201,55 @@ def load_paper0_slice_p0r04330_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_PAPER0_SLICE_P0R04338_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_paper0_slice_p0r04338_validation_specs_2026-05-17.json"
+)
+
+
+def load_paper0_slice_p0r04338_validation_spec(
+    spec_bundle: str | Path = DEFAULT_PAPER0_SLICE_P0R04338_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 paper0 slice p0r04338 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_AXION_PHOTON_MIXING_WITH_THE_PLASMA_TERM_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_axion_photon_mixing_with_the_plasma_term_validation_specs_2026-05-17.json"
+)
+
+
+def load_axion_photon_mixing_with_the_plasma_term_validation_spec(
+    spec_bundle: str | Path = DEFAULT_AXION_PHOTON_MIXING_WITH_THE_PLASMA_TERM_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 axion photon mixing with the plasma term validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_BRIDGE_BETWEEN_MIND_AND_MATTER_HOW_CONSCIOUSNESS_INFLUENCES_THE_BRAI_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_BRIDGE_BETWEEN_MIND_AND_MATTER_HOW_CONSCIOUSNESS_INFLUENCES_THE_BRAI_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the bridge between mind and matter how consciousness influences the brai validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -5756,4 +5805,10 @@ __all__ = [
     "load_paper0_slice_p0r04322_validation_spec",
     "DEFAULT_PAPER0_SLICE_P0R04330_SPEC_BUNDLE",
     "load_paper0_slice_p0r04330_validation_spec",
+    "DEFAULT_PAPER0_SLICE_P0R04338_SPEC_BUNDLE",
+    "load_paper0_slice_p0r04338_validation_spec",
+    "DEFAULT_AXION_PHOTON_MIXING_WITH_THE_PLASMA_TERM_SPEC_BUNDLE",
+    "load_axion_photon_mixing_with_the_plasma_term_validation_spec",
+    "DEFAULT_THE_BRIDGE_BETWEEN_MIND_AND_MATTER_HOW_CONSCIOUSNESS_INFLUENCES_THE_BRAI_SPEC_BUNDLE",
+    "load_the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai_validation_spec",
 ]
