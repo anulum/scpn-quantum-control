@@ -33,6 +33,8 @@ PUBLISHED_SHA256 = "f43cbd7e466a3267847b44a750aeba7801cbc52ef10e9808573ef7ed01ec
 
 @dataclass(frozen=True)
 class StateSummary:
+    """Per-state Phase 2 popcount-control leakage summary."""
+
     depth: int
     state_label: str
     initial: str
@@ -45,6 +47,8 @@ class StateSummary:
 
 @dataclass(frozen=True)
 class ComparisonSummary:
+    """Welch-test comparison between two popcount-control state families."""
+
     name: str
     depth: int
     left_label: str
@@ -207,6 +211,8 @@ def _summarise(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def main() -> int:
+    """Run the Phase 2 popcount-control raw-count reproduction CLI."""
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT)
     parser.add_argument("--verify-integrity", action="store_true")

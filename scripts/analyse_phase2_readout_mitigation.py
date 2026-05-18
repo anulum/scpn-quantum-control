@@ -45,6 +45,8 @@ OUT_PATH = (
 
 @dataclass(frozen=True)
 class CorrectedPair:
+    """Raw and readout-corrected parity comparison for one dataset depth."""
+
     dataset: str
     comparison: str
     depth: int
@@ -233,6 +235,8 @@ def _fisher_by_group(pairs: list[CorrectedPair]) -> dict[str, dict[str, float | 
 
 
 def main() -> int:
+    """Run the Phase 2 parity-readout mitigation cross-check CLI."""
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--write-json", action="store_true")
     args = parser.parse_args()
@@ -242,7 +246,7 @@ def main() -> int:
     calibrations = _readout_map([ag_payload, popcount_payload])
     pairs = _ag_rows(ag_payload, calibrations) + _popcount_rows(popcount_payload, calibrations)
     calibrated_initials = sorted(f"n={n}:{initial}" for n, initial in calibrations)
-    summary = {
+    summary: dict[str, Any] = {
         "method": "state_specific_parity_confusion_inversion",
         "full_confusion_matrix_available": False,
         "full_confusion_matrix_note": (
