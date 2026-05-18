@@ -853,6 +853,13 @@ from .introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_validation 
     introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_labels,
     validate_introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_fixture,
 )
+from .iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9_validation import (
+    IvLearningMemoryAndPlasticityTheAdaptiveScaffoldL1L9Config,
+    IvLearningMemoryAndPlasticityTheAdaptiveScaffoldL1L9FixtureResult,
+    classify_iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9_component,
+    iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9_labels,
+    validate_iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9_fixture,
+)
 from .iv_sub_synaptic_and_axonal_architecture_l1_l3_validation import (
     IvSubSynapticAndAxonalArchitectureL1L3Config,
     IvSubSynapticAndAxonalArchitectureL1L3FixtureResult,
@@ -1750,6 +1757,13 @@ from .section_2_molecular_geometry_and_the_psi_field_interface_l2_l3_validation 
     section_2_molecular_geometry_and_the_psi_field_interface_l2_l3_labels,
     validate_section_2_molecular_geometry_and_the_psi_field_interface_l2_l3_fixture,
 )
+from .section_2_specialised_sensory_systems_validation import (
+    Section2SpecialisedSensorySystemsConfig,
+    Section2SpecialisedSensorySystemsFixtureResult,
+    classify_section_2_specialised_sensory_systems_component,
+    section_2_specialised_sensory_systems_labels,
+    validate_section_2_specialised_sensory_systems_fixture,
+)
 from .section_2_the_central_void_the_source_validation import (
     Section2TheCentralVoidTheSourceConfig,
     Section2TheCentralVoidTheSourceFixtureResult,
@@ -1847,6 +1861,13 @@ from .section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_valida
     classify_section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_component,
     section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_labels,
     validate_section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_fixture,
+)
+from .section_3_pathology_chronodisruption_validation import (
+    Section3PathologyChronodisruptionConfig,
+    Section3PathologyChronodisruptionFixtureResult,
+    classify_section_3_pathology_chronodisruption_component,
+    section_3_pathology_chronodisruption_labels,
+    validate_section_3_pathology_chronodisruption_fixture,
 )
 from .section_3_pathology_vascular_dysfunction_validation import (
     Section3PathologyVascularDysfunctionConfig,
@@ -2653,6 +2674,21 @@ from .vii_pathology_the_disordered_brain_validation import (
 )
 
 __all__ = [
+    "validate_iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9_fixture",
+    "iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9_labels",
+    "classify_iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9_component",
+    "IvLearningMemoryAndPlasticityTheAdaptiveScaffoldL1L9FixtureResult",
+    "IvLearningMemoryAndPlasticityTheAdaptiveScaffoldL1L9Config",
+    "validate_section_2_specialised_sensory_systems_fixture",
+    "section_2_specialised_sensory_systems_labels",
+    "classify_section_2_specialised_sensory_systems_component",
+    "Section2SpecialisedSensorySystemsFixtureResult",
+    "Section2SpecialisedSensorySystemsConfig",
+    "validate_section_3_pathology_chronodisruption_fixture",
+    "section_3_pathology_chronodisruption_labels",
+    "classify_section_3_pathology_chronodisruption_component",
+    "Section3PathologyChronodisruptionFixtureResult",
+    "Section3PathologyChronodisruptionConfig",
     "validate_ii_the_chronobiological_architecture_temporal_synchronisation_l4_l8_fixture",
     "ii_the_chronobiological_architecture_temporal_synchronisation_l4_l8_labels",
     "classify_ii_the_chronobiological_architecture_temporal_synchronisation_l4_l8_component",

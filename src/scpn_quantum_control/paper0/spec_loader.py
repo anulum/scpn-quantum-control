@@ -6305,6 +6305,55 @@ def load_ii_the_chronobiological_architecture_temporal_synchronisation_l4_l8_val
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_3_PATHOLOGY_CHRONODISRUPTION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_3_pathology_chronodisruption_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_3_pathology_chronodisruption_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SECTION_3_PATHOLOGY_CHRONODISRUPTION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 3 pathology chronodisruption validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_2_SPECIALISED_SENSORY_SYSTEMS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_specialised_sensory_systems_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_specialised_sensory_systems_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SECTION_2_SPECIALISED_SENSORY_SYSTEMS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 specialised sensory systems validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_IV_LEARNING_MEMORY_AND_PLASTICITY_THE_ADAPTIVE_SCAFFOLD_L1_L9_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9_validation_specs_2026-05-17.json"
+)
+
+
+def load_iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_IV_LEARNING_MEMORY_AND_PLASTICITY_THE_ADAPTIVE_SCAFFOLD_L1_L9_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 iv learning memory and plasticity the adaptive scaffold l1 l9 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -6992,4 +7041,10 @@ __all__ = [
     "load_section_2_embodied_predictive_coding_interoceptive_inference_validation_spec",
     "DEFAULT_II_THE_CHRONOBIOLOGICAL_ARCHITECTURE_TEMPORAL_SYNCHRONISATION_L4_L8_SPEC_BUNDLE",
     "load_ii_the_chronobiological_architecture_temporal_synchronisation_l4_l8_validation_spec",
+    "DEFAULT_SECTION_3_PATHOLOGY_CHRONODISRUPTION_SPEC_BUNDLE",
+    "load_section_3_pathology_chronodisruption_validation_spec",
+    "DEFAULT_SECTION_2_SPECIALISED_SENSORY_SYSTEMS_SPEC_BUNDLE",
+    "load_section_2_specialised_sensory_systems_validation_spec",
+    "DEFAULT_IV_LEARNING_MEMORY_AND_PLASTICITY_THE_ADAPTIVE_SCAFFOLD_L1_L9_SPEC_BUNDLE",
+    "load_iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9_validation_spec",
 ]
