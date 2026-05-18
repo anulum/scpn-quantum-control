@@ -46,6 +46,8 @@ class WitnessRow:
     mean_state_retention: float
 
     def to_row(self) -> dict[str, object]:
+        """Serialise the witness cell for JSON and CSV artefacts."""
+
         return {
             "sector": self.sector,
             "initial": self.initial,
@@ -79,6 +81,8 @@ class FitRow:
     usable_for_guess_witness: bool
 
     def to_row(self) -> dict[str, object]:
+        """Serialise the fitted GUESS witness row for artefact output."""
+
         return {
             "sector": self.sector,
             "initial": self.initial,

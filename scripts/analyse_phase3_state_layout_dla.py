@@ -44,6 +44,8 @@ COMPARISONS = {
 
 @dataclass(frozen=True)
 class StateDepthLayoutRow:
+    """State, depth, and physical-layout leakage summary row."""
+
     layout_id: str
     physical_qubits: str
     depth: int
@@ -60,6 +62,8 @@ class StateDepthLayoutRow:
 
 @dataclass(frozen=True)
 class ComparisonRow:
+    """Welch-test comparison row for a state-pair on one layout/depth cell."""
+
     comparison: str
     layout_id: str
     depth: int
@@ -77,6 +81,8 @@ class ComparisonRow:
 
 @dataclass(frozen=True)
 class LayoutSummary:
+    """Aggregate leakage and calibration summary for one physical layout."""
+
     layout_id: str
     physical_qubits: str
     readout_error_mean: float | None
@@ -295,6 +301,8 @@ def _fisher_by_comparison(comparison_rows: list[ComparisonRow]) -> dict[str, dic
 
 
 def build_analysis(payload: dict[str, Any], *, input_sha256: str) -> dict[str, Any]:
+    """Build the complete Phase 3 state/layout DLA analysis payload."""
+
     circuits = payload["circuits"]
     main_rows = [row for row in circuits if row["meta"]["block"] == "main"]
     readout = [row for row in circuits if row["meta"]["block"] == "readout"]
@@ -403,6 +411,8 @@ def _markdown(summary: dict[str, Any], artefact_hashes: dict[str, str]) -> str:
 
 
 def write_outputs(summary: dict[str, Any]) -> dict[str, str]:
+    """Write Phase 3 state/layout analysis artefacts and return SHA256 hashes."""
+
     summary_path = OUT_DIR / f"phase3_state_layout_summary_{DATE}.json"
     rows_path = OUT_DIR / f"phase3_state_layout_row_metrics_{DATE}.csv"
     layout_path = OUT_DIR / f"phase3_state_layout_layout_metrics_{DATE}.csv"
@@ -424,6 +434,8 @@ def write_outputs(summary: dict[str, Any]) -> dict[str, str]:
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse Phase 3 state/layout analysis CLI arguments."""
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT)
     parser.add_argument("--json", action="store_true")
@@ -431,6 +443,8 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Run the Phase 3 state/layout DLA analysis CLI."""
+
     args = parse_args()
     payload = _load_payload(args.input)
     summary = build_analysis(payload, input_sha256=_sha256(args.input))

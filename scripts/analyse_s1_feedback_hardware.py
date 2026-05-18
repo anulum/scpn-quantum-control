@@ -160,6 +160,8 @@ def _required_float(mapping: Mapping[str, Any], key: str) -> float:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """Run the S1 feedback hardware package analysis CLI."""
+
     args = _parse_args(argv)
     package = json.loads(args.raw_counts.read_text(encoding="utf-8"))
     if not isinstance(package, Mapping):
