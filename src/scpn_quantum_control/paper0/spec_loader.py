@@ -4359,6 +4359,55 @@ def load_maximizing_as_the_goal_of_coupling_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SCPN_IIT_CORRESPONDENCE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_scpn_iit_correspondence_validation_specs_2026-05-17.json"
+)
+
+
+def load_scpn_iit_correspondence_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SCPN_IIT_CORRESPONDENCE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 scpn iit correspondence validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_UNIFIED_CONSCIOUSNESS_MEASURE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_unified_consciousness_measure_validation_specs_2026-05-17.json"
+)
+
+
+def load_unified_consciousness_measure_validation_spec(
+    spec_bundle: str | Path = DEFAULT_UNIFIED_CONSCIOUSNESS_MEASURE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 unified consciousness measure validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_PHYSICS_OF_TELEOLOGY_A_DERIVATION_OF_THE_ETHICAL_FUNCTIONAL_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_physics_of_teleology_a_derivation_of_the_ethical_functional_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_physics_of_teleology_a_derivation_of_the_ethical_functional_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_PHYSICS_OF_TELEOLOGY_A_DERIVATION_OF_THE_ETHICAL_FUNCTIONAL_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the physics of teleology a derivation of the ethical functional validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -4812,4 +4861,10 @@ __all__ = [
     "load_meta_framework_integrations_p0r03530_validation_spec",
     "DEFAULT_MAXIMIZING_AS_THE_GOAL_OF_COUPLING_SPEC_BUNDLE",
     "load_maximizing_as_the_goal_of_coupling_validation_spec",
+    "DEFAULT_SCPN_IIT_CORRESPONDENCE_SPEC_BUNDLE",
+    "load_scpn_iit_correspondence_validation_spec",
+    "DEFAULT_UNIFIED_CONSCIOUSNESS_MEASURE_SPEC_BUNDLE",
+    "load_unified_consciousness_measure_validation_spec",
+    "DEFAULT_THE_PHYSICS_OF_TELEOLOGY_A_DERIVATION_OF_THE_ETHICAL_FUNCTIONAL_SPEC_BUNDLE",
+    "load_the_physics_of_teleology_a_derivation_of_the_ethical_functional_validation_spec",
 ]

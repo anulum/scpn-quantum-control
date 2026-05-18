@@ -1281,6 +1281,13 @@ from .resolving_the_epigenetic_time_scale_disconnect_conformational_spin_locki_v
     resolving_the_epigenetic_time_scale_disconnect_conformational_spin_locki_labels,
     validate_resolving_the_epigenetic_time_scale_disconnect_conformational_spin_locki_fixture,
 )
+from .scpn_iit_correspondence_validation import (
+    ScpnIitCorrespondenceConfig,
+    ScpnIitCorrespondenceFixtureResult,
+    classify_scpn_iit_correspondence_component,
+    scpn_iit_correspondence_labels,
+    validate_scpn_iit_correspondence_fixture,
+)
 from .section_2_7_the_fisher_info_metric_the_geometry_of_interaction_validation import (
     Section27TheFisherInfoMetricTheGeometryOfInteractionConfig,
     Section27TheFisherInfoMetricTheGeometryOfInteractionFixtureResult,
@@ -1613,6 +1620,13 @@ from .the_physical_mechanism_of_downward_causation_amplification_of_intent_valid
     the_physical_mechanism_of_downward_causation_amplification_of_intent_labels,
     validate_the_physical_mechanism_of_downward_causation_amplification_of_intent_fixture,
 )
+from .the_physics_of_teleology_a_derivation_of_the_ethical_functional_validation import (
+    ThePhysicsOfTeleologyADerivationOfTheEthicalFunctionalConfig,
+    ThePhysicsOfTeleologyADerivationOfTheEthicalFunctionalFixtureResult,
+    classify_the_physics_of_teleology_a_derivation_of_the_ethical_functional_component,
+    the_physics_of_teleology_a_derivation_of_the_ethical_functional_labels,
+    validate_the_physics_of_teleology_a_derivation_of_the_ethical_functional_fixture,
+)
 from .the_psis_field_as_the_target_setter_validation import (
     ThePsisFieldAsTheTargetSetterConfig,
     ThePsisFieldAsTheTargetSetterFixtureResult,
@@ -1767,6 +1781,13 @@ from .u1_fim_multiscale_dynamics_validation import (
     covariant_derivative_formula,
     validate_u1_fim_multiscale_dynamics_fixture,
 )
+from .unified_consciousness_measure_validation import (
+    UnifiedConsciousnessMeasureConfig,
+    UnifiedConsciousnessMeasureFixtureResult,
+    classify_unified_consciousness_measure_component,
+    unified_consciousness_measure_labels,
+    validate_unified_consciousness_measure_fixture,
+)
 from .upde_validation import (
     AdaptiveCouplingConfig,
     AdaptiveCouplingRates,
@@ -1834,6 +1855,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_the_physics_of_teleology_a_derivation_of_the_ethical_functional_fixture",
+    "the_physics_of_teleology_a_derivation_of_the_ethical_functional_labels",
+    "classify_the_physics_of_teleology_a_derivation_of_the_ethical_functional_component",
+    "ThePhysicsOfTeleologyADerivationOfTheEthicalFunctionalFixtureResult",
+    "ThePhysicsOfTeleologyADerivationOfTheEthicalFunctionalConfig",
+    "validate_unified_consciousness_measure_fixture",
+    "unified_consciousness_measure_labels",
+    "classify_unified_consciousness_measure_component",
+    "UnifiedConsciousnessMeasureFixtureResult",
+    "UnifiedConsciousnessMeasureConfig",
+    "validate_scpn_iit_correspondence_fixture",
+    "scpn_iit_correspondence_labels",
+    "classify_scpn_iit_correspondence_component",
+    "ScpnIitCorrespondenceFixtureResult",
+    "ScpnIitCorrespondenceConfig",
     "validate_maximizing_as_the_goal_of_coupling_fixture",
     "maximizing_as_the_goal_of_coupling_labels",
     "classify_maximizing_as_the_goal_of_coupling_component",
