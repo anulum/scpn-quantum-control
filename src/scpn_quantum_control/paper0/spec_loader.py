@@ -6653,6 +6653,55 @@ def load_proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cu
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_PROTOCOL_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/paper0_protocol_validation_specs_2026-05-17.json"
+)
+
+
+def load_protocol_validation_spec(
+    spec_bundle: str | Path = DEFAULT_PROTOCOL_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 protocol validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_PREDICTION_II_CAUSAL_ENTROPIC_FORCE_SIGNATURES_IN_QUANTUM_RANDOMNESS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_prediction_ii_causal_entropic_force_signatures_in_quantum_randomness_validation_specs_2026-05-17.json"
+)
+
+
+def load_prediction_ii_causal_entropic_force_signatures_in_quantum_randomness_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_PREDICTION_II_CAUSAL_ENTROPIC_FORCE_SIGNATURES_IN_QUANTUM_RANDOMNESS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 prediction ii causal entropic force signatures in quantum randomness validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_PROPOSED_EXPERIMENTAL_PROTOCOL_CORRELATING_QRNG_STATISTICAL_DEVIATIONS_W_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_proposed_experimental_protocol_correlating_qrng_statistical_deviations_w_validation_specs_2026-05-17.json"
+)
+
+
+def load_proposed_experimental_protocol_correlating_qrng_statistical_deviations_w_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_PROPOSED_EXPERIMENTAL_PROTOCOL_CORRELATING_QRNG_STATISTICAL_DEVIATIONS_W_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 proposed experimental protocol correlating qrng statistical deviations w validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -7382,4 +7431,10 @@ __all__ = [
     "load_predicted_signature_validation_spec",
     "DEFAULT_PROPOSED_EXPERIMENTAL_PROTOCOL_NV_CENTER_QUANTUM_SENSING_OF_NEURONAL_CUL_SPEC_BUNDLE",
     "load_proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul_validation_spec",
+    "DEFAULT_PROTOCOL_SPEC_BUNDLE",
+    "load_protocol_validation_spec",
+    "DEFAULT_PREDICTION_II_CAUSAL_ENTROPIC_FORCE_SIGNATURES_IN_QUANTUM_RANDOMNESS_SPEC_BUNDLE",
+    "load_prediction_ii_causal_entropic_force_signatures_in_quantum_randomness_validation_spec",
+    "DEFAULT_PROPOSED_EXPERIMENTAL_PROTOCOL_CORRELATING_QRNG_STATISTICAL_DEVIATIONS_W_SPEC_BUNDLE",
+    "load_proposed_experimental_protocol_correlating_qrng_statistical_deviations_w_validation_spec",
 ]

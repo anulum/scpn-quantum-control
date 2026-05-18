@@ -1,0 +1,46 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved.
+# (c) Code 2020-2026 Miroslav Sotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control -- Paper 0 Proposed Experimental Protocol: Correlating QRNG Statistical Deviations with Collective Coherence Metrics runner tests
+"""Tests for the Paper 0 Proposed Experimental Protocol: Correlating QRNG Statistical Deviations with Collective Coherence Metrics fixture runner."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from scripts.run_paper0_proposed_experimental_protocol_correlating_qrng_statistical_deviations_w_fixture import (
+    render_report,
+    write_outputs,
+)
+
+
+def test_run_proposed_experimental_protocol_correlating_qrng_statistical_deviations_w_fixture_writes_json_and_report(
+    tmp_path: Path,
+) -> None:
+    outputs = write_outputs(
+        output_path=tmp_path / "fixture.json", report_path=tmp_path / "fixture.md"
+    )
+    payload = json.loads(outputs["json"].read_text(encoding="utf-8"))
+    report = outputs["report"].read_text(encoding="utf-8")
+    assert payload["source_ledger_span"] == ["P0R05217", "P0R05227"]
+    assert payload["source_record_count"] == 11
+    assert payload["component_count"] == 3
+    assert payload["next_source_boundary"] == "P0R05228"
+    assert (
+        payload["claim_boundary"]
+        == "source-bounded proposed experimental protocol correlating qrng statistical deviations w source-accounting bridge; not validation evidence"
+    )
+    assert (
+        "Paper 0 "
+        + "Proposed Experimental Protocol: Correlating QRNG Statistical Deviations with Collective Coherence Metrics"
+        + " Fixture"
+        in report
+    )
+    assert (
+        "source_proposed_experimental_protocol_correlating_qrng_statistical_deviations_w_only_no_experiment"
+        in render_report(payload)
+    )
