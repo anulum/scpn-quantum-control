@@ -474,6 +474,13 @@ from .experimental_signatures_search_strategies_validation import (
     experimental_signatures_search_strategies_labels,
     validate_experimental_signatures_search_strategies_fixture,
 )
+from .explicit_identification_of_terms_validation import (
+    ExplicitIdentificationOfTermsConfig,
+    ExplicitIdentificationOfTermsFixtureResult,
+    classify_explicit_identification_of_terms_component,
+    explicit_identification_of_terms_labels,
+    validate_explicit_identification_of_terms_fixture,
+)
 from .field_coupling_cfield_validation import (
     FieldCouplingCfieldConfig,
     FieldCouplingCfieldFixtureResult,
@@ -1058,6 +1065,13 @@ from .meta_framework_integrations_p0r04224_validation import (
     classify_meta_framework_integrations_p0r04224_component,
     meta_framework_integrations_p0r04224_labels,
     validate_meta_framework_integrations_p0r04224_fixture,
+)
+from .meta_framework_integrations_p0r04273_validation import (
+    MetaFrameworkIntegrationsP0r04273Config,
+    MetaFrameworkIntegrationsP0r04273FixtureResult,
+    classify_meta_framework_integrations_p0r04273_component,
+    meta_framework_integrations_p0r04273_labels,
+    validate_meta_framework_integrations_p0r04273_fixture,
 )
 from .meta_framework_integrations_validation import (
     MetaFrameworkIntegrationsConfig,
@@ -1907,6 +1921,13 @@ from .the_physics_of_teleology_a_derivation_of_the_ethical_functional_validation
     the_physics_of_teleology_a_derivation_of_the_ethical_functional_labels,
     validate_the_physics_of_teleology_a_derivation_of_the_ethical_functional_fixture,
 )
+from .the_pseudoscalar_coupling_validation import (
+    ThePseudoscalarCouplingConfig,
+    ThePseudoscalarCouplingFixtureResult,
+    classify_the_pseudoscalar_coupling_component,
+    the_pseudoscalar_coupling_labels,
+    validate_the_pseudoscalar_coupling_fixture,
+)
 from .the_psis_field_as_the_target_setter_validation import (
     ThePsisFieldAsTheTargetSetterConfig,
     ThePsisFieldAsTheTargetSetterFixtureResult,
@@ -2149,6 +2170,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_the_pseudoscalar_coupling_fixture",
+    "the_pseudoscalar_coupling_labels",
+    "classify_the_pseudoscalar_coupling_component",
+    "ThePseudoscalarCouplingFixtureResult",
+    "ThePseudoscalarCouplingConfig",
+    "validate_explicit_identification_of_terms_fixture",
+    "explicit_identification_of_terms_labels",
+    "classify_explicit_identification_of_terms_component",
+    "ExplicitIdentificationOfTermsFixtureResult",
+    "ExplicitIdentificationOfTermsConfig",
+    "validate_meta_framework_integrations_p0r04273_fixture",
+    "meta_framework_integrations_p0r04273_labels",
+    "classify_meta_framework_integrations_p0r04273_component",
+    "MetaFrameworkIntegrationsP0r04273FixtureResult",
+    "MetaFrameworkIntegrationsP0r04273Config",
     "validate_resolving_the_probability_desert_superradiant_amplification_and_bec_stim_fixture",
     "resolving_the_probability_desert_superradiant_amplification_and_bec_stim_labels",
     "classify_resolving_the_probability_desert_superradiant_amplification_and_bec_stim_component",

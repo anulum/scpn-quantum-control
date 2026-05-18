@@ -5105,6 +5105,54 @@ def load_resolving_the_probability_desert_superradiant_amplification_and_bec_sti
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R04273_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_meta_framework_integrations_p0r04273_validation_specs_2026-05-17.json"
+)
+
+
+def load_meta_framework_integrations_p0r04273_validation_spec(
+    spec_bundle: str | Path = DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R04273_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 meta framework integrations p0r04273 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_EXPLICIT_IDENTIFICATION_OF_TERMS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_explicit_identification_of_terms_validation_specs_2026-05-17.json"
+)
+
+
+def load_explicit_identification_of_terms_validation_spec(
+    spec_bundle: str | Path = DEFAULT_EXPLICIT_IDENTIFICATION_OF_TERMS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 explicit identification of terms validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_PSEUDOSCALAR_COUPLING_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_pseudoscalar_coupling_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_pseudoscalar_coupling_validation_spec(
+    spec_bundle: str | Path = DEFAULT_THE_PSEUDOSCALAR_COUPLING_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the pseudoscalar coupling validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -5648,4 +5696,10 @@ __all__ = [
     "load_paper0_slice_p0r04247_validation_spec",
     "DEFAULT_RESOLVING_THE_PROBABILITY_DESERT_SUPERRADIANT_AMPLIFICATION_AND_BEC_STIM_SPEC_BUNDLE",
     "load_resolving_the_probability_desert_superradiant_amplification_and_bec_stim_validation_spec",
+    "DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R04273_SPEC_BUNDLE",
+    "load_meta_framework_integrations_p0r04273_validation_spec",
+    "DEFAULT_EXPLICIT_IDENTIFICATION_OF_TERMS_SPEC_BUNDLE",
+    "load_explicit_identification_of_terms_validation_spec",
+    "DEFAULT_THE_PSEUDOSCALAR_COUPLING_SPEC_BUNDLE",
+    "load_the_pseudoscalar_coupling_validation_spec",
 ]
