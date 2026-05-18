@@ -8126,6 +8126,56 @@ def load_i_the_unified_mathematical_description_the_dynamic_fiber_bundle_validat
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_IV_THE_COHERENCE_BACKBONE_MS_QEC_AND_SYMMETRY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_iv_the_coherence_backbone_ms_qec_and_symmetry_validation_specs_2026-05-17.json"
+)
+
+
+def load_iv_the_coherence_backbone_ms_qec_and_symmetry_validation_spec(
+    spec_bundle: str | Path = DEFAULT_IV_THE_COHERENCE_BACKBONE_MS_QEC_AND_SYMMETRY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 iv the coherence backbone ms qec and symmetry validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_VIII_THE_SYNTHESIS_OF_SUBJECTIVITY_THE_TRIADIC_SOLUTION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_viii_the_synthesis_of_subjectivity_the_triadic_solution_validation_specs_2026-05-17.json"
+)
+
+
+def load_viii_the_synthesis_of_subjectivity_the_triadic_solution_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_VIII_THE_SYNTHESIS_OF_SUBJECTIVITY_THE_TRIADIC_SOLUTION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 viii the synthesis of subjectivity the triadic solution validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_UNIFYING_COMPUTATIONAL_PRINCIPLE_HIERARCHICAL_PREDICTIVE_CODING_HPC_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_unifying_computational_principle_hierarchical_predictive_coding_hpc_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_unifying_computational_principle_hierarchical_predictive_coding_hpc_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_UNIFYING_COMPUTATIONAL_PRINCIPLE_HIERARCHICAL_PREDICTIVE_CODING_HPC_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the unifying computational principle hierarchical predictive coding hpc validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -9035,4 +9085,10 @@ __all__ = [
     "load_iv_ethics_as_causal_entropic_forces_cef_validation_spec",
     "DEFAULT_I_THE_UNIFIED_MATHEMATICAL_DESCRIPTION_THE_DYNAMIC_FIBER_BUNDLE_SPEC_BUNDLE",
     "load_i_the_unified_mathematical_description_the_dynamic_fiber_bundle_validation_spec",
+    "DEFAULT_IV_THE_COHERENCE_BACKBONE_MS_QEC_AND_SYMMETRY_SPEC_BUNDLE",
+    "load_iv_the_coherence_backbone_ms_qec_and_symmetry_validation_spec",
+    "DEFAULT_VIII_THE_SYNTHESIS_OF_SUBJECTIVITY_THE_TRIADIC_SOLUTION_SPEC_BUNDLE",
+    "load_viii_the_synthesis_of_subjectivity_the_triadic_solution_validation_spec",
+    "DEFAULT_THE_UNIFYING_COMPUTATIONAL_PRINCIPLE_HIERARCHICAL_PREDICTIVE_CODING_HPC_SPEC_BUNDLE",
+    "load_the_unifying_computational_principle_hierarchical_predictive_coding_hpc_validation_spec",
 ]

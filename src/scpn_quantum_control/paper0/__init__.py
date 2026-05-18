@@ -1105,6 +1105,13 @@ from .iv_sub_synaptic_and_axonal_architecture_l1_l3_validation import (
     iv_sub_synaptic_and_axonal_architecture_l1_l3_labels,
     validate_iv_sub_synaptic_and_axonal_architecture_l1_l3_fixture,
 )
+from .iv_the_coherence_backbone_ms_qec_and_symmetry_validation import (
+    IvTheCoherenceBackboneMsQecAndSymmetryConfig,
+    IvTheCoherenceBackboneMsQecAndSymmetryFixtureResult,
+    classify_iv_the_coherence_backbone_ms_qec_and_symmetry_component,
+    iv_the_coherence_backbone_ms_qec_and_symmetry_labels,
+    validate_iv_the_coherence_backbone_ms_qec_and_symmetry_fixture,
+)
 from .iv_the_generation_of_subjective_experience_geometric_qualia_validation import (
     IvTheGenerationOfSubjectiveExperienceGeometricQualiaConfig,
     IvTheGenerationOfSubjectiveExperienceGeometricQualiaFixtureResult,
@@ -3195,6 +3202,13 @@ from .the_ultimate_feedback_loop_validation import (
     the_ultimate_feedback_loop_labels,
     validate_the_ultimate_feedback_loop_fixture,
 )
+from .the_unifying_computational_principle_hierarchical_predictive_coding_hpc_validation import (
+    TheUnifyingComputationalPrincipleHierarchicalPredictiveCodingHpcConfig,
+    TheUnifyingComputationalPrincipleHierarchicalPredictiveCodingHpcFixtureResult,
+    classify_the_unifying_computational_principle_hierarchical_predictive_coding_hpc_component,
+    the_unifying_computational_principle_hierarchical_predictive_coding_hpc_labels,
+    validate_the_unifying_computational_principle_hierarchical_predictive_coding_hpc_fixture,
+)
 from .the_universe_s_built_in_moral_compass_validation import (
     TheUniverseSBuiltInMoralCompassConfig,
     TheUniverseSBuiltInMoralCompassFixtureResult,
@@ -3414,6 +3428,13 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
     validate_viii_the_evolutionary_trajectory_of_the_brain_body_system_fixture,
     viii_the_evolutionary_trajectory_of_the_brain_body_system_labels,
 )
+from .viii_the_synthesis_of_subjectivity_the_triadic_solution_validation import (
+    ViiiTheSynthesisOfSubjectivityTheTriadicSolutionConfig,
+    ViiiTheSynthesisOfSubjectivityTheTriadicSolutionFixtureResult,
+    classify_viii_the_synthesis_of_subjectivity_the_triadic_solution_component,
+    validate_viii_the_synthesis_of_subjectivity_the_triadic_solution_fixture,
+    viii_the_synthesis_of_subjectivity_the_triadic_solution_labels,
+)
 from .xi_the_mathematics_of_hierarchy_and_scale_invariance_validation import (
     XiTheMathematicsOfHierarchyAndScaleInvarianceConfig,
     XiTheMathematicsOfHierarchyAndScaleInvarianceFixtureResult,
@@ -3430,6 +3451,21 @@ from .xiii_the_constructive_role_of_noise_msr_and_nis_validation import (
 )
 
 __all__ = [
+    "validate_the_unifying_computational_principle_hierarchical_predictive_coding_hpc_fixture",
+    "the_unifying_computational_principle_hierarchical_predictive_coding_hpc_labels",
+    "classify_the_unifying_computational_principle_hierarchical_predictive_coding_hpc_component",
+    "TheUnifyingComputationalPrincipleHierarchicalPredictiveCodingHpcFixtureResult",
+    "TheUnifyingComputationalPrincipleHierarchicalPredictiveCodingHpcConfig",
+    "validate_viii_the_synthesis_of_subjectivity_the_triadic_solution_fixture",
+    "viii_the_synthesis_of_subjectivity_the_triadic_solution_labels",
+    "classify_viii_the_synthesis_of_subjectivity_the_triadic_solution_component",
+    "ViiiTheSynthesisOfSubjectivityTheTriadicSolutionFixtureResult",
+    "ViiiTheSynthesisOfSubjectivityTheTriadicSolutionConfig",
+    "validate_iv_the_coherence_backbone_ms_qec_and_symmetry_fixture",
+    "iv_the_coherence_backbone_ms_qec_and_symmetry_labels",
+    "classify_iv_the_coherence_backbone_ms_qec_and_symmetry_component",
+    "IvTheCoherenceBackboneMsQecAndSymmetryFixtureResult",
+    "IvTheCoherenceBackboneMsQecAndSymmetryConfig",
     "validate_i_the_unified_mathematical_description_the_dynamic_fiber_bundle_fixture",
     "i_the_unified_mathematical_description_the_dynamic_fiber_bundle_labels",
     "classify_i_the_unified_mathematical_description_the_dynamic_fiber_bundle_component",
