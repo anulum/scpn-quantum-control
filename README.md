@@ -27,7 +27,9 @@
 > and noise-limited claims. Current promoted hardware evidence is narrowed to
 > artefact-backed `ibm_fez` baseline rows, the April/May 2026
 > `ibm_kingston` DLA parity raw-count datasets, and the May 2026 SCPN/FIM
-> falsification artefacts. APIs may evolve as this work progresses.
+> falsification artefacts. Stable core contracts and backend capability
+> artifacts are now part of release/repro hardening and are kept separate from
+> non-artefact scientific claims. APIs may evolve as this work progresses.
 
 **Version:** 0.9.6
 **Status:** Kuramoto-XY compiler + hardware runners + analysis stack | 49 exported Rust `#[pyfunction]` bindings | 98 tracked notebooks | 22 example files | 97%+ coverage | IBM Heron r2 evidence ledgered
@@ -39,6 +41,7 @@
 | Area | Public status |
 |---|---|
 | Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, and order-parameter measurements. |
+| Release and reproducibility scope | Stable core contracts and backend capability artifacts for Kuramoto-XY synchronisation are included in release/readiness checks and promoted only with deterministic evidence manifests. |
 | Hardware evidence | `ibm_fez` baseline rows are legacy artefact-backed observations; `ibm_kingston` Phase 1, Phase 2 A+G, Phase 2 B-C, and popcount DLA datasets are promoted with raw-count artefacts. The SCPN/FIM `ibm_kingston` result is promoted as a negative/falsification result for the tested digital circuit family. |
 | Simulator and methods evidence | BKT, OTOC, Floquet, MBL, FIM, VQE, GPU, tensor-network, and classical comparison claims stay marked as simulator/classical/methods unless a hardware artefact is named. Generated benchmark artefacts are indexed from the benchmark dashboard and reproducibility CLI. |
 | Paper 0 source-validation register | Paper 0 is fully promoted through the source-accounting register: the planner reports `0` remaining work orders and `0` remaining source records after `P0R00001`-`P0R06211`. The generated register contains 466 validation modules with colocated specs, fixtures, loaders, and tests; this is source-bounded ingestion, not external validation evidence. |
@@ -142,9 +145,11 @@ The package provides:
    research-gems and API pages; exact file counts use the package table below.
 
 3. **Hardware evidence with claim classes** — legacy `ibm_fez` baseline rows,
-   promoted `ibm_kingston` DLA parity datasets, and the SCPN/FIM negative
-   hardware result are separated from simulator-only, frontier, queued-job, and
-   aggregate-only outputs.
+  promoted `ibm_kingston` DLA parity datasets, and the SCPN/FIM negative
+  hardware result are separated from simulator-only, frontier, queued-job, and
+  aggregate-only outputs.
+   Stable core contracts and backend capability artifacts are included in this
+   hardening boundary and are replayed via reproducibility tooling.
 
 4. **Paper 0 source-validation register** — source-bounded Paper 0 ingestion is
    complete across `P0R00001`-`P0R06211`. The register is exposed under

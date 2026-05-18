@@ -19,14 +19,29 @@ boundaries. The deterministic gate is:
 ./.venv-linux/bin/python tools/audit_release_readiness.py --fail-on-blocker
 ```
 
-The audit composes four release checks:
+The audit composes five release checks:
 
 | Check | Release meaning |
 |---|---|
 | Version consistency | `pyproject.toml`, package `__version__`, `CITATION.cff`, and `.zenodo.json` carry the same version. |
-| Required release artefacts | Paper 0, coverage, behavioural-test, K_nm, and S2 blocker artefacts are present. |
+| Required release artefacts | Paper 0, coverage, behavioural-test, K_nm, stable core contracts, stable core contract fixtures, backend capability artefacts, and S2 blocker artefacts are present. |
 | Coverage gap gate | A fresh `coverage.xml` exists, aggregate package coverage meets the release threshold, and unjustified missing files are blocked. Per-file gaps remain reported; `--fail-on-file-gap` can promote them to hard blockers. |
 | Behavioural quality gate | Tests satisfy the smoke-only, assertion-density, and exception-contract-density thresholds. |
+| Core-artifact determinism | Stable core contracts and backend capability artefacts are reproducible from committed metadata, and exported digests are checked before tagging. |
+
+For any package tag or public release note touching stable-core contracts or backend
+capabilities, the preferred gate is:
+
+```bash
+scpn-bench stable-core-release-gate
+```
+
+The bundle is a no-QPU reproducibility command that composes:
+
+- `scpn-bench stable-core-capability-gate`
+- `scpn-bench stable-core-contract-gate`
+
+Use component gates only for targeted component-only verification.
 
 ## Coverage and test-quality closure boundary
 
@@ -47,6 +62,18 @@ docs/coverage_justified_exclusions_2026-05-18.json
 The current exclusions are limited to optional Julia-runtime wrappers and the
 generated Paper 0 source-accounting package. Hand-maintained source files remain
 under the normal coverage and behavioural-quality gates.
+
+The same closed-set discipline applies to stable core contracts and backend
+capability artefacts. These artefacts are not only generated for runtime use;
+they are treated as release-blocking evidence surfaces alongside version,
+coverage, and behavioural gates.
+
+For package tags or public release notes that touch stable-core contract
+shape, adaptor boundaries, or contract-facing text, add:
+
+```bash
+scpn-bench stable-core-contract-gate
+```
 
 ## Scientific gap closure boundary
 
@@ -97,6 +124,21 @@ summary, then compares the regenerated planner output against the committed
 artefact. The gate is offline, does not submit hardware jobs, and only locks the
 planner eligibility/blocker contract.
 
+## Stable-core release/repro gate
+
+When release notes, API docs, or tags touch stable-core claims, run:
+
+```bash
+scpn-bench stable-core-release-gate
+```
+
+This preferred gate is no-QPU and reproducible. It is composed of:
+
+- `scpn-bench stable-core-capability-gate`
+- `scpn-bench stable-core-contract-gate`
+
+Use these component gates for isolated changes to only one stable-core surface.
+
 ## Hardware result-pack release gate
 
 Any tag, paper-facing update, website update, or release note that cites
@@ -128,12 +170,14 @@ Before tagging:
 1. Generate a fresh coverage XML report with the release test command.
 2. Run `scpn-bench sync-benchmark-gate` if the release touches benchmark code,
    benchmark registry rows, generated benchmark artefacts, or benchmark claims.
-3. Run `scpn-bench symmetry-sector-mitigation-gate` if the release touches
+3. Run `scpn-bench stable-core-release-gate` if the release touches stable-core
+   contracts, contract fixtures, capability claims, or stable-core API text.
+5. Run `scpn-bench symmetry-sector-mitigation-gate` if the release touches
    symmetry-sector mitigation planning, planner fixtures, or mitigation claims.
-4. If the release cites promoted hardware evidence, generate the hardware
+6. If the release cites promoted hardware evidence, generate the hardware
    result-pack evidence packet and pass it to the release audit.
-5. Run `tools/audit_release_readiness.py --fail-on-blocker` with the hardware
+7. Run `tools/audit_release_readiness.py --fail-on-blocker` with the hardware
    result-pack evidence argument when applicable.
-6. Run the scoped docs build and version-consistency checks.
-7. Commit with the required trailer after staged-diff audit.
-8. Push the commit and wait for CI before creating a release tag.
+8. Run the scoped docs build and version-consistency checks.
+9. Commit with the required trailer after staged-diff audit.
+10. Push the commit and wait for CI before creating a release tag.

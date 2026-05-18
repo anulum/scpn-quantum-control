@@ -61,6 +61,8 @@ nav:
       - Orchestrator Integration: orchestrator_integration.md
   - API Reference:
       - Stable Facades API: stable_facades_api.md
+      - Stable Core API: stable_core_api.md
+      - Stable Core Backend Capability Matrix: stable_core_backend_capability_matrix.md
       - Kuramoto Core Facade: kuramoto_core_facade.md
       - Core Package Boundary: core_package_boundary.md
       - API Overview: api.md

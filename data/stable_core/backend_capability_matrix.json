@@ -1,0 +1,75 @@
+{
+  "claim_boundary": "This payload records stable backend capability profiles only. It does not prove adapter implementation, dependency availability, or hardware execution readiness.",
+  "hardware_submission": false,
+  "rows": [
+    {
+      "backend_id": "classical-reference",
+      "capabilities": [
+        "order_parameter",
+        "parity",
+        "fim",
+        "control"
+      ],
+      "claim_boundary": "Capability profile only; adapter implementation, dependency checks, and evidence gates remain required before execution claims.",
+      "hardware_submission_allowed": false,
+      "kind": "classical_reference"
+    },
+    {
+      "backend_id": "hardware-replay",
+      "capabilities": [
+        "order_parameter",
+        "parity",
+        "mitigation_replay"
+      ],
+      "claim_boundary": "Capability profile only; adapter implementation, dependency checks, and evidence gates remain required before execution claims.",
+      "hardware_submission_allowed": false,
+      "kind": "hardware_replay"
+    },
+    {
+      "backend_id": "qiskit-runtime",
+      "capabilities": [
+        "order_parameter",
+        "parity",
+        "mitigation_replay"
+      ],
+      "claim_boundary": "Capability profile only; adapter implementation, dependency checks, and evidence gates remain required before execution claims.",
+      "hardware_submission_allowed": false,
+      "kind": "qiskit"
+    },
+    {
+      "backend_id": "qutip-dynamics",
+      "capabilities": [
+        "order_parameter",
+        "hamiltonian_dynamics",
+        "lindblad"
+      ],
+      "claim_boundary": "Capability profile only; adapter implementation, dependency checks, and evidence gates remain required before execution claims.",
+      "hardware_submission_allowed": false,
+      "kind": "qutip"
+    },
+    {
+      "backend_id": "pennylane-autodiff",
+      "capabilities": [
+        "order_parameter",
+        "parity",
+        "control",
+        "autodiff"
+      ],
+      "claim_boundary": "Capability profile only; adapter implementation, dependency checks, and evidence gates remain required before execution claims.",
+      "hardware_submission_allowed": false,
+      "kind": "pennylane"
+    },
+    {
+      "backend_id": "pulser-surrogate",
+      "capabilities": [
+        "order_parameter",
+        "analog_surrogate",
+        "pulse_schedule"
+      ],
+      "claim_boundary": "Capability profile only; adapter implementation, dependency checks, and evidence gates remain required before execution claims.",
+      "hardware_submission_allowed": false,
+      "kind": "pulser_surrogate"
+    }
+  ],
+  "schema": "stable_core_backend_capability_matrix_v1"
+}

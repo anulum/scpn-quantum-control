@@ -44,6 +44,7 @@ OFFLINE_HARNESS_POLICY = ExecutionSurfacePolicy(
         "data/s4_multi_hardware_control",
         "data/s5_benchmark_harness",
         "data/s6_quantum_kuramoto_split",
+        "data/stable_core",
         "data/synchronisation_benchmarks",
         "data/symmetry_sector_mitigation",
         "docs",
@@ -213,6 +214,26 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         "scripts/run_symmetry_sector_mitigation_gate.py",
         frozenset({"symmetry-sector-gate"}),
     ),
+    Harness(
+        "stable-core-capability-matrix",
+        "scripts/export_stable_core_capability_matrix.py",
+        frozenset({"stable-core"}),
+    ),
+    Harness(
+        "stable-core-capability-gate",
+        "scripts/run_stable_core_capability_gate.py",
+        frozenset({"stable-core-gate"}),
+    ),
+    Harness(
+        "stable-core-contract-gate",
+        "scripts/run_stable_core_contract_gate.py",
+        frozenset({"stable-core-contract-gate"}),
+    ),
+    Harness(
+        "stable-core-release-gate",
+        "scripts/run_stable_core_release_gate.py",
+        frozenset({"stable-core-release-gate"}),
+    ),
 )
 
 ARTEFACT_PATHS = (
@@ -224,8 +245,10 @@ ARTEFACT_PATHS = (
     "data/s4_multi_hardware_control",
     "data/s5_benchmark_harness",
     "data/s6_quantum_kuramoto_split",
+    "data/stable_core",
     "data/synchronisation_benchmarks",
     "data/symmetry_sector_mitigation",
+    "docs/stable_core_backend_capability_matrix.md",
 )
 
 
@@ -257,6 +280,30 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate methods and FIM artefacts in one run.",
     )
     _add_run_options(all_parser, default_group="all")
+
+    stable_core = subparsers.add_parser(
+        "stable-core-capability-matrix",
+        help="Regenerate the stable-core capability matrix artifacts.",
+    )
+    _add_run_options(stable_core, default_group="stable-core")
+
+    stable_core_gate = subparsers.add_parser(
+        "stable-core-capability-gate",
+        help="Run and check stable-core capability gate fixtures.",
+    )
+    _add_run_options(stable_core_gate, default_group="stable-core-gate")
+
+    stable_core_contract_gate = subparsers.add_parser(
+        "stable-core-contract-gate",
+        help="Run and check stable-core contract gate fixtures.",
+    )
+    _add_run_options(stable_core_contract_gate, default_group="stable-core-contract-gate")
+
+    stable_core_release_gate = subparsers.add_parser(
+        "stable-core-release-gate",
+        help="Run and check the stable-core release gate fixture set.",
+    )
+    _add_run_options(stable_core_release_gate, default_group="stable-core-release-gate")
 
     s1 = subparsers.add_parser(
         "s1-feedback",

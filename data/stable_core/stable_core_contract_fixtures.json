@@ -1,0 +1,621 @@
+{
+  "backends": [
+    {
+      "backend_id": "classical-reference",
+      "capabilities": [
+        "order_parameter",
+        "parity",
+        "fim",
+        "control"
+      ],
+      "hardware_submission_allowed": false,
+      "kind": "classical_reference",
+      "metadata": {
+        "role": "baseline"
+      }
+    },
+    {
+      "backend_id": "hardware-replay",
+      "capabilities": [
+        "order_parameter",
+        "parity",
+        "mitigation_replay"
+      ],
+      "hardware_submission_allowed": false,
+      "kind": "hardware_replay",
+      "metadata": {
+        "role": "planner-replay"
+      }
+    },
+    {
+      "backend_id": "qiskit-runtime",
+      "capabilities": [
+        "order_parameter",
+        "parity",
+        "mitigation_replay"
+      ],
+      "hardware_submission_allowed": false,
+      "kind": "qiskit",
+      "metadata": {
+        "role": "adapter"
+      }
+    },
+    {
+      "backend_id": "qiskit-runtime-live",
+      "capabilities": [
+        "order_parameter",
+        "parity",
+        "mitigation_replay"
+      ],
+      "hardware_submission_allowed": true,
+      "kind": "qiskit",
+      "metadata": {
+        "mode": "fixture",
+        "role": "hardware-path"
+      }
+    },
+    {
+      "backend_id": "qutip-dynamics",
+      "capabilities": [
+        "order_parameter",
+        "hamiltonian_dynamics",
+        "lindblad"
+      ],
+      "hardware_submission_allowed": false,
+      "kind": "qutip",
+      "metadata": {
+        "role": "open-system"
+      }
+    },
+    {
+      "backend_id": "pennylane-autodiff",
+      "capabilities": [
+        "order_parameter",
+        "parity",
+        "control",
+        "autodiff"
+      ],
+      "hardware_submission_allowed": false,
+      "kind": "pennylane",
+      "metadata": {
+        "role": "autodiff"
+      }
+    },
+    {
+      "backend_id": "pulser-surrogate",
+      "capabilities": [
+        "order_parameter",
+        "analog_surrogate",
+        "pulse_schedule"
+      ],
+      "hardware_submission_allowed": false,
+      "kind": "pulser_surrogate",
+      "metadata": {
+        "role": "analog"
+      }
+    }
+  ],
+  "claim_boundary": "Stable-core contract fixtures are deterministic shape checks only. They do not execute on hardware or invoke external providers.",
+  "experiments": [
+    {
+      "backend": {
+        "backend_id": "classical-reference",
+        "capabilities": [
+          "order_parameter",
+          "parity",
+          "fim",
+          "control"
+        ],
+        "hardware_submission_allowed": false,
+        "kind": "classical_reference",
+        "metadata": {
+          "role": "baseline"
+        }
+      },
+      "experiment_id": "exp-ring4-order-classical",
+      "metadata": {},
+      "objective": "order_parameter",
+      "problem": {
+        "coupling_matrix": [
+          [
+            0.0,
+            0.45,
+            0.0,
+            0.45
+          ],
+          [
+            0.45,
+            0.0,
+            0.45,
+            0.0
+          ],
+          [
+            0.0,
+            0.45,
+            0.0,
+            0.45
+          ],
+          [
+            0.45,
+            0.0,
+            0.45,
+            0.0
+          ]
+        ],
+        "initial_state": "0011",
+        "kind": "kuramoto_xy",
+        "metadata": {
+          "domain": "stable-core",
+          "source": "fixture"
+        },
+        "n_qubits": 4,
+        "omega": [
+          0.8,
+          0.9,
+          1.1,
+          1.2
+        ],
+        "problem_id": "ring4"
+      },
+      "seed": 17,
+      "shots": 1024
+    },
+    {
+      "backend": {
+        "backend_id": "hardware-replay",
+        "capabilities": [
+          "order_parameter",
+          "parity",
+          "mitigation_replay"
+        ],
+        "hardware_submission_allowed": false,
+        "kind": "hardware_replay",
+        "metadata": {
+          "role": "planner-replay"
+        }
+      },
+      "experiment_id": "exp-ring4-parity-replay",
+      "metadata": {},
+      "objective": "parity_leakage",
+      "problem": {
+        "coupling_matrix": [
+          [
+            0.0,
+            0.45,
+            0.0,
+            0.45
+          ],
+          [
+            0.45,
+            0.0,
+            0.45,
+            0.0
+          ],
+          [
+            0.0,
+            0.45,
+            0.0,
+            0.45
+          ],
+          [
+            0.45,
+            0.0,
+            0.45,
+            0.0
+          ]
+        ],
+        "initial_state": "0011",
+        "kind": "kuramoto_xy",
+        "metadata": {
+          "domain": "stable-core",
+          "source": "fixture"
+        },
+        "n_qubits": 4,
+        "omega": [
+          0.8,
+          0.9,
+          1.1,
+          1.2
+        ],
+        "problem_id": "ring4"
+      },
+      "seed": 23,
+      "shots": 512
+    },
+    {
+      "backend": {
+        "backend_id": "qiskit-runtime",
+        "capabilities": [
+          "order_parameter",
+          "parity",
+          "mitigation_replay"
+        ],
+        "hardware_submission_allowed": false,
+        "kind": "qiskit",
+        "metadata": {
+          "role": "adapter"
+        }
+      },
+      "experiment_id": "exp-chain3-mitigation-qiskit",
+      "metadata": {},
+      "objective": "mitigation_replay",
+      "problem": {
+        "coupling_matrix": [
+          [
+            0.0,
+            0.55,
+            0.0
+          ],
+          [
+            0.55,
+            0.0,
+            0.55
+          ],
+          [
+            0.0,
+            0.55,
+            0.0
+          ]
+        ],
+        "initial_state": "010",
+        "kind": "kuramoto_xy",
+        "metadata": {
+          "domain": "stable-core",
+          "lane": "chain",
+          "source": "fixture"
+        },
+        "n_qubits": 3,
+        "omega": [
+          1.0,
+          0.95,
+          1.05
+        ],
+        "problem_id": "chain3"
+      },
+      "seed": 31,
+      "shots": null
+    },
+    {
+      "backend": {
+        "backend_id": "qutip-dynamics-fallback",
+        "capabilities": [
+          "order_parameter",
+          "hamiltonian_dynamics",
+          "lindblad"
+        ],
+        "hardware_submission_allowed": false,
+        "kind": "qutip",
+        "metadata": {
+          "role": "fim-fallback"
+        }
+      },
+      "experiment_id": "exp-chain3-fim-qutip",
+      "metadata": {
+        "fixture": "fim"
+      },
+      "objective": "order_parameter",
+      "problem": {
+        "coupling_matrix": [
+          [
+            0.0,
+            0.55,
+            0.0
+          ],
+          [
+            0.55,
+            0.0,
+            0.55
+          ],
+          [
+            0.0,
+            0.55,
+            0.0
+          ]
+        ],
+        "initial_state": "010",
+        "kind": "kuramoto_xy",
+        "metadata": {
+          "domain": "stable-core",
+          "lane": "chain",
+          "source": "fixture"
+        },
+        "n_qubits": 3,
+        "omega": [
+          1.0,
+          0.95,
+          1.05
+        ],
+        "problem_id": "chain3"
+      },
+      "seed": 41,
+      "shots": 256
+    },
+    {
+      "backend": {
+        "backend_id": "classical-control",
+        "capabilities": [
+          "order_parameter",
+          "parity",
+          "fim",
+          "control"
+        ],
+        "hardware_submission_allowed": false,
+        "kind": "classical_reference",
+        "metadata": {
+          "role": "control"
+        }
+      },
+      "experiment_id": "exp-ring4-control-live",
+      "metadata": {
+        "control_profile": "l2"
+      },
+      "objective": "control_cost",
+      "problem": {
+        "coupling_matrix": [
+          [
+            0.0,
+            0.45,
+            0.0,
+            0.45
+          ],
+          [
+            0.45,
+            0.0,
+            0.45,
+            0.0
+          ],
+          [
+            0.0,
+            0.45,
+            0.0,
+            0.45
+          ],
+          [
+            0.45,
+            0.0,
+            0.45,
+            0.0
+          ]
+        ],
+        "initial_state": "0011",
+        "kind": "kuramoto_xy",
+        "metadata": {
+          "domain": "stable-core",
+          "source": "fixture"
+        },
+        "n_qubits": 4,
+        "omega": [
+          0.8,
+          0.9,
+          1.1,
+          1.2
+        ],
+        "problem_id": "ring4"
+      },
+      "seed": 7,
+      "shots": null
+    },
+    {
+      "backend": {
+        "backend_id": "qiskit-runtime-live",
+        "capabilities": [
+          "order_parameter",
+          "parity",
+          "mitigation_replay"
+        ],
+        "hardware_submission_allowed": true,
+        "kind": "qiskit",
+        "metadata": {
+          "mode": "fixture",
+          "role": "hardware-path"
+        }
+      },
+      "experiment_id": "exp-ring4-order-qiskit-live",
+      "metadata": {
+        "preregistration_id": "fixture-001"
+      },
+      "objective": "order_parameter",
+      "problem": {
+        "coupling_matrix": [
+          [
+            0.0,
+            0.45,
+            0.0,
+            0.45
+          ],
+          [
+            0.45,
+            0.0,
+            0.45,
+            0.0
+          ],
+          [
+            0.0,
+            0.45,
+            0.0,
+            0.45
+          ],
+          [
+            0.45,
+            0.0,
+            0.45,
+            0.0
+          ]
+        ],
+        "initial_state": "0011",
+        "kind": "kuramoto_xy",
+        "metadata": {
+          "domain": "stable-core",
+          "source": "fixture"
+        },
+        "n_qubits": 4,
+        "omega": [
+          0.8,
+          0.9,
+          1.1,
+          1.2
+        ],
+        "problem_id": "ring4"
+      },
+      "seed": 53,
+      "shots": null
+    }
+  ],
+  "hardware_submission": false,
+  "problems": [
+    {
+      "coupling_matrix": [
+        [
+          0.0,
+          0.45,
+          0.0,
+          0.45
+        ],
+        [
+          0.45,
+          0.0,
+          0.45,
+          0.0
+        ],
+        [
+          0.0,
+          0.45,
+          0.0,
+          0.45
+        ],
+        [
+          0.45,
+          0.0,
+          0.45,
+          0.0
+        ]
+      ],
+      "initial_state": "0011",
+      "kind": "kuramoto_xy",
+      "metadata": {
+        "domain": "stable-core",
+        "source": "fixture"
+      },
+      "n_qubits": 4,
+      "omega": [
+        0.8,
+        0.9,
+        1.1,
+        1.2
+      ],
+      "problem_id": "ring4"
+    },
+    {
+      "coupling_matrix": [
+        [
+          0.0,
+          0.55,
+          0.0
+        ],
+        [
+          0.55,
+          0.0,
+          0.55
+        ],
+        [
+          0.0,
+          0.55,
+          0.0
+        ]
+      ],
+      "initial_state": "010",
+      "kind": "kuramoto_xy",
+      "metadata": {
+        "domain": "stable-core",
+        "lane": "chain",
+        "source": "fixture"
+      },
+      "n_qubits": 3,
+      "omega": [
+        1.0,
+        0.95,
+        1.05
+      ],
+      "problem_id": "chain3"
+    }
+  ],
+  "results": [
+    {
+      "artifacts": [
+        "artifacts/exp-ring4-order-classical.json"
+      ],
+      "backend_id": "classical-reference",
+      "blockers": [],
+      "experiment_id": "exp-ring4-order-classical",
+      "metadata": {},
+      "observables": {
+        "order_parameter": 0.742
+      },
+      "status": "succeeded"
+    },
+    {
+      "artifacts": [],
+      "backend_id": "hardware-replay",
+      "blockers": [],
+      "experiment_id": "exp-ring4-parity-replay",
+      "metadata": {},
+      "observables": {
+        "parity_leakage": 0.91
+      },
+      "status": "succeeded"
+    },
+    {
+      "artifacts": [],
+      "backend_id": "qiskit-runtime",
+      "blockers": [
+        "mitigation replay requires calibrated parity observables"
+      ],
+      "experiment_id": "exp-chain3-mitigation-qiskit",
+      "metadata": {},
+      "observables": {},
+      "status": "blocked"
+    },
+    {
+      "artifacts": [],
+      "backend_id": "qutip-dynamics-fallback",
+      "blockers": [
+        "offline fixture path forbids hardware execution"
+      ],
+      "experiment_id": "exp-chain3-fim-qutip",
+      "metadata": {
+        "fallback_mode": "fixture-only"
+      },
+      "observables": {},
+      "status": "failed"
+    },
+    {
+      "artifacts": [
+        "artifacts/exp-ring4-control-live.json"
+      ],
+      "backend_id": "classical-control",
+      "blockers": [],
+      "experiment_id": "exp-ring4-control-live",
+      "metadata": {
+        "control_profile": "l2"
+      },
+      "observables": {
+        "control_cost": 0.27
+      },
+      "status": "succeeded"
+    },
+    {
+      "artifacts": [],
+      "backend_id": "qiskit-runtime-live",
+      "blockers": [
+        "live qiskit path intentionally disabled in stable-core fixtures"
+      ],
+      "experiment_id": "exp-ring4-order-qiskit-live",
+      "metadata": {
+        "mode": "rehearsal"
+      },
+      "observables": {},
+      "status": "blocked"
+    }
+  ],
+  "schema": "stable_core_contract_fixtures_v1"
+}

@@ -79,6 +79,17 @@ is copied here.
   `scpn-bench symmetry-sector-mitigation-gate` now locks raw-count replay
   fixtures for applied postselection/expansion and blocked missing-counts
   behaviour alongside planner fixtures.
+- [x] **Stable-core release/repro gate.** Use
+  `scpn-bench stable-core-release-gate` before release notes, API changes, or
+  public stable-core documentation changes. The bundle runs both stable-core
+  contract and stable-core capability checks in one no-QPU command.
+- [ ] **Stable-core contract gate component.** Use
+  `scpn-bench stable-core-contract-gate` to verify only contract fixtures
+  (`Problem`, `Backend`, `Experiment`, `Result`, and Kuramoto adaptor mapping)
+  when stable-core surface edits are contract-only.
+- [ ] **Stable-core capability gate component.** Use
+  `scpn-bench stable-core-capability-gate` to verify only capability artifacts
+  when stable-core surface edits are capability-only.
 - [ ] **Symmetry- and sector-aware mitigation compiler.** Generalise
   GUESS/DLA parity into a bounded auto-detected mitigation-planning API once
   result packs and benchmark baselines are stable.

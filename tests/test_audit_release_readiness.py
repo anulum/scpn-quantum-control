@@ -160,6 +160,35 @@ def test_release_readiness_reports_version_and_artifact_blockers(tmp_path: Path)
     assert artifact_check.blockers
 
 
+def test_required_artifacts_lists_stable_core_release_inputs(tmp_path: Path):
+    _write_version_carriers(tmp_path)
+    _write_release_artifacts(tmp_path)
+
+    artifact_check = check_required_artifacts(tmp_path)
+    required = set(artifact_check.details["required"])
+
+    assert artifact_check.valid is True
+    assert "data/stable_core/backend_capability_matrix.json" in required
+    assert "docs/stable_core_backend_capability_matrix.md" in required
+
+
+def test_required_artifacts_blocks_missing_stable_core_release_inputs(tmp_path: Path):
+    _write_version_carriers(tmp_path)
+    _write_release_artifacts(tmp_path)
+    stable_core_paths = (
+        "data/stable_core/backend_capability_matrix.json",
+        "docs/stable_core_backend_capability_matrix.md",
+    )
+    for rel_path in stable_core_paths:
+        (tmp_path / rel_path).unlink()
+
+    artifact_check = check_required_artifacts(tmp_path)
+
+    assert artifact_check.valid is False
+    for rel_path in stable_core_paths:
+        assert f"missing required release artefact: {rel_path}" in artifact_check.blockers
+
+
 def test_release_readiness_reports_file_gaps_without_blocking_aggregate_pass(tmp_path: Path):
     _write_version_carriers(tmp_path)
     _write_release_artifacts(tmp_path)

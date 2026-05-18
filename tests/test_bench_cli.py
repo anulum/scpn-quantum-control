@@ -218,6 +218,54 @@ def test_s5_benchmark_registry_selection_is_registry_harness() -> None:
     ]
 
 
+def test_stable_core_capability_matrix_selection_is_export_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("stable-core", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "stable-core-capability-matrix",
+            "scripts/export_stable_core_capability_matrix.py",
+            frozenset({"stable-core"}),
+        )
+    ]
+
+
+def test_stable_core_capability_gate_selection_is_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("stable-core-gate", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "stable-core-capability-gate",
+            "scripts/run_stable_core_capability_gate.py",
+            frozenset({"stable-core-gate"}),
+        )
+    ]
+
+
+def test_stable_core_contract_gate_selection_is_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("stable-core-contract-gate", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "stable-core-contract-gate",
+            "scripts/run_stable_core_contract_gate.py",
+            frozenset({"stable-core-contract-gate"}),
+        )
+    ]
+
+
+def test_stable_core_release_gate_selection_is_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("stable-core-release-gate", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "stable-core-release-gate",
+            "scripts/run_stable_core_release_gate.py",
+            frozenset({"stable-core-release-gate"}),
+        )
+    ]
+
+
 def test_s6_split_audit_selection_is_boundary_harness() -> None:
     harnesses = bench_cli._selected_harnesses("s6", include_gpu=False)
 
@@ -261,6 +309,54 @@ def test_dry_run_prints_selected_harnesses(capsys: pytest.CaptureFixture[str]) -
     assert rc == 0
     assert "selected harnesses" in captured.out
     assert "fim-spectrum" in captured.out
+
+
+def test_stable_core_capability_matrix_dry_run_selects_matrix_harness(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    rc = bench_cli.run(["stable-core-capability-matrix", "--dry-run"])
+
+    captured = capsys.readouterr()
+    assert rc == 0
+    assert "selected harnesses" in captured.out
+    assert "stable-core-capability-matrix" in captured.out
+    assert "scripts/export_stable_core_capability_matrix.py" in captured.out
+
+
+def test_stable_core_capability_gate_dry_run_selects_gate_harness(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    rc = bench_cli.run(["stable-core-capability-gate", "--dry-run"])
+
+    captured = capsys.readouterr()
+    assert rc == 0
+    assert "selected harnesses" in captured.out
+    assert "stable-core-capability-gate" in captured.out
+    assert "scripts/run_stable_core_capability_gate.py" in captured.out
+
+
+def test_stable_core_contract_gate_dry_run_selects_gate_harness(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    rc = bench_cli.run(["stable-core-contract-gate", "--dry-run"])
+
+    captured = capsys.readouterr()
+    assert rc == 0
+    assert "selected harnesses" in captured.out
+    assert "stable-core-contract-gate" in captured.out
+    assert "scripts/run_stable_core_contract_gate.py" in captured.out
+
+
+def test_stable_core_release_gate_dry_run_selects_gate_harness(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    rc = bench_cli.run(["stable-core-release-gate", "--dry-run"])
+
+    captured = capsys.readouterr()
+    assert rc == 0
+    assert "selected harnesses" in captured.out
+    assert "stable-core-release-gate" in captured.out
+    assert "scripts/run_stable_core_release_gate.py" in captured.out
 
 
 def test_diff_summary_returns_two_when_artifacts_changed(
