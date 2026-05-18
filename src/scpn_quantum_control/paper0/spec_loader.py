@@ -7052,6 +7052,55 @@ def load_neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_ax
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_GLIAL_SCAFFOLDING_ASTROCYTIC_REGULATION_OF_NEURAL_SYNCHRONY_AND_CRITICAL_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical_validation_specs_2026-05-17.json"
+)
+
+
+def load_glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_GLIAL_SCAFFOLDING_ASTROCYTIC_REGULATION_OF_NEURAL_SYNCHRONY_AND_CRITICAL_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 glial scaffolding astrocytic regulation of neural synchrony and critical validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_MICROBIOME_AS_A_FOUNDATIONAL_CONTROL_LAYER_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_microbiome_as_a_foundational_control_layer_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_microbiome_as_a_foundational_control_layer_validation_spec(
+    spec_bundle: str | Path = DEFAULT_THE_MICROBIOME_AS_A_FOUNDATIONAL_CONTROL_LAYER_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the microbiome as a foundational control layer validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SCALE_INVARIANT_CYBERNETIC_PRINCIPLE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_scale_invariant_cybernetic_principle_validation_specs_2026-05-17.json"
+)
+
+
+def load_scale_invariant_cybernetic_principle_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SCALE_INVARIANT_CYBERNETIC_PRINCIPLE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 scale invariant cybernetic principle validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -7829,4 +7878,10 @@ __all__ = [
     "load_slow_control_layer_neuroendocrine_integration_validation_spec",
     "DEFAULT_NEUROENDOCRINE_REGULATION_AND_THE_HYPOTHALAMIC_PITUITARY_ADRENAL_HPA_AXI_SPEC_BUNDLE",
     "load_neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi_validation_spec",
+    "DEFAULT_GLIAL_SCAFFOLDING_ASTROCYTIC_REGULATION_OF_NEURAL_SYNCHRONY_AND_CRITICAL_SPEC_BUNDLE",
+    "load_glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical_validation_spec",
+    "DEFAULT_THE_MICROBIOME_AS_A_FOUNDATIONAL_CONTROL_LAYER_SPEC_BUNDLE",
+    "load_the_microbiome_as_a_foundational_control_layer_validation_spec",
+    "DEFAULT_SCALE_INVARIANT_CYBERNETIC_PRINCIPLE_SPEC_BUNDLE",
+    "load_scale_invariant_cybernetic_principle_validation_spec",
 ]

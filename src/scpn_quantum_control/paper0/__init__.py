@@ -639,6 +639,13 @@ from .glial_control_validation import (
     validate_glial_sigma_control_fixture,
     validate_quantum_immune_interface_fixture,
 )
+from .glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical_validation import (
+    GlialScaffoldingAstrocyticRegulationOfNeuralSynchronyAndCriticalConfig,
+    GlialScaffoldingAstrocyticRegulationOfNeuralSynchronyAndCriticalFixtureResult,
+    classify_glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical_component,
+    glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical_labels,
+    validate_glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical_fixture,
+)
 from .glial_slow_control_validation import (
     GlialSlowControlConfig,
     GlialSlowControlFixtureResult,
@@ -1715,6 +1722,13 @@ from .resolving_the_probability_desert_superradiant_amplification_and_bec_stim_v
     resolving_the_probability_desert_superradiant_amplification_and_bec_stim_labels,
     validate_resolving_the_probability_desert_superradiant_amplification_and_bec_stim_fixture,
 )
+from .scale_invariant_cybernetic_principle_validation import (
+    ScaleInvariantCyberneticPrincipleConfig,
+    ScaleInvariantCyberneticPrincipleFixtureResult,
+    classify_scale_invariant_cybernetic_principle_component,
+    scale_invariant_cybernetic_principle_labels,
+    validate_scale_invariant_cybernetic_principle_fixture,
+)
 from .schizophrenia_dissonance_validation import (
     SchizophreniaDissonanceConfig,
     SchizophreniaDissonanceFixtureResult,
@@ -2614,6 +2628,13 @@ from .the_mechanism_of_interaction_validation import (
     the_mechanism_of_interaction_labels,
     validate_the_mechanism_of_interaction_fixture,
 )
+from .the_microbiome_as_a_foundational_control_layer_validation import (
+    TheMicrobiomeAsAFoundationalControlLayerConfig,
+    TheMicrobiomeAsAFoundationalControlLayerFixtureResult,
+    classify_the_microbiome_as_a_foundational_control_layer_component,
+    the_microbiome_as_a_foundational_control_layer_labels,
+    validate_the_microbiome_as_a_foundational_control_layer_fixture,
+)
 from .the_nature_of_the_ethical_functional_e_psi_a_derivation_from_first_princip_validation import (
     TheNatureOfTheEthicalFunctionalEPsiADerivationFromFirstPrincipConfig,
     TheNatureOfTheEthicalFunctionalEPsiADerivationFromFirstPrincipFixtureResult,
@@ -2968,6 +2989,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_scale_invariant_cybernetic_principle_fixture",
+    "scale_invariant_cybernetic_principle_labels",
+    "classify_scale_invariant_cybernetic_principle_component",
+    "ScaleInvariantCyberneticPrincipleFixtureResult",
+    "ScaleInvariantCyberneticPrincipleConfig",
+    "validate_the_microbiome_as_a_foundational_control_layer_fixture",
+    "the_microbiome_as_a_foundational_control_layer_labels",
+    "classify_the_microbiome_as_a_foundational_control_layer_component",
+    "TheMicrobiomeAsAFoundationalControlLayerFixtureResult",
+    "TheMicrobiomeAsAFoundationalControlLayerConfig",
+    "validate_glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical_fixture",
+    "glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical_labels",
+    "classify_glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical_component",
+    "GlialScaffoldingAstrocyticRegulationOfNeuralSynchronyAndCriticalFixtureResult",
+    "GlialScaffoldingAstrocyticRegulationOfNeuralSynchronyAndCriticalConfig",
     "validate_neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi_fixture",
     "neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi_labels",
     "classify_neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi_component",
