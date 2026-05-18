@@ -289,6 +289,13 @@ from .ciss_bioelectric_validation import (
     radical_pair_hamiltonian,
     validate_ciss_bioelectric_fixture,
 )
+from .citations_p0r05625_validation import (
+    CitationsP0r05625Config,
+    CitationsP0r05625FixtureResult,
+    citations_p0r05625_labels,
+    classify_citations_p0r05625_component,
+    validate_citations_p0r05625_fixture,
+)
 from .citations_validation import (
     CitationsConfig,
     CitationsFixtureResult,
@@ -471,6 +478,13 @@ from .domain_iii_overview_memory_and_projection_control_validation import (
     classify_domain_iii_overview_memory_and_projection_control_component,
     domain_iii_overview_memory_and_projection_control_labels,
     validate_domain_iii_overview_memory_and_projection_control_fixture,
+)
+from .domain_interfaces_and_renormalisation_validation import (
+    DomainInterfacesAndRenormalisationConfig,
+    DomainInterfacesAndRenormalisationFixtureResult,
+    classify_domain_interfaces_and_renormalisation_component,
+    domain_interfaces_and_renormalisation_labels,
+    validate_domain_interfaces_and_renormalisation_fixture,
 )
 from .domain_v_meta_universal_integration_layers_13_15_validation import (
     DomainVMetaUniversalIntegrationLayers1315Config,
@@ -1974,6 +1988,13 @@ from .section_2_hpc_as_geometric_flow_validation import (
     section_2_hpc_as_geometric_flow_labels,
     validate_section_2_hpc_as_geometric_flow_fixture,
 )
+from .section_2_impedance_matching_validation import (
+    Section2ImpedanceMatchingConfig,
+    Section2ImpedanceMatchingFixtureResult,
+    classify_section_2_impedance_matching_component,
+    section_2_impedance_matching_labels,
+    validate_section_2_impedance_matching_fixture,
+)
 from .section_2_l2_l3_disruption_excitotoxicity_and_structural_failure_validation import (
     Section2L2L3DisruptionExcitotoxicityAndStructuralFailureConfig,
     Section2L2L3DisruptionExcitotoxicityAndStructuralFailureFixtureResult,
@@ -3052,6 +3073,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_section_2_impedance_matching_fixture",
+    "section_2_impedance_matching_labels",
+    "classify_section_2_impedance_matching_component",
+    "Section2ImpedanceMatchingFixtureResult",
+    "Section2ImpedanceMatchingConfig",
+    "validate_domain_interfaces_and_renormalisation_fixture",
+    "domain_interfaces_and_renormalisation_labels",
+    "classify_domain_interfaces_and_renormalisation_component",
+    "DomainInterfacesAndRenormalisationFixtureResult",
+    "DomainInterfacesAndRenormalisationConfig",
+    "validate_citations_p0r05625_fixture",
+    "citations_p0r05625_labels",
+    "classify_citations_p0r05625_component",
+    "CitationsP0r05625FixtureResult",
+    "CitationsP0r05625Config",
     "validate_resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state_fixture",
     "resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state_labels",
     "classify_resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state_component",

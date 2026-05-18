@@ -7249,6 +7249,54 @@ def load_resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_CITATIONS_P0R05625_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_citations_p0r05625_validation_specs_2026-05-17.json"
+)
+
+
+def load_citations_p0r05625_validation_spec(
+    spec_bundle: str | Path = DEFAULT_CITATIONS_P0R05625_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 citations p0r05625 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_DOMAIN_INTERFACES_AND_RENORMALISATION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_domain_interfaces_and_renormalisation_validation_specs_2026-05-17.json"
+)
+
+
+def load_domain_interfaces_and_renormalisation_validation_spec(
+    spec_bundle: str | Path = DEFAULT_DOMAIN_INTERFACES_AND_RENORMALISATION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 domain interfaces and renormalisation validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_2_IMPEDANCE_MATCHING_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_impedance_matching_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_impedance_matching_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SECTION_2_IMPEDANCE_MATCHING_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 impedance matching validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -8050,4 +8098,10 @@ __all__ = [
     "load_domain_vi_cybernetic_closure_meta_layer_16_validation_spec",
     "DEFAULT_RESOLVING_THE_OBSERVABILITY_PARADOX_L16_AS_A_POMDP_AND_THE_BELIEF_STATE_SPEC_BUNDLE",
     "load_resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state_validation_spec",
+    "DEFAULT_CITATIONS_P0R05625_SPEC_BUNDLE",
+    "load_citations_p0r05625_validation_spec",
+    "DEFAULT_DOMAIN_INTERFACES_AND_RENORMALISATION_SPEC_BUNDLE",
+    "load_domain_interfaces_and_renormalisation_validation_spec",
+    "DEFAULT_SECTION_2_IMPEDANCE_MATCHING_SPEC_BUNDLE",
+    "load_section_2_impedance_matching_validation_spec",
 ]
