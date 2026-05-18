@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import json
 from collections.abc import Iterable, Sequence
 from contextlib import suppress
@@ -107,9 +108,9 @@ def audit_coverage_gaps(
     audits: list[CoverageFileAudit] = []
     for source_path in _source_files(source_root):
         rel_path = source_path.relative_to(project_root).as_posix()
+        justification = _coverage_justification(rel_path, exclusions)
         item = entries.get(rel_path)
         if item is None:
-            justification = exclusions.get(rel_path)
             audits.append(
                 CoverageFileAudit(
                     path=rel_path,
@@ -125,7 +126,6 @@ def audit_coverage_gaps(
         line_rate = float(item.attrib.get("line-rate", "0"))
         covered, valid = _line_counts(item)
         status = "below_threshold" if line_rate * 100.0 < min_file_percent else "ok"
-        justification = exclusions.get(rel_path)
         if status == "below_threshold" and justification:
             status = "justified_exclusion"
         audits.append(
@@ -140,6 +140,17 @@ def audit_coverage_gaps(
             )
         )
     return tuple(audits)
+
+
+def _coverage_justification(path: str, exclusions: dict[str, str]) -> str | None:
+    """Return an exact or glob-based coverage justification for a source path."""
+    exact = exclusions.get(path)
+    if exact is not None:
+        return exact
+    for pattern, reason in exclusions.items():
+        if any(char in pattern for char in "*?[") and fnmatch.fnmatchcase(path, pattern):
+            return reason
+    return None
 
 
 def load_justified_exclusions(path: Path | None) -> dict[str, str]:
@@ -159,12 +170,17 @@ def load_justified_exclusions(path: Path | None) -> dict[str, str]:
         if not isinstance(item, dict):
             raise ValueError(f"exclusion {index} must be an object")
         path_value = item.get("path")
+        path_glob = item.get("path_glob")
         reason = item.get("reason")
-        if not isinstance(path_value, str) or not path_value:
-            raise ValueError(f"exclusion {index} requires non-empty path")
+        if isinstance(path_value, str) and path_value:
+            exclusion_path = path_value
+        elif isinstance(path_glob, str) and path_glob:
+            exclusion_path = path_glob
+        else:
+            raise ValueError(f"exclusion {index} requires non-empty path or path_glob")
         if not isinstance(reason, str) or not reason.strip():
             raise ValueError(f"exclusion {index} requires non-empty reason")
-        exclusions[path_value] = reason.strip()
+        exclusions[exclusion_path] = reason.strip()
     return exclusions
 
 

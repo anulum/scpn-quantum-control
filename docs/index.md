@@ -27,6 +27,7 @@ unmitigated hardware, mitigated hardware, and noise-limited claims.
 | Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, order-parameter measurements, and Kuramoto variant trajectories. |
 | Hardware evidence | Promoted raw-count campaigns: `ibm_kingston` DLA parity Phase 1, selected Phase 2 A+G/B-C/popcount controls, and the SCPN/FIM negative/falsification result for the tested digital circuit family. Legacy `ibm_fez` rows require artefact-level citation. |
 | Paper 0 source-validation register | Fully promoted through the source-accounting register from `P0R00001` through `P0R06211`; the planner reports `0` remaining work orders and `0` remaining records. This is source-bounded ingestion and fixture preservation, not external validation evidence. |
+| Paper 0 downstream programme | [Paper 0 Experimental Pathway](paper0_experimental_pathway.md) defines the longer-term experimental agenda and methodology-paper route. Paper 27 is treated as a bounded implementation candidate, not the definitive programme source. |
 | Claim source | [Hardware Status Ledger](hardware_status_ledger.md). |
 
 ## What this package does
@@ -147,6 +148,8 @@ for name, w in results.items():
 - [Physics-First Kuramoto-XY](physics_first_kuramoto_xy.md) — start from arbitrary oscillator networks before SCPN-specific layers
 - [API Overview](api.md) — stable facade route first, advanced module references second
 - [Paper 0 Validation Register](paper0_validation_register.md) — completed Paper 0 source-accounting register and generated API contract
+- [Paper 0 Experimental Pathway](paper0_experimental_pathway.md) — downstream methodology-paper route and experimental programme derived from Paper 0 ingestion
+- [Release Readiness Gate](release_readiness.md) — deterministic tag-readiness audit for version, coverage, behavioural quality, and claim-boundary artefacts
 - [Research Gems](research_gems.md) — **33 analysis modules with theory and API**
 - [Equations](equations.md) — every equation in the codebase
 - [Architecture](architecture.md) — dependency graph + 20 subpackages

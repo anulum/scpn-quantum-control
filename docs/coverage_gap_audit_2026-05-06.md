@@ -78,6 +78,14 @@ Every exclusion requires a non-empty `path` and `reason`. Justified exclusions
 remain visible in the text summary and JSON output as `justified_exclusion`;
 they are accepted review decisions, not silently omitted coverage gaps.
 
+As of 2026-05-18, the exclusions file also accepts `path_glob` for reviewed
+generated-code packages whose release contract is covered by higher-level
+reconciliation tests. The release exclusions file is:
+
+```bash
+docs/coverage_justified_exclusions_2026-05-18.json
+```
+
 ## Intended Coverage Workflow
 
 Generate a fresh XML report first:

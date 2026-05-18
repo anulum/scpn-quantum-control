@@ -13,7 +13,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-from datetime import UTC, date, datetime
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -907,7 +907,7 @@ def run_scan(
     return {
         "schema": "scpn_s19_resource_signature_scan_v1",
         "active_lane": "S19_resource_signatures",
-        "timestamp_utc": datetime.now(UTC).isoformat(),
+        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "submission_status": "not_submitted",
         "hardware_spend_authorised": False,
         "separation_from_submitted_papers": {

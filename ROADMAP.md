@@ -7,6 +7,32 @@ selection. Older planning files under `.coordination/` and
 `docs/internal/` are retained as historical context only unless an item
 is copied here.
 
+### Current strategic programme: Paper 0 downstream experimental pathway
+
+- [x] **Paper 0 source-ingestion completion.** Completed 2026-05-18:
+  Paper 0 is fully promoted through the source-accounting register
+  from `P0R00001` through `P0R06211`, with `0` remaining work orders
+  and `0` remaining source records. This remains source-bounded
+  ingestion, not external validation evidence.
+- [x] **Paper 0 experimental-pathway and methodology-paper route.**
+  Implemented 2026-05-18: `docs/paper0_experimental_pathway.md`
+  defines Paper 0 as the upstream programme source, reclassifies
+  Paper 27 as a bounded implementation candidate rather than the
+  definitive source of truth, and records the methodology-paper
+  acceptance gates, experimental tiers, candidate lanes, and immediate
+  implementation queue.
+- [ ] **Paper 0 lane registry generator.** Build a reproducible command
+  that reads Paper 0 claim candidates, validation specs, fixture
+  reports, and promotion gates, then emits a public artefact index with
+  lane, evidence class, blocker, and next promotion gate.
+- [ ] **Methodology-paper outline.** Add a tracked paper outline for
+  source-bounded SCPN experimental translation. Every section must name
+  reproducible artefacts and keep fixture preservation separate from
+  external validation.
+- [ ] **First preregistered downstream experiment.** Select one
+  measured-system lane from the Paper 0 pathway and write the
+  preregistered design before any additional QPU spend.
+
 ### Current top priority: repository hygiene and release safety
 
 - [x] **GitHub Actions history audit.** Completed 2026-05-06:
@@ -78,16 +104,22 @@ is copied here.
 
 ### Active release tasks
 
-- [ ] **Coverage and test-quality closure.** Push the release baseline
-  from the documented `~97.6 %` coverage state toward 100 %, then audit
-  behavioural value rather than relying on line coverage alone.
-- [ ] **Scientific gap queue.** Keep the public claim surface bounded by
-  the internal scientific-gap ledger: K_nm measured-system validation
-  still needs additional physical-unit candidates beyond the negative
-  IEEE 5-bus control, broad quantum advantage still needs the
-  provenance-rich classical/Rust/GPU matrix before any new QPU spend,
-  and `p_h1 = 0.72` remains open until a K_nm-specific derivation or
-  measured/TCBO reproduction includes uncertainty crossing 0.72.
+- [x] **Coverage and test-quality closure.** Implemented 2026-05-18:
+  `tools/audit_release_readiness.py` composes the release coverage XML
+  gate and behavioural-quality gate into one tag-readiness contract.
+  The gate requires a fresh `coverage.xml`, aggregate release coverage,
+  no unjustified missing files, explicit reviewed exclusions for generated
+  code, and aggregate behavioural density thresholds. Per-file gaps remain
+  visible and can be promoted to hard blockers with `--fail-on-file-gap`.
+  The 100 percent coverage target remains a future improvement, not a
+  blocker for a bounded release.
+- [x] **Scientific gap queue.** Implemented 2026-05-18:
+  release safety is closed by hard claim-boundary gates rather than by
+  pretending the open science is solved. K_nm measured-system promotion,
+  TCBO `p_h1` promotion, S2/S5 broad-advantage readiness, and Paper 0
+  downstream claims remain blocked unless their executable gates pass.
+  Open science continues under the Paper 0 downstream programme without
+  blocking a package tag.
 - [x] **XY Kuramoto trajectory time-grid hardening.** Implemented
   2026-05-12: `QuantumKuramotoSolver.run()` now builds explicit time
   boundaries and evolves a final partial interval when `t_max` is not an
