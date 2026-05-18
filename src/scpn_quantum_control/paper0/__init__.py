@@ -1358,12 +1358,26 @@ from .section_2_the_central_void_the_source_validation import (
     section_2_the_central_void_the_source_labels,
     validate_section_2_the_central_void_the_source_fixture,
 )
+from .section_3_1_complexity_k_and_the_cardinality_of_the_state_space_validation import (
+    Section31ComplexityKAndTheCardinalityOfTheStateSpaceConfig,
+    Section31ComplexityKAndTheCardinalityOfTheStateSpaceFixtureResult,
+    classify_section_3_1_complexity_k_and_the_cardinality_of_the_state_space_component,
+    section_3_1_complexity_k_and_the_cardinality_of_the_state_space_labels,
+    validate_section_3_1_complexity_k_and_the_cardinality_of_the_state_space_fixture,
+)
 from .section_3_1_noether_s_theorem_on_the_qualia_fiber_validation import (
     Section31NoetherSTheoremOnTheQualiaFiberConfig,
     Section31NoetherSTheoremOnTheQualiaFiberFixtureResult,
     classify_section_3_1_noether_s_theorem_on_the_qualia_fiber_component,
     section_3_1_noether_s_theorem_on_the_qualia_fiber_labels,
     validate_section_3_1_noether_s_theorem_on_the_qualia_fiber_fixture,
+)
+from .section_3_2_coherence_c_and_the_accessibility_of_trajectories_validation import (
+    Section32CoherenceCAndTheAccessibilityOfTrajectoriesConfig,
+    Section32CoherenceCAndTheAccessibilityOfTrajectoriesFixtureResult,
+    classify_section_3_2_coherence_c_and_the_accessibility_of_trajectories_component,
+    section_3_2_coherence_c_and_the_accessibility_of_trajectories_labels,
+    validate_section_3_2_coherence_c_and_the_accessibility_of_trajectories_fixture,
 )
 from .section_3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde_validation import (
     Section32TheDynamicSpineTheUnifiedPhaseDynamicsEquationUpdeConfig,
@@ -1420,6 +1434,13 @@ from .section_4_justification_for_a_teleological_least_action_principle_validati
     classify_section_4_justification_for_a_teleological_least_action_principle_component,
     section_4_justification_for_a_teleological_least_action_principle_labels,
     validate_section_4_justification_for_a_teleological_least_action_principle_fixture,
+)
+from .section_4_the_formal_equivalence_of_sec_and_sc_validation import (
+    Section4TheFormalEquivalenceOfSecAndScConfig,
+    Section4TheFormalEquivalenceOfSecAndScFixtureResult,
+    classify_section_4_the_formal_equivalence_of_sec_and_sc_component,
+    section_4_the_formal_equivalence_of_sec_and_sc_labels,
+    validate_section_4_the_formal_equivalence_of_sec_and_sc_fixture,
 )
 from .section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_p0r02810_validation import (
     Section15LayerSummaryTable32TheDynamicSpineTheUnifiedPhaseDynamicsP0r02810Config,
@@ -1960,6 +1981,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_section_4_the_formal_equivalence_of_sec_and_sc_fixture",
+    "section_4_the_formal_equivalence_of_sec_and_sc_labels",
+    "classify_section_4_the_formal_equivalence_of_sec_and_sc_component",
+    "Section4TheFormalEquivalenceOfSecAndScFixtureResult",
+    "Section4TheFormalEquivalenceOfSecAndScConfig",
+    "validate_section_3_2_coherence_c_and_the_accessibility_of_trajectories_fixture",
+    "section_3_2_coherence_c_and_the_accessibility_of_trajectories_labels",
+    "classify_section_3_2_coherence_c_and_the_accessibility_of_trajectories_component",
+    "Section32CoherenceCAndTheAccessibilityOfTrajectoriesFixtureResult",
+    "Section32CoherenceCAndTheAccessibilityOfTrajectoriesConfig",
+    "validate_section_3_1_complexity_k_and_the_cardinality_of_the_state_space_fixture",
+    "section_3_1_complexity_k_and_the_cardinality_of_the_state_space_labels",
+    "classify_section_3_1_complexity_k_and_the_cardinality_of_the_state_space_component",
+    "Section31ComplexityKAndTheCardinalityOfTheStateSpaceFixtureResult",
+    "Section31ComplexityKAndTheCardinalityOfTheStateSpaceConfig",
     "validate_section_3_the_geometric_and_dynamic_determinants_of_future_possibility_fixture",
     "section_3_the_geometric_and_dynamic_determinants_of_future_possibility_labels",
     "classify_section_3_the_geometric_and_dynamic_determinants_of_future_possibility_component",

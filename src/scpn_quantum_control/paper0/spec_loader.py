@@ -4659,6 +4659,56 @@ def load_section_3_the_geometric_and_dynamic_determinants_of_future_possibility_
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_3_1_COMPLEXITY_K_AND_THE_CARDINALITY_OF_THE_STATE_SPACE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_3_1_complexity_k_and_the_cardinality_of_the_state_space_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_3_1_complexity_k_and_the_cardinality_of_the_state_space_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_3_1_COMPLEXITY_K_AND_THE_CARDINALITY_OF_THE_STATE_SPACE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 3 1 complexity k and the cardinality of the state space validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_3_2_COHERENCE_C_AND_THE_ACCESSIBILITY_OF_TRAJECTORIES_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_3_2_coherence_c_and_the_accessibility_of_trajectories_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_3_2_coherence_c_and_the_accessibility_of_trajectories_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_3_2_COHERENCE_C_AND_THE_ACCESSIBILITY_OF_TRAJECTORIES_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 3 2 coherence c and the accessibility of trajectories validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_4_THE_FORMAL_EQUIVALENCE_OF_SEC_AND_SC_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_4_the_formal_equivalence_of_sec_and_sc_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_4_the_formal_equivalence_of_sec_and_sc_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SECTION_4_THE_FORMAL_EQUIVALENCE_OF_SEC_AND_SC_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 4 the formal equivalence of sec and sc validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -5148,4 +5198,10 @@ __all__ = [
     "load_section_2_3_formal_definition_of_causal_path_entropy_sc_validation_spec",
     "DEFAULT_SECTION_3_THE_GEOMETRIC_AND_DYNAMIC_DETERMINANTS_OF_FUTURE_POSSIBILITY_SPEC_BUNDLE",
     "load_section_3_the_geometric_and_dynamic_determinants_of_future_possibility_validation_spec",
+    "DEFAULT_SECTION_3_1_COMPLEXITY_K_AND_THE_CARDINALITY_OF_THE_STATE_SPACE_SPEC_BUNDLE",
+    "load_section_3_1_complexity_k_and_the_cardinality_of_the_state_space_validation_spec",
+    "DEFAULT_SECTION_3_2_COHERENCE_C_AND_THE_ACCESSIBILITY_OF_TRAJECTORIES_SPEC_BUNDLE",
+    "load_section_3_2_coherence_c_and_the_accessibility_of_trajectories_validation_spec",
+    "DEFAULT_SECTION_4_THE_FORMAL_EQUIVALENCE_OF_SEC_AND_SC_SPEC_BUNDLE",
+    "load_section_4_the_formal_equivalence_of_sec_and_sc_validation_spec",
 ]
