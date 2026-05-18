@@ -783,6 +783,20 @@ from .intrinsic_dynamics_il_validation import (
     intrinsic_dynamics_il_labels,
     validate_intrinsic_dynamics_il_fixture,
 )
+from .introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5_validation import (
+    IntroductionToTheArchitectureOfTheConsciousSelfDomainIiL5Config,
+    IntroductionToTheArchitectureOfTheConsciousSelfDomainIiL5FixtureResult,
+    classify_introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5_component,
+    introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5_labels,
+    validate_introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5_fixture,
+)
+from .introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_validation import (
+    IntroductionToTheDynamicsOfTheCoherentBrainDomainIL4Config,
+    IntroductionToTheDynamicsOfTheCoherentBrainDomainIL4FixtureResult,
+    classify_introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_component,
+    introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_labels,
+    validate_introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_fixture,
+)
 from .l5_active_inference_math_validation import (
     ExpectedFreeEnergyScores,
     L5ActiveInferenceMathConfig,
@@ -1135,6 +1149,13 @@ from .meta_framework_psi_coupling_validation import (
     classify_meta_framework_psi_coupling_component,
     meta_framework_psi_coupling_labels,
     validate_meta_framework_psi_coupling_fixture,
+)
+from .metastability_and_chimaera_states_the_nuance_of_quasicriticality_validation import (
+    MetastabilityAndChimaeraStatesTheNuanceOfQuasicriticalityConfig,
+    MetastabilityAndChimaeraStatesTheNuanceOfQuasicriticalityFixtureResult,
+    classify_metastability_and_chimaera_states_the_nuance_of_quasicriticality_component,
+    metastability_and_chimaera_states_the_nuance_of_quasicriticality_labels,
+    validate_metastability_and_chimaera_states_the_nuance_of_quasicriticality_fixture,
 )
 from .model_consolidation_sleep_validation import (
     ModelConsolidationSleepConfig,
@@ -2359,6 +2380,21 @@ from .vii_pathology_the_disordered_brain_validation import (
 )
 
 __all__ = [
+    "validate_introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5_fixture",
+    "introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5_labels",
+    "classify_introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5_component",
+    "IntroductionToTheArchitectureOfTheConsciousSelfDomainIiL5FixtureResult",
+    "IntroductionToTheArchitectureOfTheConsciousSelfDomainIiL5Config",
+    "validate_metastability_and_chimaera_states_the_nuance_of_quasicriticality_fixture",
+    "metastability_and_chimaera_states_the_nuance_of_quasicriticality_labels",
+    "classify_metastability_and_chimaera_states_the_nuance_of_quasicriticality_component",
+    "MetastabilityAndChimaeraStatesTheNuanceOfQuasicriticalityFixtureResult",
+    "MetastabilityAndChimaeraStatesTheNuanceOfQuasicriticalityConfig",
+    "validate_introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_fixture",
+    "introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_labels",
+    "classify_introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_component",
+    "IntroductionToTheDynamicsOfTheCoherentBrainDomainIL4FixtureResult",
+    "IntroductionToTheDynamicsOfTheCoherentBrainDomainIL4Config",
     "validate_ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_fixture",
     "ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_labels",
     "classify_ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_component",
