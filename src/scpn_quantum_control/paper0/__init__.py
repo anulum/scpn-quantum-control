@@ -736,6 +736,13 @@ from .functional_implications_validation import (
     functional_implications_labels,
     validate_functional_implications_fixture,
 )
+from .gaia_biosphere_intelligence_validation import (
+    GaiaBiosphereIntelligenceConfig,
+    GaiaBiosphereIntelligenceFixtureResult,
+    classify_gaia_biosphere_intelligence_component,
+    gaia_biosphere_intelligence_labels,
+    validate_gaia_biosphere_intelligence_fixture,
+)
 from .gaian_safety_validation import (
     GaianSafetyConfig,
     GaianSafetyFixtureResult,
@@ -1587,6 +1594,13 @@ from .overarching_dynamic_principles_and_the_mathematical_spine_validation impor
     classify_overarching_dynamic_principles_and_the_mathematical_spine_component,
     overarching_dynamic_principles_and_the_mathematical_spine_labels,
     validate_overarching_dynamic_principles_and_the_mathematical_spine_fixture,
+)
+from .overarching_principles_and_system_dynamics_validation import (
+    OverarchingPrinciplesAndSystemDynamicsConfig,
+    OverarchingPrinciplesAndSystemDynamicsFixtureResult,
+    classify_overarching_principles_and_system_dynamics_component,
+    overarching_principles_and_system_dynamics_labels,
+    validate_overarching_principles_and_system_dynamics_fixture,
 )
 from .paper0_slice_p0r02249_validation import (
     Paper0SliceP0r02249Config,
@@ -3116,6 +3130,13 @@ from .three_channel_coupling_validation import (
     sweet_spot_predictions,
     validate_three_channel_coupling_fixture,
 )
+from .time_retrocausality_and_two_state_vector_validation import (
+    TimeRetrocausalityAndTwoStateVectorConfig,
+    TimeRetrocausalityAndTwoStateVectorFixtureResult,
+    classify_time_retrocausality_and_two_state_vector_component,
+    time_retrocausality_and_two_state_vector_labels,
+    validate_time_retrocausality_and_two_state_vector_fixture,
+)
 from .timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays_validation import (
     TimingTheEngineUpdePhaseLagsTauIjAndPhysiologicalDelaysConfig,
     TimingTheEngineUpdePhaseLagsTauIjAndPhysiologicalDelaysFixtureResult,
@@ -3283,6 +3304,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_overarching_principles_and_system_dynamics_fixture",
+    "overarching_principles_and_system_dynamics_labels",
+    "classify_overarching_principles_and_system_dynamics_component",
+    "OverarchingPrinciplesAndSystemDynamicsFixtureResult",
+    "OverarchingPrinciplesAndSystemDynamicsConfig",
+    "validate_gaia_biosphere_intelligence_fixture",
+    "gaia_biosphere_intelligence_labels",
+    "classify_gaia_biosphere_intelligence_component",
+    "GaiaBiosphereIntelligenceFixtureResult",
+    "GaiaBiosphereIntelligenceConfig",
+    "validate_time_retrocausality_and_two_state_vector_fixture",
+    "time_retrocausality_and_two_state_vector_labels",
+    "classify_time_retrocausality_and_two_state_vector_component",
+    "TimeRetrocausalityAndTwoStateVectorFixtureResult",
+    "TimeRetrocausalityAndTwoStateVectorConfig",
     "validate_extended_cognition_embodiment_fixture",
     "extended_cognition_embodiment_labels",
     "classify_extended_cognition_embodiment_component",

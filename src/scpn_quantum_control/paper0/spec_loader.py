@@ -7778,6 +7778,54 @@ def load_extended_cognition_embodiment_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_TIME_RETROCAUSALITY_AND_TWO_STATE_VECTOR_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_time_retrocausality_and_two_state_vector_validation_specs_2026-05-17.json"
+)
+
+
+def load_time_retrocausality_and_two_state_vector_validation_spec(
+    spec_bundle: str | Path = DEFAULT_TIME_RETROCAUSALITY_AND_TWO_STATE_VECTOR_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 time retrocausality and two state vector validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_GAIA_BIOSPHERE_INTELLIGENCE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_gaia_biosphere_intelligence_validation_specs_2026-05-17.json"
+)
+
+
+def load_gaia_biosphere_intelligence_validation_spec(
+    spec_bundle: str | Path = DEFAULT_GAIA_BIOSPHERE_INTELLIGENCE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 gaia biosphere intelligence validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_OVERARCHING_PRINCIPLES_AND_SYSTEM_DYNAMICS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_overarching_principles_and_system_dynamics_validation_specs_2026-05-17.json"
+)
+
+
+def load_overarching_principles_and_system_dynamics_validation_spec(
+    spec_bundle: str | Path = DEFAULT_OVERARCHING_PRINCIPLES_AND_SYSTEM_DYNAMICS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 overarching principles and system dynamics validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -8645,4 +8693,10 @@ __all__ = [
     "load_complexity_economics_social_physics_validation_spec",
     "DEFAULT_EXTENDED_COGNITION_EMBODIMENT_SPEC_BUNDLE",
     "load_extended_cognition_embodiment_validation_spec",
+    "DEFAULT_TIME_RETROCAUSALITY_AND_TWO_STATE_VECTOR_SPEC_BUNDLE",
+    "load_time_retrocausality_and_two_state_vector_validation_spec",
+    "DEFAULT_GAIA_BIOSPHERE_INTELLIGENCE_SPEC_BUNDLE",
+    "load_gaia_biosphere_intelligence_validation_spec",
+    "DEFAULT_OVERARCHING_PRINCIPLES_AND_SYSTEM_DYNAMICS_SPEC_BUNDLE",
+    "load_overarching_principles_and_system_dynamics_validation_spec",
 ]
