@@ -874,6 +874,13 @@ from .i_introduction_the_brain_as_a_multi_scale_resonant_transducer_validation i
     i_introduction_the_brain_as_a_multi_scale_resonant_transducer_labels,
     validate_i_introduction_the_brain_as_a_multi_scale_resonant_transducer_fixture,
 )
+from .i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality_validation import (
+    ITheArchitectureOfTimeTheMetaMetatronCycleAndRetrocausalityConfig,
+    ITheArchitectureOfTimeTheMetaMetatronCycleAndRetrocausalityFixtureResult,
+    classify_i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality_component,
+    i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality_labels,
+    validate_i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality_fixture,
+)
 from .i_the_brain_s_protective_scaffold_and_fluid_dynamics_validation import (
     ITheBrainSProtectiveScaffoldAndFluidDynamicsConfig,
     ITheBrainSProtectiveScaffoldAndFluidDynamicsFixtureResult,
@@ -2065,6 +2072,13 @@ from .section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_netw
     section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks_labels,
     validate_section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks_fixture,
 )
+from .section_1_the_generalised_second_law_gsl_validation import (
+    Section1TheGeneralisedSecondLawGslConfig,
+    Section1TheGeneralisedSecondLawGslFixtureResult,
+    classify_section_1_the_generalised_second_law_gsl_component,
+    section_1_the_generalised_second_law_gsl_labels,
+    validate_section_1_the_generalised_second_law_gsl_fixture,
+)
 from .section_1_the_lipid_bilayer_and_lipid_rafts_validation import (
     Section1TheLipidBilayerAndLipidRaftsConfig,
     Section1TheLipidBilayerAndLipidRaftsFixtureResult,
@@ -2323,6 +2337,13 @@ from .section_3_pathology_vascular_dysfunction_validation import (
     classify_section_3_pathology_vascular_dysfunction_component,
     section_3_pathology_vascular_dysfunction_labels,
     validate_section_3_pathology_vascular_dysfunction_fixture,
+)
+from .section_3_retrocausality_via_the_two_state_vector_formalism_tsvf_validation import (
+    Section3RetrocausalityViaTheTwoStateVectorFormalismTsvfConfig,
+    Section3RetrocausalityViaTheTwoStateVectorFormalismTsvfFixtureResult,
+    classify_section_3_retrocausality_via_the_two_state_vector_formalism_tsvf_component,
+    section_3_retrocausality_via_the_two_state_vector_formalism_tsvf_labels,
+    validate_section_3_retrocausality_via_the_two_state_vector_formalism_tsvf_fixture,
 )
 from .section_3_sequential_symmetry_breaking_ssb_validation import (
     Section3SequentialSymmetryBreakingSsbConfig,
@@ -3304,6 +3325,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_section_1_the_generalised_second_law_gsl_fixture",
+    "section_1_the_generalised_second_law_gsl_labels",
+    "classify_section_1_the_generalised_second_law_gsl_component",
+    "Section1TheGeneralisedSecondLawGslFixtureResult",
+    "Section1TheGeneralisedSecondLawGslConfig",
+    "validate_section_3_retrocausality_via_the_two_state_vector_formalism_tsvf_fixture",
+    "section_3_retrocausality_via_the_two_state_vector_formalism_tsvf_labels",
+    "classify_section_3_retrocausality_via_the_two_state_vector_formalism_tsvf_component",
+    "Section3RetrocausalityViaTheTwoStateVectorFormalismTsvfFixtureResult",
+    "Section3RetrocausalityViaTheTwoStateVectorFormalismTsvfConfig",
+    "validate_i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality_fixture",
+    "i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality_labels",
+    "classify_i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality_component",
+    "ITheArchitectureOfTimeTheMetaMetatronCycleAndRetrocausalityFixtureResult",
+    "ITheArchitectureOfTimeTheMetaMetatronCycleAndRetrocausalityConfig",
     "validate_overarching_principles_and_system_dynamics_fixture",
     "overarching_principles_and_system_dynamics_labels",
     "classify_overarching_principles_and_system_dynamics_component",

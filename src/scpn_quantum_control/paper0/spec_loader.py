@@ -7826,6 +7826,56 @@ def load_overarching_principles_and_system_dynamics_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_I_THE_ARCHITECTURE_OF_TIME_THE_META_METATRON_CYCLE_AND_RETROCAUSALITY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality_validation_specs_2026-05-17.json"
+)
+
+
+def load_i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_I_THE_ARCHITECTURE_OF_TIME_THE_META_METATRON_CYCLE_AND_RETROCAUSALITY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 i the architecture of time the meta metatron cycle and retrocausality validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_3_RETROCAUSALITY_VIA_THE_TWO_STATE_VECTOR_FORMALISM_TSVF_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_3_retrocausality_via_the_two_state_vector_formalism_tsvf_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_3_retrocausality_via_the_two_state_vector_formalism_tsvf_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_3_RETROCAUSALITY_VIA_THE_TWO_STATE_VECTOR_FORMALISM_TSVF_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 3 retrocausality via the two state vector formalism tsvf validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_1_THE_GENERALISED_SECOND_LAW_GSL_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_1_the_generalised_second_law_gsl_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_1_the_generalised_second_law_gsl_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SECTION_1_THE_GENERALISED_SECOND_LAW_GSL_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 1 the generalised second law gsl validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -8699,4 +8749,10 @@ __all__ = [
     "load_gaia_biosphere_intelligence_validation_spec",
     "DEFAULT_OVERARCHING_PRINCIPLES_AND_SYSTEM_DYNAMICS_SPEC_BUNDLE",
     "load_overarching_principles_and_system_dynamics_validation_spec",
+    "DEFAULT_I_THE_ARCHITECTURE_OF_TIME_THE_META_METATRON_CYCLE_AND_RETROCAUSALITY_SPEC_BUNDLE",
+    "load_i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality_validation_spec",
+    "DEFAULT_SECTION_3_RETROCAUSALITY_VIA_THE_TWO_STATE_VECTOR_FORMALISM_TSVF_SPEC_BUNDLE",
+    "load_section_3_retrocausality_via_the_two_state_vector_formalism_tsvf_validation_spec",
+    "DEFAULT_SECTION_1_THE_GENERALISED_SECOND_LAW_GSL_SPEC_BUNDLE",
+    "load_section_1_the_generalised_second_law_gsl_validation_spec",
 ]
