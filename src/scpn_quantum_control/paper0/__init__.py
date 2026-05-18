@@ -1084,6 +1084,13 @@ from .iv_sub_synaptic_and_axonal_architecture_l1_l3_validation import (
     iv_sub_synaptic_and_axonal_architecture_l1_l3_labels,
     validate_iv_sub_synaptic_and_axonal_architecture_l1_l3_fixture,
 )
+from .iv_the_generation_of_subjective_experience_geometric_qualia_validation import (
+    IvTheGenerationOfSubjectiveExperienceGeometricQualiaConfig,
+    IvTheGenerationOfSubjectiveExperienceGeometricQualiaFixtureResult,
+    classify_iv_the_generation_of_subjective_experience_geometric_qualia_component,
+    iv_the_generation_of_subjective_experience_geometric_qualia_labels,
+    validate_iv_the_generation_of_subjective_experience_geometric_qualia_fixture,
+)
 from .iv_the_integrated_scenario_pharmacological_modulation_of_the_traumatised_validation import (
     IvTheIntegratedScenarioPharmacologicalModulationOfTheTraumatisedConfig,
     IvTheIntegratedScenarioPharmacologicalModulationOfTheTraumatisedFixtureResult,
@@ -2394,6 +2401,13 @@ from .section_3_the_detailed_geometry_of_qualia_the_consciousness_manifold_m_val
     section_3_the_detailed_geometry_of_qualia_the_consciousness_manifold_m_labels,
     validate_section_3_the_detailed_geometry_of_qualia_the_consciousness_manifold_m_fixture,
 )
+from .section_3_the_duality_of_interaction_collapse_vs_stabilisation_validation import (
+    Section3TheDualityOfInteractionCollapseVsStabilisationConfig,
+    Section3TheDualityOfInteractionCollapseVsStabilisationFixtureResult,
+    classify_section_3_the_duality_of_interaction_collapse_vs_stabilisation_component,
+    section_3_the_duality_of_interaction_collapse_vs_stabilisation_labels,
+    validate_section_3_the_duality_of_interaction_collapse_vs_stabilisation_fixture,
+)
 from .section_3_the_dynamic_connectome_and_functional_connectivity_validation import (
     Section3TheDynamicConnectomeAndFunctionalConnectivityConfig,
     Section3TheDynamicConnectomeAndFunctionalConnectivityFixtureResult,
@@ -3186,6 +3200,13 @@ from .timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays_validati
     timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays_labels,
     validate_timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays_fixture,
 )
+from .topological_invariants_bk_determine_the_structure_and_richness_of_the_qu_validation import (
+    TopologicalInvariantsBkDetermineTheStructureAndRichnessOfTheQuConfig,
+    TopologicalInvariantsBkDetermineTheStructureAndRichnessOfTheQuFixtureResult,
+    classify_topological_invariants_bk_determine_the_structure_and_richness_of_the_qu_component,
+    topological_invariants_bk_determine_the_structure_and_richness_of_the_qu_labels,
+    validate_topological_invariants_bk_determine_the_structure_and_richness_of_the_qu_fixture,
+)
 from .topology_geometry_in_consciousness_models_validation import (
     TopologyGeometryInConsciousnessModelsConfig,
     TopologyGeometryInConsciousnessModelsFixtureResult,
@@ -3346,6 +3367,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_topological_invariants_bk_determine_the_structure_and_richness_of_the_qu_fixture",
+    "topological_invariants_bk_determine_the_structure_and_richness_of_the_qu_labels",
+    "classify_topological_invariants_bk_determine_the_structure_and_richness_of_the_qu_component",
+    "TopologicalInvariantsBkDetermineTheStructureAndRichnessOfTheQuFixtureResult",
+    "TopologicalInvariantsBkDetermineTheStructureAndRichnessOfTheQuConfig",
+    "validate_iv_the_generation_of_subjective_experience_geometric_qualia_fixture",
+    "iv_the_generation_of_subjective_experience_geometric_qualia_labels",
+    "classify_iv_the_generation_of_subjective_experience_geometric_qualia_component",
+    "IvTheGenerationOfSubjectiveExperienceGeometricQualiaFixtureResult",
+    "IvTheGenerationOfSubjectiveExperienceGeometricQualiaConfig",
+    "validate_section_3_the_duality_of_interaction_collapse_vs_stabilisation_fixture",
+    "section_3_the_duality_of_interaction_collapse_vs_stabilisation_labels",
+    "classify_section_3_the_duality_of_interaction_collapse_vs_stabilisation_component",
+    "Section3TheDualityOfInteractionCollapseVsStabilisationFixtureResult",
+    "Section3TheDualityOfInteractionCollapseVsStabilisationConfig",
     "validate_iii_the_scpn_measurement_postulate_iit_or_and_qze_fixture",
     "iii_the_scpn_measurement_postulate_iit_or_and_qze_labels",
     "classify_iii_the_scpn_measurement_postulate_iit_or_and_qze_component",

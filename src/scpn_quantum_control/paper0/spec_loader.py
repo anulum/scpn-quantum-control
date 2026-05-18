@@ -7927,6 +7927,57 @@ def load_iii_the_scpn_measurement_postulate_iit_or_and_qze_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_3_THE_DUALITY_OF_INTERACTION_COLLAPSE_VS_STABILISATION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_3_the_duality_of_interaction_collapse_vs_stabilisation_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_3_the_duality_of_interaction_collapse_vs_stabilisation_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_3_THE_DUALITY_OF_INTERACTION_COLLAPSE_VS_STABILISATION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 3 the duality of interaction collapse vs stabilisation validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_IV_THE_GENERATION_OF_SUBJECTIVE_EXPERIENCE_GEOMETRIC_QUALIA_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_iv_the_generation_of_subjective_experience_geometric_qualia_validation_specs_2026-05-17.json"
+)
+
+
+def load_iv_the_generation_of_subjective_experience_geometric_qualia_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_IV_THE_GENERATION_OF_SUBJECTIVE_EXPERIENCE_GEOMETRIC_QUALIA_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 iv the generation of subjective experience geometric qualia validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_TOPOLOGICAL_INVARIANTS_BK_DETERMINE_THE_STRUCTURE_AND_RICHNESS_OF_THE_QU_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_topological_invariants_bk_determine_the_structure_and_richness_of_the_qu_validation_specs_2026-05-17.json"
+)
+
+
+def load_topological_invariants_bk_determine_the_structure_and_richness_of_the_qu_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_TOPOLOGICAL_INVARIANTS_BK_DETERMINE_THE_STRUCTURE_AND_RICHNESS_OF_THE_QU_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 topological invariants bk determine the structure and richness of the qu validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -8812,4 +8863,10 @@ __all__ = [
     "load_resolving_the_erasure_paradox_lossy_compression_and_the_heat_sink_bounda_validation_spec",
     "DEFAULT_III_THE_SCPN_MEASUREMENT_POSTULATE_IIT_OR_AND_QZE_SPEC_BUNDLE",
     "load_iii_the_scpn_measurement_postulate_iit_or_and_qze_validation_spec",
+    "DEFAULT_SECTION_3_THE_DUALITY_OF_INTERACTION_COLLAPSE_VS_STABILISATION_SPEC_BUNDLE",
+    "load_section_3_the_duality_of_interaction_collapse_vs_stabilisation_validation_spec",
+    "DEFAULT_IV_THE_GENERATION_OF_SUBJECTIVE_EXPERIENCE_GEOMETRIC_QUALIA_SPEC_BUNDLE",
+    "load_iv_the_generation_of_subjective_experience_geometric_qualia_validation_spec",
+    "DEFAULT_TOPOLOGICAL_INVARIANTS_BK_DETERMINE_THE_STRUCTURE_AND_RICHNESS_OF_THE_QU_SPEC_BUNDLE",
+    "load_topological_invariants_bk_determine_the_structure_and_richness_of_the_qu_validation_spec",
 ]
