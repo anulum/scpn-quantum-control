@@ -6056,6 +6056,56 @@ def load_ii_micro_scale_geometry_the_quantum_and_molecular_scaffold_l1_l3_valida
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_2_MOLECULAR_GEOMETRY_AND_THE_PSI_FIELD_INTERFACE_L2_L3_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_molecular_geometry_and_the_psi_field_interface_l2_l3_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_molecular_geometry_and_the_psi_field_interface_l2_l3_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_2_MOLECULAR_GEOMETRY_AND_THE_PSI_FIELD_INTERFACE_L2_L3_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 molecular geometry and the psi field interface l2 l3 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_2_CYTOARCHITECTURE_AND_THE_CANONICAL_MICROCIRCUIT_L4_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_cytoarchitecture_and_the_canonical_microcircuit_l4_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_cytoarchitecture_and_the_canonical_microcircuit_l4_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_2_CYTOARCHITECTURE_AND_THE_CANONICAL_MICROCIRCUIT_L4_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 cytoarchitecture and the canonical microcircuit l4 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_2_THE_GEOMETRY_OF_FUNCTIONAL_DYNAMICS_L4_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_the_geometry_of_functional_dynamics_l4_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_the_geometry_of_functional_dynamics_l4_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SECTION_2_THE_GEOMETRY_OF_FUNCTIONAL_DYNAMICS_L4_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 the geometry of functional dynamics l4 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -6713,4 +6763,10 @@ __all__ = [
     "load_section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9_validation_spec",
     "DEFAULT_II_MICRO_SCALE_GEOMETRY_THE_QUANTUM_AND_MOLECULAR_SCAFFOLD_L1_L3_SPEC_BUNDLE",
     "load_ii_micro_scale_geometry_the_quantum_and_molecular_scaffold_l1_l3_validation_spec",
+    "DEFAULT_SECTION_2_MOLECULAR_GEOMETRY_AND_THE_PSI_FIELD_INTERFACE_L2_L3_SPEC_BUNDLE",
+    "load_section_2_molecular_geometry_and_the_psi_field_interface_l2_l3_validation_spec",
+    "DEFAULT_SECTION_2_CYTOARCHITECTURE_AND_THE_CANONICAL_MICROCIRCUIT_L4_SPEC_BUNDLE",
+    "load_section_2_cytoarchitecture_and_the_canonical_microcircuit_l4_validation_spec",
+    "DEFAULT_SECTION_2_THE_GEOMETRY_OF_FUNCTIONAL_DYNAMICS_L4_SPEC_BUNDLE",
+    "load_section_2_the_geometry_of_functional_dynamics_l4_validation_spec",
 ]

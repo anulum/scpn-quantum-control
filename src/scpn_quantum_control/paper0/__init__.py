@@ -1680,6 +1680,13 @@ from .section_2_cross_frequency_coupling_cfc_and_hierarchical_processing_validat
     section_2_cross_frequency_coupling_cfc_and_hierarchical_processing_labels,
     validate_section_2_cross_frequency_coupling_cfc_and_hierarchical_processing_fixture,
 )
+from .section_2_cytoarchitecture_and_the_canonical_microcircuit_l4_validation import (
+    Section2CytoarchitectureAndTheCanonicalMicrocircuitL4Config,
+    Section2CytoarchitectureAndTheCanonicalMicrocircuitL4FixtureResult,
+    classify_section_2_cytoarchitecture_and_the_canonical_microcircuit_l4_component,
+    section_2_cytoarchitecture_and_the_canonical_microcircuit_l4_labels,
+    validate_section_2_cytoarchitecture_and_the_canonical_microcircuit_l4_fixture,
+)
 from .section_2_dendritic_spines_the_loci_of_plasticity_and_iet_validation import (
     Section2DendriticSpinesTheLociOfPlasticityAndIetConfig,
     Section2DendriticSpinesTheLociOfPlasticityAndIetFixtureResult,
@@ -1694,12 +1701,26 @@ from .section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_validat
     section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_labels,
     validate_section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_fixture,
 )
+from .section_2_molecular_geometry_and_the_psi_field_interface_l2_l3_validation import (
+    Section2MolecularGeometryAndThePsiFieldInterfaceL2L3Config,
+    Section2MolecularGeometryAndThePsiFieldInterfaceL2L3FixtureResult,
+    classify_section_2_molecular_geometry_and_the_psi_field_interface_l2_l3_component,
+    section_2_molecular_geometry_and_the_psi_field_interface_l2_l3_labels,
+    validate_section_2_molecular_geometry_and_the_psi_field_interface_l2_l3_fixture,
+)
 from .section_2_the_central_void_the_source_validation import (
     Section2TheCentralVoidTheSourceConfig,
     Section2TheCentralVoidTheSourceFixtureResult,
     classify_section_2_the_central_void_the_source_component,
     section_2_the_central_void_the_source_labels,
     validate_section_2_the_central_void_the_source_fixture,
+)
+from .section_2_the_geometry_of_functional_dynamics_l4_validation import (
+    Section2TheGeometryOfFunctionalDynamicsL4Config,
+    Section2TheGeometryOfFunctionalDynamicsL4FixtureResult,
+    classify_section_2_the_geometry_of_functional_dynamics_l4_component,
+    section_2_the_geometry_of_functional_dynamics_l4_labels,
+    validate_section_2_the_geometry_of_functional_dynamics_l4_fixture,
 )
 from .section_2_the_geometry_of_synchronisation_upde_manifolds_validation import (
     Section2TheGeometryOfSynchronisationUpdeManifoldsConfig,
@@ -2548,6 +2569,21 @@ from .vii_pathology_the_disordered_brain_validation import (
 )
 
 __all__ = [
+    "validate_section_2_the_geometry_of_functional_dynamics_l4_fixture",
+    "section_2_the_geometry_of_functional_dynamics_l4_labels",
+    "classify_section_2_the_geometry_of_functional_dynamics_l4_component",
+    "Section2TheGeometryOfFunctionalDynamicsL4FixtureResult",
+    "Section2TheGeometryOfFunctionalDynamicsL4Config",
+    "validate_section_2_cytoarchitecture_and_the_canonical_microcircuit_l4_fixture",
+    "section_2_cytoarchitecture_and_the_canonical_microcircuit_l4_labels",
+    "classify_section_2_cytoarchitecture_and_the_canonical_microcircuit_l4_component",
+    "Section2CytoarchitectureAndTheCanonicalMicrocircuitL4FixtureResult",
+    "Section2CytoarchitectureAndTheCanonicalMicrocircuitL4Config",
+    "validate_section_2_molecular_geometry_and_the_psi_field_interface_l2_l3_fixture",
+    "section_2_molecular_geometry_and_the_psi_field_interface_l2_l3_labels",
+    "classify_section_2_molecular_geometry_and_the_psi_field_interface_l2_l3_component",
+    "Section2MolecularGeometryAndThePsiFieldInterfaceL2L3FixtureResult",
+    "Section2MolecularGeometryAndThePsiFieldInterfaceL2L3Config",
     "validate_ii_micro_scale_geometry_the_quantum_and_molecular_scaffold_l1_l3_fixture",
     "ii_micro_scale_geometry_the_quantum_and_molecular_scaffold_l1_l3_labels",
     "classify_ii_micro_scale_geometry_the_quantum_and_molecular_scaffold_l1_l3_component",
