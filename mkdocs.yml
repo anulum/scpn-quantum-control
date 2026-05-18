@@ -65,6 +65,7 @@ nav:
       - Core Package Boundary: core_package_boundary.md
       - API Overview: api.md
       - Paper 0 Validation Register: paper0_validation_register.md
+      - Paper 0 Experimental Pathway: paper0_experimental_pathway.md
       - Runtime Contracts:
           - QPU Data Artifact: qpu_data_artifact.md
           - Pipeline Runtime Contract: pipeline_runtime_contract.md
@@ -124,6 +125,7 @@ nav:
       - Notebooks: notebooks.md
   - Roadmap:
       - Strategic Roadmap: strategic_roadmap.md
+      - Release Readiness Gate: release_readiness.md
       - Actions History Dashboard: actions_history_dashboard.md
       - E2E Contract Boundaries: e2e_contract_boundaries.md
       - Behavioural Test Audit Closure: behavioural_test_audit_closure_2026-05-06.md
