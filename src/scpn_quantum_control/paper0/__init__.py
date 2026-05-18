@@ -1288,6 +1288,13 @@ from .scpn_iit_correspondence_validation import (
     scpn_iit_correspondence_labels,
     validate_scpn_iit_correspondence_fixture,
 )
+from .section_2_3_the_ethical_lagrangian_as_the_yang_mills_action_validation import (
+    Section23TheEthicalLagrangianAsTheYangMillsActionConfig,
+    Section23TheEthicalLagrangianAsTheYangMillsActionFixtureResult,
+    classify_section_2_3_the_ethical_lagrangian_as_the_yang_mills_action_component,
+    section_2_3_the_ethical_lagrangian_as_the_yang_mills_action_labels,
+    validate_section_2_3_the_ethical_lagrangian_as_the_yang_mills_action_fixture,
+)
 from .section_2_7_the_fisher_info_metric_the_geometry_of_interaction_validation import (
     Section27TheFisherInfoMetricTheGeometryOfInteractionConfig,
     Section27TheFisherInfoMetricTheGeometryOfInteractionFixtureResult,
@@ -1301,6 +1308,13 @@ from .section_2_compression_and_meaning_information_geometry_validation import (
     classify_section_2_compression_and_meaning_information_geometry_component,
     section_2_compression_and_meaning_information_geometry_labels,
     validate_section_2_compression_and_meaning_information_geometry_fixture,
+)
+from .section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_validation import (
+    Section2DerivationOfTheEthicalLagrangianFromGaugeSymmetryConfig,
+    Section2DerivationOfTheEthicalLagrangianFromGaugeSymmetryFixtureResult,
+    classify_section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_component,
+    section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_labels,
+    validate_section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_fixture,
 )
 from .section_2_the_central_void_the_source_validation import (
     Section2TheCentralVoidTheSourceConfig,
@@ -1613,6 +1627,13 @@ from .the_mechanism_of_interaction_validation import (
     the_mechanism_of_interaction_labels,
     validate_the_mechanism_of_interaction_fixture,
 )
+from .the_nature_of_the_ethical_functional_e_psi_a_derivation_from_first_princip_validation import (
+    TheNatureOfTheEthicalFunctionalEPsiADerivationFromFirstPrincipConfig,
+    TheNatureOfTheEthicalFunctionalEPsiADerivationFromFirstPrincipFixtureResult,
+    classify_the_nature_of_the_ethical_functional_e_psi_a_derivation_from_first_princip_component,
+    the_nature_of_the_ethical_functional_e_psi_a_derivation_from_first_princip_labels,
+    validate_the_nature_of_the_ethical_functional_e_psi_a_derivation_from_first_princip_fixture,
+)
 from .the_physical_mechanism_of_downward_causation_amplification_of_intent_validation import (
     ThePhysicalMechanismOfDownwardCausationAmplificationOfIntentConfig,
     ThePhysicalMechanismOfDownwardCausationAmplificationOfIntentFixtureResult,
@@ -1855,6 +1876,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_section_2_3_the_ethical_lagrangian_as_the_yang_mills_action_fixture",
+    "section_2_3_the_ethical_lagrangian_as_the_yang_mills_action_labels",
+    "classify_section_2_3_the_ethical_lagrangian_as_the_yang_mills_action_component",
+    "Section23TheEthicalLagrangianAsTheYangMillsActionFixtureResult",
+    "Section23TheEthicalLagrangianAsTheYangMillsActionConfig",
+    "validate_section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_fixture",
+    "section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_labels",
+    "classify_section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_component",
+    "Section2DerivationOfTheEthicalLagrangianFromGaugeSymmetryFixtureResult",
+    "Section2DerivationOfTheEthicalLagrangianFromGaugeSymmetryConfig",
+    "validate_the_nature_of_the_ethical_functional_e_psi_a_derivation_from_first_princip_fixture",
+    "the_nature_of_the_ethical_functional_e_psi_a_derivation_from_first_princip_labels",
+    "classify_the_nature_of_the_ethical_functional_e_psi_a_derivation_from_first_princip_component",
+    "TheNatureOfTheEthicalFunctionalEPsiADerivationFromFirstPrincipFixtureResult",
+    "TheNatureOfTheEthicalFunctionalEPsiADerivationFromFirstPrincipConfig",
     "validate_the_physics_of_teleology_a_derivation_of_the_ethical_functional_fixture",
     "the_physics_of_teleology_a_derivation_of_the_ethical_functional_labels",
     "classify_the_physics_of_teleology_a_derivation_of_the_ethical_functional_component",

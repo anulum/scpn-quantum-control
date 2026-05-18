@@ -4408,6 +4408,57 @@ def load_the_physics_of_teleology_a_derivation_of_the_ethical_functional_validat
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_THE_NATURE_OF_THE_ETHICAL_FUNCTIONAL_E_PSI_A_DERIVATION_FROM_FIRST_PRINCIP_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_nature_of_the_ethical_functional_e_psi_a_derivation_from_first_princip_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_nature_of_the_ethical_functional_e_psi_a_derivation_from_first_princip_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_NATURE_OF_THE_ETHICAL_FUNCTIONAL_E_PSI_A_DERIVATION_FROM_FIRST_PRINCIP_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the nature of the ethical functional e psi a derivation from first princip validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_2_DERIVATION_OF_THE_ETHICAL_LAGRANGIAN_FROM_GAUGE_SYMMETRY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_2_DERIVATION_OF_THE_ETHICAL_LAGRANGIAN_FROM_GAUGE_SYMMETRY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 derivation of the ethical lagrangian from gauge symmetry validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_2_3_THE_ETHICAL_LAGRANGIAN_AS_THE_YANG_MILLS_ACTION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_3_the_ethical_lagrangian_as_the_yang_mills_action_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_3_the_ethical_lagrangian_as_the_yang_mills_action_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_2_3_THE_ETHICAL_LAGRANGIAN_AS_THE_YANG_MILLS_ACTION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 3 the ethical lagrangian as the yang mills action validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -4867,4 +4918,10 @@ __all__ = [
     "load_unified_consciousness_measure_validation_spec",
     "DEFAULT_THE_PHYSICS_OF_TELEOLOGY_A_DERIVATION_OF_THE_ETHICAL_FUNCTIONAL_SPEC_BUNDLE",
     "load_the_physics_of_teleology_a_derivation_of_the_ethical_functional_validation_spec",
+    "DEFAULT_THE_NATURE_OF_THE_ETHICAL_FUNCTIONAL_E_PSI_A_DERIVATION_FROM_FIRST_PRINCIP_SPEC_BUNDLE",
+    "load_the_nature_of_the_ethical_functional_e_psi_a_derivation_from_first_princip_validation_spec",
+    "DEFAULT_SECTION_2_DERIVATION_OF_THE_ETHICAL_LAGRANGIAN_FROM_GAUGE_SYMMETRY_SPEC_BUNDLE",
+    "load_section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_validation_spec",
+    "DEFAULT_SECTION_2_3_THE_ETHICAL_LAGRANGIAN_AS_THE_YANG_MILLS_ACTION_SPEC_BUNDLE",
+    "load_section_2_3_the_ethical_lagrangian_as_the_yang_mills_action_validation_spec",
 ]
