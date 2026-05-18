@@ -1477,6 +1477,13 @@ from .scpn_iit_correspondence_validation import (
     scpn_iit_correspondence_labels,
     validate_scpn_iit_correspondence_fixture,
 )
+from .section_1_the_emergence_of_the_self_ssb_and_the_strange_loop_validation import (
+    Section1TheEmergenceOfTheSelfSsbAndTheStrangeLoopConfig,
+    Section1TheEmergenceOfTheSelfSsbAndTheStrangeLoopFixtureResult,
+    classify_section_1_the_emergence_of_the_self_ssb_and_the_strange_loop_component,
+    section_1_the_emergence_of_the_self_ssb_and_the_strange_loop_labels,
+    validate_section_1_the_emergence_of_the_self_ssb_and_the_strange_loop_fixture,
+)
 from .section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks_validation import (
     Section1TheExistentialHolographL9HyperbolicGeometryAndTensorNetworksConfig,
     Section1TheExistentialHolographL9HyperbolicGeometryAndTensorNetworksFixtureResult,
@@ -1707,6 +1714,13 @@ from .section_4_the_formal_equivalence_of_sec_and_sc_validation import (
     classify_section_4_the_formal_equivalence_of_sec_and_sc_component,
     section_4_the_formal_equivalence_of_sec_and_sc_labels,
     validate_section_4_the_formal_equivalence_of_sec_and_sc_fixture,
+)
+from .section_4_the_geometry_of_thought_the_consciousness_manifold_m_validation import (
+    Section4TheGeometryOfThoughtTheConsciousnessManifoldMConfig,
+    Section4TheGeometryOfThoughtTheConsciousnessManifoldMFixtureResult,
+    classify_section_4_the_geometry_of_thought_the_consciousness_manifold_m_component,
+    section_4_the_geometry_of_thought_the_consciousness_manifold_m_labels,
+    validate_section_4_the_geometry_of_thought_the_consciousness_manifold_m_fixture,
 )
 from .section_5_1_the_modified_path_integral_with_cef_weighting_validation import (
     Section51TheModifiedPathIntegralWithCefWeightingConfig,
@@ -2315,8 +2329,30 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
     validate_vii_field_generation_and_upward_causality_topological_defects_fixture,
     vii_field_generation_and_upward_causality_topological_defects_labels,
 )
+from .vii_pathology_the_disordered_brain_validation import (
+    ViiPathologyTheDisorderedBrainConfig,
+    ViiPathologyTheDisorderedBrainFixtureResult,
+    classify_vii_pathology_the_disordered_brain_component,
+    validate_vii_pathology_the_disordered_brain_fixture,
+    vii_pathology_the_disordered_brain_labels,
+)
 
 __all__ = [
+    "validate_vii_pathology_the_disordered_brain_fixture",
+    "vii_pathology_the_disordered_brain_labels",
+    "classify_vii_pathology_the_disordered_brain_component",
+    "ViiPathologyTheDisorderedBrainFixtureResult",
+    "ViiPathologyTheDisorderedBrainConfig",
+    "validate_section_4_the_geometry_of_thought_the_consciousness_manifold_m_fixture",
+    "section_4_the_geometry_of_thought_the_consciousness_manifold_m_labels",
+    "classify_section_4_the_geometry_of_thought_the_consciousness_manifold_m_component",
+    "Section4TheGeometryOfThoughtTheConsciousnessManifoldMFixtureResult",
+    "Section4TheGeometryOfThoughtTheConsciousnessManifoldMConfig",
+    "validate_section_1_the_emergence_of_the_self_ssb_and_the_strange_loop_fixture",
+    "section_1_the_emergence_of_the_self_ssb_and_the_strange_loop_labels",
+    "classify_section_1_the_emergence_of_the_self_ssb_and_the_strange_loop_component",
+    "Section1TheEmergenceOfTheSelfSsbAndTheStrangeLoopFixtureResult",
+    "Section1TheEmergenceOfTheSelfSsbAndTheStrangeLoopConfig",
     "validate_section_6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical_predicti_fixture",
     "section_6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical_predicti_labels",
     "classify_section_6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical_predicti_component",

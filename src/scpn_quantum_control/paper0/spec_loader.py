@@ -5502,6 +5502,56 @@ def load_section_6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_1_THE_EMERGENCE_OF_THE_SELF_SSB_AND_THE_STRANGE_LOOP_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_1_the_emergence_of_the_self_ssb_and_the_strange_loop_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_1_the_emergence_of_the_self_ssb_and_the_strange_loop_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_1_THE_EMERGENCE_OF_THE_SELF_SSB_AND_THE_STRANGE_LOOP_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 1 the emergence of the self ssb and the strange loop validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_4_THE_GEOMETRY_OF_THOUGHT_THE_CONSCIOUSNESS_MANIFOLD_M_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_4_the_geometry_of_thought_the_consciousness_manifold_m_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_4_the_geometry_of_thought_the_consciousness_manifold_m_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_4_THE_GEOMETRY_OF_THOUGHT_THE_CONSCIOUSNESS_MANIFOLD_M_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 4 the geometry of thought the consciousness manifold m validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_VII_PATHOLOGY_THE_DISORDERED_BRAIN_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_vii_pathology_the_disordered_brain_validation_specs_2026-05-17.json"
+)
+
+
+def load_vii_pathology_the_disordered_brain_validation_spec(
+    spec_bundle: str | Path = DEFAULT_VII_PATHOLOGY_THE_DISORDERED_BRAIN_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 vii pathology the disordered brain validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -6093,4 +6143,10 @@ __all__ = [
     "load_section_3_the_quasicritical_brain_validation_spec",
     "DEFAULT_SECTION_6_THE_FREQUENCY_HIERARCHY_THETA_GAMMA_COUPLING_AND_HIERARCHICAL_PREDICTI_SPEC_BUNDLE",
     "load_section_6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical_predicti_validation_spec",
+    "DEFAULT_SECTION_1_THE_EMERGENCE_OF_THE_SELF_SSB_AND_THE_STRANGE_LOOP_SPEC_BUNDLE",
+    "load_section_1_the_emergence_of_the_self_ssb_and_the_strange_loop_validation_spec",
+    "DEFAULT_SECTION_4_THE_GEOMETRY_OF_THOUGHT_THE_CONSCIOUSNESS_MANIFOLD_M_SPEC_BUNDLE",
+    "load_section_4_the_geometry_of_thought_the_consciousness_manifold_m_validation_spec",
+    "DEFAULT_VII_PATHOLOGY_THE_DISORDERED_BRAIN_SPEC_BUNDLE",
+    "load_vii_pathology_the_disordered_brain_validation_spec",
 ]
