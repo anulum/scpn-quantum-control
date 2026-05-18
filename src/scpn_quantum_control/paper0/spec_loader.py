@@ -7393,6 +7393,54 @@ def load_systems_neuroscience_complexity_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_INFORMATION_GEOMETRY_ACTIVE_INFERENCE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_information_geometry_active_inference_validation_specs_2026-05-17.json"
+)
+
+
+def load_information_geometry_active_inference_validation_spec(
+    spec_bundle: str | Path = DEFAULT_INFORMATION_GEOMETRY_ACTIVE_INFERENCE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 information geometry active inference validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_COLLECTIVE_CULTURAL_LAYERS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_collective_cultural_layers_validation_specs_2026-05-17.json"
+)
+
+
+def load_collective_cultural_layers_validation_spec(
+    spec_bundle: str | Path = DEFAULT_COLLECTIVE_CULTURAL_LAYERS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 collective cultural layers validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THERMODYNAMICS_ENTROPY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_thermodynamics_entropy_validation_specs_2026-05-17.json"
+)
+
+
+def load_thermodynamics_entropy_validation_spec(
+    spec_bundle: str | Path = DEFAULT_THERMODYNAMICS_ENTROPY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 thermodynamics entropy validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -8212,4 +8260,10 @@ __all__ = [
     "load_quantum_gravitation_edge_cases_validation_spec",
     "DEFAULT_SYSTEMS_NEUROSCIENCE_COMPLEXITY_SPEC_BUNDLE",
     "load_systems_neuroscience_complexity_validation_spec",
+    "DEFAULT_INFORMATION_GEOMETRY_ACTIVE_INFERENCE_SPEC_BUNDLE",
+    "load_information_geometry_active_inference_validation_spec",
+    "DEFAULT_COLLECTIVE_CULTURAL_LAYERS_SPEC_BUNDLE",
+    "load_collective_cultural_layers_validation_spec",
+    "DEFAULT_THERMODYNAMICS_ENTROPY_SPEC_BUNDLE",
+    "load_thermodynamics_entropy_validation_spec",
 ]

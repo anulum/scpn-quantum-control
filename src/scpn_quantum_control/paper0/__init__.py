@@ -317,6 +317,13 @@ from .clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica_v
     clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica_labels,
     validate_clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica_fixture,
 )
+from .collective_cultural_layers_validation import (
+    CollectiveCulturalLayersConfig,
+    CollectiveCulturalLayersFixtureResult,
+    classify_collective_cultural_layers_component,
+    collective_cultural_layers_labels,
+    validate_collective_cultural_layers_fixture,
+)
 from .collective_niche_construction_validation import (
     CollectiveNicheConstructionConfig,
     CollectiveNicheConstructionFixtureResult,
@@ -929,6 +936,13 @@ from .information_geometric_lift_of_upde_validation import (
     classify_information_geometric_lift_of_upde_component,
     information_geometric_lift_of_upde_labels,
     validate_information_geometric_lift_of_upde_fixture,
+)
+from .information_geometry_active_inference_validation import (
+    InformationGeometryActiveInferenceConfig,
+    InformationGeometryActiveInferenceFixtureResult,
+    classify_information_geometry_active_inference_component,
+    information_geometry_active_inference_labels,
+    validate_information_geometry_active_inference_fixture,
 )
 from .integration_of_cef_into_the_path_integral_formalism_validation import (
     IntegrationOfCefIntoThePathIntegralFormalismConfig,
@@ -2943,6 +2957,13 @@ from .the_universe_s_path_of_least_resistance_validation import (
     the_universe_s_path_of_least_resistance_labels,
     validate_the_universe_s_path_of_least_resistance_fixture,
 )
+from .thermodynamics_entropy_validation import (
+    ThermodynamicsEntropyConfig,
+    ThermodynamicsEntropyFixtureResult,
+    classify_thermodynamics_entropy_component,
+    thermodynamics_entropy_labels,
+    validate_thermodynamics_entropy_fixture,
+)
 from .three_channel_coupling_validation import (
     ChannelConstraint,
     ThreeChannelCouplingConfig,
@@ -3115,6 +3136,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_thermodynamics_entropy_fixture",
+    "thermodynamics_entropy_labels",
+    "classify_thermodynamics_entropy_component",
+    "ThermodynamicsEntropyFixtureResult",
+    "ThermodynamicsEntropyConfig",
+    "validate_collective_cultural_layers_fixture",
+    "collective_cultural_layers_labels",
+    "classify_collective_cultural_layers_component",
+    "CollectiveCulturalLayersFixtureResult",
+    "CollectiveCulturalLayersConfig",
+    "validate_information_geometry_active_inference_fixture",
+    "information_geometry_active_inference_labels",
+    "classify_information_geometry_active_inference_component",
+    "InformationGeometryActiveInferenceFixtureResult",
+    "InformationGeometryActiveInferenceConfig",
     "validate_systems_neuroscience_complexity_fixture",
     "systems_neuroscience_complexity_labels",
     "classify_systems_neuroscience_complexity_component",
