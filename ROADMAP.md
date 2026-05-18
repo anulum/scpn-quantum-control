@@ -71,6 +71,14 @@ is copied here.
   `scpn-bench symmetry-sector-mitigation-gate` regenerates and compares
   committed planner fixtures for eligible, missing-counts, missing-GUESS, and
   nonsymmetric-coupling cases before any execution-path integration.
+- [x] **Symmetry-sector raw-count replay adapter.** Implemented 2026-05-18:
+  `replay_symmetry_sector_counts()` applies eligible parity postselection and
+  symmetry expansion to offline raw counts with shot-accounting diagnostics and
+  explicit GUESS deferral.
+- [x] **Symmetry-sector replay fixture gate.** Implemented 2026-05-18:
+  `scpn-bench symmetry-sector-mitigation-gate` now locks raw-count replay
+  fixtures for applied postselection/expansion and blocked missing-counts
+  behaviour alongside planner fixtures.
 - [ ] **Symmetry- and sector-aware mitigation compiler.** Generalise
   GUESS/DLA parity into a bounded auto-detected mitigation-planning API once
   result packs and benchmark baselines are stable.

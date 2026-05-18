@@ -19,6 +19,7 @@ Public API:
 from scpn_quantum_control.mitigation import (
     SymmetrySectorProblem,
     plan_symmetry_sector_mitigation,
+    replay_symmetry_sector_counts,
 )
 ```
 
@@ -70,3 +71,22 @@ Before this planner is wired into execution paths, every integration must pass:
 Planner output is an eligibility contract only. It does not mutate circuits,
 submit hardware jobs, prove improved hardware performance, or broaden DLA/GUESS
 claims without benchmark and raw-count evidence.
+
+## Raw-count replay adapter
+
+`replay_symmetry_sector_counts()` is the first bounded execution adapter for
+the planner. It consumes an eligible `SymmetrySectorProblem` and offline raw
+computational-basis counts, then:
+
+- validates count keys, count values, bitstring length, and shot total;
+- applies parity postselection with explicit rejected-count accounting;
+- applies symmetry expansion while preserving the raw shot total;
+- reports GUESS as deferred until calibrated noise-scaled symmetry observable
+  rows are wired into the replay contract.
+
+The adapter does not mutate circuits, does not submit hardware jobs, and does
+not infer GUESS correction from raw counts alone.
+
+The same `scpn-bench symmetry-sector-mitigation-gate` command now locks both
+planner fixtures and replay fixtures. Replay fixture rows cover the applied
+postselection/expansion path and the blocked missing-counts path.

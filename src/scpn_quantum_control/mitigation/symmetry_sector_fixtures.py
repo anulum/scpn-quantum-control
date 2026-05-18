@@ -19,6 +19,7 @@ from .symmetry_sector_compiler import (
     SymmetrySectorProblem,
     plan_symmetry_sector_mitigation,
 )
+from .symmetry_sector_replay import replay_symmetry_sector_counts
 
 SCHEMA = "symmetry_sector_mitigation_fixture_v1"
 DEFAULT_OUT_DIR = Path("data") / "symmetry_sector_mitigation"
@@ -90,12 +91,45 @@ def fixture_payload() -> dict[str, Any]:
             "schema": SCHEMA,
             "hardware_submission": False,
             "fixtures": fixtures,
+            "replay_fixtures": replay_fixture_rows(),
             "claim_boundary": (
                 "Planner fixtures prove deterministic eligibility/blocker outputs. "
-                "They do not mutate circuits, submit hardware jobs, or prove hardware improvement."
+                "Replay fixtures prove offline raw-count accounting. They do not mutate circuits, "
+                "submit hardware jobs, or prove hardware improvement."
             ),
         }
     )
+
+
+def replay_fixture_rows() -> list[dict[str, Any]]:
+    """Return deterministic raw-count replay fixture rows."""
+
+    problems = fixture_problems()
+    rows: list[dict[str, Any]] = []
+    applied = replay_symmetry_sector_counts(
+        problems["eligible_counts_guess"],
+        {"0011": 40, "0000": 10, "0001": 5, "1110": 7},
+    )
+    rows.append(
+        {
+            "fixture_id": "replay_counts_postselection_expansion",
+            "status": applied.status,
+            "result": applied.to_dict(),
+        }
+    )
+    try:
+        replay_symmetry_sector_counts(problems["blocked_missing_counts"], {"0011": 10})
+    except ValueError as exc:
+        rows.append(
+            {
+                "fixture_id": "replay_blocked_missing_counts",
+                "status": "blocked",
+                "blockers": [str(exc)],
+            }
+        )
+    else:
+        raise AssertionError("blocked replay fixture unexpectedly succeeded")
+    return rows
 
 
 def normalised_json(data: dict[str, Any]) -> str:
@@ -140,6 +174,34 @@ def fixture_markdown(data: dict[str, Any]) -> str:
                 status=plan["status"],
                 primitives=", ".join(plan["primitives"]) or "none",
                 blockers="; ".join(plan["blockers"]) or "none",
+            )
+        )
+    lines.extend(
+        [
+            "",
+            "## Raw-count replay fixtures",
+            "",
+            "| Fixture | Status | Applied primitives | Deferred primitives | Blockers |",
+            "|---|---|---|---|---|",
+        ]
+    )
+    for fixture in data["replay_fixtures"]:
+        if fixture["status"] == "applied":
+            result = fixture["result"]
+            applied = ", ".join(result["applied_primitives"]) or "none"
+            deferred = ", ".join(result["deferred_primitives"]) or "none"
+            blockers = "; ".join(result["blockers"]) or "none"
+        else:
+            applied = "none"
+            deferred = "none"
+            blockers = "; ".join(fixture["blockers"]) or "none"
+        lines.append(
+            "| `{fixture}` | `{status}` | {applied} | {deferred} | {blockers} |".format(
+                fixture=fixture["fixture_id"],
+                status=fixture["status"],
+                applied=applied,
+                deferred=deferred,
+                blockers=blockers,
             )
         )
     lines.extend(

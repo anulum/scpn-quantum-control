@@ -44,6 +44,29 @@ def test_fixture_payload_locks_expected_planner_outcomes() -> None:
     assert fixtures["blocked_nonsymmetric_coupling"]["plan"]["status"] == "blocked"
 
 
+def test_fixture_payload_locks_expected_replay_outcomes() -> None:
+    """Fixture payload covers applied and fail-closed replay branches."""
+
+    payload = fixture_payload()
+    fixtures = {row["fixture_id"]: row for row in payload["replay_fixtures"]}
+
+    assert set(fixtures) == {
+        "replay_counts_postselection_expansion",
+        "replay_blocked_missing_counts",
+    }
+    applied = fixtures["replay_counts_postselection_expansion"]["result"]
+    assert applied["raw_shots"] == 62
+    assert applied["postselected_counts"] == {"0000": 10, "0011": 40}
+    assert applied["expanded_shots"] == 62
+    assert applied["applied_primitives"] == [
+        "parity_postselection",
+        "symmetry_expansion",
+    ]
+    assert applied["deferred_primitives"] == ["guess_symmetry_decay"]
+    assert fixtures["replay_blocked_missing_counts"]["status"] == "blocked"
+    assert "raw measurement counts" in fixtures["replay_blocked_missing_counts"]["blockers"][0]
+
+
 def test_normalised_json_is_stable_and_round_trips() -> None:
     """Fixture JSON is deterministic and schema-preserving."""
 
@@ -61,5 +84,6 @@ def test_fixture_markdown_exposes_gate_and_claim_boundary() -> None:
     text = fixture_markdown(fixture_payload())
 
     assert "# Symmetry-Sector Mitigation Planner Fixtures" in text
+    assert "## Raw-count replay fixtures" in text
     assert "scpn-bench symmetry-sector-mitigation-gate" in text
-    assert "They do not mutate circuits, submit hardware jobs" in text
+    assert "Replay fixtures prove offline raw-count accounting" in text

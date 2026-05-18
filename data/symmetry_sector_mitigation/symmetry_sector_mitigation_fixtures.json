@@ -1,5 +1,5 @@
 {
-  "claim_boundary": "Planner fixtures prove deterministic eligibility/blocker outputs. They do not mutate circuits, submit hardware jobs, or prove hardware improvement.",
+  "claim_boundary": "Planner fixtures prove deterministic eligibility/blocker outputs. Replay fixtures prove offline raw-count accounting. They do not mutate circuits, submit hardware jobs, or prove hardware improvement.",
   "fixtures": [
     {
       "fixture_id": "eligible_counts_guess",
@@ -257,5 +257,78 @@
     }
   ],
   "hardware_submission": false,
+  "replay_fixtures": [
+    {
+      "fixture_id": "replay_counts_postselection_expansion",
+      "result": {
+        "applied_primitives": [
+          "parity_postselection",
+          "symmetry_expansion"
+        ],
+        "blockers": [
+          "GUESS replay requires calibrated noise-scaled symmetry observable rows"
+        ],
+        "claim_boundary": "Raw-count replay applies parity postselection and symmetry expansion only. It does not mutate circuits, submit hardware jobs, or estimate GUESS without calibrated noise-scaled symmetry observables.",
+        "deferred_primitives": [
+          "guess_symmetry_decay"
+        ],
+        "expanded_counts": {
+          "0000": 15,
+          "0011": 40,
+          "1111": 7
+        },
+        "expanded_shots": 62,
+        "plan": {
+          "benchmark_gates": [
+            "scpn-bench sync-benchmark-gate",
+            "hardware result-pack verifier for any raw-count replay claim",
+            "focused mitigation regression tests before circuit-path integration"
+          ],
+          "blockers": [],
+          "claim_boundary": "Planner output is an eligibility contract only. It does not mutate circuits, submit hardware jobs, prove improved hardware performance, or broaden DLA/GUESS claims without benchmark and raw-count evidence.",
+          "expected_parity": 0,
+          "primitives": [
+            "parity_postselection",
+            "symmetry_expansion",
+            "guess_symmetry_decay"
+          ],
+          "required_evidence": [
+            "validated symmetric XY coupling matrix",
+            "finite omega vector",
+            "computational-basis initial state",
+            "raw counts for every mitigated circuit",
+            "noise-scaled symmetry observable table for GUESS"
+          ],
+          "status": "eligible"
+        },
+        "postselected_counts": {
+          "0000": 10,
+          "0011": 40
+        },
+        "postselected_shots": 50,
+        "raw_counts": {
+          "0000": 10,
+          "0001": 5,
+          "0011": 40,
+          "1110": 7
+        },
+        "raw_shots": 62,
+        "rejected_counts": {
+          "0001": 5,
+          "1110": 7
+        },
+        "rejection_rate": 0.1935483870967742,
+        "status": "applied"
+      },
+      "status": "applied"
+    },
+    {
+      "blockers": [
+        "symmetry-sector plan is blocked: ('raw measurement counts are required before mitigation planning',)"
+      ],
+      "fixture_id": "replay_blocked_missing_counts",
+      "status": "blocked"
+    }
+  ],
   "schema": "symmetry_sector_mitigation_fixture_v1"
 }

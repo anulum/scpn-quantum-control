@@ -41,6 +41,10 @@ from .symmetry_sector_compiler import (
     SymmetrySectorProblem,
     plan_symmetry_sector_mitigation,
 )
+from .symmetry_sector_replay import (
+    SymmetrySectorReplayResult,
+    replay_symmetry_sector_counts,
+)
 from .symmetry_verification import (
     SymmetryVerificationResult,
     bitstring_parity,
@@ -77,6 +81,7 @@ __all__ = [
     "generate_training_circuits",
     "SymmetrySectorPlan",
     "SymmetrySectorProblem",
+    "SymmetrySectorReplayResult",
     "SymmetryVerificationResult",
     "bitstring_parity",
     "initial_state_parity",
@@ -85,6 +90,7 @@ __all__ = [
     "parity_verified_R",
     "symmetry_expand",
     "plan_symmetry_sector_mitigation",
+    "replay_symmetry_sector_counts",
     "is_mitiq_available",
     "zne_mitigated_expectation",
     "ddd_mitigated_expectation",
