@@ -5,6 +5,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-05-18 — Added a repository-wide documentation surface audit helper with focused tests and an internal baseline report for Python docstrings, Markdown titles, and stale status snapshots.
 - 2026-05-18 — Added public Paper 0 source-validation register documentation and API routing after completing source-accounting ingestion through `P0R06211`.
 - 2026-04-30 — Added an IEEE 5-bus measured power-grid coupling artifact and audit support for measured-system topology, magnitude, spectral, critical-response, and null-model diagnostics.
 - 2026-04-30 — Added the 109-subject EEGMMIDB baseline eyes-closed PLV artifact and an eyes-closed-minus-eyes-open comparison artifact.
