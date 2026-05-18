@@ -5056,6 +5056,55 @@ def load_section_4_5_the_strange_loop_of_closure_meta_layer_16_and_the_anulum_va
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R04224_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_meta_framework_integrations_p0r04224_validation_specs_2026-05-17.json"
+)
+
+
+def load_meta_framework_integrations_p0r04224_validation_spec(
+    spec_bundle: str | Path = DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R04224_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 meta framework integrations p0r04224 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_PAPER0_SLICE_P0R04247_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_paper0_slice_p0r04247_validation_specs_2026-05-17.json"
+)
+
+
+def load_paper0_slice_p0r04247_validation_spec(
+    spec_bundle: str | Path = DEFAULT_PAPER0_SLICE_P0R04247_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 paper0 slice p0r04247 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_RESOLVING_THE_PROBABILITY_DESERT_SUPERRADIANT_AMPLIFICATION_AND_BEC_STIM_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_resolving_the_probability_desert_superradiant_amplification_and_bec_stim_validation_specs_2026-05-17.json"
+)
+
+
+def load_resolving_the_probability_desert_superradiant_amplification_and_bec_stim_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_RESOLVING_THE_PROBABILITY_DESERT_SUPERRADIANT_AMPLIFICATION_AND_BEC_STIM_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 resolving the probability desert superradiant amplification and bec stim validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -5593,4 +5642,10 @@ __all__ = [
     "load_data_fusion_and_manifold_alignment_constructing_the_unified_state_space_validation_spec",
     "DEFAULT_SECTION_4_5_THE_STRANGE_LOOP_OF_CLOSURE_META_LAYER_16_AND_THE_ANULUM_SPEC_BUNDLE",
     "load_section_4_5_the_strange_loop_of_closure_meta_layer_16_and_the_anulum_validation_spec",
+    "DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R04224_SPEC_BUNDLE",
+    "load_meta_framework_integrations_p0r04224_validation_spec",
+    "DEFAULT_PAPER0_SLICE_P0R04247_SPEC_BUNDLE",
+    "load_paper0_slice_p0r04247_validation_spec",
+    "DEFAULT_RESOLVING_THE_PROBABILITY_DESERT_SUPERRADIANT_AMPLIFICATION_AND_BEC_STIM_SPEC_BUNDLE",
+    "load_resolving_the_probability_desert_superradiant_amplification_and_bec_stim_validation_spec",
 ]
