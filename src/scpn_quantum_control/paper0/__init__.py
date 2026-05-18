@@ -347,6 +347,13 @@ from .collective_niche_construction_validation import (
     shared_model_convergence_score,
     validate_collective_niche_construction_fixture,
 )
+from .complexity_economics_social_physics_validation import (
+    ComplexityEconomicsSocialPhysicsConfig,
+    ComplexityEconomicsSocialPhysicsFixtureResult,
+    classify_complexity_economics_social_physics_component,
+    complexity_economics_social_physics_labels,
+    validate_complexity_economics_social_physics_fixture,
+)
 from .components_validation import (
     ComponentsConfig,
     ComponentsFixtureResult,
@@ -634,6 +641,13 @@ from .explicit_identification_of_terms_validation import (
     classify_explicit_identification_of_terms_component,
     explicit_identification_of_terms_labels,
     validate_explicit_identification_of_terms_fixture,
+)
+from .extended_cognition_embodiment_validation import (
+    ExtendedCognitionEmbodimentConfig,
+    ExtendedCognitionEmbodimentFixtureResult,
+    classify_extended_cognition_embodiment_component,
+    extended_cognition_embodiment_labels,
+    validate_extended_cognition_embodiment_fixture,
 )
 from .falsification_condition_validation import (
     FalsificationConditionConfig,
@@ -3109,6 +3123,13 @@ from .timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays_validati
     timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays_labels,
     validate_timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays_fixture,
 )
+from .topology_geometry_in_consciousness_models_validation import (
+    TopologyGeometryInConsciousnessModelsConfig,
+    TopologyGeometryInConsciousnessModelsFixtureResult,
+    classify_topology_geometry_in_consciousness_models_component,
+    topology_geometry_in_consciousness_models_labels,
+    validate_topology_geometry_in_consciousness_models_fixture,
+)
 from .topology_schema import (
     Paper0AdaptiveParameterSet,
     Paper0FieldPort,
@@ -3262,6 +3283,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_extended_cognition_embodiment_fixture",
+    "extended_cognition_embodiment_labels",
+    "classify_extended_cognition_embodiment_component",
+    "ExtendedCognitionEmbodimentFixtureResult",
+    "ExtendedCognitionEmbodimentConfig",
+    "validate_complexity_economics_social_physics_fixture",
+    "complexity_economics_social_physics_labels",
+    "classify_complexity_economics_social_physics_component",
+    "ComplexityEconomicsSocialPhysicsFixtureResult",
+    "ComplexityEconomicsSocialPhysicsConfig",
+    "validate_topology_geometry_in_consciousness_models_fixture",
+    "topology_geometry_in_consciousness_models_labels",
+    "classify_topology_geometry_in_consciousness_models_component",
+    "TopologyGeometryInConsciousnessModelsFixtureResult",
+    "TopologyGeometryInConsciousnessModelsConfig",
     "validate_techno_social_systems_fixture",
     "techno_social_systems_labels",
     "classify_techno_social_systems_component",

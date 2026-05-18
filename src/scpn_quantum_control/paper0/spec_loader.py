@@ -7730,6 +7730,54 @@ def load_techno_social_systems_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_TOPOLOGY_GEOMETRY_IN_CONSCIOUSNESS_MODELS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_topology_geometry_in_consciousness_models_validation_specs_2026-05-17.json"
+)
+
+
+def load_topology_geometry_in_consciousness_models_validation_spec(
+    spec_bundle: str | Path = DEFAULT_TOPOLOGY_GEOMETRY_IN_CONSCIOUSNESS_MODELS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 topology geometry in consciousness models validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_COMPLEXITY_ECONOMICS_SOCIAL_PHYSICS_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_complexity_economics_social_physics_validation_specs_2026-05-17.json"
+)
+
+
+def load_complexity_economics_social_physics_validation_spec(
+    spec_bundle: str | Path = DEFAULT_COMPLEXITY_ECONOMICS_SOCIAL_PHYSICS_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 complexity economics social physics validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_EXTENDED_COGNITION_EMBODIMENT_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_extended_cognition_embodiment_validation_specs_2026-05-17.json"
+)
+
+
+def load_extended_cognition_embodiment_validation_spec(
+    spec_bundle: str | Path = DEFAULT_EXTENDED_COGNITION_EMBODIMENT_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 extended cognition embodiment validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -8591,4 +8639,10 @@ __all__ = [
     "load_consciousness_studies_cognitive_models_validation_spec",
     "DEFAULT_TECHNO_SOCIAL_SYSTEMS_SPEC_BUNDLE",
     "load_techno_social_systems_validation_spec",
+    "DEFAULT_TOPOLOGY_GEOMETRY_IN_CONSCIOUSNESS_MODELS_SPEC_BUNDLE",
+    "load_topology_geometry_in_consciousness_models_validation_spec",
+    "DEFAULT_COMPLEXITY_ECONOMICS_SOCIAL_PHYSICS_SPEC_BUNDLE",
+    "load_complexity_economics_social_physics_validation_spec",
+    "DEFAULT_EXTENDED_COGNITION_EMBODIMENT_SPEC_BUNDLE",
+    "load_extended_cognition_embodiment_validation_spec",
 ]
