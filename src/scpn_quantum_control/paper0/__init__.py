@@ -68,6 +68,13 @@ from .anulum_collection_mandate_validation import (
     master_publication_entries,
     validate_anulum_collection_mandate_fixture,
 )
+from .application_to_immune_enzymes_validation import (
+    ApplicationToImmuneEnzymesConfig,
+    ApplicationToImmuneEnzymesFixtureResult,
+    application_to_immune_enzymes_labels,
+    classify_application_to_immune_enzymes_component,
+    validate_application_to_immune_enzymes_fixture,
+)
 from .artificial_sentience_validation import (
     ArtificialSentienceConfig,
     ArtificialSentienceCriteriaGateValidationResult,
@@ -1066,6 +1073,13 @@ from .macro_scale_coupling_primary_interaction_validation import (
     macro_scale_coupling_primary_interaction_labels,
     validate_macro_scale_coupling_primary_interaction_fixture,
 )
+from .macro_scale_homeostasis_gaian_synchrony_and_niche_construction_validation import (
+    MacroScaleHomeostasisGaianSynchronyAndNicheConstructionConfig,
+    MacroScaleHomeostasisGaianSynchronyAndNicheConstructionFixtureResult,
+    classify_macro_scale_homeostasis_gaian_synchrony_and_niche_construction_component,
+    macro_scale_homeostasis_gaian_synchrony_and_niche_construction_labels,
+    validate_macro_scale_homeostasis_gaian_synchrony_and_niche_construction_fixture,
+)
 from .mass_eigenstates_mixing_angle_validation import (
     MassEigenstatesMixingAngleConfig,
     MassEigenstatesMixingAngleFixtureResult,
@@ -1676,6 +1690,13 @@ from .qualia_as_the_geometry_of_belief_validation import (
     classify_qualia_as_the_geometry_of_belief_component,
     qualia_as_the_geometry_of_belief_labels,
     validate_qualia_as_the_geometry_of_belief_fixture,
+)
+from .quantum_enzymology_of_the_immune_response_validation import (
+    QuantumEnzymologyOfTheImmuneResponseConfig,
+    QuantumEnzymologyOfTheImmuneResponseFixtureResult,
+    classify_quantum_enzymology_of_the_immune_response_component,
+    quantum_enzymology_of_the_immune_response_labels,
+    validate_quantum_enzymology_of_the_immune_response_fixture,
 )
 from .quasicriticality_and_self_organisation_validation import (
     QuasicriticalityAndSelfOrganisationConfig,
@@ -2989,6 +3010,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_macro_scale_homeostasis_gaian_synchrony_and_niche_construction_fixture",
+    "macro_scale_homeostasis_gaian_synchrony_and_niche_construction_labels",
+    "classify_macro_scale_homeostasis_gaian_synchrony_and_niche_construction_component",
+    "MacroScaleHomeostasisGaianSynchronyAndNicheConstructionFixtureResult",
+    "MacroScaleHomeostasisGaianSynchronyAndNicheConstructionConfig",
+    "validate_application_to_immune_enzymes_fixture",
+    "application_to_immune_enzymes_labels",
+    "classify_application_to_immune_enzymes_component",
+    "ApplicationToImmuneEnzymesFixtureResult",
+    "ApplicationToImmuneEnzymesConfig",
+    "validate_quantum_enzymology_of_the_immune_response_fixture",
+    "quantum_enzymology_of_the_immune_response_labels",
+    "classify_quantum_enzymology_of_the_immune_response_component",
+    "QuantumEnzymologyOfTheImmuneResponseFixtureResult",
+    "QuantumEnzymologyOfTheImmuneResponseConfig",
     "validate_scale_invariant_cybernetic_principle_fixture",
     "scale_invariant_cybernetic_principle_labels",
     "classify_scale_invariant_cybernetic_principle_component",

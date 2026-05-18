@@ -7101,6 +7101,55 @@ def load_scale_invariant_cybernetic_principle_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_QUANTUM_ENZYMOLOGY_OF_THE_IMMUNE_RESPONSE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_quantum_enzymology_of_the_immune_response_validation_specs_2026-05-17.json"
+)
+
+
+def load_quantum_enzymology_of_the_immune_response_validation_spec(
+    spec_bundle: str | Path = DEFAULT_QUANTUM_ENZYMOLOGY_OF_THE_IMMUNE_RESPONSE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 quantum enzymology of the immune response validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_APPLICATION_TO_IMMUNE_ENZYMES_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_application_to_immune_enzymes_validation_specs_2026-05-17.json"
+)
+
+
+def load_application_to_immune_enzymes_validation_spec(
+    spec_bundle: str | Path = DEFAULT_APPLICATION_TO_IMMUNE_ENZYMES_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 application to immune enzymes validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_MACRO_SCALE_HOMEOSTASIS_GAIAN_SYNCHRONY_AND_NICHE_CONSTRUCTION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_macro_scale_homeostasis_gaian_synchrony_and_niche_construction_validation_specs_2026-05-17.json"
+)
+
+
+def load_macro_scale_homeostasis_gaian_synchrony_and_niche_construction_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_MACRO_SCALE_HOMEOSTASIS_GAIAN_SYNCHRONY_AND_NICHE_CONSTRUCTION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 macro scale homeostasis gaian synchrony and niche construction validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -7884,4 +7933,10 @@ __all__ = [
     "load_the_microbiome_as_a_foundational_control_layer_validation_spec",
     "DEFAULT_SCALE_INVARIANT_CYBERNETIC_PRINCIPLE_SPEC_BUNDLE",
     "load_scale_invariant_cybernetic_principle_validation_spec",
+    "DEFAULT_QUANTUM_ENZYMOLOGY_OF_THE_IMMUNE_RESPONSE_SPEC_BUNDLE",
+    "load_quantum_enzymology_of_the_immune_response_validation_spec",
+    "DEFAULT_APPLICATION_TO_IMMUNE_ENZYMES_SPEC_BUNDLE",
+    "load_application_to_immune_enzymes_validation_spec",
+    "DEFAULT_MACRO_SCALE_HOMEOSTASIS_GAIAN_SYNCHRONY_AND_NICHE_CONSTRUCTION_SPEC_BUNDLE",
+    "load_macro_scale_homeostasis_gaian_synchrony_and_niche_construction_validation_spec",
 ]
