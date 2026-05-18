@@ -804,6 +804,13 @@ from .ii_the_principle_of_ethical_least_action_pela_validation import (
     ii_the_principle_of_ethical_least_action_pela_labels,
     validate_ii_the_principle_of_ethical_least_action_pela_fixture,
 )
+from .ii_the_quantum_immune_interface_l1_l2_l5_integration_validation import (
+    IiTheQuantumImmuneInterfaceL1L2L5IntegrationConfig,
+    IiTheQuantumImmuneInterfaceL1L2L5IntegrationFixtureResult,
+    classify_ii_the_quantum_immune_interface_l1_l2_l5_integration_component,
+    ii_the_quantum_immune_interface_l1_l2_l5_integration_labels,
+    validate_ii_the_quantum_immune_interface_l1_l2_l5_integration_fixture,
+)
 from .ii_the_universal_dynamic_regime_quasicriticality_validation import (
     IiTheUniversalDynamicRegimeQuasicriticalityConfig,
     IiTheUniversalDynamicRegimeQuasicriticalityFixtureResult,
@@ -2509,6 +2516,13 @@ from .the_genesis_of_the_hierarchy_sequential_symmetry_breaking_ssb_validation i
     the_genesis_of_the_hierarchy_sequential_symmetry_breaking_ssb_labels,
     validate_the_genesis_of_the_hierarchy_sequential_symmetry_breaking_ssb_fixture,
 )
+from .the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_validation import (
+    TheGlialNeuronalCouplingMechanismSlowControlOfNeuronalCriticaliConfig,
+    TheGlialNeuronalCouplingMechanismSlowControlOfNeuronalCriticaliFixtureResult,
+    classify_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_component,
+    the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_labels,
+    validate_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_fixture,
+)
 from .the_hard_problem_a_mathematical_resolution_validation import (
     TheHardProblemAMathematicalResolutionConfig,
     TheHardProblemAMathematicalResolutionFixtureResult,
@@ -2690,6 +2704,13 @@ from .the_sentient_consciousness_projection_network_scpn_validation import (
     classify_the_sentient_consciousness_projection_network_scpn_component,
     the_sentient_consciousness_projection_network_scpn_labels,
     validate_the_sentient_consciousness_projection_network_scpn_fixture,
+)
+from .the_slow_control_layer_glial_and_immune_modulation_validation import (
+    TheSlowControlLayerGlialAndImmuneModulationConfig,
+    TheSlowControlLayerGlialAndImmuneModulationFixtureResult,
+    classify_the_slow_control_layer_glial_and_immune_modulation_component,
+    the_slow_control_layer_glial_and_immune_modulation_labels,
+    validate_the_slow_control_layer_glial_and_immune_modulation_fixture,
 )
 from .the_stabiliser_transfer_lemma_a_quantitative_bridge_from_memory_to_bound_validation import (
     TheStabiliserTransferLemmaAQuantitativeBridgeFromMemoryToBoundConfig,
@@ -2905,6 +2926,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_fixture",
+    "the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_labels",
+    "classify_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_component",
+    "TheGlialNeuronalCouplingMechanismSlowControlOfNeuronalCriticaliFixtureResult",
+    "TheGlialNeuronalCouplingMechanismSlowControlOfNeuronalCriticaliConfig",
+    "validate_ii_the_quantum_immune_interface_l1_l2_l5_integration_fixture",
+    "ii_the_quantum_immune_interface_l1_l2_l5_integration_labels",
+    "classify_ii_the_quantum_immune_interface_l1_l2_l5_integration_component",
+    "IiTheQuantumImmuneInterfaceL1L2L5IntegrationFixtureResult",
+    "IiTheQuantumImmuneInterfaceL1L2L5IntegrationConfig",
+    "validate_the_slow_control_layer_glial_and_immune_modulation_fixture",
+    "the_slow_control_layer_glial_and_immune_modulation_labels",
+    "classify_the_slow_control_layer_glial_and_immune_modulation_component",
+    "TheSlowControlLayerGlialAndImmuneModulationFixtureResult",
+    "TheSlowControlLayerGlialAndImmuneModulationConfig",
     "validate_the_aqueous_substrate_domain_i_interface_fixture",
     "the_aqueous_substrate_domain_i_interface_labels",
     "classify_the_aqueous_substrate_domain_i_interface_component",

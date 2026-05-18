@@ -6900,6 +6900,57 @@ def load_the_aqueous_substrate_domain_i_interface_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_THE_SLOW_CONTROL_LAYER_GLIAL_AND_IMMUNE_MODULATION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_slow_control_layer_glial_and_immune_modulation_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_slow_control_layer_glial_and_immune_modulation_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_SLOW_CONTROL_LAYER_GLIAL_AND_IMMUNE_MODULATION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the slow control layer glial and immune modulation validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_II_THE_QUANTUM_IMMUNE_INTERFACE_L1_L2_L5_INTEGRATION_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_ii_the_quantum_immune_interface_l1_l2_l5_integration_validation_specs_2026-05-17.json"
+)
+
+
+def load_ii_the_quantum_immune_interface_l1_l2_l5_integration_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_II_THE_QUANTUM_IMMUNE_INTERFACE_L1_L2_L5_INTEGRATION_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 ii the quantum immune interface l1 l2 l5 integration validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_GLIAL_NEURONAL_COUPLING_MECHANISM_SLOW_CONTROL_OF_NEURONAL_CRITICALI_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_GLIAL_NEURONAL_COUPLING_MECHANISM_SLOW_CONTROL_OF_NEURONAL_CRITICALI_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the glial neuronal coupling mechanism slow control of neuronal criticali validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -7659,4 +7710,10 @@ __all__ = [
     "load_the_amplification_cascade_validation_spec",
     "DEFAULT_THE_AQUEOUS_SUBSTRATE_DOMAIN_I_INTERFACE_SPEC_BUNDLE",
     "load_the_aqueous_substrate_domain_i_interface_validation_spec",
+    "DEFAULT_THE_SLOW_CONTROL_LAYER_GLIAL_AND_IMMUNE_MODULATION_SPEC_BUNDLE",
+    "load_the_slow_control_layer_glial_and_immune_modulation_validation_spec",
+    "DEFAULT_II_THE_QUANTUM_IMMUNE_INTERFACE_L1_L2_L5_INTEGRATION_SPEC_BUNDLE",
+    "load_ii_the_quantum_immune_interface_l1_l2_l5_integration_validation_spec",
+    "DEFAULT_THE_GLIAL_NEURONAL_COUPLING_MECHANISM_SLOW_CONTROL_OF_NEURONAL_CRITICALI_SPEC_BUNDLE",
+    "load_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_validation_spec",
 ]
