@@ -99,17 +99,17 @@ def _run_vqe(name: str, n: int, reps: int, seed: int, maxiter: int) -> dict[str,
 
 
 def _aggregate(rows: list[dict[str, object]]) -> list[dict[str, object]]:
-    grouped = {}
+    grouped: dict[tuple[object, object, object], list[dict[str, object]]] = {}
     for row in rows:
         grouped.setdefault((row["ansatz"], row["n_qubits"], row["reps"]), []).append(row)
-    out = []
+    out: list[dict[str, object]] = []
     for (ansatz, n, reps), group in sorted(grouped.items()):
         errors = [
-            float(row["relative_error_pct"])
+            float(str(row["relative_error_pct"]))
             for row in group
             if row["relative_error_pct"] is not None
         ]
-        energies = [float(row["energy"]) for row in group]
+        energies = [float(str(row["energy"])) for row in group]
         out.append(
             {
                 "ansatz": ansatz,
@@ -127,6 +127,8 @@ def _aggregate(rows: list[dict[str, object]]) -> list[dict[str, object]]:
 
 
 def main() -> int:
+    """Run the baseline VQE methods benchmark CLI."""
+
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     rows = []
     for n in [3, 4]:
