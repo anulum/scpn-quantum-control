@@ -30,6 +30,8 @@ PUBLISHED_SHA256 = "7c5f2a32d5a113d916d84d26d27a69336846364d5ee23ba4621b059125e0
 
 @dataclass(frozen=True)
 class DepthSummary:
+    """Phase 2 leakage, uncertainty, and Welch-test result for one depth."""
+
     depth: int
     leakage_even: float
     leakage_odd: float
@@ -44,6 +46,8 @@ class DepthSummary:
 
 @dataclass(frozen=True)
 class ReadoutSummary:
+    """Readout-retention baseline for one prepared computational basis state."""
+
     n_qubits: int
     initial: str
     retention: float
@@ -159,6 +163,8 @@ def _summarise(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def main() -> int:
+    """Run the Phase 2 DLA parity raw-count reproduction CLI."""
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT)
     parser.add_argument("--verify-integrity", action="store_true")

@@ -44,6 +44,8 @@ OUT_PATH = (
 
 @dataclass(frozen=True)
 class DecayFit:
+    """Log-linear parity-survival decay fit used for GUESS-readiness triage."""
+
     dataset: str
     series: str
     n_points: int
@@ -110,6 +112,8 @@ def _popcount_series(summary: dict[str, Any]) -> list[DecayFit]:
 
 
 def main() -> int:
+    """Run the offline Phase 2 GUESS-readiness calibration summary."""
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--write-json", action="store_true")
     args = parser.parse_args()

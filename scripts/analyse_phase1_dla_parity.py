@@ -55,21 +55,29 @@ PHASE1_FILES = [
 
 @dataclass
 class DepthPoint:
+    """Raw Phase 1 leakage samples for one DLA parity depth."""
+
     depth: int
     leak_even: list[float]
     leak_odd: list[float]
 
     @property
     def n_even(self) -> int:
+        """Return the number of even-sector repetitions."""
+
         return len(self.leak_even)
 
     @property
     def n_odd(self) -> int:
+        """Return the number of odd-sector repetitions."""
+
         return len(self.leak_odd)
 
 
 @dataclass
 class DepthSummary:
+    """Statistical Phase 1 DLA parity summary for one Trotter depth."""
+
     depth: int
     n_reps_even: int
     n_reps_odd: int
@@ -128,6 +136,8 @@ def collect_n4_depth_points(circuits: list[dict]) -> dict[int, DepthPoint]:
 
 
 def ci95_from_sem(mean: float, sem: float, df: int) -> tuple[float, float]:
+    """Return a two-sided 95 percent Student-t confidence interval."""
+
     if df <= 0:
         return (mean, mean)
     tcrit = stats.t.ppf(0.975, df=df)
@@ -135,6 +145,8 @@ def ci95_from_sem(mean: float, sem: float, df: int) -> tuple[float, float]:
 
 
 def summarise_depth(dp: DepthPoint) -> DepthSummary:
+    """Compute leakage means, uncertainty, and Welch statistics for one depth."""
+
     e = np.array(dp.leak_even, dtype=float)
     o = np.array(dp.leak_odd, dtype=float)
     mean_e = float(e.mean()) if e.size else float("nan")
@@ -216,6 +228,8 @@ def read_readout_baseline(circuits: list[dict]) -> dict[str, float]:
 
 
 def plot_leakage_vs_depth(summaries: list[DepthSummary], out_path: Path) -> None:
+    """Render even/odd leakage means with standard-error bars by depth."""
+
     import matplotlib
 
     matplotlib.use("Agg")
@@ -264,6 +278,8 @@ def plot_leakage_vs_depth(summaries: list[DepthSummary], out_path: Path) -> None
 
 
 def plot_asymmetry_vs_depth(summaries: list[DepthSummary], out_path: Path) -> None:
+    """Render relative DLA parity asymmetry with propagated uncertainty."""
+
     import matplotlib
 
     matplotlib.use("Agg")
@@ -312,6 +328,8 @@ def plot_asymmetry_vs_depth(summaries: list[DepthSummary], out_path: Path) -> No
 
 
 def main() -> int:
+    """Run the Phase 1 DLA parity analysis and write figures plus JSON."""
+
     parser = argparse.ArgumentParser(description="Phase 1 DLA parity analysis")
     parser.add_argument(
         "--out-dir", default="figures/phase1", help="Output directory for figures and JSON summary"
