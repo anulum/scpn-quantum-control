@@ -685,6 +685,13 @@ from .information_geometric_lift_of_upde_validation import (
     information_geometric_lift_of_upde_labels,
     validate_information_geometric_lift_of_upde_fixture,
 )
+from .integration_of_cef_into_the_path_integral_formalism_validation import (
+    IntegrationOfCefIntoThePathIntegralFormalismConfig,
+    IntegrationOfCefIntoThePathIntegralFormalismFixtureResult,
+    classify_integration_of_cef_into_the_path_integral_formalism_component,
+    integration_of_cef_into_the_path_integral_formalism_labels,
+    validate_integration_of_cef_into_the_path_integral_formalism_fixture,
+)
 from .integration_with_integrated_information_theory_iit_4_0_validation import (
     IntegrationWithIntegratedInformationTheoryIit40Config,
     IntegrationWithIntegratedInformationTheoryIit40FixtureResult,
@@ -995,6 +1002,13 @@ from .meta_framework_integrations_p0r03530_validation import (
     classify_meta_framework_integrations_p0r03530_component,
     meta_framework_integrations_p0r03530_labels,
     validate_meta_framework_integrations_p0r03530_fixture,
+)
+from .meta_framework_integrations_p0r03664_validation import (
+    MetaFrameworkIntegrationsP0r03664Config,
+    MetaFrameworkIntegrationsP0r03664FixtureResult,
+    classify_meta_framework_integrations_p0r03664_component,
+    meta_framework_integrations_p0r03664_labels,
+    validate_meta_framework_integrations_p0r03664_fixture,
 )
 from .meta_framework_integrations_validation import (
     MetaFrameworkIntegrationsConfig,
@@ -1655,6 +1669,13 @@ from .the_nature_of_the_ethical_functional_e_psi_a_derivation_from_first_princip
     the_nature_of_the_ethical_functional_e_psi_a_derivation_from_first_princip_labels,
     validate_the_nature_of_the_ethical_functional_e_psi_a_derivation_from_first_princip_fixture,
 )
+from .the_path_integral_is_the_sum_of_all_h_int_events_validation import (
+    ThePathIntegralIsTheSumOfAllHIntEventsConfig,
+    ThePathIntegralIsTheSumOfAllHIntEventsFixtureResult,
+    classify_the_path_integral_is_the_sum_of_all_h_int_events_component,
+    the_path_integral_is_the_sum_of_all_h_int_events_labels,
+    validate_the_path_integral_is_the_sum_of_all_h_int_events_fixture,
+)
 from .the_physical_mechanism_of_downward_causation_amplification_of_intent_validation import (
     ThePhysicalMechanismOfDownwardCausationAmplificationOfIntentConfig,
     ThePhysicalMechanismOfDownwardCausationAmplificationOfIntentFixtureResult,
@@ -1897,6 +1918,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_integration_of_cef_into_the_path_integral_formalism_fixture",
+    "integration_of_cef_into_the_path_integral_formalism_labels",
+    "classify_integration_of_cef_into_the_path_integral_formalism_component",
+    "IntegrationOfCefIntoThePathIntegralFormalismFixtureResult",
+    "IntegrationOfCefIntoThePathIntegralFormalismConfig",
+    "validate_the_path_integral_is_the_sum_of_all_h_int_events_fixture",
+    "the_path_integral_is_the_sum_of_all_h_int_events_labels",
+    "classify_the_path_integral_is_the_sum_of_all_h_int_events_component",
+    "ThePathIntegralIsTheSumOfAllHIntEventsFixtureResult",
+    "ThePathIntegralIsTheSumOfAllHIntEventsConfig",
+    "validate_meta_framework_integrations_p0r03664_fixture",
+    "meta_framework_integrations_p0r03664_labels",
+    "classify_meta_framework_integrations_p0r03664_component",
+    "MetaFrameworkIntegrationsP0r03664FixtureResult",
+    "MetaFrameworkIntegrationsP0r03664Config",
     "validate_section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy_fixture",
     "section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy_labels",
     "classify_section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy_component",
