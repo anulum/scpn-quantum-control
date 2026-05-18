@@ -6454,6 +6454,56 @@ def load_section_2_l2_l3_disruption_excitotoxicity_and_structural_failure_valida
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_4_L5_DISRUPTION_THE_FRAGMENTED_SELF_AND_DISSONANCE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_4_l5_disruption_the_fragmented_self_and_dissonance_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_4_l5_disruption_the_fragmented_self_and_dissonance_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_4_L5_DISRUPTION_THE_FRAGMENTED_SELF_AND_DISSONANCE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 4 l5 disruption the fragmented self and dissonance validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_II_THE_PHYSICS_OF_PAIN_WITHIN_THE_SCPN_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_ii_the_physics_of_pain_within_the_scpn_validation_specs_2026-05-17.json"
+)
+
+
+def load_ii_the_physics_of_pain_within_the_scpn_validation_spec(
+    spec_bundle: str | Path = DEFAULT_II_THE_PHYSICS_OF_PAIN_WITHIN_THE_SCPN_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 ii the physics of pain within the scpn validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_2_L4_IMPACT_DAMPENING_DYNAMICS_AND_SHIFTING_CRITICALITY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_2_l4_impact_dampening_dynamics_and_shifting_criticality_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_2_l4_impact_dampening_dynamics_and_shifting_criticality_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_2_L4_IMPACT_DAMPENING_DYNAMICS_AND_SHIFTING_CRITICALITY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 2 l4 impact dampening dynamics and shifting criticality validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -7159,4 +7209,10 @@ __all__ = [
     "load_clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica_validation_spec",
     "DEFAULT_SECTION_2_L2_L3_DISRUPTION_EXCITOTOXICITY_AND_STRUCTURAL_FAILURE_SPEC_BUNDLE",
     "load_section_2_l2_l3_disruption_excitotoxicity_and_structural_failure_validation_spec",
+    "DEFAULT_SECTION_4_L5_DISRUPTION_THE_FRAGMENTED_SELF_AND_DISSONANCE_SPEC_BUNDLE",
+    "load_section_4_l5_disruption_the_fragmented_self_and_dissonance_validation_spec",
+    "DEFAULT_II_THE_PHYSICS_OF_PAIN_WITHIN_THE_SCPN_SPEC_BUNDLE",
+    "load_ii_the_physics_of_pain_within_the_scpn_validation_spec",
+    "DEFAULT_SECTION_2_L4_IMPACT_DAMPENING_DYNAMICS_AND_SHIFTING_CRITICALITY_SPEC_BUNDLE",
+    "load_section_2_l4_impact_dampening_dynamics_and_shifting_criticality_validation_spec",
 ]

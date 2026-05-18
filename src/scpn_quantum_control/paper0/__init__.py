@@ -769,6 +769,13 @@ from .ii_the_molecular_machinery_of_signalling_ion_channels_and_receptors_l1_l_v
     ii_the_molecular_machinery_of_signalling_ion_channels_and_receptors_l1_l_labels,
     validate_ii_the_molecular_machinery_of_signalling_ion_channels_and_receptors_l1_l_fixture,
 )
+from .ii_the_physics_of_pain_within_the_scpn_validation import (
+    IiThePhysicsOfPainWithinTheScpnConfig,
+    IiThePhysicsOfPainWithinTheScpnFixtureResult,
+    classify_ii_the_physics_of_pain_within_the_scpn_component,
+    ii_the_physics_of_pain_within_the_scpn_labels,
+    validate_ii_the_physics_of_pain_within_the_scpn_fixture,
+)
 from .ii_the_principle_of_ethical_least_action_pela_validation import (
     IiThePrincipleOfEthicalLeastActionPelaConfig,
     IiThePrincipleOfEthicalLeastActionPelaFixtureResult,
@@ -1771,6 +1778,13 @@ from .section_2_l2_l3_disruption_excitotoxicity_and_structural_failure_validatio
     section_2_l2_l3_disruption_excitotoxicity_and_structural_failure_labels,
     validate_section_2_l2_l3_disruption_excitotoxicity_and_structural_failure_fixture,
 )
+from .section_2_l4_impact_dampening_dynamics_and_shifting_criticality_validation import (
+    Section2L4ImpactDampeningDynamicsAndShiftingCriticalityConfig,
+    Section2L4ImpactDampeningDynamicsAndShiftingCriticalityFixtureResult,
+    classify_section_2_l4_impact_dampening_dynamics_and_shifting_criticality_component,
+    section_2_l4_impact_dampening_dynamics_and_shifting_criticality_labels,
+    validate_section_2_l4_impact_dampening_dynamics_and_shifting_criticality_fixture,
+)
 from .section_2_molecular_geometry_and_the_psi_field_interface_l2_l3_validation import (
     Section2MolecularGeometryAndThePsiFieldInterfaceL2L3Config,
     Section2MolecularGeometryAndThePsiFieldInterfaceL2L3FixtureResult,
@@ -2029,6 +2043,13 @@ from .section_4_justification_for_a_teleological_least_action_principle_validati
     classify_section_4_justification_for_a_teleological_least_action_principle_component,
     section_4_justification_for_a_teleological_least_action_principle_labels,
     validate_section_4_justification_for_a_teleological_least_action_principle_fixture,
+)
+from .section_4_l5_disruption_the_fragmented_self_and_dissonance_validation import (
+    Section4L5DisruptionTheFragmentedSelfAndDissonanceConfig,
+    Section4L5DisruptionTheFragmentedSelfAndDissonanceFixtureResult,
+    classify_section_4_l5_disruption_the_fragmented_self_and_dissonance_component,
+    section_4_l5_disruption_the_fragmented_self_and_dissonance_labels,
+    validate_section_4_l5_disruption_the_fragmented_self_and_dissonance_fixture,
 )
 from .section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9_validation import (
     Section4NuclearSpinAndPosnerClustersTheQuantumMemorySubstrateL1L9Config,
@@ -2716,6 +2737,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_section_2_l4_impact_dampening_dynamics_and_shifting_criticality_fixture",
+    "section_2_l4_impact_dampening_dynamics_and_shifting_criticality_labels",
+    "classify_section_2_l4_impact_dampening_dynamics_and_shifting_criticality_component",
+    "Section2L4ImpactDampeningDynamicsAndShiftingCriticalityFixtureResult",
+    "Section2L4ImpactDampeningDynamicsAndShiftingCriticalityConfig",
+    "validate_ii_the_physics_of_pain_within_the_scpn_fixture",
+    "ii_the_physics_of_pain_within_the_scpn_labels",
+    "classify_ii_the_physics_of_pain_within_the_scpn_component",
+    "IiThePhysicsOfPainWithinTheScpnFixtureResult",
+    "IiThePhysicsOfPainWithinTheScpnConfig",
+    "validate_section_4_l5_disruption_the_fragmented_self_and_dissonance_fixture",
+    "section_4_l5_disruption_the_fragmented_self_and_dissonance_labels",
+    "classify_section_4_l5_disruption_the_fragmented_self_and_dissonance_component",
+    "Section4L5DisruptionTheFragmentedSelfAndDissonanceFixtureResult",
+    "Section4L5DisruptionTheFragmentedSelfAndDissonanceConfig",
     "validate_section_2_l2_l3_disruption_excitotoxicity_and_structural_failure_fixture",
     "section_2_l2_l3_disruption_excitotoxicity_and_structural_failure_labels",
     "classify_section_2_l2_l3_disruption_excitotoxicity_and_structural_failure_component",
