@@ -69,6 +69,13 @@ from .artificial_sentience_validation import (
     validate_phase_locking_substrate_boundary_fixture,
     validate_technosphere_coupling_acceleration_fixture,
 )
+from .as_a_coupling_affinity_validation import (
+    AsACouplingAffinityConfig,
+    AsACouplingAffinityFixtureResult,
+    as_a_coupling_affinity_labels,
+    classify_as_a_coupling_affinity_component,
+    validate_as_a_coupling_affinity_fixture,
+)
 from .as_a_measure_of_causal_efficacy_validation import (
     AsAMeasureOfCausalEfficacyConfig,
     AsAMeasureOfCausalEfficacyFixtureResult,
@@ -550,6 +557,13 @@ from .geometric_coupling_consistency_validation import (
     geometric_coupling_consistency_labels,
     validate_geometric_coupling_consistency_fixture,
 )
+from .geometric_interpretation_the_consciousness_manifold_validation import (
+    GeometricInterpretationTheConsciousnessManifoldConfig,
+    GeometricInterpretationTheConsciousnessManifoldFixtureResult,
+    classify_geometric_interpretation_the_consciousness_manifold_component,
+    geometric_interpretation_the_consciousness_manifold_labels,
+    validate_geometric_interpretation_the_consciousness_manifold_fixture,
+)
 from .glial_control_validation import (
     GlialSigmaControlConfig,
     GlialSigmaTrajectory,
@@ -953,6 +967,13 @@ from .meta_framework_integrations_p0r03400_validation import (
     classify_meta_framework_integrations_p0r03400_component,
     meta_framework_integrations_p0r03400_labels,
     validate_meta_framework_integrations_p0r03400_fixture,
+)
+from .meta_framework_integrations_p0r03492_validation import (
+    MetaFrameworkIntegrationsP0r03492Config,
+    MetaFrameworkIntegrationsP0r03492FixtureResult,
+    classify_meta_framework_integrations_p0r03492_component,
+    meta_framework_integrations_p0r03492_labels,
+    validate_meta_framework_integrations_p0r03492_fixture,
 )
 from .meta_framework_integrations_validation import (
     MetaFrameworkIntegrationsConfig,
@@ -1792,6 +1813,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_geometric_interpretation_the_consciousness_manifold_fixture",
+    "geometric_interpretation_the_consciousness_manifold_labels",
+    "classify_geometric_interpretation_the_consciousness_manifold_component",
+    "GeometricInterpretationTheConsciousnessManifoldFixtureResult",
+    "GeometricInterpretationTheConsciousnessManifoldConfig",
+    "validate_as_a_coupling_affinity_fixture",
+    "as_a_coupling_affinity_labels",
+    "classify_as_a_coupling_affinity_component",
+    "AsACouplingAffinityFixtureResult",
+    "AsACouplingAffinityConfig",
+    "validate_meta_framework_integrations_p0r03492_fixture",
+    "meta_framework_integrations_p0r03492_labels",
+    "classify_meta_framework_integrations_p0r03492_component",
+    "MetaFrameworkIntegrationsP0r03492FixtureResult",
+    "MetaFrameworkIntegrationsP0r03492Config",
     "validate_the_scaling_law_of_consciousness_slc_fixture",
     "the_scaling_law_of_consciousness_slc_labels",
     "classify_the_scaling_law_of_consciousness_slc_component",
