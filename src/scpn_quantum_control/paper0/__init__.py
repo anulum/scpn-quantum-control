@@ -1194,6 +1194,13 @@ from .psis_field_coupling_integration_validation import (
     psis_field_coupling_integration_labels,
     validate_psis_field_coupling_integration_fixture,
 )
+from .qualia_as_the_geometry_of_belief_validation import (
+    QualiaAsTheGeometryOfBeliefConfig,
+    QualiaAsTheGeometryOfBeliefFixtureResult,
+    classify_qualia_as_the_geometry_of_belief_component,
+    qualia_as_the_geometry_of_belief_labels,
+    validate_qualia_as_the_geometry_of_belief_fixture,
+)
 from .quasicriticality_and_self_organisation_validation import (
     QuasicriticalityAndSelfOrganisationConfig,
     QuasicriticalityAndSelfOrganisationFixtureResult,
@@ -1473,6 +1480,13 @@ from .the_coupling_mechanism_validation import (
     the_coupling_mechanism_labels,
     validate_the_coupling_mechanism_fixture,
 )
+from .the_definition_of_subjective_experience_geometric_qualia_validation import (
+    TheDefinitionOfSubjectiveExperienceGeometricQualiaConfig,
+    TheDefinitionOfSubjectiveExperienceGeometricQualiaFixtureResult,
+    classify_the_definition_of_subjective_experience_geometric_qualia_component,
+    the_definition_of_subjective_experience_geometric_qualia_labels,
+    validate_the_definition_of_subjective_experience_geometric_qualia_fixture,
+)
 from .the_definition_of_the_self_the_triadic_solution_validation import (
     TheDefinitionOfTheSelfTheTriadicSolutionConfig,
     TheDefinitionOfTheSelfTheTriadicSolutionFixtureResult,
@@ -1591,6 +1605,13 @@ from .the_quantum_to_classical_transition_amplification_of_intent_validation imp
     classify_the_quantum_to_classical_transition_amplification_of_intent_component,
     the_quantum_to_classical_transition_amplification_of_intent_labels,
     validate_the_quantum_to_classical_transition_amplification_of_intent_fixture,
+)
+from .the_scaling_law_of_consciousness_slc_validation import (
+    TheScalingLawOfConsciousnessSlcConfig,
+    TheScalingLawOfConsciousnessSlcFixtureResult,
+    classify_the_scaling_law_of_consciousness_slc_component,
+    the_scaling_law_of_consciousness_slc_labels,
+    validate_the_scaling_law_of_consciousness_slc_fixture,
 )
 from .the_self_as_a_soliton_emergence_of_localised_consciousness_layer_5_validation import (
     TheSelfAsASolitonEmergenceOfLocalisedConsciousnessLayer5Config,
@@ -1771,6 +1792,21 @@ from .vii_field_generation_and_upward_causality_topological_defects_validation i
 )
 
 __all__ = [
+    "validate_the_scaling_law_of_consciousness_slc_fixture",
+    "the_scaling_law_of_consciousness_slc_labels",
+    "classify_the_scaling_law_of_consciousness_slc_component",
+    "TheScalingLawOfConsciousnessSlcFixtureResult",
+    "TheScalingLawOfConsciousnessSlcConfig",
+    "validate_the_definition_of_subjective_experience_geometric_qualia_fixture",
+    "the_definition_of_subjective_experience_geometric_qualia_labels",
+    "classify_the_definition_of_subjective_experience_geometric_qualia_component",
+    "TheDefinitionOfSubjectiveExperienceGeometricQualiaFixtureResult",
+    "TheDefinitionOfSubjectiveExperienceGeometricQualiaConfig",
+    "validate_qualia_as_the_geometry_of_belief_fixture",
+    "qualia_as_the_geometry_of_belief_labels",
+    "classify_qualia_as_the_geometry_of_belief_component",
+    "QualiaAsTheGeometryOfBeliefFixtureResult",
+    "QualiaAsTheGeometryOfBeliefConfig",
     "validate_the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold_fixture",
     "the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold_labels",
     "classify_the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold_component",

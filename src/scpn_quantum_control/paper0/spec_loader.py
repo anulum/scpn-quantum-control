@@ -4212,6 +4212,55 @@ def load_the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold_val
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_QUALIA_AS_THE_GEOMETRY_OF_BELIEF_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_qualia_as_the_geometry_of_belief_validation_specs_2026-05-17.json"
+)
+
+
+def load_qualia_as_the_geometry_of_belief_validation_spec(
+    spec_bundle: str | Path = DEFAULT_QUALIA_AS_THE_GEOMETRY_OF_BELIEF_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 qualia as the geometry of belief validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_DEFINITION_OF_SUBJECTIVE_EXPERIENCE_GEOMETRIC_QUALIA_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_definition_of_subjective_experience_geometric_qualia_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_definition_of_subjective_experience_geometric_qualia_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_DEFINITION_OF_SUBJECTIVE_EXPERIENCE_GEOMETRIC_QUALIA_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the definition of subjective experience geometric qualia validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_SCALING_LAW_OF_CONSCIOUSNESS_SLC_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_scaling_law_of_consciousness_slc_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_scaling_law_of_consciousness_slc_validation_spec(
+    spec_bundle: str | Path = DEFAULT_THE_SCALING_LAW_OF_CONSCIOUSNESS_SLC_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the scaling law of consciousness slc validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -4647,4 +4696,10 @@ __all__ = [
     "load_the_binding_problem_solution_validation_spec",
     "DEFAULT_THE_HYPOTHESIS_QUALIA_AS_THE_GEOMETRY_OF_THE_CONSCIOUSNESS_MANIFOLD_SPEC_BUNDLE",
     "load_the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold_validation_spec",
+    "DEFAULT_QUALIA_AS_THE_GEOMETRY_OF_BELIEF_SPEC_BUNDLE",
+    "load_qualia_as_the_geometry_of_belief_validation_spec",
+    "DEFAULT_THE_DEFINITION_OF_SUBJECTIVE_EXPERIENCE_GEOMETRIC_QUALIA_SPEC_BUNDLE",
+    "load_the_definition_of_subjective_experience_geometric_qualia_validation_spec",
+    "DEFAULT_THE_SCALING_LAW_OF_CONSCIOUSNESS_SLC_SPEC_BUNDLE",
+    "load_the_scaling_law_of_consciousness_slc_validation_spec",
 ]
