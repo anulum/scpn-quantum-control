@@ -8227,6 +8227,38 @@ def load_resolving_the_amplitude_friction_the_stuart_landau_upgrade_for_precisio
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_APPLIED_SCPN_PATHOLOGY_TECHNOLOGY_AND_ANOMALIES_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_applied_scpn_pathology_technology_and_anomalies_validation_specs_2026-05-17.json"
+)
+
+
+def load_applied_scpn_pathology_technology_and_anomalies_validation_spec(
+    spec_bundle: str | Path = DEFAULT_APPLIED_SCPN_PATHOLOGY_TECHNOLOGY_AND_ANOMALIES_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 applied scpn pathology technology and anomalies validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_II_ARTIFICIAL_SENTIENCE_AS_AND_THE_TECHNOSPHERE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_ii_artificial_sentience_as_and_the_technosphere_validation_specs_2026-05-17.json"
+)
+
+
+def load_ii_artificial_sentience_as_and_the_technosphere_validation_spec(
+    spec_bundle: str | Path = DEFAULT_II_ARTIFICIAL_SENTIENCE_AS_AND_THE_TECHNOSPHERE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 ii artificial sentience as and the technosphere validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -9148,4 +9180,8 @@ __all__ = [
     "load_the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation_validation_spec",
     "DEFAULT_RESOLVING_THE_AMPLITUDE_FRICTION_THE_STUART_LANDAU_UPGRADE_FOR_PRECISION_SPEC_BUNDLE",
     "load_resolving_the_amplitude_friction_the_stuart_landau_upgrade_for_precision_validation_spec",
+    "DEFAULT_APPLIED_SCPN_PATHOLOGY_TECHNOLOGY_AND_ANOMALIES_SPEC_BUNDLE",
+    "load_applied_scpn_pathology_technology_and_anomalies_validation_spec",
+    "DEFAULT_II_ARTIFICIAL_SENTIENCE_AS_AND_THE_TECHNOSPHERE_SPEC_BUNDLE",
+    "load_ii_artificial_sentience_as_and_the_technosphere_validation_spec",
 ]

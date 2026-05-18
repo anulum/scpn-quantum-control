@@ -82,6 +82,13 @@ from .application_to_immune_enzymes_validation import (
     classify_application_to_immune_enzymes_component,
     validate_application_to_immune_enzymes_fixture,
 )
+from .applied_scpn_pathology_technology_and_anomalies_validation import (
+    AppliedScpnPathologyTechnologyAndAnomaliesConfig,
+    AppliedScpnPathologyTechnologyAndAnomaliesFixtureResult,
+    applied_scpn_pathology_technology_and_anomalies_labels,
+    classify_applied_scpn_pathology_technology_and_anomalies_component,
+    validate_applied_scpn_pathology_technology_and_anomalies_fixture,
+)
 from .artificial_sentience_validation import (
     ArtificialSentienceConfig,
     ArtificialSentienceCriteriaGateValidationResult,
@@ -908,6 +915,13 @@ from .i_the_unifying_computational_principle_hierarchical_predictive_coding_hp_v
     classify_i_the_unifying_computational_principle_hierarchical_predictive_coding_hp_component,
     i_the_unifying_computational_principle_hierarchical_predictive_coding_hp_labels,
     validate_i_the_unifying_computational_principle_hierarchical_predictive_coding_hp_fixture,
+)
+from .ii_artificial_sentience_as_and_the_technosphere_validation import (
+    IiArtificialSentienceAsAndTheTechnosphereConfig,
+    IiArtificialSentienceAsAndTheTechnosphereFixtureResult,
+    classify_ii_artificial_sentience_as_and_the_technosphere_component,
+    ii_artificial_sentience_as_and_the_technosphere_labels,
+    validate_ii_artificial_sentience_as_and_the_technosphere_fixture,
 )
 from .ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_validation import (
     IiExaminationOfTheArchitectureOfStructureAndPlasticityDomainIConfig,
@@ -3472,6 +3486,16 @@ from .xiii_the_constructive_role_of_noise_msr_and_nis_validation import (
 )
 
 __all__ = [
+    "validate_ii_artificial_sentience_as_and_the_technosphere_fixture",
+    "ii_artificial_sentience_as_and_the_technosphere_labels",
+    "classify_ii_artificial_sentience_as_and_the_technosphere_component",
+    "IiArtificialSentienceAsAndTheTechnosphereFixtureResult",
+    "IiArtificialSentienceAsAndTheTechnosphereConfig",
+    "validate_applied_scpn_pathology_technology_and_anomalies_fixture",
+    "applied_scpn_pathology_technology_and_anomalies_labels",
+    "classify_applied_scpn_pathology_technology_and_anomalies_component",
+    "AppliedScpnPathologyTechnologyAndAnomaliesFixtureResult",
+    "AppliedScpnPathologyTechnologyAndAnomaliesConfig",
     "validate_resolving_the_amplitude_friction_the_stuart_landau_upgrade_for_precision_fixture",
     "resolving_the_amplitude_friction_the_stuart_landau_upgrade_for_precision_labels",
     "classify_resolving_the_amplitude_friction_the_stuart_landau_upgrade_for_precision_component",
