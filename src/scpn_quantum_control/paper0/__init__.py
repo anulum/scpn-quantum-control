@@ -2516,6 +2516,13 @@ from .the_genesis_of_the_hierarchy_sequential_symmetry_breaking_ssb_validation i
     the_genesis_of_the_hierarchy_sequential_symmetry_breaking_ssb_labels,
     validate_the_genesis_of_the_hierarchy_sequential_symmetry_breaking_ssb_fixture,
 )
+from .the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_p0r05390_validation import (
+    TheGlialNeuronalCouplingMechanismSlowControlOfNeuronalCriticaliP0r05390Config,
+    TheGlialNeuronalCouplingMechanismSlowControlOfNeuronalCriticaliP0r05390FixtureResult,
+    classify_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_p0r05390_component,
+    the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_p0r05390_labels,
+    validate_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_p0r05390_fixture,
+)
 from .the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_validation import (
     TheGlialNeuronalCouplingMechanismSlowControlOfNeuronalCriticaliConfig,
     TheGlialNeuronalCouplingMechanismSlowControlOfNeuronalCriticaliFixtureResult,
@@ -2712,6 +2719,13 @@ from .the_slow_control_layer_glial_and_immune_modulation_validation import (
     the_slow_control_layer_glial_and_immune_modulation_labels,
     validate_the_slow_control_layer_glial_and_immune_modulation_fixture,
 )
+from .the_slow_control_network_glial_homeostasis_and_neuronal_criticality_validation import (
+    TheSlowControlNetworkGlialHomeostasisAndNeuronalCriticalityConfig,
+    TheSlowControlNetworkGlialHomeostasisAndNeuronalCriticalityFixtureResult,
+    classify_the_slow_control_network_glial_homeostasis_and_neuronal_criticality_component,
+    the_slow_control_network_glial_homeostasis_and_neuronal_criticality_labels,
+    validate_the_slow_control_network_glial_homeostasis_and_neuronal_criticality_fixture,
+)
 from .the_stabiliser_transfer_lemma_a_quantitative_bridge_from_memory_to_bound_validation import (
     TheStabiliserTransferLemmaAQuantitativeBridgeFromMemoryToBoundConfig,
     TheStabiliserTransferLemmaAQuantitativeBridgeFromMemoryToBoundFixtureResult,
@@ -2725,6 +2739,13 @@ from .the_susceptible_substrate_validation import (
     classify_the_susceptible_substrate_component,
     the_susceptible_substrate_labels,
     validate_the_susceptible_substrate_fixture,
+)
+from .the_thermodynamic_limit_of_control_the_allostatic_bound_validation import (
+    TheThermodynamicLimitOfControlTheAllostaticBoundConfig,
+    TheThermodynamicLimitOfControlTheAllostaticBoundFixtureResult,
+    classify_the_thermodynamic_limit_of_control_the_allostatic_bound_component,
+    the_thermodynamic_limit_of_control_the_allostatic_bound_labels,
+    validate_the_thermodynamic_limit_of_control_the_allostatic_bound_fixture,
 )
 from .the_two_timescale_controller_stability_and_exploration_validation import (
     TheTwoTimescaleControllerStabilityAndExplorationConfig,
@@ -2926,6 +2947,21 @@ from .viii_the_evolutionary_trajectory_of_the_brain_body_system_validation impor
 )
 
 __all__ = [
+    "validate_the_thermodynamic_limit_of_control_the_allostatic_bound_fixture",
+    "the_thermodynamic_limit_of_control_the_allostatic_bound_labels",
+    "classify_the_thermodynamic_limit_of_control_the_allostatic_bound_component",
+    "TheThermodynamicLimitOfControlTheAllostaticBoundFixtureResult",
+    "TheThermodynamicLimitOfControlTheAllostaticBoundConfig",
+    "validate_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_p0r05390_fixture",
+    "the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_p0r05390_labels",
+    "classify_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_p0r05390_component",
+    "TheGlialNeuronalCouplingMechanismSlowControlOfNeuronalCriticaliP0r05390FixtureResult",
+    "TheGlialNeuronalCouplingMechanismSlowControlOfNeuronalCriticaliP0r05390Config",
+    "validate_the_slow_control_network_glial_homeostasis_and_neuronal_criticality_fixture",
+    "the_slow_control_network_glial_homeostasis_and_neuronal_criticality_labels",
+    "classify_the_slow_control_network_glial_homeostasis_and_neuronal_criticality_component",
+    "TheSlowControlNetworkGlialHomeostasisAndNeuronalCriticalityFixtureResult",
+    "TheSlowControlNetworkGlialHomeostasisAndNeuronalCriticalityConfig",
     "validate_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_fixture",
     "the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_labels",
     "classify_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_component",

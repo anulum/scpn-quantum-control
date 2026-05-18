@@ -6951,6 +6951,57 @@ def load_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_critical
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_THE_SLOW_CONTROL_NETWORK_GLIAL_HOMEOSTASIS_AND_NEURONAL_CRITICALITY_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_slow_control_network_glial_homeostasis_and_neuronal_criticality_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_slow_control_network_glial_homeostasis_and_neuronal_criticality_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_SLOW_CONTROL_NETWORK_GLIAL_HOMEOSTASIS_AND_NEURONAL_CRITICALITY_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the slow control network glial homeostasis and neuronal criticality validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_GLIAL_NEURONAL_COUPLING_MECHANISM_SLOW_CONTROL_OF_NEURONAL_CRITICALI_P0R05390_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_p0r05390_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_p0r05390_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_GLIAL_NEURONAL_COUPLING_MECHANISM_SLOW_CONTROL_OF_NEURONAL_CRITICALI_P0R05390_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the glial neuronal coupling mechanism slow control of neuronal criticali p0r05390 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_THERMODYNAMIC_LIMIT_OF_CONTROL_THE_ALLOSTATIC_BOUND_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_thermodynamic_limit_of_control_the_allostatic_bound_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_thermodynamic_limit_of_control_the_allostatic_bound_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_THERMODYNAMIC_LIMIT_OF_CONTROL_THE_ALLOSTATIC_BOUND_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the thermodynamic limit of control the allostatic bound validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -7716,4 +7767,10 @@ __all__ = [
     "load_ii_the_quantum_immune_interface_l1_l2_l5_integration_validation_spec",
     "DEFAULT_THE_GLIAL_NEURONAL_COUPLING_MECHANISM_SLOW_CONTROL_OF_NEURONAL_CRITICALI_SPEC_BUNDLE",
     "load_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_validation_spec",
+    "DEFAULT_THE_SLOW_CONTROL_NETWORK_GLIAL_HOMEOSTASIS_AND_NEURONAL_CRITICALITY_SPEC_BUNDLE",
+    "load_the_slow_control_network_glial_homeostasis_and_neuronal_criticality_validation_spec",
+    "DEFAULT_THE_GLIAL_NEURONAL_COUPLING_MECHANISM_SLOW_CONTROL_OF_NEURONAL_CRITICALI_P0R05390_SPEC_BUNDLE",
+    "load_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_p0r05390_validation_spec",
+    "DEFAULT_THE_THERMODYNAMIC_LIMIT_OF_CONTROL_THE_ALLOSTATIC_BOUND_SPEC_BUNDLE",
+    "load_the_thermodynamic_limit_of_control_the_allostatic_bound_validation_spec",
 ]
