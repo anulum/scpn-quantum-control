@@ -11,6 +11,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - 2026-04-30 — Added the 109-subject EEGMMIDB baseline eyes-closed PLV artifact and an eyes-closed-minus-eyes-open comparison artifact.
 
 ### Changed
+- 2026-05-18 — Closed the second Paper 0 spec-builder documentation-surface slice for immune-enzyme, pathology/anomaly, coupling-affinity, causal-efficacy, and Axiom I family-prediction builders.
 - 2026-05-18 — Closed the VQE and first Paper 0 spec-builder documentation-surface slice.
 - 2026-05-18 — Closed the second benchmark documentation-surface slice for FIM VQE, GPU, multi-language K_nm, Rust-core, and S1 feedback benchmark scripts.
 - 2026-05-18 — Closed the first benchmark documentation-surface slice for order-parameter, classical/Rust/GPU guardrail, S2-lite, ansatz, and tensor-network scaling scripts.
