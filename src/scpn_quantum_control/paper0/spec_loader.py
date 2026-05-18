@@ -6851,6 +6851,55 @@ def load_the_foundation_of_the_biological_substrate_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_THE_QUANTUM_ENGINE_LAYERS_1_2_WE_BEGIN_WITH_THE_QUANTUM_BIOLOGICAL_LAYER_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_layer_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_layer_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_QUANTUM_ENGINE_LAYERS_1_2_WE_BEGIN_WITH_THE_QUANTUM_BIOLOGICAL_LAYER_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the quantum engine layers 1 2 we begin with the quantum biological layer validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_AMPLIFICATION_CASCADE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_amplification_cascade_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_amplification_cascade_validation_spec(
+    spec_bundle: str | Path = DEFAULT_THE_AMPLIFICATION_CASCADE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the amplification cascade validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_AQUEOUS_SUBSTRATE_DOMAIN_I_INTERFACE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_aqueous_substrate_domain_i_interface_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_aqueous_substrate_domain_i_interface_validation_spec(
+    spec_bundle: str | Path = DEFAULT_THE_AQUEOUS_SUBSTRATE_DOMAIN_I_INTERFACE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the aqueous substrate domain i interface validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -7604,4 +7653,10 @@ __all__ = [
     "load_the_aqueous_substrate_the_role_of_interfacial_water_and_coherence_domain_validation_spec",
     "DEFAULT_THE_FOUNDATION_OF_THE_BIOLOGICAL_SUBSTRATE_SPEC_BUNDLE",
     "load_the_foundation_of_the_biological_substrate_validation_spec",
+    "DEFAULT_THE_QUANTUM_ENGINE_LAYERS_1_2_WE_BEGIN_WITH_THE_QUANTUM_BIOLOGICAL_LAYER_SPEC_BUNDLE",
+    "load_the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_layer_validation_spec",
+    "DEFAULT_THE_AMPLIFICATION_CASCADE_SPEC_BUNDLE",
+    "load_the_amplification_cascade_validation_spec",
+    "DEFAULT_THE_AQUEOUS_SUBSTRATE_DOMAIN_I_INTERFACE_SPEC_BUNDLE",
+    "load_the_aqueous_substrate_domain_i_interface_validation_spec",
 ]
