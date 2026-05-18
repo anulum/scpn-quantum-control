@@ -448,6 +448,13 @@ from .foreword_coupling_validation import (
     sigma_layer_catalogue,
     validate_foreword_coupling_fixture,
 )
+from .formalism_of_the_homeostatic_quasicritical_controller_validation import (
+    FormalismOfTheHomeostaticQuasicriticalControllerConfig,
+    FormalismOfTheHomeostaticQuasicriticalControllerFixtureResult,
+    classify_formalism_of_the_homeostatic_quasicritical_controller_component,
+    formalism_of_the_homeostatic_quasicritical_controller_labels,
+    validate_formalism_of_the_homeostatic_quasicritical_controller_fixture,
+)
 from .foundational_strengths_phase_boundary_validation import (
     FoundationalStrengthsPhaseBoundaryConfig,
     FoundationalStrengthsPhaseBoundaryFixtureResult,
@@ -476,6 +483,13 @@ from .front_matter_context_validation import (
     classify_toc_context,
     collection_books,
     validate_front_matter_context_fixture,
+)
+from .functional_implications_validation import (
+    FunctionalImplicationsConfig,
+    FunctionalImplicationsFixtureResult,
+    classify_functional_implications_component,
+    functional_implications_labels,
+    validate_functional_implications_fixture,
 )
 from .gaian_safety_validation import (
     GaianSafetyConfig,
@@ -806,6 +820,13 @@ from .meta_framework_integrations_p0r02600_validation import (
     classify_meta_framework_integrations_p0r02600_component,
     meta_framework_integrations_p0r02600_labels,
     validate_meta_framework_integrations_p0r02600_fixture,
+)
+from .meta_framework_integrations_p0r02894_validation import (
+    MetaFrameworkIntegrationsP0r02894Config,
+    MetaFrameworkIntegrationsP0r02894FixtureResult,
+    classify_meta_framework_integrations_p0r02894_component,
+    meta_framework_integrations_p0r02894_labels,
+    validate_meta_framework_integrations_p0r02894_fixture,
 )
 from .meta_framework_integrations_validation import (
     MetaFrameworkIntegrationsConfig,
@@ -1414,6 +1435,21 @@ from .validation_strategy import (
 )
 
 __all__ = [
+    "validate_meta_framework_integrations_p0r02894_fixture",
+    "meta_framework_integrations_p0r02894_labels",
+    "classify_meta_framework_integrations_p0r02894_component",
+    "MetaFrameworkIntegrationsP0r02894FixtureResult",
+    "MetaFrameworkIntegrationsP0r02894Config",
+    "validate_formalism_of_the_homeostatic_quasicritical_controller_fixture",
+    "formalism_of_the_homeostatic_quasicritical_controller_labels",
+    "classify_formalism_of_the_homeostatic_quasicritical_controller_component",
+    "FormalismOfTheHomeostaticQuasicriticalControllerFixtureResult",
+    "FormalismOfTheHomeostaticQuasicriticalControllerConfig",
+    "validate_functional_implications_fixture",
+    "functional_implications_labels",
+    "classify_functional_implications_component",
+    "FunctionalImplicationsFixtureResult",
+    "FunctionalImplicationsConfig",
     "validate_the_susceptible_substrate_fixture",
     "the_susceptible_substrate_labels",
     "classify_the_susceptible_substrate_component",
