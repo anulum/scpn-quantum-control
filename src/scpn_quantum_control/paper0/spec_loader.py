@@ -6005,6 +6005,57 @@ def load_iv_sub_synaptic_and_axonal_architecture_l1_l3_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SECTION_1_THE_CYTOSKELETON_WATER_INTERFACE_AND_QEC_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_1_the_cytoskeleton_water_interface_and_qec_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_1_the_cytoskeleton_water_interface_and_qec_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_1_THE_CYTOSKELETON_WATER_INTERFACE_AND_QEC_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 1 the cytoskeleton water interface and qec validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_4_NUCLEAR_SPIN_AND_POSNER_CLUSTERS_THE_QUANTUM_MEMORY_SUBSTRATE_L1_L9_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_4_NUCLEAR_SPIN_AND_POSNER_CLUSTERS_THE_QUANTUM_MEMORY_SUBSTRATE_L1_L9_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 4 nuclear spin and posner clusters the quantum memory substrate l1 l9 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_II_MICRO_SCALE_GEOMETRY_THE_QUANTUM_AND_MOLECULAR_SCAFFOLD_L1_L3_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_ii_micro_scale_geometry_the_quantum_and_molecular_scaffold_l1_l3_validation_specs_2026-05-17.json"
+)
+
+
+def load_ii_micro_scale_geometry_the_quantum_and_molecular_scaffold_l1_l3_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_II_MICRO_SCALE_GEOMETRY_THE_QUANTUM_AND_MOLECULAR_SCAFFOLD_L1_L3_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 ii micro scale geometry the quantum and molecular scaffold l1 l3 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -6656,4 +6707,10 @@ __all__ = [
     "load_iii_the_extracellular_milieu_ecm_and_pnns_l3_l4_validation_spec",
     "DEFAULT_IV_SUB_SYNAPTIC_AND_AXONAL_ARCHITECTURE_L1_L3_SPEC_BUNDLE",
     "load_iv_sub_synaptic_and_axonal_architecture_l1_l3_validation_spec",
+    "DEFAULT_SECTION_1_THE_CYTOSKELETON_WATER_INTERFACE_AND_QEC_SPEC_BUNDLE",
+    "load_section_1_the_cytoskeleton_water_interface_and_qec_validation_spec",
+    "DEFAULT_SECTION_4_NUCLEAR_SPIN_AND_POSNER_CLUSTERS_THE_QUANTUM_MEMORY_SUBSTRATE_L1_L9_SPEC_BUNDLE",
+    "load_section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9_validation_spec",
+    "DEFAULT_II_MICRO_SCALE_GEOMETRY_THE_QUANTUM_AND_MOLECULAR_SCAFFOLD_L1_L3_SPEC_BUNDLE",
+    "load_ii_micro_scale_geometry_the_quantum_and_molecular_scaffold_l1_l3_validation_spec",
 ]

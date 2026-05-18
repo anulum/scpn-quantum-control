@@ -713,6 +713,13 @@ from .ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_va
     ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_labels,
     validate_ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_fixture,
 )
+from .ii_micro_scale_geometry_the_quantum_and_molecular_scaffold_l1_l3_validation import (
+    IiMicroScaleGeometryTheQuantumAndMolecularScaffoldL1L3Config,
+    IiMicroScaleGeometryTheQuantumAndMolecularScaffoldL1L3FixtureResult,
+    classify_ii_micro_scale_geometry_the_quantum_and_molecular_scaffold_l1_l3_component,
+    ii_micro_scale_geometry_the_quantum_and_molecular_scaffold_l1_l3_labels,
+    validate_ii_micro_scale_geometry_the_quantum_and_molecular_scaffold_l1_l3_fixture,
+)
 from .ii_the_binding_problem_the_gauge_field_of_consciousness_validation import (
     IiTheBindingProblemTheGaugeFieldOfConsciousnessConfig,
     IiTheBindingProblemTheGaugeFieldOfConsciousnessFixtureResult,
@@ -1582,6 +1589,13 @@ from .section_1_the_cytoskeleton_the_l1_quantum_scaffold_validation import (
     section_1_the_cytoskeleton_the_l1_quantum_scaffold_labels,
     validate_section_1_the_cytoskeleton_the_l1_quantum_scaffold_fixture,
 )
+from .section_1_the_cytoskeleton_water_interface_and_qec_validation import (
+    Section1TheCytoskeletonWaterInterfaceAndQecConfig,
+    Section1TheCytoskeletonWaterInterfaceAndQecFixtureResult,
+    classify_section_1_the_cytoskeleton_water_interface_and_qec_component,
+    section_1_the_cytoskeleton_water_interface_and_qec_labels,
+    validate_section_1_the_cytoskeleton_water_interface_and_qec_fixture,
+)
 from .section_1_the_emergence_of_the_self_ssb_and_the_strange_loop_validation import (
     Section1TheEmergenceOfTheSelfSsbAndTheStrangeLoopConfig,
     Section1TheEmergenceOfTheSelfSsbAndTheStrangeLoopFixtureResult,
@@ -1868,6 +1882,13 @@ from .section_4_justification_for_a_teleological_least_action_principle_validati
     classify_section_4_justification_for_a_teleological_least_action_principle_component,
     section_4_justification_for_a_teleological_least_action_principle_labels,
     validate_section_4_justification_for_a_teleological_least_action_principle_fixture,
+)
+from .section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9_validation import (
+    Section4NuclearSpinAndPosnerClustersTheQuantumMemorySubstrateL1L9Config,
+    Section4NuclearSpinAndPosnerClustersTheQuantumMemorySubstrateL1L9FixtureResult,
+    classify_section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9_component,
+    section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9_labels,
+    validate_section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9_fixture,
 )
 from .section_4_the_formal_equivalence_of_sec_and_sc_validation import (
     Section4TheFormalEquivalenceOfSecAndScConfig,
@@ -2527,6 +2548,21 @@ from .vii_pathology_the_disordered_brain_validation import (
 )
 
 __all__ = [
+    "validate_ii_micro_scale_geometry_the_quantum_and_molecular_scaffold_l1_l3_fixture",
+    "ii_micro_scale_geometry_the_quantum_and_molecular_scaffold_l1_l3_labels",
+    "classify_ii_micro_scale_geometry_the_quantum_and_molecular_scaffold_l1_l3_component",
+    "IiMicroScaleGeometryTheQuantumAndMolecularScaffoldL1L3FixtureResult",
+    "IiMicroScaleGeometryTheQuantumAndMolecularScaffoldL1L3Config",
+    "validate_section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9_fixture",
+    "section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9_labels",
+    "classify_section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9_component",
+    "Section4NuclearSpinAndPosnerClustersTheQuantumMemorySubstrateL1L9FixtureResult",
+    "Section4NuclearSpinAndPosnerClustersTheQuantumMemorySubstrateL1L9Config",
+    "validate_section_1_the_cytoskeleton_water_interface_and_qec_fixture",
+    "section_1_the_cytoskeleton_water_interface_and_qec_labels",
+    "classify_section_1_the_cytoskeleton_water_interface_and_qec_component",
+    "Section1TheCytoskeletonWaterInterfaceAndQecFixtureResult",
+    "Section1TheCytoskeletonWaterInterfaceAndQecConfig",
     "validate_iv_sub_synaptic_and_axonal_architecture_l1_l3_fixture",
     "iv_sub_synaptic_and_axonal_architecture_l1_l3_labels",
     "classify_iv_sub_synaptic_and_axonal_architecture_l1_l3_component",
