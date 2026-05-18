@@ -5,6 +5,22 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-05-18 — Added a release-readiness audit helper and public gate
+  document that compose version consistency, coverage-gap readiness,
+  behavioural-test density, and required claim-boundary artefacts into one
+  deterministic tag blocker.
+- 2026-05-18 — Added reviewed coverage exclusions for optional Julia-runtime
+  wrappers and the generated Paper 0 source-accounting package, with
+  glob-aware coverage-gap audit handling.
+- 2026-05-18 — Added repo-local agent instructions advertising that Paper 0
+  source ingestion is complete and accessible through the generated register,
+  while requiring future papers to follow the same source-bounded processing
+  path before any completion claim.
+- 2026-05-18 — Added a Paper 0 experimental-pathway programme page that
+  turns completed source ingestion into a methodology-paper route,
+  experimental tiers, candidate lanes, and immediate production queue while
+  keeping Paper 27 bounded as an implementation candidate rather than the
+  definitive source of truth.
 - 2026-05-18 — Added S2 benchmark-matrix readiness ingestion to the
   quantum-advantage gap audit so IBM advantage runs stay blocked until the
   full protocol grid, hardware rows, and claim-boundary gates are satisfied.
