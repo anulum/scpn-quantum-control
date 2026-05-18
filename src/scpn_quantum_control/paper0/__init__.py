@@ -1333,6 +1333,13 @@ from .terminology_bridge_validation import (
     terminology_bridge_labels,
     validate_terminology_bridge_fixture,
 )
+from .the_biological_syndrome_measurement_and_recovery_protocol_validation import (
+    TheBiologicalSyndromeMeasurementAndRecoveryProtocolConfig,
+    TheBiologicalSyndromeMeasurementAndRecoveryProtocolFixtureResult,
+    classify_the_biological_syndrome_measurement_and_recovery_protocol_component,
+    the_biological_syndrome_measurement_and_recovery_protocol_labels,
+    validate_the_biological_syndrome_measurement_and_recovery_protocol_fixture,
+)
 from .the_coupling_mechanism_validation import (
     TheCouplingMechanismConfig,
     TheCouplingMechanismFixtureResult,
@@ -1410,6 +1417,13 @@ from .the_qec_imperative_and_the_role_of_the_psi_field_validation import (
     the_qec_imperative_and_the_role_of_the_psi_field_labels,
     validate_the_qec_imperative_and_the_role_of_the_psi_field_fixture,
 )
+from .the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance_validation import (
+    TheQecRaceConditionExplicitDissipationRatesAndFaultToleranceConfig,
+    TheQecRaceConditionExplicitDissipationRatesAndFaultToleranceFixtureResult,
+    classify_the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance_component,
+    the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance_labels,
+    validate_the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance_fixture,
+)
 from .the_self_as_a_soliton_emergence_of_localised_consciousness_layer_5_validation import (
     TheSelfAsASolitonEmergenceOfLocalisedConsciousnessLayer5Config,
     TheSelfAsASolitonEmergenceOfLocalisedConsciousnessLayer5FixtureResult,
@@ -1423,6 +1437,13 @@ from .the_sentient_consciousness_projection_network_scpn_validation import (
     classify_the_sentient_consciousness_projection_network_scpn_component,
     the_sentient_consciousness_projection_network_scpn_labels,
     validate_the_sentient_consciousness_projection_network_scpn_fixture,
+)
+from .the_stabiliser_transfer_lemma_a_quantitative_bridge_from_memory_to_bound_validation import (
+    TheStabiliserTransferLemmaAQuantitativeBridgeFromMemoryToBoundConfig,
+    TheStabiliserTransferLemmaAQuantitativeBridgeFromMemoryToBoundFixtureResult,
+    classify_the_stabiliser_transfer_lemma_a_quantitative_bridge_from_memory_to_bound_component,
+    the_stabiliser_transfer_lemma_a_quantitative_bridge_from_memory_to_bound_labels,
+    validate_the_stabiliser_transfer_lemma_a_quantitative_bridge_from_memory_to_bound_fixture,
 )
 from .the_susceptible_substrate_validation import (
     TheSusceptibleSubstrateConfig,
@@ -1561,6 +1582,21 @@ from .validation_strategy import (
 )
 
 __all__ = [
+    "validate_the_stabiliser_transfer_lemma_a_quantitative_bridge_from_memory_to_bound_fixture",
+    "the_stabiliser_transfer_lemma_a_quantitative_bridge_from_memory_to_bound_labels",
+    "classify_the_stabiliser_transfer_lemma_a_quantitative_bridge_from_memory_to_bound_component",
+    "TheStabiliserTransferLemmaAQuantitativeBridgeFromMemoryToBoundFixtureResult",
+    "TheStabiliserTransferLemmaAQuantitativeBridgeFromMemoryToBoundConfig",
+    "validate_the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance_fixture",
+    "the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance_labels",
+    "classify_the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance_component",
+    "TheQecRaceConditionExplicitDissipationRatesAndFaultToleranceFixtureResult",
+    "TheQecRaceConditionExplicitDissipationRatesAndFaultToleranceConfig",
+    "validate_the_biological_syndrome_measurement_and_recovery_protocol_fixture",
+    "the_biological_syndrome_measurement_and_recovery_protocol_labels",
+    "classify_the_biological_syndrome_measurement_and_recovery_protocol_component",
+    "TheBiologicalSyndromeMeasurementAndRecoveryProtocolFixtureResult",
+    "TheBiologicalSyndromeMeasurementAndRecoveryProtocolConfig",
     "validate_the_ultimate_feedback_loop_fixture",
     "the_ultimate_feedback_loop_labels",
     "classify_the_ultimate_feedback_loop_component",

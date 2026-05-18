@@ -3717,6 +3717,57 @@ def load_the_ultimate_feedback_loop_validation_spec(
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_THE_BIOLOGICAL_SYNDROME_MEASUREMENT_AND_RECOVERY_PROTOCOL_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_biological_syndrome_measurement_and_recovery_protocol_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_biological_syndrome_measurement_and_recovery_protocol_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_BIOLOGICAL_SYNDROME_MEASUREMENT_AND_RECOVERY_PROTOCOL_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the biological syndrome measurement and recovery protocol validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_QEC_RACE_CONDITION_EXPLICIT_DISSIPATION_RATES_AND_FAULT_TOLERANCE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_QEC_RACE_CONDITION_EXPLICIT_DISSIPATION_RATES_AND_FAULT_TOLERANCE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the qec race condition explicit dissipation rates and fault tolerance validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_THE_STABILISER_TRANSFER_LEMMA_A_QUANTITATIVE_BRIDGE_FROM_MEMORY_TO_BOUND_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_the_stabiliser_transfer_lemma_a_quantitative_bridge_from_memory_to_bound_validation_specs_2026-05-17.json"
+)
+
+
+def load_the_stabiliser_transfer_lemma_a_quantitative_bridge_from_memory_to_bound_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_THE_STABILISER_TRANSFER_LEMMA_A_QUANTITATIVE_BRIDGE_FROM_MEMORY_TO_BOUND_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 the stabiliser transfer lemma a quantitative bridge from memory to bound validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -4092,4 +4143,10 @@ __all__ = [
     "load_predictive_coding_integration_p0r03059_validation_spec",
     "DEFAULT_THE_ULTIMATE_FEEDBACK_LOOP_SPEC_BUNDLE",
     "load_the_ultimate_feedback_loop_validation_spec",
+    "DEFAULT_THE_BIOLOGICAL_SYNDROME_MEASUREMENT_AND_RECOVERY_PROTOCOL_SPEC_BUNDLE",
+    "load_the_biological_syndrome_measurement_and_recovery_protocol_validation_spec",
+    "DEFAULT_THE_QEC_RACE_CONDITION_EXPLICIT_DISSIPATION_RATES_AND_FAULT_TOLERANCE_SPEC_BUNDLE",
+    "load_the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance_validation_spec",
+    "DEFAULT_THE_STABILISER_TRANSFER_LEMMA_A_QUANTITATIVE_BRIDGE_FROM_MEMORY_TO_BOUND_SPEC_BUNDLE",
+    "load_the_stabiliser_transfer_lemma_a_quantitative_bridge_from_memory_to_bound_validation_spec",
 ]
