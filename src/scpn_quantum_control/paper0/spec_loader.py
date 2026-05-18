@@ -5704,6 +5704,56 @@ def load_introduction_to_the_clinical_implications_the_disordered_brain_as_a_dis
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
+DEFAULT_SCHIZOPHRENIA_DISSONANCE_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_schizophrenia_dissonance_validation_specs_2026-05-17.json"
+)
+
+
+def load_schizophrenia_dissonance_validation_spec(
+    spec_bundle: str | Path = DEFAULT_SCHIZOPHRENIA_DISSONANCE_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 schizophrenia dissonance validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_ADVANCED_NEUROBIOLOGICAL_IMPLEMENTATION_OF_THE_SCPN_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_advanced_neurobiological_implementation_of_the_scpn_validation_specs_2026-05-17.json"
+)
+
+
+def load_advanced_neurobiological_implementation_of_the_scpn_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_ADVANCED_NEUROBIOLOGICAL_IMPLEMENTATION_OF_THE_SCPN_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 advanced neurobiological implementation of the scpn validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
+DEFAULT_SECTION_3_NEUROTRANSMITTERS_AS_TUNERS_OF_THE_PSI_FIELD_INTERFACE_L2_SPEC_BUNDLE = (
+    "docs/internal/paper0_foundational_extraction/"
+    "paper0_section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_validation_specs_2026-05-17.json"
+)
+
+
+def load_section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_validation_spec(
+    spec_bundle: str
+    | Path = DEFAULT_SECTION_3_NEUROTRANSMITTERS_AS_TUNERS_OF_THE_PSI_FIELD_INTERFACE_L2_SPEC_BUNDLE,
+) -> dict[str, Any]:
+    """Load the Paper 0 section 3 neurotransmitters as tuners of the psi field interface l2 validation spec bundle."""
+    path = Path(spec_bundle)
+    if not path.is_absolute():
+        path = project_data_path(str(path))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+
+
 __all__ = [
     "DEFAULT_UPDE_SPEC_BUNDLE",
     "DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE",
@@ -6319,4 +6369,10 @@ __all__ = [
     "load_the_neuro_visceral_axis_heart_brain_gut_the_symphony_of_the_self_validation_spec",
     "DEFAULT_INTRODUCTION_TO_THE_CLINICAL_IMPLICATIONS_THE_DISORDERED_BRAIN_AS_A_DISO_SPEC_BUNDLE",
     "load_introduction_to_the_clinical_implications_the_disordered_brain_as_a_diso_validation_spec",
+    "DEFAULT_SCHIZOPHRENIA_DISSONANCE_SPEC_BUNDLE",
+    "load_schizophrenia_dissonance_validation_spec",
+    "DEFAULT_ADVANCED_NEUROBIOLOGICAL_IMPLEMENTATION_OF_THE_SCPN_SPEC_BUNDLE",
+    "load_advanced_neurobiological_implementation_of_the_scpn_validation_spec",
+    "DEFAULT_SECTION_3_NEUROTRANSMITTERS_AS_TUNERS_OF_THE_PSI_FIELD_INTERFACE_L2_SPEC_BUNDLE",
+    "load_section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_validation_spec",
 ]

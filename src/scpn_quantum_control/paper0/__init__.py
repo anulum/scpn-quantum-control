@@ -40,6 +40,13 @@ from .advanced_mechanisms_validation import (
     holographic_retrieval_score,
     validate_advanced_mechanisms_fixture,
 )
+from .advanced_neurobiological_implementation_of_the_scpn_validation import (
+    AdvancedNeurobiologicalImplementationOfTheScpnConfig,
+    AdvancedNeurobiologicalImplementationOfTheScpnFixtureResult,
+    advanced_neurobiological_implementation_of_the_scpn_labels,
+    classify_advanced_neurobiological_implementation_of_the_scpn_component,
+    validate_advanced_neurobiological_implementation_of_the_scpn_fixture,
+)
 from .anomalous_boundary_validation import (
     AnomalousBoundaryConfig,
     AnomalousBoundaryFixtureResult,
@@ -1512,6 +1519,13 @@ from .resolving_the_probability_desert_superradiant_amplification_and_bec_stim_v
     resolving_the_probability_desert_superradiant_amplification_and_bec_stim_labels,
     validate_resolving_the_probability_desert_superradiant_amplification_and_bec_stim_fixture,
 )
+from .schizophrenia_dissonance_validation import (
+    SchizophreniaDissonanceConfig,
+    SchizophreniaDissonanceFixtureResult,
+    classify_schizophrenia_dissonance_component,
+    schizophrenia_dissonance_labels,
+    validate_schizophrenia_dissonance_fixture,
+)
 from .scpn_iit_correspondence_validation import (
     ScpnIitCorrespondenceConfig,
     ScpnIitCorrespondenceFixtureResult,
@@ -1658,6 +1672,13 @@ from .section_3_memory_capacity_bekenstein_hawking_bound_validation import (
     classify_section_3_memory_capacity_bekenstein_hawking_bound_component,
     section_3_memory_capacity_bekenstein_hawking_bound_labels,
     validate_section_3_memory_capacity_bekenstein_hawking_bound_fixture,
+)
+from .section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_validation import (
+    Section3NeurotransmittersAsTunersOfThePsiFieldInterfaceL2Config,
+    Section3NeurotransmittersAsTunersOfThePsiFieldInterfaceL2FixtureResult,
+    classify_section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_component,
+    section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_labels,
+    validate_section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_fixture,
 )
 from .section_3_sequential_symmetry_breaking_ssb_validation import (
     Section3SequentialSymmetryBreakingSsbConfig,
@@ -2401,6 +2422,21 @@ from .vii_pathology_the_disordered_brain_validation import (
 )
 
 __all__ = [
+    "validate_section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_fixture",
+    "section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_labels",
+    "classify_section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_component",
+    "Section3NeurotransmittersAsTunersOfThePsiFieldInterfaceL2FixtureResult",
+    "Section3NeurotransmittersAsTunersOfThePsiFieldInterfaceL2Config",
+    "validate_advanced_neurobiological_implementation_of_the_scpn_fixture",
+    "advanced_neurobiological_implementation_of_the_scpn_labels",
+    "classify_advanced_neurobiological_implementation_of_the_scpn_component",
+    "AdvancedNeurobiologicalImplementationOfTheScpnFixtureResult",
+    "AdvancedNeurobiologicalImplementationOfTheScpnConfig",
+    "validate_schizophrenia_dissonance_fixture",
+    "schizophrenia_dissonance_labels",
+    "classify_schizophrenia_dissonance_component",
+    "SchizophreniaDissonanceFixtureResult",
+    "SchizophreniaDissonanceConfig",
     "validate_introduction_to_the_clinical_implications_the_disordered_brain_as_a_diso_fixture",
     "introduction_to_the_clinical_implications_the_disordered_brain_as_a_diso_labels",
     "classify_introduction_to_the_clinical_implications_the_disordered_brain_as_a_diso_component",
