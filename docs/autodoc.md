@@ -15,6 +15,31 @@ subsystem authors who need direct access to implementation modules. First-path
 user workflows should start with [Stable Facades API](stable_facades_api.md)
 and [Kuramoto Core Facade](kuramoto_core_facade.md).
 
+## Documentation Surface TODO
+
+The repository documentation-surface audit is tracked by
+`tools/audit_documentation_surface.py`. As of 2026-05-18, after the Paper 0
+generated-builder burn-down through generated builder 10-batch 25, the
+remaining `scripts` audit inventory is:
+
+- Total remaining findings: `734`
+- Function findings: `697`
+- Module findings: `37`
+- Class findings: `0`
+
+Continue from the next audit head:
+
+- `scripts/build_paper0_section_2_l4_impact_dampening_dynamics_and_shifting_criticality_specs.py`
+- `scripts/build_paper0_section_2_molecular_geometry_and_the_psi_field_interface_l2_l3_specs.py`
+- `scripts/build_paper0_section_2_specialised_sensory_systems_specs.py`
+- `scripts/build_paper0_section_2_the_central_void_the_source_specs.py`
+- `scripts/build_paper0_section_2_the_endocrine_system_and_hpa_axis_stress_response_specs.py`
+
+Production continuation rule: process generated Paper 0 builder CLI entrypoints
+in deterministic audit order, run focused documentation-surface audit, Ruff,
+mypy, diff hygiene, public-token hygiene, and freeze checks for each batch
+before staging or committing.
+
 ## Stable Facades
 
 ::: scpn_quantum_control.kuramoto_core
