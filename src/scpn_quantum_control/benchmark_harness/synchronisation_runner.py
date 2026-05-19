@@ -13,7 +13,7 @@ import math
 import platform
 import sys
 from dataclasses import asdict, dataclass
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 from scipy.integrate import solve_ivp
@@ -87,7 +87,7 @@ def decaying_chain_coupling_matrix(
         raise ValueError("chain benchmark requires at least two oscillators")
     indices = np.arange(n_oscillators, dtype=float)
     distance = np.abs(indices[:, None] - indices[None, :])
-    matrix = coupling * np.exp(-decay * distance)
+    matrix = cast(np.ndarray, coupling * np.exp(-decay * distance))
     np.fill_diagonal(matrix, 0.0)
     return matrix
 
@@ -115,7 +115,14 @@ def run_classical_reference(
 
     def rhs(_time: float, theta: np.ndarray) -> np.ndarray:
         delta = theta[None, :] - theta[:, None]
-        return np.asarray(omega + np.sum(coupling * np.sin(delta), axis=1), dtype=float)
+        derivative = cast(
+            np.ndarray,
+            np.asarray(
+                omega + np.sum(coupling * np.sin(delta), axis=1),
+                dtype=float,
+            ),
+        )
+        return derivative
 
     result = solve_ivp(
         rhs,

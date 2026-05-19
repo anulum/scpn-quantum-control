@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import shlex
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -74,14 +75,13 @@ def run_json_command(command: list[str], *, cwd: Path, output_path: Path) -> dic
 
 
 def run_log_command(command: str, *, cwd: Path, log_path: Path) -> None:
-    """Run a shell command and capture stdout/stderr into one log file."""
+    """Run a reproduction command and capture stdout/stderr into one log file."""
 
     completed = subprocess.run(
-        command,
+        shlex.split(command),
         cwd=cwd,
         check=False,
         text=True,
-        shell=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
     )
