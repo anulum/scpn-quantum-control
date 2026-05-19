@@ -39,7 +39,7 @@ def test_manifest_scans_public_capability_surfaces() -> None:
     assert manifest["schema_version"] == "capability-manifest.v1"
     assert manifest["generated_from"]["config"] == "tools/capability_manifest.toml"
     assert manifest["project"]["name"] == "scpn-quantum-control"
-    assert manifest["project"]["version"] == "0.9.6"
+    assert manifest["project"]["version"] == "0.9.7"
     assert manifest["counts"]["public_api_exports"] == len(manifest["package_exports"])
     assert manifest["counts"]["python_model_source_modules"] == len(
         manifest["models"]["python_source_modules"]

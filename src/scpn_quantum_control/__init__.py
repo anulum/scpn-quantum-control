@@ -177,7 +177,7 @@ from .stable_core_preflight import (
     stable_core_preflight_fixtures_payload,
 )
 
-__version__ = "0.9.6"
+__version__ = "0.9.7"
 
 __all__ = [
     "eeg_plv_to_vqe",

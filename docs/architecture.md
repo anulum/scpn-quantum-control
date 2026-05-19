@@ -8,7 +8,7 @@
 
 # Architecture
 
-## Package Statistics (v0.9.6)
+## Package Statistics (v0.9.7)
 
 | Metric | Count |
 |--------|-------|

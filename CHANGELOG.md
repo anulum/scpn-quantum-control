@@ -4,6 +4,25 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+## [0.9.7] - 2026-05-19
+
+### Added
+- 2026-05-19 — Added the first GOTM-SCPN Paper 0 K_nm preregistered replay
+  artefact set with deterministic JSON/Markdown outputs, comparator gate,
+  release-safe `scpn-bench` wiring, null-model diagnostics, input digest
+  manifests, and an explicit do-not-promote hardware boundary.
+- 2026-05-19 — Added the Paper 0 methodology-paper outline, first downstream
+  preregistered experiment design, replay contract, and measured-coupling
+  evidence checklist so Paper 0 ingestion now produces a concrete
+  source-bounded experimental pathway.
+- 2026-05-19 — Added the repository-specific capability-manifest system with
+  generated JSON/Markdown inventory, README snapshot, SQC-specific counts for
+  Paper 0 validation modules, domain package families, notebooks, examples,
+  Rust source modules, and Rust PyO3 function bindings.
+- 2026-05-19 — Added `scpn-bench capability-manifest-check` and focused tests
+  so public capability counts are generated and checked from one source of
+  truth rather than hand-edited across release surfaces.
+
 ### Added
 - 2026-05-18 — Added a release-readiness audit helper and public gate
   document that compose version consistency, coverage-gap readiness,

@@ -31,7 +31,7 @@
 > artifacts are now part of release/repro hardening and are kept separate from
 > non-artefact scientific claims. APIs may evolve as this work progresses.
 
-**Version:** 0.9.6
+**Version:** 0.9.7
 **Status:** Kuramoto-XY compiler + hardware runners + analysis stack | 49 exported Rust `#[pyfunction]` bindings | 98 tracked notebooks | 22 example files | 97%+ coverage | IBM Heron r2 evidence ledgered
 
 <!-- capability-snapshot:start -->
@@ -42,7 +42,7 @@
 
 | Surface | Current inventory |
 |---|---:|
-| Package version | 0.9.6 |
+| Package version | 0.9.7 |
 | Public API exports | 162 |
 | Python source modules | 720 |
 | Public Python classes | 1335 |
