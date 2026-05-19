@@ -30,6 +30,7 @@ def _sha256(path: Path) -> str:
 
 
 def main() -> int:
+    """Write the S2 scaling protocol artefacts."""
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     protocol = default_s2_scaling_protocol().to_dict()
     protocol["export"] = {

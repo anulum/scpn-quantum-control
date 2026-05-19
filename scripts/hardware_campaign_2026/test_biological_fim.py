@@ -6,6 +6,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Hardware Campaign Tests
+"""Run the biological FIM hardware campaign check."""
 
 import asyncio
 import json
@@ -19,6 +20,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_biological_fim_test():
+    """Sweep FIM coupling values on the biological-connectome parameter set."""
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=10000, mitigation="GUESS")
     K_nm_bio = np.load(parameter_path("c_elegans_connectome_14x14.npy"))
     lambda_values = [0.0, 1.0, 2.0, 2.75, 4.0, 8.0]

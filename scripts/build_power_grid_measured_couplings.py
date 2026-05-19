@@ -119,6 +119,7 @@ def symmetrised_edge_value_and_uncertainty(i: int, j: int) -> tuple[float, float
 
 
 def build_payload(*, command: list[str]) -> dict[str, Any]:
+    """Build the IEEE 5-bus swing-equation coupling artefact payload."""
     coupling_matrix, omega = ieee_5bus_coupling_matrix(allow_builtin_reference=True)
     couplings = []
     for i in range(coupling_matrix.shape[0]):
@@ -298,6 +299,7 @@ def build_ieee14_payload(*, command: list[str]) -> dict[str, Any]:
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Parse the measured power-grid candidate builder CLI arguments."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--case", choices=("ieee5", "ieee14"), default="ieee5")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
@@ -305,6 +307,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Write the requested measured power-grid coupling candidate artefact."""
     args = parse_args(argv)
     command = [Path(sys.executable).name, *sys.argv]
     if args.case == "ieee14" and args.output == DEFAULT_OUTPUT:

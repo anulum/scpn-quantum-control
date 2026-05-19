@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Frontier Campaign Tests (Batch 4)
+"""Run the frontier DLA tensor-network mapping campaign check."""
+
 import json
 
 import numpy as np
@@ -15,6 +17,7 @@ from scpn_quantum_control.analysis import dla_truncated_tn
 
 
 def run_dla_tn_mapping():
+    """Execute the DLA tensor-network observable export."""
     K_nm = np.load(parameter_path("tn_Knm_64x64.npy"))
     result = dla_truncated_tn(K_nm, max_bond_dim=32, dla_cutoff=1e-6)
     with open(result_path("dla_tensor_network.json"), "w") as f:

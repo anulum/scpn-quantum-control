@@ -6,6 +6,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Hardware Campaign Tests
+"""Run the synchrony-metrology hardware campaign check."""
 
 import asyncio
 import json
@@ -19,6 +20,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_metrology_test():
+    """Sweep coupling strengths for QFI and synchrony metrology observables."""
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=15000, mitigation="GUESS")
     K_nm = np.load(parameter_path("metrology_Knm_12x12.npy"))
     coupling_strengths = np.linspace(0.5, 4.0, 8)

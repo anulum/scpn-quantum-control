@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Commercial license available
 # © Concepts & Code 2020–2026 Miroslav Šotek. All rights reserved.
+"""Generate source-backed frontier campaign parameter matrices."""
 
 import argparse
 import json
@@ -97,6 +98,7 @@ def generate_all_params(
     allow_synthetic: bool = False,
     seed: int = 42,
 ) -> None:
+    """Write all frontier campaign parameter arrays and provenance metadata."""
     output_path = Path(output_dir) if output_dir is not None else campaign_path("params")
     output_path.mkdir(parents=True, exist_ok=True)
     rng = np.random.default_rng(seed)

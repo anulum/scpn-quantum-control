@@ -6,6 +6,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Hardware Campaign Tests
+"""Run the distributed-clock hardware campaign check."""
 
 import asyncio
 import json
@@ -19,6 +20,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_distributed_clock_test():
+    """Submit paired clock-network jobs across two asynchronous runners."""
     runner_node1 = AsyncHardwareRunner(backend="ibm_heron_r2", shots=10000, mitigation="GUESS")
     runner_node2 = AsyncHardwareRunner(backend="ibm_heron_r2", shots=10000, mitigation="GUESS")
     K_nm = np.load(parameter_path("clock_network_16x16.npy"))

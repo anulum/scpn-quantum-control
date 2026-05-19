@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Frontier Campaign Tests (Batch 4)
+"""Run the live SC-NeuroCore bridge frontier feedback loop."""
+
 import asyncio
 import json
 
@@ -19,6 +21,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_live_scneurocore():
+    """Stream bridge payloads through the asynchronous hardware runner."""
     runner = AsyncHardwareRunner(
         backend="ibm_heron_r2", shots=8000, mitigation="GUESS", real_time_feedback=True
     )

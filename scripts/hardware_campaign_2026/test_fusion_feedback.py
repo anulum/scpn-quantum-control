@@ -6,6 +6,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Hardware Campaign Tests
+"""Run the fusion-feedback hardware campaign check."""
 
 import asyncio
 import json
@@ -20,6 +21,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_fusion_feedback_test():
+    """Iterate tokamak-inspired feedback updates through hardware observables."""
     runner = AsyncHardwareRunner(
         backend="ibm_heron_r2",
         shots=8000,

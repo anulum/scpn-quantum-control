@@ -87,6 +87,7 @@ def _markdown(summary: dict[str, object]) -> str:
 
 
 def main() -> int:
+    """Write the S3 design-readiness artefacts."""
     args = _parse_args()
     if args.n_qubits < 2:
         raise ValueError("--n-qubits must be at least 2")

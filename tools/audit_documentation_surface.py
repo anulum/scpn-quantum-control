@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import fnmatch
 import json
 import re
 from collections import Counter
@@ -40,6 +41,16 @@ class DocumentationFinding:
 
     path: str
     line: int
+    kind: str
+    symbol: str
+    reason: str
+
+
+@dataclass(frozen=True, slots=True)
+class DocumentationAllowlistEntry:
+    """One explicitly accepted documentation-audit finding pattern."""
+
+    path_pattern: str
     kind: str
     symbol: str
     reason: str
@@ -244,6 +255,48 @@ def audit_files(
     return tuple(sorted(findings, key=lambda item: (item.path, item.line, item.kind, item.symbol)))
 
 
+def load_allowlist(path: Path) -> tuple[DocumentationAllowlistEntry, ...]:
+    """Load and validate documentation-audit allow-list entries."""
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    if isinstance(raw, dict):
+        raw = raw.get("entries")
+    if not isinstance(raw, list):
+        raise ValueError("documentation allowlist must be a JSON list or object with entries")
+    entries: list[DocumentationAllowlistEntry] = []
+    required = ("path_pattern", "kind", "symbol", "reason")
+    for index, item in enumerate(raw):
+        if not isinstance(item, dict):
+            raise ValueError(f"allowlist entry {index} must be an object")
+        values: dict[str, str] = {}
+        for key in required:
+            value = item.get(key)
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"allowlist entry {index} requires non-empty {key}")
+            values[key] = value.strip()
+        entries.append(DocumentationAllowlistEntry(**values))
+    return tuple(entries)
+
+
+def _is_allowed(
+    finding: DocumentationFinding,
+    allowlist: Sequence[DocumentationAllowlistEntry],
+) -> bool:
+    return any(
+        fnmatch.fnmatchcase(finding.path, entry.path_pattern)
+        and finding.kind == entry.kind
+        and finding.symbol == entry.symbol
+        for entry in allowlist
+    )
+
+
+def filter_allowed_findings(
+    findings: Sequence[DocumentationFinding],
+    allowlist: Sequence[DocumentationAllowlistEntry],
+) -> tuple[DocumentationFinding, ...]:
+    """Remove findings that match an explicit allow-list entry."""
+    return tuple(finding for finding in findings if not _is_allowed(finding, allowlist))
+
+
 def findings_to_json(findings: Sequence[DocumentationFinding]) -> str:
     """Serialise findings as deterministic JSON."""
     return json.dumps(
@@ -293,6 +346,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--fail-on-findings", action="store_true")
     parser.add_argument("--limit", type=int, default=40)
+    parser.add_argument("--allowlist", type=Path, action="append", default=[])
     parser.add_argument("--python-root", action="append", dest="python_roots")
     parser.add_argument("--markdown-root", action="append", dest="markdown_roots")
     args = parser.parse_args(argv)
@@ -312,6 +366,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         markdown_files=markdown_files,
         current_date=args.current_date,
     )
+    allowlist = tuple(
+        entry for allowlist_path in args.allowlist for entry in load_allowlist(allowlist_path)
+    )
+    if allowlist:
+        findings = filter_allowed_findings(findings, allowlist)
     print(findings_to_json(findings) if args.json else format_findings(findings, limit=args.limit))
     return 1 if findings and args.fail_on_findings else 0
 

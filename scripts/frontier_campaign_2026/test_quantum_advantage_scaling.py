@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Frontier Campaign Tests (Batch 4)
+"""Run the quantum-versus-classical frontier scaling campaign check."""
+
 import asyncio
 import json
 
@@ -19,6 +21,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_advantage_scaling():
+    """Compare QPU observables with the Rust large-N classical baseline."""
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=12000, mitigation="GUESS")
 
     Ns = [20, 40, 80, 160]

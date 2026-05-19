@@ -6,6 +6,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Hardware Campaign Tests
+"""Run the RL phase-discovery hardware campaign check."""
 
 import asyncio
 
@@ -14,6 +15,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_rl_discovery():
+    """Execute the RL discovery loop against hardware-runner observables."""
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=6000, mitigation="GUESS")
     agent = RLDiscoveryAgent(
         runner=runner,

@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Frontier Campaign Tests (Batch 4)
+"""Run the synchrony-distillation frontier campaign check."""
+
 import asyncio
 import json
 
@@ -18,6 +20,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_distillation():
+    """Iterate synchrony distillation rounds and export updated couplings."""
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=15000, mitigation="GUESS")
 
     K_nm = np.load(parameter_path("distill_Knm_12x12.npy"))

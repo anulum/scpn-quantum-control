@@ -43,6 +43,7 @@ def _git_commit() -> str:
 
 
 def load_payload(path: Path) -> dict[str, Any]:
+    """Load and validate one measured EEG PLV coupling payload."""
     payload = json.loads(path.read_text(encoding="utf-8"))
     if payload.get("schema_version") != "scpn-quantum-control.measured-couplings.v1":
         raise ValueError(f"{path} is not a measured-couplings v1 artifact")
@@ -54,6 +55,7 @@ def load_payload(path: Path) -> dict[str, Any]:
 
 
 def coupling_map(payload: dict[str, Any]) -> dict[tuple[int, int], dict[str, Any]]:
+    """Index payload couplings by one-based edge endpoint pairs."""
     mapped = {}
     for edge in payload["couplings"]:
         key = (int(edge["i"]), int(edge["j"]))
@@ -77,6 +79,7 @@ def compare_payloads(
     closed_path: Path,
     command: list[str],
 ) -> dict[str, Any]:
+    """Compare baseline-open and baseline-closed PLV payloads edge by edge."""
     open_edges = coupling_map(open_payload)
     closed_edges = coupling_map(closed_payload)
     if set(open_edges) != set(closed_edges):
@@ -169,6 +172,7 @@ def compare_payloads(
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Parse the EEG PLV cohort comparison CLI arguments."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--open", type=Path, default=DEFAULT_OPEN, dest="open_path")
     parser.add_argument("--closed", type=Path, default=DEFAULT_CLOSED, dest="closed_path")
@@ -177,6 +181,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Write the baseline-open versus baseline-closed PLV comparison artefact."""
     args = parse_args(argv)
     command = [Path(sys.executable).name, *sys.argv]
     payload = compare_payloads(

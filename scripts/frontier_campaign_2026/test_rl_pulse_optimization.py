@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Frontier RL pulse optimisation campaign
+"""Run the RL pulse-optimisation frontier campaign check."""
+
 import asyncio
 
 from campaign_io import result_path
@@ -15,6 +17,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_rl_pulse_opt():
+    """Optimise pulse settings with the asynchronous hardware runner."""
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=6000, mitigation="GUESS")
     optimizer = RLPulseOptimizer(runner=runner, target_sync_order=0.95, episodes=250)
     await optimizer.optimize_pulses()

@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Frontier Campaign Tests (Batch 4)
+"""Run the multi-backend distributed frontier campaign check."""
+
 import asyncio
 import json
 
@@ -18,6 +20,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_multi_backend():
+    """Submit matched observables to two hardware runners across cycles."""
     runner1 = AsyncHardwareRunner(backend="ibm_heron_r2", shots=10000, mitigation="GUESS")
     runner2 = AsyncHardwareRunner(backend="ibm_heron_r2", shots=10000, mitigation="GUESS")
 

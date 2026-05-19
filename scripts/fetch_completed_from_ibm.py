@@ -98,6 +98,7 @@ def sector_stats(counts: dict[str, int]) -> dict:
 
 
 def main():
+    """Fetch or list recent completed IBM Quantum jobs for local review."""
     parser = argparse.ArgumentParser(description="Fetch DONE IBM Quantum jobs.")
     parser.add_argument(
         "--status", action="store_true", help="Print status table only (no download)."

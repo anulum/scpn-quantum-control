@@ -167,6 +167,7 @@ def _write_text(path: Path, text: str) -> str:
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse the quantum Kuramoto boundary-review export arguments."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--audit-path", type=Path, default=AUDIT_PATH)
     parser.add_argument("--out-dir", type=Path, default=OUT_DIR)
@@ -175,6 +176,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Write the quantum Kuramoto boundary-review artefact."""
     args = parse_args()
     audit = _load_audit(args.audit_path)
     payload = build_boundary_review(audit)

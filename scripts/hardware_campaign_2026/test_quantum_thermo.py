@@ -6,6 +6,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Hardware Campaign Tests
+"""Run the quantum-thermodynamics hardware campaign check."""
 
 import asyncio
 import json
@@ -19,6 +20,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_thermo_engine_test():
+    """Sweep thermodynamic witness settings over FIM coupling strengths."""
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=12000, mitigation="GUESS")
     K_nm = np.load(parameter_path("thermo_Knm_12x12.npy"))
     lambda_fim_values = [0.0, 4.0, 8.0]

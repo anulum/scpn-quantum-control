@@ -51,6 +51,7 @@ async def run_credible_tests(
     tests: list[CredibleTest] | None = None,
     results_dir: str | Path | None = None,
 ) -> dict[str, Any]:
+    """Run the frontier subset with count-derived scientific observables."""
     token = os.environ.get("SCPN_IBM_TOKEN")
     if not token:
         print(

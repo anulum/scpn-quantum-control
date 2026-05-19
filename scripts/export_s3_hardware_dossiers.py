@@ -231,6 +231,7 @@ def _markdown(dossiers: list[HardwareJobDossier]) -> str:
 
 
 def main() -> int:
+    """Write the S3 hardware dossier artefacts."""
     ansatz_summary = _load_json(ANSATZ_PATH)
     pulse_summary = _load_json(PULSE_PATH)
     dossiers = [

@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Frontier Campaign Tests (Batch 4)
+"""Run the PT-symmetric Kuramoto frontier campaign check."""
+
 import asyncio
 import json
 
@@ -18,6 +20,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_pt_symmetric():
+    """Sweep non-Hermitian gain/loss settings and export observables."""
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=12000, mitigation="GUESS")
     K_nm = np.load(parameter_path("pt_Knm_12x12.npy"))
     results = {}

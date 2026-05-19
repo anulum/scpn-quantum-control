@@ -214,6 +214,7 @@ def _write_text(path: Path, text: str) -> str:
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse the S4 multi-hardware readiness export arguments."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out-dir", type=Path, default=OUT_DIR)
     parser.add_argument("--doc-path", type=Path, default=DOC_PATH)
@@ -221,6 +222,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Write the S4 multi-hardware readiness artefact."""
     args = parse_args()
     payload = build_readiness_payload()
     json_path = args.out_dir / f"s4_multi_hardware_readiness_{DATE}.json"

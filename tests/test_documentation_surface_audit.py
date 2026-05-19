@@ -37,8 +37,10 @@ audit_markdown_text = _audit_documentation_surface.audit_markdown_text
 audit_python_text = _audit_documentation_surface.audit_python_text
 candidate_markdown_files = _audit_documentation_surface.candidate_markdown_files
 candidate_python_files = _audit_documentation_surface.candidate_python_files
+filter_allowed_findings = _audit_documentation_surface.filter_allowed_findings
 findings_to_json = _audit_documentation_surface.findings_to_json
 format_findings = _audit_documentation_surface.format_findings
+load_allowlist = _audit_documentation_surface.load_allowlist
 main = _audit_documentation_surface.main
 
 
@@ -124,4 +126,96 @@ def test_cli_can_fail_on_findings(tmp_path: Path) -> None:
 
     assert (
         main(["--project-root", str(tmp_path), "--python-root", "src", "--fail-on-findings"]) == 1
+    )
+
+
+def test_allowlist_filters_generated_script_main_findings(tmp_path: Path) -> None:
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "docs" / "internal").mkdir(parents=True)
+    script = tmp_path / "scripts" / "build_paper0_generated_specs.py"
+    script.write_text(
+        '"""Generated spec builder."""\n\ndef main():\n    return None\n', encoding="utf-8"
+    )
+    allowlist = tmp_path / "docs" / "internal" / "documentation_surface_allowlist.json"
+    allowlist.write_text(
+        json.dumps(
+            [
+                {
+                    "path_pattern": "scripts/build_paper0_*_specs.py",
+                    "kind": "function",
+                    "symbol": "main",
+                    "reason": "generated Paper 0 spec builders share generator-level CLI documentation",
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    findings = audit_files(
+        tmp_path,
+        python_files=(Path("scripts/build_paper0_generated_specs.py"),),
+        markdown_files=(),
+        current_date="2026-05-18",
+    )
+
+    assert filter_allowed_findings(findings, load_allowlist(allowlist)) == ()
+
+
+def test_allowlist_requires_non_empty_reason(tmp_path: Path) -> None:
+    allowlist = tmp_path / "allowlist.json"
+    allowlist.write_text(
+        json.dumps(
+            [
+                {
+                    "path_pattern": "scripts/build_paper0_*_specs.py",
+                    "kind": "function",
+                    "symbol": "main",
+                    "reason": "",
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    try:
+        load_allowlist(allowlist)
+    except ValueError as exc:
+        assert "reason" in str(exc)
+    else:  # pragma: no cover - assertion clarity
+        raise AssertionError("allowlist entries without reasons must fail closed")
+
+
+def test_cli_applies_allowlist_before_fail_on_findings(tmp_path: Path) -> None:
+    (tmp_path / "scripts").mkdir()
+    script = tmp_path / "scripts" / "build_paper0_generated_specs.py"
+    script.write_text(
+        '"""Generated spec builder."""\n\ndef main():\n    return None\n', encoding="utf-8"
+    )
+    allowlist = tmp_path / "allowlist.json"
+    allowlist.write_text(
+        json.dumps(
+            [
+                {
+                    "path_pattern": "scripts/build_paper0_*_specs.py",
+                    "kind": "function",
+                    "symbol": "main",
+                    "reason": "generated Paper 0 spec builders share generator-level CLI documentation",
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    assert (
+        main(
+            [
+                "--project-root",
+                str(tmp_path),
+                "--python-root",
+                "scripts",
+                "--allowlist",
+                str(allowlist),
+                "--fail-on-findings",
+            ]
+        )
+        == 0
     )

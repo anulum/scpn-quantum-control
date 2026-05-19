@@ -208,6 +208,7 @@ def _required_entry(value: object, name: str) -> dict[str, object]:
 
 
 def main() -> int:
+    """Write the S1 feedback-loop preregistration artefacts."""
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     manifest = _manifest()
     json_path = OUT_DIR / f"s1_feedback_preregistration_{DATE}.json"

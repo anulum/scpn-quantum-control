@@ -62,6 +62,7 @@ async def run_frontier_campaign(
     tests: list[FrontierTest] | None = None,
     campaign_dir: str | Path | None = None,
 ) -> dict[str, Any]:
+    """Run the full frontier campaign and persist a status summary."""
     start_time = time.time()
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 

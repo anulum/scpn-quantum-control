@@ -6,6 +6,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Hardware Campaign Tests
+"""Run the tipping-point warning hardware campaign check."""
 
 import asyncio
 import json
@@ -19,6 +20,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_tipping_point_test():
+    """Sweep power-grid trajectories for OTOC and DLA warning observables."""
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=12000, mitigation="GUESS")
     K_nm = np.load(parameter_path("power_grid_europe_16x16.npy"))
     omega = np.load(parameter_path("power_grid_omega.npy"))

@@ -35,6 +35,7 @@ PATTERNS: dict[Path, re.Pattern[str]] = {
 
 
 def main() -> int:
+    """Check that all version carrier files match the pyproject version."""
     canonical = None
     errors: list[str] = []
 

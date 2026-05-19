@@ -6,6 +6,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Hardware Campaign Tests
+"""Run the hypergraph Kuramoto hardware campaign check."""
 
 import asyncio
 import json
@@ -19,6 +20,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_hypergraph_test():
+    """Compare pairwise and hypergraph Kuramoto ansatz submissions."""
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=10000, mitigation="GUESS")
     K_nm_pairwise = np.load(parameter_path("hyper_Knm_pairwise_12x12.npy"))
     K_nm_hyper = np.load(parameter_path("hyper_Knm_3body.npy"))

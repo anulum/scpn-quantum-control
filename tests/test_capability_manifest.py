@@ -120,4 +120,6 @@ def test_capability_manifest_cli_writes_review_artifacts() -> None:
         assert json.loads(json_path.read_text(encoding="utf-8"))["schema_version"] == (
             "capability-manifest.v1"
         )
-        assert "Capability Inventory" in markdown_path.read_text(encoding="utf-8")
+        markdown = markdown_path.read_text(encoding="utf-8")
+        assert "# scpn-quantum-control Capability Inventory" in markdown
+        assert "Capability Inventory" in markdown

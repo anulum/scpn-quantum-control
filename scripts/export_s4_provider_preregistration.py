@@ -169,6 +169,7 @@ def _write_text(path: Path, text: str) -> str:
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse the S4 provider preregistration export arguments."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--readiness-path", type=Path, default=READINESS_PATH)
     parser.add_argument("--json-path", type=Path, default=JSON_PATH)
@@ -177,6 +178,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Write the S4 IBM pulse-level preregistration dossier artefacts."""
     args = parse_args()
     readiness = _load_readiness(args.readiness_path)
     dossier = build_ibm_pulse_dossier(readiness)

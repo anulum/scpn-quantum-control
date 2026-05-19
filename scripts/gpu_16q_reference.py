@@ -29,6 +29,7 @@ from scpn_quantum_control.hardware.classical import (
 
 
 def main():
+    """Compute and write 16-qubit sparse Krylov reference results."""
     results = {}
 
     # 1. Exact diagonalization at n=16 (sparse eigsh, fast)

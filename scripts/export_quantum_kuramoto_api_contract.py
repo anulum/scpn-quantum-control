@@ -195,6 +195,7 @@ def _write_text(path: Path, text: str) -> str:
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse the quantum Kuramoto API-contract export arguments."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--review-path", type=Path, default=BOUNDARY_REVIEW_PATH)
     parser.add_argument("--out-dir", type=Path, default=S6_DIR)
@@ -203,6 +204,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Write the quantum Kuramoto API-contract artefacts."""
     args = parse_args()
     review = _load_review(args.review_path)
     payload = build_api_contract(review)

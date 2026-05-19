@@ -58,6 +58,7 @@ def _git_commit() -> str:
 
 
 def sha256_file(path: Path) -> str:
+    """Return the SHA-256 digest for a local raw EEG file."""
     digest = hashlib.sha256()
     with path.open("rb") as handle:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
@@ -73,6 +74,7 @@ def _validated_https_url(url: str) -> str:
 
 
 def download_https_file(source_url: str, path: Path, *, redirects_remaining: int) -> None:
+    """Download an EDF file over HTTPS into place using an atomic partial file."""
     if redirects_remaining < 0:
         raise RuntimeError(f"Could not download EDF from {source_url}: redirect limit exceeded")
     validated_url = _validated_https_url(source_url)
@@ -96,6 +98,7 @@ def download_https_file(source_url: str, path: Path, *, redirects_remaining: int
 
 
 def ensure_edf(path: Path, *, source_url: str, download: bool) -> None:
+    """Ensure an EDF file exists locally, downloading it only when requested."""
     if path.exists():
         return
     if not download:
@@ -107,16 +110,19 @@ def ensure_edf(path: Path, *, source_url: str, download: bool) -> None:
 
 
 def record_to_path(record: str, *, raw_root: Path) -> Path:
+    """Map an EEGMMIDB record identifier to its local raw EDF path."""
     subject = record[:4]
     return raw_root / subject / f"{record}.edf"
 
 
 def record_to_url(record: str, *, dataset_base_url: str) -> str:
+    """Map an EEGMMIDB record identifier to its PhysioNet HTTPS URL."""
     subject = record[:4]
     return f"{dataset_base_url.rstrip('/')}/{subject}/{record}.edf"
 
 
 def records_for_subject_run(subjects: Sequence[int], *, run: int) -> list[str]:
+    """Return validated EEGMMIDB record identifiers for one run and subject set."""
     if run < 1 or run > 14:
         raise ValueError(f"EEGMMIDB run must be in [1, 14], got {run}")
     invalid_subjects = [subject for subject in subjects if subject not in EEGMMIDB_SUBJECTS]
@@ -126,6 +132,7 @@ def records_for_subject_run(subjects: Sequence[int], *, run: int) -> list[str]:
 
 
 def record_condition(records: Sequence[str]) -> str:
+    """Return the shared EEGMMIDB condition label for a record cohort."""
     run_codes = {record[-2:] for record in records}
     if len(run_codes) != 1:
         return "mixed EEGMMIDB runs"
@@ -133,6 +140,7 @@ def record_condition(records: Sequence[str]) -> str:
 
 
 def load_edf_channels(path: Path, channels: list[str]) -> tuple[np.ndarray, float]:
+    """Load selected EDF channels and return channel data plus sampling rate."""
     import mne
 
     raw = mne.io.read_raw_edf(path, preload=True, verbose="ERROR")
@@ -144,12 +152,14 @@ def load_edf_channels(path: Path, channels: list[str]) -> tuple[np.ndarray, floa
 
 
 def bandpass_phase(data: np.ndarray, *, sfreq: float, low_hz: float, high_hz: float) -> np.ndarray:
+    """Return analytic-signal phase after zero-phase bandpass filtering."""
     sos = butter(4, [low_hz, high_hz], btype="bandpass", fs=sfreq, output="sos")
     filtered = sosfiltfilt(sos, data, axis=1)
     return np.angle(hilbert(filtered, axis=1))
 
 
 def segment_starts(n_samples: int, *, sfreq: float, window_s: float, step_s: float) -> list[int]:
+    """Return deterministic segment starts for the PLV sliding-window estimator."""
     window = int(round(window_s * sfreq))
     step = int(round(step_s * sfreq))
     if window <= 0 or step <= 0:
@@ -166,6 +176,7 @@ def plv_edges(
     window_s: float,
     step_s: float,
 ) -> list[dict[str, Any]]:
+    """Estimate all pairwise PLV edges from channel phase traces."""
     starts = segment_starts(phase.shape[1], sfreq=sfreq, window_s=window_s, step_s=step_s)
     window = int(round(window_s * sfreq))
     edges = []
@@ -200,6 +211,7 @@ def build_record_edges(
     window_s: float,
     step_s: float,
 ) -> tuple[list[dict[str, Any]], float]:
+    """Build per-edge PLV records for one EDF file."""
     data, sfreq = load_edf_channels(edf_path, channels)
     phase = bandpass_phase(data, sfreq=sfreq, low_hz=low_hz, high_hz=high_hz)
     return plv_edges(phase, sfreq=sfreq, window_s=window_s, step_s=step_s), sfreq
@@ -208,6 +220,7 @@ def build_record_edges(
 def aggregate_record_edges(
     record_edges: list[dict[str, Any]], *, source_label: str | None = None
 ) -> list[dict[str, Any]]:
+    """Aggregate per-record PLV edges into cohort-median coupling rows."""
     grouped: dict[tuple[int, int], list[dict[str, Any]]] = {}
     for item in record_edges:
         grouped.setdefault((int(item["i"]), int(item["j"])), []).append(item)
@@ -252,6 +265,7 @@ def build_payload(
     step_s: float,
     command: list[str],
 ) -> dict[str, Any]:
+    """Build the single-record measured EEG PLV coupling artefact payload."""
     data, sfreq = load_edf_channels(edf_path, channels)
     phase = bandpass_phase(data, sfreq=sfreq, low_hz=low_hz, high_hz=high_hz)
     couplings = plv_edges(phase, sfreq=sfreq, window_s=window_s, step_s=step_s)
@@ -308,6 +322,7 @@ def build_cohort_payload(
     download: bool,
     command: list[str],
 ) -> dict[str, Any]:
+    """Build the cohort-level measured EEG PLV coupling artefact payload."""
     all_edges = []
     record_metadata = []
     sampling_rates = set()
@@ -388,6 +403,7 @@ def build_cohort_payload(
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Parse the measured EEG PLV dataset builder CLI arguments."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--edf", type=Path, default=DEFAULT_EDF)
     parser.add_argument("--source-url", default=DEFAULT_SOURCE_URL)
@@ -411,6 +427,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Write a single-record or cohort measured EEG PLV coupling artefact."""
     args = parse_args(argv)
     command = [Path(sys.executable).name, *sys.argv]
     if args.single_record:
