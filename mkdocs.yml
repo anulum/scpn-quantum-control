@@ -67,9 +67,14 @@ nav:
       - Kuramoto Core Facade: kuramoto_core_facade.md
       - Core Package Boundary: core_package_boundary.md
       - API Overview: api.md
-      - Paper 0 Validation Register: paper0_validation_register.md
-      - Paper 0 Experimental Pathway: paper0_experimental_pathway.md
-      - Paper 0 Lane Registry: paper0_lane_registry.md
+      - GOTM-SCPN Paper 0 Validation Register: paper0_validation_register.md
+      - GOTM-SCPN Paper 0 Experimental Pathway: paper0_experimental_pathway.md
+      - GOTM-SCPN Paper 0 Lane Registry: paper0_lane_registry.md
+      - GOTM-SCPN Paper 0 Methodology Paper Outline: paper0_methodology_paper_outline.md
+      - GOTM-SCPN Paper 0 First Preregistered Experiment: paper0_first_preregistered_downstream_experiment.md
+      - GOTM-SCPN Paper 0 K_nm Preregistered Replay: paper0_knm_preregistered_replay.md
+      - GOTM-SCPN Paper 0 K_nm Replay Contract: paper0_knm_preregistered_replay_contract.md
+      - GOTM-SCPN Paper 0 K_nm Evidence Checklist: paper0_knm_measured_coupling_evidence_checklist.md
       - Runtime Contracts:
           - QPU Data Artifact: qpu_data_artifact.md
           - Pipeline Runtime Contract: pipeline_runtime_contract.md

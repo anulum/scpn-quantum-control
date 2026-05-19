@@ -1,0 +1,47 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# Copyright (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved.
+# Copyright (c) Code 2020-2026 Miroslav Sotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# scpn-quantum-control capability manifest configuration
+
+project_label = "scpn-quantum-control"
+schema_version = "capability-manifest.v1"
+exclude_doc_parts = ["internal", "_generated"]
+
+[paths]
+json_output = "docs/_generated/capability_manifest.json"
+markdown_output = "docs/_generated/capability_snapshot.md"
+package_root = "src/scpn_quantum_control"
+model_sources = "src/scpn_quantum_control"
+model_docs = "docs/api"
+tests_root = "tests"
+docs_root = "docs"
+notebooks_root = "notebooks"
+examples_root = "examples"
+workflows_root = ".github/workflows"
+rust_wrappers = "scpn_quantum_engine/src/lib.rs"
+rust_sources = "scpn_quantum_engine/src"
+
+[readme]
+path = "README.md"
+marker_start = "<!-- capability-snapshot:start -->"
+marker_end = "<!-- capability-snapshot:end -->"
+
+[labels]
+version = "Package version"
+public_api_exports = "Public API exports"
+python_model_source_modules = "Python source modules"
+python_model_classes = "Public Python classes"
+paper0_validation_modules = "Paper 0 validation modules"
+domain_package_families = "Domain package families"
+model_documentation_pages = "API documentation pages"
+rust_pyo3_model_wrappers = "Rust PyO3 function bindings"
+rust_source_modules = "Rust source modules"
+notebook_files = "Notebook files"
+example_files = "Example files"
+optional_extras = "Optional extras"
+test_files = "Python test files"
+public_documentation_pages = "Public documentation pages"
+github_workflows = "GitHub Actions workflows"

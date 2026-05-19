@@ -290,6 +290,33 @@ def test_paper0_lane_registry_gate_selection_is_harness() -> None:
     ]
 
 
+def test_paper0_knm_preregistered_replay_gate_selection_is_harness() -> None:
+    harnesses = bench_cli._selected_harnesses(
+        "paper0-knm-preregistered-replay-gate",
+        include_gpu=False,
+    )
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "paper0-knm-preregistered-replay-gate",
+            "scripts/run_paper0_knm_preregistered_replay_gate.py",
+            frozenset({"paper0-knm-preregistered-replay-gate"}),
+        )
+    ]
+
+
+def test_capability_manifest_check_selection_is_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("capability-manifest-check", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "capability-manifest-check",
+            "scripts/run_capability_manifest_gate.py",
+            frozenset({"capability-manifest-check"}),
+        )
+    ]
+
+
 def test_s6_split_audit_selection_is_boundary_harness() -> None:
     harnesses = bench_cli._selected_harnesses("s6", include_gpu=False)
 
@@ -405,6 +432,30 @@ def test_paper0_lane_registry_gate_dry_run_selects_gate_harness(
     assert "selected harnesses" in captured.out
     assert "paper0-lane-registry-gate" in captured.out
     assert "scripts/run_paper0_lane_registry_gate.py" in captured.out
+
+
+def test_paper0_knm_preregistered_replay_gate_dry_run_selects_gate_harness(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    rc = bench_cli.run(["paper0-knm-preregistered-replay-gate", "--dry-run"])
+
+    captured = capsys.readouterr()
+    assert rc == 0
+    assert "selected harnesses" in captured.out
+    assert "paper0-knm-preregistered-replay-gate" in captured.out
+    assert "scripts/run_paper0_knm_preregistered_replay_gate.py" in captured.out
+
+
+def test_capability_manifest_check_dry_run_selects_gate_harness(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    rc = bench_cli.run(["capability-manifest-check", "--dry-run"])
+
+    captured = capsys.readouterr()
+    assert rc == 0
+    assert "selected harnesses" in captured.out
+    assert "capability-manifest-check" in captured.out
+    assert "scripts/run_capability_manifest_gate.py" in captured.out
 
 
 def test_diff_summary_returns_two_when_artifacts_changed(

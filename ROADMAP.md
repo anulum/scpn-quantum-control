@@ -83,47 +83,53 @@ is copied here.
   `scpn-bench stable-core-release-gate` before release notes, API changes, or
   public stable-core documentation changes. The bundle runs stable-core
   contract, stable-core capability, and preflight checks in one no-QPU command.
-- [ ] **Stable-core contract gate component.** Use
+- [x] **Stable-core contract gate component.** Implemented: use
   `scpn-bench stable-core-contract-gate` to verify only contract fixtures
   (`Problem`, `Backend`, `Experiment`, `Result`, and Kuramoto adaptor mapping)
   when stable-core surface edits are contract-only.
-- [ ] **Stable-core capability gate component.** Use
+- [x] **Stable-core capability gate component.** Implemented: use
   `scpn-bench stable-core-capability-gate` to verify only capability artifacts
   when stable-core surface edits are capability-only.
-- [ ] **Stable-core preflight gate component.** Use
+- [x] **Stable-core preflight gate component.** Implemented: use
   `scpn-bench stable-core-preflight-gate` to validate stable-core preflight
   fixtures before touching stable-core API text, docs, or release-facing claims.
-- [ ] **Symmetry- and sector-aware mitigation compiler.** Generalise
-  GUESS/DLA parity into a bounded auto-detected mitigation-planning API once
-  result packs and benchmark baselines are stable.
+- [x] **Symmetry- and sector-aware mitigation compiler.** Implemented:
+  `plan_symmetry_sector_mitigation()` provides a bounded fail-closed planner,
+  `replay_symmetry_sector_counts()` provides the offline raw-count replay
+  adapter, and `scpn-bench symmetry-sector-mitigation-gate` locks planner and
+  replay fixtures before execution-path integration.
 
-### Current strategic programme: Paper 0 downstream experimental pathway
+### Current strategic programme: GOTM-SCPN Paper 0 downstream experimental pathway
 
-- [x] **Paper 0 source-ingestion completion.** Completed 2026-05-18:
-  Paper 0 is fully promoted through the source-accounting register
-  from `P0R00001` through `P0R06211`, with `0` remaining work orders
+- [x] **GOTM-SCPN Paper 0 source-ingestion completion.** Completed 2026-05-18:
+  GOTM-SCPN Paper 0: The Foundational Framework is fully promoted through the
+  source-accounting register from `P0R00001` through `P0R06211`, with `0` remaining work orders
   and `0` remaining source records. This remains source-bounded
   ingestion, not external validation evidence.
-- [x] **Paper 0 experimental-pathway and methodology-paper route.**
+- [x] **GOTM-SCPN Paper 0 experimental-pathway and methodology-paper route.**
   Implemented 2026-05-18: `docs/paper0_experimental_pathway.md`
-  defines Paper 0 as the upstream programme source, reclassifies
-  Paper 27 as a bounded implementation candidate rather than the
+  defines GOTM-SCPN Paper 0: The Foundational Framework as the upstream
+  programme source, reclassifies Paper 27 as a bounded implementation candidate rather than the
   definitive source of truth, and records the methodology-paper
   acceptance gates, experimental tiers, candidate lanes, and immediate
   implementation queue.
-- [x] **Paper 0 lane registry generator.** Implemented 2026-05-19:
+- [x] **GOTM-SCPN Paper 0 lane registry generator.** Implemented 2026-05-19:
   `scpn-bench paper0-lane-registry-gate` regenerates and compares a
   public source-bounded lane artefact with lane, evidence class,
   blocker, related spec path, and hardware-boundary fields. The
   registry remains a programme-planning artefact, not external
   validation evidence or hardware readiness.
-- [ ] **Methodology-paper outline.** Add a tracked paper outline for
-  source-bounded SCPN experimental translation. Every section must name
-  reproducible artefacts and keep fixture preservation separate from
-  external validation.
-- [ ] **First preregistered downstream experiment.** Select one
-  measured-system lane from the Paper 0 pathway and write the
-  preregistered design before any additional QPU spend.
+- [x] **Methodology-paper outline.** Implemented 2026-05-19:
+  `docs/paper0_methodology_paper_outline.md` defines the source-bounded
+  methodology-paper structure, required artefacts, evidence classes,
+  figure/table regeneration commands, and acceptance gates while keeping
+  fixture preservation separate from external validation.
+- [x] **First preregistered downstream experiment.** Implemented 2026-05-19:
+  `docs/paper0_first_preregistered_downstream_experiment.md` selects the
+  K_nm causal-efficacy and coupling-affinity lane as a no-QPU measured-system
+  replay design with EEG alpha PLV as the primary candidate, IEEE 5-bus power
+  grid as a negative control, explicit acceptance gates, falsifiers, and
+  hardware-spend blockers.
 
 ### Current top priority: repository hygiene and release safety
 
@@ -1709,3 +1715,32 @@ IIT consciousness testbed; quantum biology engineering; quantum
 internet infrastructure; autonomous AI physicist (discovery
 engine). Each applied vertical is an activation target for one or
 more physics tracks listed above.
+
+
+### GOTM-SCPN Paper 0 first downstream replay gate
+
+- Status: implemented as a deterministic no-QPU replay gate.
+- Artefacts: `scripts/run_paper0_knm_preregistered_replay.py`,
+  `scripts/compare_paper0_knm_preregistered_replay.py`,
+  `scripts/run_paper0_knm_preregistered_replay_gate.py`,
+  `data/paper0_knm_preregistered_replay.json`,
+  `docs/paper0_knm_preregistered_replay.md`, and
+  `tests/test_paper0_knm_preregistered_replay.py`.
+- Contract artefacts: `scripts/export_paper0_knm_replay_contract.py`,
+  `docs/paper0_knm_preregistered_replay_contract.md`, and
+  `docs/paper0_knm_measured_coupling_evidence_checklist.md`.
+- Contract check: `scripts/export_paper0_knm_replay_contract.py --check-replay
+  data/paper0_knm_preregistered_replay.json` validates the semantic fail-closed
+  replay boundary in addition to the comparator's artefact drift check.
+- Command: `scpn-bench paper0-knm-preregistered-replay-gate`.
+- Claim boundary: non-closing; measured-system K_nm validation remains blocked
+  until calibrated coupling magnitudes with per-edge uncertainty are available.
+- Diagnostics: deterministic permutation-null battery now accompanies primary
+  EEG and IEEE 5-bus negative-control matrix alignment.
+- Reproducibility: replay JSON records input SHA-256 digests and fixed local
+  randomness policy for audit replay.
+- Promotion safety: replay JSON emits an explicit do-not-promote decision,
+  blocking gates, required evidence, falsifiers, and `hardware_submission_authorised: false`.
+- Next promotion review: constrained by the measured-coupling evidence
+  checklist; digest stability, null diagnostics, and byte-aligned replay output
+  are reproducibility evidence only.

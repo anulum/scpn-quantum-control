@@ -4,26 +4,26 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Paper 0 Experimental Pathway
+# SCPN Quantum Control — GOTM-SCPN Paper 0 Experimental Pathway
 
-# Paper 0 Experimental Pathway
+# GOTM-SCPN Paper 0 Experimental Pathway
 
 Status: source-bounded programme plan, dated 2026-05-18.
 
-This page turns the completed Paper 0 source-validation register into a
-longer-term experimental pathway and a methodology-paper route. It does not
+This page turns the completed GOTM-SCPN Paper 0: The Foundational Framework
+(Paper 0) source-validation register into a longer-term experimental pathway and a methodology-paper route. It does not
 promote Paper 0 propositions into external scientific validation. It defines how
 source claims move from manuscript ingestion to executable validation artefacts,
 promotion gates, falsifiers, and candidate experiments.
 
 ## Source hierarchy
 
-Paper 0 is the upstream framework source for long-horizon SCPN translation work
-in this repository. It supplies the canonical source register, domain map,
+GOTM-SCPN Paper 0: The Foundational Framework is the upstream framework source
+for long-horizon SCPN translation work in this repository. It supplies the canonical source register, domain map,
 validation-spec extraction targets, and promotion-gate candidates.
 
-Paper 27 is not the definitive source of truth for the programme after Paper 0
-ingestion. In this repository, Paper 27 remains a historical implementation
+Paper 27 is not the definitive source of truth for the programme after
+GOTM-SCPN Paper 0: The Foundational Framework ingestion. In this repository, Paper 27 remains a historical implementation
 candidate for the built-in 16-layer coupling matrix and related examples. It can
 support a specific model instantiation only when its assumptions are stated and
 bounded.
@@ -57,7 +57,7 @@ Acceptance gates for the methodology paper:
 
 | Gate | Requirement |
 |---|---|
-| Source coverage | Every selected method claim maps to a Paper 0 source record or a stated non-Paper-0 assumption. |
+| Source coverage | Every selected method claim maps to a GOTM-SCPN Paper 0: The Foundational Framework source record or a stated non-Paper-0 assumption. |
 | Artefact traceability | Every reported method output names the repository artefact path that produced it. |
 | Fixture boundary | Fixture-backed preservation is never described as external validation. |
 | Promotion boundary | A stronger evidence class requires a declared promotion gate and passing artefact. |
@@ -78,9 +78,9 @@ Acceptance gates for the methodology paper:
 
 | Lane | Paper 0 benefit | Near-term repository output | Claim boundary |
 |---|---|---|---|
-| K_nm causal-efficacy and coupling-affinity | Turns Paper 0 coupling semantics into measured-system candidates. | Extend power-grid, EEG, and other measured topology audits with unit-aware promotion gates. | No physical validation unless uncertainty, units, null models, and response diagnostics pass. |
+| K_nm causal-efficacy and coupling-affinity | Turns GOTM-SCPN Paper 0: The Foundational Framework coupling semantics into measured-system candidates. | Extend power-grid, EEG, and other measured topology audits with unit-aware promotion gates. | No physical validation unless uncertainty, units, null models, and response diagnostics pass. |
 | TCBO p_H1 topology threshold | Converts a source threshold into a replayable preregistered topology test. | Named dataset replay protocol with confidence intervals and blocked promotion until preregistration exists. | No threshold claim from synthetic-only or unnamed data. |
-| S2/S5 advantage-readiness matrix | Uses Paper 0 as a pressure test for scaling methodology before hardware spend. | Complete benchmark matrix, negative rows, and hardware-row eligibility gates. | No quantum-advantage or IBM-spend justification from partial grids. |
+| S2/S5 advantage-readiness matrix | Uses GOTM-SCPN Paper 0: The Foundational Framework as a pressure test for scaling methodology before hardware spend. | Complete benchmark matrix, negative rows, and hardware-row eligibility gates. | No quantum-advantage or IBM-spend justification from partial grids. |
 | LHC, axion, and plasma search strategy | Converts high-energy and plasma statements into offline search specifications. | Public-dataset search protocol, feature schema, and null baseline registry. | No discovery claim without external dataset pass and independent review. |
 | Biological QEC, CISS, and bioelectric lanes | Converts biological mechanisms into quantitative validation-spec candidates. | Literature-to-model spec bundles with required observable, units, and falsifier fields. | No medical, biological, or biophysical validation claim from source ingestion alone. |
 | Organismal, ecological, symbolic, and noosphere layers | Converts upper-layer claims into operational-definition and falsifier work. | Layer-specific measurable-variable registry and blocked promotion gates. | No ontology-level validation without measurable variables and external data. |
@@ -94,18 +94,24 @@ only narrative:
    `scpn-bench paper0-lane-registry-gate`. The registry is the public
    source-bounded index of lane ids, evidence class, blockers, related spec
    artefacts, and hardware/QPU boundaries.
-2. Publish a methodology-paper outline that references only reproducible
-   artefacts and explicitly separates source accounting from validation.
-3. Add an artefact-index command that lists each Paper 0 lane, evidence class,
+2. Maintain the tracked methodology-paper outline in
+   `docs/paper0_methodology_paper_outline.md`. The outline references only
+   reproducible artefacts and explicitly separates source accounting from
+   validation.
+3. Maintain the first preregistered downstream experiment design in
+   `docs/paper0_first_preregistered_downstream_experiment.md`. The selected
+   lane is K_nm causal-efficacy and coupling-affinity with no QPU or hardware
+   execution.
+4. Add an artefact-index command that lists each Paper 0 lane, evidence class,
    blocker, and next promotion gate.
-4. Select one measured-system lane and produce a preregistered experimental
-   design before any new hardware execution.
-5. Keep the IBM/QPU path blocked until the relevant no-QPU matrix and claim
+5. Implement the no-QPU replay artefacts for the preregistered K_nm measured-
+   system design before any hardware execution.
+6. Keep the IBM/QPU path blocked until the relevant no-QPU matrix and claim
    boundary gates pass.
 
 ## Practical consequence
 
-Paper 0 ingestion is now useful as infrastructure: it supplies the source
+GOTM-SCPN Paper 0: The Foundational Framework ingestion is now useful as infrastructure: it supplies the source
 ledger, extraction discipline, and experimental agenda. The immediate value is
 not a stronger scientific claim. The value is a controlled method for deciding
 which SCPN claims can become experiments, what evidence would promote them, and
@@ -124,3 +130,72 @@ scpn-bench paper0-lane-registry-gate
 Passing the gate means the source-bounded lane index is reproducible. It does
 not promote any Paper 0 lane to external validation, measured-system evidence,
 or hardware/QPU readiness.
+
+## Methodology-paper outline
+
+The tracked methodology-paper outline lives at
+`docs/paper0_methodology_paper_outline.md`. It defines the paper structure,
+evidence classes, required artefacts, figure/table regeneration commands, and
+acceptance gates for source-bounded SCPN experimental translation.
+
+The outline is a drafting contract. It does not promote GOTM-SCPN Paper 0: The
+Foundational Framework claims beyond their existing evidence class.
+
+## First preregistered downstream experiment
+
+The first preregistered downstream experiment design lives at
+`docs/paper0_first_preregistered_downstream_experiment.md`. It selects the K_nm
+causal-efficacy and coupling-affinity lane as a no-QPU measured-system replay
+with EEG alpha PLV as the primary candidate and IEEE 5-bus power grid as a
+negative control.
+
+The design is a preregistration contract. It does not report results and does
+not open any hardware or QPU execution path.
+
+## First preregistered replay gate
+
+The first downstream measured-system lane now has a replayable no-QPU gate:
+
+- Preregistration: `docs/paper0_first_preregistered_downstream_experiment.md`
+- Replay generator: `scripts/run_paper0_knm_preregistered_replay.py`
+- Replay comparator: `scripts/compare_paper0_knm_preregistered_replay.py`
+- Replay gate: `scripts/run_paper0_knm_preregistered_replay_gate.py`
+- Machine-readable result: `data/paper0_knm_preregistered_replay.json`
+- Public report: `docs/paper0_knm_preregistered_replay.md`
+- Contract: `docs/paper0_knm_preregistered_replay_contract.md`
+- Promotion evidence checklist: `docs/paper0_knm_measured_coupling_evidence_checklist.md`
+- Reproduction command: `scpn-bench paper0-knm-preregistered-replay-gate`
+
+Current status is blocked and non-closing by design. The gate documents that the
+EEG alpha PLV candidate remains a dimensionless synchronisation observable
+without per-edge uncertainty, while the sparse IEEE 5-bus control prevents
+topology-only agreement from being promoted to measured-system validation.
+
+
+### Replay promotion-safety invariant
+
+The `paper0-knm-preregistered-replay-gate` command now validates the replay
+payload beyond regenerated file equality. A payload fails the gate if it stops
+being blocked/non-closing, removes the hardware-blocking claim boundary,
+authorises hardware submission, authorises claim promotion, drops the QPU
+blocking gate, omits required evidence before reconsideration, omits
+falsifiers, or carries stale input SHA-256 digests. This invariant is part of
+the Paper 0 pathway boundary: no later agent should interpret matrix alignment,
+null-model output, digest stability, or byte-aligned JSON edits as permission
+for QPU execution.
+
+### Measured-coupling promotion checklist
+
+The next promotion review is constrained by
+`docs/paper0_knm_measured_coupling_evidence_checklist.md`. The replay cannot
+move out of blocked/non-closing status until the primary measured-system lane
+has calibrated coupling units, per-edge uncertainty, frozen normalisation,
+matched null controls, digest-locked inputs, and a claim boundary that states
+exactly what has and has not been validated.
+
+The contract surface is machine-checkable through
+`scripts/export_paper0_knm_replay_contract.py --check-replay
+data/paper0_knm_preregistered_replay.json`. This check is a semantic boundary:
+it catches weakened gates, changed locked inputs, missing evidence lists, and
+hardware or claim-promotion authorisation even if a file-level drift comparison
+would otherwise be ambiguous.

@@ -47,6 +47,7 @@ OFFLINE_HARNESS_POLICY = ExecutionSurfacePolicy(
         "data/stable_core",
         "data/synchronisation_benchmarks",
         "data/symmetry_sector_mitigation",
+        "data/paper0_knm_preregistered_replay.json",
         "docs",
     ),
     subprocess_allowed=True,
@@ -244,6 +245,16 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         "scripts/run_paper0_lane_registry_gate.py",
         frozenset({"paper0-lane-registry-gate"}),
     ),
+    Harness(
+        "paper0-knm-preregistered-replay-gate",
+        "scripts/run_paper0_knm_preregistered_replay_gate.py",
+        frozenset({"paper0-knm-preregistered-replay-gate"}),
+    ),
+    Harness(
+        "capability-manifest-check",
+        "scripts/run_capability_manifest_gate.py",
+        frozenset({"capability-manifest-check"}),
+    ),
 )
 
 ARTEFACT_PATHS = (
@@ -258,7 +269,10 @@ ARTEFACT_PATHS = (
     "data/stable_core",
     "data/synchronisation_benchmarks",
     "data/symmetry_sector_mitigation",
+    "data/paper0_knm_preregistered_replay.json",
+    "docs/_generated",
     "docs/stable_core_backend_capability_matrix.md",
+    "README.md",
 )
 
 
@@ -332,6 +346,21 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         paper0_lane_registry_gate,
         default_group="paper0-lane-registry-gate",
     )
+
+    paper0_knm_preregistered_replay_gate = subparsers.add_parser(
+        "paper0-knm-preregistered-replay-gate",
+        help="Run and check the Paper 0 K_nm preregistered replay gate.",
+    )
+    _add_run_options(
+        paper0_knm_preregistered_replay_gate,
+        default_group="paper0-knm-preregistered-replay-gate",
+    )
+
+    capability_manifest_check = subparsers.add_parser(
+        "capability-manifest-check",
+        help="Refresh and check the generated public capability manifest.",
+    )
+    _add_run_options(capability_manifest_check, default_group="capability-manifest-check")
 
     s1 = subparsers.add_parser(
         "s1-feedback",
