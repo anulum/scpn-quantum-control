@@ -10,11 +10,12 @@
 Gates (in order):
   1. ruff check      — lint errors
   2. ruff format     — formatting drift
-  3. version-sync    — version string consistency across 5 carrier files
-  4. rust-pyi        — Rust PyO3 exports match local typing contract
-  5. mypy            — type errors
-  6. pytest+coverage — tests + coverage threshold (--cov-fail-under=92, CI=95)
-  7. bandit          — security scan
+  3. docs surface    — public docs/docstring surface regression gate
+  4. version-sync    — version string consistency across 5 carrier files
+  5. rust-pyi        — Rust PyO3 exports match local typing contract
+  6. mypy            — type errors
+  7. pytest+coverage — tests + coverage threshold (--cov-fail-under=92, CI=95)
+  8. bandit          — security scan
 
 Usage:
   python tools/preflight.py                # all gates (default)
@@ -52,6 +53,16 @@ _PYTEST_COV = _PYTEST_BASE + [
 STATIC_GATES: list[tuple[str, list[str]]] = [
     ("ruff check", [_PY, "-m", "ruff", "check", "src/", "tests/"]),
     ("ruff format", [_PY, "-m", "ruff", "format", "--check", "src/", "tests/"]),
+    (
+        "documentation-surface",
+        [
+            _PY,
+            "tools/audit_documentation_surface.py",
+            "--allowlist",
+            "tools/documentation_surface_allowlist.json",
+            "--fail-on-findings",
+        ],
+    ),
     ("version-sync", [_PY, "scripts/check_version_consistency.py"]),
     ("rust-pyi", [_PY, "tools/check_rust_pyi_exports.py"]),
     ("mypy", [_PY, "-m", "mypy"]),

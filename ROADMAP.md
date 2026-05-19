@@ -225,6 +225,11 @@ is copied here.
   surface was burned down to zero active findings. The allow-list remains
   tracked and reasoned so generated Paper 0 CLI boilerplate is explicit
   debt rather than hidden audit drift.
+- [x] **Documentation-surface local preflight mirror.** Implemented
+  2026-05-20: `tools/preflight.py` and the repository pre-push hook now run
+  the same allow-listed documentation-surface gate as CI. Focused static
+  tests lock both local guard paths so the release gate cannot silently
+  disappear from developer preflight.
 - [x] **XY Kuramoto trajectory time-grid hardening.** Implemented
   2026-05-12: `QuantumKuramotoSolver.run()` now builds explicit time
   boundaries and evolves a final partial interval when `t_max` is not an

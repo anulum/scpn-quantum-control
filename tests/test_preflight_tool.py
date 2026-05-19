@@ -30,6 +30,16 @@ def _load_tool_module(module_name: str, filename: str) -> ModuleType:
 _preflight = _load_tool_module("preflight_for_tests", "preflight.py")
 
 
+def test_static_gates_include_documentation_surface_gate():
+    gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
+
+    assert "documentation-surface" in gate_map
+    assert "tools/audit_documentation_surface.py" in gate_map["documentation-surface"]
+    assert "--allowlist" in gate_map["documentation-surface"]
+    assert "tools/documentation_surface_allowlist.json" in gate_map["documentation-surface"]
+    assert "--fail-on-findings" in gate_map["documentation-surface"]
+
+
 def test_run_gate_reports_pass(monkeypatch, capsys):
     def fake_run(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
