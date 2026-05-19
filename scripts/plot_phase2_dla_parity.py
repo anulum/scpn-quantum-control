@@ -133,6 +133,7 @@ def _plot_popcount(summary: dict[str, Any]) -> None:
 
 
 def main() -> int:
+    """Render the Phase 2 DLA parity and popcount-control figures."""
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     _plot_n4(_load(PHASE2_SUMMARY))
     _plot_scaling(_load(SCALING_SUMMARY))

@@ -55,6 +55,7 @@ def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
 
 
 def generate(lambdas: list[float], depths: list[int], shots: int) -> dict[str, object]:
+    """Generate the candidate FIM IBM pilot protocol matrix."""
     rows: list[dict[str, object]] = []
     for lambda_fim in lambdas:
         for depth in depths:
@@ -125,6 +126,7 @@ def generate(lambdas: list[float], depths: list[int], shots: int) -> dict[str, o
 
 
 def main() -> int:
+    """Write JSON and CSV artefacts for the candidate FIM IBM pilot protocol."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--lambdas", default="0,1,4")
     parser.add_argument("--depths", default="2,4,6")

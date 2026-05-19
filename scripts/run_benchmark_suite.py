@@ -135,6 +135,7 @@ def _write_text(path: Path, text: str) -> str:
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse benchmark-suite generation options."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out-dir", type=Path, default=OUT_DIR)
     parser.add_argument("--doc-path", type=Path, default=DOC_PATH)
@@ -144,6 +145,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Run the benchmark-suite summary and write its artefacts."""
     args = parse_args()
     payload = _summary_payload(
         verify_integrity=args.verify_integrity,

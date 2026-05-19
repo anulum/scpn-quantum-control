@@ -76,6 +76,7 @@ def build_experiment_j() -> list[tuple[dict, object]]:
 
 
 def load_prior_results(paths: list[Path]) -> list[dict]:
+    """Load previously persisted IBM circuit result rows from JSON artefacts."""
     combined: list[dict] = []
     for p in paths:
         if not p.exists():
@@ -87,6 +88,7 @@ def load_prior_results(paths: list[Path]) -> list[dict]:
 
 
 def main() -> int:
+    """Submit or dry-run the Phase 2.5 final DLA parity burn."""
     parser = argparse.ArgumentParser(description="Phase 2.5 final burn")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--backend", default=BACKEND_NAME)

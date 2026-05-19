@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Primary Campaign Tests
+"""Run the primary-campaign classical FIM redundancy falsification test."""
+
 import json
 
 from campaign_io import result_path
@@ -14,6 +16,7 @@ from scpn_quantum_control.accel import rust_kuramoto_classical
 
 
 def run_test():
+    """Compare large-N classical dynamics with and without FIM coupling."""
     results = {}
     for lam in [0.0, 8.0]:
         res = rust_kuramoto_classical.run_large_n(

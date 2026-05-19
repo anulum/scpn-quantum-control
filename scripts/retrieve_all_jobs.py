@@ -67,6 +67,7 @@ def _discover_result_json_files(root: Path | None = None) -> list[Path]:
 
 
 async def retrieve_all_jobs():
+    """Retrieve all mapped IBM jobs referenced by local campaign artefacts."""
     token = os.environ.get("SCPN_IBM_TOKEN")
     if not token:
         print("SCPN_IBM_TOKEN environment variable is not set.")

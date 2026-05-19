@@ -28,6 +28,7 @@ FAKE_BACKENDS = {
 
 
 def main() -> int:
+    """Transpile each payload circuit against the requested IQM fake backend."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--fake-backend", default="garnet")

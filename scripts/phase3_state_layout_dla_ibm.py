@@ -268,6 +268,7 @@ def transpile_with_layouts(
     *,
     optimization_level: int,
 ) -> list[QuantumCircuit]:
+    """Transpile each circuit with its preregistered physical-qubit layout."""
     isa: list[QuantumCircuit] = []
     for meta, circuit in circuits:
         isa.append(
@@ -289,6 +290,7 @@ def readiness(
     max_depth: int,
     max_total_gates: int,
 ) -> dict[str, Any]:
+    """Evaluate layout-specific depth and gate-count readiness guards."""
     depths = [circuit.depth() for circuit in isa_circuits]
     total_gates = [sum(circuit.count_ops().values()) for circuit in isa_circuits]
     ecr_gates = [circuit.count_ops().get("ecr", 0) for circuit in isa_circuits]
@@ -404,6 +406,7 @@ def _result_rows(
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse Phase 3 state/layout DLA command-line options."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--backend", default=DEFAULT_BACKEND)
     parser.add_argument("--submit", action="store_true")
@@ -417,6 +420,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Run state/layout readiness checks and optionally submit ISA circuits."""
     args = parse_args()
     if args.submit and not args.confirm_budget:
         print("ERROR: --submit requires --confirm-budget", file=sys.stderr)

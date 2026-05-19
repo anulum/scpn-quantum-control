@@ -38,6 +38,7 @@ def _commands() -> tuple[tuple[str, Entrypoint, tuple[str, ...]], ...]:
 
 
 def main() -> int:
+    """Reproduce the S1 feedback-readiness artefact from configured probes."""
     failures: list[tuple[str, int]] = []
     for label, entrypoint, args in _commands():
         command = f"{entrypoint.__module__}.{entrypoint.__name__}"

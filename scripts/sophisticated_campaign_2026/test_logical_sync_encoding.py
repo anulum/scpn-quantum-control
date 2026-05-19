@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Sophisticated Campaign Tests (Batch 3)
+"""Run the sophisticated-campaign logical synchronization encoding test."""
+
 import asyncio
 import json
 
@@ -18,6 +20,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_logical_encoding():
+    """Sweep injected error rates for logical synchronization witnesses."""
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=12000, mitigation="GUESS")
 
     K_nm = np.load(parameter_path("logical_Knm_12x12.npy"))

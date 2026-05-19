@@ -115,6 +115,7 @@ def load_phase1_results(
 
 
 def main() -> int:
+    """Submit or dry-run the Phase 1.5 DLA parity reinforcement batch."""
     parser = argparse.ArgumentParser(description="Phase 1.5 reinforcement")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--backend", default=BACKEND_NAME)

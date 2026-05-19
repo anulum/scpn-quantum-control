@@ -40,6 +40,7 @@ RESULTS_DIR = Path(__file__).resolve().parent.parent / "results" / "march_2026"
 
 
 def connect():
+    """Connect to the configured IBM Runtime backend."""
     token = os.environ.get("IBM_QUANTUM_TOKEN")
     crn = os.environ.get("IBM_QUANTUM_CRN")
     if not token or not crn:
@@ -54,6 +55,7 @@ def connect():
 
 
 def build_kuramoto_circuits(n, dt, steps, backend, order=1):
+    """Build transpiled Kuramoto evolution circuits for the March campaign."""
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
     H = knm_to_hamiltonian(K, omega)
@@ -80,6 +82,7 @@ def build_kuramoto_circuits(n, dt, steps, backend, order=1):
 
 
 def build_baseline_circuits(backend):
+    """Build transpiled single-qubit baseline circuits for calibration."""
     omega = OMEGA_N_16[:4]
     circuits = []
     for basis in ["Z", "X", "Y"]:
@@ -99,6 +102,7 @@ def build_baseline_circuits(backend):
 
 
 def build_bell_circuits(backend):
+    """Build transpiled Bell/CHSH circuits from the VQE-informed ansatz."""
     K = build_knm_paper27(L=4)
     omega = OMEGA_N_16[:4]
 
@@ -126,6 +130,7 @@ def build_bell_circuits(backend):
 
 
 def submit_and_log(name, circuits, backend, shots=SHOTS):
+    """Submit a circuit batch and return a manifest row."""
     sampler = SamplerV2(mode=backend)
     job = sampler.run(circuits, shots=shots)
     job_id = job.job_id()
@@ -146,6 +151,7 @@ def submit_and_log(name, circuits, backend, shots=SHOTS):
 
 
 def main():
+    """Submit the March 2026 hardware campaign batches."""
     print("=" * 60)
     print("  March 2026 Hardware Campaign — Queue All Experiments")
     print("  Backend: ibm_fez | Jobs queue until budget resets")

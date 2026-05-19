@@ -206,6 +206,7 @@ def build_fim_trotter_circuit(
 
 
 def build_readout_circuit(initial_bitstring: str) -> QuantumCircuit:
+    """Build a measured computational-basis readout baseline circuit."""
     qc = QuantumCircuit(N_QUBITS, N_QUBITS)
     _prep_bitstring(qc, initial_bitstring)
     qc.measure(range(N_QUBITS), range(N_QUBITS))
@@ -220,6 +221,7 @@ def generate(
     vault_token_kind: str,
     optimisation_level: int,
 ) -> dict[str, object]:
+    """Generate live-backend transpilation readiness metadata without submission."""
     token, instance, credential_source = _load_credentials(vault, channel, vault_token_kind)
     if channel == "ibm_quantum_platform":
         instance = None
@@ -296,6 +298,7 @@ def generate(
 
 
 def main() -> int:
+    """Write live readiness JSON and CSV artefacts for the FIM IBM protocol."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--backend", default="ibm_kingston")
     parser.add_argument("--channel", default="ibm_quantum_platform")

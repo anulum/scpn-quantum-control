@@ -349,6 +349,7 @@ def run_campaign(args):
 
 
 def main():
+    """Run or dry-run the March 2026 IBM Heron hardware campaign."""
     parser = argparse.ArgumentParser(
         description="March 2026 IBM Heron r2 Hardware Campaign",
         formatter_class=argparse.RawDescriptionHelpFormatter,

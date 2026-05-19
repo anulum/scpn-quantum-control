@@ -96,6 +96,7 @@ def extract_counts(pub):
 
 
 def run(*, private_map: Path, status_only: bool = False):
+    """Retrieve completed IBM job results from a private job mapping."""
     token = os.environ.get("SCPN_IBM_TOKEN")
     if not token:
         print("ERROR: Set SCPN_IBM_TOKEN environment variable.")

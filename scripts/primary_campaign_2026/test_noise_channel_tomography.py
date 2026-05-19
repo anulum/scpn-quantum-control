@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Primary Campaign Tests
+"""Run the primary-campaign DLA noise-channel tomography job."""
+
 import asyncio
 import json
 
@@ -18,6 +20,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_test():
+    """Submit tomography-enabled DLA parity circuits and save the result."""
     runner = AsyncHardwareRunner(
         backend="ibm_heron_r2", shots=15000, mitigation="GUESS", error_mitigation_level=2
     )

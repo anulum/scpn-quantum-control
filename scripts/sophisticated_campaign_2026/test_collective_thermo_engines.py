@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Sophisticated Campaign Tests (Batch 3)
+"""Run the sophisticated-campaign collective thermodynamic-engine test."""
+
 import asyncio
 import json
 
@@ -18,6 +20,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_collective_thermo():
+    """Submit thermodynamic observables across FIM coupling values."""
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=14000, mitigation="GUESS")
 
     K_nm = np.load(parameter_path("thermo_Knm_16x16.npy"))

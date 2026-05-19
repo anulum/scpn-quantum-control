@@ -199,6 +199,7 @@ def parity_of_bitstring(s: str) -> int:
 
 
 def analyse_counts(counts: dict, meta: dict) -> dict:
+    """Summarize parity leakage and initial-state retention from shot counts."""
     total = sum(counts.values())
     if total == 0:
         return {"error": "empty counts"}
@@ -270,6 +271,7 @@ def aggregate_experiment_a(results: list[dict]) -> list[dict]:
 
 
 def parse_vault(vault_path: Path) -> tuple[str, str]:
+    """Extract IBM API key and instance CRN from the shared credential vault."""
     api_key = None
     instance = None
     with open(vault_path) as f:
@@ -301,6 +303,7 @@ def parse_vault(vault_path: Path) -> tuple[str, str]:
 
 
 def main() -> int:
+    """Run the Phase 1 DLA parity mini-bench or its local dry-run path."""
     parser = argparse.ArgumentParser(description="Phase 1 DLA parity mini-bench")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--backend", default=BACKEND_NAME)

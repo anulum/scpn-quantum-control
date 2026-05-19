@@ -225,6 +225,7 @@ def _markdown(report: Mapping[str, Any]) -> str:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """Render the S2 scaling claim-boundary report."""
     args = _parse_args(argv)
     payload = json.loads(args.rows.read_text(encoding="utf-8"))
     report = build_claim_boundary_report(_rows_from_payload(payload))

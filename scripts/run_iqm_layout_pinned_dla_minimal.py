@@ -361,6 +361,7 @@ def _write_outputs(payload: dict[str, Any], *, output_dir: Path) -> tuple[Path, 
 
 
 def main() -> int:
+    """Run the IQM layout-pinned minimal DLA workflow."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--execute", action="store_true", help="submit real IQM jobs")
     parser.add_argument("--layout", default=",".join(map(str, DEFAULT_LAYOUT)))

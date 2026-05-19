@@ -17,6 +17,7 @@ from scpn_quantum_control.forecasting import run_real_data_sync_forecast_suite
 
 
 def main() -> int:
+    """Run the real-data synchronization forecast benchmark."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--hardware-only",

@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Primary Campaign Tests
+"""Compare primary-campaign OTOC observables on hardware and classical paths."""
+
 import asyncio
 import json
 
@@ -19,6 +21,7 @@ from scpn_quantum_control.phase import lindblad_engine
 
 
 async def run_test():
+    """Run matched hardware and classical OTOC evaluations and save both."""
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=10000, mitigation="GUESS")
     K_nm = np.load(parameter_path("primary_Knm_12x12.npy"))
     omega = np.load(parameter_path("primary_omega.npy"))

@@ -158,6 +158,7 @@ def _markdown(summary: dict[str, Any]) -> str:
 
 
 def main() -> int:
+    """Train and persist the S3 design-surrogate model artefact."""
     args = _parse_args()
     sizes = [int(item.strip()) for item in args.sizes.split(",") if item.strip()]
     rows = _rows_for_sizes(sizes)

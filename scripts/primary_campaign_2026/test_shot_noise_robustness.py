@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Primary Campaign Tests
+"""Run the primary-campaign DLA shot-noise robustness sweep."""
+
 import asyncio
 import json
 
@@ -18,6 +20,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_test():
+    """Submit matched DLA parity jobs across increasing shot budgets."""
     base_shots = 5000
     K_nm = np.load(parameter_path("primary_Knm_12x12.npy"))
     omega = np.load(parameter_path("primary_omega.npy"))

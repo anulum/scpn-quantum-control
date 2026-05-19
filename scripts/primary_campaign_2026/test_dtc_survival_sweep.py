@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Primary Campaign Tests
+"""Run the primary-campaign DTC survival sweep."""
+
 import asyncio
 import json
 
@@ -18,6 +20,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_test():
+    """Sweep detuning values and persist DTC survival observables."""
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=12000, mitigation="GUESS")
     K_nm = np.load(parameter_path("primary_Knm_12x12.npy"))
     n_qubits = 12

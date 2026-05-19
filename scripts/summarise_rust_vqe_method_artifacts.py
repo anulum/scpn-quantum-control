@@ -86,6 +86,7 @@ def _gpu_rows() -> list[dict[str, Any]]:
 
 
 def main() -> int:
+    """Summarize Rust/VQE method artefacts into the configured report."""
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     rows = _remote_machine_rows() + _gpu_rows()
     summary = {

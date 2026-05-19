@@ -175,6 +175,7 @@ def _markdown(summary: dict[str, Any]) -> str:
 
 
 def main() -> int:
+    """Validate S3 ansatz observable artefacts and emit diagnostics."""
     args = _parse_args()
     sizes = [int(item.strip()) for item in args.sizes.split(",") if item.strip()]
     rows = _rows(sizes, args.top_k)

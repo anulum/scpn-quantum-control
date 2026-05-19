@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Sophisticated Campaign Tests (Batch 3)
+"""Run the sophisticated-campaign synchronization resource theory test."""
+
 import asyncio
 import json
 
@@ -22,6 +24,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_resource_distillation():
+    """Submit resource-distillation observables across FIM coupling values."""
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=15000, mitigation="GUESS")
 
     K_nm = np.load(parameter_path("resource_Knm_12x12.npy"))

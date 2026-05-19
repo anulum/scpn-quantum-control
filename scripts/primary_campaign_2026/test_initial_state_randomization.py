@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Primary Campaign Tests
+"""Run the primary-campaign initial-state randomization control."""
+
 import asyncio
 import json
 
@@ -19,6 +21,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_test():
+    """Submit randomized initial states against the DLA parity witness."""
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=10000, mitigation="GUESS")
     results = []
     K_nm = np.load(parameter_path("primary_Knm_12x12.npy"))

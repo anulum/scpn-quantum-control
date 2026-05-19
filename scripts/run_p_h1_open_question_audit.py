@@ -175,6 +175,7 @@ def build_audit_payload(
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Parse P/H1 open-question audit options."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--n-values", type=int, nargs="+", default=[4, 8, 16])
@@ -187,6 +188,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Run the P/H1 open-question audit and write its artefact."""
     args = parse_args(argv)
     payload = build_audit_payload(
         n_values=list(args.n_values),

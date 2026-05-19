@@ -140,6 +140,7 @@ def _emit_json(result: FullHarnessResult) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Run the DLA parity validation suite and write its report."""
     args = _parse_args(argv)
     try:
         result = run_full_harness(

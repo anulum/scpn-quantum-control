@@ -116,6 +116,7 @@ def _markdown(summary: dict[str, Any]) -> str:
 
 
 def main() -> int:
+    """Generate the S3 pulse-feasibility probe artefact."""
     args = _parse_args()
     schedule = build_trotter_pulse_schedule(4, build_knm_paper27(4), t_step=0.2)
     providers = tuple(pulse_snapshot_from_metadata(row) for row in _load_metadata(args.metadata))

@@ -485,6 +485,7 @@ def _write_markdown(path: Path, manifest: dict[str, Any], json_path: Path, csv_p
 
 
 def main() -> int:
+    """Generate the staged IQM paper-replication manifest and report."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--fake-backend", default="garnet")
     parser.add_argument("--smoke-shots", type=int, default=128)

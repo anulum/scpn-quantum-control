@@ -19,6 +19,7 @@ FIGURES_DIR = pathlib.Path(__file__).resolve().parent.parent / "figures"
 
 
 def main():
+    """Render VQE convergence and final energy-gap figures."""
     from scpn_quantum_control.hardware.classical import classical_exact_diag
     from scpn_quantum_control.phase.ansatz_bench import run_ansatz_benchmark
 

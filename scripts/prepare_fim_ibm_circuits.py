@@ -96,6 +96,7 @@ def build_fim_trotter_circuit(
 
 
 def build_readout_circuit(initial_bitstring: str) -> QuantumCircuit:
+    """Build a measured computational-basis readout baseline circuit."""
     qc = QuantumCircuit(N_QUBITS, N_QUBITS)
     _prep_bitstring(qc, initial_bitstring)
     qc.measure(range(N_QUBITS), range(N_QUBITS))
@@ -117,6 +118,7 @@ def _two_qubit_count(ops: dict[str, int]) -> int:
 
 
 def generate(protocol_path: Path, optimisation_level: int) -> dict[str, object]:
+    """Generate local transpilation metadata for a non-submitting FIM protocol."""
     protocol = _load_protocol(protocol_path)
     rows: list[dict[str, object]] = []
     basis_gates = ["rz", "sx", "x", "cx", "measure"]
@@ -182,6 +184,7 @@ def generate(protocol_path: Path, optimisation_level: int) -> dict[str, object]:
 
 
 def main() -> int:
+    """Write JSON and CSV circuit-preparation artefacts for the FIM IBM pilot."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--protocol",

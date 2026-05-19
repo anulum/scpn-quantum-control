@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Primary Campaign Tests
+"""Run the primary-campaign cross-device DLA asymmetry comparison."""
+
 import asyncio
 import json
 
@@ -18,6 +20,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_test():
+    """Submit matched DLA parity jobs to the configured backend pair."""
     backends = ["ibm_fez", "ibm_kingston"]
     results = {}
     K_nm = np.load(parameter_path("primary_Knm_12x12.npy"))

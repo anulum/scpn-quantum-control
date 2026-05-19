@@ -55,6 +55,7 @@ class MatrixDiagnostics:
     shared_edge_count: int
 
     def to_dict(self) -> dict[str, int | float]:
+        """Return rounded scalar diagnostics for JSON serialization."""
         return {
             "pearson_upper": round(self.pearson_upper, 12),
             "spearman_upper": round(self.spearman_upper, 12),

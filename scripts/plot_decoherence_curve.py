@@ -104,6 +104,7 @@ def fit_decoherence_rate(
 
 
 def plot_decoherence():
+    """Render the hardware decoherence error-regime curve."""
     import matplotlib.pyplot as plt
 
     fig, ax = plt.subplots(figsize=(10, 6))

@@ -42,6 +42,7 @@ RESULTS_DIR = Path(__file__).resolve().parent.parent / "results"
 
 
 def main() -> None:
+    """Submit the March 2026 IBM noise-baseline job."""
     print("=" * 60)
     print("  scpn-quantum-control: March 2026 Noise Baseline")
     print("  Backend: ibm_fez (Heron r2)")

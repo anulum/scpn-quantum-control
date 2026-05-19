@@ -101,6 +101,7 @@ def parse_vault(vault_path: Path) -> tuple[str, str]:
 
 
 def main() -> int:
+    """Retrieve a single IBM Runtime job and persist its result payload."""
     if len(sys.argv) < 2:
         print("Usage: retrieve_ibm_job.py <job_id>")
         return 1

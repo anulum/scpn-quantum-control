@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Primary Campaign Tests
+"""Run the primary-campaign large-N classical FIM validation."""
+
 import json
 
 from campaign_io import result_path
@@ -14,6 +16,7 @@ from scpn_quantum_control.accel import rust_kuramoto_classical
 
 
 def run_test():
+    """Run and persist the large-N FIM classical reference simulation."""
     result = rust_kuramoto_classical.run_large_n(
         N=50000, K=0.0, lambda_fim=8.0, delta=0.1, steps=10000
     )

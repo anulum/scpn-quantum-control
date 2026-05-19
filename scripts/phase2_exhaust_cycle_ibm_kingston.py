@@ -158,7 +158,7 @@ def build_experiment_i() -> list[tuple[dict, object]]:
 
 
 def load_prior_results(paths: list[Path]) -> list[dict]:
-    """Load all prior phase results for joint aggregation."""
+    """Load previously persisted IBM circuit result rows from JSON artefacts."""
     combined: list[dict] = []
     for p in paths:
         if not p.exists():
@@ -170,6 +170,7 @@ def load_prior_results(paths: list[Path]) -> list[dict]:
 
 
 def main() -> int:
+    """Submit or dry-run the Phase 2 IBM Kingston cycle-exhaust batch."""
     parser = argparse.ArgumentParser(description="Phase 2 cycle exhaust")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--backend", default=BACKEND_NAME)

@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Sophisticated Campaign Tests (Batch 3)
+"""Run the sophisticated-campaign brain-scale bridging test."""
+
 import asyncio
 import json
 
@@ -18,6 +20,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_brain_scale_bridging():
+    """Submit repeated brain-scale bridge observables and save results."""
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=10000, mitigation="GUESS")
 
     K_nm_small = np.load(parameter_path("c_elegans_subnetwork_14x14.npy"))

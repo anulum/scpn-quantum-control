@@ -63,6 +63,7 @@ def build_calibration_circuits(
     physical_qubits: list[int],
     backend_qubits: int,
 ) -> list[tuple[dict[str, Any], QuantumCircuit]]:
+    """Build full-basis readout calibration circuits for the physical layout."""
     circuits: list[tuple[dict[str, Any], QuantumCircuit]] = []
     for prepared in _bitstrings(len(physical_qubits)):
         qc = QuantumCircuit(backend_qubits, len(physical_qubits))
@@ -108,6 +109,7 @@ def _assignment_rows(circuits: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def main() -> int:
+    """Run or prepare the full-basis IBM readout calibration batch."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--backend", default=DEFAULT_BACKEND)
     parser.add_argument(

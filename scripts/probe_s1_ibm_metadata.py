@@ -135,6 +135,7 @@ def build_decision_document(snapshot) -> dict[str, Any]:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """Probe IBM backend metadata for the S1 feedback readiness surface."""
     args = _parse_args(argv)
     if args.metadata_json is not None:
         snapshot = load_snapshot_from_metadata_json(args.metadata_json)

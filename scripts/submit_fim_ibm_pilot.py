@@ -45,6 +45,7 @@ def submit(
     shots: int,
     timeout_s: float,
 ) -> dict[str, object]:
+    """Submit the FIM IBM protocol and persist pending and completed artefacts."""
     from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
     from qiskit_ibm_runtime import QiskitRuntimeService
     from qiskit_ibm_runtime import SamplerV2 as Sampler
@@ -129,6 +130,7 @@ def submit(
 
 
 def main() -> int:
+    """Parse options and submit the FIM IBM pilot or follow-up protocol."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--backend", default="ibm_kingston")
     parser.add_argument("--channel", default="ibm_cloud")

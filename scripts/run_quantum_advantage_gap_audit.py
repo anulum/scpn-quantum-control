@@ -283,6 +283,7 @@ def build_audit_payload(
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Parse quantum-advantage gap audit options."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--s2-protocol", type=Path, default=DEFAULT_S2_PROTOCOL)
@@ -292,6 +293,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Run the quantum-advantage gap audit and write its artefact."""
     args = parse_args(argv)
     payload = build_audit_payload(
         command=[Path(sys.executable).name, *sys.argv],

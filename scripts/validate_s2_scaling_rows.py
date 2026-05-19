@@ -38,6 +38,7 @@ def _rows_from_payload(payload):
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """Validate the S2 scaling row artefact against its schema."""
     args = _parse_args(argv)
     payload = json.loads(args.rows_json.read_text(encoding="utf-8"))
     rows = _rows_from_payload(payload)

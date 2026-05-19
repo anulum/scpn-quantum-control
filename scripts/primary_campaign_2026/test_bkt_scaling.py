@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Primary Campaign Tests
+"""Run the primary-campaign BKT scaling hardware sweep."""
+
 import asyncio
 import json
 
@@ -18,6 +20,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_test():
+    """Submit BKT scaling circuits across the preregistered system sizes."""
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=20000, mitigation="GUESS")
     Ns = [8, 12, 16, 20, 24, 32]
     results = {}

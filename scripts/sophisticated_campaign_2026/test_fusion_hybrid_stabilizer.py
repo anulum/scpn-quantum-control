@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Sophisticated Campaign Tests (Batch 3)
+"""Run the sophisticated-campaign fusion hybrid stabilizer loop."""
+
 import asyncio
 import json
 
@@ -19,6 +21,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_fusion_hybrid_stabilizer():
+    """Submit closed-loop fusion stabilization cycles and save responses."""
     runner = AsyncHardwareRunner(
         backend="ibm_heron_r2", shots=8000, mitigation="GUESS", real_time_feedback=True
     )

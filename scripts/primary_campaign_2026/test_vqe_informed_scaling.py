@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Primary Campaign Tests
+"""Run the primary-campaign VQE-informed ansatz scaling test."""
+
 import asyncio
 import json
 
@@ -18,6 +20,7 @@ from scpn_quantum_control.phase import vqe_runner
 
 
 async def run_test():
+    """Evaluate VQE with Kuramoto-informed ansatze across system sizes."""
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=10000, mitigation="GUESS")
     results = {}
     for N in [8, 12, 16, 20]:

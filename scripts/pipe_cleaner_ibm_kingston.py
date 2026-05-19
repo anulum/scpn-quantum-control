@@ -141,6 +141,7 @@ def compute_sector_stats(counts: dict, n: int) -> dict:
 
 
 def main() -> int:
+    """Submit or dry-run the IBM Kingston pipeline-cleaner batch."""
     parser = argparse.ArgumentParser(description="IBM Kingston pipe cleaner")
     parser.add_argument(
         "--dry-run",

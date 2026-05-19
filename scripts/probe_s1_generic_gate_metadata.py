@@ -102,6 +102,7 @@ def build_decision_document(metadata: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """Probe generic-gate metadata for the S1 feedback readiness surface."""
     args = _parse_args(argv)
     metadata = json.loads(args.metadata_json.read_text(encoding="utf-8"))
     if not isinstance(metadata, Mapping):

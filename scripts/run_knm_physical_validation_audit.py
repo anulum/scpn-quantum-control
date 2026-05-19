@@ -584,6 +584,7 @@ def evaluate_candidate_systems(
 
 
 def compare_measured_couplings(K: np.ndarray, measured: dict[str, Any] | None) -> dict[str, Any]:
+    """Compare expected K_nm entries against a measured coupling dataset."""
     if measured is None:
         return {
             "available": False,
@@ -783,6 +784,7 @@ def build_audit_payload(
     alpha: float,
     command: list[str] | None = None,
 ) -> dict[str, Any]:
+    """Build the full physical-validation audit payload."""
     python_k = np.asarray(build_knm_paper27(L=n_layers, K_base=k_base, K_alpha=alpha))
     rust = _load_rust_knm(n_layers, k_base, alpha)
     codebase = _load_codebase_knm(codebase_path, n_layers)
@@ -909,6 +911,7 @@ def build_audit_payload(
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Parse K_nm physical-validation audit options."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--codebase", type=Path, default=DEFAULT_CODEBASE)
     parser.add_argument("--measured", type=Path, default=DEFAULT_MEASURED)
@@ -921,6 +924,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Run the K_nm physical-validation audit and write its artefact."""
     args = parse_args(argv)
     payload = build_audit_payload(
         codebase_path=args.codebase.resolve() if args.codebase else None,

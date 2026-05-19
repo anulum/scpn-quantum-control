@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Primary Campaign Tests
+"""Run primary-campaign coherence-wall scaling across graph topologies."""
+
 import asyncio
 import json
 
@@ -15,6 +17,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_test():
+    """Submit topology-specific fidelity sweeps and persist the results."""
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=8000, mitigation="GUESS")
     topologies = ["line", "ring", "random", "scale_free"]
     results = {}

@@ -6,6 +6,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Sophisticated Campaign Tests (Batch 3)
+"""Run the sophisticated-campaign autonomous discovery loop."""
+
 import asyncio
 
 from scpn_quantum_control.analysis import RLDiscoveryAgent
@@ -13,6 +15,7 @@ from scpn_quantum_control.hardware import AsyncHardwareRunner
 
 
 async def run_autonomous_discovery():
+    """Run RL phase discovery and persist discovered universality classes."""
     runner = AsyncHardwareRunner(backend="ibm_heron_r2", shots=6000, mitigation="GUESS")
 
     agent = RLDiscoveryAgent(

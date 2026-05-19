@@ -67,6 +67,7 @@ def generate(
     shots: int,
     seed: int,
 ) -> dict[str, object]:
+    """Generate the randomized repeated FIM IBM follow-up protocol matrix."""
     rows: list[dict[str, object]] = []
     for rep in range(reps):
         for lambda_fim in lambdas:
@@ -147,6 +148,7 @@ def generate(
 
 
 def main() -> int:
+    """Write JSON and CSV artefacts for the repeated FIM IBM follow-up protocol."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--lambdas", default="0,4")
     parser.add_argument("--depths", default="2,4,6")

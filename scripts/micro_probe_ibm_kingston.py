@@ -37,6 +37,7 @@ from phase1_mini_bench_ibm_kingston import (  # noqa: E402
 
 
 def main() -> int:
+    """Submit or dry-run the post-cycle IBM Kingston micro-probe."""
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
     results_dir = REPO_ROOT / ".coordination" / "ibm_runs"
     results_dir.mkdir(parents=True, exist_ok=True)

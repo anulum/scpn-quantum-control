@@ -296,6 +296,7 @@ def build_experiment_g() -> list[tuple[dict, QuantumCircuit]]:
 
 
 def main() -> int:
+    """Submit or dry-run the full Phase 2 IBM DLA campaign batch."""
     parser = argparse.ArgumentParser(description="Phase 2 full campaign")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument(

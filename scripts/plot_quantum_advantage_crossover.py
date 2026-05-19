@@ -111,6 +111,7 @@ class LogFit:
     r_squared: float
 
     def predict(self, x: np.ndarray) -> np.ndarray:
+        """Evaluate the fitted log-linear model at the supplied x values."""
         return np.power(10.0, self.intercept + self.slope * x)
 
 
@@ -123,6 +124,7 @@ class PowerFit:
     r_squared: float
 
     def predict(self, n_qubits: np.ndarray) -> np.ndarray:
+        """Evaluate the fitted power-law model at the supplied qubit counts."""
         return np.power(10.0, self.intercept) * np.power(n_qubits, self.slope)
 
 
@@ -410,6 +412,7 @@ def plot_quantum_advantage_crossover(
 
 
 def main() -> int:
+    """Render the quantum-advantage crossover figure and print its artefacts."""
     png_path, pdf_path, crossover = plot_quantum_advantage_crossover()
     print(f"Saved: {png_path}")
     print(f"Saved: {pdf_path}")

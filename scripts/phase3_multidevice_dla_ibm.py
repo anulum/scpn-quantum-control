@@ -101,6 +101,7 @@ def _validate_backend(backend: Any) -> None:
 def build_circuits() -> tuple[
     list[tuple[dict[str, Any], QuantumCircuit]], list[tuple[dict[str, Any], QuantumCircuit]]
 ]:
+    """Build preregistered main and readout circuits for second-backend DLA."""
     main: list[tuple[dict[str, Any], QuantumCircuit]] = []
     for depth in DEPTHS:
         for sector, initial in STATES.items():
@@ -145,6 +146,7 @@ def readiness(
     *,
     max_depth: int,
 ) -> dict[str, Any]:
+    """Transpile circuits and evaluate the preregistered depth guard."""
     isa = [runner.transpile(qc) for _, qc in all_circuits]
     depths = [c.depth() for c in isa]
     total_gates = [sum(c.count_ops().values()) for c in isa]
@@ -192,6 +194,7 @@ def _save(path: Path, payload: dict[str, Any]) -> None:
 
 
 def main() -> int:
+    """Run readiness checks and optionally submit the Phase 3 replication batch."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--backend", default=DEFAULT_BACKEND)
     parser.add_argument("--submit", action="store_true")

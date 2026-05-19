@@ -139,6 +139,7 @@ def summarise_leakage(rows: list[dict]) -> list[dict]:
 
 
 def main() -> int:
+    """Submit or dry-run the Phase 2 popcount-control IBM batch."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--confirm-qpu", action="store_true")
