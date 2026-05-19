@@ -99,6 +99,31 @@ def test_measured_system_promotion_readiness_blocks_without_null_gate():
     assert "candidate must beat node-label and edge-value null models" in readiness["blockers"]
 
 
+def test_measured_system_promotion_readiness_blocks_association_observable_units():
+    K = np.array([[0.0, 0.302], [0.302, 0.0]])
+    measured = {
+        "system": "unit-test PLV observable",
+        "unit": "phase_locking_value",
+        "normalisation": "PLV after fixed alpha-band preprocessing",
+        "normalisation_locked": True,
+        "couplings": [{"i": 1, "j": 2, "value": 0.302, "uncertainty": 0.0}],
+    }
+
+    comparison = compare_measured_couplings(K, measured)
+    readiness = measured_system_promotion_readiness(comparison, n_layers=2)
+
+    assert readiness["ready"] is False
+    assert readiness["coupling_unit"] == "phase_locking_value"
+    assert readiness["coupling_unit_promotable"] is False
+    assert readiness["unit_promotion_status"]["classification"] == (
+        "association_observable_not_coupling_magnitude"
+    )
+    assert (
+        "coupling unit must be a calibrated physical or model-derived coupling magnitude"
+        in readiness["blockers"]
+    )
+
+
 def test_compare_measured_couplings_requires_locked_normalisation():
     K = np.array([[0.0, 0.302], [0.302, 0.0]])
     measured = {

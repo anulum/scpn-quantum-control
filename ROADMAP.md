@@ -267,6 +267,13 @@ is copied here.
   case14 does not provide measured per-bus inertia constants for all load
   buses and the hard promotion gate must still pass before any claim is
   strengthened.
+- [x] **K_nm measured-system unit-class promotion guard.** Implemented
+  2026-05-20: `scripts/run_knm_physical_validation_audit.py` now rejects
+  association-observable units such as phase-locking value, coherence,
+  correlation, mutual information, and transfer entropy at the strict
+  measured-system promotion gate. Model-derived power-grid coupling units
+  still pass the unit-class screen but remain blocked by the existing
+  uncertainty, magnitude, spectral, and null-model gates.
 - [x] **QSVT resource-estimator input hardening.** Implemented
   2026-05-12: the QSVT resource estimator and query-count helpers now
   reject non-square, dimension-mismatched, asymmetric, or non-finite

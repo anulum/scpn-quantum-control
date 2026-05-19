@@ -150,11 +150,15 @@ eyes-closed-minus-eyes-open comparison artefact.
 | Mean absolute edge delta | `0.066249` | `data/knm_physical_validation/baseline_open_closed_comparison.json` |
 | Largest absolute edge delta | `0.135901` on edge `(2, 3)` | `data/knm_physical_validation/baseline_open_closed_comparison.json` |
 | Pearson r across edge medians | `0.963961` | `data/knm_physical_validation/baseline_open_closed_comparison.json` |
+| EEG PLV versus eight-layer K_nm Spearman | `0.767804` | `data/knm_physical_validation/eeg_alpha_plv_knm_comparison.json` |
+| EEG PLV versus eight-layer K_nm Pearson | `0.715303` | `data/knm_physical_validation/eeg_alpha_plv_knm_comparison.json` |
 
 This closes the condition-control EEG PLV comparison gate. It does not close
-the physical-unit measured-coupling gate: PLV remains dimensionless, and public
-claims must continue to describe this as condition-specific alpha-band EEG
-coupling evidence rather than measured physical K_nm magnitudes.
+the physical-unit measured-coupling gate: PLV is an association observable, and
+the measured-system promotion audit now blocks `phase_locking_value` units from
+promotion as calibrated K_nm magnitudes. Public claims must continue to
+describe this as condition-specific alpha-band EEG coupling evidence rather
+than measured physical K_nm magnitudes.
 
 ## Measured-System Control — 2026-04-30
 

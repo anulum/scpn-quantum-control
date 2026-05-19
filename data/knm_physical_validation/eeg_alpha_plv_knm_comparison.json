@@ -1,0 +1,1515 @@
+{
+  "audit": "knm_physical_validation",
+  "candidate_system_scan": {
+    "available": true,
+    "best_topology_candidate": {
+      "domain": "eeg",
+      "magnitude_status": "does_not_close_exact_magnitude_gap",
+      "pearson_offdiag": 0.8988924843789916,
+      "source_name": "eeg_alpha_plv_8ch",
+      "spearman_offdiag": 0.9160024102955289
+    },
+    "candidate_dir": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/public_application_benchmarks",
+    "status": "topology_candidates_scanned",
+    "systems": [
+      {
+        "artifact_path": "data/public_application_benchmarks/eeg_alpha_plv_8ch.json",
+        "decision": {
+          "claim_scope": "topology_candidate_not_magnitude_validation",
+          "closes_physical_magnitude_gap": false,
+          "has_uncertainty_model": false,
+          "normalisation_locked": false,
+          "status": "does_not_close_exact_magnitude_gap"
+        },
+        "domain": "eeg",
+        "magnitude": {
+          "best_scale_through_origin": {
+            "max_abs_error": 0.20221800536539147,
+            "relative_rmse_vs_mean_abs_observed": 0.24504253570708834,
+            "rmse": 0.07578815568654947,
+            "scale": 1.6564807516545028
+          },
+          "direct_max_abs_error": 0.36663180069322693,
+          "direct_relative_rmse_vs_mean_abs_observed": 0.5036598818347996,
+          "direct_rmse": 0.15577480631033444
+        },
+        "n_layers": 8,
+        "normalisation": "phase-locking values already scaled to [0, 1]",
+        "public_reference": "Stam et al., Clinical Neurophysiology 118, 2317 (2007); Breakspear, Nature Neuroscience 20, 340 (2017)",
+        "source_mode": "curated",
+        "source_name": "eeg_alpha_plv_8ch",
+        "topology": {
+          "pearson_offdiag": 0.8988924843789916,
+          "spearman_offdiag": 0.9160024102955289
+        }
+      },
+      {
+        "artifact_path": "data/public_application_benchmarks/friston_fep_6node.json",
+        "decision": {
+          "claim_scope": "topology_candidate_not_magnitude_validation",
+          "closes_physical_magnitude_gap": false,
+          "has_uncertainty_model": false,
+          "normalisation_locked": false,
+          "status": "does_not_close_exact_magnitude_gap"
+        },
+        "domain": "fep",
+        "magnitude": {
+          "best_scale_through_origin": {
+            "max_abs_error": 0.17051324003041068,
+            "relative_rmse_vs_mean_abs_observed": 0.7317421667411121,
+            "rmse": 0.11463960612277423,
+            "scale": 0.8312966665459893
+          },
+          "direct_max_abs_error": 0.18295634688326962,
+          "direct_relative_rmse_vs_mean_abs_observed": 0.7688926551936908,
+          "direct_rmse": 0.1204598493136782
+        },
+        "n_layers": 6,
+        "normalisation": "precision graph weights scaled to unitless positive Kuramoto couplings",
+        "public_reference": "Friston, Nature Reviews Neuroscience 11, 127 (2010); Buckley et al., Entropy 19, 318 (2017)",
+        "source_mode": "curated",
+        "source_name": "friston_fep_6node",
+        "topology": {
+          "pearson_offdiag": 0.7594093449430114,
+          "spearman_offdiag": 0.7627500771613848
+        }
+      },
+      {
+        "artifact_path": "data/public_application_benchmarks/ieee5bus_power_grid.json",
+        "decision": {
+          "claim_scope": "topology_candidate_not_magnitude_validation",
+          "closes_physical_magnitude_gap": false,
+          "has_uncertainty_model": false,
+          "normalisation_locked": false,
+          "status": "does_not_close_exact_magnitude_gap"
+        },
+        "domain": "power-grid",
+        "magnitude": {
+          "best_scale_through_origin": {
+            "max_abs_error": 0.0019173651836042434,
+            "relative_rmse_vs_mean_abs_observed": 1.063045232640642,
+            "rmse": 0.0008942627767795679,
+            "scale": 0.003925287384365812
+          },
+          "direct_max_abs_error": 0.3007466118513167,
+          "direct_relative_rmse_vs_mean_abs_observed": 261.33567850609813,
+          "direct_rmse": 0.21984273326912887
+        },
+        "n_layers": 5,
+        "normalisation": "per-unit susceptance converted to Kuramoto coupling by V_i V_j B_ij / (2 H_i omega_0)",
+        "public_reference": "IEEE PES public test feeder / Stagg-El-Abiad 5-bus benchmark constants",
+        "source_mode": "curated",
+        "source_name": "ieee5bus_power_grid",
+        "topology": {
+          "pearson_offdiag": 0.2261436078106145,
+          "spearman_offdiag": 0.1903943276465977
+        }
+      },
+      {
+        "artifact_path": "data/public_application_benchmarks/iter_mhd_8mode.json",
+        "decision": {
+          "claim_scope": "topology_candidate_not_magnitude_validation",
+          "closes_physical_magnitude_gap": false,
+          "has_uncertainty_model": false,
+          "normalisation_locked": false,
+          "status": "does_not_close_exact_magnitude_gap"
+        },
+        "domain": "plasma",
+        "magnitude": {
+          "best_scale_through_origin": {
+            "max_abs_error": 0.6757406145836871,
+            "relative_rmse_vs_mean_abs_observed": 1.2975134235619956,
+            "rmse": 0.2057485571648307,
+            "scale": 0.6791750465786973
+          },
+          "direct_max_abs_error": 0.6170436531167305,
+          "direct_relative_rmse_vs_mean_abs_observed": 1.3636226289782483,
+          "direct_rmse": 0.21623158830940792
+        },
+        "n_layers": 8,
+        "normalisation": "magnetic mode-coupling weights scaled to [0, 1]",
+        "public_reference": "La Haye, Physics of Plasmas 13, 055501 (2006)",
+        "source_mode": "curated",
+        "source_name": "iter_mhd_8mode",
+        "topology": {
+          "pearson_offdiag": -0.07297375846291161,
+          "spearman_offdiag": -0.021908500712398457
+        }
+      }
+    ]
+  },
+  "command": [
+    "python",
+    "scripts/run_knm_physical_validation_audit.py",
+    "--measured",
+    "data/knm_physical_validation/measured_couplings.json",
+    "--n-layers",
+    "8",
+    "--output",
+    "data/knm_physical_validation/eeg_alpha_plv_knm_comparison.json"
+  ],
+  "created_date": "2026-04-30",
+  "decision": {
+    "current_label": "open_requires_measured_system_coupling_magnitudes",
+    "ibm_rationale": "No IBM job is required for this gate unless K_nm is redefined as a QPU-device coupling-map claim. The current gap asks for measured system coupling magnitudes, not additional shot data.",
+    "next_gate": "Promote one candidate only after a locked measured-system normalisation and per-edge uncertainty model are committed, or provide data/knm_physical_validation/measured_couplings.json with system name, units, normalisation, uncertainty, and source per edge.",
+    "physical_validation_closed": false,
+    "requires_ibm_hardware": false
+  },
+  "implementation_parity": {
+    "anchors": [
+      {
+        "absolute_error": 0.0,
+        "actual": 0.302,
+        "edge_1_indexed": [
+          1,
+          2
+        ],
+        "expected": 0.302
+      },
+      {
+        "absolute_error": 0.0,
+        "actual": 0.201,
+        "edge_1_indexed": [
+          2,
+          3
+        ],
+        "expected": 0.201
+      },
+      {
+        "absolute_error": 0.0,
+        "actual": 0.252,
+        "edge_1_indexed": [
+          3,
+          4
+        ],
+        "expected": 0.252
+      },
+      {
+        "absolute_error": 0.0,
+        "actual": 0.154,
+        "edge_1_indexed": [
+          4,
+          5
+        ],
+        "expected": 0.154
+      }
+    ],
+    "cross_boosts": [
+      {
+        "absolute_error": 0.09696523624231188,
+        "actual": 0.24696523624231187,
+        "edge_1_indexed": [
+          5,
+          7
+        ],
+        "expected": 0.15
+      }
+    ],
+    "python_stats": {
+      "diagonal_max": 0.45,
+      "diagonal_min": 0.45,
+      "offdiag_max": 0.333368199306773,
+      "offdiag_mean": 0.19117597998379113,
+      "offdiag_min": 0.05510539271384186,
+      "offdiag_nonzero": 56,
+      "shape": [
+        8,
+        8
+      ],
+      "symmetric": true
+    },
+    "rust": {
+      "available": true,
+      "max_abs_diff_edge_vs_python": {
+        "absolute_diff": 2.7755575615628914e-17,
+        "edge_1_indexed": [
+          1,
+          5
+        ],
+        "left": 0.13553739536049098,
+        "right": 0.13553739536049095
+      },
+      "max_abs_diff_vs_python": 2.7755575615628914e-17,
+      "offdiag_max_abs_diff_edge_vs_python": {
+        "absolute_diff": 2.7755575615628914e-17,
+        "edge_1_indexed": [
+          1,
+          5
+        ],
+        "left": 0.13553739536049098,
+        "right": 0.13553739536049095
+      },
+      "offdiag_max_abs_diff_vs_python": 2.7755575615628914e-17,
+      "stats": {
+        "diagonal_max": 0.45,
+        "diagonal_min": 0.45,
+        "offdiag_max": 0.333368199306773,
+        "offdiag_mean": 0.19117597998379113,
+        "offdiag_min": 0.05510539271384186,
+        "offdiag_nonzero": 56,
+        "shape": [
+          8,
+          8
+        ],
+        "symmetric": true
+      }
+    },
+    "sibling_scpn_codebase": {
+      "authority": "disabled_outdated_context",
+      "available": false,
+      "error": "disabled: SCPN-CODEBASE is archived/outdated and not an audit authority"
+    }
+  },
+  "measured_system_comparison": {
+    "available": true,
+    "magnitude": {
+      "best_scale_through_origin": {
+        "max_abs_error": 0.4366776904331287,
+        "relative_rmse_vs_mean_abs_observed": 0.2817717749666011,
+        "rmse": 0.15373079084694355,
+        "scale": 2.640859152651477
+      },
+      "direct_relative_rmse_vs_mean_abs_measured": 0.6842036659306254,
+      "direct_rmse": 0.37329207539101655
+    },
+    "matched_edges": 28,
+    "max_absolute_error": 0.5193447552918954,
+    "normalisation": "Per-record PLV = |mean(exp(1j * phase_difference))| after 8-13 Hz Butterworth bandpass; cohort value is the per-edge median across records.",
+    "normalisation_locked": true,
+    "null_models": {
+      "available": true,
+      "beats_null_gate": true,
+      "edge_value_gate": true,
+      "edge_value_permutation": {
+        "description": "Seeded permutations of measured upper-triangle edge values; preserves measured value distribution.",
+        "pearson": {
+          "beats_95pct_null": true,
+          "empirical_p": 0.000244081034903588,
+          "n_null": 4096,
+          "null_max": 0.596083238768411,
+          "null_mean": -0.0003432894443291915,
+          "null_median": -1.209440477413312e-05,
+          "null_min": -0.6021212368618956,
+          "null_std": 0.19244344541432434,
+          "observed": 0.7153027817429924
+        },
+        "rmse": {
+          "beats_95pct_null": true,
+          "empirical_p": 0.000244081034903588,
+          "n_null": 4096,
+          "null_max": 0.41619333481041704,
+          "null_mean": 0.39712319032791055,
+          "null_median": 0.39716136166323307,
+          "null_min": 0.3773751617388655,
+          "null_std": 0.006231666538607971,
+          "observed": 0.37329207539101655
+        },
+        "spearman": {
+          "beats_95pct_null": true,
+          "empirical_p": 0.000244081034903588,
+          "n_null": 4096,
+          "null_max": 0.6361958529667894,
+          "null_mean": -0.0001564012792633514,
+          "null_median": -0.00013824334049691208,
+          "null_min": -0.5908520372838022,
+          "null_std": 0.1914220378421493,
+          "observed": 0.7678035131198497
+        }
+      },
+      "edge_value_samples": 4096,
+      "gate_rule": "Promotion requires topology and magnitude diagnostics to beat preregistered nulls and still pass per-edge uncertainty checks.",
+      "node_label_gate": true,
+      "node_label_permutation": {
+        "description": "Measured-system node relabellings; exhaustive for small systems and seeded sampled permutations for larger systems. Preserves measured graph weights and degree sequence.",
+        "pearson": {
+          "beats_95pct_null": true,
+          "empirical_p": 0.001016839860122517,
+          "n_null": 40320,
+          "null_max": 0.8560891378330311,
+          "null_mean": 0.0,
+          "null_median": -0.0296429259344594,
+          "null_min": -0.47459670239604723,
+          "null_std": 0.18930379221115318,
+          "observed": 0.7153027817429924
+        },
+        "rmse": {
+          "beats_95pct_null": true,
+          "empirical_p": 0.001016839860122517,
+          "n_null": 40320,
+          "null_max": 0.41223577974327846,
+          "null_mean": 0.397113063558403,
+          "null_median": 0.3981192436903407,
+          "null_min": 0.3684120911112894,
+          "null_std": 0.006168550731932478,
+          "observed": 0.37329207539101655
+        },
+        "spearman": {
+          "beats_95pct_null": true,
+          "empirical_p": 0.00047121847176409315,
+          "n_null": 40320,
+          "null_max": 0.8681681783206079,
+          "null_mean": 0.0,
+          "null_median": -0.02709569473739477,
+          "null_min": -0.5294719941031732,
+          "null_std": 0.189777498522797,
+          "observed": 0.7678035131198497
+        }
+      },
+      "node_label_samples": 40320,
+      "node_label_sampling_mode": "exhaustive",
+      "seed": 20260430
+    },
+    "rows": [
+      {
+        "absolute_error": 0.5092721893555823,
+        "canonical": 0.302,
+        "edge_1_indexed": [
+          1,
+          2
+        ],
+        "measured": 0.8112721893555823,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.009178423496450991,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.5062464809871983,
+        "canonical": 0.24696523624231187,
+        "edge_1_indexed": [
+          1,
+          3
+        ],
+        "measured": 0.7532117172295101,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.008940369026781378,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.5170099187321746,
+        "canonical": 0.18295634688326962,
+        "edge_1_indexed": [
+          1,
+          4
+        ],
+        "measured": 0.6999662656154443,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.009796720251320008,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.42653202206494534,
+        "canonical": 0.13553739536049095,
+        "edge_1_indexed": [
+          1,
+          5
+        ],
+        "measured": 0.5620694174254363,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.012679278262234733,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.36559271177882785,
+        "canonical": 0.10040857206679342,
+        "edge_1_indexed": [
+          1,
+          6
+        ],
+        "measured": 0.4660012838456213,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.012680899106301992,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.26478701193420706,
+        "canonical": 0.07438449969971396,
+        "edge_1_indexed": [
+          1,
+          7
+        ],
+        "measured": 0.339171511633921,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.007613673699584768,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.2623371755987183,
+        "canonical": 0.05510539271384186,
+        "edge_1_indexed": [
+          1,
+          8
+        ],
+        "measured": 0.3174425683125601,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.005395157078421674,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.48535417993856017,
+        "canonical": 0.201,
+        "edge_1_indexed": [
+          2,
+          3
+        ],
+        "measured": 0.6863541799385602,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.0081313611919789,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.49801932739675253,
+        "canonical": 0.24696523624231187,
+        "edge_1_indexed": [
+          2,
+          4
+        ],
+        "measured": 0.7449845636390644,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.009278709335261143,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.32658024690074433,
+        "canonical": 0.18295634688326962,
+        "edge_1_indexed": [
+          2,
+          5
+        ],
+        "measured": 0.509536593784014,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.011517696644927739,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.3622469722949444,
+        "canonical": 0.13553739536049095,
+        "edge_1_indexed": [
+          2,
+          6
+        ],
+        "measured": 0.4977843676554354,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.012910613832458482,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.2167604038483273,
+        "canonical": 0.10040857206679342,
+        "edge_1_indexed": [
+          2,
+          7
+        ],
+        "measured": 0.3171689759151207,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.005699598245080135,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.24092422443248457,
+        "canonical": 0.07438449969971396,
+        "edge_1_indexed": [
+          2,
+          8
+        ],
+        "measured": 0.3153087241321985,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.005438992109576288,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.5193447552918954,
+        "canonical": 0.252,
+        "edge_1_indexed": [
+          3,
+          4
+        ],
+        "measured": 0.7713447552918954,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.008744244540526386,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.49108760891415676,
+        "canonical": 0.24696523624231187,
+        "edge_1_indexed": [
+          3,
+          5
+        ],
+        "measured": 0.7380528451564686,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.010499998096492586,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.41186808498327604,
+        "canonical": 0.18295634688326962,
+        "edge_1_indexed": [
+          3,
+          6
+        ],
+        "measured": 0.5948244318665457,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.011918887190937429,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.26444349952060286,
+        "canonical": 0.13553739536049095,
+        "edge_1_indexed": [
+          3,
+          7
+        ],
+        "measured": 0.3999808948810938,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.0081397129690158,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.25754469270084474,
+        "canonical": 0.10040857206679342,
+        "edge_1_indexed": [
+          3,
+          8
+        ],
+        "measured": 0.35795326476763817,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.008225966114441043,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.46554838228126694,
+        "canonical": 0.154,
+        "edge_1_indexed": [
+          4,
+          5
+        ],
+        "measured": 0.619548382281267,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.012017244789011224,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.4495865265450945,
+        "canonical": 0.24696523624231187,
+        "edge_1_indexed": [
+          4,
+          6
+        ],
+        "measured": 0.6965517627874064,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.011297092107631366,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.17871653096801887,
+        "canonical": 0.18295634688326962,
+        "edge_1_indexed": [
+          4,
+          7
+        ],
+        "measured": 0.3616728778512885,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.007414479137366187,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.21972573072796045,
+        "canonical": 0.13553739536049095,
+        "edge_1_indexed": [
+          4,
+          8
+        ],
+        "measured": 0.3552631260884514,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.007757744121449537,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.293548435040117,
+        "canonical": 0.333368199306773,
+        "edge_1_indexed": [
+          5,
+          6
+        ],
+        "measured": 0.62691663434689,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.013538062717887827,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.31789515323391454,
+        "canonical": 0.24696523624231187,
+        "edge_1_indexed": [
+          5,
+          7
+        ],
+        "measured": 0.5648603894762264,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.006301501924722752,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.2781598735110168,
+        "canonical": 0.18295634688326962,
+        "edge_1_indexed": [
+          5,
+          8
+        ],
+        "measured": 0.4611162203942864,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.008217986514116446,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.11033257060233159,
+        "canonical": 0.333368199306773,
+        "edge_1_indexed": [
+          6,
+          7
+        ],
+        "measured": 0.4437007699091046,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.009052891873118312,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.2672688670760914,
+        "canonical": 0.24696523624231187,
+        "edge_1_indexed": [
+          6,
+          8
+        ],
+        "measured": 0.5142341033184032,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.0077509765221028,
+        "within_uncertainty": false
+      },
+      {
+        "absolute_error": 0.41675247206682814,
+        "canonical": 0.333368199306773,
+        "edge_1_indexed": [
+          7,
+          8
+        ],
+        "measured": 0.7501206713736012,
+        "source": "PhysioNet EEGMMIDB baseline eyes open alpha-band PLV cohort median",
+        "uncertainty": 0.007944658429776878,
+        "within_uncertainty": false
+      }
+    ],
+    "signal_processing": {
+      "bandpass_hz": [
+        8.0,
+        13.0
+      ],
+      "channels_canonical": [
+        "Fp1",
+        "Fp2",
+        "F3",
+        "F4",
+        "C3",
+        "C4",
+        "O1",
+        "O2"
+      ],
+      "channels_edf": [
+        "Fp1.",
+        "Fp2.",
+        "F3..",
+        "F4..",
+        "C3..",
+        "C4..",
+        "O1..",
+        "O2.."
+      ],
+      "cohort_estimator": "per-edge median with MAD standard error across records",
+      "per_record_estimator": "segment mean PLV with standard error across windows",
+      "sampling_hz": 160.0,
+      "step_s": 1.0,
+      "window_s": 2.0
+    },
+    "source_dataset": {
+      "citation": "Schalk et al., IEEE Transactions on Biomedical Engineering 51(6):1034-1043, 2004; Goldberger et al., Circulation 101(23):e215-e220, 2000.",
+      "condition": "baseline eyes open",
+      "dataset_base_url": "https://physionet.org/files/eegmmidb/1.0.0",
+      "licence": "Open Data Commons Attribution License v1.0",
+      "n_records": 109,
+      "name": "EEG Motor Movement/Imagery Dataset v1.0.0",
+      "raw_records": [
+        {
+          "raw_sha256": "4743b736131a7e147c150e8b37711029b6cda5e356c4b3e8261a03cdcaaf8b0c",
+          "record": "S001R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S001/S001R01.edf"
+        },
+        {
+          "raw_sha256": "d542689b31c977838f20b1a2062865b98ecf10a7e9702f56f101000d47f2ec68",
+          "record": "S002R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S002/S002R01.edf"
+        },
+        {
+          "raw_sha256": "2af68afa8d4f158a7ae7f3903b66f0947925880639b7a8b5b6bb13b0c6c50f96",
+          "record": "S003R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S003/S003R01.edf"
+        },
+        {
+          "raw_sha256": "23e9645f492488d2376ac3a606d177043efc6e5fb00281c2d6648e4b06a6ce62",
+          "record": "S004R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S004/S004R01.edf"
+        },
+        {
+          "raw_sha256": "f84f58d7d96bce1700af8b2c9e333d66e4b2183e34b3ed5634840fff37845af0",
+          "record": "S005R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S005/S005R01.edf"
+        },
+        {
+          "raw_sha256": "bfe32b925fdd469c90ce6913f7409cf85e4492b40d36c77b83511592d6e4c647",
+          "record": "S006R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S006/S006R01.edf"
+        },
+        {
+          "raw_sha256": "2ca422c6076860f12bce174799c5d7e85cae46b7b09a8e8519681d0f82168b22",
+          "record": "S007R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S007/S007R01.edf"
+        },
+        {
+          "raw_sha256": "678e47541d9903c300ba7811554ad1f8bfbe2bff086407cb4ff489d2d0e507bc",
+          "record": "S008R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S008/S008R01.edf"
+        },
+        {
+          "raw_sha256": "37f117b69060f2c784d74fe973d6af30b3b978f9c7c127324273f5741749bb2e",
+          "record": "S009R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S009/S009R01.edf"
+        },
+        {
+          "raw_sha256": "0d694b503e5ea0f6088a790f09390efb1be2688ad92213f5e82fa2f343cd18c4",
+          "record": "S010R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S010/S010R01.edf"
+        },
+        {
+          "raw_sha256": "374dfa06c6df18e3bd324f4c8aefa462bacb6bf9dcbfe8d58ae6e84ed2bbc443",
+          "record": "S011R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S011/S011R01.edf"
+        },
+        {
+          "raw_sha256": "ad02ce8943d45f07bcf6f69714a61005e570f3fd26f0e8e1bac38c7ad80fcc73",
+          "record": "S012R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S012/S012R01.edf"
+        },
+        {
+          "raw_sha256": "6f41486d61f25ea3c38608b650f4e9a19d5e6782113fa184408049267fd75310",
+          "record": "S013R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S013/S013R01.edf"
+        },
+        {
+          "raw_sha256": "9ff971d9225e764428182bf4833ce5a60e620b7b157df9798ea6266070442433",
+          "record": "S014R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S014/S014R01.edf"
+        },
+        {
+          "raw_sha256": "79564c46036cd6c3d1371811f2cc426c9ac14d09d7da3dcf935a65d1a633c9c6",
+          "record": "S015R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S015/S015R01.edf"
+        },
+        {
+          "raw_sha256": "a0396eaa7765e822a9520e78321044f7296888442e6258f3e33c550228d84576",
+          "record": "S016R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S016/S016R01.edf"
+        },
+        {
+          "raw_sha256": "051e38a4601ef46f4e5be488f06e3a6c0cf53263d6166075dd94cbddec38624c",
+          "record": "S017R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S017/S017R01.edf"
+        },
+        {
+          "raw_sha256": "664012489cbc59928d2bbd665e4f3d557421e9ecec7a8ff6f46faa64ea9e7028",
+          "record": "S018R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S018/S018R01.edf"
+        },
+        {
+          "raw_sha256": "2c542b11398dfe863ffdfa3e94aa8ee3fe6414b5ca384c7a242b018dd9e9df12",
+          "record": "S019R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S019/S019R01.edf"
+        },
+        {
+          "raw_sha256": "da48b7d4ed805218e12c70c775b47a3a111670901e06e7de843916c579278693",
+          "record": "S020R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S020/S020R01.edf"
+        },
+        {
+          "raw_sha256": "983781fb39c3a747051a04f23484164de485b97ba43a7fd63fd8fe3d7f6f6f3c",
+          "record": "S021R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S021/S021R01.edf"
+        },
+        {
+          "raw_sha256": "496fc1ca74a265ea0f888b9334ac8b16168ab201dfec3eb7d932e68a5348edc5",
+          "record": "S022R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S022/S022R01.edf"
+        },
+        {
+          "raw_sha256": "3dc49252e5969854b3c0b9126058e3a9f28efcddd61a6f570702ee3043fec0fb",
+          "record": "S023R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S023/S023R01.edf"
+        },
+        {
+          "raw_sha256": "abd9b141d8e2853e30a126a891929bf99f22661e27f571f02d5f6a415b40841a",
+          "record": "S024R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S024/S024R01.edf"
+        },
+        {
+          "raw_sha256": "d630db7ef42ec83068197a587f93bd71e218e3d592e190e79111b414633d7fed",
+          "record": "S025R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S025/S025R01.edf"
+        },
+        {
+          "raw_sha256": "2c4c52f3afd7dc4742bc1b009744da1172bb9c4f45546acee2fef230931d411b",
+          "record": "S026R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S026/S026R01.edf"
+        },
+        {
+          "raw_sha256": "16ae12914a9c301b652d64f1d6337e6e31edbc4f64f9c222c3670dd7157ecf21",
+          "record": "S027R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S027/S027R01.edf"
+        },
+        {
+          "raw_sha256": "7aefa2fd7d92490654beb7deb417dd5e04c9d7c924716c16a48ee3d73ad6c3ce",
+          "record": "S028R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S028/S028R01.edf"
+        },
+        {
+          "raw_sha256": "48641d0db6e810c96273d8c26d52510132ae503badf74471558b7c12306265b2",
+          "record": "S029R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S029/S029R01.edf"
+        },
+        {
+          "raw_sha256": "3b0b3d390a9d15b30f95230729a24d5b8a2a55b22ae6ab9ee0c18653068d22e8",
+          "record": "S030R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S030/S030R01.edf"
+        },
+        {
+          "raw_sha256": "55d1e8e8145b8eb6778468b55020662275d152d34f33e18c2893b70605175fa3",
+          "record": "S031R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S031/S031R01.edf"
+        },
+        {
+          "raw_sha256": "ba99cf38dc94b4408469708227736b388eab4cee0a0fb27ecba353ac4348757e",
+          "record": "S032R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S032/S032R01.edf"
+        },
+        {
+          "raw_sha256": "5801c97826b681eddd76641707c479385742b0fa35e5fae0935a81fd139fc646",
+          "record": "S033R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S033/S033R01.edf"
+        },
+        {
+          "raw_sha256": "62814a71a5926f51efe322e6f959b0c6a7b18da7603474a4daa3de3cd4ac2718",
+          "record": "S034R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S034/S034R01.edf"
+        },
+        {
+          "raw_sha256": "c3f65f266df7240a795efc209424b75cd86a30823f63795b51a62deb095f4700",
+          "record": "S035R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S035/S035R01.edf"
+        },
+        {
+          "raw_sha256": "dbdda796236e1262d7dd1758d7b4c80762b1865047b8bd2b28d59d273fc4f789",
+          "record": "S036R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S036/S036R01.edf"
+        },
+        {
+          "raw_sha256": "51182f52a9316783ef7d393bc1354efcac916524dfa826b3519b132bf516f7db",
+          "record": "S037R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S037/S037R01.edf"
+        },
+        {
+          "raw_sha256": "cf352ddee891d1f3f6c6aa3fb4e947ae0c89b9dcb2edd0cb2c75defa5c5eb2e1",
+          "record": "S038R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S038/S038R01.edf"
+        },
+        {
+          "raw_sha256": "b1c5ca3e506c3dc0d7dc855f3908b5d4ac3b1839e9fac8e7dd316eaaa50f953e",
+          "record": "S039R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S039/S039R01.edf"
+        },
+        {
+          "raw_sha256": "45423b0cfc992bee8cede102265968d424d3731a6a7f2c8fb4a714f4ba3dfe61",
+          "record": "S040R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S040/S040R01.edf"
+        },
+        {
+          "raw_sha256": "5fec76892825c885cb231c16424e497fa7b0bc5d255f15117c2f896da85a27bb",
+          "record": "S041R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S041/S041R01.edf"
+        },
+        {
+          "raw_sha256": "34f1adbcb0155953eb68874d9a23cc1a8d7ce57a507bc6ceea9189b410d38439",
+          "record": "S042R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S042/S042R01.edf"
+        },
+        {
+          "raw_sha256": "49151f1f618da69d7de8bea138e21c0d1f7f9833bdc8b23a9a98c95dbf0120db",
+          "record": "S043R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S043/S043R01.edf"
+        },
+        {
+          "raw_sha256": "ca0199eeca73ce7b30843e2a06baacca5cfcdc4750cd01a1e237af6feec5dccf",
+          "record": "S044R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S044/S044R01.edf"
+        },
+        {
+          "raw_sha256": "99ed18a81e6d86970dcef27b3bf1ad6d4adf01477b4560aa5e198673de2992bf",
+          "record": "S045R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S045/S045R01.edf"
+        },
+        {
+          "raw_sha256": "49b18f6779e3fdb549c80551379d76ab5fa7f9faa429e171bf4cd38f121ae5d7",
+          "record": "S046R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S046/S046R01.edf"
+        },
+        {
+          "raw_sha256": "e9e5061be6fea706fdbf03bbc9d0d8de48476d036553a06ff0117c98b60303c2",
+          "record": "S047R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S047/S047R01.edf"
+        },
+        {
+          "raw_sha256": "c614f7a42eee90e494006d410917f21c7cc14e04f6cf86e0728437c636286171",
+          "record": "S048R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S048/S048R01.edf"
+        },
+        {
+          "raw_sha256": "bdfcb91b7c914a621617d59cd6f132c9f3229f64f22084e57904232e84c2eaf9",
+          "record": "S049R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S049/S049R01.edf"
+        },
+        {
+          "raw_sha256": "8407057efedd6e133b5e7b13caba82c90654d2697288d35b27b7fc33aeb4f522",
+          "record": "S050R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S050/S050R01.edf"
+        },
+        {
+          "raw_sha256": "47fed7512d9d7d87c2f85deae9f5c8e80c9734b44352ade28655e8a27ba0ecca",
+          "record": "S051R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S051/S051R01.edf"
+        },
+        {
+          "raw_sha256": "8346bfe5bae53f3a82438211538a6482d4e1c885b5b70953b862a4d30fc0bc26",
+          "record": "S052R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S052/S052R01.edf"
+        },
+        {
+          "raw_sha256": "72184f7aad1257f85cc97ea9afbe7c6e80b4cc3c202403a1323a648955d2d327",
+          "record": "S053R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S053/S053R01.edf"
+        },
+        {
+          "raw_sha256": "329625cd03103c4162f6de3c409f3664c68481979263f56e50b8dae272e27f7f",
+          "record": "S054R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S054/S054R01.edf"
+        },
+        {
+          "raw_sha256": "38df022c18db1a69e74261fefd85f397b0b55b457384c4c7208ef00f7f6231c6",
+          "record": "S055R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S055/S055R01.edf"
+        },
+        {
+          "raw_sha256": "29f8a7a25c02b872dbbf0cb52475ed55b45fd3b5a90e2fc5025691ff389b04b3",
+          "record": "S056R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S056/S056R01.edf"
+        },
+        {
+          "raw_sha256": "0b5b499f95a86f7c04d63cef9489f04a81a335eac0c80ec8897eace504c0205a",
+          "record": "S057R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S057/S057R01.edf"
+        },
+        {
+          "raw_sha256": "6a3d55038d5198b06772b43243f2009436a23c41696e98b57d8d98acd2008df1",
+          "record": "S058R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S058/S058R01.edf"
+        },
+        {
+          "raw_sha256": "b8b6001fbd9853ab9cf3cc7dc2c40fe0547fd8904044d4bb5b654a083d6f1584",
+          "record": "S059R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S059/S059R01.edf"
+        },
+        {
+          "raw_sha256": "ae25d2c837966144341798b0bd0cbcba1b0eddd28a6b31502f813a41fd6ad1d5",
+          "record": "S060R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S060/S060R01.edf"
+        },
+        {
+          "raw_sha256": "b0728cf10eb1885b0d5cbb9fadc43dc1625dcd892b043f05f7a55a375ad1a3eb",
+          "record": "S061R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S061/S061R01.edf"
+        },
+        {
+          "raw_sha256": "3a2d4ed688479495bf9312be25dcd3ffbf393ba786f185700b611e9b95dbd4ef",
+          "record": "S062R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S062/S062R01.edf"
+        },
+        {
+          "raw_sha256": "19e89fec35b5227c3ddd5a031668a7311264610cde156def93771adc15685af6",
+          "record": "S063R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S063/S063R01.edf"
+        },
+        {
+          "raw_sha256": "e208a4c403cb3597ee704d7b59918e86faf195fdaa28587b84efc86708109219",
+          "record": "S064R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S064/S064R01.edf"
+        },
+        {
+          "raw_sha256": "2f6d0594f0207077831c620c299d84ad49cfa36c12af43a32bdbc129f0d9d703",
+          "record": "S065R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S065/S065R01.edf"
+        },
+        {
+          "raw_sha256": "6511edb550c0b24d34f0fdd8ce50bd61202130524099c1e087aa92e258bdacb9",
+          "record": "S066R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S066/S066R01.edf"
+        },
+        {
+          "raw_sha256": "7a869d87fe690e94b63ae466a2f8a888d8baf3a028c1be35b6d7fc2b80cb5eb9",
+          "record": "S067R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S067/S067R01.edf"
+        },
+        {
+          "raw_sha256": "7f528d62c8d4b342ff2f958ec6571d425f7d3926f0832ece121fa162efccab1c",
+          "record": "S068R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S068/S068R01.edf"
+        },
+        {
+          "raw_sha256": "8da5f1695c8c03bcc530dc1478ff74749380d579a5ca84d6232e1df1815071f4",
+          "record": "S069R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S069/S069R01.edf"
+        },
+        {
+          "raw_sha256": "5dbb88fd5e39ce0aae257321765c2b9fd67ee9248993c55fdcccf79605442f23",
+          "record": "S070R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S070/S070R01.edf"
+        },
+        {
+          "raw_sha256": "55ee9a28e1496f5b730ccbeaf859063b2dcc9f11039905e6fbe04fd7fbeb38d2",
+          "record": "S071R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S071/S071R01.edf"
+        },
+        {
+          "raw_sha256": "7742f6c605fd73b04ca4ddb7dbc1db4a11cae8497107d3720cae64bcf1fa32a3",
+          "record": "S072R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S072/S072R01.edf"
+        },
+        {
+          "raw_sha256": "be8473cb11d653152f32965bfc62691bae4b3df7fbc1e193840667f5912cfb73",
+          "record": "S073R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S073/S073R01.edf"
+        },
+        {
+          "raw_sha256": "5a9fed173c09eb34df7bfb6e79d6c15b616f2cf95c65bbed6b7b392acfa2ac3a",
+          "record": "S074R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S074/S074R01.edf"
+        },
+        {
+          "raw_sha256": "79c65d9990c6606d45d9c3be18ae7226cc97e4757955fd8675f313ff8f91b238",
+          "record": "S075R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S075/S075R01.edf"
+        },
+        {
+          "raw_sha256": "86659701591d9e676b453556fd006a7501530d9f328050f2860060150b9ee75b",
+          "record": "S076R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S076/S076R01.edf"
+        },
+        {
+          "raw_sha256": "1eed03d32fc8cc2cb57cf28fec4b380d56ce3bef548ad82b045d43d7f0ac82b1",
+          "record": "S077R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S077/S077R01.edf"
+        },
+        {
+          "raw_sha256": "42899f0af33e3bc857c963066f250f261d4e76d73c0c7700d223b09d13ad495c",
+          "record": "S078R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S078/S078R01.edf"
+        },
+        {
+          "raw_sha256": "5dbffbbbeb71b073533cd280510875199ac7b00e5c6225f95c1b88dcf2fbed1a",
+          "record": "S079R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S079/S079R01.edf"
+        },
+        {
+          "raw_sha256": "e02ada53d55ff4abf99928b1a5da1773023170f345d2c223a3a73b0362683d62",
+          "record": "S080R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S080/S080R01.edf"
+        },
+        {
+          "raw_sha256": "e5aa41fe4d8447c05d0e3efb752f1312210db47de6a670da2c7c57b3cdb1bad8",
+          "record": "S081R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S081/S081R01.edf"
+        },
+        {
+          "raw_sha256": "c36d3ce061cef168595ebbf3995891c60fcefa82dc1534f6dbc4fc6312d09ebe",
+          "record": "S082R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S082/S082R01.edf"
+        },
+        {
+          "raw_sha256": "5f6e11cd2acd6244310fefb52a9754242e5fd67e9d1e9fbc148c40ba6c660815",
+          "record": "S083R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S083/S083R01.edf"
+        },
+        {
+          "raw_sha256": "b8fe107728ed7e3057cc35faf2e66f91602dab9260b0ab2b0a64bfe6a3952434",
+          "record": "S084R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S084/S084R01.edf"
+        },
+        {
+          "raw_sha256": "378774575493af619ad20aa110604dc98be465894a7f82ce8ef815e3e58b51ec",
+          "record": "S085R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S085/S085R01.edf"
+        },
+        {
+          "raw_sha256": "32f1b040a3f8bbc6f3393a48b81ed911095fb0cd78859a129e918f675b3c4167",
+          "record": "S086R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S086/S086R01.edf"
+        },
+        {
+          "raw_sha256": "5876a24fa07f5580ee8df69f00a069aeeeea2a22e08f3c6ba3678a3978f4a73a",
+          "record": "S087R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S087/S087R01.edf"
+        },
+        {
+          "raw_sha256": "d7ec3aea4cb49618ec70a1c223c578afac19338e4142807ce9128e78aea49618",
+          "record": "S088R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S088/S088R01.edf"
+        },
+        {
+          "raw_sha256": "fa4c6f60949968c607bf5105f9c80ea1a786b5bf6b15737077a9f256af66bfa3",
+          "record": "S089R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S089/S089R01.edf"
+        },
+        {
+          "raw_sha256": "ef8e84de758cebfad15ee86d49bd134578ac5ff24154ece98e9e853c91356e34",
+          "record": "S090R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S090/S090R01.edf"
+        },
+        {
+          "raw_sha256": "98db88036017237d6b096d1307927fcbb21aedd5412a55ec641912a9a8dc1cf4",
+          "record": "S091R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S091/S091R01.edf"
+        },
+        {
+          "raw_sha256": "ca68794592fe3ce3f0217fda4729b2ff16cc83a3bb447302236fb0d83052edfb",
+          "record": "S092R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S092/S092R01.edf"
+        },
+        {
+          "raw_sha256": "2d1bca83825b37f2186af5dbdb0c4d7c48d0a971903761a84c385d7dfeb3f54c",
+          "record": "S093R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S093/S093R01.edf"
+        },
+        {
+          "raw_sha256": "b11fbdf3f5ecd11daaad702b58bdabaf1f15c82f045b7ed53dfd88855271a5bc",
+          "record": "S094R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S094/S094R01.edf"
+        },
+        {
+          "raw_sha256": "dfc6a2fa8305ddc93e46704abac01c6c9138bb8cd69fd86ea6b29868940d0466",
+          "record": "S095R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S095/S095R01.edf"
+        },
+        {
+          "raw_sha256": "005e6ffa9938042c262035797bcbab224dd6039236872416dbe0ec42cac91e49",
+          "record": "S096R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S096/S096R01.edf"
+        },
+        {
+          "raw_sha256": "7bf7346caa9bd3effc06b27a1f0c4bd94e21a861047fefbf19e7b60ae76ca02f",
+          "record": "S097R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S097/S097R01.edf"
+        },
+        {
+          "raw_sha256": "e908b862df484c6ffa822ccbb5658894cd3459fadd6c9d02b26e30bb9c392552",
+          "record": "S098R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S098/S098R01.edf"
+        },
+        {
+          "raw_sha256": "9bdac81d159f0f6c153e4a48a72bcb1bc53ec0ae77a35df1263524016df3a937",
+          "record": "S099R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S099/S099R01.edf"
+        },
+        {
+          "raw_sha256": "f3741fda19dfb05973fb367c6f9663df5a9a1c378324c223e677e59cb4450fa8",
+          "record": "S100R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S100/S100R01.edf"
+        },
+        {
+          "raw_sha256": "111b902998ad14ea66860661023c2e3132c8da06961afe0de02f71ddc4ee383c",
+          "record": "S101R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S101/S101R01.edf"
+        },
+        {
+          "raw_sha256": "8eb9f4a85bd7854b545d00504f59d00ae4ba301011bcf3b562fb8d09ecb37d1d",
+          "record": "S102R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S102/S102R01.edf"
+        },
+        {
+          "raw_sha256": "48dbfa8c73308311e3f7c7137b25cbf4a060775c1a460fb8496c50723b8fb231",
+          "record": "S103R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S103/S103R01.edf"
+        },
+        {
+          "raw_sha256": "359e9f6ee1667782fc85dc9c9c963fd8327fcc78c7c24381c7be139b66f89dab",
+          "record": "S104R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S104/S104R01.edf"
+        },
+        {
+          "raw_sha256": "712c423a028c67f2fa328bb427cf140fbbeca2fee90bec6c17fb54ed01ffec85",
+          "record": "S105R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S105/S105R01.edf"
+        },
+        {
+          "raw_sha256": "605ac5d4ea9ca2170fa10ff85119297a77a7ccb7054b107294a903b911788c37",
+          "record": "S106R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S106/S106R01.edf"
+        },
+        {
+          "raw_sha256": "08f3946647a37c1a9dff23a2821c23d5fc1421eaed08bd5b1e14291bf9166363",
+          "record": "S107R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S107/S107R01.edf"
+        },
+        {
+          "raw_sha256": "2115183a713af1edb4ddbda03f35712340a2e1bfdc62f825e2b73f495d421291",
+          "record": "S108R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S108/S108R01.edf"
+        },
+        {
+          "raw_sha256": "4547299bf4645e4afb08006d03b419e1273d4a3e853b8aa73d569e5a96dce8d0",
+          "record": "S109R01",
+          "source_url": "https://physionet.org/files/eegmmidb/1.0.0/S109/S109R01.edf"
+        }
+      ],
+      "records": [
+        "S001R01",
+        "S002R01",
+        "S003R01",
+        "S004R01",
+        "S005R01",
+        "S006R01",
+        "S007R01",
+        "S008R01",
+        "S009R01",
+        "S010R01",
+        "S011R01",
+        "S012R01",
+        "S013R01",
+        "S014R01",
+        "S015R01",
+        "S016R01",
+        "S017R01",
+        "S018R01",
+        "S019R01",
+        "S020R01",
+        "S021R01",
+        "S022R01",
+        "S023R01",
+        "S024R01",
+        "S025R01",
+        "S026R01",
+        "S027R01",
+        "S028R01",
+        "S029R01",
+        "S030R01",
+        "S031R01",
+        "S032R01",
+        "S033R01",
+        "S034R01",
+        "S035R01",
+        "S036R01",
+        "S037R01",
+        "S038R01",
+        "S039R01",
+        "S040R01",
+        "S041R01",
+        "S042R01",
+        "S043R01",
+        "S044R01",
+        "S045R01",
+        "S046R01",
+        "S047R01",
+        "S048R01",
+        "S049R01",
+        "S050R01",
+        "S051R01",
+        "S052R01",
+        "S053R01",
+        "S054R01",
+        "S055R01",
+        "S056R01",
+        "S057R01",
+        "S058R01",
+        "S059R01",
+        "S060R01",
+        "S061R01",
+        "S062R01",
+        "S063R01",
+        "S064R01",
+        "S065R01",
+        "S066R01",
+        "S067R01",
+        "S068R01",
+        "S069R01",
+        "S070R01",
+        "S071R01",
+        "S072R01",
+        "S073R01",
+        "S074R01",
+        "S075R01",
+        "S076R01",
+        "S077R01",
+        "S078R01",
+        "S079R01",
+        "S080R01",
+        "S081R01",
+        "S082R01",
+        "S083R01",
+        "S084R01",
+        "S085R01",
+        "S086R01",
+        "S087R01",
+        "S088R01",
+        "S089R01",
+        "S090R01",
+        "S091R01",
+        "S092R01",
+        "S093R01",
+        "S094R01",
+        "S095R01",
+        "S096R01",
+        "S097R01",
+        "S098R01",
+        "S099R01",
+        "S100R01",
+        "S101R01",
+        "S102R01",
+        "S103R01",
+        "S104R01",
+        "S105R01",
+        "S106R01",
+        "S107R01",
+        "S108R01",
+        "S109R01"
+      ]
+    },
+    "spectral": {
+      "available": true,
+      "critical_coupling_response": {
+        "canonical_adjacency_spectral_radius": 1.3556403348464516,
+        "canonical_threshold_proxy": 0.7376587833035126,
+        "measured_adjacency_spectral_radius": 3.8692056293270043,
+        "measured_threshold_proxy": 0.25845098343194967,
+        "model": "dimensionless Kuramoto threshold proxy; for fixed oscillator distribution, critical coupling is proportional to 1 / adjacency spectral radius",
+        "relative_difference": 0.6496334222789171,
+        "threshold_proxy_ratio_measured_over_canonical": 0.350366577721083
+      },
+      "graph_spectrum": {
+        "canonical": [
+          -0.40166589813952536,
+          -0.3600623067585769,
+          -0.31392373415534613,
+          -0.2275873938933125,
+          -0.18152691683090844,
+          -0.14325202814435176,
+          0.272377943075569,
+          1.3556403348464516
+        ],
+        "max_abs_error": 2.5135652944805527,
+        "measured": [
+          -0.860209496668084,
+          -0.8189494456980668,
+          -0.7796704399779145,
+          -0.762972842862563,
+          -0.5277462228867806,
+          -0.41434845279095883,
+          0.29469127155736125,
+          3.8692056293270043
+        ],
+        "pearson": 0.9905724971091243,
+        "rmse": 0.9641230902078322
+      },
+      "laplacian_spectrum": {
+        "canonical": [
+          -7.271227148413555e-16,
+          0.9555721733386622,
+          1.394488228608881,
+          1.4882454335716289,
+          1.5816885608445495,
+          1.6171200373037846,
+          1.7507928014016747,
+          1.9179476440231213
+        ],
+        "max_abs_error": 3.1692056002072007,
+        "measured": [
+          1.3967663181668773e-15,
+          3.0868753428804596,
+          3.8664580782060045,
+          4.25550922617851,
+          4.589549306939196,
+          4.749409042340917,
+          4.917872735770662,
+          5.087153244230322
+        ],
+        "pearson": 0.9929204786435967,
+        "rmse": 2.6749662886130467
+      }
+    },
+    "status": "open",
+    "system": "PhysioNet EEGMMIDB baseline eyes open cohort median",
+    "topology": {
+      "pearson": 0.7153027817429924,
+      "spearman": 0.7678035131198497
+    },
+    "unit": "phase_locking_value"
+  },
+  "measured_system_promotion_readiness": {
+    "beats_null_gate": true,
+    "blockers": [
+      "coupling unit must be a calibrated physical or model-derived coupling magnitude",
+      "canonical K_nm values must fall within per-edge uncertainty",
+      "direct relative RMSE must be within preregistered tolerance",
+      "spectral and critical-response diagnostics must be within tolerance"
+    ],
+    "coupling_unit": "phase_locking_value",
+    "coupling_unit_promotable": false,
+    "critical_response_relative_difference": 0.6496334222789171,
+    "decision": "blocked_measured_system_promotion_gate",
+    "full_pairwise_matrix": true,
+    "has_uncertainty": true,
+    "magnitude_relative_rmse": 0.6842036659306254,
+    "matched_edges": 28,
+    "normalisation_locked": true,
+    "promotion_tolerance": 0.05,
+    "ready": false,
+    "required_edges": 28,
+    "unit_promotion_status": {
+      "classification": "association_observable_not_coupling_magnitude",
+      "promotable": false,
+      "reason": "association observables such as PLV, coherence, correlation, or transfer entropy cannot be promoted as calibrated K_nm magnitudes"
+    },
+    "within_uncertainty": false
+  },
+  "parameters": {
+    "alpha": 0.3,
+    "anchor_source_label": "Paper 27 Table 2 constants in code",
+    "cross_boost_source_label": "Paper 27 S4.3 constants in code",
+    "k_base": 0.45,
+    "n_layers": 8
+  },
+  "provenance": {
+    "candidate_dir": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/public_application_benchmarks",
+    "git_commit": "7f3cdccb1076dafd9ef8e3d0a8f97ceee74f4565",
+    "machine": "x86_64",
+    "measured_path": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/knm_physical_validation/measured_couplings.json",
+    "numpy": "2.4.4",
+    "platform": "Linux-6.17.0-23-generic-x86_64-with-glibc2.39",
+    "processor": "x86_64",
+    "python": "3.12.3 (main, Mar 23 2026, 19:04:32) [GCC 13.3.0]",
+    "repo_root": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL",
+    "scpn_codebase": null
+  },
+  "schema_version": 3
+}

@@ -39,6 +39,28 @@ EDGE_VALUE_NULL_SAMPLES = 4096
 NODE_LABEL_NULL_EXHAUSTIVE_MAX_N = 8
 NODE_LABEL_NULL_SAMPLES = 4096
 DEFAULT_PROMOTION_TOLERANCE = 0.05
+ASSOCIATION_OBSERVABLE_UNITS = frozenset(
+    {
+        "coherence",
+        "correlation",
+        "mutual_information",
+        "pearson_correlation",
+        "phase_coherence",
+        "phase_locking_value",
+        "plv",
+        "spearman_correlation",
+        "transfer_entropy",
+    }
+)
+MODEL_DERIVED_COUPLING_UNIT_TOKENS = (
+    "admittance",
+    "coupling",
+    "hz",
+    "per_second",
+    "rad/s",
+    "susceptance",
+    "swing_equation",
+)
 
 ANCHORS_1_INDEXED = {
     (1, 2): 0.302,
@@ -179,6 +201,42 @@ def _rmse(left: np.ndarray, right: np.ndarray) -> float:
 
 def _finite_metric(value: float | None) -> float:
     return float(value) if value is not None and np.isfinite(value) else 0.0
+
+
+def _coupling_unit_promotion_status(unit: Any) -> dict[str, Any]:
+    unit_text = str(unit or "").strip().lower()
+    if not unit_text:
+        return {
+            "promotable": False,
+            "classification": "missing_unit",
+            "reason": "measured coupling artifact lacks a unit label",
+        }
+    if unit_text in ASSOCIATION_OBSERVABLE_UNITS:
+        return {
+            "promotable": False,
+            "classification": "association_observable_not_coupling_magnitude",
+            "reason": (
+                "association observables such as PLV, coherence, correlation, "
+                "or transfer entropy cannot be promoted as calibrated K_nm magnitudes"
+            ),
+        }
+    if any(token in unit_text for token in MODEL_DERIVED_COUPLING_UNIT_TOKENS):
+        return {
+            "promotable": True,
+            "classification": "calibrated_or_model_derived_coupling_magnitude",
+            "reason": (
+                "unit label denotes a physical or model-derived coupling quantity; "
+                "promotion still requires uncertainty, magnitude, spectral, and null gates"
+            ),
+        }
+    return {
+        "promotable": False,
+        "classification": "unknown_unit_class",
+        "reason": (
+            "unit label is not recognised as a calibrated physical or "
+            "model-derived coupling magnitude"
+        ),
+    }
 
 
 def _weighted_laplacian(matrix: np.ndarray) -> np.ndarray:
@@ -682,6 +740,8 @@ def measured_system_promotion_readiness(
     full_pairwise_matrix = int(comparison.get("matched_edges", 0)) >= required_edges
     normalisation_locked = bool(comparison.get("normalisation_locked", False))
     has_uncertainty = bool(rows) and all(row.get("uncertainty") is not None for row in rows)
+    coupling_unit = comparison.get("unit")
+    unit_status = _coupling_unit_promotion_status(coupling_unit)
     nulls = comparison.get("null_models", {})
     spectral = comparison.get("spectral", {})
     magnitude = comparison.get("magnitude", {})
@@ -700,6 +760,10 @@ def measured_system_promotion_readiness(
     null_gate = bool(nulls.get("beats_null_gate", False)) if isinstance(nulls, dict) else False
 
     blockers: list[str] = []
+    if not unit_status["promotable"]:
+        blockers.append(
+            "coupling unit must be a calibrated physical or model-derived coupling magnitude"
+        )
     if not normalisation_locked:
         blockers.append("normalisation must be locked to a named physical-unit conversion")
     if not has_uncertainty:
@@ -726,6 +790,9 @@ def measured_system_promotion_readiness(
         "promotion_tolerance": promotion_tolerance,
         "required_edges": required_edges,
         "matched_edges": int(comparison.get("matched_edges", 0)),
+        "coupling_unit": coupling_unit,
+        "coupling_unit_promotable": bool(unit_status["promotable"]),
+        "unit_promotion_status": unit_status,
         "normalisation_locked": normalisation_locked,
         "has_uncertainty": has_uncertainty,
         "full_pairwise_matrix": full_pairwise_matrix,

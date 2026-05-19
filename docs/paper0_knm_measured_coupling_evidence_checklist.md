@@ -31,6 +31,7 @@ candidate is dimensionless PLV and does not contain per-edge uncertainty.
 |---|---|---|
 | Named measured system | Source dataset identifies the biological or physical system, channel map, acquisition context, and preprocessing provenance. | Anonymous or partially described matrix cannot be promoted. |
 | Coupling units | Each K_nm edge has source units or a documented transformation into a calibrated coupling scale. | Dimensionless association matrix remains a candidate observable only. |
+| Unit-class gate | The measured-system promotion audit classifies the unit as a calibrated or model-derived coupling magnitude. | PLV, coherence, correlation, mutual information, transfer entropy, or unknown unit classes remain non-promotional observables. |
 | Per-edge uncertainty | Each retained edge has uncertainty, standard error, posterior interval, or equivalent uncertainty metadata. | Point estimates without uncertainty keep the measured-system gate closed. |
 | Normalisation lock | Normalisation is specified before replay and cannot be adjusted after seeing diagnostics. | Post-hoc normalisation invalidates the preregistration. |
 | Negative controls | Sparse and dense controls are defined with the same analysis code path and frozen thresholds. | Topology-only agreement can be mistaken for physical validation. |

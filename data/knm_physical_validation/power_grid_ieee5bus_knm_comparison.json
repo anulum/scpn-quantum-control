@@ -270,6 +270,7 @@
     "null_models": {
       "available": true,
       "beats_null_gate": false,
+      "edge_value_gate": false,
       "edge_value_permutation": {
         "description": "Seeded permutations of measured upper-triangle edge values; preserves measured value distribution.",
         "pearson": {
@@ -308,8 +309,9 @@
       },
       "edge_value_samples": 4096,
       "gate_rule": "Promotion requires topology and magnitude diagnostics to beat preregistered nulls and still pass per-edge uncertainty checks.",
+      "node_label_gate": false,
       "node_label_permutation": {
-        "description": "All measured-system node relabellings; preserves measured graph weights and degree sequence.",
+        "description": "Measured-system node relabellings; exhaustive for small systems and seeded sampled permutations for larger systems. Preserves measured graph weights and degree sequence.",
         "pearson": {
           "beats_95pct_null": false,
           "empirical_p": 0.2644628099173554,
@@ -344,6 +346,8 @@
           "observed": 0.1903943276465977
         }
       },
+      "node_label_samples": 120,
+      "node_label_sampling_mode": "exhaustive",
       "seed": 20260430
     },
     "rows": [
@@ -648,6 +652,33 @@
     },
     "unit": "dimensionless_swing_equation_coupling"
   },
+  "measured_system_promotion_readiness": {
+    "beats_null_gate": false,
+    "blockers": [
+      "canonical K_nm values must fall within per-edge uncertainty",
+      "direct relative RMSE must be within preregistered tolerance",
+      "spectral and critical-response diagnostics must be within tolerance",
+      "candidate must beat node-label and edge-value null models"
+    ],
+    "coupling_unit": "dimensionless_swing_equation_coupling",
+    "coupling_unit_promotable": true,
+    "critical_response_relative_difference": 243.2392765094786,
+    "decision": "blocked_measured_system_promotion_gate",
+    "full_pairwise_matrix": true,
+    "has_uncertainty": true,
+    "magnitude_relative_rmse": 261.33567850609825,
+    "matched_edges": 10,
+    "normalisation_locked": true,
+    "promotion_tolerance": 0.05,
+    "ready": false,
+    "required_edges": 10,
+    "unit_promotion_status": {
+      "classification": "calibrated_or_model_derived_coupling_magnitude",
+      "promotable": true,
+      "reason": "unit label denotes a physical or model-derived coupling quantity; promotion still requires uncertainty, magnitude, spectral, and null gates"
+    },
+    "within_uncertainty": false
+  },
   "parameters": {
     "alpha": 0.3,
     "anchor_source_label": "Paper 27 Table 2 constants in code",
@@ -657,15 +688,15 @@
   },
   "provenance": {
     "candidate_dir": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/public_application_benchmarks",
-    "git_commit": "fe17250c9e1568a5bd95f5f06c88045155192df5",
+    "git_commit": "7f3cdccb1076dafd9ef8e3d0a8f97ceee74f4565",
     "machine": "x86_64",
     "measured_path": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/knm_physical_validation/measured_couplings_power_grid_ieee5bus.json",
-    "numpy": "2.2.6",
-    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39",
+    "numpy": "2.4.4",
+    "platform": "Linux-6.17.0-23-generic-x86_64-with-glibc2.39",
     "processor": "x86_64",
-    "python": "3.12.3 (main, Mar  3 2026, 12:15:18) [GCC 13.3.0]",
+    "python": "3.12.3 (main, Mar 23 2026, 19:04:32) [GCC 13.3.0]",
     "repo_root": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL",
     "scpn_codebase": null
   },
-  "schema_version": 2
+  "schema_version": 3
 }
