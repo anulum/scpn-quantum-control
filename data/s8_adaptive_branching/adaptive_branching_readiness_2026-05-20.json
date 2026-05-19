@@ -1,0 +1,196 @@
+{
+  "adaptive_advantage_claim_allowed": false,
+  "branch_table": [
+    {
+      "action": "corrective_kick",
+      "claim_boundary": "branch-planning decision only; not hardware evidence",
+      "cluster_imbalance": 0.0,
+      "correction_angle": 0.059999999999999984,
+      "hardware_submission_allowed": false,
+      "local_r": 0.55,
+      "parity_leakage": 0.0,
+      "schema": "s8_adaptive_branch_row_v1",
+      "triggered_policy": "local_order_threshold"
+    },
+    {
+      "action": "topology_aware_pulse",
+      "claim_boundary": "branch-planning decision only; not hardware evidence",
+      "cluster_imbalance": 0.35,
+      "correction_angle": 0.059999999999999984,
+      "hardware_submission_allowed": false,
+      "local_r": 0.55,
+      "parity_leakage": 0.0,
+      "schema": "s8_adaptive_branch_row_v1",
+      "triggered_policy": "chimera_cluster_detector"
+    },
+    {
+      "action": "sector_rebalance",
+      "claim_boundary": "branch-planning decision only; not hardware evidence",
+      "cluster_imbalance": 0.0,
+      "correction_angle": 0.2,
+      "hardware_submission_allowed": false,
+      "local_r": 0.55,
+      "parity_leakage": 0.12,
+      "schema": "s8_adaptive_branch_row_v1",
+      "triggered_policy": "dla_parity_leakage"
+    },
+    {
+      "action": "sector_rebalance",
+      "claim_boundary": "branch-planning decision only; not hardware evidence",
+      "cluster_imbalance": 0.35,
+      "correction_angle": 0.2,
+      "hardware_submission_allowed": false,
+      "local_r": 0.55,
+      "parity_leakage": 0.12,
+      "schema": "s8_adaptive_branch_row_v1",
+      "triggered_policy": "dla_parity_leakage"
+    },
+    {
+      "action": "hold",
+      "claim_boundary": "branch-planning decision only; not hardware evidence",
+      "cluster_imbalance": 0.0,
+      "correction_angle": 0.0,
+      "hardware_submission_allowed": false,
+      "local_r": 0.7,
+      "parity_leakage": 0.0,
+      "schema": "s8_adaptive_branch_row_v1",
+      "triggered_policy": "none"
+    },
+    {
+      "action": "hold",
+      "claim_boundary": "branch-planning decision only; not hardware evidence",
+      "cluster_imbalance": 0.35,
+      "correction_angle": 0.0,
+      "hardware_submission_allowed": false,
+      "local_r": 0.7,
+      "parity_leakage": 0.0,
+      "schema": "s8_adaptive_branch_row_v1",
+      "triggered_policy": "none"
+    },
+    {
+      "action": "sector_rebalance",
+      "claim_boundary": "branch-planning decision only; not hardware evidence",
+      "cluster_imbalance": 0.0,
+      "correction_angle": 0.2,
+      "hardware_submission_allowed": false,
+      "local_r": 0.7,
+      "parity_leakage": 0.12,
+      "schema": "s8_adaptive_branch_row_v1",
+      "triggered_policy": "dla_parity_leakage"
+    },
+    {
+      "action": "sector_rebalance",
+      "claim_boundary": "branch-planning decision only; not hardware evidence",
+      "cluster_imbalance": 0.35,
+      "correction_angle": 0.2,
+      "hardware_submission_allowed": false,
+      "local_r": 0.7,
+      "parity_leakage": 0.12,
+      "schema": "s8_adaptive_branch_row_v1",
+      "triggered_policy": "dla_parity_leakage"
+    },
+    {
+      "action": "hold",
+      "claim_boundary": "branch-planning decision only; not hardware evidence",
+      "cluster_imbalance": 0.0,
+      "correction_angle": 0.0,
+      "hardware_submission_allowed": false,
+      "local_r": 0.78,
+      "parity_leakage": 0.0,
+      "schema": "s8_adaptive_branch_row_v1",
+      "triggered_policy": "none"
+    },
+    {
+      "action": "hold",
+      "claim_boundary": "branch-planning decision only; not hardware evidence",
+      "cluster_imbalance": 0.35,
+      "correction_angle": 0.0,
+      "hardware_submission_allowed": false,
+      "local_r": 0.78,
+      "parity_leakage": 0.0,
+      "schema": "s8_adaptive_branch_row_v1",
+      "triggered_policy": "none"
+    },
+    {
+      "action": "sector_rebalance",
+      "claim_boundary": "branch-planning decision only; not hardware evidence",
+      "cluster_imbalance": 0.0,
+      "correction_angle": 0.2,
+      "hardware_submission_allowed": false,
+      "local_r": 0.78,
+      "parity_leakage": 0.12,
+      "schema": "s8_adaptive_branch_row_v1",
+      "triggered_policy": "dla_parity_leakage"
+    },
+    {
+      "action": "sector_rebalance",
+      "claim_boundary": "branch-planning decision only; not hardware evidence",
+      "cluster_imbalance": 0.35,
+      "correction_angle": 0.2,
+      "hardware_submission_allowed": false,
+      "local_r": 0.78,
+      "parity_leakage": 0.12,
+      "schema": "s8_adaptive_branch_row_v1",
+      "triggered_policy": "dla_parity_leakage"
+    }
+  ],
+  "branch_table_count": 12,
+  "claim_boundary": "readiness and branch-planning artifact only; no adaptive-advantage claim and no hardware submission",
+  "config": {
+    "chimera_imbalance_threshold": 0.3,
+    "correction_gain": 0.3,
+    "deadband": 0.05,
+    "max_correction_angle": 0.2,
+    "max_parity_leakage": 0.08,
+    "n_oscillators": 4,
+    "n_rounds": 3,
+    "target_r": 0.75
+  },
+  "falsifier": "win-rate <= 50% on preregistered equal-depth open-loop comparison",
+  "hardware_submission_allowed": false,
+  "no_qpu_submission": true,
+  "policies": [
+    {
+      "action": "corrective_kick",
+      "name": "local_order_threshold",
+      "observable": "partial local Kuramoto order parameter",
+      "trigger": "local_r < target_r - deadband"
+    },
+    {
+      "action": "sector_rebalance",
+      "name": "dla_parity_leakage",
+      "observable": "sector leakage estimate",
+      "trigger": "parity_leakage > max_parity_leakage"
+    },
+    {
+      "action": "topology_aware_pulse",
+      "name": "chimera_cluster_detector",
+      "observable": "cluster imbalance with low local order",
+      "trigger": "cluster_imbalance > threshold and local_r below target window"
+    }
+  ],
+  "prerequisites": [
+    "S1 cross-shot feedback plumbing remains the runner-level dependency",
+    "target backend must declare mid-circuit measurement and conditional control",
+    "Rust branch-table generation is a performance follow-up, not a correctness prerequisite",
+    "hardware execution requires explicit preregistration and approval"
+  ],
+  "readiness": {
+    "adaptive_advantage_claim_allowed": false,
+    "hardware_submission_allowed": false,
+    "missing_features": [
+      "conditional_reset",
+      "cross_shot_batches"
+    ],
+    "n_oscillators": 4,
+    "n_rounds": 3,
+    "ready": false,
+    "required_features": [
+      "mid_circuit_measurement",
+      "conditional_control",
+      "conditional_reset",
+      "cross_shot_batches"
+    ]
+  },
+  "schema": "s8_adaptive_branching_readiness_v1"
+}

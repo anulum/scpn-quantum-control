@@ -9,6 +9,17 @@
 topological optimisation, and Petri net scheduling.
 """
 
+from .adaptive_branching import (
+    AdaptiveBranchDecision,
+    AdaptiveBranchingConfig,
+    AdaptiveBranchingReadiness,
+    build_adaptive_branch_table,
+    classify_branch_state,
+    estimate_branching_readiness,
+    required_s8_dynamic_features,
+    s8_adaptive_branching_markdown,
+    s8_adaptive_branching_payload,
+)
 from .q_disruption import QuantumDisruptionClassifier
 from .q_disruption_iter import (
     DisruptionBenchmark,
@@ -34,6 +45,15 @@ __all__ = [
     "VQLS_GradShafranov",
     "QuantumPetriNet",
     "QuantumDisruptionClassifier",
+    "AdaptiveBranchDecision",
+    "AdaptiveBranchingConfig",
+    "AdaptiveBranchingReadiness",
+    "build_adaptive_branch_table",
+    "classify_branch_state",
+    "estimate_branching_readiness",
+    "required_s8_dynamic_features",
+    "s8_adaptive_branching_markdown",
+    "s8_adaptive_branching_payload",
     "DisruptionBenchmark",
     "ITERFeatureSpec",
     "generate_synthetic_iter_data",

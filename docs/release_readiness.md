@@ -108,6 +108,7 @@ boundaries are enforced by hard gates. The current release boundary is:
 | S2/S5 broad advantage | IBM advantage readiness remains blocked until the full benchmark matrix, hardware rows, and claim-boundary requirements pass. |
 | Paper 0 downstream programme | Paper 0 is processed as source-bounded ingestion; downstream experiments require lane registry, methodology outline, and preregistered measured-system design before stronger claims. |
 | S7 logical-level DLA parity | Required release artefacts include the logical-DLA roadmap JSON and Markdown note. DLA parity survival under logical encoding remains blocked until the theory, logical-observable, and simulation prerequisites pass. |
+| S8 adaptive branching | Required release artefacts include the adaptive-branching readiness JSON and Markdown note. Adaptive advantage remains blocked until backend dynamic-circuit support, preregistration, and equal-depth open-loop falsification pass. |
 
 This means the release can be tagged when software gates pass. It does not mean
 that source ingestion, simulator output, or partial benchmark rows have become
@@ -145,6 +146,19 @@ The gate regenerates the S7 logical-DLA parity resource table and roadmap note.
 It is offline, performs no hardware submission, and keeps DLA parity survival
 claims blocked until the representation-theory and logical-observable work is
 complete.
+
+## S8 adaptive-branching readiness gate
+
+Before any tag that touches mid-circuit adaptive branching, dynamic-circuit
+feedback, or adaptive-advantage framing, run:
+
+```bash
+scpn-bench s8-adaptive-branching-readiness
+```
+
+The gate regenerates the S8 branch-policy table and readiness note. It is
+offline, performs no hardware submission, and keeps adaptive-advantage claims
+blocked until backend support and the preregistered equal-depth comparison pass.
 
 ## Symmetry-sector mitigation release gate
 

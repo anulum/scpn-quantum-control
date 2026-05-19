@@ -45,6 +45,7 @@ OFFLINE_HARNESS_POLICY = ExecutionSurfacePolicy(
         "data/s5_benchmark_harness",
         "data/s6_quantum_kuramoto_split",
         "data/s7_logical_dla_parity",
+        "data/s8_adaptive_branching",
         "data/stable_core",
         "data/synchronisation_benchmarks",
         "data/symmetry_sector_mitigation",
@@ -197,6 +198,11 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         frozenset({"s7-roadmap"}),
     ),
     Harness(
+        "s8-adaptive-branching-readiness",
+        "scripts/export_s8_adaptive_branching_readiness.py",
+        frozenset({"s8-readiness"}),
+    ),
+    Harness(
         "sync-benchmark-registry",
         "scripts/export_synchronisation_benchmark_registry.py",
         frozenset({"sync-registry"}),
@@ -278,6 +284,7 @@ ARTEFACT_PATHS = (
     "data/s5_benchmark_harness",
     "data/s6_quantum_kuramoto_split",
     "data/s7_logical_dla_parity",
+    "data/s8_adaptive_branching",
     "data/stable_core",
     "data/synchronisation_benchmarks",
     "data/symmetry_sector_mitigation",
@@ -484,6 +491,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate the S7 logical-DLA parity roadmap artefacts.",
     )
     _add_run_options(s7_roadmap, default_group="s7-roadmap")
+
+    s8_readiness = subparsers.add_parser(
+        "s8-adaptive-branching-readiness",
+        help="Regenerate the S8 adaptive-branching readiness artefacts.",
+    )
+    _add_run_options(s8_readiness, default_group="s8-readiness")
 
     sync_registry = subparsers.add_parser(
         "sync-benchmark-registry",

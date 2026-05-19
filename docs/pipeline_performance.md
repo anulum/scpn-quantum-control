@@ -185,6 +185,20 @@ oscillators at distances 3, 5, and 7; the MS-QEC cross-check records that the
 default hierarchical bundle has lower qubit overhead but a non-viable logical
 rate, so theory review remains mandatory.
 
+## S8 Adaptive Branching Readiness
+
+The S8 dynamic-circuit track is gated as a no-submit readiness artefact:
+
+```bash
+scpn-bench s8-adaptive-branching-readiness
+```
+
+The gate regenerates `data/s8_adaptive_branching/adaptive_branching_readiness_2026-05-20.json`
+and `docs/adaptive_branching.md`. It records the local-order threshold,
+DLA-parity leakage, and chimera-cluster branch policies plus the backend
+features needed before live execution. Missing dynamic-circuit support keeps
+the current readiness state blocked.
+
 ## Phase 3 State/Layout DLA Randomisation
 
 The state/layout mechanism-separation control has a dedicated fail-closed IBM

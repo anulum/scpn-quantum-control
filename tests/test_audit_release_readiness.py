@@ -445,3 +445,12 @@ def test_release_readiness_requires_s7_logical_dla_roadmap_artifacts() -> None:
 
     assert "data/s7_logical_dla_parity/logical_dla_parity_roadmap_2026-05-20.json" in required
     assert "docs/logical_dla_parity.md" in required
+
+
+def test_release_readiness_requires_s8_adaptive_branching_artifacts() -> None:
+    """Release artefact gate includes the S8 adaptive-branching surfaces."""
+
+    required = set(_audit_release_readiness.REQUIRED_RELEASE_ARTIFACTS)
+
+    assert "data/s8_adaptive_branching/adaptive_branching_readiness_2026-05-20.json" in required
+    assert "docs/adaptive_branching.md" in required

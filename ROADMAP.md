@@ -1483,7 +1483,15 @@ be executed until individually activated.
   hierarchy, and keeps DLA parity survival under logical encoding
   blocked until the representation-theory and logical-observable
   prerequisites are closed.
-- [ ] **S8--S53** Scientific, foundational, and applied post-v1.0
+- [x] **S8** Mid-circuit adaptive branching readiness.
+  Implemented 2026-05-20: `scpn-bench s8-adaptive-branching-readiness`
+  exports the no-submit S8 branch-policy table and readiness note. The
+  gate records local-order, DLA-parity-leakage, and chimera-cluster
+  branch policies, requires mid-circuit measurement plus conditional
+  control/reset and cross-shot batching before live execution, and keeps
+  adaptive-advantage claims blocked until the preregistered equal-depth
+  open-loop comparison passes.
+- [ ] **S9--S53** Scientific, foundational, and applied post-v1.0
   differentiation tracks listed in the strategic roadmap.
 
 ## Recently closed
