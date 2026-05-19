@@ -12,6 +12,7 @@ on:
     tags: ["v*"]
 
 permissions:
+  contents: write
   id-token: write
 
 jobs:
@@ -25,6 +26,9 @@ jobs:
           python-version: "3.12"
       - run: pip install build
       - run: python -m build
+      - uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b  # release/v1
+        with:
+          attestations: true
       # Sign the sdist + wheels with Sigstore (Fulcio + Rekor,
       # OIDC-based keyless signing). `.sigstore` bundle files land
       # next to each artefact in `dist/`. PyPI respects
@@ -35,9 +39,6 @@ jobs:
           inputs: >-
             ./dist/*.tar.gz
             ./dist/*.whl
-      - uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b  # release/v1
-        with:
-          attestations: true
       # Attach the bundles + sdist + wheels to the GitHub Release so
       # consumers can verify without a PyPI round-trip via
       # `sigstore verify identity --bundle <file>.sigstore`.
