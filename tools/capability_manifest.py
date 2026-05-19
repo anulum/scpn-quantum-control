@@ -651,6 +651,7 @@ def _readme_block_matches(
 
 
 def main(argv: Iterable[str] | None = None) -> int:
+    """Generate and optionally verify capability manifest artefacts."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo", type=Path, default=Path.cwd())
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)

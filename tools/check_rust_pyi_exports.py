@@ -41,6 +41,7 @@ def pyi_exports() -> set[str]:
 
 
 def main() -> int:
+    """Compare Rust extension exports with Python type-stub exports."""
     rust = rust_exports()
     pyi = pyi_exports()
     missing = sorted(rust - pyi)

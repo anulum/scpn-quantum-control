@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Commercial license available
 # © Concepts & Code 2020–2026 Miroslav Šotek. All rights reserved.
+"""DLA parity witness observable for bitstring-count analyses."""
 
 from __future__ import annotations
 

@@ -149,6 +149,7 @@ class LindbladSyncEngine:
         return diag
 
     def liouvillian(self, rho_flat: np.ndarray) -> np.ndarray:
+        """Apply the Lindblad generator to a flattened density matrix."""
         if self.H_dense is None:
             self._ensure_density_matrix_components()
         assert self.H_dense is not None

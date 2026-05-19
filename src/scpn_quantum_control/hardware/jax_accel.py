@@ -57,14 +57,17 @@ if _os.environ.get("SCPN_JAX_DISABLE", "0") != "1":
 
 
 def is_jax_available() -> bool:
+    """Return whether JAX was importable during accelerator detection."""
     return _JAX_AVAILABLE
 
 
 def is_jax_gpu_available() -> bool:
+    """Return whether a JAX GPU device was detected."""
     return _JAX_GPU
 
 
 def jax_device_name() -> str:
+    """Return the first JAX device name or ``unavailable``."""
     if _JAX_AVAILABLE:
         import jax
 

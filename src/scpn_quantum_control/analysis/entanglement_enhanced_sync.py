@@ -41,6 +41,8 @@ from ..dense_budget import require_dense_allocation
 
 
 class InitialState(Enum):
+    """Supported initial-state families for entanglement synchronization tests."""
+
     PRODUCT = "product"
     BELL_PAIRS = "bell_pairs"
     GHZ = "ghz"

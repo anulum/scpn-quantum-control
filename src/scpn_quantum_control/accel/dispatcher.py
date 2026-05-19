@@ -199,6 +199,7 @@ class MultiLangDispatcher:
         )
 
     def tiers(self) -> list[str]:
+        """Return dispatch tier names in attempted order."""
         return [name for name, _ in self._chain]
 
 

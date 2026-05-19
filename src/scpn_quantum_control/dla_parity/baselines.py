@@ -85,10 +85,12 @@ class ClassicalLeakageReference:
 
     @property
     def max_abs_leakage(self) -> float:
+        """Return the maximum absolute classical leakage over all points."""
         return max((abs(p.leakage) for p in self.points), default=0.0)
 
     @property
     def is_zero_within_tolerance(self) -> bool:
+        """Return whether the reference leakage is numerically zero."""
         return self.max_abs_leakage < CLASSICAL_LEAKAGE_THRESHOLD
 
 

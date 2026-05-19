@@ -345,6 +345,7 @@ def redact(token: str) -> str:
 
 
 def main() -> int:
+    """Run the vault-pattern scanner against the repository tree."""
     parser = argparse.ArgumentParser(description="Vault-pattern secret scanner")
     parser.add_argument(
         "--vault",

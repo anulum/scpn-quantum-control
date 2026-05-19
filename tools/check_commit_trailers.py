@@ -199,6 +199,7 @@ def _ci_audit(range_spec: str = DEFAULT_AUDIT_RANGE) -> int:
 
 
 def main(argv: list[str]) -> int:
+    """Validate commit message trailers for the configured revision range."""
     if "--help" in argv or "-h" in argv:
         print(__doc__)
         return 0

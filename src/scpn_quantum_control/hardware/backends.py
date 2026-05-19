@@ -307,6 +307,7 @@ class _QiskitIBMBackend:
     name = "qiskit_ibm"
 
     def is_available(self) -> bool:
+        """Return whether the IBM Runtime package is importable."""
         try:
             import qiskit_ibm_runtime  # noqa: F401
         except Exception:
@@ -350,6 +351,7 @@ class _QiskitAerBackend:
     name = "qiskit_aer"
 
     def is_available(self) -> bool:
+        """Return whether Qiskit Aer is importable."""
         try:
             import qiskit_aer  # noqa: F401
         except Exception:
@@ -385,6 +387,7 @@ class _CirqBackend:
     name = "cirq"
 
     def is_available(self) -> bool:
+        """Return whether the Cirq adapter can be imported."""
         try:
             from .cirq_adapter import is_cirq_available
         except Exception:
@@ -420,6 +423,7 @@ class _BraketBackend:
     name = "braket"
 
     def is_available(self) -> bool:
+        """Return whether the Amazon Braket SDK is importable."""
         try:
             import braket.aws  # type: ignore[import-untyped,import-not-found]  # noqa: F401
         except Exception:
@@ -458,6 +462,7 @@ class _PennyLaneBackend:
     name = "pennylane"
 
     def is_available(self) -> bool:
+        """Return whether the PennyLane adapter reports availability."""
         from .pennylane_adapter import is_pennylane_available
 
         return is_pennylane_available()

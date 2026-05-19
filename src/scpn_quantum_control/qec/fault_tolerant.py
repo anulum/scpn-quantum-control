@@ -33,6 +33,7 @@ class LogicalQubit:
 
     @property
     def data_qubits(self) -> int:
+        """Number of data qubits in the repetition-code logical qubit."""
         return self.code_distance
 
 

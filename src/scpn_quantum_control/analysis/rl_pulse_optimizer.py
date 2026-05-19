@@ -33,6 +33,7 @@ class RLPulseOptimizer:
         self.episodes = episode_count
 
     async def optimize_pulses(self) -> None:
+        """Fail closed until a real RL pulse optimizer is implemented."""
         raise NotImplementedError(
             "RL pulse optimisation is not implemented. Do not use this path "
             "for QPU campaigns until a real optimiser, objective, and replayable "
@@ -40,6 +41,7 @@ class RLPulseOptimizer:
         )
 
     def save_results(self, filepath: str) -> None:
+        """Fail closed instead of writing non-existent optimization results."""
         _ = filepath
         raise NotImplementedError(
             "No RL pulse optimisation results exist because optimisation has not been implemented."

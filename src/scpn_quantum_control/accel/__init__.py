@@ -54,6 +54,7 @@ import numpy as np
 
 
 def rust_random_state(n_qubits: int, seed: int = 42):
+    """Return a normalized complex random state vector for fallback tests."""
     np.random.seed(seed)
     state = np.random.randn(2**n_qubits) + 1j * np.random.randn(2**n_qubits)
     return state / np.linalg.norm(state)

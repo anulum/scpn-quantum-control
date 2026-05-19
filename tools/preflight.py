@@ -64,6 +64,7 @@ BANDIT_GATE: tuple[str, list[str]] = (
 
 
 def run_gate(name: str, cmd: list[str]) -> bool:
+    """Run a named preflight command and print a compact result summary."""
     t0 = time.monotonic()
     result = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)  # noqa: S603
     elapsed = time.monotonic() - t0
@@ -81,6 +82,7 @@ def run_gate(name: str, cmd: list[str]) -> bool:
 
 
 def main() -> int:
+    """Run the configured preflight gate suite."""
     skip_tests = "--no-tests" in sys.argv
     no_coverage = "--no-coverage" in sys.argv
 

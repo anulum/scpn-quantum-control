@@ -111,6 +111,7 @@ class DlaParityDataset:
 
     @property
     def n_circuits_total(self) -> int:
+        """Total number of circuits across all dataset runs."""
         return len(self.circuits)
 
     @property

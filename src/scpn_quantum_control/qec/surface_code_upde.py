@@ -46,6 +46,7 @@ class SurfaceCodeSpec:
 
     @classmethod
     def from_distance(cls, d: int) -> SurfaceCodeSpec:
+        """Construct a surface-code resource specification from odd distance."""
         if d < 3 or d % 2 == 0:
             raise ValueError(f"Distance must be odd >= 3, got {d}")
         n_data = d * d

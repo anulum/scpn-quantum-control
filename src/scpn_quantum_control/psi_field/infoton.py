@@ -55,6 +55,7 @@ class InfitonField:
 
     @property
     def n_sites(self) -> int:
+        """Number of lattice sites represented by the field."""
         return len(self.values)
 
     def density(self) -> np.ndarray:

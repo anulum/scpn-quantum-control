@@ -29,6 +29,8 @@ from scpn_quantum_control.phase.structured_ansatz import build_structured_ansatz
 
 @dataclass
 class EEGVQEResult:
+    """Result bundle for EEG PLV VQE classification."""
+
     n_channels: int
     optimal_energy: float
     statevector: np.ndarray

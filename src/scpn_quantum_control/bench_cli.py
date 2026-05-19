@@ -608,6 +608,7 @@ def _print_diff_summary() -> int:
 
 
 def run(argv: Sequence[str] | None = None) -> int:
+    """Run selected benchmark harnesses and enforce committed artefact parity."""
     ns = _parse_args(sys.argv[1:] if argv is None else argv)
     harnesses = _selected_harnesses(
         ns.group,

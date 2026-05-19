@@ -128,6 +128,7 @@ class _DocstringVisitor(ast.NodeVisitor):
         self.stack: list[tuple[str, str]] = []
 
     def visit_Module(self, node: ast.Module) -> None:
+        """Record a finding when a module lacks a top-level docstring."""
         if ast.get_docstring(node) is None:
             self.findings.append(
                 DocumentationFinding(
@@ -141,6 +142,7 @@ class _DocstringVisitor(ast.NodeVisitor):
         self.generic_visit(node)
 
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        """Record a finding when a public class lacks a docstring."""
         if _is_public_name(node.name) and ast.get_docstring(node) is None:
             self.findings.append(
                 DocumentationFinding(
@@ -156,9 +158,11 @@ class _DocstringVisitor(ast.NodeVisitor):
         self.stack.pop()
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        """Inspect a synchronous function definition for documentation gaps."""
         self._visit_function(node)
 
     def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
+        """Inspect an asynchronous function definition for documentation gaps."""
         self._visit_function(node)
 
     def _visit_function(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:

@@ -218,6 +218,8 @@ class AsyncHardwareRunner:
         """
 
         class JobWrapper:
+            """Awaitable wrapper around simulator, ZNE, or submitted QPU work."""
+
             def __init__(self, runner_obj, ansatz, observable, kwargs):
                 self.runner_obj = runner_obj
                 self.ansatz = ansatz
@@ -541,10 +543,12 @@ class AsyncHardwareRunner:
 
     @property
     def max_concurrent(self) -> int:
+        """Maximum number of concurrent runner workers."""
         return self._max_concurrent
 
     @property
     def n_runners(self) -> int:
+        """Number of runner workers in the local pool."""
         return len(self._runners)
 
 

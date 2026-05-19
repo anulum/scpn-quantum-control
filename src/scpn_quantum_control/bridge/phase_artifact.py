@@ -48,6 +48,7 @@ class LockSignatureArtifact:
             raise ValueError("source_layer and target_layer must be >= 0.")
 
     def to_dict(self) -> dict[str, Any]:
+        """Convert the lock signature to a JSON-serializable dictionary."""
         return {
             "source_layer": self.source_layer,
             "target_layer": self.target_layer,
@@ -57,6 +58,7 @@ class LockSignatureArtifact:
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> LockSignatureArtifact:
+        """Reconstruct a lock signature from a dictionary payload."""
         return cls(
             source_layer=int(data["source_layer"]),
             target_layer=int(data["target_layer"]),
@@ -87,6 +89,7 @@ class LayerStateArtifact:
                 raise TypeError("lock_signatures keys must be strings.")
 
     def to_dict(self) -> dict[str, Any]:
+        """Convert the layer state to a JSON-serializable dictionary."""
         return {
             "R": self.R,
             "psi": self.psi,
@@ -97,6 +100,7 @@ class LayerStateArtifact:
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> LayerStateArtifact:
+        """Reconstruct a layer state from a dictionary payload."""
         raw_locks = data.get("lock_signatures", {})
         locks = {
             str(key): (
@@ -146,6 +150,7 @@ class UPDEPhaseArtifact:
         object.__setattr__(self, "metadata", metadata)
 
     def to_dict(self) -> dict[str, Any]:
+        """Convert the UPDE artifact to a JSON-serializable dictionary."""
         return {
             "layers": [layer.to_dict() for layer in self.layers],
             "cross_layer_alignment": self.cross_layer_alignment.tolist(),
@@ -155,10 +160,12 @@ class UPDEPhaseArtifact:
         }
 
     def to_json(self, *, indent: int | None = 2) -> str:
+        """Serialize the UPDE artifact to canonical JSON text."""
         return json.dumps(self.to_dict(), indent=indent, sort_keys=True)
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> UPDEPhaseArtifact:
+        """Reconstruct a UPDE artifact from a dictionary payload."""
         raw_layers = list(data.get("layers", []))
         layers = [
             layer if isinstance(layer, LayerStateArtifact) else LayerStateArtifact.from_dict(layer)
@@ -176,6 +183,7 @@ class UPDEPhaseArtifact:
 
     @classmethod
     def from_json(cls, payload: str) -> UPDEPhaseArtifact:
+        """Reconstruct a UPDE artifact from JSON text."""
         return cls.from_dict(json.loads(payload))
 
 

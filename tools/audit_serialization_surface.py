@@ -51,11 +51,13 @@ class _Visitor(ast.NodeVisitor):
         self.import_aliases: dict[str, str] = {}
 
     def visit_Import(self, node: ast.Import) -> None:
+        """Track import aliases introduced by ``import`` statements."""
         for alias in node.names:
             self.import_aliases[alias.asname or alias.name.split(".")[0]] = alias.name
         self.generic_visit(node)
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
+        """Track import aliases introduced by ``from`` imports."""
         if node.module is None:
             return
         for alias in node.names:
@@ -64,6 +66,7 @@ class _Visitor(ast.NodeVisitor):
         self.generic_visit(node)
 
     def visit_Call(self, node: ast.Call) -> None:
+        """Record calls to unsafe serialization APIs."""
         symbol = _call_name(node.func, self.import_aliases)
         if symbol in UNSAFE_CALLS:
             self.findings.append(
