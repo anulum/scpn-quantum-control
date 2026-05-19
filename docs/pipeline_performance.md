@@ -170,6 +170,21 @@ are separated. The API contract then checks that each proposed
 current package, avoids deferred runner/provenance surfaces, and records
 SCPN-specific rows as warnings rather than silently promoting them.
 
+## S7 Logical DLA Parity Roadmap
+
+The S7 fault-tolerant track is gated as a roadmap and resource estimate before
+any logical-DLA simulation or hardware claim is allowed:
+
+```bash
+scpn-bench s7-logical-dla-roadmap
+```
+
+The gate regenerates `data/s7_logical_dla_parity/logical_dla_parity_roadmap_2026-05-20.json`
+and `docs/logical_dla_parity.md`. The flat surface-code rows cover 16
+oscillators at distances 3, 5, and 7; the MS-QEC cross-check records that the
+default hierarchical bundle has lower qubit overhead but a non-viable logical
+rate, so theory review remains mandatory.
+
 ## Phase 3 State/Layout DLA Randomisation
 
 The state/layout mechanism-separation control has a dedicated fail-closed IBM

@@ -107,6 +107,7 @@ boundaries are enforced by hard gates. The current release boundary is:
 | TCBO `p_H1` reproduction | Promotion remains blocked without a named preregistered dataset and uncertainty crossing the threshold gate. |
 | S2/S5 broad advantage | IBM advantage readiness remains blocked until the full benchmark matrix, hardware rows, and claim-boundary requirements pass. |
 | Paper 0 downstream programme | Paper 0 is processed as source-bounded ingestion; downstream experiments require lane registry, methodology outline, and preregistered measured-system design before stronger claims. |
+| S7 logical-level DLA parity | Required release artefacts include the logical-DLA roadmap JSON and Markdown note. DLA parity survival under logical encoding remains blocked until the theory, logical-observable, and simulation prerequisites pass. |
 
 This means the release can be tagged when software gates pass. It does not mean
 that source ingestion, simulator output, or partial benchmark rows have become
@@ -130,6 +131,20 @@ performance claims.
 
 The release audit now treats the synchronisation benchmark registry, n=4/n=8
 reference rows, and public benchmark pages as required release artefacts.
+
+## S7 logical-DLA roadmap gate
+
+Before any tag that touches logical-level DLA parity, fault-tolerant outlook,
+or post-NISQ QEC claims, run:
+
+```bash
+scpn-bench s7-logical-dla-roadmap
+```
+
+The gate regenerates the S7 logical-DLA parity resource table and roadmap note.
+It is offline, performs no hardware submission, and keeps DLA parity survival
+claims blocked until the representation-theory and logical-observable work is
+complete.
 
 ## Symmetry-sector mitigation release gate
 

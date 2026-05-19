@@ -1,0 +1,78 @@
+{
+  "claim_boundary": "roadmap and resource estimate only; no claim that DLA parity survives logical encoding and no hardware submission",
+  "code_distances": [
+    3,
+    5,
+    7
+  ],
+  "hardware_submission_allowed": false,
+  "multiscale_comparison": {
+    "conclusion": "hierarchical_lower_qubit_overhead_but_logical_rate_not_viable",
+    "flat_distance": 7,
+    "flat_logical_error_rate_per_round": 0.00081,
+    "flat_surface_code_physical_qubits": 1552,
+    "multiscale_below_threshold": true,
+    "multiscale_distances": [
+      3,
+      3,
+      3,
+      3,
+      3
+    ],
+    "multiscale_effective_logical_rate": 1.0,
+    "multiscale_total_physical_qubits": 1360,
+    "n_oscillators": 16,
+    "overhead_ratio_multiscale_to_flat": 0.8762886597938144
+  },
+  "n_oscillators": 16,
+  "no_qpu_submission": true,
+  "parity_survival_claim_allowed": false,
+  "prerequisites": [
+    "representation-theory review of XY Hamiltonian generators under the stabiliser group",
+    "logical observable definition for DLA parity before Monte Carlo promotion",
+    "noise-channel calibration separated from hardware-execution claims",
+    "negative-result framing if the logical code destroys the physical parity signal"
+  ],
+  "rows": [
+    {
+      "code_distance": 3,
+      "estimated_wall_clock_us_per_step": 3.0,
+      "expected_step_fidelity": 0.6492093766851474,
+      "logical_error_rate_per_round": 0.009,
+      "n_oscillators": 16,
+      "p_physical": 0.003,
+      "parity_survival_claim_allowed": false,
+      "physical_qubits_flat_surface_code": 272,
+      "physical_qubits_repetition_scaffold": 80,
+      "qec_rounds_per_trotter_step": 3,
+      "status": "theory_required_before_simulation_or_hardware_promotion"
+    },
+    {
+      "code_distance": 5,
+      "estimated_wall_clock_us_per_step": 5.0,
+      "expected_step_fidelity": 0.8057353018734796,
+      "logical_error_rate_per_round": 0.0026999999999999997,
+      "n_oscillators": 16,
+      "p_physical": 0.003,
+      "parity_survival_claim_allowed": false,
+      "physical_qubits_flat_surface_code": 784,
+      "physical_qubits_repetition_scaffold": 144,
+      "qec_rounds_per_trotter_step": 5,
+      "status": "theory_required_before_simulation_or_hardware_promotion"
+    },
+    {
+      "code_distance": 7,
+      "estimated_wall_clock_us_per_step": 7.0,
+      "expected_step_fidelity": 0.9132733916519525,
+      "logical_error_rate_per_round": 0.00081,
+      "n_oscillators": 16,
+      "p_physical": 0.003,
+      "parity_survival_claim_allowed": false,
+      "physical_qubits_flat_surface_code": 1552,
+      "physical_qubits_repetition_scaffold": 208,
+      "qec_rounds_per_trotter_step": 7,
+      "status": "theory_required_before_simulation_or_hardware_promotion"
+    }
+  ],
+  "schema": "s7_logical_dla_parity_roadmap_v1"
+}

@@ -1475,7 +1475,14 @@ be executed until individually activated.
   conservative public-API proposal, defers config/provenance/analysis
   dependent rows, records compatibility requirements, and keeps the
   `quantum_kuramoto` package skeleton blocked until refactors close.
-- [ ] **S7** Fault-tolerant / logical-level extension roadmap.
+- [x] **S7** Fault-tolerant / logical-level extension roadmap.
+  Implemented 2026-05-20: `scpn-bench s7-logical-dla-roadmap`
+  exports the S7 logical-DLA parity resource table and public roadmap
+  note. The gate estimates flat surface-code resources for 16 logical
+  oscillators at distances 3, 5, and 7, compares the existing MS-QEC
+  hierarchy, and keeps DLA parity survival under logical encoding
+  blocked until the representation-theory and logical-observable
+  prerequisites are closed.
 - [ ] **S8--S53** Scientific, foundational, and applied post-v1.0
   differentiation tracks listed in the strategic roadmap.
 

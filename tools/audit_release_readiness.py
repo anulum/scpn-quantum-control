@@ -50,10 +50,12 @@ REQUIRED_RELEASE_ARTIFACTS: tuple[str, ...] = (
     "data/synchronisation_benchmarks/kuramoto_ring_n4_linear_omega_reference_rows.json",
     "data/synchronisation_benchmarks/kuramoto_chain_n8_decay_omega_reference_rows.json",
     "data/stable_core/backend_capability_matrix.json",
+    "data/s7_logical_dla_parity/logical_dla_parity_roadmap_2026-05-20.json",
     "docs/synchronisation_benchmark_suite.md",
     "docs/synchronisation_benchmark_kuramoto_ring_n4.md",
     "docs/synchronisation_benchmark_kuramoto_chain_n8.md",
     "docs/stable_core_backend_capability_matrix.md",
+    "docs/logical_dla_parity.md",
 )
 
 

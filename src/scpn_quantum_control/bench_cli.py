@@ -44,6 +44,7 @@ OFFLINE_HARNESS_POLICY = ExecutionSurfacePolicy(
         "data/s4_multi_hardware_control",
         "data/s5_benchmark_harness",
         "data/s6_quantum_kuramoto_split",
+        "data/s7_logical_dla_parity",
         "data/stable_core",
         "data/synchronisation_benchmarks",
         "data/symmetry_sector_mitigation",
@@ -191,6 +192,11 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         frozenset({"s6-contract"}),
     ),
     Harness(
+        "s7-logical-dla-roadmap",
+        "scripts/export_s7_logical_dla_roadmap.py",
+        frozenset({"s7-roadmap"}),
+    ),
+    Harness(
         "sync-benchmark-registry",
         "scripts/export_synchronisation_benchmark_registry.py",
         frozenset({"sync-registry"}),
@@ -271,6 +277,7 @@ ARTEFACT_PATHS = (
     "data/s4_multi_hardware_control",
     "data/s5_benchmark_harness",
     "data/s6_quantum_kuramoto_split",
+    "data/s7_logical_dla_parity",
     "data/stable_core",
     "data/synchronisation_benchmarks",
     "data/symmetry_sector_mitigation",
@@ -471,6 +478,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate the S6 quantum-kuramoto API-contract artefacts.",
     )
     _add_run_options(s6_contract, default_group="s6-contract")
+
+    s7_roadmap = subparsers.add_parser(
+        "s7-logical-dla-roadmap",
+        help="Regenerate the S7 logical-DLA parity roadmap artefacts.",
+    )
+    _add_run_options(s7_roadmap, default_group="s7-roadmap")
 
     sync_registry = subparsers.add_parser(
         "sync-benchmark-registry",

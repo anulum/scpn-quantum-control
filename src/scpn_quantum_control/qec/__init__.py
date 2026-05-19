@@ -38,6 +38,17 @@ from .error_budget import (
     minimum_code_distance,
 )
 from .fault_tolerant import FaultTolerantUPDE, LogicalQubit, RepetitionCodeUPDE
+from .logical_dla_parity import (
+    LogicalDLAParityRow,
+    MultiscaleComparison,
+    compare_flat_surface_code_to_multiscale,
+    estimate_logical_dla_parity_row,
+    estimate_s7_resource_table,
+    logical_dla_parity_markdown,
+    logical_dla_parity_payload,
+    repetition_scaffold_physical_qubits,
+    surface_code_physical_qubits,
+)
 from .multiscale_qec import (
     MultiscaleQECResult,
     QECLevel,
@@ -78,6 +89,15 @@ __all__ = [
     "FaultTolerantUPDE",
     "RepetitionCodeUPDE",
     "LogicalQubit",
+    "LogicalDLAParityRow",
+    "MultiscaleComparison",
+    "compare_flat_surface_code_to_multiscale",
+    "estimate_logical_dla_parity_row",
+    "estimate_s7_resource_table",
+    "logical_dla_parity_markdown",
+    "logical_dla_parity_payload",
+    "repetition_scaffold_physical_qubits",
+    "surface_code_physical_qubits",
     "SurfaceCodeSpec",
     "SurfaceCodeUPDE",
     "MultiscaleQECResult",
