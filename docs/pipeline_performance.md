@@ -199,6 +199,21 @@ DLA-parity leakage, and chimera-cluster branch policies plus the backend
 features needed before live execution. Missing dynamic-circuit support keeps
 the current readiness state blocked.
 
+## S9 Quantum Thermodynamics Readiness
+
+The S9 thermodynamics track is gated as a no-submit calibrated-protocol
+readiness artefact:
+
+```bash
+scpn-bench s9-quantum-thermo-readiness
+```
+
+The gate regenerates `data/s9_quantum_thermo/quantum_thermo_readiness_2026-05-20.json`
+and `docs/quantum_thermo.md`. It records a five-point K-sweep for entropy
+production, heat current, and irreversibility diagnostics while keeping
+thermodynamic peak claims blocked until theory review, classical reference,
+and raw-count execution are complete.
+
 ## Phase 3 State/Layout DLA Randomisation
 
 The state/layout mechanism-separation control has a dedicated fail-closed IBM

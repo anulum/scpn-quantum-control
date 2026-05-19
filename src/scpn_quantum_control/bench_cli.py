@@ -46,6 +46,7 @@ OFFLINE_HARNESS_POLICY = ExecutionSurfacePolicy(
         "data/s6_quantum_kuramoto_split",
         "data/s7_logical_dla_parity",
         "data/s8_adaptive_branching",
+        "data/s9_quantum_thermo",
         "data/stable_core",
         "data/synchronisation_benchmarks",
         "data/symmetry_sector_mitigation",
@@ -203,6 +204,11 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         frozenset({"s8-readiness"}),
     ),
     Harness(
+        "s9-quantum-thermo-readiness",
+        "scripts/export_s9_quantum_thermo_readiness.py",
+        frozenset({"s9-readiness"}),
+    ),
+    Harness(
         "sync-benchmark-registry",
         "scripts/export_synchronisation_benchmark_registry.py",
         frozenset({"sync-registry"}),
@@ -285,6 +291,7 @@ ARTEFACT_PATHS = (
     "data/s6_quantum_kuramoto_split",
     "data/s7_logical_dla_parity",
     "data/s8_adaptive_branching",
+    "data/s9_quantum_thermo",
     "data/stable_core",
     "data/synchronisation_benchmarks",
     "data/symmetry_sector_mitigation",
@@ -497,6 +504,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate the S8 adaptive-branching readiness artefacts.",
     )
     _add_run_options(s8_readiness, default_group="s8-readiness")
+
+    s9_readiness = subparsers.add_parser(
+        "s9-quantum-thermo-readiness",
+        help="Regenerate the S9 quantum-thermodynamics readiness artefacts.",
+    )
+    _add_run_options(s9_readiness, default_group="s9-readiness")
 
     sync_registry = subparsers.add_parser(
         "sync-benchmark-registry",

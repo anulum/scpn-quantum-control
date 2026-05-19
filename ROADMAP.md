@@ -1491,7 +1491,14 @@ be executed until individually activated.
   control/reset and cross-shot batching before live execution, and keeps
   adaptive-advantage claims blocked until the preregistered equal-depth
   open-loop comparison passes.
-- [ ] **S9--S53** Scientific, foundational, and applied post-v1.0
+- [x] **S9** Quantum thermodynamics of synchronisation transitions
+  readiness. Implemented 2026-05-20:
+  `scpn-bench s9-quantum-thermo-readiness` exports the no-submit
+  entropy-production, heat-current, irreversibility, and K-sweep
+  readiness artefacts. The gate keeps thermodynamic peak claims
+  blocked until the DLA-sector formalism, classical Lindblad/QuTiP
+  reference, raw-count execution, and falsification controls pass.
+- [ ] **S10--S53** Scientific, foundational, and applied post-v1.0
   differentiation tracks listed in the strategic roadmap.
 
 ## Recently closed

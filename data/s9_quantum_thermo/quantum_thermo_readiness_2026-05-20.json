@@ -1,0 +1,96 @@
+{
+  "claim_boundary": "readiness and calibrated-protocol estimate only; no thermodynamic peak claim and no hardware submission",
+  "config": {
+    "baseline_entropy_rate_nat_per_s": 0.06,
+    "bath_beta_per_joule": 0.5,
+    "duration_s": 1.0,
+    "jump_energy_joule": 0.02,
+    "k_values": [
+      0.4,
+      0.6,
+      0.8,
+      1.0,
+      1.2
+    ],
+    "peak_entropy_rate_nat_per_s": 0.3,
+    "transition_k": 0.8,
+    "width": 0.18
+  },
+  "falsifier": "no statistically significant peak above the classical baseline across the K-sweep",
+  "hardware_submission_allowed": false,
+  "k_sweep": {
+    "falsifier": "no statistically significant peak above the classical baseline across the K-sweep",
+    "hardware_claim_allowed": false,
+    "hardware_submission_allowed": false,
+    "k_values": [
+      0.4,
+      0.6,
+      0.8,
+      1.0,
+      1.2
+    ],
+    "peak_k": 0.8,
+    "rows": [
+      {
+        "classical_reference_nat_per_s": 0.12454874523202535,
+        "entropy_production_nat_per_s": 0.12709055635920954,
+        "hardware_claim_allowed": false,
+        "hardware_submission_allowed": false,
+        "heat_current_joule_per_s": 0.04338631954490119,
+        "irreversibility_residual_joule": 0.05090233986999215,
+        "k_value": 0.4,
+        "within_two_sigma_reference": true
+      },
+      {
+        "classical_reference_nat_per_s": 0.26715819426971965,
+        "entropy_production_nat_per_s": 0.27261040231604045,
+        "hardware_claim_allowed": false,
+        "hardware_submission_allowed": false,
+        "heat_current_joule_per_s": 0.06157630028950505,
+        "irreversibility_residual_joule": 0.07363981580074719,
+        "k_value": 0.6,
+        "within_two_sigma_reference": true
+      },
+      {
+        "classical_reference_nat_per_s": 0.41159999999999997,
+        "entropy_production_nat_per_s": 0.42,
+        "hardware_claim_allowed": false,
+        "hardware_submission_allowed": false,
+        "heat_current_joule_per_s": 0.08,
+        "irreversibility_residual_joule": 0.09666944043886572,
+        "k_value": 0.8,
+        "within_two_sigma_reference": true
+      },
+      {
+        "classical_reference_nat_per_s": 0.26715819426971976,
+        "entropy_production_nat_per_s": 0.27261040231604056,
+        "hardware_claim_allowed": false,
+        "hardware_submission_allowed": false,
+        "heat_current_joule_per_s": 0.06157630028950507,
+        "irreversibility_residual_joule": 0.07363981580074719,
+        "k_value": 1.0,
+        "within_two_sigma_reference": true
+      },
+      {
+        "classical_reference_nat_per_s": 0.1245487452320254,
+        "entropy_production_nat_per_s": 0.1270905563592096,
+        "hardware_claim_allowed": false,
+        "hardware_submission_allowed": false,
+        "heat_current_joule_per_s": 0.0433863195449012,
+        "irreversibility_residual_joule": 0.05090233986999215,
+        "k_value": 1.2,
+        "within_two_sigma_reference": true
+      }
+    ],
+    "schema": "s9_quantum_thermo_k_sweep_v1"
+  },
+  "no_qpu_submission": true,
+  "prerequisites": [
+    "formal theory pass for DLA-sector entropy-production decomposition",
+    "hardware backend and readout-mitigation plan approved before execution",
+    "classical Lindblad or QuTiP reference fixed before hardware comparison",
+    "raw-count execution and Zenodo archive required before thermodynamic peak claims"
+  ],
+  "schema": "s9_quantum_thermo_readiness_v1",
+  "thermodynamic_peak_claim_allowed": false
+}
