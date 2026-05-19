@@ -18,7 +18,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, Literal
@@ -73,6 +73,12 @@ def _metadata_copy(metadata: Mapping[str, Any] | None) -> Mapping[str, Any]:
     return MappingProxyType(copied)
 
 
+def _empty_metadata() -> Mapping[str, Any]:
+    """Return a fresh immutable empty metadata mapping for dataclass defaults."""
+
+    return MappingProxyType({})
+
+
 def _normalise_matrix(matrix: tuple[tuple[float, ...], ...]) -> tuple[tuple[float, ...], ...]:
     """Return a finite square coupling matrix."""
 
@@ -97,7 +103,7 @@ class Problem:
     coupling_matrix: tuple[tuple[float, ...], ...]
     omega: tuple[float, ...]
     initial_state: str | None = None
-    metadata: Mapping[str, Any] = MappingProxyType({})
+    metadata: Mapping[str, Any] = field(default_factory=_empty_metadata)
 
     def __post_init__(self) -> None:
         """Validate stable problem invariants."""
@@ -145,7 +151,7 @@ class Backend:
     kind: BackendKind
     capabilities: tuple[str, ...]
     hardware_submission_allowed: bool = False
-    metadata: Mapping[str, Any] = MappingProxyType({})
+    metadata: Mapping[str, Any] = field(default_factory=_empty_metadata)
 
     def __post_init__(self) -> None:
         """Validate stable backend invariants."""
@@ -186,7 +192,7 @@ class Experiment:
     objective: ExperimentObjective
     seed: int
     shots: int | None = None
-    metadata: Mapping[str, Any] = MappingProxyType({})
+    metadata: Mapping[str, Any] = field(default_factory=_empty_metadata)
 
     def __post_init__(self) -> None:
         """Validate stable experiment invariants."""
@@ -237,7 +243,7 @@ class Result:
     observables: Mapping[str, float]
     artifacts: tuple[str, ...] = ()
     blockers: tuple[str, ...] = ()
-    metadata: Mapping[str, Any] = MappingProxyType({})
+    metadata: Mapping[str, Any] = field(default_factory=_empty_metadata)
 
     def __post_init__(self) -> None:
         """Validate stable result invariants."""
