@@ -218,6 +218,13 @@ is copied here.
   downstream claims remain blocked unless their executable gates pass.
   Open science continues under the Paper 0 downstream programme without
   blocking a package tag.
+- [x] **Documentation-surface release gate.** Implemented 2026-05-20:
+  `tools/audit_documentation_surface.py --allowlist
+  tools/documentation_surface_allowlist.json --fail-on-findings` now runs
+  in the primary CI lint job after the repository-wide documentation
+  surface was burned down to zero active findings. The allow-list remains
+  tracked and reasoned so generated Paper 0 CLI boilerplate is explicit
+  debt rather than hidden audit drift.
 - [x] **XY Kuramoto trajectory time-grid hardening.** Implemented
   2026-05-12: `QuantumKuramotoSolver.run()` now builds explicit time
   boundaries and evolves a final partial interval when `t_max` is not an

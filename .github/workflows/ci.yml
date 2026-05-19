@@ -32,6 +32,11 @@ jobs:
       - run: pip install --require-hashes -r requirements-ci-py312-linux.txt
       - run: ruff check src/ tests/
       - run: ruff format --check src/ tests/
+      - name: Audit documentation surface
+        run: >
+          python tools/audit_documentation_surface.py
+          --allowlist tools/documentation_surface_allowlist.json
+          --fail-on-findings
 
   test:
     needs: lint
