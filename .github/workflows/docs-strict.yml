@@ -45,6 +45,6 @@ jobs:
         with:
           python-version: "3.12"
           cache: 'pip'
-      - run: pip install -e ".[dev]"
-      - run: pip install mkdocs-material "mkdocstrings[python]>=0.24,<1.0" pymdown-extensions
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: python -m pip install --no-deps -e .
       - run: mkdocs build --strict --site-dir /tmp/site-strict

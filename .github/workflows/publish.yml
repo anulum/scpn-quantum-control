@@ -12,19 +12,22 @@ on:
     tags: ["v*"]
 
 permissions:
-  contents: write
+  contents: read
   id-token: write
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     environment: pypi
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
         with:
           python-version: "3.12"
-      - run: pip install build
+      - run: python -m pip install --require-hashes -r requirements-publish.txt
       - run: python -m build
       - uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b  # release/v1
         with:
@@ -39,13 +42,3 @@ jobs:
           inputs: >-
             ./dist/*.tar.gz
             ./dist/*.whl
-      # Attach the bundles + sdist + wheels to the GitHub Release so
-      # consumers can verify without a PyPI round-trip via
-      # `sigstore verify identity --bundle <file>.sigstore`.
-      - uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844  # v2.1.0
-        if: github.ref_type == 'tag'
-        with:
-          files: |
-            dist/*.tar.gz
-            dist/*.whl
-            dist/*.sigstore
