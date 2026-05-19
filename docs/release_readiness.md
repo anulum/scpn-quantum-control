@@ -103,7 +103,7 @@ boundaries are enforced by hard gates. The current release boundary is:
 
 | Gap | Release gate |
 |---|---|
-| K_nm measured-system validation | Physical-validation promotion remains blocked unless units, uncertainty, full pairwise coverage, tolerance, response, and null-model requirements pass. |
+| K_nm measured-system validation | Required release artefacts include the EEG PLV, IEEE 5-bus, and IEEE 14-bus comparison payloads plus the measured-coupling checklist. Physical-validation promotion remains blocked unless units, uncertainty, full pairwise coverage, tolerance, response, and null-model requirements pass. |
 | TCBO `p_H1` reproduction | Promotion remains blocked without a named preregistered dataset and uncertainty crossing the threshold gate. |
 | S2/S5 broad advantage | IBM advantage readiness remains blocked until the full benchmark matrix, hardware rows, and claim-boundary requirements pass. |
 | Paper 0 downstream programme | Paper 0 is processed as source-bounded ingestion; downstream experiments require lane registry, methodology outline, and preregistered measured-system design before stronger claims. |
