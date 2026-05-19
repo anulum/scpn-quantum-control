@@ -60,6 +60,17 @@ PYTHONPATH=src ./.venv-linux/bin/python scripts/export_paper0_knm_replay_contrac
   --check-replay data/paper0_knm_preregistered_replay.json
 ```
 
+The measured-candidate release gate for the committed EEG and power-grid audit
+artefacts is:
+
+```bash
+scpn-bench knm-measured-candidate-gate
+```
+
+It fails if any committed candidate is promoted, changes its expected edge
+count, drops the strict unit-class decision, or records K_nm physical
+validation as closed.
+
 ## Non-promotional outputs
 
 The following outputs are useful but not sufficient for measured-system

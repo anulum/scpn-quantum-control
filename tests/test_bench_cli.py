@@ -305,6 +305,21 @@ def test_paper0_knm_preregistered_replay_gate_selection_is_harness() -> None:
     ]
 
 
+def test_knm_measured_candidate_gate_selection_is_harness() -> None:
+    harnesses = bench_cli._selected_harnesses(
+        "knm-measured-candidate-gate",
+        include_gpu=False,
+    )
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "knm-measured-candidate-gate",
+            "scripts/run_knm_measured_candidate_gate.py",
+            frozenset({"knm-measured-candidate-gate"}),
+        )
+    ]
+
+
 def test_capability_manifest_check_selection_is_harness() -> None:
     harnesses = bench_cli._selected_harnesses("capability-manifest-check", include_gpu=False)
 
@@ -444,6 +459,18 @@ def test_paper0_knm_preregistered_replay_gate_dry_run_selects_gate_harness(
     assert "selected harnesses" in captured.out
     assert "paper0-knm-preregistered-replay-gate" in captured.out
     assert "scripts/run_paper0_knm_preregistered_replay_gate.py" in captured.out
+
+
+def test_knm_measured_candidate_gate_dry_run_selects_gate_harness(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    rc = bench_cli.run(["knm-measured-candidate-gate", "--dry-run"])
+
+    captured = capsys.readouterr()
+    assert rc == 0
+    assert "selected harnesses" in captured.out
+    assert "knm-measured-candidate-gate" in captured.out
+    assert "scripts/run_knm_measured_candidate_gate.py" in captured.out
 
 
 def test_capability_manifest_check_dry_run_selects_gate_harness(

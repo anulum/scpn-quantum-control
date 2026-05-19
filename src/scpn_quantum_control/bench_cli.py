@@ -251,6 +251,11 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         frozenset({"paper0-knm-preregistered-replay-gate"}),
     ),
     Harness(
+        "knm-measured-candidate-gate",
+        "scripts/run_knm_measured_candidate_gate.py",
+        frozenset({"knm-measured-candidate-gate"}),
+    ),
+    Harness(
         "capability-manifest-check",
         "scripts/run_capability_manifest_gate.py",
         frozenset({"capability-manifest-check"}),
@@ -354,6 +359,15 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
     _add_run_options(
         paper0_knm_preregistered_replay_gate,
         default_group="paper0-knm-preregistered-replay-gate",
+    )
+
+    knm_measured_candidate_gate = subparsers.add_parser(
+        "knm-measured-candidate-gate",
+        help="Check K_nm measured-candidate audit artifacts remain non-promotional.",
+    )
+    _add_run_options(
+        knm_measured_candidate_gate,
+        default_group="knm-measured-candidate-gate",
     )
 
     capability_manifest_check = subparsers.add_parser(

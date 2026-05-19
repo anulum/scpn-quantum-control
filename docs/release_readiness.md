@@ -198,10 +198,13 @@ Before tagging:
    preflight fixtures or preflight-facing API/docs text.
 5. Run `scpn-bench symmetry-sector-mitigation-gate` if the release touches
    symmetry-sector mitigation planning, planner fixtures, or mitigation claims.
-6. If the release cites promoted hardware evidence, generate the hardware
+6. Run `scpn-bench knm-measured-candidate-gate` if the release touches Paper 0
+   K_nm measured-system audit artefacts, unit-class promotion logic, or
+   measured-candidate claim text.
+7. If the release cites promoted hardware evidence, generate the hardware
    result-pack evidence packet and pass it to the release audit.
-7. Run `tools/audit_release_readiness.py --fail-on-blocker` with the hardware
+8. Run `tools/audit_release_readiness.py --fail-on-blocker` with the hardware
    result-pack evidence argument when applicable.
-8. Run the scoped docs build and version-consistency checks.
-9. Commit with the required trailer after staged-diff audit.
-10. Push the commit and wait for CI before creating a release tag.
+9. Run the scoped docs build and version-consistency checks.
+10. Commit with the required trailer after staged-diff audit.
+11. Push the commit and wait for CI before creating a release tag.

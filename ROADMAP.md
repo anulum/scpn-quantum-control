@@ -274,6 +274,11 @@ is copied here.
   measured-system promotion gate. Model-derived power-grid coupling units
   still pass the unit-class screen but remain blocked by the existing
   uncertainty, magnitude, spectral, and null-model gates.
+- [x] **K_nm measured-candidate release gate.** Implemented 2026-05-20:
+  `scpn-bench knm-measured-candidate-gate` now checks the committed EEG
+  PLV, IEEE 5-bus, and IEEE 14-bus K_nm comparison artefacts. The gate
+  fails if any candidate is promoted, changes edge count, drops the
+  strict unit-class decision, or records physical validation as closed.
 - [x] **QSVT resource-estimator input hardening.** Implemented
   2026-05-12: the QSVT resource estimator and query-count helpers now
   reject non-square, dimension-mismatched, asymmetric, or non-finite

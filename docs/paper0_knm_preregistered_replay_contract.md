@@ -24,6 +24,7 @@ validated as a measured physical coupling law.
 - Contract exporter: `scripts/export_paper0_knm_replay_contract.py`
 - Comparator: `scripts/compare_paper0_knm_preregistered_replay.py`
 - Release gate: `scpn-bench paper0-knm-preregistered-replay-gate`
+- Measured-candidate gate: `scpn-bench knm-measured-candidate-gate`
 
 ## Required replay keys
 
