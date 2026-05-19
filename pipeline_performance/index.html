@@ -1,0 +1,5937 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Quantum simulation of coupled oscillators on IBM hardware">
+      
+      
+        <meta name="author" content="Miroslav Šotek">
+      
+      
+        <link rel="canonical" href="https://anulum.github.io/scpn-quantum-control/pipeline_performance/">
+      
+      
+        <link rel="prev" href="../qpu_system_capability_dossier/">
+      
+      
+        <link rel="next" href="../s2_scaling_readiness_index_2026-05-06/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/anulum_logo_company.jpg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Pipeline Performance - scpn-quantum-control</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../css/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#spdx-license-identifier-agpl-30-or-later" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="scpn-quantum-control" class="md-header__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            scpn-quantum-control
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Pipeline Performance
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="scpn-quantum-control" class="md-nav__button md-logo" aria-label="scpn-quantum-control" data-md-component="logo">
+      
+  <img src="../assets/anulum_logo.png" alt="logo">
+
+    </a>
+    scpn-quantum-control
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/anulum/scpn-quantum-control" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    anulum/scpn-quantum-control
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SCPN Foundations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../equations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../research_gems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research Gems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../orchestrator_integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestrator Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../stable_facades_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stable Facades API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../stable_core_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stable Core API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../stable_core_preflight_fixtures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stable Core Preflight Fixtures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../stable_core_backend_capability_matrix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stable Core Backend Capability Matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kuramoto_core_facade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kuramoto Core Facade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../core_package_boundary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Package Boundary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper0_validation_register/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GOTM-SCPN Paper 0 Validation Register
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper0_experimental_pathway/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GOTM-SCPN Paper 0 Experimental Pathway
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper0_lane_registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GOTM-SCPN Paper 0 Lane Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper0_methodology_paper_outline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GOTM-SCPN Paper 0 Methodology Paper Outline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper0_first_preregistered_downstream_experiment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GOTM-SCPN Paper 0 First Preregistered Experiment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper0_knm_preregistered_replay/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GOTM-SCPN Paper 0 K_nm Preregistered Replay
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper0_knm_preregistered_replay_contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GOTM-SCPN Paper 0 K_nm Replay Contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper0_knm_measured_coupling_evidence_checklist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GOTM-SCPN Paper 0 K_nm Evidence Checklist
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_16" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_16" id="__nav_5_16_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runtime Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_16">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Runtime Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../qpu_data_artifact/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QPU Data Artifact
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipeline_runtime_contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Runtime Contract
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../qpu_compute_unit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QPU Compute Unit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../qpu_provider_readiness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QPU Provider Readiness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../qpu_system_capability_dossier/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    QPU System Capability Dossier
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../s2_scaling_readiness_index_2026-05-06/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    S2 Scaling Readiness Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../s3_design_readiness_index_2026-05-06/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    S3 Design Readiness Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hybrid_feedback_loop_s1_2026-05-06/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hybrid Feedback Loop S1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../s1_feedback_readiness_index_2026-05-06/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    S1 Feedback Readiness Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../s1_live_submission_preflight_2026-05-06/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    S1 Live Submission Preflight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../artifact_storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Artifact Storage Audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_25" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_25" id="__nav_5_25_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Module Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_25_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_25">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Advanced Module Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../autodoc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auto-Generated Module Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analysis_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../identity_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mitigation_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mitigation API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bridges_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridges API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../realtime_feedback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Real-Time Feedback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analog_backends/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analog Kuramoto Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hybrid_digital_analog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hybrid Digital-Analog Execution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dla_protected_subspace/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DLA-Protected Logical Synchronisation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dla_protected_scar_memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DLA-Protected Scar Memory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kuramoto_variants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kuramoto Variants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../witness_discovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Witness Discovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../application_benchmarks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Benchmark Plugins
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../real_data_sync_forecasting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Real-Data Synchronisation Forecasting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classical_baselines/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classical Baselines
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmarks_api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rust_engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_dynamic_coupling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Dynamic Coupling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_structured_ansatz/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: Structured Ansatz
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench_hw_topological_optimizer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bench: HW Topological Optimizer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../test_infrastructure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publications
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Publications
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprint/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprint: Quantum Kuramoto-XY on Hardware
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_sync_witnesses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: Synchronisation Witnesses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paper_dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper: DLA Parity Theorem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scpn_fim_hamiltonian_paper_plan_2026-05-05/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paper Plan: SCPN/FIM Hamiltonian
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scpn_fim_validation_protocol_2026-05-05/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protocol: SCPN/FIM Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scpn_fim_claim_boundary_2026-05-05/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Claim Boundary: SCPN/FIM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dla_parity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DLA-parity Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classical_irreproducibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classical Irreproducibility
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hardware_status_ledger/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware Status Ledger
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hardware_result_packs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware Result Packs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hardware_result_pack_release_checklist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware Result-Pack Release Checklist
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results Gallery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../methods_benchmark_dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Methods Benchmark Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../synchronisation_benchmark_suite/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Synchronisation Benchmark Suite
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../symmetry_sector_mitigation_compiler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Symmetry-Sector Mitigation Compiler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../symmetry_sector_mitigation_fixtures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Symmetry-Sector Mitigation Fixtures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../synchronisation_benchmark_kuramoto_ring_n4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kuramoto Ring n=4 Benchmark
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../synchronisation_benchmark_kuramoto_chain_n8/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kuramoto Chain n=8 Benchmark
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hardware_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IBM Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXPERIMENT_ROADMAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PAPER_CLAIMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results & Claims
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../QUANTUM_CRYPTO_RESEARCH_BRANCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Crypto Research
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Learning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../physics_first_kuramoto_xy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Physics-First Kuramoto-XY
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notebooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notebooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Roadmap
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../strategic_roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strategic Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../release_readiness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release Readiness Gate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../actions_history_dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Actions History Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../e2e_contract_boundaries/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    E2E Contract Boundaries
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../behavioural_test_audit_closure_2026-05-06/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Behavioural Test Audit Closure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../coverage_gap_audit_2026-05-06/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coverage Gap Audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pyopensci_submission_readiness_2026-05-06/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    pyOpenSci Submission Readiness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../arxiv_source_packaging_readiness_2026-05-06/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    arXiv Source Packaging Readiness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scipy_2026_cfp_readiness_2026-05-06/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SciPy 2026 CFP Readiness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="spdx-license-identifier-agpl-30-or-later">SPDX-License-Identifier: AGPL-3.0-or-later<a class="headerlink" href="#spdx-license-identifier-agpl-30-or-later" title="Permanent link">&para;</a></h1>
+<h1 id="commercial-license-available">Commercial license available<a class="headerlink" href="#commercial-license-available" title="Permanent link">&para;</a></h1>
+<h1 id="concepts-19962026-miroslav-sotek-all-rights-reserved">© Concepts 1996–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#concepts-19962026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="code-20202026-miroslav-sotek-all-rights-reserved">© Code 2020–2026 Miroslav Šotek. All rights reserved.<a class="headerlink" href="#code-20202026-miroslav-sotek-all-rights-reserved" title="Permanent link">&para;</a></h1>
+<h1 id="orcid-0009-0009-3560-0851">ORCID: 0009-0009-3560-0851<a class="headerlink" href="#orcid-0009-0009-3560-0851" title="Permanent link">&para;</a></h1>
+<h1 id="contact-wwwanulumli-protoscienceanulumli">Contact: www.anulum.li | protoscience@anulum.li<a class="headerlink" href="#contact-wwwanulumli-protoscienceanulumli" title="Permanent link">&para;</a></h1>
+<h1 id="scpn-quantum-control-pipeline-performance-benchmarks">scpn-quantum-control — Pipeline Performance Benchmarks<a class="headerlink" href="#scpn-quantum-control-pipeline-performance-benchmarks" title="Permanent link">&para;</a></h1>
+<h1 id="pipeline-performance-benchmarks">Pipeline Performance Benchmarks<a class="headerlink" href="#pipeline-performance-benchmarks" title="Permanent link">&para;</a></h1>
+<p>Every module in scpn-quantum-control is verified as <strong>wired into the pipeline</strong>
+(not decorative) by <code>tests/test_pipeline_wiring_performance.py</code> (155 tests) and
+per-module pipeline tests embedded in each test file. This page documents the
+measured wall-time performance for every subsystem.</p>
+<h2 id="test-infrastructure">Test infrastructure<a class="headerlink" href="#test-infrastructure" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pytest<span class="w"> </span>tests/test_pipeline_wiring_performance.py<span class="w"> </span>-v<span class="w"> </span>-s<span class="w">   </span><span class="c1"># 155 tests, prints benchmarks</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>pytest<span class="w"> </span>tests/test_rust_path_benchmarks.py<span class="w"> </span>-v<span class="w"> </span>-s<span class="w">           </span><span class="c1"># 68 tests, Rust parity + timing</span>
+</code></pre></div>
+<h2 id="s2-scaling-protocol-boundary">S2 Scaling Protocol Boundary<a class="headerlink" href="#s2-scaling-protocol-boundary" title="Permanent link">&para;</a></h2>
+<p>The S2 quantum-advantage scaling track starts from an explicit no-claim protocol
+manifest:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nv">PYTHONDONTWRITEBYTECODE</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>python<span class="w"> </span>scripts/export_s2_scaling_protocol.py
+</code></pre></div>
+<p>The manifest requires classical ODE, dense exact diagonalisation, sparse eigensolver,
+MPS/tensor-network, and Aer/statevector baselines before any advantage-language
+figure can be promoted. Hardware rows are optional until credits and a
+preregistered campaign exist; missing hardware must degrade to a classical
+scaling/spoofability study rather than a broad quantum-advantage claim.</p>
+<p>Rows are validated before promotion with:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nv">PYTHONDONTWRITEBYTECODE</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>python<span class="w"> </span>scripts/validate_s2_scaling_rows.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span>data/s2_advantage_scaling/s2_scaling_rows_schema_fixture_2026-05-06.json
+</code></pre></div>
+<p>The validator fails if required baselines are absent for any measured size, row
+keys are missing, baseline labels are unknown, statuses are invalid, successful
+rows omit non-negative wall-time and memory measurements, or skipped/failed rows
+omit explanatory notes. It also rejects duplicate <code>(n_qubits, baseline)</code> rows
+and malformed provenance payloads (<code>metric_payload</code>, <code>command</code>, <code>machine</code>,
+<code>dependencies</code>, <code>git_commit</code>, and <code>notes</code>). This prevents a partial or
+ambiguous matrix from being promoted as a complete preregistered comparison.</p>
+<p>A lightweight protocol-compliant rehearsal harness is available before the full
+S2 campaign:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>scpn-bench<span class="w"> </span>s2-scaling-lite
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nv">PYTHONDONTWRITEBYTECODE</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>python<span class="w"> </span>scripts/bench_s2_scaling_lite.py<span class="w"> </span>--sizes<span class="w"> </span><span class="m">4</span>,6
+</code></pre></div>
+<p>It emits required baseline rows for the selected small sizes, measures classical
+ODE, gated dense exact diagonalisation, gated sparse eigensolver rows, and
+small-size MPS/TN spoofability diagnostics, and gated Aer/statevector rows where
+cheap, marks remaining heavier baselines as explicit <code>skipped</code> rows, validates
+the result against the S2 protocol, and records <code>hardware_submission=false</code> plus
+<code>advantage_claim=false</code>.</p>
+<p>The lite harness records <code>tracemalloc</code> peak bytes for measured rows and exposes
+explicit size gates:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nv">PYTHONDONTWRITEBYTECODE</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>python<span class="w"> </span>scripts/bench_s2_scaling_lite.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>--sizes<span class="w"> </span><span class="m">4</span>,6,8<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span>--max-dense-qubits<span class="w"> </span><span class="m">6</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span>--max-sparse-qubits<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span>--max-tn-qubits<span class="w"> </span><span class="m">6</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span>--max-statevector-qubits<span class="w"> </span><span class="m">8</span>
+</code></pre></div>
+<p>The claim-boundary report is regenerated by the same CLI command and can also be
+run directly:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nv">PYTHONDONTWRITEBYTECODE</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>python<span class="w"> </span>scripts/report_s2_scaling_claim_boundary.py
+</code></pre></div>
+<p>It records allowed claims, forbidden claims, remaining blockers, validation
+state, and the protocol claim boundary for the current rows.</p>
+<p><code>docs/s2_scaling_readiness_index_2026-05-06.md</code> summarises the current lite
+baseline rows, allowed claims, forbidden claims, full-campaign blockers, and
+hardware boundary.</p>
+<h2 id="s3-pulse-ansatz-design-readiness">S3 Pulse / Ansatz Design Readiness<a class="headerlink" href="#s3-pulse-ansatz-design-readiness" title="Permanent link">&para;</a></h2>
+<p>The S3 ML-augmented pulse / ansatz track starts from a deterministic no-QPU
+candidate-ranking gate:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>scpn-bench<span class="w"> </span>s3-design-ready
+</code></pre></div>
+<p>The gate ranks structured Kuramoto-XY ansatz candidates by depth, size, and
+two-qubit gate proxies, and hypergeometric pulse-schedule candidates by analytic
+infidelity and pulse-count proxies. It records <code>hardware_submission=false</code> and
+<code>ml_training_performed=false</code>; the output is a schema and claim-boundary layer
+for later surrogate training, not evidence of a learned optimiser.</p>
+<p>Generated artefacts:</p>
+<ul>
+<li><code>data/s3_pulse_ansatz_design/s3_design_readiness_2026-05-06.json</code></li>
+<li><code>data/s3_pulse_ansatz_design/s3_design_readiness_2026-05-06.md</code></li>
+</ul>
+<p>The first surrogate rehearsal is also no-QPU:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>scpn-bench<span class="w"> </span>s3-design-surrogate
+</code></pre></div>
+<p>It expands the candidate grid across small system sizes, trains a closed-form
+ridge linear surrogate on proxy scores, and reports held-out plus per-family
+metrics. It remains a rehearsal over deterministic proxy labels.</p>
+<p>Promoted ansatz candidates can then be checked against exact no-QPU observables:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>scpn-bench<span class="w"> </span>s3-ansatz-observables
+</code></pre></div>
+<p>The output records exact statevector energy expectation, dense exact ground
+energy, energy error, and a synchronisation proxy for the promoted ansatz
+candidates. This remains an observable validation, not VQE optimisation.</p>
+<p>Provider pulse feasibility is checked by metadata-only probes:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>scpn-bench<span class="w"> </span>s3-pulse-feasibility
+</code></pre></div>
+<p>The probe compares schedule duration, sample spacing, pulse count, qubit count,
+and declared pulse or native-XY support. It does not open a provider session or
+submit hardware jobs.</p>
+<p>Human-reviewable hardware-job dossiers are exported with:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>scpn-bench<span class="w"> </span>s3-hardware-dossiers
+</code></pre></div>
+<p>These dossiers document the promoted ansatz and pulse follow-up routes, QPU
+budget state, prerequisites, falsification boundaries, and reproducibility
+artefacts. They do not authorise execution.</p>
+<h2 id="s6-quantum-kuramoto-package-boundary">S6 Quantum-Kuramoto Package Boundary<a class="headerlink" href="#s6-quantum-kuramoto-package-boundary" title="Permanent link">&para;</a></h2>
+<p>The S6 decoupling track is deliberately gated before any package skeleton is
+created:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>scpn-bench<span class="w"> </span>s6-split-audit
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>scpn-bench<span class="w"> </span>s6-boundary-review
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>scpn-bench<span class="w"> </span>s6-api-contract
+</code></pre></div>
+<p>The split audit inventories reusable, needs-review, and SCPN-specific modules.
+The boundary review selects a conservative future public surface and keeps
+package creation blocked until config, provenance, and analysis-dependent rows
+are separated. The API contract then checks that each proposed
+<code>quantum_kuramoto.*</code> export has a valid package-local name, imports from the
+current package, avoids deferred runner/provenance surfaces, and records
+SCPN-specific rows as warnings rather than silently promoting them.</p>
+<h2 id="phase-3-statelayout-dla-randomisation">Phase 3 State/Layout DLA Randomisation<a class="headerlink" href="#phase-3-statelayout-dla-randomisation" title="Permanent link">&para;</a></h2>
+<p>The state/layout mechanism-separation control has a dedicated fail-closed IBM
+submitter:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>python<span class="w"> </span>scripts/phase3_state_layout_dla_ibm.py<span class="w"> </span>--backend<span class="w"> </span>ibm_marrakesh
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>python<span class="w"> </span>scripts/phase3_state_layout_dla_ibm.py<span class="w"> </span>--backend<span class="w"> </span>ibm_marrakesh<span class="w"> </span>--submit<span class="w"> </span>--confirm-budget
+</code></pre></div>
+<p>The first command performs live readiness only. It selects three connected
+four-qubit windows before outcome data exists, builds the preregistered
+495-circuit matrix, live-transpiles every circuit with fixed initial layouts,
+records depth/gate summaries, and writes a readiness artefact under
+<code>data/phase3_state_layout_dla/</code>. The second command is the only submitting path
+and remains blocked unless the depth/gate guards and the 20-minute QPU ceiling
+pass.</p>
+<p><code>docs/s3_design_readiness_index_2026-05-06.md</code> records allowed claims,
+forbidden claims, and the follow-up path for S3.</p>
+<p><strong>Hardware:</strong> ML350 Gen8, 2× Xeon E5-2650v2, 128 GB RAM, Ubuntu 24.04.
+<strong>Python:</strong> 3.12.3 with Qiskit 1.4.5, Aer 0.17.2.
+<strong>Rust:</strong> scpn-quantum-engine 0.2.0 (PyO3 + rayon).</p>
+<hr />
+<h2 id="1-bridge-layer">1. Bridge Layer<a class="headerlink" href="#1-bridge-layer" title="Permanent link">&para;</a></h2>
+<p>The bridge compiles SCPN coupling matrices (K_nm) into quantum objects.</p>
+<h3 id="knm-to-hamiltonian">Knm to Hamiltonian<a class="headerlink" href="#knm-to-hamiltonian" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>System size</th>
+<th>Compilation time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L=2 (4×4 Hilbert)</td>
+<td>&lt;0.1 ms</td>
+<td>SparsePauliOp, 2 qubits</td>
+</tr>
+<tr>
+<td>L=4 (16×16 Hilbert)</td>
+<td>&lt;0.1 ms</td>
+<td>SparsePauliOp, 4 qubits</td>
+</tr>
+<tr>
+<td>L=8 (256×256 Hilbert)</td>
+<td>&lt;0.1 ms</td>
+<td>SparsePauliOp, 8 qubits</td>
+</tr>
+<tr>
+<td>L=16 (65536×65536 Hilbert)</td>
+<td>~6.7 ms</td>
+<td>SparsePauliOp, 16 qubits, 256 Pauli terms</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Rust path:</strong> <code>build_xy_hamiltonian_dense</code> matches Qiskit <code>SparsePauliOp.to_matrix()</code>
+to machine precision (atol=1e-10). Dense matrix construction in Rust takes 0.02 ms
+for 3-qubit systems.</p>
+<h3 id="knm-to-ansatz">Knm to Ansatz<a class="headerlink" href="#knm-to-ansatz" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>System size</th>
+<th>Reps</th>
+<th>Parameters</th>
+<th>Time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L=2</td>
+<td>2</td>
+<td>8</td>
+<td>&lt;0.1 ms</td>
+</tr>
+<tr>
+<td>L=4</td>
+<td>2</td>
+<td>16</td>
+<td>&lt;0.1 ms</td>
+</tr>
+<tr>
+<td>L=8</td>
+<td>2</td>
+<td>32</td>
+<td>&lt;0.1 ms</td>
+</tr>
+<tr>
+<td>L=16</td>
+<td>1</td>
+<td>32</td>
+<td>&lt;0.1 ms</td>
+</tr>
+</tbody>
+</table>
+<p>The Knm-informed ansatz uses coupling topology to determine entanglement gates,
+producing fewer parameters than generic two_local (12 vs 18 for 3 qubits).
+Benchmark: knm_informed E=-3.19 beats two_local E=-2.68 at equal iterations.</p>
+<h3 id="knm-construction-rust">Knm Construction (Rust)<a class="headerlink" href="#knm-construction-rust" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Input</th>
+<th>Time</th>
+<th>Speedup</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>build_knm(16, 0.45, 0.3)</code></td>
+<td>16×16 matrix</td>
+<td>0.02 ms</td>
+<td><strong>4.7×</strong> vs Python</td>
+</tr>
+</tbody>
+</table>
+<p>Rust <code>build_knm</code> includes paper27 overrides (L1-L2, L3-L5, L1-L16 boosted
+couplings) — exact parity with Python <code>build_knm_paper27</code>.</p>
+<hr />
+<h2 id="2-phase-solvers">2. Phase Solvers<a class="headerlink" href="#2-phase-solvers" title="Permanent link">&para;</a></h2>
+<h3 id="quantumkuramotosolver">QuantumKuramotoSolver<a class="headerlink" href="#quantumkuramotosolver" title="Permanent link">&para;</a></h3>
+<p>The core solver maps Kuramoto dynamics to Trotterised XY Hamiltonian evolution.
+Trajectory sampling uses explicit time boundaries rather than rescaled labels:
+for non-divisible horizons, the last evolution interval is shortened so the
+state reaches the reported final time exactly.</p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>run(t_max=0.3, dt=0.1)</code></td>
+<td>4 qubits</td>
+<td>16.5 ms</td>
+<td>R trajectory: 0.806 → 0.796 → 0.766</td>
+</tr>
+<tr>
+<td><code>evolve(t=0.5, trotter_steps=3)</code></td>
+<td>4 qubits</td>
+<td>~5 ms</td>
+<td>QuantumCircuit, depth ~45</td>
+</tr>
+<tr>
+<td><code>energy_expectation(sv)</code></td>
+<td>4 qubits</td>
+<td>&lt;1 ms</td>
+<td>float</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Quantum-classical agreement:</strong> R(quantum)=0.702 vs R(classical)=0.700 at t=0.2,
+dt=0.1, trotter_per_step=5 — 0.3% deviation.</p>
+<p><strong>Trotter convergence:</strong> Error decreases as O(t²/n) for first-order, O(t³/n²) for
+second-order Suzuki-Trotter. At 4 qubits, second-order produces strictly lower
+Frobenius error than first-order at equal step count.</p>
+<h3 id="phasevqe">PhaseVQE<a class="headerlink" href="#phasevqe" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>solve(maxiter=20, seed=42)</code></td>
+<td>2 qubits</td>
+<td>~150 ms</td>
+<td>E=-3.94, exact=-3.94</td>
+</tr>
+<tr>
+<td><code>solve(maxiter=30, seed=0)</code></td>
+<td>3 qubits</td>
+<td>~200 ms</td>
+<td>E, exact_energy, gap, params</td>
+</tr>
+</tbody>
+</table>
+<p>Variational principle verified: VQE energy &gt;= exact ground energy (within 0.5
+tolerance for short optimisation).</p>
+<h3 id="varqite-imaginary-time-evolution">VarQITE (Imaginary Time Evolution)<a class="headerlink" href="#varqite-imaginary-time-evolution" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>varqite_ground_state(tau=0.5, n_steps=5)</code></td>
+<td>3 qubits</td>
+<td>196.8 ms</td>
+<td>E=-4.783 vs exact=-4.783</td>
+</tr>
+</tbody>
+</table>
+<p><strong>0.0% error</strong> — VarQITE achieves exact ITE convergence on 3-qubit system.
+Energy trajectory: -4.753 → -4.783 (monotonic decrease).</p>
+<h3 id="quantumupdesolver-trotter-upde">QuantumUPDESolver (Trotter UPDE)<a class="headerlink" href="#quantumupdesolver-trotter-upde" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>run(n_steps=5, dt=0.05)</code></td>
+<td>4 qubits</td>
+<td>20.5 ms</td>
+<td>R: 0.806 → 0.804 → 0.796 → 0.783 → 0.765 → 0.743</td>
+</tr>
+<tr>
+<td><code>step(dt=0.1)</code></td>
+<td>3 qubits</td>
+<td>~4 ms</td>
+<td>R_global, theta</td>
+</tr>
+</tbody>
+</table>
+<p>Second-order Trotter (<code>trotter_order=2</code>) passes through correctly to underlying
+solver. Reset reinitialises state exactly (first step after reset matches first
+step from fresh solver).</p>
+<h3 id="real-time-feedback-controller">Real-Time Feedback Controller<a class="headerlink" href="#real-time-feedback-controller" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Backend</th>
+<th>Machine</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>RealtimeSyncFeedbackController.run(5, seed=20260429)</code></td>
+<td>3 qubits, 128 shots/update</td>
+<td>Qiskit statevector + NumPy/PyO3 policy fallback</td>
+<td>ASRock H510 Pro BTC+, i5-11600K, Ubuntu 24.04.4</td>
+<td>68.147 ms</td>
+<td>actions=<code>synchronise</code>×5, R_live=0.446→0.372</td>
+</tr>
+<tr>
+<td><code>build_monitored_feedback_circuit(n_rounds=2)</code></td>
+<td>3 system qubits + 1 monitor</td>
+<td>Qiskit dynamic circuit</td>
+<td>same as above</td>
+<td>tested in <code>tests/test_realtime_feedback.py</code></td>
+<td>mid-circuit monitor measurement, conditional reset, conditional correction</td>
+</tr>
+<tr>
+<td><code>scpn-bench s1-feedback</code></td>
+<td>2 qubits, 4 bounded cross-shot scheduler steps, 32 shots/update</td>
+<td><code>FeedbackRunner</code> + <code>RealtimeControllerScheduler</code> + Qiskit statevector controller</td>
+<td>current local machine when regenerated</td>
+<td>median 21.892 ms, p95 25.570 ms</td>
+<td>no-QPU latency, mean final R_live=0.562270, mean final scale=1.094638</td>
+</tr>
+<tr>
+<td><code>scpn-bench s1-feedback</code></td>
+<td>3 qubits, 4 bounded cross-shot scheduler steps, 64 shots/update</td>
+<td>same</td>
+<td>same</td>
+<td>median 18.717 ms, p95 23.680 ms</td>
+<td>no-QPU latency, mean final R_live=0.561569, mean final scale=1.095058</td>
+</tr>
+<tr>
+<td><code>scpn-bench s1-feedback</code></td>
+<td>4 qubits, 4 bounded cross-shot scheduler steps, 64 shots/update</td>
+<td>same</td>
+<td>same</td>
+<td>median 25.934 ms, p95 30.455 ms</td>
+<td>no-QPU latency, mean final R_live=0.553217, mean final scale=1.100070</td>
+</tr>
+</tbody>
+</table>
+<p>Command provenance:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import time, numpy as np; from scpn_quantum_control.control import RealtimeFeedbackConfig, RealtimeSyncFeedbackController; K=np.array([[0.0,0.35,0.2],[0.35,0.0,0.25],[0.2,0.25,0.0]], dtype=np.float64); omega=np.array([0.1,0.4,0.7], dtype=np.float64); cfg=RealtimeFeedbackConfig(measurement_shots=128, target_r=0.7); start=time.perf_counter(); controller=RealtimeSyncFeedbackController(K, omega, config=cfg); steps=controller.run(5, seed=20260429); elapsed=(time.perf_counter()-start)*1000; print(f&#39;elapsed_ms={elapsed:.3f}&#39;); print(&#39;actions=&#39; + &#39;,&#39;.join(step.action for step in steps)); print(&#39;r_live=&#39; + &#39;,&#39;.join(f&#39;{step.r_live:.3f}&#39; for step in steps)); print(&#39;next_scale=&#39; + &#39;,&#39;.join(f&#39;{step.next_coupling_scale:.3f}&#39; for step in steps))&quot;</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>scpn-bench<span class="w"> </span>s1-feedback
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>scpn-bench<span class="w"> </span>s1-feedback-ready
+</code></pre></div>
+<p>The <code>s1-feedback</code> benchmark is a control-plane benchmark only. It deliberately
+excludes provider round-trip latency, IBM queue time, and QPU execution time; an
+IBM follow-up requires a separate preregistered budget and explicit approval.</p>
+<h3 id="kuramoto-variant-trajectories">Kuramoto Variant Trajectories<a class="headerlink" href="#kuramoto-variant-trajectories" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Backend</th>
+<th>Machine</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Run higher-order, monitored, and PT-symmetric variants</td>
+<td>4 oscillators, 64 Euler steps per variant, 4 anchored triadic terms</td>
+<td>Rust PyO3 <code>higher_order_kuramoto_trajectory</code>, <code>monitored_kuramoto_trajectory</code>, <code>pt_symmetric_kuramoto_trajectory</code></td>
+<td>ASRock H510 Pro BTC+, i5-11600K, Ubuntu 24.04.4</td>
+<td>2.205 ms</td>
+<td>final R=<code>0.514092,0.775172,0.606729</code>; PT norm final=1.000000</td>
+</tr>
+</tbody>
+</table>
+<p>Command provenance:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>.venv-linux/bin/python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import time, numpy as np; from scpn_quantum_control.phase import HigherOrderKuramotoSpec, MonitoredKuramotoSpec, PTSymmetricKuramotoSpec, build_triadic_ring_terms, simulate_higher_order_kuramoto, simulate_monitored_kuramoto, simulate_pt_symmetric_kuramoto; K=np.array([[0.0,0.45,0.0,0.45],[0.45,0.0,0.45,0.0],[0.0,0.45,0.0,0.45],[0.45,0.0,0.45,0.0]], dtype=np.float64); omega=np.array([0.0,0.6,1.2,2.4], dtype=np.float64); theta0=np.array([0.0,0.8,2.0,4.2], dtype=np.float64); edges, weights=build_triadic_ring_terms(4, 0.25); start=time.perf_counter(); higher=simulate_higher_order_kuramoto(HigherOrderKuramotoSpec(K, omega, edges, weights, theta0=theta0), dt=0.02, n_steps=64); monitored=simulate_monitored_kuramoto(MonitoredKuramotoSpec(K, omega, target_r=0.85, monitor_gain=1.1, measurement_strength=0.25, theta0=theta0), dt=0.02, n_steps=64); pt=simulate_pt_symmetric_kuramoto(PTSymmetricKuramotoSpec(K, omega, np.array([0.08,-0.08,0.04,-0.04], dtype=np.float64), theta0=theta0), dt=0.02, n_steps=64); elapsed=(time.perf_counter()-start)*1000; print(f&#39;elapsed_ms={elapsed:.3f}&#39;); print(&#39;backends=&#39; + &#39;,&#39;.join([higher.backend, monitored.backend, pt.backend])); print(&#39;final_r=&#39; + &#39;,&#39;.join(f&#39;{x.final_r:.6f}&#39; for x in [higher, monitored, pt])); print(&#39;peak_r=&#39; + &#39;,&#39;.join(f&#39;{x.peak_r:.6f}&#39; for x in [higher, monitored, pt])); print(&#39;hyperedges=&#39; + str(higher.diagnostics[&#39;n_hyperedges&#39;])); print(&#39;pt_norm_final=&#39; + f\&quot;{pt.diagnostics[&#39;pt_norm&#39;][-1]:.6f}\&quot;)&quot;</span>
+</code></pre></div>
+<h3 id="automated-witness-discovery">Automated Witness Discovery<a class="headerlink" href="#automated-witness-discovery" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Backend</th>
+<th>Machine</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Run Bayesian/bandit Kuramoto witness discovery</td>
+<td>4 oscillators, 20 evaluated candidates, 48 Euler steps/candidate</td>
+<td>Rust PyO3 <code>kuramoto_witness_candidate_features</code> + NumPy RBF UCB/scoring</td>
+<td>ASRock H510 Pro BTC+, i5-11600K, Ubuntu 24.04.4</td>
+<td>10.145 ms</td>
+<td>best score=1.399925; R=0.816060; corr=0.554605; Fiedler=0.909005; source=<code>bayesian_ucb</code></td>
+</tr>
+</tbody>
+</table>
+<p>Command provenance:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>.venv-linux/bin/python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import time, numpy as np; from scpn_quantum_control.analysis import WitnessDiscoverySpec, discover_kuramoto_witnesses; K=np.array([[0.0,0.5,0.2,0.0],[0.5,0.0,0.4,0.1],[0.2,0.4,0.0,0.3],[0.0,0.1,0.3,0.0]], dtype=np.float64); omega=np.array([0.0,0.35,0.7,1.05], dtype=np.float64); theta0=np.array([0.0,0.7,1.4,2.8], dtype=np.float64); spec=WitnessDiscoverySpec(dt=0.025,n_steps=48,n_initial=8,n_iterations=4,batch_size=3,pool_size=32,seed=20260429,correlation_threshold=0.25,fiedler_threshold=0.2); start=time.perf_counter(); result=discover_kuramoto_witnesses(K, omega, theta0=theta0, spec=spec); elapsed=(time.perf_counter()-start)*1000; print(f&#39;elapsed_ms={elapsed:.3f}&#39;); print(&#39;backend=&#39; + result.backend); print(&#39;evaluations=&#39; + str(len(result.evaluations))); print(&#39;best_score=&#39; + f&#39;{result.best.score:.6f}&#39;); print(&#39;best_final_r=&#39; + f&#39;{result.best.final_r:.6f}&#39;); print(&#39;best_corr=&#39; + f&#39;{result.best.mean_correlation:.6f}&#39;); print(&#39;best_fiedler=&#39; + f&#39;{result.best.fiedler_value:.6f}&#39;); print(&#39;best_source=&#39; + result.best.source.value); print(&#39;candidate=&#39; + &#39;,&#39;.join(f&#39;{v:.6f}&#39; for v in result.best.candidate.as_array()))&quot;</span>
+</code></pre></div>
+<h3 id="application-benchmark-plugins">Application Benchmark Plugins<a class="headerlink" href="#application-benchmark-plugins" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Backend</th>
+<th>Machine</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Run application plugin benchmark suite</td>
+<td>EEG alpha PLV 8-channel, FEP 6-node workflow, ITER MHD 8-mode, IEEE 5-bus grid</td>
+<td><code>scipy.stats.spearmanr</code> + NumPy domain scorers; FEP path through <code>scpn_quantum_control.fep</code></td>
+<td>ASRock H510 Pro BTC+, i5-11600K, Ubuntu 24.04.4</td>
+<td>117.635 ms</td>
+<td>plugins=<code>eeg_alpha,friston_fep,plasma_iter_mhd,power_grid_ieee5</code>; datasets=<code>eeg_alpha_plv_8ch,friston_fep_6node,iter_mhd_8mode,ieee5bus_power_grid</code>; n=<code>8,6,8,5</code></td>
+</tr>
+</tbody>
+</table>
+<p>The plasma plugin routes the packaged <code>iter_mhd_8mode</code> artifact as a curated
+reference. The power-grid plugin routes the packaged <code>ieee5bus_power_grid</code>
+artifact as a curated reference. Direct <code>iter_benchmark()</code> calls require
+<code>allow_synthetic_reference=True</code> for the built-in synthetic reference, and those
+results are marked <code>publication_safe=False</code>; direct <code>power_grid_benchmark()</code>
+calls require <code>allow_builtin_reference=True</code> for the built-in IEEE 5-bus
+reference and return provenance metadata.</p>
+<p>Command provenance:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>.venv-linux/bin/python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import time; from scpn_quantum_control.applications import run_application_benchmark_suite; start=time.perf_counter(); results=run_application_benchmark_suite(); elapsed=(time.perf_counter()-start)*1000; print(f&#39;elapsed_ms={elapsed:.3f}&#39;); print(&#39;plugins=&#39; + &#39;,&#39;.join(r.plugin_name for r in results)); print(&#39;datasets=&#39; + &#39;,&#39;.join(r.dataset_id for r in results)); print(&#39;domains=&#39; + &#39;,&#39;.join(r.domain for r in results)); print(&#39;backends=&#39; + &#39;|&#39;.join(r.backend for r in results)); print(&#39;n_oscillators=&#39; + &#39;,&#39;.join(str(r.n_oscillators) for r in results)); print(&#39;key_metrics=&#39; + &#39;|&#39;.join(&#39;,&#39;.join(f&#39;{k}={v:.6f}&#39; for k, v in sorted(r.metrics.items())[:3]) for r in results))&quot;</span>
+</code></pre></div>
+<h3 id="analog-kuramoto-backend-compiler">Analog Kuramoto Backend Compiler<a class="headerlink" href="#analog-kuramoto-backend-compiler" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Backend</th>
+<th>Machine</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Compile one problem for <code>neutral_atoms</code>, <code>circuit_qed</code>, and <code>continuous_variable</code></td>
+<td>4 oscillators, 5 non-zero couplers</td>
+<td>NumPy/PyO3 analog term kernel + serialisable native schemas</td>
+<td>ASRock H510 Pro BTC+, i5-11600K, Ubuntu 24.04.4</td>
+<td>0.610 ms</td>
+<td>schemas=<code>native_ahs_v1</code>, <code>exchange_resonator_v1</code>, <code>cv_gaussian_schedule_v1</code></td>
+</tr>
+<tr>
+<td>Compile one hybrid digital-analog execution plan</td>
+<td>4 oscillators, 5 non-zero couplers split into 2 analog + 3 digital residual couplers</td>
+<td>Rust PyO3 partition kernel + Qiskit Trotter residual compiler</td>
+<td>ASRock H510 Pro BTC+, i5-11600K, Ubuntu 24.04.4</td>
+<td>6.275 ms</td>
+<td>schema=<code>hybrid_digital_analog_v1</code>, Rust partition=True, digital depth=1</td>
+</tr>
+<tr>
+<td>Certify and witness one DLA-protected logical synchronisation memory</td>
+<td>4 logical oscillators, distance-3 repetition blocks, 12 physical qubits</td>
+<td>Rust PyO3 protected-memory mask + probability metrics</td>
+<td>ASRock H510 Pro BTC+, i5-11600K, Ubuntu 24.04.4</td>
+<td>0.390 ms</td>
+<td>DLA dimension=8,388,606; protected=0.950; sync=0.950</td>
+</tr>
+<tr>
+<td>Simulate one DLA-protected scar memory revival</td>
+<td>4 logical oscillators, distance-3 repetition blocks, 12 physical qubits</td>
+<td>NumPy diagonal phase evolution + Rust PyO3 trajectory protected-sector metrics</td>
+<td>ASRock H510 Pro BTC+, i5-11600K, Ubuntu 24.04.4</td>
+<td>9.478 ms</td>
+<td>scar states=2; revival=1.000000; midcycle=0.000000; protected=1.000000; parity leakage=0.000000</td>
+</tr>
+<tr>
+<td>Run real-data synchronisation forecasting suite</td>
+<td>IBM Heron r2 4-oscillator hardware trace + IEEE 5-bus topology replay</td>
+<td>Stored hardware <code>exact_R</code> baseline + Rust PyO3 <code>kuramoto_trajectory</code> for topology replay + NumPy train-window calibration</td>
+<td>ASRock H510 Pro BTC+, i5-11600K, Ubuntu 24.04.4</td>
+<td>17.142 ms</td>
+<td>hardware held-out MSE 0.104217 -&gt; 0.000104; IEEE replay backend=<code>rust:kuramoto_trajectory</code>; suite passes</td>
+</tr>
+</tbody>
+</table>
+<p>Command provenance:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import time, numpy as np; from scpn_quantum_control.hardware.analog_kuramoto import compile_analog_kuramoto; K=np.array([[0.0,0.5,-0.25,0.125],[0.5,0.0,0.2,0.0],[-0.25,0.2,0.0,0.3],[0.125,0.0,0.3,0.0]], dtype=np.float64); omega=np.array([0.1,-0.2,0.3,0.0], dtype=np.float64); start=time.perf_counter(); programs=[compile_analog_kuramoto(K, omega, platform=p, duration=1.25) for p in (&#39;neutral_atoms&#39;,&#39;circuit_qed&#39;,&#39;continuous_variable&#39;)]; elapsed=(time.perf_counter()-start)*1000; print(f&#39;elapsed_ms={elapsed:.3f}&#39;); print(&#39;platforms=&#39; + &#39;,&#39;.join(p.platform.value for p in programs)); print(&#39;couplers=&#39; + &#39;,&#39;.join(str(p.n_couplers) for p in programs)); print(&#39;schemas=&#39; + &#39;,&#39;.join(p.payload[&#39;schema&#39;] for p in programs))&quot;</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>.venv-linux/bin/python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import time, numpy as np; import scpn_quantum_engine as e; from scpn_quantum_control.hardware.hybrid_digital_analog import compile_hybrid_digital_analog; K=np.array([[0.0,0.8,-0.4,0.1],[0.8,0.0,0.3,0.0],[-0.4,0.3,0.0,-0.2],[0.1,0.0,-0.2,0.0]], dtype=np.float64); omega=np.array([0.1,-0.2,0.05,0.3], dtype=np.float64); start=time.perf_counter(); program=compile_hybrid_digital_analog(K, omega, platform=&#39;circuit_qed&#39;, duration=1.25, max_analog_couplers=2, trotter_steps=3); elapsed=(time.perf_counter()-start)*1000; print(f&#39;elapsed_ms={elapsed:.3f}&#39;); print(&#39;rust_partition=&#39; + str(hasattr(e, &#39;hybrid_coupling_partition&#39;))); print(&#39;analog=&#39; + str(program.n_analog_couplers)); print(&#39;digital=&#39; + str(program.n_digital_couplers)); print(&#39;schema=&#39; + program.payload[&#39;schema&#39;]); print(&#39;digital_depth=&#39; + str(program.digital_circuit.depth()))&quot;</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>.venv-linux/bin/python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import time, numpy as np, scpn_quantum_engine as e; from scpn_quantum_control.qec import DLAProtectedSubspaceSpec, certify_dla_protected_subspace, evaluate_dla_protected_memory; spec=DLAProtectedSubspaceSpec(n_logical=4, code_distance=3, target_parity=0); probs=np.zeros(spec.hilbert_dim, dtype=np.float64); probs[0]=0.55; probs[(1 &lt;&lt; spec.n_physical)-1]=0.40; probs[0b000000000111]=0.03; probs[0b000000010111]=0.02; start=time.perf_counter(); cert=certify_dla_protected_subspace(spec); result=evaluate_dla_protected_memory(probs, spec=spec); elapsed=(time.perf_counter()-start)*1000; print(f&#39;elapsed_ms={elapsed:.3f}&#39;); print(&#39;rust_mask=&#39; + str(hasattr(e, &#39;dla_protected_memory_mask&#39;))); print(&#39;rust_metrics=&#39; + str(hasattr(e, &#39;dla_protected_memory_metrics&#39;))); print(&#39;dla_dim=&#39; + str(cert.physical_dla_dimension)); print(&#39;protected=&#39; + f&#39;{result.protected_weight:.3f}&#39;); print(&#39;sync=&#39; + f&#39;{result.sync_weight:.3f}&#39;); print(&#39;passes=&#39; + str(result.passes))&quot;</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>.venv-linux/bin/python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import time; from scpn_quantum_control.qec import DLAProtectedScarSpec, build_dla_protected_scar_prototype, simulate_dla_protected_scar_memory; start=time.perf_counter(); spec=DLAProtectedScarSpec(); prototype=build_dla_protected_scar_prototype(spec); result=simulate_dla_protected_scar_memory(prototype); elapsed=(time.perf_counter()-start)*1000; print(f&#39;elapsed_ms={elapsed:.3f}&#39;); print(&#39;backend=&#39; + result.backend); print(&#39;n_physical=&#39; + str(spec.memory_spec.n_physical)); print(&#39;scar_states=&#39; + str(prototype.n_scar_states)); print(&#39;revival=&#39; + f&#39;{result.final_revival_fidelity:.6f}&#39;); print(&#39;midcycle=&#39; + f&#39;{result.midcycle_survival:.6f}&#39;); print(&#39;protected=&#39; + f&#39;{result.min_protected_weight:.6f}&#39;); print(&#39;parity_leakage=&#39; + f&#39;{result.max_parity_leakage:.6f}&#39;); print(&#39;passes=&#39; + str(result.passes))&quot;</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>.venv-linux/bin/python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import time; from scpn_quantum_control.forecasting import run_real_data_sync_forecast_suite; start=time.perf_counter(); results=run_real_data_sync_forecast_suite(include_topology_replay=True); elapsed=(time.perf_counter()-start)*1000; print(f&#39;elapsed_ms={elapsed:.3f}&#39;); print(&#39;passes=&#39; + str(all(r.passes for r in results))); [print(f&#39;{r.dataset.name}: baseline_mse={r.baseline.holdout_mse:.9f}; calibrated_mse={r.calibrated.holdout_mse:.9f}; improvement_pct={100*r.improvement_fraction:.2f}; backend={r.baseline.backend}; source={r.dataset.source_kind}&#39;) for r in results]&quot;</span>
+</code></pre></div>
+<h3 id="adiabatic-state-preparation">Adiabatic State Preparation<a class="headerlink" href="#adiabatic-state-preparation" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>adiabatic_ramp(K_target=3.0, T=5.0, n_steps=15)</code></td>
+<td>3 qubits</td>
+<td>54.4 ms</td>
+<td>min_gap=0.0012 at K=2.80</td>
+</tr>
+</tbody>
+</table>
+<p>This dense finite-size scan records the observed gap minimum and fidelity
+loss for the selected schedule. The reported K value is a finite-size gap
+minimum for this scan, not a standalone transition-location proof.</p>
+<h3 id="floquet-kuramoto-time-crystal">Floquet-Kuramoto (Time Crystal)<a class="headerlink" href="#floquet-kuramoto-time-crystal" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>floquet_evolve(K=1.0, amp=0.5, freq=2.0)</code></td>
+<td>2 qubits</td>
+<td>0.6 ms</td>
+<td>R(t), subharmonic ratio</td>
+</tr>
+<tr>
+<td><code>scan_drive_amplitude(5 amplitudes)</code></td>
+<td>2 qubits</td>
+<td>~3 ms</td>
+<td>subharmonic ratio per amplitude</td>
+</tr>
+</tbody>
+</table>
+<p>DTC candidate detection via subharmonic_ratio &gt; threshold. Drive signal oscillates
+between K_base<em>(1-amp) and K_base</em>(1+amp) as expected.</p>
+<hr />
+<h2 id="3-hardware-layer">3. Hardware Layer<a class="headerlink" href="#3-hardware-layer" title="Permanent link">&para;</a></h2>
+<h3 id="hardwarerunner-simulator">HardwareRunner (Simulator)<a class="headerlink" href="#hardwarerunner-simulator" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>connect()</code></td>
+<td>AerSimulator</td>
+<td>~50 ms</td>
+<td>Backend ready</td>
+</tr>
+<tr>
+<td><code>transpile(GHZ circuit)</code></td>
+<td>4 qubits</td>
+<td>~10 ms</td>
+<td>ISA circuit, depth ~10</td>
+</tr>
+<tr>
+<td><code>run_sampler(shots=1000)</code></td>
+<td>4 qubits</td>
+<td>~100 ms</td>
+<td>counts dict</td>
+</tr>
+<tr>
+<td><code>circuit_stats()</code></td>
+<td>—</td>
+<td>&lt;1 ms</td>
+<td>depth, n_qubits, ECR count</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Fractional gates:</strong> With <code>use_fractional_gates=True</code>, Kuramoto circuit depth
+reduces from ~80 to ~60 (25% reduction) for 4 qubits, 2 Trotter steps.
+RZZ gates remain native instead of decomposing to ECR+RZ.</p>
+<h3 id="noise-model-heron-r2">Noise Model (Heron r2)<a class="headerlink" href="#noise-model-heron-r2" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>heron_r2_noise_model()</code></td>
+<td>—</td>
+<td>&lt;1 ms</td>
+<td>NoiseModel</td>
+</tr>
+<tr>
+<td>Noisy Bell pair (10k shots)</td>
+<td>2 qubits</td>
+<td>~150 ms</td>
+<td>non-ideal counts</td>
+</tr>
+<tr>
+<td>Noisy Kuramoto R comparison</td>
+<td>3 qubits</td>
+<td>1349 ms</td>
+<td>R_clean=0.734, R_noisy=0.734</td>
+</tr>
+</tbody>
+</table>
+<p>At default Heron r2 parameters (CZ error=0.005), noise degradation is minimal
+(R_clean ≈ R_noisy). Higher CZ error (0.1) produces measurable non-ideal counts.</p>
+<h3 id="trapped-ion-backend">Trapped-Ion Backend<a class="headerlink" href="#trapped-ion-backend" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>transpile_for_trapped_ion(allow_proxy_basis=True)</code></td>
+<td>4 qubits</td>
+<td>~5 ms</td>
+<td>All-to-all connectivity, no SWAPs</td>
+</tr>
+</tbody>
+</table>
+<p>Kuramoto circuits transpile without SWAP gates under the all-to-all
+representative model. The output circuit is metadata-labelled as a CX-basis
+proxy for native MS/RXX-style trapped-ion operations; unitarity preservation is
+verified by Operator equivalence.</p>
+<h3 id="circuit-depth-regression">Circuit Depth Regression<a class="headerlink" href="#circuit-depth-regression" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>System</th>
+<th>Trotter reps</th>
+<th>Transpiled depth</th>
+<th>Gate count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2q, 1 rep</td>
+<td>1</td>
+<td>&lt;50</td>
+<td>&lt;100</td>
+</tr>
+<tr>
+<td>4q, 1 rep</td>
+<td>1</td>
+<td>&lt;100</td>
+<td>&lt;300</td>
+</tr>
+<tr>
+<td>4q, 3 reps</td>
+<td>3</td>
+<td>134</td>
+<td>~200</td>
+</tr>
+<tr>
+<td>8q, 1 rep</td>
+<td>1</td>
+<td>&lt;300</td>
+<td>&lt;600</td>
+</tr>
+<tr>
+<td>16q, 1 rep</td>
+<td>1</td>
+<td>&lt;1000</td>
+<td>~1500</td>
+</tr>
+</tbody>
+</table>
+<p>Depth scales sub-linearly with reps (3 reps &lt; 4× depth of 1 rep due to gate
+cancellation in transpilation).</p>
+<h3 id="qasm-export">QASM Export<a class="headerlink" href="#qasm-export" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>export_trotter_qasm(K, omega, t=0.5, reps=3)</code></td>
+<td>4 qubits</td>
+<td>3.4 ms</td>
+<td>1903 chars, 48 gates</td>
+</tr>
+</tbody>
+</table>
+<p>Exports OpenQASM 3.0 with qubit declarations and gate definitions.</p>
+<hr />
+<h2 id="4-error-mitigation">4. Error Mitigation<a class="headerlink" href="#4-error-mitigation" title="Permanent link">&para;</a></h2>
+<h3 id="zero-noise-extrapolation-zne">Zero-Noise Extrapolation (ZNE)<a class="headerlink" href="#zero-noise-extrapolation-zne" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fold at scales [1,3,5] + extrapolate</td>
+<td>3 qubits</td>
+<td>34.4 ms</td>
+<td>R_ZNE estimate</td>
+</tr>
+</tbody>
+</table>
+<p>Folded circuits preserve unitarity (norm=1.0 at all odd scales). Fit residual &gt;= 0.
+On noiseless simulator, all scale values are identical (folding is identity).</p>
+<h3 id="probabilistic-error-cancellation-pec">Probabilistic Error Cancellation (PEC)<a class="headerlink" href="#probabilistic-error-cancellation-pec" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pauli_twirl_decompose(0.05)</code></td>
+<td>1 qubit</td>
+<td>&lt;0.01 ms</td>
+<td>4 coefficients</td>
+</tr>
+<tr>
+<td><code>pec_sample(circuit, p=0.05, n=200)</code></td>
+<td>1 qubit</td>
+<td>160.9 ms</td>
+<td>mitigated <Z>=-1.07 (ideal -1.0)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Rust path:</strong> <code>pec_coefficients(p)</code> matches Python <code>pauli_twirl_decompose(p)</code> to
+machine precision (atol=1e-10). Rust <code>pec_sample_parallel(100k samples)</code> takes
+49-91 ms using rayon parallelism.</p>
+<p>Quasi-probability invariant: identity coefficient &gt; 1, error coefficients &lt; 0,
+sum = 1.0 (trace preservation).</p>
+<hr />
+<h2 id="5-quantum-error-correction">5. Quantum Error Correction<a class="headerlink" href="#5-quantum-error-correction" title="Permanent link">&para;</a></h2>
+<h3 id="controlqec-surface-code">ControlQEC (Surface Code)<a class="headerlink" href="#controlqec-surface-code" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ControlQEC(distance=3)</code></td>
+<td>18 data qubits</td>
+<td>&lt;0.1 ms</td>
+<td>Decoder ready</td>
+</tr>
+<tr>
+<td><code>get_syndrome()</code> + <code>decode()</code></td>
+<td>d=3</td>
+<td>0.6 ms</td>
+<td>correction vector</td>
+</tr>
+</tbody>
+</table>
+<p>Below-threshold correction: &gt;80% success at p=0.01. Above-threshold: significant
+failure at p=0.3. Zero-error syndrome is all-zero (verified).</p>
+<h3 id="faulttolerantupde-repetition-code">FaultTolerantUPDE (Repetition Code)<a class="headerlink" href="#faulttolerantupde-repetition-code" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>build_step_circuit(dt=0.1)</code></td>
+<td>2 osc, d=3</td>
+<td>&lt;0.1 ms</td>
+<td>10-qubit circuit</td>
+</tr>
+<tr>
+<td><code>step_with_qec(dt=0.1)</code></td>
+<td>3 osc, d=3</td>
+<td>0.3 ms</td>
+<td>syndromes, errors_detected</td>
+</tr>
+</tbody>
+</table>
+<p>Qubit layout: n_osc × (2d-1) physical qubits. Contains RZZ (transversal coupling),
+CX (encoding + syndrome), RZ (field terms).</p>
+<h3 id="surfacecodeupde">SurfaceCodeUPDE<a class="headerlink" href="#surfacecodeupde" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SurfaceCodeUPDE(n_osc=4, code_distance=3)</code></td>
+<td>4 oscillators</td>
+<td>&lt;1 ms</td>
+<td>Resource model</td>
+</tr>
+</tbody>
+</table>
+<p>Total physical qubits = n_osc × (2d²-1). For d=3: 4 × 17 = 68 physical qubits.</p>
+<hr />
+<h2 id="6-qsnn-quantum-spiking-neural-network">6. QSNN (Quantum Spiking Neural Network)<a class="headerlink" href="#6-qsnn-quantum-spiking-neural-network" title="Permanent link">&para;</a></h2>
+<h3 id="quantumsynapse">QuantumSynapse<a class="headerlink" href="#quantumsynapse" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>apply(circuit, pre, post)</code></td>
+<td>&lt;0.01 ms</td>
+<td>CRy gate appended</td>
+</tr>
+</tbody>
+</table>
+<p>theta = pi × (w - w_min) / (w_max - w_min). Effective weight = sin²(theta/2).
+Pre=|1&gt; → post rotates; pre=|0&gt; → post stays |0&gt; (controlled rotation).</p>
+<h3 id="quantumlifneuron">QuantumLIFNeuron<a class="headerlink" href="#quantumlifneuron" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>step(input_current=1.5)</code></td>
+<td>~1 ms</td>
+<td 0_="0," 1="1">spike ∈</td>
+</tr>
+</tbody>
+</table>
+<p>Membrane equation: v(t+1) = v(t) - (dt/tau)(v(t) - v_rest) + R<em>I</em>dt.
+Quantum mapping: P(spike) = sin²(theta/2) where theta encodes membrane potential.</p>
+<h3 id="quantumstdp">QuantumSTDP<a class="headerlink" href="#quantumstdp" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>update(syn, pre=1, post=1)</code></td>
+<td>&lt;0.01 ms</td>
+<td>weight updated</td>
+</tr>
+</tbody>
+</table>
+<p>Hebbian LTP: pre+post fire → weight increases. LTD: pre fires, post doesn't →
+weight decreases. No pre spike → no change (verified).</p>
+<h3 id="qsnntrainer">QSNNTrainer<a class="headerlink" href="#qsnntrainer" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>train(X, y, epochs=3)</code></td>
+<td>2×2 layer</td>
+<td>47.6 ms</td>
+<td>loss history</td>
+</tr>
+</tbody>
+</table>
+<p>Parameter-shift gradient: g = (L(+pi/2) - L(-pi/2)) / 2. Gradient sign flips
+for opposite targets (antisymmetry). Zero learning rate → zero weight change
+(verified to 1e-14). Forward probabilities bounded [0,1].</p>
+<h3 id="snnquantumbridge">SNNQuantumBridge<a class="headerlink" href="#snnquantumbridge" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>forward(spike_history)</code></td>
+<td>4→3 neurons</td>
+<td>2.2 ms</td>
+<td>output currents</td>
+</tr>
+</tbody>
+</table>
+<p>Spike-to-rotation: firing_rate × pi ∈ [0, pi]. Higher rate → larger angle
+(monotonic). Measurement-to-current: P(|1&gt;) × scale.</p>
+<hr />
+<h2 id="7-identity-layer-arcane-sapience">7. Identity Layer (Arcane Sapience)<a class="headerlink" href="#7-identity-layer-arcane-sapience" title="Permanent link">&para;</a></h2>
+<h3 id="identityattractor">IdentityAttractor<a class="headerlink" href="#identityattractor" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>solve(maxiter=30, seed=42)</code></td>
+<td>3 qubits</td>
+<td>108.4 ms</td>
+<td>E_0=-4.749, gap=1.383</td>
+</tr>
+</tbody>
+</table>
+<p>Robustness gap = E_1 - E_0. Gap=1.383 provides strong identity protection.
+Eigenvalues sorted ascending. Variational bound: E_vqe &gt;= E_exact.
+Stronger coupling → larger gap (verified).</p>
+<h3 id="identity-fingerprint">Identity Fingerprint<a class="headerlink" href="#identity-fingerprint" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>identity_fingerprint(K, omega)</code></td>
+<td>4 qubits</td>
+<td>~150 ms</td>
+<td>commitment (SHA-256 hex)</td>
+</tr>
+</tbody>
+</table>
+<p>Returns dict with commitment, spectral data (fiedler, eigenvalues), ground_energy,
+n_parameters. Different K → different commitment. Spectral data deterministic.</p>
+<h3 id="challenge-response-protocol">Challenge-Response Protocol<a class="headerlink" href="#challenge-response-protocol" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>prove_identity(K, challenge)</code></td>
+<td>3 qubits</td>
+<td>&lt;1 ms</td>
+<td>response bytes</td>
+</tr>
+<tr>
+<td><code>verify_identity(K, challenge, response)</code></td>
+<td>3 qubits</td>
+<td>&lt;1 ms</td>
+<td>True/False</td>
+</tr>
+</tbody>
+</table>
+<p>Wrong K produces wrong response → verification fails. Different challenges →
+different responses (no replay).</p>
+<h3 id="robustness-certificate">Robustness Certificate<a class="headerlink" href="#robustness-certificate" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>compute_robustness_certificate(K, omega)</code></td>
+<td>3 qubits</td>
+<td>0.9 ms</td>
+<td>gap=1.383, P_transition=5.2e-5</td>
+</tr>
+</tbody>
+</table>
+<p>P_transition = 5.2×10⁻⁵ — probability of identity confusion under noise.
+Fidelity at depth: deeper circuits → lower fidelity (decoherence monotonicity).</p>
+<hr />
+<h2 id="8-cryptographic-layer">8. Cryptographic Layer<a class="headerlink" href="#8-cryptographic-layer" title="Permanent link">&para;</a></h2>
+<h3 id="key-hierarchy">Key Hierarchy<a class="headerlink" href="#key-hierarchy" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>key_hierarchy(K, phases, R, nonce)</code></td>
+<td>4 layers</td>
+<td>0.11 ms</td>
+<td>master (32 bytes) + 4 layer keys</td>
+</tr>
+</tbody>
+</table>
+<p>All layer keys unique. Master key differs from all layer keys. Same inputs →
+same keys (deterministic). Different R or nonce → different keys.
+<code>verify_key_chain()</code> detects tampered master, tampered layer keys, wrong nonce.</p>
+<h3 id="topology-commitment">Topology Commitment<a class="headerlink" href="#topology-commitment" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>topology_commitment(K)</code></td>
+<td>4×4 matrix</td>
+<td>&lt;0.1 ms</td>
+<td>32-byte SHA-256</td>
+</tr>
+</tbody>
+</table>
+<p>Deterministic hash of coupling topology. Combined pipeline (hierarchy +
+fingerprint + commitment): 0.46 ms.</p>
+<h3 id="scpn-qkd-protocol">SCPN-QKD Protocol<a class="headerlink" href="#scpn-qkd-protocol" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scpn_qkd_protocol(K, omega, alice, bob)</code></td>
+<td>4 qubits</td>
+<td>692 ms</td>
+<td>QBER, raw keys, Bell</td>
+</tr>
+</tbody>
+</table>
+<p>QBER ∈ [0, 1]. Ground energy &lt; 0. Raw key shapes match qubit allocation.
+Secure key length &gt;= 0.</p>
+<h3 id="evolving-key-phases">Evolving Key Phases<a class="headerlink" href="#evolving-key-phases" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>evolve_key_phases(K, omega, theta_0, t=0.5)</code></td>
+<td>4 layers</td>
+<td>~1 ms</td>
+<td>(n_layers, n_samples) trajectory</td>
+</tr>
+</tbody>
+</table>
+<p>Kuramoto ODE integration via <code>solve_ivp(RK45)</code>. Initial condition preserved at t=0.
+All values finite. ODE failure → RuntimeError with message.</p>
+<hr />
+<h2 id="9-analysis-layer">9. Analysis Layer<a class="headerlink" href="#9-analysis-layer" title="Permanent link">&para;</a></h2>
+<h3 id="finite-size-scaling">Finite-Size Scaling<a class="headerlink" href="#finite-size-scaling" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>finite_size_scaling(sizes=[2,3,4])</code></td>
+<td>3 sizes</td>
+<td>0.8 ms</td>
+<td>K_c per size + extrapolation</td>
+</tr>
+</tbody>
+</table>
+<p>K_c values finite. gap_min &gt; 0. Extrapolation via BKT or power-law fit.</p>
+<h3 id="h1-persistence">H1 Persistence<a class="headerlink" href="#h1-persistence" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scan_h1_persistence(omega, n_points=10)</code></td>
+<td>4 osc</td>
+<td>14.9 ms</td>
+<td>K_critical, p_h1</td>
+</tr>
+</tbody>
+</table>
+<p>K_critical &gt; 0. p_h1 ∈ [0, 1]. Vortex densities bounded. K values sorted.</p>
+<h3 id="otoc-synchronisation-probe">OTOC Synchronisation Probe<a class="headerlink" href="#otoc-synchronisation-probe" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>otoc_sync_scan(K, omega, n_K=6, n_t=8)</code></td>
+<td>3 qubits</td>
+<td>7.6 ms</td>
+<td>Lyapunov, R_classical</td>
+</tr>
+</tbody>
+</table>
+<p>R_classical bounded [0, 1]. Lyapunov values finite. OTOC detects transition: True.</p>
+<h3 id="berry-phase">Berry Phase<a class="headerlink" href="#berry-phase" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>berry_phase_scan(omega, T, k_range)</code></td>
+<td>3 qubits</td>
+<td>6.6 ms</td>
+<td>curvature peak at K=0.75</td>
+</tr>
+</tbody>
+</table>
+<p>Fidelity ∈ [0, 1]. Spectral gap &gt; 0. Curvature finite. Fidelity susceptibility
+chi_F peaks near BKT transition (max chi_F = 0.005).</p>
+<h3 id="loschmidt-echo-dqpt">Loschmidt Echo / DQPT<a class="headerlink" href="#loschmidt-echo-dqpt" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>loschmidt_quench(K_i=0.5, K_f=3.0)</code></td>
+<td>3 qubits</td>
+<td>0.8 ms</td>
+<td>3 cusps detected</td>
+</tr>
+</tbody>
+</table>
+<p>|G(0)| = 1 exactly. Rate function r(0) = 0. Times monotonic. No-quench: |G(t)| = 1
+for all t. Large quench: amplitude oscillations.</p>
+<h3 id="krylov-complexity">Krylov Complexity<a class="headerlink" href="#krylov-complexity" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>krylov_complexity(H, Z0, t_max=5.0)</code></td>
+<td>3 qubits</td>
+<td>155 ms</td>
+<td>peak K(t) = 3.031</td>
+</tr>
+</tbody>
+</table>
+<p>K(0) = 0 (operator starts in first basis element). K(t) &gt;= 0. K(t) &lt;= d²
+(bounded by Hilbert space dimension). Lanczos b_n decay for finite dimension.</p>
+<p><strong>Rust path:</strong> <code>lanczos_b_coefficients</code> produces same coefficients as Python
+(verified to atol=1e-6 on first few b_n).</p>
+<h3 id="entanglement-entropy">Entanglement Entropy<a class="headerlink" href="#entanglement-entropy" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>entanglement_at_coupling(omega, T, K=2.0)</code></td>
+<td>4 qubits</td>
+<td>0.3 ms</td>
+<td>S=0.928, gap=0.224</td>
+</tr>
+</tbody>
+</table>
+<p>S ∈ [0, log₂(d)] where d = 2^(n/2). Schmidt gap ∈ [0, 1]. Weak coupling →
+S ≈ 0 (product state). Strong coupling → S &gt; 0. Schmidt gap closes near BKT.</p>
+<h3 id="qfi-criticality">QFI Criticality<a class="headerlink" href="#qfi-criticality" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>qfi_vs_coupling(omega, T, k_range)</code></td>
+<td>3 qubits</td>
+<td>8.5 ms</td>
+<td>peak QFI=0.225 at K=3.07</td>
+</tr>
+</tbody>
+</table>
+<p>QFI &gt;= 0. Total QFI &gt;= max single-generator QFI. Peak at K=3.07 confirms
+criticality-enhanced quantum correlations.</p>
+<h3 id="quantum-speed-limit">Quantum Speed Limit<a class="headerlink" href="#quantum-speed-limit" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>compute_qsl(K, omega, t=1.0)</code></td>
+<td>3 qubits</td>
+<td>10.4 ms</td>
+<td>tau_MT, tau_ML bounds</td>
+</tr>
+</tbody>
+</table>
+<p>Mandelstam-Tamm bound tau_MT &gt;= 0. Margolus-Levitin bound tau_ML &gt;= 0.
+Actual time tau_actual &gt;= both bounds (QSL is a lower bound).</p>
+<h3 id="spectral-form-factor">Spectral Form Factor<a class="headerlink" href="#spectral-form-factor" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>compute_sff(K, omega, n_times=20)</code></td>
+<td>4 qubits</td>
+<td>1.2 ms</td>
+<td>r_bar=0.488, gap=1.132</td>
+</tr>
+</tbody>
+</table>
+<p>K(t=0) = 1 exactly (trace identity). SFF ∈ [0, 1]. Times monotonic. Level
+spacing ratio r_bar = 0.488 (near GOE Wigner-Dyson 0.536 — quantum chaotic).</p>
+<h3 id="magic-non-stabilizerness">Magic (Non-stabilizerness)<a class="headerlink" href="#magic-non-stabilizerness" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>magic_vs_coupling(omega, T, k_range)</code></td>
+<td>3 qubits</td>
+<td>~5 ms</td>
+<td>SRE peak</td>
+</tr>
+</tbody>
+</table>
+<p>SRE (stabiliser Renyi entropy) M₂ &gt;= 0. Weak coupling → M₂ ≈ 0 (stabiliser
+ground state). Strong coupling → M₂ &gt; 0 (magic resource). Berry curvature
+F_μν is antisymmetric (traceless).</p>
+<h3 id="lindblad-ness">Lindblad NESS<a class="headerlink" href="#lindblad-ness" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>compute_ness(omega, T, K=2.0, gamma=0.1)</code></td>
+<td>2 qubits</td>
+<td>~1 ms</td>
+<td>R_ness, purity</td>
+</tr>
+</tbody>
+</table>
+<p>Purity ∈ [1/d, 1]. R_ness ∈ [0, 1]. gamma=0 → NESS = ground state (R_ness ≈
+R_ideal). Purity decreases with noise (generally).</p>
+<h3 id="hamiltonian-learning">Hamiltonian Learning<a class="headerlink" href="#hamiltonian-learning" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>measure_correlators</code> + <code>learn_hamiltonian</code></td>
+<td>3 qubits</td>
+<td>34.6 ms</td>
+<td>loss=0, corr_error=0</td>
+</tr>
+</tbody>
+</table>
+<p>Correlator matrix symmetric, zero diagonal, bounded [-2, 2]. Learned K symmetric,
+non-negative. Perfect recovery for 3-qubit system (loss=0). Self-consistent: true
+K as init → near-zero error.</p>
+<h3 id="hamiltonian-self-consistency">Hamiltonian Self-Consistency<a class="headerlink" href="#hamiltonian-self-consistency" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>self_consistency_from_exact(K, omega)</code></td>
+<td>2 qubits</td>
+<td>10.9 ms</td>
+<td>Frobenius=1.81, loss=0</td>
+</tr>
+</tbody>
+</table>
+<p>2-qubit inverse problem is degenerate: loss=0 but Frobenius error=1.81 because
+different K values produce identical correlators.</p>
+<h3 id="xxz-phase-diagram">XXZ Phase Diagram<a class="headerlink" href="#xxz-phase-diagram" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>anisotropy_phase_diagram(3δ × 6K)</code></td>
+<td>3 qubits</td>
+<td>36.1 ms</td>
+<td>K_c(Δ=0)=0.5, K_c(Δ=0.5)=1.2</td>
+</tr>
+</tbody>
+</table>
+<p>XY (Δ=0) and Heisenberg (Δ=1) produce different gap structure. All gaps &gt; 0.</p>
+<h3 id="qrc-phase-detector">QRC Phase Detector<a class="headerlink" href="#qrc-phase-detector" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>qrc_phase_detection(8 train, 2 test)</code></td>
+<td>3 qubits</td>
+<td>39.3 ms</td>
+<td>accuracy=100%, 36 features</td>
+</tr>
+</tbody>
+</table>
+<p>Self-probing: reservoir features from ground state observables. Linear readout
+achieves perfect phase classification on well-separated data.</p>
+<hr />
+<h2 id="10-application-layer">10. Application Layer<a class="headerlink" href="#10-application-layer" title="Permanent link">&para;</a></h2>
+<h3 id="quantum-reservoir-computing">Quantum Reservoir Computing<a class="headerlink" href="#quantum-reservoir-computing" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>reservoir_ridge_regression(12 samples)</code></td>
+<td>3 qubits</td>
+<td>33.9 ms</td>
+<td>MSE=0.022</td>
+</tr>
+</tbody>
+</table>
+<p>Feature matrix has non-trivial rank (expressive reservoir). Higher weight →
+more features. Ridge regression produces actionable predictions.</p>
+<h3 id="quantum-kernel">Quantum Kernel<a class="headerlink" href="#quantum-kernel" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>compute_kernel_matrix(5 samples)</code></td>
+<td>3 qubits</td>
+<td>16.1 ms</td>
+<td>PSD Gram matrix</td>
+</tr>
+</tbody>
+</table>
+<p>Mercer conditions verified: symmetric, PSD (min eigenvalue=0.028 &gt; 0), diagonal=1.
+K(x,x) = 1. Close inputs → high overlap (&gt;0.95). Different Knm → different kernel.</p>
+<h3 id="disruption-classifier">Disruption Classifier<a class="headerlink" href="#disruption-classifier" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>run_disruption_benchmark(10+5, allow_synthetic=True)</code></td>
+<td>3 qubits</td>
+<td>297 ms</td>
+<td>accuracy=80%, source_mode=synthetic</td>
+</tr>
+</tbody>
+</table>
+<p>Kernel Gram matrix symmetric + PSD. Binary predictions. Accuracy bounded [0, 1].
+This benchmark is generated-data only and is not publication-safe without measured plasma diagnostics.</p>
+<h3 id="quantum-disruption-iter">Quantum Disruption (ITER)<a class="headerlink" href="#quantum-disruption-iter" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>predict(features)</code></td>
+<td>5 qubits</td>
+<td>4.6 ms</td>
+<td>risk=0.495</td>
+</tr>
+<tr>
+<td><code>DisruptionBenchmark(20+10, allow_synthetic=True, 2 epochs)</code></td>
+<td>5 qubits</td>
+<td>11.9 s</td>
+<td>accuracy=70%, source_mode=synthetic</td>
+</tr>
+</tbody>
+</table>
+<p>Feature normalisation clamps to [0, 1]. Prediction deterministic for same params.
+Circuit depth &gt; 0. Training updates parameters.
+The benchmark dataset is generated and is not publication-safe without measured plasma diagnostics or <code>from_fusion_core_shot()</code> inputs.</p>
+<h3 id="fmo-photosynthetic-benchmark">FMO Photosynthetic Benchmark<a class="headerlink" href="#fmo-photosynthetic-benchmark" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fmo_benchmark(K, omega, allow_builtin_reference=True)</code></td>
+<td>7 sites</td>
+<td>1.4 ms</td>
+<td>topology ρ=0.304, source_mode=builtin_literature_reference</td>
+</tr>
+</tbody>
+</table>
+<p>SCPN vs FMO topology correlation ρ=0.304 (weak positive). FMO self-comparison:
+ρ=1.0. FMO coupling: symmetric, non-negative, zero diagonal, 7×7.
+The packaged Adolphs-Renger reference requires explicit opt-in and is marked
+<code>publication_safe=False</code>; publication-safe FMO claims must pass measured
+<code>fmo_coupling</code> and <code>fmo_frequencies</code> arrays.</p>
+<h3 id="quantum-advantage-scaling-exact-simulation-crossover-scope">Quantum Advantage Scaling — Exact-Simulation Crossover Scope<a class="headerlink" href="#quantum-advantage-scaling-exact-simulation-crossover-scope" title="Permanent link">&para;</a></h3>
+<p>These rows describe only the exact Hilbert-space crossover benchmark: classical exact
+diagonalisation and Python/SciPy ODE vs statevector Qiskit wall time for
+the same order-parameter trajectory observable. They are not evidence for
+broad observable-level quantum advantage.</p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>run_scaling_benchmark(sizes=[3,4])</code></td>
+<td>3-4 qubits</td>
+<td>101 ms</td>
+<td>timing comparison</td>
+</tr>
+</tbody>
+</table>
+<p>n=3: classical=23 ms, quantum=11 ms (quantum wins). n=4: classical=26 ms,
+quantum=34 ms (classical wins). Crossover near n=4.</p>
+<h3 id="quantum-advantage-scaling-provenance-run">Quantum Advantage Scaling — Provenance Run<a class="headerlink" href="#quantum-advantage-scaling-provenance-run" title="Permanent link">&para;</a></h3>
+<p>Measured on 2026-04-29 on local host <code>aaarthuus</code>
+(Intel i5-11600K, 6 cores / 12 threads, Linux
+6.17.0-22-generic). Backend versions: Python 3.12.3, NumPy 2.4.4,
+SciPy 1.17.1, Qiskit 2.4.0.</p>
+<p>Command:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;from scpn_quantum_control.benchmarks.quantum_advantage import run_scaling_benchmark; results = run_scaling_benchmark(sizes=[3,4,5], t_max=0.2, dt=0.1); print(&#39;n,t_classical_ms,t_quantum_ms,crossover&#39;); [print(f&#39;{r.n_qubits},{r.t_classical_ms:.3f},{r.t_quantum_ms:.3f},{r.crossover_predicted}&#39;) for r in results]&quot;</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Backend</th>
+<th>Machine</th>
+<th>Command</th>
+<th>Dependency</th>
+<th>Commit</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">Classical exact evolution + diagonalisation</th>
+<th style="text-align: right;">Qiskit statevector Trotter</th>
+<th style="text-align: right;">Predicted crossover</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>python-scipy-qiskit-local</td>
+<td>Intel i5-11600K / Linux 6.17.0-22-generic</td>
+<td><code>python -c "from scpn_quantum_control.benchmarks.quantum_advantage import run_scaling_benchmark; results = run_scaling_benchmark(sizes=[3,4,5], t_max=0.2, dt=0.1); print('n,t_classical_ms,t_quantum_ms,crossover'); [print(f'{r.n_qubits},{r.t_classical_ms:.3f},{r.t_quantum_ms:.3f},{r.crossover_predicted}') for r in results]"</code></td>
+<td>Python 3.12.3; NumPy 2.4.4; SciPy 1.17.1; Qiskit 2.4.0</td>
+<td>638bba955e84044f887b537bc0dce46234cb80fc</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">53.197 ms</td>
+<td style="text-align: right;">68.128 ms</td>
+<td style="text-align: right;">6</td>
+</tr>
+<tr>
+<td>python-scipy-qiskit-local</td>
+<td>Intel i5-11600K / Linux 6.17.0-22-generic</td>
+<td><code>python -c "from scpn_quantum_control.benchmarks.quantum_advantage import run_scaling_benchmark; results = run_scaling_benchmark(sizes=[3,4,5], t_max=0.2, dt=0.1); print('n,t_classical_ms,t_quantum_ms,crossover'); [print(f'{r.n_qubits},{r.t_classical_ms:.3f},{r.t_quantum_ms:.3f},{r.crossover_predicted}') for r in results]"</code></td>
+<td>Python 3.12.3; NumPy 2.4.4; SciPy 1.17.1; Qiskit 2.4.0</td>
+<td>638bba955e84044f887b537bc0dce46234cb80fc</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">23.316 ms</td>
+<td style="text-align: right;">53.197 ms</td>
+<td style="text-align: right;">6</td>
+</tr>
+<tr>
+<td>python-scipy-qiskit-local</td>
+<td>Intel i5-11600K / Linux 6.17.0-22-generic</td>
+<td><code>python -c "from scpn_quantum_control.benchmarks.quantum_advantage import run_scaling_benchmark; results = run_scaling_benchmark(sizes=[3,4,5], t_max=0.2, dt=0.1); print('n,t_classical_ms,t_quantum_ms,crossover'); [print(f'{r.n_qubits},{r.t_classical_ms:.3f},{r.t_quantum_ms:.3f},{r.crossover_predicted}') for r in results]"</code></td>
+<td>Python 3.12.3; NumPy 2.4.4; SciPy 1.17.1; Qiskit 2.4.0</td>
+<td>638bba955e84044f887b537bc0dce46234cb80fc</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">65.367 ms</td>
+<td style="text-align: right;">66.430 ms</td>
+<td style="text-align: right;">6</td>
+</tr>
+</tbody>
+</table>
+<p>These rows are a smoke-scale provenance table, not the publication
+scaling claim. Sparse SciPy emitted conversion warnings during the
+run, which is useful context for interpreting the small-n noise.</p>
+<h3 id="quantum-advantage-classical-rust-gpu-matrix-gap-b-item-3">Quantum Advantage — Classical / Rust / GPU Matrix (Gap B item 3)<a class="headerlink" href="#quantum-advantage-classical-rust-gpu-matrix-gap-b-item-3" title="Permanent link">&para;</a></h3>
+<p>Gap B item 3 now tracks the pre-QPU guardrail matrix in
+<code>results/classical_rust_gpu_matrix_2026-05-03.json</code>. It records, for matching
+problem sizes:</p>
+<ul>
+<li>classical order-parameter ODE (SciPy path),</li>
+<li>classical exact diagonalisation (CPU dense and sparse),</li>
+<li>exact diagonalisation on GPU when available,</li>
+<li>Rust ODE kernel timing.</li>
+</ul>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>python<span class="w"> </span>scripts/bench_quantum_advantage_classical_matrix.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">  </span>--sizes<span class="w"> </span><span class="m">4</span>,6,8,10<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">  </span>--max-dense-dim<span class="w"> </span><span class="m">64</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">  </span>--max-sparse-dim<span class="w"> </span><span class="m">64</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="w">  </span>--max-sparse-iter<span class="w"> </span><span class="m">20</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="w">  </span>--output<span class="w"> </span>results/classical_rust_gpu_matrix_2026-05-03.json
+</code></pre></div>
+<p>Matrix rows are used as the classical-rank evidence gate before expanding frontier
+QPU campaigns.</p>
+<h3 id="broad-quantum-advantage-observable-level-not-yet-claimed">Broad Quantum Advantage (Observable-Level) — Not yet claimed<a class="headerlink" href="#broad-quantum-advantage-observable-level-not-yet-claimed" title="Permanent link">&para;</a></h3>
+<p>No broad observable-level advantage claim is documented yet. The committed evidence
+must distinguish:</p>
+<ul>
+<li>exact-simulation crossover (this section),</li>
+<li>observable-level hardware-native/algorithm-native comparisons,</li>
+<li>matched-accuracy and matched-budget classical alternatives (including sparse
+  and tensor-network paths), and</li>
+<li>gating path that justifies any future broad-advantage wording in captions,
+  README content, or preprint claims.</li>
+</ul>
+<hr />
+<h2 id="11-bridge-adapters">11. Bridge Adapters<a class="headerlink" href="#11-bridge-adapters" title="Permanent link">&para;</a></h2>
+<h3 id="ssgf-adapter">SSGF Adapter<a class="headerlink" href="#ssgf-adapter" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>W→H→encode→decode</td>
+<td>4 oscillators</td>
+<td>1.5 ms</td>
+<td>R_global=0.767</td>
+</tr>
+<tr>
+<td>SSGFQuantumLoop.quantum_step</td>
+<td>4 oscillators</td>
+<td>~9 ms</td>
+<td>theta updated, R returned</td>
+</tr>
+</tbody>
+</table>
+<p>Encoding: 2 gates per oscillator (Ry + Rz). Normalisation preserved. Uniform
+phases → R ≈ 1. Opposite phases → R ≈ 0.</p>
+<h3 id="ssgf-spectral-bridge">SSGF Spectral Bridge<a class="headerlink" href="#ssgf-spectral-bridge" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>spectral_bridge_analysis(K, omega)</code></td>
+<td>4 oscillators</td>
+<td>0.2 ms</td>
+<td>fiedler=0.872, QPE=7 bits</td>
+</tr>
+</tbody>
+</table>
+<p>Fiedler &gt; 0 for connected graph. Eigenvalues non-negative (Laplacian PSD).
+Disconnected graph → fiedler=0. QPE bits estimate for spectral resolution.</p>
+<h3 id="ssgf-w-adapter">SSGF W Adapter<a class="headerlink" href="#ssgf-w-adapter" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>adapt_w_from_quantum(K, theta, lr=0.1)</code></td>
+<td>4 oscillators</td>
+<td>4.9 ms</td>
+<td>max_update=0.027</td>
+</tr>
+</tbody>
+</table>
+<p>W_updated symmetric, non-negative, zero diagonal. Correlators symmetric.
+lr=0 → no change. W changes with non-zero lr.</p>
+<h3 id="orchestrator-adapter">Orchestrator Adapter<a class="headerlink" href="#orchestrator-adapter" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>from_orchestrator_state</code> → <code>to_scpn_control_telemetry</code></td>
+<td>3 layers</td>
+<td>0.07 ms</td>
+<td>regime, R, stability</td>
+</tr>
+</tbody>
+</table>
+<p>Handles both dataclass and dict payloads. Legacy field names (locks, cross_alignment,
+stability, regime) resolved automatically.</p>
+<h3 id="orchestrator-feedback">Orchestrator Feedback<a class="headerlink" href="#orchestrator-feedback" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>compute_orchestrator_feedback(K, omega)</code></td>
+<td>4 qubits</td>
+<td>~0.5 ms</td>
+<td>action, confidence, R_global</td>
+</tr>
+</tbody>
+</table>
+<p>Actions: advance, hold, rollback. Confidence ∈ [0, 1]. R_global ∈ [0, 1].
+Custom thresholds supported.</p>
+<hr />
+<h2 id="12-pgbo-parameter-space-geometry-bridge">12. PGBO (Parameter-space Geometry Bridge)<a class="headerlink" href="#12-pgbo-parameter-space-geometry-bridge" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>compute_pgbo_tensor(K, omega)</code></td>
+<td>4 qubits</td>
+<td>6.7 ms</td>
+<td>metric (6×6), curvature (6×6)</td>
+</tr>
+</tbody>
+</table>
+<p>Quantum Fisher metric: symmetric, PSD (det &gt;= 0). Berry curvature: antisymmetric
+(traceless). Parameter count: C(n,2) upper-triangle couplings.</p>
+<hr />
+<h2 id="13-tcbo-observer">13. TCBO Observer<a class="headerlink" href="#13-tcbo-observer" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>compute_tcbo_observables(K, omega)</code></td>
+<td>4 qubits</td>
+<td>4.6 ms</td>
+<td>p_h1, TEE, string_order</td>
+</tr>
+</tbody>
+</table>
+<p>p_h1 ∈ [0, 1]. TEE finite. |string_order| &lt;= 1. beta_0 + beta_1 ≈ 1
+(connected components + loops = 1). Different coupling → different observables.</p>
+<hr />
+<h2 id="14-trotter-error-analysis">14. Trotter Error Analysis<a class="headerlink" href="#14-trotter-error-analysis" title="Permanent link">&para;</a></h2>
+<h3 id="commutator-bounds">Commutator Bounds<a class="headerlink" href="#commutator-bounds" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>commutator_norm_bound</code> + <code>optimal_dt</code></td>
+<td>4 qubits</td>
+<td>&lt;0.1 ms</td>
+<td>gamma=5.344, dt*=0.004, n_steps=268</td>
+</tr>
+</tbody>
+</table>
+<p>Equal frequencies → gamma=0 (no Trotter error). Heterogeneous frequencies →
+larger gamma. Second-order bounds use exact nested-commutator spectral norms
+for small systems and a Pauli coefficient-norm upper bound for larger systems.
+Optimal dt respects the epsilon target.</p>
+<h3 id="trotter-error-sweep">Trotter Error Sweep<a class="headerlink" href="#trotter-error-sweep" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>trotter_error_sweep(3t × 3reps)</code></td>
+<td>3 qubits</td>
+<td>483 ms</td>
+<td>2D error map</td>
+</tr>
+</tbody>
+</table>
+<p>Error at t=0: &lt; 1e-10. Error decreases with reps. Error increases with time.
+Quadratic scaling: doubling t roughly quadruples error.</p>
+<hr />
+<h2 id="15-experiment-registry">15. Experiment Registry<a class="headerlink" href="#15-experiment-registry" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>List all experiments</td>
+<td>0.18 ms</td>
+<td>20 registered experiments</td>
+</tr>
+</tbody>
+</table>
+<p>Every experiment has: runner as first param, docstring &gt; 10 chars, lowercase
+underscore name, no private experiments. At least half accept shots parameter.</p>
+<hr />
+<h2 id="16-cutting-runner-large-scale">16. Cutting Runner (Large-Scale)<a class="headerlink" href="#16-cutting-runner-large-scale" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>System</th>
+<th>Time</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>run_cutting_simulation(n=16, max=8, allow_partition_energy_estimate=True)</code></td>
+<td>16 oscillators</td>
+<td>39.3 ms</td>
+<td>2 partitions, R=1.0, energy scope <code>partition_local_sum</code></td>
+</tr>
+<tr>
+<td><code>run_cutting_simulation(n=24, max=8, allow_partition_energy_estimate=True)</code></td>
+<td>24 oscillators</td>
+<td>~53 ms</td>
+<td>3 partitions, energy scope <code>partition_local_sum</code></td>
+</tr>
+<tr>
+<td><code>run_cutting_simulation(n=32, max=8, allow_partition_energy_estimate=True)</code></td>
+<td>32 oscillators</td>
+<td>~60 ms</td>
+<td>4 partitions, energy scope <code>partition_local_sum</code></td>
+</tr>
+</tbody>
+</table>
+<p>Partitions: ceil(n/max_partition_size). R per partition bounded [0, 1].
+Combined R bounded [0, 1]. For multi-partition runs, energy is a labelled
+partition-local diagnostic and the omitted cross-partition coupling L1 norm is
+reported in the result; full-system energy is not claimed.</p>
+<hr />
+<h2 id="17-guess-symmetry-decay-zne-april-2026">17. GUESS Symmetry-Decay ZNE (April 2026)<a class="headerlink" href="#17-guess-symmetry-decay-zne-april-2026" title="Permanent link">&para;</a></h2>
+<p><code>mitigation/symmetry_decay.py</code> (Rust path: <code>fit_symmetry_decay</code>,
+<code>guess_extrapolate_batch</code>).</p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Input</th>
+<th>Time</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>learn_symmetry_decay</code></td>
+<td>5 noise scales (Rust)</td>
+<td>&lt; 1 µs</td>
+<td>least-squares α fit</td>
+</tr>
+<tr>
+<td><code>learn_symmetry_decay</code></td>
+<td>5 noise scales (Python fallback)</td>
+<td>&lt; 1 µs</td>
+<td>numpy polyfit</td>
+</tr>
+<tr>
+<td><code>guess_extrapolate</code></td>
+<td>single observable</td>
+<td>&lt; 0.1 µs</td>
+<td>analytic correction</td>
+</tr>
+<tr>
+<td><code>guess_extrapolate_batch</code></td>
+<td>1,000 observables (Rust)</td>
+<td>&lt; 50 µs</td>
+<td>rayon-parallel</td>
+</tr>
+<tr>
+<td><code>guess_extrapolate_batch</code></td>
+<td>100,000 observables (Rust)</td>
+<td>&lt; 2 ms</td>
+<td>scales linearly</td>
+</tr>
+</tbody>
+</table>
+<p>Pipeline test: <code>tests/test_pipeline_wiring_performance.py::TestGUESSPipeline</code>.</p>
+<h2 id="18-dynq-topology-agnostic-qubit-mapper-april-2026">18. DynQ Topology-Agnostic Qubit Mapper (April 2026)<a class="headerlink" href="#18-dynq-topology-agnostic-qubit-mapper-april-2026" title="Permanent link">&para;</a></h2>
+<p><code>hardware/qubit_mapper.py</code> (Rust path: <code>score_regions_batch</code>).</p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Input</th>
+<th>Time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>build_calibration_graph</code></td>
+<td>156-qubit heavy-hex</td>
+<td>&lt; 5 ms</td>
+</tr>
+<tr>
+<td><code>detect_execution_regions</code></td>
+<td>156 qubits</td>
+<td>&lt; 50 ms</td>
+</tr>
+<tr>
+<td><code>dynq_initial_layout</code> (full pipeline)</td>
+<td>156 qubits → 5-qubit layout</td>
+<td>&lt; 100 ms</td>
+</tr>
+<tr>
+<td><code>score_regions_batch</code> (Rust)</td>
+<td>100 regions × 50 qubits</td>
+<td>&lt; 5 ms</td>
+</tr>
+</tbody>
+</table>
+<p>Pipeline test: <code>tests/test_pipeline_wiring_performance.py::TestDynQPipeline</code>.</p>
+<h2 id="19-pulse-shaping-ici-hypergeometric-april-2026">19. Pulse Shaping — ICI + (α,β)-Hypergeometric (April 2026)<a class="headerlink" href="#19-pulse-shaping-ici-hypergeometric-april-2026" title="Permanent link">&para;</a></h2>
+<p><code>phase/pulse_shaping.py</code> (Rust paths: <code>hypergeometric_envelope_batch</code>,
+<code>ici_mixing_angle_batch</code>, <code>ici_three_level_evolution_batch</code>).</p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Input</th>
+<th style="text-align: right;">Python</th>
+<th style="text-align: right;">Rust</th>
+<th style="text-align: right;">Speedup</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hypergeometric_envelope</code></td>
+<td>200 points</td>
+<td style="text-align: right;">0.4 ms</td>
+<td style="text-align: right;">0.1 ms</td>
+<td style="text-align: right;">4×</td>
+</tr>
+<tr>
+<td><code>hypergeometric_envelope</code></td>
+<td>10,000 points</td>
+<td style="text-align: right;">114.5 ms</td>
+<td style="text-align: right;">2.6 ms</td>
+<td style="text-align: right;"><strong>44×</strong></td>
+</tr>
+<tr>
+<td><code>ici_mixing_angle</code></td>
+<td>1,000 points</td>
+<td style="text-align: right;">0.05 ms</td>
+<td style="text-align: right;">0.04 ms</td>
+<td style="text-align: right;">parity-checked</td>
+</tr>
+<tr>
+<td><code>ici_three_level_evolution</code></td>
+<td>2,000 points</td>
+<td style="text-align: right;">68.30 ms</td>
+<td style="text-align: right;">0.04 ms</td>
+<td style="text-align: right;"><strong>1,665×</strong></td>
+</tr>
+<tr>
+<td><code>build_trotter_pulse_schedule</code></td>
+<td>4 qubits, K all-to-all</td>
+<td style="text-align: right;">1.2 ms</td>
+<td style="text-align: right;">n/a</td>
+<td style="text-align: right;">full schedule</td>
+</tr>
+</tbody>
+</table>
+<p>Verified parity (Rust vs Python): max abs diff <span class="arithmatex">\(4.97 \times 10^{-14}\)</span>
+for <span class="arithmatex">\(n_\text{points} = 500\)</span> on <code>ici_three_level_evolution</code>.</p>
+<p>Pipeline test: <code>tests/test_pipeline_wiring_performance.py::TestPulseShapingPipeline</code>.</p>
+<h2 id="20-phase-1-ibm-hardware-campaign-april-2026">20. Phase 1 IBM Hardware Campaign (April 2026)<a class="headerlink" href="#20-phase-1-ibm-hardware-campaign-april-2026" title="Permanent link">&para;</a></h2>
+<p>Real-world QPU runs on <code>ibm_kingston</code> (Heron r2, 156 q):</p>
+<table>
+<thead>
+<tr>
+<th>Sub-phase</th>
+<th style="text-align: right;">Circuits</th>
+<th style="text-align: right;">Wall (queue + exec)</th>
+<th style="text-align: right;">QPU rate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pipe cleaner</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">~0.1 s</td>
+<td style="text-align: right;">1.0 s/circuit</td>
+</tr>
+<tr>
+<td>Phase 1 (A/B/C)</td>
+<td style="text-align: right;">42</td>
+<td style="text-align: right;">44.1 s</td>
+<td style="text-align: right;">0.65 s/circuit</td>
+</tr>
+<tr>
+<td>Phase 1.5 (D/E)</td>
+<td style="text-align: right;">72</td>
+<td style="text-align: right;">56.7 s</td>
+<td style="text-align: right;">0.55 s/circuit</td>
+</tr>
+<tr>
+<td>Phase 2 exhaust (F/G/H/I)</td>
+<td style="text-align: right;">138</td>
+<td style="text-align: right;">97.5 s</td>
+<td style="text-align: right;">0.55 s/circuit</td>
+</tr>
+<tr>
+<td>Phase 2.5 final burn (J)</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">65.1 s</td>
+<td style="text-align: right;">0.55 s/circuit</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td style="text-align: right;"><strong>344</strong></td>
+<td style="text-align: right;"><strong>~264 s</strong></td>
+<td style="text-align: right;"><strong>~0.55 s/circuit</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Reproducible from <code>data/phase1_dla_parity/*.json</code> via
+<code>scripts/analyse_phase1_dla_parity.py</code> (no QPU needed for the analysis).</p>
+<hr />
+<h2 id="21-measured-rust-speedups-vs-python-baseline">21. Measured Rust speedups vs. Python baseline<a class="headerlink" href="#21-measured-rust-speedups-vs-python-baseline" title="Permanent link">&para;</a></h2>
+<p>Re-run from <code>tests/test_rust_path_benchmarks.py</code> on 2026-04-17
+(ML350 Gen8, scpn-quantum-engine 0.2.0, PyO3 0.25 + rayon 1.10).
+These are the only cross-language acceleration numbers we publish;
+they are measured, not estimated.</p>
+<p>The Koopman rows were measured on 2026-05-12 with CPython 3.12.3 on
+x86_64 from a release wheel built by
+<code>python -m maturin build --release --manifest-path scpn_quantum_engine/Cargo.toml --features extension-module --interpreter python</code>.
+Each row reports the median of seven Python and Rust calls after a
+forced <code>require_rust=True</code> parity check against the NumPy generator.</p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th style="text-align: right;">Python</th>
+<th style="text-align: right;">Rust</th>
+<th style="text-align: right;">Speedup</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>build_knm</code> (16×16)</td>
+<td style="text-align: right;">0.1 ms</td>
+<td style="text-align: right;">0.01 ms</td>
+<td style="text-align: right;"><strong>18.4×</strong></td>
+</tr>
+<tr>
+<td><code>koopman_generator</code> (n=4, dim=16)</td>
+<td style="text-align: right;">0.028014 ms</td>
+<td style="text-align: right;">0.012752 ms</td>
+<td style="text-align: right;"><strong>2.197×</strong></td>
+</tr>
+<tr>
+<td><code>koopman_generator</code> (n=8, dim=64)</td>
+<td style="text-align: right;">0.172246 ms</td>
+<td style="text-align: right;">0.020980 ms</td>
+<td style="text-align: right;"><strong>8.210×</strong></td>
+</tr>
+<tr>
+<td><code>koopman_generator</code> (n=16, dim=256)</td>
+<td style="text-align: right;">1.478324 ms</td>
+<td style="text-align: right;">0.083449 ms</td>
+<td style="text-align: right;"><strong>17.715×</strong></td>
+</tr>
+<tr>
+<td><code>kuramoto_euler</code> (8 osc, 1 000 steps)</td>
+<td style="text-align: right;">2.3 ms</td>
+<td style="text-align: right;">0.25 ms</td>
+<td style="text-align: right;"><strong>9.3×</strong></td>
+</tr>
+<tr>
+<td><code>correlation_matrix_xy</code> (n=3)</td>
+<td style="text-align: right;">0.7 ms</td>
+<td style="text-align: right;">0.04 ms</td>
+<td style="text-align: right;"><strong>19.5×</strong></td>
+</tr>
+<tr>
+<td><code>lindblad_jump_ops_coo</code> (n=3)</td>
+<td style="text-align: right;">0.0 ms</td>
+<td style="text-align: right;">0.0 ms</td>
+<td style="text-align: right;"><strong>9.2×</strong></td>
+</tr>
+<tr>
+<td><code>lindblad_anti_hermitian_diag</code> (n=3)</td>
+<td style="text-align: right;">0.0 ms</td>
+<td style="text-align: right;">0.0 ms</td>
+<td style="text-align: right;"><strong>4.7×</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Standalone Rust paths (no Python parity comparison; absolute wall time):</p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Configuration</th>
+<th style="text-align: right;">Wall time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kuramoto_trajectory</code></td>
+<td>16 osc, 10 000 steps</td>
+<td style="text-align: right;">11.79 ms</td>
+</tr>
+<tr>
+<td><code>expectation_pauli_fast</code></td>
+<td>10 qubits, single-Z</td>
+<td style="text-align: right;">0.02 ms</td>
+</tr>
+<tr>
+<td><code>pec_sample_parallel</code></td>
+<td>100 000 samples, 5 gates</td>
+<td style="text-align: right;">14.04 ms</td>
+</tr>
+<tr>
+<td><code>mc_xy_simulate</code></td>
+<td>8 osc, 5k therm + 2k meas</td>
+<td style="text-align: right;">1.39 ms</td>
+</tr>
+<tr>
+<td><code>brute_mpc</code></td>
+<td>dim=3, horizon=4</td>
+<td style="text-align: right;">0.27 ms</td>
+</tr>
+<tr>
+<td><code>parity_filter_mask</code></td>
+<td>10 000 × 20-bit</td>
+<td style="text-align: right;">0.14 ms</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cross-language-outlook">Cross-language outlook<a class="headerlink" href="#cross-language-outlook" title="Permanent link">&para;</a></h3>
+<p>These measured numbers are the verification baseline against which
+any future Mojo / Julia / Lean 4 investment is judged. Julia is now
+wired for <code>order_parameter</code> (see the next section); Mojo and Lean 4
+are not yet benchmarked in this codebase.</p>
+<p>Decision criteria for adopting a new acceleration backend:</p>
+<ol>
+<li>Identify a specific compute-hot Python module that does <strong>not</strong>
+   already have a Rust path. (Currently every module flagged in the
+   internal Rust audit already has one — see <code>docs/rust_engine.md</code>.)</li>
+<li>Build a minimal port and re-run the relevant section of
+   <code>tests/test_rust_path_benchmarks.py</code> shape.</li>
+<li>Publish the measured number in this table. Vague "X–Y faster"
+   ranges are explicitly out of scope.</li>
+</ol>
+<h3 id="python-orchestration-hot-paths">Python Orchestration Hot Paths<a class="headerlink" href="#python-orchestration-hot-paths" title="Permanent link">&para;</a></h3>
+<p>The table below is from code inspection plus the measured benchmark
+surfaces in this document. It identifies work that should move out of
+Python loops only after a parity test and benchmark row are added.</p>
+<table>
+<thead>
+<tr>
+<th>Current Python surface</th>
+<th>Evidence</th>
+<th>Target backend</th>
+<th>Acceptance gate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>analysis/koopman.py::build_koopman_generator</code></td>
+<td>Python builds the dense n²×n² Koopman generator and now has a native <code>scpn_quantum_engine.koopman_generator</code> route.</td>
+<td>Rust kernel returning the dense generator, with Python reconstructing canonical labels and retaining the NumPy fallback.</td>
+<td>Parity on n=4/8/16 and a new Rust-vs-Python timing row.</td>
+</tr>
+<tr>
+<td><code>benchmarks/quantum_advantage.py::quantum_benchmark</code></td>
+<td>The benchmark constructs Qiskit circuits once, then repeatedly calls <code>Statevector.evolve</code> in a Python loop.</td>
+<td>Vectorised simulator batch or Rust sparse statevector stepper once Qiskit semantics are matched.</td>
+<td>Same final state/order-parameter tolerance for fixed K, omega, t_max, dt, and a provenance table row.</td>
+</tr>
+<tr>
+<td><code>phase/mps_evolution.py::{dmrg_ground_state,tebd_evolution}</code></td>
+<td>Python drives per-sweep and per-step tensor operations around quimb.</td>
+<td>Prefer quimb-native vectorised calls first; only move glue to Rust if profiling shows Python overhead after tensor contraction cost is removed.</td>
+<td>Quimb parity test with long-range-coupling caveat preserved and a TEBD timing table.</td>
+</tr>
+<tr>
+<td><code>hardware/async_runner.py::_submit_blocking</code></td>
+<td>The module is an I/O bridge and is explicitly exempt from the Rust-path rule; its hot path is repeated transpilation/submission orchestration, not numeric compute.</td>
+<td>Keep in Python; batch or cache transpilation inputs before considering native code.</td>
+<td>Hardware mock tests plus real-job provenance showing lower submission overhead without changing counts.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="multi-language-accel-chain">Multi-language accel chain<a class="headerlink" href="#multi-language-accel-chain" title="Permanent link">&para;</a></h2>
+<p>The dispatcher in <code>src/scpn_quantum_control/accel/dispatcher.py</code>
+forwards each compute function through an ordered chain of
+acceleration tiers (Rust → Julia → Python). The chain order <strong>must</strong>
+match measured wall-time on the runner class used in production.
+This section is the authoritative place where those measurements
+are recorded. The raw JSON is at
+<code>docs/benchmarks/order_parameter_tiers.json</code> and the reproducer is
+<code>scripts/bench_order_parameter_tiers.py</code>.</p>
+<h3 id="order_parametertheta"><code>order_parameter(theta)</code><a class="headerlink" href="#order_parametertheta" title="Permanent link">&para;</a></h3>
+<p>Measured 2026-04-17 on the local Linux runner (Intel i5-11600K,
+Python 3.12, juliacall 0.9.31, scpn-quantum-engine local build).
+Inner loop: 50 calls per sample × 5 samples; reported value is the
+per-call median.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">N</th>
+<th style="text-align: right;">Rust</th>
+<th style="text-align: right;">Julia</th>
+<th style="text-align: right;">Python</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">1.13 µs</td>
+<td style="text-align: right;">11.19 µs</td>
+<td style="text-align: right;">6.22 µs</td>
+</tr>
+<tr>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">0.90 µs</td>
+<td style="text-align: right;">13.93 µs</td>
+<td style="text-align: right;">5.92 µs</td>
+</tr>
+<tr>
+<td style="text-align: right;">64</td>
+<td style="text-align: right;">1.32 µs</td>
+<td style="text-align: right;">13.32 µs</td>
+<td style="text-align: right;">7.21 µs</td>
+</tr>
+<tr>
+<td style="text-align: right;">256</td>
+<td style="text-align: right;">2.97 µs</td>
+<td style="text-align: right;">16.83 µs</td>
+<td style="text-align: right;">12.82 µs</td>
+</tr>
+<tr>
+<td style="text-align: right;">1024</td>
+<td style="text-align: right;">13.12 µs</td>
+<td style="text-align: right;">21.62 µs</td>
+<td style="text-align: right;">26.60 µs</td>
+</tr>
+<tr>
+<td style="text-align: right;">4096</td>
+<td style="text-align: right;">38.10 µs</td>
+<td style="text-align: right;">58.29 µs</td>
+<td style="text-align: right;">123.89 µs</td>
+</tr>
+<tr>
+<td style="text-align: right;">16384</td>
+<td style="text-align: right;">256.50 µs</td>
+<td style="text-align: right;">275.80 µs</td>
+<td style="text-align: right;">465.78 µs</td>
+</tr>
+</tbody>
+</table>
+<p>Read-offs:</p>
+<ul>
+<li>Rust wins at every measured N — the dispatcher places it first,
+  which matches measurement.</li>
+<li>Julia is <strong>slower than Python</strong> for N ≤ 256 because the juliacall
+  FFI crossing + Julia unboxing overhead cost more than the SIMD
+  win on tiny arrays. The chain still places Julia before Python,
+  which is the correct behaviour when Rust is unavailable and the
+  caller expects <em>some</em> acceleration; callers with N &lt; 256 who
+  cannot use the Rust tier should pick the Python floor explicitly
+  by importing <code>_python_order_parameter</code> directly.</li>
+<li>Julia beats Python from N ≥ 1024 onwards (1.23× at N = 1024,
+  2.13× at N = 4096, 1.69× at N = 16 384) — here the SIMD
+  accumulator amortises the FFI cost.</li>
+<li>Rust's margin over Julia narrows as N grows (12.3× at N = 16,
+  1.08× at N = 16 384) — at very large N the bottleneck is memory
+  bandwidth and both tiers converge to the same throughput.</li>
+</ul>
+<h3 id="re-running">Re-running<a class="headerlink" href="#re-running" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>python<span class="w"> </span>scripts/bench_order_parameter_tiers.py
+</code></pre></div>
+<p>Default arguments: 7 outer repeats × 100 inner reps, sizes
+4/16/64/256/1024/4096/16384. Output lands at
+<code>docs/benchmarks/order_parameter_tiers.json</code>. If the measured
+ordering changes (e.g. Julia overtakes Rust on a future runner with
+a smaller FFI overhead), update the chain comment at the top of
+<code>_ORDER_PARAMETER_CHAIN</code> in
+<code>src/scpn_quantum_control/accel/dispatcher.py</code> to match.</p>
+<h3 id="s4-multi-hardware-readiness">S4 multi-hardware readiness<a class="headerlink" href="#s4-multi-hardware-readiness" title="Permanent link">&para;</a></h3>
+<p>Command:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>scpn-bench<span class="w"> </span>s4-multi-hardware-ready
+</code></pre></div>
+<p>Regenerates <code>data/s4_multi_hardware_control/s4_multi_hardware_readiness_2026-05-06.json</code> and <code>docs/s4_multi_hardware_readiness_2026-05-06.md</code>. The harness compiles the Kuramoto-XY programme into neutral-atom and circuit-QED analogue forms, exports Pulser, Bloqade, and IBM pulse-level provider payloads, and wraps each route in an approval-gated execution plan. It performs no provider contact, no emulator execution, and no QPU submission.</p>
+<h3 id="s4-ibm-pulse-level-preregistration">S4 IBM pulse-level preregistration<a class="headerlink" href="#s4-ibm-pulse-level-preregistration" title="Permanent link">&para;</a></h3>
+<p>Command:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>scpn-bench<span class="w"> </span>s4-provider-preregistration
+</code></pre></div>
+<p>Regenerates <code>data/s4_multi_hardware_control/s4_ibm_pulse_preregistration_2026-05-06.json</code> and <code>docs/s4_ibm_pulse_preregistration_2026-05-06.md</code>. The harness reads the S4 readiness payload and packages the IBM pulse-level route as a calibration-review dossier. It performs no provider contact, creates no calibrated pulse schedule, and requests no QPU time.</p>
+<h3 id="s4-neutral-atom-preregistration">S4 neutral-atom preregistration<a class="headerlink" href="#s4-neutral-atom-preregistration" title="Permanent link">&para;</a></h3>
+<p>Command:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>scpn-bench<span class="w"> </span>s4-neutral-atom-preregistration
+</code></pre></div>
+<p>Regenerates <code>data/s4_multi_hardware_control/s4_neutral_atom_preregistration_2026-05-06.json</code> and <code>docs/s4_neutral_atom_preregistration_2026-05-06.md</code>. The harness reads the S4 readiness payload and packages the Pulser/Bloqade neutral-atom routes as provider-object construction review dossiers. It performs no provider SDK construction, no emulator run, no cloud contact, and no QPU submission.</p>
+<h3 id="s5-benchmark-suite">S5 benchmark suite<a class="headerlink" href="#s5-benchmark-suite" title="Permanent link">&para;</a></h3>
+<p>Command:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>scpn-bench<span class="w"> </span>s5-benchmark-suite
+</code></pre></div>
+<p>Regenerates <code>data/s5_benchmark_harness/phase1_benchmark_harness_2026-05-06.json</code> and <code>docs/benchmark_harness_phase1_2026-05-06.md</code>. The harness exposes the Phase 1 DLA-parity raw-count dataset through <code>scpn_quantum_control.benchmark_harness</code>, recomputes the published statistics, checks the noiseless classical parity-conservation baseline, and performs no QPU submission.</p>
+<h3 id="s5-benchmark-registry">S5 benchmark registry<a class="headerlink" href="#s5-benchmark-registry" title="Permanent link">&para;</a></h3>
+<p>Command:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>scpn-bench<span class="w"> </span>s5-benchmark-registry
+</code></pre></div>
+<p>Regenerates <code>data/s5_benchmark_harness/benchmark_registry_2026-05-06.json</code> and <code>docs/benchmark_harness_registry_2026-05-06.md</code>. The registry lists implemented and planned benchmark families separately so CHSH, BKT, OTOC, and DLA-dimension plans are visible without being presented as available benchmark results.</p>
+<h3 id="s6-quantum-kuramoto-split-audit">S6 quantum-kuramoto split audit<a class="headerlink" href="#s6-quantum-kuramoto-split-audit" title="Permanent link">&para;</a></h3>
+<p>Command:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>scpn-bench<span class="w"> </span>s6-split-audit
+</code></pre></div>
+<p>Regenerates <code>data/s6_quantum_kuramoto_split/quantum_kuramoto_split_audit_2026-05-07.json</code> and <code>docs/quantum_kuramoto_split_audit_2026-05-07.md</code>. The audit classifies candidate <code>phase</code>, <code>bridge</code>, <code>hardware</code>, and <code>accel</code> modules as reusable, needs-review, or SCPN-specific. It does not create or publish a second package.</p>
+<h3 id="s6-quantum-kuramoto-boundary-review">S6 quantum-kuramoto boundary review<a class="headerlink" href="#s6-quantum-kuramoto-boundary-review" title="Permanent link">&para;</a></h3>
+<p>Command:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>scpn-bench<span class="w"> </span>s6-boundary-review
+</code></pre></div>
+<p>Regenerates <code>data/s6_quantum_kuramoto_split/quantum_kuramoto_boundary_review_2026-05-07.json</code> and <code>docs/quantum_kuramoto_boundary_review_2026-05-07.md</code>. The review proposes a stable public API surface, documents decisions for needs-review rows, and keeps package-skeleton creation blocked until config/provenance/analysis-dependent refactors are closed.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+        <script src="../js/goatcounter.js"></script>
+      
+    
+  </body>
+</html>

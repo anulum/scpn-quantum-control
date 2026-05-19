@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# scpn-quantum-control — Execution-Surface Manifest
+
+[[surface]]
+path = "notebooks/39_ibm_hardware_v2.ipynb"
+classification = "hardware_gated"
+allowed_rules = ["credential_read", "hardware_submission"]
+ci_blocking = true
+
+[[surface]]
+path = "notebooks/14_dla_parity_ibm_hardware.ipynb"
+classification = "hardware_gated"
+allowed_rules = ["credential_read", "hardware_submission"]
+ci_blocking = true
+
+[[surface]]
+path = "notebooks/colab/kaggle_protein_folding_kuramoto.ipynb"
+classification = "external_publication"
+allowed_rules = ["shell_magic", "subprocess_execution", "network_access"]
+ci_blocking = true
+
+[[surface]]
+path = "notebooks/kaggle_push/kaggle_protein_folding_kuramoto.py"
+classification = "external_publication"
+allowed_rules = ["subprocess_execution", "network_access"]
+ci_blocking = true
+
+[[surface]]
+path = "notebooks/kaggle_push/push_all.sh"
+classification = "external_publication"
+allowed_rules = ["external_publication"]
+ci_blocking = true
