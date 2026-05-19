@@ -1,5 +1,8 @@
 .git
-.github
+.github/*
+!.github/workflows/
+!.github/workflows/*.yml
+!.github/workflows/*.yaml
 .githooks
 .mypy_cache
 .pytest_cache

@@ -26,6 +26,8 @@ RUN pip install --no-cache-dir --require-hashes -r requirements-ci-py312-linux.t
 
 COPY tests/ tests/
 COPY tools/ tools/
+COPY .github/workflows/ .github/workflows/
+COPY scpn_quantum_engine/src/ scpn_quantum_engine/src/
 COPY docs/ docs/
 COPY paper/ paper/
 COPY examples/ examples/
