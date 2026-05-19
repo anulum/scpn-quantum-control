@@ -16,6 +16,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 COMPARATOR_SCRIPT = Path("scripts") / "compare_paper0_knm_preregistered_replay.py"
+MEASURED_CANDIDATE_GATE_SCRIPT = Path("scripts") / "run_knm_measured_candidate_gate.py"
 DEFAULT_EXPECTED_JSON = REPO_ROOT / "data" / "paper0_knm_preregistered_replay.json"
 DEFAULT_EXPECTED_MARKDOWN = REPO_ROOT / "docs" / "paper0_knm_preregistered_replay.md"
 
@@ -25,6 +26,7 @@ def build_paper0_knm_preregistered_replay_gate_commands(
     comparator_script: Path = COMPARATOR_SCRIPT,
     expected_json: Path = DEFAULT_EXPECTED_JSON,
     expected_markdown: Path = DEFAULT_EXPECTED_MARKDOWN,
+    measured_candidate_gate_script: Path = MEASURED_CANDIDATE_GATE_SCRIPT,
 ) -> tuple[tuple[str, ...], ...]:
     """Return deterministic Paper 0 K_nm replay gate commands."""
 
@@ -37,6 +39,7 @@ def build_paper0_knm_preregistered_replay_gate_commands(
             "--expected-markdown",
             str(expected_markdown),
         ),
+        (sys.executable, str(measured_candidate_gate_script)),
     )
 
 

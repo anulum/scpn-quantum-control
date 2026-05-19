@@ -279,6 +279,8 @@ is copied here.
   PLV, IEEE 5-bus, and IEEE 14-bus K_nm comparison artefacts. The gate
   fails if any candidate is promoted, changes edge count, drops the
   strict unit-class decision, or records physical validation as closed.
+  The gate is now part of `scpn-bench paper0-knm-preregistered-replay-gate`,
+  so replay drift and measured-candidate promotion drift are checked together.
 - [x] **QSVT resource-estimator input hardening.** Implemented
   2026-05-12: the QSVT resource estimator and query-count helpers now
   reject non-square, dimension-mismatched, asymmetric, or non-finite

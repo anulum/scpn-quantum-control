@@ -46,7 +46,7 @@ then measured-system or hardware evidence.
 | Ledger-bound source ingestion | `docs/paper0_validation_register.md`; `scpn_quantum_control.paper0` | Complete source accounting for GOTM-SCPN Paper 0: The Foundational Framework, not external validation. |
 | Reproducible spec and fixture preservation | `scpn_quantum_control.paper0.spec_loader`; generated GOTM-SCPN Paper 0 validation modules | Fixture preservation and loader determinism only. |
 | Public downstream programme registry | `docs/paper0_lane_registry.md`; `data/paper0_lane_registry.json`; `scpn-bench paper0-lane-registry-gate` | Source-bounded programme planning, not hardware readiness. |
-| First preregistered replay gate | `docs/paper0_knm_preregistered_replay.md`; `data/paper0_knm_preregistered_replay.json`; `scpn-bench paper0-knm-preregistered-replay-gate` | Deterministic no-QPU replay with fail-closed promotion decision; blocked and non-closing until measured coupling magnitudes with uncertainty exist. |
+| First preregistered replay gate | `docs/paper0_knm_preregistered_replay.md`; `data/paper0_knm_preregistered_replay.json`; `scpn-bench paper0-knm-preregistered-replay-gate` | Deterministic no-QPU replay with fail-closed promotion decision plus measured-candidate unit-class gate; blocked and non-closing until measured coupling magnitudes with uncertainty exist. |
 | Stable release-gate pattern | `docs/release_readiness.md`; `scpn-bench stable-core-release-gate` | Software reproducibility and claim-boundary discipline only. |
 | Method for choosing next experiments | `docs/paper0_experimental_pathway.md` | Candidate prioritisation; no measured-system result yet. |
 

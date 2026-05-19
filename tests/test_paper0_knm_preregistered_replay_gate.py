@@ -28,6 +28,7 @@ from scripts.run_paper0_knm_preregistered_replay import (
 )
 from scripts.run_paper0_knm_preregistered_replay_gate import (
     COMPARATOR_SCRIPT,
+    MEASURED_CANDIDATE_GATE_SCRIPT,
     build_paper0_knm_preregistered_replay_gate_commands,
 )
 
@@ -179,7 +180,17 @@ def test_gate_helper_builds_comparator_command_with_explicit_expected_paths(
             "--expected-markdown",
             str(expected_markdown),
         ),
+        (sys.executable, "scripts/run_knm_measured_candidate_gate.py"),
     )
+
+
+def test_gate_helper_includes_measured_candidate_boundary_gate() -> None:
+    commands = build_paper0_knm_preregistered_replay_gate_commands()
+
+    assert (
+        sys.executable,
+        str(MEASURED_CANDIDATE_GATE_SCRIPT),
+    ) in commands
 
 
 def test_contract_export_preserves_fail_closed_replay_boundary() -> None:

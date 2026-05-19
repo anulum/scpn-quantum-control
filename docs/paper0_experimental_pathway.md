@@ -179,10 +179,11 @@ payload beyond regenerated file equality. A payload fails the gate if it stops
 being blocked/non-closing, removes the hardware-blocking claim boundary,
 authorises hardware submission, authorises claim promotion, drops the QPU
 blocking gate, omits required evidence before reconsideration, omits
-falsifiers, or carries stale input SHA-256 digests. This invariant is part of
-the Paper 0 pathway boundary: no later agent should interpret matrix alignment,
-null-model output, digest stability, or byte-aligned JSON edits as permission
-for QPU execution.
+falsifiers, carries stale input SHA-256 digests, or weakens the committed
+measured-candidate unit-class and non-promotion boundary. This invariant is
+part of the Paper 0 pathway boundary: no later agent should interpret matrix
+alignment, null-model output, digest stability, or byte-aligned JSON edits as
+permission for QPU execution.
 
 ### Measured-coupling promotion checklist
 
