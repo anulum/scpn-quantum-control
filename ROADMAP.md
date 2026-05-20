@@ -960,6 +960,18 @@ explicit QPU-time estimate before submission.
   improves under linear extrapolation. Remaining paper work is
   venue-specific formatting and bibliography polish, not additional QPU spend
   for this paper.
+- [ ] **Entanglement tomography third-backend ZNE replication.** Started
+  2026-05-20 on `ibm_kingston` after `ibm_sherbrooke` and `ibm_torino` were
+  unavailable to the account. Readiness passed for physical qubits
+  `[141,142,143,144]`, 45 main ZNE circuits, 16 full-readout circuits, max
+  depth `1686`, and estimated QPU time `0.5592` minutes under the 25-minute
+  ceiling. Pending jobs: main `d86i8fas46sc73f70vg0`, readout
+  `d86ijr9789is738vnh30`. Artefacts:
+  `data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_kingston_2026-05-20T030151Z.json`,
+  `data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_kingston_2026-05-20T030211Z.json`,
+  and `docs/phase3_entanglement_zne_third_backend_kingston_2026-05-20.md`.
+  This is pending execution evidence only; paper claims remain blocked until
+  both jobs are done, raw counts are retrieved, and the ZNE reducer is run.
 - [x] **Depth-optimal native decomposition preregistration.**
   Completed 2026-05-06:
   `docs/depth_optimal_native_decomposition_prereg_2026-05-06.md`
