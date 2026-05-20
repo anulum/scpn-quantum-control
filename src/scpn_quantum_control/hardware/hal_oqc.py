@@ -1,0 +1,251 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# scpn-quantum-control — OQC QCAAS adapter for the hardware HAL
+"""Direct OQC QCAAS adapter for the provider-neutral HAL."""
+
+from __future__ import annotations
+
+from collections.abc import Callable, Mapping
+from datetime import datetime, timezone
+from importlib import import_module
+from typing import Any, cast
+
+from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
+
+OQC_EXECUTION_MODE = "oqc_qcaas_openqasm3"
+
+
+def oqc_openqasm3_workload(
+    program: str,
+    *,
+    workload_id: str,
+    n_qubits: int,
+    shots: int,
+    metadata: Mapping[str, object] | None = None,
+) -> QuantumWorkload:
+    """Encode an OpenQASM 3 program as an OQC HAL workload."""
+
+    _validate_openqasm3(program)
+    return QuantumWorkload(
+        workload_id=workload_id,
+        ir_format="openqasm3",
+        program=program,
+        n_qubits=n_qubits,
+        shots=shots,
+        metadata=dict(metadata or {}),
+    )
+
+
+class OQCHALAdapter:
+    """OQC QCAAS client adapter implementing the provider-neutral HAL protocol."""
+
+    def __init__(
+        self,
+        profile: BackendProfile,
+        *,
+        client: Any | None = None,
+        client_factory: Callable[[], Any] | None = None,
+        target: str = "default",
+    ) -> None:
+        if profile.backend_id != "oqc_cloud":
+            raise ValueError("OQCHALAdapter requires the oqc_cloud profile")
+        self.profile = profile
+        self.backend_id = profile.backend_id
+        self._client = client
+        self._client_factory = client_factory
+        self._target = target
+        self._jobs: dict[str, QuantumJobRef] = {}
+        self._provider_jobs: dict[str, Any] = {}
+        self._results: dict[str, QuantumJobResult] = {}
+
+    def submit(
+        self, workload: QuantumWorkload, *, approval_id: str | None = None
+    ) -> QuantumJobRef:
+        if not approval_id:
+            raise PermissionError("approval_id is required for OQC submission")
+        if workload.ir_format != "openqasm3":
+            raise ValueError("OQC direct adapter requires openqasm3 workloads")
+        _validate_openqasm3(workload.program)
+        submit = getattr(self._client_for(), "submit", None)
+        if not callable(submit):
+            raise TypeError("OQC client object does not provide submit()")
+        provider_job = submit(
+            program=workload.program,
+            shots=workload.shots,
+            target=self._target,
+            name=workload.workload_id,
+        )
+        job = QuantumJobRef(
+            job_id=f"{self.backend_id}:{workload.workload_id}",
+            backend_id=self.backend_id,
+            workload_id=workload.workload_id,
+            status="submitted",
+            metadata={
+                "approval_id": approval_id,
+                "provider_job_id": f"{self.backend_id}:{workload.workload_id}",
+                "execution_mode": OQC_EXECUTION_MODE,
+                "target": self._target,
+                "ir_format": workload.ir_format,
+                "n_qubits": workload.n_qubits,
+                "shots": workload.shots,
+            },
+        )
+        self._jobs[job.job_id] = job
+        self._provider_jobs[job.job_id] = provider_job
+        return job
+
+    def status(self, job: QuantumJobRef) -> str:
+        provider_job = self._provider_job(job)
+        status = getattr(provider_job, "status", None)
+        if callable(status):
+            status = status()
+        return _normalise_status(status)
+
+    def result(self, job: QuantumJobRef) -> QuantumJobResult:
+        cached = self._results.get(job.job_id)
+        if cached is not None:
+            return cached
+        stored = self._job(job)
+        provider_job = self._provider_job(job)
+        result_method = getattr(provider_job, "result", None)
+        if not callable(result_method):
+            raise TypeError("OQC provider job does not provide result()")
+        counts = _normalise_counts(_extract_counts(result_method()))
+        result = QuantumJobResult(
+            job=stored,
+            status="completed",
+            counts=counts,
+            shots=sum(counts.values()),
+            metadata={
+                "approval_id": stored.metadata.get("approval_id"),
+                "execution_mode": OQC_EXECUTION_MODE,
+                "target": self._target,
+                "timestamp": _utc_now(),
+            },
+        )
+        self._results[job.job_id] = result
+        return result
+
+    def cancel(self, job: QuantumJobRef) -> QuantumJobRef:
+        stored = self._job(job)
+        provider_job = self._provider_job(job)
+        cancel = getattr(provider_job, "cancel", None)
+        if callable(cancel):
+            cancel()
+        cancelled = QuantumJobRef(
+            job_id=stored.job_id,
+            backend_id=stored.backend_id,
+            workload_id=stored.workload_id,
+            status="cancelled",
+            metadata=stored.metadata,
+        )
+        self._jobs[job.job_id] = cancelled
+        return cancelled
+
+    def _client_for(self) -> Any:
+        if self._client is not None:
+            return self._client
+        if self._client_factory is not None:
+            self._client = self._client_factory()
+            return self._client
+        self._client = _default_client_factory()
+        return self._client
+
+    def _job(self, job: QuantumJobRef) -> QuantumJobRef:
+        stored = self._jobs.get(job.job_id)
+        if stored is None:
+            raise KeyError(f"unknown job_id: {job.job_id}")
+        return stored
+
+    def _provider_job(self, job: QuantumJobRef) -> Any:
+        self._job(job)
+        return self._provider_jobs[job.job_id]
+
+
+def _default_client_factory() -> Any:
+    try:
+        import_module("qcaas_client")
+    except Exception as exc:
+        raise RuntimeError(
+            "oqc-qcaas-client is required for OQCHALAdapter; inject client_factory"
+        ) from exc
+    raise RuntimeError(
+        "automatic OQC client construction requires a calibrated OQC client; inject client_factory"
+    )
+
+
+def _validate_openqasm3(program: str) -> None:
+    if not isinstance(program, str) or not program.strip():
+        raise ValueError("OQC OpenQASM 3 program must be non-empty")
+    first_line = program.lstrip().splitlines()[0].strip()
+    if not first_line.startswith("OPENQASM 3.0"):
+        raise ValueError("OQC direct adapter requires an OPENQASM 3.0 program")
+
+
+def _extract_counts(result: object) -> object:
+    if isinstance(result, Mapping):
+        for key in ("counts", "results", "histogram"):
+            value = result.get(key)
+            if isinstance(value, Mapping):
+                return value
+    counts = getattr(result, "counts", None)
+    if isinstance(counts, Mapping):
+        return counts
+    results = getattr(result, "results", None)
+    if isinstance(results, Mapping):
+        return results
+    raise RuntimeError("Could not extract OQC counts from provider result")
+
+
+def _normalise_counts(raw: object) -> dict[str, int]:
+    if not isinstance(raw, Mapping):
+        raise TypeError("OQC counts must be a mapping")
+    counts: dict[str, int] = {}
+    for bitstring, count in raw.items():
+        key = str(bitstring)
+        value = _coerce_int(count, field_name="count")
+        if not key:
+            raise ValueError("counts keys must be non-empty bitstrings")
+        if value < 0:
+            raise ValueError("counts values must be non-negative integers")
+        counts[key] = value
+    if not counts:
+        raise ValueError("OQC result did not contain any counts")
+    return counts
+
+
+def _normalise_status(value: object) -> str:
+    text = str(value).split(".")[-1].lower()
+    return {
+        "done": "completed",
+        "completed": "completed",
+        "finished": "completed",
+        "success": "completed",
+        "queued": "queued",
+        "pending": "queued",
+        "running": "running",
+        "cancelled": "cancelled",
+        "canceled": "cancelled",
+        "failed": "failed",
+        "error": "failed",
+    }.get(text, text or "unknown")
+
+
+def _coerce_int(value: object, *, field_name: str) -> int:
+    if isinstance(value, bool):
+        raise ValueError(f"{field_name} must be an integer")
+    try:
+        return int(cast(int | str, value))
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{field_name} must be an integer") from exc
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+__all__ = ["OQC_EXECUTION_MODE", "OQCHALAdapter", "oqc_openqasm3_workload"]

@@ -80,6 +80,10 @@ def test_hal_profiles_export_backend_descriptors_for_selector_metadata() -> None
     assert quandela.adapter_module == "scpn_quantum_control.hardware.hal_quandela"
     assert "perceval" in quandela.workloads
 
+    oqc = describe_hal_backend_profile("oqc_cloud")
+    assert oqc.adapter_module == "scpn_quantum_control.hardware.hal_oqc"
+    assert "openqasm3" in oqc.workloads
+
 
 def test_builtin_hal_profiles_cover_major_current_provider_routes() -> None:
     """Built-in profiles should cover the current major provider families."""

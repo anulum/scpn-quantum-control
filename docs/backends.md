@@ -337,6 +337,7 @@ from scpn_quantum_control.hardware import (
     IonQCloudHALAdapter,
     IQMHALAdapter,
     LocalDeterministicSimulator,
+    OQCHALAdapter,
     PasqalPulserHALAdapter,
     PennyLaneDeviceHALAdapter,
     QbraidRuntimeHALAdapter,
@@ -352,6 +353,7 @@ from scpn_quantum_control.hardware import (
     dwave_bqm_workload,
     ionq_qis_workload,
     iqm_qiskit_workload,
+    oqc_openqasm3_workload,
     pulser_sequence_workload,
     pennylane_gate_workload,
     qbraid_program_to_workload,
@@ -480,6 +482,28 @@ job = hal.submit(
         n_qubits=2,
         shots=256,
     ),
+    approval_id="approved-run",
+)
+```
+
+The direct OQC adapter layer provides `OQCHALAdapter` and
+`oqc_openqasm3_workload()`. It consumes OpenQASM 3 programs, validates the
+program header before submission, calls an injected QCAAS-style client, normalises
+provider counts into HAL counts, and keeps OQC cloud execution approval-gated.
+Automatic client construction is calibration-gated.
+
+```python
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+hal.register_backend(
+    OQCHALAdapter(
+        hal.profile("oqc_cloud"),
+        client_factory=calibrated_oqc_client_factory,
+        target="Lucy",
+    )
+)
+job = hal.submit(
+    "oqc_cloud",
+    oqc_openqasm3_workload(openqasm3_program, workload_id="oqc_bell", n_qubits=2, shots=256),
     approval_id="approved-run",
 )
 ```

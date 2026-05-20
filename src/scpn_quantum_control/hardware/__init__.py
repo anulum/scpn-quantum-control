@@ -149,6 +149,7 @@ from .hal_braket import (
 from .hal_dwave import DWaveLeapHALAdapter, dwave_bqm_workload
 from .hal_ionq import IonQCloudHALAdapter, ionq_qis_workload
 from .hal_iqm import IQMHALAdapter, iqm_qiskit_workload
+from .hal_oqc import OQCHALAdapter, oqc_openqasm3_workload
 from .hal_pasqal import PasqalPulserHALAdapter, pulser_sequence_workload
 from .hal_pennylane import PennyLaneDeviceHALAdapter, pennylane_gate_workload
 from .hal_qbraid import QbraidRuntimeHALAdapter, qbraid_program_to_workload
@@ -259,6 +260,8 @@ __all__ = [
     "ionq_qis_workload",
     "IQMHALAdapter",
     "iqm_qiskit_workload",
+    "OQCHALAdapter",
+    "oqc_openqasm3_workload",
     "PasqalPulserHALAdapter",
     "pulser_sequence_workload",
     "PennyLaneDeviceHALAdapter",

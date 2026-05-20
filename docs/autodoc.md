@@ -166,6 +166,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [IQMHALAdapter, iqm_qiskit_workload]
 
+::: scpn_quantum_control.hardware.hal_oqc
+    options:
+      members: [OQCHALAdapter, oqc_openqasm3_workload]
+
 ::: scpn_quantum_control.hardware.hal_pasqal
     options:
       members: [PasqalPulserHALAdapter, pulser_sequence_workload]
