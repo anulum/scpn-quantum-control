@@ -321,6 +321,7 @@ def _summarise_backend(
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """Run the command-line entry point."""
     args = _parse_args(argv)
     backends = [str(name) for name in args.backends]
     lanes = [str(name) for name in args.lanes]

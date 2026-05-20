@@ -158,6 +158,7 @@ class NetworkCycleBackend:
         *,
         persistence_threshold: float = 0.1,
     ) -> H1Summary:
+        """Compute an H1 summary from a thresholded graph cycle basis."""
         distance = _as_square_symmetric_matrix("distance_matrix", distance_matrix)
         graph = nx.Graph()
         n = distance.shape[0]
@@ -200,6 +201,7 @@ class RipserPHBackend:
         *,
         persistence_threshold: float = 0.1,
     ) -> H1Summary:
+        """Compute a Vietoris-Rips persistent-H1 summary with ripser."""
         if not RIPSER_AVAILABLE:
             raise ImportError("ripser not installed: pip install 'scpn-quantum-control[topology]'")
         distance = _as_square_symmetric_matrix("distance_matrix", distance_matrix)

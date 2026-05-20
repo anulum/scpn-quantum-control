@@ -73,6 +73,7 @@ class QuEraBloqadeHALAdapter:
     def submit(
         self, workload: QuantumWorkload, *, approval_id: str | None = None
     ) -> QuantumJobRef:
+        """Submit a workload to the backend and return its job reference."""
         if not approval_id:
             raise PermissionError("approval_id is required for QuEra Bloqade submission")
         if workload.ir_format != "bloqade":
@@ -101,6 +102,7 @@ class QuEraBloqadeHALAdapter:
         return job
 
     def status(self, job: QuantumJobRef) -> str:
+        """Return the current status for a submitted backend job."""
         batch = self._batch(job)
         if callable(getattr(batch, "fetch", None)):
             batch = batch.fetch()
@@ -108,6 +110,7 @@ class QuEraBloqadeHALAdapter:
         return _normalise_status(getattr(batch, "status", "completed"))
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
+        """Return the completed result for a submitted backend job."""
         cached = self._results.get(job.job_id)
         if cached is not None:
             return cached
@@ -133,6 +136,7 @@ class QuEraBloqadeHALAdapter:
         return result
 
     def cancel(self, job: QuantumJobRef) -> QuantumJobRef:
+        """Request cancellation for a submitted backend job."""
         stored = self._job(job)
         batch = self._batch(job)
         cancel = getattr(batch, "cancel", None)

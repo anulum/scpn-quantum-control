@@ -240,6 +240,7 @@ def write_multibackend_heatmap(
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR)
     parser.add_argument("--figure-dir", type=Path, default=DEFAULT_FIGURE_DIR)
@@ -247,6 +248,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Run the command-line entry point."""
     args = parse_args()
     rows, columns, matrix = build_matrix(args.data_dir, BACKEND_RUNS[0])
     outputs = write_single_backend_heatmap(rows, columns, matrix, args.figure_dir)

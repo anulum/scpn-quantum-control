@@ -724,6 +724,7 @@ def _run_lane(args: argparse.Namespace, backend: Any, lane: str) -> int:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """Run the command-line entry point."""
     args = _parse_args(argv)
     if args.submit and not args.confirm_budget:
         print("ERROR: --submit requires --confirm-budget", file=sys.stderr)

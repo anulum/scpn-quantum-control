@@ -52,6 +52,7 @@ class HardwareEmbeddingConstraint:
     def from_edges(
         cls, edges: set[Edge] | frozenset[Edge] | tuple[Edge, ...]
     ) -> HardwareEmbeddingConstraint:
+        """Build a hardware embedding constraint from undirected edge pairs."""
         return cls(frozenset(canonical_edge(i, j) for i, j in edges))
 
     def mask(self, n_nodes: int) -> FloatArray:

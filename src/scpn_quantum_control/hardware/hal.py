@@ -205,6 +205,7 @@ class LocalDeterministicSimulator:
     def submit(
         self, workload: QuantumWorkload, *, approval_id: str | None = None
     ) -> QuantumJobRef:
+        """Submit a workload to the backend and return its job reference."""
         del approval_id
         _validate_workload_for_profile(self.profile, workload)
         digest = hashlib.sha256(
@@ -234,18 +235,21 @@ class LocalDeterministicSimulator:
         return job
 
     def status(self, job: QuantumJobRef) -> str:
+        """Return the current status for a submitted backend job."""
         stored = self._jobs.get(job.job_id)
         if stored is None:
             raise KeyError(f"unknown job_id: {job.job_id}")
         return stored.status
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
+        """Return the completed result for a submitted backend job."""
         result = self._results.get(job.job_id)
         if result is None:
             raise KeyError(f"unknown job_id: {job.job_id}")
         return result
 
     def cancel(self, job: QuantumJobRef) -> QuantumJobRef:
+        """Request cancellation for a submitted backend job."""
         if job.job_id not in self._jobs:
             raise KeyError(f"unknown job_id: {job.job_id}")
         cancelled = QuantumJobRef(

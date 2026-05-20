@@ -82,6 +82,7 @@ class QuantinuumCloudHALAdapter:
     def submit(
         self, workload: QuantumWorkload, *, approval_id: str | None = None
     ) -> QuantumJobRef:
+        """Submit a workload to the backend and return its job reference."""
         if not approval_id:
             raise PermissionError("approval_id is required for Quantinuum submission")
         if workload.ir_format != "tket":
@@ -111,10 +112,12 @@ class QuantinuumCloudHALAdapter:
         return job
 
     def status(self, job: QuantumJobRef) -> str:
+        """Return the current status for a submitted backend job."""
         handle = self._handle(job)
         return _normalise_status(self._backend_client().circuit_status(handle))
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
+        """Return the completed result for a submitted backend job."""
         stored = self._job(job)
         handle = self._handle(job)
         result = self._backend_client().get_result(handle)
@@ -133,6 +136,7 @@ class QuantinuumCloudHALAdapter:
         )
 
     def cancel(self, job: QuantumJobRef) -> QuantumJobRef:
+        """Request cancellation for a submitted backend job."""
         stored = self._job(job)
         handle = self._handle(job)
         self._backend_client().cancel(handle)

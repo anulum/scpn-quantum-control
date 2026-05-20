@@ -443,6 +443,7 @@ def _raw_count_package_from_policy_sweep_results(
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """Run the command-line entry point."""
     args = _parse_args(argv)
     if args.submit and not args.confirm_budget:
         print("ERROR: --submit requires --confirm-budget", file=sys.stderr)

@@ -216,12 +216,14 @@ def hydrate_artifact(path: Path) -> tuple[dict[str, Any], str]:
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("artifact", type=Path)
     return parser.parse_args()
 
 
 def main() -> int:
+    """Run the command-line entry point."""
     args = parse_args()
     artifact = args.artifact.resolve()
     payload, sha = hydrate_artifact(artifact)

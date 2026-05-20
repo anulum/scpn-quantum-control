@@ -72,6 +72,7 @@ class AzureQuantumHALAdapter:
     def submit(
         self, workload: QuantumWorkload, *, approval_id: str | None = None
     ) -> QuantumJobRef:
+        """Submit a workload to the backend and return its job reference."""
         if not approval_id:
             raise PermissionError("approval_id is required for Azure Quantum submission")
         if workload.ir_format != "openqasm3":
@@ -108,6 +109,7 @@ class AzureQuantumHALAdapter:
         return job
 
     def status(self, job: QuantumJobRef) -> str:
+        """Return the current status for a submitted backend job."""
         provider_job = self._provider_job(job)
         refresh = getattr(provider_job, "refresh", None)
         if callable(refresh):
@@ -124,6 +126,7 @@ class AzureQuantumHALAdapter:
         return self._jobs[job.job_id].status
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
+        """Return the completed result for a submitted backend job."""
         cached = self._results.get(job.job_id)
         if cached is not None:
             return cached
@@ -147,6 +150,7 @@ class AzureQuantumHALAdapter:
         return result
 
     def cancel(self, job: QuantumJobRef) -> QuantumJobRef:
+        """Request cancellation for a submitted backend job."""
         provider_job = self._provider_job(job)
         cancel = getattr(provider_job, "cancel", None)
         if not callable(cancel):

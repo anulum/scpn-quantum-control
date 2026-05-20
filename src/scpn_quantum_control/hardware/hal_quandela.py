@@ -73,6 +73,7 @@ class QuandelaPercevalHALAdapter:
     def submit(
         self, workload: QuantumWorkload, *, approval_id: str | None = None
     ) -> QuantumJobRef:
+        """Submit a workload to the backend and return its job reference."""
         if not approval_id:
             raise PermissionError("approval_id is required for Quandela submission")
         if workload.ir_format != "perceval":
@@ -113,15 +114,18 @@ class QuandelaPercevalHALAdapter:
         return job
 
     def status(self, job: QuantumJobRef) -> str:
+        """Return the current status for a submitted backend job."""
         return self._job(job).status
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
+        """Return the completed result for a submitted backend job."""
         result = self._results.get(job.job_id)
         if result is None:
             raise KeyError(f"unknown job_id: {job.job_id}")
         return result
 
     def cancel(self, job: QuantumJobRef) -> QuantumJobRef:
+        """Request cancellation for a submitted backend job."""
         stored = self._job(job)
         cancelled = QuantumJobRef(
             job_id=stored.job_id,

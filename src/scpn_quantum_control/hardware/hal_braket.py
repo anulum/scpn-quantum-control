@@ -55,6 +55,7 @@ class BraketLocalHALAdapter:
     def submit(
         self, workload: QuantumWorkload, *, approval_id: str | None = None
     ) -> QuantumJobRef:
+        """Submit a workload to the backend and return its job reference."""
         del approval_id
         circuit = _workload_to_braket_circuit(workload)
         device = self._device or _default_local_device(self.profile.backend_id)
@@ -90,18 +91,21 @@ class BraketLocalHALAdapter:
         return job
 
     def status(self, job: QuantumJobRef) -> str:
+        """Return the current status for a submitted backend job."""
         stored = self._jobs.get(job.job_id)
         if stored is None:
             raise KeyError(f"unknown job_id: {job.job_id}")
         return stored.status
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
+        """Return the completed result for a submitted backend job."""
         result = self._results.get(job.job_id)
         if result is None:
             raise KeyError(f"unknown job_id: {job.job_id}")
         return result
 
     def cancel(self, job: QuantumJobRef) -> QuantumJobRef:
+        """Request cancellation for a submitted backend job."""
         if job.job_id not in self._jobs:
             raise KeyError(f"unknown job_id: {job.job_id}")
         cancelled = QuantumJobRef(
@@ -142,6 +146,7 @@ class BraketAwsHALAdapter:
     def submit(
         self, workload: QuantumWorkload, *, approval_id: str | None = None
     ) -> QuantumJobRef:
+        """Submit a workload to the backend and return its job reference."""
         if not approval_id:
             raise PermissionError("approval_id is required for AWS Braket submission")
         circuit = _workload_to_braket_circuit(workload)
@@ -166,11 +171,13 @@ class BraketAwsHALAdapter:
         return job
 
     def status(self, job: QuantumJobRef) -> str:
+        """Return the current status for a submitted backend job."""
         task = self._task(job)
         state = task.state()
         return str(getattr(state, "name", state)).lower()
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
+        """Return the completed result for a submitted backend job."""
         cached = self._results.get(job.job_id)
         if cached is not None:
             return cached
@@ -193,6 +200,7 @@ class BraketAwsHALAdapter:
         return result
 
     def cancel(self, job: QuantumJobRef) -> QuantumJobRef:
+        """Request cancellation for a submitted backend job."""
         task = self._task(job)
         task.cancel()
         cancelled = QuantumJobRef(

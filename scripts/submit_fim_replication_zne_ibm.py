@@ -784,6 +784,7 @@ def retrieve_lane(args: argparse.Namespace) -> int:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """Run the command-line entry point."""
     args = _parse_args(argv)
     if args.retrieve_submission is not None:
         return retrieve_lane(args)
