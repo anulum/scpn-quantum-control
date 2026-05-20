@@ -683,6 +683,7 @@ from scpn_quantum_control.hardware import (
     HardwareAbstractionLayer,
     IonQCloudHALAdapter,
     IQMHALAdapter,
+    PasqalPulserHALAdapter,
     PennyLaneDeviceHALAdapter,
     QbraidRuntimeHALAdapter,
     QuEraBloqadeHALAdapter,
@@ -697,6 +698,7 @@ from scpn_quantum_control.hardware import (
     built_in_backend_profiles,
     ionq_qis_workload,
     iqm_qiskit_workload,
+    pulser_sequence_workload,
     pennylane_gate_workload,
     qbraid_program_to_workload,
     quantinuum_tket_workload,
@@ -819,6 +821,30 @@ hal.register_backend(
 job = hal.submit(
     "iqm_cloud",
     iqm_qiskit_workload(qiskit_circuit, workload_id="iqm_bell", shots=128),
+    approval_id="approved-run",
+)
+```
+
+The direct Pasqal adapter layer provides `PasqalPulserHALAdapter` and
+`pulser_sequence_workload()`. It consumes the repository's
+`pulser_sequence_plan_v1` neutral-atom export schema, validates register
+coordinates, Rabi envelope points, detuning terms, interaction terms, and FIM
+feedback terms, then submits through an injected Pasqal client or
+caller-supplied client factory. Automatic client construction is
+calibration-gated.
+
+```python
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+hal.register_backend(
+    PasqalPulserHALAdapter(
+        hal.profile("pasqal_cloud"),
+        client_factory=calibrated_pasqal_client_factory,
+        target="FRESNEL",
+    )
+)
+job = hal.submit(
+    "pasqal_cloud",
+    pulser_sequence_workload(pulser_plan, workload_id="pasqal_pair", n_qubits=2, shots=128),
     approval_id="approved-run",
 )
 ```

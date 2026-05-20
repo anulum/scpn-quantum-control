@@ -68,6 +68,10 @@ def test_hal_profiles_export_backend_descriptors_for_selector_metadata() -> None
     assert iqm.adapter_module == "scpn_quantum_control.hardware.hal_iqm"
     assert "qiskit_qpy" in iqm.workloads
 
+    pasqal = describe_hal_backend_profile("pasqal_cloud")
+    assert pasqal.adapter_module == "scpn_quantum_control.hardware.hal_pasqal"
+    assert "pulser" in pasqal.workloads
+
 
 def test_builtin_hal_profiles_cover_major_current_provider_routes() -> None:
     """Built-in profiles should cover the current major provider families."""

@@ -78,7 +78,7 @@ _HAL_PROFILE_ADAPTER_MODULES: dict[str, str] = {
     "local_qiskit_aer": "scpn_quantum_control.hardware.hal_qiskit",
     "local_statevector": "scpn_quantum_control.hardware.hal",
     "oqc_cloud": "scpn_quantum_control.hardware.hal",
-    "pasqal_cloud": "scpn_quantum_control.hardware.hal",
+    "pasqal_cloud": "scpn_quantum_control.hardware.hal_pasqal",
     "qbraid_ionq": "scpn_quantum_control.hardware.hal_qbraid",
     "quandela_cloud": "scpn_quantum_control.hardware.hal",
     "quantinuum_cloud": "scpn_quantum_control.hardware.hal_quantinuum",
