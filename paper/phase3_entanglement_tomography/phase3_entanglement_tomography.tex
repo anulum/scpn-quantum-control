@@ -62,7 +62,10 @@ entanglement dynamics.
 \section{Introduction}
 
 Kuramoto synchronisation and XY spin Hamiltonians provide a compact route from
-phase-oscillator structure to gate-model quantum dynamics~\cite{Kuramoto1975,Acebron2005}.
+phase-oscillator structure to gate-model quantum
+dynamics~\cite{Kuramoto1975,Acebron2005}. The dynamical-Lie-algebra language
+used here follows the standard Lie-algebraic controllability framework for
+finite-dimensional quantum systems~\cite{DAlessandro2007}.
 In the present programme, the relevant small-system hardware question is not
 whether a broad advantage has been demonstrated. It is narrower: when
 sector-resolved leakage and retention observables deviate from exact
@@ -72,12 +75,16 @@ accompanying structure that can constrain the mechanism?
 Previous DLA-parity and FIM runs established bounded hardware observations,
 including backend, layout, state-preparation, and readout sensitivity. A scalar
 leakage metric alone cannot distinguish coherent correlator deformation from
-population readout effects or generic depth-dependent decoherence. This paper
-therefore measures a small set of preregistered reduced-Pauli observables for
-the same class of promoted circuits. Full tomography is unnecessary for this
-question: the aim is to compare selected two-qubit correlators against exact
-classical references under one backend, layout, shot budget, and calibration
-window.
+population readout effects or generic depth-dependent decoherence on noisy
+intermediate-scale quantum hardware~\cite{Preskill2018}. This paper therefore
+measures a small set of preregistered reduced-Pauli observables for the same
+class of promoted circuits. Full tomography~\cite{NielsenChuang2010} is
+unnecessary for this question, and the protocol is closer in spirit to
+targeted local-observable estimation than to full state reconstruction; related
+measurement-efficient ideas include classical shadows and local observable
+prediction~\cite{HuangKuengPreskill2020}. The aim here is narrower still: to
+compare selected two-qubit correlators against exact classical references
+under one backend, layout, shot budget, and calibration window.
 
 \section{Protocol}
 
@@ -115,7 +122,9 @@ circuits. Four computational-basis readout states, \texttt{0000},
 The complete hardware block therefore contains 166 circuits. The selected
 physical qubits are $[1,2,3,4]$ on \texttt{ibm\_marrakesh}; the maximum
 transpiled depth in the live preflight is 388, and the maximum
-measurement-basis depth expansion is 1.0718.
+measurement-basis depth expansion is 1.0718. Circuit construction,
+transpilation, and hardware execution used Qiskit and the IBM Quantum
+platform~\cite{Qiskit2024,IBMQuantum}.
 
 \section{Analysis}
 
@@ -310,7 +319,9 @@ unmeasured circuits, depths, layouts, or backends.
 
 The source code and data are in the
 \href{https://github.com/anulum/scpn-quantum-control}{\texttt{anulum/scpn-quantum-control}}
-repository. The relevant commands are:
+repository. The execution and analysis use Qiskit and IBM Quantum access paths
+consistent with the cited platform references~\cite{Qiskit2024,IBMQuantum}.
+The relevant commands are:
 \begin{itemize}
   \item live readiness and gated submission:
     \path{scripts/phase3_entanglement_tomography_ibm.py};
