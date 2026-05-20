@@ -16,6 +16,7 @@ from scpn_quantum_control.hardware.provider_capability_discovery import (
     ProviderCapabilitySnapshot,
     assess_provider_capability_snapshot,
     probe_aggregator_provider_capability,
+    snapshot_from_azure_target,
     snapshot_from_braket_device,
     snapshot_from_qbraid_device,
     snapshot_from_qiskit_runtime_backend,
@@ -140,9 +141,9 @@ def test_probe_rejects_snapshot_that_does_not_match_resolved_route() -> None:
 def test_provider_capability_contract_is_exported_from_hardware_package() -> None:
     """The generic capability probe should be available from the HAL facade."""
 
-    from scpn_quantum_control.hardware import (  # noqa: PLC0415
+    from scpn_quantum_control.hardware import (
         ProviderCapabilityDecision,
-    )
+    )  # noqa: PLC0415
     from scpn_quantum_control.hardware import (
         ProviderCapabilitySnapshot as ExportedSnapshot,
     )
@@ -151,6 +152,9 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
     )
     from scpn_quantum_control.hardware import (
         probe_aggregator_provider_capability as exported_probe,
+    )
+    from scpn_quantum_control.hardware import (
+        snapshot_from_azure_target as exported_azure_snapshot,
     )
     from scpn_quantum_control.hardware import (
         snapshot_from_braket_device as exported_braket_snapshot,
@@ -163,8 +167,105 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
     assert ProviderCapabilityDecision.__name__ == "ProviderCapabilityDecision"
     assert exported_assess is assess_provider_capability_snapshot
     assert exported_probe is probe_aggregator_provider_capability
+    assert exported_azure_snapshot is snapshot_from_azure_target
     assert exported_braket_snapshot is snapshot_from_braket_device
     assert exported_qiskit_snapshot is snapshot_from_qiskit_runtime_backend
+
+
+def test_azure_quantum_snapshot_reads_target_metadata_without_submission() -> None:
+    """Azure metadata adapters should consume injected target metadata only."""
+
+    class Capability:
+        num_qubits = 56
+        basis_gates = ("rz", "sx", "cx", "measure")
+        max_shots = 10_000
+        max_experiments = 20
+
+    class Target:
+        name = "quantinuum.qpu.h2-1"
+        provider_id = "quantinuum"
+        current_availability = "Available"
+        input_formats = ("qasm.v3", "qiskit")
+        capability = Capability()
+        average_queue_time = 3
+        latest_calibration = "2026-05-20T10:00:00Z"
+        is_simulator = False
+
+        def submit(self, *args: object, **kwargs: object) -> None:
+            raise AssertionError("metadata snapshot must not submit Azure work")
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="azure_quantum",
+        provider="quantinuum",
+        ir_format="openqasm3",
+        min_qubits=4,
+        metadata_probe=lambda resolved: snapshot_from_azure_target(resolved, Target()),
+    )
+
+    assert decision.status == "ready"
+    assert decision.snapshot.route_id == "azure_quantum/quantinuum"
+    assert decision.snapshot.backend_id == "azure_quantum_quantinuum"
+    assert decision.snapshot.target_name == "quantinuum.qpu.h2-1"
+    assert decision.snapshot.n_qubits == 56
+    assert decision.snapshot.supported_ir_formats == ("openqasm3", "qiskit")
+    assert decision.snapshot.basis_gates == ("rz", "sx", "cx", "measure")
+    assert decision.snapshot.max_shots == 10_000
+    assert decision.snapshot.max_circuits == 20
+    assert decision.snapshot.queue_depth == 3
+    assert decision.snapshot.calibration_timestamp == "2026-05-20T10:00:00Z"
+    assert decision.snapshot.metadata["adapter"] == "azure_target_no_submit"
+    assert decision.snapshot.metadata["provider_id"] == "quantinuum"
+
+
+def test_azure_quantum_snapshot_maps_qir_preview_target_to_route_ir() -> None:
+    """Azure private-preview QCI targets should expose QIR support when declared."""
+
+    class Target:
+        name = "qci.preview"
+        provider_id = "qci"
+        status = "ready"
+        input_data_formats = ("qir",)
+        n_qubits = 8
+
+        def submit(self, *args: object, **kwargs: object) -> None:
+            raise AssertionError("metadata snapshot must not submit Azure work")
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="azure_quantum",
+        provider="qci",
+        ir_format="qir",
+        metadata_probe=lambda resolved: snapshot_from_azure_target(resolved, Target()),
+    )
+
+    assert decision.status == "ready"
+    assert decision.snapshot.route_id == "azure_quantum/qci_preview"
+    assert decision.snapshot.supported_ir_formats == ("qir",)
+
+
+def test_azure_quantum_snapshot_blocks_unavailable_target_without_submission() -> None:
+    """Unavailable Azure targets should be blocked before workload submission."""
+
+    class Capability:
+        num_qubits = 30
+
+    class Target:
+        name = "pasqal.unavailable"
+        current_availability = "Unavailable"
+        input_formats = ("openqasm3",)
+        capability = Capability()
+
+        def submit(self, *args: object, **kwargs: object) -> None:
+            raise AssertionError("metadata snapshot must not submit Azure work")
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="azure_quantum",
+        provider="pasqal",
+        ir_format="openqasm3",
+        metadata_probe=lambda resolved: snapshot_from_azure_target(resolved, Target()),
+    )
+
+    assert decision.status == "blocked"
+    assert "provider target is offline" in decision.blockers
 
 
 def test_braket_gate_model_snapshot_reads_device_properties_without_submission() -> None:

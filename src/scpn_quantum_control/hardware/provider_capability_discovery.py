@@ -137,6 +137,85 @@ def probe_aggregator_provider_capability(
     )
 
 
+def snapshot_from_azure_target(
+    resolved: ResolvedAggregatorProviderRoute,
+    target: Any,
+) -> ProviderCapabilitySnapshot:
+    """Build a no-submit capability snapshot from Azure Quantum target metadata."""
+
+    capability = _first_available_attr(
+        target,
+        names=("capability", "capabilities", "target_capability", "target_capabilities"),
+    )
+    return ProviderCapabilitySnapshot(
+        route_id=resolved.route.route_id,
+        aggregator=resolved.route.aggregator,
+        provider=resolved.route.provider,
+        backend_id=resolved.route.backend_id,
+        target_name=_first_text_attr(
+            target,
+            capability,
+            names=("name", "target_id", "target", "id"),
+            field_name="Azure target name",
+        ),
+        n_qubits=_first_positive_int_attr(
+            capability,
+            target,
+            names=("num_qubits", "n_qubits", "qubits", "qubit_count", "qubitCount"),
+            field_name="Azure qubit count",
+        ),
+        supported_ir_formats=_azure_supported_ir_formats(resolved, target, capability),
+        basis_gates=_first_string_tuple_attr(
+            capability,
+            target,
+            names=("basis_gates", "native_gates", "gates", "supported_operations"),
+        ),
+        native_features=_azure_native_features(target, capability),
+        online=_azure_online_state(target, capability),
+        simulator=_first_bool_attr(
+            target,
+            capability,
+            names=("simulator", "is_simulator"),
+        )
+        or False,
+        max_shots=_first_optional_int_attr(
+            capability,
+            target,
+            names=("max_shots", "shots_limit", "maxShots", "max_execution_shots"),
+        ),
+        max_circuits=_first_optional_int_attr(
+            capability,
+            target,
+            names=("max_experiments", "max_circuits", "max_jobs"),
+        ),
+        queue_depth=_first_optional_int_attr(
+            target,
+            capability,
+            names=("average_queue_time", "queue_depth", "pending_jobs", "queue_size"),
+            minimum=0,
+        ),
+        calibration_timestamp=_first_optional_text_attr(
+            target,
+            capability,
+            names=(
+                "latest_calibration",
+                "calibration_timestamp",
+                "last_calibration",
+                "last_updated",
+                "lastUpdated",
+            ),
+        ),
+        metadata={
+            "adapter": "azure_target_no_submit",
+            "provider_id": _first_optional_text_attr(
+                target,
+                capability,
+                names=("provider_id", "provider", "provider_name"),
+            ),
+        },
+    )
+
+
 def snapshot_from_braket_device(
     resolved: ResolvedAggregatorProviderRoute,
     device: Any,
@@ -491,6 +570,13 @@ def _optional_noarg_call(source: Any, name: str) -> Any:
         return None
 
 
+def _first_available_attr(*sources: Any, names: tuple[str, ...]) -> Any:
+    for value in _attr_candidates(*sources, names=names):
+        if value is not None:
+            return value
+    return None
+
+
 def _attr_candidates(*sources: Any, names: tuple[str, ...]) -> list[Any]:
     candidates: list[Any] = []
     for source in sources:
@@ -579,6 +665,73 @@ def _qiskit_supported_ir_formats(
         ),
     )
     return declared or resolved.route.ir_formats
+
+
+def _azure_supported_ir_formats(
+    resolved: ResolvedAggregatorProviderRoute,
+    *sources: Any,
+) -> tuple[str, ...]:
+    declared = _azure_declared_ir_formats(*sources)
+    if not declared:
+        return resolved.route.ir_formats
+    return declared
+
+
+def _azure_declared_ir_formats(*sources: Any) -> tuple[str, ...]:
+    declared = _first_string_tuple_attr(
+        *sources,
+        names=(
+            "supported_ir_formats",
+            "ir_formats",
+            "input_formats",
+            "input_data_formats",
+            "program_formats",
+        ),
+    )
+    return tuple(_azure_ir_format_token(item) for item in declared)
+
+
+def _azure_ir_format_token(value: str) -> str:
+    normalized = value.strip().lower().replace("-", "_")
+    if normalized in {"qasm.v3", "qasm3", "openqasm", "openqasm_3", "openqasm3"}:
+        return "openqasm3"
+    if normalized in {"qiskit", "qiskit_qpy"}:
+        return "qiskit"
+    if normalized in {"qir", "qir.v1"}:
+        return "qir"
+    if normalized in {"quil", "rigetti.quil"}:
+        return "quil"
+    if normalized in {"pasqal_ir", "pasqal.ir"}:
+        return "pasqal_ir"
+    return normalized
+
+
+def _azure_native_features(*sources: Any) -> tuple[str, ...]:
+    features = set(_first_string_tuple_attr(*sources, names=("native_features", "features")))
+    formats = _azure_declared_ir_formats(*sources)
+    if "openqasm3" in formats or "qiskit" in formats or "qir" in formats or "quil" in formats:
+        features.add("gate_model")
+    if "pasqal_ir" in formats:
+        features.add("neutral_atom")
+    return tuple(sorted(features))
+
+
+def _azure_online_state(*sources: Any) -> bool | None:
+    explicit = _first_online_attr(*sources)
+    if explicit is not None:
+        return explicit
+    text_status = _first_optional_text_attr(
+        *sources,
+        names=("current_availability", "availability", "target_status", "status"),
+    )
+    if text_status is None:
+        return None
+    normalized = text_status.strip().lower()
+    if normalized in {"available", "online", "ready", "active", "enabled"}:
+        return True
+    if normalized in {"unavailable", "offline", "disabled", "retired", "maintenance"}:
+        return False
+    return None
 
 
 def _braket_supported_ir_formats(
@@ -809,6 +962,7 @@ __all__ = [
     "ProviderMetadataProbe",
     "assess_provider_capability_snapshot",
     "probe_aggregator_provider_capability",
+    "snapshot_from_azure_target",
     "snapshot_from_braket_device",
     "snapshot_from_qiskit_runtime_backend",
     "snapshot_from_qbraid_device",

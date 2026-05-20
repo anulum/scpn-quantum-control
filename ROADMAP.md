@@ -128,6 +128,12 @@ is copied here.
   routes. The adapter uses Azure `Target.submit(...)`, requires explicit
   approval through HAL, and fails closed when no target or target factory is
   supplied.
+- [x] **Azure Quantum no-submit capability snapshot.** Implemented 2026-05-20:
+  `snapshot_from_azure_target` adds route-bound metadata snapshots for injected
+  Azure Quantum targets, including declared IR format translation, qubit count,
+  gate basis, shot/circuit limits, queue depth, availability state, simulator
+  flag, provider id, and calibration timestamp without calling target
+  submission APIs.
 - [x] **Stable-core release/repro gate.** Use
   `scpn-bench stable-core-release-gate` before release notes, API changes, or
   public stable-core documentation changes. The bundle runs stable-core
