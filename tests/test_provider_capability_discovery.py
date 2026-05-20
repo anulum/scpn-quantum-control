@@ -16,6 +16,7 @@ from scpn_quantum_control.hardware.provider_capability_discovery import (
     ProviderCapabilitySnapshot,
     assess_provider_capability_snapshot,
     probe_aggregator_provider_capability,
+    snapshot_from_braket_device,
     snapshot_from_qbraid_device,
     snapshot_from_qiskit_runtime_backend,
     snapshot_from_strangeworks_backend,
@@ -152,6 +153,9 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
         probe_aggregator_provider_capability as exported_probe,
     )
     from scpn_quantum_control.hardware import (
+        snapshot_from_braket_device as exported_braket_snapshot,
+    )
+    from scpn_quantum_control.hardware import (
         snapshot_from_qiskit_runtime_backend as exported_qiskit_snapshot,
     )
 
@@ -159,7 +163,127 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
     assert ProviderCapabilityDecision.__name__ == "ProviderCapabilityDecision"
     assert exported_assess is assess_provider_capability_snapshot
     assert exported_probe is probe_aggregator_provider_capability
+    assert exported_braket_snapshot is snapshot_from_braket_device
     assert exported_qiskit_snapshot is snapshot_from_qiskit_runtime_backend
+
+
+def test_braket_gate_model_snapshot_reads_device_properties_without_submission() -> None:
+    """AWS Braket metadata adapters should consume injected device properties only."""
+
+    class DeviceAction:
+        supportedOperations = ("x", "rz", "cnot", "measure")
+
+    class Paradigm:
+        qubitCount = 25
+
+    class Service:
+        shotsRange = (1, 10_000)
+
+    class Properties:
+        action = {"braket.ir.openqasm.program": DeviceAction()}
+        paradigm = Paradigm()
+        service = Service()
+        lastUpdated = "2026-05-20T09:00:00Z"
+
+    class QueueDepth:
+        normal = 7
+
+    class Device:
+        name = "IonQ Forte via Braket"
+        arn = "arn:aws:braket:us-east-1::device/qpu/ionq/Forte-1"
+        status = "ONLINE"
+        properties = Properties()
+        queue_depth = QueueDepth()
+        simulator = False
+
+        def run(self, *args: object, **kwargs: object) -> None:
+            raise AssertionError("metadata snapshot must not submit Braket work")
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="aws_braket",
+        provider="ionq",
+        ir_format="openqasm3",
+        min_qubits=4,
+        metadata_probe=lambda resolved: snapshot_from_braket_device(resolved, Device()),
+    )
+
+    assert decision.status == "ready"
+    assert decision.snapshot.route_id == "aws_braket/ionq"
+    assert decision.snapshot.backend_id == "aws_braket_ionq"
+    assert decision.snapshot.target_name == "IonQ Forte via Braket"
+    assert decision.snapshot.n_qubits == 25
+    assert decision.snapshot.supported_ir_formats == ("openqasm3",)
+    assert decision.snapshot.basis_gates == ("x", "rz", "cnot", "measure")
+    assert decision.snapshot.max_shots == 10_000
+    assert decision.snapshot.queue_depth == 7
+    assert decision.snapshot.calibration_timestamp == "2026-05-20T09:00:00Z"
+    assert decision.snapshot.metadata["adapter"] == "braket_device_no_submit"
+    assert decision.snapshot.metadata["device_arn"] == Device.arn
+
+
+def test_braket_ahs_snapshot_maps_analog_action_to_route_ir() -> None:
+    """Braket analogue Hamiltonian targets should report braket_ahs support."""
+
+    class Paradigm:
+        qubitCount = 256
+
+    class Service:
+        shotsRange = {"min": 1, "max": 1_000}
+
+    class Properties:
+        action = {"braket.ir.ahs.program": object()}
+        paradigm = Paradigm()
+        service = Service()
+
+    class Device:
+        name = "QuEra Aquila"
+        status = "ONLINE"
+        properties = Properties()
+
+        def run(self, *args: object, **kwargs: object) -> None:
+            raise AssertionError("metadata snapshot must not submit Braket work")
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="aws_braket",
+        provider="quera",
+        ir_format="braket_ahs",
+        min_qubits=16,
+        metadata_probe=lambda resolved: snapshot_from_braket_device(resolved, Device()),
+    )
+
+    assert decision.status == "ready"
+    assert decision.snapshot.supported_ir_formats == ("braket_ahs",)
+    assert decision.snapshot.n_qubits == 256
+    assert decision.snapshot.max_shots == 1_000
+
+
+def test_braket_snapshot_blocks_offline_device_without_submission() -> None:
+    """Offline Braket targets should be blocked before workload submission."""
+
+    class Paradigm:
+        qubitCount = 32
+
+    class Properties:
+        action = {"braket.ir.openqasm.program": object()}
+        paradigm = Paradigm()
+
+    class Device:
+        name = "offline-rigetti"
+        status = "OFFLINE"
+        properties = Properties()
+
+        def run(self, *args: object, **kwargs: object) -> None:
+            raise AssertionError("metadata snapshot must not submit Braket work")
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="aws_braket",
+        provider="rigetti",
+        ir_format="openqasm3",
+        metadata_probe=lambda resolved: snapshot_from_braket_device(resolved, Device()),
+    )
+
+    assert decision.status == "blocked"
+    assert "provider target is offline" in decision.blockers
 
 
 def test_qiskit_runtime_snapshot_reads_backend_metadata_without_submission() -> None:

@@ -137,6 +137,68 @@ def probe_aggregator_provider_capability(
     )
 
 
+def snapshot_from_braket_device(
+    resolved: ResolvedAggregatorProviderRoute,
+    device: Any,
+) -> ProviderCapabilitySnapshot:
+    """Build a no-submit capability snapshot from AWS Braket device metadata."""
+
+    properties = _optional_attr(device, "properties")
+    service = _optional_attr(properties, "service")
+    paradigm = _optional_attr(properties, "paradigm")
+    action = _optional_attr(properties, "action")
+    return ProviderCapabilitySnapshot(
+        route_id=resolved.route.route_id,
+        aggregator=resolved.route.aggregator,
+        provider=resolved.route.provider,
+        backend_id=resolved.route.backend_id,
+        target_name=_first_text_attr(
+            device,
+            properties,
+            names=("name", "deviceName", "device_name", "arn", "deviceArn"),
+            field_name="Braket device name",
+        ),
+        n_qubits=_first_positive_int_attr(
+            paradigm,
+            properties,
+            device,
+            names=("qubitCount", "qubit_count", "num_qubits", "n_qubits", "qubits"),
+            field_name="Braket qubit count",
+        ),
+        supported_ir_formats=_braket_supported_ir_formats(resolved, action, device, properties),
+        basis_gates=_braket_basis_gates(action, properties, device),
+        native_features=_braket_native_features(action, properties, device),
+        online=_first_online_attr(device, properties, service),
+        simulator=_first_bool_attr(
+            device,
+            properties,
+            service,
+            names=("simulator", "is_simulator"),
+        )
+        or False,
+        max_shots=_braket_max_shots(service, properties, device),
+        max_circuits=_first_optional_int_attr(
+            service,
+            properties,
+            device,
+            names=("max_circuits", "max_experiments", "max_jobs"),
+        ),
+        queue_depth=_braket_queue_depth(device),
+        calibration_timestamp=_first_optional_text_attr(
+            properties,
+            device,
+            names=("lastUpdated", "last_updated", "calibration_timestamp", "last_calibration"),
+        ),
+        metadata={
+            "adapter": "braket_device_no_submit",
+            "device_arn": _first_optional_text_attr(
+                device, properties, names=("arn", "deviceArn")
+            ),
+            "action_names": _braket_action_names(action),
+        },
+    )
+
+
 def snapshot_from_qiskit_runtime_backend(
     resolved: ResolvedAggregatorProviderRoute,
     backend: Any,
@@ -519,6 +581,117 @@ def _qiskit_supported_ir_formats(
     return declared or resolved.route.ir_formats
 
 
+def _braket_supported_ir_formats(
+    resolved: ResolvedAggregatorProviderRoute,
+    action: Any,
+    *sources: Any,
+) -> tuple[str, ...]:
+    declared = _first_string_tuple_attr(
+        *sources,
+        names=("supported_ir_formats", "ir_formats", "input_formats", "program_formats"),
+    )
+    if declared:
+        return declared
+    action_names = _braket_action_names(action)
+    formats: list[str] = []
+    for action_name in action_names:
+        lowered = action_name.lower()
+        if "openqasm" in lowered and "openqasm3" not in formats:
+            formats.append("openqasm3")
+        if "braket.ir.ahs" in lowered and "braket_ahs" not in formats:
+            formats.append("braket_ahs")
+        if "braket.ir.jaqcd" in lowered and "braket_ir" not in formats:
+            formats.append("braket_ir")
+    if formats:
+        route_formats = set(resolved.route.ir_formats)
+        filtered = tuple(format_name for format_name in formats if format_name in route_formats)
+        return filtered or tuple(formats)
+    return resolved.route.ir_formats
+
+
+def _braket_action_names(action: Any) -> tuple[str, ...]:
+    if isinstance(action, Mapping):
+        return _string_tuple_from_value(action.keys())
+    return _string_tuple_from_value(action)
+
+
+def _braket_basis_gates(action: Any, *sources: Any) -> tuple[str, ...]:
+    for action_entry in _braket_action_entries(action):
+        basis = _first_string_tuple_attr(
+            action_entry,
+            names=("supportedOperations", "supported_operations", "basis_gates", "native_gates"),
+        )
+        if basis:
+            return basis
+    return _first_string_tuple_attr(*sources, names=("basis_gates", "native_gates", "gates"))
+
+
+def _braket_action_entries(action: Any) -> tuple[Any, ...]:
+    if isinstance(action, Mapping):
+        return tuple(action.values())
+    try:
+        return tuple(action)
+    except TypeError:
+        return ()
+
+
+def _braket_native_features(action: Any, *sources: Any) -> tuple[str, ...]:
+    features = set(_first_string_tuple_attr(*sources, names=("native_features", "features")))
+    action_names = _braket_action_names(action)
+    if any("openqasm" in action_name.lower() for action_name in action_names):
+        features.add("gate_model")
+    if any("braket.ir.ahs" in action_name.lower() for action_name in action_names):
+        features.add("analog_hamiltonian_simulation")
+    return tuple(sorted(features))
+
+
+def _braket_max_shots(*sources: Any) -> int | None:
+    explicit = _first_optional_int_attr(
+        *sources,
+        names=("max_shots", "shots_limit", "maxShots", "max_execution_shots"),
+    )
+    if explicit is not None:
+        return explicit
+    for value in _attr_candidates(*sources, names=("shotsRange", "shots_range")):
+        maximum = _range_maximum(value)
+        if maximum is not None:
+            return maximum
+    return None
+
+
+def _range_maximum(value: Any) -> int | None:
+    if isinstance(value, Mapping):
+        return _positive_int(value.get("max") or value.get("maximum") or value.get("end"))
+    if isinstance(value, tuple | list) and value:
+        return _positive_int(value[-1])
+    return None
+
+
+def _positive_int(value: Any) -> int | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int) and value >= 1:
+        return value
+    return None
+
+
+def _braket_queue_depth(device: Any) -> int | None:
+    queue_depth = _optional_attr(device, "queue_depth")
+    if isinstance(queue_depth, int) and queue_depth >= 0:
+        return queue_depth
+    if queue_depth is not None:
+        return _first_optional_int_attr(
+            queue_depth,
+            names=("normal", "priority", "queue_depth", "queueSize", "queue_size"),
+            minimum=0,
+        )
+    return _first_optional_int_attr(
+        device,
+        names=("pending_jobs", "queue_depth", "queueSize", "queue_size"),
+        minimum=0,
+    )
+
+
 def _qiskit_native_features(
     backend: Any,
     target: Any,
@@ -636,6 +809,7 @@ __all__ = [
     "ProviderMetadataProbe",
     "assess_provider_capability_snapshot",
     "probe_aggregator_provider_capability",
+    "snapshot_from_braket_device",
     "snapshot_from_qiskit_runtime_backend",
     "snapshot_from_qbraid_device",
     "snapshot_from_strangeworks_backend",

@@ -116,6 +116,12 @@ is copied here.
   local SV/DM simulator execution, and approval-gated AWS Braket device/task
   submission through the provider-neutral HAL contract. Optional cloud broker
   extras now expose `braket`, `azure`, and `qbraid` install groups.
+- [x] **AWS Braket no-submit capability snapshot.** Implemented 2026-05-20:
+  `snapshot_from_braket_device` adds route-bound metadata snapshots for injected
+  Braket QPU, AHS, and managed-simulator devices, including action-derived IR
+  support, qubit count, basis operations, shot limits, queue depth, online
+  state, simulator flag, and calibration/update timestamp without task
+  submission.
 - [x] **Azure Quantum HAL adapter integration.** Implemented 2026-05-20:
   `hardware.hal_azure` adds OpenQASM 3 workload construction and an injected
   Azure target adapter for IonQ, Quantinuum, Rigetti, Pasqal, and preview

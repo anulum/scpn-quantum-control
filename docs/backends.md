@@ -447,6 +447,9 @@ The Braket adapter layer provides:
   submission through HAL with explicit approval tokens.
 - `braket_circuit_to_workload()` for OpenQASM 3 payloads generated from
   `braket.circuits.Circuit`.
+- `snapshot_from_braket_device()` for no-submit capability snapshots from
+  injected Braket device metadata, including OpenQASM and AHS action support,
+  shot limits, queue depth, online state, and calibration/update timestamp.
 
 ```python
 from braket.circuits import Circuit
@@ -577,12 +580,13 @@ route, rejects route mismatches and non-no-submit snapshots, and returns a
 ready/blocked/unknown decision based on online status, qubit count, and required
 IR support. The function does not create clients or submit jobs; provider SDK
 authentication remains inside the injected read-only probe.
-`snapshot_from_qiskit_runtime_backend()`, `snapshot_from_qbraid_device()`, and
-`snapshot_from_strangeworks_backend()` are concrete metadata adapters for this
-contract. They consume injected SDK backend/device objects and record target
-name, qubit count, route-supported or declared IR formats, gate basis, queue
-depth, shot/circuit limits, online state, simulator state, and calibration
-timestamp when the provider object exposes those fields.
+`snapshot_from_braket_device()`, `snapshot_from_qiskit_runtime_backend()`,
+`snapshot_from_qbraid_device()`, and `snapshot_from_strangeworks_backend()` are
+concrete metadata adapters for this contract. They consume injected SDK
+backend/device objects and record target name, qubit count, route-supported or
+declared IR formats, gate basis, queue depth, shot/circuit limits, online state,
+simulator state, and calibration timestamp when the provider object exposes
+those fields.
 
 The same check is exposed as `scpn-provider-smoke`. In CI or operator
 preflight lanes, install `scpn-quantum-control[providers]` and run:
