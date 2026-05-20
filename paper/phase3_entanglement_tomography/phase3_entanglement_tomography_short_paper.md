@@ -12,7 +12,7 @@
 *Contact: protoscience@anulum.li*
 
 **Date:** 2026-05-20
-**Status:** Draft scaffold, raw-count execution pending
+**Status:** Draft with completed IBM raw-count execution and first-pass analysis
 **Target venue:** short communication / workshop submission candidate
 
 ---
@@ -26,14 +26,14 @@ entanglement/tomography protocol for the promoted Phase 3 DLA-parity and
 Fisher-information-modified Kuramoto-XY circuit families. The protocol measures
 54 exact-reference Pauli observables across six source circuits, grouped into
 nine measurement bases with three repetitions per source/basis pair, plus four
-readout calibration states. A live no-submit preflight on IBM `ibm_marrakesh`
-selected physical qubits `[1,2,3,4]`, transpiled 166 circuits, and estimated
-1.52 QPU minutes under a 25 minute ceiling, with maximum depth 388 and maximum
-measurement-basis depth expansion 1.072. The paper's physics claim remains
-pending until the raw-count run is executed and the preregistered reducer
-compares measured correlators with exact references. The intended claim is
-bounded: whether reduced-Pauli entanglement structure accompanies the observed
-leakage/retention mechanisms in this fixed small-system hardware setting.
+readout calibration states. The approved IBM `ibm_marrakesh` execution selected
+physical qubits `[1,2,3,4]`, transpiled 166 circuits, and completed jobs
+`d86g7h1789is738vkreg` and `d86ggpis46sc73f6v170` under the preregistered 25
+minute ceiling. The preregistered reducer produced 54 observable rows with mean
+absolute deviation 0.1299 and maximum absolute deviation 0.5561 relative to
+exact references. The intended claim is bounded: reduced-Pauli correlators show
+large hardware deviations in the fixed small-system setting, with no scalable
+tomography, quantum-advantage, or backend-general claim.
 
 ## 1. Introduction
 
@@ -80,9 +80,9 @@ states are measured at 8192 shots:
 
 The resulting hardware block contains 162 main circuits and 4 readout circuits.
 
-## 3. Live Preflight
+## 3. Live Execution
 
-The live no-submit preflight was run on 2026-05-20:
+The live preflight was run on 2026-05-20:
 
 ```bash
 python scripts/phase3_entanglement_tomography_ibm.py --backend ibm_marrakesh
@@ -108,7 +108,24 @@ Preflight summary:
 | Maximum transpiled depth | 388 |
 | Maximum basis-expansion ratio | 1.0718232044198894 |
 
-The preflight passed. No QPU job was submitted.
+The approved budget-confirmed execution was then run:
+
+```bash
+python scripts/phase3_entanglement_tomography_ibm.py --backend ibm_marrakesh --submit --confirm-budget
+```
+
+Completed artefact:
+
+```text
+data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_marrakesh_2026-05-20T004334Z.json
+```
+
+Completed jobs:
+
+```text
+d86g7h1789is738vkreg
+d86ggpis46sc73f6v170
+```
 
 ## 4. Analysis Plan
 
@@ -141,16 +158,37 @@ Primary outputs:
 
 ## 5. Results
 
-Raw-count execution is pending.
+Raw-count execution completed on `ibm_marrakesh`.
 
-This section must not be filled from simulator values or from the live preflight
-alone. It should be populated only after:
+First-pass reduced-Pauli analysis was generated with:
 
-1. the approved QPU command is run;
-2. job IDs and raw counts are saved in the live artefact;
-3. `scripts/analyse_phase3_entanglement_tomography.py` generates the summary,
-   rows, and manifest;
-4. the generated rows are reviewed for readout sensitivity and uncertainty.
+```bash
+python scripts/analyse_phase3_entanglement_tomography.py \
+  data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_marrakesh_2026-05-20T004334Z.json
+```
+
+Outputs:
+
+- `data/phase3_entanglement_tomography/entanglement_tomography_summary_2026-05-20.json`;
+- `data/phase3_entanglement_tomography/entanglement_tomography_rows_2026-05-20.csv`;
+- `docs/phase3_entanglement_tomography_manifest_2026-05-20.md`.
+
+Summary:
+
+| Metric | Value |
+|---|---:|
+| Backend | `ibm_marrakesh` |
+| Submitted jobs | `d86g7h1789is738vkreg`, `d86ggpis46sc73f6v170` |
+| Observable rows | 54 |
+| Mean absolute deviation from exact reference | 0.12989296537986128 |
+| Maximum absolute deviation from exact reference | 0.5560906424788263 |
+| Rows SHA256 | `3d18308d60fe32827bae7517f18fd71690240b105779287408c4749cb0e7dc72` |
+
+Largest observed deviations occur in DLA odd/even shallow and signal edge
+correlators, especially `XXII`, `YYII`, `IIXX`, and `IIYY`. The largest single
+deviation is for `dla_odd_signal`, initial `0001`, depth 10, basis `XXII`,
+where the measured expectation is 0.431640625 against exact reference
+-0.12445001747882631.
 
 ## 6. Interpretation Rules
 
@@ -163,6 +201,12 @@ boundary. The interpretation is downgraded if any of the following occur:
 - DLA and FIM families show no coherent separation;
 - measured correlators are consistent with product-state or readout artefact
   explanations.
+
+The current first-pass result establishes large reduced-Pauli deviations from
+exact references in the measured hardware window. It does not yet establish
+that those deviations are an entanglement mechanism rather than a compound
+effect of coherent hardware error, readout context, layout, and circuit depth.
+That distinction is the central interpretation work for the paper.
 
 ## 7. Claim Boundary
 
@@ -212,8 +256,10 @@ python scripts/analyse_phase3_entanglement_tomography.py \
 
 ## 9. Conclusion
 
-The campaign is ready for an approved, budget-confirmed IBM submission. The
-scientific paper should be framed as a mechanism-boundary study: reduced-Pauli
-tomography is used to test whether DLA-sector leakage and FIM retention
-phenomena have a measurable entanglement-structure companion in a fixed
-small-system hardware setting.
+The campaign has completed the approved IBM execution and first-pass
+reduced-Pauli analysis. The scientific paper should be framed as a
+mechanism-boundary study: reduced-Pauli tomography shows sizeable measured
+correlator deviations in the same small-system setting as the DLA/FIM hardware
+programme, but the conservative contribution is to bound and interpret that
+structure rather than to claim scalable tomography, backend-general dynamics, or
+quantum advantage.

@@ -42,14 +42,27 @@ Completed:
 - exact reference rows for 54 observables;
 - approval-gated IBM runner;
 - no-submit live preflight on `ibm_marrakesh`;
+- approved QPU submission on `ibm_marrakesh`;
+- raw-count artefact with job IDs;
+- generated observable-summary CSV and manifest;
 - post-run raw-count reducer.
+
+Current first-pass result:
+
+- completed artefact:
+  `data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_marrakesh_2026-05-20T004334Z.json`;
+- jobs: `d86g7h1789is738vkreg`, `d86ggpis46sc73f6v170`;
+- 54 observable rows;
+- mean absolute deviation from exact reference: `0.12989296537986128`;
+- maximum absolute deviation from exact reference: `0.5560906424788263`;
+- observable rows SHA256:
+  `3d18308d60fe32827bae7517f18fd71690240b105779287408c4749cb0e7dc72`.
 
 Pending:
 
-- approved QPU submission;
-- raw-count artefact with job IDs and SHA256 hashes;
-- generated observable-summary CSV and manifest;
-- final paper tables and figures from measured counts.
+- final paper tables and figures from measured counts;
+- readout-sensitivity interpretation pass;
+- family-level aggregate table for DLA shallow/signal and FIM lambda pair.
 
 ## Minimum Run
 
@@ -67,13 +80,13 @@ Pending:
 | Max transpiled depth | 388 |
 | Max basis-expansion ratio | 1.0718232044198894 |
 
-Submission command after approval:
+Executed submission command:
 
 ```bash
 python scripts/phase3_entanglement_tomography_ibm.py --backend ibm_marrakesh --submit --confirm-budget
 ```
 
-Analysis command after completion:
+Executed analysis command:
 
 ```bash
 python scripts/analyse_phase3_entanglement_tomography.py \
@@ -136,6 +149,6 @@ Draft scaffold:
 
 - `paper/phase3_entanglement_tomography/phase3_entanglement_tomography_short_paper.md`
 
-The draft intentionally marks raw-count results as pending. Replace only the
-pending sections after the analysis artefacts are generated from an approved
-hardware run.
+The draft now records completed raw-count execution and first-pass analysis.
+Next paper work is table/figure generation and readout-sensitivity
+interpretation, not additional QPU spend.

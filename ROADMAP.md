@@ -923,15 +923,20 @@ explicit QPU-time estimate before submission.
   circuits, so full tomography is unnecessary and the optional hardware
   block is scientifically promotable after backend selection, live
   transpilation gates, budget confirmation, and explicit approval.
-- [ ] **Entanglement entropy or tomography hardware execution.** Optional
-  QPU follow-up live preflight passed 2026-05-20 on `ibm_marrakesh`
-  with `166` circuits, selected physical qubits `[1, 2, 3, 4]`,
-  maximum transpiled depth `388`, maximum basis-expansion ratio
-  `1.0718232044198894`, and estimated QPU time `1.5217` minutes
-  under a `25` minute ceiling. Submission remains blocked only by
-  explicit budget-confirmed approval; run
-  `python scripts/phase3_entanglement_tomography_ibm.py --backend ibm_marrakesh --submit --confirm-budget`
-  when approved.
+- [x] **Entanglement entropy or tomography hardware execution.**
+  Completed 2026-05-20 on `ibm_marrakesh` after live preflight,
+  budget-confirmed approval, and the guarded submit command. Jobs
+  `d86g7h1789is738vkreg` and `d86ggpis46sc73f6v170` produced the
+  completed raw-count artefact
+  `data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_marrakesh_2026-05-20T004334Z.json`.
+  First-pass analysis generated
+  `data/phase3_entanglement_tomography/entanglement_tomography_summary_2026-05-20.json`,
+  `data/phase3_entanglement_tomography/entanglement_tomography_rows_2026-05-20.csv`,
+  and `docs/phase3_entanglement_tomography_manifest_2026-05-20.md`.
+  Result snapshot: 54 observable rows, mean absolute deviation
+  `0.12989296537986128`, maximum absolute deviation
+  `0.5560906424788263`, bounded to reduced-Pauli small-system
+  mechanism analysis only.
 - [x] **Depth-optimal native decomposition preregistration.**
   Completed 2026-05-06:
   `docs/depth_optimal_native_decomposition_prereg_2026-05-06.md`

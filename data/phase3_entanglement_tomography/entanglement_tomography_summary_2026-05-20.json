@@ -1,0 +1,19 @@
+{
+  "analysis_job_ids": [
+    "d86g7h1789is738vkreg"
+  ],
+  "backend": "ibm_marrakesh",
+  "claim_boundary": "reduced-Pauli observable analysis only; no scalable tomography, quantum advantage, or backend-general claim",
+  "counts_artifact": "data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_marrakesh_2026-05-20T004334Z.json",
+  "job_ids": [
+    "d86g7h1789is738vkreg",
+    "d86ggpis46sc73f6v170"
+  ],
+  "max_absolute_deviation": 0.5560906424788263,
+  "mean_absolute_deviation": 0.12989296537986128,
+  "n_observable_rows": 54,
+  "reference_csv": "data/phase3_entanglement_tomography/entanglement_observable_rows_2026-05-07.csv",
+  "rows_sha256": "3d18308d60fe32827bae7517f18fd71690240b105779287408c4749cb0e7dc72",
+  "schema": "scpn_phase3_entanglement_tomography_analysis_v1",
+  "status": "completed"
+}

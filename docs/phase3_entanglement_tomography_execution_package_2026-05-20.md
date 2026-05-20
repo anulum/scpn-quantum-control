@@ -16,9 +16,11 @@ Date: 2026-05-20
 - Backend preflight target: `ibm_marrakesh`.
 - Live preflight artefact:
   `data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_marrakesh_2026-05-20T001956Z.json`.
-- Status: `readiness_passed`.
-- Hardware submission performed: `False`.
-- Job IDs: none.
+- Completed execution artefact:
+  `data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_marrakesh_2026-05-20T004334Z.json`.
+- Status: `completed`.
+- Hardware submission performed: `True`.
+- Job IDs: `d86g7h1789is738vkreg`, `d86ggpis46sc73f6v170`.
 
 ## Live Preflight Summary
 
@@ -62,6 +64,26 @@ python scripts/analyse_phase3_entanglement_tomography.py \
   data/phase3_entanglement_tomography/entanglement_tomography_live_<backend>_<timestamp>.json
 ```
 
+## First-Pass Analysis
+
+Post-run analysis produced:
+
+- JSON summary:
+  `data/phase3_entanglement_tomography/entanglement_tomography_summary_2026-05-20.json`
+- Observable rows:
+  `data/phase3_entanglement_tomography/entanglement_tomography_rows_2026-05-20.csv`
+- Manifest:
+  `docs/phase3_entanglement_tomography_manifest_2026-05-20.md`
+
+Result snapshot:
+
+| Metric | Value |
+|---|---:|
+| Observable rows | 54 |
+| Mean absolute deviation from exact reference | 0.12989296537986128 |
+| Maximum absolute deviation from exact reference | 0.5560906424788263 |
+| Rows SHA256 | `3d18308d60fe32827bae7517f18fd71690240b105779287408c4749cb0e7dc72` |
+
 ## Paper Spin
 
 Working title:
@@ -93,7 +115,9 @@ Paper-facing artefacts:
 
 ## Boundary
 
-This package is ready for an approved QPU submission. It does not itself
-authorise spend. Submission still requires the explicit budget-confirmed command
-above and the resulting raw-count artefact must pass the included analysis
-script before any paper claim is promoted.
+This package records a completed, approved QPU submission and first-pass
+reduced-Pauli analysis. It supports only the bounded claim that measured
+small-system reduced-Pauli correlators deviate from exact references under the
+specified backend, layout, circuit family, shots, repetitions, and calibration
+window. It does not support scalable tomography, quantum advantage, or
+backend-general entanglement dynamics.

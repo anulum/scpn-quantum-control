@@ -97,7 +97,7 @@ def analyse_counts_artifact(
     payload = json.loads(counts_path.read_text(encoding="utf-8"))
     references = _load_reference_rows(reference_csv)
     grouped: dict[tuple[str, str, str, int, str, str], list[float]] = defaultdict(list)
-    jobs: set[str] = set()
+    analysis_jobs: set[str] = set()
     for circuit in payload.get("circuits", []):
         meta = circuit.get("meta", {})
         if meta.get("block") != "main":
@@ -110,7 +110,7 @@ def analyse_counts_artifact(
             pauli_expectation_from_counts(circuit.get("counts", {}), str(reference["pauli_label"]))
         )
         if circuit.get("job_id"):
-            jobs.add(str(circuit["job_id"]))
+            analysis_jobs.add(str(circuit["job_id"]))
 
     rows: list[dict[str, Any]] = []
     for key, values in sorted(grouped.items()):
@@ -148,7 +148,8 @@ def analyse_counts_artifact(
         "reference_csv": _display_path(reference_csv),
         "backend": payload.get("backend"),
         "status": payload.get("status"),
-        "job_ids": sorted(jobs),
+        "job_ids": [str(job_id) for job_id in payload.get("job_ids", [])],
+        "analysis_job_ids": sorted(analysis_jobs),
         "n_observable_rows": len(rows),
         "max_absolute_deviation": max_abs,
         "mean_absolute_deviation": mean_abs,
@@ -205,12 +206,19 @@ def _manifest(summary: Mapping[str, Any], *, json_path: Path, csv_path: Path) ->
             f"- Counts artefact: `{summary['counts_artifact']}`",
             f"- Reference CSV: `{summary['reference_csv']}`",
             f"- Backend: `{summary['backend']}`",
+            f"- Job IDs: `{', '.join(summary['job_ids'])}`",
             "",
             "## Outputs",
             "",
             f"- JSON summary: `{_display_path(json_path)}`",
             f"- Observable rows: `{_display_path(csv_path)}`",
             f"- Observable rows SHA256: `{_sha256(csv_path)}`",
+            "",
+            "## Result Snapshot",
+            "",
+            f"- Observable rows: `{summary['n_observable_rows']}`",
+            f"- Mean absolute deviation from exact reference: `{summary['mean_absolute_deviation']}`",
+            f"- Maximum absolute deviation from exact reference: `{summary['max_absolute_deviation']}`",
             "",
             "## Boundary",
             "",

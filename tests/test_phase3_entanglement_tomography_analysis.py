@@ -52,6 +52,7 @@ def test_analyse_counts_artifact_groups_repetitions_against_reference(tmp_path: 
                 "schema": "scpn_phase3_entanglement_tomography_live_v1",
                 "backend": "fake_heron",
                 "status": "completed",
+                "job_ids": ["job-main", "job-readout"],
                 "circuits": [
                     {
                         "job_id": "job-main",
@@ -128,6 +129,8 @@ def test_analyse_counts_artifact_groups_repetitions_against_reference(tmp_path: 
     rows, summary = module.analyse_counts_artifact(counts_path, refs_path)
 
     assert summary["backend"] == "fake_heron"
+    assert summary["job_ids"] == ["job-main", "job-readout"]
+    assert summary["analysis_job_ids"] == ["job-main"]
     assert summary["n_observable_rows"] == 1
     assert rows[0]["mean_expectation"] == 0.8
     assert rows[0]["exact_expectation"] == 0.9
