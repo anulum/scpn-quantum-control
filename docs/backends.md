@@ -318,6 +318,7 @@ from scpn_quantum_control.hardware import (
     LocalDeterministicSimulator,
     PennyLaneDeviceHALAdapter,
     QbraidRuntimeHALAdapter,
+    QuantinuumCloudHALAdapter,
     RigettiQCSHALAdapter,
     QiskitAerHALAdapter,
     QuantumWorkload,
@@ -326,6 +327,7 @@ from scpn_quantum_control.hardware import (
     ionq_qis_workload,
     pennylane_gate_workload,
     qbraid_program_to_workload,
+    quantinuum_tket_workload,
     rigetti_quil_workload,
     qiskit_circuit_to_workload,
 )
@@ -448,6 +450,36 @@ job = hal.submit(
         workload_id="ionq_bell",
         n_qubits=2,
         shots=256,
+    ),
+    approval_id="approved-run",
+)
+```
+
+The direct Quantinuum adapter layer provides `QuantinuumCloudHALAdapter` and
+`quantinuum_tket_workload()`. It keeps pytket and pytket-quantinuum loading lazy
+until a concrete adapter is registered, then follows the documented Quantinuum
+route: `get_compiled_circuit(...)`, `process_circuit(..., n_shots=...)`,
+`circuit_status(...)`, `get_result(...).get_counts()`, and
+`QuantinuumBackend.cancel(...)`. Direct Quantinuum execution is tket-native;
+OpenQASM 3, QIR, and MLIR route entries are registry-level translation targets
+and must be converted before submission.
+
+```python
+quantinuum_machine = "H1-1E"
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+hal.register_backend(
+    QuantinuumCloudHALAdapter(
+        hal.profile("quantinuum_cloud"),
+        machine=quantinuum_machine,
+    )
+)
+job = hal.submit(
+    "quantinuum_cloud",
+    quantinuum_tket_workload(
+        {"name": "h_sample", "qubits": 1},
+        workload_id="quantinuum_h",
+        n_qubits=1,
+        shots=128,
     ),
     approval_id="approved-run",
 )

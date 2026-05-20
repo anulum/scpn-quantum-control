@@ -676,6 +676,7 @@ from scpn_quantum_control.hardware import (
     IonQCloudHALAdapter,
     PennyLaneDeviceHALAdapter,
     QbraidRuntimeHALAdapter,
+    QuantinuumCloudHALAdapter,
     RigettiQCSHALAdapter,
     QiskitAerHALAdapter,
     QuantumBackend,
@@ -686,6 +687,7 @@ from scpn_quantum_control.hardware import (
     ionq_qis_workload,
     pennylane_gate_workload,
     qbraid_program_to_workload,
+    quantinuum_tket_workload,
     rigetti_quil_workload,
     qiskit_circuit_to_workload,
 )
@@ -815,6 +817,36 @@ qbraid_job = hal.submit(
         "OPENQASM 3.0;\nqubit[1] q;\nbit[1] c;\nh q[0];",
         workload_id="qbraid_h",
         ir_format="openqasm3",
+        n_qubits=1,
+        shots=128,
+    ),
+    approval_id="approved-run",
+)
+```
+
+The direct Quantinuum adapter layer provides `QuantinuumCloudHALAdapter` and
+`quantinuum_tket_workload()`. It follows the pytket-quantinuum execution path:
+construct a pytket `Circuit`, compile it with
+`QuantinuumBackend.get_compiled_circuit(...)`, submit with
+`process_circuit(..., n_shots=...)`, inspect `circuit_status(...)`, retrieve
+`get_result(...).get_counts()`, and cancel through `QuantinuumBackend.cancel`.
+The direct route is tket-native; OpenQASM 3, QIR, or MLIR must be translated
+before submission.
+
+```python
+quantinuum_machine = "H1-1E"
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+hal.register_backend(
+    QuantinuumCloudHALAdapter(
+        hal.profile("quantinuum_cloud"),
+        machine=quantinuum_machine,
+    )
+)
+job = hal.submit(
+    "quantinuum_cloud",
+    quantinuum_tket_workload(
+        {"name": "h_sample", "qubits": 1},
+        workload_id="quantinuum_h",
         n_qubits=1,
         shots=128,
     ),

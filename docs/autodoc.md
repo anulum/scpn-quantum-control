@@ -162,6 +162,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [QbraidRuntimeHALAdapter, qbraid_program_to_workload]
 
+::: scpn_quantum_control.hardware.hal_quantinuum
+    options:
+      members: [QuantinuumCloudHALAdapter, quantinuum_tket_workload]
+
 ::: scpn_quantum_control.hardware.hal_rigetti
     options:
       members: [RigettiQCSHALAdapter, rigetti_quil_workload]
