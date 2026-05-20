@@ -307,6 +307,18 @@ VQE via PennyLane optimisers:
 result = runner.run_vqe(ansatz_depth=1, maxiter=5, seed=42)
 ```
 
+Differentiable VQE surface:
+
+```python
+result = runner.vqe_value_and_grad(params, ansatz_depth=1)
+result.value       # VQE energy
+result.gradient    # PennyLane autodiff gradient over ansatz parameters
+result.method      # "pennylane_autodiff"
+```
+
+For framework-native gradients that do not require PennyLane, use
+`scpn_quantum_control.differentiable.parameter_shift_gradient`.
+
 Requires: `pip install pennylane`
 
 ### Cirq Adapter (`cirq_adapter.py`)

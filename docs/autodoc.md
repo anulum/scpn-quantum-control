@@ -108,6 +108,12 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [QSNNTrainer]
 
+## Differentiable Programming
+
+::: scpn_quantum_control.differentiable
+    options:
+      members: [Parameter, ParameterShiftRule, GradientResult, DifferentiableOptimizer, parameter_shift_gradient, value_and_parameter_shift_grad, batch_parameter_shift_gradient, is_jax_autodiff_available, jax_value_and_grad]
+
 ## Identity
 
 ::: scpn_quantum_control.identity.ground_state

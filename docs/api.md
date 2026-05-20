@@ -215,6 +215,69 @@ QSNNTrainer(layer: QuantumDenseLayer, lr: float = 0.01)
     .train(X, y, epochs=10) -> list[float]  # loss history
 ```
 
+`QSNNTrainer.parameter_shift_gradient()` delegates to the native
+`scpn_quantum_control.differentiable` parameter-shift primitive. The training
+demo is therefore no longer a separate manual-gradient implementation.
+
+## differentiable
+
+Native scalar-objective autodiff surface. The core path has no PennyLane or JAX
+runtime dependency; optional adapters expose JAX and PennyLane gradients when
+those extras are installed.
+
+```python
+from scpn_quantum_control import (
+    DifferentiableOptimizer,
+    Parameter,
+    ParameterShiftRule,
+    parameter_shift_gradient,
+    value_and_parameter_shift_grad,
+)
+
+result = value_and_parameter_shift_grad(
+    lambda theta: np.sin(theta[0]) + np.cos(theta[1]),
+    [0.1, -0.2],
+    parameters=[Parameter("theta"), Parameter("phi")],
+)
+result.value                # scalar objective value
+result.gradient             # np.ndarray, same length as parameter vector
+result.method               # "parameter_shift"
+
+updated = DifferentiableOptimizer(learning_rate=0.01).step(
+    [0.1, -0.2],
+    result,
+)
+```
+
+Available primitives:
+
+```python
+Parameter(name: str, trainable: bool = True)
+ParameterShiftRule(shift: float = np.pi / 2, coefficient: float = 0.5)
+GradientResult(value, gradient, method, shift, coefficient, evaluations, parameter_names, trainable)
+parameter_shift_gradient(objective, values, parameters=None, rule=None) -> np.ndarray
+value_and_parameter_shift_grad(objective, values, parameters=None, rule=None) -> GradientResult
+batch_parameter_shift_gradient(objectives, values, parameters=None, rule=None) -> np.ndarray
+DifferentiableOptimizer(learning_rate=0.01).step(values, gradient_result) -> np.ndarray
+is_jax_autodiff_available() -> bool
+jax_value_and_grad(objective, values) -> tuple[float, np.ndarray]
+```
+
+PennyLane VQE bridge:
+
+```python
+from scpn_quantum_control.hardware.pennylane_adapter import PennyLaneRunner
+
+runner = PennyLaneRunner(K, omega, device="default.qubit")
+grad_result = runner.vqe_value_and_grad(params, ansatz_depth=1)
+grad_result.method          # "pennylane_autodiff"
+```
+
+Claim boundary: this is a native differentiable-programming foundation for
+scalar SCPN quantum objectives and QSNN training. It is not yet a full
+PyTorch/JAX-style parameter-container system, hardware-shot gradient estimator,
+or optimiser suite.
+
 ## phase
 
 ### `structured_ansatz`

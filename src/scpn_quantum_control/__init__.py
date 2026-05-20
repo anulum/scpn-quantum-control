@@ -65,6 +65,17 @@ from .control.qaoa_mpc import QAOA_MPC
 from .control.qpetri import QuantumPetriNet
 from .control.topological_optimizer import TopologicalCouplingOptimizer
 from .control.vqls_gs import VQLS_GradShafranov
+from .differentiable import (
+    DifferentiableOptimizer,
+    GradientResult,
+    Parameter,
+    ParameterShiftRule,
+    batch_parameter_shift_gradient,
+    is_jax_autodiff_available,
+    jax_value_and_grad,
+    parameter_shift_gradient,
+    value_and_parameter_shift_grad,
+)
 from .forecasting import (
     ForecastModelRun,
     SynchronisationForecastBenchmarkResult,
@@ -279,6 +290,15 @@ __all__ = [
     "QAOA_MPC",
     "QuantumPetriNet",
     "VQLS_GradShafranov",
+    "DifferentiableOptimizer",
+    "GradientResult",
+    "Parameter",
+    "ParameterShiftRule",
+    "batch_parameter_shift_gradient",
+    "is_jax_autodiff_available",
+    "jax_value_and_grad",
+    "parameter_shift_gradient",
+    "value_and_parameter_shift_grad",
     "ControlQEC",
     "FaultTolerantUPDE",
     "LogicalQubit",

@@ -32,6 +32,8 @@ from typing import Any, Callable
 
 import numpy as np
 
+from ..differentiable import GradientResult
+
 try:
     import pennylane as qml  # type: ignore[import-untyped,import-not-found]
 
@@ -220,4 +222,44 @@ class PennyLaneRunner:
             statevector=None,
             device_name=self.device_name,
             n_qubits=n,
+        )
+
+    def vqe_value_and_grad(
+        self,
+        params: np.ndarray,
+        *,
+        ansatz_depth: int = 2,
+    ) -> GradientResult:
+        """Return VQE energy and PennyLane autodiff gradient for ansatz parameters."""
+
+        n_params = self.n * ansatz_depth * 3
+        raw_params = np.asarray(params, dtype=np.float64)
+        if raw_params.ndim != 1 or raw_params.size != n_params:
+            raise ValueError(f"params must be a one-dimensional array with {n_params} entries")
+        if not np.all(np.isfinite(raw_params)):
+            raise ValueError("params must contain finite values")
+
+        pl_np = getattr(qml, "numpy", np)
+        try:
+            diff_params = pl_np.array(raw_params, requires_grad=True)
+        except TypeError:
+            diff_params = pl_np.array(raw_params)
+
+        @qml.qnode(self.dev)
+        def cost_fn(current_params):
+            self._apply_vqe_ansatz(current_params, ansatz_depth)
+            return qml.expval(self.H)
+
+        gradient_fn = qml.grad(cost_fn)
+        value = float(cost_fn(diff_params))
+        gradient = np.asarray(gradient_fn(diff_params), dtype=np.float64)
+        return GradientResult(
+            value=value,
+            gradient=gradient,
+            method="pennylane_autodiff",
+            shift=None,
+            coefficient=None,
+            evaluations=2,
+            parameter_names=tuple(f"vqe_{index}" for index in range(n_params)),
+            trainable=tuple(True for _ in range(n_params)),
         )

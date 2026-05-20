@@ -16,7 +16,14 @@ import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 
+from ..differentiable import (
+    DifferentiableOptimizer,
+    GradientResult,
+    Parameter,
+    value_and_parameter_shift_grad,
+)
 from .qlayer import QuantumDenseLayer
+from .qsynapse import QuantumSynapse
 
 
 class QSNNTrainer:
@@ -25,6 +32,7 @@ class QSNNTrainer:
     def __init__(self, layer: QuantumDenseLayer, lr: float = 0.01):
         self.layer = layer
         self.lr = lr
+        self.optimizer = DifferentiableOptimizer(learning_rate=lr)
 
     def _build_circuit(
         self,
@@ -66,6 +74,15 @@ class QSNNTrainer:
         )
         return probs
 
+    @staticmethod
+    def _set_synapse_theta(synapse: QuantumSynapse, theta: float) -> None:
+        """Set a synapse through its weight API from a target CRy angle."""
+
+        w_min = float(synapse.w_min)
+        w_max = float(synapse.w_max)
+        weight = theta / np.pi * (w_max - w_min) + w_min
+        synapse.update_weight(weight)
+
     def parameter_shift_gradient(
         self,
         inputs: np.ndarray,
@@ -75,18 +92,51 @@ class QSNNTrainer:
 
         Returns (n_neurons, n_inputs) gradient array.
         """
-        grad = np.zeros((self.layer.n_neurons, self.layer.n_inputs))
+        shape = (self.layer.n_neurons, self.layer.n_inputs)
+        values = np.array(
+            [
+                self.layer.synapses[ni][ii].theta
+                for ni in range(self.layer.n_neurons)
+                for ii in range(self.layer.n_inputs)
+            ],
+            dtype=np.float64,
+        )
+        parameters = [
+            Parameter(f"synapse_{ni}_{ii}")
+            for ni in range(self.layer.n_neurons)
+            for ii in range(self.layer.n_inputs)
+        ]
 
-        for ni in range(self.layer.n_neurons):
-            for ii in range(self.layer.n_inputs):
-                p_plus = self._forward_probs(inputs, (ni, ii, np.pi / 2))
-                l_plus = float(np.mean((p_plus - target) ** 2))
-                p_minus = self._forward_probs(inputs, (ni, ii, -np.pi / 2))
-                l_minus = float(np.mean((p_minus - target) ** 2))
-                grad[ni, ii] = (l_plus - l_minus) / 2.0
+        def objective(flat_values: np.ndarray) -> float:
+            flat_index = 0
+            for ni in range(self.layer.n_neurons):
+                for ii in range(self.layer.n_inputs):
+                    self._set_synapse_theta(
+                        self.layer.synapses[ni][ii],
+                        float(flat_values[flat_index]),
+                    )
+                    flat_index += 1
+            prediction = self._forward_probs(inputs)
+            return float(np.mean((prediction - target) ** 2))
 
-        result: np.ndarray = grad
-        return result
+        original = values.copy()
+        try:
+            result = value_and_parameter_shift_grad(
+                objective,
+                values,
+                parameters=parameters,
+            )
+        finally:
+            flat_index = 0
+            for ni in range(self.layer.n_neurons):
+                for ii in range(self.layer.n_inputs):
+                    self._set_synapse_theta(
+                        self.layer.synapses[ni][ii],
+                        float(original[flat_index]),
+                    )
+                    flat_index += 1
+
+        return result.gradient.reshape(shape)
 
     def train_epoch(self, X: np.ndarray, y: np.ndarray) -> float:
         """One epoch over dataset. Returns mean loss."""
@@ -96,12 +146,38 @@ class QSNNTrainer:
             total_loss += float(np.mean((pred - yi) ** 2))
 
             grad = self.parameter_shift_gradient(xi, yi)
+            theta_values = np.array(
+                [
+                    self.layer.synapses[ni][ii].theta
+                    for ni in range(self.layer.n_neurons)
+                    for ii in range(self.layer.n_inputs)
+                ],
+                dtype=np.float64,
+            )
+            parameter_names = tuple(
+                f"synapse_{ni}_{ii}"
+                for ni in range(self.layer.n_neurons)
+                for ii in range(self.layer.n_inputs)
+            )
+            gradient_payload = GradientResult(
+                value=float(np.mean((pred - yi) ** 2)),
+                gradient=grad.reshape(-1),
+                method="parameter_shift",
+                shift=np.pi / 2,
+                coefficient=0.5,
+                evaluations=1 + 2 * grad.size,
+                parameter_names=parameter_names,
+                trainable=tuple(True for _ in parameter_names),
+            )
+            updated = self.optimizer.step(theta_values, gradient_payload)
+            flat_index = 0
             for ni in range(self.layer.n_neurons):
                 for ii in range(self.layer.n_inputs):
-                    syn = self.layer.synapses[ni][ii]
-                    new_theta = syn.theta - self.lr * grad[ni, ii]
-                    new_w = new_theta / np.pi * (syn.w_max - syn.w_min) + syn.w_min
-                    syn.update_weight(new_w)
+                    self._set_synapse_theta(
+                        self.layer.synapses[ni][ii],
+                        float(updated[flat_index]),
+                    )
+                    flat_index += 1
 
         return total_loss / len(X)
 

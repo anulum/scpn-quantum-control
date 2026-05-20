@@ -103,7 +103,7 @@ The registry includes lazy loaders for three backends:
 | Backend | Package | Provides |
 |---------|---------|----------|
 | `qiskit` | `qiskit` | Trotter circuits, IBM execution |
-| `pennylane` | `pennylane` | Differentiable circuits |
+| `pennylane` | `pennylane` | Differentiable circuits and VQE value/gradient adapter |
 | `cirq` | `cirq-core` | Google Quantum circuits |
 
 These are loaded on first access — no import cost if unused.

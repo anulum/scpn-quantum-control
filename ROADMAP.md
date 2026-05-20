@@ -79,6 +79,12 @@ is copied here.
   `scpn-bench symmetry-sector-mitigation-gate` now locks raw-count replay
   fixtures for applied postselection/expansion and blocked missing-counts
   behaviour alongside planner fixtures.
+- [x] **Native differentiable-programming foundation.** Implemented
+  2026-05-20: `scpn_quantum_control.differentiable` exposes backend-neutral
+  scalar-objective parameter-shift gradients, explicit parameter metadata,
+  trainable masks, provenance-bearing `GradientResult` payloads, a native
+  gradient-descent step, optional JAX value/gradient bridging, QSNN trainer
+  integration, and a PennyLane VQE value/gradient adapter.
 - [x] **Stable-core release/repro gate.** Use
   `scpn-bench stable-core-release-gate` before release notes, API changes, or
   public stable-core documentation changes. The bundle runs stable-core
