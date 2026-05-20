@@ -109,6 +109,23 @@ def test_readout_mitigated_pauli_expectation_inverts_independent_assignment_erro
     assert mitigated == pytest.approx(1.0)
 
 
+def test_correlated_readout_mitigation_uses_full_calibration_matrix() -> None:
+    module = _load_module()
+    readout = [
+        {
+            "meta": {"block": "readout", "initial": prepared[::-1]},
+            "counts": {prepared: 100},
+        }
+        for prepared in ["00", "01", "10", "11"]
+    ]
+
+    model = module.build_readout_mitigation_model(readout, width=2)
+    mitigated = module.mitigated_pauli_expectation({"11": 100}, "ZZ", model)
+
+    assert model["method"] == "full_correlated_readout_inverse"
+    assert mitigated == pytest.approx(1.0)
+
+
 def test_analyse_counts_artifact_groups_repetitions_against_reference(tmp_path: Path) -> None:
     module = _load_module()
     counts_path = tmp_path / "counts.json"

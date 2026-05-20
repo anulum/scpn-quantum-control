@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Commercial license available
-# (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved.
-# (c) Code 2020-2026 Miroslav Sotek. All rights reserved.
+# © Concepts 1996-2026 Miroslav Sotek. All rights reserved.
+# © Code 2020-2026 Miroslav Sotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control -- Phase 3 entanglement/tomography IBM runner
@@ -223,6 +223,52 @@ def select_layout(backend: Any) -> LayoutCandidate:
     return sorted(candidates, key=lambda item: item.score)[0]
 
 
+def parse_physical_qubits(value: str) -> tuple[int, int, int, int]:
+    """Parse an explicit four-qubit physical layout."""
+
+    try:
+        qubits = tuple(int(part.strip()) for part in value.split(","))
+    except ValueError as exc:
+        raise ValueError("--physical-qubits must contain comma-separated integers") from exc
+    if len(qubits) != N_QUBITS:
+        raise ValueError(f"--physical-qubits must contain exactly {N_QUBITS} entries")
+    if len(set(qubits)) != N_QUBITS:
+        raise ValueError("--physical-qubits entries must be distinct")
+    if any(qubit < 0 for qubit in qubits):
+        raise ValueError("--physical-qubits entries must be non-negative")
+    return qubits  # type: ignore[return-value]
+
+
+def select_pinned_layout(
+    backend: Any, physical_qubits: tuple[int, int, int, int]
+) -> LayoutCandidate:
+    """Validate and return an explicitly requested connected four-qubit layout."""
+
+    n_qubits = int(getattr(backend, "num_qubits", 0))
+    if max(physical_qubits) >= n_qubits:
+        raise RuntimeError(f"pinned layout exceeds backend width {n_qubits}: {physical_qubits}")
+    edges = _coupling_edges(backend)
+    if not _is_connected_window(physical_qubits, edges):
+        raise RuntimeError(f"pinned layout is not connected on backend: {physical_qubits}")
+    local_edges = [
+        (a, b) for a, b in edges if a in physical_qubits and b in physical_qubits and a < b
+    ]
+    readout = _readout_errors(backend, physical_qubits)
+    twoq = _two_qubit_errors(backend, local_edges)
+    readout_mean = float(mean(readout)) if readout else None
+    twoq_mean = float(mean(twoq)) if twoq else None
+    score = (readout_mean if readout_mean is not None else 0.02) + (
+        twoq_mean if twoq_mean is not None else 0.02
+    )
+    return LayoutCandidate(
+        layout_id="pinned_" + "_".join(str(qubit) for qubit in physical_qubits),
+        physical_qubits=physical_qubits,
+        readout_error_mean=readout_mean,
+        two_qubit_error_mean=twoq_mean,
+        score=score,
+    )
+
+
 def apply_measurement_basis(circuit: QuantumCircuit, basis_setting: str) -> QuantumCircuit:
     """Return a measured circuit for one reduced-Pauli basis setting."""
 
@@ -255,6 +301,8 @@ def _readout_circuit(bitstring: str) -> QuantumCircuit:
 
 def build_circuits(
     layout: LayoutCandidate,
+    *,
+    full_readout_calibration: bool = False,
 ) -> tuple[
     list[tuple[dict[str, Any], QuantumCircuit]], list[tuple[dict[str, Any], QuantumCircuit]]
 ]:
@@ -287,7 +335,10 @@ def build_circuits(
                 measured = apply_measurement_basis(source, basis)
                 measured.name = f"p3_ento_{spec.label}_{basis}_r{rep}"
                 main.append((meta, measured))
-    readout_states = sorted({spec.initial for spec in specs}.union({"0000", "1111"}))
+    if full_readout_calibration:
+        readout_states = [format(index, f"0{N_QUBITS}b") for index in range(2**N_QUBITS)]
+    else:
+        readout_states = sorted({spec.initial for spec in specs}.union({"0000", "1111"}))
     readout: list[tuple[dict[str, Any], QuantumCircuit]] = []
     for state in readout_states:
         meta = {
@@ -503,6 +554,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--timeout-main-s", type=int, default=3600)
     parser.add_argument("--timeout-readout-s", type=int, default=1800)
     parser.add_argument("--optimization-level", type=int, default=2)
+    parser.add_argument(
+        "--physical-qubits",
+        help="comma-separated pinned physical qubits, for example 21,22,23,24",
+    )
+    parser.add_argument("--full-readout-calibration", action="store_true")
     return parser.parse_args()
 
 
@@ -537,8 +593,15 @@ def main() -> int:
     runner.connect()
     _validate_backend(runner.backend)
 
-    layout = select_layout(runner.backend)
-    main_circuits, readout_circuits = build_circuits(layout)
+    layout = (
+        select_pinned_layout(runner.backend, parse_physical_qubits(args.physical_qubits))
+        if args.physical_qubits
+        else select_layout(runner.backend)
+    )
+    main_circuits, readout_circuits = build_circuits(
+        layout,
+        full_readout_calibration=args.full_readout_calibration,
+    )
     source_isa = transpile_sources_for_main(
         runner.backend,
         main_circuits,
@@ -576,6 +639,7 @@ def main() -> int:
         "n_circuits": len(all_circuits),
         "n_main_circuits": len(main_circuits),
         "n_readout_circuits": len(readout_circuits),
+        "full_readout_calibration": bool(args.full_readout_calibration),
         "shots_main": MAIN_SHOTS,
         "shots_readout": READOUT_SHOTS,
         "repetitions": REPETITIONS,

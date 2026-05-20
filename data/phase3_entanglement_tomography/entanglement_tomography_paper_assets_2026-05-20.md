@@ -20,9 +20,9 @@ Date: 2026-05-20
 - `data/phase3_entanglement_tomography/entanglement_tomography_label_summary_2026-05-20.md` SHA256 `a38a5d13303fdc5f1dbfd7a3379f53bdb982edd233fd9c34a9965232e8e9488f`
 - `data/phase3_entanglement_tomography/entanglement_tomography_top_deviations_2026-05-20.md` SHA256 `b79b1ebc0079b0ea8d37802bf259b7e702a9a9fc993ba9e8271c2fa2deddba13`
 - `figures/phase3/phase3_entanglement_deviation_heatmap_2026-05-20.png` SHA256 `8eb1d8f068f79967718aeaaecdba4c29ab343e21650121c7e050215df7387486`
-- `figures/phase3/phase3_entanglement_deviation_heatmap_2026-05-20.pdf` SHA256 `ab884480487f23a8364040091f3863e23d455a521a84cae6f02cffd911e6465e`
-- `data/phase3_entanglement_tomography/entanglement_tomography_backend_comparison_2026-05-20.csv` SHA256 `767a7a421f5c14e98f90bb8b32d01417d29c0bc80e9ce9572e4d484b8cd43d7c`
-- `data/phase3_entanglement_tomography/entanglement_tomography_backend_comparison_2026-05-20.md` SHA256 `4ea452e24376b373e6843a11da31ed710ec34dd360812fe62af6a7d9ef0b94b0`
+- `figures/phase3/phase3_entanglement_deviation_heatmap_2026-05-20.pdf` SHA256 `bbf353f86f77ee77f4f1f6a8bbfa68f662a18cee653736323c3e90bbb538fbc4`
+- `data/phase3_entanglement_tomography/entanglement_tomography_backend_comparison_2026-05-20.csv` SHA256 `20f2820a21a88be316bc6152c9517b547ff04552475b52b5ec947bdded1952f1`
+- `data/phase3_entanglement_tomography/entanglement_tomography_backend_comparison_2026-05-20.md` SHA256 `6f296f1c73bbdd470fa2527c030d00ba8ebf56b7253d16a2afbaad6385cb9faf`
 
 ## Claim Boundary
 

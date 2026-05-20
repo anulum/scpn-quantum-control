@@ -53,11 +53,14 @@ while the FIM $\lambda_{\mathrm{fim}}=4$ circuit deviates more strongly than
 the $\lambda_{\mathrm{fim}}=0$ reference. A tensor-product readout-mitigation
 replay leaves the primary mean absolute deviation essentially unchanged
 (0.1293), and a same-day \texttt{ibm\_fez} replication gives mean absolute
-deviation 0.1528, readout-mitigated to 0.1513. The result is a
-mechanism-boundary measurement: it shows structured reduced-Pauli distortions
-accompanying the small-system DLA/FIM hardware programme, but does not claim
-scalable tomography, quantum advantage, full-state reconstruction, or
-backend-general entanglement dynamics.
+deviation 0.1528, readout-mitigated to 0.1513. A pinned-layout
+\texttt{ibm\_fez} repeat with full 16-state readout calibration gives raw mean
+absolute deviation 0.1494; correlated readout inversion amplifies rather than
+erases the strongest channels. The result is a mechanism-boundary measurement:
+it shows structured reduced-Pauli distortions accompanying the small-system
+DLA/FIM hardware programme, but does not claim scalable tomography, quantum
+advantage, full-state reconstruction, or backend-general entanglement
+dynamics.
 \end{abstract}
 
 \maketitle
@@ -128,7 +131,10 @@ transpiled depth in the live preflight is 388, and the maximum
 measurement-basis depth expansion is 1.0718. A second-backend replication on
 \texttt{ibm\_fez} used physical qubits $[21,22,23,24]$, the same circuit and
 shot budget, and jobs \texttt{d86h4jlg7okc73el3ra0} and
-\texttt{d86h5d9789is738vlt7g}. Circuit construction, transpilation, and
+\texttt{d86h5d9789is738vlt7g}. A pinned-layout repeat on the same
+\texttt{ibm\_fez} qubits added all 16 computational-basis readout calibration
+states and used jobs \texttt{d86hdk8p0eas73dkv9eg} and
+\texttt{d86hedp789is738vm7mg}. Circuit construction, transpilation, and
 hardware execution used Qiskit and the IBM Quantum
 platform~\cite{Qiskit2024,IBMQuantum}.
 
@@ -157,7 +163,11 @@ hardware claim. The four calibration circuits are marginalised into independent
 single-qubit assignment matrices in IBM count-key order, and the tensor-product
 assignment matrix is inverted before recomputing each reduced-Pauli
 expectation. This is not a full 16-state correlated readout calibration and is
-not ZNE or PEC.
+not ZNE or PEC. When all 16 calibration states are present in the pinned
+\texttt{ibm\_fez} repeat, the reducer instead inverts the full correlated
+16-by-16 assignment matrix. This still corrects only readout assignment; it
+does not correct basis rotations, coherent gate errors, drift, or depth
+effects.
 
 \section{Results}
 
@@ -238,14 +248,19 @@ Circuit label & Basis & Measured & Exact & Deviation \\
 \subsection{Readout mitigation and same-day replication}
 
 Table~\ref{tab:backend-comparison} summarises the primary
-\texttt{ibm\_marrakesh} run and the same-day \texttt{ibm\_fez} replication.
+\texttt{ibm\_marrakesh} run, the same-day \texttt{ibm\_fez} replication, and
+the pinned-layout \texttt{ibm\_fez} repeat with full readout calibration.
 The tensor-product readout inversion does not collapse the deviations toward
 zero on either backend. On \texttt{ibm\_marrakesh}, the mean absolute deviation
 changes from 0.1299 to 0.1293; on \texttt{ibm\_fez}, it changes from 0.1528 to
-0.1513. The largest absolute deviations also remain of the same order. This
-does not prove backend-general dynamics, but it does rule out the simplest
+0.1513. The pinned-layout repeat gives a similar raw mean absolute deviation,
+0.1494, while full correlated readout inversion increases the aggregate
+mitigated deviation to 0.1953 and the largest mitigated deviation to 0.9913.
+This does not prove backend-general dynamics, but it does rule out the simplest
 interpretation that the primary observation is only a single-backend
-population-readout artefact.
+population-readout artefact. The full correlated inversion result is treated as
+a sensitivity bound, because matrix inversion can amplify calibration and shot
+noise in individual channels.
 
 \begin{table}[tb]
 \centering
@@ -255,12 +270,13 @@ population-readout artefact.
 Backend & Mean abs. & Max abs. & Mitigated mean abs. & Mitigated max abs. \\
 \midrule
 \texttt{ibm\_marrakesh} & 0.129893 & 0.556091 & 0.129304 & 0.564834 \\
-\texttt{ibm\_fez} & 0.152821 & 0.479015 & 0.151317 & 0.486875 \\
+\texttt{ibm\_fez} auto layout & 0.152821 & 0.479015 & 0.151317 & 0.486875 \\
+\texttt{ibm\_fez} pinned full readout & 0.149445 & 0.473481 & 0.195282 & 0.991278 \\
 \bottomrule
 \end{tabular}
 \caption{Cross-backend reduced-Pauli deviation summary. Mitigation is
-independent single-qubit readout inversion from the calibration circuits in the
-same artefact.}
+independent single-qubit readout inversion for the first two rows and full
+correlated readout inversion for the pinned full-readout row.}
 \label{tab:backend-comparison}
 \end{table}
 
@@ -299,6 +315,17 @@ population-readout story. It may still include basis-rotation error,
 layout-dependent coherent error, calibration drift, and depth-dependent
 decoherence. The safe interpretation is therefore mechanism-boundary evidence,
 not full causal attribution.
+
+The two \texttt{ibm\_fez} executions also separate layout robustness from
+same-layout repeatability. The auto-layout \texttt{ibm\_fez} run and the
+pinned-layout repeat use the same physical qubits, $[21,22,23,24]$, and their
+raw aggregate deviations are close: 0.1528 and 0.1494. The remaining
+quantitative differences may reflect calibration-window drift, basis-rotation
+error, coherent layout-specific error, or finite-shot variation. Because the
+same-order transverse deviations persist across \texttt{ibm\_marrakesh} and
+\texttt{ibm\_fez}, and across two \texttt{ibm\_fez} executions, a single
+layout-only explanation is not sufficient; however, layout-specific coherent
+error remains a plausible contributor to the detailed channel amplitudes.
 
 \subsection{Readout-sensitivity check}
 
@@ -372,6 +399,8 @@ The relevant commands are:
     \path{data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_marrakesh_2026-05-20T004334Z.json};
   \item completed replication raw-count artefact:
     \path{data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_fez_2026-05-20T014536Z.json};
+  \item completed pinned full-readout raw-count artefact:
+    \path{data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_fez_2026-05-20T020452Z.json};
   \item post-run reducer:
     \path{scripts/analyse_phase3_entanglement_tomography.py};
   \item paper-asset generator:
@@ -389,9 +418,15 @@ mechanism-separation result: it localises correlator-level hardware
 deformation accompanying the earlier leakage/retention observations, shows
 that the largest effects exceed the dominant computational-basis readout
 leakage scale, and verifies that independent readout inversion and a second
-Heron backend do not remove the aggregate deviation pattern. It still avoids
-scalable tomography, backend-general, full-causal-entanglement, or advantage
-claims.
+Heron backend do not remove the aggregate deviation pattern. A pinned-layout
+repeat with full readout calibration further shows that correlated readout
+inversion amplifies rather than eliminates the strongest deviations. The next
+experimental step is therefore not a broader claim, but a preregistered
+noise-scaling lane on the same reduced-Pauli observables: a small ZNE subset
+covering the dominant DLA transverse channels and one FIM control channel, with
+depth-expansion and cost gates fixed before submission. The present paper still
+avoids scalable tomography, backend-general, full-causal-entanglement, or
+advantage claims.
 
 \bibliographystyle{apsrev4-2}
 \bibliography{phase3_entanglement_tomography_refs}

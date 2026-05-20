@@ -132,6 +132,111 @@ def _tensor_assignment_matrix(matrices: Sequence[Mapping[str, float]]) -> np.nda
     return assignment
 
 
+def estimate_correlated_readout_matrix(
+    readout_circuits: Sequence[Mapping[str, Any]],
+    *,
+    width: int,
+) -> list[list[float]]:
+    """Estimate the full correlated assignment matrix from all basis states."""
+
+    bitstrings = _bitstrings(width)
+    bitstring_index = {bitstring: index for index, bitstring in enumerate(bitstrings)}
+    columns: dict[str, np.ndarray] = {}
+    for circuit in readout_circuits:
+        meta = circuit.get("meta", {})
+        if meta.get("block") != "readout":
+            continue
+        prepared = str(meta["initial"]).replace(" ", "")[-width:][::-1]
+        if prepared not in bitstring_index:
+            raise ValueError("readout calibration prepared state has invalid width")
+        total = sum(int(value) for value in circuit.get("counts", {}).values())
+        if total <= 0:
+            raise ValueError(f"readout calibration for {prepared} contains no shots")
+        column = np.zeros(len(bitstrings), dtype=float)
+        for observed, shots in circuit.get("counts", {}).items():
+            compact = str(observed).replace(" ", "")[-width:]
+            column[bitstring_index[compact]] += int(shots) / total
+        columns[prepared] = column
+    missing = sorted(set(bitstrings).difference(columns))
+    if missing:
+        raise ValueError(f"full readout calibration is missing states: {missing}")
+    assignment = np.column_stack([columns[bitstring] for bitstring in bitstrings])
+    if abs(float(np.linalg.det(assignment))) < 1e-12:
+        raise ValueError("full readout assignment matrix is singular")
+    return assignment.tolist()
+
+
+def build_readout_mitigation_model(
+    readout_circuits: Sequence[Mapping[str, Any]],
+    *,
+    width: int,
+) -> dict[str, Any]:
+    """Build the strongest readout mitigation model supported by calibration data."""
+
+    prepared = {
+        str(circuit.get("meta", {}).get("initial", "")).replace(" ", "")[-width:]
+        for circuit in readout_circuits
+        if circuit.get("meta", {}).get("block") == "readout"
+    }
+    full_states = {format(index, f"0{width}b") for index in range(2**width)}
+    if prepared == full_states:
+        return {
+            "method": "full_correlated_readout_inverse",
+            "source": "full computational-basis readout calibration from the same live artefact",
+            "n_calibration_circuits": len(readout_circuits),
+            "assignment_matrix": estimate_correlated_readout_matrix(readout_circuits, width=width),
+            "claim_boundary": (
+                "full correlated readout inversion only; not a ZNE/PEC result and "
+                "not a correction for basis-rotation or coherent gate errors"
+            ),
+        }
+    return {
+        "method": "tensor_product_single_qubit_inverse",
+        "source": "readout calibration marginals from the same live artefact",
+        "n_calibration_circuits": len(readout_circuits),
+        "single_qubit_assignment_matrices": estimate_single_qubit_readout_matrices(
+            readout_circuits,
+            width=width,
+        ),
+        "claim_boundary": (
+            "independent single-qubit readout inversion only; not a full "
+            "16-state correlated readout calibration and not a ZNE/PEC result"
+        ),
+    }
+
+
+def mitigated_pauli_expectation(
+    counts: Mapping[str, int],
+    pauli_label: str,
+    model: Mapping[str, Any],
+) -> float:
+    """Estimate a Pauli expectation using the selected readout mitigation model."""
+
+    if model["method"] == "full_correlated_readout_inverse":
+        width = len(pauli_label)
+        total = sum(int(value) for value in counts.values())
+        if total <= 0:
+            raise ValueError("counts must contain at least one shot")
+        bitstrings = _bitstrings(width)
+        bitstring_index = {bitstring: index for index, bitstring in enumerate(bitstrings)}
+        observed = np.zeros(len(bitstrings), dtype=float)
+        for bitstring, shots in counts.items():
+            compact = str(bitstring).replace(" ", "")[-width:]
+            observed[bitstring_index[compact]] += int(shots) / total
+        mitigated = np.linalg.inv(np.array(model["assignment_matrix"], dtype=float)) @ observed
+        active = [index for index, basis in enumerate(pauli_label) if basis != "I"]
+        expectation = 0.0
+        for bitstring, probability in zip(bitstrings, mitigated):
+            parity = sum(1 for index in active if bitstring[index] == "1")
+            expectation += (-1.0 if parity % 2 else 1.0) * float(probability)
+        return float(expectation)
+    return readout_mitigated_pauli_expectation(
+        counts,
+        pauli_label,
+        model["single_qubit_assignment_matrices"],
+    )
+
+
 def readout_mitigated_pauli_expectation(
     counts: Mapping[str, int],
     pauli_label: str,
@@ -212,7 +317,7 @@ def analyse_counts_artifact(
     readout_circuits = [
         circuit for circuit in circuits if circuit.get("meta", {}).get("block") == "readout"
     ]
-    readout_matrices = estimate_single_qubit_readout_matrices(readout_circuits, width=N_QUBITS)
+    readout_model = build_readout_mitigation_model(readout_circuits, width=N_QUBITS)
     for circuit in circuits:
         meta = circuit.get("meta", {})
         if meta.get("block") != "main":
@@ -225,7 +330,7 @@ def analyse_counts_artifact(
         pauli_label = str(reference["pauli_label"])
         grouped[key].append(pauli_expectation_from_counts(counts, pauli_label))
         grouped_mitigated[key].append(
-            readout_mitigated_pauli_expectation(counts, pauli_label, readout_matrices)
+            mitigated_pauli_expectation(counts, pauli_label, readout_model)
         )
         if circuit.get("job_id"):
             analysis_jobs.add(str(circuit["job_id"]))
@@ -290,16 +395,7 @@ def analyse_counts_artifact(
         "readout_mitigated_mean_absolute_deviation": (
             mean(mitigated_abs_values) if mitigated_abs_values else None
         ),
-        "readout_mitigation": {
-            "method": "tensor_product_single_qubit_inverse",
-            "source": "readout calibration marginals from the same live artefact",
-            "n_calibration_circuits": len(readout_circuits),
-            "single_qubit_assignment_matrices": readout_matrices,
-            "claim_boundary": (
-                "independent single-qubit readout inversion only; not a full "
-                "16-state correlated readout calibration and not a ZNE/PEC result"
-            ),
-        },
+        "readout_mitigation": readout_model,
         "claim_boundary": (
             "reduced-Pauli observable analysis only; no scalable tomography, "
             "quantum advantage, or backend-general claim"

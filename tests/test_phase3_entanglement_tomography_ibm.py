@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Commercial license available
-# (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved.
-# (c) Code 2020-2026 Miroslav Sotek. All rights reserved.
+# © Concepts 1996-2026 Miroslav Sotek. All rights reserved.
+# © Code 2020-2026 Miroslav Sotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control -- Phase 3 entanglement/tomography submitter tests
@@ -74,6 +74,56 @@ def test_build_circuits_matches_promoted_readiness_scope() -> None:
     assert first_meta["shots"] == 2048
     assert first_meta["physical_qubits"] == [0, 1, 2, 3]
     assert first_circuit.num_clbits == 4
+
+
+def test_parse_physical_qubits_requires_four_distinct_indices() -> None:
+    module = _load_module()
+
+    assert module.parse_physical_qubits("21,22,23,24") == (21, 22, 23, 24)
+
+    for value in ["21,22,23", "21,22,23,23", "21,22,x,24"]:
+        try:
+            module.parse_physical_qubits(value)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"accepted invalid qubit list: {value}")
+
+
+def test_select_pinned_layout_preserves_requested_qubits() -> None:
+    module = _load_module()
+
+    layout = module.select_pinned_layout(_Backend(), (2, 3, 4, 5))
+
+    assert layout.layout_id == "pinned_2_3_4_5"
+    assert layout.physical_qubits == (2, 3, 4, 5)
+
+
+def test_build_circuits_can_emit_full_readout_calibration() -> None:
+    module = _load_module()
+    layout = module.select_layout(_Backend())
+
+    _main, readout = module.build_circuits(layout, full_readout_calibration=True)
+
+    assert len(readout) == 16
+    assert [meta["initial"] for meta, _circuit in readout] == [
+        "0000",
+        "0001",
+        "0010",
+        "0011",
+        "0100",
+        "0101",
+        "0110",
+        "0111",
+        "1000",
+        "1001",
+        "1010",
+        "1011",
+        "1100",
+        "1101",
+        "1110",
+        "1111",
+    ]
 
 
 def test_apply_measurement_basis_adds_expected_rotations() -> None:
