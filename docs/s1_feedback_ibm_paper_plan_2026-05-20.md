@@ -109,6 +109,23 @@ Observed readiness:
 - matched open-loop mean target error: `0.2116406250`;
 - target-error improvement: `-0.0032552083`.
 
+S1b direct-XY observable extension:
+
+- status: completed on `ibm_kingston`;
+- purpose: keep this in the same paper and test direct XY-sector correlators
+  after the binary synchrony proxy saturated;
+- observables: `XXI`, `YYI`, `IXX`, `IYY`;
+- jobs: `d86r1rqs46sc73f7c2g0`, `d86r1udg7okc73elggi0`,
+  `d86r201789is739022q0`, `d86r21is46sc73f7c2o0`,
+  `d86r252s46sc73f7c2tg`, `d86r26gp0eas73dlbkkg`,
+  `d86r288p0eas73dlbkmg`, `d86r29p789is7390238g`;
+- mean absolute feedback-control separation: `0.0205078125`;
+- signed feedback minus control by sorted observable row: `0.0247395833`,
+  `0.0358072917`, `-0.0175781250`, `0.0039062500`;
+- interpretation: not a robust positive-control result, but channel-structured
+  evidence that the binary proxy hid small direct-XY feedback/control
+  differences.
+
 ## Preregistered Job Shape
 
 | Field | Value |
@@ -144,6 +161,11 @@ matched open-loop control under the same hardware window.
 | Feedback and open-loop are statistically indistinguishable | Hardware-control null result; dynamic-circuit overhead/noise dominates at this scale. |
 | Feedback worsens target error | **Observed.** Negative control result; the feedback action is not robust under this backend/calibration window. |
 | Capability or transpilation gate fails | Provider-readiness paper note only; no hardware-control claim. |
+
+S1b does not replace the preregistered binary-proxy decision tree. It adds a
+same-paper diagnostic extension showing whether the null/negative result is
+uniform across direct XY-sector observables. The observed answer is no:
+feedback/control differences are small but not uniform across channels.
 
 ## Claim Boundary
 

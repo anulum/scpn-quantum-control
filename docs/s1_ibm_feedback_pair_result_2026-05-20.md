@@ -38,6 +38,13 @@ The preregistered analysis returns `null_or_negative`.
 The feedback arm is farther from the target by `0.0032552083`, a relative
 target-error change of `-1.538%` compared with the matched open-loop control.
 
+Follow-up in the same paper:
+
+- `docs/s1b_ibm_xy_observable_result_2026-05-20.md`
+
+The S1b extension keeps the same feedback/control dynamic bodies but measures
+direct XY-sector Pauli correlators. It is not a separate paper.
+
 ## Boundary
 
 This is a bounded hardware-control falsification for the tested S1 policy,

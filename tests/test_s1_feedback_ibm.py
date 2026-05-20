@@ -21,7 +21,10 @@ from scpn_quantum_control.hardware.s1_feedback_ibm import (
     binary_phase_synchrony_from_counts,
     build_s1_arm_command,
     build_s1_feedback_arm_circuits,
+    build_s1_xy_observable_arm_circuits,
+    pauli_expectation_from_counts,
     raw_count_package_from_feedback_results,
+    raw_count_package_from_xy_observable_results,
     run_ibm_sampler_arm,
 )
 
@@ -166,3 +169,80 @@ def test_build_s1_arm_command_carries_approval_budget_payload() -> None:
     assert command.estimated_qpu_seconds == pytest.approx(arm.estimated_qpu_seconds)
     assert command.payload["shots"] == 128
     assert command.payload["timeout_s"] == 45.0
+
+
+def test_build_s1_xy_observable_arm_circuits_preserves_dynamic_body() -> None:
+    arms = build_s1_xy_observable_arm_circuits(
+        _controller(),
+        observables=("XXI", "YYI", "IXX", "IYY"),
+        n_rounds=3,
+        shots=1024,
+        repetitions=2,
+    )
+
+    assert len(arms) == 8
+    assert {(arm.label, arm.observable) for arm in arms} == {
+        (S1_FEEDBACK_ARM, "XXI"),
+        (S1_FEEDBACK_ARM, "YYI"),
+        (S1_FEEDBACK_ARM, "IXX"),
+        (S1_FEEDBACK_ARM, "IYY"),
+        (S1_CONTROL_ARM, "XXI"),
+        (S1_CONTROL_ARM, "YYI"),
+        (S1_CONTROL_ARM, "IXX"),
+        (S1_CONTROL_ARM, "IYY"),
+    }
+    feedback_xx = next(
+        arm for arm in arms if arm.label == S1_FEEDBACK_ARM and arm.observable == "XXI"
+    )
+    control_yy = next(
+        arm for arm in arms if arm.label == S1_CONTROL_ARM and arm.observable == "YYI"
+    )
+    assert feedback_xx.circuit.count_ops()["if_else"] == 3
+    assert "if_else" not in control_yy.circuit.count_ops()
+    assert feedback_xx.circuit.count_ops()["h"] >= 2
+    assert control_yy.circuit.count_ops()["sdg"] >= 2
+
+
+def test_pauli_expectation_from_counts_reduces_selected_non_identity_bits() -> None:
+    assert pauli_expectation_from_counts(
+        {"000": 10}, observable="XXI", n_qubits=3
+    ) == pytest.approx(1.0)
+    assert pauli_expectation_from_counts(
+        {"010": 10}, observable="XXI", n_qubits=3
+    ) == pytest.approx(-1.0)
+    assert pauli_expectation_from_counts(
+        {"010": 5, "000": 5}, observable="XXI", n_qubits=3
+    ) == pytest.approx(0.0)
+
+
+def test_raw_count_package_from_xy_observable_results_groups_by_observable() -> None:
+    feedback_xx = FeedbackResult(
+        job_id="job-feedback-xx",
+        metadata={
+            "arm": S1_FEEDBACK_ARM,
+            "observable": "XXI",
+            "records": [{"counts": {"000": 10}, "source_index": 0}],
+        },
+    )
+    control_xx = FeedbackResult(
+        job_id="job-control-xx",
+        metadata={
+            "arm": S1_CONTROL_ARM,
+            "observable": "XXI",
+            "records": [{"counts": {"010": 10}, "source_index": 0}],
+        },
+    )
+
+    package = raw_count_package_from_xy_observable_results(
+        experiment_id="s1b",
+        n_qubits=3,
+        results=[feedback_xx, control_xx],
+    )
+
+    assert package["experiment_id"] == "s1b"
+    assert package["observable_family"] == "direct_xy_pauli_correlators"
+    assert package["job_ids"] == ["job-feedback-xx", "job-control-xx"]
+    assert package["observables"][0]["basis"] == "XXI"
+    assert package["observables"][0]["arms"][0]["mean_expectation"] == pytest.approx(1.0)
+    assert package["observables"][0]["arms"][1]["mean_expectation"] == pytest.approx(-1.0)
+    assert package["observables"][0]["feedback_minus_control"] == pytest.approx(2.0)

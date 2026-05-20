@@ -12,7 +12,7 @@
 *Contact: protoscience@anulum.li*
 
 **Date:** 2026-05-20
-**Status:** IBM paired-arm execution complete; result is null-or-negative under the preregistered analysis
+**Status:** IBM paired-arm execution complete; S1 binary-proxy result is null-or-negative and S1b direct-XY extension is complete
 **Target venue:** short communication / workshop submission candidate
 
 ---
@@ -29,8 +29,12 @@ the matched open-loop arm under the same backend, layout, shots, repetitions,
 and calibration window. The S1 readiness bundle, preregistration manifest,
 hardware-job dossier, live backend capture, approval-gated IBM execution, raw
 count archive, and preregistered analysis are now complete for `ibm_kingston`.
-The observed feedback arm does not reduce target-order-parameter error
-relative to the matched open-loop control. The claim is bounded to
+The observed feedback arm does not reduce binary-proxy target-order-parameter
+error relative to the matched open-loop control. Because that proxy is near
+saturation in both arms, we add an S1b extension in the same paper: final
+direct XY-sector Pauli correlators (`XXI`, `YYI`, `IXX`, `IYY`) measured on
+the same dynamic-circuit body. The direct-XY extension shows small but
+channel-structured feedback/control differences. The claim is bounded to
 hardware-control interpretability, not quantum advantage or backend-general
 feedback.
 
@@ -140,6 +144,8 @@ shows lower target error than the matched open-loop control.
 
 ## 6. Results
 
+### 6.1 Binary synchrony proxy
+
 The preregistered analysis returned `null_or_negative`.
 
 | Metric | Feedback | Matched open-loop control |
@@ -154,6 +160,32 @@ improvement is `-0.0032552083`, or `-1.538%` relative to the open-loop
 control. Under the preregistered decision tree this is a bounded negative
 hardware-control result: the tested monitored-feedback policy did not improve
 the selected binary-phase synchrony proxy on `ibm_kingston`.
+
+### 6.2 S1b direct XY-sector extension
+
+The S1b extension keeps the same dynamic feedback and matched open-loop bodies
+but rotates the final readout basis to direct XY-sector Pauli correlators. The
+goal is to avoid relying only on the saturated binary synchrony proxy.
+
+| Observable | Feedback mean | Matched open-loop mean | Feedback minus control |
+|---|---:|---:|---:|
+| `IXX` | 0.9042968750 | 0.8795572917 | 0.0247395833 |
+| `IYY` | 0.8977864583 | 0.8619791667 | 0.0358072917 |
+| `XXI` | 0.8424479167 | 0.8600260417 | -0.0175781250 |
+| `YYI` | 0.8632812500 | 0.8593750000 | 0.0039062500 |
+
+Mean absolute feedback-control separation across the four direct XY channels
+is `0.0205078125`. Three channels move positive for the feedback arm and one
+channel (`XXI`) moves negative. This is not a robust positive-control result,
+but it is more informative than the binary proxy: the feedback/control
+difference is small and channel-structured rather than uniformly erased.
+
+S1b jobs:
+
+- `XXI`: feedback `d86r1rqs46sc73f7c2g0`, control `d86r252s46sc73f7c2tg`
+- `YYI`: feedback `d86r1udg7okc73elggi0`, control `d86r26gp0eas73dlbkkg`
+- `IXX`: feedback `d86r201789is739022q0`, control `d86r288p0eas73dlbkmg`
+- `IYY`: feedback `d86r21is46sc73f7c2o0`, control `d86r29p789is7390238g`
 
 ## 7. Claim Boundary
 
@@ -175,9 +207,13 @@ Blocked claims:
 
 ## 8. Conclusion
 
-S1 is scientifically useful as a falsification result. It shows that the tested
+S1 is scientifically useful as a falsification and boundary result. The tested
 small dynamic-circuit feedback policy, at this depth and calibration window,
 does not outperform a matched open-loop arm on the preregistered binary-phase
-synchrony target. The next S1-level paper step is either a shallower feedback
-policy or a different observable that measures the intended XY order parameter
-more directly.
+synchrony target. The S1b extension shows why that is not the whole story:
+direct XY-sector channels expose a small, non-uniform feedback/control
+response. The paper should therefore be framed as a dynamic-circuit
+hardware-control boundary test: the specific policy is not promoted as a
+successful controller, but the paired-arm method and direct-observable
+extension reveal where future shallower or gain-tuned policies should be
+tested.

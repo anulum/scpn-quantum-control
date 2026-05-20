@@ -175,6 +175,12 @@ The corrected paired-arm S1 run completed on `ibm_kingston` on 2026-05-20.
 Jobs `d86qn3lg7okc73elg2eg` and `d86qn65g7okc73elg2hg` returned a
 `null_or_negative` preregistered result: the feedback arm was farther from the
 target by `0.0032552083` mean absolute target error.
+The S1b direct-XY extension also completed on `ibm_kingston` on 2026-05-20.
+It stays inside the same S1 paper and measures `XXI`, `YYI`, `IXX`, and `IYY`
+on the same feedback/control bodies. The mean absolute feedback-control
+separation is `0.0205078125`; three direct XY channels move positive for the
+feedback arm and `XXI` moves negative. This supports a bounded
+hardware-control stress-test framing, not a promoted controller claim.
 
 ### Acceptance
 

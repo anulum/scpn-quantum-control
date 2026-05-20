@@ -239,7 +239,10 @@ from .s1_feedback_ibm import (
     binary_phase_synchrony_from_counts,
     build_s1_arm_command,
     build_s1_feedback_arm_circuits,
+    build_s1_xy_observable_arm_circuits,
+    pauli_expectation_from_counts,
     raw_count_package_from_feedback_results,
+    raw_count_package_from_xy_observable_results,
     run_ibm_sampler_arm,
 )
 from .trapped_ion import transpile_for_trapped_ion, trapped_ion_noise_model
@@ -391,7 +394,10 @@ __all__ = [
     "binary_phase_synchrony_from_counts",
     "build_s1_arm_command",
     "build_s1_feedback_arm_circuits",
+    "build_s1_xy_observable_arm_circuits",
+    "pauli_expectation_from_counts",
     "raw_count_package_from_feedback_results",
+    "raw_count_package_from_xy_observable_results",
     "run_ibm_sampler_arm",
     "compile_hybrid_digital_analog",
     "hybrid_digital_analog_factory",
