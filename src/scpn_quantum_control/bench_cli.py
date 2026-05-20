@@ -48,6 +48,7 @@ OFFLINE_HARNESS_POLICY = ExecutionSurfacePolicy(
         "data/s8_adaptive_branching",
         "data/s9_quantum_thermo",
         "data/s10_analog_native",
+        "data/s11_quantum_sensing",
         "data/stable_core",
         "data/synchronisation_benchmarks",
         "data/symmetry_sector_mitigation",
@@ -215,6 +216,11 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         frozenset({"s10-readiness"}),
     ),
     Harness(
+        "s11-quantum-sensing-readiness",
+        "scripts/export_s11_quantum_sensing_readiness.py",
+        frozenset({"s11-readiness"}),
+    ),
+    Harness(
         "sync-benchmark-registry",
         "scripts/export_synchronisation_benchmark_registry.py",
         frozenset({"sync-registry"}),
@@ -299,6 +305,7 @@ ARTEFACT_PATHS = (
     "data/s8_adaptive_branching",
     "data/s9_quantum_thermo",
     "data/s10_analog_native",
+    "data/s11_quantum_sensing",
     "data/stable_core",
     "data/synchronisation_benchmarks",
     "data/symmetry_sector_mitigation",
@@ -523,6 +530,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate the S10 analog-native Kuramoto readiness artefacts.",
     )
     _add_run_options(s10_readiness, default_group="s10-readiness")
+
+    s11_readiness = subparsers.add_parser(
+        "s11-quantum-sensing-readiness",
+        help="Regenerate the S11 sync-order quantum-sensing readiness artefacts.",
+    )
+    _add_run_options(s11_readiness, default_group="s11-readiness")
 
     sync_registry = subparsers.add_parser(
         "sync-benchmark-registry",

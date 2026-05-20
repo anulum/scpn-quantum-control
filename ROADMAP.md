@@ -1505,7 +1505,14 @@ be executed until individually activated.
   analog-advantage and provider-execution claims blocked until SDK
   construction, calibrated unit constraints, matched-tolerance digital
   baselines, and raw execution records pass.
-- [ ] **S11--S53** Scientific, foundational, and applied post-v1.0
+- [x] **S11** DLA-driven quantum sensing via sync order parameter
+  readiness. Implemented 2026-05-20:
+  `scpn-bench s11-quantum-sensing-readiness` exports the no-submit
+  QFI/classical-Fisher proxy scan and public sensing note. The gate
+  keeps sensing-advantage claims blocked until the preregistered
+  perturbation benchmark, classical Fisher baseline, hardware shot
+  budget, and raw-count uncertainty archive pass.
+- [ ] **S12--S53** Scientific, foundational, and applied post-v1.0
   differentiation tracks listed in the strategic roadmap.
 
 ## Recently closed

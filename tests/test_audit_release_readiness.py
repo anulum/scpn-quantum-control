@@ -472,3 +472,12 @@ def test_release_readiness_requires_s10_analog_native_artifacts() -> None:
 
     assert "data/s10_analog_native/analog_native_readiness_2026-05-20.json" in required
     assert "docs/analog_native_readiness.md" in required
+
+
+def test_release_readiness_requires_s11_quantum_sensing_artifacts() -> None:
+    """Release artefact gate includes the S11 quantum-sensing readiness surfaces."""
+
+    required = set(_audit_release_readiness.REQUIRED_RELEASE_ARTIFACTS)
+
+    assert "data/s11_quantum_sensing/quantum_sensing_readiness_2026-05-20.json" in required
+    assert "docs/quantum_sensing.md" in required

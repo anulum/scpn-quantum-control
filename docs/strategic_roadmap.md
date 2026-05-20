@@ -775,6 +775,12 @@ synchronisation with three heterogeneous-frequency modes.
 
 ## S11 — DLA-driven quantum sensing via sync order parameter
 
+Status 2026-05-20: first release gate landed as
+`scpn-bench s11-quantum-sensing-readiness`. The gate publishes a
+no-submit QFI/classical-Fisher proxy scan and keeps hardware execution
+plus sensing-advantage claims blocked behind preregistration, shot
+budgeting, and raw-count uncertainty evidence.
+
 ### Motivation
 
 The sync order parameter R (global) and its DLA-protected

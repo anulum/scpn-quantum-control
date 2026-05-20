@@ -111,6 +111,7 @@ boundaries are enforced by hard gates. The current release boundary is:
 | S8 adaptive branching | Required release artefacts include the adaptive-branching readiness JSON and Markdown note. Adaptive advantage remains blocked until backend dynamic-circuit support, preregistration, and equal-depth open-loop falsification pass. |
 | S9 quantum thermodynamics | Required release artefacts include the quantum-thermodynamics readiness JSON and Markdown note. Entropy-production peak claims remain blocked until theory review, classical reference, raw-count execution, and falsification controls pass. |
 | S10 analog-native Kuramoto | Required release artefacts include the analog-native readiness JSON and Markdown note. Analog advantage and provider-execution claims remain blocked until calibrated provider SDK construction, matched-tolerance digital baselines, and raw execution records pass. |
+| S11 sync-order quantum sensing | Required release artefacts include the quantum-sensing readiness JSON and Markdown note. Sensing-advantage claims remain blocked until a preregistered perturbation benchmark, classical Fisher baseline, hardware shot budget, and raw-count uncertainty archive pass. |
 
 This means the release can be tagged when software gates pass. It does not mean
 that source ingestion, simulator output, or partial benchmark rows have become
@@ -190,6 +191,20 @@ note. It is offline, performs no hardware submission, and keeps analog
 advantage claims blocked until provider SDK construction, calibrated unit
 constraints, matched-tolerance digital baselines, and raw execution records
 pass.
+
+## S11 quantum-sensing readiness gate
+
+Before any tag that touches QFI-based sensing, synchronisation-order sensing,
+or sensing-advantage framing, run:
+
+```bash
+scpn-bench s11-quantum-sensing-readiness
+```
+
+The gate regenerates the S11 QFI/classical-Fisher proxy table and public note.
+It is offline, performs no hardware submission, and keeps sensing-advantage
+claims blocked until the preregistered perturbation benchmark, classical Fisher
+baseline, shot budget, and raw-count uncertainty archive pass.
 
 ## Symmetry-sector mitigation release gate
 

@@ -91,6 +91,16 @@ from .quantum_persistent_homology import QuantumPHResult, ph_sync_scan
 from .quantum_phi import PhiResult, compute_quantum_phi, phi_vs_coupling_scan, von_neumann_entropy
 from .rl_discovery_agent import RLDiscoveryAgent
 from .rl_pulse_optimizer import RLPulseOptimizer
+from .sensing import (
+    QUANTUM_SENSING_SCHEMA,
+    QuantumSensingReadinessConfig,
+    SensingGainRow,
+    SensingGainScan,
+    metrological_gain_vs_k,
+    optimal_sensing_k,
+    quantum_sensing_markdown,
+    quantum_sensing_payload,
+)
 from .shadow_tomography import ShadowResult, classical_shadow_estimation
 from .spectral_form_factor import SFFResult, sff_vs_coupling
 from .sync_entanglement_witness import (
@@ -225,6 +235,14 @@ __all__ = [
     "pairing_vs_anisotropy",
     "QFICriticalityResult",
     "qfi_vs_coupling",
+    "QUANTUM_SENSING_SCHEMA",
+    "QuantumSensingReadinessConfig",
+    "SensingGainRow",
+    "SensingGainScan",
+    "metrological_gain_vs_k",
+    "optimal_sensing_k",
+    "quantum_sensing_markdown",
+    "quantum_sensing_payload",
     "MpembaResult",
     "mpemba_experiment",
     "QuantumPHResult",

@@ -1,0 +1,79 @@
+{
+  "claim_boundary": "QFI and sync-order sensing readiness estimate only; no hardware submission and no sensing-advantage claim",
+  "config": {
+    "finite_difference_delta": 0.001,
+    "max_dense_gib": 0.01,
+    "readout_variance_floor": 0.05
+  },
+  "falsifier": "ratio of QFI-based Fisher information to classical Fisher information is below 1 on the pre-registered perturbation benchmark",
+  "gain_scan": {
+    "best_gain_ratio": 1.2290574653363031,
+    "falsifier": "ratio of QFI-based Fisher information to classical Fisher information is below 1 on the pre-registered perturbation benchmark",
+    "hardware_submission_allowed": false,
+    "k_values": [
+      0.4,
+      0.8,
+      1.2
+    ],
+    "optimal_row": {
+      "claim_boundary": "readiness estimate only; not hardware evidence",
+      "classical_fisher_proxy": 0.06200406074149329,
+      "gain_ratio": 1.2290574653363031,
+      "hardware_submission_allowed": false,
+      "k_value": 1.2,
+      "qfi_value": 0.07620655373549792,
+      "sensing_advantage_claim_allowed": false,
+      "spectral_gap": 0.03307496465792781,
+      "sync_order_parameter": 0.9354143466934853
+    },
+    "peak_k": 0.4,
+    "peak_qfi": 0.7584187206821627,
+    "rows": [
+      {
+        "claim_boundary": "readiness estimate only; not hardware evidence",
+        "classical_fisher_proxy": 7.031368214455718,
+        "gain_ratio": 0.10786218237340173,
+        "hardware_submission_allowed": false,
+        "k_value": 0.4,
+        "qfi_value": 0.7584187206821627,
+        "sensing_advantage_claim_allowed": false,
+        "spectral_gap": 0.03112395221028419,
+        "sync_order_parameter": 0.7905694150420949
+      },
+      {
+        "claim_boundary": "readiness estimate only; not hardware evidence",
+        "classical_fisher_proxy": 0.3380420506871691,
+        "gain_ratio": 0.527705712329132,
+        "hardware_submission_allowed": false,
+        "k_value": 0.8,
+        "qfi_value": 0.17838672115507312,
+        "sensing_advantage_claim_allowed": false,
+        "spectral_gap": 0.032756700827512475,
+        "sync_order_parameter": 0.9013878188659973
+      },
+      {
+        "claim_boundary": "readiness estimate only; not hardware evidence",
+        "classical_fisher_proxy": 0.06200406074149329,
+        "gain_ratio": 1.2290574653363031,
+        "hardware_submission_allowed": false,
+        "k_value": 1.2,
+        "qfi_value": 0.07620655373549792,
+        "sensing_advantage_claim_allowed": false,
+        "spectral_gap": 0.03307496465792781,
+        "sync_order_parameter": 0.9354143466934853
+      }
+    ],
+    "schema": "s11_quantum_sensing_gain_scan_v1",
+    "sensing_advantage_claim_allowed": false
+  },
+  "hardware_submission_allowed": false,
+  "no_qpu_submission": true,
+  "prerequisites": [
+    "pre-registered perturbation benchmark and classical Fisher estimator fixed",
+    "hardware shot budget and shadow-tomography estimator approved before execution",
+    "raw counts and uncertainty intervals archived before sensing-advantage claims",
+    "applied EEG or Josephson replay target selected before real-world promotion"
+  ],
+  "schema": "s11_quantum_sensing_readiness_v1",
+  "sensing_advantage_claim_allowed": false
+}

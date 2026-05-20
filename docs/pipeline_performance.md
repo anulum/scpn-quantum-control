@@ -229,6 +229,21 @@ against a matched declared-tolerance digital Trotter baseline and keeps
 provider execution plus analog-advantage claims blocked until SDK construction,
 calibrated unit constraints, and raw execution records are complete.
 
+## S11 Quantum Sensing Readiness
+
+The S11 sync-order sensing track is gated as a no-submit QFI/classical-Fisher
+readiness artefact:
+
+```bash
+scpn-bench s11-quantum-sensing-readiness
+```
+
+The gate regenerates `data/s11_quantum_sensing/quantum_sensing_readiness_2026-05-20.json`
+and `docs/quantum_sensing.md`. It records a finite K-grid QFI scan, sync-order
+classical Fisher proxy, and optimal readiness row while keeping hardware
+submission and sensing-advantage claims blocked until preregistration, shot
+budget, and raw-count uncertainty evidence are complete.
+
 ## Phase 3 State/Layout DLA Randomisation
 
 The state/layout mechanism-separation control has a dedicated fail-closed IBM

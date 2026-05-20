@@ -116,6 +116,21 @@ Each claim has four fields:
   `docs/analog_native_readiness.md`, and
   `tests/test_analog_native_readiness.py`.
 
+## C15 — Sync-order quantum-sensing gain
+
+- **Claim.** On a preregistered perturbation benchmark, QFI-based
+  sync-order-parameter sensing beats the classical Fisher-information
+  baseline.
+- **Domain.** The committed S11 readiness benchmark records only a
+  no-submit estimate. Hardware or applied-target promotion requires raw
+  counts, uncertainty intervals, and the preregistered classical Fisher
+  estimator.
+- **Falsifier.** The QFI/classical-Fisher ratio is below 1 on the
+  benchmark mean, or the uncertainty interval overlaps or falls below 1.
+- **Evidence.** `data/s11_quantum_sensing/quantum_sensing_readiness_2026-05-20.json`,
+  `docs/quantum_sensing.md`, and
+  `tests/test_quantum_sensing_readiness.py`.
+
 ## Open questions (no claim yet)
 
 The following items are **not** claims — they are open problems.
