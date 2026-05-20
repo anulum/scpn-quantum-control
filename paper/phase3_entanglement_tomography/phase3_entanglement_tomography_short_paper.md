@@ -35,10 +35,13 @@ physical qubits `[1,2,3,4]`, transpiled 166 circuits, and completed jobs
 minute ceiling. The preregistered reducer produced 54 observable rows with mean
 absolute deviation 0.1299 and maximum absolute deviation 0.5561 relative to
 exact references. Same-day `ibm_fez` replication, pinned-layout full correlated
-readout calibration, and a five-channel ZNE stress test were later added in the
-canonical LaTeX manuscript. The intended claim is bounded: reduced-Pauli
-correlators show large hardware deviations in the fixed small-system setting,
-with no scalable tomography, quantum-advantage, or backend-general claim.
+readout calibration, and a five-channel ZNE stress test were later added in
+the canonical LaTeX manuscript. The ZNE stress test shows that global
+unitary-folding noise scaling does not erase the dominant DLA transverse
+deviations, even though a FIM control channel partially improves. The intended
+claim is bounded: reduced-Pauli correlators show large hardware deviations in
+the fixed small-system setting, with no scalable tomography, quantum-advantage,
+or backend-general claim.
 
 ## 1. Introduction
 
