@@ -1,0 +1,53 @@
+{
+  "analysis_job_ids": [
+    "d86h4jlg7okc73el3ra0"
+  ],
+  "backend": "ibm_fez",
+  "claim_boundary": "reduced-Pauli observable analysis only; no scalable tomography, quantum advantage, or backend-general claim",
+  "counts_artifact": "data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_fez_2026-05-20T014536Z.json",
+  "job_ids": [
+    "d86h4jlg7okc73el3ra0",
+    "d86h5d9789is738vlt7g"
+  ],
+  "max_absolute_deviation": 0.47901490766488014,
+  "mean_absolute_deviation": 0.15282093077862535,
+  "n_observable_rows": 54,
+  "readout_mitigated_max_absolute_deviation": 0.4868750566558935,
+  "readout_mitigated_mean_absolute_deviation": 0.1513169450615788,
+  "readout_mitigation": {
+    "claim_boundary": "independent single-qubit readout inversion only; not a full 16-state correlated readout calibration and not a ZNE/PEC result",
+    "method": "tensor_product_single_qubit_inverse",
+    "n_calibration_circuits": 4,
+    "single_qubit_assignment_matrices": [
+      {
+        "prepared_0_observed_0": 0.98388671875,
+        "prepared_0_observed_1": 0.01611328125,
+        "prepared_1_observed_0": 0.017496744791666668,
+        "prepared_1_observed_1": 0.9825032552083334
+      },
+      {
+        "prepared_0_observed_0": 0.99700927734375,
+        "prepared_0_observed_1": 0.00299072265625,
+        "prepared_1_observed_0": 0.0086669921875,
+        "prepared_1_observed_1": 0.9913330078125
+      },
+      {
+        "prepared_0_observed_0": 0.9984944661458334,
+        "prepared_0_observed_1": 0.0015055338541666667,
+        "prepared_1_observed_0": 0.0086669921875,
+        "prepared_1_observed_1": 0.9913330078125
+      },
+      {
+        "prepared_0_observed_0": 0.98974609375,
+        "prepared_0_observed_1": 0.01025390625,
+        "prepared_1_observed_0": 0.016845703125,
+        "prepared_1_observed_1": 0.983154296875
+      }
+    ],
+    "source": "readout calibration marginals from the same live artefact"
+  },
+  "reference_csv": "data/phase3_entanglement_tomography/entanglement_observable_rows_2026-05-07.csv",
+  "rows_sha256": "40801f8ce562e462c3b051b6cd4026b48480fb76770c7f164251c5de550efca1",
+  "schema": "scpn_phase3_entanglement_tomography_analysis_v1",
+  "status": "completed"
+}

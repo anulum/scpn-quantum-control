@@ -138,6 +138,28 @@ def build_top_deviations(
     ]
 
 
+def build_backend_comparison(
+    backend_rows: Mapping[str, Sequence[Mapping[str, str]]],
+) -> list[dict[str, Any]]:
+    """Aggregate raw and readout-mitigated deviations by backend."""
+
+    output: list[dict[str, Any]] = []
+    for backend, rows in sorted(backend_rows.items()):
+        raw_abs = [_float(row["absolute_deviation"]) for row in rows]
+        mitigated_abs = [_float(row["readout_mitigated_absolute_deviation"]) for row in rows]
+        output.append(
+            {
+                "backend": backend,
+                "n_observables": len(rows),
+                "mean_absolute_deviation": mean(raw_abs),
+                "max_absolute_deviation": max(raw_abs),
+                "readout_mitigated_mean_absolute_deviation": mean(mitigated_abs),
+                "readout_mitigated_max_absolute_deviation": max(mitigated_abs),
+            }
+        )
+    return output
+
+
 def write_markdown_table(path: Path, title: str, rows: Sequence[Mapping[str, Any]]) -> None:
     """Write a compact Markdown table for direct manuscript review."""
 
@@ -248,6 +270,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--rows", type=Path, default=DEFAULT_ROWS)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--figure-dir", type=Path, default=DEFAULT_FIGURE_DIR)
+    parser.add_argument(
+        "--comparison-row",
+        action="append",
+        default=[],
+        metavar="BACKEND=CSV",
+        help="additional backend rows for cross-backend comparison assets",
+    )
     return parser.parse_args()
 
 
@@ -274,6 +303,27 @@ def main() -> int:
 
     manifest = output_dir / f"entanglement_tomography_paper_assets_{TODAY}.md"
     outputs = [label_csv, basis_csv, top_csv, label_md, top_md, heatmap_png, heatmap_pdf]
+    for item in args.comparison_row:
+        backend, separator, csv_path = str(item).partition("=")
+        if not separator or not backend or not csv_path:
+            raise ValueError("--comparison-row must have form BACKEND=CSV")
+    if args.comparison_row:
+        backend_rows = {
+            backend: _read_rows(Path(csv_path))
+            for backend, _separator, csv_path in (
+                str(item).partition("=") for item in args.comparison_row
+            )
+        }
+        comparison_rows = build_backend_comparison(backend_rows)
+        comparison_csv = output_dir / f"entanglement_tomography_backend_comparison_{TODAY}.csv"
+        comparison_md = output_dir / f"entanglement_tomography_backend_comparison_{TODAY}.md"
+        _write_csv(comparison_csv, comparison_rows)
+        write_markdown_table(
+            comparison_md,
+            "Phase 3 Entanglement Backend Comparison",
+            comparison_rows,
+        )
+        outputs.extend([comparison_csv, comparison_md])
     write_manifest(manifest, source_rows=args.rows, outputs=outputs)
     for output in [*outputs, manifest]:
         print(output.relative_to(REPO_ROOT))

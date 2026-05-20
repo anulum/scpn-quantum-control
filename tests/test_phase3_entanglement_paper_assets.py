@@ -79,3 +79,30 @@ def test_top_deviations_identify_dla_odd_signal_transverse_edge() -> None:
     assert [row["basis_setting"] for row in top] == ["XXII", "YYII"]
     assert all(row["label"] == "dla_odd_signal" for row in top)
     assert top[0]["absolute_deviation"] == pytest.approx(0.5560906424788263)
+
+
+def test_backend_comparison_tracks_raw_and_readout_mitigated_deviation() -> None:
+    module = _load_module()
+    rows = [
+        {
+            "absolute_deviation": "0.20",
+            "readout_mitigated_absolute_deviation": "0.10",
+        },
+        {
+            "absolute_deviation": "0.40",
+            "readout_mitigated_absolute_deviation": "0.30",
+        },
+    ]
+
+    comparison = module.build_backend_comparison({"ibm_test": rows})
+
+    assert comparison == [
+        {
+            "backend": "ibm_test",
+            "n_observables": 2,
+            "mean_absolute_deviation": pytest.approx(0.30),
+            "max_absolute_deviation": pytest.approx(0.40),
+            "readout_mitigated_mean_absolute_deviation": pytest.approx(0.20),
+            "readout_mitigated_max_absolute_deviation": pytest.approx(0.30),
+        }
+    ]

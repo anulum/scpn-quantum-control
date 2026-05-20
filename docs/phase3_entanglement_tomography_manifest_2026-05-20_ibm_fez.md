@@ -12,24 +12,24 @@ Date: 2026-05-20
 
 ## Inputs
 
-- Counts artefact: `data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_marrakesh_2026-05-20T004334Z.json`
+- Counts artefact: `data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_fez_2026-05-20T014536Z.json`
 - Reference CSV: `data/phase3_entanglement_tomography/entanglement_observable_rows_2026-05-07.csv`
-- Backend: `ibm_marrakesh`
-- Job IDs: `d86g7h1789is738vkreg, d86ggpis46sc73f6v170`
+- Backend: `ibm_fez`
+- Job IDs: `d86h4jlg7okc73el3ra0, d86h5d9789is738vlt7g`
 
 ## Outputs
 
-- JSON summary: `data/phase3_entanglement_tomography/entanglement_tomography_summary_2026-05-20.json`
-- Observable rows: `data/phase3_entanglement_tomography/entanglement_tomography_rows_2026-05-20.csv`
-- Observable rows SHA256: `b280db120f9f13dfb8dd6b8d4e2e6a86a86feff714e2514be01bd5b3ed95bd83`
+- JSON summary: `data/phase3_entanglement_tomography/entanglement_tomography_summary_2026-05-20_ibm_fez.json`
+- Observable rows: `data/phase3_entanglement_tomography/entanglement_tomography_rows_2026-05-20_ibm_fez.csv`
+- Observable rows SHA256: `40801f8ce562e462c3b051b6cd4026b48480fb76770c7f164251c5de550efca1`
 
 ## Result Snapshot
 
 - Observable rows: `54`
-- Mean absolute deviation from exact reference: `0.12989296537986128`
-- Maximum absolute deviation from exact reference: `0.5560906424788263`
-- Readout-mitigated mean absolute deviation from exact reference: `0.12930386230559288`
-- Readout-mitigated maximum absolute deviation from exact reference: `0.5648340543137427`
+- Mean absolute deviation from exact reference: `0.15282093077862535`
+- Maximum absolute deviation from exact reference: `0.47901490766488014`
+- Readout-mitigated mean absolute deviation from exact reference: `0.1513169450615788`
+- Readout-mitigated maximum absolute deviation from exact reference: `0.4868750566558935`
 
 ## Readout Mitigation
 

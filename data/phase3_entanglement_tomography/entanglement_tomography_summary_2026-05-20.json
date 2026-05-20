@@ -12,8 +12,42 @@
   "max_absolute_deviation": 0.5560906424788263,
   "mean_absolute_deviation": 0.12989296537986128,
   "n_observable_rows": 54,
+  "readout_mitigated_max_absolute_deviation": 0.5648340543137427,
+  "readout_mitigated_mean_absolute_deviation": 0.12930386230559288,
+  "readout_mitigation": {
+    "claim_boundary": "independent single-qubit readout inversion only; not a full 16-state correlated readout calibration and not a ZNE/PEC result",
+    "method": "tensor_product_single_qubit_inverse",
+    "n_calibration_circuits": 4,
+    "single_qubit_assignment_matrices": [
+      {
+        "prepared_0_observed_0": 0.9942626953125,
+        "prepared_0_observed_1": 0.0057373046875,
+        "prepared_1_observed_0": 0.008341471354166666,
+        "prepared_1_observed_1": 0.9916585286458334
+      },
+      {
+        "prepared_0_observed_0": 0.99517822265625,
+        "prepared_0_observed_1": 0.00482177734375,
+        "prepared_1_observed_0": 0.0057373046875,
+        "prepared_1_observed_1": 0.9942626953125
+      },
+      {
+        "prepared_0_observed_0": 0.9973551432291666,
+        "prepared_0_observed_1": 0.0026448567708333335,
+        "prepared_1_observed_0": 0.0064697265625,
+        "prepared_1_observed_1": 0.9935302734375
+      },
+      {
+        "prepared_0_observed_0": 0.9936116536458334,
+        "prepared_0_observed_1": 0.006388346354166667,
+        "prepared_1_observed_0": 0.006591796875,
+        "prepared_1_observed_1": 0.993408203125
+      }
+    ],
+    "source": "readout calibration marginals from the same live artefact"
+  },
   "reference_csv": "data/phase3_entanglement_tomography/entanglement_observable_rows_2026-05-07.csv",
-  "rows_sha256": "3d18308d60fe32827bae7517f18fd71690240b105779287408c4749cb0e7dc72",
+  "rows_sha256": "b280db120f9f13dfb8dd6b8d4e2e6a86a86feff714e2514be01bd5b3ed95bd83",
   "schema": "scpn_phase3_entanglement_tomography_analysis_v1",
   "status": "completed"
 }
