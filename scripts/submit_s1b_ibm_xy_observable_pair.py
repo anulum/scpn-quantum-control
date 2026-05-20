@@ -41,6 +41,7 @@ from scpn_quantum_control.hardware.feedback_hardware_scheduler import (  # noqa:
     HardwareApprovalRecord,
     hash_package_manifest,
 )
+from scpn_quantum_control.hardware.feedback_loop import FeedbackResult  # noqa: E402
 from scpn_quantum_control.hardware.feedback_submission import (  # noqa: E402
     build_s1_feedback_submission_package,
 )
@@ -62,6 +63,29 @@ PARENT_EXPERIMENT_ID = "s1_dynamic_feedback_preregistration_2026-05-06"
 DEFAULT_LANE = "s1b"
 DEFAULT_BACKEND = "ibm_kingston"
 DEFAULT_OBSERVABLES = ("XXI", "YYI", "IXX", "IYY")
+DEFAULT_S1D_POLICY_SWEEP = (
+    {
+        "policy_variant": "current_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "hypothesis": "repeats the completed S1c shallow positive-correction policy",
+    },
+    {
+        "policy_variant": "polarity_flipped",
+        "n_rounds": 1,
+        "correction_angle": -0.06,
+        "base_gain": 0.4,
+        "hypothesis": "tests whether the S1c negative shift is a correction-polarity effect",
+    },
+    {
+        "policy_variant": "weak_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.03,
+        "base_gain": 0.2,
+        "hypothesis": "tests whether positive correction needs a lower-gain stability boundary",
+    },
+)
 DEFAULT_N_ROUNDS = 3
 SYSTEM_QUBITS = 3
 DEFAULT_SHOTS = 1024
@@ -82,6 +106,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--n-rounds", type=int, default=DEFAULT_N_ROUNDS)
     parser.add_argument("--correction-angle", type=float, default=0.12)
     parser.add_argument("--base-gain", type=float, default=0.8)
+    parser.add_argument("--policy-sweep", choices=("none", "s1d"), default="none")
     parser.add_argument("--shots", type=int, default=DEFAULT_SHOTS)
     parser.add_argument("--repetitions", type=int, default=DEFAULT_REPETITIONS)
     parser.add_argument("--observables", nargs="+", default=list(DEFAULT_OBSERVABLES))
@@ -97,6 +122,18 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def _controller(args: argparse.Namespace) -> RealtimeSyncFeedbackController:
+    return _controller_from_policy(
+        base_gain=float(args.base_gain),
+        correction_angle=float(args.correction_angle),
+    )
+
+
+def _controller_from_policy(
+    *,
+    base_gain: float,
+    correction_angle: float,
+) -> RealtimeSyncFeedbackController:
+    correction_sign = -1.0 if correction_angle >= 0.0 else 1.0
     return RealtimeSyncFeedbackController(
         np.array(
             [[0.0, 0.35, 0.20], [0.35, 0.0, 0.25], [0.20, 0.25, 0.0]],
@@ -104,9 +141,24 @@ def _controller(args: argparse.Namespace) -> RealtimeSyncFeedbackController:
         ),
         np.array([0.1, 0.4, 0.7], dtype=np.float64),
         config=RealtimeFeedbackConfig(
-            base_gain=float(args.base_gain),
-            correction_angle=float(args.correction_angle),
+            base_gain=float(base_gain),
+            correction_angle=abs(float(correction_angle)),
+            feedback_correction_sign=correction_sign,
         ),
+    )
+
+
+def _policy_variants(args: argparse.Namespace) -> tuple[dict[str, Any], ...]:
+    if args.policy_sweep == "s1d":
+        return tuple(dict(variant) for variant in DEFAULT_S1D_POLICY_SWEEP)
+    return (
+        {
+            "policy_variant": args.lane,
+            "n_rounds": int(args.n_rounds),
+            "correction_angle": float(args.correction_angle),
+            "base_gain": float(args.base_gain),
+            "hypothesis": "single configured direct-XY policy lane",
+        },
     )
 
 
@@ -160,6 +212,24 @@ def _arm_summary(arm: S1FeedbackArmCircuit, isa: Sequence[QuantumCircuit]) -> di
     }
 
 
+def _policy_arm_summary(
+    *,
+    policy: Mapping[str, Any],
+    arm: S1FeedbackArmCircuit,
+    isa: Sequence[QuantumCircuit],
+) -> dict[str, Any]:
+    summary = _arm_summary(arm, isa)
+    summary.update(
+        {
+            "policy_variant": policy["policy_variant"],
+            "n_rounds": int(policy["n_rounds"]),
+            "correction_angle": float(policy["correction_angle"]),
+            "base_gain": float(policy["base_gain"]),
+        }
+    )
+    return summary
+
+
 def _manifest(
     package: Mapping[str, Any],
     readiness: Mapping[str, Any],
@@ -202,6 +272,8 @@ def _readiness_document(
         "n_rounds": args.n_rounds,
         "correction_angle": args.correction_angle,
         "base_gain": args.base_gain,
+        "policy_sweep": args.policy_sweep,
+        "policy_variants": _policy_readiness_variants(arm_summaries),
         "arms": list(arm_summaries),
         "max_depth": max_depth,
         "max_qpu_seconds": max_qpu_seconds,
@@ -213,6 +285,35 @@ def _readiness_document(
             budget_ok=budget_ok,
         ),
     }
+
+
+def _policy_readiness_variants(
+    arm_summaries: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    variants: dict[str, dict[str, Any]] = {}
+    for row in arm_summaries:
+        policy_variant = str(row.get("policy_variant", "single_policy"))
+        entry = variants.setdefault(
+            policy_variant,
+            {
+                "policy_variant": policy_variant,
+                "n_rounds": int(row.get("n_rounds", 0)),
+                "correction_angle": float(row.get("correction_angle", 0.0)),
+                "base_gain": float(row.get("base_gain", 0.0)),
+                "observables": [],
+                "transpiled_depth_max": 0,
+                "estimated_qpu_seconds": 0.0,
+            },
+        )
+        entry["observables"].append({"arm": row["label"], "basis": row["observable"]})
+        entry["transpiled_depth_max"] = max(
+            int(entry["transpiled_depth_max"]),
+            int(row["transpiled_depth_max"]),
+        )
+        entry["estimated_qpu_seconds"] = float(entry["estimated_qpu_seconds"]) + float(
+            row["estimated_qpu_seconds"]
+        )
+    return list(variants.values())
 
 
 def _readiness_reasons(*, lane: str, depth_ok: bool, budget_ok: bool) -> list[str]:
@@ -231,6 +332,8 @@ def _readiness_reasons(*, lane: str, depth_ok: bool, budget_ok: bool) -> list[st
 
 
 def _analysis_summary(package: Mapping[str, Any]) -> dict[str, Any]:
+    if "policy_variants" in package:
+        return _policy_sweep_analysis_summary(package)
     observables = package.get("observables")
     if not isinstance(observables, Sequence) or isinstance(observables, str):
         raise ValueError("S1b package must contain observable rows")
@@ -253,33 +356,134 @@ def _analysis_summary(package: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _policy_sweep_analysis_summary(package: Mapping[str, Any]) -> dict[str, Any]:
+    raw_variants = package.get("policy_variants")
+    if not isinstance(raw_variants, Sequence) or isinstance(raw_variants, str):
+        raise ValueError("policy-sweep package must contain policy_variants")
+    variants: list[dict[str, Any]] = []
+    for raw_variant in raw_variants:
+        if not isinstance(raw_variant, Mapping):
+            raise ValueError("policy variant rows must be mappings")
+        observables = raw_variant.get("observables")
+        if not isinstance(observables, Sequence) or isinstance(observables, str):
+            raise ValueError("policy variant rows must contain observable rows")
+        signed = [float(row["feedback_minus_control"]) for row in observables]
+        abs_deltas = [abs(delta) for delta in signed]
+        variants.append(
+            {
+                "policy_variant": raw_variant["policy_variant"],
+                "correction_angle": float(raw_variant["correction_angle"]),
+                "base_gain": float(raw_variant["base_gain"]),
+                "n_rounds": int(raw_variant["n_rounds"]),
+                "n_observables": len(signed),
+                "mean_signed_feedback_minus_control": sum(signed) / len(signed),
+                "mean_abs_feedback_minus_control": sum(abs_deltas) / len(abs_deltas),
+                "signed_feedback_minus_control": signed,
+                "observables": list(observables),
+            }
+        )
+    best = max(variants, key=lambda row: float(row["mean_signed_feedback_minus_control"]))
+    return {
+        "experiment_id": package["experiment_id"],
+        "parent_experiment_id": package["parent_experiment_id"],
+        "lane": package["lane"],
+        "job_ids": list(package.get("job_ids", [])),
+        "observable_family": package["observable_family"],
+        "n_policy_variants": len(variants),
+        "best_variant_by_mean_signed_delta": best["policy_variant"],
+        "policy_variants": variants,
+        "claim_boundary": (
+            f"{package['lane']} extends the S1 paper with a preregistered "
+            "policy-direction sweep. It diagnoses the tested feedback law; it "
+            "does not establish backend-general feedback control."
+        ),
+    }
+
+
+def _raw_count_package_from_policy_sweep_results(
+    *,
+    experiment_id: str,
+    lane: str,
+    n_qubits: int,
+    policy_variants: Sequence[Mapping[str, Any]],
+    results_by_policy: Mapping[str, Sequence[FeedbackResult]],
+) -> dict[str, Any]:
+    variants: list[dict[str, Any]] = []
+    job_ids: list[str] = []
+    for policy in policy_variants:
+        policy_variant = str(policy["policy_variant"])
+        raw = raw_count_package_from_xy_observable_results(
+            experiment_id=experiment_id,
+            n_qubits=n_qubits,
+            results=tuple(results_by_policy.get(policy_variant, ())),
+        )
+        job_ids.extend(str(job_id) for job_id in raw["job_ids"])
+        variants.append(
+            {
+                "policy_variant": policy_variant,
+                "n_rounds": int(policy["n_rounds"]),
+                "correction_angle": float(policy["correction_angle"]),
+                "base_gain": float(policy["base_gain"]),
+                "hypothesis": policy.get("hypothesis", ""),
+                "job_ids": list(raw["job_ids"]),
+                "observables": list(raw["observables"]),
+            }
+        )
+    return {
+        "experiment_id": experiment_id,
+        "lane": lane,
+        "job_ids": job_ids,
+        "observable_family": "direct_xy_pauli_correlators",
+        "policy_variants": variants,
+    }
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     if args.submit and not args.confirm_budget:
         print("ERROR: --submit requires --confirm-budget", file=sys.stderr)
         return 2
 
-    controller = _controller(args)
+    policies = _policy_variants(args)
+    package_controller = _controller_from_policy(
+        base_gain=float(policies[0]["base_gain"]),
+        correction_angle=float(policies[0]["correction_angle"]),
+    )
     package = build_s1_feedback_submission_package(
-        controller,
+        package_controller,
         experiment_id=args.experiment_id,
-        n_rounds=args.n_rounds,
-        circuits=2 * len(args.observables),
+        n_rounds=max(int(policy["n_rounds"]) for policy in policies),
+        circuits=2 * len(args.observables) * len(policies),
         shots_per_circuit=args.shots,
         repetitions=args.repetitions,
         estimated_seconds_per_circuit=1.0,
     )
     backend = load_authenticated_backend(args.backend, args.instance, args.credentials_vault)
-    arms = build_s1_xy_observable_arm_circuits(
-        controller,
-        observables=tuple(args.observables),
-        n_rounds=args.n_rounds,
-        shots=args.shots,
-        repetitions=args.repetitions,
-    )
-    isa_by_key = {(arm.label, arm.observable): _transpile_arm(backend, arm) for arm in arms}
+    arm_entries: list[tuple[Mapping[str, Any], S1FeedbackArmCircuit]] = []
+    for policy in policies:
+        controller = _controller_from_policy(
+            base_gain=float(policy["base_gain"]),
+            correction_angle=float(policy["correction_angle"]),
+        )
+        arms = build_s1_xy_observable_arm_circuits(
+            controller,
+            observables=tuple(args.observables),
+            n_rounds=int(policy["n_rounds"]),
+            shots=args.shots,
+            repetitions=args.repetitions,
+        )
+        arm_entries.extend((policy, arm) for arm in arms)
+    isa_by_key = {
+        (str(policy["policy_variant"]), arm.label, arm.observable): _transpile_arm(backend, arm)
+        for policy, arm in arm_entries
+    }
     arm_summaries = tuple(
-        _arm_summary(arm, isa_by_key[(arm.label, arm.observable)]) for arm in arms
+        _policy_arm_summary(
+            policy=policy,
+            arm=arm,
+            isa=isa_by_key[(str(policy["policy_variant"]), arm.label, arm.observable)],
+        )
+        for policy, arm in arm_entries
     )
     provisional_manifest = _manifest(package.to_dict(), {"arms": arm_summaries}, args=args)
     readiness = _readiness_document(
@@ -316,42 +520,82 @@ def main(argv: Sequence[str] | None = None) -> int:
         approved=True,
         notes=f"explicit command-line --submit --confirm-budget approval for {args.lane}",
     )
-    arm_by_key = {(arm.label, arm.observable): arm for arm in arms}
+    arm_by_key = {
+        (str(policy["policy_variant"]), arm.label, arm.observable): arm
+        for policy, arm in arm_entries
+    }
+
+    def submit_policy_arm(command: Any, _: Any) -> FeedbackResult:
+        policy_variant = str(command.payload["policy_variant"])
+        arm = arm_by_key[(policy_variant, command.label, command.payload["observable"])]
+        result = run_ibm_sampler_arm(
+            backend=backend,
+            arm=arm,
+            isa_circuits=command.payload["isa_circuits"],
+            timeout_s=float(command.payload["timeout_s"]),
+        )
+        return FeedbackResult(
+            counts=result.counts,
+            metrics=result.metrics,
+            job_id=result.job_id,
+            qpu_seconds=result.qpu_seconds,
+            metadata=dict(result.metadata)
+            | {
+                "policy_variant": policy_variant,
+                "n_rounds": int(command.payload["n_rounds"]),
+                "correction_angle": float(command.payload["correction_angle"]),
+                "base_gain": float(command.payload["base_gain"]),
+            },
+        )
+
     scheduler = ApprovalGatedFeedbackHardwareScheduler(
         provider="ibm_runtime",
         package_manifest=manifest,
         approval=approval,
-        submitter=lambda command, _: run_ibm_sampler_arm(
-            backend=backend,
-            arm=arm_by_key[(command.label, command.payload["observable"])],
-            isa_circuits=command.payload["isa_circuits"],
-            timeout_s=float(command.payload["timeout_s"]),
-        ),
+        submitter=submit_policy_arm,
     )
-    results = []
-    for arm in arms:
+    results: list[FeedbackResult] = []
+    results_by_policy: dict[str, list[FeedbackResult]] = {}
+    for entry_policy, arm in arm_entries:
+        policy_variant = str(entry_policy["policy_variant"])
         command = build_s1_arm_command(
             arm,
-            isa_circuits=isa_by_key[(arm.label, arm.observable)],
+            isa_circuits=isa_by_key[(policy_variant, arm.label, arm.observable)],
             timeout_s=args.timeout_s,
         )
         command.payload["observable"] = arm.observable
-        results.append(scheduler.submit(command))
+        command.payload["policy_variant"] = policy_variant
+        command.payload["n_rounds"] = int(entry_policy["n_rounds"])
+        command.payload["correction_angle"] = float(entry_policy["correction_angle"])
+        command.payload["base_gain"] = float(entry_policy["base_gain"])
+        result = scheduler.submit(command)
+        results.append(result)
+        results_by_policy.setdefault(policy_variant, []).append(result)
 
-    raw_package = raw_count_package_from_xy_observable_results(
-        experiment_id=args.experiment_id,
-        n_qubits=SYSTEM_QUBITS,
-        results=results,
-    )
+    if args.policy_sweep == "s1d":
+        raw_package = _raw_count_package_from_policy_sweep_results(
+            experiment_id=args.experiment_id,
+            lane=args.lane,
+            n_qubits=SYSTEM_QUBITS,
+            policy_variants=policies,
+            results_by_policy=results_by_policy,
+        )
+    else:
+        raw_package = raw_count_package_from_xy_observable_results(
+            experiment_id=args.experiment_id,
+            n_qubits=SYSTEM_QUBITS,
+            results=results,
+        )
     raw_package.update(
         {
             "schema": f"scpn_{args.lane}_xy_observable_raw_counts_v1",
             "backend": args.backend,
             "parent_experiment_id": args.parent_experiment_id,
             "lane": args.lane,
-            "n_rounds": args.n_rounds,
-            "correction_angle": args.correction_angle,
-            "base_gain": args.base_gain,
+            "n_rounds": args.n_rounds if args.policy_sweep == "none" else None,
+            "correction_angle": (args.correction_angle if args.policy_sweep == "none" else None),
+            "base_gain": args.base_gain if args.policy_sweep == "none" else None,
+            "policy_sweep": args.policy_sweep,
             "approval": {
                 "approval_id": approval.approval_id,
                 "approver": approval.approver,

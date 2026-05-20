@@ -12,7 +12,8 @@
 *Contact: protoscience@anulum.li*
 
 **Date:** 2026-05-20
-**Status:** IBM paired-arm execution complete; S1 binary-proxy result is null-or-negative and S1b direct-XY extension is complete
+**Status:** IBM paired-arm execution complete; S1/S1b/S1c/S1d same-paper
+extensions are complete
 **Target venue:** short communication / workshop submission candidate
 
 ---
@@ -31,12 +32,12 @@ hardware-job dossier, live backend capture, approval-gated IBM execution, raw
 count archive, and preregistered analysis are now complete for `ibm_kingston`.
 The observed feedback arm does not reduce binary-proxy target-order-parameter
 error relative to the matched open-loop control. Because that proxy is near
-saturation in both arms, we add an S1b extension in the same paper: final
-direct XY-sector Pauli correlators (`XXI`, `YYI`, `IXX`, `IYY`) measured on
-the same dynamic-circuit body. The direct-XY extension shows small but
-channel-structured feedback/control differences. The claim is bounded to
-hardware-control interpretability, not quantum advantage or backend-general
-feedback.
+saturation in both arms, we add same-paper direct-XY extensions: S1b measures
+final XY-sector Pauli correlators on the original body, S1c reduces depth and
+gain, and S1d sweeps correction direction and gain. The direct-XY extensions
+show channel-structured and policy-sensitive feedback/control differences. The
+claim is bounded to hardware-control interpretability, not quantum advantage
+or backend-general feedback.
 
 ## 1. Introduction
 
@@ -217,6 +218,34 @@ which showed mixed signs, S1c moves negative in all four direct XY channels.
 The shallower/lower-gain policy therefore does not rescue the current
 feedback design.
 
+### 6.4 S1d policy-direction sweep
+
+S1d is the final same-paper discriminator for the S1 feedback law. It keeps
+the S1c one-round shallow body and direct XY observable family, but compares
+three preregistered policy variants: the current shallow positive-correction
+policy, a correction-polarity flip, and a weaker positive policy.
+
+The S1d readiness gate passed on `ibm_kingston` with maximum transpiled depth
+`237` and total estimated QPU budget `72.0` seconds under the `120.0` second
+ceiling. The first approved submission produced 14 completed jobs before local
+budget accounting stopped the batch because provider wall-clock wait time was
+reported as QPU spend. That accounting bug was fixed; the completed jobs were
+recovered from IBM job lookup and the 10 missing arms were submitted without
+duplicating completed arms.
+
+| Variant | `IXX` | `IYY` | `XXI` | `YYI` | Mean signed | Mean absolute |
+|---|---:|---:|---:|---:|---:|---:|
+| `current_shallow_positive` | -0.0078125 | -0.0136718750 | -0.0605468750 | 0.1848958333 | 0.0257161458 | 0.0667317708 |
+| `polarity_flipped` | -0.0130208333 | -0.0065104167 | 0.0156250000 | -0.0123697917 | -0.0040690104 | 0.0118815104 |
+| `weak_positive` | -0.0026041667 | -0.0039062500 | 0.0065104167 | -0.0201822917 | -0.0050455729 | 0.0083007813 |
+
+S1d does not turn S1 into a positive controller paper. The repeat of the
+S1c-like policy is favourable only by mean signed delta and is driven by one
+large `YYI` channel, while the polarity-flipped and weak-positive policies are
+close to zero. The conservative interpretation is policy- and
+calibration-window sensitivity in the direct-XY sector, not robust feedback
+success.
+
 ## 7. Claim Boundary
 
 Safe claims after successful analysis:
@@ -243,8 +272,10 @@ does not outperform a matched open-loop arm on the preregistered binary-phase
 synchrony target. The S1b extension shows why that is not the whole story:
 direct XY-sector channels expose a small, non-uniform feedback/control
 response. The S1c shallow/lower-gain extension then moves negative across all
-four direct XY channels. The paper should therefore be framed as a dynamic-circuit
+four direct XY channels. S1d then shows that a same-day policy-direction sweep
+is sensitive to the policy and calibration window: the current shallow policy
+has one large favourable `YYI` channel, but the flipped and weak policies remain
+near zero. The paper should therefore be framed as a dynamic-circuit
 hardware-control boundary test: the specific policy is not promoted as a
 successful controller, but the paired-arm method and direct-observable
-extension reveal where future shallower or gain-tuned policies should be
-tested.
+extensions reveal where future policies should be redesigned and preregistered.

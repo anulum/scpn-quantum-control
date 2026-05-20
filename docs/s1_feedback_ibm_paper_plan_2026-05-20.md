@@ -196,6 +196,33 @@ S1c shallow/gain-tuned extension:
   arm; all four direct XY channels move negative relative to matched open-loop
   control.
 
+S1d policy-direction sweep:
+
+- status: completed on `ibm_kingston`;
+- purpose: same-paper discriminator for correction polarity, gain strength,
+  and calibration-window sensitivity after S1c;
+- variants: `current_shallow_positive` (`n_rounds=1`, correction angle
+  `0.06`, base gain `0.4`), `polarity_flipped` (`n_rounds=1`, correction
+  angle `-0.06`, base gain `0.4`), and `weak_positive` (`n_rounds=1`,
+  correction angle `0.03`, base gain `0.2`);
+- readiness artefact:
+  `data/s1_feedback_loop/s1d_xy_observable_readiness_ibm_kingston_20260520T134614Z.json`;
+- raw-count artefact:
+  `data/s1_feedback_loop/s1d_xy_observable_raw_counts_ibm_kingston_20260520T134614Z.json`;
+- analysis artefact:
+  `data/s1_feedback_loop/s1d_xy_observable_analysis_ibm_kingston_20260520T134614Z.json`;
+- maximum transpiled depth: `237`;
+- estimated QPU seconds: `72.0`;
+- jobs: 24 total, with 14 recovered from the first approved submission and 10
+  submitted in a resume pass without duplicating completed arms;
+- result: `current_shallow_positive` has mean signed feedback-control delta
+  `0.0257161458` and mean absolute separation `0.0667317708`, driven by a
+  large `YYI` shift; `polarity_flipped` and `weak_positive` remain close to
+  zero with mean signed deltas `-0.0040690104` and `-0.0050455729`;
+- interpretation: S1d is diagnostic rather than a promoted controller result.
+  It shows policy- and calibration-window sensitivity in the direct-XY sector;
+  stronger feedback claims require a predeclared repeat or redesigned policy.
+
 ## Claim Boundary
 
 Safe after successful raw-count analysis:

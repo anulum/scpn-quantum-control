@@ -186,6 +186,14 @@ base gain `0.4`, direct XY observables, and maximum feedback transpiled depth
 `237`. It was the shallow/depth-overhead discriminator; all four direct XY
 channels moved negative for feedback versus matched open-loop control, with
 mean absolute separation `0.0299479167`.
+S1d completed on `ibm_kingston` as a same-paper policy-direction sweep over
+current shallow positive correction, polarity-flipped correction, and a weaker
+positive policy. All variants used one dynamic round and maximum transpiled
+depth `237`. The current shallow repeat had mean signed feedback-control delta
+`0.0257161458`, driven by one favourable `YYI` channel; polarity-flipped and
+weak-positive variants were close to zero. S1d therefore supports a
+policy-sensitivity and calibration-window boundary, not a robust controller
+promotion.
 
 ### Acceptance
 

@@ -316,7 +316,7 @@ def run_ibm_sampler_arm(
     return FeedbackResult(
         counts=_aggregate_counts(per_pub_counts),
         job_id=job_id,
-        qpu_seconds=wall,
+        qpu_seconds=arm.estimated_qpu_seconds,
         metadata={
             "arm": arm.label,
             "observable": arm.observable,

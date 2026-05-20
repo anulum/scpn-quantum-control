@@ -45,6 +45,7 @@ class RealtimeFeedbackConfig:
     max_gain: float = 2.0
     monitor_strength: float = 0.18
     correction_angle: float = 0.12
+    feedback_correction_sign: float = -1.0
 
     def __post_init__(self) -> None:
         _require_range(self.target_r, 0.0, 1.0, "target_r")
@@ -53,6 +54,8 @@ class RealtimeFeedbackConfig:
         _require_positive(self.base_gain, "base_gain", allow_zero=True)
         _require_range(self.monitor_strength, 0.0, np.pi, "monitor_strength")
         _require_range(self.correction_angle, 0.0, np.pi, "correction_angle")
+        if self.feedback_correction_sign not in {-1.0, 1.0}:
+            raise ValueError("feedback_correction_sign must be either -1.0 or 1.0")
         if not isinstance(self.trotter_steps, int) or self.trotter_steps < 1:
             raise ValueError("trotter_steps must be a positive integer")
         if not isinstance(self.measurement_shots, int) or self.measurement_shots < 1:
@@ -205,6 +208,7 @@ class RealtimeSyncFeedbackController:
         )
         if abs(correction) < 1e-15:
             return 0.0
+        correction *= -self.config.feedback_correction_sign
         qc = QuantumCircuit(self.n)
         for qubit, omega_i in enumerate(self.omega):
             direction = 1.0 if np.cos(float(omega_i)) >= 0.0 else -1.0
@@ -251,7 +255,10 @@ def build_monitored_feedback_circuit(
         qc.reset(monitor_reg[0])
         with qc.if_test((monitor_bits[round_index], 1)):
             for qubit in range(n):
-                qc.ry(-cfg.correction_angle / max(n, 1), sys_reg[qubit])
+                qc.ry(
+                    cfg.feedback_correction_sign * cfg.correction_angle / max(n, 1),
+                    sys_reg[qubit],
+                )
 
     qc.measure(sys_reg, readout_bits)
     return qc

@@ -158,7 +158,8 @@ def test_run_ibm_sampler_arm_preserves_per_repetition_counts() -> None:
         {"source_index": 0, "counts": {"000": 128}},
         {"source_index": 1, "counts": {"001": 128}},
     ]
-    assert result.qpu_seconds > 0.0
+    assert result.qpu_seconds == pytest.approx(arm.estimated_qpu_seconds)
+    assert result.metadata["wall_time_s"] >= 0.0
 
 
 def test_extract_counts_prefers_final_readout_over_monitor_register() -> None:
