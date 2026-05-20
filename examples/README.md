@@ -24,6 +24,7 @@ Recommended researcher quick path:
 - `18_end_to_end_pipeline.py` for the packaged workflow path.
 - `19_sync_witness_operator.py` for synchronisation observables.
 - `20_quantum_persistent_homology.py` for topology diagnostics.
+- `22_quantum_neuromorphic_bridge.py` for the QSNN LIF/STDP/dynamic-coupling bridge.
 
 ## 01_qlif_demo.py — Quantum LIF Neuron
 
@@ -231,4 +232,16 @@ and correction path on that graph.
 
 ```bash
 python examples/21_biological_qec_scpn16.py
+```
+
+## 22_quantum_neuromorphic_bridge.py — QSNN Neuromorphic Bridge
+
+Runs the integrated QSNN bridge: vectorised quantum LIF neurons, trace-based
+STDP, and dynamic recurrent coupling driven by spike coactivity and quantum
+spike-probability coherence. The demo is simulator-only and prints the explicit
+claim boundary; it is a framework primitive, not empirical quantum-biology
+evidence by itself.
+
+```bash
+python examples/22_quantum_neuromorphic_bridge.py
 ```

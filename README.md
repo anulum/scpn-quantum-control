@@ -414,7 +414,7 @@ graph TD
 | `benchmarks` | 7 | Classical vs quantum scaling, MPS baseline, GPU baseline, AppQSim |
 | `crypto` | 6 | BB84, Bell tests, topology-authenticated QKD, key hierarchy |
 | `identity` | 6 | VQE attractor, coherence budget, entanglement witness, fingerprint |
-| `qsnn` | 6 | Quantum spiking neural networks (LIF, STDP, synapses, dynamic coupling, training) |
+| `qsnn` | 7 | Quantum spiking neural networks (LIF, trace STDP, synapses, dynamic coupling, training, neuromorphic bridge) |
 | `gauge` | 5 | U(1) Wilson loops, vortex detection, CFT, universality, confinement |
 | `psi_field` | 4 | U(1) compact lattice gauge: lattice, infoton, observables, SCPN mapping |
 | `ssgf` | 4 | SSGF quantum integration |
@@ -499,7 +499,7 @@ graph LR
 
 ## Examples
 
-21 standalone scripts in [`examples/`](examples/):
+22 standalone scripts in [`examples/`](examples/):
 
 | # | Script | What it demonstrates |
 |:-:|--------|---------------------|
@@ -524,6 +524,7 @@ graph LR
 | 19 | `sync_witness_operator` | Synchronisation witness operator demo |
 | 20 | `quantum_persistent_homology` | Persistent homology analysis |
 | 21 | `biological_qec_scpn16` | Biological surface code on 16-layer SCPN |
+| 22 | `quantum_neuromorphic_bridge` | QSNN quantum LIF + trace STDP + dynamic coupling bridge |
 
 All examples run on statevector simulation (no QPU needed).
 
@@ -565,7 +566,7 @@ scpn_quantum_control/
 ├── qec/             9 modules — error correction + biological surface code
 ├── benchmarks/      7 modules — performance baselines
 ├── identity/        6 modules — identity continuity analysis
-├── qsnn/            6 modules — quantum spiking neural networks
+├── qsnn/            7 modules — quantum spiking neural networks + neuromorphic bridge
 ├── crypto/          6 modules — QKD, Bell tests, key hierarchy
 ├── gauge/           5 modules — U(1) gauge theory probes
 ├── ssgf/            4 modules — SSGF quantum integration

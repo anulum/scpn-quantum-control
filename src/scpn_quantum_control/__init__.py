@@ -245,6 +245,15 @@ from .qsnn.qlayer import QuantumDenseLayer
 from .qsnn.qlif import QuantumLIFNeuron
 from .qsnn.qstdp import QuantumSTDP
 from .qsnn.qsynapse import QuantumSynapse
+from .qsnn.quantum_neuromorphic_bridge import (
+    CLAIM_BOUNDARY,
+    DynamicCouplingConfig,
+    NeuromorphicStepResult,
+    QuantumLIFConfig,
+    QuantumNeuromorphicBridge,
+    TraceSTDPConfig,
+    TraceSTDPState,
+)
 from .qsnn.training import QSNNTrainer
 from .stable_core import (
     Backend,
@@ -496,6 +505,13 @@ __all__ = [
     "QuantumSTDP",
     "QuantumDenseLayer",
     "QSNNTrainer",
+    "CLAIM_BOUNDARY",
+    "DynamicCouplingConfig",
+    "NeuromorphicStepResult",
+    "QuantumLIFConfig",
+    "QuantumNeuromorphicBridge",
+    "TraceSTDPConfig",
+    "TraceSTDPState",
     "ZNEResult",
     "gate_fold_circuit",
     "zne_extrapolate",

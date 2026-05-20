@@ -13,6 +13,28 @@ from .qlayer import QuantumDenseLayer
 from .qlif import QuantumLIFNeuron
 from .qstdp import QuantumSTDP
 from .qsynapse import QuantumSynapse
+from .quantum_neuromorphic_bridge import (
+    CLAIM_BOUNDARY,
+    DynamicCouplingConfig,
+    NeuromorphicStepResult,
+    QuantumLIFConfig,
+    QuantumNeuromorphicBridge,
+    TraceSTDPConfig,
+    TraceSTDPState,
+)
 from .training import QSNNTrainer
 
-__all__ = ["QuantumLIFNeuron", "QuantumSynapse", "QuantumSTDP", "QuantumDenseLayer", "QSNNTrainer"]
+__all__ = [
+    "CLAIM_BOUNDARY",
+    "DynamicCouplingConfig",
+    "NeuromorphicStepResult",
+    "QuantumDenseLayer",
+    "QuantumLIFConfig",
+    "QuantumLIFNeuron",
+    "QuantumNeuromorphicBridge",
+    "QuantumSTDP",
+    "QuantumSynapse",
+    "QSNNTrainer",
+    "TraceSTDPConfig",
+    "TraceSTDPState",
+]
