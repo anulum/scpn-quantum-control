@@ -1244,6 +1244,54 @@ def test_qbraid_device_snapshot_reads_profile_without_submission() -> None:
     assert decision.snapshot.metadata["adapter"] == "qbraid_device_no_submit"
 
 
+def test_qbraid_catalog_snapshot_normalises_program_specs_without_submission() -> None:
+    """qBraid catalogue program specs should map onto route-level HAL IR tokens."""
+
+    class ProgramSpec:
+        def __init__(self, alias: str) -> None:
+            self.alias = alias
+
+    class Profile:
+        device_id = "qbraid_ionq_forte"
+        provider_name = "IonQ"
+        num_qubits = 36
+        program_specs = (ProgramSpec("qasm3"), ProgramSpec("qiskit.QuantumCircuit"))
+        native_features = ("all_to_all_connectivity",)
+        simulator = False
+
+    class Device:
+        profile = Profile()
+        status = "available"
+        max_shots = 10_000
+        queue_depth = 3
+        last_calibration = "2026-05-20T14:20:00Z"
+
+        def run(self, *args: object, **kwargs: object) -> None:
+            raise AssertionError("metadata snapshot must not submit qBraid work")
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="qbraid",
+        provider="ionq",
+        ir_format="openqasm3",
+        min_qubits=4,
+        metadata_probe=lambda resolved: snapshot_from_qbraid_device(resolved, Device()),
+    )
+
+    assert decision.status == "ready"
+    assert decision.snapshot.route_id == "qbraid/ionq"
+    assert decision.snapshot.backend_id == "qbraid_ionq"
+    assert decision.snapshot.target_name == "qbraid_ionq_forte"
+    assert decision.snapshot.supported_ir_formats == ("openqasm3", "qiskit")
+    assert "broker_catalog_target" in decision.snapshot.native_features
+    assert "all_to_all_connectivity" in decision.snapshot.native_features
+    assert decision.snapshot.max_shots == 10_000
+    assert decision.snapshot.queue_depth == 3
+    assert decision.snapshot.calibration_timestamp == "2026-05-20T14:20:00Z"
+    assert decision.snapshot.metadata["adapter"] == "qbraid_device_no_submit"
+    assert decision.snapshot.metadata["provider_name"] == "IonQ"
+    assert decision.snapshot.metadata["broker_route"] == "qbraid/ionq"
+
+
 def test_strangeworks_backend_snapshot_reads_backend_metadata_without_submission() -> None:
     """Strangeworks metadata adapters should stay read-only and route-bound."""
 

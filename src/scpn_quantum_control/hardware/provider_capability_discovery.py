@@ -1031,18 +1031,7 @@ def snapshot_from_qbraid_device(
         names=("num_qubits", "n_qubits", "qubits"),
         field_name="qBraid qubit count",
     )
-    supported_ir_formats = _declared_ir_formats(
-        profile,
-        device,
-        names=(
-            "supported_ir_formats",
-            "ir_formats",
-            "input_formats",
-            "program_formats",
-            "supported_program_formats",
-        ),
-        field_name="qBraid IR formats",
-    )
+    supported_ir_formats = _qbraid_supported_ir_formats(profile, device)
     return ProviderCapabilitySnapshot(
         route_id=resolved.route.route_id,
         aggregator=resolved.route.aggregator,
@@ -1056,10 +1045,9 @@ def snapshot_from_qbraid_device(
             device,
             names=("basis_gates", "native_gates", "gates"),
         ),
-        native_features=_first_string_tuple_attr(
+        native_features=_qbraid_native_features(
             profile,
             device,
-            names=("native_features", "features", "capabilities"),
         ),
         online=_first_online_attr(device, profile),
         simulator=_first_bool_attr(profile, device, names=("simulator", "is_simulator")) or False,
@@ -1082,6 +1070,7 @@ def snapshot_from_qbraid_device(
         ),
         metadata={
             "adapter": "qbraid_device_no_submit",
+            "broker_route": resolved.route.route_id,
             "provider_name": _first_optional_text_attr(
                 profile,
                 device,
@@ -2140,6 +2129,63 @@ def _online_state_from_text(value: str) -> bool | None:
     }:
         return False
     return None
+
+
+def _qbraid_supported_ir_formats(*sources: Any) -> tuple[str, ...]:
+    declared = _first_string_tuple_attr(
+        *sources,
+        names=(
+            "supported_ir_formats",
+            "ir_formats",
+            "input_formats",
+            "program_formats",
+            "supported_program_formats",
+            "program_specs",
+        ),
+    )
+    if not declared:
+        raise ValueError("qBraid IR formats must declare supported IR formats")
+    return tuple(_qbraid_ir_format_token(item) for item in declared)
+
+
+def _qbraid_ir_format_token(value: str) -> str:
+    normalized = value.strip().lower().replace("-", "_")
+    if normalized in {
+        "qasm3",
+        "qasm.v3",
+        "openqasm",
+        "openqasm_3",
+        "openqasm3",
+        "braket.ir.openqasm.program",
+    }:
+        return "openqasm3"
+    if normalized in {"qiskit", "qiskit.quantumcircuit", "quantum_circuit"}:
+        return "qiskit"
+    if normalized in {"cirq", "cirq.circuit"}:
+        return "cirq"
+    if normalized in {"quil", "pyquil", "pyquil.program"}:
+        return "quil"
+    if normalized in {"braket_ir", "braket.ir", "braket.circuit"}:
+        return "braket_ir"
+    if normalized in {"pennylane", "pennylane.tape", "quantum_tape"}:
+        return "pennylane"
+    if normalized in {"pyqubo", "qubo"}:
+        return "pyqubo"
+    if normalized in {"tket", "pytket", "pytket.circuit"}:
+        return "tket"
+    if normalized in {"qir", "qir.v1"}:
+        return "qir"
+    if normalized == "mlir":
+        return "mlir"
+    return normalized
+
+
+def _qbraid_native_features(*sources: Any) -> tuple[str, ...]:
+    features = set(
+        _first_string_tuple_attr(*sources, names=("native_features", "features", "capabilities"))
+    )
+    features.add("broker_catalog_target")
+    return tuple(sorted(features))
 
 
 def _qiskit_calibration_timestamp(*sources: Any) -> str | None:

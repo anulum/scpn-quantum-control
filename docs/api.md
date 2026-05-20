@@ -1031,8 +1031,11 @@ PennyLane, qBraid, and Strangeworks adapters are concrete HAL routes, not regist
 `PennyLaneDeviceHALAdapter` executes strict native-gate payloads on a local
 PennyLane device and fails closed on unsupported gates. `QbraidRuntimeHALAdapter`
 uses injected qBraid devices or providers and still requires the HAL approval
-token for cloud submission. `StrangeworksComputeHALAdapter` follows the same
-dynamic-catalog contract for injected Strangeworks backends or workspaces.
+token for cloud submission. `snapshot_from_qbraid_device()` also normalises
+qBraid catalogue `program_specs` into HAL IR tokens and records the resolved
+broker route without submitting work. `StrangeworksComputeHALAdapter` follows
+the same dynamic-catalog contract for injected Strangeworks backends or
+workspaces.
 
 ```python
 hal = HardwareAbstractionLayer.with_builtin_profiles()

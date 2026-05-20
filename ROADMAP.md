@@ -181,6 +181,11 @@ is copied here.
   support, qubit count, basis operations, shot limits, queue depth, online
   state, simulator flag, and calibration/update timestamp without task
   submission.
+- [x] **qBraid catalogue no-submit IR normalisation.** Implemented 2026-05-20:
+  `snapshot_from_qbraid_device` now consumes qBraid catalogue `program_specs`,
+  normalises broker program declarations into HAL IR tokens, adds a
+  `broker_catalog_target` feature marker, and records the resolved broker route
+  without device submission.
 - [x] **Azure Quantum HAL adapter integration.** Implemented 2026-05-20:
   `hardware.hal_azure` adds OpenQASM 3 workload construction and an injected
   Azure target adapter for IonQ, Quantinuum, Rigetti, Pasqal, and preview

@@ -901,7 +901,10 @@ or `qbraid_runtime` for qBraid's dynamic provider catalog. Cloud submission
 remains approval-gated by HAL. For pre-submit capability checks, use
 `snapshot_from_qbraid_device()` with an authenticated qBraid device object; the
 snapshot path reads metadata only and fails closed when the target does not
-declare supported IR formats.
+declare supported IR formats. qBraid catalogue `program_specs` are normalised
+into HAL IR tokens such as `openqasm3`, `qiskit`, `cirq`, `quil`, `braket_ir`,
+`pennylane`, `pyqubo`, `tket`, `qir`, and `mlir`, and snapshots record the
+resolved broker route.
 
 ```python
 hal = HardwareAbstractionLayer.with_builtin_profiles()
