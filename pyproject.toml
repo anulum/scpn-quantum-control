@@ -56,6 +56,7 @@ dependencies = [
 scpn-bench = "scpn_quantum_control.bench_cli:main"
 scpn-verify-hardware-packs = "scpn_quantum_control.hardware_result_packs:main"
 scpn-generate-hardware-pack-evidence = "scpn_quantum_control.hardware_result_pack_evidence:main"
+scpn-provider-smoke = "scpn_quantum_control.hardware.provider_smoke:main"
 
 [project.optional-dependencies]
 viz = ["matplotlib>=3.5,<4.0"]
@@ -68,6 +69,17 @@ ibm = ["qiskit-ibm-runtime>=0.40,<1.0"]
 braket = ["amazon-braket-sdk>=1.117,<2.0"]
 azure = ["azure-quantum>=3.9,<4.0"]
 qbraid = ["qbraid>=0.12,<1.0"]
+cirq = ["cirq-core>=1.6,<2.0"]
+dwave = ["dwave-cloud-client>=0.14,<1.0", "dwave-system>=1.34,<2.0"]
+ionq = ["requests>=2.22,<3.0"]
+iqm = ["iqm-client>=34,<35"]
+oqc = ["oqc-qcaas-client>=3.22,<4.0"]
+pasqal = ["pulser-core>=1.8,<2.0"]
+quandela = ["perceval-quandela>=1.1,<2.0"]
+quantinuum = ["pytket-quantinuum>=0.59,<1.0"]
+quera = ["bloqade>=0.33,<1.0"]
+rigetti = ["pyquil>=4.17,<5.0"]
+providers = ["qiskit-aer>=0.15,<1.0", "qiskit-ibm-runtime>=0.40,<1.0", "amazon-braket-sdk>=1.117,<2.0", "azure-quantum>=3.9,<4.0", "qbraid>=0.12,<1.0", "cirq-core>=1.6,<2.0", "pennylane>=0.40,<1.0", "requests>=2.22,<3.0", "oqc-qcaas-client>=3.22,<4.0", "pulser-core>=1.8,<2.0", "perceval-quandela>=1.1,<2.0", "pytket-quantinuum>=0.59,<1.0", "pyquil>=4.17,<5.0"]
 tensor = ["quimb>=1.10,<2.0"]
 mitigation = ["mitiq>=0.30,<2.0"]
 topology = ["ripser>=0.6,<1.0"]
@@ -83,7 +95,7 @@ app-plasma = ["h5py>=3.10,<4.0", "pandas>=2.0,<3.0"]
 app-power-grid = ["pandapower>=2.14,<4.0"]
 app-fep = ["pydantic>=2.0,<3.0"]
 app-benchmarks = ["scpn-quantum-control[app-eeg,app-plasma,app-power-grid,app-fep]"]
-all = ["scpn-quantum-control[viz,ibm,braket,azure,qbraid,tensor,mitigation,topology,opensys,pennylane,xvalidate,config,logging,julia,dla-parity]"]
+all = ["scpn-quantum-control[viz,providers,tensor,mitigation,topology,opensys,pennylane,xvalidate,config,logging,julia,dla-parity]"]
 accelerated = ["scpn-quantum-control[gpu,jax]"]
 
 [project.entry-points."scpn_quantum_control.backends"]

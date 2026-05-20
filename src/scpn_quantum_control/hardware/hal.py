@@ -651,7 +651,7 @@ def built_in_backend_profiles() -> tuple[BackendProfile, ...]:
             provider="ionq",
             broker="direct",
             modality="trapped_ion_gate_model",
-            sdk_package="ionq",
+            sdk_package="requests",
             ir_formats=("openqasm3", "ionq_json", "qir", "mlir"),
             max_qubits=None,
             is_cloud=True,

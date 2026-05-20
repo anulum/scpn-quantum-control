@@ -9,8 +9,11 @@
 
 from __future__ import annotations
 
+import argparse
 import importlib.util
-from dataclasses import dataclass
+import json
+from collections.abc import Sequence
+from dataclasses import asdict, dataclass
 
 from .backends import list_hal_backend_descriptors
 
@@ -20,8 +23,7 @@ _SDK_IMPORTS: dict[str, tuple[str, ...]] = {
     "cirq-core": ("cirq",),
     "dimod": ("dimod",),
     "dwave-cloud-client": ("dimod", "dwave.system"),
-    "ionq": ("requests",),
-    "iqm-client": ("iqm", "qiskit_iqm"),
+    "iqm-client": ("iqm.iqm_client",),
     "oqc-qcaas-client": ("qcaas_client",),
     "pennylane": ("pennylane",),
     "perceval-quandela": ("perceval",),
@@ -32,6 +34,7 @@ _SDK_IMPORTS: dict[str, tuple[str, ...]] = {
     "qiskit-aer": ("qiskit_aer",),
     "qiskit-ibm-runtime": ("qiskit", "qiskit_ibm_runtime"),
     "python": ("scpn_quantum_control",),
+    "requests": ("requests",),
 }
 
 
@@ -80,4 +83,54 @@ def _module_available(name: str) -> bool:
         return False
 
 
-__all__ = ["ProviderOptionalDependencyRow", "provider_optional_dependency_matrix"]
+def main(argv: Sequence[str] | None = None) -> int:
+    """Print the offline provider optional-dependency matrix.
+
+    The command is intentionally metadata-only: it imports no provider SDK,
+    reads no credentials, creates no clients, performs no authentication, and
+    touches no network endpoint. Use ``--require-all`` in provider-pack CI lanes
+    after installing ``scpn-quantum-control[providers]``.
+    """
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--format",
+        choices=("table", "json"),
+        default="table",
+        help="Output format.",
+    )
+    parser.add_argument(
+        "--require-all",
+        action="store_true",
+        help="Return exit code 1 when any declared provider import is missing.",
+    )
+    args = parser.parse_args(argv)
+
+    rows = provider_optional_dependency_matrix()
+    if args.format == "json":
+        print(json.dumps([asdict(row) for row in rows], sort_keys=True))
+    else:
+        print(_format_table(rows))
+    if args.require_all and any(not row.available for row in rows):
+        return 1
+    return 0
+
+
+def _format_table(rows: Sequence[ProviderOptionalDependencyRow]) -> str:
+    lines = ["backend_id\tprovider\tsdk_package\tavailable\tmissing_imports"]
+    lines.extend(
+        "\t".join(
+            (
+                row.backend_id,
+                row.provider,
+                row.sdk_package,
+                str(row.available).lower(),
+                ",".join(row.missing_imports),
+            )
+        )
+        for row in rows
+    )
+    return "\n".join(lines)
+
+
+__all__ = ["ProviderOptionalDependencyRow", "main", "provider_optional_dependency_matrix"]

@@ -538,6 +538,19 @@ built-in HAL route. It uses import-spec discovery only; it does not import
 provider SDKs, read credentials, authenticate, create clients, or touch provider
 networks.
 
+The same check is exposed as `scpn-provider-smoke`. In CI or operator
+preflight lanes, install `scpn-quantum-control[providers]` and run:
+
+```bash
+scpn-provider-smoke --format table
+```
+
+The portable `providers` extra intentionally excludes the current D-Wave, IQM,
+and QuEra direct SDK extras because their dependency trees are not compatible
+with the shared development/application environment as one aggregate install.
+Use `[dwave]`, `[iqm]`, or `[quera]` in isolated runner environments when those
+direct routes are being exercised.
+
 The direct Quandela adapter layer provides `QuandelaPercevalHALAdapter` and
 `quandela_perceval_workload()`. It consumes `scpn.quandela.perceval.v1`
 photonic circuit plans, validates mode count, input occupations,

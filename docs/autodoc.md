@@ -140,7 +140,7 @@ or debugging a subsystem, not as the default path for tutorial code.
 
 ::: scpn_quantum_control.hardware.provider_smoke
     options:
-      members: [ProviderOptionalDependencyRow, provider_optional_dependency_matrix]
+      members: [ProviderOptionalDependencyRow, main, provider_optional_dependency_matrix]
 
 ::: scpn_quantum_control.hardware.hal
     options:

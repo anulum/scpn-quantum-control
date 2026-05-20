@@ -831,6 +831,11 @@ job = hal.submit(
 missing import names for every built-in HAL route without importing SDKs or
 touching provider networks.
 
+The `scpn-provider-smoke` command exposes the same no-network matrix for
+operator preflight checks after installing provider extras. The portable
+`[providers]` extra covers routes whose SDKs resolve cleanly together; D-Wave,
+IQM, and QuEra remain dedicated extras for isolated runner environments.
+
 The direct Quandela adapter layer provides `QuandelaPercevalHALAdapter` and
 `quandela_perceval_workload()`. It consumes `scpn.quandela.perceval.v1`
 photonic plans, validates modes, input occupations, optical components, and

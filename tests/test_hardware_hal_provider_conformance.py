@@ -10,10 +10,21 @@
 from __future__ import annotations
 
 import importlib
+import json
+import re
+import sys
 from pathlib import Path
+
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    import tomli as tomllib
 
 from scpn_quantum_control.hardware.backends import list_hal_backend_descriptors
 from scpn_quantum_control.hardware.hal import built_in_backend_profiles
+from scpn_quantum_control.hardware.provider_smoke import (
+    main as provider_smoke_main,
+)
 from scpn_quantum_control.hardware.provider_smoke import (
     provider_optional_dependency_matrix,
 )
@@ -85,3 +96,72 @@ def test_optional_dependency_matrix_covers_all_non_builtin_provider_modules() ->
         assert row.sdk_package == descriptor.sdk_package
         assert row.import_names
         assert isinstance(row.available, bool)
+
+
+def test_hal_sdk_packages_are_exposed_as_install_extras() -> None:
+    pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+    data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+    extras = data["project"]["optional-dependencies"]
+
+    provider_packages = {
+        descriptor.sdk_package
+        for descriptor in list_hal_backend_descriptors()
+        if descriptor.sdk_package != "python"
+    }
+    isolated_provider_packages = {"bloqade", "dwave-cloud-client", "iqm-client"}
+    declared_packages = {
+        _normalise_requirement(requirement)
+        for requirements in extras.values()
+        for requirement in requirements
+        if not requirement.startswith("scpn-quantum-control[")
+    }
+
+    assert provider_packages <= declared_packages
+
+    provider_extra_requirements = {
+        _normalise_requirement(requirement)
+        for requirement in extras["providers"]
+        if not requirement.startswith("scpn-quantum-control[")
+    }
+    assert provider_packages - isolated_provider_packages <= provider_extra_requirements
+    assert isolated_provider_packages.isdisjoint(provider_extra_requirements)
+    isolated_extra_packages = {
+        _normalise_requirement(requirement)
+        for extra_name in ("dwave", "iqm", "quera")
+        for requirement in extras[extra_name]
+        if not requirement.startswith("scpn-quantum-control[")
+    }
+    assert isolated_provider_packages <= isolated_extra_packages
+
+    all_extra_references = {
+        extra
+        for requirement in extras["all"]
+        for extra in re.findall(r"scpn-quantum-control\[([^\]]+)\]", requirement)
+    }
+    assert "providers" in {
+        part.strip() for reference in all_extra_references for part in reference.split(",")
+    }
+
+
+def _normalise_requirement(requirement: str) -> str:
+    return re.split(r"\s*(?:[<>=!~;\[])", requirement, maxsplit=1)[0].strip().lower()
+
+
+def test_provider_smoke_cli_emits_offline_json_matrix(capsys) -> None:  # type: ignore[no-untyped-def]
+    exit_code = provider_smoke_main(["--format", "json"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    payload = json.loads(captured.out)
+    assert isinstance(payload, list)
+    assert payload
+    row = payload[0]
+    assert {
+        "backend_id",
+        "provider",
+        "sdk_package",
+        "adapter_module",
+        "import_names",
+        "available",
+        "missing_imports",
+    } <= set(row)

@@ -37,6 +37,20 @@ pip install -e ".[viz]"
 # handle both legacy 'meas' and per-circuit names ('c', 'cr', 'c0').
 pip install -e ".[ibm]"
 
+# Portable provider bundle for offline SDK smoke coverage.
+# This installs IBM, Braket, Azure Quantum, IonQ REST, OQC, Pasqal,
+# Quandela, Quantinuum, Rigetti, qBraid, Cirq, Qiskit Aer, and PennyLane
+# routes without credentials or live provider calls.
+pip install -e ".[providers]"
+scpn-provider-smoke --format table
+
+# Provider-specific isolated extras. These are intentionally outside
+# [providers] because their current SDK dependency trees conflict with
+# common development or application extras on the shared Qiskit 2.x stack.
+pip install -e ".[dwave]"   # D-Wave Leap; requires click >=8.2 via dwave-cloud-client
+pip install -e ".[iqm]"     # IQM direct client; Qiskit bridge remains isolated
+pip install -e ".[quera]"   # QuEra Bloqade; current Bloqade meta-package resolves separately
+
 # Rust acceleration (158–5,401× faster Hamiltonian construction;
 # 1,665× faster ICI three-level evolution; 44× faster (α,β)-hypergeometric
 # envelope; 2–10× across Pauli expectations and OTOC)
