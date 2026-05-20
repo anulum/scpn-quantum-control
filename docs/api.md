@@ -680,6 +680,7 @@ from scpn_quantum_control.hardware import (
     BackendProfile,
     AzureQuantumHALAdapter,
     BraketLocalHALAdapter,
+    DWaveLeapHALAdapter,
     HardwareAbstractionLayer,
     IonQCloudHALAdapter,
     IQMHALAdapter,
@@ -696,6 +697,7 @@ from scpn_quantum_control.hardware import (
     braket_circuit_to_workload,
     bloqade_ahs_workload,
     built_in_backend_profiles,
+    dwave_bqm_workload,
     ionq_qis_workload,
     iqm_qiskit_workload,
     pulser_sequence_workload,
@@ -771,6 +773,33 @@ job = hal.submit(
         workload_id="azure_h",
         n_qubits=1,
         shots=128,
+    ),
+    approval_id="approved-run",
+)
+```
+
+The direct D-Wave Leap adapter layer provides `DWaveLeapHALAdapter` and
+`dwave_bqm_workload()`. It consumes `scpn.dwave.bqm.v1`, validates binary
+quadratic model structure, submits through an injected D-Wave sampler or
+caller-supplied sampler factory, and normalises sample-set occurrences into HAL
+counts. Remote Leap execution remains approval-gated.
+
+```python
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+hal.register_backend(
+    DWaveLeapHALAdapter(
+        hal.profile("dwave_leap"),
+        sampler_factory=calibrated_dwave_sampler_factory,
+    )
+)
+job = hal.submit(
+    "dwave_leap",
+    dwave_bqm_workload(
+        linear={"0": -1.0, "1": 0.5},
+        quadratic={("0", "1"): -0.25},
+        workload_id="dwave_pair",
+        n_variables=2,
+        reads=128,
     ),
     approval_id="approved-run",
 )

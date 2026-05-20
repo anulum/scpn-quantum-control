@@ -146,6 +146,7 @@ from .hal_braket import (
     BraketLocalHALAdapter,
     braket_circuit_to_workload,
 )
+from .hal_dwave import DWaveLeapHALAdapter, dwave_bqm_workload
 from .hal_ionq import IonQCloudHALAdapter, ionq_qis_workload
 from .hal_iqm import IQMHALAdapter, iqm_qiskit_workload
 from .hal_pasqal import PasqalPulserHALAdapter, pulser_sequence_workload
@@ -251,6 +252,8 @@ __all__ = [
     "BraketAwsHALAdapter",
     "BraketLocalHALAdapter",
     "braket_circuit_to_workload",
+    "DWaveLeapHALAdapter",
+    "dwave_bqm_workload",
     "IonQCloudHALAdapter",
     "ionq_qis_workload",
     "IQMHALAdapter",

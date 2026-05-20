@@ -66,7 +66,7 @@ _HAL_PROFILE_ADAPTER_MODULES: dict[str, str] = {
     "azure_quantum_quantinuum_emulator": "scpn_quantum_control.hardware.hal_azure",
     "azure_quantum_rigetti": "scpn_quantum_control.hardware.hal_azure",
     "azure_quantum_rigetti_qvm": "scpn_quantum_control.hardware.hal_azure",
-    "dwave_leap": "scpn_quantum_control.hardware.hal",
+    "dwave_leap": "scpn_quantum_control.hardware.hal_dwave",
     "ibm_quantum": "scpn_quantum_control.hardware.hal_qiskit",
     "ionq_cloud": "scpn_quantum_control.hardware.hal_ionq",
     "iqm_cloud": "scpn_quantum_control.hardware.hal_iqm",

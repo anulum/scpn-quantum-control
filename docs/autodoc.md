@@ -150,6 +150,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [BraketLocalHALAdapter, BraketAwsHALAdapter, braket_circuit_to_workload]
 
+::: scpn_quantum_control.hardware.hal_dwave
+    options:
+      members: [DWaveLeapHALAdapter, dwave_bqm_workload]
+
 ::: scpn_quantum_control.hardware.hal_azure
     options:
       members: [AzureQuantumHALAdapter, azure_openqasm3_to_workload]
