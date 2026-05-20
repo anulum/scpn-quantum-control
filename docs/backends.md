@@ -576,6 +576,12 @@ route, rejects route mismatches and non-no-submit snapshots, and returns a
 ready/blocked/unknown decision based on online status, qubit count, and required
 IR support. The function does not create clients or submit jobs; provider SDK
 authentication remains inside the injected read-only probe.
+`snapshot_from_qbraid_device()` and `snapshot_from_strangeworks_backend()` are
+the first concrete broker metadata adapters for this contract. They consume
+injected SDK device/backend objects, require explicitly declared IR formats, and
+record target name, qubit count, gate basis, queue depth, shot/circuit limits,
+online state, simulator state, and calibration timestamp when the provider
+object exposes those fields.
 
 The same check is exposed as `scpn-provider-smoke`. In CI or operator
 preflight lanes, install `scpn-quantum-control[providers]` and run:
@@ -831,7 +837,10 @@ providers, supports provider lookup by qBraid device id, forwards the exact HAL
 program payload to `device.run(...)`, and converts qBraid measurement counts
 back into `QuantumJobResult`. Use `qbraid_ionq` for the named IonQ broker route
 or `qbraid_runtime` for qBraid's dynamic provider catalog. Cloud submission
-remains approval-gated by HAL.
+remains approval-gated by HAL. For pre-submit capability checks, use
+`snapshot_from_qbraid_device()` with an authenticated qBraid device object; the
+snapshot path reads metadata only and fails closed when the target does not
+declare supported IR formats.
 
 ```python
 hal = HardwareAbstractionLayer.with_builtin_profiles()
@@ -854,7 +863,10 @@ The Strangeworks adapter layer provides `StrangeworksComputeHALAdapter` and
 pattern: production callers inject an authenticated Strangeworks backend,
 workspace, or factory; the adapter forwards the HAL program payload to the
 selected backend, records the resolved backend id, and normalises measurement
-counts into `QuantumJobResult`.
+counts into `QuantumJobResult`. For pre-submit capability checks, use
+`snapshot_from_strangeworks_backend()` with an injected Strangeworks backend; it
+reads the backend metadata surface and feeds the route-bound no-submit readiness
+decision before any workload path is eligible.
 
 ```python
 hal = HardwareAbstractionLayer.with_builtin_profiles()

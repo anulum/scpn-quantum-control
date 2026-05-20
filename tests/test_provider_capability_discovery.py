@@ -16,6 +16,8 @@ from scpn_quantum_control.hardware.provider_capability_discovery import (
     ProviderCapabilitySnapshot,
     assess_provider_capability_snapshot,
     probe_aggregator_provider_capability,
+    snapshot_from_qbraid_device,
+    snapshot_from_strangeworks_backend,
 )
 
 
@@ -153,3 +155,89 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
     assert ProviderCapabilityDecision.__name__ == "ProviderCapabilityDecision"
     assert exported_assess is assess_provider_capability_snapshot
     assert exported_probe is probe_aggregator_provider_capability
+
+
+def test_qbraid_device_snapshot_reads_profile_without_submission() -> None:
+    """qBraid metadata adapters should consume injected device profiles only."""
+
+    class Profile:
+        device_id = "qbraid_qpu_rigetti"
+        provider_name = "rigetti"
+        num_qubits = 80
+        basis_gates = ("rx", "rz", "cz", "measure")
+        simulator = False
+
+    class Device:
+        profile = Profile()
+        status = "ONLINE"
+        supported_ir_formats = ("quil", "openqasm3")
+        max_shots = 10_000
+        queue_depth = 2
+
+        def run(self, *args: object, **kwargs: object) -> None:
+            raise AssertionError("metadata snapshot must not submit qBraid work")
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="qbraid",
+        provider="rigetti",
+        ir_format="quil",
+        min_qubits=4,
+        metadata_probe=lambda resolved: snapshot_from_qbraid_device(resolved, Device()),
+    )
+
+    assert decision.status == "ready"
+    assert decision.snapshot.target_name == "qbraid_qpu_rigetti"
+    assert decision.snapshot.supported_ir_formats == ("quil", "openqasm3")
+    assert decision.snapshot.basis_gates == ("rx", "rz", "cz", "measure")
+    assert decision.snapshot.queue_depth == 2
+    assert decision.snapshot.metadata["adapter"] == "qbraid_device_no_submit"
+
+
+def test_strangeworks_backend_snapshot_reads_backend_metadata_without_submission() -> None:
+    """Strangeworks metadata adapters should stay read-only and route-bound."""
+
+    class Backend:
+        id = "sw_quantinuum_h2"
+        n_qubits = 56
+        input_formats = ("openqasm3", "qiskit")
+        basis_gates = ("rz", "sx", "cx", "measure")
+        online = True
+        max_circuits = 32
+        pending_jobs = 5
+
+        def run(self, *args: object, **kwargs: object) -> None:
+            raise AssertionError("metadata snapshot must not submit Strangeworks work")
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="strangeworks",
+        provider="quantinuum",
+        ir_format="openqasm3",
+        min_qubits=4,
+        metadata_probe=lambda resolved: snapshot_from_strangeworks_backend(resolved, Backend()),
+    )
+
+    assert decision.status == "ready"
+    assert decision.snapshot.route_id == "strangeworks/quantinuum"
+    assert decision.snapshot.target_name == "sw_quantinuum_h2"
+    assert decision.snapshot.max_circuits == 32
+    assert decision.snapshot.queue_depth == 5
+    assert decision.snapshot.metadata["adapter"] == "strangeworks_backend_no_submit"
+
+
+def test_broker_snapshot_rejects_missing_declared_ir_formats() -> None:
+    """Broker SDK metadata must declare target IR support explicitly."""
+
+    class Profile:
+        device_id = "metadata_light"
+        num_qubits = 8
+
+    class Device:
+        profile = Profile()
+
+    with pytest.raises(ValueError, match="IR formats"):
+        probe_aggregator_provider_capability(
+            aggregator="qbraid",
+            provider="rigetti",
+            ir_format="quil",
+            metadata_probe=lambda resolved: snapshot_from_qbraid_device(resolved, Device()),
+        )

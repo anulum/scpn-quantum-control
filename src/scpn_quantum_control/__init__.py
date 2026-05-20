@@ -154,6 +154,8 @@ from .hardware.provider_capability_discovery import (
     ProviderMetadataProbe,
     assess_provider_capability_snapshot,
     probe_aggregator_provider_capability,
+    snapshot_from_qbraid_device,
+    snapshot_from_strangeworks_backend,
 )
 from .hardware.provider_smoke import (
     AggregatorProviderOptionalDependencyRow,
@@ -411,6 +413,8 @@ __all__ = [
     "aggregator_provider_optional_dependency_matrix",
     "probe_aggregator_provider_capability",
     "provider_optional_dependency_matrix",
+    "snapshot_from_qbraid_device",
+    "snapshot_from_strangeworks_backend",
     "QbraidRuntimeHALAdapter",
     "StrangeworksComputeHALAdapter",
     "QuandelaPercevalHALAdapter",

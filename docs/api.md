@@ -171,6 +171,10 @@ capability probes or live submissions.
 contract for authenticated metadata probes: it resolves the broker route,
 accepts only no-submit target snapshots, and returns ready/blocked/unknown
 readiness decisions before any submission path is considered.
+`snapshot_from_qbraid_device()` and `snapshot_from_strangeworks_backend()`
+provide concrete no-submit adapters for injected broker SDK objects: they read
+declared target metadata, require explicit IR-format support, and expose queue,
+limit, online, simulator, and gate metadata without invoking submission APIs.
 
 ## Advanced Module Reference
 

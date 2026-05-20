@@ -137,6 +137,148 @@ def probe_aggregator_provider_capability(
     )
 
 
+def snapshot_from_qbraid_device(
+    resolved: ResolvedAggregatorProviderRoute,
+    device: Any,
+) -> ProviderCapabilitySnapshot:
+    """Build a no-submit capability snapshot from qBraid device metadata."""
+
+    profile = _optional_attr(device, "profile")
+    target_name = _first_text_attr(
+        profile,
+        device,
+        names=("device_id", "backend_id", "id", "name"),
+        field_name="qBraid target name",
+    )
+    n_qubits = _first_positive_int_attr(
+        profile,
+        device,
+        names=("num_qubits", "n_qubits", "qubits"),
+        field_name="qBraid qubit count",
+    )
+    supported_ir_formats = _declared_ir_formats(
+        profile,
+        device,
+        names=(
+            "supported_ir_formats",
+            "ir_formats",
+            "input_formats",
+            "program_formats",
+            "supported_program_formats",
+        ),
+        field_name="qBraid IR formats",
+    )
+    return ProviderCapabilitySnapshot(
+        route_id=resolved.route.route_id,
+        aggregator=resolved.route.aggregator,
+        provider=resolved.route.provider,
+        backend_id=resolved.route.backend_id,
+        target_name=target_name,
+        n_qubits=n_qubits,
+        supported_ir_formats=supported_ir_formats,
+        basis_gates=_first_string_tuple_attr(
+            profile,
+            device,
+            names=("basis_gates", "native_gates", "gates"),
+        ),
+        native_features=_first_string_tuple_attr(
+            profile,
+            device,
+            names=("native_features", "features", "capabilities"),
+        ),
+        online=_first_online_attr(device, profile),
+        simulator=_first_bool_attr(profile, device, names=("simulator", "is_simulator")) or False,
+        max_shots=_first_optional_int_attr(device, profile, names=("max_shots", "shots_limit")),
+        max_circuits=_first_optional_int_attr(
+            device,
+            profile,
+            names=("max_circuits", "max_experiments", "max_jobs"),
+        ),
+        queue_depth=_first_optional_int_attr(
+            device,
+            profile,
+            names=("queue_depth", "pending_jobs", "queue_size"),
+            minimum=0,
+        ),
+        calibration_timestamp=_first_optional_text_attr(
+            device,
+            profile,
+            names=("calibration_timestamp", "last_calibration", "calibrated_at"),
+        ),
+        metadata={
+            "adapter": "qbraid_device_no_submit",
+            "provider_name": _first_optional_text_attr(
+                profile,
+                device,
+                names=("provider_name", "provider", "vendor"),
+            ),
+        },
+    )
+
+
+def snapshot_from_strangeworks_backend(
+    resolved: ResolvedAggregatorProviderRoute,
+    backend: Any,
+) -> ProviderCapabilitySnapshot:
+    """Build a no-submit capability snapshot from Strangeworks backend metadata."""
+
+    target_name = _first_text_attr(
+        backend,
+        names=("id", "backend_id", "device_id", "name"),
+        field_name="Strangeworks target name",
+    )
+    n_qubits = _first_positive_int_attr(
+        backend,
+        names=("n_qubits", "num_qubits", "qubits"),
+        field_name="Strangeworks qubit count",
+    )
+    supported_ir_formats = _declared_ir_formats(
+        backend,
+        names=(
+            "input_formats",
+            "supported_ir_formats",
+            "ir_formats",
+            "program_formats",
+            "supported_program_formats",
+        ),
+        field_name="Strangeworks IR formats",
+    )
+    return ProviderCapabilitySnapshot(
+        route_id=resolved.route.route_id,
+        aggregator=resolved.route.aggregator,
+        provider=resolved.route.provider,
+        backend_id=resolved.route.backend_id,
+        target_name=target_name,
+        n_qubits=n_qubits,
+        supported_ir_formats=supported_ir_formats,
+        basis_gates=_first_string_tuple_attr(
+            backend,
+            names=("basis_gates", "native_gates", "gates"),
+        ),
+        native_features=_first_string_tuple_attr(
+            backend,
+            names=("native_features", "features", "capabilities"),
+        ),
+        online=_first_online_attr(backend),
+        simulator=_first_bool_attr(backend, names=("simulator", "is_simulator")) or False,
+        max_shots=_first_optional_int_attr(backend, names=("max_shots", "shots_limit")),
+        max_circuits=_first_optional_int_attr(
+            backend,
+            names=("max_circuits", "max_experiments", "max_jobs"),
+        ),
+        queue_depth=_first_optional_int_attr(
+            backend,
+            names=("queue_depth", "pending_jobs", "queue_size"),
+            minimum=0,
+        ),
+        calibration_timestamp=_first_optional_text_attr(
+            backend,
+            names=("calibration_timestamp", "last_calibration", "calibrated_at"),
+        ),
+        metadata={"adapter": "strangeworks_backend_no_submit"},
+    )
+
+
 def assess_provider_capability_snapshot(
     snapshot: ProviderCapabilitySnapshot,
     *,
@@ -200,6 +342,134 @@ def _require_string_tuple(value: tuple[str, ...], field_name: str) -> None:
         raise ValueError(f"{field_name} must be a tuple of non-empty strings")
 
 
+def _optional_attr(source: Any, name: str) -> Any:
+    if source is None:
+        return None
+    try:
+        return getattr(source, name)
+    except Exception:
+        return None
+
+
+def _attr_candidates(*sources: Any, names: tuple[str, ...]) -> list[Any]:
+    candidates: list[Any] = []
+    for source in sources:
+        if source is None:
+            continue
+        for name in names:
+            candidates.append(_optional_attr(source, name))
+    return candidates
+
+
+def _first_text_attr(*sources: Any, names: tuple[str, ...], field_name: str) -> str:
+    value = _first_optional_text_attr(*sources, names=names)
+    if value is None:
+        raise ValueError(f"{field_name} must be provided by provider metadata")
+    return value
+
+
+def _first_optional_text_attr(*sources: Any, names: tuple[str, ...]) -> str | None:
+    for value in _attr_candidates(*sources, names=names):
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return None
+
+
+def _first_positive_int_attr(*sources: Any, names: tuple[str, ...], field_name: str) -> int:
+    value = _first_optional_int_attr(*sources, names=names)
+    if value is None:
+        raise ValueError(f"{field_name} must be provided by provider metadata")
+    return value
+
+
+def _first_optional_int_attr(
+    *sources: Any,
+    names: tuple[str, ...],
+    minimum: int = 1,
+) -> int | None:
+    for value in _attr_candidates(*sources, names=names):
+        if isinstance(value, bool):
+            continue
+        if isinstance(value, int) and value >= minimum:
+            return value
+    return None
+
+
+def _first_bool_attr(*sources: Any, names: tuple[str, ...]) -> bool | None:
+    for value in _attr_candidates(*sources, names=names):
+        if isinstance(value, bool):
+            return value
+    return None
+
+
+def _first_online_attr(*sources: Any) -> bool | None:
+    for value in _attr_candidates(
+        *sources,
+        names=("online", "is_online", "available", "status"),
+    ):
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            normalized = value.strip().lower()
+            if normalized in {"online", "available", "active", "ready", "operational"}:
+                return True
+            if normalized in {
+                "offline",
+                "unavailable",
+                "inactive",
+                "retired",
+                "maintenance",
+            }:
+                return False
+    return None
+
+
+def _declared_ir_formats(
+    *sources: Any, names: tuple[str, ...], field_name: str
+) -> tuple[str, ...]:
+    formats = _first_string_tuple_attr(*sources, names=names)
+    if not formats:
+        raise ValueError(f"{field_name} must declare supported IR formats")
+    return formats
+
+
+def _first_string_tuple_attr(*sources: Any, names: tuple[str, ...]) -> tuple[str, ...]:
+    for value in _attr_candidates(*sources, names=names):
+        items = _string_tuple_from_value(value)
+        if items:
+            return items
+    return ()
+
+
+def _string_tuple_from_value(value: Any) -> tuple[str, ...]:
+    if value is None or isinstance(value, str):
+        return (value.strip(),) if isinstance(value, str) and value.strip() else ()
+    if isinstance(value, Mapping):
+        return _string_tuple_from_value(value.keys())
+    try:
+        iterator = iter(value)
+    except TypeError:
+        return ()
+    items: list[str] = []
+    for item in iterator:
+        normalized: str | None
+        if isinstance(item, str) and item.strip():
+            normalized = item.strip()
+        else:
+            normalized = _program_spec_name(item)
+        if normalized and normalized not in items:
+            items.append(normalized)
+    return tuple(items)
+
+
+def _program_spec_name(value: Any) -> str | None:
+    for name in ("alias", "program_type", "package", "name", "__name__"):
+        candidate = _optional_attr(value, name)
+        if isinstance(candidate, str) and candidate.strip():
+            return candidate.strip()
+    return None
+
+
 __all__ = [
     "CapabilityDecisionStatus",
     "ProviderCapabilityDecision",
@@ -207,4 +477,6 @@ __all__ = [
     "ProviderMetadataProbe",
     "assess_provider_capability_snapshot",
     "probe_aggregator_provider_capability",
+    "snapshot_from_qbraid_device",
+    "snapshot_from_strangeworks_backend",
 ]

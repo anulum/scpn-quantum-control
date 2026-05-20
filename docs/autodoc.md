@@ -144,7 +144,7 @@ or debugging a subsystem, not as the default path for tutorial code.
 
 ::: scpn_quantum_control.hardware.provider_capability_discovery
     options:
-      members: [ProviderCapabilitySnapshot, ProviderCapabilityDecision, assess_provider_capability_snapshot, probe_aggregator_provider_capability]
+      members: [ProviderCapabilitySnapshot, ProviderCapabilityDecision, assess_provider_capability_snapshot, probe_aggregator_provider_capability, snapshot_from_qbraid_device, snapshot_from_strangeworks_backend]
 
 ::: scpn_quantum_control.hardware.aggregators
     options:
