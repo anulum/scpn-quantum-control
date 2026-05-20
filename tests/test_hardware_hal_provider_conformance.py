@@ -15,6 +15,8 @@ import re
 import sys
 from pathlib import Path
 
+import pytest
+
 if sys.version_info >= (3, 11):
     import tomllib
 else:
@@ -23,6 +25,7 @@ else:
 from scpn_quantum_control.hardware.aggregators import (
     aggregator_provider_routes_for,
     built_in_aggregator_provider_routes,
+    resolve_aggregator_provider_route,
 )
 from scpn_quantum_control.hardware.backends import list_hal_backend_descriptors
 from scpn_quantum_control.hardware.hal import built_in_backend_profiles
@@ -86,13 +89,26 @@ def test_aggregator_provider_matrix_covers_source_grounded_current_brokers() -> 
         "qbraid/aws_braket",
         "qbraid/azure_quantum",
         "qbraid/ibm_quantum",
+        "qbraid/equal1",
+        "qbraid/iqm",
         "qbraid/qir_simulator",
+        "qbraid/nec_vector_annealer",
+        "qbraid/oqc",
+        "qbraid/pasqal",
+        "qbraid/quantinuum",
+        "qbraid/quera",
+        "qbraid/rigetti",
+        "strangeworks/aqt",
         "strangeworks/ionq",
+        "strangeworks/iqm",
         "strangeworks/rigetti",
         "strangeworks/ibm_quantum",
         "strangeworks/aws_braket",
         "strangeworks/azure_quantum",
         "strangeworks/classical_hpc",
+        "strangeworks/qiskit_runtime",
+        "strangeworks/quantinuum",
+        "strangeworks/quera",
     }
 
     assert expected <= route_ids
@@ -101,12 +117,53 @@ def test_aggregator_provider_matrix_covers_source_grounded_current_brokers() -> 
         "azure_quantum",
         "ibm_quantum",
         "ionq",
+        "iqm",
+        "nec_vector_annealer",
+        "oqc",
+        "pasqal",
+        "quantinuum",
+        "quera",
+        "rigetti",
     }
     assert [route.route_id for route in aggregator_provider_routes_for(provider="rigetti")] == [
         "aws_braket/rigetti",
         "azure_quantum/rigetti",
+        "qbraid/rigetti",
         "strangeworks/rigetti",
     ]
+
+
+def test_aggregator_provider_selector_resolves_profile_and_ir() -> None:
+    """Routing code should resolve matrix rows to executable HAL profiles."""
+
+    resolved = resolve_aggregator_provider_route(
+        aggregator="qbraid",
+        provider="aws_braket",
+        ir_format="braket_ir",
+    )
+
+    assert resolved.route.route_id == "qbraid/aws_braket"
+    assert resolved.profile.backend_id == "qbraid_runtime"
+    assert resolved.descriptor.name == "qbraid_runtime"
+    assert resolved.route.submit_requires_approval is True
+
+    direct = resolve_aggregator_provider_route(
+        aggregator="aws_braket",
+        provider="ionq",
+        ir_format="openqasm3",
+    )
+    assert direct.route.backend_id == "aws_braket_ionq"
+    assert direct.profile.provider == "ionq"
+
+    with pytest.raises(LookupError, match="unsupported IR"):
+        resolve_aggregator_provider_route(
+            aggregator="qbraid",
+            provider="aws_braket",
+            ir_format="quil",
+        )
+
+    with pytest.raises(LookupError, match="no aggregator/provider route"):
+        resolve_aggregator_provider_route(aggregator="qbraid", provider="missing_provider")
 
 
 def test_cloud_routes_are_approval_gated_and_local_routes_are_not() -> None:

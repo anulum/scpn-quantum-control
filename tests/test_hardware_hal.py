@@ -155,9 +155,17 @@ def test_dynamic_aggregator_profiles_are_first_class_catalog_routes() -> None:
     assert qbraid.target_family == "dynamic_catalog"
     assert "dynamic_catalog" in qbraid.notes
     assert qbraid.submit_requires_approval is True
-    assert {"openqasm3", "qiskit", "cirq", "braket_ir", "pennylane", "tket", "mlir"} <= set(
-        qbraid.ir_formats
-    )
+    assert {
+        "openqasm3",
+        "qiskit",
+        "cirq",
+        "quil",
+        "braket_ir",
+        "pennylane",
+        "pyqubo",
+        "tket",
+        "mlir",
+    } <= set(qbraid.ir_formats)
 
     strangeworks = hal.profile("strangeworks_compute")
     assert strangeworks.provider == "dynamic"

@@ -144,7 +144,7 @@ or debugging a subsystem, not as the default path for tutorial code.
 
 ::: scpn_quantum_control.hardware.aggregators
     options:
-      members: [AggregatorProviderRoute, aggregator_provider_routes_for, built_in_aggregator_provider_routes]
+      members: [AggregatorProviderRoute, ResolvedAggregatorProviderRoute, aggregator_provider_routes_for, built_in_aggregator_provider_routes, resolve_aggregator_provider_route]
 
 ::: scpn_quantum_control.hardware.hal
     options:

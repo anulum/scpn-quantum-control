@@ -102,8 +102,10 @@ from .forecasting import (
 )
 from .hardware.aggregators import (
     AggregatorProviderRoute,
+    ResolvedAggregatorProviderRoute,
     aggregator_provider_routes_for,
     built_in_aggregator_provider_routes,
+    resolve_aggregator_provider_route,
 )
 from .hardware.fast_classical import fast_sparse_evolution
 from .hardware.hal import (
@@ -366,8 +368,10 @@ __all__ = [
     "ContainerResources",
     "generate_cloud_manifests",
     "AggregatorProviderRoute",
+    "ResolvedAggregatorProviderRoute",
     "aggregator_provider_routes_for",
     "built_in_aggregator_provider_routes",
+    "resolve_aggregator_provider_route",
     "AzureQuantumHALAdapter",
     "azure_openqasm3_to_workload",
     "BraketAwsHALAdapter",

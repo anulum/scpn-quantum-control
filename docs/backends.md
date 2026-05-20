@@ -339,13 +339,18 @@ without multiplying identical runtime adapters.
 | --- | --- | --- |
 | AWS Braket | AQT, IonQ, IQM, QuEra, Rigetti, Amazon simulators | `aws_braket_*` |
 | Azure Quantum | IonQ, Quantinuum, Rigetti, Pasqal, QCI preview | `azure_quantum_*` |
-| qBraid | IonQ named route, AWS Braket, Azure Quantum, IBM Quantum, QIR simulator | `qbraid_ionq` or `qbraid_runtime` |
-| Strangeworks | IonQ, Rigetti, IBM Quantum, AWS Braket, Azure Quantum, classical/HPC compute targets | `strangeworks_compute` |
+| qBraid | AWS Braket, Azure Quantum, Equal1, IBM Quantum, IonQ, IQM, NEC vector annealer, OQC, Pasqal, Quantinuum, QuEra, Rigetti, QIR simulator | `qbraid_ionq` or `qbraid_runtime` |
+| Strangeworks | AQT, IonQ, IQM, Quantinuum, QuEra, Rigetti, IBM Quantum/Qiskit Runtime, AWS Braket, Azure Quantum, classical/HPC compute targets | `strangeworks_compute` |
 
 Dynamic rows carry `dynamic_catalog_target` notes and still require the
 runtime caller to inject the authenticated provider backend or workspace. The
 matrix is metadata-only: it imports no provider SDKs, reads no credentials,
 authenticates nowhere, and submits no jobs.
+
+`resolve_aggregator_provider_route()` is the fail-closed selector above this
+matrix. It returns the selected row, executable HAL profile, and backend
+descriptor for a requested aggregator/provider/IR tuple, and raises
+`LookupError` when no row exists or the requested IR format is unsupported.
 
 ### HAL API
 

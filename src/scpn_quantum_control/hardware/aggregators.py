@@ -13,8 +13,8 @@ import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from .backends import describe_hal_backend_profile
-from .hal import built_in_backend_profiles
+from .backends import QuantumBackendDescriptor, describe_hal_backend_profile
+from .hal import BackendProfile, built_in_backend_profiles
 
 _TOKEN_RE = re.compile(r"^[A-Za-z0-9_.:/-]+$")
 
@@ -44,6 +44,15 @@ class AggregatorProviderRoute:
         for ir_format in self.ir_formats:
             _validate_token(ir_format, "ir_formats")
         object.__setattr__(self, "notes", tuple(str(note) for note in self.notes))
+
+
+@dataclass(frozen=True)
+class ResolvedAggregatorProviderRoute:
+    """Executable resolution of an aggregator/provider route."""
+
+    route: AggregatorProviderRoute
+    profile: BackendProfile
+    descriptor: QuantumBackendDescriptor
 
 
 def built_in_aggregator_provider_routes() -> tuple[AggregatorProviderRoute, ...]:
@@ -132,6 +141,22 @@ def built_in_aggregator_provider_routes() -> tuple[AggregatorProviderRoute, ...]
             notes=("dynamic_catalog_target",),
         ),
         _route(
+            "qbraid/equal1",
+            "qbraid",
+            "equal1",
+            "qbraid_runtime",
+            ("openqasm3",),
+            notes=("dynamic_catalog_target",),
+        ),
+        _route(
+            "qbraid/iqm",
+            "qbraid",
+            "iqm",
+            "qbraid_runtime",
+            ("qiskit", "openqasm3"),
+            notes=("dynamic_catalog_target",),
+        ),
+        _route(
             "qbraid/qir_simulator",
             "qbraid",
             "qbraid",
@@ -140,9 +165,73 @@ def built_in_aggregator_provider_routes() -> tuple[AggregatorProviderRoute, ...]
             notes=("managed_simulator_family", "dynamic_catalog_target"),
         ),
         _route(
+            "qbraid/nec_vector_annealer",
+            "qbraid",
+            "nec_vector_annealer",
+            "qbraid_runtime",
+            ("pyqubo",),
+            notes=("optimisation_target", "dynamic_catalog_target"),
+        ),
+        _route(
+            "qbraid/oqc",
+            "qbraid",
+            "oqc",
+            "qbraid_runtime",
+            ("openqasm3", "qiskit"),
+            notes=("dynamic_catalog_target",),
+        ),
+        _route(
+            "qbraid/pasqal",
+            "qbraid",
+            "pasqal",
+            "qbraid_runtime",
+            ("openqasm3",),
+            notes=("dynamic_catalog_target",),
+        ),
+        _route(
+            "qbraid/quantinuum",
+            "qbraid",
+            "quantinuum",
+            "qbraid_runtime",
+            ("openqasm3", "tket"),
+            notes=("dynamic_catalog_target",),
+        ),
+        _route(
+            "qbraid/quera",
+            "qbraid",
+            "quera",
+            "qbraid_runtime",
+            ("openqasm3", "braket_ir"),
+            notes=("qasm_simulator", "dynamic_catalog_target"),
+        ),
+        _route(
+            "qbraid/rigetti",
+            "qbraid",
+            "rigetti",
+            "qbraid_runtime",
+            ("quil", "openqasm3"),
+            notes=("dynamic_catalog_target",),
+        ),
+        _route(
+            "strangeworks/aqt",
+            "strangeworks",
+            "aqt",
+            "strangeworks_compute",
+            ("openqasm3",),
+            notes=("dynamic_catalog_target",),
+        ),
+        _route(
             "strangeworks/ionq",
             "strangeworks",
             "ionq",
+            "strangeworks_compute",
+            ("openqasm3", "qiskit"),
+            notes=("dynamic_catalog_target",),
+        ),
+        _route(
+            "strangeworks/iqm",
+            "strangeworks",
+            "iqm",
             "strangeworks_compute",
             ("openqasm3", "qiskit"),
             notes=("dynamic_catalog_target",),
@@ -161,6 +250,30 @@ def built_in_aggregator_provider_routes() -> tuple[AggregatorProviderRoute, ...]
             "ibm_quantum",
             "strangeworks_compute",
             ("qiskit", "openqasm3"),
+            notes=("dynamic_catalog_target",),
+        ),
+        _route(
+            "strangeworks/qiskit_runtime",
+            "strangeworks",
+            "ibm_quantum",
+            "strangeworks_compute",
+            ("qiskit", "openqasm3"),
+            notes=("qiskit_runtime", "dynamic_catalog_target"),
+        ),
+        _route(
+            "strangeworks/quantinuum",
+            "strangeworks",
+            "quantinuum",
+            "strangeworks_compute",
+            ("openqasm3", "qiskit"),
+            notes=("dynamic_catalog_target",),
+        ),
+        _route(
+            "strangeworks/quera",
+            "strangeworks",
+            "quera",
+            "strangeworks_compute",
+            ("braket_ir", "openqasm3"),
             notes=("dynamic_catalog_target",),
         ),
         _route(
@@ -213,6 +326,43 @@ def aggregator_provider_routes_for(
     return routes
 
 
+def resolve_aggregator_provider_route(
+    *,
+    aggregator: str,
+    provider: str,
+    ir_format: str | None = None,
+    route_id: str | None = None,
+) -> ResolvedAggregatorProviderRoute:
+    """Resolve a broker/provider request to one executable HAL profile."""
+
+    routes = aggregator_provider_routes_for(aggregator=aggregator, provider=provider)
+    if route_id is not None:
+        _validate_token(route_id, "route_id")
+        routes = tuple(route for route in routes if route.route_id == route_id)
+    if not routes:
+        raise LookupError(f"no aggregator/provider route for {aggregator}/{provider}")
+    if ir_format is not None:
+        _validate_token(ir_format, "ir_format")
+        supported_by_pair = tuple(route for route in routes if ir_format in route.ir_formats)
+        if not supported_by_pair:
+            raise LookupError(f"unsupported IR {ir_format!r} for {aggregator}/{provider}")
+        routes = supported_by_pair
+    if len(routes) != 1:
+        choices = ", ".join(route.route_id for route in routes)
+        raise LookupError(
+            f"ambiguous aggregator/provider route for {aggregator}/{provider}: {choices}"
+        )
+
+    route = routes[0]
+    profiles = {profile.backend_id: profile for profile in built_in_backend_profiles()}
+    profile = profiles[route.backend_id]
+    return ResolvedAggregatorProviderRoute(
+        route=route,
+        profile=profile,
+        descriptor=describe_hal_backend_profile(route.backend_id),
+    )
+
+
 def _route(
     route_id: str,
     aggregator: str,
@@ -245,6 +395,8 @@ def _validate_token(value: str, field_name: str) -> None:
 
 __all__ = [
     "AggregatorProviderRoute",
+    "ResolvedAggregatorProviderRoute",
     "aggregator_provider_routes_for",
     "built_in_aggregator_provider_routes",
+    "resolve_aggregator_provider_route",
 ]

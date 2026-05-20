@@ -161,7 +161,9 @@ profiles through `built_in_aggregator_provider_routes()`. This keeps broad
 broker catalogues explicit without duplicating runtime adapters: direct Braket
 and Azure provider rows resolve to their specific HAL profiles, while dynamic
 qBraid and Strangeworks rows resolve to `qbraid_runtime` and
-`strangeworks_compute` respectively.
+`strangeworks_compute` respectively. Use `resolve_aggregator_provider_route()`
+when routing code needs a single validated row plus the executable HAL profile
+for a requested aggregator, provider, and IR format.
 
 ## Advanced Module Reference
 
