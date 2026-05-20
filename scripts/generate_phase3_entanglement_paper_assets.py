@@ -160,6 +160,63 @@ def build_backend_comparison(
     return output
 
 
+def channel_class(basis_setting: str) -> str:
+    """Classify a reduced-Pauli basis for readout-amplification summaries."""
+
+    if basis_setting in {"IIXX", "IIYY", "XXII", "YYII"}:
+        return "transverse_edge"
+    if basis_setting in {"IXXI", "IYYI"}:
+        return "transverse_middle"
+    if basis_setting in {"IIZZ", "ZZII"}:
+        return "zz_edge"
+    if basis_setting == "IZZI":
+        return "zz_middle"
+    return "other"
+
+
+def build_full_readout_amplification_summary(
+    rows: Sequence[Mapping[str, str]], *, limit: int = 12
+) -> dict[str, list[dict[str, Any]]]:
+    """Summarise where full correlated readout inversion amplifies deviations."""
+
+    enriched: list[dict[str, Any]] = []
+    for row in rows:
+        raw = _float(row["absolute_deviation"])
+        mitigated = _float(row["readout_mitigated_absolute_deviation"])
+        amplification = mitigated - raw
+        enriched.append(
+            {
+                "family": row["family"],
+                "label": row["label"],
+                "basis_setting": row["basis_setting"],
+                "channel_class": channel_class(row["basis_setting"]),
+                "absolute_deviation": raw,
+                "readout_mitigated_absolute_deviation": mitigated,
+                "absolute_amplification": amplification,
+                "amplification_ratio": mitigated / raw if raw else None,
+            }
+        )
+    top_rows = sorted(
+        enriched,
+        key=lambda row: abs(float(row["absolute_amplification"])),
+        reverse=True,
+    )[:limit]
+    class_summary: list[dict[str, Any]] = []
+    for key, group_rows in sorted(_group(enriched, ["channel_class"]).items()):
+        amplifications = [float(row["absolute_amplification"]) for row in group_rows]
+        abs_amplifications = [abs(value) for value in amplifications]
+        class_summary.append(
+            {
+                "channel_class": key[0],
+                "n_observables": len(group_rows),
+                "mean_signed_amplification": mean(amplifications),
+                "mean_absolute_amplification": mean(abs_amplifications),
+                "max_absolute_amplification": max(abs_amplifications),
+            }
+        )
+    return {"top_rows": top_rows, "class_summary": class_summary}
+
+
 def write_markdown_table(path: Path, title: str, rows: Sequence[Mapping[str, Any]]) -> None:
     """Write a compact Markdown table for direct manuscript review."""
 
@@ -277,6 +334,11 @@ def parse_args() -> argparse.Namespace:
         metavar="BACKEND=CSV",
         help="additional backend rows for cross-backend comparison assets",
     )
+    parser.add_argument(
+        "--full-readout-amplification-row",
+        type=Path,
+        help="pinned full-readout rows CSV for correlated-inversion amplification assets",
+    )
     return parser.parse_args()
 
 
@@ -324,6 +386,34 @@ def main() -> int:
             comparison_rows,
         )
         outputs.extend([comparison_csv, comparison_md])
+    if args.full_readout_amplification_row:
+        full_readout_rows = _read_rows(args.full_readout_amplification_row)
+        amplification = build_full_readout_amplification_summary(full_readout_rows)
+        top_amp_csv = (
+            output_dir / f"entanglement_tomography_full_readout_amplification_top_{TODAY}.csv"
+        )
+        class_amp_csv = (
+            output_dir / f"entanglement_tomography_full_readout_amplification_classes_{TODAY}.csv"
+        )
+        top_amp_md = (
+            output_dir / f"entanglement_tomography_full_readout_amplification_top_{TODAY}.md"
+        )
+        class_amp_md = (
+            output_dir / f"entanglement_tomography_full_readout_amplification_classes_{TODAY}.md"
+        )
+        _write_csv(top_amp_csv, amplification["top_rows"])
+        _write_csv(class_amp_csv, amplification["class_summary"])
+        write_markdown_table(
+            top_amp_md,
+            "Phase 3 Full-Readout Amplification Top Channels",
+            amplification["top_rows"],
+        )
+        write_markdown_table(
+            class_amp_md,
+            "Phase 3 Full-Readout Amplification Channel Classes",
+            amplification["class_summary"],
+        )
+        outputs.extend([top_amp_csv, class_amp_csv, top_amp_md, class_amp_md])
     write_manifest(manifest, source_rows=args.rows, outputs=outputs)
     for output in [*outputs, manifest]:
         print(output.relative_to(REPO_ROOT))

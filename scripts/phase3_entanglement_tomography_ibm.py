@@ -16,12 +16,13 @@ accounting, and writes a readiness artefact. It submits QPU jobs only when
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import importlib.util
 import json
 import sys
 import time
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -46,6 +47,8 @@ MAX_TOTAL_GATES = 1500
 BASIS_EXPANSION_LIMIT = 1.20
 BUDGET_CEILING_MINUTES = 25.0
 SECONDS_PER_CIRCUIT_ESTIMATE = 0.55
+ZNE_DEFAULT_SCALES = (1, 3, 5)
+ZNE_TRANSVERSE_EDGE_BASES = {"IIXX", "IIYY", "XXII", "YYII"}
 
 
 @dataclass(frozen=True)
@@ -299,6 +302,139 @@ def _readout_circuit(bitstring: str) -> QuantumCircuit:
     return circuit
 
 
+def _float_row(row: Mapping[str, Any], key: str) -> float:
+    return float(str(row[key]))
+
+
+def load_rows_csv(path: Path) -> list[dict[str, str]]:
+    """Load analysed reduced-Pauli rows for subset planning."""
+
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        return list(csv.DictReader(handle))
+
+
+def select_zne_subset_rows(
+    rows: Sequence[Mapping[str, Any]], *, dla_channel_count: int = 4
+) -> list[dict[str, Any]]:
+    """Select a preregistered small ZNE subset from analysed row deviations."""
+
+    dla_rows = [
+        dict(row)
+        for row in rows
+        if str(row["family"]) == "dla_parity"
+        and str(row["basis_setting"]) in ZNE_TRANSVERSE_EDGE_BASES
+    ]
+    selected_dla = sorted(
+        dla_rows,
+        key=lambda row: _float_row(row, "absolute_deviation"),
+        reverse=True,
+    )[:dla_channel_count]
+    fim_rows = [
+        dict(row)
+        for row in rows
+        if str(row["family"]) == "fim_pair" and str(row["label"]) == "fim_lambda4_feedback"
+    ]
+    if not fim_rows:
+        fim_rows = [dict(row) for row in rows if str(row["family"]) == "fim_pair"]
+    selected_fim = sorted(
+        fim_rows,
+        key=lambda row: _float_row(row, "absolute_deviation"),
+        reverse=True,
+    )[:1]
+    return selected_dla + selected_fim
+
+
+def parse_noise_scales(value: str) -> tuple[int, ...]:
+    """Parse odd positive ZNE noise scale factors."""
+
+    try:
+        scales = tuple(int(part.strip()) for part in value.split(",") if part.strip())
+    except ValueError as exc:
+        raise ValueError("--zne-noise-scales must contain comma-separated integers") from exc
+    if not scales:
+        raise ValueError("--zne-noise-scales must contain at least one scale")
+    if any(scale < 1 or scale % 2 == 0 for scale in scales):
+        raise ValueError("--zne-noise-scales entries must be odd positive integers")
+    if len(set(scales)) != len(scales):
+        raise ValueError("--zne-noise-scales entries must be distinct")
+    return scales
+
+
+def _meta_to_spec(meta: Mapping[str, Any]) -> Any:
+    readiness = _readiness_module()
+    lambda_raw = str(meta.get("lambda_fim") or "")
+    return readiness.CircuitSpec(
+        str(meta["family"]),
+        str(meta["label"]),
+        str(meta["initial"]),
+        int(meta["depth"]),
+        None if lambda_raw == "" else float(lambda_raw),
+    )
+
+
+def build_zne_subset_circuits(
+    layout: LayoutCandidate,
+    selected_rows: Sequence[Mapping[str, Any]],
+    *,
+    noise_scales: Sequence[int] = ZNE_DEFAULT_SCALES,
+) -> tuple[
+    list[tuple[dict[str, Any], QuantumCircuit]], list[tuple[dict[str, Any], QuantumCircuit]]
+]:
+    """Build folded circuits for the preregistered Phase 3 ZNE subset."""
+
+    if str(SRC_DIR) not in sys.path:
+        sys.path.insert(0, str(SRC_DIR))
+    from scpn_quantum_control.mitigation.zne import gate_fold_circuit
+
+    readiness = _readiness_module()
+    main: list[tuple[dict[str, Any], QuantumCircuit]] = []
+    for row_index, row in enumerate(selected_rows):
+        spec = _meta_to_spec(row)
+        source = readiness.build_source_circuit(spec)
+        measured = apply_measurement_basis(source, str(row["basis_setting"]))
+        for scale in noise_scales:
+            folded = gate_fold_circuit(measured, int(scale))
+            for rep in range(REPETITIONS):
+                meta = {
+                    "experiment": EXPERIMENT,
+                    "block": "main",
+                    "family": spec.family,
+                    "label": spec.label,
+                    "initial": spec.initial,
+                    "depth": spec.depth,
+                    "lambda_fim": spec.lambda_fim,
+                    "basis_setting": str(row["basis_setting"]),
+                    "rep": rep,
+                    "shots": MAIN_SHOTS,
+                    "layout_id": layout.layout_id,
+                    "physical_qubits": list(layout.physical_qubits),
+                    "source_depth": int(source.depth()),
+                    "source_size": int(source.size()),
+                    "zne_subset": True,
+                    "zne_source_row_index": row_index,
+                    "zne_noise_scale": int(scale),
+                    "zne_reference_absolute_deviation": _float_row(row, "absolute_deviation"),
+                }
+                circuit = folded.copy()
+                circuit.name = f"p3_zne_{spec.label}_{row['basis_setting']}_s{scale}_r{rep}"
+                main.append((meta, circuit))
+    readout: list[tuple[dict[str, Any], QuantumCircuit]] = []
+    for state in [format(index, f"0{N_QUBITS}b") for index in range(2**N_QUBITS)]:
+        meta = {
+            "experiment": EXPERIMENT,
+            "block": "readout",
+            "initial": state,
+            "shots": READOUT_SHOTS,
+            "layout_id": layout.layout_id,
+            "physical_qubits": list(layout.physical_qubits),
+            "zne_subset": True,
+        }
+        circuit = _readout_circuit(state)
+        circuit.name = f"p3_zne_readout_{state}"
+        readout.append((meta, circuit))
+    return main, readout
+
+
 def build_circuits(
     layout: LayoutCandidate,
     *,
@@ -415,6 +551,7 @@ def readiness(
     readout_isa_circuits: Sequence[Any],
     max_depth: int,
     max_total_gates: int,
+    basis_expansion_limit: float = BASIS_EXPANSION_LIMIT,
 ) -> dict[str, Any]:
     """Evaluate live transpilation and budget readiness guards."""
 
@@ -431,7 +568,7 @@ def readiness(
         bool(depths)
         and max(depths) <= max_depth
         and max(total_gates) <= max_total_gates
-        and max(expansion_ratios, default=0.0) <= BASIS_EXPANSION_LIMIT
+        and max(expansion_ratios, default=0.0) <= basis_expansion_limit
     )
     reason = None
     if not depths:
@@ -440,10 +577,10 @@ def readiness(
         reason = f"max depth {max(depths)} exceeds guard {max_depth}"
     elif max(total_gates) > max_total_gates:
         reason = f"max total gates {max(total_gates)} exceeds guard {max_total_gates}"
-    elif max(expansion_ratios, default=0.0) > BASIS_EXPANSION_LIMIT:
+    elif max(expansion_ratios, default=0.0) > basis_expansion_limit:
         reason = (
             f"basis expansion ratio {max(expansion_ratios):.3f} exceeds "
-            f"guard {BASIS_EXPANSION_LIMIT:.2f}"
+            f"guard {basis_expansion_limit:.2f}"
         )
     return {
         "accepted": accepted,
@@ -452,7 +589,7 @@ def readiness(
         "n_readout_circuits": len(readout_circuits),
         "max_depth": max_depth,
         "max_total_gates": max_total_gates,
-        "basis_expansion_limit": BASIS_EXPANSION_LIMIT,
+        "basis_expansion_limit": basis_expansion_limit,
         "depth_summary": _summary(depths),
         "source_depth_summary": _summary(source_depths),
         "basis_depth_summary": _summary(main_depths),
@@ -554,11 +691,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--timeout-main-s", type=int, default=3600)
     parser.add_argument("--timeout-readout-s", type=int, default=1800)
     parser.add_argument("--optimization-level", type=int, default=2)
+    parser.add_argument("--max-basis-expansion", type=float)
     parser.add_argument(
         "--physical-qubits",
         help="comma-separated pinned physical qubits, for example 21,22,23,24",
     )
     parser.add_argument("--full-readout-calibration", action="store_true")
+    parser.add_argument(
+        "--zne-subset-rows",
+        type=Path,
+        help="analysed rows CSV used to select a preregistered small ZNE subset",
+    )
+    parser.add_argument("--zne-noise-scales", default="1,3,5")
+    parser.add_argument("--zne-dla-channel-count", type=int, default=4)
     return parser.parse_args()
 
 
@@ -598,10 +743,23 @@ def main() -> int:
         if args.physical_qubits
         else select_layout(runner.backend)
     )
-    main_circuits, readout_circuits = build_circuits(
-        layout,
-        full_readout_calibration=args.full_readout_calibration,
-    )
+    zne_scales = parse_noise_scales(args.zne_noise_scales)
+    zne_selected_rows: list[dict[str, Any]] = []
+    if args.zne_subset_rows:
+        zne_selected_rows = select_zne_subset_rows(
+            load_rows_csv(args.zne_subset_rows),
+            dla_channel_count=args.zne_dla_channel_count,
+        )
+        main_circuits, readout_circuits = build_zne_subset_circuits(
+            layout,
+            zne_selected_rows,
+            noise_scales=zne_scales,
+        )
+    else:
+        main_circuits, readout_circuits = build_circuits(
+            layout,
+            full_readout_calibration=args.full_readout_calibration,
+        )
     source_isa = transpile_sources_for_main(
         runner.backend,
         main_circuits,
@@ -617,6 +775,15 @@ def main() -> int:
         readout_circuits,
         optimization_level=args.optimization_level,
     )
+    basis_expansion_limit = (
+        float(args.max_basis_expansion)
+        if args.max_basis_expansion is not None
+        else (
+            max(zne_scales) * BASIS_EXPANSION_LIMIT
+            if args.zne_subset_rows
+            else BASIS_EXPANSION_LIMIT
+        )
+    )
     ready = readiness(
         runner.backend,
         main_circuits,
@@ -626,6 +793,7 @@ def main() -> int:
         readout_isa_circuits=isa_readout,
         max_depth=args.max_depth,
         max_total_gates=args.max_total_gates,
+        basis_expansion_limit=basis_expansion_limit,
     )
     all_circuits = main_circuits + readout_circuits
     est_qpu_minutes = len(all_circuits) * SECONDS_PER_CIRCUIT_ESTIMATE / 60.0
@@ -639,7 +807,10 @@ def main() -> int:
         "n_circuits": len(all_circuits),
         "n_main_circuits": len(main_circuits),
         "n_readout_circuits": len(readout_circuits),
-        "full_readout_calibration": bool(args.full_readout_calibration),
+        "full_readout_calibration": bool(args.full_readout_calibration or args.zne_subset_rows),
+        "zne_subset": bool(args.zne_subset_rows),
+        "zne_noise_scales": list(zne_scales) if args.zne_subset_rows else [],
+        "zne_selected_rows": zne_selected_rows,
         "shots_main": MAIN_SHOTS,
         "shots_readout": READOUT_SHOTS,
         "repetitions": REPETITIONS,

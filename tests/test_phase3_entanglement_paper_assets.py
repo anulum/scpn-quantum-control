@@ -106,3 +106,40 @@ def test_backend_comparison_tracks_raw_and_readout_mitigated_deviation() -> None
             "readout_mitigated_max_absolute_deviation": pytest.approx(0.30),
         }
     ]
+
+
+def test_full_readout_amplification_summary_separates_transverse_edges() -> None:
+    module = _load_module()
+    rows = [
+        {
+            "family": "dla_parity",
+            "label": "dla_odd_shallow",
+            "basis_setting": "IIYY",
+            "absolute_deviation": "0.47",
+            "readout_mitigated_absolute_deviation": "0.99",
+        },
+        {
+            "family": "dla_parity",
+            "label": "dla_odd_shallow",
+            "basis_setting": "IIZZ",
+            "absolute_deviation": "0.11",
+            "readout_mitigated_absolute_deviation": "0.40",
+        },
+        {
+            "family": "fim_pair",
+            "label": "fim_lambda4_feedback",
+            "basis_setting": "IXXI",
+            "absolute_deviation": "0.20",
+            "readout_mitigated_absolute_deviation": "0.21",
+        },
+    ]
+
+    summary = module.build_full_readout_amplification_summary(rows, limit=2)
+
+    assert summary["top_rows"][0]["label"] == "dla_odd_shallow"
+    assert summary["top_rows"][0]["basis_setting"] == "IIYY"
+    assert summary["top_rows"][0]["channel_class"] == "transverse_edge"
+    assert summary["top_rows"][0]["absolute_amplification"] == pytest.approx(0.52)
+    by_class = {row["channel_class"]: row for row in summary["class_summary"]}
+    assert by_class["transverse_edge"]["mean_absolute_amplification"] == pytest.approx(0.52)
+    assert by_class["zz_edge"]["mean_absolute_amplification"] == pytest.approx(0.29)

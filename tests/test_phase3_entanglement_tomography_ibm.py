@@ -126,6 +126,104 @@ def test_build_circuits_can_emit_full_readout_calibration() -> None:
     ]
 
 
+def test_zne_subset_selects_dla_transverse_edges_and_one_fim_control() -> None:
+    module = _load_module()
+    rows = [
+        {
+            "family": "dla_parity",
+            "label": "dla_odd_signal",
+            "initial": "0001",
+            "depth": "10",
+            "lambda_fim": "",
+            "basis_setting": "XXII",
+            "absolute_deviation": "0.55",
+        },
+        {
+            "family": "dla_parity",
+            "label": "dla_odd_signal",
+            "initial": "0001",
+            "depth": "10",
+            "lambda_fim": "",
+            "basis_setting": "YYII",
+            "absolute_deviation": "0.54",
+        },
+        {
+            "family": "dla_parity",
+            "label": "dla_odd_shallow",
+            "initial": "0001",
+            "depth": "6",
+            "lambda_fim": "",
+            "basis_setting": "IIXX",
+            "absolute_deviation": "0.50",
+        },
+        {
+            "family": "dla_parity",
+            "label": "dla_odd_shallow",
+            "initial": "0001",
+            "depth": "6",
+            "lambda_fim": "",
+            "basis_setting": "IIYY",
+            "absolute_deviation": "0.49",
+        },
+        {
+            "family": "fim_pair",
+            "label": "fim_lambda4_feedback",
+            "initial": "0011",
+            "depth": "4",
+            "lambda_fim": "4.0",
+            "basis_setting": "IXXI",
+            "absolute_deviation": "0.27",
+        },
+        {
+            "family": "fim_pair",
+            "label": "fim_lambda0_reference",
+            "initial": "0011",
+            "depth": "4",
+            "lambda_fim": "0.0",
+            "basis_setting": "XXII",
+            "absolute_deviation": "0.05",
+        },
+    ]
+
+    selected = module.select_zne_subset_rows(rows)
+
+    assert [(row["label"], row["basis_setting"]) for row in selected] == [
+        ("dla_odd_signal", "XXII"),
+        ("dla_odd_signal", "YYII"),
+        ("dla_odd_shallow", "IIXX"),
+        ("dla_odd_shallow", "IIYY"),
+        ("fim_lambda4_feedback", "IXXI"),
+    ]
+
+
+def test_build_zne_subset_circuits_adds_odd_scale_metadata() -> None:
+    module = _load_module()
+    layout = module.select_layout(_Backend())
+    selected_rows = [
+        {
+            "family": "dla_parity",
+            "label": "dla_odd_signal",
+            "initial": "0001",
+            "depth": "10",
+            "lambda_fim": "",
+            "basis_setting": "XXII",
+            "absolute_deviation": "0.55",
+        }
+    ]
+
+    main, readout = module.build_zne_subset_circuits(
+        layout,
+        selected_rows,
+        noise_scales=(1, 3, 5),
+    )
+
+    assert len(main) == 9
+    assert len(readout) == 16
+    assert {meta["zne_noise_scale"] for meta, _circuit in main} == {1, 3, 5}
+    assert {meta["rep"] for meta, _circuit in main} == {0, 1, 2}
+    assert all(meta["zne_subset"] is True for meta, _circuit in main)
+
+
 def test_apply_measurement_basis_adds_expected_rotations() -> None:
     module = _load_module()
     circuit = QuantumCircuit(4)

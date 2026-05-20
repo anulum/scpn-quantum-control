@@ -56,7 +56,9 @@ replay leaves the primary mean absolute deviation essentially unchanged
 deviation 0.1528, readout-mitigated to 0.1513. A pinned-layout
 \texttt{ibm\_fez} repeat with full 16-state readout calibration gives raw mean
 absolute deviation 0.1494; correlated readout inversion amplifies rather than
-erases the strongest channels. The result is a mechanism-boundary measurement:
+erases the strongest channels, with the largest amplification still
+concentrated in transverse edge observables. The result is a
+mechanism-boundary measurement:
 it shows structured reduced-Pauli distortions accompanying the small-system
 DLA/FIM hardware programme, but does not claim scalable tomography, quantum
 advantage, full-state reconstruction, or backend-general entanglement
@@ -162,8 +164,10 @@ Readout mitigation is applied as a conservative replay, not as a stronger
 hardware claim. The four calibration circuits are marginalised into independent
 single-qubit assignment matrices in IBM count-key order, and the tensor-product
 assignment matrix is inverted before recomputing each reduced-Pauli
-expectation. This is not a full 16-state correlated readout calibration and is
-not ZNE or PEC. When all 16 calibration states are present in the pinned
+expectation, following the standard response-matrix/post-processing
+measurement-error mitigation logic~\cite{Maciejewski2020}. This is not a full
+16-state correlated readout calibration and is not ZNE or PEC. When all 16
+calibration states are present in the pinned
 \texttt{ibm\_fez} repeat, the reducer instead inverts the full correlated
 16-by-16 assignment matrix. This still corrects only readout assignment; it
 does not correct basis rotations, coherent gate errors, drift, or depth
@@ -261,6 +265,21 @@ interpretation that the primary observation is only a single-backend
 population-readout artefact. The full correlated inversion result is treated as
 a sensitivity bound, because matrix inversion can amplify calibration and shot
 noise in individual channels.
+
+The amplification is not uniform across the reduced-Pauli table. In the
+pinned full-readout replay, transverse edge channels have mean absolute
+amplification 0.1110 and maximum amplification 0.5178, while transverse-middle
+channels have mean absolute amplification 0.0026. The two largest amplified
+rows are \texttt{dla\_odd\_shallow}/\texttt{IIYY} and
+\texttt{dla\_odd\_shallow}/\texttt{IIXX}, both already in the dominant
+DLA transverse-edge family. The \texttt{ZZ} edge class also shows
+sensitivity, with mean absolute amplification 0.0946 and maximum
+amplification 0.2855. Thus the correlated-inversion replay should not be read
+as a clean mitigation result, but it also does not look like a featureless
+uniform noise blow-up. The supplementary amplification rows are generated in
+\path{data/phase3_entanglement_tomography/entanglement_tomography_full_readout_amplification_top_2026-05-20.csv}
+and
+\path{data/phase3_entanglement_tomography/entanglement_tomography_full_readout_amplification_classes_2026-05-20.csv}.
 
 \begin{table}[tb]
 \centering
@@ -405,6 +424,8 @@ The relevant commands are:
     \path{scripts/analyse_phase3_entanglement_tomography.py};
   \item paper-asset generator:
     \path{scripts/generate_phase3_entanglement_paper_assets.py}.
+  \item ZNE-subset readiness artefact:
+    \path{data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_fez_2026-05-20T022653Z.json}.
 \end{itemize}
 
 \section{Conclusion}
@@ -427,6 +448,16 @@ covering the dominant DLA transverse channels and one FIM control channel, with
 depth-expansion and cost gates fixed before submission. The present paper still
 avoids scalable tomography, backend-general, full-causal-entanglement, or
 advantage claims.
+
+The preregistered ZNE follow-up has been preflighted as a 61-circuit subset on
+\texttt{ibm\_fez} qubits $[21,22,23,24]$: five selected observables, three
+repetitions, global unitary-folding scale factors $1,3,5$, and all 16
+readout-calibration states. Under an explicit ZNE depth gate of 1900, the
+maximum transpiled depth is 1684 and the estimated QPU time is 0.56 minutes.
+This is a readiness result only; no ZNE hardware data are included in the
+present manuscript. The proposed extrapolation lane follows the established
+short-depth error-mitigation and digital ZNE literature
+~\cite{Temme2017,LiBenjamin2017,Endo2021,GiurgicaTiron2020}.
 
 \bibliographystyle{apsrev4-2}
 \bibliography{phase3_entanglement_tomography_refs}
