@@ -165,16 +165,17 @@ meaning and should not be collapsed into one aggregate success metric.
 \begin{table}[b]
 \caption{\label{tab:evidenceclasses}%
 Evidence classes used in this overview.}
-\begin{ruledtabular}
-\begin{tabular}{lll}
+\footnotesize
+\begin{tabular}{@{}p{0.22\columnwidth}p{0.28\columnwidth}p{0.40\columnwidth}@{}}
+\toprule
 Class & Examples & Claim boundary \\
-\colrule
+\midrule
 Exact simulation & BKT, Krylov, OTOC, DTC & finite-size diagnostics \\
 Raw-count hardware & Bell, QKD, DLA rows & backend/window observations \\
 Resource boundary & exact crossover & no broad advantage claim \\
 Legacy artefact & early Fez rows & cited only by artefact path \\
+\bottomrule
 \end{tabular}
-\end{ruledtabular}
 \end{table}
 
 \begin{table}[t]
@@ -182,18 +183,19 @@ Legacy artefact & early Fez rows & cited only by artefact path \\
 Programme roadmap linking the overview evidence to the focused companion
 papers. The table is a map of claim ownership, not an aggregate validation
 score.}
-\begin{ruledtabular}
-\begin{tabular}{lll}
+\footnotesize
+\begin{tabular}{@{}p{0.20\columnwidth}p{0.24\columnwidth}p{0.46\columnwidth}@{}}
+\toprule
 Component & Focused paper & Positive knowledge gained \\
-\colrule
+\midrule
 Exact diagnostics & This overview & finite-size and resource-boundary map \\
 Software methods & Rust/VQE methods & reproducible artefact pipeline and kernel bounds \\
 DLA parity & Phase~1 DLA parity & real but multifactorial leakage asymmetry \\
 FIM term & FIM Hamiltonian & negative design rule for direct digital feedback \\
 Reduced Pauli & Phase~3 tomography & channel-localised mechanism boundary \\
 Dynamic feedback & S1 feedback & backend-dependent control-response boundary \\
+\bottomrule
 \end{tabular}
-\end{ruledtabular}
 \end{table}
 
 %% ====================================================================
