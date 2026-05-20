@@ -680,6 +680,7 @@ from scpn_quantum_control.hardware import (
     BackendProfile,
     AzureQuantumHALAdapter,
     BraketLocalHALAdapter,
+    CirqLocalHALAdapter,
     DWaveLeapHALAdapter,
     HardwareAbstractionLayer,
     IonQCloudHALAdapter,
@@ -699,12 +700,14 @@ from scpn_quantum_control.hardware import (
     braket_circuit_to_workload,
     bloqade_ahs_workload,
     built_in_backend_profiles,
+    cirq_circuit_workload,
     dwave_bqm_workload,
     ionq_qis_workload,
     iqm_qiskit_workload,
     oqc_openqasm3_workload,
     pulser_sequence_workload,
     pennylane_gate_workload,
+    provider_optional_dependency_matrix,
     qbraid_program_to_workload,
     quandela_perceval_workload,
     quantinuum_tket_workload,
@@ -782,6 +785,26 @@ job = hal.submit(
 )
 ```
 
+The local Cirq adapter layer provides `CirqLocalHALAdapter` and
+`cirq_circuit_workload()`. It executes through an injected Cirq simulator or
+simulator factory, normalises measurement histograms into HAL counts, and keeps
+local execution on the same lifecycle surface as the cloud adapters.
+
+```python
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+hal.register_backend(
+    CirqLocalHALAdapter(
+        hal.profile("local_cirq"),
+        circuit_factory=cirq_circuit_factory,
+        simulator_factory=cirq_simulator_factory,
+    )
+)
+job = hal.submit(
+    "local_cirq",
+    cirq_circuit_workload(cirq_payload, workload_id="cirq_bell", n_qubits=2, shots=128),
+)
+```
+
 The direct OQC adapter layer provides `OQCHALAdapter` and
 `oqc_openqasm3_workload()`. It consumes OpenQASM 3 programs, validates the
 program header, submits through an injected QCAAS-style client or client
@@ -803,6 +826,10 @@ job = hal.submit(
     approval_id="approved-run",
 )
 ```
+
+`provider_optional_dependency_matrix()` reports the optional import names and
+missing import names for every built-in HAL route without importing SDKs or
+touching provider networks.
 
 The direct Quandela adapter layer provides `QuandelaPercevalHALAdapter` and
 `quandela_perceval_workload()`. It consumes `scpn.quandela.perceval.v1`

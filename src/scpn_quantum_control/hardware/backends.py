@@ -73,7 +73,7 @@ _HAL_PROFILE_ADAPTER_MODULES: dict[str, str] = {
     "local_braket_ahs": "scpn_quantum_control.hardware.hal_braket",
     "local_braket_dm": "scpn_quantum_control.hardware.hal_braket",
     "local_braket_sv": "scpn_quantum_control.hardware.hal_braket",
-    "local_cirq": "scpn_quantum_control.hardware.cirq_adapter",
+    "local_cirq": "scpn_quantum_control.hardware.hal_cirq",
     "local_pennylane": "scpn_quantum_control.hardware.hal_pennylane",
     "local_qiskit_aer": "scpn_quantum_control.hardware.hal_qiskit",
     "local_statevector": "scpn_quantum_control.hardware.hal",

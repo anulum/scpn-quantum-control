@@ -118,6 +118,7 @@ from .hardware.hal_braket import (
     BraketLocalHALAdapter,
     braket_circuit_to_workload,
 )
+from .hardware.hal_cirq import CirqLocalHALAdapter, cirq_circuit_workload
 from .hardware.hal_dwave import DWaveLeapHALAdapter, dwave_bqm_workload
 from .hardware.hal_ionq import IonQCloudHALAdapter, ionq_qis_workload
 from .hardware.hal_iqm import IQMHALAdapter, iqm_qiskit_workload
@@ -135,6 +136,10 @@ from .hardware.hal_quandela import QuandelaPercevalHALAdapter, quandela_perceval
 from .hardware.hal_quantinuum import QuantinuumCloudHALAdapter, quantinuum_tket_workload
 from .hardware.hal_quera_bloqade import QuEraBloqadeHALAdapter, bloqade_ahs_workload
 from .hardware.hal_rigetti import RigettiQCSHALAdapter, rigetti_quil_workload
+from .hardware.provider_smoke import (
+    ProviderOptionalDependencyRow,
+    provider_optional_dependency_matrix,
+)
 from .hardware.qubit_mapper import (
     ExecutionRegion,
     QubitMappingResult,
@@ -356,6 +361,8 @@ __all__ = [
     "BraketAwsHALAdapter",
     "BraketLocalHALAdapter",
     "braket_circuit_to_workload",
+    "CirqLocalHALAdapter",
+    "cirq_circuit_workload",
     "DWaveLeapHALAdapter",
     "dwave_bqm_workload",
     "IonQCloudHALAdapter",
@@ -368,6 +375,8 @@ __all__ = [
     "pulser_sequence_workload",
     "PennyLaneDeviceHALAdapter",
     "pennylane_gate_workload",
+    "ProviderOptionalDependencyRow",
+    "provider_optional_dependency_matrix",
     "QbraidRuntimeHALAdapter",
     "QuandelaPercevalHALAdapter",
     "quandela_perceval_workload",

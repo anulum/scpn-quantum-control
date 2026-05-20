@@ -1,0 +1,87 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# scpn-quantum-control — HAL provider conformance tests
+"""Cross-provider invariants for the built-in HAL route matrix."""
+
+from __future__ import annotations
+
+import importlib
+from pathlib import Path
+
+from scpn_quantum_control.hardware.backends import list_hal_backend_descriptors
+from scpn_quantum_control.hardware.hal import built_in_backend_profiles
+from scpn_quantum_control.hardware.provider_smoke import (
+    provider_optional_dependency_matrix,
+)
+
+
+def test_every_builtin_hal_route_has_importable_adapter_module() -> None:
+    descriptors = list_hal_backend_descriptors()
+
+    assert descriptors
+    for descriptor in descriptors:
+        module = importlib.import_module(descriptor.adapter_module)
+        assert module is not None, descriptor.name
+
+
+def test_cloud_routes_are_approval_gated_and_local_routes_are_not() -> None:
+    profile_by_id = {profile.backend_id: profile for profile in built_in_backend_profiles()}
+
+    for descriptor in list_hal_backend_descriptors():
+        profile = profile_by_id[descriptor.name]
+        assert descriptor.submit_requires_approval is profile.is_cloud
+        assert descriptor.can_submit is profile.is_cloud
+        if not profile.is_cloud:
+            assert descriptor.can_simulate is True
+
+
+def test_direct_and_local_provider_routes_do_not_fall_back_to_generic_hal_module() -> None:
+    allowed_generic = {"local_statevector"}
+
+    for descriptor in list_hal_backend_descriptors():
+        if descriptor.name in allowed_generic:
+            continue
+        assert descriptor.adapter_module != "scpn_quantum_control.hardware.hal", descriptor.name
+
+
+def test_every_dedicated_hal_adapter_has_focused_adapter_tests() -> None:
+    tests_dir = Path(__file__).resolve().parent
+    available = {path.name for path in tests_dir.glob("test_hardware_hal*_adapters.py")}
+
+    expected = {
+        "test_hardware_hal_azure_adapters.py",
+        "test_hardware_hal_braket_adapters.py",
+        "test_hardware_hal_cirq_adapters.py",
+        "test_hardware_hal_dwave_adapters.py",
+        "test_hardware_hal_ionq_adapters.py",
+        "test_hardware_hal_iqm_adapters.py",
+        "test_hardware_hal_oqc_adapters.py",
+        "test_hardware_hal_pasqal_adapters.py",
+        "test_hardware_hal_pennylane_adapters.py",
+        "test_hardware_hal_qbraid_adapters.py",
+        "test_hardware_hal_qiskit_adapters.py",
+        "test_hardware_hal_quandela_adapters.py",
+        "test_hardware_hal_quantinuum_adapters.py",
+        "test_hardware_hal_quera_bloqade_adapters.py",
+        "test_hardware_hal_rigetti_adapters.py",
+    }
+
+    assert expected <= available
+
+
+def test_optional_dependency_matrix_covers_all_non_builtin_provider_modules() -> None:
+    matrix = provider_optional_dependency_matrix()
+    by_backend = {row.backend_id: row for row in matrix}
+
+    for descriptor in list_hal_backend_descriptors():
+        if descriptor.name == "local_statevector":
+            continue
+        row = by_backend[descriptor.name]
+        assert row.adapter_module == descriptor.adapter_module
+        assert row.sdk_package == descriptor.sdk_package
+        assert row.import_names
+        assert isinstance(row.available, bool)

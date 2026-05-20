@@ -146,6 +146,7 @@ from .hal_braket import (
     BraketLocalHALAdapter,
     braket_circuit_to_workload,
 )
+from .hal_cirq import CirqLocalHALAdapter, cirq_circuit_workload
 from .hal_dwave import DWaveLeapHALAdapter, dwave_bqm_workload
 from .hal_ionq import IonQCloudHALAdapter, ionq_qis_workload
 from .hal_iqm import IQMHALAdapter, iqm_qiskit_workload
@@ -183,6 +184,7 @@ from .iqm_backend import (
 )
 from .job_dossier import HardwareJobDossier, build_s1_feedback_job_dossier
 from .noise_model import heron_r2_noise_model
+from .provider_smoke import ProviderOptionalDependencyRow, provider_optional_dependency_matrix
 from .qubit_mapper import (
     ExecutionRegion,
     QubitMappingResult,
@@ -240,9 +242,11 @@ __all__ = [
     "FeedbackPlatformCapability",
     "FeedbackSubmissionPackage",
     "PlatformReadiness",
+    "ProviderOptionalDependencyRow",
     "assess_platform_readiness",
     "build_s1_feedback_submission_package",
     "default_s1_platforms",
+    "provider_optional_dependency_matrix",
     "summarise_feedback_circuit",
     "FeedbackDryRunPayload",
     "build_analog_native_review_payload",
@@ -254,6 +258,8 @@ __all__ = [
     "BraketAwsHALAdapter",
     "BraketLocalHALAdapter",
     "braket_circuit_to_workload",
+    "CirqLocalHALAdapter",
+    "cirq_circuit_workload",
     "DWaveLeapHALAdapter",
     "dwave_bqm_workload",
     "IonQCloudHALAdapter",

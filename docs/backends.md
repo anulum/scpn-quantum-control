@@ -332,6 +332,7 @@ provider adapter, not the HAL registry.
 from scpn_quantum_control.hardware import (
     AzureQuantumHALAdapter,
     BraketLocalHALAdapter,
+    CirqLocalHALAdapter,
     DWaveLeapHALAdapter,
     HardwareAbstractionLayer,
     IonQCloudHALAdapter,
@@ -350,6 +351,7 @@ from scpn_quantum_control.hardware import (
     azure_openqasm3_to_workload,
     braket_circuit_to_workload,
     bloqade_ahs_workload,
+    cirq_circuit_workload,
     dwave_bqm_workload,
     ionq_qis_workload,
     iqm_qiskit_workload,
@@ -486,6 +488,29 @@ job = hal.submit(
 )
 ```
 
+The local Cirq adapter layer provides `CirqLocalHALAdapter` and
+`cirq_circuit_workload()`. It runs a caller-supplied Cirq circuit
+representation through an injected Cirq simulator or simulator factory,
+normalises measurement histograms into HAL counts, and uses the same
+`submit/status/result/cancel` lifecycle shape as cloud adapters without
+requiring a cloud approval token. Automatic circuit reconstruction remains
+explicit through `circuit_factory`.
+
+```python
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+hal.register_backend(
+    CirqLocalHALAdapter(
+        hal.profile("local_cirq"),
+        circuit_factory=cirq_circuit_factory,
+        simulator_factory=cirq_simulator_factory,
+    )
+)
+job = hal.submit(
+    "local_cirq",
+    cirq_circuit_workload(cirq_payload, workload_id="cirq_bell", n_qubits=2, shots=256),
+)
+```
+
 The direct OQC adapter layer provides `OQCHALAdapter` and
 `oqc_openqasm3_workload()`. It consumes OpenQASM 3 programs, validates the
 program header before submission, calls an injected QCAAS-style client, normalises
@@ -507,6 +532,11 @@ job = hal.submit(
     approval_id="approved-run",
 )
 ```
+
+`provider_optional_dependency_matrix()` gives an offline smoke matrix for every
+built-in HAL route. It uses import-spec discovery only; it does not import
+provider SDKs, read credentials, authenticate, create clients, or touch provider
+networks.
 
 The direct Quandela adapter layer provides `QuandelaPercevalHALAdapter` and
 `quandela_perceval_workload()`. It consumes `scpn.quandela.perceval.v1`
