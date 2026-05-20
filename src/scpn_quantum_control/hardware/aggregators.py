@@ -124,6 +124,14 @@ def built_in_aggregator_provider_routes() -> tuple[AggregatorProviderRoute, ...]
             target_family="pasqal_neutral_atom",
         ),
         _route(
+            "direct/quandela",
+            "direct",
+            "quandela",
+            "quandela_cloud",
+            ("perceval", "openqasm3", "mlir"),
+            target_family="quandela_photonic",
+        ),
+        _route(
             "direct/quantinuum",
             "direct",
             "quantinuum",

@@ -595,10 +595,10 @@ authentication remains inside the injected read-only probe.
 `snapshot_from_dwave_solver()`, `snapshot_from_iqm_backend()`,
 `snapshot_from_ionq_backend()`, `snapshot_from_oqc_target()`,
 `snapshot_from_pasqal_target()`, `snapshot_from_qiskit_runtime_backend()`,
-`snapshot_from_qbraid_device()`, `snapshot_from_quantinuum_backend()`,
-`snapshot_from_quera_bloqade()`, `snapshot_from_rigetti_qcs()`, and
-`snapshot_from_strangeworks_backend()` are concrete metadata adapters for this
-contract. They consume injected SDK
+`snapshot_from_qbraid_device()`, `snapshot_from_quandela_processor()`,
+`snapshot_from_quantinuum_backend()`, `snapshot_from_quera_bloqade()`,
+`snapshot_from_rigetti_qcs()`, and `snapshot_from_strangeworks_backend()` are
+concrete metadata adapters for this contract. They consume injected SDK
 backend/device objects and record target name, qubit count, route-supported or
 declared IR formats, gate basis, queue depth, shot/circuit limits, online state,
 simulator state, and calibration timestamp when the provider object exposes
@@ -667,6 +667,13 @@ job = hal.submit(
     approval_id="approved-run",
 )
 ```
+
+`snapshot_from_quandela_processor()` provides the matching no-submit readiness
+path for injected Quandela processor metadata or metadata JSON. It records
+processor name, mode count, declared Perceval/OpenQASM/MLIR support, optical
+component set, photonic feature flags, shot and circuit limits, queue depth,
+online state, simulator flag, topology, and calibration timestamp without
+calling processor or sampler APIs.
 
 The direct D-Wave Leap adapter layer provides `DWaveLeapHALAdapter` and
 `dwave_bqm_workload()`. It consumes a `scpn.dwave.bqm.v1` binary quadratic

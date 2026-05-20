@@ -87,6 +87,7 @@ def test_aggregator_provider_matrix_covers_source_grounded_current_brokers() -> 
         "direct/ionq",
         "direct/oqc",
         "direct/pasqal",
+        "direct/quandela",
         "direct/quantinuum",
         "direct/quera",
         "direct/rigetti",
@@ -165,6 +166,9 @@ def test_aggregator_provider_matrix_covers_source_grounded_current_brokers() -> 
         "azure_quantum/pasqal",
         "direct/pasqal",
         "qbraid/pasqal",
+    ]
+    assert [route.route_id for route in aggregator_provider_routes_for(provider="quandela")] == [
+        "direct/quandela",
     ]
 
 
@@ -270,6 +274,15 @@ def test_aggregator_provider_selector_resolves_profile_and_ir() -> None:
     assert pasqal.route.route_id == "direct/pasqal"
     assert pasqal.route.backend_id == "pasqal_cloud"
     assert pasqal.profile.provider == "pasqal"
+
+    quandela = resolve_aggregator_provider_route(
+        aggregator="direct",
+        provider="quandela",
+        ir_format="perceval",
+    )
+    assert quandela.route.route_id == "direct/quandela"
+    assert quandela.route.backend_id == "quandela_cloud"
+    assert quandela.profile.provider == "quandela"
 
     with pytest.raises(LookupError, match="unsupported IR"):
         resolve_aggregator_provider_route(
@@ -429,6 +442,14 @@ def test_aggregator_provider_dependency_matrix_covers_every_route() -> None:
     assert direct_pasqal.target_family == "pasqal_neutral_atom"
     assert "pulser" in direct_pasqal.ir_formats
     assert direct_pasqal.submit_requires_approval is True
+
+    direct_quandela = by_route["direct/quandela"]
+    assert direct_quandela.aggregator == "direct"
+    assert direct_quandela.provider == "quandela"
+    assert direct_quandela.backend_id == "quandela_cloud"
+    assert direct_quandela.target_family == "quandela_photonic"
+    assert "perceval" in direct_quandela.ir_formats
+    assert direct_quandela.submit_requires_approval is True
 
     direct_ibm = by_route["direct/ibm_quantum"]
     assert direct_ibm.aggregator == "direct"

@@ -142,6 +142,13 @@ is copied here.
   count, supported bases, channel declarations, shot and sequence limits, queue
   depth, online state, simulator flag, lattice geometry, and calibration
   timestamp without Pasqal submission.
+- [x] **Direct Quandela no-submit capability snapshot.** Implemented
+  2026-05-20: `snapshot_from_quandela_processor` adds the direct
+  `direct/quandela` route and metadata snapshot path for injected Quandela
+  processor objects or metadata JSON, including Perceval/OpenQASM/MLIR
+  declaration translation, mode count, optical component set, photonic feature
+  flags, shot and circuit limits, queue depth, online state, simulator flag,
+  topology, and calibration timestamp without processor or sampler calls.
 - [x] **Direct Quantinuum no-submit capability snapshot.** Implemented
   2026-05-20: `snapshot_from_quantinuum_backend` adds the direct
   `direct/quantinuum` route and metadata snapshot path for injected Quantinuum

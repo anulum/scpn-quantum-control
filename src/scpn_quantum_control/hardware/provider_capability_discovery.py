@@ -655,6 +655,80 @@ def snapshot_from_pasqal_target(
     )
 
 
+def snapshot_from_quandela_processor(
+    resolved: ResolvedAggregatorProviderRoute,
+    processor: Any,
+) -> ProviderCapabilitySnapshot:
+    """Build a no-submit capability snapshot from direct Quandela processor metadata."""
+
+    specs = _first_available_attr(
+        processor,
+        names=("specs", "specification", "capabilities", "metadata"),
+    )
+    return ProviderCapabilitySnapshot(
+        route_id=resolved.route.route_id,
+        aggregator=resolved.route.aggregator,
+        provider=resolved.route.provider,
+        backend_id=resolved.route.backend_id,
+        target_name=_first_text_attr(
+            processor,
+            specs,
+            names=("processor", "processor_name", "target", "target_name", "name", "id"),
+            field_name="Quandela processor name",
+        ),
+        n_qubits=_first_positive_int_attr(
+            specs,
+            processor,
+            names=("modes", "n_modes", "num_modes", "n_qubits", "num_qubits", "qubits"),
+            field_name="Quandela mode count",
+        ),
+        supported_ir_formats=_quandela_supported_ir_formats(resolved, processor, specs),
+        basis_gates=_first_string_tuple_attr(
+            specs,
+            processor,
+            names=("components", "supported_components", "basis_gates", "native_gates", "gates"),
+        ),
+        native_features=_quandela_native_features(processor, specs),
+        online=_quandela_online_state(processor, specs),
+        simulator=_first_bool_attr(processor, specs, names=("simulator", "is_simulator")) or False,
+        max_shots=_first_optional_int_attr(
+            specs,
+            processor,
+            names=("max_shots", "shots_limit", "maxShots", "max_execution_shots"),
+        ),
+        max_circuits=_first_optional_int_attr(
+            specs,
+            processor,
+            names=("max_circuits", "max_jobs", "max_experiments", "max_programs"),
+        ),
+        queue_depth=_first_optional_int_attr(
+            processor,
+            specs,
+            names=("queue_depth", "pending_jobs", "queue_size", "average_queue_time"),
+            minimum=0,
+        ),
+        calibration_timestamp=_first_optional_text_attr(
+            processor,
+            specs,
+            names=(
+                "last_calibration",
+                "calibration_timestamp",
+                "latest_calibration",
+                "last_updated",
+                "lastUpdated",
+            ),
+        ),
+        metadata={
+            "adapter": "quandela_processor_no_submit",
+            "topology": _first_optional_text_attr(
+                specs,
+                processor,
+                names=("topology", "layout", "chip_topology"),
+            ),
+        },
+    )
+
+
 def snapshot_from_quantinuum_backend(
     resolved: ResolvedAggregatorProviderRoute,
     backend: Any,
@@ -1728,6 +1802,66 @@ def _pasqal_online_state(target: Any) -> bool | None:
     return None
 
 
+def _quandela_supported_ir_formats(
+    resolved: ResolvedAggregatorProviderRoute,
+    *sources: Any,
+) -> tuple[str, ...]:
+    declared = _first_string_tuple_attr(
+        *sources,
+        names=(
+            "supported_ir_formats",
+            "ir_formats",
+            "input_formats",
+            "input_data_formats",
+            "program_formats",
+        ),
+    )
+    if not declared:
+        return resolved.route.ir_formats
+    return tuple(_quandela_ir_format_token(item) for item in declared)
+
+
+def _quandela_ir_format_token(value: str) -> str:
+    normalized = value.strip().lower().replace("-", "_")
+    if normalized in {"perceval", "perceval_circuit", "perceval_processor"}:
+        return "perceval"
+    if normalized in {"qasm.v3", "qasm3", "openqasm", "openqasm_3", "openqasm3"}:
+        return "openqasm3"
+    if normalized == "mlir":
+        return "mlir"
+    return normalized
+
+
+def _quandela_native_features(*sources: Any) -> tuple[str, ...]:
+    features = set(_first_string_tuple_attr(*sources, names=("native_features", "features")))
+    features.add("photonic")
+    features.add("linear_optical")
+    if _first_bool_attr(
+        *sources,
+        names=("photon_number_resolution", "supports_photon_number_resolution"),
+    ):
+        features.add("photon_number_resolution")
+    return tuple(sorted(features))
+
+
+def _quandela_online_state(*sources: Any) -> bool | None:
+    explicit = _first_online_attr(*sources)
+    if explicit is not None:
+        return explicit
+    text_status = _first_optional_text_attr(
+        *sources,
+        names=("availability", "target_status", "status", "state"),
+    )
+    if text_status is None:
+        return None
+    normalized = text_status.strip().lower()
+    if normalized in {"available", "online", "ready", "active", "enabled"}:
+        return True
+    if normalized in {"unavailable", "offline", "disabled", "retired", "maintenance"}:
+        return False
+    return None
+
+
 def _quantinuum_supported_ir_formats(
     resolved: ResolvedAggregatorProviderRoute,
     *sources: Any,
@@ -2084,6 +2218,7 @@ __all__ = [
     "snapshot_from_ionq_backend",
     "snapshot_from_oqc_target",
     "snapshot_from_pasqal_target",
+    "snapshot_from_quandela_processor",
     "snapshot_from_qiskit_runtime_backend",
     "snapshot_from_qbraid_device",
     "snapshot_from_quantinuum_backend",

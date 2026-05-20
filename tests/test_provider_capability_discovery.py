@@ -25,6 +25,7 @@ from scpn_quantum_control.hardware.provider_capability_discovery import (
     snapshot_from_pasqal_target,
     snapshot_from_qbraid_device,
     snapshot_from_qiskit_runtime_backend,
+    snapshot_from_quandela_processor,
     snapshot_from_quantinuum_backend,
     snapshot_from_quera_bloqade,
     snapshot_from_rigetti_qcs,
@@ -186,6 +187,9 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
         snapshot_from_qiskit_runtime_backend as exported_qiskit_snapshot,
     )
     from scpn_quantum_control.hardware import (
+        snapshot_from_quandela_processor as exported_quandela_snapshot,
+    )
+    from scpn_quantum_control.hardware import (
         snapshot_from_quantinuum_backend as exported_quantinuum_snapshot,
     )
     from scpn_quantum_control.hardware import (
@@ -206,6 +210,7 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
     assert exported_ionq_snapshot is snapshot_from_ionq_backend
     assert exported_oqc_snapshot is snapshot_from_oqc_target
     assert exported_pasqal_snapshot is snapshot_from_pasqal_target
+    assert exported_quandela_snapshot is snapshot_from_quandela_processor
     assert exported_qiskit_snapshot is snapshot_from_qiskit_runtime_backend
     assert exported_quantinuum_snapshot is snapshot_from_quantinuum_backend
     assert exported_quera_snapshot is snapshot_from_quera_bloqade
@@ -813,6 +818,87 @@ def test_direct_pasqal_snapshot_blocks_offline_target_without_submission() -> No
     assert decision.status == "blocked"
     assert "provider target is offline" in decision.blockers
     assert decision.snapshot.supported_ir_formats == ("pulser",)
+    assert decision.snapshot.simulator is False
+
+
+def test_direct_quandela_snapshot_reads_processor_metadata_without_submission() -> None:
+    """Direct Quandela metadata adapters should consume injected processor metadata only."""
+
+    class ProcessorSpec:
+        modes = 12
+        supported_ir_formats = ("perceval", "qasm.v3", "mlir")
+        components = ("beam_splitter", "phase_shifter", "permutation", "barrier")
+        max_shots = 10_000
+        max_circuits = 16
+        photon_number_resolution = True
+        topology = "universal_linear_optical"
+
+    class Processor:
+        name = "Ascella"
+        status = "available"
+        specs = ProcessorSpec()
+        queue_depth = 7
+        last_calibration = "2026-05-20T14:00:00Z"
+        is_simulator = False
+
+        def samples(self, *args: object, **kwargs: object) -> None:
+            raise AssertionError("metadata snapshot must not sample Quandela work")
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="direct",
+        provider="quandela",
+        ir_format="perceval",
+        min_qubits=4,
+        metadata_probe=lambda resolved: snapshot_from_quandela_processor(
+            resolved,
+            Processor(),
+        ),
+    )
+
+    assert decision.status == "ready"
+    assert decision.snapshot.route_id == "direct/quandela"
+    assert decision.snapshot.backend_id == "quandela_cloud"
+    assert decision.snapshot.target_name == "Ascella"
+    assert decision.snapshot.n_qubits == 12
+    assert decision.snapshot.supported_ir_formats == ("perceval", "openqasm3", "mlir")
+    assert decision.snapshot.basis_gates == (
+        "beam_splitter",
+        "phase_shifter",
+        "permutation",
+        "barrier",
+    )
+    assert "photonic" in decision.snapshot.native_features
+    assert "linear_optical" in decision.snapshot.native_features
+    assert "photon_number_resolution" in decision.snapshot.native_features
+    assert decision.snapshot.max_shots == 10_000
+    assert decision.snapshot.max_circuits == 16
+    assert decision.snapshot.queue_depth == 7
+    assert decision.snapshot.calibration_timestamp == "2026-05-20T14:00:00Z"
+    assert decision.snapshot.metadata["adapter"] == "quandela_processor_no_submit"
+    assert decision.snapshot.metadata["topology"] == "universal_linear_optical"
+
+
+def test_direct_quandela_snapshot_blocks_offline_processor_without_submission() -> None:
+    """Direct Quandela offline metadata should block before processor sampling."""
+
+    metadata = {
+        "processor": "ascella-maintenance",
+        "status": "maintenance",
+        "modes": 8,
+        "input_formats": ("perceval_circuit",),
+        "simulator": False,
+    }
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="direct",
+        provider="quandela",
+        ir_format="perceval",
+        metadata_probe=lambda resolved: snapshot_from_quandela_processor(resolved, metadata),
+    )
+
+    assert decision.status == "blocked"
+    assert "provider target is offline" in decision.blockers
+    assert decision.snapshot.supported_ir_formats == ("perceval",)
     assert decision.snapshot.simulator is False
 
 

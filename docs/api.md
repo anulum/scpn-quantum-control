@@ -163,11 +163,11 @@ and Azure provider rows resolve to their specific HAL profiles, the direct IBM
 Quantum row resolves to `ibm_quantum`, the direct D-Wave row resolves to
 `dwave_leap`, the direct IonQ row resolves to `ionq_cloud`, the direct IQM row
 resolves to `iqm_cloud`, the direct OQC row resolves to `oqc_cloud`, the direct
-Pasqal row resolves to `pasqal_cloud`, the direct Quantinuum row resolves to
-`quantinuum_cloud`, the direct QuEra/Bloqade row resolves to `quera_bloqade`,
-the direct Rigetti row resolves to `rigetti_qcs`, while dynamic qBraid and
-Strangeworks rows resolve to `qbraid_runtime` and `strangeworks_compute`
-respectively. Use
+Pasqal row resolves to `pasqal_cloud`, the direct Quandela row resolves to
+`quandela_cloud`, the direct Quantinuum row resolves to `quantinuum_cloud`, the
+direct QuEra/Bloqade row resolves to `quera_bloqade`, the direct Rigetti row
+resolves to `rigetti_qcs`, while dynamic qBraid and Strangeworks rows resolve
+to `qbraid_runtime` and `strangeworks_compute` respectively. Use
 `resolve_aggregator_provider_route()` when routing code needs a single
 validated row plus the executable HAL profile for a requested aggregator,
 provider, and IR format.
@@ -182,9 +182,10 @@ readiness decisions before any submission path is considered.
 `snapshot_from_dwave_solver()`, `snapshot_from_iqm_backend()`,
 `snapshot_from_ionq_backend()`, `snapshot_from_oqc_target()`,
 `snapshot_from_pasqal_target()`, `snapshot_from_qiskit_runtime_backend()`,
-`snapshot_from_qbraid_device()`, `snapshot_from_quantinuum_backend()`,
-`snapshot_from_quera_bloqade()`, `snapshot_from_rigetti_qcs()`, and
-`snapshot_from_strangeworks_backend()` provide concrete no-submit adapters for
+`snapshot_from_qbraid_device()`, `snapshot_from_quandela_processor()`,
+`snapshot_from_quantinuum_backend()`, `snapshot_from_quera_bloqade()`,
+`snapshot_from_rigetti_qcs()`, and `snapshot_from_strangeworks_backend()`
+provide concrete no-submit adapters for
 injected provider or broker SDK objects: they read declared target metadata,
 route-supported IR formats, queue, limit, online, simulator, calibration, and
 gate metadata without invoking submission APIs.
@@ -900,6 +901,13 @@ job = hal.submit(
     approval_id="approved-run",
 )
 ```
+
+`snapshot_from_quandela_processor()` provides the matching no-submit readiness
+path for injected Quandela processor metadata or metadata JSON. It records
+processor name, mode count, declared Perceval/OpenQASM/MLIR support, optical
+component set, photonic feature flags, shot and circuit limits, queue depth,
+online state, simulator flag, topology, and calibration timestamp without
+calling processor or sampler APIs.
 
 The direct D-Wave Leap adapter layer provides `DWaveLeapHALAdapter` and
 `dwave_bqm_workload()`. It consumes `scpn.dwave.bqm.v1`, validates binary
