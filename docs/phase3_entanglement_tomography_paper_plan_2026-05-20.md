@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <!-- Commercial license available -->
-<!-- (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved. -->
-<!-- (c) Code 2020-2026 Miroslav Sotek. All rights reserved. -->
+<!-- © Concepts 1996-2026 Miroslav Sotek. All rights reserved. -->
+<!-- © Code 2020-2026 Miroslav Sotek. All rights reserved. -->
 <!-- ORCID: 0009-0009-3560-0851 -->
 <!-- Contact: www.anulum.li | protoscience@anulum.li -->
 <!-- scpn-quantum-control -- entanglement/tomography paper plan -->
@@ -45,7 +45,9 @@ Completed:
 - approved QPU submission on `ibm_marrakesh`;
 - raw-count artefact with job IDs;
 - generated observable-summary CSV and manifest;
-- post-run raw-count reducer.
+- post-run raw-count reducer;
+- paper asset generator with label summary, basis summary, top-deviation
+  table, and heatmap figure.
 
 Current first-pass result:
 
@@ -57,12 +59,13 @@ Current first-pass result:
 - maximum absolute deviation from exact reference: `0.5560906424788263`;
 - observable rows SHA256:
   `3d18308d60fe32827bae7517f18fd71690240b105779287408c4749cb0e7dc72`.
+- paper asset manifest:
+  `data/phase3_entanglement_tomography/entanglement_tomography_paper_assets_2026-05-20.md`.
 
 Pending:
 
-- final paper tables and figures from measured counts;
 - readout-sensitivity interpretation pass;
-- family-level aggregate table for DLA shallow/signal and FIM lambda pair.
+- final venue formatting and bibliography pass.
 
 ## Minimum Run
 
@@ -125,13 +128,21 @@ Blocked even after a positive result:
 
 Minimum paper assets:
 
-1. Campaign schematic: source circuits, basis expansion, readout calibration.
-2. Table of preflight gates: circuits, shots, depth, basis-expansion ratio,
+1. Table of preflight gates: circuits, shots, depth, basis-expansion ratio,
    QPU-minute estimate.
-3. Heatmap of measured minus exact Pauli expectations by circuit label and
+2. Heatmap of measured minus exact Pauli expectations by circuit label and
    observable.
-4. Family-level aggregate table for DLA shallow/signal and FIM lambda pair.
+3. Family-level aggregate table for DLA shallow/signal and FIM lambda pair.
+4. Largest-deviation table for the dominant measured correlator channels.
 5. Boundary table: supported claims, blocked claims, falsifiers.
+
+Generated assets:
+
+- `figures/phase3/phase3_entanglement_deviation_heatmap_2026-05-20.png`
+- `figures/phase3/phase3_entanglement_deviation_heatmap_2026-05-20.pdf`
+- `data/phase3_entanglement_tomography/entanglement_tomography_label_summary_2026-05-20.csv`
+- `data/phase3_entanglement_tomography/entanglement_tomography_basis_summary_2026-05-20.csv`
+- `data/phase3_entanglement_tomography/entanglement_tomography_top_deviations_2026-05-20.csv`
 
 ## Submission Target
 
@@ -145,7 +156,7 @@ Best fit after raw counts:
 
 ## Current Manuscript Source
 
-Draft scaffold:
+Manuscript source:
 
 - `paper/phase3_entanglement_tomography/phase3_entanglement_tomography_short_paper.md`
 

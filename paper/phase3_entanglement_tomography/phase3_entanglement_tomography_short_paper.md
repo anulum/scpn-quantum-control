@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Commercial license available
-# (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved.
-# (c) Code 2020-2026 Miroslav Sotek. All rights reserved.
+# © Concepts 1996-2026 Miroslav Sotek. All rights reserved.
+# © Code 2020-2026 Miroslav Sotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 
@@ -12,7 +12,7 @@
 *Contact: protoscience@anulum.li*
 
 **Date:** 2026-05-20
-**Status:** Draft with completed IBM raw-count execution and first-pass analysis
+**Status:** Manuscript draft with completed IBM execution, analysis tables, and figure assets
 **Target venue:** short communication / workshop submission candidate
 
 ---
@@ -173,6 +173,19 @@ Outputs:
 - `data/phase3_entanglement_tomography/entanglement_tomography_rows_2026-05-20.csv`;
 - `docs/phase3_entanglement_tomography_manifest_2026-05-20.md`.
 
+Paper table and figure assets were generated with:
+
+```bash
+python scripts/generate_phase3_entanglement_paper_assets.py
+```
+
+This generated the label-level summary, basis-level summary, largest-deviation
+table, and heatmap figure used below. The asset manifest is:
+
+```text
+data/phase3_entanglement_tomography/entanglement_tomography_paper_assets_2026-05-20.md
+```
+
 Summary:
 
 | Metric | Value |
@@ -184,11 +197,37 @@ Summary:
 | Maximum absolute deviation from exact reference | 0.5560906424788263 |
 | Rows SHA256 | `3d18308d60fe32827bae7517f18fd71690240b105779287408c4749cb0e7dc72` |
 
-Largest observed deviations occur in DLA odd/even shallow and signal edge
-correlators, especially `XXII`, `YYII`, `IIXX`, and `IIYY`. The largest single
-deviation is for `dla_odd_signal`, initial `0001`, depth 10, basis `XXII`,
-where the measured expectation is 0.431640625 against exact reference
--0.12445001747882631.
+Label-level aggregate deviations:
+
+| Family | Circuit label | Mean signed deviation | Mean absolute deviation | Maximum absolute deviation |
+|---|---|---:|---:|---:|
+| DLA parity | `dla_even_shallow` | -0.120474 | 0.148396 | 0.314180 |
+| DLA parity | `dla_even_signal` | 0.061095 | 0.063458 | 0.160443 |
+| DLA parity | `dla_odd_shallow` | 0.098416 | 0.219708 | 0.515473 |
+| DLA parity | `dla_odd_signal` | 0.153497 | 0.176026 | 0.556091 |
+| FIM pair | `fim_lambda0_reference` | 0.030496 | 0.052205 | 0.088148 |
+| FIM pair | `fim_lambda4_feedback` | 0.096107 | 0.119566 | 0.274155 |
+
+Largest observed deviations:
+
+| Circuit label | Basis | Measured | Exact | Deviation |
+|---|---|---:|---:|---:|
+| `dla_odd_signal` | `XXII` | 0.431641 | -0.124450 | 0.556091 |
+| `dla_odd_signal` | `YYII` | 0.429688 | -0.124450 | 0.554138 |
+| `dla_odd_shallow` | `IIYY` | 0.488932 | -0.026541 | 0.515473 |
+| `dla_odd_shallow` | `IIXX` | 0.478841 | -0.026541 | 0.505382 |
+| `dla_even_shallow` | `IIXX` | -0.456055 | -0.141874 | -0.314180 |
+| `dla_even_shallow` | `IIYY` | -0.447591 | -0.141874 | -0.305717 |
+| `fim_lambda4_feedback` | `IXXI` | 0.175781 | -0.098373 | 0.274155 |
+
+![Measured-minus-exact reduced-Pauli deviations](../../figures/phase3/phase3_entanglement_deviation_heatmap_2026-05-20.png)
+
+The heatmap shows that the largest deviations are concentrated in transverse
+two-qubit correlators (`XX` and `YY`) rather than only in population-like `ZZ`
+observables. DLA odd circuits show the largest positive edge-correlator shifts,
+while the DLA even shallow circuit shows large negative shifts on corresponding
+edge correlators. The FIM `lambda_fim=4` feedback circuit deviates more strongly
+than the `lambda_fim=0` reference, but not as strongly as the DLA odd circuits.
 
 ## 6. Interpretation Rules
 
@@ -208,7 +247,45 @@ that those deviations are an entanglement mechanism rather than a compound
 effect of coherent hardware error, readout context, layout, and circuit depth.
 That distinction is the central interpretation work for the paper.
 
-## 7. Claim Boundary
+## 7. Discussion
+
+The main scientific result is not that the hardware implements the exact
+reduced-Pauli reference structure. It does not. The result is that the
+departures from the exact reference are large, structured, and concentrated in
+specific correlator channels. This makes the earlier DLA/FIM hardware story
+more precise: leakage and retention should not be treated only as scalar
+survival metrics, because the same circuit families carry measurable
+correlator-level distortions.
+
+The DLA circuits dominate the strongest deviations. The odd-sector signal
+circuit has the largest absolute deviations in `XXII` and `YYII`, both changing
+from small negative exact values to positive measured values. The odd shallow
+circuit shows the analogous strong positive shift on `IIXX` and `IIYY`. The
+even shallow circuit moves in the opposite direction, with large negative
+shifts in the same transverse correlator family. This sign structure is the
+most interesting physics feature of the dataset: it suggests that the
+hardware-visible mechanism is not a uniform decay of all correlators, but a
+sector- and edge-dependent deformation.
+
+The FIM pair is more muted but still informative. The `lambda_fim=4` feedback
+circuit has more than twice the mean absolute deviation of the `lambda_fim=0`
+reference. This is consistent with the earlier negative FIM hardware result:
+the tested digital FIM modification does not simply protect the target
+structure, and it introduces a measurable reduced-Pauli distortion channel.
+The result therefore supports a conservative follow-up question for adaptive
+FIM control, but it does not rescue a fixed-`lambda_fim` protection claim.
+
+The readout boundary remains important. Four readout calibration states were
+included in the execution block, but the current manuscript-level conclusion is
+based on unmitigated measured correlators compared with exact references.
+Because the largest deviations occur in transverse basis-rotated measurements,
+not only in computational-basis `ZZ` channels, the result is unlikely to be a
+pure population-readout story. It can still include basis-rotation error,
+layout-dependent coherent error, calibration drift, and depth-dependent
+decoherence. The safe interpretation is therefore mechanism-boundary evidence,
+not full causal attribution.
+
+## 8. Claim Boundary
 
 Safe claims after successful analysis:
 
@@ -227,7 +304,7 @@ Blocked claims:
 - full-state reconstruction;
 - claims about unmeasured subsystems, depths, layouts, or backends.
 
-## 8. Reproducibility
+## 9. Reproducibility
 
 Offline readiness:
 
@@ -254,7 +331,13 @@ python scripts/analyse_phase3_entanglement_tomography.py \
   data/phase3_entanglement_tomography/entanglement_tomography_live_<backend>_<timestamp>.json
 ```
 
-## 9. Conclusion
+Paper assets:
+
+```bash
+python scripts/generate_phase3_entanglement_paper_assets.py
+```
+
+## 10. Conclusion
 
 The campaign has completed the approved IBM execution and first-pass
 reduced-Pauli analysis. The scientific paper should be framed as a
@@ -263,3 +346,11 @@ correlator deviations in the same small-system setting as the DLA/FIM hardware
 programme, but the conservative contribution is to bound and interpret that
 structure rather than to claim scalable tomography, backend-general dynamics, or
 quantum advantage.
+
+The most defensible contribution is therefore: a preregistered 166-circuit IBM
+Heron run measured 54 reduced-Pauli observables for promoted DLA and FIM
+Kuramoto-XY circuits, found structured deviations from exact references, and
+localized the strongest deviations to transverse edge correlators in DLA
+odd/even sector comparisons and the fixed-`lambda_fim=4` FIM circuit. This
+turns the earlier leakage/retention observations into a sharper hardware
+mechanism question for follow-up controls.

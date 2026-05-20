@@ -937,6 +937,16 @@ explicit QPU-time estimate before submission.
   `0.12989296537986128`, maximum absolute deviation
   `0.5560906424788263`, bounded to reduced-Pauli small-system
   mechanism analysis only.
+- [x] **Entanglement tomography manuscript tables and figure assets.**
+  Completed 2026-05-20:
+  `scripts/generate_phase3_entanglement_paper_assets.py` generates
+  reproducible label-level, basis-level, and largest-deviation paper
+  tables plus the measured-minus-exact heatmap
+  `figures/phase3/phase3_entanglement_deviation_heatmap_2026-05-20.png`.
+  The short-paper draft now includes the result tables, heatmap reference,
+  discussion, and conservative mechanism-boundary interpretation. Remaining
+  work is venue formatting and any optional readout-sensitivity expansion,
+  not additional QPU spend.
 - [x] **Depth-optimal native decomposition preregistration.**
   Completed 2026-05-06:
   `docs/depth_optimal_native_decomposition_prereg_2026-05-06.md`
