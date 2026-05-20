@@ -570,6 +570,13 @@ preflight surface for broker/provider combinations: it reports the route id,
 resolved HAL backend, SDK package, import names, supported IR formats, approval
 gate, and whether the row is a dynamic catalogue target.
 
+`probe_aggregator_provider_capability()` is the next no-submit layer. It accepts
+an injected provider metadata probe, resolves the selected aggregator/provider
+route, rejects route mismatches and non-no-submit snapshots, and returns a
+ready/blocked/unknown decision based on online status, qubit count, and required
+IR support. The function does not create clients or submit jobs; provider SDK
+authentication remains inside the injected read-only probe.
+
 The same check is exposed as `scpn-provider-smoke`. In CI or operator
 preflight lanes, install `scpn-quantum-control[providers]` and run:
 

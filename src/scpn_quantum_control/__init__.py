@@ -147,6 +147,14 @@ from .hardware.hal_strangeworks import (
     StrangeworksComputeHALAdapter,
     strangeworks_program_to_workload,
 )
+from .hardware.provider_capability_discovery import (
+    CapabilityDecisionStatus,
+    ProviderCapabilityDecision,
+    ProviderCapabilitySnapshot,
+    ProviderMetadataProbe,
+    assess_provider_capability_snapshot,
+    probe_aggregator_provider_capability,
+)
 from .hardware.provider_smoke import (
     AggregatorProviderOptionalDependencyRow,
     ProviderOptionalDependencyRow,
@@ -393,9 +401,15 @@ __all__ = [
     "pulser_sequence_workload",
     "PennyLaneDeviceHALAdapter",
     "pennylane_gate_workload",
+    "CapabilityDecisionStatus",
+    "ProviderCapabilityDecision",
+    "ProviderCapabilitySnapshot",
+    "ProviderMetadataProbe",
     "AggregatorProviderOptionalDependencyRow",
     "ProviderOptionalDependencyRow",
+    "assess_provider_capability_snapshot",
     "aggregator_provider_optional_dependency_matrix",
+    "probe_aggregator_provider_capability",
     "provider_optional_dependency_matrix",
     "QbraidRuntimeHALAdapter",
     "StrangeworksComputeHALAdapter",

@@ -167,6 +167,10 @@ for a requested aggregator, provider, and IR format.
 `aggregator_provider_optional_dependency_matrix()` adds the corresponding
 offline SDK-import evidence for preflight checks before authenticated provider
 capability probes or live submissions.
+`probe_aggregator_provider_capability()` is the provider-neutral no-submit
+contract for authenticated metadata probes: it resolves the broker route,
+accepts only no-submit target snapshots, and returns ready/blocked/unknown
+readiness decisions before any submission path is considered.
 
 ## Advanced Module Reference
 

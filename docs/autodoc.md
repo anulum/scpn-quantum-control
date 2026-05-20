@@ -142,6 +142,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [AggregatorProviderOptionalDependencyRow, ProviderOptionalDependencyRow, aggregator_provider_optional_dependency_matrix, main, provider_optional_dependency_matrix]
 
+::: scpn_quantum_control.hardware.provider_capability_discovery
+    options:
+      members: [ProviderCapabilitySnapshot, ProviderCapabilityDecision, assess_provider_capability_snapshot, probe_aggregator_provider_capability]
+
 ::: scpn_quantum_control.hardware.aggregators
     options:
       members: [AggregatorProviderRoute, ResolvedAggregatorProviderRoute, aggregator_provider_routes_for, built_in_aggregator_provider_routes, resolve_aggregator_provider_route]

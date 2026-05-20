@@ -195,6 +195,14 @@ from .iqm_backend import (
 )
 from .job_dossier import HardwareJobDossier, build_s1_feedback_job_dossier
 from .noise_model import heron_r2_noise_model
+from .provider_capability_discovery import (
+    CapabilityDecisionStatus,
+    ProviderCapabilityDecision,
+    ProviderCapabilitySnapshot,
+    ProviderMetadataProbe,
+    assess_provider_capability_snapshot,
+    probe_aggregator_provider_capability,
+)
 from .provider_smoke import (
     AggregatorProviderOptionalDependencyRow,
     ProviderOptionalDependencyRow,
@@ -263,12 +271,18 @@ __all__ = [
     "FeedbackPlatformCapability",
     "FeedbackSubmissionPackage",
     "PlatformReadiness",
+    "CapabilityDecisionStatus",
+    "ProviderCapabilityDecision",
+    "ProviderCapabilitySnapshot",
+    "ProviderMetadataProbe",
     "AggregatorProviderOptionalDependencyRow",
     "ProviderOptionalDependencyRow",
+    "assess_provider_capability_snapshot",
     "assess_platform_readiness",
     "aggregator_provider_optional_dependency_matrix",
     "build_s1_feedback_submission_package",
     "default_s1_platforms",
+    "probe_aggregator_provider_capability",
     "provider_optional_dependency_matrix",
     "summarise_feedback_circuit",
     "FeedbackDryRunPayload",
