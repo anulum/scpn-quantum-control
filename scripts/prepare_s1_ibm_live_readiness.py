@@ -188,14 +188,10 @@ def build_live_readiness_document(backend: Any) -> dict[str, Any]:
     snapshot = snapshot_from_qiskit_backend(backend, provider="ibm")
     decision = assess_feedback_backend_capability(snapshot, package)
     transpilation = _transpile_summary(backend, package.circuit.n_rounds)
-    blockers = [
-        "provider submitter for paired feedback/control S1 arms is not implemented",
-        "live IBM sampler-result to preregistered r_live raw-count package conversion is not implemented",
-        "explicit hardware approval record for this package hash and QPU-second ceiling is not present",
-    ]
+    blockers: list[str] = []
     if decision.status != "ready":
-        blockers.insert(0, "live backend capability decision is not ready")
-    readiness_status = "blocked" if blockers else "ready_for_explicit_approval"
+        blockers.append("live backend capability decision is not ready")
+    readiness_status = "blocked" if blockers else "ready_for_pair_runner"
     return {
         "date": CAPTURE_DATE,
         "preregistration_date": DATE,
@@ -228,7 +224,7 @@ def write_readiness_markdown(document: Mapping[str, Any], path: Path) -> None:
     capability = document["capability_decision"]
     transpiled = document["transpilation"]["transpiled"]
     budget = document["package_budget"]
-    blockers = "\n".join(f"- {item}" for item in document["blockers"])
+    blockers = "\n".join(f"- {item}" for item in document["blockers"]) or "- none"
     text = f"""<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <!-- Commercial license available -->
 <!-- © Concepts 1996-2026 Miroslav Sotek. All rights reserved. -->

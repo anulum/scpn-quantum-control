@@ -232,6 +232,16 @@ from .qubit_mapper import (
     select_best_region,
 )
 from .runner import HardwareRunner, JobResult
+from .s1_feedback_ibm import (
+    S1_CONTROL_ARM,
+    S1_FEEDBACK_ARM,
+    S1FeedbackArmCircuit,
+    binary_phase_synchrony_from_counts,
+    build_s1_arm_command,
+    build_s1_feedback_arm_circuits,
+    raw_count_package_from_feedback_results,
+    run_ibm_sampler_arm,
+)
 from .trapped_ion import transpile_for_trapped_ion, trapped_ion_noise_model
 
 __all__ = [
@@ -375,6 +385,14 @@ __all__ = [
     "snapshot_from_qiskit_backend",
     "HardwareJobDossier",
     "build_s1_feedback_job_dossier",
+    "S1_CONTROL_ARM",
+    "S1_FEEDBACK_ARM",
+    "S1FeedbackArmCircuit",
+    "binary_phase_synchrony_from_counts",
+    "build_s1_arm_command",
+    "build_s1_feedback_arm_circuits",
+    "raw_count_package_from_feedback_results",
+    "run_ibm_sampler_arm",
     "compile_hybrid_digital_analog",
     "hybrid_digital_analog_factory",
     "partition_kuramoto_couplings",

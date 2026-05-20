@@ -1,0 +1,98 @@
+{
+  "schema": "scpn_s1_ibm_feedback_pair_readiness_v1",
+  "timestamp_utc": "20260520T123941Z",
+  "backend": "ibm_kingston",
+  "experiment_id": "s1_dynamic_feedback_preregistration_2026-05-06",
+  "hardware_submission": false,
+  "status": "ready_for_submission",
+  "target_r": 0.72,
+  "observable": "binary_phase_synchrony_from_final_counts",
+  "arms": [
+    {
+      "label": "feedback",
+      "shots": 1024,
+      "repetitions": 12,
+      "source_depth": 38,
+      "source_operation_counts": {
+        "cx": 18,
+        "ry": 12,
+        "measure": 6,
+        "PauliEvolution": 3,
+        "reset": 3,
+        "if_else": 3
+      },
+      "transpiled_depth_max": 717,
+      "transpiled_depths": [
+        717,
+        717,
+        717,
+        717,
+        717,
+        717,
+        717,
+        717,
+        717,
+        717,
+        717,
+        717
+      ],
+      "transpiled_operation_counts": {
+        "rz": 380,
+        "sx": 363,
+        "cz": 183,
+        "measure": 6,
+        "reset": 3,
+        "if_else": 3,
+        "x": 2
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 12.0
+    },
+    {
+      "label": "matched_open_loop_control",
+      "shots": 1024,
+      "repetitions": 12,
+      "source_depth": 35,
+      "source_operation_counts": {
+        "cx": 18,
+        "ry": 12,
+        "measure": 6,
+        "PauliEvolution": 3,
+        "reset": 3
+      },
+      "transpiled_depth_max": 684,
+      "transpiled_depths": [
+        684,
+        684,
+        684,
+        684,
+        684,
+        684,
+        684,
+        684,
+        684,
+        684,
+        684,
+        684
+      ],
+      "transpiled_operation_counts": {
+        "rz": 376,
+        "sx": 345,
+        "cz": 174,
+        "measure": 6,
+        "reset": 3,
+        "x": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 12.0
+    }
+  ],
+  "max_depth": 1200,
+  "max_qpu_seconds": 120.0,
+  "estimated_qpu_seconds": 24.0,
+  "package_hash": "369778856a3763776f9964376202ae59ff957bfc0c70874af55c0d89c8dd1285",
+  "reasons": [
+    "both S1 arms satisfy the transpiled depth ceiling",
+    "paired-arm estimate satisfies the approved QPU-second ceiling"
+  ]
+}

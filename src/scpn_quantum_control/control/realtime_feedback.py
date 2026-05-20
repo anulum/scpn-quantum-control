@@ -248,11 +248,59 @@ def build_monitored_feedback_circuit(
         )
         _append_monitor_interaction(qc, sys_reg, monitor_reg, cfg.monitor_strength)
         qc.measure(monitor_reg[0], monitor_bits[round_index])
-        with qc.if_test((monitor_bits[round_index], 1)):
-            qc.reset(monitor_reg[0])
+        qc.reset(monitor_reg[0])
         with qc.if_test((monitor_bits[round_index], 1)):
             for qubit in range(n):
                 qc.ry(-cfg.correction_angle / max(n, 1), sys_reg[qubit])
+
+    qc.measure(sys_reg, readout_bits)
+    return qc
+
+
+def build_open_loop_feedback_control_circuit(
+    K_coupling: FloatArray,
+    omega_natural: FloatArray,
+    config: RealtimeFeedbackConfig | None = None,
+    n_rounds: int = 3,
+    trotter_order: int = 1,
+) -> QuantumCircuit:
+    """Build the matched open-loop control circuit for S1.
+
+    The control arm preserves the same initialisation, evolution schedule,
+    monitor interaction, monitor readout, monitor reset, and final system
+    readout as the monitored feedback arm. It deliberately omits
+    measurement-conditioned correction gates, so any improvement in the
+    feedback arm is tested against a circuit-family matched open-loop baseline
+    rather than an unmonitored static circuit.
+    """
+    cfg = config or RealtimeFeedbackConfig()
+    if not isinstance(n_rounds, int) or n_rounds < 1:
+        raise ValueError("n_rounds must be a positive integer")
+    K = np.asarray(K_coupling, dtype=np.float64)
+    omega = np.asarray(omega_natural, dtype=np.float64)
+    n = int(omega.shape[0])
+    QuantumKuramotoSolver(n, K, omega, trotter_order=trotter_order)
+
+    sys_reg = QuantumRegister(n, "sys")
+    monitor_reg = QuantumRegister(1, "monitor")
+    monitor_bits = ClassicalRegister(n_rounds, "monitor_bit")
+    readout_bits = ClassicalRegister(n, "readout")
+    qc = QuantumCircuit(sys_reg, monitor_reg, monitor_bits, readout_bits)
+
+    for qubit, omega_i in enumerate(omega):
+        qc.ry(float(omega_i) % (2 * np.pi), sys_reg[qubit])
+
+    for round_index in range(n_rounds):
+        scale = 1.0 + min(round_index, 2) * cfg.base_gain * cfg.deadband
+        solver = QuantumKuramotoSolver(n, K * scale, omega, trotter_order=trotter_order)
+        qc.compose(
+            solver.evolve(cfg.base_dt, cfg.trotter_steps),
+            qubits=list(sys_reg),
+            inplace=True,
+        )
+        _append_monitor_interaction(qc, sys_reg, monitor_reg, cfg.monitor_strength)
+        qc.measure(monitor_reg[0], monitor_bits[round_index])
+        qc.reset(monitor_reg[0])
 
     qc.measure(sys_reg, readout_bits)
     return qc

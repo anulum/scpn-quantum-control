@@ -43,7 +43,7 @@ class _Backend:
         return _Status()
 
 
-def test_build_live_readiness_document_is_no_submit_and_blocks_without_submitter(
+def test_build_live_readiness_document_is_no_submit_and_ready_for_pair_runner(
     monkeypatch,
 ) -> None:
     monkeypatch.setattr(
@@ -71,11 +71,10 @@ def test_build_live_readiness_document_is_no_submit_and_blocks_without_submitter
     assert document["hardware_submission"] is False
     assert document["credential_string_argument_supported"] is False
     assert document["capability_decision"]["status"] == "ready"
-    assert document["readiness_status"] == "blocked"
+    assert document["readiness_status"] == "ready_for_pair_runner"
     assert document["backend_status"]["pending_jobs"] == 7
     assert document["transpilation"]["submission_performed"] is False
-    assert any("submitter" in blocker for blocker in document["blockers"])
-    assert any("r_live" in blocker for blocker in document["blockers"])
+    assert document["blockers"] == []
 
 
 def test_write_readiness_markdown_preserves_no_submission_boundary(tmp_path) -> None:

@@ -107,11 +107,13 @@ The readiness layer currently distinguishes:
 - continuous-variable analogue targets;
 - local statevector simulation.
 
-The dynamic-circuit payload is ready for providers that declare mid-circuit
-measurement, conditional reset, conditional rotations, cross-shot batches, and
-sufficient qubits. Analogue-native targets are intentionally marked
-`manual_review` for this payload because they are scientifically relevant for
-native/open-loop XY follow-up, but they do not execute the same mid-circuit
+The corrected dynamic-circuit payload is ready for providers that declare
+mid-circuit measurement, conditional rotations, cross-shot batches, and
+sufficient qubits. Monitor resets are unconditional in the IBM-valid S1
+payload; reset operations inside conditional blocks are not required.
+Analogue-native targets are intentionally marked `manual_review` for this
+payload because they are scientifically relevant for native/open-loop XY
+follow-up, but they do not execute the same mid-circuit
 measurement-and-conditional-rotation circuit without a separate analogue
 feedback formulation.
 

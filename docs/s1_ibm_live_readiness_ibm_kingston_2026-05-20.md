@@ -20,7 +20,7 @@ Hardware submission: `false`
 
 Capability status: `ready`
 
-Readiness status: `blocked`
+Readiness status: `ready_for_pair_runner`
 
 ## Transpiled Dynamic-Circuit Payload
 
@@ -28,7 +28,7 @@ Readiness status: `blocked`
 |---|---:|
 | Qubits | 156 |
 | Classical bits | 6 |
-| Depth | 720 |
+| Depth | 717 |
 | Shots per circuit | 1024 |
 | Repetitions | 12 |
 | QPU-second ceiling | 120.0 |
@@ -39,19 +39,25 @@ Operation counts:
 ```json
 {
   "cz": 183,
-  "if_else": 6,
+  "if_else": 3,
   "measure": 6,
+  "reset": 3,
   "rz": 380,
   "sx": 363,
   "x": 2
 }
 ```
 
-## Remaining Blockers
+## Pair-Runner Status
 
-- provider submitter for paired feedback/control S1 arms is not implemented
-- live IBM sampler-result to preregistered r_live raw-count package conversion is not implemented
-- explicit hardware approval record for this package hash and QPU-second ceiling is not present
+No live-readiness blocker remains for the corrected S1 dynamic-circuit
+payload. The paired feedback/open-loop runner has superseded this no-submit
+probe and completed IBM execution:
+
+- feedback job: `d86qn3lg7okc73elg2eg`
+- matched open-loop control job: `d86qn65g7okc73elg2hg`
+- result note: `docs/s1_ibm_feedback_pair_result_2026-05-20.md`
+- analysis: `data/s1_feedback_loop/s1_feedback_analysis_summary_ibm_kingston_20260520T123941Z.json`
 
 ## Claim Boundary
 

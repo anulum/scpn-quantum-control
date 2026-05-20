@@ -66,14 +66,16 @@ The refresh regenerated:
 - `data/s1_feedback_loop/s1_feedback_preregistration_2026-05-06.md`
 - `data/s1_feedback_loop/s1_feedback_analysis_summary_2026-05-06.json`
 
-Pending before any IBM submission:
+IBM submission status:
 
-- Wire a provider submitter for paired feedback and matched open-loop IBM arms.
-- Convert live IBM sampler results into the preregistered raw-count package
-  with `r_live` records.
-- Keep feedback and open-loop arms matched after live transpilation.
-- Create a matching hardware approval record for the package hash and
-  QPU-second ceiling.
+- Paired feedback/open-loop IBM submitter is implemented behind the existing
+  approval-gated scheduler.
+- Live IBM sampler results are converted into the preregistered raw-count
+  package with `r_live` records.
+- Corrected dynamic-circuit payload uses unconditional monitor resets and
+  conditional corrections only; IBM rejected reset operations inside
+  conditional blocks during the first attempted feedback-arm execution.
+- Corrected paired run completed on `ibm_kingston`.
 
 Fresh live no-submit IBM readiness on 2026-05-20:
 
@@ -87,17 +89,25 @@ The live probe and transpilation artefacts are:
 - `data/s1_feedback_loop/s1_ibm_metadata_probe_ibm_kingston_2026-05-06.json`
 - `data/s1_feedback_loop/s1_ibm_live_readiness_ibm_kingston_2026-05-20.json`
 - `docs/s1_ibm_live_readiness_ibm_kingston_2026-05-20.md`
+- `data/s1_feedback_loop/s1_ibm_feedback_pair_readiness_ibm_kingston_20260520T123941Z.json`
+- `data/s1_feedback_loop/s1_feedback_raw_counts_ibm_kingston_20260520T123941Z.json`
+- `data/s1_feedback_loop/s1_feedback_analysis_summary_ibm_kingston_20260520T123941Z.json`
 
 Observed readiness:
 
 - backend capability status: `ready`;
 - backend availability: active with zero pending jobs at capture time;
-- transpiled monitored payload depth: `720`;
-- transpiled operation counts: `cz=183`, `if_else=6`, `measure=6`,
-  `rz=380`, `sx=363`, `x=2`;
+- corrected transpiled monitored payload depth: `717`;
+- corrected transpiled operation counts: `cz=183`, `if_else=3`, `measure=6`,
+  `reset=3`, `rz=380`, `sx=363`, `x=2`;
 - hardware submission: `false`;
-- readiness status: `blocked` until the submitter, converter, and approval
-  record are implemented.
+- corrected paired-run status: completed;
+- corrected paired-run jobs: `d86qn3lg7okc73elg2eg`,
+  `d86qn65g7okc73elg2hg`;
+- preregistered analysis decision: `null_or_negative`;
+- feedback mean target error: `0.2148958333`;
+- matched open-loop mean target error: `0.2116406250`;
+- target-error improvement: `-0.0032552083`.
 
 ## Preregistered Job Shape
 
@@ -113,7 +123,7 @@ Observed readiness:
 | Shots per circuit | 1024 |
 | Repetitions | 12 |
 | Estimated execution seconds | 24.0 |
-| Hardware submission state | blocked until paired submitter, live-result converter, and approval |
+| Hardware submission state | completed on `ibm_kingston` |
 
 ## Primary Observable
 
@@ -132,7 +142,7 @@ matched open-loop control under the same hardware window.
 |---|---|
 | Feedback improves target error after the preregistered analysis | Bounded evidence that monitored dynamic-circuit feedback can steer the tested small-system synchronisation observable on the selected backend/layout. |
 | Feedback and open-loop are statistically indistinguishable | Hardware-control null result; dynamic-circuit overhead/noise dominates at this scale. |
-| Feedback worsens target error | Negative control result; the feedback action is not robust under this backend/calibration window. |
+| Feedback worsens target error | **Observed.** Negative control result; the feedback action is not robust under this backend/calibration window. |
 | Capability or transpilation gate fails | Provider-readiness paper note only; no hardware-control claim. |
 
 ## Claim Boundary

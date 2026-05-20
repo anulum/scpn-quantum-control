@@ -39,7 +39,6 @@ def test_required_s1_dynamic_features_follow_package_circuit() -> None:
         "cross_shot_batches",
         "mid_circuit_measurement",
         "conditional_control",
-        "conditional_reset",
     )
 
 

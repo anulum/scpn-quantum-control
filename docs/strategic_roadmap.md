@@ -168,10 +168,13 @@ decoherence tracking) all require sub-second feedback.
 
 As of 2026-05-20, the S1 no-QPU bundle is refreshed and `ibm_kingston`
 passes the live no-submit dynamic-circuit capability probe. The monitored
-payload transpiles on `ibm_kingston` with depth `720` and operation counts
-`cz=183`, `if_else=6`, `measure=6`, `rz=380`, `sx=363`, `x=2`.
-Hardware submission remains blocked until the paired-arm submitter, live
-result converter, and explicit approval record are implemented.
+corrected payload transpiles on `ibm_kingston` with depth `717` and operation
+counts `cz=183`, `if_else=3`, `measure=6`, `reset=3`, `rz=380`, `sx=363`,
+`x=2`.
+The corrected paired-arm S1 run completed on `ibm_kingston` on 2026-05-20.
+Jobs `d86qn3lg7okc73elg2eg` and `d86qn65g7okc73elg2hg` returned a
+`null_or_negative` preregistered result: the feedback arm was farther from the
+target by `0.0032552083` mean absolute target error.
 
 ### Acceptance
 

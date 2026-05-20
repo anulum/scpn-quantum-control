@@ -324,7 +324,7 @@ def summarise_feedback_circuit(
     counts = {str(name): int(count) for name, count in circuit.count_ops().items()}
     has_measure = counts.get("measure", 0) > 0
     has_conditional = _circuit_has_conditionals(circuit)
-    has_conditional_reset = has_conditional and _circuit_has_operation(circuit, "reset")
+    has_conditional_reset = _circuit_has_conditional_operation(circuit, "reset")
     return FeedbackCircuitSummary(
         n_qubits=circuit.num_qubits,
         n_clbits=circuit.num_clbits,
@@ -403,6 +403,18 @@ def _circuit_has_operation(circuit: QuantumCircuit, operation_name: str) -> bool
         for block in getattr(operation, "blocks", ()):
             if _circuit_has_operation(block, operation_name):
                 return True
+    return False
+
+
+def _circuit_has_conditional_operation(circuit: QuantumCircuit, operation_name: str) -> bool:
+    for instruction in circuit.data:
+        operation = instruction.operation
+        if getattr(operation, "condition", None) is not None and operation.name == operation_name:
+            return True
+        if operation.name in {"if_else", "while_loop", "for_loop", "switch_case"}:
+            for block in getattr(operation, "blocks", ()):
+                if _circuit_has_operation(block, operation_name):
+                    return True
     return False
 
 

@@ -14,6 +14,7 @@ from scpn_quantum_control.control.realtime_feedback import (
     RealtimeFeedbackConfig,
     RealtimeSyncFeedbackController,
     build_monitored_feedback_circuit,
+    build_open_loop_feedback_control_circuit,
     feedback_policy_numpy,
 )
 
@@ -90,7 +91,8 @@ def test_monitored_circuit_contains_conditional_reset_and_correction():
     circuit = build_monitored_feedback_circuit(K, omega, n_rounds=2)
     operations = circuit.count_ops()
     assert operations["measure"] == 5
-    assert operations["if_else"] >= 4
+    assert operations["if_else"] == 2
+    assert operations["reset"] == 2
     assert circuit.num_qubits == 4
     assert circuit.num_clbits == 5
     conditional_blocks = [
@@ -99,19 +101,29 @@ def test_monitored_circuit_contains_conditional_reset_and_correction():
         if instruction.operation.name == "if_else"
     ]
     assert any(
-        any(inner.operation.name == "reset" for inner in block.blocks[0].data)
-        for block in conditional_blocks
-    )
-    assert any(
         any(inner.operation.name == "ry" for inner in block.blocks[0].data)
         for block in conditional_blocks
     )
+
+
+def test_open_loop_control_circuit_matches_monitor_skeleton_without_conditionals():
+    K, omega = _inputs()
+    monitored = build_monitored_feedback_circuit(K, omega, n_rounds=2)
+    control = build_open_loop_feedback_control_circuit(K, omega, n_rounds=2)
+
+    assert control.num_qubits == monitored.num_qubits == 4
+    assert control.num_clbits == monitored.num_clbits == 5
+    assert control.count_ops()["measure"] == monitored.count_ops()["measure"] == 5
+    assert control.count_ops()["reset"] == 2
+    assert "if_else" not in control.count_ops()
 
 
 def test_monitored_circuit_rejects_zero_rounds():
     K, omega = _inputs()
     with pytest.raises(ValueError, match="n_rounds"):
         build_monitored_feedback_circuit(K, omega, n_rounds=0)
+    with pytest.raises(ValueError, match="n_rounds"):
+        build_open_loop_feedback_control_circuit(K, omega, n_rounds=0)
 
 
 def test_controller_run_is_seeded_and_live_shot_driven():
@@ -188,4 +200,5 @@ def test_controller_builds_instance_monitored_circuit():
     controller = RealtimeSyncFeedbackController(K, omega)
     circuit = controller.build_monitored_circuit(n_rounds=1)
     assert circuit.num_qubits == 4
-    assert circuit.count_ops()["if_else"] >= 2
+    assert circuit.count_ops()["if_else"] == 1
+    assert circuit.count_ops()["reset"] == 1

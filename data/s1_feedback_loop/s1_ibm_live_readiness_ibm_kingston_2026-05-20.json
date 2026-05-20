@@ -28,8 +28,7 @@
     "required_features": [
       "cross_shot_batches",
       "mid_circuit_measurement",
-      "conditional_control",
-      "conditional_reset"
+      "conditional_control"
     ],
     "missing_features": [],
     "n_qubits": 156,
@@ -41,36 +40,34 @@
     "source": {
       "n_qubits": 4,
       "n_clbits": 6,
-      "depth": 41,
+      "depth": 38,
       "operation_counts": {
         "cx": 18,
         "ry": 12,
         "measure": 6,
-        "if_else": 6,
-        "PauliEvolution": 3
+        "PauliEvolution": 3,
+        "reset": 3,
+        "if_else": 3
       }
     },
     "transpiled": {
       "n_qubits": 156,
       "n_clbits": 6,
-      "depth": 720,
+      "depth": 717,
       "operation_counts": {
         "rz": 380,
         "sx": 363,
         "cz": 183,
         "measure": 6,
-        "if_else": 6,
+        "reset": 3,
+        "if_else": 3,
         "x": 2
       },
       "seed_transpiler": 20260520
     },
     "submission_performed": false
   },
-  "readiness_status": "blocked",
-  "blockers": [
-    "provider submitter for paired feedback/control S1 arms is not implemented",
-    "live IBM sampler-result to preregistered r_live raw-count package conversion is not implemented",
-    "explicit hardware approval record for this package hash and QPU-second ceiling is not present"
-  ],
+  "readiness_status": "ready_for_pair_runner",
+  "blockers": [],
   "claim_boundary": "This artefact captures live backend metadata and transpilation only. It does not submit IBM jobs and cannot support an S1 hardware-control claim."
 }

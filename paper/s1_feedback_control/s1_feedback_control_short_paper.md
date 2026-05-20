@@ -12,7 +12,7 @@
 *Contact: protoscience@anulum.li*
 
 **Date:** 2026-05-20
-**Status:** Draft scaffold, live IBM metadata and transpilation captured; raw-count execution blocked pending submitter/converter
+**Status:** IBM paired-arm execution complete; result is null-or-negative under the preregistered analysis
 **Target venue:** short communication / workshop submission candidate
 
 ---
@@ -26,12 +26,13 @@ system qubits, one monitor qubit, three dynamic rounds, and two matched arms:
 a monitored feedback arm and an open-loop control arm. The primary endpoint is
 whether the feedback arm reduces the target-order-parameter error relative to
 the matched open-loop arm under the same backend, layout, shots, repetitions,
-and calibration window. The current package is no-QPU readiness only: the S1
-readiness bundle, preregistration manifest, synthetic analysis rehearsal, and
-hardware-job dossier are complete, while live backend metadata capture,
-transpilation, explicit budget approval, raw-count execution, and analysis
-remain pending. The intended claim is bounded to hardware-control
-interpretability, not quantum advantage or backend-general feedback.
+and calibration window. The S1 readiness bundle, preregistration manifest,
+hardware-job dossier, live backend capture, approval-gated IBM execution, raw
+count archive, and preregistered analysis are now complete for `ibm_kingston`.
+The observed feedback arm does not reduce target-order-parameter error
+relative to the matched open-loop control. The claim is bounded to
+hardware-control interpretability, not quantum advantage or backend-general
+feedback.
 
 ## 1. Introduction
 
@@ -97,22 +98,28 @@ Current preregistered artefacts:
 
 The current package declares the IBM Heron dynamic-circuit backend class as a
 ready target under template capabilities. A live no-submit probe on
-`ibm_kingston` now reports ready dynamic-circuit capability, and the monitored
-payload transpiles on the backend. Hardware execution remains blocked until the
-paired feedback/open-loop submitter, live-result-to-`r_live` converter, and
-explicit hardware approval record exist.
+`ibm_kingston` reported ready dynamic-circuit capability. The monitored
+payload was corrected to use unconditional monitor reset and conditional
+correction only, because IBM rejected reset operations inside conditional
+dynamic-circuit blocks. The corrected paired-arm payload was then submitted and
+analysed.
 
-## 4. Pending IBM Gates
+## 4. IBM Execution
 
-No S1 IBM job should be submitted until all of the following are complete:
+The corrected S1 paired-arm run executed on `ibm_kingston` with:
 
-1. paired feedback/open-loop IBM submitter exists behind approval gating;
-2. live IBM sampler-result conversion writes the preregistered raw-count
-   package with `r_live` records;
-3. the feedback and open-loop arms remain matched after transpilation;
-4. raw-count archive path and SHA256 hashing plan exist;
-5. explicit hardware approval record matches the preregistration package hash
-   and QPU-second ceiling.
+| Field | Feedback | Matched open-loop control |
+|---|---:|---:|
+| Job ID | `d86qn3lg7okc73elg2eg` | `d86qn65g7okc73elg2hg` |
+| Repetitions | 12 | 12 |
+| Total shots | 12288 | 12288 |
+| Transpiled depth | 717 | 684 |
+
+The hardware artefacts are:
+
+- `data/s1_feedback_loop/s1_feedback_raw_counts_ibm_kingston_20260520T123941Z.json`
+- `data/s1_feedback_loop/s1_feedback_analysis_summary_ibm_kingston_20260520T123941Z.json`
+- `data/s1_feedback_loop/s1_ibm_feedback_pair_readiness_ibm_kingston_20260520T123941Z.json`
 
 ## 5. Analysis Plan
 
@@ -133,16 +140,20 @@ shows lower target error than the matched open-loop control.
 
 ## 6. Results
 
-Raw-count execution is pending.
+The preregistered analysis returned `null_or_negative`.
 
-This section must not be filled from synthetic fixtures, template capability
-metadata, or readiness outputs. It should be populated only after:
+| Metric | Feedback | Matched open-loop control |
+|---|---:|---:|
+| Mean `r_live` | 0.9348958333 | 0.9316406250 |
+| Mean target error | 0.2148958333 | 0.2116406250 |
+| Final `r_live` | 0.9322916667 | 0.9322916667 |
 
-1. live metadata and transpilation gates pass;
-2. explicit QPU approval is recorded;
-3. an approved IBM run writes raw counts and job metadata;
-4. `scripts/analyse_s1_feedback_hardware.py` generates the result summary;
-5. the result is checked against the preregistered decision tree.
+Feedback minus control mean `r_live` is `0.0032552083`, but the target is
+`0.72`, so the feedback arm is farther from the target. The target-error
+improvement is `-0.0032552083`, or `-1.538%` relative to the open-loop
+control. Under the preregistered decision tree this is a bounded negative
+hardware-control result: the tested monitored-feedback policy did not improve
+the selected binary-phase synchrony proxy on `ibm_kingston`.
 
 ## 7. Claim Boundary
 
@@ -164,7 +175,9 @@ Blocked claims:
 
 ## 8. Conclusion
 
-S1 is the next strongest IBM paper candidate after the reduced-Pauli
-entanglement/tomography run because it tests a control mechanism rather than
-another static diagnostic. The current paper remains a scaffold until live IBM
-metadata, transpilation, approved raw counts, and preregistered analysis exist.
+S1 is scientifically useful as a falsification result. It shows that the tested
+small dynamic-circuit feedback policy, at this depth and calibration window,
+does not outperform a matched open-loop arm on the preregistered binary-phase
+synchrony target. The next S1-level paper step is either a shallower feedback
+policy or a different observable that measures the intended XY order parameter
+more directly.
