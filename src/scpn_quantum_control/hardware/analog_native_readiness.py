@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Commercial license available
-# (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved.
-# (c) Code 2020-2026 Miroslav Sotek. All rights reserved.
+# © Concepts 1996-2026 Miroslav Sotek. All rights reserved.
+# © Code 2020-2026 Miroslav Sotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control -- S10 analog-native readiness
@@ -10,7 +10,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from typing import Any
+from typing import Any, TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -23,7 +23,7 @@ from .analog_kuramoto import (
     prepare_provider_execution_plan,
 )
 
-FloatArray = NDArray[np.float64]
+FloatArray: TypeAlias = NDArray[np.float64]
 
 ANALOG_NATIVE_SCHEMA = "s10_analog_native_readiness_v1"
 CLAIM_BOUNDARY = (
