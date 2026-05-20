@@ -682,6 +682,7 @@ from scpn_quantum_control.hardware import (
     BraketLocalHALAdapter,
     HardwareAbstractionLayer,
     IonQCloudHALAdapter,
+    IQMHALAdapter,
     PennyLaneDeviceHALAdapter,
     QbraidRuntimeHALAdapter,
     QuEraBloqadeHALAdapter,
@@ -695,6 +696,7 @@ from scpn_quantum_control.hardware import (
     bloqade_ahs_workload,
     built_in_backend_profiles,
     ionq_qis_workload,
+    iqm_qiskit_workload,
     pennylane_gate_workload,
     qbraid_program_to_workload,
     quantinuum_tket_workload,
@@ -795,6 +797,28 @@ job = hal.submit(
         n_qubits=2,
         shots=128,
     ),
+    approval_id="approved-run",
+)
+```
+
+The direct IQM adapter layer provides `IQMHALAdapter` and
+`iqm_qiskit_workload()`. It uses the IQM Qiskit provider path lazily, accepts
+injected backend objects for tests or calibrated execution routes, encodes
+circuits as QPY-backed `qiskit_qpy` workloads, and preserves HAL approval
+gating for remote submission.
+
+```python
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+hal.register_backend(
+    IQMHALAdapter(
+        hal.profile("iqm_cloud"),
+        server_url=iqm_server_url,
+        quantum_computer="garnet",
+    )
+)
+job = hal.submit(
+    "iqm_cloud",
+    iqm_qiskit_workload(qiskit_circuit, workload_id="iqm_bell", shots=128),
     approval_id="approved-run",
 )
 ```

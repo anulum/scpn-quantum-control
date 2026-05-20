@@ -158,6 +158,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [IonQCloudHALAdapter, ionq_qis_workload]
 
+::: scpn_quantum_control.hardware.hal_iqm
+    options:
+      members: [IQMHALAdapter, iqm_qiskit_workload]
+
 ::: scpn_quantum_control.hardware.hal_pennylane
     options:
       members: [PennyLaneDeviceHALAdapter, pennylane_gate_workload]

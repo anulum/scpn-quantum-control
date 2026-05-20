@@ -64,6 +64,10 @@ def test_hal_profiles_export_backend_descriptors_for_selector_metadata() -> None
     assert aer.submit_requires_approval is False
     assert "statevector" in aer.capabilities
 
+    iqm = describe_hal_backend_profile("iqm_cloud")
+    assert iqm.adapter_module == "scpn_quantum_control.hardware.hal_iqm"
+    assert "qiskit_qpy" in iqm.workloads
+
 
 def test_builtin_hal_profiles_cover_major_current_provider_routes() -> None:
     """Built-in profiles should cover the current major provider families."""

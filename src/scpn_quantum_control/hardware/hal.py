@@ -663,7 +663,7 @@ def built_in_backend_profiles() -> tuple[BackendProfile, ...]:
             broker="direct",
             modality="superconducting_gate_model",
             sdk_package="iqm-client",
-            ir_formats=("openqasm3", "qiskit", "circuit", "mlir"),
+            ir_formats=("qiskit_qpy", "openqasm3", "qiskit", "circuit", "mlir"),
             max_qubits=None,
             is_cloud=True,
             target_family="iqm_superconducting",

@@ -69,7 +69,7 @@ _HAL_PROFILE_ADAPTER_MODULES: dict[str, str] = {
     "dwave_leap": "scpn_quantum_control.hardware.hal",
     "ibm_quantum": "scpn_quantum_control.hardware.hal_qiskit",
     "ionq_cloud": "scpn_quantum_control.hardware.hal_ionq",
-    "iqm_cloud": "scpn_quantum_control.hardware.iqm_backend",
+    "iqm_cloud": "scpn_quantum_control.hardware.hal_iqm",
     "local_braket_ahs": "scpn_quantum_control.hardware.hal_braket",
     "local_braket_dm": "scpn_quantum_control.hardware.hal_braket",
     "local_braket_sv": "scpn_quantum_control.hardware.hal_braket",
