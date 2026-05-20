@@ -108,6 +108,13 @@ def built_in_aggregator_provider_routes() -> tuple[AggregatorProviderRoute, ...]
             ("tket", "openqasm3", "qir"),
         ),
         _route(
+            "direct/quera",
+            "direct",
+            "quera",
+            "quera_bloqade",
+            ("bloqade", "braket_ahs"),
+        ),
+        _route(
             "direct/rigetti",
             "direct",
             "rigetti",

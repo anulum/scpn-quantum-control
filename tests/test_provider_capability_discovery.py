@@ -23,6 +23,7 @@ from scpn_quantum_control.hardware.provider_capability_discovery import (
     snapshot_from_qbraid_device,
     snapshot_from_qiskit_runtime_backend,
     snapshot_from_quantinuum_backend,
+    snapshot_from_quera_bloqade,
     snapshot_from_rigetti_qcs,
     snapshot_from_strangeworks_backend,
 )
@@ -176,6 +177,9 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
         snapshot_from_quantinuum_backend as exported_quantinuum_snapshot,
     )
     from scpn_quantum_control.hardware import (
+        snapshot_from_quera_bloqade as exported_quera_snapshot,
+    )
+    from scpn_quantum_control.hardware import (
         snapshot_from_rigetti_qcs as exported_rigetti_snapshot,
     )
 
@@ -189,6 +193,7 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
     assert exported_ionq_snapshot is snapshot_from_ionq_backend
     assert exported_qiskit_snapshot is snapshot_from_qiskit_runtime_backend
     assert exported_quantinuum_snapshot is snapshot_from_quantinuum_backend
+    assert exported_quera_snapshot is snapshot_from_quera_bloqade
     assert exported_rigetti_snapshot is snapshot_from_rigetti_qcs
 
 
@@ -495,6 +500,84 @@ def test_direct_iqm_snapshot_blocks_offline_backend_without_submission() -> None
     assert "provider target is offline" in decision.blockers
     assert decision.snapshot.supported_ir_formats == ("qiskit",)
     assert decision.snapshot.simulator is True
+
+
+def test_direct_quera_snapshot_reads_bloqade_metadata_without_submission() -> None:
+    """Direct QuEra/Bloqade metadata adapters should consume injected routine metadata only."""
+
+    class Lattice:
+        n_sites = 256
+        geometry = "2d_tweezer_array"
+
+    class Routine:
+        name = "aquila-analog"
+        status = "online"
+        lattice = Lattice()
+        supported_ir_formats = ("bloqade", "braket.ahs", "mlir")
+        native_operations = ("rydberg_drive", "local_detuning", "global_detuning")
+        max_shots = 1_000
+        max_circuits = 1
+        queue_depth = 3
+        last_calibration = "2026-05-20T12:45:00Z"
+        simulator = False
+
+        def run(self, *args: object, **kwargs: object) -> None:
+            raise AssertionError("metadata snapshot must not run QuEra Bloqade work")
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="direct",
+        provider="quera",
+        ir_format="bloqade",
+        min_qubits=16,
+        metadata_probe=lambda resolved: snapshot_from_quera_bloqade(
+            resolved,
+            Routine(),
+        ),
+    )
+
+    assert decision.status == "ready"
+    assert decision.snapshot.route_id == "direct/quera"
+    assert decision.snapshot.backend_id == "quera_bloqade"
+    assert decision.snapshot.target_name == "aquila-analog"
+    assert decision.snapshot.n_qubits == 256
+    assert decision.snapshot.supported_ir_formats == ("bloqade", "braket_ahs", "mlir")
+    assert decision.snapshot.basis_gates == (
+        "rydberg_drive",
+        "local_detuning",
+        "global_detuning",
+    )
+    assert "neutral_atom" in decision.snapshot.native_features
+    assert "analog_hamiltonian" in decision.snapshot.native_features
+    assert decision.snapshot.max_shots == 1_000
+    assert decision.snapshot.max_circuits == 1
+    assert decision.snapshot.queue_depth == 3
+    assert decision.snapshot.calibration_timestamp == "2026-05-20T12:45:00Z"
+    assert decision.snapshot.metadata["adapter"] == "quera_bloqade_no_submit"
+    assert decision.snapshot.metadata["lattice_geometry"] == "2d_tweezer_array"
+
+
+def test_direct_quera_snapshot_blocks_offline_bloqade_target_without_submission() -> None:
+    """Direct QuEra/Bloqade offline metadata should block before routine execution."""
+
+    metadata = {
+        "target": "aquila-offline",
+        "status": "maintenance",
+        "num_atoms": 256,
+        "input_formats": ("bloqade_ahs_plan_v1",),
+        "simulator": False,
+    }
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="direct",
+        provider="quera",
+        ir_format="bloqade",
+        metadata_probe=lambda resolved: snapshot_from_quera_bloqade(resolved, metadata),
+    )
+
+    assert decision.status == "blocked"
+    assert "provider target is offline" in decision.blockers
+    assert decision.snapshot.supported_ir_formats == ("bloqade",)
+    assert decision.snapshot.simulator is False
 
 
 def test_azure_quantum_snapshot_reads_target_metadata_without_submission() -> None:

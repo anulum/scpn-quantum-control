@@ -162,9 +162,10 @@ broker catalogues explicit without duplicating runtime adapters: direct Braket
 and Azure provider rows resolve to their specific HAL profiles, the direct IBM
 Quantum row resolves to `ibm_quantum`, the direct IonQ row resolves to
 `ionq_cloud`, the direct IQM row resolves to `iqm_cloud`, the direct
-Quantinuum row resolves to `quantinuum_cloud`, the direct Rigetti row resolves
-to `rigetti_qcs`, while dynamic qBraid and Strangeworks rows resolve to
-`qbraid_runtime` and `strangeworks_compute` respectively. Use
+Quantinuum row resolves to `quantinuum_cloud`, the direct QuEra/Bloqade row
+resolves to `quera_bloqade`, the direct Rigetti row resolves to `rigetti_qcs`,
+while dynamic qBraid and Strangeworks rows resolve to `qbraid_runtime` and
+`strangeworks_compute` respectively. Use
 `resolve_aggregator_provider_route()` when routing code needs a single
 validated row plus the executable HAL profile for a requested aggregator,
 provider, and IR format.
@@ -178,8 +179,9 @@ readiness decisions before any submission path is considered.
 `snapshot_from_azure_target()`, `snapshot_from_braket_device()`,
 `snapshot_from_iqm_backend()`, `snapshot_from_ionq_backend()`,
 `snapshot_from_qiskit_runtime_backend()`, `snapshot_from_qbraid_device()`,
-`snapshot_from_quantinuum_backend()`, `snapshot_from_rigetti_qcs()`, and
-`snapshot_from_strangeworks_backend()` provide concrete no-submit adapters for
+`snapshot_from_quantinuum_backend()`, `snapshot_from_quera_bloqade()`,
+`snapshot_from_rigetti_qcs()`, and `snapshot_from_strangeworks_backend()`
+provide concrete no-submit adapters for
 injected provider or broker SDK objects: they read declared target metadata,
 route-supported IR formats, queue, limit, online, simulator, calibration, and
 gate metadata without invoking submission APIs.
@@ -1060,6 +1062,11 @@ normalises `fetch()`/`report()` bitstrings or count mappings into HAL counts,
 and cancels batches that expose `cancel()`. Automatic provider-object
 construction remains calibration-gated; production callers inject the calibrated
 Bloqade routine or a routine factory.
+`snapshot_from_quera_bloqade()` provides the matching no-submit readiness path
+for injected Bloqade routine metadata or metadata JSON. It records target name,
+atom count, declared Bloqade/Braket AHS/MLIR support, native analogue
+operations, shot and circuit limits, queue depth, online state, simulator flag,
+lattice geometry, and calibration timestamp without running a routine.
 
 ```python
 hal = HardwareAbstractionLayer.with_builtin_profiles()

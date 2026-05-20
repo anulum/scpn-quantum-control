@@ -85,6 +85,7 @@ def test_aggregator_provider_matrix_covers_source_grounded_current_brokers() -> 
         "direct/iqm",
         "direct/ionq",
         "direct/quantinuum",
+        "direct/quera",
         "direct/rigetti",
         "azure_quantum/ionq",
         "azure_quantum/quantinuum",
@@ -143,6 +144,12 @@ def test_aggregator_provider_matrix_covers_source_grounded_current_brokers() -> 
         "direct/iqm",
         "qbraid/iqm",
         "strangeworks/iqm",
+    ]
+    assert [route.route_id for route in aggregator_provider_routes_for(provider="quera")] == [
+        "aws_braket/quera",
+        "direct/quera",
+        "qbraid/quera",
+        "strangeworks/quera",
     ]
 
 
@@ -212,6 +219,15 @@ def test_aggregator_provider_selector_resolves_profile_and_ir() -> None:
     assert iqm.route.route_id == "direct/iqm"
     assert iqm.route.backend_id == "iqm_cloud"
     assert iqm.profile.provider == "iqm"
+
+    quera = resolve_aggregator_provider_route(
+        aggregator="direct",
+        provider="quera",
+        ir_format="bloqade",
+    )
+    assert quera.route.route_id == "direct/quera"
+    assert quera.route.backend_id == "quera_bloqade"
+    assert quera.profile.provider == "quera"
 
     with pytest.raises(LookupError, match="unsupported IR"):
         resolve_aggregator_provider_route(
@@ -339,6 +355,14 @@ def test_aggregator_provider_dependency_matrix_covers_every_route() -> None:
     assert direct_iqm.target_family == "iqm"
     assert "qiskit_qpy" in direct_iqm.ir_formats
     assert direct_iqm.submit_requires_approval is True
+
+    direct_quera = by_route["direct/quera"]
+    assert direct_quera.aggregator == "direct"
+    assert direct_quera.provider == "quera"
+    assert direct_quera.backend_id == "quera_bloqade"
+    assert direct_quera.target_family == "quera"
+    assert "bloqade" in direct_quera.ir_formats
+    assert direct_quera.submit_requires_approval is True
 
     direct_ibm = by_route["direct/ibm_quantum"]
     assert direct_ibm.aggregator == "direct"

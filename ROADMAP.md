@@ -130,6 +130,13 @@ is copied here.
   translation, qubit count, native gate set, mid-circuit measurement feature
   inference, shot/batch limits, queue depth, online state, simulator flag,
   machine id, and calibration timestamp without circuit processing.
+- [x] **Direct QuEra/Bloqade no-submit capability snapshot.** Implemented
+  2026-05-20: `snapshot_from_quera_bloqade` adds the direct `direct/quera`
+  route and metadata snapshot path for injected Bloqade routine objects or
+  metadata JSON, including Bloqade/Braket AHS/MLIR declaration translation,
+  atom count, native analogue operations, shot and circuit limits, queue depth,
+  online state, simulator flag, lattice geometry, and calibration timestamp
+  without routine execution.
 - [x] **Direct Rigetti QCS no-submit capability snapshot.** Implemented
   2026-05-20: `snapshot_from_rigetti_qcs` adds the direct `direct/rigetti`
   route and metadata snapshot path for injected Rigetti QCS quantum-computer

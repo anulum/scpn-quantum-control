@@ -359,6 +359,85 @@ def snapshot_from_iqm_backend(
     )
 
 
+def snapshot_from_quera_bloqade(
+    resolved: ResolvedAggregatorProviderRoute,
+    target: Any,
+) -> ProviderCapabilitySnapshot:
+    """Build a no-submit capability snapshot from direct QuEra/Bloqade metadata."""
+
+    lattice = _first_available_attr(
+        target,
+        names=("lattice", "atom_lattice", "register", "geometry", "metadata"),
+    )
+    return ProviderCapabilitySnapshot(
+        route_id=resolved.route.route_id,
+        aggregator=resolved.route.aggregator,
+        provider=resolved.route.provider,
+        backend_id=resolved.route.backend_id,
+        target_name=_first_text_attr(
+            target,
+            lattice,
+            names=("target", "target_name", "backend", "backend_id", "routine", "name", "id"),
+            field_name="QuEra/Bloqade target name",
+        ),
+        n_qubits=_first_positive_int_attr(
+            lattice,
+            target,
+            names=(
+                "n_sites",
+                "num_atoms",
+                "n_atoms",
+                "atom_count",
+                "num_qubits",
+                "n_qubits",
+                "qubits",
+            ),
+            field_name="QuEra/Bloqade atom count",
+        ),
+        supported_ir_formats=_quera_supported_ir_formats(resolved, target),
+        basis_gates=_first_string_tuple_attr(
+            target,
+            lattice,
+            names=("native_operations", "basis_gates", "native_gates", "gates"),
+        ),
+        native_features=_quera_native_features(target, lattice),
+        online=_quera_online_state(target),
+        simulator=_first_bool_attr(target, names=("simulator", "is_simulator")) or False,
+        max_shots=_first_optional_int_attr(
+            target,
+            names=("max_shots", "shots_limit", "maxShots", "max_execution_shots"),
+        ),
+        max_circuits=_first_optional_int_attr(
+            target,
+            names=("max_circuits", "max_jobs", "max_experiments"),
+        ),
+        queue_depth=_first_optional_int_attr(
+            target,
+            names=("queue_depth", "pending_jobs", "queue_size", "average_queue_time"),
+            minimum=0,
+        ),
+        calibration_timestamp=_first_optional_text_attr(
+            target,
+            lattice,
+            names=(
+                "last_calibration",
+                "calibration_timestamp",
+                "latest_calibration",
+                "last_updated",
+                "lastUpdated",
+            ),
+        ),
+        metadata={
+            "adapter": "quera_bloqade_no_submit",
+            "lattice_geometry": _first_optional_text_attr(
+                lattice,
+                target,
+                names=("geometry", "lattice_geometry", "topology"),
+            ),
+        },
+    )
+
+
 def snapshot_from_quantinuum_backend(
     resolved: ResolvedAggregatorProviderRoute,
     backend: Any,
@@ -1150,6 +1229,61 @@ def _iqm_online_state(backend: Any) -> bool | None:
     return None
 
 
+def _quera_supported_ir_formats(
+    resolved: ResolvedAggregatorProviderRoute,
+    target: Any,
+) -> tuple[str, ...]:
+    declared = _first_string_tuple_attr(
+        target,
+        names=(
+            "supported_ir_formats",
+            "ir_formats",
+            "input_formats",
+            "input_data_formats",
+            "program_formats",
+        ),
+    )
+    if not declared:
+        return resolved.route.ir_formats
+    return tuple(_quera_ir_format_token(item) for item in declared)
+
+
+def _quera_ir_format_token(value: str) -> str:
+    normalized = value.strip().lower().replace("-", "_")
+    if normalized in {"bloqade", "bloqade_ahs", "bloqade_ahs_plan_v1"}:
+        return "bloqade"
+    if normalized in {"braket.ahs", "braket_ahs", "braket.ir.ahs.program"}:
+        return "braket_ahs"
+    if normalized == "mlir":
+        return "mlir"
+    return normalized
+
+
+def _quera_native_features(*sources: Any) -> tuple[str, ...]:
+    features = set(_first_string_tuple_attr(*sources, names=("native_features", "features")))
+    features.add("neutral_atom")
+    features.add("analog_hamiltonian")
+    return tuple(sorted(features))
+
+
+def _quera_online_state(target: Any) -> bool | None:
+    explicit = _first_online_attr(target)
+    if explicit is not None:
+        return explicit
+    text_status = _first_optional_text_attr(
+        target,
+        names=("availability", "target_status", "status", "state"),
+    )
+    if text_status is None:
+        return None
+    normalized = text_status.strip().lower()
+    if normalized in {"available", "online", "ready", "active", "enabled"}:
+        return True
+    if normalized in {"unavailable", "offline", "disabled", "retired", "maintenance"}:
+        return False
+    return None
+
+
 def _quantinuum_supported_ir_formats(
     resolved: ResolvedAggregatorProviderRoute,
     *sources: Any,
@@ -1506,6 +1640,7 @@ __all__ = [
     "snapshot_from_qiskit_runtime_backend",
     "snapshot_from_qbraid_device",
     "snapshot_from_quantinuum_backend",
+    "snapshot_from_quera_bloqade",
     "snapshot_from_rigetti_qcs",
     "snapshot_from_strangeworks_backend",
 ]
