@@ -161,10 +161,10 @@ profiles through `built_in_aggregator_provider_routes()`. This keeps broad
 broker catalogues explicit without duplicating runtime adapters: direct Braket
 and Azure provider rows resolve to their specific HAL profiles, the direct IBM
 Quantum row resolves to `ibm_quantum`, the direct IonQ row resolves to
-`ionq_cloud`, the direct Quantinuum row resolves to `quantinuum_cloud`, the
-direct Rigetti row resolves to `rigetti_qcs`, while dynamic qBraid and
-Strangeworks rows resolve to `qbraid_runtime` and `strangeworks_compute`
-respectively. Use
+`ionq_cloud`, the direct IQM row resolves to `iqm_cloud`, the direct
+Quantinuum row resolves to `quantinuum_cloud`, the direct Rigetti row resolves
+to `rigetti_qcs`, while dynamic qBraid and Strangeworks rows resolve to
+`qbraid_runtime` and `strangeworks_compute` respectively. Use
 `resolve_aggregator_provider_route()` when routing code needs a single
 validated row plus the executable HAL profile for a requested aggregator,
 provider, and IR format.
@@ -176,10 +176,10 @@ contract for authenticated metadata probes: it resolves the broker route,
 accepts only no-submit target snapshots, and returns ready/blocked/unknown
 readiness decisions before any submission path is considered.
 `snapshot_from_azure_target()`, `snapshot_from_braket_device()`,
-`snapshot_from_ionq_backend()`, `snapshot_from_qiskit_runtime_backend()`,
-`snapshot_from_qbraid_device()`, `snapshot_from_quantinuum_backend()`,
-`snapshot_from_rigetti_qcs()`, and `snapshot_from_strangeworks_backend()`
-provide concrete no-submit adapters for
+`snapshot_from_iqm_backend()`, `snapshot_from_ionq_backend()`,
+`snapshot_from_qiskit_runtime_backend()`, `snapshot_from_qbraid_device()`,
+`snapshot_from_quantinuum_backend()`, `snapshot_from_rigetti_qcs()`, and
+`snapshot_from_strangeworks_backend()` provide concrete no-submit adapters for
 injected provider or broker SDK objects: they read declared target metadata,
 route-supported IR formats, queue, limit, online, simulator, calibration, and
 gate metadata without invoking submission APIs.
@@ -949,6 +949,11 @@ The direct IQM adapter layer provides `IQMHALAdapter` and
 injected backend objects for tests or calibrated execution routes, encodes
 circuits as QPY-backed `qiskit_qpy` workloads, and preserves HAL approval
 gating for remote submission.
+`snapshot_from_iqm_backend()` provides the matching no-submit readiness path for
+injected IQM backend metadata or metadata JSON. It records target name, qubit
+count, declared QPY/Qiskit/OpenQASM support, native gate set, shot and circuit
+limits, queue depth, online state, simulator flag, architecture name, and
+calibration timestamp without running a circuit.
 
 ```python
 hal = HardwareAbstractionLayer.with_builtin_profiles()

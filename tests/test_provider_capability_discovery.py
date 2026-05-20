@@ -19,6 +19,7 @@ from scpn_quantum_control.hardware.provider_capability_discovery import (
     snapshot_from_azure_target,
     snapshot_from_braket_device,
     snapshot_from_ionq_backend,
+    snapshot_from_iqm_backend,
     snapshot_from_qbraid_device,
     snapshot_from_qiskit_runtime_backend,
     snapshot_from_quantinuum_backend,
@@ -166,6 +167,9 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
         snapshot_from_ionq_backend as exported_ionq_snapshot,
     )
     from scpn_quantum_control.hardware import (
+        snapshot_from_iqm_backend as exported_iqm_snapshot,
+    )
+    from scpn_quantum_control.hardware import (
         snapshot_from_qiskit_runtime_backend as exported_qiskit_snapshot,
     )
     from scpn_quantum_control.hardware import (
@@ -181,6 +185,7 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
     assert exported_probe is probe_aggregator_provider_capability
     assert exported_azure_snapshot is snapshot_from_azure_target
     assert exported_braket_snapshot is snapshot_from_braket_device
+    assert exported_iqm_snapshot is snapshot_from_iqm_backend
     assert exported_ionq_snapshot is snapshot_from_ionq_backend
     assert exported_qiskit_snapshot is snapshot_from_qiskit_runtime_backend
     assert exported_quantinuum_snapshot is snapshot_from_quantinuum_backend
@@ -412,6 +417,83 @@ def test_direct_rigetti_snapshot_blocks_offline_qcs_target_without_submission() 
     assert decision.status == "blocked"
     assert "provider target is offline" in decision.blockers
     assert decision.snapshot.supported_ir_formats == ("quil",)
+    assert decision.snapshot.simulator is True
+
+
+def test_direct_iqm_snapshot_reads_backend_metadata_without_submission() -> None:
+    """Direct IQM metadata adapters should consume injected backend metadata only."""
+
+    class Architecture:
+        name = "garnet"
+
+    class Backend:
+        name = "IQM Garnet"
+        status = "online"
+        num_qubits = 20
+        supported_ir_formats = ("qiskit_qpy", "openqasm3", "qiskit")
+        operation_names = ("prx", "cz", "measure", "barrier")
+        architecture = Architecture()
+        max_shots = 10_000
+        max_circuits = 32
+        queue_depth = 2
+        last_calibration = "2026-05-20T12:30:00Z"
+        is_simulator = False
+
+        def run(self, *args: object, **kwargs: object) -> None:
+            raise AssertionError("metadata snapshot must not submit IQM work")
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="direct",
+        provider="iqm",
+        ir_format="qiskit_qpy",
+        min_qubits=4,
+        metadata_probe=lambda resolved: snapshot_from_iqm_backend(
+            resolved,
+            Backend(),
+        ),
+    )
+
+    assert decision.status == "ready"
+    assert decision.snapshot.route_id == "direct/iqm"
+    assert decision.snapshot.backend_id == "iqm_cloud"
+    assert decision.snapshot.target_name == "IQM Garnet"
+    assert decision.snapshot.n_qubits == 20
+    assert decision.snapshot.supported_ir_formats == ("qiskit_qpy", "openqasm3", "qiskit")
+    assert decision.snapshot.basis_gates == ("prx", "cz", "measure", "barrier")
+    assert "superconducting" in decision.snapshot.native_features
+    assert "gate_model" in decision.snapshot.native_features
+    assert decision.snapshot.max_shots == 10_000
+    assert decision.snapshot.max_circuits == 32
+    assert decision.snapshot.queue_depth == 2
+    assert decision.snapshot.calibration_timestamp == "2026-05-20T12:30:00Z"
+    assert decision.snapshot.metadata["adapter"] == "iqm_backend_no_submit"
+    assert decision.snapshot.metadata["architecture"] == "garnet"
+
+
+def test_direct_iqm_snapshot_blocks_offline_backend_without_submission() -> None:
+    """Direct IQM offline metadata should block before backend execution."""
+
+    backend_metadata = {
+        "backend": "iqm-apollo",
+        "status": "offline",
+        "qubits": 20,
+        "input_formats": ("qiskit",),
+        "simulator": True,
+    }
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="direct",
+        provider="iqm",
+        ir_format="qiskit",
+        metadata_probe=lambda resolved: snapshot_from_iqm_backend(
+            resolved,
+            backend_metadata,
+        ),
+    )
+
+    assert decision.status == "blocked"
+    assert "provider target is offline" in decision.blockers
+    assert decision.snapshot.supported_ir_formats == ("qiskit",)
     assert decision.snapshot.simulator is True
 
 

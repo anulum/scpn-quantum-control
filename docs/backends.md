@@ -586,10 +586,11 @@ ready/blocked/unknown decision based on online status, qubit count, and required
 IR support. The function does not create clients or submit jobs; provider SDK
 authentication remains inside the injected read-only probe.
 `snapshot_from_azure_target()`, `snapshot_from_braket_device()`,
-`snapshot_from_ionq_backend()`, `snapshot_from_qiskit_runtime_backend()`,
-`snapshot_from_qbraid_device()`, `snapshot_from_quantinuum_backend()`,
-`snapshot_from_rigetti_qcs()`, and `snapshot_from_strangeworks_backend()` are
-concrete metadata adapters for this contract. They consume injected SDK
+`snapshot_from_iqm_backend()`, `snapshot_from_ionq_backend()`,
+`snapshot_from_qiskit_runtime_backend()`, `snapshot_from_qbraid_device()`,
+`snapshot_from_quantinuum_backend()`, `snapshot_from_rigetti_qcs()`, and
+`snapshot_from_strangeworks_backend()` are concrete metadata adapters for this
+contract. They consume injected SDK
 backend/device objects and record target name, qubit count, route-supported or
 declared IR formats, gate basis, queue depth, shot/circuit limits, online state,
 simulator state, and calibration timestamp when the provider object exposes
@@ -693,6 +694,11 @@ The direct IQM adapter layer provides `IQMHALAdapter` and
 accepts injected backend objects for tests or calibrated execution routes,
 encodes circuits as QPY-backed `qiskit_qpy` workloads, normalises job status
 and counts into HAL payloads, and keeps remote execution approval-gated.
+`snapshot_from_iqm_backend()` provides the matching no-submit readiness path for
+injected IQM backend metadata or metadata JSON. It records target name, qubit
+count, declared QPY/Qiskit/OpenQASM support, native gate set, shot and circuit
+limits, queue depth, online state, simulator flag, architecture name, and
+calibration timestamp without running a circuit.
 
 ```python
 hal = HardwareAbstractionLayer.with_builtin_profiles()

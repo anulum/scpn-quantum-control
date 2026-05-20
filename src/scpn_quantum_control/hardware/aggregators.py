@@ -87,6 +87,13 @@ def built_in_aggregator_provider_routes() -> tuple[AggregatorProviderRoute, ...]
             ("qiskit_qpy", "openqasm3"),
         ),
         _route(
+            "direct/iqm",
+            "direct",
+            "iqm",
+            "iqm_cloud",
+            ("qiskit_qpy", "openqasm3", "qiskit"),
+        ),
+        _route(
             "direct/ionq",
             "direct",
             "ionq",

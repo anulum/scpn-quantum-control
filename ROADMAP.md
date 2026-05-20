@@ -111,6 +111,12 @@ is copied here.
   IR support, basis gates, queue depth, shot/circuit limits, online state,
   dynamic-circuit feature inference, and calibration timestamp without job
   submission.
+- [x] **Direct IQM no-submit capability snapshot.** Implemented 2026-05-20:
+  `snapshot_from_iqm_backend` adds the direct `direct/iqm` route and metadata
+  snapshot path for injected IQM backend objects or metadata JSON, including
+  QPY/Qiskit/OpenQASM declaration translation, qubit count, native gate set,
+  shot and circuit limits, queue depth, online state, simulator flag,
+  architecture name, and calibration timestamp without circuit execution.
 - [x] **Direct IonQ no-submit capability snapshot.** Implemented 2026-05-20:
   `snapshot_from_ionq_backend` adds the direct `direct/ionq` route and
   metadata snapshot path for injected IonQ backend objects or REST JSON,

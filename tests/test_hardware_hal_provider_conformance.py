@@ -82,6 +82,7 @@ def test_aggregator_provider_matrix_covers_source_grounded_current_brokers() -> 
         "aws_braket/rigetti",
         "aws_braket/amazon_simulators",
         "direct/ibm_quantum",
+        "direct/iqm",
         "direct/ionq",
         "direct/quantinuum",
         "direct/rigetti",
@@ -136,6 +137,12 @@ def test_aggregator_provider_matrix_covers_source_grounded_current_brokers() -> 
         "direct/rigetti",
         "qbraid/rigetti",
         "strangeworks/rigetti",
+    ]
+    assert [route.route_id for route in aggregator_provider_routes_for(provider="iqm")] == [
+        "aws_braket/iqm",
+        "direct/iqm",
+        "qbraid/iqm",
+        "strangeworks/iqm",
     ]
 
 
@@ -196,6 +203,15 @@ def test_aggregator_provider_selector_resolves_profile_and_ir() -> None:
     assert rigetti.route.route_id == "direct/rigetti"
     assert rigetti.route.backend_id == "rigetti_qcs"
     assert rigetti.profile.provider == "rigetti"
+
+    iqm = resolve_aggregator_provider_route(
+        aggregator="direct",
+        provider="iqm",
+        ir_format="qiskit_qpy",
+    )
+    assert iqm.route.route_id == "direct/iqm"
+    assert iqm.route.backend_id == "iqm_cloud"
+    assert iqm.profile.provider == "iqm"
 
     with pytest.raises(LookupError, match="unsupported IR"):
         resolve_aggregator_provider_route(
@@ -315,6 +331,14 @@ def test_aggregator_provider_dependency_matrix_covers_every_route() -> None:
     assert direct_rigetti.target_family == "rigetti"
     assert "quil" in direct_rigetti.ir_formats
     assert direct_rigetti.submit_requires_approval is True
+
+    direct_iqm = by_route["direct/iqm"]
+    assert direct_iqm.aggregator == "direct"
+    assert direct_iqm.provider == "iqm"
+    assert direct_iqm.backend_id == "iqm_cloud"
+    assert direct_iqm.target_family == "iqm"
+    assert "qiskit_qpy" in direct_iqm.ir_formats
+    assert direct_iqm.submit_requires_approval is True
 
     direct_ibm = by_route["direct/ibm_quantum"]
     assert direct_ibm.aggregator == "direct"
