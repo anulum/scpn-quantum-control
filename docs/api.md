@@ -676,6 +676,7 @@ from scpn_quantum_control.hardware import (
     IonQCloudHALAdapter,
     PennyLaneDeviceHALAdapter,
     QbraidRuntimeHALAdapter,
+    RigettiQCSHALAdapter,
     QiskitAerHALAdapter,
     QuantumBackend,
     QuantumWorkload,
@@ -685,6 +686,7 @@ from scpn_quantum_control.hardware import (
     ionq_qis_workload,
     pennylane_gate_workload,
     qbraid_program_to_workload,
+    rigetti_quil_workload,
     qiskit_circuit_to_workload,
 )
 
@@ -813,6 +815,35 @@ qbraid_job = hal.submit(
         "OPENQASM 3.0;\nqubit[1] q;\nbit[1] c;\nh q[0];",
         workload_id="qbraid_h",
         ir_format="openqasm3",
+        n_qubits=1,
+        shots=128,
+    ),
+    approval_id="approved-run",
+)
+```
+
+The direct Rigetti adapter layer provides `RigettiQCSHALAdapter` and
+`rigetti_quil_workload()`. It follows the pyQuil `QuantumComputer` execution
+path: construct a Quil `Program`, wrap it in a shot loop, compile it with the
+selected QCS quantum computer, run the compiled executable, and normalise the
+`ro` readout register into HAL counts. The route is still approval-gated by
+HAL, and direct execution accepts Quil workloads only; OpenQASM or MLIR must be
+translated before submission.
+
+```python
+rigetti_qc_name = "9q-square-qvm"
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+hal.register_backend(
+    RigettiQCSHALAdapter(
+        hal.profile("rigetti_qcs"),
+        quantum_computer_name=rigetti_qc_name,
+    )
+)
+job = hal.submit(
+    "rigetti_qcs",
+    rigetti_quil_workload(
+        "DECLARE ro BIT[1]\nH 0\nMEASURE 0 ro[0]",
+        workload_id="rigetti_h",
         n_qubits=1,
         shots=128,
     ),

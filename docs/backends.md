@@ -318,6 +318,7 @@ from scpn_quantum_control.hardware import (
     LocalDeterministicSimulator,
     PennyLaneDeviceHALAdapter,
     QbraidRuntimeHALAdapter,
+    RigettiQCSHALAdapter,
     QiskitAerHALAdapter,
     QuantumWorkload,
     azure_openqasm3_to_workload,
@@ -325,6 +326,7 @@ from scpn_quantum_control.hardware import (
     ionq_qis_workload,
     pennylane_gate_workload,
     qbraid_program_to_workload,
+    rigetti_quil_workload,
     qiskit_circuit_to_workload,
 )
 
@@ -446,6 +448,35 @@ job = hal.submit(
         workload_id="ionq_bell",
         n_qubits=2,
         shots=256,
+    ),
+    approval_id="approved-run",
+)
+```
+
+The direct Rigetti adapter layer provides `RigettiQCSHALAdapter` and
+`rigetti_quil_workload()`. It keeps pyQuil and QCS loading lazy until a concrete
+adapter is registered, then follows the documented pyQuil route: `Program`,
+`wrap_in_numshots_loop(...)`, `QuantumComputer.compile(...)`,
+`QuantumComputer.run(...)`, and `ro` register readout extraction. Direct
+Rigetti execution is Quil-native; OpenQASM 3 and MLIR route entries are
+registry-level translation targets and must be converted before submission.
+
+```python
+rigetti_qc_name = "9q-square-qvm"
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+hal.register_backend(
+    RigettiQCSHALAdapter(
+        hal.profile("rigetti_qcs"),
+        quantum_computer_name=rigetti_qc_name,
+    )
+)
+job = hal.submit(
+    "rigetti_qcs",
+    rigetti_quil_workload(
+        "DECLARE ro BIT[1]\nH 0\nMEASURE 0 ro[0]",
+        workload_id="rigetti_h",
+        n_qubits=1,
+        shots=128,
     ),
     approval_id="approved-run",
 )

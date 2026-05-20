@@ -153,6 +153,7 @@ from .hal_qiskit import (
     qiskit_circuit_to_qasm3_workload,
     qiskit_circuit_to_workload,
 )
+from .hal_rigetti import RigettiQCSHALAdapter, rigetti_quil_workload
 from .hybrid_digital_analog import (
     HybridCouplingAssignment,
     HybridCouplingPartition,
@@ -249,7 +250,9 @@ __all__ = [
     "PennyLaneDeviceHALAdapter",
     "pennylane_gate_workload",
     "QbraidRuntimeHALAdapter",
+    "RigettiQCSHALAdapter",
     "qbraid_program_to_workload",
+    "rigetti_quil_workload",
     "BackendCapabilities",
     "BackendProfile",
     "HardwareAbstractionLayer",
