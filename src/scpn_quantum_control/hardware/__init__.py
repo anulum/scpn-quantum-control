@@ -195,7 +195,12 @@ from .iqm_backend import (
 )
 from .job_dossier import HardwareJobDossier, build_s1_feedback_job_dossier
 from .noise_model import heron_r2_noise_model
-from .provider_smoke import ProviderOptionalDependencyRow, provider_optional_dependency_matrix
+from .provider_smoke import (
+    AggregatorProviderOptionalDependencyRow,
+    ProviderOptionalDependencyRow,
+    aggregator_provider_optional_dependency_matrix,
+    provider_optional_dependency_matrix,
+)
 from .qubit_mapper import (
     ExecutionRegion,
     QubitMappingResult,
@@ -258,8 +263,10 @@ __all__ = [
     "FeedbackPlatformCapability",
     "FeedbackSubmissionPackage",
     "PlatformReadiness",
+    "AggregatorProviderOptionalDependencyRow",
     "ProviderOptionalDependencyRow",
     "assess_platform_readiness",
+    "aggregator_provider_optional_dependency_matrix",
     "build_s1_feedback_submission_package",
     "default_s1_platforms",
     "provider_optional_dependency_matrix",

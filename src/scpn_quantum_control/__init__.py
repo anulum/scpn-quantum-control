@@ -148,7 +148,9 @@ from .hardware.hal_strangeworks import (
     strangeworks_program_to_workload,
 )
 from .hardware.provider_smoke import (
+    AggregatorProviderOptionalDependencyRow,
     ProviderOptionalDependencyRow,
+    aggregator_provider_optional_dependency_matrix,
     provider_optional_dependency_matrix,
 )
 from .hardware.qubit_mapper import (
@@ -391,7 +393,9 @@ __all__ = [
     "pulser_sequence_workload",
     "PennyLaneDeviceHALAdapter",
     "pennylane_gate_workload",
+    "AggregatorProviderOptionalDependencyRow",
     "ProviderOptionalDependencyRow",
+    "aggregator_provider_optional_dependency_matrix",
     "provider_optional_dependency_matrix",
     "QbraidRuntimeHALAdapter",
     "StrangeworksComputeHALAdapter",

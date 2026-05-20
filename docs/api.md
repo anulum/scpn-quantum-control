@@ -164,6 +164,9 @@ qBraid and Strangeworks rows resolve to `qbraid_runtime` and
 `strangeworks_compute` respectively. Use `resolve_aggregator_provider_route()`
 when routing code needs a single validated row plus the executable HAL profile
 for a requested aggregator, provider, and IR format.
+`aggregator_provider_optional_dependency_matrix()` adds the corresponding
+offline SDK-import evidence for preflight checks before authenticated provider
+capability probes or live submissions.
 
 ## Advanced Module Reference
 

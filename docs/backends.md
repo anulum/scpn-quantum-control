@@ -564,12 +564,19 @@ built-in HAL route. It uses import-spec discovery only; it does not import
 provider SDKs, read credentials, authenticate, create clients, or touch provider
 networks.
 
+`aggregator_provider_optional_dependency_matrix()` joins the
+aggregator/provider route matrix to the same dependency evidence. This is the
+preflight surface for broker/provider combinations: it reports the route id,
+resolved HAL backend, SDK package, import names, supported IR formats, approval
+gate, and whether the row is a dynamic catalogue target.
+
 The same check is exposed as `scpn-provider-smoke`. In CI or operator
 preflight lanes, install `scpn-quantum-control[providers]` and run:
 
 ```bash
 scpn-provider-smoke --format table
 scpn-provider-smoke --format json --sdk-package qiskit-ibm-runtime --require-all
+scpn-provider-smoke --aggregator-routes --aggregator qbraid --provider rigetti --ir-format quil --format json
 ```
 
 The portable `providers` extra intentionally excludes the current D-Wave, IQM,

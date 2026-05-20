@@ -16,6 +16,11 @@ import sys
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 
+from .aggregators import (
+    AggregatorProviderRoute,
+    built_in_aggregator_provider_routes,
+    resolve_aggregator_provider_route,
+)
 from .backends import list_hal_backend_descriptors
 
 _SDK_IMPORTS: dict[str, tuple[str, ...]] = {
@@ -61,6 +66,25 @@ class ProviderOptionalDependencyRow:
 
 
 @dataclass(frozen=True)
+class AggregatorProviderOptionalDependencyRow:
+    """Offline dependency evidence for one aggregator/provider route."""
+
+    route_id: str
+    aggregator: str
+    provider: str
+    backend_id: str
+    adapter_module: str
+    sdk_package: str
+    import_names: tuple[str, ...]
+    available: bool
+    missing_imports: tuple[str, ...]
+    ir_formats: tuple[str, ...]
+    submit_requires_approval: bool
+    target_family: str
+    dynamic_catalog_target: bool
+
+
+@dataclass(frozen=True)
 class IsolatedProviderSmokeLane:
     """Deterministic command lane for an SDK family isolated from ``[providers]``."""
 
@@ -97,6 +121,48 @@ def provider_optional_dependency_matrix() -> tuple[ProviderOptionalDependencyRow
             )
         )
     return tuple(rows)
+
+
+def aggregator_provider_optional_dependency_matrix(
+    *,
+    aggregator: str | None = None,
+    provider: str | None = None,
+    ir_format: str | None = None,
+    route_id: str | None = None,
+) -> tuple[AggregatorProviderOptionalDependencyRow, ...]:
+    """Return offline dependency evidence for aggregator/provider routes.
+
+    The matrix joins the declared aggregator/provider route table to the HAL
+    optional-dependency probe. It remains no-network and no-authentication:
+    import availability is measured through ``find_spec`` only.
+    """
+
+    dependency_by_backend = {row.backend_id: row for row in provider_optional_dependency_matrix()}
+    routes = built_in_aggregator_provider_routes()
+    if aggregator is not None and provider is not None:
+        resolved = resolve_aggregator_provider_route(
+            aggregator=aggregator,
+            provider=provider,
+            ir_format=ir_format,
+            route_id=route_id,
+        )
+        routes = (resolved.route,)
+    else:
+        if aggregator is not None:
+            routes = tuple(route for route in routes if route.aggregator == aggregator)
+        if provider is not None:
+            routes = tuple(route for route in routes if route.provider == provider)
+        if route_id is not None:
+            routes = tuple(route for route in routes if route.route_id == route_id)
+        if ir_format is not None:
+            routes = tuple(route for route in routes if ir_format in route.ir_formats)
+    rows = tuple(
+        _aggregator_dependency_row(route, dependency_by_backend[route.backend_id])
+        for route in routes
+    )
+    if not rows:
+        raise LookupError("no aggregator/provider dependency rows matched the requested filters")
+    return rows
 
 
 def isolated_provider_smoke_lanes() -> tuple[IsolatedProviderSmokeLane, ...]:
@@ -139,6 +205,27 @@ def isolated_provider_smoke_lanes() -> tuple[IsolatedProviderSmokeLane, ...]:
             )
         )
     return tuple(lanes)
+
+
+def _aggregator_dependency_row(
+    route: AggregatorProviderRoute,
+    dependency: ProviderOptionalDependencyRow,
+) -> AggregatorProviderOptionalDependencyRow:
+    return AggregatorProviderOptionalDependencyRow(
+        route_id=route.route_id,
+        aggregator=route.aggregator,
+        provider=route.provider,
+        backend_id=route.backend_id,
+        adapter_module=dependency.adapter_module,
+        sdk_package=dependency.sdk_package,
+        import_names=dependency.import_names,
+        available=dependency.available,
+        missing_imports=dependency.missing_imports,
+        ir_formats=route.ir_formats,
+        submit_requires_approval=route.submit_requires_approval,
+        target_family=route.target_family,
+        dynamic_catalog_target="dynamic_catalog_target" in route.notes,
+    )
 
 
 def _smoke_command(venv_path: str, backend_ids: Sequence[str]) -> tuple[str, ...]:
@@ -194,6 +281,27 @@ def main(argv: Sequence[str] | None = None) -> int:
         action="store_true",
         help="Print isolated smoke lanes for SDK families excluded from [providers].",
     )
+    parser.add_argument(
+        "--aggregator-routes",
+        action="store_true",
+        help="Print dependency evidence joined to aggregator/provider route rows.",
+    )
+    parser.add_argument(
+        "--aggregator",
+        help="Restrict --aggregator-routes to one aggregator id.",
+    )
+    parser.add_argument(
+        "--provider",
+        help="Restrict --aggregator-routes to one provider id.",
+    )
+    parser.add_argument(
+        "--ir-format",
+        help="Restrict --aggregator-routes to rows supporting one IR format.",
+    )
+    parser.add_argument(
+        "--route-id",
+        help="Restrict --aggregator-routes to one route id.",
+    )
     args = parser.parse_args(argv)
 
     if args.plan_isolated:
@@ -202,6 +310,25 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(json.dumps([asdict(lane) for lane in lanes], sort_keys=True))
         else:
             print(_format_isolated_plan(lanes))
+        return 0
+
+    if args.aggregator_routes:
+        try:
+            route_rows = aggregator_provider_optional_dependency_matrix(
+                aggregator=args.aggregator,
+                provider=args.provider,
+                ir_format=args.ir_format,
+                route_id=args.route_id,
+            )
+        except LookupError as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
+        if args.format == "json":
+            print(json.dumps([asdict(row) for row in route_rows], sort_keys=True))
+        else:
+            print(_format_aggregator_dependency_table(route_rows))
+        if args.require_all and any(not row.available for row in route_rows):
+            return 1
         return 0
 
     rows = _select_rows(
@@ -254,6 +381,30 @@ def _format_table(rows: Sequence[ProviderOptionalDependencyRow]) -> str:
     return "\n".join(lines)
 
 
+def _format_aggregator_dependency_table(
+    rows: Sequence[AggregatorProviderOptionalDependencyRow],
+) -> str:
+    lines = [
+        "route_id\taggregator\tprovider\tbackend_id\tsdk_package\tavailable\tmissing_imports\tir_formats"
+    ]
+    lines.extend(
+        "\t".join(
+            (
+                row.route_id,
+                row.aggregator,
+                row.provider,
+                row.backend_id,
+                row.sdk_package,
+                str(row.available).lower(),
+                ",".join(row.missing_imports),
+                ",".join(row.ir_formats),
+            )
+        )
+        for row in rows
+    )
+    return "\n".join(lines)
+
+
 def _format_isolated_plan(rows: Sequence[IsolatedProviderSmokeLane]) -> str:
     lines = [
         "extra\tbackend_ids\tsdk_packages\tvenv_path\tcreate_command\tinstall_command\tsmoke_command"
@@ -276,8 +427,10 @@ def _format_isolated_plan(rows: Sequence[IsolatedProviderSmokeLane]) -> str:
 
 
 __all__ = [
+    "AggregatorProviderOptionalDependencyRow",
     "IsolatedProviderSmokeLane",
     "ProviderOptionalDependencyRow",
+    "aggregator_provider_optional_dependency_matrix",
     "isolated_provider_smoke_lanes",
     "main",
     "provider_optional_dependency_matrix",

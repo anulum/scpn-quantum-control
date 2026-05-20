@@ -30,6 +30,7 @@ from scpn_quantum_control.hardware.aggregators import (
 from scpn_quantum_control.hardware.backends import list_hal_backend_descriptors
 from scpn_quantum_control.hardware.hal import built_in_backend_profiles
 from scpn_quantum_control.hardware.provider_smoke import (
+    aggregator_provider_optional_dependency_matrix,
     isolated_provider_smoke_lanes,
     provider_optional_dependency_matrix,
 )
@@ -226,6 +227,50 @@ def test_optional_dependency_matrix_covers_all_non_builtin_provider_modules() ->
         assert isinstance(row.available, bool)
 
 
+def test_aggregator_provider_dependency_matrix_covers_every_route() -> None:
+    """Aggregator routes should carry executable dependency evidence."""
+
+    rows = aggregator_provider_optional_dependency_matrix()
+    by_route = {row.route_id: row for row in rows}
+    routes = built_in_aggregator_provider_routes()
+
+    assert len(rows) == len(routes)
+    assert set(by_route) == {route.route_id for route in routes}
+
+    qbraid_rigetti = by_route["qbraid/rigetti"]
+    assert qbraid_rigetti.aggregator == "qbraid"
+    assert qbraid_rigetti.provider == "rigetti"
+    assert qbraid_rigetti.backend_id == "qbraid_runtime"
+    assert qbraid_rigetti.sdk_package == "qbraid"
+    assert "quil" in qbraid_rigetti.ir_formats
+    assert qbraid_rigetti.dynamic_catalog_target is True
+    assert isinstance(qbraid_rigetti.available, bool)
+
+    direct_ionq = by_route["aws_braket/ionq"]
+    assert direct_ionq.backend_id == "aws_braket_ionq"
+    assert direct_ionq.target_family == "ionq"
+    assert direct_ionq.submit_requires_approval is True
+
+
+def test_aggregator_provider_dependency_matrix_filters_by_route_request() -> None:
+    """Operators need deterministic scoped preflight rows before live work."""
+
+    rows = aggregator_provider_optional_dependency_matrix(
+        aggregator="qbraid",
+        provider="rigetti",
+        ir_format="quil",
+    )
+
+    assert [row.route_id for row in rows] == ["qbraid/rigetti"]
+
+    with pytest.raises(LookupError, match="unsupported IR"):
+        aggregator_provider_optional_dependency_matrix(
+            aggregator="qbraid",
+            provider="rigetti",
+            ir_format="braket_ahs",
+        )
+
+
 def test_hal_sdk_packages_are_exposed_as_install_extras() -> None:
     pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
     data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
@@ -308,6 +353,29 @@ def test_provider_smoke_cli_filters_to_one_backend(capsys) -> None:  # type: ign
     assert exit_code == 0
     assert [row["backend_id"] for row in payload] == ["dwave_leap"]
     assert payload[0]["sdk_package"] == "dwave-cloud-client"
+
+
+def test_provider_smoke_cli_emits_aggregator_route_dependency_matrix(capsys) -> None:  # type: ignore[no-untyped-def]
+    exit_code = provider_smoke_main(
+        [
+            "--format",
+            "json",
+            "--aggregator-routes",
+            "--aggregator",
+            "qbraid",
+            "--provider",
+            "rigetti",
+            "--ir-format",
+            "quil",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert [row["route_id"] for row in payload] == ["qbraid/rigetti"]
+    assert payload[0]["backend_id"] == "qbraid_runtime"
+    assert payload[0]["dynamic_catalog_target"] is True
 
 
 def test_provider_smoke_cli_rejects_empty_filter(capsys) -> None:  # type: ignore[no-untyped-def]
