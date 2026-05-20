@@ -593,11 +593,11 @@ IR support. The function does not create clients or submit jobs; provider SDK
 authentication remains inside the injected read-only probe.
 `snapshot_from_azure_target()`, `snapshot_from_braket_device()`,
 `snapshot_from_iqm_backend()`, `snapshot_from_ionq_backend()`,
-`snapshot_from_oqc_target()`, `snapshot_from_qiskit_runtime_backend()`,
-`snapshot_from_qbraid_device()`, `snapshot_from_quantinuum_backend()`,
-`snapshot_from_quera_bloqade()`, `snapshot_from_rigetti_qcs()`, and
-`snapshot_from_strangeworks_backend()` are concrete metadata adapters for this
-contract. They consume injected SDK
+`snapshot_from_oqc_target()`, `snapshot_from_pasqal_target()`,
+`snapshot_from_qiskit_runtime_backend()`, `snapshot_from_qbraid_device()`,
+`snapshot_from_quantinuum_backend()`, `snapshot_from_quera_bloqade()`,
+`snapshot_from_rigetti_qcs()`, and `snapshot_from_strangeworks_backend()` are
+concrete metadata adapters for this contract. They consume injected SDK
 backend/device objects and record target name, qubit count, route-supported or
 declared IR formats, gate basis, queue depth, shot/circuit limits, online state,
 simulator state, and calibration timestamp when the provider object exposes
@@ -745,6 +745,13 @@ job = hal.submit(
     approval_id="approved-run",
 )
 ```
+
+`snapshot_from_pasqal_target()` provides the matching no-submit readiness path
+for injected Pasqal target metadata or metadata JSON. It records target name,
+atom count, declared Pulser/Pasqal IR/OpenQASM/MLIR support, supported bases,
+channel declarations, shot and sequence limits, queue depth, online state,
+simulator flag, lattice geometry, and calibration timestamp without calling
+Pasqal submission APIs.
 
 The direct QuEra/Bloqade adapter layer provides `QuEraBloqadeHALAdapter` and
 `bloqade_ahs_workload()`. It consumes the repository's `bloqade_ahs_plan_v1`

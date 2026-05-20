@@ -85,6 +85,7 @@ def test_aggregator_provider_matrix_covers_source_grounded_current_brokers() -> 
         "direct/iqm",
         "direct/ionq",
         "direct/oqc",
+        "direct/pasqal",
         "direct/quantinuum",
         "direct/quera",
         "direct/rigetti",
@@ -155,6 +156,11 @@ def test_aggregator_provider_matrix_covers_source_grounded_current_brokers() -> 
     assert [route.route_id for route in aggregator_provider_routes_for(provider="oqc")] == [
         "direct/oqc",
         "qbraid/oqc",
+    ]
+    assert [route.route_id for route in aggregator_provider_routes_for(provider="pasqal")] == [
+        "azure_quantum/pasqal",
+        "direct/pasqal",
+        "qbraid/pasqal",
     ]
 
 
@@ -242,6 +248,15 @@ def test_aggregator_provider_selector_resolves_profile_and_ir() -> None:
     assert oqc.route.route_id == "direct/oqc"
     assert oqc.route.backend_id == "oqc_cloud"
     assert oqc.profile.provider == "oqc"
+
+    pasqal = resolve_aggregator_provider_route(
+        aggregator="direct",
+        provider="pasqal",
+        ir_format="pulser",
+    )
+    assert pasqal.route.route_id == "direct/pasqal"
+    assert pasqal.route.backend_id == "pasqal_cloud"
+    assert pasqal.profile.provider == "pasqal"
 
     with pytest.raises(LookupError, match="unsupported IR"):
         resolve_aggregator_provider_route(
@@ -385,6 +400,14 @@ def test_aggregator_provider_dependency_matrix_covers_every_route() -> None:
     assert direct_oqc.target_family == "oqc"
     assert "openqasm3" in direct_oqc.ir_formats
     assert direct_oqc.submit_requires_approval is True
+
+    direct_pasqal = by_route["direct/pasqal"]
+    assert direct_pasqal.aggregator == "direct"
+    assert direct_pasqal.provider == "pasqal"
+    assert direct_pasqal.backend_id == "pasqal_cloud"
+    assert direct_pasqal.target_family == "pasqal_neutral_atom"
+    assert "pulser" in direct_pasqal.ir_formats
+    assert direct_pasqal.submit_requires_approval is True
 
     direct_ibm = by_route["direct/ibm_quantum"]
     assert direct_ibm.aggregator == "direct"

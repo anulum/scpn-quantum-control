@@ -21,6 +21,7 @@ from scpn_quantum_control.hardware.provider_capability_discovery import (
     snapshot_from_ionq_backend,
     snapshot_from_iqm_backend,
     snapshot_from_oqc_target,
+    snapshot_from_pasqal_target,
     snapshot_from_qbraid_device,
     snapshot_from_qiskit_runtime_backend,
     snapshot_from_quantinuum_backend,
@@ -175,6 +176,9 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
         snapshot_from_oqc_target as exported_oqc_snapshot,
     )
     from scpn_quantum_control.hardware import (
+        snapshot_from_pasqal_target as exported_pasqal_snapshot,
+    )
+    from scpn_quantum_control.hardware import (
         snapshot_from_qiskit_runtime_backend as exported_qiskit_snapshot,
     )
     from scpn_quantum_control.hardware import (
@@ -196,6 +200,7 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
     assert exported_iqm_snapshot is snapshot_from_iqm_backend
     assert exported_ionq_snapshot is snapshot_from_ionq_backend
     assert exported_oqc_snapshot is snapshot_from_oqc_target
+    assert exported_pasqal_snapshot is snapshot_from_pasqal_target
     assert exported_qiskit_snapshot is snapshot_from_qiskit_runtime_backend
     assert exported_quantinuum_snapshot is snapshot_from_quantinuum_backend
     assert exported_quera_snapshot is snapshot_from_quera_bloqade
@@ -653,6 +658,83 @@ def test_direct_oqc_snapshot_blocks_offline_target_without_submission() -> None:
     assert decision.status == "blocked"
     assert "provider target is offline" in decision.blockers
     assert decision.snapshot.supported_ir_formats == ("openqasm3",)
+    assert decision.snapshot.simulator is False
+
+
+def test_direct_pasqal_snapshot_reads_target_metadata_without_submission() -> None:
+    """Direct Pasqal metadata adapters should consume injected target metadata only."""
+
+    class DeviceSpecs:
+        max_atom_num = 100
+        supported_bases = ("ground-rydberg", "digital")
+        channels = ("rydberg_global", "raman_local")
+        max_runs = 200
+        max_sequence_count = 8
+
+    class Target:
+        name = "Fresnel"
+        status = "available"
+        supported_ir_formats = ("pulser", "pasqal.ir", "qasm.v3", "mlir")
+        device_specs = DeviceSpecs()
+        queue_depth = 5
+        last_calibration = "2026-05-20T13:30:00Z"
+        is_simulator = False
+        lattice_geometry = "2d_tweezer_array"
+
+        def submit(self, *args: object, **kwargs: object) -> None:
+            raise AssertionError("metadata snapshot must not submit Pasqal work")
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="direct",
+        provider="pasqal",
+        ir_format="pulser",
+        min_qubits=16,
+        metadata_probe=lambda resolved: snapshot_from_pasqal_target(
+            resolved,
+            Target(),
+        ),
+    )
+
+    assert decision.status == "ready"
+    assert decision.snapshot.route_id == "direct/pasqal"
+    assert decision.snapshot.backend_id == "pasqal_cloud"
+    assert decision.snapshot.target_name == "Fresnel"
+    assert decision.snapshot.n_qubits == 100
+    assert decision.snapshot.supported_ir_formats == ("pulser", "pasqal_ir", "openqasm3", "mlir")
+    assert decision.snapshot.basis_gates == ("ground-rydberg", "digital")
+    assert "neutral_atom" in decision.snapshot.native_features
+    assert "analog_hamiltonian" in decision.snapshot.native_features
+    assert "rydberg" in decision.snapshot.native_features
+    assert decision.snapshot.max_shots == 200
+    assert decision.snapshot.max_circuits == 8
+    assert decision.snapshot.queue_depth == 5
+    assert decision.snapshot.calibration_timestamp == "2026-05-20T13:30:00Z"
+    assert decision.snapshot.metadata["adapter"] == "pasqal_target_no_submit"
+    assert decision.snapshot.metadata["channels"] == ("rydberg_global", "raman_local")
+    assert decision.snapshot.metadata["lattice_geometry"] == "2d_tweezer_array"
+
+
+def test_direct_pasqal_snapshot_blocks_offline_target_without_submission() -> None:
+    """Direct Pasqal offline metadata should block before Pulser submission."""
+
+    metadata = {
+        "target": "pasqal-maintenance",
+        "availability": "maintenance",
+        "atom_count": 64,
+        "input_formats": ("pulser_sequence",),
+        "simulator": False,
+    }
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="direct",
+        provider="pasqal",
+        ir_format="pulser",
+        metadata_probe=lambda resolved: snapshot_from_pasqal_target(resolved, metadata),
+    )
+
+    assert decision.status == "blocked"
+    assert "provider target is offline" in decision.blockers
+    assert decision.snapshot.supported_ir_formats == ("pulser",)
     assert decision.snapshot.simulator is False
 
 

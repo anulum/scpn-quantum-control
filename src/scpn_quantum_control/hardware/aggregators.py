@@ -108,6 +108,14 @@ def built_in_aggregator_provider_routes() -> tuple[AggregatorProviderRoute, ...]
             ("openqasm3", "qir"),
         ),
         _route(
+            "direct/pasqal",
+            "direct",
+            "pasqal",
+            "pasqal_cloud",
+            ("pulser", "pasqal_ir", "openqasm3", "mlir"),
+            target_family="pasqal_neutral_atom",
+        ),
+        _route(
             "direct/quantinuum",
             "direct",
             "quantinuum",
@@ -420,9 +428,16 @@ def _route(
     ir_formats: Sequence[str],
     *,
     notes: Sequence[str] = (),
+    target_family: str | None = None,
 ) -> AggregatorProviderRoute:
     descriptor = describe_hal_backend_profile(backend_id)
-    target_family = descriptor.provider if descriptor.provider != "dynamic" else provider
+    resolved_target_family = (
+        target_family
+        if target_family is not None
+        else descriptor.provider
+        if descriptor.provider != "dynamic"
+        else provider
+    )
     return AggregatorProviderRoute(
         route_id=route_id,
         aggregator=aggregator,
@@ -432,7 +447,7 @@ def _route(
         sdk_package=descriptor.sdk_package,
         ir_formats=tuple(ir_formats),
         submit_requires_approval=descriptor.submit_requires_approval,
-        target_family=target_family,
+        target_family=resolved_target_family,
         notes=tuple(notes),
     )
 

@@ -500,6 +500,101 @@ def snapshot_from_oqc_target(
     )
 
 
+def snapshot_from_pasqal_target(
+    resolved: ResolvedAggregatorProviderRoute,
+    target: Any,
+) -> ProviderCapabilitySnapshot:
+    """Build a no-submit capability snapshot from direct Pasqal target metadata."""
+
+    device_specs = _first_available_attr(
+        target,
+        names=("device_specs", "device", "device_capabilities", "capabilities", "metadata"),
+    )
+    return ProviderCapabilitySnapshot(
+        route_id=resolved.route.route_id,
+        aggregator=resolved.route.aggregator,
+        provider=resolved.route.provider,
+        backend_id=resolved.route.backend_id,
+        target_name=_first_text_attr(
+            target,
+            device_specs,
+            names=("target", "target_name", "backend", "backend_id", "name", "id"),
+            field_name="Pasqal target name",
+        ),
+        n_qubits=_first_positive_int_attr(
+            device_specs,
+            target,
+            names=(
+                "max_atom_num",
+                "max_atoms",
+                "num_atoms",
+                "n_atoms",
+                "atom_count",
+                "num_qubits",
+                "n_qubits",
+                "qubits",
+            ),
+            field_name="Pasqal atom count",
+        ),
+        supported_ir_formats=_pasqal_supported_ir_formats(resolved, target),
+        basis_gates=_first_string_tuple_attr(
+            device_specs,
+            target,
+            names=(
+                "supported_bases",
+                "basis_gates",
+                "native_gates",
+                "gates",
+                "supported_operations",
+            ),
+        ),
+        native_features=_pasqal_native_features(target, device_specs),
+        online=_pasqal_online_state(target),
+        simulator=_first_bool_attr(target, device_specs, names=("simulator", "is_simulator"))
+        or False,
+        max_shots=_first_optional_int_attr(
+            device_specs,
+            target,
+            names=("max_runs", "max_shots", "shots_limit", "maxShots", "max_execution_shots"),
+        ),
+        max_circuits=_first_optional_int_attr(
+            device_specs,
+            target,
+            names=("max_sequence_count", "max_circuits", "max_jobs", "max_experiments"),
+        ),
+        queue_depth=_first_optional_int_attr(
+            target,
+            device_specs,
+            names=("queue_depth", "pending_jobs", "queue_size", "average_queue_time"),
+            minimum=0,
+        ),
+        calibration_timestamp=_first_optional_text_attr(
+            target,
+            device_specs,
+            names=(
+                "last_calibration",
+                "calibration_timestamp",
+                "latest_calibration",
+                "last_updated",
+                "lastUpdated",
+            ),
+        ),
+        metadata={
+            "adapter": "pasqal_target_no_submit",
+            "channels": _first_string_tuple_attr(
+                device_specs,
+                target,
+                names=("channels", "supported_channels", "rydberg_channels"),
+            ),
+            "lattice_geometry": _first_optional_text_attr(
+                target,
+                device_specs,
+                names=("lattice_geometry", "geometry", "topology", "register_geometry"),
+            ),
+        },
+    )
+
+
 def snapshot_from_quantinuum_backend(
     resolved: ResolvedAggregatorProviderRoute,
     backend: Any,
@@ -1403,6 +1498,66 @@ def _oqc_online_state(target: Any) -> bool | None:
     return None
 
 
+def _pasqal_supported_ir_formats(
+    resolved: ResolvedAggregatorProviderRoute,
+    target: Any,
+) -> tuple[str, ...]:
+    declared = _first_string_tuple_attr(
+        target,
+        names=(
+            "supported_ir_formats",
+            "ir_formats",
+            "input_formats",
+            "input_data_formats",
+            "program_formats",
+        ),
+    )
+    if not declared:
+        return resolved.route.ir_formats
+    return tuple(_pasqal_ir_format_token(item) for item in declared)
+
+
+def _pasqal_ir_format_token(value: str) -> str:
+    normalized = value.strip().lower().replace("-", "_")
+    if normalized in {"pulser", "pulser_sequence", "pulser_sequence_plan_v1"}:
+        return "pulser"
+    if normalized in {"pasqal_ir", "pasqal.ir"}:
+        return "pasqal_ir"
+    if normalized in {"qasm.v3", "qasm3", "openqasm", "openqasm_3", "openqasm3"}:
+        return "openqasm3"
+    if normalized == "mlir":
+        return "mlir"
+    return normalized
+
+
+def _pasqal_native_features(*sources: Any) -> tuple[str, ...]:
+    features = set(_first_string_tuple_attr(*sources, names=("native_features", "features")))
+    features.add("neutral_atom")
+    features.add("analog_hamiltonian")
+    features.add("rydberg")
+    if _first_bool_attr(*sources, names=("digital_mode", "supports_digital")):
+        features.add("digital_analog")
+    return tuple(sorted(features))
+
+
+def _pasqal_online_state(target: Any) -> bool | None:
+    explicit = _first_online_attr(target)
+    if explicit is not None:
+        return explicit
+    text_status = _first_optional_text_attr(
+        target,
+        names=("availability", "target_status", "status", "state"),
+    )
+    if text_status is None:
+        return None
+    normalized = text_status.strip().lower()
+    if normalized in {"available", "online", "ready", "active", "enabled"}:
+        return True
+    if normalized in {"unavailable", "offline", "disabled", "retired", "maintenance"}:
+        return False
+    return None
+
+
 def _quantinuum_supported_ir_formats(
     resolved: ResolvedAggregatorProviderRoute,
     *sources: Any,
@@ -1757,6 +1912,7 @@ __all__ = [
     "snapshot_from_iqm_backend",
     "snapshot_from_ionq_backend",
     "snapshot_from_oqc_target",
+    "snapshot_from_pasqal_target",
     "snapshot_from_qiskit_runtime_backend",
     "snapshot_from_qbraid_device",
     "snapshot_from_quantinuum_backend",

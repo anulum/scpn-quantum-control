@@ -162,11 +162,11 @@ broker catalogues explicit without duplicating runtime adapters: direct Braket
 and Azure provider rows resolve to their specific HAL profiles, the direct IBM
 Quantum row resolves to `ibm_quantum`, the direct IonQ row resolves to
 `ionq_cloud`, the direct IQM row resolves to `iqm_cloud`, the direct
-OQC row resolves to `oqc_cloud`, the direct Quantinuum row resolves to
-`quantinuum_cloud`, the direct QuEra/Bloqade row resolves to `quera_bloqade`,
-the direct Rigetti row resolves to `rigetti_qcs`, while dynamic qBraid and
-Strangeworks rows resolve to `qbraid_runtime` and `strangeworks_compute`
-respectively. Use
+OQC row resolves to `oqc_cloud`, the direct Pasqal row resolves to
+`pasqal_cloud`, the direct Quantinuum row resolves to `quantinuum_cloud`, the
+direct QuEra/Bloqade row resolves to `quera_bloqade`, the direct Rigetti row
+resolves to `rigetti_qcs`, while dynamic qBraid and Strangeworks rows resolve
+to `qbraid_runtime` and `strangeworks_compute` respectively. Use
 `resolve_aggregator_provider_route()` when routing code needs a single
 validated row plus the executable HAL profile for a requested aggregator,
 provider, and IR format.
@@ -179,10 +179,11 @@ accepts only no-submit target snapshots, and returns ready/blocked/unknown
 readiness decisions before any submission path is considered.
 `snapshot_from_azure_target()`, `snapshot_from_braket_device()`,
 `snapshot_from_iqm_backend()`, `snapshot_from_ionq_backend()`,
-`snapshot_from_oqc_target()`, `snapshot_from_qiskit_runtime_backend()`,
-`snapshot_from_qbraid_device()`, `snapshot_from_quantinuum_backend()`,
-`snapshot_from_quera_bloqade()`, `snapshot_from_rigetti_qcs()`, and
-`snapshot_from_strangeworks_backend()` provide concrete no-submit adapters for
+`snapshot_from_oqc_target()`, `snapshot_from_pasqal_target()`,
+`snapshot_from_qiskit_runtime_backend()`, `snapshot_from_qbraid_device()`,
+`snapshot_from_quantinuum_backend()`, `snapshot_from_quera_bloqade()`,
+`snapshot_from_rigetti_qcs()`, and `snapshot_from_strangeworks_backend()`
+provide concrete no-submit adapters for
 injected provider or broker SDK objects: they read declared target metadata,
 route-supported IR formats, queue, limit, online, simulator, calibration, and
 gate metadata without invoking submission APIs.
@@ -1003,6 +1004,13 @@ job = hal.submit(
     approval_id="approved-run",
 )
 ```
+
+`snapshot_from_pasqal_target()` provides the matching no-submit readiness path
+for injected Pasqal target metadata or metadata JSON. It records target name,
+atom count, declared Pulser/Pasqal IR/OpenQASM/MLIR support, supported bases,
+channel declarations, shot and sequence limits, queue depth, online state,
+simulator flag, lattice geometry, and calibration timestamp without calling
+Pasqal submission APIs.
 
 PennyLane, qBraid, and Strangeworks adapters are concrete HAL routes, not registry aliases.
 `PennyLaneDeviceHALAdapter` executes strict native-gate payloads on a local

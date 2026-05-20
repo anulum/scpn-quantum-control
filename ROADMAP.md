@@ -129,6 +129,13 @@ is copied here.
   OpenQASM/QIR declaration translation, qubit count, native gate set, shot and
   circuit limits, queue depth, online state, simulator flag, topology, and
   calibration timestamp without QCAAS submission.
+- [x] **Direct Pasqal no-submit capability snapshot.** Implemented 2026-05-20:
+  `snapshot_from_pasqal_target` adds the direct `direct/pasqal` route and
+  metadata snapshot path for injected Pasqal target objects or metadata JSON,
+  including Pulser/Pasqal IR/OpenQASM/MLIR declaration translation, atom
+  count, supported bases, channel declarations, shot and sequence limits, queue
+  depth, online state, simulator flag, lattice geometry, and calibration
+  timestamp without Pasqal submission.
 - [x] **Direct Quantinuum no-submit capability snapshot.** Implemented
   2026-05-20: `snapshot_from_quantinuum_backend` adds the direct
   `direct/quantinuum` route and metadata snapshot path for injected Quantinuum
