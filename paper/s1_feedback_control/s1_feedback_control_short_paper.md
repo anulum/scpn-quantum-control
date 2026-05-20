@@ -34,11 +34,12 @@ The observed feedback arm does not reduce binary-proxy target-order-parameter
 error relative to the matched open-loop control. Because that proxy is near
 saturation in both arms, we add same-paper direct-XY extensions: S1b measures
 final XY-sector Pauli correlators on the original body, S1c reduces depth and
-gain, S1d sweeps correction direction and gain, and S1e repeats the policy
-sweep at higher repetitions. The direct-XY extensions show channel-structured
-and policy-sensitive feedback/control differences. The claim is bounded to
-hardware-control interpretability, not quantum advantage or backend-general
-feedback.
+gain, S1d sweeps correction direction and gain, S1e repeats the policy sweep
+at higher repetitions, and S1f checks quadrature and population controls. The
+direct-XY extensions show channel-structured and policy-sensitive
+feedback/control differences that are not stable enough to promote the tested
+controller. The claim is bounded to hardware-control interpretability, not
+quantum advantage or backend-general feedback.
 
 ## 1. Introduction
 
@@ -270,6 +271,27 @@ channel-specific rather than a full-controller promotion, since `IXX` and
 `XXI` stay negative and the alternative policies do not reproduce the same
 mean-signed behaviour.
 
+### 6.6 S1f quadrature mechanism check
+
+S1f keeps only the S1d/S1e-favoured `current_shallow_positive` policy and tests
+whether the repeated `YYI` response localises to a stable quadrature structure.
+It measures `YYI`, `XXI`, cross-quadrature controls `XYI` and `YXI`, and the
+population control `ZZI`, all at five repetitions.
+
+| Observable | Feedback | Control | Feedback minus control |
+|---|---:|---:|---:|
+| `XXI` | 0.2187500000 | 0.2175781250 | 0.0011718750 |
+| `XYI` | 0.1617187500 | 0.1566406250 | 0.0050781250 |
+| `YXI` | 0.2242187500 | 0.2136718750 | 0.0105468750 |
+| `YYI` | -0.0445312500 | -0.0242187500 | -0.0203125000 |
+| `ZZI` | 0.6523437500 | 0.6480468750 | 0.0042968750 |
+
+S1f does not reproduce the large positive `YYI` shift in the later mechanism
+window. The mean absolute feedback-control separation is only `0.0082812500`;
+`YYI` is negative, while `XXI`, `XYI`, `YXI`, and `ZZI` remain small. This
+blocks a stable quadrature-localised positive-mechanism claim and supports a
+calibration-window boundary.
+
 ## 7. Claim Boundary
 
 Safe claims after successful analysis:
@@ -298,9 +320,10 @@ direct XY-sector channels expose a small, non-uniform feedback/control
 response. The S1c shallow/lower-gain extension then moves negative across all
 four direct XY channels. S1d then shows that a same-day policy-direction sweep
 is sensitive to policy choice, with one large favourable `YYI` channel in the
-current shallow policy. S1e repeats that `YYI` response at higher repetitions.
-The paper should therefore be framed as a dynamic-circuit hardware-control
-boundary test with a reproducible channel-specific policy sensitivity: the
-specific controller is not promoted as broadly successful, but the paired-arm
-method and direct-observable extensions expose a concrete mechanism target for
-future redesigned and preregistered policies.
+current shallow policy. S1e repeats that `YYI` response at higher repetitions,
+but S1f does not reproduce it in a later quadrature mechanism check. The paper
+should therefore be framed as a dynamic-circuit hardware-control boundary test:
+the specific controller is not promoted as broadly successful, but the
+paired-arm method and direct-observable extensions expose structured,
+calibration-window-sensitive failure and response modes that future redesigned
+policies must explicitly preregister against.

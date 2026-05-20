@@ -202,6 +202,12 @@ feedback-control delta `0.0345703125`. The result upgrades S1 from a simple
 negative-control note to a publishable boundary study with reproducible
 channel-specific policy sensitivity, while still blocking backend-general
 feedback-control claims.
+S1f completed on `ibm_kingston` as the final quadrature mechanism check for the
+same paper. It kept the S1d/S1e-favoured current shallow policy but measured
+`YYI`, `XXI`, `XYI`, `YXI`, and `ZZI`. The large positive `YYI` did not persist
+in the later mechanism-check window: `YYI = -0.0203125000`, with mean absolute
+separation only `0.0082812500`. This closes S1 as a claim-boundary and
+calibration-window-sensitivity paper, not as a promoted controller paper.
 
 ### Acceptance
 

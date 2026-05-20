@@ -247,6 +247,31 @@ S1e confirmatory policy-sweep repeat:
   promote backend-general feedback control because the favourable response is
   not uniform across direct-XY channels or policy variants.
 
+S1f quadrature mechanism check:
+
+- status: completed on `ibm_kingston`;
+- purpose: final same-paper mechanism discriminator for whether the S1d/S1e
+  `YYI` response is stable and quadrature-localised;
+- configuration: `current_shallow_positive` only, `n_rounds=1`, correction
+  angle `0.06`, base gain `0.4`, repetitions `5`;
+- observables: `YYI`, `XXI`, `XYI`, `YXI`, `ZZI`;
+- readiness artefact:
+  `data/s1_feedback_loop/s1f_xy_observable_readiness_ibm_kingston_20260520T142213Z.json`;
+- raw-count artefact:
+  `data/s1_feedback_loop/s1f_xy_observable_raw_counts_ibm_kingston_20260520T142213Z.json`;
+- analysis artefact:
+  `data/s1_feedback_loop/s1f_xy_observable_analysis_ibm_kingston_20260520T142213Z.json`;
+- maximum transpiled depth: `237`;
+- estimated QPU seconds: `50.0`;
+- jobs: 10 completed IBM jobs;
+- result: mean absolute feedback-control separation `0.0082812500`; `YYI`
+  moved negative (`-0.0203125000`) while `XXI`, `XYI`, `YXI`, and `ZZI` stayed
+  small;
+- interpretation: S1f blocks a stable quadrature-localised positive-mechanism
+  claim. The S1d/S1e `YYI` effect is reproducible within a calibration window
+  but not stable enough across the later mechanism-check window to promote the
+  tested feedback law as a robust controller.
+
 ## Claim Boundary
 
 Safe after successful raw-count analysis:
