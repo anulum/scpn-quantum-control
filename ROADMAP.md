@@ -92,6 +92,14 @@ is copied here.
   miss-budget accounting for software control loops; and
   `deployment.cloud_native` emits secret-free Kubernetes and Docker Compose
   manifests with non-root, read-only, no-privilege-escalation defaults.
+- [x] **Provider-neutral hardware abstraction layer.** Implemented
+  2026-05-20: `hardware.hal` adds immutable backend profiles, workload and
+  job/result payloads, a runtime `QuantumBackend` protocol, metadata-only
+  discovery for IBM Quantum, IonQ, AWS Braket QPU/simulator routes, Azure
+  Quantum QPU/emulator/preview routes, Quantinuum, Rigetti QCS, QuEra/Bloqade,
+  IQM, Pasqal, OQC, D-Wave, qBraid IonQ, Quandela photonics, and local
+  simulators, plus fail-closed cloud submission and explicit approval tokens
+  before any injected adapter can submit live QPU or managed-simulator work.
 - [x] **Stable-core release/repro gate.** Use
   `scpn-bench stable-core-release-gate` before release notes, API changes, or
   public stable-core documentation changes. The bundle runs stable-core

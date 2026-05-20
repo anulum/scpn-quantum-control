@@ -132,6 +132,12 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [ContainerResources, CloudDeploymentSpec, CloudManifestBundle, generate_cloud_manifests]
 
+## Hardware Abstraction Layer
+
+::: scpn_quantum_control.hardware.hal
+    options:
+      members: [BackendCapabilities, BackendProfile, QuantumWorkload, QuantumJobRef, QuantumJobResult, QuantumBackend, LocalDeterministicSimulator, HardwareAbstractionLayer, built_in_backend_profiles]
+
 ## Identity
 
 ::: scpn_quantum_control.identity.ground_state

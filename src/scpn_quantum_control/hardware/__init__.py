@@ -127,6 +127,17 @@ from .feedback_submission import (
     default_s1_platforms,
     summarise_feedback_circuit,
 )
+from .hal import (
+    BackendCapabilities,
+    BackendProfile,
+    HardwareAbstractionLayer,
+    LocalDeterministicSimulator,
+    QuantumBackend,
+    QuantumJobRef,
+    QuantumJobResult,
+    QuantumWorkload,
+    built_in_backend_profiles,
+)
 from .hybrid_digital_analog import (
     HybridCouplingAssignment,
     HybridCouplingPartition,
@@ -213,6 +224,15 @@ __all__ = [
     "build_ibm_runtime_dry_run",
     "build_openqasm3_gate_dry_run",
     "build_s1_feedback_dry_run_bundle",
+    "BackendCapabilities",
+    "BackendProfile",
+    "HardwareAbstractionLayer",
+    "LocalDeterministicSimulator",
+    "QuantumBackend",
+    "QuantumJobRef",
+    "QuantumJobResult",
+    "QuantumWorkload",
+    "built_in_backend_profiles",
     "ApprovalGatedFeedbackHardwareScheduler",
     "HardwareApprovalRecord",
     "HardwareSubmissionRecord",

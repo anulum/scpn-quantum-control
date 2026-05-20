@@ -101,6 +101,17 @@ from .forecasting import (
     run_real_data_sync_forecast_suite,
 )
 from .hardware.fast_classical import fast_sparse_evolution
+from .hardware.hal import (
+    BackendCapabilities,
+    BackendProfile,
+    HardwareAbstractionLayer,
+    LocalDeterministicSimulator,
+    QuantumBackend,
+    QuantumJobRef,
+    QuantumJobResult,
+    QuantumWorkload,
+    built_in_backend_profiles,
+)
 from .hardware.qubit_mapper import (
     ExecutionRegion,
     QubitMappingResult,
@@ -317,6 +328,15 @@ __all__ = [
     "CloudManifestBundle",
     "ContainerResources",
     "generate_cloud_manifests",
+    "BackendCapabilities",
+    "BackendProfile",
+    "HardwareAbstractionLayer",
+    "LocalDeterministicSimulator",
+    "QuantumBackend",
+    "QuantumJobRef",
+    "QuantumJobResult",
+    "QuantumWorkload",
+    "built_in_backend_profiles",
     "VQLS_GradShafranov",
     "DifferentiableOptimizer",
     "GradientResult",

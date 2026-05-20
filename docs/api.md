@@ -116,6 +116,45 @@ read-only-root filesystem, no privilege escalation, and deterministic digests.
 Secret-like environment variables are rejected. The generator does not read
 credentials, create clusters, or contact cloud APIs.
 
+### `hardware.hal`
+
+```python
+from scpn_quantum_control import (
+    HardwareAbstractionLayer,
+    LocalDeterministicSimulator,
+    QuantumWorkload,
+)
+
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+profile = hal.profile("local_statevector")
+hal.register_backend(LocalDeterministicSimulator(profile))
+
+job = hal.submit(
+    "local_statevector",
+    QuantumWorkload(
+        workload_id="demo",
+        ir_format="mlir",
+        program="module {}",
+        n_qubits=4,
+        shots=1024,
+    ),
+)
+result = hal.result(job)
+```
+
+The HAL is the provider-neutral execution contract above the older descriptor
+registry. Built-in profiles are metadata-only and do not import provider SDKs,
+read credentials, open network sessions, or queue jobs. Cloud routes fail closed
+unless a concrete adapter is injected and an approval token is supplied at
+submission time.
+
+Built-in route families cover IBM Quantum, IonQ direct, AWS Braket QPU and
+managed-simulator routes, Azure Quantum QPU, emulator, and private-preview
+routes, Quantinuum, Rigetti QCS, QuEra/Bloqade, IQM, Pasqal, OQC, D-Wave Leap,
+qBraid IonQ, Quandela photonics, and local simulator adapters.
+Provider-specific SDK credentials, queue selection, pricing, and region policy
+remain adapter responsibilities.
+
 ## Advanced Module Reference
 
 The following sections expose lower-level modules directly. Prefer the stable
@@ -625,6 +664,26 @@ discover_backends()                     # scan entry_points group
 
 Every registered backend exposes `name: str` and `is_available() ->
 bool`. Discovery is lazy; one broken plugin never blocks the rest.
+
+### `hal` — provider-neutral execution contract
+
+```python
+from scpn_quantum_control.hardware import (
+    BackendProfile,
+    HardwareAbstractionLayer,
+    QuantumBackend,
+    QuantumWorkload,
+    built_in_backend_profiles,
+)
+
+profiles = built_in_backend_profiles()
+hal = HardwareAbstractionLayer(profiles)
+```
+
+`BackendProfile` records the provider, broker, modality, SDK package,
+accepted IR formats, cloud/submission policy, and capability limits. The HAL
+validates workload IR, qubit count, shots, backend registration, and explicit
+approval before delegating to an injected `QuantumBackend`.
 
 ### `async_runner.AsyncHardwareRunner`
 

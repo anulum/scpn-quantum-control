@@ -17,6 +17,9 @@ Two modules for runtime backend management:
 3. **Provider-neutral backend registry** (`hardware/backends.py`) —
    production routing descriptors for IBM Runtime, local Aer, Cirq,
    Amazon Braket, PennyLane, analogue, and hybrid compiler paths
+4. **Hardware abstraction layer** (`hardware/hal.py`) — provider-neutral
+   workload, job, result, approval, and adapter protocol across cloud and
+   simulator routes
 
 ---
 
@@ -247,16 +250,106 @@ conservative descriptor with `can_submit=False` and
 
 ---
 
+## Part 4: Hardware Abstraction Layer
+
+`scpn_quantum_control.hardware.hal`
+
+The HAL is the execution contract above provider descriptors. It decouples SCPN
+workloads from provider SDKs by using immutable metadata profiles and injected
+adapter objects. Constructing the HAL is offline and metadata-only: it does not
+import cloud SDKs, inspect credentials, open network sessions, or submit jobs.
+
+### Built-In HAL Profiles
+
+Built-in route families include:
+
+| Backend id | Provider | Broker | Modality |
+|------------|----------|--------|----------|
+| `ibm_quantum` | IBM | direct | superconducting gate model |
+| `ionq_cloud` | IonQ | direct | trapped-ion gate model |
+| `aws_braket_ionq` | IonQ | AWS Braket | trapped-ion gate model |
+| `aws_braket_iqm` | IQM | AWS Braket | superconducting gate model |
+| `aws_braket_quera` | QuEra | AWS Braket | neutral-atom analogue |
+| `aws_braket_rigetti` | Rigetti | AWS Braket | superconducting gate model |
+| `aws_braket_aqt` | AQT | AWS Braket | trapped-ion gate model |
+| `aws_braket_sv1` | AWS | AWS Braket | managed statevector simulator |
+| `aws_braket_dm1` | AWS | AWS Braket | managed density-matrix simulator |
+| `aws_braket_tn1` | AWS | AWS Braket | managed tensor-network simulator |
+| `azure_quantum_quantinuum` | Quantinuum | Azure Quantum | trapped-ion gate model |
+| `azure_quantum_quantinuum_emulator` | Quantinuum | Azure Quantum | trapped-ion emulator |
+| `azure_quantum_ionq` | IonQ | Azure Quantum | trapped-ion gate model |
+| `azure_quantum_ionq_simulator` | IonQ | Azure Quantum | managed gate-model simulator |
+| `azure_quantum_rigetti` | Rigetti | Azure Quantum | superconducting gate model |
+| `azure_quantum_rigetti_qvm` | Rigetti | Azure Quantum | managed QVM simulator |
+| `azure_quantum_pasqal` | Pasqal | Azure Quantum | neutral-atom analogue |
+| `azure_quantum_pasqal_emulator` | Pasqal | Azure Quantum | neutral-atom emulator |
+| `azure_quantum_qci_preview` | Quantum Circuits | Azure Quantum | private-preview superconducting route |
+| `quantinuum_cloud` | Quantinuum | direct | trapped-ion gate model |
+| `rigetti_qcs` | Rigetti | direct | superconducting gate model |
+| `quera_bloqade` | QuEra | direct | neutral-atom analogue |
+| `iqm_cloud` | IQM | direct | superconducting gate model |
+| `pasqal_cloud` | Pasqal | direct | neutral-atom analogue |
+| `oqc_cloud` | OQC | direct | superconducting gate model |
+| `qbraid_ionq` | IonQ | qBraid | trapped-ion gate model |
+| `quandela_cloud` | Quandela | direct | photonic gate model |
+| `dwave_leap` | D-Wave | direct | quantum annealing |
+| `local_statevector` | SCPN | local | deterministic simulator |
+| `local_braket_sv` | AWS Braket SDK | local | statevector simulator |
+| `local_braket_dm` | AWS Braket SDK | local | density-matrix simulator |
+| `local_braket_ahs` | AWS Braket SDK | local | analogue Hamiltonian simulator |
+| `local_qiskit_aer` | Qiskit Aer | local | simulator |
+| `local_cirq` | Cirq | local | simulator |
+| `local_pennylane` | PennyLane | local | simulator |
+
+All cloud profiles set `submit_requires_approval=True`. A cloud workload fails
+closed unless the application has registered a concrete adapter and supplied an
+approval token for that submission. Provider credentials, queue selection,
+region policy, pricing, and detailed target selection belong inside the
+provider adapter, not the HAL registry.
+
+### HAL API
+
+```python
+from scpn_quantum_control.hardware import (
+    HardwareAbstractionLayer,
+    LocalDeterministicSimulator,
+    QuantumWorkload,
+)
+
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+hal.register_backend(LocalDeterministicSimulator(hal.profile("local_statevector")))
+
+job = hal.submit(
+    "local_statevector",
+    QuantumWorkload(
+        workload_id="demo",
+        ir_format="mlir",
+        program="module {}",
+        n_qubits=4,
+        shots=1024,
+    ),
+)
+result = hal.result(job)
+```
+
+Injected adapters implement `QuantumBackend.submit`, `status`, `result`, and
+`cancel`. The HAL validates workload id, IR format, qubit limits, shot count,
+backend registration, and approval before delegating.
+
+---
+
 ## Comparison
 
-| Feature | Backend Dispatch | Plugin Registry | TensorCircuit |
-|---------|-----------------|-----------------|---------------|
-| Array backend switching | Yes | No | Yes |
-| Hardware backend registry | No | Yes | No |
-| Custom backends | No | Yes (decorator) | No |
-| Lazy loading | N/A | Yes | No |
-| JAX support | Yes | Via backends | Yes |
-| PyTorch support | Yes | Via backends | Yes |
+| Feature | Backend Dispatch | Plugin Registry | HAL | TensorCircuit |
+|---------|-----------------|-----------------|-----|---------------|
+| Array backend switching | Yes | No | No | Yes |
+| Hardware backend registry | No | Yes | Yes | No |
+| Provider-neutral execution contract | No | No | Yes | No |
+| Cloud approval gate | No | Partial | Yes | No |
+| Custom backends | No | Yes (decorator) | Yes (protocol adapter) | No |
+| Lazy loading | N/A | Yes | Metadata-only | No |
+| JAX support | Yes | Via backends | Via adapter | Yes |
+| PyTorch support | Yes | Via backends | Via adapter | Yes |
 
 ---
 
