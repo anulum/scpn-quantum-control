@@ -249,6 +249,50 @@ layout-dependent coherent error, calibration drift, and depth-dependent
 decoherence. The safe interpretation is therefore mechanism-boundary evidence,
 not full causal attribution.
 
+\subsection{Readout-sensitivity check}
+
+The four readout calibration circuits provide a scale check for the largest
+reduced-Pauli deviations. The dominant measured bitstring for each calibration
+state is shown in Table~\ref{tab:readout}. Because Qiskit reports classical
+bitstrings with endianness opposite to the source labels for some prepared
+states, the table reports the dominant observed bitstring rather than treating
+the printed label as a direct left-to-right comparator. The mean dominant-state
+retention across the four calibration circuits is 0.9771, corresponding to a
+mean leakage from the dominant calibration bitstring of 0.0229. The weakest
+calibration state retains 0.9744 of shots.
+
+\begin{table}[tb]
+\centering
+\small
+\begin{tabular}{lrr}
+\toprule
+Prepared label & Dominant observed bitstring & Retention \\
+\midrule
+\texttt{0000} & \texttt{0000} & 0.981079 \\
+\texttt{0001} & \texttt{1000} & 0.975342 \\
+\texttt{0011} & \texttt{1100} & 0.977661 \\
+\texttt{1111} & \texttt{1111} & 0.974365 \\
+\bottomrule
+\end{tabular}
+\caption{Readout calibration dominant-state retention for the completed
+\texttt{ibm\_marrakesh} execution. The largest reduced-Pauli deviations in
+Table~\ref{tab:top} are roughly an order of magnitude larger than this
+dominant-bitstring readout leakage scale.}
+\label{tab:readout}
+\end{table}
+
+This calibration block does not remove the need for caution: transverse
+basis-rotated measurements can be affected by basis-rotation and coherent gate
+errors before readout. It does, however, make a pure computational-basis
+readout-retention explanation implausible for the largest observed effects.
+The maximum reduced-Pauli deviation, 0.5561, is about 21.7 times the worst
+dominant-state calibration leakage of 0.0256 and about 24.3 times the mean
+dominant-state calibration leakage of 0.0229. The paper's claim boundary is
+therefore refined as follows: readout calibration does not by itself explain
+the largest transverse correlator deviations, but the result remains a
+compound hardware-window observation rather than an isolated entanglement
+mechanism attribution.
+
 \section{Claim boundary}
 
 The supported claims are intentionally narrow. The run measured preregistered
@@ -286,8 +330,10 @@ exact references are large and structured, with the strongest departures in
 transverse DLA edge correlators and a smaller but clear FIM
 $\lambda_{\mathrm{fim}}=4$ distortion. The paper's contribution is a bounded
 mechanism-separation result: it localises correlator-level hardware
-deformation accompanying the earlier leakage/retention observations, while
-avoiding scalable tomography, backend-general, or advantage claims.
+deformation accompanying the earlier leakage/retention observations and shows
+that the largest effects exceed the dominant computational-basis readout
+leakage scale. It still avoids scalable tomography, backend-general,
+full-causal-entanglement, or advantage claims.
 
 \bibliographystyle{apsrev4-2}
 \bibliography{phase3_entanglement_tomography_refs}
