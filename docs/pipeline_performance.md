@@ -214,6 +214,21 @@ production, heat current, and irreversibility diagnostics while keeping
 thermodynamic peak claims blocked until theory review, classical reference,
 and raw-count execution are complete.
 
+## S10 Analog-Native Kuramoto Readiness
+
+The S10 analog-native track is gated as a no-submit primitive-accounting and
+provider-readiness artefact:
+
+```bash
+scpn-bench s10-analog-native-readiness
+```
+
+The gate regenerates `data/s10_analog_native/analog_native_readiness_2026-05-20.json`
+and `docs/analog_native_readiness.md`. It records native-coupler accounting
+against a matched declared-tolerance digital Trotter baseline and keeps
+provider execution plus analog-advantage claims blocked until SDK construction,
+calibrated unit constraints, and raw execution records are complete.
+
 ## Phase 3 State/Layout DLA Randomisation
 
 The state/layout mechanism-separation control has a dedicated fail-closed IBM

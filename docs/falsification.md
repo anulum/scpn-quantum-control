@@ -100,6 +100,22 @@ Each claim has four fields:
 - **Evidence.** Section §21 of `pipeline_performance.md` (measured
   2026-04-17 on ML350 Gen8 via `test_rust_path_benchmarks.py`).
 
+## C14 — Analog-native Kuramoto primitive accounting
+
+- **Claim.** On the fixed S10 readiness benchmark, analog-native
+  Kuramoto compilation uses fewer native coupling primitives than the
+  digital Trotter compilation uses two-qubit gates at the same declared
+  tolerance.
+- **Domain.** The committed S10 readiness benchmark and compiler
+  accounting only; this is not a hardware-performance or analog-advantage
+  claim.
+- **Falsifier.** Digital Trotter compilation reaches a lower two-qubit
+  gate count at the same declared tolerance, or provider validation fails
+  to preserve the native coupling model.
+- **Evidence.** `data/s10_analog_native/analog_native_readiness_2026-05-20.json`,
+  `docs/analog_native_readiness.md`, and
+  `tests/test_analog_native_readiness.py`.
+
 ## Open questions (no claim yet)
 
 The following items are **not** claims — they are open problems.

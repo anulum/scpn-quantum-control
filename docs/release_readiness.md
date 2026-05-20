@@ -110,6 +110,7 @@ boundaries are enforced by hard gates. The current release boundary is:
 | S7 logical-level DLA parity | Required release artefacts include the logical-DLA roadmap JSON and Markdown note. DLA parity survival under logical encoding remains blocked until the theory, logical-observable, and simulation prerequisites pass. |
 | S8 adaptive branching | Required release artefacts include the adaptive-branching readiness JSON and Markdown note. Adaptive advantage remains blocked until backend dynamic-circuit support, preregistration, and equal-depth open-loop falsification pass. |
 | S9 quantum thermodynamics | Required release artefacts include the quantum-thermodynamics readiness JSON and Markdown note. Entropy-production peak claims remain blocked until theory review, classical reference, raw-count execution, and falsification controls pass. |
+| S10 analog-native Kuramoto | Required release artefacts include the analog-native readiness JSON and Markdown note. Analog advantage and provider-execution claims remain blocked until calibrated provider SDK construction, matched-tolerance digital baselines, and raw execution records pass. |
 
 This means the release can be tagged when software gates pass. It does not mean
 that source ingestion, simulator output, or partial benchmark rows have become
@@ -174,6 +175,21 @@ The gate regenerates the S9 calibrated-observable K-sweep readiness table and
 public note. It is offline, performs no hardware submission, and keeps
 thermodynamic peak claims blocked until the formalism, classical reference,
 and preregistered raw-count comparison pass.
+
+## S10 analog-native readiness gate
+
+Before any tag that touches analog-native Kuramoto backends, provider exports,
+or analog-advantage framing, run:
+
+```bash
+scpn-bench s10-analog-native-readiness
+```
+
+The gate regenerates the S10 primitive-accounting table and provider-readiness
+note. It is offline, performs no hardware submission, and keeps analog
+advantage claims blocked until provider SDK construction, calibrated unit
+constraints, matched-tolerance digital baselines, and raw execution records
+pass.
 
 ## Symmetry-sector mitigation release gate
 

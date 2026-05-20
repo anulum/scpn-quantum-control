@@ -1,0 +1,83 @@
+{
+  "analog_advantage_claim_allowed": false,
+  "claim_boundary": "analog-native primitive accounting and provider export readiness only; no hardware submission and no analog-advantage claim",
+  "config": {
+    "coupling_scale": 1.0,
+    "duration": 1.5,
+    "fixed_tolerance": 0.02,
+    "trotter_steps": 8
+  },
+  "falsifier": "digital Trotter compilation reaches a lower two-qubit-gate count at the same declared tolerance or provider validation fails to preserve the native coupling model",
+  "hardware_submission_allowed": false,
+  "no_qpu_submission": true,
+  "prerequisites": [
+    "provider SDK object construction validated in an approved emulator path",
+    "calibrated units and coupling constraints fixed for each target platform",
+    "digital baseline compiled with the same declared tolerance before any advantage claim",
+    "raw provider execution records archived before hardware-performance statements"
+  ],
+  "primitive_comparison": {
+    "analog_advantage_claim_allowed": false,
+    "digital_single_qubit_gate_count": 32,
+    "digital_two_qubit_gate_count": 80,
+    "falsifier": "digital Trotter compilation reaches a lower two-qubit-gate count at the same declared tolerance or provider validation fails to preserve the native coupling model",
+    "fixed_tolerance": 0.02,
+    "hardware_submission_allowed": false,
+    "n_oscillators": 4,
+    "native_coupler_count": 5,
+    "native_drive_count": 4,
+    "native_to_digital_ratio": 0.0625,
+    "schema": "s10_analog_native_primitive_comparison_v1"
+  },
+  "provider_readiness": [
+    {
+      "can_execute": false,
+      "can_submit": false,
+      "limitations": [
+        "export_only_no_cloud_submission",
+        "rydberg_interaction_signs_remain_phase_labelled",
+        "fim_feedback_terms_require_provider_native_validation",
+        "execution_plan_only_no_provider_contact",
+        "cloud_submission_requires_separate_runner_approval"
+      ],
+      "program_platform": "neutral_atoms",
+      "provider": "pulser",
+      "reason": "blocked_until_explicit_execution_approval",
+      "sdk_available": false,
+      "sdk_module": "pulser"
+    },
+    {
+      "can_execute": false,
+      "can_submit": false,
+      "limitations": [
+        "export_only_no_cloud_submission",
+        "geometry_and_units_need_provider_calibration",
+        "fim_feedback_terms_are_design_terms_not_execution_claims",
+        "execution_plan_only_no_provider_contact",
+        "cloud_submission_requires_separate_runner_approval"
+      ],
+      "program_platform": "neutral_atoms",
+      "provider": "bloqade",
+      "reason": "blocked_until_explicit_execution_approval",
+      "sdk_available": false,
+      "sdk_module": "bloqade"
+    },
+    {
+      "can_execute": false,
+      "can_submit": false,
+      "limitations": [
+        "export_only_no_backend_submission",
+        "pulse_schedule_is_a_design_plan_not_a_calibrated_instruction_schedule",
+        "fim_cross_kerr_feedback_requires backend-native calibration",
+        "execution_plan_only_no_provider_contact",
+        "cloud_submission_requires_separate_runner_approval"
+      ],
+      "program_platform": "circuit_qed",
+      "provider": "ibm_pulse",
+      "reason": "blocked_until_explicit_execution_approval",
+      "sdk_available": false,
+      "sdk_module": "qiskit.pulse"
+    }
+  ],
+  "schema": "s10_analog_native_readiness_v1"
+}

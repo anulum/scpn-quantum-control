@@ -463,3 +463,12 @@ def test_release_readiness_requires_s9_quantum_thermo_artifacts() -> None:
 
     assert "data/s9_quantum_thermo/quantum_thermo_readiness_2026-05-20.json" in required
     assert "docs/quantum_thermo.md" in required
+
+
+def test_release_readiness_requires_s10_analog_native_artifacts() -> None:
+    """Release artefact gate includes the S10 analog-native readiness surfaces."""
+
+    required = set(_audit_release_readiness.REQUIRED_RELEASE_ARTIFACTS)
+
+    assert "data/s10_analog_native/analog_native_readiness_2026-05-20.json" in required
+    assert "docs/analog_native_readiness.md" in required

@@ -1498,7 +1498,14 @@ be executed until individually activated.
   readiness artefacts. The gate keeps thermodynamic peak claims
   blocked until the DLA-sector formalism, classical Lindblad/QuTiP
   reference, raw-count execution, and falsification controls pass.
-- [ ] **S10--S53** Scientific, foundational, and applied post-v1.0
+- [x] **S10** Analog-native Kuramoto backends readiness. Implemented
+  2026-05-20: `scpn-bench s10-analog-native-readiness` exports the
+  no-submit primitive-accounting and provider-readiness artefacts for
+  neutral-atom, Bloqade, and IBM Pulse export targets. The gate keeps
+  analog-advantage and provider-execution claims blocked until SDK
+  construction, calibrated unit constraints, matched-tolerance digital
+  baselines, and raw execution records pass.
+- [ ] **S11--S53** Scientific, foundational, and applied post-v1.0
   differentiation tracks listed in the strategic roadmap.
 
 ## Recently closed

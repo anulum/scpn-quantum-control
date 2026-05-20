@@ -687,6 +687,12 @@ hardware point. Paper draft circulated for internal review.
 
 ## S10 — Analog-native Kuramoto backends (Rydberg / neutral-atom / CV photonic)
 
+Status 2026-05-20: first release gate landed as
+`scpn-bench s10-analog-native-readiness`. The gate publishes
+primitive accounting and no-submit provider-readiness artefacts for
+neutral-atom, Bloqade, and IBM Pulse export targets while keeping
+provider execution and analog-advantage claims blocked.
+
 ### Motivation
 
 Every Kuramoto / XY implementation in this repo today is digital-

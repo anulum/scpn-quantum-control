@@ -26,6 +26,16 @@ from .analog_kuramoto import (
     export_provider_payload,
     prepare_provider_execution_plan,
 )
+from .analog_native_readiness import (
+    ANALOG_NATIVE_SCHEMA,
+    AnalogNativePrimitiveComparison,
+    AnalogNativeReadinessConfig,
+    AnalogProviderReadinessRow,
+    analog_native_markdown,
+    analog_native_payload,
+    compare_native_to_digital_primitives,
+    provider_readiness_rows,
+)
 from .async_runner import AsyncHardwareRunner, AsyncJobHandle
 from .backends import (
     BackendProtocol,
@@ -166,6 +176,14 @@ __all__ = [
     "compile_analog_kuramoto",
     "export_provider_payload",
     "prepare_provider_execution_plan",
+    "ANALOG_NATIVE_SCHEMA",
+    "AnalogNativePrimitiveComparison",
+    "AnalogNativeReadinessConfig",
+    "AnalogProviderReadinessRow",
+    "analog_native_markdown",
+    "analog_native_payload",
+    "compare_native_to_digital_primitives",
+    "provider_readiness_rows",
     "HybridCouplingAssignment",
     "HybridCouplingPartition",
     "HybridDigitalAnalogBackend",
