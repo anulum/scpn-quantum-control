@@ -924,9 +924,14 @@ explicit QPU-time estimate before submission.
   block is scientifically promotable after backend selection, live
   transpilation gates, budget confirmation, and explicit approval.
 - [ ] **Entanglement entropy or tomography hardware execution.** Optional
-  QPU follow-up remains blocked until backend selection, live
-  transpilation, QPU-minute estimate, and explicit approval are completed
-  from committed code.
+  QPU follow-up live preflight passed 2026-05-20 on `ibm_marrakesh`
+  with `166` circuits, selected physical qubits `[1, 2, 3, 4]`,
+  maximum transpiled depth `388`, maximum basis-expansion ratio
+  `1.0718232044198894`, and estimated QPU time `1.5217` minutes
+  under a `25` minute ceiling. Submission remains blocked only by
+  explicit budget-confirmed approval; run
+  `python scripts/phase3_entanglement_tomography_ibm.py --backend ibm_marrakesh --submit --confirm-budget`
+  when approved.
 - [x] **Depth-optimal native decomposition preregistration.**
   Completed 2026-05-06:
   `docs/depth_optimal_native_decomposition_prereg_2026-05-06.md`
