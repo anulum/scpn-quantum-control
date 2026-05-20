@@ -670,11 +670,13 @@ bool`. Discovery is lazy; one broken plugin never blocks the rest.
 ```python
 from scpn_quantum_control.hardware import (
     BackendProfile,
+    AzureQuantumHALAdapter,
     BraketLocalHALAdapter,
     HardwareAbstractionLayer,
     QiskitAerHALAdapter,
     QuantumBackend,
     QuantumWorkload,
+    azure_openqasm3_to_workload,
     braket_circuit_to_workload,
     built_in_backend_profiles,
     qiskit_circuit_to_workload,
@@ -723,6 +725,30 @@ result = hal.result(
         "local_braket_sv",
         braket_circuit_to_workload(circuit, workload_id="bell", shots=128),
     )
+)
+```
+
+Azure Quantum adapters use injected `Target` objects or explicit target
+factories. They do not create workspaces or read credentials during HAL
+construction.
+
+```python
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+hal.register_backend(
+    AzureQuantumHALAdapter(
+        hal.profile("azure_quantum_ionq_simulator"),
+        target=target,
+    )
+)
+job = hal.submit(
+    "azure_quantum_ionq_simulator",
+    azure_openqasm3_to_workload(
+        "OPENQASM 3.0;\nqubit[1] q;\nbit[1] c;\nh q[0];",
+        workload_id="azure_h",
+        n_qubits=1,
+        shots=128,
+    ),
+    approval_id="approved-run",
 )
 ```
 

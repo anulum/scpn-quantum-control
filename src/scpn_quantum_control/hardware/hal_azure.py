@@ -1,0 +1,222 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996-2026 Miroslav Sotek. All rights reserved.
+# © Code 2020-2026 Miroslav Sotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# scpn-quantum-control -- Azure Quantum adapter for the hardware HAL
+"""Azure Quantum adapter for :mod:`scpn_quantum_control.hardware.hal`."""
+
+from __future__ import annotations
+
+from collections.abc import Callable, Mapping
+from datetime import datetime, timezone
+from typing import Any
+
+from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
+
+InputParamsFactory = Callable[[QuantumWorkload], Mapping[str, object] | None]
+TargetFactory = Callable[[Any, str], Any]
+
+
+def azure_openqasm3_to_workload(
+    program: str,
+    *,
+    workload_id: str,
+    n_qubits: int,
+    shots: int,
+    metadata: Mapping[str, object] | None = None,
+) -> QuantumWorkload:
+    """Build an Azure Quantum OpenQASM 3 HAL workload."""
+
+    return QuantumWorkload(
+        workload_id=workload_id,
+        ir_format="openqasm3",
+        program=program,
+        n_qubits=n_qubits,
+        shots=shots,
+        metadata=dict(metadata or {}),
+    )
+
+
+class AzureQuantumHALAdapter:
+    """Azure Quantum target adapter implementing the HAL protocol."""
+
+    def __init__(
+        self,
+        profile: BackendProfile,
+        *,
+        target: Any | None = None,
+        workspace: Any | None = None,
+        target_name: str | None = None,
+        target_factory: TargetFactory | None = None,
+        input_params_factory: InputParamsFactory | None = None,
+        submit_kwargs: Mapping[str, object] | None = None,
+    ) -> None:
+        if not profile.backend_id.startswith("azure_quantum_"):
+            raise ValueError("AzureQuantumHALAdapter requires an azure_quantum profile")
+        if target is None and (workspace is None or target_name is None or target_factory is None):
+            raise ValueError("target or workspace+target_name+target_factory is required")
+        self.profile = profile
+        self.backend_id = profile.backend_id
+        self._target = target
+        self._workspace = workspace
+        self._target_name = target_name
+        self._target_factory = target_factory
+        self._input_params_factory = input_params_factory
+        self._submit_kwargs = dict(submit_kwargs or {})
+        self._jobs: dict[str, QuantumJobRef] = {}
+        self._provider_jobs: dict[str, Any] = {}
+        self._results: dict[str, QuantumJobResult] = {}
+
+    def submit(
+        self, workload: QuantumWorkload, *, approval_id: str | None = None
+    ) -> QuantumJobRef:
+        if not approval_id:
+            raise PermissionError("approval_id is required for Azure Quantum submission")
+        if workload.ir_format != "openqasm3":
+            raise ValueError("Azure Quantum adapter requires OpenQASM 3 workloads")
+        target = self._target or self._load_target()
+        input_params = (
+            dict(self._input_params_factory(workload) or {})
+            if self._input_params_factory is not None
+            else None
+        )
+        provider_job = target.submit(
+            workload.program,
+            name=workload.workload_id,
+            shots=workload.shots,
+            input_params=input_params,
+            **self._submit_kwargs,
+        )
+        job_id = _job_id(provider_job, workload.workload_id)
+        job = QuantumJobRef(
+            job_id=job_id,
+            backend_id=self.backend_id,
+            workload_id=workload.workload_id,
+            status="submitted",
+            metadata={
+                "approval_id": approval_id,
+                "provider_job_id": job_id,
+                "execution_mode": "azure_quantum",
+                "ir_format": workload.ir_format,
+                "target_name": _target_name(target),
+            },
+        )
+        self._jobs[job.job_id] = job
+        self._provider_jobs[job.job_id] = provider_job
+        return job
+
+    def status(self, job: QuantumJobRef) -> str:
+        provider_job = self._provider_job(job)
+        refresh = getattr(provider_job, "refresh", None)
+        if callable(refresh):
+            refresh()
+        details = getattr(provider_job, "details", None)
+        detail_status = getattr(details, "status", None)
+        if detail_status is not None:
+            return str(detail_status).lower()
+        status = getattr(provider_job, "status", None)
+        if callable(status):
+            return str(status()).lower()
+        if status is not None:
+            return str(status).lower()
+        return self._jobs[job.job_id].status
+
+    def result(self, job: QuantumJobRef) -> QuantumJobResult:
+        cached = self._results.get(job.job_id)
+        if cached is not None:
+            return cached
+        provider_job = self._provider_job(job)
+        payload = _job_results(provider_job)
+        counts = _extract_counts(payload)
+        result = QuantumJobResult(
+            job=job,
+            status="completed",
+            counts=counts,
+            shots=sum(counts.values()),
+            metadata={
+                "approval_id": job.metadata.get("approval_id"),
+                "execution_mode": "azure_quantum",
+                "ir_format": job.metadata.get("ir_format"),
+                "target_name": job.metadata.get("target_name"),
+                "timestamp": _utc_now(),
+            },
+        )
+        self._results[job.job_id] = result
+        return result
+
+    def cancel(self, job: QuantumJobRef) -> QuantumJobRef:
+        provider_job = self._provider_job(job)
+        cancel = getattr(provider_job, "cancel", None)
+        if not callable(cancel):
+            raise ValueError("Azure Quantum job object does not expose cancel()")
+        cancel()
+        cancelled = QuantumJobRef(
+            job_id=job.job_id,
+            backend_id=job.backend_id,
+            workload_id=job.workload_id,
+            status="cancelled",
+            metadata=job.metadata,
+        )
+        self._jobs[job.job_id] = cancelled
+        return cancelled
+
+    def _load_target(self) -> Any:
+        if self._workspace is None or self._target_name is None or self._target_factory is None:
+            raise ValueError("workspace, target_name, and target_factory are required")
+        return self._target_factory(self._workspace, self._target_name)
+
+    def _provider_job(self, job: QuantumJobRef) -> Any:
+        provider_job = self._provider_jobs.get(job.job_id)
+        if provider_job is None:
+            raise KeyError(f"unknown job_id: {job.job_id}")
+        return provider_job
+
+
+def _job_id(provider_job: Any, fallback: str) -> str:
+    for attr in ("id", "job_id", "name"):
+        value = getattr(provider_job, attr, None)
+        if callable(value):
+            value = value()
+        if value:
+            return str(value)
+    return f"azure-job-{fallback}"
+
+
+def _job_results(provider_job: Any) -> Any:
+    for name in ("get_results", "result", "results"):
+        method = getattr(provider_job, name, None)
+        if callable(method):
+            return method()
+    raise ValueError("Azure Quantum job object does not expose results")
+
+
+def _extract_counts(payload: Any) -> dict[str, int]:
+    if isinstance(payload, Mapping):
+        for key in ("counts", "histogram", "measurement_counts", "MeasurementCounts"):
+            candidate = payload.get(key)
+            if isinstance(candidate, Mapping):
+                return {str(bitstring): int(count) for bitstring, count in candidate.items()}
+        if all(isinstance(key, str) and isinstance(value, int) for key, value in payload.items()):
+            return {str(bitstring): int(count) for bitstring, count in payload.items()}
+    raise ValueError("Azure Quantum result payload does not contain shot counts")
+
+
+def _target_name(target: Any) -> str:
+    name = getattr(target, "name", None)
+    if callable(name):
+        return str(name())
+    if name is not None:
+        return str(name)
+    return str(target.__class__.__name__)
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+__all__ = [
+    "AzureQuantumHALAdapter",
+    "azure_openqasm3_to_workload",
+]

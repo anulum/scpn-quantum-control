@@ -138,6 +138,7 @@ from .hal import (
     QuantumWorkload,
     built_in_backend_profiles,
 )
+from .hal_azure import AzureQuantumHALAdapter, azure_openqasm3_to_workload
 from .hal_braket import (
     BraketAwsHALAdapter,
     BraketLocalHALAdapter,
@@ -235,6 +236,8 @@ __all__ = [
     "build_ibm_runtime_dry_run",
     "build_openqasm3_gate_dry_run",
     "build_s1_feedback_dry_run_bundle",
+    "AzureQuantumHALAdapter",
+    "azure_openqasm3_to_workload",
     "BraketAwsHALAdapter",
     "BraketLocalHALAdapter",
     "braket_circuit_to_workload",

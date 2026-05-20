@@ -112,6 +112,7 @@ from .hardware.hal import (
     QuantumWorkload,
     built_in_backend_profiles,
 )
+from .hardware.hal_azure import AzureQuantumHALAdapter, azure_openqasm3_to_workload
 from .hardware.hal_braket import (
     BraketAwsHALAdapter,
     BraketLocalHALAdapter,
@@ -339,6 +340,8 @@ __all__ = [
     "CloudManifestBundle",
     "ContainerResources",
     "generate_cloud_manifests",
+    "AzureQuantumHALAdapter",
+    "azure_openqasm3_to_workload",
     "BraketAwsHALAdapter",
     "BraketLocalHALAdapter",
     "braket_circuit_to_workload",

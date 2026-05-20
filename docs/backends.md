@@ -311,11 +311,13 @@ provider adapter, not the HAL registry.
 
 ```python
 from scpn_quantum_control.hardware import (
+    AzureQuantumHALAdapter,
     BraketLocalHALAdapter,
     HardwareAbstractionLayer,
     LocalDeterministicSimulator,
     QiskitAerHALAdapter,
     QuantumWorkload,
+    azure_openqasm3_to_workload,
     braket_circuit_to_workload,
     qiskit_circuit_to_workload,
 )
@@ -387,6 +389,31 @@ result = hal.result(
         "local_braket_sv",
         braket_circuit_to_workload(circuit, workload_id="bell", shots=256),
     )
+)
+```
+
+The Azure Quantum adapter layer provides `AzureQuantumHALAdapter` and
+`azure_openqasm3_to_workload()`. The adapter calls Azure `Target.submit(...)`
+only after HAL approval has been supplied and only when a target object or
+explicit workspace/target factory was injected.
+
+```python
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+hal.register_backend(
+    AzureQuantumHALAdapter(
+        hal.profile("azure_quantum_ionq_simulator"),
+        target=target,
+    )
+)
+job = hal.submit(
+    "azure_quantum_ionq_simulator",
+    azure_openqasm3_to_workload(
+        "OPENQASM 3.0;\nqubit[1] q;\nbit[1] c;\nx q[0];",
+        workload_id="azure_x",
+        n_qubits=1,
+        shots=128,
+    ),
+    approval_id="approved-run",
 )
 ```
 

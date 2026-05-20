@@ -110,6 +110,12 @@ is copied here.
   local SV/DM simulator execution, and approval-gated AWS Braket device/task
   submission through the provider-neutral HAL contract. Optional cloud broker
   extras now expose `braket`, `azure`, and `qbraid` install groups.
+- [x] **Azure Quantum HAL adapter integration.** Implemented 2026-05-20:
+  `hardware.hal_azure` adds OpenQASM 3 workload construction and an injected
+  Azure target adapter for IonQ, Quantinuum, Rigetti, Pasqal, and preview
+  routes. The adapter uses Azure `Target.submit(...)`, requires explicit
+  approval through HAL, and fails closed when no target or target factory is
+  supplied.
 - [x] **Stable-core release/repro gate.** Use
   `scpn-bench stable-core-release-gate` before release notes, API changes, or
   public stable-core documentation changes. The bundle runs stable-core
