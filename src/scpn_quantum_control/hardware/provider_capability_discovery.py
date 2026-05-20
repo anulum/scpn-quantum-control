@@ -438,6 +438,68 @@ def snapshot_from_quera_bloqade(
     )
 
 
+def snapshot_from_oqc_target(
+    resolved: ResolvedAggregatorProviderRoute,
+    target: Any,
+) -> ProviderCapabilitySnapshot:
+    """Build a no-submit capability snapshot from direct OQC target metadata."""
+
+    return ProviderCapabilitySnapshot(
+        route_id=resolved.route.route_id,
+        aggregator=resolved.route.aggregator,
+        provider=resolved.route.provider,
+        backend_id=resolved.route.backend_id,
+        target_name=_first_text_attr(
+            target,
+            names=("target", "target_name", "backend", "backend_id", "name", "id"),
+            field_name="OQC target name",
+        ),
+        n_qubits=_first_positive_int_attr(
+            target,
+            names=("num_qubits", "n_qubits", "qubits", "qubit_count", "qubitCount"),
+            field_name="OQC qubit count",
+        ),
+        supported_ir_formats=_oqc_supported_ir_formats(resolved, target),
+        basis_gates=_first_string_tuple_attr(
+            target,
+            names=("basis_gates", "native_gates", "gates", "operation_names"),
+        ),
+        native_features=_oqc_native_features(target),
+        online=_oqc_online_state(target),
+        simulator=_first_bool_attr(target, names=("simulator", "is_simulator")) or False,
+        max_shots=_first_optional_int_attr(
+            target,
+            names=("max_shots", "shots_limit", "maxShots", "max_execution_shots"),
+        ),
+        max_circuits=_first_optional_int_attr(
+            target,
+            names=("max_circuits", "max_jobs", "max_experiments"),
+        ),
+        queue_depth=_first_optional_int_attr(
+            target,
+            names=("queue_depth", "pending_jobs", "queue_size", "average_queue_time"),
+            minimum=0,
+        ),
+        calibration_timestamp=_first_optional_text_attr(
+            target,
+            names=(
+                "last_calibration",
+                "calibration_timestamp",
+                "latest_calibration",
+                "last_updated",
+                "lastUpdated",
+            ),
+        ),
+        metadata={
+            "adapter": "oqc_target_no_submit",
+            "topology": _first_optional_text_attr(
+                target,
+                names=("topology", "coupling_map", "connectivity"),
+            ),
+        },
+    )
+
+
 def snapshot_from_quantinuum_backend(
     resolved: ResolvedAggregatorProviderRoute,
     backend: Any,
@@ -1284,6 +1346,63 @@ def _quera_online_state(target: Any) -> bool | None:
     return None
 
 
+def _oqc_supported_ir_formats(
+    resolved: ResolvedAggregatorProviderRoute,
+    target: Any,
+) -> tuple[str, ...]:
+    declared = _first_string_tuple_attr(
+        target,
+        names=(
+            "supported_ir_formats",
+            "ir_formats",
+            "input_formats",
+            "input_data_formats",
+            "program_formats",
+        ),
+    )
+    if not declared:
+        return resolved.route.ir_formats
+    return tuple(_oqc_ir_format_token(item) for item in declared)
+
+
+def _oqc_ir_format_token(value: str) -> str:
+    normalized = value.strip().lower().replace("-", "_")
+    if normalized in {"qasm.v3", "qasm3", "openqasm", "openqasm_3", "openqasm3"}:
+        return "openqasm3"
+    if normalized in {"qir", "qir.v1"}:
+        return "qir"
+    if normalized == "mlir":
+        return "mlir"
+    return normalized
+
+
+def _oqc_native_features(target: Any) -> tuple[str, ...]:
+    features = set(_first_string_tuple_attr(target, names=("native_features", "features")))
+    features.add("gate_model")
+    features.add("superconducting")
+    if _first_bool_attr(target, names=("lattice_connectivity", "topology")) is not False:
+        features.add("lattice_connectivity")
+    return tuple(sorted(features))
+
+
+def _oqc_online_state(target: Any) -> bool | None:
+    explicit = _first_online_attr(target)
+    if explicit is not None:
+        return explicit
+    text_status = _first_optional_text_attr(
+        target,
+        names=("availability", "target_status", "status", "state"),
+    )
+    if text_status is None:
+        return None
+    normalized = text_status.strip().lower()
+    if normalized in {"available", "online", "ready", "active", "enabled"}:
+        return True
+    if normalized in {"unavailable", "offline", "disabled", "retired", "maintenance"}:
+        return False
+    return None
+
+
 def _quantinuum_supported_ir_formats(
     resolved: ResolvedAggregatorProviderRoute,
     *sources: Any,
@@ -1637,6 +1756,7 @@ __all__ = [
     "snapshot_from_braket_device",
     "snapshot_from_iqm_backend",
     "snapshot_from_ionq_backend",
+    "snapshot_from_oqc_target",
     "snapshot_from_qiskit_runtime_backend",
     "snapshot_from_qbraid_device",
     "snapshot_from_quantinuum_backend",

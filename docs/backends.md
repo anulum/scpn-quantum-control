@@ -552,6 +552,12 @@ program header before submission, calls an injected QCAAS-style client, normalis
 provider counts into HAL counts, and keeps OQC cloud execution approval-gated.
 Automatic client construction is calibration-gated.
 
+`snapshot_from_oqc_target()` provides the matching no-submit readiness path for
+injected OQC target metadata or metadata JSON. It records target name, qubit
+count, declared OpenQASM/QIR support, native gate set, shot and circuit limits,
+queue depth, online state, simulator flag, topology, and calibration timestamp
+without calling QCAAS submission APIs.
+
 ```python
 hal = HardwareAbstractionLayer.with_builtin_profiles()
 hal.register_backend(
@@ -587,10 +593,11 @@ IR support. The function does not create clients or submit jobs; provider SDK
 authentication remains inside the injected read-only probe.
 `snapshot_from_azure_target()`, `snapshot_from_braket_device()`,
 `snapshot_from_iqm_backend()`, `snapshot_from_ionq_backend()`,
-`snapshot_from_qiskit_runtime_backend()`, `snapshot_from_qbraid_device()`,
-`snapshot_from_quantinuum_backend()`, `snapshot_from_quera_bloqade()`,
-`snapshot_from_rigetti_qcs()`, and `snapshot_from_strangeworks_backend()` are
-concrete metadata adapters for this contract. They consume injected SDK
+`snapshot_from_oqc_target()`, `snapshot_from_qiskit_runtime_backend()`,
+`snapshot_from_qbraid_device()`, `snapshot_from_quantinuum_backend()`,
+`snapshot_from_quera_bloqade()`, `snapshot_from_rigetti_qcs()`, and
+`snapshot_from_strangeworks_backend()` are concrete metadata adapters for this
+contract. They consume injected SDK
 backend/device objects and record target name, qubit count, route-supported or
 declared IR formats, gate basis, queue depth, shot/circuit limits, online state,
 simulator state, and calibration timestamp when the provider object exposes

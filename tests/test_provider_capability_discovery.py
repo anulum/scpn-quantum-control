@@ -20,6 +20,7 @@ from scpn_quantum_control.hardware.provider_capability_discovery import (
     snapshot_from_braket_device,
     snapshot_from_ionq_backend,
     snapshot_from_iqm_backend,
+    snapshot_from_oqc_target,
     snapshot_from_qbraid_device,
     snapshot_from_qiskit_runtime_backend,
     snapshot_from_quantinuum_backend,
@@ -171,6 +172,9 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
         snapshot_from_iqm_backend as exported_iqm_snapshot,
     )
     from scpn_quantum_control.hardware import (
+        snapshot_from_oqc_target as exported_oqc_snapshot,
+    )
+    from scpn_quantum_control.hardware import (
         snapshot_from_qiskit_runtime_backend as exported_qiskit_snapshot,
     )
     from scpn_quantum_control.hardware import (
@@ -191,6 +195,7 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
     assert exported_braket_snapshot is snapshot_from_braket_device
     assert exported_iqm_snapshot is snapshot_from_iqm_backend
     assert exported_ionq_snapshot is snapshot_from_ionq_backend
+    assert exported_oqc_snapshot is snapshot_from_oqc_target
     assert exported_qiskit_snapshot is snapshot_from_qiskit_runtime_backend
     assert exported_quantinuum_snapshot is snapshot_from_quantinuum_backend
     assert exported_quera_snapshot is snapshot_from_quera_bloqade
@@ -577,6 +582,77 @@ def test_direct_quera_snapshot_blocks_offline_bloqade_target_without_submission(
     assert decision.status == "blocked"
     assert "provider target is offline" in decision.blockers
     assert decision.snapshot.supported_ir_formats == ("bloqade",)
+    assert decision.snapshot.simulator is False
+
+
+def test_direct_oqc_snapshot_reads_target_metadata_without_submission() -> None:
+    """Direct OQC metadata adapters should consume injected target metadata only."""
+
+    class Target:
+        name = "Lucy"
+        status = "online"
+        num_qubits = 32
+        supported_ir_formats = ("openqasm3", "qir")
+        basis_gates = ("rz", "sx", "x", "ecr", "measure")
+        max_shots = 10_000
+        max_circuits = 20
+        queue_depth = 4
+        last_calibration = "2026-05-20T13:00:00Z"
+        is_simulator = False
+        topology = "heavy_hex"
+
+        def submit(self, *args: object, **kwargs: object) -> None:
+            raise AssertionError("metadata snapshot must not submit OQC work")
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="direct",
+        provider="oqc",
+        ir_format="openqasm3",
+        min_qubits=4,
+        metadata_probe=lambda resolved: snapshot_from_oqc_target(
+            resolved,
+            Target(),
+        ),
+    )
+
+    assert decision.status == "ready"
+    assert decision.snapshot.route_id == "direct/oqc"
+    assert decision.snapshot.backend_id == "oqc_cloud"
+    assert decision.snapshot.target_name == "Lucy"
+    assert decision.snapshot.n_qubits == 32
+    assert decision.snapshot.supported_ir_formats == ("openqasm3", "qir")
+    assert decision.snapshot.basis_gates == ("rz", "sx", "x", "ecr", "measure")
+    assert "superconducting" in decision.snapshot.native_features
+    assert "gate_model" in decision.snapshot.native_features
+    assert decision.snapshot.max_shots == 10_000
+    assert decision.snapshot.max_circuits == 20
+    assert decision.snapshot.queue_depth == 4
+    assert decision.snapshot.calibration_timestamp == "2026-05-20T13:00:00Z"
+    assert decision.snapshot.metadata["adapter"] == "oqc_target_no_submit"
+    assert decision.snapshot.metadata["topology"] == "heavy_hex"
+
+
+def test_direct_oqc_snapshot_blocks_offline_target_without_submission() -> None:
+    """Direct OQC offline metadata should block before QCAAS submission."""
+
+    metadata = {
+        "target": "oqc-offline",
+        "status": "offline",
+        "qubits": 8,
+        "input_formats": ("qasm.v3",),
+        "simulator": False,
+    }
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="direct",
+        provider="oqc",
+        ir_format="openqasm3",
+        metadata_probe=lambda resolved: snapshot_from_oqc_target(resolved, metadata),
+    )
+
+    assert decision.status == "blocked"
+    assert "provider target is offline" in decision.blockers
+    assert decision.snapshot.supported_ir_formats == ("openqasm3",)
     assert decision.snapshot.simulator is False
 
 

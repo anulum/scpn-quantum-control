@@ -123,6 +123,12 @@ is copied here.
   including IonQ JSON/OpenQASM/QIR declaration translation, qubit count, basis
   gates, shot limits, queue depth, online state, simulator flag, gateset, and
   calibration timestamp without job creation.
+- [x] **Direct OQC no-submit capability snapshot.** Implemented 2026-05-20:
+  `snapshot_from_oqc_target` adds the direct `direct/oqc` route and metadata
+  snapshot path for injected OQC target objects or metadata JSON, including
+  OpenQASM/QIR declaration translation, qubit count, native gate set, shot and
+  circuit limits, queue depth, online state, simulator flag, topology, and
+  calibration timestamp without QCAAS submission.
 - [x] **Direct Quantinuum no-submit capability snapshot.** Implemented
   2026-05-20: `snapshot_from_quantinuum_backend` adds the direct
   `direct/quantinuum` route and metadata snapshot path for injected Quantinuum

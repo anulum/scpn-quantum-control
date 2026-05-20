@@ -84,6 +84,7 @@ def test_aggregator_provider_matrix_covers_source_grounded_current_brokers() -> 
         "direct/ibm_quantum",
         "direct/iqm",
         "direct/ionq",
+        "direct/oqc",
         "direct/quantinuum",
         "direct/quera",
         "direct/rigetti",
@@ -150,6 +151,10 @@ def test_aggregator_provider_matrix_covers_source_grounded_current_brokers() -> 
         "direct/quera",
         "qbraid/quera",
         "strangeworks/quera",
+    ]
+    assert [route.route_id for route in aggregator_provider_routes_for(provider="oqc")] == [
+        "direct/oqc",
+        "qbraid/oqc",
     ]
 
 
@@ -228,6 +233,15 @@ def test_aggregator_provider_selector_resolves_profile_and_ir() -> None:
     assert quera.route.route_id == "direct/quera"
     assert quera.route.backend_id == "quera_bloqade"
     assert quera.profile.provider == "quera"
+
+    oqc = resolve_aggregator_provider_route(
+        aggregator="direct",
+        provider="oqc",
+        ir_format="openqasm3",
+    )
+    assert oqc.route.route_id == "direct/oqc"
+    assert oqc.route.backend_id == "oqc_cloud"
+    assert oqc.profile.provider == "oqc"
 
     with pytest.raises(LookupError, match="unsupported IR"):
         resolve_aggregator_provider_route(
@@ -363,6 +377,14 @@ def test_aggregator_provider_dependency_matrix_covers_every_route() -> None:
     assert direct_quera.target_family == "quera"
     assert "bloqade" in direct_quera.ir_formats
     assert direct_quera.submit_requires_approval is True
+
+    direct_oqc = by_route["direct/oqc"]
+    assert direct_oqc.aggregator == "direct"
+    assert direct_oqc.provider == "oqc"
+    assert direct_oqc.backend_id == "oqc_cloud"
+    assert direct_oqc.target_family == "oqc"
+    assert "openqasm3" in direct_oqc.ir_formats
+    assert direct_oqc.submit_requires_approval is True
 
     direct_ibm = by_route["direct/ibm_quantum"]
     assert direct_ibm.aggregator == "direct"
