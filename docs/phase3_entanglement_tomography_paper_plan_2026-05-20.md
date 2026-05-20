@@ -134,7 +134,7 @@ Best fit after raw counts:
 
 Draft scaffold:
 
-- `paper/phase3_entanglement_tomography_short_paper.md`
+- `paper/phase3_entanglement_tomography/phase3_entanglement_tomography_short_paper.md`
 
 The draft intentionally marks raw-count results as pending. Replace only the
 pending sections after the analysis artefacts are generated from an approved

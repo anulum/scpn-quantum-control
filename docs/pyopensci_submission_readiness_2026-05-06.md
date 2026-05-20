@@ -65,7 +65,7 @@ line.
 | Evidence | Path |
 |----------|------|
 | Package metadata | `pyproject.toml` |
-| JOSS-style software paper | `paper/joss/paper.md` |
+| JOSS-style software paper | `paper/joss/software_framework_note/paper.md` |
 | Software submission checklist | `docs/joss_software_submission_checklist_2026-05-06.md` |
 | Combined paper checklist | `docs/combined_submission_checklist_2026-05-06.md` |
 | Benchmark dashboard | `docs/methods_benchmark_dashboard.md` |

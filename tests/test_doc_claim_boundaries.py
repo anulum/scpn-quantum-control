@@ -20,7 +20,7 @@ def _read(relative_path: str) -> str:
 
 def test_phase1_short_paper_names_nearest_neighbour_truncation() -> None:
     """The hardware DLA paper must not imply a full all-to-all K circuit."""
-    text = _read("paper/phase1_dla_parity_short_paper.md")
+    text = _read("paper/phase1_dla_parity/phase1_dla_parity_short_paper.md")
 
     assert "nearest-neighbour truncation" in text
     assert "nearest-neighbour Hamiltonian" in text
@@ -58,7 +58,7 @@ def test_legacy_preprint_no_survival_or_outperformance_overclaims() -> None:
 
 def test_overview_paper_has_bounded_hardware_novelty_and_noise_language() -> None:
     """The overview manuscript must avoid broad hardware-novelty overclaims."""
-    text = _read("paper/main.tex")
+    text = _read("paper/ibm_fez_synchronisation/main.tex")
     collapsed = " ".join(text.split())
 
     assert "no prior hardware demonstration" not in collapsed
@@ -71,7 +71,7 @@ def test_overview_paper_has_bounded_hardware_novelty_and_noise_language() -> Non
 
 def test_fim_manuscript_preserves_negative_hardware_boundary() -> None:
     """The FIM manuscript should stay bounded to exact structure plus negative IBM evidence."""
-    text = _read("paper/scpn_fim_hamiltonian.tex")
+    text = _read("paper/scpn_fim_hamiltonian/scpn_fim_hamiltonian.tex")
     collapsed = " ".join(text.split())
 
     assert "backend/circuit-specific negative hardware result" in collapsed

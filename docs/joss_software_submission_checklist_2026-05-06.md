@@ -69,9 +69,9 @@ Avoid the stronger claim:
 
 | Item | Path |
 |------|------|
-| JOSS paper source | `paper/joss/paper.md` |
-| JOSS preview source | `paper/joss/paper_preview.tex` |
-| JOSS preview PDF | `paper/joss/paper_preview.pdf` |
+| JOSS paper source | `paper/joss/software_framework_note/paper.md` |
+| JOSS preview source | `paper/joss/software_framework_note/paper_preview.tex` |
+| JOSS preview PDF | `paper/joss/software_framework_note/paper_preview.pdf` |
 | Project metadata | `pyproject.toml` |
 | README | `README.md` |
 | Documentation site config | `mkdocs.yml` |
@@ -117,10 +117,10 @@ paper and dashboard.
 
 Before JOSS, pyOpenSci, or arXiv upload:
 
-- Rebuild `paper/joss/paper_preview.pdf` from `paper/joss/paper_preview.tex`
+- Rebuild `paper/joss/software_framework_note/paper_preview.pdf` from `paper/joss/software_framework_note/paper_preview.tex`
   if the preview source changed.
-- Verify `paper/joss/paper.md` has valid YAML metadata and bibliography links.
-- Verify every benchmark number in `paper/joss/paper.md` appears in committed
+- Verify `paper/joss/software_framework_note/paper.md` has valid YAML metadata and bibliography links.
+- Verify every benchmark number in `paper/joss/software_framework_note/paper.md` appears in committed
   JSON/CSV artefacts or is removed.
 - Verify the quickstart imports still match public package APIs.
 - Verify installation instructions do not require optional IBM, GPU, Julia, or

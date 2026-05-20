@@ -69,8 +69,8 @@ same-sector-state-independent causal language is rejected.
 | GUESS-readiness analysis | `scripts/analyse_phase2_guess_calibration.py` |
 | Phase 3 state/layout analysis | `scripts/analyse_phase3_state_layout_dla.py` |
 | Phase 3 state/layout manifest | `docs/phase3_state_layout_dla_manifest_2026-05-07.md` |
-| Paper source | `paper/phase1_dla_parity.tex` |
-| Paper PDF | `paper/phase1_dla_parity.pdf` |
+| Paper source | `paper/phase1_dla_parity/phase1_dla_parity.tex` |
+| Paper PDF | `paper/phase1_dla_parity/phase1_dla_parity.pdf` |
 
 ## Job IDs That Must Match the Paper
 
@@ -94,7 +94,7 @@ these job IDs.
 
 Before arXiv or journal upload:
 
-- Rebuild `paper/phase1_dla_parity.pdf` from `paper/phase1_dla_parity.tex`.
+- Rebuild `paper/phase1_dla_parity/phase1_dla_parity.pdf` from `paper/phase1_dla_parity/phase1_dla_parity.tex`.
 - Verify every path in the Data and Code Availability section matches committed
   files.
 - Verify the GitHub URL is `https://github.com/anulum/scpn-quantum-control`.

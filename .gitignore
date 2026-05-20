@@ -41,13 +41,13 @@ scpn_quantum_engine/target/
 
 # Internal business docs — never commit
 docs/internal/
-paper/*.aux
-paper/*.log
-paper/*.out
-paper/*.pdf
-paper/*.bib
-paper/*.bbl
-paper/*.blg
+paper/**/*.aux
+paper/**/*.log
+paper/**/*.out
+paper/**/*.pdf
+paper/**/*.bib
+paper/**/*.bbl
+paper/**/*.blg
 
 # Local assistant config — never commit
 CLAUDE.md
@@ -110,9 +110,9 @@ scpn_quantum_engine/*.cdx.json
 # Paper-extraction working files (raw pdftotext dumps, structured
 # extractions, per-paper assessments, archived under-fidelity v1
 # attempts) — local-only research artefacts; the publication-ready
-# manuscripts live in `paper/main.tex` and similar tracked files.
-paper/paper*_full_dump_*.txt
-paper/paper*_extraction_*.md
-paper/paper*_assessment.md
-paper/_v1_archive/
-paper/paper*_assessment_*.md
+# manuscripts live in named subdirectories under `paper/`.
+paper/**/paper*_full_dump_*.txt
+paper/**/paper*_extraction_*.md
+paper/**/paper*_assessment.md
+paper/**/_v1_archive/
+paper/**/paper*_assessment_*.md

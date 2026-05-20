@@ -17,13 +17,14 @@ set. It does not claim that any arXiv submission has happened.
 
 | Paper | Primary source | Bibliography/source companions | PDF |
 |-------|----------------|--------------------------------|-----|
-| DLA parity hardware preprint | `paper/phase1_dla_parity.tex` | inline `thebibliography`; figures under `figures/phase1/` and `figures/phase2/` | `paper/phase1_dla_parity.pdf` |
-| Rust/VQE methods paper | `paper/rust_vqe_methods.tex` | inline `thebibliography`; generated artefacts under `data/rust_vqe_methods/` | `paper/rust_vqe_methods.pdf` |
-| SCPN/FIM Hamiltonian paper | `paper/scpn_fim_hamiltonian.tex` | `paper/scpn_fim_hamiltonian_refs.bib`; generated artefacts under `data/scpn_fim_hamiltonian/` | `paper/scpn_fim_hamiltonian.pdf` |
+| DLA parity hardware preprint | `paper/phase1_dla_parity/phase1_dla_parity.tex` | inline `thebibliography`; figures under `figures/phase1/` and `figures/phase2/` | `paper/phase1_dla_parity/phase1_dla_parity.pdf` |
+| Rust/VQE methods paper | `paper/rust_vqe_methods/rust_vqe_methods.tex` | inline `thebibliography`; generated artefacts under `data/rust_vqe_methods/` | `paper/rust_vqe_methods/rust_vqe_methods.pdf` |
+| SCPN/FIM Hamiltonian paper | `paper/scpn_fim_hamiltonian/scpn_fim_hamiltonian.tex` | `paper/scpn_fim_hamiltonian/scpn_fim_hamiltonian_refs.bib`; generated artefacts under `data/scpn_fim_hamiltonian/` | `paper/scpn_fim_hamiltonian/scpn_fim_hamiltonian.pdf` |
 
-The JOSS-style software note is tracked separately under `paper/joss/`. It is
-not the primary arXiv source package unless a venue-specific decision promotes
-it to arXiv.
+The current JOSS-style software note is tracked separately under
+`paper/joss/software_framework_note/`. Future JOSS submissions should use
+sibling directories under `paper/joss/`; none are primary arXiv source packages
+unless a venue-specific decision promotes them to arXiv.
 
 ## Required Source Bundle Contents
 
@@ -49,12 +50,16 @@ Do not include:
 
 ## Build Gate
 
-Run from repository root:
+Run each manuscript from its own directory:
 
 ```bash
-cd paper
+cd paper/phase1_dla_parity
 pdflatex -interaction=nonstopmode -halt-on-error phase1_dla_parity.tex
+
+cd ../rust_vqe_methods
 pdflatex -interaction=nonstopmode -halt-on-error rust_vqe_methods.tex
+
+cd ../scpn_fim_hamiltonian
 pdflatex -interaction=nonstopmode -halt-on-error scpn_fim_hamiltonian.tex
 ```
 

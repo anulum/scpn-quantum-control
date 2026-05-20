@@ -63,8 +63,8 @@ date, and artefact source.
 | Local GPU summary | `data/rust_vqe_methods/gpu_benchmark_summary_aaarthuus_local_2026-05-05.json` |
 | ML350 CPU summary | `data/rust_vqe_methods/remote_knm_benchmark_ml350_2026-05-05.json` |
 | Vertex CPU summary | `data/rust_vqe_methods/remote_knm_benchmark_vertex_n1_standard_4_2026-05-05.json` |
-| Paper source | `paper/rust_vqe_methods.tex` |
-| Paper PDF | `paper/rust_vqe_methods.pdf` |
+| Paper source | `paper/rust_vqe_methods/rust_vqe_methods.tex` |
+| Paper PDF | `paper/rust_vqe_methods/rust_vqe_methods.pdf` |
 
 ## Generator Scripts
 
@@ -102,7 +102,7 @@ reviewed as machine-context evidence, not automatically promoted.
 
 Before arXiv, SoftwareX, or related upload:
 
-- Rebuild `paper/rust_vqe_methods.pdf` from `paper/rust_vqe_methods.tex`.
+- Rebuild `paper/rust_vqe_methods/rust_vqe_methods.pdf` from `paper/rust_vqe_methods/rust_vqe_methods.tex`.
 - Verify every table number against the committed JSON/CSV artefact cited in
   the caption or text.
 - Verify the GitHub URL is `https://github.com/anulum/scpn-quantum-control`.

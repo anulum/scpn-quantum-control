@@ -106,7 +106,7 @@ single highest-priority hardware claim. The raw-count reproduction path is
 committed — see
 [`docs/results.md`](results.md#phase-1-dla-parity-asymmetry-april-2026-ibm_kingston)
 and the short-paper draft at
-[`paper/phase1_dla_parity_short_paper.md`](https://github.com/anulum/scpn-quantum-control/blob/main/paper/phase1_dla_parity_short_paper.md).
+[`paper/phase1_dla_parity/phase1_dla_parity_short_paper.md`](https://github.com/anulum/scpn-quantum-control/blob/main/paper/phase1_dla_parity/phase1_dla_parity_short_paper.md).
 
 **Phase 1 deliverables (DONE):**
 
@@ -119,7 +119,7 @@ and the short-paper draft at
   depth 6 — consistent with the 4.5–9.6 % apriori simulator prediction
 - Wall time ~264 s, all within the Open Plan 10-min cycle
 - Full reproducible analysis: `scripts/analyse_phase1_dla_parity.py`
-- 267-line short-paper draft: `paper/phase1_dla_parity_short_paper.md`
+- 267-line short-paper draft: `paper/phase1_dla_parity/phase1_dla_parity_short_paper.md`
 
 **Phase 2 plan (ready, requires 180-min promo):**
 

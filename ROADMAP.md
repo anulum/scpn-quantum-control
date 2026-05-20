@@ -347,7 +347,7 @@ is copied here.
   promotes a specific raw-count claim.
 - [x] **Coauthor meeting claim-readiness pass.** Implemented
   2026-05-12 for the 2026-05-13 15:00 Europe/Zurich Teams meeting:
-  `paper/main.tex`, `docs/preprint.md`, and `docs/PAPER_CLAIMS.md`
+  `paper/ibm_fez_synchronisation/main.tex`, `docs/preprint.md`, and `docs/PAPER_CLAIMS.md`
   now avoid first-hardware, hardware-DTC, backend-general coherence,
   generic-outperformance, and clean-readout overclaims. The FIM
   manuscript boundary remains regression-tested as a backend/circuit-
@@ -1531,7 +1531,7 @@ be executed until individually activated.
   CI smoke step. 100 % line coverage across all modules; 128 / 128
   tests green.
 - **B1** arXiv LaTeX preprint — **closed 2026-04-18** (commit
-  `457b734`): `paper/phase1_dla_parity.tex` compiles to a 4-page
+  `457b734`): `paper/phase1_dla_parity/phase1_dla_parity.tex` compiles to a 4-page
   PDF; `paper/README.md` documents the submission packaging.
 - **Qiskit 1.x → 2.x migration** — **closed 2026-04-18** (commit
   `b786fc2`): pin bump to `qiskit>=2.2,<3.0`, closed the Dependabot

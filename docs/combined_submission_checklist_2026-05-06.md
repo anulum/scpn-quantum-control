@@ -19,10 +19,10 @@ minimal AI-disclosure policy. It does not claim that submission has happened.
 
 | Package | Source | PDF | Checklist |
 |---------|--------|-----|-----------|
-| DLA parity hardware preprint | `paper/phase1_dla_parity.tex` | `paper/phase1_dla_parity.pdf` | `docs/dla_parity_submission_checklist_2026-05-06.md` |
-| Rust/VQE methods paper | `paper/rust_vqe_methods.tex` | `paper/rust_vqe_methods.pdf` | `docs/rust_vqe_methods_submission_checklist_2026-05-06.md` |
-| JOSS-style software note | `paper/joss/paper.md`; preview `paper/joss/paper_preview.tex` | `paper/joss/paper_preview.pdf` | `docs/joss_software_submission_checklist_2026-05-06.md` |
-| SCPN/FIM Hamiltonian paper | `paper/scpn_fim_hamiltonian.tex` | `paper/scpn_fim_hamiltonian.pdf` | `docs/scpn_fim_submission_checklist_2026-05-06.md` |
+| DLA parity hardware preprint | `paper/phase1_dla_parity/phase1_dla_parity.tex` | `paper/phase1_dla_parity/phase1_dla_parity.pdf` | `docs/dla_parity_submission_checklist_2026-05-06.md` |
+| Rust/VQE methods paper | `paper/rust_vqe_methods/rust_vqe_methods.tex` | `paper/rust_vqe_methods/rust_vqe_methods.pdf` | `docs/rust_vqe_methods_submission_checklist_2026-05-06.md` |
+| JOSS-style software note | `paper/joss/software_framework_note/paper.md`; preview `paper/joss/software_framework_note/paper_preview.tex` | `paper/joss/software_framework_note/paper_preview.pdf` | `docs/joss_software_submission_checklist_2026-05-06.md` |
+| SCPN/FIM Hamiltonian paper | `paper/scpn_fim_hamiltonian/scpn_fim_hamiltonian.tex` | `paper/scpn_fim_hamiltonian/scpn_fim_hamiltonian.pdf` | `docs/scpn_fim_submission_checklist_2026-05-06.md` |
 
 ## Claim Boundaries That Must Survive Upload
 
@@ -37,14 +37,19 @@ minimal AI-disclosure policy. It does not claim that submission has happened.
 
 ## Final PDF Build Gate
 
-Run the relevant build commands from the repository root before upload:
+Run each paper from its own source directory before upload:
 
 ```bash
-cd paper
+cd paper/phase1_dla_parity
 pdflatex -interaction=nonstopmode -halt-on-error phase1_dla_parity.tex
+
+cd ../rust_vqe_methods
 pdflatex -interaction=nonstopmode -halt-on-error rust_vqe_methods.tex
+
+cd ../scpn_fim_hamiltonian
 pdflatex -interaction=nonstopmode -halt-on-error scpn_fim_hamiltonian.tex
-cd joss
+
+cd ../joss/software_framework_note
 pdflatex -interaction=nonstopmode -halt-on-error paper_preview.tex
 ```
 

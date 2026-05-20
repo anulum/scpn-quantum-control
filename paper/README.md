@@ -5,45 +5,50 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 
-# paper/ — publication sources
+# paper/ - publication sources
 
-Two arXiv-submission-ready manuscripts live here.
+Each manuscript or venue package has its own subdirectory. Keep future JOSS
+submissions under `paper/joss/<submission_slug>/`; do not place a second JOSS
+paper directly under `paper/joss/`.
 
-## `main.tex` — February 2026 ibm_fez campaign
+## Directory map
 
-Long-form paper on the 33-job Feb 2026 campaign on `ibm_fez`.
-Status: compiles to `main.pdf`, self-contained `thebibliography`.
+| Directory | Contents | Status |
+|---|---|---|
+| `ibm_fez_synchronisation/` | February 2026 `ibm_fez` synchronisation overview in `main.tex` | Contextual overview; compiles locally. |
+| `phase1_dla_parity/` | April 2026 `ibm_kingston` DLA-parity manuscript and Markdown short-paper draft | Submission-ready source package, with claim boundaries. |
+| `phase3_entanglement_tomography/` | Reduced-Pauli entanglement/tomography follow-up draft | Raw-count execution pending. |
+| `rust_vqe_methods/` | Rust/VQE methodology manuscript and local PDF | Methods preprint candidate. |
+| `scpn_fim_hamiltonian/` | SCPN/FIM Hamiltonian manuscript and bibliography material | Negative hardware-validation paper candidate. |
+| `joss/software_framework_note/` | Current JOSS software-framework note and preview files | One JOSS submission package; future JOSS notes get sibling directories. |
+| `paper0_foundational_framework/` | Local Paper 0 extraction dumps and assessments | Ignored research working material. |
+| `paper1_quantum_biological/` | Local Paper 1 extraction dumps, assessments, and v1 archive | Ignored research working material. |
+| `paper2_neurochemical/` | Local Paper 2 extraction dumps and assessments | Ignored research working material. |
+
+## Build commands
+
+Run LaTeX from the manuscript directory so local build artefacts stay beside the
+source:
 
 ```bash
-pdflatex main.tex  # twice for cross-references + bibliography
+cd paper/phase1_dla_parity
+pdflatex phase1_dla_parity.tex
+pdflatex phase1_dla_parity.tex
 ```
-
-## `phase1_dla_parity.tex` — April 2026 ibm_kingston DLA-parity campaign
-
-Short-paper companion for the April 2026 Phase 1 campaign on
-`ibm_kingston` (342 circuits, $n = 4$, DLA parity asymmetry
-$+10.8 \pm 1.1\,\%$). Target venue: *Quantum Science and Technology*
-Letter or *Physical Review Research*. Four-column-format pages in
-the current build.
 
 ```bash
-pdflatex phase1_dla_parity.tex  # twice for cross-references
+cd paper/rust_vqe_methods
+pdflatex rust_vqe_methods.tex
+pdflatex rust_vqe_methods.tex
 ```
 
-LaTeX class: `revtex4-2` with `twocolumn, aps, prresearch,
-superscriptaddress, floatfix, notitlepage, longbibliography`
-options. All figures pulled from `figures/phase1/*.png`, all
-references inlined in `thebibliography` (no external `.bib` needed
-for arXiv submission).
-
-## `phase3_entanglement_tomography_short_paper.md` — Phase 3 mechanism-boundary draft
-
-Markdown scaffold for the reduced-Pauli entanglement/tomography follow-up.
-Status: raw-count execution pending. The draft records the approved
-`ibm_marrakesh` live preflight, the 166-circuit execution package, the analysis
-command, and the blocked-claim boundary. Populate the Results section only
-after the approved QPU run and `scripts/analyse_phase3_entanglement_tomography.py`
-complete.
+```bash
+cd paper/scpn_fim_hamiltonian
+pdflatex scpn_fim_hamiltonian.tex
+bibtex scpn_fim_hamiltonian
+pdflatex scpn_fim_hamiltonian.tex
+pdflatex scpn_fim_hamiltonian.tex
+```
 
 ## arXiv submission packaging
 
@@ -55,8 +60,8 @@ For arXiv (either paper):
 
    ```bash
    tar czf phase1_dla_parity_arxiv.tar.gz \
-       paper/phase1_dla_parity.tex \
-       paper/phase1_dla_parity.bbl \
+       paper/phase1_dla_parity/phase1_dla_parity.tex \
+       paper/phase1_dla_parity/phase1_dla_parity.bbl \
        figures/phase1/leakage_vs_depth.png \
        figures/phase1/asymmetry_vs_depth.png
    ```
@@ -68,6 +73,6 @@ For arXiv (either paper):
 
 ## Build artefacts
 
-`paper/*.aux`, `paper/*.log`, `paper/*.out`, `paper/*.pdf` are all
-gitignored. Clean rebuild with `rm paper/*.aux paper/*.log
-paper/*.out paper/*.pdf && pdflatex paper/phase1_dla_parity.tex`.
+`paper/**/*.aux`, `paper/**/*.log`, `paper/**/*.out`, generated PDFs, generated
+BibTeX outputs, and source extraction dumps are gitignored unless already
+tracked as a deliberate publication artefact.

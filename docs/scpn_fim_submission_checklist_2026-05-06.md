@@ -64,8 +64,8 @@ falsification visible. It is part of the contribution.
 | Repeated follow-up analysis note | `docs/scpn_fim_repeated_followup_analysis_2026-05-05.md` |
 | Repeated follow-up protocol | `docs/scpn_fim_repeated_followup_protocol_2026-05-05.md` |
 | Validation protocol | `docs/scpn_fim_validation_protocol_2026-05-05.md` |
-| Paper source | `paper/scpn_fim_hamiltonian.tex` |
-| Paper PDF | `paper/scpn_fim_hamiltonian.pdf` |
+| Paper source | `paper/scpn_fim_hamiltonian/scpn_fim_hamiltonian.tex` |
+| Paper PDF | `paper/scpn_fim_hamiltonian/scpn_fim_hamiltonian.pdf` |
 | Exact spectra summary | `data/scpn_fim_hamiltonian/fim_spectrum_summary_2026-05-05.json` |
 | Level-spacing summary | `data/scpn_fim_hamiltonian/fim_level_spacing_summary_2026-05-05.json` |
 | Entanglement summary | `data/scpn_fim_hamiltonian/fim_entanglement_summary_2026-05-05.json` |
@@ -118,8 +118,8 @@ These commands analyse committed artefacts only. They must not submit IBM jobs.
 
 Before arXiv or journal upload:
 
-- Rebuild `paper/scpn_fim_hamiltonian.pdf` from
-  `paper/scpn_fim_hamiltonian.tex`.
+- Rebuild `paper/scpn_fim_hamiltonian/scpn_fim_hamiltonian.pdf` from
+  `paper/scpn_fim_hamiltonian/scpn_fim_hamiltonian.tex`.
 - Verify every table value against the committed JSON/CSV artefact cited in
   the paper.
 - Verify the paper states `H_FIM(lambda) = -lambda M^2 / n` and the

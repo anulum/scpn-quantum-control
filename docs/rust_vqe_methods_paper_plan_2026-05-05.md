@@ -100,7 +100,7 @@ Remaining benchmark matrix before submission:
 
 Created:
 
-- `paper/rust_vqe_methods.tex`
+- `paper/rust_vqe_methods/rust_vqe_methods.tex`
 
 The scaffold is intentionally conservative. It includes placeholder tables and
 explicit TODO-style language where fresh benchmark data is required.

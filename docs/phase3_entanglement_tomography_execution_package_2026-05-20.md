@@ -89,7 +89,7 @@ Blocked claims:
 Paper-facing artefacts:
 
 - Plan: `docs/phase3_entanglement_tomography_paper_plan_2026-05-20.md`
-- Draft scaffold: `paper/phase3_entanglement_tomography_short_paper.md`
+- Draft scaffold: `paper/phase3_entanglement_tomography/phase3_entanglement_tomography_short_paper.md`
 
 ## Boundary
 

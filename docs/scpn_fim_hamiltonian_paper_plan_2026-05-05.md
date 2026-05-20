@@ -173,8 +173,8 @@ Minimum scripts:
 
 Initial manuscript draft:
 
-- `paper/scpn_fim_hamiltonian.tex`
-- `paper/scpn_fim_hamiltonian_refs.bib`
+- `paper/scpn_fim_hamiltonian/scpn_fim_hamiltonian.tex`
+- `paper/scpn_fim_hamiltonian/scpn_fim_hamiltonian_refs.bib`
 
 ## Publication stance
 

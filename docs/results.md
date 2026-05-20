@@ -169,7 +169,7 @@ Reproducible from the raw JSON in `data/phase1_dla_parity/` via
 
 A 267-line short paper draft for *Quantum Science and Technology* /
 *Physical Review Research* is in
-[`paper/phase1_dla_parity_short_paper.md`](https://github.com/anulum/scpn-quantum-control/blob/main/paper/phase1_dla_parity_short_paper.md).
+[`paper/phase1_dla_parity/phase1_dla_parity_short_paper.md`](https://github.com/anulum/scpn-quantum-control/blob/main/paper/phase1_dla_parity/phase1_dla_parity_short_paper.md).
 
 ### Phase 2 — Reduced A+G Replication (May 2026, ibm_kingston)
 
