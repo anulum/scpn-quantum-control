@@ -150,6 +150,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [AzureQuantumHALAdapter, azure_openqasm3_to_workload]
 
+::: scpn_quantum_control.hardware.hal_ionq
+    options:
+      members: [IonQCloudHALAdapter, ionq_qis_workload]
+
 ::: scpn_quantum_control.hardware.hal_pennylane
     options:
       members: [PennyLaneDeviceHALAdapter, pennylane_gate_workload]

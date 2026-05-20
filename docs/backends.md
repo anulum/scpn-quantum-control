@@ -314,6 +314,7 @@ from scpn_quantum_control.hardware import (
     AzureQuantumHALAdapter,
     BraketLocalHALAdapter,
     HardwareAbstractionLayer,
+    IonQCloudHALAdapter,
     LocalDeterministicSimulator,
     PennyLaneDeviceHALAdapter,
     QbraidRuntimeHALAdapter,
@@ -321,6 +322,7 @@ from scpn_quantum_control.hardware import (
     QuantumWorkload,
     azure_openqasm3_to_workload,
     braket_circuit_to_workload,
+    ionq_qis_workload,
     pennylane_gate_workload,
     qbraid_program_to_workload,
     qiskit_circuit_to_workload,
@@ -416,6 +418,34 @@ job = hal.submit(
         workload_id="azure_x",
         n_qubits=1,
         shots=128,
+    ),
+    approval_id="approved-run",
+)
+```
+
+The direct IonQ adapter layer provides `IonQCloudHALAdapter` and
+`ionq_qis_workload()`. It uses IonQ API v0.4 directly, targets a named IonQ
+backend such as `simulator` or `qpu.forte-1`, submits IonQ QIS JSON circuits,
+fetches sparse probability results, converts them to fixed-shot bitstring
+counts, and cancels via the v0.4 job status endpoint. API keys are supplied by
+constructor argument or `IONQ_API_KEY`; they are never part of `QuantumWorkload`.
+
+```python
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+hal.register_backend(
+    IonQCloudHALAdapter(
+        hal.profile("ionq_cloud"),
+        api_key=ionq_api_key,
+        backend="simulator",
+    )
+)
+job = hal.submit(
+    "ionq_cloud",
+    ionq_qis_workload(
+        [{"gate": "h", "target": 0}, {"gate": "cnot", "control": 0, "target": 1}],
+        workload_id="ionq_bell",
+        n_qubits=2,
+        shots=256,
     ),
     approval_id="approved-run",
 )

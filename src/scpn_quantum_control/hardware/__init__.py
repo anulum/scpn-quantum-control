@@ -144,6 +144,7 @@ from .hal_braket import (
     BraketLocalHALAdapter,
     braket_circuit_to_workload,
 )
+from .hal_ionq import IonQCloudHALAdapter, ionq_qis_workload
 from .hal_pennylane import PennyLaneDeviceHALAdapter, pennylane_gate_workload
 from .hal_qbraid import QbraidRuntimeHALAdapter, qbraid_program_to_workload
 from .hal_qiskit import (
@@ -243,6 +244,8 @@ __all__ = [
     "BraketAwsHALAdapter",
     "BraketLocalHALAdapter",
     "braket_circuit_to_workload",
+    "IonQCloudHALAdapter",
+    "ionq_qis_workload",
     "PennyLaneDeviceHALAdapter",
     "pennylane_gate_workload",
     "QbraidRuntimeHALAdapter",
