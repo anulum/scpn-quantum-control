@@ -17,7 +17,7 @@ paper directly under `paper/joss/`.
 |---|---|---|
 | `ibm_fez_synchronisation/` | February 2026 `ibm_fez` synchronisation overview in `main.tex` | Contextual overview; compiles locally. |
 | `phase1_dla_parity/` | April 2026 `ibm_kingston` DLA-parity manuscript and Markdown short-paper draft | Submission-ready source package, with claim boundaries. |
-| `phase3_entanglement_tomography/` | Reduced-Pauli entanglement/tomography follow-up draft | Raw-count execution pending. |
+| `phase3_entanglement_tomography/` | Reduced-Pauli entanglement/tomography REVTeX manuscript, bibliography, and PDF | Completed IBM run; venue-style source package. |
 | `s1_feedback_control/` | Monitored feedback versus open-loop dynamic-circuit draft | Live IBM metadata and raw-count execution pending. |
 | `rust_vqe_methods/` | Rust/VQE methodology manuscript and local PDF | Methods preprint candidate. |
 | `scpn_fim_hamiltonian/` | SCPN/FIM Hamiltonian manuscript and bibliography material | Negative hardware-validation paper candidate. |
@@ -49,6 +49,14 @@ pdflatex scpn_fim_hamiltonian.tex
 bibtex scpn_fim_hamiltonian
 pdflatex scpn_fim_hamiltonian.tex
 pdflatex scpn_fim_hamiltonian.tex
+```
+
+```bash
+cd paper/phase3_entanglement_tomography
+pdflatex phase3_entanglement_tomography.tex
+bibtex phase3_entanglement_tomography
+pdflatex phase3_entanglement_tomography.tex
+pdflatex phase3_entanglement_tomography.tex
 ```
 
 ## arXiv submission packaging
