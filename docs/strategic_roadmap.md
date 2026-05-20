@@ -181,10 +181,11 @@ on the same feedback/control bodies. The mean absolute feedback-control
 separation is `0.0205078125`; three direct XY channels move positive for the
 feedback arm and `XXI` moves negative. This supports a bounded
 hardware-control stress-test framing, not a promoted controller claim.
-S1c is prepared but not submitted: one dynamic round, correction angle `0.06`,
+S1c completed on `ibm_kingston`: one dynamic round, correction angle `0.06`,
 base gain `0.4`, direct XY observables, and maximum feedback transpiled depth
-`237`. It is the next same-paper run if a shallow/depth-overhead discriminator
-is needed.
+`237`. It was the shallow/depth-overhead discriminator; all four direct XY
+channels moved negative for feedback versus matched open-loop control, with
+mean absolute separation `0.0299479167`.
 
 ### Acceptance
 

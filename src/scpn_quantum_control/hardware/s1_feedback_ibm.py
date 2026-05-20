@@ -132,9 +132,7 @@ def binary_phase_synchrony_from_counts(counts: Mapping[str, int], *, n_qubits: i
         if not isinstance(raw_count, int) or raw_count < 0:
             raise ValueError(f"count for {raw_bitstring!r} must be a non-negative integer")
         bitstring = raw_bitstring.replace(" ", "")
-        if len(bitstring) < n_qubits:
-            raise ValueError("count bitstrings must include all measured system qubits")
-        system_bits = bitstring[-n_qubits:]
+        system_bits = bitstring[-n_qubits:].zfill(n_qubits)
         phase_sum = sum(1.0 if bit == "0" else -1.0 for bit in system_bits)
         synchrony = abs(phase_sum / n_qubits)
         weighted += raw_count * synchrony
@@ -163,9 +161,7 @@ def pauli_expectation_from_counts(
         if not isinstance(raw_count, int) or raw_count < 0:
             raise ValueError(f"count for {raw_bitstring!r} must be a non-negative integer")
         bitstring = raw_bitstring.replace(" ", "")
-        if len(bitstring) < n_qubits:
-            raise ValueError("count bitstrings must include all measured system qubits")
-        system_bits = bitstring[-n_qubits:]
+        system_bits = bitstring[-n_qubits:].zfill(n_qubits)
         eigenvalue = 1.0
         for index in active_indices:
             eigenvalue *= 1.0 if system_bits[index] == "0" else -1.0

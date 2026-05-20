@@ -6,17 +6,20 @@
 <!-- Contact: www.anulum.li | protoscience@anulum.li -->
 <!-- scpn-quantum-control -- S1c IBM shallow direct-XY readiness -->
 
-# S1c IBM Shallow Direct-XY Readiness
+# S1c IBM Shallow Direct-XY Result
 
 Date: 2026-05-20
 
 Backend: `ibm_kingston`
 
-Status: `ready_for_submission`
+Status: completed
 
-Artefact:
+Artefacts:
 
 - `data/s1_feedback_loop/s1c_xy_observable_readiness_ibm_kingston_20260520T131646Z.json`
+- `data/s1_feedback_loop/s1c_xy_observable_readiness_ibm_kingston_20260520T132455Z.json`
+- `data/s1_feedback_loop/s1c_xy_observable_raw_counts_ibm_kingston_20260520T132455Z.json`
+- `data/s1_feedback_loop/s1c_xy_observable_analysis_ibm_kingston_20260520T132455Z.json`
 
 ## Purpose
 
@@ -64,6 +67,35 @@ PYTHONDONTWRITEBYTECODE=1 .venv-linux/bin/python scripts/submit_s1b_ibm_xy_obser
 
 ## Boundary
 
-S1c is a prepared same-paper extension. It has not been submitted in this
-artefact. A successful execution would test whether shallower dynamic feedback
-changes the small, channel-structured direct-XY response observed in S1b.
+S1c is a same-paper extension. It was submitted after the readiness artefact
+was prepared. The original live runner completed the IBM jobs, then failed
+locally during packaging because the generic count extractor selected the
+monitor register instead of the final `readout` register for one-round
+circuits. The jobs were recovered from IBM without resubmission after fixing
+the extractor to prefer the final `readout` register.
+
+## Jobs
+
+| Observable | Feedback job | Matched open-loop job |
+|---|---|---|
+| `XXI` | `d86rca1789is73902fc0` | `d86rcgh789is73902fm0` |
+| `YYI` | `d86rcc2s46sc73f7cf50` | `d86rcias46sc73f7cfh0` |
+| `IXX` | `d86rcdgp0eas73dlc2j0` | `d86rcjp789is73902fsg` |
+| `IYY` | `d86rcf0p0eas73dlc2lg` | `d86rclgp0eas73dlc2sg` |
+
+## Result
+
+| Observable | Feedback minus control |
+|---|---:|
+| `IXX` | -0.0364583333 |
+| `IYY` | -0.0319010417 |
+| `XXI` | -0.0221354167 |
+| `YYI` | -0.0292968750 |
+
+Mean absolute feedback-control separation: `0.0299479167`.
+
+S1c does not rescue the feedback policy. Under the shallow one-round,
+lower-gain configuration, all four direct XY channels move negative for the
+feedback arm relative to the matched open-loop arm. This strengthens the same
+paper's conservative conclusion: the current monitored-feedback policy is not
+a robust controller on this backend/window.

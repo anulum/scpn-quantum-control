@@ -187,19 +187,35 @@ S1b jobs:
 - `IXX`: feedback `d86r201789is739022q0`, control `d86r288p0eas73dlbkmg`
 - `IYY`: feedback `d86r21is46sc73f7c2o0`, control `d86r29p789is7390238g`
 
-### 6.3 Prepared S1c shallow/gain-tuned extension
+### 6.3 S1c shallow/gain-tuned extension
 
-S1c is prepared as a same-paper follow-up lane, not a separate paper. It keeps
-the direct XY-sector observables but reduces the dynamic feedback body to one
-round, correction angle `0.06`, and base gain `0.4`. The readiness artefact is
-`data/s1_feedback_loop/s1c_xy_observable_readiness_ibm_kingston_20260520T131646Z.json`.
+S1c is a same-paper follow-up lane, not a separate paper. It keeps the direct
+XY-sector observables but reduces the dynamic feedback body to one round,
+correction angle `0.06`, and base gain `0.4`.
 
 The S1c feedback arms transpile on `ibm_kingston` with maximum depths
 `236`-`237`, compared with S1b feedback depths near `720`. This is the next
 logical hardware execution if the paper needs to separate policy/depth
-overhead from the underlying dynamic-feedback idea. S1c was prepared as
-`ready_for_submission`; it is not included as a completed hardware result in
-this manuscript version.
+overhead from the underlying dynamic-feedback idea.
+
+S1c completed on `ibm_kingston` with jobs:
+
+- `XXI`: feedback `d86rca1789is73902fc0`, control `d86rcgh789is73902fm0`
+- `YYI`: feedback `d86rcc2s46sc73f7cf50`, control `d86rcias46sc73f7cfh0`
+- `IXX`: feedback `d86rcdgp0eas73dlc2j0`, control `d86rcjp789is73902fsg`
+- `IYY`: feedback `d86rcf0p0eas73dlc2lg`, control `d86rclgp0eas73dlc2sg`
+
+| Observable | Feedback minus control |
+|---|---:|
+| `IXX` | -0.0364583333 |
+| `IYY` | -0.0319010417 |
+| `XXI` | -0.0221354167 |
+| `YYI` | -0.0292968750 |
+
+Mean absolute feedback-control separation is `0.0299479167`. Unlike S1b,
+which showed mixed signs, S1c moves negative in all four direct XY channels.
+The shallower/lower-gain policy therefore does not rescue the current
+feedback design.
 
 ## 7. Claim Boundary
 
@@ -226,7 +242,8 @@ small dynamic-circuit feedback policy, at this depth and calibration window,
 does not outperform a matched open-loop arm on the preregistered binary-phase
 synchrony target. The S1b extension shows why that is not the whole story:
 direct XY-sector channels expose a small, non-uniform feedback/control
-response. The paper should therefore be framed as a dynamic-circuit
+response. The S1c shallow/lower-gain extension then moves negative across all
+four direct XY channels. The paper should therefore be framed as a dynamic-circuit
 hardware-control boundary test: the specific policy is not promoted as a
 successful controller, but the paired-arm method and direct-observable
 extension reveal where future shallower or gain-tuned policies should be

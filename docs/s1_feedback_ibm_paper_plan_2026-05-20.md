@@ -167,18 +167,34 @@ same-paper diagnostic extension showing whether the null/negative result is
 uniform across direct XY-sector observables. The observed answer is no:
 feedback/control differences are small but not uniform across channels.
 
-S1c prepared extension:
+S1c shallow/gain-tuned extension:
 
-- status: `ready_for_submission`, not submitted in the preparation artefact;
+- status: completed on `ibm_kingston`;
 - purpose: same-paper shallow/gain-tuned continuation to test whether S1/S1b
   weakness is dominated by dynamic depth and feedback strength;
 - configuration: `n_rounds=1`, correction angle `0.06`, base gain `0.4`;
 - observables: `XXI`, `YYI`, `IXX`, `IYY`;
 - readiness artefact:
   `data/s1_feedback_loop/s1c_xy_observable_readiness_ibm_kingston_20260520T131646Z.json`;
+- execution readiness artefact:
+  `data/s1_feedback_loop/s1c_xy_observable_readiness_ibm_kingston_20260520T132455Z.json`;
+- raw-count artefact:
+  `data/s1_feedback_loop/s1c_xy_observable_raw_counts_ibm_kingston_20260520T132455Z.json`;
+- analysis artefact:
+  `data/s1_feedback_loop/s1c_xy_observable_analysis_ibm_kingston_20260520T132455Z.json`;
 - maximum feedback transpiled depth: `237`, compared with S1b feedback depth
   about `720`;
 - estimated QPU seconds: `24.0`.
+- jobs: `d86rca1789is73902fc0`, `d86rcc2s46sc73f7cf50`,
+  `d86rcdgp0eas73dlc2j0`, `d86rcf0p0eas73dlc2lg`,
+  `d86rcgh789is73902fm0`, `d86rcias46sc73f7cfh0`,
+  `d86rcjp789is73902fsg`, `d86rclgp0eas73dlc2sg`;
+- mean absolute feedback-control separation: `0.0299479167`;
+- signed feedback minus control by sorted observable row: `-0.0364583333`,
+  `-0.0319010417`, `-0.0221354167`, `-0.0292968750`;
+- interpretation: the shallow/lower-gain policy does not rescue the feedback
+  arm; all four direct XY channels move negative relative to matched open-loop
+  control.
 
 ## Claim Boundary
 

@@ -1,0 +1,282 @@
+{
+  "schema": "scpn_s1c_ibm_xy_observable_readiness_v1",
+  "timestamp_utc": "20260520T132455Z",
+  "backend": "ibm_kingston",
+  "experiment_id": "s1c_shallow_gain_tuned_xy_extension_2026-05-20",
+  "parent_experiment_id": "s1_dynamic_feedback_preregistration_2026-05-06",
+  "lane": "s1c",
+  "hardware_submission": false,
+  "status": "ready_for_submission",
+  "observable_family": "direct_xy_pauli_correlators",
+  "observables": [
+    "XXI",
+    "YYI",
+    "IXX",
+    "IYY"
+  ],
+  "n_rounds": 1,
+  "correction_angle": 0.06,
+  "base_gain": 0.4,
+  "arms": [
+    {
+      "label": "feedback",
+      "observable": "XXI",
+      "shots": 1024,
+      "repetitions": 3,
+      "source_depth": 15,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1,
+        "if_else": 1
+      },
+      "transpiled_depth_max": 237,
+      "transpiled_depths": [
+        237,
+        237,
+        237
+      ],
+      "transpiled_operation_counts": {
+        "rz": 128,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1,
+        "if_else": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 3.0
+    },
+    {
+      "label": "feedback",
+      "observable": "YYI",
+      "shots": 1024,
+      "repetitions": 3,
+      "source_depth": 16,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "sdg": 2,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1,
+        "if_else": 1
+      },
+      "transpiled_depth_max": 236,
+      "transpiled_depths": [
+        236,
+        236,
+        236
+      ],
+      "transpiled_operation_counts": {
+        "rz": 126,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1,
+        "if_else": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 3.0
+    },
+    {
+      "label": "feedback",
+      "observable": "IXX",
+      "shots": 1024,
+      "repetitions": 3,
+      "source_depth": 15,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1,
+        "if_else": 1
+      },
+      "transpiled_depth_max": 237,
+      "transpiled_depths": [
+        237,
+        237,
+        237
+      ],
+      "transpiled_operation_counts": {
+        "rz": 128,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1,
+        "if_else": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 3.0
+    },
+    {
+      "label": "feedback",
+      "observable": "IYY",
+      "shots": 1024,
+      "repetitions": 3,
+      "source_depth": 16,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "sdg": 2,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1,
+        "if_else": 1
+      },
+      "transpiled_depth_max": 236,
+      "transpiled_depths": [
+        236,
+        236,
+        236
+      ],
+      "transpiled_operation_counts": {
+        "rz": 126,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1,
+        "if_else": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 3.0
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "XXI",
+      "shots": 1024,
+      "repetitions": 3,
+      "source_depth": 13,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1
+      },
+      "transpiled_depth_max": 233,
+      "transpiled_depths": [
+        233,
+        233,
+        233
+      ],
+      "transpiled_operation_counts": {
+        "rz": 128,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 3.0
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "YYI",
+      "shots": 1024,
+      "repetitions": 3,
+      "source_depth": 13,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "sdg": 2,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1
+      },
+      "transpiled_depth_max": 233,
+      "transpiled_depths": [
+        233,
+        233,
+        233
+      ],
+      "transpiled_operation_counts": {
+        "rz": 126,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 3.0
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "IXX",
+      "shots": 1024,
+      "repetitions": 3,
+      "source_depth": 13,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1
+      },
+      "transpiled_depth_max": 233,
+      "transpiled_depths": [
+        233,
+        233,
+        233
+      ],
+      "transpiled_operation_counts": {
+        "rz": 128,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 3.0
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "IYY",
+      "shots": 1024,
+      "repetitions": 3,
+      "source_depth": 14,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "sdg": 2,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1
+      },
+      "transpiled_depth_max": 233,
+      "transpiled_depths": [
+        233,
+        233,
+        233
+      ],
+      "transpiled_operation_counts": {
+        "rz": 126,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 3.0
+    }
+  ],
+  "max_depth": 900,
+  "max_qpu_seconds": 120.0,
+  "estimated_qpu_seconds": 24.0,
+  "package_hash": "e0002a0a150dbc39e97abe3e227a550f9c2d093f0e6396f9c1f05a911dab5015",
+  "reasons": [
+    "all s1c direct-XY arms satisfy the transpiled depth ceiling",
+    "s1c direct-XY estimate satisfies the approved QPU-second ceiling"
+  ]
+}

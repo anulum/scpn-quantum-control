@@ -72,8 +72,8 @@ def _extract_counts(pub_result: Any) -> dict:
     actual register name from the circuit, not a hard-coded 'meas'.
     """
     data = pub_result.data
-    # Try common register names first (fast path)
-    for reg_name in ("meas", "c", "cr", "c0"):
+    # Try explicit final-readout register names before generic/monitor names.
+    for reg_name in ("readout", "meas", "c", "cr", "c0"):
         reg = getattr(data, reg_name, None)
         if reg is not None and hasattr(reg, "get_counts"):
             counts: dict = reg.get_counts()

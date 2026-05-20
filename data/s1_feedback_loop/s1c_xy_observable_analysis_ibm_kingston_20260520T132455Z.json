@@ -1,0 +1,459 @@
+{
+  "experiment_id": "s1c_shallow_gain_tuned_xy_extension_2026-05-20",
+  "parent_experiment_id": "s1_dynamic_feedback_preregistration_2026-05-06",
+  "lane": "s1c",
+  "job_ids": [
+    "d86rca1789is73902fc0",
+    "d86rcc2s46sc73f7cf50",
+    "d86rcdgp0eas73dlc2j0",
+    "d86rcf0p0eas73dlc2lg",
+    "d86rcgh789is73902fm0",
+    "d86rcias46sc73f7cfh0",
+    "d86rcjp789is73902fsg",
+    "d86rclgp0eas73dlc2sg"
+  ],
+  "observable_family": "direct_xy_pauli_correlators",
+  "n_observables": 4,
+  "mean_abs_feedback_minus_control": 0.029947916666666664,
+  "signed_feedback_minus_control": [
+    -0.03645833333333334,
+    -0.03190104166666666,
+    -0.022135416666666657,
+    -0.029296875
+  ],
+  "observables": [
+    {
+      "basis": "IXX",
+      "arms": [
+        {
+          "label": "feedback",
+          "job_id": "d86rcdgp0eas73dlc2j0",
+          "records": [
+            {
+              "expectation": 0.19921875,
+              "counts": {
+                "000": 410,
+                "101": 32,
+                "010": 248,
+                "001": 64,
+                "100": 156,
+                "011": 38,
+                "110": 66,
+                "111": 10
+              },
+              "source_index": 0
+            },
+            {
+              "expectation": 0.154296875,
+              "counts": {
+                "000": 408,
+                "010": 272,
+                "100": 123,
+                "001": 66,
+                "011": 45,
+                "111": 15,
+                "110": 67,
+                "101": 28
+              },
+              "source_index": 1
+            },
+            {
+              "expectation": 0.146484375,
+              "counts": {
+                "000": 396,
+                "110": 64,
+                "010": 260,
+                "100": 123,
+                "001": 74,
+                "011": 47,
+                "101": 39,
+                "111": 21
+              },
+              "source_index": 2
+            }
+          ],
+          "mean_expectation": 0.16666666666666666,
+          "repetitions": 3,
+          "total_shots": 3072
+        },
+        {
+          "label": "matched_open_loop_control",
+          "job_id": "d86rcjp789is73902fsg",
+          "records": [
+            {
+              "expectation": 0.232421875,
+              "counts": {
+                "011": 40,
+                "000": 438,
+                "010": 243,
+                "001": 57,
+                "100": 130,
+                "101": 32,
+                "111": 23,
+                "110": 61
+              },
+              "source_index": 0
+            },
+            {
+              "expectation": 0.208984375,
+              "counts": {
+                "001": 72,
+                "000": 437,
+                "100": 123,
+                "010": 234,
+                "011": 42,
+                "101": 31,
+                "110": 68,
+                "111": 17
+              },
+              "source_index": 1
+            },
+            {
+              "expectation": 0.16796875,
+              "counts": {
+                "000": 405,
+                "110": 70,
+                "100": 143,
+                "001": 69,
+                "010": 259,
+                "101": 28,
+                "011": 40,
+                "111": 10
+              },
+              "source_index": 2
+            }
+          ],
+          "mean_expectation": 0.203125,
+          "repetitions": 3,
+          "total_shots": 3072
+        }
+      ],
+      "feedback_minus_control": -0.03645833333333334
+    },
+    {
+      "basis": "IYY",
+      "arms": [
+        {
+          "label": "feedback",
+          "job_id": "d86rcf0p0eas73dlc2lg",
+          "records": [
+            {
+              "expectation": -0.0859375,
+              "counts": {
+                "100": 170,
+                "000": 196,
+                "010": 294,
+                "110": 209,
+                "101": 22,
+                "001": 31,
+                "011": 54,
+                "111": 48
+              },
+              "source_index": 0
+            },
+            {
+              "expectation": -0.234375,
+              "counts": {
+                "000": 180,
+                "110": 239,
+                "010": 326,
+                "111": 42,
+                "100": 128,
+                "001": 43,
+                "011": 42,
+                "101": 24
+              },
+              "source_index": 1
+            },
+            {
+              "expectation": -0.126953125,
+              "counts": {
+                "001": 32,
+                "000": 198,
+                "010": 290,
+                "110": 221,
+                "101": 34,
+                "100": 148,
+                "011": 58,
+                "111": 43
+              },
+              "source_index": 2
+            }
+          ],
+          "mean_expectation": -0.14908854166666666,
+          "repetitions": 3,
+          "total_shots": 3072
+        },
+        {
+          "label": "matched_open_loop_control",
+          "job_id": "d86rclgp0eas73dlc2sg",
+          "records": [
+            {
+              "expectation": -0.10546875,
+              "counts": {
+                "110": 213,
+                "111": 43,
+                "010": 282,
+                "000": 208,
+                "101": 25,
+                "011": 46,
+                "100": 161,
+                "001": 46
+              },
+              "source_index": 0
+            },
+            {
+              "expectation": -0.166015625,
+              "counts": {
+                "100": 159,
+                "110": 219,
+                "001": 25,
+                "011": 51,
+                "000": 166,
+                "111": 51,
+                "010": 328,
+                "101": 25
+              },
+              "source_index": 1
+            },
+            {
+              "expectation": -0.080078125,
+              "counts": {
+                "010": 289,
+                "111": 51,
+                "100": 155,
+                "001": 30,
+                "000": 213,
+                "110": 205,
+                "011": 52,
+                "101": 29
+              },
+              "source_index": 2
+            }
+          ],
+          "mean_expectation": -0.1171875,
+          "repetitions": 3,
+          "total_shots": 3072
+        }
+      ],
+      "feedback_minus_control": -0.03190104166666666
+    },
+    {
+      "basis": "XXI",
+      "arms": [
+        {
+          "label": "feedback",
+          "job_id": "d86rca1789is73902fc0",
+          "records": [
+            {
+              "expectation": 0.19921875,
+              "counts": {
+                "001": 236,
+                "010": 150,
+                "000": 292,
+                "100": 79,
+                "101": 71,
+                "011": 110,
+                "111": 39,
+                "110": 47
+              },
+              "source_index": 0
+            },
+            {
+              "expectation": 0.220703125,
+              "counts": {
+                "111": 26,
+                "011": 114,
+                "000": 336,
+                "101": 72,
+                "001": 231,
+                "110": 32,
+                "010": 152,
+                "100": 61
+              },
+              "source_index": 1
+            },
+            {
+              "expectation": 0.212890625,
+              "counts": {
+                "010": 163,
+                "011": 110,
+                "000": 312,
+                "001": 234,
+                "101": 70,
+                "111": 36,
+                "100": 60,
+                "110": 39
+              },
+              "source_index": 2
+            }
+          ],
+          "mean_expectation": 0.2109375,
+          "repetitions": 3,
+          "total_shots": 3072
+        },
+        {
+          "label": "matched_open_loop_control",
+          "job_id": "d86rcgh789is73902fm0",
+          "records": [
+            {
+              "expectation": 0.236328125,
+              "counts": {
+                "110": 48,
+                "000": 312,
+                "011": 113,
+                "001": 236,
+                "111": 37,
+                "101": 70,
+                "010": 141,
+                "100": 67
+              },
+              "source_index": 0
+            },
+            {
+              "expectation": 0.240234375,
+              "counts": {
+                "100": 62,
+                "001": 231,
+                "000": 323,
+                "010": 165,
+                "101": 56,
+                "111": 35,
+                "011": 106,
+                "110": 46
+              },
+              "source_index": 1
+            },
+            {
+              "expectation": 0.22265625,
+              "counts": {
+                "000": 303,
+                "011": 113,
+                "101": 58,
+                "100": 96,
+                "010": 131,
+                "001": 233,
+                "111": 32,
+                "110": 58
+              },
+              "source_index": 2
+            }
+          ],
+          "mean_expectation": 0.23307291666666666,
+          "repetitions": 3,
+          "total_shots": 3072
+        }
+      ],
+      "feedback_minus_control": -0.022135416666666657
+    },
+    {
+      "basis": "YYI",
+      "arms": [
+        {
+          "label": "feedback",
+          "job_id": "d86rcc2s46sc73f7cf50",
+          "records": [
+            {
+              "expectation": -0.068359375,
+              "counts": {
+                "000": 240,
+                "111": 55,
+                "101": 41,
+                "001": 113,
+                "010": 295,
+                "100": 51,
+                "011": 160,
+                "110": 69
+              },
+              "source_index": 0
+            },
+            {
+              "expectation": 0.03515625,
+              "counts": {
+                "010": 272,
+                "011": 127,
+                "001": 131,
+                "101": 35,
+                "000": 261,
+                "111": 53,
+                "100": 60,
+                "110": 85
+              },
+              "source_index": 1
+            },
+            {
+              "expectation": -0.09375,
+              "counts": {
+                "001": 118,
+                "100": 64,
+                "010": 296,
+                "110": 72,
+                "011": 156,
+                "000": 235,
+                "111": 39,
+                "101": 44
+              },
+              "source_index": 2
+            }
+          ],
+          "mean_expectation": -0.042317708333333336,
+          "repetitions": 3,
+          "total_shots": 3072
+        },
+        {
+          "label": "matched_open_loop_control",
+          "job_id": "d86rcias46sc73f7cfh0",
+          "records": [
+            {
+              "expectation": -0.033203125,
+              "counts": {
+                "010": 270,
+                "000": 225,
+                "001": 152,
+                "111": 43,
+                "110": 75,
+                "011": 174,
+                "100": 52,
+                "101": 33
+              },
+              "source_index": 0
+            },
+            {
+              "expectation": 0.0,
+              "counts": {
+                "010": 254,
+                "110": 80,
+                "011": 167,
+                "000": 249,
+                "111": 47,
+                "001": 136,
+                "100": 59,
+                "101": 32
+              },
+              "source_index": 1
+            },
+            {
+              "expectation": -0.005859375,
+              "counts": {
+                "011": 141,
+                "101": 34,
+                "000": 256,
+                "100": 60,
+                "010": 280,
+                "110": 87,
+                "001": 116,
+                "111": 50
+              },
+              "source_index": 2
+            }
+          ],
+          "mean_expectation": -0.013020833333333334,
+          "repetitions": 3,
+          "total_shots": 3072
+        }
+      ],
+      "feedback_minus_control": -0.029296875
+    }
+  ],
+  "claim_boundary": "s1c extends the S1 paper with direct XY-sector Pauli correlators. It does not by itself establish backend-general feedback control."
+}

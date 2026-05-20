@@ -15,6 +15,7 @@ import pytest
 from scpn_quantum_control.control.realtime_feedback import RealtimeSyncFeedbackController
 from scpn_quantum_control.hardware.feedback_loop import FeedbackResult
 from scpn_quantum_control.hardware.feedback_submission import summarise_feedback_circuit
+from scpn_quantum_control.hardware.runner import _extract_counts
 from scpn_quantum_control.hardware.s1_feedback_ibm import (
     S1_CONTROL_ARM,
     S1_FEEDBACK_ARM,
@@ -160,6 +161,32 @@ def test_run_ibm_sampler_arm_preserves_per_repetition_counts() -> None:
     assert result.qpu_seconds > 0.0
 
 
+def test_extract_counts_prefers_final_readout_over_monitor_register() -> None:
+    class _Register:
+        def __init__(self, counts: dict[str, int]) -> None:
+            self._counts = counts
+
+        def get_counts(self) -> dict[str, int]:
+            return self._counts
+
+    pub_result = type(
+        "PubResult",
+        (),
+        {
+            "data": type(
+                "Data",
+                (),
+                {
+                    "monitor_bit": _Register({"0": 1024}),
+                    "readout": _Register({"000": 900, "001": 124}),
+                },
+            )()
+        },
+    )()
+
+    assert _extract_counts(pub_result) == {"000": 900, "001": 124}
+
+
 def test_build_s1_arm_command_carries_approval_budget_payload() -> None:
     arm = build_s1_feedback_arm_circuits(_controller(), n_rounds=1, shots=128, repetitions=2)[1]
 
@@ -213,6 +240,15 @@ def test_pauli_expectation_from_counts_reduces_selected_non_identity_bits() -> N
     assert pauli_expectation_from_counts(
         {"010": 5, "000": 5}, observable="XXI", n_qubits=3
     ) == pytest.approx(0.0)
+
+
+def test_pauli_expectation_from_counts_left_pads_provider_trimmed_bitstrings() -> None:
+    assert pauli_expectation_from_counts({"0": 10}, observable="IXX", n_qubits=3) == pytest.approx(
+        1.0
+    )
+    assert pauli_expectation_from_counts({"1": 10}, observable="IXX", n_qubits=3) == pytest.approx(
+        -1.0
+    )
 
 
 def test_raw_count_package_from_xy_observable_results_groups_by_observable() -> None:
