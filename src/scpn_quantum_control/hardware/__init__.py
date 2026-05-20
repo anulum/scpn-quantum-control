@@ -158,6 +158,7 @@ from .hal_qiskit import (
     qiskit_circuit_to_qasm3_workload,
     qiskit_circuit_to_workload,
 )
+from .hal_quandela import QuandelaPercevalHALAdapter, quandela_perceval_workload
 from .hal_quantinuum import QuantinuumCloudHALAdapter, quantinuum_tket_workload
 from .hal_quera_bloqade import QuEraBloqadeHALAdapter, bloqade_ahs_workload
 from .hal_rigetti import RigettiQCSHALAdapter, rigetti_quil_workload
@@ -263,6 +264,8 @@ __all__ = [
     "PennyLaneDeviceHALAdapter",
     "pennylane_gate_workload",
     "QbraidRuntimeHALAdapter",
+    "QuandelaPercevalHALAdapter",
+    "quandela_perceval_workload",
     "QuEraBloqadeHALAdapter",
     "QuantinuumCloudHALAdapter",
     "RigettiQCSHALAdapter",

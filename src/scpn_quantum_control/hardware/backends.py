@@ -80,7 +80,7 @@ _HAL_PROFILE_ADAPTER_MODULES: dict[str, str] = {
     "oqc_cloud": "scpn_quantum_control.hardware.hal",
     "pasqal_cloud": "scpn_quantum_control.hardware.hal_pasqal",
     "qbraid_ionq": "scpn_quantum_control.hardware.hal_qbraid",
-    "quandela_cloud": "scpn_quantum_control.hardware.hal",
+    "quandela_cloud": "scpn_quantum_control.hardware.hal_quandela",
     "quantinuum_cloud": "scpn_quantum_control.hardware.hal_quantinuum",
     "quera_bloqade": "scpn_quantum_control.hardware.hal_quera_bloqade",
     "rigetti_qcs": "scpn_quantum_control.hardware.hal_rigetti",

@@ -76,6 +76,10 @@ def test_hal_profiles_export_backend_descriptors_for_selector_metadata() -> None
     assert dwave.adapter_module == "scpn_quantum_control.hardware.hal_dwave"
     assert "bqm" in dwave.workloads
 
+    quandela = describe_hal_backend_profile("quandela_cloud")
+    assert quandela.adapter_module == "scpn_quantum_control.hardware.hal_quandela"
+    assert "perceval" in quandela.workloads
+
 
 def test_builtin_hal_profiles_cover_major_current_provider_routes() -> None:
     """Built-in profiles should cover the current major provider families."""

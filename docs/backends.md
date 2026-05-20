@@ -340,6 +340,7 @@ from scpn_quantum_control.hardware import (
     PasqalPulserHALAdapter,
     PennyLaneDeviceHALAdapter,
     QbraidRuntimeHALAdapter,
+    QuandelaPercevalHALAdapter,
     QuEraBloqadeHALAdapter,
     QuantinuumCloudHALAdapter,
     RigettiQCSHALAdapter,
@@ -354,6 +355,7 @@ from scpn_quantum_control.hardware import (
     pulser_sequence_workload,
     pennylane_gate_workload,
     qbraid_program_to_workload,
+    quandela_perceval_workload,
     quantinuum_tket_workload,
     rigetti_quil_workload,
     qiskit_circuit_to_workload,
@@ -476,6 +478,36 @@ job = hal.submit(
         [{"gate": "h", "target": 0}, {"gate": "cnot", "control": 0, "target": 1}],
         workload_id="ionq_bell",
         n_qubits=2,
+        shots=256,
+    ),
+    approval_id="approved-run",
+)
+```
+
+The direct Quandela adapter layer provides `QuandelaPercevalHALAdapter` and
+`quandela_perceval_workload()`. It consumes `scpn.quandela.perceval.v1`
+photonic circuit plans, validates mode count, input occupations,
+beam-splitter and phase-shifter components, and postselection bounds, then
+executes through an injected Perceval processor or processor/sampler factory.
+Remote Quandela execution remains approval-gated and automatic processor
+construction is calibration-gated.
+
+```python
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+hal.register_backend(
+    QuandelaPercevalHALAdapter(
+        hal.profile("quandela_cloud"),
+        processor_factory=calibrated_quandela_processor_factory,
+        sampler_factory=calibrated_perceval_sampler_factory,
+        target="ascella",
+    )
+)
+job = hal.submit(
+    "quandela_cloud",
+    quandela_perceval_workload(
+        photonic_plan,
+        workload_id="quandela_pair",
+        n_modes=2,
         shots=256,
     ),
     approval_id="approved-run",
