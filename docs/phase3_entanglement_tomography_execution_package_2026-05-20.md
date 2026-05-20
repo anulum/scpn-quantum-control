@@ -86,6 +86,11 @@ Blocked claims:
 - full-state reconstruction;
 - claims on unmeasured subsystems, unmeasured depths, or unmeasured backends.
 
+Paper-facing artefacts:
+
+- Plan: `docs/phase3_entanglement_tomography_paper_plan_2026-05-20.md`
+- Draft scaffold: `paper/phase3_entanglement_tomography_short_paper.md`
+
 ## Boundary
 
 This package is ready for an approved QPU submission. It does not itself

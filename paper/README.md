@@ -36,6 +36,15 @@ options. All figures pulled from `figures/phase1/*.png`, all
 references inlined in `thebibliography` (no external `.bib` needed
 for arXiv submission).
 
+## `phase3_entanglement_tomography_short_paper.md` — Phase 3 mechanism-boundary draft
+
+Markdown scaffold for the reduced-Pauli entanglement/tomography follow-up.
+Status: raw-count execution pending. The draft records the approved
+`ibm_marrakesh` live preflight, the 166-circuit execution package, the analysis
+command, and the blocked-claim boundary. Populate the Results section only
+after the approved QPU run and `scripts/analyse_phase3_entanglement_tomography.py`
+complete.
+
 ## arXiv submission packaging
 
 For arXiv (either paper):
