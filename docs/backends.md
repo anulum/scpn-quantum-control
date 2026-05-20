@@ -930,7 +930,11 @@ selected backend, records the resolved backend id, and normalises measurement
 counts into `QuantumJobResult`. For pre-submit capability checks, use
 `snapshot_from_strangeworks_backend()` with an injected Strangeworks backend; it
 reads the backend metadata surface and feeds the route-bound no-submit readiness
-decision before any workload path is eligible.
+decision before any workload path is eligible. Strangeworks catalogue program
+declarations such as `available_programs`, `program_specs`, and
+`supported_programs` are normalised into HAL IR tokens, snapshots record the
+resolved broker route, and backend `state`/`availability` metadata is consumed
+as readiness evidence without submission.
 
 ```python
 hal = HardwareAbstractionLayer.with_builtin_profiles()

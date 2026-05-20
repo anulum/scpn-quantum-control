@@ -186,6 +186,12 @@ is copied here.
   normalises broker program declarations into HAL IR tokens, adds a
   `broker_catalog_target` feature marker, and records the resolved broker route
   without device submission.
+- [x] **Strangeworks catalogue no-submit IR normalisation.** Implemented
+  2026-05-20: `snapshot_from_strangeworks_backend` now consumes Strangeworks
+  catalogue program declarations such as `available_programs`, normalises them
+  into HAL IR tokens, adds a `broker_catalog_target` feature marker, records the
+  resolved broker route, and treats backend `state`/`availability` as
+  no-submit readiness evidence.
 - [x] **Azure Quantum HAL adapter integration.** Implemented 2026-05-20:
   `hardware.hal_azure` adds OpenQASM 3 workload construction and an injected
   Azure target adapter for IonQ, Quantinuum, Rigetti, Pasqal, and preview

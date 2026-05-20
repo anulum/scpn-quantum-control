@@ -1323,6 +1323,56 @@ def test_strangeworks_backend_snapshot_reads_backend_metadata_without_submission
     assert decision.snapshot.metadata["adapter"] == "strangeworks_backend_no_submit"
 
 
+def test_strangeworks_catalog_snapshot_normalises_program_catalog_without_submission() -> None:
+    """Strangeworks catalogue program declarations should map to HAL IR tokens."""
+
+    class ProgramDeclaration:
+        def __init__(self, name: str) -> None:
+            self.name = name
+
+    class Backend:
+        resource_id = "sw_ionq_aria"
+        provider = "IonQ"
+        qubits = 25
+        available_programs = (
+            ProgramDeclaration("OpenQASM 3"),
+            ProgramDeclaration("qiskit.QuantumCircuit"),
+        )
+        capabilities = ("all_to_all_connectivity",)
+        state = "ready"
+        shots_limit = 5_000
+        queue_size = 4
+        calibrated_at = "2026-05-20T15:05:00Z"
+
+        def submit(self, *args: object, **kwargs: object) -> None:
+            raise AssertionError("metadata snapshot must not submit Strangeworks work")
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="strangeworks",
+        provider="ionq",
+        ir_format="openqasm3",
+        min_qubits=4,
+        metadata_probe=lambda resolved: snapshot_from_strangeworks_backend(
+            resolved,
+            Backend(),
+        ),
+    )
+
+    assert decision.status == "ready"
+    assert decision.snapshot.route_id == "strangeworks/ionq"
+    assert decision.snapshot.backend_id == "strangeworks_compute"
+    assert decision.snapshot.target_name == "sw_ionq_aria"
+    assert decision.snapshot.supported_ir_formats == ("openqasm3", "qiskit")
+    assert "broker_catalog_target" in decision.snapshot.native_features
+    assert "all_to_all_connectivity" in decision.snapshot.native_features
+    assert decision.snapshot.max_shots == 5_000
+    assert decision.snapshot.queue_depth == 4
+    assert decision.snapshot.calibration_timestamp == "2026-05-20T15:05:00Z"
+    assert decision.snapshot.metadata["adapter"] == "strangeworks_backend_no_submit"
+    assert decision.snapshot.metadata["provider_name"] == "IonQ"
+    assert decision.snapshot.metadata["broker_route"] == "strangeworks/ionq"
+
+
 def test_broker_snapshot_rejects_missing_declared_ir_formats() -> None:
     """Broker SDK metadata must declare target IR support explicitly."""
 

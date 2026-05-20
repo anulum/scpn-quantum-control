@@ -1088,7 +1088,7 @@ def snapshot_from_strangeworks_backend(
 
     target_name = _first_text_attr(
         backend,
-        names=("id", "backend_id", "device_id", "name"),
+        names=("id", "backend_id", "device_id", "resource_id", "target_id", "name"),
         field_name="Strangeworks target name",
     )
     n_qubits = _first_positive_int_attr(
@@ -1096,16 +1096,8 @@ def snapshot_from_strangeworks_backend(
         names=("n_qubits", "num_qubits", "qubits"),
         field_name="Strangeworks qubit count",
     )
-    supported_ir_formats = _declared_ir_formats(
+    supported_ir_formats = _strangeworks_supported_ir_formats(
         backend,
-        names=(
-            "input_formats",
-            "supported_ir_formats",
-            "ir_formats",
-            "program_formats",
-            "supported_program_formats",
-        ),
-        field_name="Strangeworks IR formats",
     )
     return ProviderCapabilitySnapshot(
         route_id=resolved.route.route_id,
@@ -1119,11 +1111,8 @@ def snapshot_from_strangeworks_backend(
             backend,
             names=("basis_gates", "native_gates", "gates"),
         ),
-        native_features=_first_string_tuple_attr(
-            backend,
-            names=("native_features", "features", "capabilities"),
-        ),
-        online=_first_online_attr(backend),
+        native_features=_strangeworks_native_features(backend),
+        online=_strangeworks_online_state(backend),
         simulator=_first_bool_attr(backend, names=("simulator", "is_simulator")) or False,
         max_shots=_first_optional_int_attr(backend, names=("max_shots", "shots_limit")),
         max_circuits=_first_optional_int_attr(
@@ -1139,7 +1128,14 @@ def snapshot_from_strangeworks_backend(
             backend,
             names=("calibration_timestamp", "last_calibration", "calibrated_at"),
         ),
-        metadata={"adapter": "strangeworks_backend_no_submit"},
+        metadata={
+            "adapter": "strangeworks_backend_no_submit",
+            "broker_route": resolved.route.route_id,
+            "provider_name": _first_optional_text_attr(
+                backend,
+                names=("provider_name", "provider", "vendor", "vendor_name"),
+            ),
+        },
     )
 
 
@@ -2145,11 +2141,32 @@ def _qbraid_supported_ir_formats(*sources: Any) -> tuple[str, ...]:
     )
     if not declared:
         raise ValueError("qBraid IR formats must declare supported IR formats")
-    return tuple(_qbraid_ir_format_token(item) for item in declared)
+    return tuple(_broker_ir_format_token(item) for item in declared)
 
 
-def _qbraid_ir_format_token(value: str) -> str:
-    normalized = value.strip().lower().replace("-", "_")
+def _strangeworks_supported_ir_formats(*sources: Any) -> tuple[str, ...]:
+    declared = _first_string_tuple_attr(
+        *sources,
+        names=(
+            "input_formats",
+            "supported_ir_formats",
+            "ir_formats",
+            "program_formats",
+            "supported_program_formats",
+            "available_programs",
+            "program_specs",
+            "programs",
+            "program_types",
+            "supported_programs",
+        ),
+    )
+    if not declared:
+        raise ValueError("Strangeworks IR formats must declare supported IR formats")
+    return tuple(_broker_ir_format_token(item) for item in declared)
+
+
+def _broker_ir_format_token(value: str) -> str:
+    normalized = value.strip().lower().replace("-", "_").replace(" ", "")
     if normalized in {
         "qasm3",
         "qasm.v3",
@@ -2186,6 +2203,24 @@ def _qbraid_native_features(*sources: Any) -> tuple[str, ...]:
     )
     features.add("broker_catalog_target")
     return tuple(sorted(features))
+
+
+def _strangeworks_native_features(*sources: Any) -> tuple[str, ...]:
+    features = set(
+        _first_string_tuple_attr(*sources, names=("native_features", "features", "capabilities"))
+    )
+    features.add("broker_catalog_target")
+    return tuple(sorted(features))
+
+
+def _strangeworks_online_state(*sources: Any) -> bool | None:
+    text_state = _first_optional_text_attr(
+        *sources,
+        names=("online", "is_online", "available", "status", "state", "availability"),
+    )
+    if text_state is not None:
+        return _online_state_from_text(text_state)
+    return _first_online_attr(*sources)
 
 
 def _qiskit_calibration_timestamp(*sources: Any) -> str | None:

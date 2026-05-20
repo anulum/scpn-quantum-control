@@ -1035,7 +1035,10 @@ token for cloud submission. `snapshot_from_qbraid_device()` also normalises
 qBraid catalogue `program_specs` into HAL IR tokens and records the resolved
 broker route without submitting work. `StrangeworksComputeHALAdapter` follows
 the same dynamic-catalog contract for injected Strangeworks backends or
-workspaces.
+workspaces. `snapshot_from_strangeworks_backend()` normalises Strangeworks
+catalogue program declarations such as `available_programs` into HAL IR tokens,
+records the resolved broker route, and treats backend `state`/`availability`
+metadata as no-submit readiness evidence.
 
 ```python
 hal = HardwareAbstractionLayer.with_builtin_profiles()
