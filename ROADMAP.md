@@ -105,6 +105,12 @@ is copied here.
   a local `QiskitAerHALAdapter`, and an approval-gated
   `QiskitRuntimeHALAdapter` for IBM Runtime Sampler execution through the
   provider-neutral HAL contract.
+- [x] **IBM Runtime no-submit capability snapshot.** Implemented 2026-05-20:
+  `snapshot_from_qiskit_runtime_backend` adds the direct `direct/ibm_quantum`
+  capability path for injected Qiskit Runtime backends, including route-bound
+  IR support, basis gates, queue depth, shot/circuit limits, online state,
+  dynamic-circuit feature inference, and calibration timestamp without job
+  submission.
 - [x] **AWS Braket HAL adapter integration.** Implemented 2026-05-20:
   `hardware.hal_braket` adds OpenQASM 3 workload conversion for Braket circuits,
   local SV/DM simulator execution, and approval-gated AWS Braket device/task

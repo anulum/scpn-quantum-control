@@ -137,6 +137,74 @@ def probe_aggregator_provider_capability(
     )
 
 
+def snapshot_from_qiskit_runtime_backend(
+    resolved: ResolvedAggregatorProviderRoute,
+    backend: Any,
+) -> ProviderCapabilitySnapshot:
+    """Build a no-submit capability snapshot from IBM/Qiskit backend metadata."""
+
+    configuration = _optional_noarg_call(backend, "configuration")
+    status = _optional_noarg_call(backend, "status")
+    properties = _optional_noarg_call(backend, "properties")
+    target = _optional_attr(backend, "target")
+    basis_gates = _first_string_tuple_attr(
+        configuration,
+        target,
+        backend,
+        names=("basis_gates", "operation_names", "operations", "native_gates", "gates"),
+    )
+    return ProviderCapabilitySnapshot(
+        route_id=resolved.route.route_id,
+        aggregator=resolved.route.aggregator,
+        provider=resolved.route.provider,
+        backend_id=resolved.route.backend_id,
+        target_name=_first_text_attr(
+            backend,
+            configuration,
+            names=("name", "backend_name", "backend_id"),
+            field_name="Qiskit backend name",
+        ),
+        n_qubits=_first_positive_int_attr(
+            backend,
+            configuration,
+            target,
+            names=("num_qubits", "n_qubits", "qubits"),
+            field_name="Qiskit qubit count",
+        ),
+        supported_ir_formats=_qiskit_supported_ir_formats(resolved, backend, configuration),
+        basis_gates=basis_gates,
+        native_features=_qiskit_native_features(backend, target, basis_gates),
+        online=_qiskit_online_state(backend, status),
+        simulator=_first_bool_attr(
+            backend,
+            configuration,
+            names=("simulator", "is_simulator"),
+        )
+        or False,
+        max_shots=_first_optional_int_attr(
+            configuration,
+            backend,
+            names=("max_shots", "shots_limit", "max_execution_shots"),
+        ),
+        max_circuits=_first_optional_int_attr(
+            configuration,
+            backend,
+            names=("max_experiments", "max_circuits", "max_jobs"),
+        ),
+        queue_depth=_first_optional_int_attr(
+            status,
+            backend,
+            names=("pending_jobs", "queue_depth", "queue_size"),
+            minimum=0,
+        ),
+        calibration_timestamp=_qiskit_calibration_timestamp(properties, backend),
+        metadata={
+            "adapter": "qiskit_runtime_backend_no_submit",
+            "metadata_calls": ("configuration", "status", "properties"),
+        },
+    )
+
+
 def snapshot_from_qbraid_device(
     resolved: ResolvedAggregatorProviderRoute,
     device: Any,
@@ -351,6 +419,16 @@ def _optional_attr(source: Any, name: str) -> Any:
         return None
 
 
+def _optional_noarg_call(source: Any, name: str) -> Any:
+    candidate = _optional_attr(source, name)
+    if not callable(candidate):
+        return candidate
+    try:
+        return candidate()
+    except Exception:
+        return None
+
+
 def _attr_candidates(*sources: Any, names: tuple[str, ...]) -> list[Any]:
     candidates: list[Any] = []
     for source in sources:
@@ -424,6 +502,87 @@ def _first_online_attr(*sources: Any) -> bool | None:
     return None
 
 
+def _qiskit_supported_ir_formats(
+    resolved: ResolvedAggregatorProviderRoute,
+    *sources: Any,
+) -> tuple[str, ...]:
+    declared = _first_string_tuple_attr(
+        *sources,
+        names=(
+            "supported_ir_formats",
+            "ir_formats",
+            "input_formats",
+            "program_formats",
+            "supported_program_formats",
+        ),
+    )
+    return declared or resolved.route.ir_formats
+
+
+def _qiskit_native_features(
+    backend: Any,
+    target: Any,
+    basis_gates: tuple[str, ...],
+) -> tuple[str, ...]:
+    features = {"cross_shot_batches"}
+    basis = set(basis_gates)
+    operation_names = set(_first_string_tuple_attr(target, names=("operation_names",)))
+    if basis.intersection({"measure", "measurement"}) or "measure" in operation_names:
+        features.add("mid_circuit_measurement")
+    if "reset" in basis or "reset" in operation_names:
+        features.add("conditional_reset")
+    if operation_names.intersection({"if_else", "while_loop", "for_loop", "switch_case"}) or (
+        _first_bool_attr(backend, names=("dynamic_circuits",)) is True
+    ):
+        features.add("conditional_control")
+    return tuple(sorted(features))
+
+
+def _qiskit_online_state(backend: Any, status: Any) -> bool | None:
+    operational = _first_bool_attr(status, names=("operational", "online", "available"))
+    if operational is not None:
+        return operational
+    text_status = _first_optional_text_attr(
+        status,
+        backend,
+        names=("status", "status_msg", "state"),
+    )
+    if text_status is not None:
+        return _online_state_from_text(text_status)
+    return _first_online_attr(backend, status)
+
+
+def _online_state_from_text(value: str) -> bool | None:
+    normalized = value.strip().lower()
+    if normalized in {"online", "available", "active", "ready", "operational"}:
+        return True
+    if normalized in {
+        "offline",
+        "unavailable",
+        "inactive",
+        "retired",
+        "maintenance",
+    }:
+        return False
+    return None
+
+
+def _qiskit_calibration_timestamp(*sources: Any) -> str | None:
+    for value in _attr_candidates(
+        *sources,
+        names=("last_update_date", "calibration_timestamp", "last_calibration", "calibrated_at"),
+    ):
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+        isoformat = _optional_attr(value, "isoformat")
+        if callable(isoformat):
+            try:
+                return str(isoformat())
+            except Exception:
+                return None
+    return None
+
+
 def _declared_ir_formats(
     *sources: Any, names: tuple[str, ...], field_name: str
 ) -> tuple[str, ...]:
@@ -477,6 +636,7 @@ __all__ = [
     "ProviderMetadataProbe",
     "assess_provider_capability_snapshot",
     "probe_aggregator_provider_capability",
+    "snapshot_from_qiskit_runtime_backend",
     "snapshot_from_qbraid_device",
     "snapshot_from_strangeworks_backend",
 ]

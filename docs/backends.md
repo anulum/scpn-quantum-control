@@ -337,6 +337,7 @@ without multiplying identical runtime adapters.
 
 | Aggregator | Provider family | Executable HAL route |
 | --- | --- | --- |
+| Direct | IBM Quantum / Qiskit Runtime | `ibm_quantum` |
 | AWS Braket | AQT, IonQ, IQM, QuEra, Rigetti, Amazon simulators | `aws_braket_*` |
 | Azure Quantum | IonQ, Quantinuum, Rigetti, Pasqal, QCI preview | `azure_quantum_*` |
 | qBraid | AWS Braket, Azure Quantum, Equal1, IBM Quantum, IonQ, IQM, NEC vector annealer, OQC, Pasqal, Quantinuum, QuEra, Rigetti, QIR simulator | `qbraid_ionq` or `qbraid_runtime` |
@@ -576,12 +577,12 @@ route, rejects route mismatches and non-no-submit snapshots, and returns a
 ready/blocked/unknown decision based on online status, qubit count, and required
 IR support. The function does not create clients or submit jobs; provider SDK
 authentication remains inside the injected read-only probe.
-`snapshot_from_qbraid_device()` and `snapshot_from_strangeworks_backend()` are
-the first concrete broker metadata adapters for this contract. They consume
-injected SDK device/backend objects, require explicitly declared IR formats, and
-record target name, qubit count, gate basis, queue depth, shot/circuit limits,
-online state, simulator state, and calibration timestamp when the provider
-object exposes those fields.
+`snapshot_from_qiskit_runtime_backend()`, `snapshot_from_qbraid_device()`, and
+`snapshot_from_strangeworks_backend()` are concrete metadata adapters for this
+contract. They consume injected SDK backend/device objects and record target
+name, qubit count, route-supported or declared IR formats, gate basis, queue
+depth, shot/circuit limits, online state, simulator state, and calibration
+timestamp when the provider object exposes those fields.
 
 The same check is exposed as `scpn-provider-smoke`. In CI or operator
 preflight lanes, install `scpn-quantum-control[providers]` and run:

@@ -203,6 +203,7 @@ from .provider_capability_discovery import (
     assess_provider_capability_snapshot,
     probe_aggregator_provider_capability,
     snapshot_from_qbraid_device,
+    snapshot_from_qiskit_runtime_backend,
     snapshot_from_strangeworks_backend,
 )
 from .provider_smoke import (
@@ -286,6 +287,7 @@ __all__ = [
     "default_s1_platforms",
     "probe_aggregator_provider_capability",
     "provider_optional_dependency_matrix",
+    "snapshot_from_qiskit_runtime_backend",
     "snapshot_from_qbraid_device",
     "snapshot_from_strangeworks_backend",
     "summarise_feedback_circuit",

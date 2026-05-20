@@ -17,6 +17,7 @@ from scpn_quantum_control.hardware.provider_capability_discovery import (
     assess_provider_capability_snapshot,
     probe_aggregator_provider_capability,
     snapshot_from_qbraid_device,
+    snapshot_from_qiskit_runtime_backend,
     snapshot_from_strangeworks_backend,
 )
 
@@ -150,11 +151,106 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
     from scpn_quantum_control.hardware import (
         probe_aggregator_provider_capability as exported_probe,
     )
+    from scpn_quantum_control.hardware import (
+        snapshot_from_qiskit_runtime_backend as exported_qiskit_snapshot,
+    )
 
     assert ExportedSnapshot is ProviderCapabilitySnapshot
     assert ProviderCapabilityDecision.__name__ == "ProviderCapabilityDecision"
     assert exported_assess is assess_provider_capability_snapshot
     assert exported_probe is probe_aggregator_provider_capability
+    assert exported_qiskit_snapshot is snapshot_from_qiskit_runtime_backend
+
+
+def test_qiskit_runtime_snapshot_reads_backend_metadata_without_submission() -> None:
+    """IBM/Qiskit metadata adapters should consume backend metadata only."""
+
+    class Configuration:
+        basis_gates = ("rz", "sx", "x", "cx", "measure", "reset")
+        max_shots = 8192
+        max_experiments = 75
+
+    class Target:
+        operation_names = ("rz", "sx", "cx", "measure", "reset", "if_else")
+
+    class Properties:
+        last_update_date = "2026-05-20T08:00:00Z"
+
+    class Backend:
+        name = "ibm_marrakesh"
+        num_qubits = 156
+        target = Target()
+        status = "online"
+        pending_jobs = 4
+        simulator = False
+
+        def configuration(self) -> Configuration:
+            return Configuration()
+
+        def properties(self) -> Properties:
+            return Properties()
+
+        def run(self, *args: object, **kwargs: object) -> None:
+            raise AssertionError("metadata snapshot must not submit IBM work")
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="direct",
+        provider="ibm_quantum",
+        ir_format="qiskit_qpy",
+        min_qubits=4,
+        metadata_probe=lambda resolved: snapshot_from_qiskit_runtime_backend(
+            resolved,
+            Backend(),
+        ),
+    )
+
+    assert decision.status == "ready"
+    assert decision.snapshot.route_id == "direct/ibm_quantum"
+    assert decision.snapshot.backend_id == "ibm_quantum"
+    assert decision.snapshot.target_name == "ibm_marrakesh"
+    assert decision.snapshot.n_qubits == 156
+    assert decision.snapshot.supported_ir_formats == ("qiskit_qpy", "openqasm3")
+    assert decision.snapshot.basis_gates == (
+        "rz",
+        "sx",
+        "x",
+        "cx",
+        "measure",
+        "reset",
+    )
+    assert "conditional_control" in decision.snapshot.native_features
+    assert decision.snapshot.max_shots == 8192
+    assert decision.snapshot.max_circuits == 75
+    assert decision.snapshot.queue_depth == 4
+    assert decision.snapshot.calibration_timestamp == "2026-05-20T08:00:00Z"
+    assert decision.snapshot.metadata["adapter"] == "qiskit_runtime_backend_no_submit"
+
+
+def test_qiskit_runtime_snapshot_blocks_offline_backend_without_submission() -> None:
+    """Provider readiness should block offline IBM targets before submission."""
+
+    class Backend:
+        name = "ibm_offline"
+        num_qubits = 127
+        basis_gates = ("rz", "sx", "cx", "measure")
+        status = "offline"
+
+        def run(self, *args: object, **kwargs: object) -> None:
+            raise AssertionError("metadata snapshot must not submit IBM work")
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="direct",
+        provider="ibm_quantum",
+        ir_format="openqasm3",
+        metadata_probe=lambda resolved: snapshot_from_qiskit_runtime_backend(
+            resolved,
+            Backend(),
+        ),
+    )
+
+    assert decision.status == "blocked"
+    assert "provider target is offline" in decision.blockers
+    assert decision.snapshot.supported_ir_formats == ("qiskit_qpy", "openqasm3")
 
 
 def test_qbraid_device_snapshot_reads_profile_without_submission() -> None:

@@ -159,11 +159,12 @@ remain adapter responsibilities.
 Aggregator/provider combinations are exposed separately from executable HAL
 profiles through `built_in_aggregator_provider_routes()`. This keeps broad
 broker catalogues explicit without duplicating runtime adapters: direct Braket
-and Azure provider rows resolve to their specific HAL profiles, while dynamic
-qBraid and Strangeworks rows resolve to `qbraid_runtime` and
-`strangeworks_compute` respectively. Use `resolve_aggregator_provider_route()`
-when routing code needs a single validated row plus the executable HAL profile
-for a requested aggregator, provider, and IR format.
+and Azure provider rows resolve to their specific HAL profiles, the direct IBM
+Quantum row resolves to `ibm_quantum`, while dynamic qBraid and Strangeworks
+rows resolve to `qbraid_runtime` and `strangeworks_compute` respectively. Use
+`resolve_aggregator_provider_route()` when routing code needs a single
+validated row plus the executable HAL profile for a requested aggregator,
+provider, and IR format.
 `aggregator_provider_optional_dependency_matrix()` adds the corresponding
 offline SDK-import evidence for preflight checks before authenticated provider
 capability probes or live submissions.
@@ -171,10 +172,11 @@ capability probes or live submissions.
 contract for authenticated metadata probes: it resolves the broker route,
 accepts only no-submit target snapshots, and returns ready/blocked/unknown
 readiness decisions before any submission path is considered.
-`snapshot_from_qbraid_device()` and `snapshot_from_strangeworks_backend()`
-provide concrete no-submit adapters for injected broker SDK objects: they read
-declared target metadata, require explicit IR-format support, and expose queue,
-limit, online, simulator, and gate metadata without invoking submission APIs.
+`snapshot_from_qiskit_runtime_backend()`, `snapshot_from_qbraid_device()`, and
+`snapshot_from_strangeworks_backend()` provide concrete no-submit adapters for
+injected provider or broker SDK objects: they read declared target metadata,
+route-supported IR formats, queue, limit, online, simulator, calibration, and
+gate metadata without invoking submission APIs.
 
 ## Advanced Module Reference
 

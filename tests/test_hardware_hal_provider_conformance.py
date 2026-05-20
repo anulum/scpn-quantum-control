@@ -81,6 +81,7 @@ def test_aggregator_provider_matrix_covers_source_grounded_current_brokers() -> 
         "aws_braket/quera",
         "aws_braket/rigetti",
         "aws_braket/amazon_simulators",
+        "direct/ibm_quantum",
         "azure_quantum/ionq",
         "azure_quantum/quantinuum",
         "azure_quantum/rigetti",
@@ -155,6 +156,15 @@ def test_aggregator_provider_selector_resolves_profile_and_ir() -> None:
     )
     assert direct.route.backend_id == "aws_braket_ionq"
     assert direct.profile.provider == "ionq"
+
+    ibm = resolve_aggregator_provider_route(
+        aggregator="direct",
+        provider="ibm_quantum",
+        ir_format="qiskit_qpy",
+    )
+    assert ibm.route.route_id == "direct/ibm_quantum"
+    assert ibm.route.backend_id == "ibm_quantum"
+    assert ibm.profile.provider == "ibm"
 
     with pytest.raises(LookupError, match="unsupported IR"):
         resolve_aggregator_provider_route(
@@ -250,6 +260,13 @@ def test_aggregator_provider_dependency_matrix_covers_every_route() -> None:
     assert direct_ionq.backend_id == "aws_braket_ionq"
     assert direct_ionq.target_family == "ionq"
     assert direct_ionq.submit_requires_approval is True
+
+    direct_ibm = by_route["direct/ibm_quantum"]
+    assert direct_ibm.aggregator == "direct"
+    assert direct_ibm.provider == "ibm_quantum"
+    assert direct_ibm.backend_id == "ibm_quantum"
+    assert "qiskit_qpy" in direct_ibm.ir_formats
+    assert direct_ibm.dynamic_catalog_target is False
 
 
 def test_aggregator_provider_dependency_matrix_filters_by_route_request() -> None:

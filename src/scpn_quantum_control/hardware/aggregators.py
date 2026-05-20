@@ -80,6 +80,13 @@ def built_in_aggregator_provider_routes() -> tuple[AggregatorProviderRoute, ...]
             notes=("managed_simulator_family", "sv1_dm1_tn1"),
         ),
         _route(
+            "direct/ibm_quantum",
+            "direct",
+            "ibm_quantum",
+            "ibm_quantum",
+            ("qiskit_qpy", "openqasm3"),
+        ),
+        _route(
             "azure_quantum/ionq",
             "azure_quantum",
             "ionq",
