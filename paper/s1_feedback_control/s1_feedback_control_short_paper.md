@@ -187,6 +187,20 @@ S1b jobs:
 - `IXX`: feedback `d86r201789is739022q0`, control `d86r288p0eas73dlbkmg`
 - `IYY`: feedback `d86r21is46sc73f7c2o0`, control `d86r29p789is7390238g`
 
+### 6.3 Prepared S1c shallow/gain-tuned extension
+
+S1c is prepared as a same-paper follow-up lane, not a separate paper. It keeps
+the direct XY-sector observables but reduces the dynamic feedback body to one
+round, correction angle `0.06`, and base gain `0.4`. The readiness artefact is
+`data/s1_feedback_loop/s1c_xy_observable_readiness_ibm_kingston_20260520T131646Z.json`.
+
+The S1c feedback arms transpile on `ibm_kingston` with maximum depths
+`236`-`237`, compared with S1b feedback depths near `720`. This is the next
+logical hardware execution if the paper needs to separate policy/depth
+overhead from the underlying dynamic-feedback idea. S1c was prepared as
+`ready_for_submission`; it is not included as a completed hardware result in
+this manuscript version.
+
 ## 7. Claim Boundary
 
 Safe claims after successful analysis:

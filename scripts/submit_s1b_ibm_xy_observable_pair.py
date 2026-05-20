@@ -33,6 +33,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from scpn_quantum_control.control.realtime_feedback import (  # noqa: E402
+    RealtimeFeedbackConfig,
     RealtimeSyncFeedbackController,
 )
 from scpn_quantum_control.hardware.feedback_hardware_scheduler import (  # noqa: E402
@@ -58,9 +59,10 @@ from scripts.prepare_s1_ibm_live_readiness import (  # noqa: E402
 
 EXPERIMENT_ID = "s1b_dynamic_feedback_xy_observable_extension_2026-05-20"
 PARENT_EXPERIMENT_ID = "s1_dynamic_feedback_preregistration_2026-05-06"
+DEFAULT_LANE = "s1b"
 DEFAULT_BACKEND = "ibm_kingston"
 DEFAULT_OBSERVABLES = ("XXI", "YYI", "IXX", "IYY")
-N_ROUNDS = 3
+DEFAULT_N_ROUNDS = 3
 SYSTEM_QUBITS = 3
 DEFAULT_SHOTS = 1024
 DEFAULT_REPETITIONS = 3
@@ -71,9 +73,15 @@ DATA_DIR = REPO_ROOT / "data" / "s1_feedback_loop"
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--lane", default=DEFAULT_LANE)
+    parser.add_argument("--experiment-id", default=EXPERIMENT_ID)
+    parser.add_argument("--parent-experiment-id", default=PARENT_EXPERIMENT_ID)
     parser.add_argument("--backend", default=DEFAULT_BACKEND)
     parser.add_argument("--instance")
     parser.add_argument("--credentials-vault", type=Path, default=DEFAULT_CREDENTIALS_VAULT)
+    parser.add_argument("--n-rounds", type=int, default=DEFAULT_N_ROUNDS)
+    parser.add_argument("--correction-angle", type=float, default=0.12)
+    parser.add_argument("--base-gain", type=float, default=0.8)
     parser.add_argument("--shots", type=int, default=DEFAULT_SHOTS)
     parser.add_argument("--repetitions", type=int, default=DEFAULT_REPETITIONS)
     parser.add_argument("--observables", nargs="+", default=list(DEFAULT_OBSERVABLES))
@@ -88,13 +96,17 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _controller() -> RealtimeSyncFeedbackController:
+def _controller(args: argparse.Namespace) -> RealtimeSyncFeedbackController:
     return RealtimeSyncFeedbackController(
         np.array(
             [[0.0, 0.35, 0.20], [0.35, 0.0, 0.25], [0.20, 0.25, 0.0]],
             dtype=np.float64,
         ),
         np.array([0.1, 0.4, 0.7], dtype=np.float64),
+        config=RealtimeFeedbackConfig(
+            base_gain=float(args.base_gain),
+            correction_angle=float(args.correction_angle),
+        ),
     )
 
 
@@ -148,11 +160,17 @@ def _arm_summary(arm: S1FeedbackArmCircuit, isa: Sequence[QuantumCircuit]) -> di
     }
 
 
-def _manifest(package: Mapping[str, Any], readiness: Mapping[str, Any]) -> dict[str, Any]:
+def _manifest(
+    package: Mapping[str, Any],
+    readiness: Mapping[str, Any],
+    *,
+    args: argparse.Namespace,
+) -> dict[str, Any]:
     return {
-        "schema": "scpn_s1b_ibm_xy_observable_manifest_v1",
-        "experiment_id": EXPERIMENT_ID,
-        "parent_experiment_id": PARENT_EXPERIMENT_ID,
+        "schema": f"scpn_{args.lane}_ibm_xy_observable_manifest_v1",
+        "experiment_id": args.experiment_id,
+        "parent_experiment_id": args.parent_experiment_id,
+        "lane": args.lane,
         "package": dict(package),
         "readiness": dict(readiness),
     }
@@ -161,6 +179,7 @@ def _manifest(package: Mapping[str, Any], readiness: Mapping[str, Any]) -> dict[
 def _readiness_document(
     *,
     backend_name: str,
+    args: argparse.Namespace,
     package_manifest: Mapping[str, Any],
     arm_summaries: Sequence[Mapping[str, Any]],
     max_depth: int,
@@ -170,35 +189,43 @@ def _readiness_document(
     depth_ok = all(int(row["transpiled_depth_max"]) <= max_depth for row in arm_summaries)
     budget_ok = estimated <= max_qpu_seconds
     return {
-        "schema": "scpn_s1b_ibm_xy_observable_readiness_v1",
+        "schema": f"scpn_{args.lane}_ibm_xy_observable_readiness_v1",
         "timestamp_utc": _timestamp(),
         "backend": backend_name,
-        "experiment_id": EXPERIMENT_ID,
-        "parent_experiment_id": PARENT_EXPERIMENT_ID,
+        "experiment_id": args.experiment_id,
+        "parent_experiment_id": args.parent_experiment_id,
+        "lane": args.lane,
         "hardware_submission": False,
         "status": "ready_for_submission" if depth_ok and budget_ok else "blocked",
         "observable_family": "direct_xy_pauli_correlators",
-        "observables": list(DEFAULT_OBSERVABLES),
+        "observables": list(args.observables),
+        "n_rounds": args.n_rounds,
+        "correction_angle": args.correction_angle,
+        "base_gain": args.base_gain,
         "arms": list(arm_summaries),
         "max_depth": max_depth,
         "max_qpu_seconds": max_qpu_seconds,
         "estimated_qpu_seconds": estimated,
         "package_hash": hash_package_manifest(package_manifest),
-        "reasons": _readiness_reasons(depth_ok=depth_ok, budget_ok=budget_ok),
+        "reasons": _readiness_reasons(
+            lane=args.lane,
+            depth_ok=depth_ok,
+            budget_ok=budget_ok,
+        ),
     }
 
 
-def _readiness_reasons(*, depth_ok: bool, budget_ok: bool) -> list[str]:
+def _readiness_reasons(*, lane: str, depth_ok: bool, budget_ok: bool) -> list[str]:
     reasons: list[str] = []
     reasons.append(
-        "all S1b direct-XY arms satisfy the transpiled depth ceiling"
+        f"all {lane} direct-XY arms satisfy the transpiled depth ceiling"
         if depth_ok
-        else "at least one S1b direct-XY arm exceeds the transpiled depth ceiling"
+        else f"at least one {lane} direct-XY arm exceeds the transpiled depth ceiling"
     )
     reasons.append(
-        "S1b direct-XY estimate satisfies the approved QPU-second ceiling"
+        f"{lane} direct-XY estimate satisfies the approved QPU-second ceiling"
         if budget_ok
-        else "S1b direct-XY estimate exceeds the approved QPU-second ceiling"
+        else f"{lane} direct-XY estimate exceeds the approved QPU-second ceiling"
     )
     return reasons
 
@@ -211,7 +238,8 @@ def _analysis_summary(package: Mapping[str, Any]) -> dict[str, Any]:
     signed = [float(row["feedback_minus_control"]) for row in observables]
     return {
         "experiment_id": package["experiment_id"],
-        "parent_experiment_id": PARENT_EXPERIMENT_ID,
+        "parent_experiment_id": package["parent_experiment_id"],
+        "lane": package["lane"],
         "job_ids": list(package.get("job_ids", [])),
         "observable_family": package["observable_family"],
         "n_observables": len(deltas),
@@ -219,7 +247,7 @@ def _analysis_summary(package: Mapping[str, Any]) -> dict[str, Any]:
         "signed_feedback_minus_control": signed,
         "observables": list(observables),
         "claim_boundary": (
-            "S1b extends the S1 paper with direct XY-sector Pauli correlators. "
+            f"{package['lane']} extends the S1 paper with direct XY-sector Pauli correlators. "
             "It does not by itself establish backend-general feedback control."
         ),
     }
@@ -231,11 +259,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         print("ERROR: --submit requires --confirm-budget", file=sys.stderr)
         return 2
 
-    controller = _controller()
+    controller = _controller(args)
     package = build_s1_feedback_submission_package(
         controller,
-        experiment_id=EXPERIMENT_ID,
-        n_rounds=N_ROUNDS,
+        experiment_id=args.experiment_id,
+        n_rounds=args.n_rounds,
         circuits=2 * len(args.observables),
         shots_per_circuit=args.shots,
         repetitions=args.repetitions,
@@ -245,7 +273,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     arms = build_s1_xy_observable_arm_circuits(
         controller,
         observables=tuple(args.observables),
-        n_rounds=N_ROUNDS,
+        n_rounds=args.n_rounds,
         shots=args.shots,
         repetitions=args.repetitions,
     )
@@ -253,19 +281,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     arm_summaries = tuple(
         _arm_summary(arm, isa_by_key[(arm.label, arm.observable)]) for arm in arms
     )
-    provisional_manifest = _manifest(package.to_dict(), {"arms": arm_summaries})
+    provisional_manifest = _manifest(package.to_dict(), {"arms": arm_summaries}, args=args)
     readiness = _readiness_document(
         backend_name=args.backend,
+        args=args,
         package_manifest=provisional_manifest,
         arm_summaries=arm_summaries,
         max_depth=args.max_depth,
         max_qpu_seconds=args.max_qpu_seconds,
     )
-    readiness["observables"] = list(args.observables)
-    manifest = _manifest(package.to_dict(), readiness)
+    manifest = _manifest(package.to_dict(), readiness, args=args)
     readiness["package_hash"] = hash_package_manifest(manifest)
     timestamp = readiness["timestamp_utc"]
-    readiness_path = args.out_dir / f"s1b_xy_observable_readiness_{args.backend}_{timestamp}.json"
+    readiness_path = (
+        args.out_dir / f"{args.lane}_xy_observable_readiness_{args.backend}_{timestamp}.json"
+    )
     readiness_sha = _write_json(readiness_path, readiness)
     print(f"readiness={readiness['status']}")
     print(f"readiness_json={readiness_path}")
@@ -274,7 +304,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 3
     if not args.submit:
         print("hardware_submission=false")
-        print("Re-run with --submit --confirm-budget to submit S1b direct-XY jobs.")
+        print(f"Re-run with --submit --confirm-budget to submit {args.lane} direct-XY jobs.")
         return 0
 
     approval = HardwareApprovalRecord(
@@ -284,7 +314,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         max_qpu_seconds=args.max_qpu_seconds,
         allowed_provider="ibm_runtime",
         approved=True,
-        notes="explicit command-line --submit --confirm-budget approval for S1b",
+        notes=f"explicit command-line --submit --confirm-budget approval for {args.lane}",
     )
     arm_by_key = {(arm.label, arm.observable): arm for arm in arms}
     scheduler = ApprovalGatedFeedbackHardwareScheduler(
@@ -309,15 +339,19 @@ def main(argv: Sequence[str] | None = None) -> int:
         results.append(scheduler.submit(command))
 
     raw_package = raw_count_package_from_xy_observable_results(
-        experiment_id=EXPERIMENT_ID,
+        experiment_id=args.experiment_id,
         n_qubits=SYSTEM_QUBITS,
         results=results,
     )
     raw_package.update(
         {
-            "schema": "scpn_s1b_xy_observable_raw_counts_v1",
+            "schema": f"scpn_{args.lane}_xy_observable_raw_counts_v1",
             "backend": args.backend,
-            "parent_experiment_id": PARENT_EXPERIMENT_ID,
+            "parent_experiment_id": args.parent_experiment_id,
+            "lane": args.lane,
+            "n_rounds": args.n_rounds,
+            "correction_angle": args.correction_angle,
+            "base_gain": args.base_gain,
             "approval": {
                 "approval_id": approval.approval_id,
                 "approver": approval.approver,
@@ -331,10 +365,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             ],
         }
     )
-    raw_path = args.out_dir / f"s1b_xy_observable_raw_counts_{args.backend}_{timestamp}.json"
+    raw_path = (
+        args.out_dir / f"{args.lane}_xy_observable_raw_counts_{args.backend}_{timestamp}.json"
+    )
     raw_sha = _write_json(raw_path, raw_package)
     analysis = _analysis_summary(raw_package)
-    analysis_path = args.out_dir / f"s1b_xy_observable_analysis_{args.backend}_{timestamp}.json"
+    analysis_path = (
+        args.out_dir / f"{args.lane}_xy_observable_analysis_{args.backend}_{timestamp}.json"
+    )
     analysis_sha = _write_json(analysis_path, analysis)
     print("hardware_submission=true")
     print(f"job_ids={','.join(raw_package['job_ids'])}")

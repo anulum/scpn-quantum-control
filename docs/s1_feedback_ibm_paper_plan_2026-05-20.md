@@ -167,6 +167,19 @@ same-paper diagnostic extension showing whether the null/negative result is
 uniform across direct XY-sector observables. The observed answer is no:
 feedback/control differences are small but not uniform across channels.
 
+S1c prepared extension:
+
+- status: `ready_for_submission`, not submitted in the preparation artefact;
+- purpose: same-paper shallow/gain-tuned continuation to test whether S1/S1b
+  weakness is dominated by dynamic depth and feedback strength;
+- configuration: `n_rounds=1`, correction angle `0.06`, base gain `0.4`;
+- observables: `XXI`, `YYI`, `IXX`, `IYY`;
+- readiness artefact:
+  `data/s1_feedback_loop/s1c_xy_observable_readiness_ibm_kingston_20260520T131646Z.json`;
+- maximum feedback transpiled depth: `237`, compared with S1b feedback depth
+  about `720`;
+- estimated QPU seconds: `24.0`.
+
 ## Claim Boundary
 
 Safe after successful raw-count analysis:
