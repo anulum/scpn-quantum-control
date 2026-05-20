@@ -166,6 +166,15 @@ def test_aggregator_provider_selector_resolves_profile_and_ir() -> None:
     assert ibm.route.backend_id == "ibm_quantum"
     assert ibm.profile.provider == "ibm"
 
+    ionq = resolve_aggregator_provider_route(
+        aggregator="direct",
+        provider="ionq",
+        ir_format="ionq_json",
+    )
+    assert ionq.route.route_id == "direct/ionq"
+    assert ionq.route.backend_id == "ionq_cloud"
+    assert ionq.profile.provider == "ionq"
+
     with pytest.raises(LookupError, match="unsupported IR"):
         resolve_aggregator_provider_route(
             aggregator="qbraid",
@@ -256,9 +265,17 @@ def test_aggregator_provider_dependency_matrix_covers_every_route() -> None:
     assert qbraid_rigetti.dynamic_catalog_target is True
     assert isinstance(qbraid_rigetti.available, bool)
 
-    direct_ionq = by_route["aws_braket/ionq"]
-    assert direct_ionq.backend_id == "aws_braket_ionq"
+    braket_ionq = by_route["aws_braket/ionq"]
+    assert braket_ionq.backend_id == "aws_braket_ionq"
+    assert braket_ionq.target_family == "ionq"
+    assert braket_ionq.submit_requires_approval is True
+
+    direct_ionq = by_route["direct/ionq"]
+    assert direct_ionq.aggregator == "direct"
+    assert direct_ionq.provider == "ionq"
+    assert direct_ionq.backend_id == "ionq_cloud"
     assert direct_ionq.target_family == "ionq"
+    assert "ionq_json" in direct_ionq.ir_formats
     assert direct_ionq.submit_requires_approval is True
 
     direct_ibm = by_route["direct/ibm_quantum"]

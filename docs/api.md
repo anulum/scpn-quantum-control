@@ -160,8 +160,9 @@ Aggregator/provider combinations are exposed separately from executable HAL
 profiles through `built_in_aggregator_provider_routes()`. This keeps broad
 broker catalogues explicit without duplicating runtime adapters: direct Braket
 and Azure provider rows resolve to their specific HAL profiles, the direct IBM
-Quantum row resolves to `ibm_quantum`, while dynamic qBraid and Strangeworks
-rows resolve to `qbraid_runtime` and `strangeworks_compute` respectively. Use
+Quantum row resolves to `ibm_quantum`, the direct IonQ row resolves to
+`ionq_cloud`, while dynamic qBraid and Strangeworks rows resolve to
+`qbraid_runtime` and `strangeworks_compute` respectively. Use
 `resolve_aggregator_provider_route()` when routing code needs a single
 validated row plus the executable HAL profile for a requested aggregator,
 provider, and IR format.
@@ -173,11 +174,12 @@ contract for authenticated metadata probes: it resolves the broker route,
 accepts only no-submit target snapshots, and returns ready/blocked/unknown
 readiness decisions before any submission path is considered.
 `snapshot_from_azure_target()`, `snapshot_from_braket_device()`,
-`snapshot_from_qiskit_runtime_backend()`, `snapshot_from_qbraid_device()`, and
-`snapshot_from_strangeworks_backend()` provide concrete no-submit adapters for
-injected provider or broker SDK objects: they read declared target metadata,
-route-supported IR formats, queue, limit, online, simulator, calibration, and
-gate metadata without invoking submission APIs.
+`snapshot_from_ionq_backend()`, `snapshot_from_qiskit_runtime_backend()`,
+`snapshot_from_qbraid_device()`, and `snapshot_from_strangeworks_backend()`
+provide concrete no-submit adapters for injected provider or broker SDK
+objects: they read declared target metadata, route-supported IR formats, queue,
+limit, online, simulator, calibration, and gate metadata without invoking
+submission APIs.
 
 ## Advanced Module Reference
 

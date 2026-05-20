@@ -216,6 +216,65 @@ def snapshot_from_azure_target(
     )
 
 
+def snapshot_from_ionq_backend(
+    resolved: ResolvedAggregatorProviderRoute,
+    backend: Any,
+) -> ProviderCapabilitySnapshot:
+    """Build a no-submit capability snapshot from direct IonQ backend metadata."""
+
+    return ProviderCapabilitySnapshot(
+        route_id=resolved.route.route_id,
+        aggregator=resolved.route.aggregator,
+        provider=resolved.route.provider,
+        backend_id=resolved.route.backend_id,
+        target_name=_first_text_attr(
+            backend,
+            names=("backend", "backend_id", "id", "name", "target", "target_name"),
+            field_name="IonQ backend name",
+        ),
+        n_qubits=_first_positive_int_attr(
+            backend,
+            names=("qubits", "n_qubits", "num_qubits", "qubit_count", "qubitCount"),
+            field_name="IonQ qubit count",
+        ),
+        supported_ir_formats=_ionq_supported_ir_formats(resolved, backend),
+        basis_gates=_first_string_tuple_attr(
+            backend,
+            names=("basis_gates", "native_gates", "gates", "supported_operations"),
+        ),
+        native_features=_ionq_native_features(backend),
+        online=_ionq_online_state(backend),
+        simulator=_first_bool_attr(backend, names=("simulator", "is_simulator")) or False,
+        max_shots=_first_optional_int_attr(
+            backend,
+            names=("max_shots", "shots_limit", "maxShots", "max_execution_shots"),
+        ),
+        max_circuits=_first_optional_int_attr(
+            backend,
+            names=("max_circuits", "max_jobs", "max_experiments"),
+        ),
+        queue_depth=_first_optional_int_attr(
+            backend,
+            names=("queue_depth", "pending_jobs", "queue_size", "average_queue_time"),
+            minimum=0,
+        ),
+        calibration_timestamp=_first_optional_text_attr(
+            backend,
+            names=(
+                "last_calibration",
+                "calibration_timestamp",
+                "latest_calibration",
+                "last_updated",
+                "lastUpdated",
+            ),
+        ),
+        metadata={
+            "adapter": "ionq_backend_no_submit",
+            "gateset": _first_optional_text_attr(backend, names=("gateset", "gate_set")),
+        },
+    )
+
+
 def snapshot_from_braket_device(
     resolved: ResolvedAggregatorProviderRoute,
     device: Any,
@@ -554,6 +613,8 @@ def _require_string_tuple(value: tuple[str, ...], field_name: str) -> None:
 def _optional_attr(source: Any, name: str) -> Any:
     if source is None:
         return None
+    if isinstance(source, Mapping):
+        return source.get(name)
     try:
         return getattr(source, name)
     except Exception:
@@ -723,6 +784,63 @@ def _azure_online_state(*sources: Any) -> bool | None:
     text_status = _first_optional_text_attr(
         *sources,
         names=("current_availability", "availability", "target_status", "status"),
+    )
+    if text_status is None:
+        return None
+    normalized = text_status.strip().lower()
+    if normalized in {"available", "online", "ready", "active", "enabled"}:
+        return True
+    if normalized in {"unavailable", "offline", "disabled", "retired", "maintenance"}:
+        return False
+    return None
+
+
+def _ionq_supported_ir_formats(
+    resolved: ResolvedAggregatorProviderRoute,
+    backend: Any,
+) -> tuple[str, ...]:
+    declared = _first_string_tuple_attr(
+        backend,
+        names=(
+            "supported_ir_formats",
+            "ir_formats",
+            "input_formats",
+            "input_data_formats",
+            "program_formats",
+        ),
+    )
+    if not declared:
+        return resolved.route.ir_formats
+    return tuple(_ionq_ir_format_token(item) for item in declared)
+
+
+def _ionq_ir_format_token(value: str) -> str:
+    normalized = value.strip().lower().replace("-", "_")
+    if normalized in {"ionq_json", "ionq.circuit.v1", "ionq_circuit_v1", "qis"}:
+        return "ionq_json"
+    if normalized in {"qasm.v3", "qasm3", "openqasm", "openqasm_3", "openqasm3"}:
+        return "openqasm3"
+    if normalized in {"qir", "qir.v1"}:
+        return "qir"
+    return normalized
+
+
+def _ionq_native_features(backend: Any) -> tuple[str, ...]:
+    features = set(_first_string_tuple_attr(backend, names=("native_features", "features")))
+    features.add("gate_model")
+    features.add("trapped_ion")
+    if _first_bool_attr(backend, names=("all_to_all", "all_to_all_connectivity")) is not False:
+        features.add("all_to_all_connectivity")
+    return tuple(sorted(features))
+
+
+def _ionq_online_state(backend: Any) -> bool | None:
+    explicit = _first_online_attr(backend)
+    if explicit is not None:
+        return explicit
+    text_status = _first_optional_text_attr(
+        backend,
+        names=("availability", "target_status", "status", "state"),
     )
     if text_status is None:
         return None
@@ -964,6 +1082,7 @@ __all__ = [
     "probe_aggregator_provider_capability",
     "snapshot_from_azure_target",
     "snapshot_from_braket_device",
+    "snapshot_from_ionq_backend",
     "snapshot_from_qiskit_runtime_backend",
     "snapshot_from_qbraid_device",
     "snapshot_from_strangeworks_backend",

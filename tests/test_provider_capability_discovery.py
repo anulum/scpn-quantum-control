@@ -18,6 +18,7 @@ from scpn_quantum_control.hardware.provider_capability_discovery import (
     probe_aggregator_provider_capability,
     snapshot_from_azure_target,
     snapshot_from_braket_device,
+    snapshot_from_ionq_backend,
     snapshot_from_qbraid_device,
     snapshot_from_qiskit_runtime_backend,
     snapshot_from_strangeworks_backend,
@@ -160,6 +161,9 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
         snapshot_from_braket_device as exported_braket_snapshot,
     )
     from scpn_quantum_control.hardware import (
+        snapshot_from_ionq_backend as exported_ionq_snapshot,
+    )
+    from scpn_quantum_control.hardware import (
         snapshot_from_qiskit_runtime_backend as exported_qiskit_snapshot,
     )
 
@@ -169,7 +173,85 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
     assert exported_probe is probe_aggregator_provider_capability
     assert exported_azure_snapshot is snapshot_from_azure_target
     assert exported_braket_snapshot is snapshot_from_braket_device
+    assert exported_ionq_snapshot is snapshot_from_ionq_backend
     assert exported_qiskit_snapshot is snapshot_from_qiskit_runtime_backend
+
+
+def test_direct_ionq_snapshot_reads_backend_json_without_submission() -> None:
+    """Direct IonQ metadata adapters should consume injected API JSON only."""
+
+    backend_metadata = {
+        "backend": "qpu.forte-1",
+        "status": "available",
+        "qubits": 36,
+        "supported_ir_formats": ("ionq_json", "openqasm3", "qir"),
+        "gateset": "qis",
+        "basis_gates": ("x", "y", "z", "h", "cnot", "rx", "ry", "rz", "xx", "measure"),
+        "max_shots": 10_000,
+        "queue_depth": 4,
+        "last_calibration": "2026-05-20T11:00:00Z",
+        "simulator": False,
+    }
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="direct",
+        provider="ionq",
+        ir_format="ionq_json",
+        min_qubits=4,
+        metadata_probe=lambda resolved: snapshot_from_ionq_backend(
+            resolved,
+            backend_metadata,
+        ),
+    )
+
+    assert decision.status == "ready"
+    assert decision.snapshot.route_id == "direct/ionq"
+    assert decision.snapshot.backend_id == "ionq_cloud"
+    assert decision.snapshot.target_name == "qpu.forte-1"
+    assert decision.snapshot.n_qubits == 36
+    assert decision.snapshot.supported_ir_formats == ("ionq_json", "openqasm3", "qir")
+    assert decision.snapshot.basis_gates == (
+        "x",
+        "y",
+        "z",
+        "h",
+        "cnot",
+        "rx",
+        "ry",
+        "rz",
+        "xx",
+        "measure",
+    )
+    assert "trapped_ion" in decision.snapshot.native_features
+    assert decision.snapshot.max_shots == 10_000
+    assert decision.snapshot.queue_depth == 4
+    assert decision.snapshot.calibration_timestamp == "2026-05-20T11:00:00Z"
+    assert decision.snapshot.metadata["adapter"] == "ionq_backend_no_submit"
+    assert decision.snapshot.metadata["gateset"] == "qis"
+
+
+def test_direct_ionq_snapshot_blocks_offline_backend_without_submission() -> None:
+    """Direct IonQ offline metadata should block before job creation."""
+
+    class Backend:
+        id = "qpu.aria-1"
+        status = "offline"
+        qubits = 25
+        input_formats = ("ionq.circuit.v1",)
+
+        def submit(self, *args: object, **kwargs: object) -> None:
+            raise AssertionError("metadata snapshot must not submit IonQ work")
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="direct",
+        provider="ionq",
+        ir_format="ionq_json",
+        metadata_probe=lambda resolved: snapshot_from_ionq_backend(resolved, Backend()),
+    )
+
+    assert decision.status == "blocked"
+    assert "provider target is offline" in decision.blockers
+    assert decision.snapshot.supported_ir_formats == ("ionq_json",)
 
 
 def test_azure_quantum_snapshot_reads_target_metadata_without_submission() -> None:
