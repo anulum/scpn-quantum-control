@@ -566,6 +566,11 @@ python -m venv .venv-provider-iqm
 .venv-provider-iqm/bin/scpn-provider-smoke --backend iqm_cloud --require-all
 ```
 
+The same three isolated lanes are available as the manual GitHub Actions
+workflow `Provider Isolated Smoke`. It is deliberately separate from the
+blocking CI gate and performs offline import checks only; it does not read
+credentials, authenticate, create provider clients, or submit jobs.
+
 The direct Quandela adapter layer provides `QuandelaPercevalHALAdapter` and
 `quandela_perceval_workload()`. It consumes `scpn.quandela.perceval.v1`
 photonic circuit plans, validates mode count, input occupations,

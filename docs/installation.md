@@ -61,6 +61,10 @@ python -m venv .venv-provider-dwave
 .venv-provider-dwave/bin/python -m pip install -e ".[dwave]"
 .venv-provider-dwave/bin/scpn-provider-smoke --backend dwave_leap --require-all
 
+# The manual "Provider Isolated Smoke" GitHub Actions workflow runs
+# D-Wave, IQM, and QuEra lanes in separate virtual environments. It is
+# offline: no credentials, authentication, provider clients, or job submission.
+
 # Rust acceleration (158–5,401× faster Hamiltonian construction;
 # 1,665× faster ICI three-level evolution; 44× faster (α,β)-hypergeometric
 # envelope; 2–10× across Pauli expectations and OTOC)

@@ -1,0 +1,57 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — isolated provider SDK smoke lanes
+name: Provider Isolated Smoke
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: provider-isolated-smoke-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  isolated-provider-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - extra: dwave
+            backend: dwave_leap
+            sdk_package: dwave-cloud-client
+            venv_path: .venv-provider-dwave
+          - extra: iqm
+            backend: iqm_cloud
+            sdk_package: iqm-client
+            venv_path: .venv-provider-iqm
+          - extra: quera
+            backend: quera_bloqade
+            sdk_package: bloqade
+            venv_path: .venv-provider-quera
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        with:
+          python-version: "3.12"
+      - name: Create isolated provider environment
+        run: python -m venv "${{ matrix.venv_path }}"
+      - name: Install isolated provider extra
+        run: |
+          "${{ matrix.venv_path }}/bin/python" -m pip install -U pip
+          "${{ matrix.venv_path }}/bin/python" -m pip install -e ".[${{ matrix.extra }}]"
+      - name: Run offline provider smoke gate
+        run: >-
+          "${{ matrix.venv_path }}/bin/scpn-provider-smoke"
+          --format table
+          --backend "${{ matrix.backend }}"
+          --sdk-package "${{ matrix.sdk_package }}"
+          --require-all
