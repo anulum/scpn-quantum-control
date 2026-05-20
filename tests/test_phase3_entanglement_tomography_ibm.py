@@ -149,6 +149,15 @@ def test_zne_subset_selects_dla_transverse_edges_and_one_fim_control() -> None:
         },
         {
             "family": "dla_parity",
+            "label": "dla_even_signal",
+            "initial": "0011",
+            "depth": "10",
+            "lambda_fim": "",
+            "basis_setting": "IIXX",
+            "absolute_deviation": "0.90",
+        },
+        {
+            "family": "dla_parity",
             "label": "dla_odd_shallow",
             "initial": "0001",
             "depth": "6",
@@ -176,6 +185,15 @@ def test_zne_subset_selects_dla_transverse_edges_and_one_fim_control() -> None:
         },
         {
             "family": "fim_pair",
+            "label": "fim_lambda4_feedback",
+            "initial": "0011",
+            "depth": "4",
+            "lambda_fim": "4.0",
+            "basis_setting": "IZZI",
+            "absolute_deviation": "0.41",
+        },
+        {
+            "family": "fim_pair",
             "label": "fim_lambda0_reference",
             "initial": "0011",
             "depth": "4",
@@ -192,7 +210,7 @@ def test_zne_subset_selects_dla_transverse_edges_and_one_fim_control() -> None:
         ("dla_odd_signal", "YYII"),
         ("dla_odd_shallow", "IIXX"),
         ("dla_odd_shallow", "IIYY"),
-        ("fim_lambda4_feedback", "IXXI"),
+        ("fim_lambda4_feedback", "IZZI"),
     ]
 
 

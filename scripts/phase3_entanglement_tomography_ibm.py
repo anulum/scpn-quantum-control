@@ -49,6 +49,13 @@ BUDGET_CEILING_MINUTES = 25.0
 SECONDS_PER_CIRCUIT_ESTIMATE = 0.55
 ZNE_DEFAULT_SCALES = (1, 3, 5)
 ZNE_TRANSVERSE_EDGE_BASES = {"IIXX", "IIYY", "XXII", "YYII"}
+ZNE_DLA_PREREGISTERED_CHANNELS = (
+    ("dla_odd_signal", "XXII"),
+    ("dla_odd_signal", "YYII"),
+    ("dla_odd_shallow", "IIXX"),
+    ("dla_odd_shallow", "IIYY"),
+)
+ZNE_FIM_PREFERRED_CONTROL = ("fim_lambda4_feedback", "IZZI")
 
 
 @dataclass(frozen=True)
@@ -318,17 +325,23 @@ def select_zne_subset_rows(
 ) -> list[dict[str, Any]]:
     """Select a preregistered small ZNE subset from analysed row deviations."""
 
-    dla_rows = [
-        dict(row)
+    by_channel = {
+        (str(row["label"]), str(row["basis_setting"])): dict(row)
         for row in rows
         if str(row["family"]) == "dla_parity"
-        and str(row["basis_setting"]) in ZNE_TRANSVERSE_EDGE_BASES
+    }
+    selected_dla = [
+        by_channel[channel]
+        for channel in ZNE_DLA_PREREGISTERED_CHANNELS[:dla_channel_count]
+        if channel in by_channel
     ]
-    selected_dla = sorted(
-        dla_rows,
-        key=lambda row: _float_row(row, "absolute_deviation"),
-        reverse=True,
-    )[:dla_channel_count]
+    if len(selected_dla) < min(dla_channel_count, len(ZNE_DLA_PREREGISTERED_CHANNELS)):
+        missing = [
+            channel
+            for channel in ZNE_DLA_PREREGISTERED_CHANNELS[:dla_channel_count]
+            if channel not in by_channel
+        ]
+        raise ValueError(f"missing preregistered ZNE DLA channels: {missing}")
     fim_rows = [
         dict(row)
         for row in rows
@@ -336,11 +349,19 @@ def select_zne_subset_rows(
     ]
     if not fim_rows:
         fim_rows = [dict(row) for row in rows if str(row["family"]) == "fim_pair"]
-    selected_fim = sorted(
-        fim_rows,
-        key=lambda row: _float_row(row, "absolute_deviation"),
-        reverse=True,
-    )[:1]
+    preferred_fim = [
+        row
+        for row in fim_rows
+        if (str(row["label"]), str(row["basis_setting"])) == ZNE_FIM_PREFERRED_CONTROL
+    ]
+    selected_fim = (
+        preferred_fim[:1]
+        or sorted(
+            fim_rows,
+            key=lambda row: _float_row(row, "absolute_deviation"),
+            reverse=True,
+        )[:1]
+    )
     return selected_dla + selected_fim
 
 
