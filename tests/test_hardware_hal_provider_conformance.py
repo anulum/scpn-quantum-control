@@ -82,6 +82,8 @@ def test_aggregator_provider_matrix_covers_source_grounded_current_brokers() -> 
         "aws_braket/rigetti",
         "aws_braket/amazon_simulators",
         "direct/ibm_quantum",
+        "direct/ionq",
+        "direct/quantinuum",
         "azure_quantum/ionq",
         "azure_quantum/quantinuum",
         "azure_quantum/rigetti",
@@ -174,6 +176,15 @@ def test_aggregator_provider_selector_resolves_profile_and_ir() -> None:
     assert ionq.route.route_id == "direct/ionq"
     assert ionq.route.backend_id == "ionq_cloud"
     assert ionq.profile.provider == "ionq"
+
+    quantinuum = resolve_aggregator_provider_route(
+        aggregator="direct",
+        provider="quantinuum",
+        ir_format="tket",
+    )
+    assert quantinuum.route.route_id == "direct/quantinuum"
+    assert quantinuum.route.backend_id == "quantinuum_cloud"
+    assert quantinuum.profile.provider == "quantinuum"
 
     with pytest.raises(LookupError, match="unsupported IR"):
         resolve_aggregator_provider_route(
@@ -277,6 +288,14 @@ def test_aggregator_provider_dependency_matrix_covers_every_route() -> None:
     assert direct_ionq.target_family == "ionq"
     assert "ionq_json" in direct_ionq.ir_formats
     assert direct_ionq.submit_requires_approval is True
+
+    direct_quantinuum = by_route["direct/quantinuum"]
+    assert direct_quantinuum.aggregator == "direct"
+    assert direct_quantinuum.provider == "quantinuum"
+    assert direct_quantinuum.backend_id == "quantinuum_cloud"
+    assert direct_quantinuum.target_family == "quantinuum"
+    assert "tket" in direct_quantinuum.ir_formats
+    assert direct_quantinuum.submit_requires_approval is True
 
     direct_ibm = by_route["direct/ibm_quantum"]
     assert direct_ibm.aggregator == "direct"

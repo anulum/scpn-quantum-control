@@ -117,6 +117,13 @@ is copied here.
   including IonQ JSON/OpenQASM/QIR declaration translation, qubit count, basis
   gates, shot limits, queue depth, online state, simulator flag, gateset, and
   calibration timestamp without job creation.
+- [x] **Direct Quantinuum no-submit capability snapshot.** Implemented
+  2026-05-20: `snapshot_from_quantinuum_backend` adds the direct
+  `direct/quantinuum` route and metadata snapshot path for injected Quantinuum
+  backend objects or metadata JSON, including tket/OpenQASM/QIR declaration
+  translation, qubit count, native gate set, mid-circuit measurement feature
+  inference, shot/batch limits, queue depth, online state, simulator flag,
+  machine id, and calibration timestamp without circuit processing.
 - [x] **AWS Braket HAL adapter integration.** Implemented 2026-05-20:
   `hardware.hal_braket` adds OpenQASM 3 workload conversion for Braket circuits,
   local SV/DM simulator execution, and approval-gated AWS Braket device/task

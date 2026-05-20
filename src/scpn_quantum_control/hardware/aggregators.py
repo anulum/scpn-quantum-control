@@ -94,6 +94,13 @@ def built_in_aggregator_provider_routes() -> tuple[AggregatorProviderRoute, ...]
             ("ionq_json", "openqasm3", "qir"),
         ),
         _route(
+            "direct/quantinuum",
+            "direct",
+            "quantinuum",
+            "quantinuum_cloud",
+            ("tket", "openqasm3", "qir"),
+        ),
+        _route(
             "azure_quantum/ionq",
             "azure_quantum",
             "ionq",

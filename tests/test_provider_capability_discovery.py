@@ -21,6 +21,7 @@ from scpn_quantum_control.hardware.provider_capability_discovery import (
     snapshot_from_ionq_backend,
     snapshot_from_qbraid_device,
     snapshot_from_qiskit_runtime_backend,
+    snapshot_from_quantinuum_backend,
     snapshot_from_strangeworks_backend,
 )
 
@@ -166,6 +167,9 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
     from scpn_quantum_control.hardware import (
         snapshot_from_qiskit_runtime_backend as exported_qiskit_snapshot,
     )
+    from scpn_quantum_control.hardware import (
+        snapshot_from_quantinuum_backend as exported_quantinuum_snapshot,
+    )
 
     assert ExportedSnapshot is ProviderCapabilitySnapshot
     assert ProviderCapabilityDecision.__name__ == "ProviderCapabilityDecision"
@@ -175,6 +179,7 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
     assert exported_braket_snapshot is snapshot_from_braket_device
     assert exported_ionq_snapshot is snapshot_from_ionq_backend
     assert exported_qiskit_snapshot is snapshot_from_qiskit_runtime_backend
+    assert exported_quantinuum_snapshot is snapshot_from_quantinuum_backend
 
 
 def test_direct_ionq_snapshot_reads_backend_json_without_submission() -> None:
@@ -252,6 +257,81 @@ def test_direct_ionq_snapshot_blocks_offline_backend_without_submission() -> Non
     assert decision.status == "blocked"
     assert "provider target is offline" in decision.blockers
     assert decision.snapshot.supported_ir_formats == ("ionq_json",)
+
+
+def test_direct_quantinuum_snapshot_reads_backend_metadata_without_submission() -> None:
+    """Direct Quantinuum metadata adapters should consume injected backend metadata only."""
+
+    class BackendInfo:
+        n_qubits = 56
+        gate_set = ("Rz", "PhasedX", "ZZMax", "Measure", "Reset")
+        supports_mid_circuit_measurement = True
+        max_n_shots = 10_000
+        max_batch_circuits = 25
+        queue_depth = 5
+        last_calibration = "2026-05-20T11:30:00Z"
+
+    class Backend:
+        machine = "H2-1"
+        status = "online"
+        supported_ir_formats = ("tket", "openqasm3", "qir")
+        backend_info = BackendInfo()
+        is_simulator = False
+
+        def process_circuit(self, *args: object, **kwargs: object) -> None:
+            raise AssertionError("metadata snapshot must not submit Quantinuum work")
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="direct",
+        provider="quantinuum",
+        ir_format="tket",
+        min_qubits=4,
+        metadata_probe=lambda resolved: snapshot_from_quantinuum_backend(
+            resolved,
+            Backend(),
+        ),
+    )
+
+    assert decision.status == "ready"
+    assert decision.snapshot.route_id == "direct/quantinuum"
+    assert decision.snapshot.backend_id == "quantinuum_cloud"
+    assert decision.snapshot.target_name == "H2-1"
+    assert decision.snapshot.n_qubits == 56
+    assert decision.snapshot.supported_ir_formats == ("tket", "openqasm3", "qir")
+    assert decision.snapshot.basis_gates == ("Rz", "PhasedX", "ZZMax", "Measure", "Reset")
+    assert "trapped_ion" in decision.snapshot.native_features
+    assert "mid_circuit_measurement" in decision.snapshot.native_features
+    assert decision.snapshot.max_shots == 10_000
+    assert decision.snapshot.max_circuits == 25
+    assert decision.snapshot.queue_depth == 5
+    assert decision.snapshot.calibration_timestamp == "2026-05-20T11:30:00Z"
+    assert decision.snapshot.metadata["adapter"] == "quantinuum_backend_no_submit"
+    assert decision.snapshot.metadata["machine"] == "H2-1"
+
+
+def test_direct_quantinuum_snapshot_blocks_offline_backend_without_submission() -> None:
+    """Direct Quantinuum offline metadata should block before circuit processing."""
+
+    backend_metadata = {
+        "name": "H1-1E",
+        "status": "offline",
+        "n_qubits": 20,
+        "input_formats": ("pytket",),
+    }
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="direct",
+        provider="quantinuum",
+        ir_format="tket",
+        metadata_probe=lambda resolved: snapshot_from_quantinuum_backend(
+            resolved,
+            backend_metadata,
+        ),
+    )
+
+    assert decision.status == "blocked"
+    assert "provider target is offline" in decision.blockers
+    assert decision.snapshot.supported_ir_formats == ("tket",)
 
 
 def test_azure_quantum_snapshot_reads_target_metadata_without_submission() -> None:
