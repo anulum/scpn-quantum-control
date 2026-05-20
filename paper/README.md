@@ -16,7 +16,7 @@ publication submissions under `paper/submissions/`, JOSS submissions under
 
 | Directory | Contents | Status |
 |---|---|---|
-| `publication_planning/` | Cross-paper planning notes, preprint outlines, and publication-framing guidance. | Planning material, not a submission source package. |
+| `publication_planning/` | Cross-paper planning notes, preprint outlines, programme overview, and publication-framing guidance. | Planning material, not a submission source package. |
 | `submissions/submission_001_ibm_fez_synchronisation/` | February 2026 `ibm_fez` synchronisation overview in `main.tex`, with local `figures/publication/`. | Contextual overview; compiles locally. |
 | `submissions/submission_002_phase1_dla_parity/` | April 2026 `ibm_kingston` DLA-parity manuscript, short-paper draft, and local `figures/phase1/` + `figures/phase2/`. | Submission-ready source package, with claim boundaries. |
 | `submissions/submission_003_rust_vqe_methods/` | Rust/VQE methodology manuscript and local PDF. | Methods preprint candidate. |

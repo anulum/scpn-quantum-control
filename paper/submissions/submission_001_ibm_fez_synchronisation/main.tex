@@ -31,7 +31,7 @@ $c = 1.04$ at $n = 8$, while larger sizes show finite-size drift. The
 same exact-simulation diagnostics show subharmonic Floquet response and
 non-ergodic level-spacing behaviour for heterogeneous frequencies. A
 hardware-anchored scaling analysis gives a resource boundary for exact
-Hilbert-space simulation; it is not a broad quantum-advantage claim because
+Hilbert-space simulation; it is not a broad quantum advantage claim because
 Rust Kuramoto ODE baselines remain faster for the measured $n \leq 16$
 observable-level regime.
 All code, data, and figures are open-source at
@@ -157,7 +157,7 @@ classes. Exact-simulation rows are deterministic within the specified
 Hamiltonian, system size, and solver tolerance. Hardware rows are raw-count
 observations with job identifiers, shot counts, and committed reducer scripts.
 Scaling rows are resource-boundary estimates and are not promoted to broad
-quantum-advantage claims. This classification is necessary because the paper
+quantum advantage claims. This classification is necessary because the paper
 combines heterogeneous evidence: Bell/QKD rows, finite-size exact diagnostics,
 legacy IBM rows, and later parity-sector campaigns have different statistical
 meaning and should not be collapsed into one aggregate success metric.
@@ -173,6 +173,25 @@ Exact simulation & BKT, Krylov, OTOC, DTC & finite-size diagnostics \\
 Raw-count hardware & Bell, QKD, DLA rows & backend/window observations \\
 Resource boundary & exact crossover & no broad advantage claim \\
 Legacy artefact & early Fez rows & cited only by artefact path \\
+\end{tabular}
+\end{ruledtabular}
+\end{table}
+
+\begin{table}[t]
+\caption{\label{tab:programmeroadmap}%
+Programme roadmap linking the overview evidence to the focused companion
+papers. The table is a map of claim ownership, not an aggregate validation
+score.}
+\begin{ruledtabular}
+\begin{tabular}{lll}
+Component & Focused paper & Positive knowledge gained \\
+\colrule
+Exact diagnostics & This overview & finite-size and resource-boundary map \\
+Software methods & Rust/VQE methods & reproducible artefact pipeline and kernel bounds \\
+DLA parity & Phase~1 DLA parity & real but multifactorial leakage asymmetry \\
+FIM term & FIM Hamiltonian & negative design rule for direct digital feedback \\
+Reduced Pauli & Phase~3 tomography & channel-localised mechanism boundary \\
+Dynamic feedback & S1 feedback & backend-dependent control-response boundary \\
 \end{tabular}
 \end{ruledtabular}
 \end{table}

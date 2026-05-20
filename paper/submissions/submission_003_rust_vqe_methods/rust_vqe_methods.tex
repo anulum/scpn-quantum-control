@@ -65,10 +65,14 @@ for \texttt{TwoLocal} and $1.92\times10^{-3}\,\%$ for
 state-vector expectation benchmark on Vertex T4 gives CUDA median
 times of $0.176$--$0.905\,\mathrm{ms}$ for $n=8$--$11$, compared with
 Vertex CPU medians of $3.557$--$12.094\,\mathrm{ms}$ for the same
-workload. A same-day 25-circuit IBM Marrakesh validation lane preserves
-the same ansatz energy ordering after full 16-state readout calibration:
-$K_{ij}$-informed $-6.2021$, \texttt{TwoLocal} $-6.0805$, and
-\texttt{EfficientSU2} $-6.0539$. The paper is
+workload. IBM ansatz-validation lanes were then executed at $n=4,6,8$ with
+full computational-basis readout calibration. The original $n=4$ Marrakesh
+lane preserves the topology-informed ordering, but the larger $n=6,8$
+Fez/Marrakesh lanes rank \texttt{EfficientSU2} lowest in measured energy.
+Additional $n=8$ seed-sensitivity lanes with seed 23 preserve that
+larger-width ordering on both backends.
+The hardware evidence is therefore a reproducibility and ansatz-sensitivity
+check, not a backend-general topology-informed superiority claim. The paper is
 methodological rather than a quantum-advantage claim: small-system exact
 simulation remains classically tractable, and hardware results are used
 to validate compilation, noise budgeting, and experiment reproducibility.
@@ -505,6 +509,77 @@ replay.}
 \label{tab:hardwareansatz}
 \end{table}
 
+To address the small-width limitation directly, we also submitted the same
+ansatz-validation machinery at $n=6$ and $n=8$ on \texttt{ibm\_fez} and
+\texttt{ibm\_marrakesh}. Each larger lane measured the same three ansatz
+families and included the complete $2^n$ computational-basis readout
+calibration. These runs validate the packaging, retrieval, and readout
+inversion path at larger width, but they do not preserve the $n=4$
+topology-informed ranking. Table~\ref{tab:hardwareansatzlarge} reports the
+full-readout-mitigated energies. In all four larger lanes,
+\texttt{EfficientSU2} has the lowest measured energy. This is a useful negative
+methods result: the topology-informed ansatz remains a good small-system design
+signal, but the larger hardware lanes show that ansatz ranking is sensitive to
+width, backend, layout, and noise.
+
+\begin{table}[tb]
+\centering
+\small
+\begin{tabular}{lllrrr}
+\toprule
+Backend & $n$ & Seed & $K_{ij}$-informed & \texttt{TwoLocal} & \texttt{EfficientSU2} \\
+\midrule
+\texttt{ibm\_fez} & 6 & 11 & $-9.1343$ & $-7.9625$ & $-10.0840$ \\
+\texttt{ibm\_fez} & 8 & 11 & $-6.6274$ & $-3.6932$ & $-9.7473$ \\
+\texttt{ibm\_fez} & 8 & 23 & $-6.7392$ & $-5.1422$ & $-10.0636$ \\
+\texttt{ibm\_marrakesh} & 6 & 11 & $-10.0442$ & $-9.9373$ & $-10.3118$ \\
+\texttt{ibm\_marrakesh} & 8 & 11 & $-11.3559$ & $-10.2083$ & $-11.9303$ \\
+\texttt{ibm\_marrakesh} & 8 & 23 & $-11.4752$ & $-10.6883$ & $-11.9551$ \\
+\bottomrule
+\end{tabular}
+\caption{Larger-width IBM ansatz-validation lanes submitted on 2026-05-20.
+Entries are full-readout-mitigated energy estimates from the retrieved raw
+counts. The seed-23 repeat at $n=8$ preserves the larger-width
+\texttt{EfficientSU2}-lowest ordering on both backends. The result is
+deliberately reported as ansatz-sensitivity evidence: the larger hardware
+lanes validate the workflow at $n=6,8$ but do not promote the
+topology-informed ansatz as hardware-general superior.}
+\label{tab:hardwareansatzlarge}
+\end{table}
+
+\begin{table}[tb]
+\centering
+\small
+\begin{tabular}{lp{0.62\linewidth}}
+\toprule
+Workflow component & Interpretation \\
+\midrule
+$K_{ij}$ construction & Rust/PyO3 kernel acceleration reduces repeated
+coupling-graph construction cost during sweeps and artefact regeneration. \\
+Hamiltonian/ansatz export & Python/Qiskit object construction remains part of
+the cost and limits end-to-end speedup. \\
+Optimiser evaluations & COBYLA and state-vector evaluations dominate VQE
+screening once the Hamiltonian is built. \\
+Transpilation/provider execution & Hardware lanes are governed by circuit
+depth, backend routing, shot budget, queueing, and calibration windows. \\
+\bottomrule
+\end{tabular}
+\caption{End-to-end placement of the Rust kernel in the methods workflow. The
+kernel speedups are real and useful, but they are deliberately reported as
+workflow-component gains rather than full-stack VQE speedups.}
+\label{tab:endtoendbreakdown}
+\end{table}
+
+The larger-width hardware lanes also give a useful negative design rule. The
+topology-informed ansatz is the best family in the original small $n=4$
+screening, but \texttt{EfficientSU2} gives the lowest measured energy in the
+$n=6,8$ hardware lanes and in the seed-23 $n=8$ repeats. A plausible
+mechanism is that the topology-informed circuit encodes non-native graph
+structure whose routed two-qubit gates and calibration-window sensitivity
+outweigh its variational inductive bias on current heavy-hex hardware. The
+paper therefore promotes the ansatz path as a reproducible compiler and
+benchmarking method, not as a universal hardware ansatz-selection rule.
+
 \section{Limitations}
 
 The benchmark results are deliberately bounded. First, the CPU timings
@@ -520,10 +595,10 @@ is a controlled screening budget, not proof of convergence; the 320-evaluation
 extension improves traceability for the representative case but still covers
 only a small Hamiltonian and three seeds. Larger ansatz matrices, more seeds,
 and additional Hamiltonian families remain necessary before promoting a broad
-ansatz-selection rule. The IBM observable comparison in
-Table~\ref{tab:hardwareansatz} is a single-backend, single-layout
-validation lane; it should be read as a hardware sanity check for the
-methods claim, not as backend-general ansatz superiority.
+ansatz-selection rule. The IBM observable comparisons in
+Tables~\ref{tab:hardwareansatz} and~\ref{tab:hardwareansatzlarge} are hardware
+sanity checks for the methods workflow, not backend-general ansatz-superiority
+evidence.
 
 Third, the GPU benchmark is a classical-validation workload, not a claim
 that the full Qiskit circuit-construction path is GPU accelerated. Circuit
@@ -569,7 +644,13 @@ in this manuscript are:
   \item \path{ansatz_ibm_validation_readiness_ibm_marrakesh_20260520T163234Z.json},
   \item \path{ansatz_ibm_validation_submission_ibm_marrakesh_20260520T163234Z.json},
   \item \path{ansatz_ibm_validation_raw_counts_ibm_marrakesh_20260520T163812Z.json},
-  \item \path{ansatz_ibm_validation_analysis_ibm_marrakesh_20260520T163812Z.json}.
+  \item \path{ansatz_ibm_validation_analysis_ibm_marrakesh_20260520T163812Z.json},
+  \item \path{ansatz_ibm_validation_analysis_ibm_fez_20260520T195028Z.json},
+  \item \path{ansatz_ibm_validation_analysis_ibm_fez_20260520T195040Z.json},
+  \item \path{ansatz_ibm_validation_analysis_ibm_marrakesh_20260520T195051Z.json},
+  \item \path{ansatz_ibm_validation_analysis_ibm_marrakesh_20260520T195102Z.json},
+  \item \path{ansatz_ibm_validation_analysis_ibm_fez_20260520T201721Z.json}, and
+  \item \path{ansatz_ibm_validation_analysis_ibm_marrakesh_20260520T201741Z.json}.
 \end{itemize}
 %
 The latest combined summary hashes at the time of this draft are

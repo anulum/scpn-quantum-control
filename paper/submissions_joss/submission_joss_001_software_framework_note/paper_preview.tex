@@ -60,10 +60,19 @@ result.
 dynamics experiments. Its target users are quantum software researchers, NISQ
 experimentalists, and computational physicists who need reproducible pipelines
 connecting oscillator-network models to circuits, simulators, hardware runs,
-and published artefacts. The software is not presented as a quantum-advantage
+and published artefacts. The software is not presented as a quantum advantage
 engine; rather, it is an auditable workflow for small- and medium-scale hardware
 experiments where honest classical baselines and raw data provenance are
 essential.
+
+A typical user is a graduate student or hardware-methods researcher who wants
+to reproduce a small Kuramoto--XY benchmark without rebuilding the full
+artefact chain by hand. From a clean checkout, that user can install the
+package, regenerate the $n=4$ VQE comparison, inspect the submitted IBM job
+metadata, and rerun the count reducer that produced the manuscript table. This
+use case is intentionally narrower than general-purpose SDK development: the
+package is designed to make one class of oscillator-network hardware study
+auditable end to end.
 
 \section*{State of the field}
 
@@ -195,8 +204,17 @@ VQE $n=4$, topology-informed median error & $0.372\,\%$ & VQE benchmark summary 
 
 These rows are intentionally small and auditable. They are sufficient to show
 that the package generates reproducible artefacts and useful implementation
-ordering, but they are not quantum-advantage claims and not a replacement for
+ordering, but they are not quantum advantage claims and not a replacement for
 larger provider-backed validation.
+
+The $44.1\times$ local $K_{ij}$ row is a kernel result, not an end-to-end VQE
+speedup. It matters because coupling construction is a repeated inner-loop
+operation in topology sweeps, ansatz generation, Hamiltonian export, and
+benchmark regeneration. The manuscript therefore reports it as a bounded
+software-engineering gain under an Amdahl-law caveat: once Qiskit
+transpilation, provider queueing, optimiser evaluations, and raw-count
+analysis dominate, kernel acceleration improves workflow latency and
+reproducibility rather than becoming a full-stack performance claim.
 
 \section*{Artefact workflow}
 
@@ -228,7 +246,7 @@ Readiness JSON & Freezes backend, circuit family, depth, shots, and budget befor
 Raw-count archive & Preserves provider job IDs and count dictionaries for independent replay. \\
 Reducer script & Converts raw counts to the published statistic with no manual table editing. \\
 Digest field & Binds generated tables and manuscript rows to exact artefact content. \\
-Claim boundary & Blocks quantum-advantage or cross-provider wording unless matching evidence exists. \\
+Claim boundary & Blocks quantum advantage or cross-provider wording unless matching evidence exists. \\
 \hline
 \end{tabular}
 \end{center}

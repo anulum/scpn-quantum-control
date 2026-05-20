@@ -67,6 +67,76 @@ def test_build_entries_includes_main_scales_and_full_readout_calibration() -> No
     assert {entry.lambda_fim for entry in main} == {0.0, 4.0}
 
 
+def test_build_entries_supports_larger_n_full_readout_lane() -> None:
+    entries = fim_zne.build_entries(
+        states=["000001"],
+        depths=[2],
+        replicates=2,
+        noise_scales=[1, 3],
+        n_qubits=6,
+    )
+
+    main = [entry for entry in entries if entry.block == "main"]
+    readout = [entry for entry in entries if entry.block == "readout_calibration"]
+
+    assert len(main) == 8
+    assert len(readout) == 64
+    assert all(entry.circuit.num_qubits == 6 for entry in entries)
+    assert {entry.initial_bitstring for entry in readout} == {
+        format(index, "06b")[::-1] for index in range(64)
+    }
+
+
+def test_readiness_payload_uses_dynamic_qubit_width_and_budget() -> None:
+    args = fim_zne._parse_args(
+        [
+            "--backend",
+            "fake_backend",
+            "--n-qubits",
+            "6",
+            "--states",
+            "000001",
+            "--depths",
+            "2",
+            "--replicates",
+            "1",
+            "--noise-scales",
+            "1",
+            "--physical-qubits",
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "--max-qpu-seconds",
+            "1000",
+        ]
+    )
+    entries = fim_zne.build_entries(
+        states=args.states,
+        depths=args.depths,
+        replicates=args.replicates,
+        noise_scales=args.noise_scales,
+        n_qubits=args.n_qubits,
+    )
+    circuits = [entry.circuit for entry in entries]
+
+    payload = fim_zne._readiness_payload(
+        args=args,
+        backend=object(),
+        entries=entries,
+        isa_circuits=circuits,
+        physical_qubits=args.physical_qubits,
+    )
+
+    assert payload["status"] == "ready_for_submission"
+    assert payload["n_qubits"] == 6
+    assert payload["readout_calibration_circuits"] == 64
+    assert payload["physical_qubits"] == [0, 1, 2, 3, 4, 5]
+    assert "n=6" in payload["claim_boundary"]
+
+
 def test_summarise_synthetic_rows_reports_zne_delta() -> None:
     rows = []
     metadata_index = 0

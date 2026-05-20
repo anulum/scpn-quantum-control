@@ -613,6 +613,29 @@ the feedback law itself still needs a matched-arm falsification gate. Under
 these standards, S1 is not archive clutter: it is a claim-bound falsification
 and localisation paper for dynamic-circuit feedback on current IBM hardware.
 
+\begin{figure}[tb]
+\centering
+\fbox{\begin{minipage}{0.92\linewidth}
+\small
+\begin{tabular}{@{}p{0.25\linewidth}p{0.66\linewidth}@{}}
+Monitor layer & Mid-circuit measurement with reset-fidelity and latency
+metadata recorded before execution. \\
+Adaptive policy & Outcome-conditioned gain and polarity selected from a
+preregistered finite policy table. \\
+Control arm & Matched open-loop body with the same routed circuit family and
+shot budget. \\
+Observable gate & Binary proxy plus direct \texttt{XX}/\texttt{YY},
+cross-quadrature, and population controls. \\
+Promotion gate & Same-layout repeat and readout/ZNE lane before any
+backend-specific controller promotion. \\
+\end{tabular}
+\end{minipage}}
+\caption{Concrete redesign target implied by S1. The next controller should
+make provider constraints and direct observables part of the preregistered
+policy, rather than treating them as post-run diagnostics.}
+\label{fig:controller-redesign}
+\end{figure}
+
 \section{Conclusion}
 
 The S1 programme tests monitored feedback at the smallest scale where IBM

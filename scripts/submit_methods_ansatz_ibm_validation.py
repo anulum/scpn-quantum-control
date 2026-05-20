@@ -67,6 +67,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--reps", type=int, default=1)
     parser.add_argument("--seed", type=int, default=11)
     parser.add_argument("--maxiter", type=int, default=320)
+    parser.add_argument("--max-qpu-seconds", type=float, default=QPU_SECONDS_CEILING)
     parser.add_argument("--physical-qubits", type=int, nargs="+", default=list(DEFAULT_LAYOUT))
     parser.add_argument("--submit", action="store_true")
     parser.add_argument("--confirm-budget", action="store_true")
@@ -394,7 +395,7 @@ def _readiness_payload(
     ready = (
         len(args.physical_qubits) == args.n_qubits
         and args.shots > 0
-        and estimated_qpu_seconds <= QPU_SECONDS_CEILING
+        and estimated_qpu_seconds <= args.max_qpu_seconds
         and status.get("available") is not False
     )
     return {
@@ -407,7 +408,7 @@ def _readiness_payload(
         "n_qubits": args.n_qubits,
         "logical_to_physical_layout": list(args.physical_qubits),
         "shots": args.shots,
-        "qpu_seconds_ceiling": QPU_SECONDS_CEILING,
+        "qpu_seconds_ceiling": float(args.max_qpu_seconds),
         "estimated_qpu_seconds": estimated_qpu_seconds,
         "circuit_count": len(entries),
         "ansatz_families": list(ANSATZ_FAMILIES),
@@ -420,7 +421,7 @@ def _readiness_payload(
             for entry, circuit in zip(entries, isa_circuits, strict=True)
         ],
         "claim_boundary": (
-            "This is a four-qubit hardware validation of ansatz-family energy ordering "
+            f"This is an n={args.n_qubits} hardware validation of ansatz-family energy ordering "
             "under one IBM backend/layout, not a convergence proof, quantum advantage "
             "claim, or backend-general ansatz superiority claim."
         ),

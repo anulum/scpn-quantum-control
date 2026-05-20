@@ -41,8 +41,12 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = REPO_ROOT / "data" / "scpn_fim_hamiltonian"
 DEFAULT_CREDENTIALS_VAULT = Path("/media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md")
 DEFAULT_LAYOUTS = {
-    "ibm_marrakesh": (7, 17, 6, 8),
-    "ibm_fez": (21, 22, 23, 24),
+    ("ibm_marrakesh", 4): (7, 17, 6, 8),
+    ("ibm_fez", 4): (21, 22, 23, 24),
+    ("ibm_marrakesh", 6): (2, 3, 4, 5, 6, 7),
+    ("ibm_marrakesh", 8): (1, 2, 3, 4, 5, 6, 7, 8),
+    ("ibm_fez", 6): (21, 22, 23, 24, 25, 26),
+    ("ibm_fez", 8): (21, 22, 23, 24, 25, 26, 27, 28),
 }
 N_QUBITS = 4
 DEFAULT_STATES = ("0000", "0001", "0111", "1111")
@@ -74,6 +78,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--out-dir", type=Path, default=OUT_DIR)
     parser.add_argument("--experiment-id", default="scpn_fim_replication_zne_2026-05-20")
     parser.add_argument("--shots", type=int, default=1024)
+    parser.add_argument("--n-qubits", type=int, default=N_QUBITS)
     parser.add_argument("--states", nargs="+", default=list(DEFAULT_STATES))
     parser.add_argument("--depths", type=int, nargs="+", default=list(DEFAULT_DEPTHS))
     parser.add_argument("--replicates", type=int, default=3)
@@ -153,10 +158,10 @@ def _prep_bitstring(circuit: QuantumCircuit, bitstring: str) -> None:
             circuit.x(qubit)
 
 
-def _kuramoto_k_matrix() -> np.ndarray:
-    k_matrix = np.zeros((N_QUBITS, N_QUBITS), dtype=np.float64)
-    for i in range(N_QUBITS):
-        for j in range(N_QUBITS):
+def _kuramoto_k_matrix(n_qubits: int) -> np.ndarray:
+    k_matrix = np.zeros((n_qubits, n_qubits), dtype=np.float64)
+    for i in range(n_qubits):
+        for j in range(n_qubits):
             if i != j:
                 k_matrix[i, j] = 0.45 * np.exp(-0.3 * abs(i - j))
     return k_matrix
@@ -166,35 +171,36 @@ def build_fim_trotter_circuit(
     initial_bitstring: str,
     depth: int,
     lambda_fim: float,
+    n_qubits: int = N_QUBITS,
     t_step: float = T_STEP,
 ) -> QuantumCircuit:
-    """Build the n=4 Kuramoto-XY plus FIM digital Trotter circuit."""
-    circuit = QuantumCircuit(N_QUBITS, N_QUBITS)
+    """Build an n-qubit Kuramoto-XY plus FIM digital Trotter circuit."""
+    circuit = QuantumCircuit(n_qubits, n_qubits)
     _prep_bitstring(circuit, initial_bitstring)
-    k_matrix = _kuramoto_k_matrix()
-    omega = np.linspace(0.8, 1.2, N_QUBITS)
-    fim_theta = -4.0 * float(lambda_fim) * t_step / float(N_QUBITS)
+    k_matrix = _kuramoto_k_matrix(n_qubits)
+    omega = np.linspace(0.8, 1.2, n_qubits)
+    fim_theta = -4.0 * float(lambda_fim) * t_step / float(n_qubits)
     for _ in range(depth):
-        for qubit in range(N_QUBITS):
+        for qubit in range(n_qubits):
             circuit.rz(2.0 * omega[qubit] * t_step, qubit)
-        for i in range(N_QUBITS - 1):
+        for i in range(n_qubits - 1):
             j = i + 1
             theta = 2.0 * k_matrix[i, j] * t_step
             circuit.rxx(theta, i, j)
             circuit.ryy(theta, i, j)
         if abs(fim_theta) > 1e-15:
-            for i in range(N_QUBITS):
-                for j in range(i + 1, N_QUBITS):
+            for i in range(n_qubits):
+                for j in range(i + 1, n_qubits):
                     circuit.rzz(fim_theta, i, j)
-    circuit.measure(range(N_QUBITS), range(N_QUBITS))
+    circuit.measure(range(n_qubits), range(n_qubits))
     return circuit
 
 
-def build_readout_circuit(initial_bitstring: str) -> QuantumCircuit:
+def build_readout_circuit(initial_bitstring: str, n_qubits: int = N_QUBITS) -> QuantumCircuit:
     """Build a computational-basis readout calibration circuit."""
-    circuit = QuantumCircuit(N_QUBITS, N_QUBITS)
+    circuit = QuantumCircuit(n_qubits, n_qubits)
     _prep_bitstring(circuit, initial_bitstring)
-    circuit.measure(range(N_QUBITS), range(N_QUBITS))
+    circuit.measure(range(n_qubits), range(n_qubits))
     return circuit
 
 
@@ -238,17 +244,23 @@ def build_entries(
     depths: Sequence[int],
     replicates: int,
     noise_scales: Sequence[int],
+    n_qubits: int = N_QUBITS,
 ) -> list[FIMCircuitEntry]:
-    """Build main FIM ZNE circuits plus full 16-state readout calibration."""
+    """Build main FIM ZNE circuits plus full 2**n readout calibration."""
     scales = _validate_scales(noise_scales)
     entries: list[FIMCircuitEntry] = []
     for initial in states:
-        if len(initial) != N_QUBITS or any(bit not in {"0", "1"} for bit in initial):
+        if len(initial) != n_qubits or any(bit not in {"0", "1"} for bit in initial):
             raise ValueError(f"invalid initial bitstring: {initial}")
         for depth in depths:
             for lambda_fim in DEFAULT_LAMBDAS:
                 for replicate in range(replicates):
-                    base = build_fim_trotter_circuit(initial, int(depth), float(lambda_fim))
+                    base = build_fim_trotter_circuit(
+                        initial,
+                        int(depth),
+                        float(lambda_fim),
+                        n_qubits=n_qubits,
+                    )
                     base.name = f"fim_l{lambda_fim:g}_d{depth}_{initial}_r{replicate}"
                     for scale in scales:
                         folded = locally_fold_circuit(base, scale)
@@ -263,10 +275,10 @@ def build_entries(
                                 circuit=folded,
                             )
                         )
-    for state in computational_basis_labels(N_QUBITS):
+    for state in computational_basis_labels(n_qubits):
         # build_readout_circuit expects logical preparation order; counts are observed reversed.
         logical_state = state[::-1]
-        circuit = build_readout_circuit(logical_state)
+        circuit = build_readout_circuit(logical_state, n_qubits=n_qubits)
         circuit.name = f"fim_readout_{state}"
         entries.append(
             FIMCircuitEntry(
@@ -347,7 +359,7 @@ def _readiness_payload(
     estimated_qpu_seconds = len(rows) * 0.55
     status = _backend_status(backend)
     ready = (
-        len(physical_qubits) == N_QUBITS
+        len(physical_qubits) == args.n_qubits
         and int(args.shots) > 0
         and max(depths) <= int(args.max_depth)
         and estimated_qpu_seconds <= float(args.max_qpu_seconds)
@@ -360,6 +372,7 @@ def _readiness_payload(
         "backend": args.backend,
         "backend_status": status,
         "status": "ready_for_submission" if ready else "blocked",
+        "n_qubits": int(args.n_qubits),
         "physical_qubits": list(physical_qubits),
         "shots": int(args.shots),
         "states": list(args.states),
@@ -379,12 +392,34 @@ def _readiness_payload(
         "max_two_qubit_gates": max(int(row["transpiled_two_qubit_gates"]) for row in rows),
         "metadata_rows": rows,
         "claim_boundary": (
-            "Second-backend FIM replication plus local-folding ZNE stress lane. "
+            f"n={args.n_qubits} second-backend FIM replication plus local-folding ZNE stress lane. "
             "It tests whether the lambda=4 versus lambda=0 leakage/retention sign "
             "survives another IBM backend/layout and noise-scale extrapolation. "
             "It is not backend-general protection evidence."
         ),
     }
+
+
+def _default_states(n_qubits: int) -> tuple[str, str, str, str]:
+    return (
+        "0" * n_qubits,
+        "0" * (n_qubits - 1) + "1",
+        "0" + "1" * (n_qubits - 1),
+        "1" * n_qubits,
+    )
+
+
+def _resolve_states(args: argparse.Namespace) -> tuple[str, ...]:
+    states = tuple(str(state) for state in args.states)
+    if int(args.n_qubits) != N_QUBITS and states == DEFAULT_STATES:
+        return _default_states(int(args.n_qubits))
+    return states
+
+
+def _resolve_physical_qubits(args: argparse.Namespace) -> tuple[int, ...]:
+    if args.physical_qubits:
+        return tuple(int(qubit) for qubit in args.physical_qubits)
+    return tuple(DEFAULT_LAYOUTS.get((args.backend, int(args.n_qubits)), ()))
 
 
 def _job_status(job: Any) -> str:
@@ -397,13 +432,15 @@ def submit_lane(args: argparse.Namespace) -> int:
     if args.submit and not args.confirm_budget:
         print("ERROR: --submit requires --confirm-budget", file=sys.stderr)
         return 2
-    physical_qubits = tuple(args.physical_qubits or DEFAULT_LAYOUTS.get(args.backend, ()))
+    physical_qubits = _resolve_physical_qubits(args)
     backend, _service = _load_backend(args.backend, args.instance, args.credentials_vault)
+    states = _resolve_states(args)
     entries = build_entries(
-        states=args.states,
+        states=states,
         depths=args.depths,
         replicates=args.replicates,
         noise_scales=args.noise_scales,
+        n_qubits=int(args.n_qubits),
     )
     isa_circuits = _transpile_entries(backend, entries, physical_qubits)
     readiness = _readiness_payload(
@@ -444,6 +481,7 @@ def submit_lane(args: argparse.Namespace) -> int:
         "readiness_json": str(readiness_path.relative_to(REPO_ROOT)),
         "readiness_sha256": readiness_sha,
         "physical_qubits": list(physical_qubits),
+        "n_qubits": int(args.n_qubits),
         "shots": int(args.shots),
         "metadata_rows": readiness["metadata_rows"],
         "claim_boundary": readiness["claim_boundary"],
@@ -516,8 +554,10 @@ def _raw_parity_leakage(counts: Mapping[str, int], target: str) -> float:
     return _raw_probability(counts, lambda bitstring: bitstring.count("1") % 2 != target_p)
 
 
-def _calibration_counts(rows: Sequence[Mapping[str, Any]]) -> dict[str, dict[str, int]]:
-    labels = set(computational_basis_labels(N_QUBITS))
+def _calibration_counts(
+    rows: Sequence[Mapping[str, Any]], n_qubits: int = N_QUBITS
+) -> dict[str, dict[str, int]]:
+    labels = set(computational_basis_labels(n_qubits))
     calibrations: dict[str, dict[str, int]] = {}
     for row in rows:
         metadata = row["metadata"]
@@ -530,8 +570,10 @@ def _calibration_counts(rows: Sequence[Mapping[str, Any]]) -> dict[str, dict[str
     return calibrations
 
 
-def _metric_rows(rows: Sequence[Mapping[str, Any]]) -> tuple[list[dict[str, Any]], Any]:
-    matrix = build_readout_confusion_matrix(_calibration_counts(rows), N_QUBITS)
+def _metric_rows(
+    rows: Sequence[Mapping[str, Any]], n_qubits: int = N_QUBITS
+) -> tuple[list[dict[str, Any]], Any]:
+    matrix = build_readout_confusion_matrix(_calibration_counts(rows, n_qubits), n_qubits)
     metrics: list[dict[str, Any]] = []
     for row in rows:
         metadata = row["metadata"]
@@ -654,7 +696,8 @@ def _channel_rows(metrics: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
 
 
 def _summarise(raw_payload: Mapping[str, Any]) -> dict[str, Any]:
-    metrics, matrix = _metric_rows(raw_payload["result_rows"])
+    n_qubits = int(raw_payload.get("n_qubits", N_QUBITS))
+    metrics, matrix = _metric_rows(raw_payload["result_rows"], n_qubits)
     channels = _channel_rows(metrics)
 
     def _mean_abs(observable: str, key: str) -> float:
@@ -665,6 +708,7 @@ def _summarise(raw_payload: Mapping[str, Any]) -> dict[str, Any]:
         "schema": "scpn_fim_replication_zne_analysis_v1",
         "experiment_id": raw_payload["experiment_id"],
         "backend": raw_payload["backend"],
+        "n_qubits": n_qubits,
         "job_ids": raw_payload["job_ids"],
         "readout_model": {
             "n_qubits": matrix.n_qubits,
@@ -716,6 +760,7 @@ def retrieve_lane(args: argparse.Namespace) -> int:
         "submission_json": str(submission_path.relative_to(REPO_ROOT)),
         "submission_sha256": _sha256(submission_path),
         "physical_qubits": submission["physical_qubits"],
+        "n_qubits": int(submission.get("n_qubits", N_QUBITS)),
         "shots": submission["shots"],
         "result_rows": rows,
     }

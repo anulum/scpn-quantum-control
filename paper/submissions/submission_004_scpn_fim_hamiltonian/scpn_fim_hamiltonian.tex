@@ -66,10 +66,16 @@ negative conclusion: magnetisation leakage still increases by $0.0917$
 ($p=1.19\times10^{-48}$). We then executed a dedicated replication/ZNE lane
 on \texttt{ibm\_marrakesh} and \texttt{ibm\_fez}. After full readout
 mitigation and linear ZNE, the mean $\lambda=4$ minus $\lambda=0$
-magnetisation-leakage deltas remained positive: $+0.0599$ on Marrakesh and
-$+0.1937$ on Fez. Thus the tested digital Trotter implementation falsifies the
-simple hypothesis that this FIM term acts as a hardware coherence-protection
-mechanism. The paper is deliberately bounded: the artefacts support exact
+magnetisation-leakage deltas remained positive in the $n=4$ replication:
+$+0.0599$ on Marrakesh and $+0.1937$ on Fez. Larger $n=6,8$ Fez/Marrakesh
+replication/ZNE lanes were then executed. They preserve the falsification
+boundary rather than promoting FIM protection: all four larger lanes show
+positive mean raw scale-1 magnetisation-leakage deltas, with linear-ZNE deltas
+of $0.4021$, $0.1480$, $0.2541$, and $0.4203$ for Fez $n=6$, Fez $n=8$,
+Marrakesh $n=6$, and Marrakesh $n=8$, respectively. Thus the tested digital
+Trotter implementation falsifies the simple hypothesis that this FIM term acts
+as a hardware coherence-protection mechanism. The paper is deliberately
+bounded: the artefacts support exact
 small-system Hamiltonian findings and a backend/circuit-specific negative
 hardware result on IBM Heron devices. They do not demonstrate
 hardware coherence improvement, quantum advantage, strict many-body
@@ -147,6 +153,13 @@ $M=n-2k$, and the FIM shift is
 %
 Thus Eq.~\eqref{eq:fim} separates sectors by a known collective diagonal
 contribution.
+
+This exact-sector effect is the reason the hardware test is scientifically
+sharp. If the widened spectral gaps and magnetisation-sector shifts translated
+directly into a NISQ protection mechanism, the $\lambda>0$ circuits would be
+expected to suppress leakage or improve state retention relative to the
+$\lambda=0$ references. The experiments below test precisely that expected
+hardware consequence and falsify it for the direct Trotter implementation.
 
 The same identity also explains the digital hardware burden. Because
 %
@@ -461,16 +474,51 @@ direct digital FIM construction. It makes the claim boundary stronger:
 the observed failure is no longer a single-backend Kingston-only artefact,
 although it remains IBM-Heron and circuit-family specific.
 
+Finally, we executed larger-width replication/ZNE lanes at $n=6$ and $n=8$ on
+the same two Heron backends. These lanes use the same $\lambda=4$ versus
+$\lambda=0$ leakage discriminator, local-folding noise scales $\{1,3,5\}$, and
+full $2^n$ computational-basis readout calibration. Table~\ref{tab:largerfim}
+summarises the mean magnetisation-leakage deltas. The larger-width evidence
+does not reverse the negative hardware conclusion: every scale-1 mean delta is
+positive, and linear ZNE leaves the deltas positive at both widths and both
+backends. The values are backend- and width-dependent, so this is not a
+universal leakage law; it is a stronger falsification of the narrow claim that
+the tested FIM digital circuit family protects the measured magnetisation
+sector on IBM Heron hardware.
+
+\begin{table}[tb]
+\centering
+\small
+\begin{tabular}{llrrr}
+\toprule
+Backend & $n$ & Raw scale-1 & Raw linear ZNE & Mitigated linear ZNE \\
+\midrule
+\texttt{ibm\_fez} & 6 & 0.4091 & 0.4021 & 0.4257 \\
+\texttt{ibm\_fez} & 8 & 0.1479 & 0.1480 & 0.1539 \\
+\texttt{ibm\_marrakesh} & 6 & 0.2474 & 0.2541 & 0.2672 \\
+\texttt{ibm\_marrakesh} & 8 & 0.4231 & 0.4203 & 0.4483 \\
+\bottomrule
+\end{tabular}
+\caption{Larger-width FIM replication/ZNE lanes submitted on 2026-05-20.
+Values are mean absolute $\lambda=4$ minus $\lambda=0$ magnetisation-leakage
+deltas from the retrieved raw-count artefacts. The table addresses the
+small-system limitation, but it remains an IBM-Heron circuit-family result
+rather than evidence for backend-general protection.}
+\label{tab:largerfim}
+\end{table}
+
 \section{Limitations}
 
-The study is limited to exact dense diagonalisation at $n=4,6,8$ and an
-$n=4$ VQE scoring grid. The level-spacing and entropy results are
+The study is limited to exact dense diagonalisation at $n=4,6,8$, an
+$n=4$ VQE scoring grid, and IBM Heron hardware lanes at $n=4,6,8$. The
+level-spacing and entropy results are
 localisation-like diagnostics only. They do not prove strict many-body
 localisation. The VQE result uses a small optimiser budget and should be treated
 as an ansatz-design signal, not a theorem. The IBM hardware result is
 multi-backend within IBM Heron devices but still circuit-family specific and
 IBM-only. Full readout-matrix mitigation is available for the repeated and
-replication FIM follow-ups because they include all 16 readout baseline
+replication FIM follow-ups because they include complete computational-basis
+readout baseline
 circuits, but this does not correct gate errors, Trotter overhead, layout
 routing, or calibration drift. ZNE is also not a universal correction:
 it is a stress test for monotone noise-scaling behaviour and can fail when

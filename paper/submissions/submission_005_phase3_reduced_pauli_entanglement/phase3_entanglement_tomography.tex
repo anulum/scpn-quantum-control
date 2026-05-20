@@ -66,7 +66,16 @@ simple monotone gate noise. A third-backend \texttt{ibm\_kingston} ZNE
 replication on qubits $[141,142,143,144]$ gives the same qualitative pattern:
 the four DLA transverse channels move farther from exact under linear ZNE,
 while the FIM control improves. A same-layout Kingston statistical repeat
-preserves this DLA-worsens/FIM-improves separation. The result is a
+preserves this DLA-worsens/FIM-improves separation. Larger $n=6,8$
+reduced-Pauli/ZNE lanes on Fez and Marrakesh then address the ``all hardware is
+$n=4$'' limitation with 36 reduced-Pauli channels per lane. A Kingston
+larger-width replication adds the third backend, and a Marrakesh $n=8$ repeat
+checks the largest readout-sensitivity effect. The readout-mitigated
+linear-ZNE mean absolute deviations range from 0.0980 to 0.1577 on Fez, from
+0.0604 to 0.0688 on Marrakesh after a large readout-sensitivity correction,
+and from 0.1504 to 1.6735 on Kingston, where the $n=6$ full-readout assignment
+matrix is singular and therefore reported with a pseudo-inverse sensitivity
+boundary. The result is a
 mechanism-boundary measurement:
 it shows structured reduced-Pauli distortions accompanying the small-system
 DLA/FIM hardware programme, but does not claim scalable tomography, quantum
@@ -399,6 +408,58 @@ transverse channels worsen under linear ZNE, while the FIM control improves.}
 \label{tab:zne-kingston}
 \end{table}
 
+\subsection{Larger-width reduced-Pauli stress lanes}
+
+To avoid leaving the hardware package entirely at $n=4$, we executed a bounded
+larger-width extension on \texttt{ibm\_fez} and \texttt{ibm\_marrakesh} at
+$n=6$ and $n=8$. The larger lanes retain the reduced-Pauli philosophy rather
+than attempting scalable tomography: six source families, left/middle/right
+transverse edge \texttt{XX}/\texttt{YY} observables, local-folding ZNE scales
+$1,3,5$, three repetitions per channel and scale, and complete $2^n$
+computational-basis readout calibration. The submitted jobs were
+\texttt{d870qa8p0eas73dlj6kg}, \texttt{d870qf9789is73909nu0},
+\texttt{d870qj9789is73909o2g}, and \texttt{d870qo0p0eas73dlj75g}. A
+dedicated dynamic-width reducer generated exact reference rows, raw scale rows,
+full-readout-mitigated rows, and linear/quadratic ZNE channel summaries.
+
+Table~\ref{tab:phase3large} summarises the aggregate result. The larger-width
+lanes are not a simple monotone extrapolation of the $n=4$ story. Fez remains
+moderate in raw and mitigated deviation. Marrakesh shows much larger raw
+scale-1 and raw linear-ZNE deviations but a strong reduction after full
+readout inversion, and the same pattern is reproduced in the Marrakesh $n=8$
+repeat. Kingston provides the third larger-width backend: the $n=8$ lane is
+finite after full readout inversion, while the $n=6$ lane has a singular
+full-readout assignment matrix and is therefore reduced with a pseudo-inverse
+sensitivity boundary. This keeps the claim boundary honest: the $n=6,8$ lanes
+show that reduced-Pauli structure can be measured beyond four qubits with
+archived raw counts and complete readout calibration, but they also show that
+larger-width conclusions are readout-sensitive and backend/layout dependent.
+
+\begin{table}[tb]
+\centering
+\small
+\begin{tabular}{llrrr}
+\toprule
+Backend & $n$ & Scale-1 mean abs. & Linear ZNE mean abs. & Mitigated linear mean abs. \\
+\midrule
+\texttt{ibm\_fez} & 6 & 0.1697 & 0.1688 & 0.1577 \\
+\texttt{ibm\_fez} & 8 & 0.1348 & 0.1395 & 0.0980 \\
+\texttt{ibm\_marrakesh} & 6 & 0.3306 & 0.3298 & 0.0688 \\
+\texttt{ibm\_marrakesh} & 8 & 0.3788 & 0.3795 & 0.0604 \\
+\texttt{ibm\_marrakesh} & 8 repeat & 0.3917 & 0.3906 & 0.0609 \\
+\texttt{ibm\_kingston} & 6 & 0.2897 & 0.2916 & 1.6735 \\
+\texttt{ibm\_kingston} & 8 & 0.4710 & 0.4704 & 0.1504 \\
+\bottomrule
+\end{tabular}
+\caption{Phase~3 larger-width reduced-Pauli/ZNE stress lanes. Each row
+summarises 36 reduced-Pauli channels from the retrieved 2026-05-20 IBM
+raw-count artefacts. The mitigated column applies full correlated
+computational-basis readout inversion before the linear ZNE fit, except for
+the Kingston $n=6$ row where the readout assignment matrix was singular and a
+pseudo-inverse sensitivity replay is reported.}
+\label{tab:phase3large}
+\end{table}
+
 \section{Discussion}
 
 The main result is not that the hardware reproduces the exact reduced-Pauli
@@ -408,6 +469,27 @@ correlator channels. This turns the earlier leakage/retention observations
 into a sharper hardware-mechanism question: the same circuit families that show
 sector-sensitive survival behaviour also show measurable correlator-level
 distortions.
+
+\begin{figure}[tb]
+\centering
+\fbox{\begin{minipage}{0.92\linewidth}
+\small
+\begin{tabular}{@{}p{0.28\linewidth}p{0.62\linewidth}@{}}
+DLA odd channels & Dominant transverse edge deviations in
+\texttt{XX}/\texttt{YY} rows. \\
+DLA even channels & Opposite-sign shallow transverse structure, not a scalar
+decoherence rescaling. \\
+FIM control & Smaller but persistent $\lambda_{\mathrm{fim}}=4$ distortion,
+with partial ZNE improvement. \\
+Readout boundary & Marrakesh larger-width rows are strongly readout-sensitive;
+Kingston $n=6$ requires a pseudo-inverse replay. \\
+\end{tabular}
+\end{minipage}}
+\caption{Reduced-Pauli channel map distilled from the detailed heatmap and
+tables. The useful signal is localisation by channel family and mitigation
+response, not a claim of full-state tomography.}
+\label{fig:channel-map}
+\end{figure}
 
 The DLA circuits dominate the strongest deviations. The sign structure is
 particularly important: odd-sector circuits show large positive transverse
@@ -527,6 +609,22 @@ reconstruction, or claims about unmeasured circuits and depths. The
 multi-backend robustness for the five-channel stress-test pattern, not
 backend-general entanglement dynamics.
 
+The larger-width $n=6,8$ lanes further show that reduced-Pauli stress tests can
+be executed beyond four qubits, including a third-backend Kingston
+replication. The Marrakesh larger-width readout correction is large, and the
+Kingston $n=6$ calibration matrix is singular. These rows must therefore be
+treated as readout-sensitive stress evidence rather than a clean
+backend-general scaling claim.
+
+The Kingston $n=6$ singular matrix is itself informative about the boundary of
+full correlated mitigation at larger width. The calibration block contains
+$2^6$ prepared computational-basis states, but finite shots, classical
+readout-key collisions, and near-degenerate assignment columns can make the
+empirical matrix rank deficient. In that case direct inversion would turn a
+calibration artefact into a numerical artefact, so the reducer reports a
+pseudo-inverse sensitivity replay and the manuscript does not treat that row
+as ordinary full-readout mitigation.
+
 At the time of execution, authenticated live QPU access for this paper was
 limited to IBM Quantum hardware and to the reported Heron backends. The
 repository contains provider-neutral execution and artefact-packaging surfaces
@@ -570,7 +668,18 @@ The relevant commands are:
   \item Kingston same-layout repeat reducer summary:
     \path{data/phase3_entanglement_tomography/entanglement_zne_summary_2026-05-20_ibm_kingston_zne_repeat.json};
   \item ZNE reducer:
-    \path{scripts/analyse_phase3_entanglement_zne.py}.
+    \path{scripts/analyse_phase3_entanglement_zne.py};
+  \item larger-width Phase~3 analysis summaries:
+    \path{data/phase3_entanglement_tomography/phase3_large_system_analysis_20260520T195233Z_ibm_fez_n6.json},
+    \path{data/phase3_entanglement_tomography/phase3_large_system_analysis_20260520T195245Z_ibm_fez_n8.json},
+    \path{data/phase3_entanglement_tomography/phase3_large_system_analysis_20260520T195300Z_ibm_marrakesh_n6.json}, and
+    \path{data/phase3_entanglement_tomography/phase3_large_system_analysis_20260520T195312Z_ibm_marrakesh_n8.json};
+  \item additional larger-width variant summaries:
+    \path{data/phase3_entanglement_tomography/phase3_large_system_analysis_20260520T201613Z_ibm_kingston_n6.json},
+    \path{data/phase3_entanglement_tomography/phase3_large_system_analysis_20260520T201657Z_ibm_marrakesh_n8.json}, and
+    \path{data/phase3_entanglement_tomography/phase3_large_system_analysis_20260520T201817Z_ibm_kingston_n8.json};
+  \item larger-width retrieval/reducer:
+    \path{scripts/retrieve_phase3_large_system_ibm.py}.
 \end{itemize}
 
 \section{Conclusion}
@@ -595,7 +704,8 @@ same-layout statistical repeat preserves it again as a drift-robustness check.
 The present paper therefore remains narrow but stronger: it reports structured
 mechanism-boundary evidence that survives readout replay, second-backend
 replication, pinned-layout repetition, third-backend ZNE replication, and a
-small controlled noise-scaling stress test. It still avoids scalable
+small controlled noise-scaling stress test, plus larger-width $n=6,8$
+reduced-Pauli/ZNE lanes. It still avoids scalable
 tomography, backend-general, full-causal-entanglement, or advantage claims.
 
 \bibliographystyle{apsrev4-2}

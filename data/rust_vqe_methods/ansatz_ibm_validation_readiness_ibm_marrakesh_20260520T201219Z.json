@@ -1,0 +1,4607 @@
+{
+  "schema": "scpn_rust_vqe_methods_ansatz_ibm_readiness_v1",
+  "experiment_id": "rust_vqe_methods_ansatz_validation_n8_seed23_marrakesh_2026-05-20",
+  "timestamp_utc": "20260520T201219Z",
+  "backend": "ibm_marrakesh",
+  "backend_status": {
+    "available": true,
+    "pending_jobs": 0,
+    "status_msg": "active"
+  },
+  "status": "ready_for_submission",
+  "n_qubits": 8,
+  "logical_to_physical_layout": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "shots": 1024,
+  "qpu_seconds_ceiling": 400.0,
+  "estimated_qpu_seconds": 265.0,
+  "circuit_count": 265,
+  "ansatz_families": [
+    "knm_informed",
+    "two_local",
+    "efficient_su2"
+  ],
+  "measurement_bases": [
+    "Z",
+    "X",
+    "Y"
+  ],
+  "readout_calibration_states": 256,
+  "term_groups": {
+    "X": [
+      {
+        "label": "IIIIIIXX",
+        "coefficient": -0.302
+      },
+      {
+        "label": "IIIIIXIX",
+        "coefficient": -0.24696523624231187
+      },
+      {
+        "label": "IIIIXIIX",
+        "coefficient": -0.18295634688326962
+      },
+      {
+        "label": "IIIXIIIX",
+        "coefficient": -0.13553739536049095
+      },
+      {
+        "label": "IIXIIIIX",
+        "coefficient": -0.10040857206679342
+      },
+      {
+        "label": "IXIIIIIX",
+        "coefficient": -0.07438449969971396
+      },
+      {
+        "label": "XIIIIIIX",
+        "coefficient": -0.05510539271384186
+      },
+      {
+        "label": "IIIIIXXI",
+        "coefficient": -0.201
+      },
+      {
+        "label": "IIIIXIXI",
+        "coefficient": -0.24696523624231187
+      },
+      {
+        "label": "IIIXIIXI",
+        "coefficient": -0.18295634688326962
+      },
+      {
+        "label": "IIXIIIXI",
+        "coefficient": -0.13553739536049095
+      },
+      {
+        "label": "IXIIIIXI",
+        "coefficient": -0.10040857206679342
+      },
+      {
+        "label": "XIIIIIXI",
+        "coefficient": -0.07438449969971396
+      },
+      {
+        "label": "IIIIXXII",
+        "coefficient": -0.252
+      },
+      {
+        "label": "IIIXIXII",
+        "coefficient": -0.24696523624231187
+      },
+      {
+        "label": "IIXIIXII",
+        "coefficient": -0.18295634688326962
+      },
+      {
+        "label": "IXIIIXII",
+        "coefficient": -0.13553739536049095
+      },
+      {
+        "label": "XIIIIXII",
+        "coefficient": -0.10040857206679342
+      },
+      {
+        "label": "IIIXXIII",
+        "coefficient": -0.154
+      },
+      {
+        "label": "IIXIXIII",
+        "coefficient": -0.24696523624231187
+      },
+      {
+        "label": "IXIIXIII",
+        "coefficient": -0.18295634688326962
+      },
+      {
+        "label": "XIIIXIII",
+        "coefficient": -0.13553739536049095
+      },
+      {
+        "label": "IIXXIIII",
+        "coefficient": -0.333368199306773
+      },
+      {
+        "label": "IXIXIIII",
+        "coefficient": -0.24696523624231187
+      },
+      {
+        "label": "XIIXIIII",
+        "coefficient": -0.18295634688326962
+      },
+      {
+        "label": "IXXIIIII",
+        "coefficient": -0.333368199306773
+      },
+      {
+        "label": "XIXIIIII",
+        "coefficient": -0.24696523624231187
+      },
+      {
+        "label": "XXIIIIII",
+        "coefficient": -0.333368199306773
+      }
+    ],
+    "Y": [
+      {
+        "label": "IIIIIIYY",
+        "coefficient": -0.302
+      },
+      {
+        "label": "IIIIIYIY",
+        "coefficient": -0.24696523624231187
+      },
+      {
+        "label": "IIIIYIIY",
+        "coefficient": -0.18295634688326962
+      },
+      {
+        "label": "IIIYIIIY",
+        "coefficient": -0.13553739536049095
+      },
+      {
+        "label": "IIYIIIIY",
+        "coefficient": -0.10040857206679342
+      },
+      {
+        "label": "IYIIIIIY",
+        "coefficient": -0.07438449969971396
+      },
+      {
+        "label": "YIIIIIIY",
+        "coefficient": -0.05510539271384186
+      },
+      {
+        "label": "IIIIIYYI",
+        "coefficient": -0.201
+      },
+      {
+        "label": "IIIIYIYI",
+        "coefficient": -0.24696523624231187
+      },
+      {
+        "label": "IIIYIIYI",
+        "coefficient": -0.18295634688326962
+      },
+      {
+        "label": "IIYIIIYI",
+        "coefficient": -0.13553739536049095
+      },
+      {
+        "label": "IYIIIIYI",
+        "coefficient": -0.10040857206679342
+      },
+      {
+        "label": "YIIIIIYI",
+        "coefficient": -0.07438449969971396
+      },
+      {
+        "label": "IIIIYYII",
+        "coefficient": -0.252
+      },
+      {
+        "label": "IIIYIYII",
+        "coefficient": -0.24696523624231187
+      },
+      {
+        "label": "IIYIIYII",
+        "coefficient": -0.18295634688326962
+      },
+      {
+        "label": "IYIIIYII",
+        "coefficient": -0.13553739536049095
+      },
+      {
+        "label": "YIIIIYII",
+        "coefficient": -0.10040857206679342
+      },
+      {
+        "label": "IIIYYIII",
+        "coefficient": -0.154
+      },
+      {
+        "label": "IIYIYIII",
+        "coefficient": -0.24696523624231187
+      },
+      {
+        "label": "IYIIYIII",
+        "coefficient": -0.18295634688326962
+      },
+      {
+        "label": "YIIIYIII",
+        "coefficient": -0.13553739536049095
+      },
+      {
+        "label": "IIYYIIII",
+        "coefficient": -0.333368199306773
+      },
+      {
+        "label": "IYIYIIII",
+        "coefficient": -0.24696523624231187
+      },
+      {
+        "label": "YIIYIIII",
+        "coefficient": -0.18295634688326962
+      },
+      {
+        "label": "IYYIIIII",
+        "coefficient": -0.333368199306773
+      },
+      {
+        "label": "YIYIIIII",
+        "coefficient": -0.24696523624231187
+      },
+      {
+        "label": "YYIIIIII",
+        "coefficient": -0.333368199306773
+      }
+    ],
+    "Z": [
+      {
+        "label": "IIIIIIIZ",
+        "coefficient": -1.329
+      },
+      {
+        "label": "IIIIIIZI",
+        "coefficient": -2.61
+      },
+      {
+        "label": "IIIIIZII",
+        "coefficient": -0.844
+      },
+      {
+        "label": "IIIIZIII",
+        "coefficient": -1.52
+      },
+      {
+        "label": "IIIZIIII",
+        "coefficient": -0.71
+      },
+      {
+        "label": "IIZIIIII",
+        "coefficient": -3.78
+      },
+      {
+        "label": "IZIIIIII",
+        "coefficient": -1.055
+      },
+      {
+        "label": "ZIIIIIII",
+        "coefficient": -0.625
+      }
+    ]
+  },
+  "local_vqe_summaries": [
+    {
+      "ansatz": "knm_informed",
+      "n_qubits": 8,
+      "reps": 1,
+      "seed": 23,
+      "maxiter": 320,
+      "parameters": 16,
+      "exact_energy": -12.755724606401255,
+      "final_energy": -12.481313480447106,
+      "best_energy": -12.481313480447106,
+      "absolute_error": 0.27441112595414907,
+      "relative_error_pct": 2.1512782254364464,
+      "n_evals": 320,
+      "optimizer_success": false,
+      "elapsed_ms": 1233.976540970616,
+      "optimal_params": [
+        -0.12265096713417614,
+        -0.06017577353578979,
+        0.2044552308418985,
+        0.11540377448628951,
+        -0.23248362344331808,
+        -0.07309511017340146,
+        0.2001777702080521,
+        0.24008233978628704,
+        2.385164411448125,
+        2.15575072091726,
+        -1.2047329700202303,
+        -1.2137403766482897,
+        -3.9404139645884775,
+        2.0562140512798877,
+        -1.2873742693919448,
+        -1.301737469156612
+      ],
+      "trace": [
+        {
+          "eval": 1,
+          "energy": 1.92233538230649,
+          "best_energy": 1.92233538230649,
+          "absolute_error": 14.678059988707744,
+          "relative_error_pct": 115.07037382526897
+        },
+        {
+          "eval": 5,
+          "energy": -0.4114426145398606,
+          "best_energy": -0.4114426145398606,
+          "absolute_error": 12.344281991861395,
+          "relative_error_pct": 96.77444733846492
+        },
+        {
+          "eval": 10,
+          "energy": -1.8859194280630713,
+          "best_energy": -1.8859194280630713,
+          "absolute_error": 10.869805178338185,
+          "relative_error_pct": 85.21511332161677
+        },
+        {
+          "eval": 20,
+          "energy": -1.9057485034923218,
+          "best_energy": -8.261718002921253,
+          "absolute_error": 4.494006603480003,
+          "relative_error_pct": 35.23129216214622
+        },
+        {
+          "eval": 40,
+          "energy": -12.08125444599175,
+          "best_energy": -12.086781132474286,
+          "absolute_error": 0.6689434739269693,
+          "relative_error_pct": 5.244260867714804
+        },
+        {
+          "eval": 80,
+          "energy": -12.433802040888393,
+          "best_energy": -12.433802040888393,
+          "absolute_error": 0.32192256551286214,
+          "relative_error_pct": 2.523749731562176
+        },
+        {
+          "eval": 160,
+          "energy": -12.471361724674658,
+          "best_energy": -12.471403532193694,
+          "absolute_error": 0.28432107420756125,
+          "relative_error_pct": 2.228968427751092
+        },
+        {
+          "eval": 320,
+          "energy": -12.481185165419953,
+          "best_energy": -12.481313480447106,
+          "absolute_error": 0.27441112595414907,
+          "relative_error_pct": 2.1512782254364464
+        }
+      ]
+    },
+    {
+      "ansatz": "two_local",
+      "n_qubits": 8,
+      "reps": 1,
+      "seed": 23,
+      "maxiter": 320,
+      "parameters": 32,
+      "exact_energy": -12.755724606401255,
+      "final_energy": -12.471782468708893,
+      "best_energy": -12.471782468708893,
+      "absolute_error": 0.2839421376923621,
+      "relative_error_pct": 2.2259977104700917,
+      "n_evals": 320,
+      "optimizer_success": false,
+      "elapsed_ms": 1481.416389986407,
+      "optimal_params": [
+        0.012516314731868568,
+        0.004357804902858699,
+        -0.01394725686636166,
+        -3.127327905334841,
+        3.1259153874942363,
+        3.1476116394783205,
+        -1.4925252695783058,
+        -3.129172114067327,
+        1.6850964867241893,
+        -0.09620499044452585,
+        -1.1432446166691068,
+        -0.04860835167485527,
+        -2.6881472653918315,
+        1.355353821838421,
+        -0.019709224094138666,
+        0.8617325034115884,
+        0.0005807323833464653,
+        0.008628391094185608,
+        0.008042267793523575,
+        3.1260984381947687,
+        -3.130888770286416,
+        3.140399584295982,
+        1.4816156962989633,
+        3.153361612605685,
+        2.9869592601164947,
+        -2.422937413294884,
+        2.896016825058544,
+        0.873289837057818,
+        1.4357810156649995,
+        3.36659338611595,
+        0.4123686172742605,
+        2.444741095867574
+      ],
+      "trace": [
+        {
+          "eval": 1,
+          "energy": 1.5432107693994515,
+          "best_energy": 1.5432107693994515,
+          "absolute_error": 14.298935375800706,
+          "relative_error_pct": 112.09818193021364
+        },
+        {
+          "eval": 5,
+          "energy": 0.8065303853163642,
+          "best_energy": 0.8065303853163642,
+          "absolute_error": 13.56225499171762,
+          "relative_error_pct": 106.32288960606455
+        },
+        {
+          "eval": 10,
+          "energy": -0.5432644845383405,
+          "best_energy": -0.8007821141724774,
+          "absolute_error": 11.954942492228778,
+          "relative_error_pct": 93.72217464015633
+        },
+        {
+          "eval": 20,
+          "energy": -0.7326905306645881,
+          "best_energy": -1.1514974899093,
+          "absolute_error": 11.604227116491955,
+          "relative_error_pct": 90.97270029386304
+        },
+        {
+          "eval": 40,
+          "energy": -5.683504800423027,
+          "best_energy": -6.410662062771892,
+          "absolute_error": 6.345062543629363,
+          "relative_error_pct": 49.74286243562515
+        },
+        {
+          "eval": 80,
+          "energy": -11.279409707243115,
+          "best_energy": -11.291357877766137,
+          "absolute_error": 1.4643667286351185,
+          "relative_error_pct": 11.480074819898899
+        },
+        {
+          "eval": 160,
+          "energy": -12.26860429366755,
+          "best_energy": -12.26860429366755,
+          "absolute_error": 0.4871203127337047,
+          "relative_error_pct": 3.8188368576823244
+        },
+        {
+          "eval": 320,
+          "energy": -12.471677670497815,
+          "best_energy": -12.471782468708893,
+          "absolute_error": 0.2839421376923621,
+          "relative_error_pct": 2.2259977104700917
+        }
+      ]
+    },
+    {
+      "ansatz": "efficient_su2",
+      "n_qubits": 8,
+      "reps": 1,
+      "seed": 23,
+      "maxiter": 320,
+      "parameters": 32,
+      "exact_energy": -12.755724606401255,
+      "final_energy": -12.389014615004879,
+      "best_energy": -12.389014615004879,
+      "absolute_error": 0.3667099913963767,
+      "relative_error_pct": 2.8748660128045507,
+      "n_evals": 320,
+      "optimizer_success": false,
+      "elapsed_ms": 1277.033248974476,
+      "optimal_params": [
+        -0.024557385264755236,
+        0.02239083019033343,
+        -3.109377680250448,
+        -0.024681241463325846,
+        3.0737531760924903,
+        3.1526452975350683,
+        -3.345542713725229,
+        -1.3275065893235047,
+        -0.035187609673220446,
+        -0.23322141100060284,
+        -1.6770236519107278,
+        -2.763396876557028,
+        0.5957335832057937,
+        0.2829400554742832,
+        -0.47073747081298334,
+        -0.23664211176782943,
+        0.07668601429580063,
+        -0.03170019869811836,
+        2.6615737464877496,
+        2.9313530626029967,
+        -2.70601983234745,
+        -0.0026264915047420553,
+        0.29196079765525756,
+        2.06482217996682,
+        1.9860363943775494,
+        -0.9731836303021815,
+        3.998177772159468,
+        -2.7153295168759044,
+        1.1480244914519646,
+        3.1519403723391624,
+        1.534419091534234,
+        1.458625198882721
+      ],
+      "trace": [
+        {
+          "eval": 1,
+          "energy": -0.6259326701376414,
+          "best_energy": -0.6259326701376414,
+          "absolute_error": 12.129791936263613,
+          "relative_error_pct": 95.09292737612469
+        },
+        {
+          "eval": 5,
+          "energy": -0.1193015907239178,
+          "best_energy": -0.6406406696098391,
+          "absolute_error": 12.115083936791416,
+          "relative_error_pct": 94.97762228820507
+        },
+        {
+          "eval": 10,
+          "energy": -2.117685438193689,
+          "best_energy": -2.4799756542486033,
+          "absolute_error": 10.275748952152652,
+          "relative_error_pct": 80.55793982096425
+        },
+        {
+          "eval": 20,
+          "energy": -2.557804578308954,
+          "best_energy": -2.736716176207301,
+          "absolute_error": 10.019008430193955,
+          "relative_error_pct": 78.54519236928395
+        },
+        {
+          "eval": 40,
+          "energy": -4.943725651172965,
+          "best_energy": -5.2856645744919994,
+          "absolute_error": 7.470060031909256,
+          "relative_error_pct": 58.56241226908055
+        },
+        {
+          "eval": 80,
+          "energy": -6.720717578054468,
+          "best_energy": -6.720717578054468,
+          "absolute_error": 6.035007028346787,
+          "relative_error_pct": 47.312145837001026
+        },
+        {
+          "eval": 160,
+          "energy": -9.132073778796224,
+          "best_energy": -9.132073778796224,
+          "absolute_error": 3.623650827605031,
+          "relative_error_pct": 28.408035916568476
+        },
+        {
+          "eval": 320,
+          "energy": -12.389014615004879,
+          "best_energy": -12.389014615004879,
+          "absolute_error": 0.3667099913963767,
+          "relative_error_pct": 2.8748660128045507
+        }
+      ]
+    }
+  ],
+  "transpiled_circuits": [
+    {
+      "role": "ansatz_observable",
+      "ansatz": "knm_informed",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": null,
+      "depth": 160,
+      "size": 356,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "sx": 202,
+        "cz": 124,
+        "rz": 22,
+        "measure": 8
+      }
+    },
+    {
+      "role": "ansatz_observable",
+      "ansatz": "knm_informed",
+      "basis": "X",
+      "repetition": 0,
+      "calibration_state": null,
+      "depth": 164,
+      "size": 378,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "sx": 208,
+        "cz": 124,
+        "rz": 38,
+        "measure": 8
+      }
+    },
+    {
+      "role": "ansatz_observable",
+      "ansatz": "knm_informed",
+      "basis": "Y",
+      "repetition": 0,
+      "calibration_state": null,
+      "depth": 163,
+      "size": 372,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "sx": 208,
+        "cz": 124,
+        "rz": 32,
+        "measure": 8
+      }
+    },
+    {
+      "role": "ansatz_observable",
+      "ansatz": "two_local",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": null,
+      "depth": 167,
+      "size": 388,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "sx": 216,
+        "cz": 124,
+        "rz": 40,
+        "measure": 8
+      }
+    },
+    {
+      "role": "ansatz_observable",
+      "ansatz": "two_local",
+      "basis": "X",
+      "repetition": 0,
+      "calibration_state": null,
+      "depth": 168,
+      "size": 394,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "sx": 216,
+        "cz": 124,
+        "rz": 46,
+        "measure": 8
+      }
+    },
+    {
+      "role": "ansatz_observable",
+      "ansatz": "two_local",
+      "basis": "Y",
+      "repetition": 0,
+      "calibration_state": null,
+      "depth": 168,
+      "size": 394,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "sx": 216,
+        "cz": 124,
+        "rz": 46,
+        "measure": 8
+      }
+    },
+    {
+      "role": "ansatz_observable",
+      "ansatz": "efficient_su2",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": null,
+      "depth": 35,
+      "size": 98,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "rz": 45,
+        "sx": 38,
+        "measure": 8,
+        "cz": 7
+      }
+    },
+    {
+      "role": "ansatz_observable",
+      "ansatz": "efficient_su2",
+      "basis": "X",
+      "repetition": 0,
+      "calibration_state": null,
+      "depth": 36,
+      "size": 106,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "rz": 53,
+        "sx": 38,
+        "measure": 8,
+        "cz": 7
+      }
+    },
+    {
+      "role": "ansatz_observable",
+      "ansatz": "efficient_su2",
+      "basis": "Y",
+      "repetition": 0,
+      "calibration_state": null,
+      "depth": 36,
+      "size": 106,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "rz": 53,
+        "sx": 38,
+        "measure": 8,
+        "cz": 7
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00000000",
+      "depth": 1,
+      "size": 8,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00000001",
+      "depth": 2,
+      "size": 9,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 1
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00000010",
+      "depth": 2,
+      "size": 9,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 1
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00000011",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00000100",
+      "depth": 2,
+      "size": 9,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 1
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00000101",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00000110",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00000111",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00001000",
+      "depth": 2,
+      "size": 9,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 1
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00001001",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00001010",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00001011",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00001100",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00001101",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00001110",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00001111",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00010000",
+      "depth": 2,
+      "size": 9,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 1
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00010001",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00010010",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00010011",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00010100",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00010101",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00010110",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00010111",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00011000",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00011001",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00011010",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00011011",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00011100",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00011101",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00011110",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00011111",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00100000",
+      "depth": 2,
+      "size": 9,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 1
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00100001",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00100010",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00100011",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00100100",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00100101",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00100110",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00100111",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00101000",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00101001",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00101010",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00101011",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00101100",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00101101",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00101110",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00101111",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00110000",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00110001",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00110010",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00110011",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00110100",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00110101",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00110110",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00110111",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00111000",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00111001",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00111010",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00111011",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00111100",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00111101",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00111110",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "00111111",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01000000",
+      "depth": 2,
+      "size": 9,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 1
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01000001",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01000010",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01000011",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01000100",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01000101",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01000110",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01000111",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01001000",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01001001",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01001010",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01001011",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01001100",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01001101",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01001110",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01001111",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01010000",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01010001",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01010010",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01010011",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01010100",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01010101",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01010110",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01010111",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01011000",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01011001",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01011010",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01011011",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01011100",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01011101",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01011110",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01011111",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01100000",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01100001",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01100010",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01100011",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01100100",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01100101",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01100110",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01100111",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01101000",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01101001",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01101010",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01101011",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01101100",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01101101",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01101110",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01101111",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01110000",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01110001",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01110010",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01110011",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01110100",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01110101",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01110110",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01110111",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01111000",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01111001",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01111010",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01111011",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01111100",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01111101",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01111110",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "01111111",
+      "depth": 2,
+      "size": 15,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 7
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10000000",
+      "depth": 2,
+      "size": 9,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 1
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10000001",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10000010",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10000011",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10000100",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10000101",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10000110",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10000111",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10001000",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10001001",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10001010",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10001011",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10001100",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10001101",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10001110",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10001111",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10010000",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10010001",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10010010",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10010011",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10010100",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10010101",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10010110",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10010111",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10011000",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10011001",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10011010",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10011011",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10011100",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10011101",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10011110",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10011111",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10100000",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10100001",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10100010",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10100011",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10100100",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10100101",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10100110",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10100111",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10101000",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10101001",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10101010",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10101011",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10101100",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10101101",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10101110",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10101111",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10110000",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10110001",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10110010",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10110011",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10110100",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10110101",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10110110",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10110111",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10111000",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10111001",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10111010",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10111011",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10111100",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10111101",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10111110",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "10111111",
+      "depth": 2,
+      "size": 15,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 7
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11000000",
+      "depth": 2,
+      "size": 10,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 2
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11000001",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11000010",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11000011",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11000100",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11000101",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11000110",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11000111",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11001000",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11001001",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11001010",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11001011",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11001100",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11001101",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11001110",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11001111",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11010000",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11010001",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11010010",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11010011",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11010100",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11010101",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11010110",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11010111",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11011000",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11011001",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11011010",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11011011",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11011100",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11011101",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11011110",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11011111",
+      "depth": 2,
+      "size": 15,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 7
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11100000",
+      "depth": 2,
+      "size": 11,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 3
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11100001",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11100010",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11100011",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11100100",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11100101",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11100110",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11100111",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11101000",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11101001",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11101010",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11101011",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11101100",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11101101",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11101110",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11101111",
+      "depth": 2,
+      "size": 15,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 7
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11110000",
+      "depth": 2,
+      "size": 12,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 4
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11110001",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11110010",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11110011",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11110100",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11110101",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11110110",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11110111",
+      "depth": 2,
+      "size": 15,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 7
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11111000",
+      "depth": 2,
+      "size": 13,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 5
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11111001",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11111010",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11111011",
+      "depth": 2,
+      "size": 15,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 7
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11111100",
+      "depth": 2,
+      "size": 14,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 6
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11111101",
+      "depth": 2,
+      "size": 15,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 7
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11111110",
+      "depth": 2,
+      "size": 15,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "measure": 8,
+        "x": 7
+      }
+    },
+    {
+      "role": "readout_calibration",
+      "ansatz": "calibration",
+      "basis": "Z",
+      "repetition": 0,
+      "calibration_state": "11111111",
+      "depth": 2,
+      "size": 16,
+      "n_qubits": 156,
+      "n_clbits": 8,
+      "operation_counts": {
+        "x": 8,
+        "measure": 8
+      }
+    }
+  ],
+  "claim_boundary": "This is an n=8 hardware validation of ansatz-family energy ordering under one IBM backend/layout, not a convergence proof, quantum advantage claim, or backend-general ansatz superiority claim."
+}

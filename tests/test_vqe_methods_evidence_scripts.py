@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from qiskit import QuantumCircuit
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = REPO_ROOT / "scripts"
@@ -125,3 +126,51 @@ def test_full_readout_identity_mitigation_preserves_distribution() -> None:
         {"Z": mitigated},
         {"Z": [{"label": "ZZ", "coefficient": 1.0}]},
     ) == pytest.approx(1.0)
+
+
+def test_methods_readiness_uses_configured_budget_and_dynamic_claim_boundary() -> None:
+    args = ibm_validation._parse_args(
+        [
+            "--backend",
+            "fake_backend",
+            "--n-qubits",
+            "8",
+            "--physical-qubits",
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "--max-qpu-seconds",
+            "300",
+        ]
+    )
+
+    circuit = QuantumCircuit(8, 8)
+    circuit.measure(range(8), range(8))
+    entries = [
+        ibm_validation.ValidationCircuit(
+            role="ansatz_basis",
+            ansatz="knm_informed",
+            basis="Z",
+            repetition=0,
+            calibration_state=None,
+            circuit=circuit,
+        )
+        for _ in range(265)
+    ]
+    payload = ibm_validation._readiness_payload(
+        args=args,
+        backend=object(),
+        entries=entries,
+        isa_circuits=[circuit] * len(entries),
+        local_summaries=[],
+        grouped_terms={"X": [], "Y": [], "Z": []},
+    )
+
+    assert payload["status"] == "ready_for_submission"
+    assert payload["qpu_seconds_ceiling"] == 300.0
+    assert "n=8 hardware validation" in payload["claim_boundary"]
