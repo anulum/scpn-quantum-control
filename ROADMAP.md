@@ -85,6 +85,13 @@ is copied here.
   trainable masks, provenance-bearing `GradientResult` payloads, a native
   gradient-descent step, optional JAX value/gradient bridging, QSNN trainer
   integration, and a PennyLane VQE value/gradient adapter.
+- [x] **MLIR, real-time runtime, and cloud-native deployment foundation.**
+  Implemented 2026-05-20: `compiler.mlir` emits deterministic Kuramoto-XY
+  MLIR-style textual IR with digests and resource counts;
+  `control.realtime_runtime` adds fixed-period deadline, jitter, and
+  miss-budget accounting for software control loops; and
+  `deployment.cloud_native` emits secret-free Kubernetes and Docker Compose
+  manifests with non-root, read-only, no-privilege-escalation defaults.
 - [x] **Stable-core release/repro gate.** Use
   `scpn-bench stable-core-release-gate` before release notes, API changes, or
   public stable-core documentation changes. The bundle runs stable-core

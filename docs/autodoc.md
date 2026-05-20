@@ -114,6 +114,24 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [Parameter, ParameterShiftRule, GradientResult, DifferentiableOptimizer, parameter_shift_gradient, value_and_parameter_shift_grad, batch_parameter_shift_gradient, is_jax_autodiff_available, jax_value_and_grad]
 
+## MLIR Compiler
+
+::: scpn_quantum_control.compiler.mlir
+    options:
+      members: [MLIRCompileConfig, MLIRModule, compile_kuramoto_to_mlir]
+
+## Real-Time Runtime
+
+::: scpn_quantum_control.control.realtime_runtime
+    options:
+      members: [RealtimeRuntimeConfig, RealtimeTickRecord, RealtimeRunResult, VirtualRealtimeClock, MonotonicRealtimeClock, run_realtime_control_loop]
+
+## Cloud-Native Deployment
+
+::: scpn_quantum_control.deployment.cloud_native
+    options:
+      members: [ContainerResources, CloudDeploymentSpec, CloudManifestBundle, generate_cloud_manifests]
+
 ## Identity
 
 ::: scpn_quantum_control.identity.ground_state

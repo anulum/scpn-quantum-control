@@ -52,6 +52,7 @@ from .bridge.ssgf_adapter import (
     ssgf_state_to_quantum,
     ssgf_w_to_hamiltonian,
 )
+from .compiler.mlir import MLIRCompileConfig, MLIRModule, compile_kuramoto_to_mlir
 from .control.hardware_topological_optimizer import HardwareTopologicalOptimizer
 from .control.q_disruption import QuantumDisruptionClassifier
 from .control.q_disruption_iter import (
@@ -63,8 +64,22 @@ from .control.q_disruption_iter import (
 )
 from .control.qaoa_mpc import QAOA_MPC
 from .control.qpetri import QuantumPetriNet
+from .control.realtime_runtime import (
+    MonotonicRealtimeClock,
+    RealtimeRunResult,
+    RealtimeRuntimeConfig,
+    RealtimeTickRecord,
+    VirtualRealtimeClock,
+    run_realtime_control_loop,
+)
 from .control.topological_optimizer import TopologicalCouplingOptimizer
 from .control.vqls_gs import VQLS_GradShafranov
+from .deployment.cloud_native import (
+    CloudDeploymentSpec,
+    CloudManifestBundle,
+    ContainerResources,
+    generate_cloud_manifests,
+)
 from .differentiable import (
     DifferentiableOptimizer,
     GradientResult,
@@ -289,6 +304,19 @@ __all__ = [
     "normalize_iter_features",
     "QAOA_MPC",
     "QuantumPetriNet",
+    "MLIRCompileConfig",
+    "MLIRModule",
+    "compile_kuramoto_to_mlir",
+    "MonotonicRealtimeClock",
+    "RealtimeRunResult",
+    "RealtimeRuntimeConfig",
+    "RealtimeTickRecord",
+    "VirtualRealtimeClock",
+    "run_realtime_control_loop",
+    "CloudDeploymentSpec",
+    "CloudManifestBundle",
+    "ContainerResources",
+    "generate_cloud_manifests",
     "VQLS_GradShafranov",
     "DifferentiableOptimizer",
     "GradientResult",

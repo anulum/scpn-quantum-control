@@ -55,6 +55,67 @@ documentation and regression infrastructure for source ingestion; they do not
 convert Paper 0 source statements into measured hardware evidence or external
 scientific validation. See [Paper 0 Validation Register](paper0_validation_register.md).
 
+### `compiler.mlir`
+
+```python
+from scpn_quantum_control import MLIRCompileConfig, compile_kuramoto_to_mlir
+
+module = compile_kuramoto_to_mlir(
+    problem,
+    MLIRCompileConfig(time=0.4, trotter_steps=2, trotter_order=2),
+)
+module.text      # deterministic MLIR-style textual IR
+module.sha256    # digest over module.text
+```
+
+The MLIR compiler surface emits deterministic, auditable Kuramoto-XY IR with
+explicit omega terms, coupling terms, Trotter parameters, resource counts, and
+claim-boundary metadata. It is an interchange layer; it does not claim LLVM/QIR
+lowering, cloud submission, pulse compilation, or hardware execution.
+
+### `control.realtime_runtime`
+
+```python
+from scpn_quantum_control import RealtimeRuntimeConfig, VirtualRealtimeClock
+from scpn_quantum_control import run_realtime_control_loop
+
+clock = VirtualRealtimeClock()
+config = RealtimeRuntimeConfig(sample_period_s=0.01, deadline_s=0.005)
+result = run_realtime_control_loop(10, step_fn, config=config, clock=clock)
+result.missed_deadlines
+result.max_latency_s
+```
+
+The runtime records scheduled start, actual start, finish time, latency, jitter,
+deadline-miss state, and numeric metrics for fixed-period software control
+loops. It can use a monotonic wall clock or deterministic virtual clock. It is
+not an intra-shot hardware-latency claim.
+
+### `deployment.cloud_native`
+
+```python
+from scpn_quantum_control import CloudDeploymentSpec, ContainerResources
+from scpn_quantum_control import generate_cloud_manifests
+
+bundle = generate_cloud_manifests(
+    CloudDeploymentSpec(
+        name="scpn-qc",
+        image="registry.example/scpn-quantum-control:0.9.7",
+        command=("scpn-bench", "stable-core-contract-gate"),
+        resources=ContainerResources(cpu="1000m", memory="1Gi"),
+        env={"SCPN_EXECUTION_MODE": "offline"},
+    )
+)
+bundle.files["deployment.yaml"]
+bundle.files["docker-compose.yaml"]
+```
+
+Cloud-native deployment generation emits Kubernetes Deployment/Service and
+Docker Compose manifests with resource limits, non-root execution,
+read-only-root filesystem, no privilege escalation, and deterministic digests.
+Secret-like environment variables are rejected. The generator does not read
+credentials, create clusters, or contact cloud APIs.
+
 ## Advanced Module Reference
 
 The following sections expose lower-level modules directly. Prefer the stable
