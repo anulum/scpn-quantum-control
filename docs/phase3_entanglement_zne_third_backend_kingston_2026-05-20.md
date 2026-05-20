@@ -77,40 +77,72 @@ PYTHONDONTWRITEBYTECODE=1 python scripts/phase3_entanglement_tomography_ibm.py \
   --confirm-budget
 ```
 
-Pending execution artefact:
+Execution artefact:
 
 - `data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_kingston_2026-05-20T030211Z.json`
 - SHA256 after pending-job registration:
   `56baf1812ba8193fc67b05f27fcf99ae8ce4960a9e16e604e9c8b09e7884d635`
 
-Queued IBM jobs:
+IBM jobs:
 
-| Role | Job ID | Status at registration |
+| Role | Job ID | Final status |
 |---|---|---|
-| Main ZNE circuits | `d86i8fas46sc73f70vg0` | `QUEUED` |
-| Full 16-state readout calibration | `d86ijr9789is738vnh30` | `QUEUED` |
+| Main ZNE circuits | `d86i8fas46sc73f70vg0` | `DONE` |
+| Full 16-state readout calibration | `d86ijr9789is738vnh30` | `DONE` |
 
 The main job was submitted by the guarded runner. The readout job was submitted
 independently after the main job entered the IBM queue, because the guarded
 runner waits for the main result before launching readout. The local sequential
 runner was then stopped to prevent a duplicate readout submission.
 
+## Reduction
+
+The completed jobs were retrieved into the canonical execution artefact and
+reduced with:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python scripts/analyse_phase3_entanglement_zne.py \
+  data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_kingston_2026-05-20T030211Z.json \
+  --result-tag 2026-05-20_ibm_kingston_zne
+```
+
+Reducer outputs:
+
+- `data/phase3_entanglement_tomography/entanglement_zne_summary_2026-05-20_ibm_kingston_zne.json`
+- `data/phase3_entanglement_tomography/entanglement_zne_scale_rows_2026-05-20_ibm_kingston_zne.csv`
+- `data/phase3_entanglement_tomography/entanglement_zne_channel_summary_2026-05-20_ibm_kingston_zne.csv`
+- `docs/phase3_entanglement_zne_manifest_2026-05-20_ibm_kingston_zne.md`
+
+Result snapshot:
+
+| Field | Value |
+|---|---:|
+| Scale rows | 15 |
+| Channels | 5 |
+| Scale-1 mean absolute deviation | 0.4533514489822172 |
+| Linear ZNE mean absolute deviation | 0.4729152510655504 |
+| Readout-mitigated linear ZNE mean absolute deviation | 0.480609277847894 |
+| Quadratic ZNE mean absolute deviation | 0.45559754273221703 |
+
+Channel-level result: all four DLA transverse channels move farther from exact
+under linear ZNE, while the FIM control improves. This is a qualitative
+third-backend replication of the Fez ZNE stress-test pattern, still bounded to
+the preregistered five-channel small-system stress test.
+
 ## Claim Boundary
 
-This is a pending third-backend ZNE replication only. It is not yet a result and
-must not be described as confirming or falsifying the existing Fez/Marrakesh
-pattern until both jobs complete, raw counts are retrieved, the ZNE reducer is
-run, and the paper is updated from committed artefacts.
+This is a completed third-backend ZNE replication for the preregistered
+five-channel reduced-Pauli stress test only. It is not an `n=6` extension, not a
+backend-general entanglement-dynamics claim, not full tomography, and not a
+quantum-advantage claim. The paper may now describe Kingston as a
+third-backend qualitative replication of the Fez ZNE pattern once the
+manuscript is updated from the committed reducer artefacts.
 
 ## Next Gate
 
-When both IBM jobs are `DONE`:
-
-1. retrieve raw counts into the pending Kingston artefact;
-2. run `scripts/analyse_phase3_entanglement_zne.py` with a Kingston result tag;
-3. compare DLA and FIM channel-level ZNE behaviour against Fez;
-4. update the LaTeX manuscript and PDF with either replication, partial
-   replication, or falsification language.
+Update the LaTeX manuscript and PDF with the Kingston reducer outputs. The
+safe paper language is qualitative third-backend replication: DLA transverse
+channels again worsen under linear ZNE, while the FIM control improves.
 
 ## Restart Runbook
 

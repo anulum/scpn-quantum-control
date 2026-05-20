@@ -99,6 +99,15 @@ def test_select_pinned_layout_preserves_requested_qubits() -> None:
     assert layout.physical_qubits == (2, 3, 4, 5)
 
 
+def test_pending_job_roles_preserve_main_and_readout_ids() -> None:
+    module = _load_module()
+
+    assert module._pending_job_roles("job-main", "job-readout") == {
+        "main": "job-main",
+        "readout": "job-readout",
+    }
+
+
 def test_build_circuits_can_emit_full_readout_calibration() -> None:
     module = _load_module()
     layout = module.select_layout(_Backend())

@@ -677,6 +677,24 @@ def _run_isa_sampler(
     return job_id, [extract_counts(pub_result) for pub_result in result], wall
 
 
+def _submit_isa_sampler(
+    backend: Any,
+    isa_circuits: Sequence[QuantumCircuit],
+    *,
+    shots: int,
+) -> str:
+    from qiskit_ibm_runtime import SamplerV2 as Sampler
+
+    sampler = Sampler(mode=backend)
+    sampler.options.default_shots = shots
+    job = sampler.run(list(isa_circuits))
+    return _job_id(job)
+
+
+def _pending_job_roles(main_job: str, readout_job: str) -> dict[str, str]:
+    return {"main": main_job, "readout": readout_job}
+
+
 def _result_rows(
     metas: Sequence[dict[str, Any]],
     counts_rows: Sequence[dict[str, int]],
@@ -706,6 +724,14 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--backend", default=DEFAULT_BACKEND)
     parser.add_argument("--submit", action="store_true")
+    parser.add_argument(
+        "--submit-async",
+        action="store_true",
+        help=(
+            "submit main and readout jobs, record their IDs, and exit without "
+            "waiting for IBM Runtime results"
+        ),
+    )
     parser.add_argument("--confirm-budget", action="store_true")
     parser.add_argument("--max-depth", type=int, default=MAX_DEPTH)
     parser.add_argument("--max-total-gates", type=int, default=MAX_TOTAL_GATES)
@@ -732,8 +758,11 @@ def main() -> int:
     """Run live readiness checks and optionally submit ISA circuits."""
 
     args = parse_args()
-    if args.submit and not args.confirm_budget:
-        print("ERROR: --submit requires --confirm-budget", file=sys.stderr)
+    if args.submit and args.submit_async:
+        print("ERROR: --submit and --submit-async are mutually exclusive", file=sys.stderr)
+        return 2
+    if (args.submit or args.submit_async) and not args.confirm_budget:
+        print("ERROR: submission requires --confirm-budget", file=sys.stderr)
         return 2
 
     timestamp = _timestamp()
@@ -862,7 +891,7 @@ def main() -> int:
         print(f"READINESS REJECTED: {ready['rejection_reason']}", file=sys.stderr)
         _append_execution_log(timestamp, payload, out_path)
         return 3
-    if not args.submit:
+    if not args.submit and not args.submit_async:
         print("Readiness passed. Re-run with --submit --confirm-budget to submit.")
         return 0
     if est_qpu_minutes > BUDGET_CEILING_MINUTES:
@@ -871,6 +900,29 @@ def main() -> int:
         _append_execution_log(timestamp, payload, out_path)
         print("ERROR: estimate exceeds QPU ceiling; no job submitted.", file=sys.stderr)
         return 4
+
+    if args.submit_async:
+        print("Submitting entanglement/tomography main batch asynchronously...")
+        main_job = _submit_isa_sampler(runner.backend, isa_main, shots=MAIN_SHOTS)
+        print("Submitting entanglement/tomography readout batch asynchronously...")
+        readout_job = _submit_isa_sampler(runner.backend, isa_readout, shots=READOUT_SHOTS)
+        payload.update(
+            {
+                "status": "pending_jobs_submitted",
+                "job_ids": [main_job, readout_job],
+                "pending_job_roles": _pending_job_roles(main_job, readout_job),
+                "async_submission": True,
+                "async_submission_boundary": (
+                    "jobs were submitted and registered without local result wait; "
+                    "retrieve counts only after both jobs report DONE"
+                ),
+            }
+        )
+        final_sha = _save(out_path, payload)
+        _append_execution_log(timestamp, payload, out_path)
+        print(f"Submitted. Jobs: {payload['job_ids']}")
+        print(f"Saved: {out_path.relative_to(REPO_ROOT)} sha256={final_sha}")
+        return 0
 
     print("Submitting entanglement/tomography main batch...")
     main_job, main_counts, wall_main = _run_isa_sampler(

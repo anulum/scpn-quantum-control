@@ -204,6 +204,14 @@ is copied here.
   gate basis, shot/circuit limits, queue depth, availability state, simulator
   flag, provider id, and calibration timestamp without calling target
   submission APIs.
+- [ ] **Provider frontier watchlist and certification gate.** Maintain SCPN's
+  declared HAL/provider matrix as provider SDKs and broker catalogues evolve. A
+  provider may be publicly claimed only when it has descriptor coverage, route
+  resolution, optional dependency smoke coverage, no-submit capability snapshot
+  coverage, docs, tests, approval-gated live submission semantics where
+  applicable, and a passing provider-conformance gate. New direct adapters
+  should be added only for providers not adequately covered by the existing
+  direct, qBraid, Strangeworks, Braket, or Azure routes.
 - [x] **Stable-core release/repro gate.** Use
   `scpn-bench stable-core-release-gate` before release notes, API changes, or
   public stable-core documentation changes. The bundle runs stable-core
@@ -1085,18 +1093,35 @@ explicit QPU-time estimate before submission.
   improves under linear extrapolation. Remaining paper work is
   venue-specific formatting and bibliography polish, not additional QPU spend
   for this paper.
-- [ ] **Entanglement tomography third-backend ZNE replication.** Started
+- [x] **Entanglement tomography third-backend ZNE replication.** Completed
   2026-05-20 on `ibm_kingston` after `ibm_sherbrooke` and `ibm_torino` were
   unavailable to the account. Readiness passed for physical qubits
   `[141,142,143,144]`, 45 main ZNE circuits, 16 full-readout circuits, max
-  depth `1686`, and estimated QPU time `0.5592` minutes under the 25-minute
-  ceiling. Pending jobs: main `d86i8fas46sc73f70vg0`, readout
-  `d86ijr9789is738vnh30`. Artefacts:
+  depth `1686`, and estimated QPU time `0.5592` minutes under the
+  25-minute ceiling. Jobs `d86i8fas46sc73f70vg0` and
+  `d86ijr9789is738vnh30` completed; counts were hydrated into the canonical
+  artefact and reduced with the Kingston ZNE tag. Artefacts:
   `data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_kingston_2026-05-20T030151Z.json`,
   `data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_kingston_2026-05-20T030211Z.json`,
-  and `docs/phase3_entanglement_zne_third_backend_kingston_2026-05-20.md`.
-  This is pending execution evidence only; paper claims remain blocked until
-  both jobs are done, raw counts are retrieved, and the ZNE reducer is run.
+  `data/phase3_entanglement_tomography/entanglement_zne_summary_2026-05-20_ibm_kingston_zne.json`,
+  `data/phase3_entanglement_tomography/entanglement_zne_channel_summary_2026-05-20_ibm_kingston_zne.csv`,
+  and `docs/phase3_entanglement_zne_manifest_2026-05-20_ibm_kingston_zne.md`.
+  Result: Kingston reproduces the qualitative Fez ZNE stress-test pattern:
+  the four DLA transverse channels move farther from exact under linear ZNE,
+  while the FIM control improves. Remaining paper work is manuscript/PDF
+  integration from the committed Kingston artefacts.
+- [ ] **Entanglement tomography Kingston ZNE statistical repeat.** Submitted
+  2026-05-20 as a same-backend, same-layout statistical repeat for the Phase 3
+  paper. The repeat keeps `ibm_kingston`, physical qubits `[141,142,143,144]`,
+  the preregistered five-channel ZNE subset, noise scales `1,3,5`, three
+  repetitions per channel/scale, and full 16-state readout calibration fixed.
+  Readiness passed with 45 main circuits, 16 readout circuits, max depth
+  `1657`, and estimated QPU time `0.5592` minutes under the 25-minute ceiling.
+  Pending jobs: main `d86pul0p0eas73dla3dg`, readout
+  `d86pul8p0eas73dla3eg`. Canonical pending artefact:
+  `data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_kingston_2026-05-20T114719Z.json`.
+  The paper-use criterion is drift robustness: compare the repeat against the
+  completed Kingston ZNE result before strengthening statistical language.
 - [x] **Depth-optimal native decomposition preregistration.**
   Completed 2026-05-06:
   `docs/depth_optimal_native_decomposition_prereg_2026-05-06.md`

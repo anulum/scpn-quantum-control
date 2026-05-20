@@ -1,10 +1,2915 @@
 {
   "backend": "ibm_kingston",
   "budget_ceiling_minutes": 25.0,
+  "circuits": [
+    {
+      "counts": {
+        "0000": 153,
+        "0001": 486,
+        "0010": 467,
+        "0011": 217,
+        "0100": 103,
+        "0101": 113,
+        "0110": 97,
+        "0111": 107,
+        "1000": 36,
+        "1001": 29,
+        "1010": 76,
+        "1011": 72,
+        "1100": 28,
+        "1101": 29,
+        "1110": 17,
+        "1111": 18
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "XXII",
+        "block": "main",
+        "depth": 10,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_signal",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 0,
+        "shots": 2048,
+        "source_depth": 52,
+        "source_size": 101,
+        "zne_noise_scale": 1,
+        "zne_reference_absolute_deviation": 0.37054376747882634,
+        "zne_source_row_index": 0,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 159,
+        "0001": 482,
+        "0010": 446,
+        "0011": 236,
+        "0100": 115,
+        "0101": 123,
+        "0110": 108,
+        "0111": 107,
+        "1000": 30,
+        "1001": 31,
+        "1010": 64,
+        "1011": 64,
+        "1100": 16,
+        "1101": 25,
+        "1110": 16,
+        "1111": 26
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "XXII",
+        "block": "main",
+        "depth": 10,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_signal",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 1,
+        "shots": 2048,
+        "source_depth": 52,
+        "source_size": 101,
+        "zne_noise_scale": 1,
+        "zne_reference_absolute_deviation": 0.37054376747882634,
+        "zne_source_row_index": 0,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 180,
+        "0001": 474,
+        "0010": 464,
+        "0011": 226,
+        "0100": 120,
+        "0101": 128,
+        "0110": 111,
+        "0111": 88,
+        "1000": 27,
+        "1001": 42,
+        "1010": 59,
+        "1011": 55,
+        "1100": 20,
+        "1101": 24,
+        "1110": 14,
+        "1111": 16
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "XXII",
+        "block": "main",
+        "depth": 10,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_signal",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 2,
+        "shots": 2048,
+        "source_depth": 52,
+        "source_size": 101,
+        "zne_noise_scale": 1,
+        "zne_reference_absolute_deviation": 0.37054376747882634,
+        "zne_source_row_index": 0,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 172,
+        "0001": 360,
+        "0010": 372,
+        "0011": 233,
+        "0100": 110,
+        "0101": 162,
+        "0110": 104,
+        "0111": 83,
+        "1000": 68,
+        "1001": 53,
+        "1010": 101,
+        "1011": 98,
+        "1100": 31,
+        "1101": 36,
+        "1110": 33,
+        "1111": 32
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "XXII",
+        "block": "main",
+        "depth": 10,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_signal",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 0,
+        "shots": 2048,
+        "source_depth": 52,
+        "source_size": 101,
+        "zne_noise_scale": 3,
+        "zne_reference_absolute_deviation": 0.37054376747882634,
+        "zne_source_row_index": 0,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 142,
+        "0001": 320,
+        "0010": 391,
+        "0011": 281,
+        "0100": 94,
+        "0101": 152,
+        "0110": 103,
+        "0111": 97,
+        "1000": 64,
+        "1001": 53,
+        "1010": 90,
+        "1011": 94,
+        "1100": 42,
+        "1101": 47,
+        "1110": 37,
+        "1111": 41
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "XXII",
+        "block": "main",
+        "depth": 10,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_signal",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 1,
+        "shots": 2048,
+        "source_depth": 52,
+        "source_size": 101,
+        "zne_noise_scale": 3,
+        "zne_reference_absolute_deviation": 0.37054376747882634,
+        "zne_source_row_index": 0,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 153,
+        "0001": 358,
+        "0010": 374,
+        "0011": 267,
+        "0100": 88,
+        "0101": 146,
+        "0110": 102,
+        "0111": 108,
+        "1000": 76,
+        "1001": 50,
+        "1010": 85,
+        "1011": 79,
+        "1100": 34,
+        "1101": 48,
+        "1110": 41,
+        "1111": 39
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "XXII",
+        "block": "main",
+        "depth": 10,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_signal",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 2,
+        "shots": 2048,
+        "source_depth": 52,
+        "source_size": 101,
+        "zne_noise_scale": 3,
+        "zne_reference_absolute_deviation": 0.37054376747882634,
+        "zne_source_row_index": 0,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 144,
+        "0001": 264,
+        "0010": 299,
+        "0011": 263,
+        "0100": 120,
+        "0101": 147,
+        "0110": 97,
+        "0111": 86,
+        "1000": 84,
+        "1001": 69,
+        "1010": 144,
+        "1011": 116,
+        "1100": 58,
+        "1101": 71,
+        "1110": 43,
+        "1111": 43
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "XXII",
+        "block": "main",
+        "depth": 10,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_signal",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 0,
+        "shots": 2048,
+        "source_depth": 52,
+        "source_size": 101,
+        "zne_noise_scale": 5,
+        "zne_reference_absolute_deviation": 0.37054376747882634,
+        "zne_source_row_index": 0,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 125,
+        "0001": 248,
+        "0010": 299,
+        "0011": 245,
+        "0100": 119,
+        "0101": 145,
+        "0110": 94,
+        "0111": 114,
+        "1000": 103,
+        "1001": 74,
+        "1010": 140,
+        "1011": 114,
+        "1100": 59,
+        "1101": 63,
+        "1110": 46,
+        "1111": 60
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "XXII",
+        "block": "main",
+        "depth": 10,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_signal",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 1,
+        "shots": 2048,
+        "source_depth": 52,
+        "source_size": 101,
+        "zne_noise_scale": 5,
+        "zne_reference_absolute_deviation": 0.37054376747882634,
+        "zne_source_row_index": 0,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 139,
+        "0001": 218,
+        "0010": 277,
+        "0011": 261,
+        "0100": 109,
+        "0101": 138,
+        "0110": 106,
+        "0111": 105,
+        "1000": 110,
+        "1001": 76,
+        "1010": 146,
+        "1011": 126,
+        "1100": 64,
+        "1101": 66,
+        "1110": 46,
+        "1111": 61
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "XXII",
+        "block": "main",
+        "depth": 10,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_signal",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 2,
+        "shots": 2048,
+        "source_depth": 52,
+        "source_size": 101,
+        "zne_noise_scale": 5,
+        "zne_reference_absolute_deviation": 0.37054376747882634,
+        "zne_source_row_index": 0,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 200,
+        "0001": 430,
+        "0010": 517,
+        "0011": 178,
+        "0100": 105,
+        "0101": 117,
+        "0110": 119,
+        "0111": 122,
+        "1000": 63,
+        "1001": 48,
+        "1010": 61,
+        "1011": 29,
+        "1100": 9,
+        "1101": 17,
+        "1110": 18,
+        "1111": 15
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "YYII",
+        "block": "main",
+        "depth": 10,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_signal",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 0,
+        "shots": 2048,
+        "source_depth": 52,
+        "source_size": 101,
+        "zne_noise_scale": 1,
+        "zne_reference_absolute_deviation": 0.3542677258121596,
+        "zne_source_row_index": 1,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 176,
+        "0001": 451,
+        "0010": 535,
+        "0011": 218,
+        "0100": 98,
+        "0101": 133,
+        "0110": 73,
+        "0111": 96,
+        "1000": 65,
+        "1001": 37,
+        "1010": 66,
+        "1011": 27,
+        "1100": 12,
+        "1101": 23,
+        "1110": 19,
+        "1111": 19
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "YYII",
+        "block": "main",
+        "depth": 10,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_signal",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 1,
+        "shots": 2048,
+        "source_depth": 52,
+        "source_size": 101,
+        "zne_noise_scale": 1,
+        "zne_reference_absolute_deviation": 0.3542677258121596,
+        "zne_source_row_index": 1,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 200,
+        "0001": 422,
+        "0010": 535,
+        "0011": 184,
+        "0100": 103,
+        "0101": 123,
+        "0110": 101,
+        "0111": 123,
+        "1000": 76,
+        "1001": 44,
+        "1010": 56,
+        "1011": 24,
+        "1100": 19,
+        "1101": 17,
+        "1110": 14,
+        "1111": 7
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "YYII",
+        "block": "main",
+        "depth": 10,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_signal",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 2,
+        "shots": 2048,
+        "source_depth": 52,
+        "source_size": 101,
+        "zne_noise_scale": 1,
+        "zne_reference_absolute_deviation": 0.3542677258121596,
+        "zne_source_row_index": 1,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 200,
+        "0001": 302,
+        "0010": 420,
+        "0011": 207,
+        "0100": 103,
+        "0101": 98,
+        "0110": 117,
+        "0111": 125,
+        "1000": 113,
+        "1001": 89,
+        "1010": 73,
+        "1011": 56,
+        "1100": 38,
+        "1101": 42,
+        "1110": 34,
+        "1111": 31
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "YYII",
+        "block": "main",
+        "depth": 10,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_signal",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 0,
+        "shots": 2048,
+        "source_depth": 52,
+        "source_size": 101,
+        "zne_noise_scale": 3,
+        "zne_reference_absolute_deviation": 0.3542677258121596,
+        "zne_source_row_index": 1,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 192,
+        "0001": 292,
+        "0010": 417,
+        "0011": 211,
+        "0100": 91,
+        "0101": 102,
+        "0110": 109,
+        "0111": 142,
+        "1000": 114,
+        "1001": 82,
+        "1010": 76,
+        "1011": 50,
+        "1100": 32,
+        "1101": 47,
+        "1110": 42,
+        "1111": 49
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "YYII",
+        "block": "main",
+        "depth": 10,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_signal",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 1,
+        "shots": 2048,
+        "source_depth": 52,
+        "source_size": 101,
+        "zne_noise_scale": 3,
+        "zne_reference_absolute_deviation": 0.3542677258121596,
+        "zne_source_row_index": 1,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 217,
+        "0001": 311,
+        "0010": 427,
+        "0011": 170,
+        "0100": 93,
+        "0101": 143,
+        "0110": 132,
+        "0111": 118,
+        "1000": 96,
+        "1001": 78,
+        "1010": 67,
+        "1011": 61,
+        "1100": 28,
+        "1101": 41,
+        "1110": 31,
+        "1111": 35
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "YYII",
+        "block": "main",
+        "depth": 10,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_signal",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 2,
+        "shots": 2048,
+        "source_depth": 52,
+        "source_size": 101,
+        "zne_noise_scale": 3,
+        "zne_reference_absolute_deviation": 0.3542677258121596,
+        "zne_source_row_index": 1,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 211,
+        "0001": 221,
+        "0010": 334,
+        "0011": 181,
+        "0100": 90,
+        "0101": 112,
+        "0110": 122,
+        "0111": 129,
+        "1000": 116,
+        "1001": 150,
+        "1010": 86,
+        "1011": 72,
+        "1100": 42,
+        "1101": 66,
+        "1110": 52,
+        "1111": 64
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "YYII",
+        "block": "main",
+        "depth": 10,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_signal",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 0,
+        "shots": 2048,
+        "source_depth": 52,
+        "source_size": 101,
+        "zne_noise_scale": 5,
+        "zne_reference_absolute_deviation": 0.3542677258121596,
+        "zne_source_row_index": 1,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 193,
+        "0001": 214,
+        "0010": 339,
+        "0011": 205,
+        "0100": 79,
+        "0101": 134,
+        "0110": 119,
+        "0111": 110,
+        "1000": 143,
+        "1001": 130,
+        "1010": 90,
+        "1011": 80,
+        "1100": 47,
+        "1101": 60,
+        "1110": 47,
+        "1111": 58
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "YYII",
+        "block": "main",
+        "depth": 10,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_signal",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 1,
+        "shots": 2048,
+        "source_depth": 52,
+        "source_size": 101,
+        "zne_noise_scale": 5,
+        "zne_reference_absolute_deviation": 0.3542677258121596,
+        "zne_source_row_index": 1,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 208,
+        "0001": 225,
+        "0010": 332,
+        "0011": 202,
+        "0100": 76,
+        "0101": 130,
+        "0110": 115,
+        "0111": 132,
+        "1000": 120,
+        "1001": 133,
+        "1010": 79,
+        "1011": 69,
+        "1100": 48,
+        "1101": 57,
+        "1110": 49,
+        "1111": 73
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "YYII",
+        "block": "main",
+        "depth": 10,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_signal",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 2,
+        "shots": 2048,
+        "source_depth": 52,
+        "source_size": 101,
+        "zne_noise_scale": 5,
+        "zne_reference_absolute_deviation": 0.3542677258121596,
+        "zne_source_row_index": 1,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 239,
+        "0001": 28,
+        "0010": 87,
+        "0011": 7,
+        "0100": 535,
+        "0101": 28,
+        "0110": 156,
+        "0111": 20,
+        "1000": 433,
+        "1001": 24,
+        "1010": 65,
+        "1011": 12,
+        "1100": 252,
+        "1101": 24,
+        "1110": 132,
+        "1111": 6
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IIXX",
+        "block": "main",
+        "depth": 6,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_shallow",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 0,
+        "shots": 2048,
+        "source_depth": 32,
+        "source_size": 61,
+        "zne_noise_scale": 1,
+        "zne_reference_absolute_deviation": 0.4572050118315468,
+        "zne_source_row_index": 2,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 273,
+        "0001": 19,
+        "0010": 96,
+        "0011": 14,
+        "0100": 528,
+        "0101": 33,
+        "0110": 158,
+        "0111": 20,
+        "1000": 424,
+        "1001": 24,
+        "1010": 68,
+        "1011": 8,
+        "1100": 228,
+        "1101": 22,
+        "1110": 121,
+        "1111": 12
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IIXX",
+        "block": "main",
+        "depth": 6,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_shallow",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 1,
+        "shots": 2048,
+        "source_depth": 32,
+        "source_size": 61,
+        "zne_noise_scale": 1,
+        "zne_reference_absolute_deviation": 0.4572050118315468,
+        "zne_source_row_index": 2,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 233,
+        "0001": 22,
+        "0010": 92,
+        "0011": 9,
+        "0100": 554,
+        "0101": 26,
+        "0110": 157,
+        "0111": 14,
+        "1000": 445,
+        "1001": 23,
+        "1010": 63,
+        "1011": 2,
+        "1100": 253,
+        "1101": 27,
+        "1110": 118,
+        "1111": 10
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IIXX",
+        "block": "main",
+        "depth": 6,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_shallow",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 2,
+        "shots": 2048,
+        "source_depth": 32,
+        "source_size": 61,
+        "zne_noise_scale": 1,
+        "zne_reference_absolute_deviation": 0.4572050118315468,
+        "zne_source_row_index": 2,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 211,
+        "0001": 27,
+        "0010": 88,
+        "0011": 13,
+        "0100": 553,
+        "0101": 40,
+        "0110": 175,
+        "0111": 22,
+        "1000": 347,
+        "1001": 34,
+        "1010": 79,
+        "1011": 17,
+        "1100": 279,
+        "1101": 30,
+        "1110": 110,
+        "1111": 23
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IIXX",
+        "block": "main",
+        "depth": 6,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_shallow",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 0,
+        "shots": 2048,
+        "source_depth": 32,
+        "source_size": 61,
+        "zne_noise_scale": 3,
+        "zne_reference_absolute_deviation": 0.4572050118315468,
+        "zne_source_row_index": 2,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 210,
+        "0001": 28,
+        "0010": 104,
+        "0011": 18,
+        "0100": 535,
+        "0101": 40,
+        "0110": 172,
+        "0111": 25,
+        "1000": 353,
+        "1001": 29,
+        "1010": 89,
+        "1011": 9,
+        "1100": 256,
+        "1101": 35,
+        "1110": 125,
+        "1111": 20
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IIXX",
+        "block": "main",
+        "depth": 6,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_shallow",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 1,
+        "shots": 2048,
+        "source_depth": 32,
+        "source_size": 61,
+        "zne_noise_scale": 3,
+        "zne_reference_absolute_deviation": 0.4572050118315468,
+        "zne_source_row_index": 2,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 193,
+        "0001": 44,
+        "0010": 118,
+        "0011": 16,
+        "0100": 535,
+        "0101": 49,
+        "0110": 160,
+        "0111": 31,
+        "1000": 337,
+        "1001": 39,
+        "1010": 70,
+        "1011": 12,
+        "1100": 254,
+        "1101": 40,
+        "1110": 135,
+        "1111": 15
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IIXX",
+        "block": "main",
+        "depth": 6,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_shallow",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 2,
+        "shots": 2048,
+        "source_depth": 32,
+        "source_size": 61,
+        "zne_noise_scale": 3,
+        "zne_reference_absolute_deviation": 0.4572050118315468,
+        "zne_source_row_index": 2,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 163,
+        "0001": 33,
+        "0010": 96,
+        "0011": 15,
+        "0100": 590,
+        "0101": 60,
+        "0110": 179,
+        "0111": 44,
+        "1000": 289,
+        "1001": 48,
+        "1010": 62,
+        "1011": 21,
+        "1100": 259,
+        "1101": 39,
+        "1110": 118,
+        "1111": 32
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IIXX",
+        "block": "main",
+        "depth": 6,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_shallow",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 0,
+        "shots": 2048,
+        "source_depth": 32,
+        "source_size": 61,
+        "zne_noise_scale": 5,
+        "zne_reference_absolute_deviation": 0.4572050118315468,
+        "zne_source_row_index": 2,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 166,
+        "0001": 42,
+        "0010": 143,
+        "0011": 27,
+        "0100": 550,
+        "0101": 59,
+        "0110": 159,
+        "0111": 57,
+        "1000": 262,
+        "1001": 41,
+        "1010": 85,
+        "1011": 12,
+        "1100": 238,
+        "1101": 57,
+        "1110": 120,
+        "1111": 30
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IIXX",
+        "block": "main",
+        "depth": 6,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_shallow",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 1,
+        "shots": 2048,
+        "source_depth": 32,
+        "source_size": 61,
+        "zne_noise_scale": 5,
+        "zne_reference_absolute_deviation": 0.4572050118315468,
+        "zne_source_row_index": 2,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 161,
+        "0001": 34,
+        "0010": 110,
+        "0011": 16,
+        "0100": 600,
+        "0101": 55,
+        "0110": 149,
+        "0111": 43,
+        "1000": 269,
+        "1001": 49,
+        "1010": 64,
+        "1011": 15,
+        "1100": 268,
+        "1101": 47,
+        "1110": 140,
+        "1111": 28
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IIXX",
+        "block": "main",
+        "depth": 6,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_shallow",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 2,
+        "shots": 2048,
+        "source_depth": 32,
+        "source_size": 61,
+        "zne_noise_scale": 5,
+        "zne_reference_absolute_deviation": 0.4572050118315468,
+        "zne_source_row_index": 2,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 217,
+        "0001": 24,
+        "0010": 136,
+        "0011": 11,
+        "0100": 449,
+        "0101": 22,
+        "0110": 111,
+        "0111": 19,
+        "1000": 494,
+        "1001": 27,
+        "1010": 96,
+        "1011": 13,
+        "1100": 315,
+        "1101": 18,
+        "1110": 87,
+        "1111": 9
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IIYY",
+        "block": "main",
+        "depth": 6,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_shallow",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 0,
+        "shots": 2048,
+        "source_depth": 32,
+        "source_size": 61,
+        "zne_noise_scale": 1,
+        "zne_reference_absolute_deviation": 0.4734810534982135,
+        "zne_source_row_index": 3,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 242,
+        "0001": 20,
+        "0010": 121,
+        "0011": 15,
+        "0100": 460,
+        "0101": 27,
+        "0110": 113,
+        "0111": 15,
+        "1000": 466,
+        "1001": 36,
+        "1010": 121,
+        "1011": 10,
+        "1100": 303,
+        "1101": 20,
+        "1110": 70,
+        "1111": 9
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IIYY",
+        "block": "main",
+        "depth": 6,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_shallow",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 1,
+        "shots": 2048,
+        "source_depth": 32,
+        "source_size": 61,
+        "zne_noise_scale": 1,
+        "zne_reference_absolute_deviation": 0.4734810534982135,
+        "zne_source_row_index": 3,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 233,
+        "0001": 21,
+        "0010": 109,
+        "0011": 5,
+        "0100": 443,
+        "0101": 29,
+        "0110": 123,
+        "0111": 12,
+        "1000": 509,
+        "1001": 25,
+        "1010": 129,
+        "1011": 11,
+        "1100": 284,
+        "1101": 21,
+        "1110": 84,
+        "1111": 10
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IIYY",
+        "block": "main",
+        "depth": 6,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_shallow",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 2,
+        "shots": 2048,
+        "source_depth": 32,
+        "source_size": 61,
+        "zne_noise_scale": 1,
+        "zne_reference_absolute_deviation": 0.4734810534982135,
+        "zne_source_row_index": 3,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 159,
+        "0001": 25,
+        "0010": 92,
+        "0011": 18,
+        "0100": 387,
+        "0101": 36,
+        "0110": 89,
+        "0111": 15,
+        "1000": 532,
+        "1001": 50,
+        "1010": 168,
+        "1011": 27,
+        "1100": 315,
+        "1101": 20,
+        "1110": 104,
+        "1111": 11
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IIYY",
+        "block": "main",
+        "depth": 6,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_shallow",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 0,
+        "shots": 2048,
+        "source_depth": 32,
+        "source_size": 61,
+        "zne_noise_scale": 3,
+        "zne_reference_absolute_deviation": 0.4734810534982135,
+        "zne_source_row_index": 3,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 140,
+        "0001": 28,
+        "0010": 104,
+        "0011": 15,
+        "0100": 389,
+        "0101": 23,
+        "0110": 89,
+        "0111": 10,
+        "1000": 530,
+        "1001": 50,
+        "1010": 166,
+        "1011": 25,
+        "1100": 332,
+        "1101": 34,
+        "1110": 95,
+        "1111": 18
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IIYY",
+        "block": "main",
+        "depth": 6,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_shallow",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 1,
+        "shots": 2048,
+        "source_depth": 32,
+        "source_size": 61,
+        "zne_noise_scale": 3,
+        "zne_reference_absolute_deviation": 0.4734810534982135,
+        "zne_source_row_index": 3,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 154,
+        "0001": 28,
+        "0010": 102,
+        "0011": 10,
+        "0100": 369,
+        "0101": 21,
+        "0110": 86,
+        "0111": 15,
+        "1000": 526,
+        "1001": 41,
+        "1010": 177,
+        "1011": 22,
+        "1100": 331,
+        "1101": 39,
+        "1110": 107,
+        "1111": 20
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IIYY",
+        "block": "main",
+        "depth": 6,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_shallow",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 2,
+        "shots": 2048,
+        "source_depth": 32,
+        "source_size": 61,
+        "zne_noise_scale": 3,
+        "zne_reference_absolute_deviation": 0.4734810534982135,
+        "zne_source_row_index": 3,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 116,
+        "0001": 35,
+        "0010": 85,
+        "0011": 18,
+        "0100": 274,
+        "0101": 36,
+        "0110": 75,
+        "0111": 24,
+        "1000": 543,
+        "1001": 82,
+        "1010": 225,
+        "1011": 34,
+        "1100": 339,
+        "1101": 35,
+        "1110": 97,
+        "1111": 30
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IIYY",
+        "block": "main",
+        "depth": 6,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_shallow",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 0,
+        "shots": 2048,
+        "source_depth": 32,
+        "source_size": 61,
+        "zne_noise_scale": 5,
+        "zne_reference_absolute_deviation": 0.4734810534982135,
+        "zne_source_row_index": 3,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 115,
+        "0001": 41,
+        "0010": 78,
+        "0011": 24,
+        "0100": 296,
+        "0101": 25,
+        "0110": 93,
+        "0111": 19,
+        "1000": 523,
+        "1001": 87,
+        "1010": 221,
+        "1011": 41,
+        "1100": 317,
+        "1101": 34,
+        "1110": 103,
+        "1111": 31
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IIYY",
+        "block": "main",
+        "depth": 6,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_shallow",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 1,
+        "shots": 2048,
+        "source_depth": 32,
+        "source_size": 61,
+        "zne_noise_scale": 5,
+        "zne_reference_absolute_deviation": 0.4734810534982135,
+        "zne_source_row_index": 3,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 138,
+        "0001": 35,
+        "0010": 82,
+        "0011": 21,
+        "0100": 300,
+        "0101": 39,
+        "0110": 61,
+        "0111": 18,
+        "1000": 520,
+        "1001": 84,
+        "1010": 233,
+        "1011": 40,
+        "1100": 317,
+        "1101": 38,
+        "1110": 93,
+        "1111": 29
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IIYY",
+        "block": "main",
+        "depth": 6,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "dla_parity",
+        "initial": "0001",
+        "label": "dla_odd_shallow",
+        "lambda_fim": null,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 2,
+        "shots": 2048,
+        "source_depth": 32,
+        "source_size": 61,
+        "zne_noise_scale": 5,
+        "zne_reference_absolute_deviation": 0.4734810534982135,
+        "zne_source_row_index": 3,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 45,
+        "0001": 15,
+        "0010": 46,
+        "0011": 18,
+        "0100": 60,
+        "0101": 36,
+        "0110": 182,
+        "0111": 24,
+        "1000": 116,
+        "1001": 54,
+        "1010": 513,
+        "1011": 39,
+        "1100": 752,
+        "1101": 48,
+        "1110": 64,
+        "1111": 36
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IZZI",
+        "block": "main",
+        "depth": 4,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "fim_pair",
+        "initial": "0011",
+        "label": "fim_lambda4_feedback",
+        "lambda_fim": 4.0,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 0,
+        "shots": 2048,
+        "source_depth": 41,
+        "source_size": 66,
+        "zne_noise_scale": 1,
+        "zne_reference_absolute_deviation": 0.41334301962367287,
+        "zne_source_row_index": 4,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 34,
+        "0001": 14,
+        "0010": 50,
+        "0011": 20,
+        "0100": 65,
+        "0101": 35,
+        "0110": 171,
+        "0111": 12,
+        "1000": 116,
+        "1001": 65,
+        "1010": 513,
+        "1011": 43,
+        "1100": 729,
+        "1101": 67,
+        "1110": 79,
+        "1111": 35
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IZZI",
+        "block": "main",
+        "depth": 4,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "fim_pair",
+        "initial": "0011",
+        "label": "fim_lambda4_feedback",
+        "lambda_fim": 4.0,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 1,
+        "shots": 2048,
+        "source_depth": 41,
+        "source_size": 66,
+        "zne_noise_scale": 1,
+        "zne_reference_absolute_deviation": 0.41334301962367287,
+        "zne_source_row_index": 4,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 33,
+        "0001": 16,
+        "0010": 48,
+        "0011": 15,
+        "0100": 65,
+        "0101": 43,
+        "0110": 167,
+        "0111": 16,
+        "1000": 96,
+        "1001": 65,
+        "1010": 542,
+        "1011": 26,
+        "1100": 771,
+        "1101": 51,
+        "1110": 64,
+        "1111": 30
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IZZI",
+        "block": "main",
+        "depth": 4,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "fim_pair",
+        "initial": "0011",
+        "label": "fim_lambda4_feedback",
+        "lambda_fim": 4.0,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 2,
+        "shots": 2048,
+        "source_depth": 41,
+        "source_size": 66,
+        "zne_noise_scale": 1,
+        "zne_reference_absolute_deviation": 0.41334301962367287,
+        "zne_source_row_index": 4,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 92,
+        "0001": 42,
+        "0010": 106,
+        "0011": 41,
+        "0100": 140,
+        "0101": 46,
+        "0110": 192,
+        "0111": 40,
+        "1000": 200,
+        "1001": 66,
+        "1010": 344,
+        "1011": 62,
+        "1100": 429,
+        "1101": 76,
+        "1110": 121,
+        "1111": 51
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IZZI",
+        "block": "main",
+        "depth": 4,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "fim_pair",
+        "initial": "0011",
+        "label": "fim_lambda4_feedback",
+        "lambda_fim": 4.0,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 0,
+        "shots": 2048,
+        "source_depth": 41,
+        "source_size": 66,
+        "zne_noise_scale": 3,
+        "zne_reference_absolute_deviation": 0.41334301962367287,
+        "zne_source_row_index": 4,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 86,
+        "0001": 35,
+        "0010": 91,
+        "0011": 31,
+        "0100": 164,
+        "0101": 52,
+        "0110": 167,
+        "0111": 46,
+        "1000": 250,
+        "1001": 65,
+        "1010": 353,
+        "1011": 54,
+        "1100": 414,
+        "1101": 67,
+        "1110": 122,
+        "1111": 51
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IZZI",
+        "block": "main",
+        "depth": 4,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "fim_pair",
+        "initial": "0011",
+        "label": "fim_lambda4_feedback",
+        "lambda_fim": 4.0,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 1,
+        "shots": 2048,
+        "source_depth": 41,
+        "source_size": 66,
+        "zne_noise_scale": 3,
+        "zne_reference_absolute_deviation": 0.41334301962367287,
+        "zne_source_row_index": 4,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 75,
+        "0001": 39,
+        "0010": 79,
+        "0011": 31,
+        "0100": 138,
+        "0101": 60,
+        "0110": 155,
+        "0111": 37,
+        "1000": 248,
+        "1001": 74,
+        "1010": 310,
+        "1011": 68,
+        "1100": 457,
+        "1101": 98,
+        "1110": 114,
+        "1111": 65
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IZZI",
+        "block": "main",
+        "depth": 4,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "fim_pair",
+        "initial": "0011",
+        "label": "fim_lambda4_feedback",
+        "lambda_fim": 4.0,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 2,
+        "shots": 2048,
+        "source_depth": 41,
+        "source_size": 66,
+        "zne_noise_scale": 3,
+        "zne_reference_absolute_deviation": 0.41334301962367287,
+        "zne_source_row_index": 4,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 115,
+        "0001": 50,
+        "0010": 123,
+        "0011": 56,
+        "0100": 169,
+        "0101": 66,
+        "0110": 168,
+        "0111": 46,
+        "1000": 275,
+        "1001": 87,
+        "1010": 242,
+        "1011": 79,
+        "1100": 284,
+        "1101": 102,
+        "1110": 116,
+        "1111": 70
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IZZI",
+        "block": "main",
+        "depth": 4,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "fim_pair",
+        "initial": "0011",
+        "label": "fim_lambda4_feedback",
+        "lambda_fim": 4.0,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 0,
+        "shots": 2048,
+        "source_depth": 41,
+        "source_size": 66,
+        "zne_noise_scale": 5,
+        "zne_reference_absolute_deviation": 0.41334301962367287,
+        "zne_source_row_index": 4,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 116,
+        "0001": 62,
+        "0010": 120,
+        "0011": 62,
+        "0100": 175,
+        "0101": 69,
+        "0110": 142,
+        "0111": 53,
+        "1000": 263,
+        "1001": 72,
+        "1010": 285,
+        "1011": 72,
+        "1100": 258,
+        "1101": 90,
+        "1110": 140,
+        "1111": 69
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IZZI",
+        "block": "main",
+        "depth": 4,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "fim_pair",
+        "initial": "0011",
+        "label": "fim_lambda4_feedback",
+        "lambda_fim": 4.0,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 1,
+        "shots": 2048,
+        "source_depth": 41,
+        "source_size": 66,
+        "zne_noise_scale": 5,
+        "zne_reference_absolute_deviation": 0.41334301962367287,
+        "zne_source_row_index": 4,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 143,
+        "0001": 66,
+        "0010": 127,
+        "0011": 61,
+        "0100": 139,
+        "0101": 65,
+        "0110": 146,
+        "0111": 66,
+        "1000": 291,
+        "1001": 87,
+        "1010": 223,
+        "1011": 87,
+        "1100": 235,
+        "1101": 97,
+        "1110": 138,
+        "1111": 77
+      },
+      "job_id": "d86i8fas46sc73f70vg0",
+      "meta": {
+        "basis_setting": "IZZI",
+        "block": "main",
+        "depth": 4,
+        "experiment": "phase3_entanglement_tomography",
+        "family": "fim_pair",
+        "initial": "0011",
+        "label": "fim_lambda4_feedback",
+        "lambda_fim": 4.0,
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "rep": 2,
+        "shots": 2048,
+        "source_depth": 41,
+        "source_size": 66,
+        "zne_noise_scale": 5,
+        "zne_reference_absolute_deviation": 0.41334301962367287,
+        "zne_source_row_index": 4,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": null,
+        "ecr_gates": null,
+        "recovery_note": "main transpiled-circuit metadata was not stored in the pending artifact",
+        "total_gates": null
+      }
+    },
+    {
+      "counts": {
+        "0000": 7902,
+        "0001": 106,
+        "0010": 61,
+        "0011": 1,
+        "0100": 68,
+        "0101": 4,
+        "1000": 48,
+        "1001": 2
+      },
+      "job_id": "d86ijr9789is738vnh30",
+      "meta": {
+        "block": "readout",
+        "experiment": "phase3_entanglement_tomography",
+        "initial": "0000",
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "shots": 8192,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": 1,
+        "ecr_gates": 0,
+        "total_gates": 4
+      }
+    },
+    {
+      "counts": {
+        "0000": 80,
+        "0001": 1,
+        "0010": 2,
+        "1000": 7948,
+        "1001": 85,
+        "1010": 35,
+        "1100": 40,
+        "1101": 1
+      },
+      "job_id": "d86ijr9789is738vnh30",
+      "meta": {
+        "block": "readout",
+        "experiment": "phase3_entanglement_tomography",
+        "initial": "0001",
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "shots": 8192,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": 2,
+        "ecr_gates": 0,
+        "total_gates": 5
+      }
+    },
+    {
+      "counts": {
+        "0000": 86,
+        "0001": 2,
+        "0100": 7898,
+        "0101": 88,
+        "0110": 54,
+        "0111": 1,
+        "1100": 62,
+        "1101": 1
+      },
+      "job_id": "d86ijr9789is738vnh30",
+      "meta": {
+        "block": "readout",
+        "experiment": "phase3_entanglement_tomography",
+        "initial": "0010",
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "shots": 8192,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": 2,
+        "ecr_gates": 0,
+        "total_gates": 5
+      }
+    },
+    {
+      "counts": {
+        "0100": 100,
+        "0101": 2,
+        "0110": 1,
+        "1000": 69,
+        "1001": 1,
+        "1100": 7899,
+        "1101": 84,
+        "1110": 36
+      },
+      "job_id": "d86ijr9789is738vnh30",
+      "meta": {
+        "block": "readout",
+        "experiment": "phase3_entanglement_tomography",
+        "initial": "0011",
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "shots": 8192,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": 2,
+        "ecr_gates": 0,
+        "total_gates": 6
+      }
+    },
+    {
+      "counts": {
+        "0000": 89,
+        "0010": 7918,
+        "0011": 70,
+        "0100": 3,
+        "0110": 86,
+        "0111": 1,
+        "1010": 25
+      },
+      "job_id": "d86ijr9789is738vnh30",
+      "meta": {
+        "block": "readout",
+        "experiment": "phase3_entanglement_tomography",
+        "initial": "0100",
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "shots": 8192,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": 2,
+        "ecr_gates": 0,
+        "total_gates": 5
+      }
+    },
+    {
+      "counts": {
+        "0000": 1,
+        "0010": 65,
+        "1000": 96,
+        "1001": 1,
+        "1010": 7892,
+        "1011": 87,
+        "1100": 1,
+        "1110": 47,
+        "1111": 2
+      },
+      "job_id": "d86ijr9789is738vnh30",
+      "meta": {
+        "block": "readout",
+        "experiment": "phase3_entanglement_tomography",
+        "initial": "0101",
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "shots": 8192,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": 2,
+        "ecr_gates": 0,
+        "total_gates": 6
+      }
+    },
+    {
+      "counts": {
+        "0000": 2,
+        "0010": 52,
+        "0011": 1,
+        "0100": 111,
+        "0110": 7882,
+        "0111": 93,
+        "1110": 50,
+        "1111": 1
+      },
+      "job_id": "d86ijr9789is738vnh30",
+      "meta": {
+        "block": "readout",
+        "experiment": "phase3_entanglement_tomography",
+        "initial": "0110",
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "shots": 8192,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": 2,
+        "ecr_gates": 0,
+        "total_gates": 6
+      }
+    },
+    {
+      "counts": {
+        "0010": 1,
+        "0100": 2,
+        "0110": 75,
+        "0111": 2,
+        "1010": 70,
+        "1011": 2,
+        "1100": 93,
+        "1101": 1,
+        "1110": 7873,
+        "1111": 73
+      },
+      "job_id": "d86ijr9789is738vnh30",
+      "meta": {
+        "block": "readout",
+        "experiment": "phase3_entanglement_tomography",
+        "initial": "0111",
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "shots": 8192,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": 2,
+        "ecr_gates": 0,
+        "total_gates": 7
+      }
+    },
+    {
+      "counts": {
+        "0000": 75,
+        "0001": 7940,
+        "0011": 58,
+        "0101": 65,
+        "1001": 54
+      },
+      "job_id": "d86ijr9789is738vnh30",
+      "meta": {
+        "block": "readout",
+        "experiment": "phase3_entanglement_tomography",
+        "initial": "1000",
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "shots": 8192,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": 2,
+        "ecr_gates": 0,
+        "total_gates": 5
+      }
+    },
+    {
+      "counts": {
+        "0001": 74,
+        "1000": 92,
+        "1001": 7922,
+        "1011": 52,
+        "1100": 1,
+        "1101": 51
+      },
+      "job_id": "d86ijr9789is738vnh30",
+      "meta": {
+        "block": "readout",
+        "experiment": "phase3_entanglement_tomography",
+        "initial": "1001",
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "shots": 8192,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": 2,
+        "ecr_gates": 0,
+        "total_gates": 6
+      }
+    },
+    {
+      "counts": {
+        "0000": 2,
+        "0001": 47,
+        "0100": 90,
+        "0101": 7958,
+        "0110": 1,
+        "0111": 44,
+        "1101": 49,
+        "1111": 1
+      },
+      "job_id": "d86ijr9789is738vnh30",
+      "meta": {
+        "block": "readout",
+        "experiment": "phase3_entanglement_tomography",
+        "initial": "1010",
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "shots": 8192,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": 2,
+        "ecr_gates": 0,
+        "total_gates": 6
+      }
+    },
+    {
+      "counts": {
+        "0101": 80,
+        "0111": 2,
+        "1001": 67,
+        "1100": 82,
+        "1101": 7906,
+        "1110": 1,
+        "1111": 54
+      },
+      "job_id": "d86ijr9789is738vnh30",
+      "meta": {
+        "block": "readout",
+        "experiment": "phase3_entanglement_tomography",
+        "initial": "1011",
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "shots": 8192,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": 2,
+        "ecr_gates": 0,
+        "total_gates": 7
+      }
+    },
+    {
+      "counts": {
+        "0000": 1,
+        "0001": 96,
+        "0010": 95,
+        "0011": 7897,
+        "0101": 2,
+        "0110": 1,
+        "0111": 83,
+        "1011": 16,
+        "1111": 1
+      },
+      "job_id": "d86ijr9789is738vnh30",
+      "meta": {
+        "block": "readout",
+        "experiment": "phase3_entanglement_tomography",
+        "initial": "1100",
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "shots": 8192,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": 2,
+        "ecr_gates": 0,
+        "total_gates": 6
+      }
+    },
+    {
+      "counts": {
+        "0011": 101,
+        "0111": 1,
+        "1001": 103,
+        "1010": 71,
+        "1011": 7832,
+        "1101": 1,
+        "1110": 2,
+        "1111": 81
+      },
+      "job_id": "d86ijr9789is738vnh30",
+      "meta": {
+        "block": "readout",
+        "experiment": "phase3_entanglement_tomography",
+        "initial": "1101",
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "shots": 8192,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": 2,
+        "ecr_gates": 0,
+        "total_gates": 7
+      }
+    },
+    {
+      "counts": {
+        "0001": 1,
+        "0010": 1,
+        "0011": 61,
+        "0100": 1,
+        "0101": 121,
+        "0110": 81,
+        "0111": 7857,
+        "1011": 1,
+        "1111": 68
+      },
+      "job_id": "d86ijr9789is738vnh30",
+      "meta": {
+        "block": "readout",
+        "experiment": "phase3_entanglement_tomography",
+        "initial": "1110",
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "shots": 8192,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": 2,
+        "ecr_gates": 0,
+        "total_gates": 7
+      }
+    },
+    {
+      "counts": {
+        "0011": 2,
+        "0101": 1,
+        "0110": 1,
+        "0111": 75,
+        "1011": 68,
+        "1101": 89,
+        "1110": 76,
+        "1111": 7880
+      },
+      "job_id": "d86ijr9789is738vnh30",
+      "meta": {
+        "block": "readout",
+        "experiment": "phase3_entanglement_tomography",
+        "initial": "1111",
+        "layout_id": "L92",
+        "physical_qubits": [
+          141,
+          142,
+          143,
+          144
+        ],
+        "shots": 8192,
+        "zne_subset": true
+      },
+      "metadata": {
+        "depth": 2,
+        "ecr_gates": 0,
+        "total_gates": 8
+      }
+    }
+  ],
   "claim_boundary": "reduced-Pauli entanglement/tomography check only; no quantum advantage, backend-general, or scalable tomography claim",
+  "downloaded_utc": "2026-05-20T11:37:26Z",
   "estimated_qpu_minutes": 0.5591666666666667,
   "experiment": "phase3_entanglement_tomography",
   "full_readout_calibration": true,
+  "ibm_job_metadata": {
+    "main": {
+      "creation_date": "2026-05-20T05:02:21.856668+02:00",
+      "job_id": "d86i8fas46sc73f70vg0",
+      "metrics": {
+        "bss": {
+          "seconds": 27
+        },
+        "caller": "qiskit_ibm_runtime~sampler.py",
+        "qiskit_version": "qiskit_ibm_runtime-0.46.1,qiskit-2.4.0*,qiskit_aer-0.17.2*",
+        "timestamps": {
+          "created": "2026-05-20T03:02:21.856668Z",
+          "finished": "2026-05-20T06:23:27.129647Z",
+          "running": "2026-05-20T06:14:58.645836Z"
+        },
+        "usage": {
+          "quantum_seconds": 27,
+          "seconds": 27,
+          "status": "complete"
+        }
+      },
+      "status": "DONE",
+      "usage_estimation": {
+        "quantum_seconds": 33.143792582
+      }
+    },
+    "readout": {
+      "creation_date": "2026-05-20T05:26:37.230473+02:00",
+      "job_id": "d86ijr9789is738vnh30",
+      "metrics": {
+        "bss": {
+          "seconds": 36
+        },
+        "caller": "qiskit_ibm_runtime~sampler.py",
+        "qiskit_version": "qiskit_ibm_runtime-0.46.1,qiskit-2.4.0*,qiskit_aer-0.17.2",
+        "timestamps": {
+          "created": "2026-05-20T03:26:37.230473Z",
+          "finished": "2026-05-20T06:26:52.614157Z",
+          "running": "2026-05-20T06:21:19.982198Z"
+        },
+        "usage": {
+          "quantum_seconds": 36,
+          "seconds": 36,
+          "status": "complete"
+        }
+      },
+      "status": "DONE",
+      "usage_estimation": {
+        "quantum_seconds": 35.168175427
+      }
+    }
+  },
   "job_ids": [
     "d86i8fas46sc73f70vg0",
     "d86ijr9789is738vnh30"
@@ -1781,13 +4686,16 @@
       }
     }
   ],
+  "recovery_note": "Counts hydrated after both queued Kingston jobs reached DONE; main per-circuit transpilation metadata was not present in the pending artifact, while readout metadata was recovered from readout_submission_metadata.",
   "repetitions": 3,
   "schema": "scpn_phase3_entanglement_tomography_live_v1",
   "shots_main": 2048,
   "shots_readout": 8192,
-  "status": "pending_jobs_submitted",
+  "status": "completed",
   "submission_recovery_note": "Main job was submitted by the guarded runner; readout job was submitted independently because the guarded runner waits for the main result before launching readout.",
   "timestamp_utc": "2026-05-20T030211Z",
+  "wall_time_main_s": 12065.272979,
+  "wall_time_readout_s": 10815.383684,
   "zne_noise_scales": [
     1,
     3,
