@@ -12,7 +12,10 @@
 *Contact: protoscience@anulum.li*
 
 **Date:** 2026-05-20
-**Status:** Manuscript draft with completed IBM execution, analysis tables, and figure assets
+**Status:** Historical Markdown scaffold; canonical source is
+`phase3_entanglement_tomography.tex`, with completed IBM execution,
+second-backend replication, full-readout calibration, ZNE stress-test analysis,
+tables, and figure assets.
 **Target venue:** short communication / workshop submission candidate
 
 ---
@@ -25,15 +28,17 @@ prepared-state, and readout artefacts. We present a cost-bounded reduced-Pauli
 entanglement/tomography protocol for the promoted Phase 3 DLA-parity and
 Fisher-information-modified Kuramoto-XY circuit families. The protocol measures
 54 exact-reference Pauli observables across six source circuits, grouped into
-nine measurement bases with three repetitions per source/basis pair, plus four
+nine measurement bases with three repetitions per source/basis pair, plus
 readout calibration states. The approved IBM `ibm_marrakesh` execution selected
 physical qubits `[1,2,3,4]`, transpiled 166 circuits, and completed jobs
 `d86g7h1789is738vkreg` and `d86ggpis46sc73f6v170` under the preregistered 25
 minute ceiling. The preregistered reducer produced 54 observable rows with mean
 absolute deviation 0.1299 and maximum absolute deviation 0.5561 relative to
-exact references. The intended claim is bounded: reduced-Pauli correlators show
-large hardware deviations in the fixed small-system setting, with no scalable
-tomography, quantum-advantage, or backend-general claim.
+exact references. Same-day `ibm_fez` replication, pinned-layout full correlated
+readout calibration, and a five-channel ZNE stress test were later added in the
+canonical LaTeX manuscript. The intended claim is bounded: reduced-Pauli
+correlators show large hardware deviations in the fixed small-system setting,
+with no scalable tomography, quantum-advantage, or backend-general claim.
 
 ## 1. Introduction
 
@@ -241,11 +246,12 @@ boundary. The interpretation is downgraded if any of the following occur:
 - measured correlators are consistent with product-state or readout artefact
   explanations.
 
-The current first-pass result establishes large reduced-Pauli deviations from
-exact references in the measured hardware window. It does not yet establish
-that those deviations are an entanglement mechanism rather than a compound
-effect of coherent hardware error, readout context, layout, and circuit depth.
-That distinction is the central interpretation work for the paper.
+The canonical LaTeX manuscript extends this first-pass result with
+second-backend replication, full correlated readout calibration, and the
+preregistered ZNE subset. Those extensions make a pure population-readout
+explanation less plausible, but still do not establish full causal attribution:
+coherent hardware error, basis-rotation error, layout context, calibration
+drift, and circuit depth remain within the claim boundary.
 
 ## 7. Discussion
 
@@ -337,15 +343,24 @@ Paper assets:
 python scripts/generate_phase3_entanglement_paper_assets.py
 ```
 
+ZNE stress-test analysis:
+
+```bash
+python scripts/analyse_phase3_entanglement_zne.py \
+  data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_fez_2026-05-20T023600Z.json
+```
+
 ## 10. Conclusion
 
-The campaign has completed the approved IBM execution and first-pass
-reduced-Pauli analysis. The scientific paper should be framed as a
-mechanism-boundary study: reduced-Pauli tomography shows sizeable measured
-correlator deviations in the same small-system setting as the DLA/FIM hardware
-programme, but the conservative contribution is to bound and interpret that
-structure rather than to claim scalable tomography, backend-general dynamics, or
-quantum advantage.
+The campaign has completed the approved IBM execution, first-pass reduced-Pauli
+analysis, same-day replication, full-readout sensitivity checks, and a bounded
+ZNE stress test. The scientific paper should be framed as a mechanism-boundary
+study: reduced-Pauli tomography shows sizeable measured correlator deviations
+in the same small-system setting as the DLA/FIM hardware programme, and simple
+global-folding ZNE does not erase the dominant DLA transverse deviations, but
+the conservative contribution is to bound and interpret that structure rather
+than to claim scalable tomography, backend-general dynamics, or quantum
+advantage.
 
 The most defensible contribution is therefore: a preregistered 166-circuit IBM
 Heron run measured 54 reduced-Pauli observables for promoted DLA and FIM

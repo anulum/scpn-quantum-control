@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <!-- Commercial license available -->
-<!-- (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved. -->
-<!-- (c) Code 2020-2026 Miroslav Sotek. All rights reserved. -->
+<!-- © Concepts 1996-2026 Miroslav Sotek. All rights reserved. -->
+<!-- © Code 2020-2026 Miroslav Sotek. All rights reserved. -->
 <!-- ORCID: 0009-0009-3560-0851 -->
 <!-- Contact: www.anulum.li | protoscience@anulum.li -->
 <!-- scpn-quantum-control -- entanglement/tomography IBM execution package -->
@@ -111,7 +111,50 @@ Blocked claims:
 Paper-facing artefacts:
 
 - Plan: `docs/phase3_entanglement_tomography_paper_plan_2026-05-20.md`
-- Draft scaffold: `paper/phase3_entanglement_tomography/phase3_entanglement_tomography_short_paper.md`
+- Canonical LaTeX source:
+  `paper/phase3_entanglement_tomography/phase3_entanglement_tomography.tex`
+- Built PDF:
+  `paper/phase3_entanglement_tomography/phase3_entanglement_tomography.pdf`
+- Historical Markdown scaffold:
+  `paper/phase3_entanglement_tomography/phase3_entanglement_tomography_short_paper.md`
+
+## Completed Extensions
+
+The initial execution package was extended on the same date with second-backend
+replication, pinned-layout full correlated readout calibration, and a
+preregistered five-channel ZNE stress test on `ibm_fez`.
+
+Extension artefacts:
+
+- `data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_fez_2026-05-20T014536Z.json`
+- `data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_fez_2026-05-20T020452Z.json`
+- `data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_fez_2026-05-20T023204Z.json`
+- `data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_fez_2026-05-20T023600Z.json`
+- `data/phase3_entanglement_tomography/entanglement_zne_summary_2026-05-20_ibm_fez_zne.json`
+- `docs/phase3_entanglement_zne_manifest_2026-05-20_ibm_fez_zne.md`
+
+Extension jobs:
+
+- backend replication and full-readout calibration:
+  `d86hdk8p0eas73dkv9eg`, `d86hedp789is738vm7mg`
+- ZNE subset and 16-state readout calibration:
+  `d86hs6qs46sc73f70h90`, `d86hsltg7okc73el4lg0`
+
+ZNE snapshot:
+
+| Metric | Value |
+|---|---:|
+| ZNE scale rows | 15 |
+| ZNE channels | 5 |
+| Scale-1 mean absolute deviation | 0.4196274906488838 |
+| Linear-ZNE mean absolute deviation | 0.44124749932943935 |
+| Full-readout-mitigated linear-ZNE mean absolute deviation | 0.4468173734963394 |
+| Quadratic-ZNE mean absolute deviation | 0.4477931807530503 |
+
+The ZNE extension is interpreted as a mechanism stress test only. The simple
+global-folding lane does not erase the four dominant DLA transverse deviations;
+the FIM control channel behaves differently and improves under linear
+extrapolation.
 
 ## Boundary
 

@@ -47,7 +47,14 @@ Completed:
 - generated observable-summary CSV and manifest;
 - post-run raw-count reducer;
 - paper asset generator with label summary, basis summary, top-deviation
-  table, and heatmap figure.
+  table, and heatmap figure;
+- second-backend `ibm_fez` replication;
+- pinned-layout `ibm_fez` repeat with full 16-state correlated readout
+  calibration;
+- preregistered five-channel ZNE stress test on `ibm_fez` physical qubits
+  `[21,22,23,24]`;
+- ZNE reducer and manifest:
+  `docs/phase3_entanglement_zne_manifest_2026-05-20_ibm_fez_zne.md`.
 
 Current first-pass result:
 
@@ -64,8 +71,20 @@ Current first-pass result:
 
 Pending:
 
-- readout-sensitivity interpretation pass;
 - final venue formatting and bibliography pass.
+
+Completed ZNE stress-test result:
+
+- completed artefact:
+  `data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_fez_2026-05-20T023600Z.json`;
+- jobs: `d86hs6qs46sc73f70h90`, `d86hsltg7okc73el4lg0`;
+- 15 scale rows over 5 preregistered channels;
+- scale-1 mean absolute deviation: `0.4196274906488838`;
+- linear-ZNE mean absolute deviation: `0.44124749932943935`;
+- full-readout-mitigated linear-ZNE mean absolute deviation:
+  `0.4468173734963394`;
+- channel-summary SHA256:
+  `775594dd3efc8f519111365179659d41903cf774bcde1d20a378d53b6ee8e7aa`.
 
 ## Minimum Run
 
@@ -135,6 +154,8 @@ Minimum paper assets:
 3. Family-level aggregate table for DLA shallow/signal and FIM lambda pair.
 4. Largest-deviation table for the dominant measured correlator channels.
 5. Boundary table: supported claims, blocked claims, falsifiers.
+6. ZNE stress-test table for the four DLA transverse channels and one FIM
+   control channel.
 
 Generated assets:
 
@@ -158,8 +179,18 @@ Best fit after raw counts:
 
 Manuscript source:
 
+- `paper/phase3_entanglement_tomography/phase3_entanglement_tomography.tex`
+
+Built PDF:
+
+- `paper/phase3_entanglement_tomography/phase3_entanglement_tomography.pdf`
+
+Historical scaffold:
+
 - `paper/phase3_entanglement_tomography/phase3_entanglement_tomography_short_paper.md`
 
-The draft now records completed raw-count execution and first-pass analysis.
-Next paper work is table/figure generation and readout-sensitivity
-interpretation, not additional QPU spend.
+The canonical LaTeX manuscript now records the completed raw-count execution,
+readout-sensitivity extensions, second-backend replication, full correlated
+readout calibration, and the five-channel ZNE stress test. Next paper work is
+venue-specific formatting and final bibliography polishing, not additional QPU
+spend for this paper.

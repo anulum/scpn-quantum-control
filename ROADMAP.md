@@ -943,10 +943,23 @@ explicit QPU-time estimate before submission.
   reproducible label-level, basis-level, and largest-deviation paper
   tables plus the measured-minus-exact heatmap
   `figures/phase3/phase3_entanglement_deviation_heatmap_2026-05-20.png`.
-  The short-paper draft now includes the result tables, heatmap reference,
-  discussion, and conservative mechanism-boundary interpretation. Remaining
-  work is venue formatting and any optional readout-sensitivity expansion,
-  not additional QPU spend.
+  The canonical LaTeX manuscript now includes the result tables, heatmap
+  reference, discussion, and conservative mechanism-boundary interpretation.
+- [x] **Entanglement tomography readout, replication, and ZNE stress-test
+  extension.** Completed 2026-05-20: same-day `ibm_fez` replication,
+  pinned-layout full 16-state correlated readout calibration, and the
+  preregistered five-channel ZNE subset were executed and reduced. ZNE jobs
+  `d86hs6qs46sc73f70h90` and `d86hsltg7okc73el4lg0` produced
+  `data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_fez_2026-05-20T023600Z.json`;
+  `scripts/analyse_phase3_entanglement_zne.py` generated
+  `data/phase3_entanglement_tomography/entanglement_zne_summary_2026-05-20_ibm_fez_zne.json`,
+  scale rows, channel summary, and
+  `docs/phase3_entanglement_zne_manifest_2026-05-20_ibm_fez_zne.md`.
+  Result: simple global-folding ZNE does not erase the four dominant DLA
+  transverse deviations; the FIM control channel behaves differently and
+  improves under linear extrapolation. Remaining paper work is
+  venue-specific formatting and bibliography polish, not additional QPU spend
+  for this paper.
 - [x] **Depth-optimal native decomposition preregistration.**
   Completed 2026-05-06:
   `docs/depth_optimal_native_decomposition_prereg_2026-05-06.md`
