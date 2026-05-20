@@ -1,0 +1,2114 @@
+{
+  "schema": "scpn_s1_readout_zne_raw_counts_v1",
+  "experiment_id": "s1_readout_zne_direct_xy_extension_2026-05-20",
+  "parent_experiment_id": "s1_dynamic_feedback_preregistration_2026-05-06",
+  "backend": "ibm_fez",
+  "lane": "s1c",
+  "timestamp_utc": "20260520T153317Z",
+  "job_ids": [
+    "d86t8ftg7okc73eljf10"
+  ],
+  "wall_time_s": 36.13979697227478,
+  "readiness_json": "data/s1_feedback_loop/s1c_readout_zne_readiness_ibm_fez_20260520T153317Z.json",
+  "readiness_sha256": "0c2402143f805cee2be4b423f0a0579c26da650779e568169fbf2d5da759b591",
+  "physical_layout": {
+    "system_qubits": [
+      143,
+      142,
+      136
+    ],
+    "monitor_qubit": 144,
+    "logical_order": [
+      "sys_0",
+      "sys_1",
+      "sys_2",
+      "monitor"
+    ]
+  },
+  "noise_scales": [
+    1,
+    3,
+    5
+  ],
+  "shots": 1024,
+  "circuits": [
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "XXI",
+        "zne_noise_scale": 1,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "110": 41,
+        "001": 239,
+        "000": 327,
+        "010": 148,
+        "011": 111,
+        "101": 64,
+        "100": 69,
+        "111": 25
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 0
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "XXI",
+        "zne_noise_scale": 1,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "011": 132,
+        "000": 294,
+        "010": 155,
+        "001": 251,
+        "110": 40,
+        "100": 79,
+        "101": 52,
+        "111": 21
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 1
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "XXI",
+        "zne_noise_scale": 1,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "000": 341,
+        "010": 138,
+        "001": 220,
+        "110": 27,
+        "011": 138,
+        "100": 81,
+        "101": 52,
+        "111": 27
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 2
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "XXI",
+        "zne_noise_scale": 3,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "100": 86,
+        "001": 220,
+        "000": 385,
+        "101": 46,
+        "011": 117,
+        "010": 107,
+        "110": 40,
+        "111": 23
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 3
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "XXI",
+        "zne_noise_scale": 3,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "000": 407,
+        "001": 197,
+        "011": 92,
+        "010": 134,
+        "101": 48,
+        "100": 98,
+        "110": 26,
+        "111": 22
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 4
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "XXI",
+        "zne_noise_scale": 3,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "000": 384,
+        "100": 89,
+        "111": 32,
+        "001": 217,
+        "110": 36,
+        "101": 45,
+        "010": 121,
+        "011": 100
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 5
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "XXI",
+        "zne_noise_scale": 5,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "010": 149,
+        "111": 31,
+        "000": 357,
+        "011": 106,
+        "110": 49,
+        "001": 181,
+        "100": 99,
+        "101": 52
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 6
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "XXI",
+        "zne_noise_scale": 5,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "000": 327,
+        "011": 127,
+        "001": 182,
+        "100": 84,
+        "010": 143,
+        "101": 50,
+        "111": 47,
+        "110": 64
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 7
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "XXI",
+        "zne_noise_scale": 5,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "000": 359,
+        "100": 108,
+        "010": 129,
+        "110": 45,
+        "001": 171,
+        "011": 128,
+        "101": 45,
+        "111": 39
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 8
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "YYI",
+        "zne_noise_scale": 1,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "000": 217,
+        "101": 36,
+        "011": 226,
+        "010": 170,
+        "001": 206,
+        "100": 46,
+        "110": 58,
+        "111": 65
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 9
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "YYI",
+        "zne_noise_scale": 1,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "011": 202,
+        "001": 207,
+        "010": 187,
+        "000": 223,
+        "111": 73,
+        "100": 49,
+        "101": 44,
+        "110": 39
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 10
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "YYI",
+        "zne_noise_scale": 1,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "010": 241,
+        "001": 188,
+        "111": 64,
+        "000": 212,
+        "110": 34,
+        "100": 30,
+        "011": 205,
+        "101": 50
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 11
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "YYI",
+        "zne_noise_scale": 3,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "001": 223,
+        "000": 247,
+        "010": 182,
+        "011": 170,
+        "110": 48,
+        "111": 52,
+        "100": 48,
+        "101": 54
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 12
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "YYI",
+        "zne_noise_scale": 3,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "010": 167,
+        "001": 214,
+        "000": 226,
+        "011": 197,
+        "101": 59,
+        "110": 52,
+        "111": 58,
+        "100": 51
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 13
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "YYI",
+        "zne_noise_scale": 3,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "000": 256,
+        "010": 154,
+        "101": 56,
+        "011": 183,
+        "001": 236,
+        "100": 51,
+        "110": 38,
+        "111": 50
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 14
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "YYI",
+        "zne_noise_scale": 5,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "010": 204,
+        "011": 226,
+        "110": 53,
+        "111": 71,
+        "101": 50,
+        "001": 177,
+        "000": 199,
+        "100": 44
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 15
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "YYI",
+        "zne_noise_scale": 5,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "000": 191,
+        "010": 192,
+        "100": 58,
+        "111": 73,
+        "011": 205,
+        "001": 180,
+        "101": 67,
+        "110": 58
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 16
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "YYI",
+        "zne_noise_scale": 5,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "010": 183,
+        "011": 229,
+        "000": 199,
+        "001": 202,
+        "110": 42,
+        "100": 51,
+        "101": 56,
+        "111": 62
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 17
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "IXX",
+        "zne_noise_scale": 1,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "111": 11,
+        "000": 478,
+        "010": 196,
+        "100": 185,
+        "001": 30,
+        "110": 94,
+        "101": 16,
+        "011": 14
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 18
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "IXX",
+        "zne_noise_scale": 1,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "010": 184,
+        "000": 480,
+        "100": 172,
+        "011": 17,
+        "001": 35,
+        "110": 101,
+        "101": 23,
+        "111": 12
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 19
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "IXX",
+        "zne_noise_scale": 1,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "000": 461,
+        "110": 94,
+        "100": 188,
+        "010": 196,
+        "101": 22,
+        "001": 31,
+        "011": 18,
+        "111": 14
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 20
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "IXX",
+        "zne_noise_scale": 3,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "110": 69,
+        "000": 406,
+        "100": 168,
+        "011": 35,
+        "001": 111,
+        "101": 68,
+        "111": 40,
+        "010": 127
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 21
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "IXX",
+        "zne_noise_scale": 3,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "101": 67,
+        "000": 418,
+        "001": 116,
+        "100": 154,
+        "010": 123,
+        "110": 74,
+        "011": 45,
+        "111": 27
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 22
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "IXX",
+        "zne_noise_scale": 3,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "000": 404,
+        "011": 34,
+        "001": 140,
+        "100": 169,
+        "010": 115,
+        "101": 56,
+        "111": 28,
+        "110": 78
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 23
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "IXX",
+        "zne_noise_scale": 5,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "101": 88,
+        "000": 259,
+        "100": 134,
+        "001": 201,
+        "011": 62,
+        "010": 129,
+        "110": 102,
+        "111": 49
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 24
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "IXX",
+        "zne_noise_scale": 5,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "111": 53,
+        "000": 288,
+        "100": 104,
+        "101": 100,
+        "010": 147,
+        "001": 200,
+        "011": 60,
+        "110": 72
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 25
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "IXX",
+        "zne_noise_scale": 5,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "011": 75,
+        "001": 200,
+        "000": 257,
+        "101": 95,
+        "110": 82,
+        "100": 137,
+        "010": 130,
+        "111": 48
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 26
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "IYY",
+        "zne_noise_scale": 1,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "100": 192,
+        "011": 24,
+        "110": 186,
+        "010": 282,
+        "000": 272,
+        "111": 26,
+        "101": 19,
+        "001": 23
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 27
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "IYY",
+        "zne_noise_scale": 1,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "010": 281,
+        "100": 190,
+        "110": 192,
+        "000": 263,
+        "001": 28,
+        "011": 22,
+        "111": 25,
+        "101": 23
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 28
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "IYY",
+        "zne_noise_scale": 1,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "010": 278,
+        "100": 199,
+        "110": 188,
+        "000": 261,
+        "101": 32,
+        "001": 20,
+        "011": 20,
+        "111": 26
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 29
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "IYY",
+        "zne_noise_scale": 3,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "100": 172,
+        "000": 263,
+        "001": 72,
+        "010": 232,
+        "101": 52,
+        "110": 115,
+        "011": 59,
+        "111": 59
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 30
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "IYY",
+        "zne_noise_scale": 3,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "101": 70,
+        "100": 189,
+        "010": 236,
+        "110": 125,
+        "011": 56,
+        "001": 82,
+        "000": 217,
+        "111": 49
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 31
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "IYY",
+        "zne_noise_scale": 3,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "111": 45,
+        "000": 266,
+        "010": 216,
+        "011": 67,
+        "100": 163,
+        "001": 67,
+        "101": 64,
+        "110": 136
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 32
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "IYY",
+        "zne_noise_scale": 5,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "100": 112,
+        "001": 104,
+        "011": 130,
+        "000": 180,
+        "111": 77,
+        "010": 211,
+        "110": 116,
+        "101": 94
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 33
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "IYY",
+        "zne_noise_scale": 5,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "001": 121,
+        "101": 79,
+        "111": 93,
+        "000": 174,
+        "011": 116,
+        "110": 120,
+        "010": 210,
+        "100": 111
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 34
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "feedback",
+        "observable": "IYY",
+        "zne_noise_scale": 5,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "101": 90,
+        "011": 89,
+        "111": 91,
+        "110": 107,
+        "010": 207,
+        "001": 148,
+        "100": 111,
+        "000": 181
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 35
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "XXI",
+        "zne_noise_scale": 1,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "100": 97,
+        "000": 373,
+        "010": 137,
+        "111": 29,
+        "001": 198,
+        "011": 103,
+        "110": 38,
+        "101": 49
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 36
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "XXI",
+        "zne_noise_scale": 1,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "010": 126,
+        "000": 373,
+        "100": 78,
+        "001": 233,
+        "011": 101,
+        "101": 48,
+        "111": 32,
+        "110": 33
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 37
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "XXI",
+        "zne_noise_scale": 1,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "001": 214,
+        "010": 129,
+        "110": 37,
+        "000": 372,
+        "101": 47,
+        "100": 87,
+        "011": 114,
+        "111": 24
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 38
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "XXI",
+        "zne_noise_scale": 3,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "110": 44,
+        "000": 394,
+        "001": 199,
+        "010": 127,
+        "011": 93,
+        "100": 105,
+        "111": 22,
+        "101": 40
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 39
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "XXI",
+        "zne_noise_scale": 3,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "000": 425,
+        "110": 39,
+        "011": 89,
+        "010": 117,
+        "001": 201,
+        "101": 41,
+        "100": 86,
+        "111": 26
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 40
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "XXI",
+        "zne_noise_scale": 3,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "000": 380,
+        "100": 99,
+        "010": 112,
+        "001": 206,
+        "110": 45,
+        "011": 103,
+        "101": 49,
+        "111": 30
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 41
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "XXI",
+        "zne_noise_scale": 5,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "000": 362,
+        "001": 167,
+        "010": 130,
+        "011": 109,
+        "110": 53,
+        "100": 105,
+        "101": 58,
+        "111": 40
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 42
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "XXI",
+        "zne_noise_scale": 5,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "011": 120,
+        "000": 349,
+        "010": 130,
+        "100": 88,
+        "101": 59,
+        "001": 185,
+        "111": 38,
+        "110": 55
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 43
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "XXI",
+        "zne_noise_scale": 5,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "001": 172,
+        "000": 355,
+        "011": 121,
+        "111": 39,
+        "100": 96,
+        "010": 121,
+        "101": 71,
+        "110": 49
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 44
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "YYI",
+        "zne_noise_scale": 1,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "000": 227,
+        "010": 235,
+        "110": 53,
+        "001": 186,
+        "100": 41,
+        "011": 194,
+        "101": 46,
+        "111": 42
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 45
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "YYI",
+        "zne_noise_scale": 1,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "010": 194,
+        "000": 252,
+        "011": 191,
+        "101": 41,
+        "110": 53,
+        "100": 46,
+        "001": 200,
+        "111": 47
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 46
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "YYI",
+        "zne_noise_scale": 1,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "011": 185,
+        "001": 176,
+        "000": 258,
+        "010": 212,
+        "100": 47,
+        "101": 47,
+        "111": 59,
+        "110": 40
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 47
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "YYI",
+        "zne_noise_scale": 3,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "011": 185,
+        "000": 253,
+        "010": 181,
+        "001": 213,
+        "111": 54,
+        "110": 43,
+        "100": 45,
+        "101": 50
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 48
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "YYI",
+        "zne_noise_scale": 3,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "011": 177,
+        "000": 245,
+        "110": 37,
+        "101": 55,
+        "010": 156,
+        "100": 44,
+        "001": 245,
+        "111": 65
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 49
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "YYI",
+        "zne_noise_scale": 3,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "001": 238,
+        "111": 44,
+        "010": 153,
+        "101": 61,
+        "000": 269,
+        "011": 174,
+        "100": 40,
+        "110": 45
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 50
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "YYI",
+        "zne_noise_scale": 5,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "010": 183,
+        "000": 187,
+        "011": 226,
+        "001": 194,
+        "101": 76,
+        "100": 36,
+        "111": 69,
+        "110": 53
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 51
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "YYI",
+        "zne_noise_scale": 5,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "101": 73,
+        "010": 191,
+        "000": 193,
+        "100": 54,
+        "001": 184,
+        "110": 64,
+        "011": 198,
+        "111": 67
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 52
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "YYI",
+        "zne_noise_scale": 5,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "110": 59,
+        "001": 176,
+        "011": 210,
+        "111": 72,
+        "010": 184,
+        "000": 201,
+        "100": 49,
+        "101": 73
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 53
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "IXX",
+        "zne_noise_scale": 1,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "110": 71,
+        "100": 176,
+        "000": 502,
+        "010": 205,
+        "001": 28,
+        "011": 23,
+        "101": 14,
+        "111": 5
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 54
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "IXX",
+        "zne_noise_scale": 1,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "010": 206,
+        "111": 14,
+        "000": 486,
+        "110": 67,
+        "100": 180,
+        "011": 22,
+        "001": 31,
+        "101": 18
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 55
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "IXX",
+        "zne_noise_scale": 1,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "000": 500,
+        "010": 193,
+        "011": 24,
+        "100": 145,
+        "110": 86,
+        "101": 24,
+        "001": 39,
+        "111": 13
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 56
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "IXX",
+        "zne_noise_scale": 3,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "101": 69,
+        "000": 424,
+        "001": 104,
+        "100": 162,
+        "011": 53,
+        "110": 59,
+        "111": 26,
+        "010": 127
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 57
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "IXX",
+        "zne_noise_scale": 3,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "000": 419,
+        "111": 39,
+        "101": 58,
+        "001": 120,
+        "100": 153,
+        "110": 78,
+        "010": 120,
+        "011": 37
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 58
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "IXX",
+        "zne_noise_scale": 3,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "111": 24,
+        "000": 418,
+        "100": 149,
+        "101": 41,
+        "010": 139,
+        "110": 86,
+        "001": 122,
+        "011": 45
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 59
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "IXX",
+        "zne_noise_scale": 5,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "001": 201,
+        "000": 280,
+        "101": 80,
+        "010": 137,
+        "011": 72,
+        "110": 84,
+        "100": 120,
+        "111": 50
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 60
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "IXX",
+        "zne_noise_scale": 5,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "101": 107,
+        "001": 193,
+        "011": 79,
+        "110": 78,
+        "000": 269,
+        "100": 127,
+        "010": 137,
+        "111": 34
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 61
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "IXX",
+        "zne_noise_scale": 5,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "001": 203,
+        "010": 140,
+        "000": 310,
+        "011": 58,
+        "111": 31,
+        "101": 96,
+        "110": 70,
+        "100": 116
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 62
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "IYY",
+        "zne_noise_scale": 1,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "010": 291,
+        "100": 217,
+        "000": 263,
+        "001": 13,
+        "011": 10,
+        "110": 177,
+        "101": 25,
+        "111": 28
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 63
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "IYY",
+        "zne_noise_scale": 1,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "010": 281,
+        "100": 220,
+        "000": 258,
+        "110": 169,
+        "111": 24,
+        "001": 25,
+        "011": 29,
+        "101": 18
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 64
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "IYY",
+        "zne_noise_scale": 1,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "100": 189,
+        "110": 188,
+        "000": 293,
+        "010": 276,
+        "001": 26,
+        "111": 16,
+        "101": 18,
+        "011": 18
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 65
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "IYY",
+        "zne_noise_scale": 3,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "000": 273,
+        "101": 68,
+        "010": 204,
+        "001": 73,
+        "100": 166,
+        "110": 121,
+        "111": 59,
+        "011": 60
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 66
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "IYY",
+        "zne_noise_scale": 3,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "010": 208,
+        "101": 79,
+        "100": 168,
+        "000": 254,
+        "110": 119,
+        "001": 82,
+        "011": 62,
+        "111": 52
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 67
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "IYY",
+        "zne_noise_scale": 3,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "111": 52,
+        "000": 242,
+        "010": 197,
+        "110": 130,
+        "100": 199,
+        "101": 55,
+        "001": 93,
+        "011": 56
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 68
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "IYY",
+        "zne_noise_scale": 5,
+        "repetition": 0,
+        "shots": 1024
+      },
+      "counts": {
+        "100": 130,
+        "011": 104,
+        "101": 91,
+        "001": 111,
+        "110": 138,
+        "000": 167,
+        "010": 190,
+        "111": 93
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 69
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "IYY",
+        "zne_noise_scale": 5,
+        "repetition": 1,
+        "shots": 1024
+      },
+      "counts": {
+        "111": 89,
+        "001": 121,
+        "000": 167,
+        "101": 103,
+        "011": 99,
+        "100": 114,
+        "010": 211,
+        "110": 120
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 70
+    },
+    {
+      "block": "main",
+      "meta": {
+        "lane": "s1c",
+        "policy_variant": "s1c_shallow_positive",
+        "n_rounds": 1,
+        "correction_angle": 0.06,
+        "base_gain": 0.4,
+        "arm": "matched_open_loop_control",
+        "observable": "IYY",
+        "zne_noise_scale": 5,
+        "repetition": 2,
+        "shots": 1024
+      },
+      "counts": {
+        "111": 82,
+        "100": 122,
+        "001": 118,
+        "000": 202,
+        "101": 111,
+        "011": 98,
+        "010": 187,
+        "110": 104
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 71
+    },
+    {
+      "block": "readout_calibration",
+      "meta": {
+        "lane": "s1c",
+        "prepared": "000",
+        "shots": 1024,
+        "n_qubits": 3
+      },
+      "counts": {
+        "000": 1011,
+        "100": 4,
+        "001": 8,
+        "010": 1
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 72
+    },
+    {
+      "block": "readout_calibration",
+      "meta": {
+        "lane": "s1c",
+        "prepared": "001",
+        "shots": 1024,
+        "n_qubits": 3
+      },
+      "counts": {
+        "001": 1005,
+        "000": 16,
+        "101": 3
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 73
+    },
+    {
+      "block": "readout_calibration",
+      "meta": {
+        "lane": "s1c",
+        "prepared": "010",
+        "shots": 1024,
+        "n_qubits": 3
+      },
+      "counts": {
+        "010": 1007,
+        "011": 5,
+        "000": 10,
+        "110": 2
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 74
+    },
+    {
+      "block": "readout_calibration",
+      "meta": {
+        "lane": "s1c",
+        "prepared": "011",
+        "shots": 1024,
+        "n_qubits": 3
+      },
+      "counts": {
+        "011": 994,
+        "001": 12,
+        "010": 16,
+        "111": 2
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 75
+    },
+    {
+      "block": "readout_calibration",
+      "meta": {
+        "lane": "s1c",
+        "prepared": "100",
+        "shots": 1024,
+        "n_qubits": 3
+      },
+      "counts": {
+        "100": 1012,
+        "110": 2,
+        "101": 5,
+        "000": 5
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 76
+    },
+    {
+      "block": "readout_calibration",
+      "meta": {
+        "lane": "s1c",
+        "prepared": "101",
+        "shots": 1024,
+        "n_qubits": 3
+      },
+      "counts": {
+        "101": 1000,
+        "001": 10,
+        "100": 14
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 77
+    },
+    {
+      "block": "readout_calibration",
+      "meta": {
+        "lane": "s1c",
+        "prepared": "110",
+        "shots": 1024,
+        "n_qubits": 3
+      },
+      "counts": {
+        "110": 993,
+        "010": 7,
+        "111": 10,
+        "100": 14
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 78
+    },
+    {
+      "block": "readout_calibration",
+      "meta": {
+        "lane": "s1c",
+        "prepared": "111",
+        "shots": 1024,
+        "n_qubits": 3
+      },
+      "counts": {
+        "111": 984,
+        "101": 18,
+        "110": 17,
+        "011": 5
+      },
+      "job_id": "d86t8ftg7okc73eljf10",
+      "source_index": 79
+    }
+  ]
+}

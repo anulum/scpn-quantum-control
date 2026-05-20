@@ -628,7 +628,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(f"raw_counts_sha256={raw_sha}")
     print(f"analysis_json={analysis_path}")
     print(f"analysis_sha256={analysis_sha}")
-    print(f"mean_abs_feedback_minus_control={analysis['mean_abs_feedback_minus_control']}")
+    if "mean_abs_feedback_minus_control" in analysis:
+        print(f"mean_abs_feedback_minus_control={analysis['mean_abs_feedback_minus_control']}")
+    else:
+        print(f"best_variant_by_mean_signed_delta={analysis['best_variant_by_mean_signed_delta']}")
+        for row in analysis["policy_variants"]:
+            print(
+                "policy_variant_summary="
+                f"{row['policy_variant']}:"
+                f"mean_signed={row['mean_signed_feedback_minus_control']}:"
+                f"mean_abs={row['mean_abs_feedback_minus_control']}"
+            )
     return 0
 
 

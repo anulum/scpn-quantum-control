@@ -44,20 +44,22 @@ qubit, three dynamic rounds, and paired hardware arms: a monitored-feedback
 arm and a matched open-loop control. The preregistered binary synchronisation
 endpoint is negative: the feedback arm gives mean target error 0.2148958333,
 while the matched control gives 0.2116406250, so the feedback policy does not
-improve the selected target. Because the binary proxy is near saturation in
-both arms, we add same-paper direct-observable extensions. S1b measures final
-XY-sector correlators on the original body; S1c reduces depth and gain; S1d
-and S1e sweep and repeat policy direction; and S1f tests quadrature and
-population controls. The extensions expose structured, policy-sensitive
-feedback--control differences, including a repeated positive \texttt{YYI}
-response in one shallow policy window. A later quadrature check does not
-reproduce that large \texttt{YYI} response, reducing the mean absolute
-feedback--control separation to 0.0082812500 and blocking a stable
-controller-promotion claim. The contribution is therefore a hardware-control
-boundary result: paired dynamic-circuit feedback tests and direct Pauli
-readouts can reveal calibration-window-sensitive response modes, but the
-tested controller is not supported as a backend-general or robust
-synchronisation-improving policy.
+improve the selected target. We then replicate the full S1--S1f stack on
+\texttt{ibm\_fez} and \texttt{ibm\_marrakesh}. The primary binary endpoint is
+positive on those two backends, with target-error improvements 0.0927777778
+and 0.0678710938, respectively. Direct-observable extensions show that this
+is not a simple backend-independent controller promotion: Fez gives mostly
+negative \texttt{YYI} extension structure, Marrakesh gives consistently
+positive \texttt{YYI} and positive primary response, and the original
+Kingston run remains a negative primary falsifier. The contribution is
+therefore a hardware-control boundary result. A dedicated follow-up lane adds
+full three-bit readout calibration and local gate-folding ZNE on Fez and
+Marrakesh for S1b--S1f. Readout mitigation does not erase the
+feedback/control separations, and ZNE generally preserves or enlarges them
+except for the Fez S1f quadrature check. Paired dynamic-circuit feedback
+tests and direct Pauli readouts can reveal backend- and calibration-window
+sensitive response modes, but the tested controller is not supported as a
+backend-general or robust synchronisation-improving policy.
 \end{abstract}
 
 \maketitle
@@ -161,11 +163,11 @@ arm. S1f keeps the S1d/S1e-favoured shallow policy and measures \texttt{XXI},
 \texttt{XYI}/\texttt{YXI} rows test cross-quadrature leakage, while
 \texttt{ZZI} is a population-sector control.
 
-Figure~\ref{fig:s1-heatmap} gives the extension-level summary. The figure is
-intended to expose the same logic as the tables: S1b is mixed-sign, S1c is
-uniformly negative, the S1d/S1e current shallow policy has a narrow
-\texttt{YYI} response, and S1f removes the stable positive-mechanism
-interpretation in the later quadrature check.
+Figure~\ref{fig:s1-heatmap} gives the extension-level summary across
+\texttt{ibm\_kingston}, \texttt{ibm\_fez}, and \texttt{ibm\_marrakesh}. The
+figure is intended to expose the same logic as the tables: the direct
+observable response is structured, but its sign and localisation are
+backend-dependent.
 
 For an observable $P$, each arm expectation is reduced from counts as
 \begin{equation}
@@ -175,11 +177,13 @@ For an observable $P$, each arm expectation is reduced from counts as
 
 \begin{figure}[tb]
 \centering
-\includegraphics[width=0.98\linewidth]{../../figures/s1_feedback_control/s1_feedback_delta_heatmap_2026-05-20.png}
+\includegraphics[width=0.98\linewidth]{../../figures/s1_feedback_control/s1_feedback_multibackend_delta_heatmap_2026-05-20.png}
 \caption{Feedback-minus-control Pauli expectations across the S1 direct
-observable extensions. Grey cells mark observables not included in that
-extension. The repeated S1d/S1e \texttt{YYI} response and the later S1f
-sign reversal are visually isolated.}
+observable extensions on three IBM Heron backends. Grey cells mark
+observables not included in that extension. The original Kingston
+\texttt{YYI} feature is not backend-universal: Fez is mostly negative in the
+\texttt{YYI} column, while Marrakesh is positive through the shallow policy
+and quadrature checks.}
 \label{fig:s1-heatmap}
 \end{figure}
 with $n_b$ the observed count for bitstring $b$ and $N$ the total shots. The
@@ -190,37 +194,47 @@ reported extension quantity is
     \langle P\rangle_{\mathrm{control}}.
 \end{equation}
 
-\section{Primary S1 result}
+\section{Primary S1 result and replication}
 
-The primary paired-arm execution completed on \texttt{ibm\_kingston}. The
-feedback job was \texttt{d86qn3lg7okc73elg2eg}; the matched open-loop control
-job was \texttt{d86qn65g7okc73elg2hg}. Each arm used 12 repetitions and
-12,288 total shots. The transpiled depths were 717 for the feedback arm and
-684 for the matched control.
+The primary paired-arm execution first completed on \texttt{ibm\_kingston}.
+The feedback job was \texttt{d86qn3lg7okc73elg2eg}; the matched open-loop
+control job was \texttt{d86qn65g7okc73elg2hg}. Each arm used 12 repetitions
+and 12,288 total shots. The transpiled depths were 717 for the feedback arm
+and 684 for the matched control. This first execution was negative under the
+preregistered decision tree.
+
+After review, the same primary endpoint was replicated on \texttt{ibm\_fez}
+and \texttt{ibm\_marrakesh}. The Fez jobs were
+\texttt{d86sl45g7okc73elimdg} and \texttt{d86slcp789is73904bng}. The
+Marrakesh jobs were \texttt{d86sr9h789is73904jm0} and
+\texttt{d86src2s46sc73f7edm0}. Both same-day replication runs were positive
+on the binary target-error endpoint, as shown in Table~\ref{tab:s1-primary}.
 
 \begin{table}[tb]
 \centering
-\begin{tabular}{lrr}
+\small
+\begin{tabular}{lrrrr}
 \toprule
-Metric & Feedback & Matched control \\
+Backend & Feedback error & Control error & Improvement & Decision \\
 \midrule
-Mean $R_{\mathrm{live}}$ & 0.9348958333 & 0.9316406250 \\
-Mean target error & 0.2148958333 & 0.2116406250 \\
-Final $R_{\mathrm{live}}$ & 0.9322916667 & 0.9322916667 \\
+\texttt{ibm\_kingston} & 0.2148958333 & 0.2116406250 & -0.0032552083 & negative \\
+\texttt{ibm\_fez} & 0.0355338542 & 0.1283116319 & 0.0927777778 & positive \\
+\texttt{ibm\_marrakesh} & 0.0440559896 & 0.1119270833 & 0.0678710938 & positive \\
 \bottomrule
 \end{tabular}
-\caption{Primary S1 binary-proxy hardware result on \texttt{ibm\_kingston}.}
+\caption{Primary S1 binary-proxy hardware result across three backends. The
+improvement column is control target error minus feedback target error, so
+positive values favour feedback.}
 \label{tab:s1-primary}
 \end{table}
 
-The feedback arm has a slightly larger mean synchronisation proxy than the
-matched control, but both arms lie above the target. Consequently the feedback
-arm is farther from the target. The target-error improvement is
-$-0.0032552083$, corresponding to a relative improvement of
-$-1.5380829334\%$. The preregistered decision is therefore
-\texttt{null\_or\_negative}. This is the first claim boundary of the paper:
-the tested three-round feedback payload does not improve the selected
-binary-phase synchronisation proxy on this backend and calibration window.
+The primary result is therefore not a universal controller failure, but it is
+also not a backend-general controller success. The same preregistered
+three-round payload is negative on Kingston and positive on Fez and
+Marrakesh. This makes backend and calibration-window dependence part of the
+main result rather than a footnote. The direct-observable stack below is
+needed to determine whether the positive primary endpoint corresponds to a
+stable mechanism.
 
 \section{XY-sector localisation}
 
@@ -257,7 +271,12 @@ uniformly absent.
 S1c then tests whether the depth and gain of the original dynamic body are the
 problem. The shallower, lower-gain policy reduces the feedback depths to about
 237, but all four XY-sector channels move negative. The direct-observable
-response therefore cannot be rescued by this shallow/gain-tuned policy.
+response therefore cannot be rescued by this shallow/gain-tuned policy on
+Kingston. The Fez and Marrakesh replications show a different boundary: the
+same direct-observable lanes have larger aggregate separations than Kingston,
+but their channel signs disagree. Fez is dominated by negative
+\texttt{YYI}/\texttt{IYY} structure, whereas Marrakesh has a persistent
+positive \texttt{YYI} column.
 
 \section{Policy-direction sweep and repeat}
 
@@ -330,11 +349,93 @@ Mean $|\Delta_P|$ & \multicolumn{2}{r}{ } & 0.0082812500 \\
 \end{table}
 
 The S1f result blocks the strongest possible positive interpretation of S1d
-and S1e. The \texttt{YYI} separation changes sign and the mean absolute
-feedback--control separation falls to 0.0082812500. The cross-quadrature
-controls are small, and the population control is also small. The conservative
-interpretation is calibration-window-sensitive response, not a stable
-quadrature-localised feedback mechanism.
+and S1e on Kingston. The \texttt{YYI} separation changes sign and the mean
+absolute feedback--control separation falls to 0.0082812500. The
+cross-quadrature controls are small, and the population control is also small.
+On Fez, S1f remains negative in \texttt{YYI} with mean absolute separation
+0.0314843750. On Marrakesh, S1f remains positive in \texttt{YYI} with mean
+absolute separation 0.0453125000. The conservative interpretation is not a
+stable backend-general quadrature-localised feedback mechanism; it is a
+backend-dependent response boundary.
+
+\begin{table*}[tb]
+\centering
+\scriptsize
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrrrr}
+\toprule
+Backend & Primary improvement & S1b mean abs. & S1c mean abs. &
+S1d current \texttt{YYI} & S1e current \texttt{YYI} &
+S1f \texttt{YYI} & S1f mean abs. \\
+\midrule
+\texttt{ibm\_kingston} & -0.003255 & 0.020508 & 0.029948 & 0.184896 & 0.182422 & -0.020313 & 0.008281 \\
+\texttt{ibm\_fez} & 0.092778 & 0.173991 & 0.071777 & -0.114583 & -0.128906 & -0.060547 & 0.031484 \\
+\texttt{ibm\_marrakesh} & 0.067871 & 0.145182 & 0.044596 & 0.099609 & 0.148047 & 0.096875 & 0.045313 \\
+\bottomrule
+\end{tabular}
+}
+\caption{Compact cross-backend S1--S1f summary. The primary improvement is
+control target error minus feedback target error. Direct-observable entries
+are feedback-minus-control Pauli expectations or mean absolute separations.}
+\label{tab:cross-backend-summary}
+\end{table*}
+
+\section{Readout mitigation and ZNE stress lane}
+
+The first S1b--S1f direct-observable executions did not include dedicated
+readout calibration circuits. We therefore do not retrofit mitigation onto
+those artefacts. Instead, we execute a new preregistered readout/ZNE lane on
+Fez and Marrakesh. Each backend/lane submission contains the folded main
+circuits at local gate-folding noise scales 1, 3, and 5, plus all eight
+computational-basis calibration circuits for the three final system-readout
+bits. The calibration and main circuits are pinned to the same selected
+system/monitor physical layout. The folding is local rather than global
+unitary folding because the S1 feedback arm contains mid-circuit measurement,
+reset, and classical conditioning; the reducer folds invertible quantum gates
+while preserving the dynamic-circuit control-flow operations.
+
+\begin{table*}[tb]
+\centering
+\scriptsize
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llrrrr}
+\toprule
+Backend & Lane & Scale-1 mean abs. & Linear ZNE mean abs. &
+Readout-mitigated linear ZNE mean abs. & Readout matrix cond. \\
+\midrule
+\texttt{ibm\_fez} & S1b & 0.056315 & 0.063192 & 0.063868 & 1.078215 \\
+\texttt{ibm\_fez} & S1c & 0.031738 & 0.038425 & 0.039430 & 1.059059 \\
+\texttt{ibm\_fez} & S1d & 0.038032 & 0.043936 & 0.045297 & 1.059970 \\
+\texttt{ibm\_fez} & S1e & 0.037435 & 0.045204 & 0.046707 & 1.061207 \\
+\texttt{ibm\_fez} & S1f & 0.054141 & 0.041439 & 0.042975 & 1.066406 \\
+\midrule
+\texttt{ibm\_marrakesh} & S1b & 0.030273 & 0.040256 & 0.040437 & 1.036386 \\
+\texttt{ibm\_marrakesh} & S1c & 0.113932 & 0.120402 & 0.122239 & 1.029654 \\
+\texttt{ibm\_marrakesh} & S1d & 0.095486 & 0.101951 & 0.102965 & 1.031348 \\
+\texttt{ibm\_marrakesh} & S1e & 0.104590 & 0.113810 & 0.115997 & 1.038547 \\
+\texttt{ibm\_marrakesh} & S1f & 0.069531 & 0.076432 & 0.077617 & 1.040666 \\
+\bottomrule
+\end{tabular}
+}
+\caption{Dedicated readout-mitigation and local-folding ZNE lane for the S1
+direct-observable stack. The table reports mean absolute
+feedback-minus-control separation across each lane's preregistered Pauli
+channels or policy-channel rows. The readout confusion matrices are
+well-conditioned in this lane; mitigation does not remove the observed
+separations.}
+\label{tab:s1-readout-zne}
+\end{table*}
+
+Table~\ref{tab:s1-readout-zne} changes the limitation boundary. The dominant
+direct-observable separations are not explained away by a poorly conditioned
+readout inversion: the full-basis readout matrices have condition numbers
+near one, and the readout-mitigated ZNE values remain close to the unmitigated
+ZNE values. The ZNE stress test also does not convert the result into a
+controller-promotion claim. On Marrakesh, all S1b--S1f mean absolute
+separations increase under the linear ZNE fit. On Fez, S1b--S1e also increase,
+while S1f decreases. The conservative interpretation is that the
+feedback/control response is not a simple removable readout artefact, but the
+sign and localisation remain backend- and lane-dependent.
 
 \section{Reproducibility artefacts}
 
@@ -363,16 +464,32 @@ S1f & \path{s1f_xy_observable_analysis_ibm_kingston_20260520T142213Z.json} & \pa
 \label{tab:artefacts}
 \end{table*}
 
+The Fez and Marrakesh replication artefacts follow the same naming scheme
+under \path{data/s1_feedback_loop/}, with backend names
+\texttt{ibm\_fez} and \texttt{ibm\_marrakesh} and timestamps
+20260520T145159Z--20260520T150249Z for Fez and
+20260520T150509Z--20260520T151450Z for Marrakesh. Their analysis SHA256
+digests are recorded in the JSON sidecars and in the repository history.
+The dedicated readout/ZNE lane uses timestamps 20260520T153231Z--20260520T153820Z
+for Fez and 20260520T153231Z--20260520T153847Z for Marrakesh. Its job IDs are
+\texttt{d86t84p789is739052r0}, \texttt{d86t8ftg7okc73eljf10},
+\texttt{d86t8qp789is739053og}, \texttt{d86t9hop0eas73dleo20}, and
+\texttt{d86tarlg7okc73elji20} on Fez, and
+\texttt{d86t84op0eas73dlem4g}, \texttt{d86t8gtg7okc73eljf20},
+\texttt{d86t8stg7okc73eljfig}, \texttt{d86t9ptg7okc73eljgo0}, and
+\texttt{d86tb2dg7okc73eljiag} on Marrakesh.
+
 \section{Claim boundary}
 
 The supported claims are deliberately narrow. First, the S1 monitored-feedback
-payload and matched open-loop control executed on \texttt{ibm\_kingston} and
-the feedback arm did not improve the preregistered binary synchronisation
-target. Second, direct XY-sector extensions show that feedback/control
-differences can be channel-structured and policy-sensitive even when the
-primary binary proxy is negative. Third, the repeated S1d/S1e \texttt{YYI}
-response is not stable under the later S1f quadrature check, so the controller
-is not promoted.
+payload and matched open-loop control executed on three IBM Heron backends,
+with a negative primary result on Kingston and positive primary results on
+Fez and Marrakesh. Second, direct XY-sector extensions show that
+feedback/control differences can be channel-structured and policy-sensitive.
+Third, the S1d/S1e/S1f \texttt{YYI} story is backend-dependent: Kingston loses
+the positive \texttt{YYI} response in S1f, Fez is mostly negative in that
+column, and Marrakesh remains positive. The controller is therefore not
+promoted as backend-general.
 
 The paper does not claim quantum advantage, backend-general feedback control,
 full real-time control beyond provider-supported dynamic circuits, scalable
@@ -380,31 +497,28 @@ control, or larger-system synchronisation. It also does not claim that the
 observed response is isolated from calibration drift, layout-dependent
 coherent error, readout effects, or finite-shot variation. The result is a
 bounded hardware-control measurement and a falsifier for the tested feedback
-law.
+law as a universal policy.
 
-The current S1 hardware artefacts do not include independent readout
-calibration circuits for S1b--S1f. For that reason, tensor-product or
-mid-circuit-aware readout mitigation cannot be replayed from this committed
-data package without adding new calibration executions. This is an explicit
-limitation rather than a hidden post-processing omission. Mid-circuit
-measurement and feedforward readout mitigation is an active technical area
-~\cite{KohKohThompson2026}; the correct follow-up is a preregistered S1g lane
-with matched feedback/control arms, calibration circuits in the same submitted
-block, and a fixed mitigation reducer before execution. A ZNE subset would
-also be useful, but it should be executed as a preregistered stress test rather
-than fitted after inspecting the present extensions.
+The original S1b--S1f artefacts remain unmitigated raw hardware evidence. The
+readout/ZNE lane is a separate preregistered execution, not a post hoc
+correction of those earlier jobs. Mid-circuit measurement and feedforward
+readout mitigation is an active technical area~\cite{KohKohThompson2026};
+the present reducer only mitigates the final three-bit readout distribution
+and only stress-tests gate noise through local folding of invertible quantum
+operations.
 
 \section{Discussion}
 
 The central scientific value of S1 is methodological rather than promotional.
-The primary endpoint fails, and that failure matters: it prevents the dynamic
-feedback policy from being sold as a working synchronisation controller. The
-extensions then add mechanism information that a binary endpoint alone would
-hide. S1b shows mixed XY-sector response on the original body; S1c shows that
-a shallower/lower-gain body is uniformly negative across the same channels;
-S1d and S1e show a repeatable single-channel response in one policy window;
-and S1f shows that this response does not survive a later quadrature
-mechanism check.
+The primary endpoint fails on Kingston but succeeds on Fez and Marrakesh, so a
+single-backend story would be misleading in either direction. The extensions
+then add mechanism information that a binary endpoint alone would hide. S1b
+and S1c show backend-dependent XY-sector response; S1d and S1e show that the
+policy sweep can repeat a \texttt{YYI} feature inside a backend window; and
+S1f shows that the same feature is not stable across backends. The dedicated
+readout/ZNE lane strengthens the negative claim boundary: the
+direct-observable separations survive full final-readout calibration and do
+not behave like a uniform monotone gate-noise artefact.
 
 This sequence is useful for future control design because it converts a
 simple negative result into design constraints. Any next-generation S1 policy
@@ -428,13 +542,15 @@ and localisation paper for dynamic-circuit feedback on current IBM hardware.
 The S1 programme tests monitored feedback at the smallest scale where IBM
 dynamic circuits can implement an active monitor-and-correct loop with a
 matched open-loop control. The preregistered binary synchronisation endpoint
-is negative. Direct-observable extensions reveal structured,
-policy-sensitive feedback/control differences, but the final quadrature check
-does not support a stable positive controller mechanism. The appropriate
-publication claim is therefore precise: S1 establishes a reproducible
-paired-arm method and a hardware-control boundary for Kuramoto--XY feedback,
-while rejecting promotion of the tested controller under the observed
-\texttt{ibm\_kingston} windows.
+is negative on Kingston but positive on Fez and Marrakesh. Direct-observable
+extensions reveal structured, policy-sensitive feedback/control differences,
+and a dedicated Fez/Marrakesh readout/ZNE lane shows that those differences
+are not erased by full final-readout mitigation or by local-folding
+extrapolation. The final quadrature checks still do not support a
+backend-general positive controller mechanism. The appropriate publication
+claim is therefore precise: S1 establishes a reproducible paired-arm method
+and a hardware-control boundary for Kuramoto--XY feedback, while rejecting
+backend-general promotion of the tested controller.
 
 \bibliographystyle{apsrev4-2}
 \bibliography{s1_feedback_control_refs}

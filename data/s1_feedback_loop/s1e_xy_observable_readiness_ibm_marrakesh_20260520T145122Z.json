@@ -1,0 +1,1059 @@
+{
+  "schema": "scpn_s1e_ibm_xy_observable_readiness_v1",
+  "timestamp_utc": "20260520T145122Z",
+  "backend": "ibm_marrakesh",
+  "experiment_id": "s1b_dynamic_feedback_xy_observable_extension_2026-05-20",
+  "parent_experiment_id": "s1_dynamic_feedback_preregistration_2026-05-06",
+  "lane": "s1e",
+  "hardware_submission": false,
+  "status": "ready_for_submission",
+  "observable_family": "direct_xy_pauli_correlators",
+  "observables": [
+    "XXI",
+    "YYI",
+    "IXX",
+    "IYY"
+  ],
+  "n_rounds": 3,
+  "correction_angle": 0.12,
+  "base_gain": 0.8,
+  "policy_sweep": "s1e",
+  "policy_variants": [
+    {
+      "policy_variant": "current_shallow_positive",
+      "n_rounds": 1,
+      "correction_angle": 0.06,
+      "base_gain": 0.4,
+      "observables": [
+        {
+          "arm": "feedback",
+          "basis": "XXI"
+        },
+        {
+          "arm": "feedback",
+          "basis": "YYI"
+        },
+        {
+          "arm": "feedback",
+          "basis": "IXX"
+        },
+        {
+          "arm": "feedback",
+          "basis": "IYY"
+        },
+        {
+          "arm": "matched_open_loop_control",
+          "basis": "XXI"
+        },
+        {
+          "arm": "matched_open_loop_control",
+          "basis": "YYI"
+        },
+        {
+          "arm": "matched_open_loop_control",
+          "basis": "IXX"
+        },
+        {
+          "arm": "matched_open_loop_control",
+          "basis": "IYY"
+        }
+      ],
+      "transpiled_depth_max": 237,
+      "estimated_qpu_seconds": 40.0
+    },
+    {
+      "policy_variant": "polarity_flipped",
+      "n_rounds": 1,
+      "correction_angle": -0.06,
+      "base_gain": 0.4,
+      "observables": [
+        {
+          "arm": "feedback",
+          "basis": "XXI"
+        },
+        {
+          "arm": "feedback",
+          "basis": "YYI"
+        },
+        {
+          "arm": "feedback",
+          "basis": "IXX"
+        },
+        {
+          "arm": "feedback",
+          "basis": "IYY"
+        },
+        {
+          "arm": "matched_open_loop_control",
+          "basis": "XXI"
+        },
+        {
+          "arm": "matched_open_loop_control",
+          "basis": "YYI"
+        },
+        {
+          "arm": "matched_open_loop_control",
+          "basis": "IXX"
+        },
+        {
+          "arm": "matched_open_loop_control",
+          "basis": "IYY"
+        }
+      ],
+      "transpiled_depth_max": 237,
+      "estimated_qpu_seconds": 40.0
+    },
+    {
+      "policy_variant": "weak_positive",
+      "n_rounds": 1,
+      "correction_angle": 0.03,
+      "base_gain": 0.2,
+      "observables": [
+        {
+          "arm": "feedback",
+          "basis": "XXI"
+        },
+        {
+          "arm": "feedback",
+          "basis": "YYI"
+        },
+        {
+          "arm": "feedback",
+          "basis": "IXX"
+        },
+        {
+          "arm": "feedback",
+          "basis": "IYY"
+        },
+        {
+          "arm": "matched_open_loop_control",
+          "basis": "XXI"
+        },
+        {
+          "arm": "matched_open_loop_control",
+          "basis": "YYI"
+        },
+        {
+          "arm": "matched_open_loop_control",
+          "basis": "IXX"
+        },
+        {
+          "arm": "matched_open_loop_control",
+          "basis": "IYY"
+        }
+      ],
+      "transpiled_depth_max": 237,
+      "estimated_qpu_seconds": 40.0
+    }
+  ],
+  "arms": [
+    {
+      "label": "feedback",
+      "observable": "XXI",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 15,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1,
+        "if_else": 1
+      },
+      "transpiled_depth_max": 237,
+      "transpiled_depths": [
+        237,
+        237,
+        237,
+        237,
+        237
+      ],
+      "transpiled_operation_counts": {
+        "rz": 128,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1,
+        "if_else": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "current_shallow_positive",
+      "n_rounds": 1,
+      "correction_angle": 0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "feedback",
+      "observable": "YYI",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 16,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "sdg": 2,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1,
+        "if_else": 1
+      },
+      "transpiled_depth_max": 236,
+      "transpiled_depths": [
+        236,
+        236,
+        236,
+        236,
+        236
+      ],
+      "transpiled_operation_counts": {
+        "rz": 126,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1,
+        "if_else": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "current_shallow_positive",
+      "n_rounds": 1,
+      "correction_angle": 0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "feedback",
+      "observable": "IXX",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 15,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1,
+        "if_else": 1
+      },
+      "transpiled_depth_max": 237,
+      "transpiled_depths": [
+        237,
+        237,
+        237,
+        237,
+        237
+      ],
+      "transpiled_operation_counts": {
+        "rz": 128,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "if_else": 1,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "current_shallow_positive",
+      "n_rounds": 1,
+      "correction_angle": 0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "feedback",
+      "observable": "IYY",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 16,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "sdg": 2,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1,
+        "if_else": 1
+      },
+      "transpiled_depth_max": 236,
+      "transpiled_depths": [
+        236,
+        236,
+        236,
+        236,
+        236
+      ],
+      "transpiled_operation_counts": {
+        "rz": 126,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "if_else": 1,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "current_shallow_positive",
+      "n_rounds": 1,
+      "correction_angle": 0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "XXI",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 13,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1
+      },
+      "transpiled_depth_max": 233,
+      "transpiled_depths": [
+        233,
+        233,
+        233,
+        233,
+        233
+      ],
+      "transpiled_operation_counts": {
+        "rz": 128,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "current_shallow_positive",
+      "n_rounds": 1,
+      "correction_angle": 0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "YYI",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 13,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "sdg": 2,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1
+      },
+      "transpiled_depth_max": 233,
+      "transpiled_depths": [
+        233,
+        233,
+        233,
+        233,
+        233
+      ],
+      "transpiled_operation_counts": {
+        "rz": 126,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "current_shallow_positive",
+      "n_rounds": 1,
+      "correction_angle": 0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "IXX",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 13,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1
+      },
+      "transpiled_depth_max": 233,
+      "transpiled_depths": [
+        233,
+        233,
+        233,
+        233,
+        233
+      ],
+      "transpiled_operation_counts": {
+        "rz": 128,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "current_shallow_positive",
+      "n_rounds": 1,
+      "correction_angle": 0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "IYY",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 14,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "sdg": 2,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1
+      },
+      "transpiled_depth_max": 233,
+      "transpiled_depths": [
+        233,
+        233,
+        233,
+        233,
+        233
+      ],
+      "transpiled_operation_counts": {
+        "rz": 126,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "current_shallow_positive",
+      "n_rounds": 1,
+      "correction_angle": 0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "feedback",
+      "observable": "XXI",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 15,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1,
+        "if_else": 1
+      },
+      "transpiled_depth_max": 237,
+      "transpiled_depths": [
+        237,
+        237,
+        237,
+        237,
+        237
+      ],
+      "transpiled_operation_counts": {
+        "rz": 128,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1,
+        "if_else": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "polarity_flipped",
+      "n_rounds": 1,
+      "correction_angle": -0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "feedback",
+      "observable": "YYI",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 16,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "sdg": 2,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1,
+        "if_else": 1
+      },
+      "transpiled_depth_max": 236,
+      "transpiled_depths": [
+        236,
+        236,
+        236,
+        236,
+        236
+      ],
+      "transpiled_operation_counts": {
+        "rz": 126,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1,
+        "if_else": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "polarity_flipped",
+      "n_rounds": 1,
+      "correction_angle": -0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "feedback",
+      "observable": "IXX",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 15,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1,
+        "if_else": 1
+      },
+      "transpiled_depth_max": 237,
+      "transpiled_depths": [
+        237,
+        237,
+        237,
+        237,
+        237
+      ],
+      "transpiled_operation_counts": {
+        "rz": 128,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "if_else": 1,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "polarity_flipped",
+      "n_rounds": 1,
+      "correction_angle": -0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "feedback",
+      "observable": "IYY",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 16,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "sdg": 2,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1,
+        "if_else": 1
+      },
+      "transpiled_depth_max": 236,
+      "transpiled_depths": [
+        236,
+        236,
+        236,
+        236,
+        236
+      ],
+      "transpiled_operation_counts": {
+        "rz": 126,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "if_else": 1,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "polarity_flipped",
+      "n_rounds": 1,
+      "correction_angle": -0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "XXI",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 13,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1
+      },
+      "transpiled_depth_max": 233,
+      "transpiled_depths": [
+        233,
+        233,
+        233,
+        233,
+        233
+      ],
+      "transpiled_operation_counts": {
+        "rz": 128,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "polarity_flipped",
+      "n_rounds": 1,
+      "correction_angle": -0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "YYI",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 13,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "sdg": 2,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1
+      },
+      "transpiled_depth_max": 233,
+      "transpiled_depths": [
+        233,
+        233,
+        233,
+        233,
+        233
+      ],
+      "transpiled_operation_counts": {
+        "rz": 126,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "polarity_flipped",
+      "n_rounds": 1,
+      "correction_angle": -0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "IXX",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 13,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1
+      },
+      "transpiled_depth_max": 233,
+      "transpiled_depths": [
+        233,
+        233,
+        233,
+        233,
+        233
+      ],
+      "transpiled_operation_counts": {
+        "rz": 128,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "polarity_flipped",
+      "n_rounds": 1,
+      "correction_angle": -0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "IYY",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 14,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "sdg": 2,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1
+      },
+      "transpiled_depth_max": 233,
+      "transpiled_depths": [
+        233,
+        233,
+        233,
+        233,
+        233
+      ],
+      "transpiled_operation_counts": {
+        "rz": 126,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "polarity_flipped",
+      "n_rounds": 1,
+      "correction_angle": -0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "feedback",
+      "observable": "XXI",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 15,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1,
+        "if_else": 1
+      },
+      "transpiled_depth_max": 237,
+      "transpiled_depths": [
+        237,
+        237,
+        237,
+        237,
+        237
+      ],
+      "transpiled_operation_counts": {
+        "rz": 128,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1,
+        "if_else": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "weak_positive",
+      "n_rounds": 1,
+      "correction_angle": 0.03,
+      "base_gain": 0.2
+    },
+    {
+      "label": "feedback",
+      "observable": "YYI",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 16,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "sdg": 2,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1,
+        "if_else": 1
+      },
+      "transpiled_depth_max": 236,
+      "transpiled_depths": [
+        236,
+        236,
+        236,
+        236,
+        236
+      ],
+      "transpiled_operation_counts": {
+        "rz": 126,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1,
+        "if_else": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "weak_positive",
+      "n_rounds": 1,
+      "correction_angle": 0.03,
+      "base_gain": 0.2
+    },
+    {
+      "label": "feedback",
+      "observable": "IXX",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 15,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1,
+        "if_else": 1
+      },
+      "transpiled_depth_max": 237,
+      "transpiled_depths": [
+        237,
+        237,
+        237,
+        237,
+        237
+      ],
+      "transpiled_operation_counts": {
+        "rz": 128,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "if_else": 1,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "weak_positive",
+      "n_rounds": 1,
+      "correction_angle": 0.03,
+      "base_gain": 0.2
+    },
+    {
+      "label": "feedback",
+      "observable": "IYY",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 16,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "sdg": 2,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1,
+        "if_else": 1
+      },
+      "transpiled_depth_max": 236,
+      "transpiled_depths": [
+        236,
+        236,
+        236,
+        236,
+        236
+      ],
+      "transpiled_operation_counts": {
+        "rz": 126,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "if_else": 1,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "weak_positive",
+      "n_rounds": 1,
+      "correction_angle": 0.03,
+      "base_gain": 0.2
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "XXI",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 13,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1
+      },
+      "transpiled_depth_max": 233,
+      "transpiled_depths": [
+        233,
+        233,
+        233,
+        233,
+        233
+      ],
+      "transpiled_operation_counts": {
+        "rz": 128,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "weak_positive",
+      "n_rounds": 1,
+      "correction_angle": 0.03,
+      "base_gain": 0.2
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "YYI",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 13,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "sdg": 2,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1
+      },
+      "transpiled_depth_max": 233,
+      "transpiled_depths": [
+        233,
+        233,
+        233,
+        233,
+        233
+      ],
+      "transpiled_operation_counts": {
+        "rz": 126,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "weak_positive",
+      "n_rounds": 1,
+      "correction_angle": 0.03,
+      "base_gain": 0.2
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "IXX",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 13,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1
+      },
+      "transpiled_depth_max": 233,
+      "transpiled_depths": [
+        233,
+        233,
+        233,
+        233,
+        233
+      ],
+      "transpiled_operation_counts": {
+        "rz": 128,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "weak_positive",
+      "n_rounds": 1,
+      "correction_angle": 0.03,
+      "base_gain": 0.2
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "IYY",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 14,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "sdg": 2,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1
+      },
+      "transpiled_depth_max": 233,
+      "transpiled_depths": [
+        233,
+        233,
+        233,
+        233,
+        233
+      ],
+      "transpiled_operation_counts": {
+        "rz": 126,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "weak_positive",
+      "n_rounds": 1,
+      "correction_angle": 0.03,
+      "base_gain": 0.2
+    }
+  ],
+  "max_depth": 1400,
+  "max_qpu_seconds": 130.0,
+  "estimated_qpu_seconds": 120.0,
+  "package_hash": "bb9e2ca41fed9909fe73b193bc62e6b909f5311769393bc716c9885ce0d7dc29",
+  "reasons": [
+    "all s1e direct-XY arms satisfy the transpiled depth ceiling",
+    "s1e direct-XY estimate satisfies the approved QPU-second ceiling"
+  ]
+}

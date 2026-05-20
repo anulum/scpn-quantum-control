@@ -1,0 +1,367 @@
+{
+  "schema": "scpn_s1b_ibm_xy_observable_readiness_v1",
+  "timestamp_utc": "20260520T150538Z",
+  "backend": "ibm_marrakesh",
+  "experiment_id": "s1b_dynamic_feedback_xy_observable_extension_2026-05-20",
+  "parent_experiment_id": "s1_dynamic_feedback_preregistration_2026-05-06",
+  "lane": "s1b",
+  "hardware_submission": false,
+  "status": "ready_for_submission",
+  "observable_family": "direct_xy_pauli_correlators",
+  "observables": [
+    "XXI",
+    "YYI",
+    "IXX",
+    "IYY"
+  ],
+  "n_rounds": 3,
+  "correction_angle": 0.12,
+  "base_gain": 0.8,
+  "policy_sweep": "none",
+  "policy_variants": [
+    {
+      "policy_variant": "s1b",
+      "n_rounds": 3,
+      "correction_angle": 0.12,
+      "base_gain": 0.8,
+      "observables": [
+        {
+          "arm": "feedback",
+          "basis": "XXI"
+        },
+        {
+          "arm": "feedback",
+          "basis": "YYI"
+        },
+        {
+          "arm": "feedback",
+          "basis": "IXX"
+        },
+        {
+          "arm": "feedback",
+          "basis": "IYY"
+        },
+        {
+          "arm": "matched_open_loop_control",
+          "basis": "XXI"
+        },
+        {
+          "arm": "matched_open_loop_control",
+          "basis": "YYI"
+        },
+        {
+          "arm": "matched_open_loop_control",
+          "basis": "IXX"
+        },
+        {
+          "arm": "matched_open_loop_control",
+          "basis": "IYY"
+        }
+      ],
+      "transpiled_depth_max": 720,
+      "estimated_qpu_seconds": 24.0
+    }
+  ],
+  "arms": [
+    {
+      "label": "feedback",
+      "observable": "XXI",
+      "shots": 1024,
+      "repetitions": 3,
+      "source_depth": 39,
+      "source_operation_counts": {
+        "cx": 18,
+        "ry": 12,
+        "measure": 6,
+        "PauliEvolution": 3,
+        "reset": 3,
+        "if_else": 3,
+        "h": 2
+      },
+      "transpiled_depth_max": 720,
+      "transpiled_depths": [
+        720,
+        720,
+        720
+      ],
+      "transpiled_operation_counts": {
+        "rz": 384,
+        "sx": 365,
+        "cz": 183,
+        "measure": 6,
+        "if_else": 3,
+        "reset": 3,
+        "x": 2
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 3.0,
+      "policy_variant": "s1b",
+      "n_rounds": 3,
+      "correction_angle": 0.12,
+      "base_gain": 0.8
+    },
+    {
+      "label": "feedback",
+      "observable": "YYI",
+      "shots": 1024,
+      "repetitions": 3,
+      "source_depth": 40,
+      "source_operation_counts": {
+        "cx": 18,
+        "ry": 12,
+        "measure": 6,
+        "PauliEvolution": 3,
+        "reset": 3,
+        "if_else": 3,
+        "sdg": 2,
+        "h": 2
+      },
+      "transpiled_depth_max": 719,
+      "transpiled_depths": [
+        719,
+        719,
+        719
+      ],
+      "transpiled_operation_counts": {
+        "rz": 382,
+        "sx": 365,
+        "cz": 183,
+        "measure": 6,
+        "if_else": 3,
+        "reset": 3,
+        "x": 2
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 3.0,
+      "policy_variant": "s1b",
+      "n_rounds": 3,
+      "correction_angle": 0.12,
+      "base_gain": 0.8
+    },
+    {
+      "label": "feedback",
+      "observable": "IXX",
+      "shots": 1024,
+      "repetitions": 3,
+      "source_depth": 39,
+      "source_operation_counts": {
+        "cx": 18,
+        "ry": 12,
+        "measure": 6,
+        "PauliEvolution": 3,
+        "reset": 3,
+        "if_else": 3,
+        "h": 2
+      },
+      "transpiled_depth_max": 720,
+      "transpiled_depths": [
+        720,
+        720,
+        720
+      ],
+      "transpiled_operation_counts": {
+        "rz": 384,
+        "sx": 365,
+        "cz": 183,
+        "measure": 6,
+        "if_else": 3,
+        "reset": 3,
+        "x": 2
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 3.0,
+      "policy_variant": "s1b",
+      "n_rounds": 3,
+      "correction_angle": 0.12,
+      "base_gain": 0.8
+    },
+    {
+      "label": "feedback",
+      "observable": "IYY",
+      "shots": 1024,
+      "repetitions": 3,
+      "source_depth": 40,
+      "source_operation_counts": {
+        "cx": 18,
+        "ry": 12,
+        "measure": 6,
+        "PauliEvolution": 3,
+        "reset": 3,
+        "if_else": 3,
+        "sdg": 2,
+        "h": 2
+      },
+      "transpiled_depth_max": 719,
+      "transpiled_depths": [
+        719,
+        719,
+        719
+      ],
+      "transpiled_operation_counts": {
+        "rz": 382,
+        "sx": 365,
+        "cz": 183,
+        "measure": 6,
+        "if_else": 3,
+        "reset": 3,
+        "x": 2
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 3.0,
+      "policy_variant": "s1b",
+      "n_rounds": 3,
+      "correction_angle": 0.12,
+      "base_gain": 0.8
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "XXI",
+      "shots": 1024,
+      "repetitions": 3,
+      "source_depth": 35,
+      "source_operation_counts": {
+        "cx": 18,
+        "ry": 12,
+        "measure": 6,
+        "PauliEvolution": 3,
+        "reset": 3,
+        "h": 2
+      },
+      "transpiled_depth_max": 686,
+      "transpiled_depths": [
+        686,
+        686,
+        686
+      ],
+      "transpiled_operation_counts": {
+        "rz": 380,
+        "sx": 345,
+        "cz": 174,
+        "measure": 6,
+        "reset": 3,
+        "x": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 3.0,
+      "policy_variant": "s1b",
+      "n_rounds": 3,
+      "correction_angle": 0.12,
+      "base_gain": 0.8
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "YYI",
+      "shots": 1024,
+      "repetitions": 3,
+      "source_depth": 35,
+      "source_operation_counts": {
+        "cx": 18,
+        "ry": 12,
+        "measure": 6,
+        "PauliEvolution": 3,
+        "reset": 3,
+        "sdg": 2,
+        "h": 2
+      },
+      "transpiled_depth_max": 686,
+      "transpiled_depths": [
+        686,
+        686,
+        686
+      ],
+      "transpiled_operation_counts": {
+        "rz": 380,
+        "sx": 345,
+        "cz": 174,
+        "measure": 6,
+        "reset": 3,
+        "x": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 3.0,
+      "policy_variant": "s1b",
+      "n_rounds": 3,
+      "correction_angle": 0.12,
+      "base_gain": 0.8
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "IXX",
+      "shots": 1024,
+      "repetitions": 3,
+      "source_depth": 35,
+      "source_operation_counts": {
+        "cx": 18,
+        "ry": 12,
+        "measure": 6,
+        "PauliEvolution": 3,
+        "reset": 3,
+        "h": 2
+      },
+      "transpiled_depth_max": 684,
+      "transpiled_depths": [
+        684,
+        684,
+        684
+      ],
+      "transpiled_operation_counts": {
+        "rz": 380,
+        "sx": 346,
+        "cz": 174,
+        "measure": 6,
+        "reset": 3,
+        "x": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 3.0,
+      "policy_variant": "s1b",
+      "n_rounds": 3,
+      "correction_angle": 0.12,
+      "base_gain": 0.8
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "IYY",
+      "shots": 1024,
+      "repetitions": 3,
+      "source_depth": 36,
+      "source_operation_counts": {
+        "cx": 18,
+        "ry": 12,
+        "measure": 6,
+        "PauliEvolution": 3,
+        "reset": 3,
+        "sdg": 2,
+        "h": 2
+      },
+      "transpiled_depth_max": 684,
+      "transpiled_depths": [
+        684,
+        684,
+        684
+      ],
+      "transpiled_operation_counts": {
+        "rz": 379,
+        "sx": 346,
+        "cz": 174,
+        "measure": 6,
+        "reset": 3,
+        "x": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 3.0,
+      "policy_variant": "s1b",
+      "n_rounds": 3,
+      "correction_angle": 0.12,
+      "base_gain": 0.8
+    }
+  ],
+  "max_depth": 1400,
+  "max_qpu_seconds": 130.0,
+  "estimated_qpu_seconds": 24.0,
+  "package_hash": "90c5b23cc2ef91f2034c52956b4874a060a4fc7b137c265deca0769b51b42028",
+  "reasons": [
+    "all s1b direct-XY arms satisfy the transpiled depth ceiling",
+    "s1b direct-XY estimate satisfies the approved QPU-second ceiling"
+  ]
+}

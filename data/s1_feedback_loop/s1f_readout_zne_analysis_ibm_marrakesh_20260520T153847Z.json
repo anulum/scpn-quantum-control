@@ -1,0 +1,600 @@
+{
+  "schema": "scpn_s1_readout_zne_analysis_v1",
+  "experiment_id": "s1_readout_zne_direct_xy_extension_2026-05-20",
+  "parent_experiment_id": "s1_dynamic_feedback_preregistration_2026-05-06",
+  "backend": "ibm_marrakesh",
+  "lane": "s1f",
+  "readout_model": {
+    "n_qubits": 3,
+    "labels": [
+      "000",
+      "001",
+      "010",
+      "011",
+      "100",
+      "101",
+      "110",
+      "111"
+    ],
+    "condition_number": 1.0406656928666411,
+    "shots_by_prepared_state": {
+      "000": 1024,
+      "001": 1024,
+      "010": 1024,
+      "011": 1024,
+      "100": 1024,
+      "101": 1024,
+      "110": 1024,
+      "111": 1024
+    },
+    "calibration_rows": [
+      {
+        "prepared": "000",
+        "total_shots": 1024,
+        "retention": 0.994140625,
+        "counts": {
+          "000": 1018,
+          "100": 3,
+          "010": 3
+        }
+      },
+      {
+        "prepared": "001",
+        "total_shots": 1024,
+        "retention": 0.9951171875,
+        "counts": {
+          "001": 1019,
+          "101": 2,
+          "000": 3
+        }
+      },
+      {
+        "prepared": "010",
+        "total_shots": 1024,
+        "retention": 0.9853515625,
+        "counts": {
+          "010": 1009,
+          "011": 7,
+          "000": 7,
+          "110": 1
+        }
+      },
+      {
+        "prepared": "011",
+        "total_shots": 1024,
+        "retention": 0.9833984375,
+        "counts": {
+          "011": 1007,
+          "001": 11,
+          "111": 2,
+          "010": 3,
+          "000": 1
+        }
+      },
+      {
+        "prepared": "100",
+        "total_shots": 1024,
+        "retention": 0.9921875,
+        "counts": {
+          "100": 1016,
+          "110": 3,
+          "000": 4,
+          "101": 1
+        }
+      },
+      {
+        "prepared": "101",
+        "total_shots": 1024,
+        "retention": 0.98046875,
+        "counts": {
+          "101": 1004,
+          "001": 9,
+          "100": 10,
+          "111": 1
+        }
+      },
+      {
+        "prepared": "110",
+        "total_shots": 1024,
+        "retention": 0.9833984375,
+        "counts": {
+          "110": 1007,
+          "010": 7,
+          "111": 2,
+          "100": 8
+        }
+      },
+      {
+        "prepared": "111",
+        "total_shots": 1024,
+        "retention": 0.9697265625,
+        "counts": {
+          "111": 993,
+          "110": 14,
+          "101": 10,
+          "011": 7
+        }
+      }
+    ]
+  },
+  "scale_rows": [
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "XXI",
+      "arm": "feedback",
+      "zne_noise_scale": 1,
+      "n_repetitions": 5,
+      "mean_expectation": 0.219921875,
+      "stderr_expectation": 0.008660077842732563,
+      "readout_mitigated_mean_expectation": 0.21865520144643205,
+      "readout_mitigated_stderr_expectation": 0.008843154508447873
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "XXI",
+      "arm": "feedback",
+      "zne_noise_scale": 3,
+      "n_repetitions": 5,
+      "mean_expectation": 0.376171875,
+      "stderr_expectation": 0.01158122428154187,
+      "readout_mitigated_mean_expectation": 0.37692952717978234,
+      "readout_mitigated_stderr_expectation": 0.011693390414622997
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "XXI",
+      "arm": "feedback",
+      "zne_noise_scale": 5,
+      "n_repetitions": 5,
+      "mean_expectation": 0.166796875,
+      "stderr_expectation": 0.010797089813347854,
+      "readout_mitigated_mean_expectation": 0.165675750732643,
+      "readout_mitigated_stderr_expectation": 0.01092353364463826
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "XXI",
+      "arm": "matched_open_loop_control",
+      "zne_noise_scale": 1,
+      "n_repetitions": 5,
+      "mean_expectation": 0.364453125,
+      "stderr_expectation": 0.005262575619260734,
+      "readout_mitigated_mean_expectation": 0.36495614815904864,
+      "readout_mitigated_stderr_expectation": 0.005317181912055938
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "XXI",
+      "arm": "matched_open_loop_control",
+      "zne_noise_scale": 3,
+      "n_repetitions": 5,
+      "mean_expectation": 0.391015625,
+      "stderr_expectation": 0.013967233733422752,
+      "readout_mitigated_mean_expectation": 0.39200765303657986,
+      "readout_mitigated_stderr_expectation": 0.014193722150923271
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "XXI",
+      "arm": "matched_open_loop_control",
+      "zne_noise_scale": 5,
+      "n_repetitions": 5,
+      "mean_expectation": 0.1453125,
+      "stderr_expectation": 0.0031854504746679866,
+      "readout_mitigated_mean_expectation": 0.1438108648234289,
+      "readout_mitigated_stderr_expectation": 0.0032623003318629274
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "XYI",
+      "arm": "feedback",
+      "zne_noise_scale": 1,
+      "n_repetitions": 5,
+      "mean_expectation": 0.175,
+      "stderr_expectation": 0.00904783970460974,
+      "readout_mitigated_mean_expectation": 0.17321037913701523,
+      "readout_mitigated_stderr_expectation": 0.009152949475264419
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "XYI",
+      "arm": "feedback",
+      "zne_noise_scale": 3,
+      "n_repetitions": 5,
+      "mean_expectation": 0.113671875,
+      "stderr_expectation": 0.015860048477079523,
+      "readout_mitigated_mean_expectation": 0.11099452708112209,
+      "readout_mitigated_stderr_expectation": 0.01605554656939357
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "XYI",
+      "arm": "feedback",
+      "zne_noise_scale": 5,
+      "n_repetitions": 5,
+      "mean_expectation": 0.191796875,
+      "stderr_expectation": 0.014130154099754627,
+      "readout_mitigated_mean_expectation": 0.19123932107208078,
+      "readout_mitigated_stderr_expectation": 0.014387084622338064
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "XYI",
+      "arm": "matched_open_loop_control",
+      "zne_noise_scale": 1,
+      "n_repetitions": 5,
+      "mean_expectation": 0.1828125,
+      "stderr_expectation": 0.009659580483498624,
+      "readout_mitigated_mean_expectation": 0.18119479629508628,
+      "readout_mitigated_stderr_expectation": 0.009878429197679634
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "XYI",
+      "arm": "matched_open_loop_control",
+      "zne_noise_scale": 3,
+      "n_repetitions": 5,
+      "mean_expectation": 0.16328125,
+      "stderr_expectation": 0.0170112590530599,
+      "readout_mitigated_mean_expectation": 0.16136719513693973,
+      "readout_mitigated_stderr_expectation": 0.017147227194717184
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "XYI",
+      "arm": "matched_open_loop_control",
+      "zne_noise_scale": 5,
+      "n_repetitions": 5,
+      "mean_expectation": 0.211328125,
+      "stderr_expectation": 0.014608017149464962,
+      "readout_mitigated_mean_expectation": 0.21097901591665244,
+      "readout_mitigated_stderr_expectation": 0.014791404349187968
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "YXI",
+      "arm": "feedback",
+      "zne_noise_scale": 1,
+      "n_repetitions": 5,
+      "mean_expectation": 0.196875,
+      "stderr_expectation": 0.009127594879334315,
+      "readout_mitigated_mean_expectation": 0.19580799638687746,
+      "readout_mitigated_stderr_expectation": 0.009295024764215905
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "YXI",
+      "arm": "feedback",
+      "zne_noise_scale": 3,
+      "n_repetitions": 5,
+      "mean_expectation": 0.408203125,
+      "stderr_expectation": 0.014043498447068398,
+      "readout_mitigated_mean_expectation": 0.4099736577186814,
+      "readout_mitigated_stderr_expectation": 0.01432470863168539
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "YXI",
+      "arm": "feedback",
+      "zne_noise_scale": 5,
+      "n_repetitions": 5,
+      "mean_expectation": 0.171875,
+      "stderr_expectation": 0.012398883006331154,
+      "readout_mitigated_mean_expectation": 0.17097286344518287,
+      "readout_mitigated_stderr_expectation": 0.012638369108049793
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "YXI",
+      "arm": "matched_open_loop_control",
+      "zne_noise_scale": 1,
+      "n_repetitions": 5,
+      "mean_expectation": 0.374609375,
+      "stderr_expectation": 0.010543257481457638,
+      "readout_mitigated_mean_expectation": 0.3761796867070187,
+      "readout_mitigated_stderr_expectation": 0.010602684368898906
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "YXI",
+      "arm": "matched_open_loop_control",
+      "zne_noise_scale": 3,
+      "n_repetitions": 5,
+      "mean_expectation": 0.375390625,
+      "stderr_expectation": 0.014660151566246253,
+      "readout_mitigated_mean_expectation": 0.37675493944797234,
+      "readout_mitigated_stderr_expectation": 0.014896002370239723
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "YXI",
+      "arm": "matched_open_loop_control",
+      "zne_noise_scale": 5,
+      "n_repetitions": 5,
+      "mean_expectation": 0.18828125,
+      "stderr_expectation": 0.010672715697120508,
+      "readout_mitigated_mean_expectation": 0.18755714456570396,
+      "readout_mitigated_stderr_expectation": 0.010762943521310478
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "YYI",
+      "arm": "feedback",
+      "zne_noise_scale": 1,
+      "n_repetitions": 5,
+      "mean_expectation": 0.176953125,
+      "stderr_expectation": 0.009893691517120265,
+      "readout_mitigated_mean_expectation": 0.1754318804596621,
+      "readout_mitigated_stderr_expectation": 0.010007503705832862
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "YYI",
+      "arm": "feedback",
+      "zne_noise_scale": 3,
+      "n_repetitions": 5,
+      "mean_expectation": 0.109375,
+      "stderr_expectation": 0.005891837159764983,
+      "readout_mitigated_mean_expectation": 0.10727495888830063,
+      "readout_mitigated_stderr_expectation": 0.006016217789657126
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "YYI",
+      "arm": "feedback",
+      "zne_noise_scale": 5,
+      "n_repetitions": 5,
+      "mean_expectation": 0.226953125,
+      "stderr_expectation": 0.00803871704189714,
+      "readout_mitigated_mean_expectation": 0.22694077572278326,
+      "readout_mitigated_stderr_expectation": 0.008154165127703802
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "YYI",
+      "arm": "matched_open_loop_control",
+      "zne_noise_scale": 1,
+      "n_repetitions": 5,
+      "mean_expectation": 0.183984375,
+      "stderr_expectation": 0.009909102260910798,
+      "readout_mitigated_mean_expectation": 0.18303552784620278,
+      "readout_mitigated_stderr_expectation": 0.009974557216151909
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "YYI",
+      "arm": "matched_open_loop_control",
+      "zne_noise_scale": 3,
+      "n_repetitions": 5,
+      "mean_expectation": 0.112890625,
+      "stderr_expectation": 0.022839039036298407,
+      "readout_mitigated_mean_expectation": 0.11081347409904868,
+      "readout_mitigated_stderr_expectation": 0.023107752583441735
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "YYI",
+      "arm": "matched_open_loop_control",
+      "zne_noise_scale": 5,
+      "n_repetitions": 5,
+      "mean_expectation": 0.21484375,
+      "stderr_expectation": 0.016070314399003287,
+      "readout_mitigated_mean_expectation": 0.2146837013516818,
+      "readout_mitigated_stderr_expectation": 0.016257864752137422
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "ZZI",
+      "arm": "feedback",
+      "zne_noise_scale": 1,
+      "n_repetitions": 5,
+      "mean_expectation": 0.606640625,
+      "stderr_expectation": 0.004521811290152431,
+      "readout_mitigated_mean_expectation": 0.6129776055558667,
+      "readout_mitigated_stderr_expectation": 0.004557418923264905
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "ZZI",
+      "arm": "feedback",
+      "zne_noise_scale": 3,
+      "n_repetitions": 5,
+      "mean_expectation": 0.432421875,
+      "stderr_expectation": 0.013037749428342684,
+      "readout_mitigated_mean_expectation": 0.43525814354670367,
+      "readout_mitigated_stderr_expectation": 0.013215485865386971
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "ZZI",
+      "arm": "feedback",
+      "zne_noise_scale": 5,
+      "n_repetitions": 5,
+      "mean_expectation": 0.24140625,
+      "stderr_expectation": 0.01700004308358511,
+      "readout_mitigated_mean_expectation": 0.2408203178922744,
+      "readout_mitigated_stderr_expectation": 0.01726445494946531
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "ZZI",
+      "arm": "matched_open_loop_control",
+      "zne_noise_scale": 1,
+      "n_repetitions": 5,
+      "mean_expectation": 0.6171875,
+      "stderr_expectation": 0.013699748372461079,
+      "readout_mitigated_mean_expectation": 0.6236713732816913,
+      "readout_mitigated_stderr_expectation": 0.013869325268215516
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "ZZI",
+      "arm": "matched_open_loop_control",
+      "zne_noise_scale": 3,
+      "n_repetitions": 5,
+      "mean_expectation": 0.41953125,
+      "stderr_expectation": 0.011226646768124933,
+      "readout_mitigated_mean_expectation": 0.42227610625445994,
+      "readout_mitigated_stderr_expectation": 0.01139896409440765
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "ZZI",
+      "arm": "matched_open_loop_control",
+      "zne_noise_scale": 5,
+      "n_repetitions": 5,
+      "mean_expectation": 0.2734375,
+      "stderr_expectation": 0.019146603020550733,
+      "readout_mitigated_mean_expectation": 0.27334891030939995,
+      "readout_mitigated_stderr_expectation": 0.019430831237243294
+    }
+  ],
+  "channel_rows": [
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "XXI",
+      "noise_scales": [
+        1,
+        3,
+        5
+      ],
+      "scale_feedback_minus_control": [
+        -0.14453125,
+        -0.014843749999999989,
+        0.021484375
+      ],
+      "readout_mitigated_scale_feedback_minus_control": [
+        -0.1463009467126166,
+        -0.01507812585679752,
+        0.02186488590921412
+      ],
+      "scale1_feedback_minus_control": -0.14453125,
+      "linear_zne_feedback_minus_control": -0.17047526041666666,
+      "linear_zne_fit_residual": 0.022005015716612612,
+      "readout_mitigated_linear_zne_feedback_minus_control": -0.17262910335310633,
+      "readout_mitigated_linear_zne_fit_residual": 0.022221964112125313,
+      "quadratic_zne_feedback_minus_control": -0.24438476562499947,
+      "quadratic_zne_fit_residual": 3.9448084808579573e-16,
+      "readout_mitigated_quadratic_zne_feedback_minus_control": -0.24726728554920346,
+      "readout_mitigated_quadratic_zne_fit_residual": 3.2566016377648e-16
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "XYI",
+      "noise_scales": [
+        1,
+        3,
+        5
+      ],
+      "scale_feedback_minus_control": [
+        -0.0078125,
+        -0.04960937499999998,
+        -0.01953125
+      ],
+      "readout_mitigated_scale_feedback_minus_control": [
+        -0.00798441715807105,
+        -0.05037266805581764,
+        -0.019739694844571665
+      ],
+      "scale1_feedback_minus_control": -0.0078125,
+      "linear_zne_feedback_minus_control": -0.016861979166666645,
+      "linear_zne_fit_residual": 0.016941099965927693,
+      "readout_mitigated_linear_zne_feedback_minus_control": -0.017215801754611303,
+      "readout_mitigated_linear_zne_fit_residual": 0.017211267579337084,
+      "quadratic_zne_feedback_minus_control": 0.040039062499999716,
+      "quadratic_zne_fit_residual": 2.400362559481063e-16,
+      "readout_mitigated_quadratic_zne_feedback_minus_control": 0.040592667331674215,
+      "readout_mitigated_quadratic_zne_fit_residual": 1.3049302890048882e-16
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "YXI",
+      "noise_scales": [
+        1,
+        3,
+        5
+      ],
+      "scale_feedback_minus_control": [
+        -0.17773437500000003,
+        0.03281250000000002,
+        -0.01640625000000001
+      ],
+      "readout_mitigated_scale_feedback_minus_control": [
+        -0.18037169032014122,
+        0.03321871827070905,
+        -0.0165842811205211
+      ],
+      "scale1_feedback_minus_control": -0.17773437500000003,
+      "linear_zne_feedback_minus_control": -0.17477213541666664,
+      "linear_zne_fit_residual": 0.06122734498555395,
+      "readout_mitigated_linear_zne_feedback_minus_control": -0.1774196412896995,
+      "readout_mitigated_linear_zne_fit_residual": 0.062082421634654654,
+      "quadratic_zne_feedback_minus_control": -0.38041992187499885,
+      "quadratic_zne_fit_residual": 8.412580204060442e-16,
+      "readout_mitigated_quadratic_zne_feedback_minus_control": -0.38593942260884534,
+      "readout_mitigated_quadratic_zne_fit_residual": 7.311895462613622e-16
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "YYI",
+      "noise_scales": [
+        1,
+        3,
+        5
+      ],
+      "scale_feedback_minus_control": [
+        -0.007031250000000017,
+        -0.0035156249999999944,
+        0.012109375000000006
+      ],
+      "readout_mitigated_scale_feedback_minus_control": [
+        -0.0076036473865406795,
+        -0.00353851521074805,
+        0.012257074371101462
+      ],
+      "scale1_feedback_minus_control": -0.007031250000000017,
+      "linear_zne_feedback_minus_control": -0.013834635416666682,
+      "linear_zne_fit_residual": 0.0028542070594769443,
+      "readout_mitigated_linear_zne_feedback_minus_control": -0.014523904060294024,
+      "readout_mitigated_linear_zne_fit_residual": 0.0027648953260809256,
+      "quadratic_zne_feedback_minus_control": -0.004248046875000072,
+      "quadratic_zne_fit_residual": 1.9055656420024215e-17,
+      "readout_mitigated_quadratic_zne_feedback_minus_control": -0.005237291947165697,
+      "readout_mitigated_quadratic_zne_fit_residual": 2.8443867151390527e-17
+    },
+    {
+      "policy_variant": "current_shallow_positive_quadrature_check",
+      "observable": "ZZI",
+      "noise_scales": [
+        1,
+        3,
+        5
+      ],
+      "scale_feedback_minus_control": [
+        -0.010546874999999956,
+        0.012890624999999989,
+        -0.03203125000000001
+      ],
+      "readout_mitigated_scale_feedback_minus_control": [
+        -0.010693767725824643,
+        0.012982037292243731,
+        -0.03252859241712555
+      ],
+      "scale1_feedback_minus_control": -0.010546874999999956,
+      "linear_zne_feedback_minus_control": 0.006217447916666712,
+      "linear_zne_fit_residual": 0.016112459206724702,
+      "readout_mitigated_linear_zne_feedback_minus_control": 0.0062960109015735176,
+      "readout_mitigated_linear_zne_fit_residual": 0.016307399053963872,
+      "quadratic_zne_feedback_minus_control": -0.04790039062499966,
+      "quadratic_zne_fit_residual": 1.411856045225854e-16,
+      "readout_mitigated_quadratic_zne_feedback_minus_control": -0.048476583257647685,
+      "readout_mitigated_quadratic_zne_fit_residual": 1.7277706484948214e-16
+    }
+  ],
+  "mean_abs_scale1_feedback_minus_control": 0.06953125,
+  "mean_abs_linear_zne_feedback_minus_control": 0.07643229166666667,
+  "mean_abs_readout_mitigated_linear_zne_feedback_minus_control": 0.07761689227185693,
+  "claim_boundary": "Dedicated S1 readout-mitigation and local-folding ZNE lane. It is not a retroactive mitigation of earlier S1b--S1f jobs and does not establish backend-general feedback control.",
+  "raw_counts_json": "data/s1_feedback_loop/s1f_readout_zne_raw_counts_ibm_marrakesh_20260520T153847Z.json",
+  "raw_counts_sha256": "9017557d9760cc93c29a40ad131b600138332d91bc7f2072e6e48d0fd6fda792"
+}

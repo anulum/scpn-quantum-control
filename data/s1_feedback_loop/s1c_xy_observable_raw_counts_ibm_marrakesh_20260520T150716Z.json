@@ -1,0 +1,577 @@
+{
+  "experiment_id": "s1b_dynamic_feedback_xy_observable_extension_2026-05-20",
+  "job_ids": [
+    "d86ss98p0eas73dle7cg",
+    "d86ssb5g7okc73elj000",
+    "d86sscis46sc73f7eep0",
+    "d86sse8p0eas73dle7i0",
+    "d86ssfp789is73904l1g",
+    "d86sshgp0eas73dle7lg",
+    "d86ssj0p0eas73dle7ng",
+    "d86ssl0p0eas73dle7rg"
+  ],
+  "observable_family": "direct_xy_pauli_correlators",
+  "observables": [
+    {
+      "basis": "IXX",
+      "arms": [
+        {
+          "label": "feedback",
+          "job_id": "d86sscis46sc73f7eep0",
+          "records": [
+            {
+              "expectation": 0.294921875,
+              "counts": {
+                "000": 471,
+                "010": 248,
+                "011": 33,
+                "100": 142,
+                "110": 49,
+                "001": 49,
+                "111": 17,
+                "101": 15
+              },
+              "source_index": 0
+            },
+            {
+              "expectation": 0.275390625,
+              "counts": {
+                "010": 237,
+                "110": 67,
+                "000": 498,
+                "100": 114,
+                "001": 47,
+                "101": 20,
+                "011": 24,
+                "111": 17
+              },
+              "source_index": 1
+            },
+            {
+              "expectation": 0.294921875,
+              "counts": {
+                "000": 467,
+                "010": 232,
+                "110": 69,
+                "100": 149,
+                "011": 35,
+                "101": 19,
+                "001": 41,
+                "111": 12
+              },
+              "source_index": 2
+            }
+          ],
+          "mean_expectation": 0.2884114583333333,
+          "repetitions": 3,
+          "total_shots": 3072
+        },
+        {
+          "label": "matched_open_loop_control",
+          "job_id": "d86ssj0p0eas73dle7ng",
+          "records": [
+            {
+              "expectation": 0.296875,
+              "counts": {
+                "100": 111,
+                "010": 251,
+                "000": 506,
+                "110": 64,
+                "011": 35,
+                "001": 35,
+                "111": 12,
+                "101": 10
+              },
+              "source_index": 0
+            },
+            {
+              "expectation": 0.28515625,
+              "counts": {
+                "000": 485,
+                "010": 251,
+                "100": 136,
+                "110": 55,
+                "011": 25,
+                "101": 18,
+                "001": 42,
+                "111": 12
+              },
+              "source_index": 1
+            },
+            {
+              "expectation": 0.328125,
+              "counts": {
+                "000": 530,
+                "010": 223,
+                "001": 51,
+                "110": 58,
+                "101": 12,
+                "100": 120,
+                "011": 24,
+                "111": 6
+              },
+              "source_index": 2
+            }
+          ],
+          "mean_expectation": 0.3033854166666667,
+          "repetitions": 3,
+          "total_shots": 3072
+        }
+      ],
+      "feedback_minus_control": -0.01497395833333337
+    },
+    {
+      "basis": "IYY",
+      "arms": [
+        {
+          "label": "feedback",
+          "job_id": "d86sse8p0eas73dle7i0",
+          "records": [
+            {
+              "expectation": -0.080078125,
+              "counts": {
+                "000": 232,
+                "110": 256,
+                "100": 197,
+                "111": 30,
+                "010": 257,
+                "001": 27,
+                "011": 12,
+                "101": 13
+              },
+              "source_index": 0
+            },
+            {
+              "expectation": -0.09765625,
+              "counts": {
+                "011": 20,
+                "010": 261,
+                "001": 25,
+                "110": 249,
+                "000": 210,
+                "100": 203,
+                "111": 29,
+                "101": 27
+              },
+              "source_index": 1
+            },
+            {
+              "expectation": -0.10546875,
+              "counts": {
+                "010": 250,
+                "110": 263,
+                "100": 200,
+                "000": 207,
+                "011": 34,
+                "101": 30,
+                "001": 23,
+                "111": 17
+              },
+              "source_index": 2
+            }
+          ],
+          "mean_expectation": -0.09440104166666667,
+          "repetitions": 3,
+          "total_shots": 3072
+        },
+        {
+          "label": "matched_open_loop_control",
+          "job_id": "d86ssl0p0eas73dle7rg",
+          "records": [
+            {
+              "expectation": -0.099609375,
+              "counts": {
+                "010": 253,
+                "000": 200,
+                "111": 37,
+                "110": 265,
+                "100": 198,
+                "011": 26,
+                "101": 20,
+                "001": 25
+              },
+              "source_index": 0
+            },
+            {
+              "expectation": -0.04296875,
+              "counts": {
+                "010": 254,
+                "000": 218,
+                "100": 217,
+                "110": 245,
+                "001": 15,
+                "011": 30,
+                "101": 20,
+                "111": 25
+              },
+              "source_index": 1
+            },
+            {
+              "expectation": -0.115234375,
+              "counts": {
+                "100": 191,
+                "000": 219,
+                "010": 268,
+                "110": 247,
+                "111": 26,
+                "101": 30,
+                "011": 17,
+                "001": 26
+              },
+              "source_index": 2
+            }
+          ],
+          "mean_expectation": -0.0859375,
+          "repetitions": 3,
+          "total_shots": 3072
+        }
+      ],
+      "feedback_minus_control": -0.008463541666666671
+    },
+    {
+      "basis": "XXI",
+      "arms": [
+        {
+          "label": "feedback",
+          "job_id": "d86ss98p0eas73dle7cg",
+          "records": [
+            {
+              "expectation": 0.234375,
+              "counts": {
+                "000": 339,
+                "011": 139,
+                "001": 249,
+                "010": 149,
+                "101": 45,
+                "100": 59,
+                "110": 25,
+                "111": 19
+              },
+              "source_index": 0
+            },
+            {
+              "expectation": 0.2578125,
+              "counts": {
+                "010": 150,
+                "011": 136,
+                "001": 258,
+                "000": 337,
+                "110": 30,
+                "100": 48,
+                "101": 46,
+                "111": 19
+              },
+              "source_index": 1
+            },
+            {
+              "expectation": 0.228515625,
+              "counts": {
+                "100": 57,
+                "010": 160,
+                "000": 318,
+                "001": 275,
+                "011": 138,
+                "111": 20,
+                "101": 40,
+                "110": 16
+              },
+              "source_index": 2
+            }
+          ],
+          "mean_expectation": 0.240234375,
+          "repetitions": 3,
+          "total_shots": 3072
+        },
+        {
+          "label": "matched_open_loop_control",
+          "job_id": "d86ssfp789is73904l1g",
+          "records": [
+            {
+              "expectation": 0.23046875,
+              "counts": {
+                "001": 264,
+                "000": 316,
+                "010": 176,
+                "011": 137,
+                "100": 54,
+                "111": 24,
+                "101": 27,
+                "110": 26
+              },
+              "source_index": 0
+            },
+            {
+              "expectation": 0.162109375,
+              "counts": {
+                "010": 186,
+                "011": 140,
+                "000": 290,
+                "100": 60,
+                "101": 43,
+                "001": 248,
+                "110": 31,
+                "111": 26
+              },
+              "source_index": 1
+            },
+            {
+              "expectation": 0.2109375,
+              "counts": {
+                "010": 182,
+                "001": 236,
+                "000": 333,
+                "101": 35,
+                "100": 54,
+                "011": 133,
+                "111": 17,
+                "110": 34
+              },
+              "source_index": 2
+            }
+          ],
+          "mean_expectation": 0.201171875,
+          "repetitions": 3,
+          "total_shots": 3072
+        }
+      ],
+      "feedback_minus_control": 0.0390625
+    },
+    {
+      "basis": "YYI",
+      "arms": [
+        {
+          "label": "feedback",
+          "job_id": "d86ssb5g7okc73elj000",
+          "records": [
+            {
+              "expectation": 0.119140625,
+              "counts": {
+                "010": 237,
+                "001": 193,
+                "000": 307,
+                "011": 150,
+                "100": 33,
+                "101": 31,
+                "110": 39,
+                "111": 34
+              },
+              "source_index": 0
+            },
+            {
+              "expectation": 0.044921875,
+              "counts": {
+                "000": 281,
+                "001": 189,
+                "011": 196,
+                "010": 220,
+                "110": 29,
+                "100": 36,
+                "111": 36,
+                "101": 37
+              },
+              "source_index": 1
+            },
+            {
+              "expectation": 0.033203125,
+              "counts": {
+                "010": 232,
+                "011": 187,
+                "001": 214,
+                "000": 248,
+                "101": 42,
+                "111": 38,
+                "110": 29,
+                "100": 34
+              },
+              "source_index": 2
+            }
+          ],
+          "mean_expectation": 0.06575520833333333,
+          "repetitions": 3,
+          "total_shots": 3072
+        },
+        {
+          "label": "matched_open_loop_control",
+          "job_id": "d86sshgp0eas73dle7lg",
+          "records": [
+            {
+              "expectation": -0.0234375,
+              "counts": {
+                "001": 211,
+                "111": 56,
+                "011": 252,
+                "010": 206,
+                "000": 193,
+                "101": 36,
+                "100": 30,
+                "110": 40
+              },
+              "source_index": 0
+            },
+            {
+              "expectation": -0.04296875,
+              "counts": {
+                "011": 235,
+                "000": 205,
+                "010": 239,
+                "111": 53,
+                "001": 201,
+                "110": 31,
+                "100": 30,
+                "101": 30
+              },
+              "source_index": 1
+            },
+            {
+              "expectation": -0.083984375,
+              "counts": {
+                "011": 256,
+                "000": 193,
+                "010": 237,
+                "001": 185,
+                "101": 36,
+                "111": 55,
+                "110": 36,
+                "100": 26
+              },
+              "source_index": 2
+            }
+          ],
+          "mean_expectation": -0.050130208333333336,
+          "repetitions": 3,
+          "total_shots": 3072
+        }
+      ],
+      "feedback_minus_control": 0.11588541666666666
+    }
+  ],
+  "schema": "scpn_s1c_xy_observable_raw_counts_v1",
+  "backend": "ibm_marrakesh",
+  "parent_experiment_id": "s1_dynamic_feedback_preregistration_2026-05-06",
+  "lane": "s1c",
+  "n_rounds": 1,
+  "correction_angle": 0.06,
+  "base_gain": 0.4,
+  "policy_sweep": "none",
+  "approval": {
+    "approval_id": "s1c_full_stack_ibm_marrakesh_2026-05-20",
+    "approver": "Miroslav Sotek",
+    "package_hash": "593201bb67dc2ac0c49919db5a9692f2c4225c26ae144cb6a9432f4f2b71c941",
+    "max_qpu_seconds": 130.0,
+    "allowed_provider": "ibm_runtime"
+  },
+  "submission_records": [
+    {
+      "approval_id": "s1c_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "feedback",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86ss98p0eas73dle7cg",
+      "metadata": {
+        "package_hash": "593201bb67dc2ac0c49919db5a9692f2c4225c26ae144cb6a9432f4f2b71c941",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1c",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1c_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "feedback",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86ssb5g7okc73elj000",
+      "metadata": {
+        "package_hash": "593201bb67dc2ac0c49919db5a9692f2c4225c26ae144cb6a9432f4f2b71c941",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1c",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1c_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "feedback",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86sscis46sc73f7eep0",
+      "metadata": {
+        "package_hash": "593201bb67dc2ac0c49919db5a9692f2c4225c26ae144cb6a9432f4f2b71c941",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1c",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1c_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "feedback",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86sse8p0eas73dle7i0",
+      "metadata": {
+        "package_hash": "593201bb67dc2ac0c49919db5a9692f2c4225c26ae144cb6a9432f4f2b71c941",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1c",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1c_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "matched_open_loop_control",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86ssfp789is73904l1g",
+      "metadata": {
+        "package_hash": "593201bb67dc2ac0c49919db5a9692f2c4225c26ae144cb6a9432f4f2b71c941",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1c",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1c_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "matched_open_loop_control",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86sshgp0eas73dle7lg",
+      "metadata": {
+        "package_hash": "593201bb67dc2ac0c49919db5a9692f2c4225c26ae144cb6a9432f4f2b71c941",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1c",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1c_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "matched_open_loop_control",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86ssj0p0eas73dle7ng",
+      "metadata": {
+        "package_hash": "593201bb67dc2ac0c49919db5a9692f2c4225c26ae144cb6a9432f4f2b71c941",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1c",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1c_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "matched_open_loop_control",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86ssl0p0eas73dle7rg",
+      "metadata": {
+        "package_hash": "593201bb67dc2ac0c49919db5a9692f2c4225c26ae144cb6a9432f4f2b71c941",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1c",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    }
+  ]
+}

@@ -1,0 +1,1738 @@
+{
+  "experiment_id": "s1b_dynamic_feedback_xy_observable_extension_2026-05-20",
+  "lane": "s1d",
+  "job_ids": [
+    "d86ssph789is73904ld0",
+    "d86sssop0eas73dle840",
+    "d86ssuis46sc73f7efeg",
+    "d86st0gp0eas73dle890",
+    "d86st28p0eas73dle8b0",
+    "d86st4lg7okc73elj0sg",
+    "d86st6h789is73904lq0",
+    "d86st81789is73904lrg",
+    "d86st9p789is73904lu0",
+    "d86stbh789is73904m10",
+    "d86std9789is73904m30",
+    "d86stf0p0eas73dle8og",
+    "d86stgp789is73904m80",
+    "d86stigp0eas73dle8tg",
+    "d86stkdg7okc73elj1g0",
+    "d86stlqs46sc73f7eg6g",
+    "d86stngp0eas73dle93g",
+    "d86stp5g7okc73elj1lg",
+    "d86stqtg7okc73elj1o0",
+    "d86stsh789is73904mk0",
+    "d86stu0p0eas73dle9c0",
+    "d86stvp789is73904mpg",
+    "d86su18p0eas73dle9h0",
+    "d86su32s46sc73f7egp0"
+  ],
+  "observable_family": "direct_xy_pauli_correlators",
+  "policy_variants": [
+    {
+      "policy_variant": "current_shallow_positive",
+      "n_rounds": 1,
+      "correction_angle": 0.06,
+      "base_gain": 0.4,
+      "hypothesis": "repeats the completed S1c shallow positive-correction policy",
+      "job_ids": [
+        "d86ssph789is73904ld0",
+        "d86sssop0eas73dle840",
+        "d86ssuis46sc73f7efeg",
+        "d86st0gp0eas73dle890",
+        "d86st28p0eas73dle8b0",
+        "d86st4lg7okc73elj0sg",
+        "d86st6h789is73904lq0",
+        "d86st81789is73904lrg"
+      ],
+      "observables": [
+        {
+          "basis": "IXX",
+          "arms": [
+            {
+              "label": "feedback",
+              "job_id": "d86ssuis46sc73f7efeg",
+              "records": [
+                {
+                  "expectation": 0.25390625,
+                  "counts": {
+                    "010": 237,
+                    "000": 480,
+                    "110": 67,
+                    "100": 135,
+                    "011": 20,
+                    "001": 63,
+                    "101": 15,
+                    "111": 7
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": 0.326171875,
+                  "counts": {
+                    "001": 46,
+                    "010": 223,
+                    "110": 55,
+                    "000": 517,
+                    "100": 135,
+                    "111": 8,
+                    "101": 21,
+                    "011": 19
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": 0.31640625,
+                  "counts": {
+                    "100": 133,
+                    "000": 505,
+                    "010": 222,
+                    "001": 56,
+                    "110": 53,
+                    "111": 13,
+                    "101": 19,
+                    "011": 23
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": 0.298828125,
+              "repetitions": 3,
+              "total_shots": 3072
+            },
+            {
+              "label": "matched_open_loop_control",
+              "job_id": "d86st6h789is73904lq0",
+              "records": [
+                {
+                  "expectation": 0.267578125,
+                  "counts": {
+                    "110": 53,
+                    "000": 501,
+                    "001": 66,
+                    "100": 117,
+                    "111": 7,
+                    "010": 241,
+                    "101": 15,
+                    "011": 24
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": 0.314453125,
+                  "counts": {
+                    "000": 496,
+                    "010": 249,
+                    "011": 25,
+                    "110": 59,
+                    "001": 35,
+                    "100": 139,
+                    "111": 13,
+                    "101": 8
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": 0.248046875,
+                  "counts": {
+                    "101": 17,
+                    "000": 494,
+                    "010": 245,
+                    "110": 61,
+                    "001": 62,
+                    "100": 118,
+                    "111": 7,
+                    "011": 20
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": 0.2766927083333333,
+              "repetitions": 3,
+              "total_shots": 3072
+            }
+          ],
+          "feedback_minus_control": 0.022135416666666685
+        },
+        {
+          "basis": "IYY",
+          "arms": [
+            {
+              "label": "feedback",
+              "job_id": "d86st0gp0eas73dle890",
+              "records": [
+                {
+                  "expectation": -0.078125,
+                  "counts": {
+                    "010": 275,
+                    "110": 244,
+                    "100": 215,
+                    "000": 206,
+                    "011": 19,
+                    "111": 32,
+                    "001": 18,
+                    "101": 15
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": -0.087890625,
+                  "counts": {
+                    "110": 254,
+                    "010": 253,
+                    "100": 201,
+                    "000": 217,
+                    "011": 24,
+                    "111": 25,
+                    "001": 25,
+                    "101": 25
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": -0.146484375,
+                  "counts": {
+                    "110": 276,
+                    "010": 263,
+                    "000": 204,
+                    "100": 193,
+                    "101": 18,
+                    "111": 26,
+                    "011": 14,
+                    "001": 30
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": -0.10416666666666667,
+              "repetitions": 3,
+              "total_shots": 3072
+            },
+            {
+              "label": "matched_open_loop_control",
+              "job_id": "d86st81789is73904lrg",
+              "records": [
+                {
+                  "expectation": -0.16015625,
+                  "counts": {
+                    "100": 186,
+                    "110": 273,
+                    "010": 266,
+                    "001": 25,
+                    "000": 187,
+                    "111": 32,
+                    "101": 30,
+                    "011": 25
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": -0.083984375,
+                  "counts": {
+                    "010": 236,
+                    "110": 260,
+                    "100": 204,
+                    "101": 35,
+                    "000": 215,
+                    "001": 24,
+                    "011": 29,
+                    "111": 21
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": -0.103515625,
+                  "counts": {
+                    "111": 29,
+                    "110": 261,
+                    "100": 197,
+                    "000": 206,
+                    "001": 22,
+                    "010": 253,
+                    "101": 29,
+                    "011": 27
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": -0.11588541666666667,
+              "repetitions": 3,
+              "total_shots": 3072
+            }
+          ],
+          "feedback_minus_control": 0.01171875
+        },
+        {
+          "basis": "XXI",
+          "arms": [
+            {
+              "label": "feedback",
+              "job_id": "d86ssph789is73904ld0",
+              "records": [
+                {
+                  "expectation": 0.248046875,
+                  "counts": {
+                    "101": 41,
+                    "001": 289,
+                    "000": 311,
+                    "110": 24,
+                    "011": 157,
+                    "100": 50,
+                    "010": 137,
+                    "111": 15
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": 0.248046875,
+                  "counts": {
+                    "010": 153,
+                    "000": 329,
+                    "011": 143,
+                    "001": 267,
+                    "101": 43,
+                    "110": 20,
+                    "111": 23,
+                    "100": 46
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": 0.212890625,
+                  "counts": {
+                    "010": 155,
+                    "111": 31,
+                    "001": 268,
+                    "000": 294,
+                    "100": 58,
+                    "011": 142,
+                    "101": 48,
+                    "110": 28
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": 0.236328125,
+              "repetitions": 3,
+              "total_shots": 3072
+            },
+            {
+              "label": "matched_open_loop_control",
+              "job_id": "d86st28p0eas73dle8b0",
+              "records": [
+                {
+                  "expectation": 0.205078125,
+                  "counts": {
+                    "010": 189,
+                    "001": 251,
+                    "000": 309,
+                    "011": 140,
+                    "110": 35,
+                    "101": 29,
+                    "100": 49,
+                    "111": 22
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": 0.18359375,
+                  "counts": {
+                    "001": 248,
+                    "010": 189,
+                    "011": 150,
+                    "000": 304,
+                    "100": 43,
+                    "111": 22,
+                    "101": 36,
+                    "110": 32
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": 0.228515625,
+                  "counts": {
+                    "010": 178,
+                    "100": 51,
+                    "000": 311,
+                    "001": 260,
+                    "011": 133,
+                    "110": 27,
+                    "101": 33,
+                    "111": 31
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": 0.20572916666666666,
+              "repetitions": 3,
+              "total_shots": 3072
+            }
+          ],
+          "feedback_minus_control": 0.030598958333333343
+        },
+        {
+          "basis": "YYI",
+          "arms": [
+            {
+              "label": "feedback",
+              "job_id": "d86sssop0eas73dle840",
+              "records": [
+                {
+                  "expectation": 0.025390625,
+                  "counts": {
+                    "000": 273,
+                    "011": 156,
+                    "110": 34,
+                    "010": 252,
+                    "111": 28,
+                    "100": 44,
+                    "001": 190,
+                    "101": 47
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": 0.08203125,
+                  "counts": {
+                    "011": 161,
+                    "001": 210,
+                    "111": 23,
+                    "000": 289,
+                    "110": 32,
+                    "101": 32,
+                    "100": 44,
+                    "010": 233
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": 0.119140625,
+                  "counts": {
+                    "111": 31,
+                    "011": 171,
+                    "000": 292,
+                    "001": 216,
+                    "010": 223,
+                    "110": 34,
+                    "101": 26,
+                    "100": 31
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": 0.07552083333333333,
+              "repetitions": 3,
+              "total_shots": 3072
+            },
+            {
+              "label": "matched_open_loop_control",
+              "job_id": "d86st4lg7okc73elj0sg",
+              "records": [
+                {
+                  "expectation": -0.02734375,
+                  "counts": {
+                    "010": 232,
+                    "000": 215,
+                    "011": 246,
+                    "001": 192,
+                    "100": 22,
+                    "111": 56,
+                    "101": 26,
+                    "110": 35
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": 0.00390625,
+                  "counts": {
+                    "001": 192,
+                    "110": 41,
+                    "100": 22,
+                    "000": 227,
+                    "101": 28,
+                    "010": 215,
+                    "011": 245,
+                    "111": 54
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": -0.048828125,
+                  "counts": {
+                    "011": 238,
+                    "000": 209,
+                    "001": 195,
+                    "111": 50,
+                    "101": 24,
+                    "010": 242,
+                    "100": 33,
+                    "110": 33
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": -0.024088541666666668,
+              "repetitions": 3,
+              "total_shots": 3072
+            }
+          ],
+          "feedback_minus_control": 0.099609375
+        }
+      ]
+    },
+    {
+      "policy_variant": "polarity_flipped",
+      "n_rounds": 1,
+      "correction_angle": -0.06,
+      "base_gain": 0.4,
+      "hypothesis": "tests whether the S1c negative shift is a correction-polarity effect",
+      "job_ids": [
+        "d86st9p789is73904lu0",
+        "d86stbh789is73904m10",
+        "d86std9789is73904m30",
+        "d86stf0p0eas73dle8og",
+        "d86stgp789is73904m80",
+        "d86stigp0eas73dle8tg",
+        "d86stkdg7okc73elj1g0",
+        "d86stlqs46sc73f7eg6g"
+      ],
+      "observables": [
+        {
+          "basis": "IXX",
+          "arms": [
+            {
+              "label": "feedback",
+              "job_id": "d86std9789is73904m30",
+              "records": [
+                {
+                  "expectation": 0.30078125,
+                  "counts": {
+                    "100": 124,
+                    "000": 504,
+                    "010": 229,
+                    "001": 45,
+                    "110": 63,
+                    "011": 24,
+                    "101": 21,
+                    "111": 14
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": 0.330078125,
+                  "counts": {
+                    "001": 47,
+                    "100": 129,
+                    "010": 222,
+                    "000": 526,
+                    "110": 54,
+                    "101": 20,
+                    "011": 18,
+                    "111": 8
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": 0.265625,
+                  "counts": {
+                    "010": 235,
+                    "000": 511,
+                    "110": 68,
+                    "011": 16,
+                    "001": 51,
+                    "100": 113,
+                    "101": 22,
+                    "111": 8
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": 0.298828125,
+              "repetitions": 3,
+              "total_shots": 3072
+            },
+            {
+              "label": "matched_open_loop_control",
+              "job_id": "d86stkdg7okc73elj1g0",
+              "records": [
+                {
+                  "expectation": 0.234375,
+                  "counts": {
+                    "000": 478,
+                    "110": 75,
+                    "100": 129,
+                    "010": 238,
+                    "101": 19,
+                    "011": 22,
+                    "001": 60,
+                    "111": 3
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": 0.3125,
+                  "counts": {
+                    "010": 225,
+                    "000": 496,
+                    "001": 51,
+                    "110": 61,
+                    "100": 127,
+                    "011": 35,
+                    "101": 15,
+                    "111": 14
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": 0.30078125,
+                  "counts": {
+                    "000": 489,
+                    "001": 40,
+                    "010": 236,
+                    "100": 128,
+                    "110": 59,
+                    "101": 23,
+                    "011": 35,
+                    "111": 14
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": 0.2825520833333333,
+              "repetitions": 3,
+              "total_shots": 3072
+            }
+          ],
+          "feedback_minus_control": 0.016276041666666685
+        },
+        {
+          "basis": "IYY",
+          "arms": [
+            {
+              "label": "feedback",
+              "job_id": "d86stf0p0eas73dle8og",
+              "records": [
+                {
+                  "expectation": -0.083984375,
+                  "counts": {
+                    "010": 260,
+                    "000": 222,
+                    "100": 205,
+                    "110": 253,
+                    "101": 23,
+                    "011": 22,
+                    "001": 19,
+                    "111": 20
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": -0.12109375,
+                  "counts": {
+                    "010": 249,
+                    "001": 20,
+                    "110": 290,
+                    "100": 189,
+                    "111": 37,
+                    "000": 203,
+                    "011": 21,
+                    "101": 15
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": -0.1484375,
+                  "counts": {
+                    "110": 268,
+                    "010": 278,
+                    "100": 202,
+                    "000": 174,
+                    "001": 26,
+                    "011": 31,
+                    "111": 29,
+                    "101": 16
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": -0.11783854166666667,
+              "repetitions": 3,
+              "total_shots": 3072
+            },
+            {
+              "label": "matched_open_loop_control",
+              "job_id": "d86stlqs46sc73f7eg6g",
+              "records": [
+                {
+                  "expectation": -0.1171875,
+                  "counts": {
+                    "010": 262,
+                    "100": 208,
+                    "110": 255,
+                    "000": 200,
+                    "101": 25,
+                    "111": 24,
+                    "011": 20,
+                    "001": 30
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": -0.130859375,
+                  "counts": {
+                    "000": 199,
+                    "110": 247,
+                    "001": 30,
+                    "010": 283,
+                    "111": 23,
+                    "100": 198,
+                    "101": 19,
+                    "011": 25
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": -0.12890625,
+                  "counts": {
+                    "110": 251,
+                    "010": 285,
+                    "000": 190,
+                    "100": 198,
+                    "111": 30,
+                    "001": 23,
+                    "011": 28,
+                    "101": 19
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": -0.12565104166666666,
+              "repetitions": 3,
+              "total_shots": 3072
+            }
+          ],
+          "feedback_minus_control": 0.007812499999999986
+        },
+        {
+          "basis": "XXI",
+          "arms": [
+            {
+              "label": "feedback",
+              "job_id": "d86st9p789is73904lu0",
+              "records": [
+                {
+                  "expectation": 0.25,
+                  "counts": {
+                    "101": 35,
+                    "110": 25,
+                    "011": 148,
+                    "001": 271,
+                    "000": 322,
+                    "010": 152,
+                    "111": 22,
+                    "100": 49
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": 0.220703125,
+                  "counts": {
+                    "101": 51,
+                    "001": 302,
+                    "000": 262,
+                    "011": 142,
+                    "010": 159,
+                    "100": 47,
+                    "111": 32,
+                    "110": 29
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": 0.240234375,
+                  "counts": {
+                    "100": 55,
+                    "000": 315,
+                    "010": 151,
+                    "101": 51,
+                    "011": 132,
+                    "001": 271,
+                    "111": 22,
+                    "110": 27
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": 0.23697916666666666,
+              "repetitions": 3,
+              "total_shots": 3072
+            },
+            {
+              "label": "matched_open_loop_control",
+              "job_id": "d86stgp789is73904m80",
+              "records": [
+                {
+                  "expectation": 0.1953125,
+                  "counts": {
+                    "000": 320,
+                    "010": 191,
+                    "001": 247,
+                    "101": 39,
+                    "110": 25,
+                    "100": 52,
+                    "011": 130,
+                    "111": 20
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": 0.162109375,
+                  "counts": {
+                    "000": 329,
+                    "100": 41,
+                    "010": 208,
+                    "001": 213,
+                    "011": 145,
+                    "101": 35,
+                    "111": 21,
+                    "110": 32
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": 0.166015625,
+                  "counts": {
+                    "010": 210,
+                    "100": 46,
+                    "011": 140,
+                    "000": 322,
+                    "001": 225,
+                    "101": 31,
+                    "111": 20,
+                    "110": 30
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": 0.17447916666666666,
+              "repetitions": 3,
+              "total_shots": 3072
+            }
+          ],
+          "feedback_minus_control": 0.0625
+        },
+        {
+          "basis": "YYI",
+          "arms": [
+            {
+              "label": "feedback",
+              "job_id": "d86stbh789is73904m10",
+              "records": [
+                {
+                  "expectation": 0.0234375,
+                  "counts": {
+                    "011": 187,
+                    "010": 240,
+                    "000": 262,
+                    "001": 189,
+                    "111": 43,
+                    "100": 27,
+                    "101": 46,
+                    "110": 30
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": 0.04296875,
+                  "counts": {
+                    "101": 35,
+                    "010": 242,
+                    "001": 205,
+                    "000": 273,
+                    "011": 171,
+                    "111": 32,
+                    "110": 24,
+                    "100": 42
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": 0.060546875,
+                  "counts": {
+                    "001": 212,
+                    "000": 267,
+                    "010": 234,
+                    "011": 175,
+                    "100": 41,
+                    "101": 31,
+                    "110": 29,
+                    "111": 35
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": 0.042317708333333336,
+              "repetitions": 3,
+              "total_shots": 3072
+            },
+            {
+              "label": "matched_open_loop_control",
+              "job_id": "d86stigp0eas73dle8tg",
+              "records": [
+                {
+                  "expectation": -0.041015625,
+                  "counts": {
+                    "001": 185,
+                    "100": 34,
+                    "110": 52,
+                    "010": 233,
+                    "011": 242,
+                    "000": 202,
+                    "111": 52,
+                    "101": 24
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": -0.037109375,
+                  "counts": {
+                    "000": 193,
+                    "011": 221,
+                    "010": 249,
+                    "111": 63,
+                    "110": 55,
+                    "001": 182,
+                    "100": 26,
+                    "101": 35
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": -0.05859375,
+                  "counts": {
+                    "000": 192,
+                    "010": 237,
+                    "011": 232,
+                    "111": 62,
+                    "110": 37,
+                    "101": 38,
+                    "001": 191,
+                    "100": 35
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": -0.045572916666666664,
+              "repetitions": 3,
+              "total_shots": 3072
+            }
+          ],
+          "feedback_minus_control": 0.087890625
+        }
+      ]
+    },
+    {
+      "policy_variant": "weak_positive",
+      "n_rounds": 1,
+      "correction_angle": 0.03,
+      "base_gain": 0.2,
+      "hypothesis": "tests whether positive correction needs a lower-gain stability boundary",
+      "job_ids": [
+        "d86stngp0eas73dle93g",
+        "d86stp5g7okc73elj1lg",
+        "d86stqtg7okc73elj1o0",
+        "d86stsh789is73904mk0",
+        "d86stu0p0eas73dle9c0",
+        "d86stvp789is73904mpg",
+        "d86su18p0eas73dle9h0",
+        "d86su32s46sc73f7egp0"
+      ],
+      "observables": [
+        {
+          "basis": "IXX",
+          "arms": [
+            {
+              "label": "feedback",
+              "job_id": "d86stqtg7okc73elj1o0",
+              "records": [
+                {
+                  "expectation": 0.232421875,
+                  "counts": {
+                    "100": 137,
+                    "000": 458,
+                    "110": 66,
+                    "101": 20,
+                    "010": 261,
+                    "001": 46,
+                    "011": 28,
+                    "111": 8
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": 0.263671875,
+                  "counts": {
+                    "000": 452,
+                    "011": 36,
+                    "010": 254,
+                    "100": 150,
+                    "001": 49,
+                    "110": 54,
+                    "101": 20,
+                    "111": 9
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": 0.24609375,
+                  "counts": {
+                    "001": 44,
+                    "010": 244,
+                    "000": 469,
+                    "100": 135,
+                    "110": 72,
+                    "101": 26,
+                    "011": 28,
+                    "111": 6
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": 0.24739583333333334,
+              "repetitions": 3,
+              "total_shots": 3072
+            },
+            {
+              "label": "matched_open_loop_control",
+              "job_id": "d86su18p0eas73dle9h0",
+              "records": [
+                {
+                  "expectation": 0.2734375,
+                  "counts": {
+                    "100": 125,
+                    "000": 490,
+                    "001": 40,
+                    "110": 71,
+                    "010": 241,
+                    "111": 15,
+                    "101": 20,
+                    "011": 22
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": 0.3125,
+                  "counts": {
+                    "111": 10,
+                    "100": 145,
+                    "010": 251,
+                    "110": 57,
+                    "000": 494,
+                    "001": 27,
+                    "011": 23,
+                    "101": 17
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": 0.3203125,
+                  "counts": {
+                    "000": 521,
+                    "010": 222,
+                    "011": 28,
+                    "110": 69,
+                    "001": 45,
+                    "100": 121,
+                    "101": 12,
+                    "111": 6
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": 0.3020833333333333,
+              "repetitions": 3,
+              "total_shots": 3072
+            }
+          ],
+          "feedback_minus_control": -0.05468749999999997
+        },
+        {
+          "basis": "IYY",
+          "arms": [
+            {
+              "label": "feedback",
+              "job_id": "d86stsh789is73904mk0",
+              "records": [
+                {
+                  "expectation": -0.115234375,
+                  "counts": {
+                    "110": 292,
+                    "101": 24,
+                    "000": 204,
+                    "010": 234,
+                    "100": 192,
+                    "011": 35,
+                    "001": 21,
+                    "111": 22
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": -0.048828125,
+                  "counts": {
+                    "100": 214,
+                    "000": 213,
+                    "110": 256,
+                    "111": 30,
+                    "010": 239,
+                    "011": 30,
+                    "101": 21,
+                    "001": 21
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": -0.11328125,
+                  "counts": {
+                    "000": 212,
+                    "110": 268,
+                    "011": 24,
+                    "010": 254,
+                    "100": 194,
+                    "001": 21,
+                    "111": 24,
+                    "101": 27
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": -0.09244791666666667,
+              "repetitions": 3,
+              "total_shots": 3072
+            },
+            {
+              "label": "matched_open_loop_control",
+              "job_id": "d86su32s46sc73f7egp0",
+              "records": [
+                {
+                  "expectation": -0.0546875,
+                  "counts": {
+                    "000": 227,
+                    "100": 208,
+                    "110": 263,
+                    "010": 229,
+                    "101": 23,
+                    "111": 25,
+                    "001": 25,
+                    "011": 24
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": -0.09765625,
+                  "counts": {
+                    "111": 27,
+                    "010": 272,
+                    "000": 214,
+                    "100": 202,
+                    "110": 245,
+                    "011": 19,
+                    "101": 25,
+                    "001": 20
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": -0.0625,
+                  "counts": {
+                    "000": 217,
+                    "010": 249,
+                    "100": 204,
+                    "110": 244,
+                    "111": 28,
+                    "011": 31,
+                    "101": 26,
+                    "001": 25
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": -0.07161458333333333,
+              "repetitions": 3,
+              "total_shots": 3072
+            }
+          ],
+          "feedback_minus_control": -0.020833333333333343
+        },
+        {
+          "basis": "XXI",
+          "arms": [
+            {
+              "label": "feedback",
+              "job_id": "d86stngp0eas73dle93g",
+              "records": [
+                {
+                  "expectation": 0.291015625,
+                  "counts": {
+                    "001": 292,
+                    "000": 319,
+                    "010": 141,
+                    "100": 45,
+                    "011": 126,
+                    "101": 51,
+                    "111": 28,
+                    "110": 22
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": 0.244140625,
+                  "counts": {
+                    "000": 295,
+                    "011": 142,
+                    "001": 291,
+                    "101": 48,
+                    "100": 51,
+                    "110": 25,
+                    "111": 26,
+                    "010": 146
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": 0.2109375,
+                  "counts": {
+                    "101": 47,
+                    "000": 302,
+                    "100": 53,
+                    "001": 252,
+                    "010": 156,
+                    "011": 148,
+                    "111": 29,
+                    "110": 37
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": 0.24869791666666666,
+              "repetitions": 3,
+              "total_shots": 3072
+            },
+            {
+              "label": "matched_open_loop_control",
+              "job_id": "d86stu0p0eas73dle9c0",
+              "records": [
+                {
+                  "expectation": 0.146484375,
+                  "counts": {
+                    "001": 234,
+                    "000": 309,
+                    "010": 202,
+                    "011": 155,
+                    "101": 38,
+                    "111": 23,
+                    "100": 42,
+                    "110": 21
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": 0.173828125,
+                  "counts": {
+                    "011": 173,
+                    "111": 28,
+                    "001": 229,
+                    "000": 318,
+                    "010": 176,
+                    "100": 48,
+                    "110": 26,
+                    "101": 26
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": 0.17578125,
+                  "counts": {
+                    "000": 314,
+                    "011": 163,
+                    "001": 229,
+                    "010": 174,
+                    "111": 24,
+                    "100": 55,
+                    "110": 35,
+                    "101": 30
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": 0.16536458333333334,
+              "repetitions": 3,
+              "total_shots": 3072
+            }
+          ],
+          "feedback_minus_control": 0.08333333333333331
+        },
+        {
+          "basis": "YYI",
+          "arms": [
+            {
+              "label": "feedback",
+              "job_id": "d86stp5g7okc73elj1lg",
+              "records": [
+                {
+                  "expectation": 0.09375,
+                  "counts": {
+                    "011": 165,
+                    "001": 229,
+                    "010": 235,
+                    "100": 34,
+                    "000": 270,
+                    "101": 30,
+                    "110": 32,
+                    "111": 29
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": 0.080078125,
+                  "counts": {
+                    "000": 286,
+                    "011": 181,
+                    "111": 37,
+                    "010": 226,
+                    "100": 34,
+                    "110": 33,
+                    "101": 30,
+                    "001": 197
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": 0.125,
+                  "counts": {
+                    "011": 180,
+                    "010": 204,
+                    "001": 226,
+                    "000": 275,
+                    "111": 46,
+                    "100": 33,
+                    "101": 31,
+                    "110": 29
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": 0.099609375,
+              "repetitions": 3,
+              "total_shots": 3072
+            },
+            {
+              "label": "matched_open_loop_control",
+              "job_id": "d86stvp789is73904mpg",
+              "records": [
+                {
+                  "expectation": -0.015625,
+                  "counts": {
+                    "001": 220,
+                    "011": 241,
+                    "000": 179,
+                    "010": 218,
+                    "101": 29,
+                    "110": 45,
+                    "111": 60,
+                    "100": 32
+                  },
+                  "source_index": 0
+                },
+                {
+                  "expectation": -0.0625,
+                  "counts": {
+                    "000": 192,
+                    "011": 237,
+                    "010": 249,
+                    "111": 53,
+                    "100": 26,
+                    "101": 32,
+                    "001": 193,
+                    "110": 42
+                  },
+                  "source_index": 1
+                },
+                {
+                  "expectation": -0.068359375,
+                  "counts": {
+                    "000": 204,
+                    "011": 266,
+                    "001": 192,
+                    "101": 28,
+                    "010": 216,
+                    "100": 37,
+                    "111": 43,
+                    "110": 38
+                  },
+                  "source_index": 2
+                }
+              ],
+              "mean_expectation": -0.048828125,
+              "repetitions": 3,
+              "total_shots": 3072
+            }
+          ],
+          "feedback_minus_control": 0.1484375
+        }
+      ]
+    }
+  ],
+  "schema": "scpn_s1d_xy_observable_raw_counts_v1",
+  "backend": "ibm_marrakesh",
+  "parent_experiment_id": "s1_dynamic_feedback_preregistration_2026-05-06",
+  "n_rounds": null,
+  "correction_angle": null,
+  "base_gain": null,
+  "policy_sweep": "s1d",
+  "approval": {
+    "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+    "approver": "Miroslav Sotek",
+    "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+    "max_qpu_seconds": 130.0,
+    "allowed_provider": "ibm_runtime"
+  },
+  "submission_records": [
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "feedback",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86ssph789is73904ld0",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "feedback",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86sssop0eas73dle840",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "feedback",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86ssuis46sc73f7efeg",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "feedback",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86st0gp0eas73dle890",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "matched_open_loop_control",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86st28p0eas73dle8b0",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "matched_open_loop_control",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86st4lg7okc73elj0sg",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "matched_open_loop_control",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86st6h789is73904lq0",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "matched_open_loop_control",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86st81789is73904lrg",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "feedback",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86st9p789is73904lu0",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "feedback",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86stbh789is73904m10",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "feedback",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86std9789is73904m30",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "feedback",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86stf0p0eas73dle8og",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "matched_open_loop_control",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86stgp789is73904m80",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "matched_open_loop_control",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86stigp0eas73dle8tg",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "matched_open_loop_control",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86stkdg7okc73elj1g0",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "matched_open_loop_control",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86stlqs46sc73f7eg6g",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "feedback",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86stngp0eas73dle93g",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "feedback",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86stp5g7okc73elj1lg",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "feedback",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86stqtg7okc73elj1o0",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "feedback",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86stsh789is73904mk0",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "matched_open_loop_control",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86stu0p0eas73dle9c0",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "matched_open_loop_control",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86stvp789is73904mpg",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "matched_open_loop_control",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86su18p0eas73dle9h0",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    },
+    {
+      "approval_id": "s1d_full_stack_ibm_marrakesh_2026-05-20",
+      "provider": "ibm_runtime",
+      "command_label": "matched_open_loop_control",
+      "estimated_qpu_seconds": 3.0,
+      "result_qpu_seconds": 3.0,
+      "job_id": "d86su32s46sc73f7egp0",
+      "metadata": {
+        "package_hash": "0c70540b5e85a22d54d6233951b97c23efae66636b551b28561b48b38e3fbfba",
+        "approval_notes": "explicit command-line --submit --confirm-budget approval for s1d",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum"
+      }
+    }
+  ]
+}

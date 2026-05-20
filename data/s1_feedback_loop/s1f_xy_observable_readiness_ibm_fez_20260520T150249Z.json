@@ -1,0 +1,458 @@
+{
+  "schema": "scpn_s1f_ibm_xy_observable_readiness_v1",
+  "timestamp_utc": "20260520T150249Z",
+  "backend": "ibm_fez",
+  "experiment_id": "s1b_dynamic_feedback_xy_observable_extension_2026-05-20",
+  "parent_experiment_id": "s1_dynamic_feedback_preregistration_2026-05-06",
+  "lane": "s1f",
+  "hardware_submission": false,
+  "status": "ready_for_submission",
+  "observable_family": "direct_xy_pauli_correlators",
+  "observables": [
+    "XXI",
+    "XYI",
+    "YXI",
+    "YYI",
+    "ZZI"
+  ],
+  "n_rounds": 1,
+  "correction_angle": 0.06,
+  "base_gain": 0.4,
+  "policy_sweep": "none",
+  "policy_variants": [
+    {
+      "policy_variant": "s1f",
+      "n_rounds": 1,
+      "correction_angle": 0.06,
+      "base_gain": 0.4,
+      "observables": [
+        {
+          "arm": "feedback",
+          "basis": "XXI"
+        },
+        {
+          "arm": "feedback",
+          "basis": "XYI"
+        },
+        {
+          "arm": "feedback",
+          "basis": "YXI"
+        },
+        {
+          "arm": "feedback",
+          "basis": "YYI"
+        },
+        {
+          "arm": "feedback",
+          "basis": "ZZI"
+        },
+        {
+          "arm": "matched_open_loop_control",
+          "basis": "XXI"
+        },
+        {
+          "arm": "matched_open_loop_control",
+          "basis": "XYI"
+        },
+        {
+          "arm": "matched_open_loop_control",
+          "basis": "YXI"
+        },
+        {
+          "arm": "matched_open_loop_control",
+          "basis": "YYI"
+        },
+        {
+          "arm": "matched_open_loop_control",
+          "basis": "ZZI"
+        }
+      ],
+      "transpiled_depth_max": 237,
+      "estimated_qpu_seconds": 50.0
+    }
+  ],
+  "arms": [
+    {
+      "label": "feedback",
+      "observable": "XXI",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 15,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1,
+        "if_else": 1
+      },
+      "transpiled_depth_max": 237,
+      "transpiled_depths": [
+        237,
+        237,
+        237,
+        237,
+        237
+      ],
+      "transpiled_operation_counts": {
+        "rz": 128,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "if_else": 1,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "s1f",
+      "n_rounds": 1,
+      "correction_angle": 0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "feedback",
+      "observable": "XYI",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 16,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1,
+        "if_else": 1,
+        "sdg": 1
+      },
+      "transpiled_depth_max": 237,
+      "transpiled_depths": [
+        237,
+        237,
+        237,
+        237,
+        237
+      ],
+      "transpiled_operation_counts": {
+        "rz": 127,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "if_else": 1,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "s1f",
+      "n_rounds": 1,
+      "correction_angle": 0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "feedback",
+      "observable": "YXI",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 16,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1,
+        "if_else": 1,
+        "sdg": 1
+      },
+      "transpiled_depth_max": 237,
+      "transpiled_depths": [
+        237,
+        237,
+        237,
+        237,
+        237
+      ],
+      "transpiled_operation_counts": {
+        "rz": 127,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "if_else": 1,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "s1f",
+      "n_rounds": 1,
+      "correction_angle": 0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "feedback",
+      "observable": "YYI",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 16,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "sdg": 2,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1,
+        "if_else": 1
+      },
+      "transpiled_depth_max": 236,
+      "transpiled_depths": [
+        236,
+        236,
+        236,
+        236,
+        236
+      ],
+      "transpiled_operation_counts": {
+        "rz": 126,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "if_else": 1,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "s1f",
+      "n_rounds": 1,
+      "correction_angle": 0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "feedback",
+      "observable": "ZZI",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 14,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "PauliEvolution": 1,
+        "reset": 1,
+        "if_else": 1
+      },
+      "transpiled_depth_max": 234,
+      "transpiled_depths": [
+        234,
+        234,
+        234,
+        234,
+        234
+      ],
+      "transpiled_operation_counts": {
+        "rz": 124,
+        "sx": 115,
+        "cz": 57,
+        "measure": 4,
+        "if_else": 1,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "s1f",
+      "n_rounds": 1,
+      "correction_angle": 0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "XXI",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 13,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1
+      },
+      "transpiled_depth_max": 233,
+      "transpiled_depths": [
+        233,
+        233,
+        233,
+        233,
+        233
+      ],
+      "transpiled_operation_counts": {
+        "rz": 128,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "s1f",
+      "n_rounds": 1,
+      "correction_angle": 0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "XYI",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 13,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1,
+        "sdg": 1
+      },
+      "transpiled_depth_max": 233,
+      "transpiled_depths": [
+        233,
+        233,
+        233,
+        233,
+        233
+      ],
+      "transpiled_operation_counts": {
+        "rz": 127,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "s1f",
+      "n_rounds": 1,
+      "correction_angle": 0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "YXI",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 13,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1,
+        "sdg": 1
+      },
+      "transpiled_depth_max": 233,
+      "transpiled_depths": [
+        233,
+        233,
+        233,
+        233,
+        233
+      ],
+      "transpiled_operation_counts": {
+        "rz": 127,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "s1f",
+      "n_rounds": 1,
+      "correction_angle": 0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "YYI",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 13,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "sdg": 2,
+        "h": 2,
+        "PauliEvolution": 1,
+        "reset": 1
+      },
+      "transpiled_depth_max": 233,
+      "transpiled_depths": [
+        233,
+        233,
+        233,
+        233,
+        233
+      ],
+      "transpiled_operation_counts": {
+        "rz": 126,
+        "sx": 117,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "s1f",
+      "n_rounds": 1,
+      "correction_angle": 0.06,
+      "base_gain": 0.4
+    },
+    {
+      "label": "matched_open_loop_control",
+      "observable": "ZZI",
+      "shots": 1024,
+      "repetitions": 5,
+      "source_depth": 13,
+      "source_operation_counts": {
+        "ry": 6,
+        "cx": 6,
+        "measure": 4,
+        "PauliEvolution": 1,
+        "reset": 1
+      },
+      "transpiled_depth_max": 233,
+      "transpiled_depths": [
+        233,
+        233,
+        233,
+        233,
+        233
+      ],
+      "transpiled_operation_counts": {
+        "rz": 124,
+        "sx": 115,
+        "cz": 57,
+        "measure": 4,
+        "reset": 1
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 5.0,
+      "policy_variant": "s1f",
+      "n_rounds": 1,
+      "correction_angle": 0.06,
+      "base_gain": 0.4
+    }
+  ],
+  "max_depth": 1400,
+  "max_qpu_seconds": 130.0,
+  "estimated_qpu_seconds": 50.0,
+  "package_hash": "ea5aad9a730924e173654d492ee252a245b4ff7eea220de8da5ef082ae58a283",
+  "reasons": [
+    "all s1f direct-XY arms satisfy the transpiled depth ceiling",
+    "s1f direct-XY estimate satisfies the approved QPU-second ceiling"
+  ]
+}
