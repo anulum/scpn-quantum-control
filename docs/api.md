@@ -673,12 +673,16 @@ from scpn_quantum_control.hardware import (
     AzureQuantumHALAdapter,
     BraketLocalHALAdapter,
     HardwareAbstractionLayer,
+    PennyLaneDeviceHALAdapter,
+    QbraidRuntimeHALAdapter,
     QiskitAerHALAdapter,
     QuantumBackend,
     QuantumWorkload,
     azure_openqasm3_to_workload,
     braket_circuit_to_workload,
     built_in_backend_profiles,
+    pennylane_gate_workload,
+    qbraid_program_to_workload,
     qiskit_circuit_to_workload,
 )
 
@@ -745,6 +749,41 @@ job = hal.submit(
     azure_openqasm3_to_workload(
         "OPENQASM 3.0;\nqubit[1] q;\nbit[1] c;\nh q[0];",
         workload_id="azure_h",
+        n_qubits=1,
+        shots=128,
+    ),
+    approval_id="approved-run",
+)
+```
+
+PennyLane and qBraid adapters are concrete HAL routes, not registry aliases.
+`PennyLaneDeviceHALAdapter` executes strict native-gate payloads on a local
+PennyLane device and fails closed on unsupported gates. `QbraidRuntimeHALAdapter`
+uses injected qBraid devices or providers and still requires the HAL approval
+token for cloud submission.
+
+```python
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+hal.register_backend(PennyLaneDeviceHALAdapter(hal.profile("local_pennylane")))
+pl_result = hal.result(
+    hal.submit(
+        "local_pennylane",
+        pennylane_gate_workload(
+            [{"gate": "h", "wires": [0]}, {"gate": "cnot", "wires": [0, 1]}],
+            workload_id="pl_bell",
+            n_qubits=2,
+            shots=128,
+        ),
+    )
+)
+
+hal.register_backend(QbraidRuntimeHALAdapter(hal.profile("qbraid_ionq"), device=qbraid_device))
+qbraid_job = hal.submit(
+    "qbraid_ionq",
+    qbraid_program_to_workload(
+        "OPENQASM 3.0;\nqubit[1] q;\nbit[1] c;\nh q[0];",
+        workload_id="qbraid_h",
+        ir_format="openqasm3",
         n_qubits=1,
         shots=128,
     ),

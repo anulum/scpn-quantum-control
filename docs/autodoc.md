@@ -150,6 +150,14 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [AzureQuantumHALAdapter, azure_openqasm3_to_workload]
 
+::: scpn_quantum_control.hardware.hal_pennylane
+    options:
+      members: [PennyLaneDeviceHALAdapter, pennylane_gate_workload]
+
+::: scpn_quantum_control.hardware.hal_qbraid
+    options:
+      members: [QbraidRuntimeHALAdapter, qbraid_program_to_workload]
+
 ## Identity
 
 ::: scpn_quantum_control.identity.ground_state
