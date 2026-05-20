@@ -328,6 +328,25 @@ approval token for that submission. Provider credentials, queue selection,
 region policy, pricing, and detailed target selection belong inside the
 provider adapter, not the HAL registry.
 
+### Aggregator/provider matrix
+
+`built_in_aggregator_provider_routes()` provides the broker-facing coverage
+view used by conformance tests and documentation. Each row resolves to a real
+HAL profile and adapter module, so broad aggregator catalogues are first-class
+without multiplying identical runtime adapters.
+
+| Aggregator | Provider family | Executable HAL route |
+| --- | --- | --- |
+| AWS Braket | AQT, IonQ, IQM, QuEra, Rigetti, Amazon simulators | `aws_braket_*` |
+| Azure Quantum | IonQ, Quantinuum, Rigetti, Pasqal, QCI preview | `azure_quantum_*` |
+| qBraid | IonQ named route, AWS Braket, Azure Quantum, IBM Quantum, QIR simulator | `qbraid_ionq` or `qbraid_runtime` |
+| Strangeworks | IonQ, Rigetti, IBM Quantum, AWS Braket, Azure Quantum, classical/HPC compute targets | `strangeworks_compute` |
+
+Dynamic rows carry `dynamic_catalog_target` notes and still require the
+runtime caller to inject the authenticated provider backend or workspace. The
+matrix is metadata-only: it imports no provider SDKs, reads no credentials,
+authenticates nowhere, and submits no jobs.
+
 ### HAL API
 
 ```python

@@ -9,6 +9,11 @@
 noise models, trapped-ion transpilation, and experiment definitions.
 """
 
+from .aggregators import (
+    AggregatorProviderRoute,
+    aggregator_provider_routes_for,
+    built_in_aggregator_provider_routes,
+)
 from .analog_kuramoto import (
     AnalogBackendCapabilities,
     AnalogCouplingTerm,
@@ -226,6 +231,9 @@ __all__ = [
     "analog_native_payload",
     "compare_native_to_digital_primitives",
     "provider_readiness_rows",
+    "AggregatorProviderRoute",
+    "aggregator_provider_routes_for",
+    "built_in_aggregator_provider_routes",
     "HybridCouplingAssignment",
     "HybridCouplingPartition",
     "HybridDigitalAnalogBackend",

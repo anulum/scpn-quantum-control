@@ -20,6 +20,10 @@ if sys.version_info >= (3, 11):
 else:
     import tomli as tomllib
 
+from scpn_quantum_control.hardware.aggregators import (
+    aggregator_provider_routes_for,
+    built_in_aggregator_provider_routes,
+)
 from scpn_quantum_control.hardware.backends import list_hal_backend_descriptors
 from scpn_quantum_control.hardware.hal import built_in_backend_profiles
 from scpn_quantum_control.hardware.provider_smoke import (
@@ -38,6 +42,71 @@ def test_every_builtin_hal_route_has_importable_adapter_module() -> None:
     for descriptor in descriptors:
         module = importlib.import_module(descriptor.adapter_module)
         assert module is not None, descriptor.name
+
+
+def test_aggregator_provider_routes_resolve_to_first_class_hal_profiles() -> None:
+    """Every declared aggregator-provider combination must hit a real HAL route."""
+
+    descriptors = {descriptor.name: descriptor for descriptor in list_hal_backend_descriptors()}
+    profiles = {profile.backend_id: profile for profile in built_in_backend_profiles()}
+    routes = built_in_aggregator_provider_routes()
+
+    assert routes
+    assert [route.route_id for route in routes] == sorted(route.route_id for route in routes)
+    assert len({route.route_id for route in routes}) == len(routes)
+
+    for route in routes:
+        assert route.backend_id in profiles
+        assert route.backend_id in descriptors
+        assert route.adapter_module == descriptors[route.backend_id].adapter_module
+        assert route.sdk_package == descriptors[route.backend_id].sdk_package
+        assert set(route.ir_formats) <= set(profiles[route.backend_id].ir_formats)
+        if profiles[route.backend_id].is_cloud:
+            assert route.submit_requires_approval is True
+
+
+def test_aggregator_provider_matrix_covers_source_grounded_current_brokers() -> None:
+    """The matrix should expose concrete current aggregator/provider combinations."""
+
+    route_ids = {route.route_id for route in built_in_aggregator_provider_routes()}
+
+    expected = {
+        "aws_braket/aqt",
+        "aws_braket/ionq",
+        "aws_braket/iqm",
+        "aws_braket/quera",
+        "aws_braket/rigetti",
+        "aws_braket/amazon_simulators",
+        "azure_quantum/ionq",
+        "azure_quantum/quantinuum",
+        "azure_quantum/rigetti",
+        "azure_quantum/pasqal",
+        "azure_quantum/qci_preview",
+        "qbraid/ionq",
+        "qbraid/aws_braket",
+        "qbraid/azure_quantum",
+        "qbraid/ibm_quantum",
+        "qbraid/qir_simulator",
+        "strangeworks/ionq",
+        "strangeworks/rigetti",
+        "strangeworks/ibm_quantum",
+        "strangeworks/aws_braket",
+        "strangeworks/azure_quantum",
+        "strangeworks/classical_hpc",
+    }
+
+    assert expected <= route_ids
+    assert {route.provider for route in aggregator_provider_routes_for(aggregator="qbraid")} >= {
+        "aws_braket",
+        "azure_quantum",
+        "ibm_quantum",
+        "ionq",
+    }
+    assert [route.route_id for route in aggregator_provider_routes_for(provider="rigetti")] == [
+        "aws_braket/rigetti",
+        "azure_quantum/rigetti",
+        "strangeworks/rigetti",
+    ]
 
 
 def test_cloud_routes_are_approval_gated_and_local_routes_are_not() -> None:

@@ -100,6 +100,11 @@ from .forecasting import (
     run_real_data_sync_forecast_benchmark,
     run_real_data_sync_forecast_suite,
 )
+from .hardware.aggregators import (
+    AggregatorProviderRoute,
+    aggregator_provider_routes_for,
+    built_in_aggregator_provider_routes,
+)
 from .hardware.fast_classical import fast_sparse_evolution
 from .hardware.hal import (
     BackendCapabilities,
@@ -360,6 +365,9 @@ __all__ = [
     "CloudManifestBundle",
     "ContainerResources",
     "generate_cloud_manifests",
+    "AggregatorProviderRoute",
+    "aggregator_provider_routes_for",
+    "built_in_aggregator_provider_routes",
     "AzureQuantumHALAdapter",
     "azure_openqasm3_to_workload",
     "BraketAwsHALAdapter",

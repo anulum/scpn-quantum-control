@@ -156,6 +156,13 @@ and local simulator adapters.
 Provider-specific SDK credentials, queue selection, pricing, and region policy
 remain adapter responsibilities.
 
+Aggregator/provider combinations are exposed separately from executable HAL
+profiles through `built_in_aggregator_provider_routes()`. This keeps broad
+broker catalogues explicit without duplicating runtime adapters: direct Braket
+and Azure provider rows resolve to their specific HAL profiles, while dynamic
+qBraid and Strangeworks rows resolve to `qbraid_runtime` and
+`strangeworks_compute` respectively.
+
 ## Advanced Module Reference
 
 The following sections expose lower-level modules directly. Prefer the stable

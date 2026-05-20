@@ -142,6 +142,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [ProviderOptionalDependencyRow, main, provider_optional_dependency_matrix]
 
+::: scpn_quantum_control.hardware.aggregators
+    options:
+      members: [AggregatorProviderRoute, aggregator_provider_routes_for, built_in_aggregator_provider_routes]
+
 ::: scpn_quantum_control.hardware.hal
     options:
       members: [BackendCapabilities, BackendProfile, QuantumWorkload, QuantumJobRef, QuantumJobResult, QuantumBackend, LocalDeterministicSimulator, HardwareAbstractionLayer, built_in_backend_profiles]
