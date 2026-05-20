@@ -111,3 +111,110 @@ When both IBM jobs are `DONE`:
 3. compare DLA and FIM channel-level ZNE behaviour against Fez;
 4. update the LaTeX manuscript and PDF with either replication, partial
    replication, or falsification language.
+
+## Restart Runbook
+
+Use this section when returning to the queued jobs. Do not start a replacement
+Kingston run unless one of the two job IDs below is cancelled or failed and the
+failure is recorded first.
+
+Canonical pending artefact:
+
+```text
+data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_kingston_2026-05-20T030211Z.json
+```
+
+Job roles:
+
+```text
+main    d86i8fas46sc73f70vg0
+readout d86ijr9789is738vnh30
+```
+
+Check live job status without exposing credentials:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python - <<'PY'
+from pathlib import Path
+import importlib.util
+from qiskit_ibm_runtime import QiskitRuntimeService
+
+spec = importlib.util.spec_from_file_location(
+    "phase1", "scripts/phase1_mini_bench_ibm_kingston.py"
+)
+phase1 = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(phase1)
+token, instance = phase1.parse_vault(
+    Path("/media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md")
+)
+service = QiskitRuntimeService(channel="ibm_cloud", token=token, instance=instance)
+for role, job_id in {
+    "main": "d86i8fas46sc73f70vg0",
+    "readout": "d86ijr9789is738vnh30",
+}.items():
+    job = service.job(job_id)
+    print(f"{role}\t{job_id}\t{job.status()}")
+PY
+```
+
+Expected current pre-completion state:
+
+```text
+status: pending_jobs_submitted
+job_ids: ["d86i8fas46sc73f70vg0", "d86ijr9789is738vnh30"]
+pending_job_roles.main: d86i8fas46sc73f70vg0
+pending_job_roles.readout: d86ijr9789is738vnh30
+```
+
+After both jobs are `DONE`, hydrate the canonical artefact with:
+
+- `status: completed`;
+- `wall_time_main_s` and `wall_time_readout_s` if recoverable from runtime
+  metadata, otherwise an explicit `wall_time_*_s: null` plus a recovery note;
+- `circuits`: 45 main count rows and 16 readout count rows, each preserving
+  the original `meta`, `job_id`, `counts`, and transpiled-circuit metadata.
+
+The pending artefact already contains `metas_main` and `metas_readout`; preserve
+their ordering when attaching counts. The readout submission metadata is stored
+under `readout_submission_metadata` because the readout job was launched by the
+recovery helper rather than by the sequential guarded runner.
+
+Then run the reducer:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python scripts/analyse_phase3_entanglement_zne.py \
+  data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_kingston_2026-05-20T030211Z.json \
+  --result-tag 2026-05-20_ibm_kingston_zne
+```
+
+Expected reducer outputs:
+
+```text
+data/phase3_entanglement_tomography/entanglement_zne_summary_2026-05-20_ibm_kingston_zne.json
+data/phase3_entanglement_tomography/entanglement_zne_scale_rows_2026-05-20_ibm_kingston_zne.csv
+data/phase3_entanglement_tomography/entanglement_zne_channel_summary_2026-05-20_ibm_kingston_zne.csv
+docs/phase3_entanglement_zne_manifest_2026-05-20_ibm_kingston_zne.md
+```
+
+Paper update gate:
+
+- If all four DLA transverse channels again move farther from exact under
+  linear ZNE while the FIM control improves or behaves differently, update the
+  paper as a third-backend structured-distortion replication.
+- If Kingston weakens, reverses, or randomises the Fez pattern, update the
+  paper as a limited two-backend result plus third-backend falsification or
+  partial replication.
+- If either job fails or is cancelled, do not replace it silently. Record the
+  failure status, then rerun readiness before deciding whether another
+  `ibm_kingston` attempt is scientifically and budget-wise justified.
+
+Minimum verification before committing the completed result:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python -m pytest \
+  tests/test_phase3_entanglement_zne_analysis.py \
+  tests/test_phase3_entanglement_paper_assets.py \
+  tests/test_doc_claim_boundaries.py -q
+PYTHONDONTWRITEBYTECODE=1 python tools/audit_release_readiness.py --fail-on-blocker
+git diff --check
+```
