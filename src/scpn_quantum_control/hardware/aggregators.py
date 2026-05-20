@@ -87,6 +87,14 @@ def built_in_aggregator_provider_routes() -> tuple[AggregatorProviderRoute, ...]
             ("qiskit_qpy", "openqasm3"),
         ),
         _route(
+            "direct/dwave",
+            "direct",
+            "dwave",
+            "dwave_leap",
+            ("bqm", "ising", "qubo", "mlir"),
+            target_family="annealing",
+        ),
+        _route(
             "direct/iqm",
             "direct",
             "iqm",

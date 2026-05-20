@@ -111,6 +111,12 @@ is copied here.
   IR support, basis gates, queue depth, shot/circuit limits, online state,
   dynamic-circuit feature inference, and calibration timestamp without job
   submission.
+- [x] **Direct D-Wave no-submit capability snapshot.** Implemented 2026-05-20:
+  `snapshot_from_dwave_solver` adds the direct `direct/dwave` route and
+  metadata snapshot path for injected D-Wave solver objects or metadata JSON,
+  including BQM/Ising/QUBO/MLIR declaration translation, qubit count, annealing
+  topology, read limits, queue/load estimate, online state, simulator flag,
+  category, and last update timestamp without sampler calls.
 - [x] **Direct IQM no-submit capability snapshot.** Implemented 2026-05-20:
   `snapshot_from_iqm_backend` adds the direct `direct/iqm` route and metadata
   snapshot path for injected IQM backend objects or metadata JSON, including

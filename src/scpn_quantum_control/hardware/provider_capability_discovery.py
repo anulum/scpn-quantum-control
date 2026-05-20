@@ -275,6 +275,66 @@ def snapshot_from_ionq_backend(
     )
 
 
+def snapshot_from_dwave_solver(
+    resolved: ResolvedAggregatorProviderRoute,
+    solver: Any,
+) -> ProviderCapabilitySnapshot:
+    """Build a no-submit capability snapshot from direct D-Wave solver metadata."""
+
+    properties = _first_available_attr(
+        solver,
+        names=("properties", "solver_properties", "metadata"),
+    )
+    topology = _dwave_topology_name(solver, properties)
+    return ProviderCapabilitySnapshot(
+        route_id=resolved.route.route_id,
+        aggregator=resolved.route.aggregator,
+        provider=resolved.route.provider,
+        backend_id=resolved.route.backend_id,
+        target_name=_first_text_attr(
+            solver,
+            properties,
+            names=("solver", "solver_id", "solver_name", "name", "id", "target"),
+            field_name="D-Wave solver name",
+        ),
+        n_qubits=_first_positive_int_attr(
+            properties,
+            solver,
+            names=("num_qubits", "n_qubits", "qubits", "qubit_count", "qubitCount"),
+            field_name="D-Wave qubit count",
+        ),
+        supported_ir_formats=_dwave_supported_ir_formats(resolved, solver, properties),
+        basis_gates=(),
+        native_features=_dwave_native_features(topology, solver, properties),
+        online=_dwave_online_state(solver, properties),
+        simulator=_first_bool_attr(solver, properties, names=("simulator", "is_simulator"))
+        or False,
+        max_shots=_dwave_max_reads(solver, properties),
+        max_circuits=_first_optional_int_attr(
+            properties,
+            solver,
+            names=("max_problems", "max_circuits", "max_jobs", "max_experiments"),
+        ),
+        queue_depth=_dwave_queue_depth(solver, properties),
+        calibration_timestamp=_first_optional_text_attr(
+            properties,
+            solver,
+            names=(
+                "last_update_time",
+                "last_updated",
+                "lastUpdated",
+                "calibration_timestamp",
+                "last_calibration",
+            ),
+        ),
+        metadata={
+            "adapter": "dwave_solver_no_submit",
+            "topology": topology,
+            "category": _first_optional_text_attr(properties, solver, names=("category",)),
+        },
+    )
+
+
 def snapshot_from_iqm_backend(
     resolved: ResolvedAggregatorProviderRoute,
     backend: Any,
@@ -1325,6 +1385,116 @@ def _ionq_online_state(backend: Any) -> bool | None:
     return None
 
 
+def _dwave_supported_ir_formats(
+    resolved: ResolvedAggregatorProviderRoute,
+    *sources: Any,
+) -> tuple[str, ...]:
+    declared = _first_string_tuple_attr(
+        *sources,
+        names=(
+            "supported_problem_types",
+            "supported_ir_formats",
+            "ir_formats",
+            "input_formats",
+            "problem_types",
+            "program_formats",
+        ),
+    )
+    if not declared:
+        return resolved.route.ir_formats
+    return tuple(_dwave_ir_format_token(item) for item in declared)
+
+
+def _dwave_ir_format_token(value: str) -> str:
+    normalized = value.strip().lower().replace("-", "_")
+    if normalized in {"bqm", "binary_quadratic_model"}:
+        return "bqm"
+    if normalized in {"ising", "ising_model"}:
+        return "ising"
+    if normalized in {"qubo", "quadratic_unconstrained_binary_optimisation"}:
+        return "qubo"
+    if normalized == "mlir":
+        return "mlir"
+    return normalized
+
+
+def _dwave_native_features(topology: str | None, *sources: Any) -> tuple[str, ...]:
+    features = set(_first_string_tuple_attr(*sources, names=("native_features", "features")))
+    features.add("quantum_annealing")
+    features.add("bqm")
+    if topology:
+        features.add(f"{topology}_topology")
+    return tuple(sorted(features))
+
+
+def _dwave_online_state(*sources: Any) -> bool | None:
+    explicit = _first_online_attr(*sources)
+    if explicit is not None:
+        return explicit
+    text_status = _first_optional_text_attr(
+        *sources,
+        names=("availability", "target_status", "status", "state"),
+    )
+    if text_status is None:
+        return None
+    normalized = text_status.strip().lower()
+    if normalized in {"available", "online", "ready", "active", "enabled"}:
+        return True
+    if normalized in {"unavailable", "offline", "disabled", "retired", "maintenance"}:
+        return False
+    return None
+
+
+def _dwave_max_reads(*sources: Any) -> int | None:
+    direct = _first_optional_int_attr(
+        *sources,
+        names=("max_reads", "num_reads", "max_shots", "shots_limit", "maxShots"),
+    )
+    if direct is not None:
+        return direct
+    parameters = _first_available_attr(*sources, names=("parameters", "parameter_ranges"))
+    if isinstance(parameters, Mapping):
+        reads_range = parameters.get("num_reads") or parameters.get("reads")
+        if isinstance(reads_range, tuple | list):
+            positive_ints = [
+                item
+                for item in reads_range
+                if isinstance(item, int) and not isinstance(item, bool) and item > 0
+            ]
+            if positive_ints:
+                return max(positive_ints)
+    return None
+
+
+def _dwave_queue_depth(*sources: Any) -> int | None:
+    direct = _first_optional_int_attr(
+        *sources,
+        names=("queue_depth", "pending_jobs", "queue_size"),
+        minimum=0,
+    )
+    if direct is not None:
+        return direct
+    for value in _attr_candidates(*sources, names=("avg_load", "average_load", "load")):
+        if isinstance(value, int | float) and not isinstance(value, bool) and value >= 0:
+            return int(round(float(value) * 100))
+    return None
+
+
+def _dwave_topology_name(*sources: Any) -> str | None:
+    text = _first_optional_text_attr(
+        *sources,
+        names=("topology_type", "topology", "graph_family", "family"),
+    )
+    if text is not None:
+        return text.strip().lower().replace("-", "_")
+    for value in _attr_candidates(*sources, names=("topology",)):
+        if isinstance(value, Mapping):
+            topology_type = value.get("type")
+            if isinstance(topology_type, str) and topology_type.strip():
+                return topology_type.strip().lower().replace("-", "_")
+    return None
+
+
 def _iqm_supported_ir_formats(
     resolved: ResolvedAggregatorProviderRoute,
     backend: Any,
@@ -1909,6 +2079,7 @@ __all__ = [
     "probe_aggregator_provider_capability",
     "snapshot_from_azure_target",
     "snapshot_from_braket_device",
+    "snapshot_from_dwave_solver",
     "snapshot_from_iqm_backend",
     "snapshot_from_ionq_backend",
     "snapshot_from_oqc_target",

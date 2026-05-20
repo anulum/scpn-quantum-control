@@ -160,13 +160,14 @@ Aggregator/provider combinations are exposed separately from executable HAL
 profiles through `built_in_aggregator_provider_routes()`. This keeps broad
 broker catalogues explicit without duplicating runtime adapters: direct Braket
 and Azure provider rows resolve to their specific HAL profiles, the direct IBM
-Quantum row resolves to `ibm_quantum`, the direct IonQ row resolves to
-`ionq_cloud`, the direct IQM row resolves to `iqm_cloud`, the direct
-OQC row resolves to `oqc_cloud`, the direct Pasqal row resolves to
-`pasqal_cloud`, the direct Quantinuum row resolves to `quantinuum_cloud`, the
-direct QuEra/Bloqade row resolves to `quera_bloqade`, the direct Rigetti row
-resolves to `rigetti_qcs`, while dynamic qBraid and Strangeworks rows resolve
-to `qbraid_runtime` and `strangeworks_compute` respectively. Use
+Quantum row resolves to `ibm_quantum`, the direct D-Wave row resolves to
+`dwave_leap`, the direct IonQ row resolves to `ionq_cloud`, the direct IQM row
+resolves to `iqm_cloud`, the direct OQC row resolves to `oqc_cloud`, the direct
+Pasqal row resolves to `pasqal_cloud`, the direct Quantinuum row resolves to
+`quantinuum_cloud`, the direct QuEra/Bloqade row resolves to `quera_bloqade`,
+the direct Rigetti row resolves to `rigetti_qcs`, while dynamic qBraid and
+Strangeworks rows resolve to `qbraid_runtime` and `strangeworks_compute`
+respectively. Use
 `resolve_aggregator_provider_route()` when routing code needs a single
 validated row plus the executable HAL profile for a requested aggregator,
 provider, and IR format.
@@ -178,12 +179,12 @@ contract for authenticated metadata probes: it resolves the broker route,
 accepts only no-submit target snapshots, and returns ready/blocked/unknown
 readiness decisions before any submission path is considered.
 `snapshot_from_azure_target()`, `snapshot_from_braket_device()`,
-`snapshot_from_iqm_backend()`, `snapshot_from_ionq_backend()`,
-`snapshot_from_oqc_target()`, `snapshot_from_pasqal_target()`,
-`snapshot_from_qiskit_runtime_backend()`, `snapshot_from_qbraid_device()`,
-`snapshot_from_quantinuum_backend()`, `snapshot_from_quera_bloqade()`,
-`snapshot_from_rigetti_qcs()`, and `snapshot_from_strangeworks_backend()`
-provide concrete no-submit adapters for
+`snapshot_from_dwave_solver()`, `snapshot_from_iqm_backend()`,
+`snapshot_from_ionq_backend()`, `snapshot_from_oqc_target()`,
+`snapshot_from_pasqal_target()`, `snapshot_from_qiskit_runtime_backend()`,
+`snapshot_from_qbraid_device()`, `snapshot_from_quantinuum_backend()`,
+`snapshot_from_quera_bloqade()`, `snapshot_from_rigetti_qcs()`, and
+`snapshot_from_strangeworks_backend()` provide concrete no-submit adapters for
 injected provider or broker SDK objects: they read declared target metadata,
 route-supported IR formats, queue, limit, online, simulator, calibration, and
 gate metadata without invoking submission APIs.
@@ -926,6 +927,12 @@ job = hal.submit(
     approval_id="approved-run",
 )
 ```
+
+`snapshot_from_dwave_solver()` provides the matching no-submit readiness path
+for injected D-Wave solver metadata or metadata JSON. It records solver name,
+qubit count, declared BQM/Ising/QUBO/MLIR support, annealing topology, read
+limits, queue/load estimate, online state, simulator flag, category, and last
+update timestamp without calling sampler APIs.
 
 The direct IonQ adapter uses the IonQ Quantum Cloud API v0.4 job lifecycle:
 `POST /jobs`, `GET /jobs/{id}`, `GET /jobs/{id}/results/probabilities`, and

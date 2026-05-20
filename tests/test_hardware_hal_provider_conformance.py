@@ -81,6 +81,7 @@ def test_aggregator_provider_matrix_covers_source_grounded_current_brokers() -> 
         "aws_braket/quera",
         "aws_braket/rigetti",
         "aws_braket/amazon_simulators",
+        "direct/dwave",
         "direct/ibm_quantum",
         "direct/iqm",
         "direct/ionq",
@@ -134,6 +135,9 @@ def test_aggregator_provider_matrix_covers_source_grounded_current_brokers() -> 
         "quera",
         "rigetti",
     }
+    assert [route.route_id for route in aggregator_provider_routes_for(provider="dwave")] == [
+        "direct/dwave",
+    ]
     assert [route.route_id for route in aggregator_provider_routes_for(provider="rigetti")] == [
         "aws_braket/rigetti",
         "azure_quantum/rigetti",
@@ -194,6 +198,15 @@ def test_aggregator_provider_selector_resolves_profile_and_ir() -> None:
     assert ibm.route.route_id == "direct/ibm_quantum"
     assert ibm.route.backend_id == "ibm_quantum"
     assert ibm.profile.provider == "ibm"
+
+    dwave = resolve_aggregator_provider_route(
+        aggregator="direct",
+        provider="dwave",
+        ir_format="bqm",
+    )
+    assert dwave.route.route_id == "direct/dwave"
+    assert dwave.route.backend_id == "dwave_leap"
+    assert dwave.profile.provider == "dwave"
 
     ionq = resolve_aggregator_provider_route(
         aggregator="direct",
@@ -352,6 +365,14 @@ def test_aggregator_provider_dependency_matrix_covers_every_route() -> None:
     assert braket_ionq.backend_id == "aws_braket_ionq"
     assert braket_ionq.target_family == "ionq"
     assert braket_ionq.submit_requires_approval is True
+
+    direct_dwave = by_route["direct/dwave"]
+    assert direct_dwave.aggregator == "direct"
+    assert direct_dwave.provider == "dwave"
+    assert direct_dwave.backend_id == "dwave_leap"
+    assert direct_dwave.target_family == "annealing"
+    assert "bqm" in direct_dwave.ir_formats
+    assert direct_dwave.submit_requires_approval is True
 
     direct_ionq = by_route["direct/ionq"]
     assert direct_ionq.aggregator == "direct"

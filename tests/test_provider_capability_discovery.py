@@ -18,6 +18,7 @@ from scpn_quantum_control.hardware.provider_capability_discovery import (
     probe_aggregator_provider_capability,
     snapshot_from_azure_target,
     snapshot_from_braket_device,
+    snapshot_from_dwave_solver,
     snapshot_from_ionq_backend,
     snapshot_from_iqm_backend,
     snapshot_from_oqc_target,
@@ -167,6 +168,9 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
         snapshot_from_braket_device as exported_braket_snapshot,
     )
     from scpn_quantum_control.hardware import (
+        snapshot_from_dwave_solver as exported_dwave_snapshot,
+    )
+    from scpn_quantum_control.hardware import (
         snapshot_from_ionq_backend as exported_ionq_snapshot,
     )
     from scpn_quantum_control.hardware import (
@@ -197,6 +201,7 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
     assert exported_probe is probe_aggregator_provider_capability
     assert exported_azure_snapshot is snapshot_from_azure_target
     assert exported_braket_snapshot is snapshot_from_braket_device
+    assert exported_dwave_snapshot is snapshot_from_dwave_solver
     assert exported_iqm_snapshot is snapshot_from_iqm_backend
     assert exported_ionq_snapshot is snapshot_from_ionq_backend
     assert exported_oqc_snapshot is snapshot_from_oqc_target
@@ -258,6 +263,79 @@ def test_direct_ionq_snapshot_reads_backend_json_without_submission() -> None:
     assert decision.snapshot.calibration_timestamp == "2026-05-20T11:00:00Z"
     assert decision.snapshot.metadata["adapter"] == "ionq_backend_no_submit"
     assert decision.snapshot.metadata["gateset"] == "qis"
+
+
+def test_direct_dwave_snapshot_reads_solver_metadata_without_submission() -> None:
+    """Direct D-Wave metadata adapters should consume injected solver metadata only."""
+
+    class Properties:
+        num_qubits = 5_760
+        supported_problem_types = ("bqm", "ising", "qubo")
+        parameters = {"num_reads": (1, 10_000), "annealing_time": (1, 2_000)}
+        topology = {"type": "pegasus", "shape": (16, 16, 12)}
+        category = "qpu"
+        problem_run_duration_range = (1, 1_000_000)
+        last_update_time = "2026-05-20T13:45:00Z"
+
+    class Solver:
+        name = "Advantage_system6.4"
+        online = True
+        properties = Properties()
+        avg_load = 0.23
+
+        def sample_bqm(self, *args: object, **kwargs: object) -> None:
+            raise AssertionError("metadata snapshot must not sample D-Wave BQM work")
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="direct",
+        provider="dwave",
+        ir_format="bqm",
+        min_qubits=1_000,
+        metadata_probe=lambda resolved: snapshot_from_dwave_solver(
+            resolved,
+            Solver(),
+        ),
+    )
+
+    assert decision.status == "ready"
+    assert decision.snapshot.route_id == "direct/dwave"
+    assert decision.snapshot.backend_id == "dwave_leap"
+    assert decision.snapshot.target_name == "Advantage_system6.4"
+    assert decision.snapshot.n_qubits == 5_760
+    assert decision.snapshot.supported_ir_formats == ("bqm", "ising", "qubo")
+    assert decision.snapshot.basis_gates == ()
+    assert "quantum_annealing" in decision.snapshot.native_features
+    assert "pegasus_topology" in decision.snapshot.native_features
+    assert decision.snapshot.max_shots == 10_000
+    assert decision.snapshot.queue_depth == 23
+    assert decision.snapshot.calibration_timestamp == "2026-05-20T13:45:00Z"
+    assert decision.snapshot.metadata["adapter"] == "dwave_solver_no_submit"
+    assert decision.snapshot.metadata["topology"] == "pegasus"
+    assert decision.snapshot.metadata["category"] == "qpu"
+
+
+def test_direct_dwave_snapshot_blocks_offline_solver_without_submission() -> None:
+    """Direct D-Wave offline metadata should block before sampler calls."""
+
+    metadata = {
+        "solver": "Advantage_offline",
+        "status": "offline",
+        "num_qubits": 5_000,
+        "supported_problem_types": ("ising",),
+        "simulator": False,
+    }
+
+    decision = probe_aggregator_provider_capability(
+        aggregator="direct",
+        provider="dwave",
+        ir_format="ising",
+        metadata_probe=lambda resolved: snapshot_from_dwave_solver(resolved, metadata),
+    )
+
+    assert decision.status == "blocked"
+    assert "provider target is offline" in decision.blockers
+    assert decision.snapshot.supported_ir_formats == ("ising",)
+    assert decision.snapshot.simulator is False
 
 
 def test_direct_ionq_snapshot_blocks_offline_backend_without_submission() -> None:

@@ -592,12 +592,13 @@ ready/blocked/unknown decision based on online status, qubit count, and required
 IR support. The function does not create clients or submit jobs; provider SDK
 authentication remains inside the injected read-only probe.
 `snapshot_from_azure_target()`, `snapshot_from_braket_device()`,
-`snapshot_from_iqm_backend()`, `snapshot_from_ionq_backend()`,
-`snapshot_from_oqc_target()`, `snapshot_from_pasqal_target()`,
-`snapshot_from_qiskit_runtime_backend()`, `snapshot_from_qbraid_device()`,
-`snapshot_from_quantinuum_backend()`, `snapshot_from_quera_bloqade()`,
-`snapshot_from_rigetti_qcs()`, and `snapshot_from_strangeworks_backend()` are
-concrete metadata adapters for this contract. They consume injected SDK
+`snapshot_from_dwave_solver()`, `snapshot_from_iqm_backend()`,
+`snapshot_from_ionq_backend()`, `snapshot_from_oqc_target()`,
+`snapshot_from_pasqal_target()`, `snapshot_from_qiskit_runtime_backend()`,
+`snapshot_from_qbraid_device()`, `snapshot_from_quantinuum_backend()`,
+`snapshot_from_quera_bloqade()`, `snapshot_from_rigetti_qcs()`, and
+`snapshot_from_strangeworks_backend()` are concrete metadata adapters for this
+contract. They consume injected SDK
 backend/device objects and record target name, qubit count, route-supported or
 declared IR formats, gate basis, queue depth, shot/circuit limits, online state,
 simulator state, and calibration timestamp when the provider object exposes
@@ -695,6 +696,12 @@ job = hal.submit(
     approval_id="approved-run",
 )
 ```
+
+`snapshot_from_dwave_solver()` provides the matching no-submit readiness path
+for injected D-Wave solver metadata or metadata JSON. It records solver name,
+qubit count, declared BQM/Ising/QUBO/MLIR support, annealing topology, read
+limits, queue/load estimate, online state, simulator flag, category, and last
+update timestamp without calling sampler APIs.
 
 The direct IQM adapter layer provides `IQMHALAdapter` and
 `iqm_qiskit_workload()`. It follows the IQM Qiskit provider path lazily,
