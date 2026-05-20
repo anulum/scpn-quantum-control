@@ -29,12 +29,20 @@
     {
       "platform": "IBM Heron dynamic-circuit backend",
       "kind": "ibm_dynamic_circuits",
+      "backend_descriptor": "qiskit_ibm",
+      "provider": "ibm_quantum",
+      "can_submit": true,
+      "submit_requires_approval": true,
       "status": "ready",
       "reasons": [
         "declared capabilities satisfy the dynamic-circuit payload"
       ],
       "payload": {
         "kind": "ibm_dynamic_circuits",
+        "backend_descriptor": "qiskit_ibm",
+        "provider": "ibm_quantum",
+        "can_submit": true,
+        "submit_requires_approval": true,
         "n_qubits": 4,
         "n_clbits": 6,
         "depth": 41,
@@ -53,12 +61,20 @@
     {
       "platform": "Generic dynamic-circuit gate backend",
       "kind": "gate_based_dynamic_circuits",
+      "backend_descriptor": "",
+      "provider": "manual",
+      "can_submit": false,
+      "submit_requires_approval": true,
       "status": "ready",
       "reasons": [
         "declared capabilities satisfy the dynamic-circuit payload"
       ],
       "payload": {
         "kind": "gate_based_dynamic_circuits",
+        "backend_descriptor": "",
+        "provider": "manual",
+        "can_submit": false,
+        "submit_requires_approval": true,
         "n_qubits": 4,
         "n_clbits": 6,
         "depth": 41,
@@ -77,6 +93,10 @@
     {
       "platform": "Neutral-atom analogue XY target",
       "kind": "neutral_atom_analog",
+      "backend_descriptor": "",
+      "provider": "manual",
+      "can_submit": false,
+      "submit_requires_approval": true,
       "status": "manual_review",
       "reasons": [
         "payload requires mid-circuit measurement",
@@ -85,6 +105,10 @@
       ],
       "payload": {
         "kind": "neutral_atom_analog",
+        "backend_descriptor": "",
+        "provider": "manual",
+        "can_submit": false,
+        "submit_requires_approval": true,
         "n_qubits": 4,
         "n_clbits": 6,
         "depth": 41,
@@ -103,6 +127,10 @@
     {
       "platform": "Continuous-variable analogue target",
       "kind": "continuous_variable",
+      "backend_descriptor": "",
+      "provider": "manual",
+      "can_submit": false,
+      "submit_requires_approval": true,
       "status": "manual_review",
       "reasons": [
         "payload requires mid-circuit measurement",
@@ -111,6 +139,10 @@
       ],
       "payload": {
         "kind": "continuous_variable",
+        "backend_descriptor": "",
+        "provider": "manual",
+        "can_submit": false,
+        "submit_requires_approval": true,
         "n_qubits": 4,
         "n_clbits": 6,
         "depth": 41,
@@ -129,12 +161,20 @@
     {
       "platform": "Local statevector simulator",
       "kind": "simulator",
+      "backend_descriptor": "qiskit_aer",
+      "provider": "local_qiskit_aer",
+      "can_submit": false,
+      "submit_requires_approval": false,
       "status": "ready",
       "reasons": [
         "declared capabilities satisfy the dynamic-circuit payload"
       ],
       "payload": {
         "kind": "simulator",
+        "backend_descriptor": "qiskit_aer",
+        "provider": "local_qiskit_aer",
+        "can_submit": false,
+        "submit_requires_approval": false,
         "n_qubits": 4,
         "n_clbits": 6,
         "depth": 41,

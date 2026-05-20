@@ -1239,6 +1239,15 @@ be executed until individually activated.
   no-QPU readiness state, artefact inventory, exact commands,
   preregistered job shape, claim boundary, platform interpretation, and
   remaining live-submission blockers.
+- [x] **S1 IBM feedback-control paper scaffold.** Implemented
+  2026-05-20: `docs/s1_feedback_ibm_paper_plan_2026-05-20.md` and
+  `paper/s1_feedback_control/s1_feedback_control_short_paper.md` define
+  the next no-QPU preparation lane for a monitored-feedback versus
+  matched-open-loop IBM dynamic-circuit paper. The package records the
+  4-qubit, 2-circuit, 1024-shot, 12-repetition, 24-second preregistered
+  job shape, claim boundary, decision tree, and remaining live metadata,
+  transpilation, approval, raw-count, and analysis gates. It does not
+  authorise or perform an S1 hardware submission.
 - [ ] **S2** Quantum advantage benchmarks at scale.
 - [x] **S2 scaling protocol manifest.** Implemented 2026-05-06:
   `benchmarks/advantage_protocol.py` and
