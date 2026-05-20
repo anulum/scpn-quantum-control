@@ -49,8 +49,8 @@ preregistered reducer produced 54 observable rows. The mean absolute
 measured-minus-exact deviation is 0.1299 and the maximum absolute deviation is
 0.5561. The largest deviations are concentrated in transverse two-qubit
 correlators, especially DLA odd-sector \texttt{XX}/\texttt{YY} edge channels,
-while the FIM $\lambda_{\mathrm{fim}}=4$ circuit deviates more strongly than
-the $\lambda_{\mathrm{fim}}=0$ reference. A tensor-product readout-mitigation
+while the FIM lambda-4 circuit deviates more strongly than
+the FIM lambda-0 reference. A tensor-product readout-mitigation
 replay leaves the primary mean absolute deviation essentially unchanged
 (0.1293), and a same-day \texttt{ibm\_fez} replication gives mean absolute
 deviation 0.1528, readout-mitigated to 0.1513. A pinned-layout
@@ -99,7 +99,8 @@ Kuramoto--XY references on IBM hardware, do reduced-Pauli correlators show an
 accompanying structure that can constrain the mechanism?
 
 Previous DLA-parity and FIM runs established bounded hardware observations,
-including backend, layout, state-preparation, and readout sensitivity. A scalar
+including backend, layout, state-preparation, and readout
+sensitivity~\cite{SotekDLA2026,SotekFIM2026}. A scalar
 leakage metric alone cannot distinguish coherent correlator deformation from
 population readout effects or generic depth-dependent decoherence on noisy
 intermediate-scale quantum hardware~\cite{Preskill2018}. This paper therefore
@@ -111,6 +112,10 @@ measurement-efficient ideas include classical shadows and local observable
 prediction~\cite{HuangKuengPreskill2020}. The aim here is narrower still: to
 compare selected two-qubit correlators against exact classical references
 under one backend, layout, shot budget, and calibration window.
+The contribution is a channel-localised falsifier: the dominant DLA transverse
+deviations survive readout replay, backend replication, and ZNE stress tests,
+so future mechanism claims must account for correlator-level structure rather
+than only scalar leakage summaries.
 
 \section{Protocol}
 

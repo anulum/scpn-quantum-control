@@ -309,7 +309,9 @@ the 16-qubit circuit is explicitly noise-limited (Fig.~\ref{fig:hardware16}).
 \begin{figure}[t]
 \includegraphics[width=\columnwidth]{figures/publication/fig10_ibm_hardware.pdf}
 \caption{\label{fig:hardware}%
-IBM hardware results. (a)~Per-qubit $\langle Z \rangle$ heatmap.
+Legacy artefact-backed \texttt{ibm\_fez} hardware campaign from March 2026,
+retained for completeness and workflow context rather than promoted as the
+later DLA/parity dataset. (a)~Per-qubit $\langle Z \rangle$ heatmap.
 (b)~8-qubit expectations show coupling pattern. (c)~QKD QBER: 5.5\%.
 (d)~CHSH $S = 2.165 > 2$.}
 \end{figure}
@@ -317,9 +319,11 @@ IBM hardware results. (a)~Per-qubit $\langle Z \rangle$ heatmap.
 \begin{figure}[t]
 \includegraphics[width=\columnwidth]{figures/publication/fig14_complete_analysis.pdf}
 \caption{\label{fig:hardware16}%
-(a)~ZZ correlation matrix. (b)~Trotter order comparison. (c)~16-qubit
-per-qubit $\langle Z \rangle$: alternating pattern visible.
-(d)~VQE 8-qubit energy landscape.}
+Legacy \texttt{ibm\_fez} analysis companion to Fig.~\ref{fig:hardware}. These
+rows are artefact-backed context for the overview, not the promoted evidence
+for the later DLA, FIM, Phase~3, or S1 claims. (a)~ZZ correlation matrix.
+(b)~Trotter order comparison. (c)~16-qubit per-qubit $\langle Z \rangle$:
+alternating pattern visible. (d)~VQE 8-qubit energy landscape.}
 \end{figure}
 
 \subsection{Exact-simulation crossover boundary}
@@ -436,6 +440,20 @@ routes are readiness infrastructure rather than live non-IBM execution
 evidence. We plan to rerun the same bounded synchronisation payloads on
 additional hardware families when compute allocations and provider access
 become available.
+
+\section{Provider access and programme boundaries}
+
+The present stack should be read as an IBM-Heron hardware programme with
+provider-neutral software readiness, not as a cross-provider universality
+claim. IBM Quantum was the authenticated QPU route available for these
+campaigns at execution time. The framework already contains provider and
+aggregator surfaces for other hardware families, but a software route is not
+evidence of live hardware execution. Individual companion papers therefore
+state their IBM boundary briefly, while this overview records the programme
+level reason: cross-provider reruns are the next evidence class once compute
+allocations and access are available. Until then, the positive contribution is
+the raw-count, preregistered, reducer-bound methodology and the exact
+mechanism boundaries it establishes inside the available IBM hardware window.
 
 %% ====================================================================
 \section{Conclusion}

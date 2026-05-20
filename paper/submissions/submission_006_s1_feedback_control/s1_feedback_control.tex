@@ -79,6 +79,15 @@ The useful question is narrower: can a small monitored feedback policy improve
 a preregistered hardware observable relative to a matched open-loop arm under
 the same backend, layout, shot budget, repetitions, and calibration window?
 
+This work is the dynamic-circuit control branch of the same Kuramoto--XY
+hardware programme that produced the DLA-parity leakage observation, the FIM
+hardware falsification, and the reduced-Pauli mechanism-separation
+study~\cite{SotekDLA2026,SotekFIM2026,SotekPhase3ReducedPauli2026}. Its role is
+not to promote a controller after one positive backend response. It asks
+whether monitored feedback has a reproducible paired-arm signature once direct
+observables, backend replication, readout calibration, and local-folding ZNE
+are all treated as part of the claim boundary.
+
 Measurement-conditioned feedback is a standard quantum-control primitive
 ~\cite{WisemanMilburn2010}. Dynamic circuits provide the required gate-model
 hardware surface: mid-circuit measurement, classical conditioning, and
@@ -649,7 +658,11 @@ extrapolation. The final quadrature checks still do not support a
 backend-general positive controller mechanism. The appropriate publication
 claim is therefore precise: S1 establishes a reproducible paired-arm method
 and a hardware-control boundary for Kuramoto--XY feedback, while rejecting
-backend-general promotion of the tested controller.
+backend-general promotion of the tested controller. It also establishes that
+monitored feedback on IBM dynamic circuits can exhibit backend-dependent
+response modes that are not captured by a saturated binary synchronisation
+proxy, which is a concrete methodological constraint for future controller
+design.
 
 \bibliographystyle{apsrev4-2}
 \bibliography{s1_feedback_control_refs}

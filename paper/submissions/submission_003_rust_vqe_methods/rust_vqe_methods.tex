@@ -397,27 +397,30 @@ All three runs report matching checksums for the three language kernels,
 which makes the timings meaningful as implementation comparisons rather
 than unrelated algorithms.
 
-\begin{table*}[tb]
-\centering
+\paragraph*{Cross-machine $K_{ij}$ construction comparison.}
+The generated 16-oscillator cross-machine benchmark is kept inline rather than
+as a floating table so the machine rows remain adjacent to the explanatory
+text.
+\begin{center}
 \small
-\begin{tabular}{lrrrr}
+\begin{tabular}{lrrr}
 \toprule
-Machine & Python $n=16$ & Rust $n=16$ & Go $n=16$ & Rust/Python \\
+Machine & Python median & Rust median & Rust/Python \\
 \midrule
-Local workstation & $0.06631\,\mathrm{ms}$ & $0.00150\,\mathrm{ms}$ & $0.00437\,\mathrm{ms}$ & $44.1\times$ \\
-ML350 & $0.07620\,\mathrm{ms}$ & $0.00493\,\mathrm{ms}$ & $0.01023\,\mathrm{ms}$ & $15.5\times$ \\
-Vertex CPU & $0.04705\,\mathrm{ms}$ & $0.00260\,\mathrm{ms}$ & $0.00667\,\mathrm{ms}$ & $18.1\times$ \\
+Local & $0.06631\,\mathrm{ms}$ & $0.00150\,\mathrm{ms}$ & $44.1\times$ \\
+ML350 & $0.07620\,\mathrm{ms}$ & $0.00493\,\mathrm{ms}$ & $15.5\times$ \\
+Vertex CPU & $0.04705\,\mathrm{ms}$ & $0.00260\,\mathrm{ms}$ & $18.1\times$ \\
 \bottomrule
 \end{tabular}
-\caption{Generated cross-machine $K_{ij}$ construction comparison at
-$n=16$ from \texttt{remote\_knm\_benchmark\_*2026-05-05.json} and
-\texttt{combined\_methods\_benchmark\_summary\_2026-05-05.json}. Each
-row uses the self-contained benchmark harness with 1000 iterations. The
-reported machines had non-zero load averages during measurement, so the
-table supports robustness of the ordering, not isolated microbenchmark
-claims.}
-\label{tab:crossmachine}
-\end{table*}
+\end{center}
+The rows are generated from
+\texttt{remote\_knm\_benchmark\_*2026-05-05.json} and
+\texttt{combined\_methods\_benchmark\_summary\_2026-05-05.json}. Each row uses
+the self-contained benchmark harness with 1000 iterations and matching
+Python/Rust/Go checksums; the Go timings are retained in the JSON artefacts but
+omitted from this compact manuscript table. The reported machines had non-zero
+load averages during measurement, so the table supports robustness of the
+ordering, not isolated microbenchmark claims.
 
 \section{GPU-assisted validation benchmark}
 

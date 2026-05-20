@@ -37,11 +37,11 @@ Hamiltonians: exact small-system structure and a hardware falsification}
 \begin{abstract}
 We introduce and characterise a collective Fisher-information-inspired
 magnetisation-feedback term for Kuramoto--XY quantum simulations. The model
-augments the heterogeneous XY Hamiltonian by
-$H_{\mathrm{FIM}}(\lambda)=-\lambda M^2/n$, where
-$M=\sum_i Z_i$ is the total magnetisation. The term is diagonal in the
+augments the heterogeneous XY Hamiltonian with a diagonal term proportional to
+minus lambda times total magnetisation squared, normalised by the qubit count.
+The term is diagonal in the
 computational basis and therefore creates explicit magnetisation-sector energy
-shifts without breaking the $U(1)$ magnetisation conservation of the ideal XY
+shifts without breaking the magnetisation conservation of the ideal XY
 model. Artefact-generated exact diagonalisation on $n=4,6,8$ qubits shows that
 increasing $\lambda$ lowers the ground energy, widens the spectrum, and
 increases the spectral gap in the tested grid. For example, the exact gap
@@ -93,6 +93,16 @@ standard mapping, heterogeneous oscillator frequencies and couplings are encoded
 as local $Z$ fields and $XX+YY$ exchange terms. This construction preserves
 total magnetisation because the XY interaction swaps excitations without
 creating or destroying them.
+
+This paper continues the SCPN Kuramoto--XY hardware programme, which first
+established a bounded parity-sector and excitation-number correlated leakage
+observation on IBM Heron hardware~\cite{SotekDLA2026} and then used
+reduced-Pauli checks to localise correlator-level structure in the same
+families~\cite{SotekPhase3ReducedPauli2026}. Here we test a distinct
+Hamiltonian modification: a Fisher-information-inspired magnetisation-feedback
+term. The contribution is a negative design rule: the direct digital Trotter
+implementation of this FIM term is not a coherence-protection mechanism on the
+tested superconducting hardware.
 
 This manuscript studies a minimal extension of that model: a collective
 magnetisation-feedback term inspired by Fisher-information and
