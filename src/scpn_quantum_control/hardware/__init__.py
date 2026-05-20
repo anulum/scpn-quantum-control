@@ -154,6 +154,7 @@ from .hal_qiskit import (
     qiskit_circuit_to_workload,
 )
 from .hal_quantinuum import QuantinuumCloudHALAdapter, quantinuum_tket_workload
+from .hal_quera_bloqade import QuEraBloqadeHALAdapter, bloqade_ahs_workload
 from .hal_rigetti import RigettiQCSHALAdapter, rigetti_quil_workload
 from .hybrid_digital_analog import (
     HybridCouplingAssignment,
@@ -251,8 +252,10 @@ __all__ = [
     "PennyLaneDeviceHALAdapter",
     "pennylane_gate_workload",
     "QbraidRuntimeHALAdapter",
+    "QuEraBloqadeHALAdapter",
     "QuantinuumCloudHALAdapter",
     "RigettiQCSHALAdapter",
+    "bloqade_ahs_workload",
     "qbraid_program_to_workload",
     "quantinuum_tket_workload",
     "rigetti_quil_workload",

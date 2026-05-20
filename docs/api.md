@@ -676,6 +676,7 @@ from scpn_quantum_control.hardware import (
     IonQCloudHALAdapter,
     PennyLaneDeviceHALAdapter,
     QbraidRuntimeHALAdapter,
+    QuEraBloqadeHALAdapter,
     QuantinuumCloudHALAdapter,
     RigettiQCSHALAdapter,
     QiskitAerHALAdapter,
@@ -683,6 +684,7 @@ from scpn_quantum_control.hardware import (
     QuantumWorkload,
     azure_openqasm3_to_workload,
     braket_circuit_to_workload,
+    bloqade_ahs_workload,
     built_in_backend_profiles,
     ionq_qis_workload,
     pennylane_gate_workload,
@@ -818,6 +820,36 @@ qbraid_job = hal.submit(
         workload_id="qbraid_h",
         ir_format="openqasm3",
         n_qubits=1,
+        shots=128,
+    ),
+    approval_id="approved-run",
+)
+```
+
+The direct QuEra/Bloqade adapter layer provides `QuEraBloqadeHALAdapter` and
+`bloqade_ahs_workload()`. It consumes the repository's `bloqade_ahs_plan_v1`
+neutral-atom export schema, validates atom geometry and piecewise schedules,
+runs an injected Bloqade local or remote routine with `run(shots=..., name=...)`,
+normalises `fetch()`/`report()` bitstrings or count mappings into HAL counts,
+and cancels batches that expose `cancel()`. Automatic provider-object
+construction remains calibration-gated; production callers inject the calibrated
+Bloqade routine or a routine factory.
+
+```python
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+hal.register_backend(
+    QuEraBloqadeHALAdapter(
+        hal.profile("quera_bloqade"),
+        routine=calibrated_bloqade_routine,
+        routine_name="aquila-approved-route",
+    )
+)
+job = hal.submit(
+    "quera_bloqade",
+    bloqade_ahs_workload(
+        bloqade_ahs_plan,
+        workload_id="quera_rydberg_pair",
+        n_qubits=2,
         shots=128,
     ),
     approval_id="approved-run",
